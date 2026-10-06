@@ -53,6 +53,7 @@ union EffectRuntimeOwnerReference {
     Ptr32<struct ModelRuntimeSlot> modelRuntime; /* owner of EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY */
     Ptr32<struct ArmyRuntimeSlot> armyRuntime;
     Ptr32<struct ShotTerrainImpactDeformationColumns> terrainImpactColumns; /* owner of a shot's terrain impact effect (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) */
+    Ptr32<struct GameEntityRuntime> entityRuntime; /* the same owner as the GameEntityRuntime view (EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL; step 13 X7, was a (GameEntityRuntime *)modelNode cast) */
     uint32_t serializedOffset;
 };
 

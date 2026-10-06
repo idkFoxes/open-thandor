@@ -119,12 +119,11 @@ void SoftwareTexture_BilinearBlendScaleSubresources
           GraphicsScreenCoordinate destinationTop,GraphicsScreenCoordinate destinationLeft,
           uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
           GraphicsSubresourceIndex sourceSubresourceIndexA,
-          GraphicsSubresourceIndex sourceSubresourceIndexB,int *graphicsTextureAsset,
-          int *framebufferAccess)
+          GraphicsSubresourceIndex sourceSubresourceIndexB,const GraphicsTextureSourceAsset *graphicsTextureAsset,
+          const SoftwareFramebufferAccess *framebufferAccess)
 {
-  /* the A3 slot type (GraphicsGreyScaleImageProc) passes the asset and the framebuffer as int * */
-  const GraphicsTextureSourceAsset *asset = reinterpret_cast<const GraphicsTextureSourceAsset *>(graphicsTextureAsset);
-  const SoftwareFramebufferAccess *framebuffer = reinterpret_cast<const SoftwareFramebufferAccess *>(framebufferAccess);
+  const GraphicsTextureSourceAsset *asset = graphicsTextureAsset;
+  const SoftwareFramebufferAccess *framebuffer = framebufferAccess;
   const GraphicsTextureSourceEntry *entries;
   const GraphicsTextureSourceEntry *entryA;
   const GraphicsTextureSourceEntry *entryB;

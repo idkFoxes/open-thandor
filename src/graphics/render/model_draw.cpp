@@ -10,6 +10,7 @@
 
 #include <thandor/graphics/render/model_draw.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -67,10 +68,10 @@ static Bool8 ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
     /* level of detail: the next mesh group beyond g_ModelLodDepthThresholdQ8, the third beyond twice that depth
        (each group starts with the offset to the next) */
     if ((uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)g_ModelCullViewRelative.z && 1 < meshGroupCount) {
-      meshGroup = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroup + *meshGroup);
+      meshGroup = Asset_RecordAt<ModelMeshGroupRelativeOffset>(meshGroup,*meshGroup);
       if ((uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)(g_ModelCullViewRelative.z >> 1) &&
           2 < meshGroupCount) {
-        meshGroup = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroup + *meshGroup);
+        meshGroup = Asset_RecordAt<ModelMeshGroupRelativeOffset>(meshGroup,*meshGroup);
       }
     }
     ModelRender_DrawMeshGroupsWithTemporaryTransform

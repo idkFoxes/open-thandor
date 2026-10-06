@@ -111,37 +111,37 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
      re-initialised scenario; neither for a client of a fresh scenario */
   if ((((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
       (g_FrontendLoadedCampaignAsset == 0)) && (g_FrontendScenarioInitializationCount == 0)) {
-    FRONTEND_UI(frontendRoot,briefingBackButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,briefingBackButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingBackButton))->stateFlags &= ~FRONTEND_CONTROL_INACTIVE;
   }
   else {
-    FRONTEND_UI(frontendRoot,briefingBackButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,briefingBackButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
     ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingBackButton))->stateFlags |= FRONTEND_CONTROL_INACTIVE;
   }
   /* (when Back was shown, both of these are zero) */
   if ((g_FrontendScenarioInitializationCount != 0) || (g_FrontendLoadedCampaignAsset != 0)) {
-    FRONTEND_UI(frontendRoot,briefingExitButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,briefingExitButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingExitButton))->stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
     /* the original shows the Save button and switches it off again right away */
-    FRONTEND_UI(frontendRoot,briefingSaveButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,briefingSaveButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingSaveButton))->stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
-    FRONTEND_UI(frontendRoot,briefingSaveButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,briefingSaveButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
     ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingSaveButton))->stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
   }
   else {
-    FRONTEND_UI(frontendRoot,briefingExitButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,briefingExitButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
     ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingExitButton))->stateFlags |= FRONTEND_CONTROL_INACTIVE;
-    FRONTEND_UI(frontendRoot,briefingSaveButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,briefingSaveButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
     ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingSaveButton))->stateFlags |= FRONTEND_CONTROL_INACTIVE;
   }
   /* in a network game with other players only the host starts the mission */
-  FRONTEND_UI(frontendRoot,briefingBeginButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+  FRONTEND_UI(frontendRoot,briefingBeginButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) &&
      (1 < g_FrontendPlayerRuntimeBlockCount)) {
-    FRONTEND_UI(frontendRoot,briefingBeginButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,briefingBeginButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
   }
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -154,8 +154,8 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   textExtent = RichTextCommandStream_MeasureWrappedBlock
                      (g_UiTextStyleNormal,briefingText,((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->wrapWidth);
   /* size the text control to the wrapped text plus a 6-pixel margin, then refit the scroller */
-  FRONTEND_UI(frontendRoot,briefingText)->rightOffset = textExtent.widthPixels + 6;
-  FRONTEND_UI(frontendRoot,briefingText)->bottomOffset = textExtent.heightPixels + 6;
+  FRONTEND_UI(frontendRoot,briefingText)->base.rightOffset = textExtent.widthPixels + 6;
+  FRONTEND_UI(frontendRoot,briefingText)->base.bottomOffset = textExtent.heightPixels + 6;
   control = (UiAnchorFractionQ31 *)FRONTEND_UI(frontendRoot,briefingTextScroller);
   UiScrollableControl_RebuildViewportAndScrollbars((UiScrollableControl *)control);
   UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,(UiScrollableControl *)control);
@@ -177,10 +177,10 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   if ((g_FrontendLoadedCampaignAsset == 0 ||
        ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->currentLevelId ==
        ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->firstLevelId) && unclaimedActiveFactions != 0) {
-    FRONTEND_UI(frontendRoot,opponentSettingsGroup)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,opponentSettingsGroup)->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   }
   else {
-    FRONTEND_UI(frontendRoot,opponentSettingsGroup)->nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRoot,opponentSettingsGroup)->base.nodeFlags |= UI_NODE_SUPPRESSED;
     UiNodeList_SuppressActionId(FRONTEND_ACTION_GAME_SPEED,&frontendRoot->base);
   }
 }

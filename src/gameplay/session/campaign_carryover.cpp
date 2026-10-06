@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/session/campaign_carryover.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
@@ -15,6 +16,13 @@ uint32_t *g_OldUnitSecondaryTable = nullptr;
 uint32_t *g_OldUnitPrimaryTable = nullptr;
 
 OldUnitRecordCount g_OldUnitRecordCount = 0;
+
+/* The campaign asset viewed at a byte address: g_FrontendLoadedCampaignAsset and the scan cursor keep the
+   loaded CGN bytes as an integer address. */
+static inline CampaignAsset *CampaignCarryover_AssetAt(uintptr_t address)
+{
+  return reinterpret_cast<CampaignAsset *>(address);
+}
 
 /* Mission carry-over after a session ends: finds the current scenario's record in the loaded campaign and,
    for the outcome selected by g_EndMovieSelectionIndex, stores each faction's technology masks (8 dwords) in
@@ -44,13 +52,13 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
 
   scenarioFound = false;
   /* Campaign asset (CampaignAsset): the cursor starts at the asset base and advances by one 0x180-byte level
-     record, so ((CampaignAsset *)cursor)->levels[0] is the current record. */
+     record, so levels[0] of the asset viewed at the cursor is the current record. */
   if ((g_InGameRuntimeRoot != nullptr) && (g_FrontendLoadedCampaignAsset != 0)) {
-    levelRecordsRemaining = ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->levelRecordCount;
+    levelRecordsRemaining = CampaignCarryover_AssetAt(g_FrontendLoadedCampaignAsset)->levelRecordCount;
     scenarioRecord = g_FrontendLoadedCampaignAsset;
     do {
-      if (((CampaignAsset *)g_FrontendLoadedCampaignAsset)->currentLevelId ==
-          ((CampaignAsset *)scenarioRecord)->levels[0].levelId) {
+      if (CampaignCarryover_AssetAt(g_FrontendLoadedCampaignAsset)->currentLevelId ==
+          CampaignCarryover_AssetAt(scenarioRecord)->levels[0].levelId) {
         scenarioFound = true;
         break;
       }
@@ -62,11 +70,11 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
     OldUnitRuntime_ResetPendingTables();
     return;
   }
-  scenarioLevel = &((CampaignAsset *)scenarioRecord)->levels[0];
+  scenarioLevel = &CampaignCarryover_AssetAt(scenarioRecord)->levels[0];
   /* Original quirk: the original offsets the faction-record cursor by an uninitialized value times the
      active faction index; the loop then walks all eight 0x740-byte faction records, which only stays
      inside the table from records[0], so the cursor always starts there. */
-  technologyMasks = (uint32_t *)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits;
+  technologyMasks = g_GameFactionRuntimeImage.records[0].technologyMasks256Bits;
   /* Per-faction exit zones of the level record; carry-over and skip hold one bit per outcome.
      factionExitZoneCursor walks the level record 4 bytes (one faction) per group, so element 0 of each
      per-faction array is the current faction's. */
@@ -94,7 +102,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
     /* on to the next faction record's technology masks */
     technologyMasks = technologyMasks + GAME_FACTION_RUNTIME_RECORD_BYTES / 4;
     factionExitZoneCursor =
-         (CampaignLevelRecord *)((uint8_t *)factionExitZoneCursor + sizeof(factionExitZoneCursor->exitZoneCenterX[0]));
+         Asset_RecordAt<CampaignLevelRecord>(factionExitZoneCursor,sizeof(factionExitZoneCursor->exitZoneCenterX[0]));
   }
   /* Primary records (8 dwords each, at most 0x200): [0] army asset id, [1] faction, [2] X, [3] Y,
      [4] rotation angle. */
@@ -248,7 +256,8 @@ Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
   uint32_t *destinationCursor;
   int index;
 
-  if (g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&oldUnitImage) != 0) {
+  if (g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES,
+                        reinterpret_cast<void **>(&oldUnitImage)) != 0) {
     return false;
   }
   oldUnitImage[0] = g_OldUnitRecordCount;
@@ -262,8 +271,8 @@ Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
     destinationCursor++;
   }
   Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
-                      (PckDecodedByteCount)((uint8_t *)destinationCursor - (uint8_t *)oldUnitImage),oldUnitImage,
-                      (uint16_t *)g_OldunitHexPathUtf16,packageHandle);
+                      (PckDecodedByteCount)Asset_ByteDistance(destinationCursor,oldUnitImage),oldUnitImage,
+                      g_OldunitHexPathUtf16,packageHandle);
   g_MemoryApi.free(oldUnitImage);
   return true;
 }

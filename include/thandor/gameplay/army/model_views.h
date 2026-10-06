@@ -42,6 +42,30 @@ THANDOR_SLOT_OVERLAY(ModelRuntimePlacementClass14View, ModelRuntimePlacementVali
 THANDOR_SLOT_OVERLAY(ModelDefinition, ModelDefinitionRecordPrefix);
 THANDOR_SLOT_OVERLAY(ShotModelRuntimeNode, ModelRuntimeNode);
 THANDOR_SLOT_OVERLAY(EffectModelRuntimeNode, ModelRuntimeNode);
+/* The owner-list and generic views of a world node (every world node has the ModelRuntimeNode shape: common
+   links, model payload, runtimePayload). */
+THANDOR_SLOT_OVERLAY(WorldOwnerListNode, ModelRuntimeNode);
+THANDOR_SLOT_OVERLAY(WorldRuntimeNode, ModelRuntimeNode);
+
+/* ModelView_Cast<To>(p): the named cast between two views of the same record (step 13 X5; replaces the C-style
+   casts between them). It compiles only when one type is registered as a view of the other (THANDOR_SLOT_OVERLAY,
+   THANDOR_SLOT_PREFIX in core/slot.h) or both are views of a ModelRuntimeSlot, so it cannot reach an unrelated
+   record. The conversion is the reinterpret_cast the C-style cast was (same address, no adjustment). */
+template <class To, class From> inline To *ModelView_Cast(From *record)
+{
+    using ToBare = std::remove_cv_t<To>;
+    using FromBare = std::remove_cv_t<From>;
+    static_assert(thandor_slot_is_view_of<ToBare, FromBare>() || thandor_slot_is_view_of<FromBare, ToBare>() ||
+                      (thandor_slot_is_view_of<ToBare, ModelRuntimeSlot>() &&
+                       thandor_slot_is_view_of<FromBare, ModelRuntimeSlot>()),
+                  "ModelView_Cast: the types are not registered views of one record");
+    return reinterpret_cast<To *>(record);
+}
+/* The same for a typed 32-bit pointer field (the load, then the view cast). */
+template <class To, class From> inline To *ModelView_Cast(const Ptr32<From> &field)
+{
+    return ModelView_Cast<To>(field.get());
+}
 #endif /* __cplusplus */
 
 #endif /* THANDOR_GAMEPLAY_ARMY_MODEL_VIEWS_H */

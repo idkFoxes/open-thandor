@@ -113,7 +113,7 @@ const GraphicsTextureSourceEntry *SubresourceEntry(const GraphicsTextureSourceAs
         return nullptr;
     }
     const GraphicsTextureSourceEntry *entry =
-        (const GraphicsTextureSourceEntry *)((const uint8_t *)asset + asset->tableDescriptor.subresourceTableOffset) +
+        GraphicsTextureSource_Entries(asset) +
         subresource;
     if (entry->paletteIndex != -1 && (uint32_t)entry->paletteIndex >= asset->tableDescriptor.paletteBankCount) {
         return nullptr;
@@ -272,7 +272,9 @@ void RecordStretchDirectColorBilinear(uint32_t destinationHeight, uint32_t desti
         entry->pixelWidth > (uint32_t)INT32_MAX / 4 || entry->pixelHeight > (uint32_t)INT32_MAX) {
         return;
     }
-    const uint32_t *texels = (const uint32_t *)((const uint8_t *)sourceAsset + entry->dataOffset);
+    /* the direct-colour texels of the entry: ARGB dwords inside the asset block */
+    const uint32_t *texels =
+        reinterpret_cast<const uint32_t *>(GraphicsTextureSource_Bytes(sourceAsset) + entry->dataOffset);
     RecordImageBilinear(destinationX, destinationY, (int32_t)destinationWidth, (int32_t)destinationHeight,
                         (int32_t)(destinationWidth & ~1u), texels, (int32_t)entry->pixelWidth,
                         (int32_t)entry->pixelHeight, (int32_t)entry->pixelWidth * 4);
@@ -401,7 +403,7 @@ bool GreyScaleImageDraws(uint32_t subresourceA, uint32_t subresourceB, const Gra
         return false;
     }
     const GraphicsTextureSourceEntry *entries =
-        (const GraphicsTextureSourceEntry *)((const uint8_t *)asset + asset->tableDescriptor.subresourceTableOffset);
+        GraphicsTextureSource_Entries(asset);
     return entries[subresourceA].paletteIndex >= 0 && entries[subresourceB].paletteIndex >= 0;
 }
 
@@ -409,12 +411,12 @@ void RecordGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixe
                           GraphicsScreenCoordinate destinationTop, GraphicsScreenCoordinate destinationLeft,
                           uint64_t *blendedSourcePixels, uint64_t *blendFactorPixels,
                           GraphicsSubresourceIndex sourceSubresourceIndexA,
-                          GraphicsSubresourceIndex sourceSubresourceIndexB, int *graphicsTextureAsset,
-                          int *framebufferAccess)
+                          GraphicsSubresourceIndex sourceSubresourceIndexB, const GraphicsTextureSourceAsset *graphicsTextureAsset,
+                          const SoftwareFramebufferAccess *framebufferAccess)
 {
-    if (!IsDisplay((const SoftwareFramebufferAccess *)framebufferAccess) ||
+    if (!IsDisplay(framebufferAccess) ||
         !GreyScaleImageDraws(sourceSubresourceIndexA, sourceSubresourceIndexB,
-                             (const GraphicsTextureSourceAsset *)graphicsTextureAsset) ||
+                             graphicsTextureAsset) ||
         destinationWidth < 2 || destinationHeight < 2 || destinationWidth > 16384 || destinationHeight > 16384) {
         /* other destinations, and the cases the software function handles by itself (sizes 0 and 1 loop or divide
            by zero there) */
@@ -429,16 +431,17 @@ void RecordGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixe
        software scale shows intensity 255 - sample (g_SoftwarePixelIntensityToNativeColorLut256 runs from white to
        black), so the texels are inverted here: the GPU's bilinear sample of 255 - b is 255 - (sample of b), up to
        the weights' rounding. */
-    const GraphicsTextureSourceAsset *asset = (const GraphicsTextureSourceAsset *)graphicsTextureAsset;
+    const GraphicsTextureSourceAsset *asset = graphicsTextureAsset;
     SoftwareTexture_CrossFadeSubresources(blendedSourcePixels, blendFactorPixels, sourceSubresourceIndexA,
                                           sourceSubresourceIndexB, asset);
     const GraphicsTextureSourceEntry *entryB =
-        (const GraphicsTextureSourceEntry *)((const uint8_t *)asset + asset->tableDescriptor.subresourceTableOffset) +
+        GraphicsTextureSource_Entries(asset) +
         sourceSubresourceIndexB;
     const int32_t width = (int32_t)entryB->pixelWidth;
     const int32_t height = (int32_t)entryB->pixelHeight;
     uint32_t *pixels = AcquireScratch((std::size_t)width * (std::size_t)height);
-    const uint8_t *blended = (const uint8_t *)blendedSourcePixels;
+    /* the cross-faded image is one grey byte per pixel, kept in a qword buffer */
+    const uint8_t *blended = reinterpret_cast<const uint8_t *>(blendedSourcePixels);
     for (std::size_t index = 0; index < (std::size_t)width * (std::size_t)height; index++) {
         pixels[index] = ARGB8888_ALPHA_MASK | (uint32_t)(255 - blended[index]) * 0x010101u;
     }
@@ -540,16 +543,16 @@ void CompareGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPix
                            GraphicsScreenCoordinate destinationTop, GraphicsScreenCoordinate destinationLeft,
                            uint64_t *blendedSourcePixels, uint64_t *blendFactorPixels,
                            GraphicsSubresourceIndex sourceSubresourceIndexA,
-                           GraphicsSubresourceIndex sourceSubresourceIndexB, int *graphicsTextureAsset,
-                           int *framebufferAccess)
+                           GraphicsSubresourceIndex sourceSubresourceIndexB, const GraphicsTextureSourceAsset *graphicsTextureAsset,
+                           const SoftwareFramebufferAccess *framebufferAccess)
 {
     SoftwareTexture_BilinearBlendScaleSubresources(destinationHeight, destinationWidth, destinationTop, destinationLeft,
                                                    blendedSourcePixels, blendFactorPixels, sourceSubresourceIndexA,
                                                    sourceSubresourceIndexB, graphicsTextureAsset, framebufferAccess);
     /* only the cases the record function records (it would draw the others into the display a second time) */
-    if (IsDisplay((const SoftwareFramebufferAccess *)framebufferAccess) &&
+    if (IsDisplay(framebufferAccess) &&
         GreyScaleImageDraws(sourceSubresourceIndexA, sourceSubresourceIndexB,
-                            (const GraphicsTextureSourceAsset *)graphicsTextureAsset) &&
+                            graphicsTextureAsset) &&
         destinationWidth >= 2 && destinationHeight >= 2 && destinationWidth <= 16384 && destinationHeight <= 16384) {
         /* (the record function repeats the cross-fade: it depends only on the two images and the mask) */
         RecordGreyScaleImage(destinationHeight, destinationWidth, destinationTop, destinationLeft, blendedSourcePixels,

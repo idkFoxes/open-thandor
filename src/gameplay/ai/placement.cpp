@@ -30,7 +30,7 @@ Bool8 AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId
   if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                 (7,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,heading,
                  workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
-                 AiPlacement_WorldAsPlacementRoot(worldRuntime),&placementCount)) {
+                 worldRuntime,&placementCount)) {
     return true;
   }
   if (placementCount == 0) {
@@ -38,7 +38,7 @@ Bool8 AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId
   }
   if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                 (4,0,heading,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                 factionIndex,AiPlacement_WorldAsPlacementRoot(worldRuntime),nullptr)) {
+                 factionIndex,worldRuntime,nullptr)) {
     return true;
   }
   /* ceil(placementCount / quantum) must stay below 5 */
@@ -414,7 +414,7 @@ Bool8 AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,F
   return !ArmyPlacement_CanPlaceAssetAtFieldPoint
                     (0,0,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,placementContext,
-                     AiPlacement_WorldAsPlacementRoot(worldRuntime),nullptr);
+                     worldRuntime,nullptr);
 }
 
 
@@ -428,7 +428,7 @@ Bool8 AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,F
   return !ArmyPlacement_CanPlaceAssetAtFieldPoint
                     (4,0,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
-                     AiPlacement_WorldAsPlacementRoot(worldRuntime),nullptr);
+                     worldRuntime,nullptr);
 }
 
 
@@ -452,10 +452,10 @@ Bool8 AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetI
   if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                 (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,heading,
                  workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
-                 AiPlacement_WorldAsPlacementRoot(worldRuntime),&placementCount)) {
+                 worldRuntime,&placementCount)) {
     if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                   (0,0,heading,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                   factionIndex,AiPlacement_WorldAsPlacementRoot(worldRuntime),nullptr)) {
+                   factionIndex,worldRuntime,nullptr)) {
       return false;
     }
     bucketCount = 0;
@@ -463,7 +463,7 @@ Bool8 AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetI
   else if ((placementCount != 0) &&
           (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                          (0,0,heading,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                          factionIndex,AiPlacement_WorldAsPlacementRoot(worldRuntime),nullptr))) {
+                          factionIndex,worldRuntime,nullptr))) {
     /* Round the placement count up to whole separation quanta. */
     quantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
     bucketCount = ((placementCount - 1) + quantum) / quantum;
@@ -493,7 +493,7 @@ Bool8 AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,Fiel
   if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                 (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,
                  (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
-                 workspaceRecord->worldX,armyAssetId,factionIndex,AiPlacement_WorldAsPlacementRoot(worldRuntime),
+                 workspaceRecord->worldX,armyAssetId,factionIndex,worldRuntime,
                  &placementCount)) {
     return true;
   }
@@ -609,7 +609,7 @@ Bool8 AiPlacement_FindNearestPlaceableBaseSite
       if ((int)candidateDistance < (int)bestDistance) {
         if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
-                           candidateCell->worldX,armyAssetId,factionIndex,AiPlacement_WorldAsPlacementRoot(worldRuntime),nullptr)) {
+                           candidateCell->worldX,armyAssetId,factionIndex,worldRuntime,nullptr)) {
           bestDistance = candidateDistance;
           bestCell = candidateCell;
         }

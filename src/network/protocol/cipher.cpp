@@ -303,6 +303,25 @@ const uint32_t g_UiTransferRoundKeys[16] = {
     /*  8 */ 0xF1E2D3C, 0x4B5A6978, 0xC3D2E1F0, 0x8796A5B4, 0x54686F6D, 0x61732047, 0x6572656B, 0x65212121,
 };
 
+/* The S-box tables as bytes and the entry at a byte position. The original addresses the tables by byte offsets
+   assembled from the key and data nibbles (row = key nibble * 0x40, column = data nibble * 4); the byte
+   arithmetic is kept as it is (a reinterpretation of the table as bytes, hence reinterpret_cast). */
+static inline const uint8_t *UiTransfer_SboxBytes(const uint32_t (*table)[16])
+{
+  return reinterpret_cast<const uint8_t *>(table);
+}
+template <class T = uint32_t> static inline T UiTransfer_SboxWord(const uint8_t *entry)
+{
+  return *reinterpret_cast<const T *>(entry);
+}
+
+/* The S-box entry at address: the decryption assembles the entry's address as an integer (table address plus
+   the nibble offsets), as the original does. */
+template <class T = uint32_t> static inline T UiTransfer_SboxWordAt(uintptr_t address)
+{
+  return *reinterpret_cast<const T *>(address);
+}
+
 /* Encrypts an outgoing packet: byteCount/8 64-bit blocks in CBC mode (each input block is XORed with the
    previous output block, starting from zero), each through 16 rounds keyed by roundKeys16 and the eight
    nibble substitution tables g_UiTransferEncryptSboxes. UiTransfer_DecryptPacketBlocks is the
@@ -347,25 +366,25 @@ void UiTransfer_EncryptPacketBlocks(const uint32_t *roundKeys16,uint32_t *output
         roundIndex++;
         /* one nibble per table: table n, row = key nibble n, column = input nibble n */
         /* byte offsets into the uint32_t[16][16] tables: row = key nibble * 64, column = input nibble * 4 */
-        rightState =(((((((*(int *)((uint8_t *)g_UiTransferEncryptSboxes[0] +
+        rightState =(((((((UiTransfer_SboxWord<int>(UiTransfer_SboxBytes(g_UiTransferEncryptSboxes[0]) +
                                     (roundInputHalf & 0xf) * 4 + (*roundKeyNibble0 & 0xf) * UI_TRANSFER_CIPHER_ROW_BYTES) << 4 |
-                           *(uint32_t *)((uint8_t *)g_UiTransferEncryptSboxes[1] +
+                           UiTransfer_SboxWord(UiTransfer_SboxBytes(g_UiTransferEncryptSboxes[1]) +
                                     ((roundInputHalf & 0xf0) >> 4) * 4 + (*roundKeyNibble1 & 0xf0) * 4)) << 4
-                          | *(uint32_t *)((uint8_t *)g_UiTransferEncryptSboxes[2] +
+                          | UiTransfer_SboxWord(UiTransfer_SboxBytes(g_UiTransferEncryptSboxes[2]) +
                                      ((roundInputHalf & 0xf00) >> 8) * 4 + ((*roundKeyNibble2 & 0xf00) >> 2))
-                          ) << 4 | *(uint32_t *)((uint8_t *)g_UiTransferEncryptSboxes[3] +
+                          ) << 4 | UiTransfer_SboxWord(UiTransfer_SboxBytes(g_UiTransferEncryptSboxes[3]) +
                                             ((roundInputHalf & 0xf000) >> 12) * 4 +
                                             ((*roundKeyNibble3 & 0xf000) >> 6))) << 4 |
-                        *(uint32_t *)((uint8_t *)g_UiTransferEncryptSboxes[4] +
+                        UiTransfer_SboxWord(UiTransfer_SboxBytes(g_UiTransferEncryptSboxes[4]) +
                                  ((roundInputHalf & 0xf0000) >> 16) * 4 +
                                  ((*roundKeyNibble4 & 0xf0000) >> 10))) << 4 |
-                       *(uint32_t *)((uint8_t *)g_UiTransferEncryptSboxes[5] +
+                       UiTransfer_SboxWord(UiTransfer_SboxBytes(g_UiTransferEncryptSboxes[5]) +
                                 ((roundInputHalf & 0xf00000) >> 20) * 4 +
                                 ((*roundKeyNibble5 & 0xf00000) >> 14))) << 4 |
-                      *(uint32_t *)((uint8_t *)g_UiTransferEncryptSboxes[6] +
+                      UiTransfer_SboxWord(UiTransfer_SboxBytes(g_UiTransferEncryptSboxes[6]) +
                                ((roundInputHalf & 0xf000000) >> 24) * 4 +
                                ((*roundKeyNibble6 & 0xf000000) >> 18))) << 4 |
-                     *(uint32_t *)((uint8_t *)g_UiTransferEncryptSboxes[7] +
+                     UiTransfer_SboxWord(UiTransfer_SboxBytes(g_UiTransferEncryptSboxes[7]) +
                               (roundInputHalf >> 28) * 4 + ((*roundKeyNibble7 & 0xf0000000) >> 22))) ^
                      leftState;
         roundInputHalf = leftState;
@@ -401,37 +420,37 @@ void UiTransfer_DecryptPacketBlocks
     previousCipherLow = 0;
     do {
       roundIndex = 15;
-      leftHalf = *(uint32_t *)source;
-      rightHalf = ((uint32_t *)source)[1];
+      leftHalf = *static_cast<uint32_t *>(source);
+      rightHalf = static_cast<uint32_t *>(source)[1];
       do {
         savedHalf = leftHalf;
         rightHalf = rightHalf ^ savedHalf;
-        leftHalf = ((((((*(int *)(((roundKeys16[roundIndex] & 0xf0000000) >> 22) + THANDOR_ADDR(g_UiTransferDecryptSboxes,7 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+        leftHalf = ((((((UiTransfer_SboxWordAt<int>(((roundKeys16[roundIndex] & 0xf0000000) >> 22) + THANDOR_ADDR(g_UiTransferDecryptSboxes,7 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                               (rightHalf & 0xf) * 4) << 4 |
-                     *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000000) >> 18) + THANDOR_ADDR(g_UiTransferDecryptSboxes,6 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                     UiTransfer_SboxWordAt(((roundKeys16[roundIndex] & 0xf000000) >> 18) + THANDOR_ADDR(g_UiTransferDecryptSboxes,6 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                               ((rightHalf & 0xf0) >> 4) * 4)) << 4 |
-                    *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00000) >> 14) + THANDOR_ADDR(g_UiTransferDecryptSboxes,5 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                    UiTransfer_SboxWordAt(((roundKeys16[roundIndex] & 0xf00000) >> 14) + THANDOR_ADDR(g_UiTransferDecryptSboxes,5 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                              ((rightHalf & 0xf00) >> 8) * 4)) << 4 |
-                   *(uint32_t *)(((roundKeys16[roundIndex] & 0xf0000) >> 10) + THANDOR_ADDR(g_UiTransferDecryptSboxes,4 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                   UiTransfer_SboxWordAt(((roundKeys16[roundIndex] & 0xf0000) >> 10) + THANDOR_ADDR(g_UiTransferDecryptSboxes,4 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                             ((rightHalf & 0xf000) >> 12) * 4)) << 4 |
-                  *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000) >> 6) + THANDOR_ADDR(g_UiTransferDecryptSboxes,3 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                  UiTransfer_SboxWordAt(((roundKeys16[roundIndex] & 0xf000) >> 6) + THANDOR_ADDR(g_UiTransferDecryptSboxes,3 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                            ((rightHalf & 0xf0000) >> 16) * 4)) << 4 |
-                 *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00) >> 2) + THANDOR_ADDR(g_UiTransferDecryptSboxes,2 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                 UiTransfer_SboxWordAt(((roundKeys16[roundIndex] & 0xf00) >> 2) + THANDOR_ADDR(g_UiTransferDecryptSboxes,2 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                           ((rightHalf & 0xf00000) >> 20) * 4)) << 4 |
-                *(uint32_t *)((roundKeys16[roundIndex] & 0xf0) * 4 + THANDOR_ADDR(g_UiTransferDecryptSboxes,1 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                UiTransfer_SboxWordAt((roundKeys16[roundIndex] & 0xf0) * 4 + THANDOR_ADDR(g_UiTransferDecryptSboxes,1 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                          ((rightHalf & 0xf000000) >> 24) * 4)) << 4 |
-                *(uint32_t *)((roundKeys16[roundIndex] & 0xf) * UI_TRANSFER_CIPHER_ROW_BYTES + THANDOR_ADDR(g_UiTransferDecryptSboxes,0) + (rightHalf >> 28) * 4);
+                UiTransfer_SboxWordAt((roundKeys16[roundIndex] & 0xf) * UI_TRANSFER_CIPHER_ROW_BYTES + THANDOR_ADDR(g_UiTransferDecryptSboxes,0) + (rightHalf >> 28) * 4);
         roundIndex--;
         rightHalf = savedHalf;
       } while (-1 < roundIndex);
       leftHalf = leftHalf ^ previousCipherLow;
       savedHalf = savedHalf ^ previousCipherHigh;
-      previousCipherLow = *(uint32_t *)source;
-      previousCipherHigh = ((uint32_t *)source)[1];
-      *(uint32_t *)destination = leftHalf;
-      ((uint32_t *)destination)[1] = savedHalf;
-      source = (uint8_t *)source + 8;
-      destination = (uint8_t *)destination + 8;
+      previousCipherLow = *static_cast<uint32_t *>(source);
+      previousCipherHigh = static_cast<uint32_t *>(source)[1];
+      *static_cast<uint32_t *>(destination) = leftHalf;
+      static_cast<uint32_t *>(destination)[1] = savedHalf;
+      source = static_cast<uint8_t *>(source) + 8;
+      destination = static_cast<uint8_t *>(destination) + 8;
       blocksRemaining--;
     } while (blocksRemaining != 0);
   }

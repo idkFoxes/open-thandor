@@ -49,14 +49,14 @@ void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
           fieldGrid->cells[cellIndex].armyRuntimeSavedOffset =
                Thandor_PointerToI32(modelRuntime) - g_ModelRuntimeRebaseDelta; /* 32-bit format field: FieldGridCell.armyRuntimeSavedOffset */
           ArmyRuntime_UpdateTimedShotAndEffectEmitters
-                    (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+                    (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
           ArmyRuntime_UpdateAnimatedModelSubnodes
-                    (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+                    (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
         }
       }
     }
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Class command of the structure classes (the ten non-default class slots that share it; session conditions
@@ -87,8 +87,8 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
   /* crush every class-0/class-12 model standing inside the structure */
   ownNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
-    for (scanNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; scanNode != nullptr;
-        scanNode = (ModelRuntimeNode *)(scanNode->common).nextNode) {
+    for (scanNode = ModelView_Cast<ModelRuntimeNode>(worldRuntime->ownerListHead); scanNode != nullptr;
+        scanNode = ModelView_Cast<ModelRuntimeNode>((scanNode->common).nextNode)) {
       if (scanNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
@@ -123,8 +123,8 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
   armyModelNode = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->modelNodeRuntime;
   completionModelRuntime = nullptr;
   blockingCount = 0;
-  for (scanNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; scanNode != nullptr;
-      scanNode = (ModelRuntimeNode *)(scanNode->common).nextNode) {
+  for (scanNode = ModelView_Cast<ModelRuntimeNode>(worldRuntime->ownerListHead); scanNode != nullptr;
+      scanNode = ModelView_Cast<ModelRuntimeNode>((scanNode->common).nextNode)) {
     if ((scanNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || (scanNode == armyModelNode)) {
       continue;
     }
@@ -198,7 +198,7 @@ void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
   int remainingClassDistanceQ12;
 
   ArmyRuntime_UpdateTimedShotAndEffectEmitters
-            (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+            (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
   modelNodeRuntime = modelRuntime->rootModelNode;
   rootModelResource = (modelNodeRuntime->modelPayload).modelResource;
   verticalStepQ12 =
@@ -211,7 +211,7 @@ void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
   remainingClassDistanceQ12 = (modelRuntime->classLinkState).modelLinkOrState.signedScalarState;
   modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
   if (modelHeightQ12 < remainingClassDistanceQ12) {
-    ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+    ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   }
   else {
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
@@ -432,8 +432,8 @@ Bool8 ArmyRuntime_TestPositionDistanceWithinCombinedRadius
   int64_t yDistanceSquaredQ24;
 
   axisDeltaXQ12 =
-       ((ModelRuntimeNode *)sourceModelNode)->worldTransform.translation.x -
-       ((ModelRuntimeNode *)candidateModelNode)->worldTransform.translation.x;
+       static_cast<ModelRuntimeNode *>(sourceModelNode)->worldTransform.translation.x -
+       static_cast<ModelRuntimeNode *>(candidateModelNode)->worldTransform.translation.x;
   remainingRadiusSquaredAfterXQ24 =
        (int64_t)(int)(sourceRadiusQ12 + candidateRadiusQ12) *
        (int64_t)(int)(sourceRadiusQ12 + candidateRadiusQ12) -
@@ -441,8 +441,8 @@ Bool8 ArmyRuntime_TestPositionDistanceWithinCombinedRadius
   if (remainingRadiusSquaredAfterXQ24 < 0) {
     return true;
   }
-  axisDeltaYQ12 = ((ModelRuntimeNode *)sourceModelNode)->worldTransform.translation.y -
-                  ((ModelRuntimeNode *)candidateModelNode)->worldTransform.translation.y;
+  axisDeltaYQ12 = static_cast<ModelRuntimeNode *>(sourceModelNode)->worldTransform.translation.y -
+                  static_cast<ModelRuntimeNode *>(candidateModelNode)->worldTransform.translation.y;
   yDistanceSquaredQ24 = (int64_t)axisDeltaYQ12 * (int64_t)axisDeltaYQ12;
   /* the original tests the sign of the high dword of remainder - dy^2 (high dwords minus the borrow); both
      values are below 2^62 in magnitude, so this is a plain 64-bit comparison */
@@ -472,7 +472,7 @@ void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
   }
   if ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime != nullptr) {
     ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics
-              ((int *)(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime);
+              ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime);
   }
 }
 
@@ -552,5 +552,5 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
     *classStateField = *classStateField ^ 4;
     ArmyRuntime_RebuildDerivedSelectionMetrics(modelRuntime->ownerArmyRuntime);
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }

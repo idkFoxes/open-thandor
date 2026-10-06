@@ -66,7 +66,7 @@ static void InGameNewSession_ResetSessionState()
   memset(&g_FrontendPacket10021Buffer,0,sizeof(g_FrontendPacket10021Buffer));
   memset(&g_FrontendPacket10022Buffer,0,sizeof(g_FrontendPacket10022Buffer));
   memset(&g_FrontendPacket10023Buffer,0,sizeof(g_FrontendPacket10023Buffer));
-  clearCursor = (uint32_t *)g_SelectionPlayerBlocks;
+  clearCursor = reinterpret_cast<uint32_t *>(g_SelectionPlayerBlocks); /* dword clear */
   for (remainingCount = SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock) / sizeof(uint32_t);
        remainingCount != 0; remainingCount--) {
     *clearCursor = 0;
@@ -97,8 +97,8 @@ static void InGameNewSession_ResetSessionState()
        (40 bytes), so the copy also covers the 40 bytes behind each of them (the start of the next selection block).
        The original copies 80 bytes for the last selection block as well; bounded here to the 40-byte name field
        because its excess would land behind the g_SelectionPlayerBlocks allocation. */
-    nameSource = (uint32_t *)frontendPlayer->playerName.textUtf16;
-    nameDestination = (uint32_t *)selectionBlock->playerNameUtf16;
+    nameSource = reinterpret_cast<uint32_t *>(frontendPlayer->playerName.textUtf16); /* dword copy */
+    nameDestination = reinterpret_cast<uint32_t *>(selectionBlock->playerNameUtf16);
     remainingCount = 20;
     if (selectionBlock == g_SelectionPlayerBlocks + (SELECTION_PLAYER_BLOCK_COUNT - 1)) {
       remainingCount = (int)(sizeof(selectionBlock->playerNameUtf16) / (sizeof(uint32_t)));
@@ -148,13 +148,15 @@ static void InGameNewSession_BuildSessionName(UiTextResourceId titleTextIndex)
   uint16_t titleChar;
   int remainingCount;
 
-  sessionNameCursor = ((UiRequiredTextEditControl *)&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
+  sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
+                        (&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
   for (remainingCount = 32; remainingCount != 0; remainingCount--) {
     *sessionNameCursor = 0;
     sessionNameCursor++;
   }
   titleSource = TextResource_Resolve(titleTextIndex + TEXT_ID_LEVEL_TITLE_BASE);
-  sessionNameCursor = ((UiRequiredTextEditControl *)&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
+  sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
+                        (&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
   for (remainingCount = 31; remainingCount != 0; remainingCount--) {
     titleSource++;
     titleChar = *titleSource;
@@ -220,7 +222,8 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
   uint32_t mapMouseOptionFlags;
 
   world = &inGameRoot->worldRuntime;
-  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  /* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int */
+  g_SpinLockAcquire(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
   InGameSession_InitShadingAndMirrorViewOptions(world);
   mapMouseOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   if ((mapMouseOptionFlags & 4) != 0) {
@@ -228,7 +231,7 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
     UiPageStack_SetActiveIndex(0,&inGameRoot->resourceBarModePageStack);
     UiPageStack_SetActiveIndex(0,&inGameRoot->gamePanelsModePageStack);
     inGameRoot->worldViewAreaRightOffset = 0;
-    UiContainer_LayoutChildren((UiNodeBase *)inGameRoot);
+    UiContainer_LayoutChildren(&inGameRoot->rootUi.base);
   }
   /* a campaign carries units over from the previous level */
   if (g_FrontendLoadedCampaignAsset == 0) {
@@ -289,9 +292,11 @@ Bool8 InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uin
 
   InGameNewSession_ResetSessionState();
   InGameNewSession_BuildSessionName((levelAsset->header).titleTextResourceIndex);
+  /* the local player's block starts with its selection slots (SelectionPointerArray32): the same 32 entity
+     pointers */
   if (!InGameSession_CreateRoot
-         ((SelectionInfoEntitySlots *)g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId],&inGameRoot,
-          &stepError)) {
+         (reinterpret_cast<SelectionInfoEntitySlots *>(g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]),
+          &inGameRoot,&stepError)) {
     return InGameNewSession_Fail(stepError,outError);
   }
   if (!InGameNewSession_LoadWorld(levelAsset,levelMoviePath,inGameRoot,&stepError)) {

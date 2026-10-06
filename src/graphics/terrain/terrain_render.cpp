@@ -9,6 +9,21 @@
 #include <thandor/thandor.h>
 #include <thandor/core/color_lanes.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/assets/record_bytes.h>
+
+/* The projection work record of a field grid cell: the terrain pass reuses the 0x80-byte cells of the field grid
+   as its vertex records. */
+static inline TerrainProjectedVertexWorkRecord *TerrainVertex_OfCell(FieldGridCell *cell)
+{
+  return reinterpret_cast<TerrainProjectedVertexWorkRecord *>(cell);
+}
+
+/* The vertex one grid row below (rowStrideBytes: one grid row of vertex records). */
+static inline TerrainProjectedVertexWorkRecord *TerrainVertex_RowBelow(TerrainProjectedVertexWorkRecord *vertex,
+                                                                       uint32_t rowStrideBytes)
+{
+  return reinterpret_cast<TerrainProjectedVertexWorkRecord *>(reinterpret_cast<uint8_t *>(vertex) + rowStrideBytes);
+}
 
 /* Module data. */
 
@@ -166,7 +181,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
       spanFirstColumn = rowSpan->firstColumn;
       vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
       if (vertexCount != 0 && spanFirstColumn <= rowSpan->endColumnExclusive) {
-        vertexCursor = (TerrainProjectedVertexWorkRecord *)(rowCells + spanFirstColumn);
+        vertexCursor = TerrainVertex_OfCell(rowCells + spanFirstColumn);
         do {
           TerrainProjectedVertex_ReshadeKeepingProjection(vertexCursor);
           vertexCursor = vertexCursor + 1;
@@ -186,7 +201,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
       spanFirstColumn = rowSpan->firstColumn;
       vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
       if (vertexCount != 0 && spanFirstColumn <= rowSpan->endColumnExclusive) {
-        vertexCursor = (TerrainProjectedVertexWorkRecord *)(rowCells + spanFirstColumn);
+        vertexCursor = TerrainVertex_OfCell(rowCells + spanFirstColumn);
         do {
           TerrainProjectedVertex_TransformProjectAndShade(vertexCursor);
           vertexCursor = vertexCursor + 1;
@@ -209,7 +224,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     if (vertexCount != 0 && spanFirstColumn <= rowSpan->endColumnExclusive) {
       quadCount = vertexCount - 1;
       if (quadCount != 0) {
-        vertexCursor = (TerrainProjectedVertexWorkRecord *)(rowCells + spanFirstColumn);
+        vertexCursor = TerrainVertex_OfCell(rowCells + spanFirstColumn);
         do {
           TerrainProjectedQuad_QueueAsTwoTriangles(gridWidth * sizeof(FieldGridCell),vertexCursor,renderContext);
           vertexCursor = vertexCursor + 1;
@@ -255,12 +270,12 @@ void TerrainProjectedQuad_QueueAsTwoTriangles
   /* + rowStrideBytes: the vertex one row down */
   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
             (topLeftVertex->surfacePacketIndex,topLeftVertex + 1,
-             (TerrainProjectedVertexWorkRecord *)((uint8_t *)topLeftVertex + rowStrideBytes),topLeftVertex,
+             TerrainVertex_RowBelow(topLeftVertex,rowStrideBytes),topLeftVertex,
              renderContext);
   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
             (topLeftVertex->surfacePacketIndex,topLeftVertex + 1,
-             (TerrainProjectedVertexWorkRecord *)((uint8_t *)(topLeftVertex + 1) + rowStrideBytes),
-             (TerrainProjectedVertexWorkRecord *)((uint8_t *)topLeftVertex + rowStrideBytes),renderContext);
+             TerrainVertex_RowBelow(topLeftVertex + 1,rowStrideBytes),
+             TerrainVertex_RowBelow(topLeftVertex,rowStrideBytes),renderContext);
 }
 
 
@@ -467,9 +482,9 @@ static GraphicsPrimitivePacket *TerrainProjectedTriangle_QueueSoilPacket
   GraphicsPrimitivePacket *queuedPacket;
 
   queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
-                     ((uint32_t *)((uint8_t *)soilPacketTable + packetOffset),vertex2Color,vertex1Color,vertex0Color,
-                      (GraphicsProjectedVertexSource *)vertex2,(GraphicsProjectedVertexSource *)vertex1,
-                      (GraphicsProjectedVertexSource *)vertex0,renderContext);
+                     (Asset_RecordAt<uint32_t>(soilPacketTable,packetOffset),vertex2Color,vertex1Color,vertex0Color,
+                      TerrainVertex_AsProjectedSource(vertex2),TerrainVertex_AsProjectedSource(vertex1),
+                      TerrainVertex_AsProjectedSource(vertex0),renderContext);
   if (queuedPacket != nullptr) {
     queuedPacket->renderFlags = queuedPacket->renderFlags | layerFlags;
   }
@@ -520,10 +535,10 @@ static void TerrainProjectedTriangle_QueueSoilTriangles
   packetOffset1 = materialOffset1 + (vertex1->projectionFlags & TERRAIN_VERTEX_VARIANT_OFFSET_MASK);
   packetOffset2 = materialOffset2 + (vertex2->projectionFlags & TERRAIN_VERTEX_VARIANT_OFFSET_MASK);
   queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
-                     ((uint32_t *)((uint8_t *)soilPacketTable +
+                     (reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(soilPacketTable) +
                                materialOffset0 + (vertex0->projectionFlags & TERRAIN_VERTEX_VARIANT_OFFSET_MASK)),
-                      vertex2Color,vertex1Color,vertex0Color,(GraphicsProjectedVertexSource *)vertex2,
-                      (GraphicsProjectedVertexSource *)vertex1,(GraphicsProjectedVertexSource *)vertex0,
+                      vertex2Color,vertex1Color,vertex0Color,TerrainVertex_AsProjectedSource(vertex2),
+                      TerrainVertex_AsProjectedSource(vertex1),TerrainVertex_AsProjectedSource(vertex0),
                       renderContext);
   if (queuedPacket == nullptr) {
     return;
@@ -618,13 +633,13 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       litProduct2 = pmulhw(ColorLanes_UnpackBytesShiftRight(vertex2Color,4),
                            g_PackedLightingLookupTable[vertex2->lightingLookupIndexOrSentinel]);
       GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
-                ((uint32_t *)((uint8_t *)g_TerrainSurfacePacketTablePayload +
+                (Asset_RecordAt<uint32_t>(g_TerrainSurfacePacketTablePayload,
                               surfacePacketIndex * TERRAIN_SURFACE_PACKET_BYTES),
                  ColorLanes_PackWordsUnsignedSaturate(litProduct2),
                  ColorLanes_PackWordsUnsignedSaturate(litProduct1),
                  ColorLanes_PackWordsUnsignedSaturate(litProduct0),
-                 (GraphicsProjectedVertexSource *)vertex2,(GraphicsProjectedVertexSource *)vertex1,
-                 (GraphicsProjectedVertexSource *)vertex0,renderContext);
+                 TerrainVertex_AsProjectedSource(vertex2),TerrainVertex_AsProjectedSource(vertex1),
+                 TerrainVertex_AsProjectedSource(vertex0),renderContext);
     }
   }
 }
@@ -797,11 +812,11 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
   primitiveQueue->primaryNodes[packetIndex].packet = newPacket;
   /* the vertices are TerrainProjectedVertexWorkRecords (passed with the GraphicsProjectedVertexSource type) */
   GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[0],
-          (const TerrainProjectedVertexWorkRecord *)vertex0Projected,vertex0DiffuseColor);
+          TerrainVertex_FromProjectedSource(vertex0Projected),vertex0DiffuseColor);
   GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[1],
-          (const TerrainProjectedVertexWorkRecord *)vertex1Projected,vertex1DiffuseColor);
+          TerrainVertex_FromProjectedSource(vertex1Projected),vertex1DiffuseColor);
   GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[2],
-          (const TerrainProjectedVertexWorkRecord *)vertex2Projected,vertex2DiffuseColor);
+          TerrainVertex_FromProjectedSource(vertex2Projected),vertex2DiffuseColor);
   newPacket->vertices[0].textureU = terrainPacketRecord[0];
   newPacket->vertices[1].textureU = terrainPacketRecord[2];
   newPacket->vertices[2].textureU = terrainPacketRecord[4];

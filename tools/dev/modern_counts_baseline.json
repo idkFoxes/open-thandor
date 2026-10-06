@@ -1,7 +1,7 @@
 {
- "revision": "6b5e87bf",
+ "revision": "3a085da2",
  "worktree": true,
- "files": 691,
+ "files": 692,
  "metrics": {
   "cstyle_cast": {
    "item": 1,
@@ -116,13 +116,11 @@
   "cstyle_cast": {
    "audio": 23,
    "core": 57,
-   "gameplay": 549,
-   "graphics": 234,
+   "gameplay": 200,
    "movie": 41,
-   "network": 197,
-   "platform": 239,
-   "ui": 1958,
-   "world": 289
+   "platform": 237,
+   "ui": 1937,
+   "world": 206
   },
   "ingame_ui": {
    "gameplay": 10,
@@ -158,11 +156,11 @@
    "generated": 1,
    "graphics": 206,
    "movie": 37,
-   "network": 164,
+   "network": 165,
    "platform": 330,
    "root": 7,
    "ui": 803,
-   "world": 179
+   "world": 177
   },
   "include_guard": {
    "assets": 34,
@@ -172,7 +170,7 @@
    "generated": 1,
    "graphics": 41,
    "movie": 6,
-   "network": 15,
+   "network": 16,
    "platform": 33,
    "root": 1,
    "ui": 101,
@@ -181,6 +179,7 @@
   "constexpr": {
    "core": 45,
    "gameplay": 1,
+   "network": 2,
    "platform": 52,
    "ui": 5,
    "world": 13

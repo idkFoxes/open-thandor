@@ -94,9 +94,16 @@ static WinSockData11 g_WinSockStartupData = {};
 
 static NetworkBackendInstanceDescriptorPrefix g_NetworkBackendInstanceDescriptorPrefix = {.displayNameUtf16 = {'W', 'i', 'n', 'S', 'o', 'c', 'k', '3', '2', ' ', '1', '.', '1', ' ', '-', ' ', 'U', 'D', 'P', 0}}; /* L"WinSock32 1.1 - UDP" */
 
+/* Resolves one WSOCK32 export into its function pointer slot. DynAPI_Resolve stores the export's address
+   through a void ** (a genuine reinterpretation of the function pointer slot, hence reinterpret_cast). */
+template <class Proc> static inline uint32_t Network_ResolveExport(Proc **slot,HINSTANCE module,char *procedureName)
+{
+  return DynAPI_Resolve(reinterpret_cast<void **>(slot),module,procedureName);
+}
+
 /* Binds the 14 exports of wsock32.dll that the code calls (the original binds 45), starts WinSock 1.1 and
    installs the UDP fallback backend
-   (NetworkFallback_*) as the only network backend instance. Returns 0 on success, otherwise the
+   (the NetworkFallback_* functions) as the only network backend instance. Returns 0 on success, otherwise the
    DynDLL/DynAPI error code or the WSAStartup error; the original reports success in every case,
    so a missing WinSock is not fatal there. The original starts by jumping over a large block of code,
    presumably a ws2_32 path (not ported: nothing installed it).
@@ -110,33 +117,33 @@ uint32_t Network_Init()
 
   module = DynDLL_Load(s_Wsock32ModuleName);
   if (module == nullptr) return FATAL_ERROR_DLL_LOAD_FAILED;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_bind,module,s_Wsock32Export_bind);
+  resolveError = Network_ResolveExport(&g_WinSock_bind,module,s_Wsock32Export_bind);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_closesocket,module,s_Wsock32Export_closesocket);
+  resolveError = Network_ResolveExport(&g_WinSock_closesocket,module,s_Wsock32Export_closesocket);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_htons,module,s_Wsock32Export_htons);
+  resolveError = Network_ResolveExport(&g_WinSock_htons,module,s_Wsock32Export_htons);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_inet_addr,module,s_Wsock32Export_inet_addr);
+  resolveError = Network_ResolveExport(&g_WinSock_inet_addr,module,s_Wsock32Export_inet_addr);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_inet_ntoa,module,s_Wsock32Export_inet_ntoa);
+  resolveError = Network_ResolveExport(&g_WinSock_inet_ntoa,module,s_Wsock32Export_inet_ntoa);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_ioctlsocket,module,s_Wsock32Export_ioctlsocket);
+  resolveError = Network_ResolveExport(&g_WinSock_ioctlsocket,module,s_Wsock32Export_ioctlsocket);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_recvfrom,module,s_Wsock32Export_recvfrom);
+  resolveError = Network_ResolveExport(&g_WinSock_recvfrom,module,s_Wsock32Export_recvfrom);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_sendto,module,s_Wsock32Export_sendto);
+  resolveError = Network_ResolveExport(&g_WinSock_sendto,module,s_Wsock32Export_sendto);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_setsockopt,module,s_Wsock32Export_setsockopt);
+  resolveError = Network_ResolveExport(&g_WinSock_setsockopt,module,s_Wsock32Export_setsockopt);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_socket,module,s_Wsock32Export_socket);
+  resolveError = Network_ResolveExport(&g_WinSock_socket,module,s_Wsock32Export_socket);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_gethostbyname,module,s_Wsock32Export_gethostbyname);
+  resolveError = Network_ResolveExport(&g_WinSock_gethostbyname,module,s_Wsock32Export_gethostbyname);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_WSACleanup,module,s_Wsock32Export_WSACleanup);
+  resolveError = Network_ResolveExport(&g_WinSock_WSACleanup,module,s_Wsock32Export_WSACleanup);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_WSAGetLastError,module,s_Wsock32Export_WSAGetLastError);
+  resolveError = Network_ResolveExport(&g_WinSock_WSAGetLastError,module,s_Wsock32Export_WSAGetLastError);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve((void **)&g_WinSock_WSAStartup,module,s_Wsock32Export_WSAStartup);
+  resolveError = Network_ResolveExport(&g_WinSock_WSAStartup,module,s_Wsock32Export_WSAStartup);
   if (resolveError != 0) return resolveError;
   startupError = (uint32_t)g_WinSock_WSAStartup(MAKEWORD(1,1),&g_WinSockStartupData);
   if (startupError != 0) return startupError;

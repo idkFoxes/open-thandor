@@ -108,7 +108,7 @@ static void FieldGridCell_RefreshChangedCellAndNeighbours(int rowStrideBytes,Fie
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell + 1);
     FieldGridCell_ComputeDirectionalLightColor(cell + 1);
   }
-  rowAboveCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes);
+  rowAboveCell = FieldGridCell_AtByteOffset(cell,-rowStrideBytes);
   if ((rowAboveCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,rowAboveCell);
     FieldGridCell_ComputeDirectionalLightColor(rowAboveCell);
@@ -117,7 +117,7 @@ static void FieldGridCell_RefreshChangedCellAndNeighbours(int rowStrideBytes,Fie
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,rowAboveCell + 1);
     FieldGridCell_ComputeDirectionalLightColor(rowAboveCell + 1);
   }
-  rowBelowLeftCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,rowStrideBytes);
+  rowBelowLeftCell = FieldGridCell_AtByteOffset(cell - 1,rowStrideBytes);
   if ((rowBelowLeftCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,rowBelowLeftCell);
     FieldGridCell_ComputeDirectionalLightColor(rowBelowLeftCell);

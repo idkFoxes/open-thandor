@@ -20,7 +20,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(FactionRuntimeIndex fa
 
 {
   ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
-            (factionIndex,(int *)(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime);
+            (factionIndex,(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime);
 }
 
 /* Marks every not yet destroyed node of the army's model hierarchy (root modelRuntimeOrSavedOffset.modelRuntime) as destroyed, dismantling
@@ -82,7 +82,7 @@ int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
    visibilityHeightOffset, the largest shot selection range in weaponRangeQ12 and, for armed models, the shot's
    impact damage per target class summed into targetClassShotDamage[8].
 */
-void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
+void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *modelRuntimeSlot;
@@ -97,7 +97,7 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   int targetClassIndex;
   int childrenRemaining;
 
-  modelRuntimeSlot = (ModelRuntimeSlot *)modelRuntime;
+  modelRuntimeSlot = modelRuntime;
   modelDefinition = modelRuntimeSlot->definitionOrSavedId.runtimeDefinition;
   army = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
@@ -136,7 +136,7 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   attachment = modelRuntimeSlot->attachments;
   for (childrenRemaining = modelRuntimeSlot->attachmentCount; childrenRemaining != 0; childrenRemaining--) {
     if (attachment->childModelRuntimeOrSavedOffset != nullptr) {
-      ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics((int *)attachment->childModelRuntimeOrSavedOffset);
+      ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(attachment->childModelRuntimeOrSavedOffset);
     }
     attachment++;
   }
@@ -387,7 +387,7 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
    definition (variantModelDefinitionIds) that the faction's technology unlocks. The armour points (health) are
    rescaled to the new definition's maximumHealth so the condition stays the same, and the army's derived metrics are rebuilt.
 */
-void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,int *modelRuntime)
+void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *modelRuntimeSlot;
@@ -399,7 +399,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
   int variantIndex;
   int childrenRemaining;
 
-  modelRuntimeSlot = (ModelRuntimeSlot *)modelRuntime;
+  modelRuntimeSlot = modelRuntime;
   currentDefinition = modelRuntimeSlot->definitionOrSavedId.runtimeDefinition;
   for (variantIndex = 0; variantIndex < MODEL_TECHNOLOGY_VARIANT_COUNT; variantIndex++) {
     modelDefinitionId = currentDefinition->variantModelDefinitionIds[variantIndex];
@@ -418,7 +418,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
     modelRuntimeSlot->definitionOrSavedId.definition = variantDefinition;
     modelRuntimeSlot->health =
          (int)(((int64_t)(int)modelRuntimeSlot->health *
-               (int64_t)(int)((ModelDefinition *)variantDefinition)->maximumHealth) /
+               (int64_t)(int)ModelView_Cast<ModelDefinition>(variantDefinition)->maximumHealth) /
               (int64_t)(int)previousDefinition->maximumHealth);
     ArmyRuntime_RebuildDerivedSelectionMetrics(modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     break;
@@ -427,7 +427,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
   for (childrenRemaining = modelRuntimeSlot->attachmentCount; childrenRemaining != 0; childrenRemaining--) {
     if (attachment->childModelRuntimeOrSavedOffset != nullptr) {
       ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
-                (factionIndex,(int *)attachment->childModelRuntimeOrSavedOffset);
+                (factionIndex,attachment->childModelRuntimeOrSavedOffset);
     }
     attachment++;
   }

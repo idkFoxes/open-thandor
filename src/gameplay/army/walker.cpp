@@ -72,7 +72,7 @@ static void ArticulatedWalker_AdvanceRunningStep(WorldRuntimeContext *worldRunti
       (modelRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory = footHeading;
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = restartSpeed;
       ArmyArticulatedRuntime_UpdateContactChildAndEffects
-                (modelRuntime->rootModelNode->childNodes[0],worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+                (modelRuntime->rootModelNode->childNodes[0],worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
     }
   }
   else {
@@ -95,7 +95,7 @@ static void ArticulatedWalker_AdvanceRunningStep(WorldRuntimeContext *worldRunti
       (modelRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory = footHeading;
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = restartSpeed;
       ArmyArticulatedRuntime_UpdateContactChildAndEffects
-                (modelRuntime->rootModelNode->childNodes[1],worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+                (modelRuntime->rootModelNode->childNodes[1],worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
     }
   }
 }
@@ -344,7 +344,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
   ModelRuntimeSlot *linkedModelRuntime;
   ModelRuntimeNode *rootNode;
 
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   linkedModelRuntime = modelRuntime->linkedModelRuntime;
   rootNode = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
@@ -369,7 +369,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
   if (movementDefinition->waterDamageThreshold < waterDelta) {
     waterDamage = waterDelta * movementDefinition->waterDamageMultiplier >> 7;
     if (-1 < waterDamage) {
-      ArmyRuntime_ApplyDamageAndPropagateToParent(waterDamage,(ModelRuntimeSlot *)modelRuntime);
+      ArmyRuntime_ApplyDamageAndPropagateToParent(waterDamage,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
     }
   }
   if (((modelRuntime->articulatedContact).fallbackPosition0Q12 &
@@ -400,7 +400,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
      (previousRotationAngle != (rootNode->modelPayload).worldRotationAngle2)) {
     ownerArmy = modelRuntime->ownerArmyRuntime;
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
-              (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+              (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
     ownerMovementFlags = &ownerArmy->movementStateFlags;
     *ownerMovementFlags = *ownerMovementFlags & ~ARMY_MOVEMENT_STATIONARY;
   }
@@ -497,7 +497,7 @@ static void ArticulatedContact_SetStepRateFromTravel(ArmyArticulatedRuntimeSlotV
   int travelPlusLift;
   int strideLength;
 
-  movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
+  movementDefinition = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get());
   travelPlusLift = footTravelLength + movementDefinition->classParameterC4 * 2;
   strideLength = movementDefinition->classParameterC0;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
@@ -625,7 +625,7 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
                             (lateralSinCos.cosValue + armyRuntime->runtimeState94) -
                             (rootNode->worldTransform).translation.x);
   /* classParameterC0: stride length */
-  strideReach = reachFromRoot + ((ModelDefinition *)movementDefinition)->classParameterC0;
+  strideReach = reachFromRoot + static_cast<ModelDefinition *>(movementDefinition)->classParameterC0;
   if (strideReach < (uint32_t)routeDistanceQ12) {
     headingSinCos = FixedMath_SinCosScaled(headingAngle16,strideReach);
     aheadX = headingSinCos.cosValue + (rootNode->worldTransform).translation.x;
@@ -665,7 +665,7 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
       return;
     }
     ArmyRuntime_HandleCollisionPartner
-              ((ModelRuntimeSlot *)armyRuntime,
+              (reinterpret_cast<ModelRuntimeSlot *>(armyRuntime), /* the walker's model runtime under its slot view */
                (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
                blockingModelRuntime,worldRuntime);
@@ -769,7 +769,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
                             (lateralSinCos.cosValue + armyRuntime->runtimeState90) -
                             (rootNode->worldTransform).translation.x);
   /* classParameterC0: stride length */
-  strideReach = reachFromRoot + ((ModelDefinition *)movementDefinition)->classParameterC0;
+  strideReach = reachFromRoot + static_cast<ModelDefinition *>(movementDefinition)->classParameterC0;
   if (strideReach < (uint32_t)routeDistanceQ12) {
     headingSinCos = FixedMath_SinCosScaled(headingAngle16,strideReach);
     aheadX = headingSinCos.cosValue + (rootNode->worldTransform).translation.x;
@@ -808,7 +808,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
       return;
     }
     ArmyRuntime_HandleCollisionPartner
-              ((ModelRuntimeSlot *)armyRuntime,
+              (reinterpret_cast<ModelRuntimeSlot *>(armyRuntime), /* the walker's model runtime under its slot view */
                (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
                blockingModelRuntime,worldRuntime);
@@ -1027,7 +1027,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   /* left foot position along its step (progress in runtimeStateA8) */
   leftNode = modelNodeRuntime->childNodes[0]->childNodes[0]->childNodes[0]->childNodes[0];
   leftBlendQ12 = articulatedRuntime->runtimeStateA8;
-  liftHeight = ((ModelDefinition *)articulatedRuntime->definitionOrAsset)->classParameterC4;
+  liftHeight = static_cast<ModelDefinition *>(articulatedRuntime->definitionOrAsset.get())->classParameterC4;
   ArticulatedWalker_PlaceFootAlongStep
             (leftNode,leftBlendQ12,liftHeight,
              articulatedRuntime->movementTarget0Q12,articulatedRuntime->runtimeState90,
@@ -1042,7 +1042,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   /* the same for the right foot (progress in terrainContactMode) */
   rightNode = modelNodeRuntime->childNodes[1]->childNodes[0]->childNodes[0]->childNodes[0];
   rightBlendQ12 = (articulatedRuntime->articulatedContact).terrainContactMode;
-  liftHeight = ((ModelDefinition *)articulatedRuntime->definitionOrAsset)->classParameterC4;
+  liftHeight = static_cast<ModelDefinition *>(articulatedRuntime->definitionOrAsset.get())->classParameterC4;
   ArticulatedWalker_PlaceFootAlongStep
             (rightNode,rightBlendQ12,liftHeight,
              articulatedRuntime->movementTarget1Q12,articulatedRuntime->runtimeState94,
@@ -1075,7 +1075,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   (modelNodeRuntime->worldTransform).translation.x = (leftFootX + rightFootX) >> 1;
   (modelNodeRuntime->worldTransform).translation.y = (leftFootY + rightFootY) >> 1;
   (modelNodeRuntime->worldTransform).translation.z =
-       ((leftFootZ + rightFootZ) >> 1) + ((ModelDefinition *)movementDefinition)->placementHeightOffsetQ12;
+       ((leftFootZ + rightFootZ) >> 1) + static_cast<ModelDefinition *>(movementDefinition)->placementHeightOffsetQ12;
   rightContactZ = (rightNode->worldTransform).translation.z;
   rightContactY = (rightNode->worldTransform).translation.y;
   rightContactX = (rightNode->worldTransform).translation.x;
@@ -1233,7 +1233,7 @@ static Bool8 ArmyArticulatedRuntime_SetStepRate(ArmyArticulatedRuntimeSlotView *
   int travelPlusLift;
   int strideLength;
 
-  movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
+  movementDefinition = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get());
   travelPlusLift = footTravel + movementDefinition->classParameterC4 * 4;
   strideLength = movementDefinition->classParameterC0;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
@@ -1361,7 +1361,7 @@ static void ArmyArticulatedRuntime_PlanLeftTurnStep
   uint32_t terrainNormalAngles;
 
   /* definition classParameterC8: maximum turn per step */
-  movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
+  movementDefinition = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get());
   if ((uint32_t)movementDefinition->classParameterC8 < steeringAngle16) {
     steeringAngle16 = (AngleTurn32)movementDefinition->classParameterC8;
   }
@@ -1439,7 +1439,7 @@ static void ArmyArticulatedRuntime_PlanRightTurnStep
   uint32_t terrainNormalAngles;
 
   /* definition classParameterC8: maximum turn per step */
-  movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
+  movementDefinition = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get());
   minimumSteeringAngle = FIXED_ANGLE16_FULL_TURN - movementDefinition->classParameterC8;
   if (steeringAngle16 < minimumSteeringAngle) {
     steeringAngle16 = minimumSteeringAngle;

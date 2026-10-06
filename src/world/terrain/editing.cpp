@@ -55,8 +55,8 @@ void TerrainRegionCollection_CollectConnectedCellsRecursive
     spanStopCell = spanStopCell + 1;
   }
   /* row above: from the span start up to the column of the cell that ended the span */
-  for (aboveRowCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(spanStartCell,-rowStrideBytes);
-       aboveRowCell <= FIELD_GRID_CELL_AT_BYTE_OFFSET(spanStopCell,-rowStrideBytes);
+  for (aboveRowCell = FieldGridCell_AtByteOffset(spanStartCell,-rowStrideBytes);
+       aboveRowCell <= FieldGridCell_AtByteOffset(spanStopCell,-rowStrideBytes);
        aboveRowCell = aboveRowCell + 1) {
     if (((aboveRowCell->flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0) &&
        ((aboveRowCell->flagsAndMaterial & requiredCellFlags) != 0)) {
@@ -65,8 +65,8 @@ void TerrainRegionCollection_CollectConnectedCellsRecursive
     }
   }
   /* row below: from one cell left of the span start up to the span's last cell */
-  for (belowRowCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(spanStartCell - 1,rowStrideBytes);
-       belowRowCell < FIELD_GRID_CELL_AT_BYTE_OFFSET(spanStopCell,rowStrideBytes);
+  for (belowRowCell = FieldGridCell_AtByteOffset(spanStartCell - 1,rowStrideBytes);
+       belowRowCell < FieldGridCell_AtByteOffset(spanStopCell,rowStrideBytes);
        belowRowCell = belowRowCell + 1) {
     if (((belowRowCell->flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0) &&
        ((belowRowCell->flagsAndMaterial & requiredCellFlags) != 0)) {
