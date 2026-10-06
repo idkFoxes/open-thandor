@@ -153,7 +153,7 @@ static void ArmyUnitFactory_CreateBuiltArmy(WorldRuntimeContext *worldRuntime,Mo
   createdModelRuntime = createdArmyRuntime->modelRuntimeOrSavedOffset.modelRuntime;
   createdArmyRuntime->movementStateFlags = createdArmyRuntime->movementStateFlags | ARMY_MOVEMENT_LOCKED;
   /* the new army links back to this factory until it has left (ARMY_FACTORY_STATE_WAITING_EXIT) */
-  createdModelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = (ModelRuntimeSlot *)modelRuntime;
+  createdModelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = ModelView_Cast<ModelRuntimeSlot>(modelRuntime);
   if (createdFactionIndex != worldRuntime->activeFactionRuntimeIndex) {
     return;
   }
@@ -250,7 +250,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
                    (modelRuntime->classLinkState).classState78,localPoint.yQ12,localPoint.xQ12,
                    (ArmyMovementRuntime *)linkedArmyRuntime);
         (linkedModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime =
-             (ModelRuntimeSlot *)modelRuntime;
+             ModelView_Cast<ModelRuntimeSlot>(modelRuntime);
       }
     }
     break;
@@ -276,7 +276,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
       (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags & ~ARMY_MODEL_STATE_PRODUCING;
     }
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Runtime update of production class 11, reached only through
@@ -388,8 +388,8 @@ void ArmyRuntimeClass_UpdateStructureFactory
             if (activeFactionIndex == ownerArmyRuntime->factionIndex) {
               linkedRootNodeOffset = assetRecord->rootNodeOffsetOrPointer; /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
               InGameArmyStock_RebuildGrid((UiNodeBase *)worldRuntime);
-              linkedModelDefinition = (ModelDefinition *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                                 (ownerArmyRuntime->factionIndex,linkedRootNodeOffset);
+              linkedModelDefinition = ModelView_Cast<ModelDefinition>(ModelDefinition_SelectFactionUnlockedLinkedDefinition
+                                 (ownerArmyRuntime->factionIndex,linkedRootNodeOffset));
               rootNode = modelRuntime->rootModelNode;
               pitchAngle = (worldRuntime->motion).pitchAngle;
               headingAngle = (rootNode->modelPayload).worldRotationAngle2;
@@ -408,7 +408,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
       }
     }
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Launches one linked asset of a class-22 pad (called directly by
@@ -437,7 +437,7 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
      movementTarget0Q12; classParameterC4 slots). Original quirk: slot 0
      is tested even with 0 slots, and the count then runs below 0 instead of stopping. */
   slotBit = 1;
-  remainingSlots = ((ModelDefinition *)armyRuntime->definitionOrAsset)->classParameterC4;
+  remainingSlots = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get())->classParameterC4;
   slotAssetId = &armyRuntime->movementTarget0Q12;
   while ((linkedArmyAssetId != *slotAssetId ||
          (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit)
@@ -464,7 +464,8 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
   slotMaskState->linkedChildSlotMask = slotMaskState->linkedChildSlotMask | slotBit;
   armyRuntime->fallbackWorldYQ12 = armyRuntime->fallbackWorldYQ12 - 1;
   /* the aircraft's home pad, state 1 = parked (behaviorState), attack point and heading (classState70..78) */
-  childModelRuntime->classLinkState.modelLinkOrState.modelRuntime = (ModelRuntimeSlot *)armyRuntime;
+  /* the pad's model runtime (armyRuntime is its linked-child mask view) */
+  childModelRuntime->classLinkState.modelLinkOrState.modelRuntime = reinterpret_cast<ModelRuntimeSlot *>(armyRuntime);
   childModelRuntime->classState.behaviorState = ARMY_AIRCRAFT_STATE_PARKED;
   modelNode = childModelRuntime->rootModelNodeOrSavedOffset.modelNode;
   childModelRuntime->classLinkState.classState70 = inheritedValue70;
@@ -477,7 +478,7 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
   childModelRuntime->health =
        (int)(((int64_t)armyRuntime->actionVector2Q12 *
              (int64_t)(int)childModelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth)
-            / (int64_t)(int)((ModelDefinition *)armyRuntime->definitionOrAsset)->maximumHealth);
+            / (int64_t)(int)static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get())->maximumHealth);
   return false;
 }
 
@@ -532,7 +533,7 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
   factionIndex = (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex;
   slotBit = 1;
   slotIndex = 0;
-  remainingSlots = ((ModelDefinition *)armyRuntime->definitionOrAsset)->classParameterC4;
+  remainingSlots = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get())->classParameterC4;
   /* the linked asset ids are consecutive dwords starting at movementTarget0Q12 */
   linkedAssetIds = &armyRuntime->movementTarget0Q12;
   /* Original quirk: a do/while, so slot 0 is always visited; a classParameterC4 of 0 would run on until the
@@ -542,7 +543,7 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
       if (ArmyAssetRegistry_FindById(linkedAssetIds[slotIndex],&assetRecord) == 0) {
         selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                           (factionIndex,assetRecord->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
-        metricSum = metricSum + ((ModelDefinition *)selectedDefinition)->xeniteValueQ4;
+        metricSum = metricSum + ModelView_Cast<ModelDefinition>(selectedDefinition)->xeniteValueQ4;
       }
     }
     slotIndex++;
@@ -567,7 +568,7 @@ void EffectLifecycle_SpawnArmyFromOwner(WorldRuntimeContext *worldRuntime,GameEn
   if (ownerEntity == nullptr) {
     return;
   }
-  ownerModelSlot = (ModelRuntimeSlot *)ownerEntity->common.ownership.definitionOrClassRecord;
+  ownerModelSlot = ownerEntity->common.ownership.modelRuntime();
   ownerModelNode = ownerEntity->common.ownership.modelNode;
   ownerDefinition = ownerModelSlot->definitionOrSavedId.runtimeDefinition;
   if (ownerDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_18) {

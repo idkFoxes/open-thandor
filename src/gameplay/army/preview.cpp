@@ -213,7 +213,7 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   }
   rootNode = (previewArmy->common).ownership.modelNode;
   /* armies of runtime class 13 lose their fourth child node */
-  if (((((ModelRuntimeSlot *)(previewArmy->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+  if ((((previewArmy->common).ownership.modelRuntime()->definitionOrSavedId.
         runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (3 < rootNode->childCount)) &&
      (rootNode->childNodes[3] != nullptr)) {
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNode->childNodes[3]);
