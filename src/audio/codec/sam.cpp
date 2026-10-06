@@ -303,8 +303,8 @@ void SoundCoefficientTransform_ApplyCosineBanksMmx(short *outputMonoPcm,SoundCoe
   do {
     /* One pass = output samples m..m+3: all 256 coefficients, 8 at a time, are multiplied pairwise (PMADDWD)
        with the cosine rows at cosineRowCursor + 0, + 0x100, + 0x200 and + 0x300. */
-    coefficientQuadLow = *(MmxPackedValue64 *)coefficientBlock->coefficients;
-    coefficientQuadHigh = *(MmxPackedValue64 *)(coefficientBlock->coefficients + 4);
+    coefficientQuadLow = Thandor_LoadU64(coefficientBlock->coefficients);
+    coefficientQuadHigh = Thandor_LoadU64(coefficientBlock->coefficients + 4);
     coefficientPairProducts46 = pmaddwd(coefficientQuadLow,*(MmxPackedValue64 *)cosineRowCursor);
     coefficientPairProducts252 = pmaddwd(coefficientQuadLow,*(MmxPackedValue64 *)(cosineRowCursor + 0x100));
     coefficientPairProducts45 = pmaddwd(coefficientQuadHigh,*(MmxPackedValue64 *)(cosineRowCursor + 4));
