@@ -140,8 +140,8 @@ void FrontendFactionSetup_CycleFactionColour
         selectionTextCycleLength = 8;
       }
       playerSlotOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowIndex];
-      selectionControl = (UiFramedTextButtonControl *)
-           (g_FrontendRootNode + g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]);
+      selectionControl = Thandor_At<UiFramedTextButtonControl>
+           (FrontendUi_Image(g_FrontendRootNode),g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]);
       nextSelectionTextId = selectionControl->textResourceId + 1;
       selectionCycleCounterField =
            (int *)&((LevelPlayerSlotRecord *)((uint8_t *)g_FrontendLoadedLevelAsset->playerSlots + playerSlotOffset))->aiClassOrMode;
@@ -203,7 +203,7 @@ void FrontendFactionSetup_ChooseFaction
 {
   FrontendPlayerRuntimeBlockCount remainingBlockCount;
   uint32_t readyStateGeneration;
-  UiNodeBase *selectedControl;
+  UiTextButtonControl *selectedControl;
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   FrontendPlayerRuntimeRecord *matchedPlayerBlock;
 
@@ -211,25 +211,17 @@ void FrontendFactionSetup_ChooseFaction
     return;
   }
   selectedControl =
-       THANDOR_UI_AT(g_FrontendRootNode,
-                     g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]);
-  if ((((UiSelectableControl *)selectedControl)->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+       FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]);
+  if ((selectedControl->selectable.stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
     if (playerRuntimeId == g_LocalPlayerRuntimeId) {
-      UiSelectableGroup_SelectExclusive(7,selectedControl,
-          THANDOR_UI_AT(g_FrontendRootNode,
-                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[0]),
-          THANDOR_UI_AT(g_FrontendRootNode,
-                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[1]),
-          THANDOR_UI_AT(g_FrontendRootNode,
-                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[2]),
-          THANDOR_UI_AT(g_FrontendRootNode,
-                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[3]),
-          THANDOR_UI_AT(g_FrontendRootNode,
-                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[4]),
-          THANDOR_UI_AT(g_FrontendRootNode,
-                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[5]),
-          THANDOR_UI_AT(g_FrontendRootNode,
-                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[6]));
+      UiSelectableGroup_SelectExclusive(7,&selectedControl->selectable.base,
+          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[0])->selectable.base,
+          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[1])->selectable.base,
+          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[2])->selectable.base,
+          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[3])->selectable.base,
+          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[4])->selectable.base,
+          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[5])->selectable.base,
+          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[6])->selectable.base);
     }
     readyStateGeneration = g_FrontendFactionAssignmentReadyStateGeneration;
     /* network game: search the player's record; when the count runs out first, the first record is used
