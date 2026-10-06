@@ -517,6 +517,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/selftest/raster_selftest.cpp
         src/platform/selftest/selftests.cpp
         src/platform/selftest/uiatlas_selftest.cpp
+        src/platform/selftest/uitemplate_selftest.cpp
     )
     target_compile_definitions(thandor PRIVATE THANDOR_DEV_TOOLS=1)
 endif()

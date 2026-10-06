@@ -120,6 +120,10 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
 
 extern DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate;
 
+/* The mode confirmation dialog's template image (UiRuntime_OpenFourValueDialog copies it; also read by the
+   uitemplate self-test). */
+extern FourValueDialogUiImage g_UiFourValueDialogTemplateImage;
+
 void UiDisplaySettingsRoot_FormatColorReadouts(void *root);
 
 void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,

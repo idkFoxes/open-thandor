@@ -252,7 +252,7 @@ static UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
     .method08 = UI_SLOT(UiModalDialogRoot_BlockMissedPointerPress),
     .pointerMissPolicy = UI_SLOT(UiModalDialogRoot_BlockMissedPointerMotion)};
 
-static FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
+FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
         { /* +0000 confirmModeDialogPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
             .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
