@@ -9,6 +9,7 @@
 #define THANDOR_WORLD_TERRAIN_GRID_H
 
 #include <thandor/core/contracts.h>
+#include <thandor/world/terrain/types.h> /* FieldGridCell for the cell helpers */
 
 /* Field-grid cell flag bits (FieldGridCell.flagsAndMaterial, +0x50) beyond the FIELD_CELL_* enum
    (FieldCellPackedFlagsAndMaterial) in core/types.h. FieldGrid_InitializeRuntimeCellsAndBoundaryFlags sets the
@@ -36,12 +37,20 @@
 #define FIELD_CELL_OCCUPANCY_EXPLORED_BITS 0xf8   /* bits 3..7: the faction has explored the cell (exploration score) */
 /* a byte mask moved into the faction slot's byte of the 64-bit occupancyMask */
 #define FIELD_CELL_OCCUPANCY_SLOT_MASK(bits,factionSlot) ((uint64_t)(bits) << ((factionSlot) * 8))
-/* the faction slot's occupancy byte of a cell (an lvalue) */
-#define FIELD_CELL_OCCUPANCY_BYTE(cell,factionSlot) (((uint8_t *)&(cell)->occupancyMask)[factionSlot])
-/* the cell byteOffset bytes away from cell; byteOffset is usually +-the row stride (one grid row). It is a
+/* The faction slot's occupancy byte of a cell (an lvalue): byte factionSlot of the 64-bit occupancyMask, one
+   byte per faction slot (step 13 X7: was the macro FIELD_CELL_OCCUPANCY_BYTE). The index keeps the caller's type,
+   as the macro's subscript did. */
+template <class SlotIndex> inline uint8_t &FieldGridCell_OccupancyByte(FieldGridCell *cell, SlotIndex factionSlot)
+{
+    return reinterpret_cast<uint8_t *>(&cell->occupancyMask)[factionSlot];
+}
+/* The cell byteOffset bytes away from cell; byteOffset is usually +-the row stride (one grid row). It is a
    signed 32-bit offset, also when computed in unsigned arithmetic (-stride of a uint32_t stride), so it moves
-   backwards on x64 too. */
-#define FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,byteOffset) ((FieldGridCell *)((uint8_t *)(cell) + (int32_t)(byteOffset)))
+   backwards on x64 too (step 13 X7: was the macro FIELD_GRID_CELL_AT_BYTE_OFFSET). */
+inline FieldGridCell *FieldGridCell_AtByteOffset(FieldGridCell *cell, int32_t byteOffset)
+{
+    return reinterpret_cast<FieldGridCell *>(reinterpret_cast<uint8_t *>(cell) + byteOffset);
+}
 
 /* FieldGridCell.visibilityLightingIndex (+0x68) as FieldGrid_ClassifyCellFlagsToRuntimeByte sets it; the
    projection pass indexes g_PackedLightingLookupTable with it, FIELD_CELL_LIGHTING_VISIBLE selects the dynamic

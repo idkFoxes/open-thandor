@@ -89,7 +89,7 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer()
      into every presented frame. */
 }
 
-/* Selects the software cursor frame (GRAPHICS_CURSOR_FRAME_*) that the cursor timer animates and draws.
+/* Selects the software cursor frame (a GRAPHICS_CURSOR_FRAME_* value) that the cursor timer animates and draws.
    Returns true when the frame was selected, false (frame unchanged) for an index at or above g_CursorFrameCount;
    the error to report for that is FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE. Installed in g_GraphicsCursorSetFrame.
 */

@@ -7,9 +7,14 @@
 
 #include <thandor/graphics/render/shadow_texture.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/core/color_lanes.h>
 
 #include <emmintrin.h>
+
+/* Mesh groups, mesh records, vertices and triangles are bytes of the loaded model asset, passed as addresses
+   (ModelMeshGroupAddress32) or byte cursors: the reinterpret_casts in this file view those bytes as the record
+   structs (ModelMeshGroupHeader, ModelMeshHeader, GraphicsTriangleInput, GraphicsFixedVec3 vertex words). */
 
 /* the original offsets of the render context view and the 0x80-byte primitive blocks */
 static_assert(offsetof(GeneratedTextureRenderContextView, fieldGrid) == 0x54 &&
@@ -341,6 +346,12 @@ static const int s_ShadowSampleVertexPair[12] = {
   GRAPHICS_PROJECTED_PAIR(0,8),GRAPHICS_PROJECTED_PAIR(0,4),GRAPHICS_PROJECTED_PAIR(1,0)
 };
 
+/* A sample vertex's view-space point: the GraphicsFixedVec3 stored over pairs [1] and [2] of its point pairs. */
+static GraphicsFixedVec3 *ShadowSample_ViewPoint(GraphicsProjectedPointPair *vertex)
+{
+  return reinterpret_cast<GraphicsFixedVec3 *>(vertex + 1);
+}
+
 /* Not in the original as a separate function: transforms the twelve sample points into view space (pairs
    [1] and [2] of their vertices) and reports whether any of them lies in front of the near plane. */
 static Bool8 GraphicsShadingGeneratedTexture_TransformSamplesToView(GraphicsProjectedPointPair *projectedBlocks)
@@ -350,7 +361,7 @@ static Bool8 GraphicsShadingGeneratedTexture_TransformSamplesToView(GraphicsProj
 
   for (sampleIndex = 0; sampleIndex < 12; sampleIndex++) {
     FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)(projectedBlocks + s_ShadowSampleVertexPair[sampleIndex] + 1),
+              (ShadowSample_ViewPoint(projectedBlocks + s_ShadowSampleVertexPair[sampleIndex]),
                &g_GeneratedTextureScratchRuntime.samples[sampleIndex].worldPoint,&g_ViewProjectionMatrixFixed);
   }
   for (sampleIndex = 0; sampleIndex < 12; sampleIndex++) {
@@ -377,7 +388,8 @@ static uint32_t Shading_ShadowVertexColour(Q12 terrainRayDistanceQ12,uint64_t ti
     intensity = GRAPHICS_SHADING_INTENSITY_MAX;
   }
   return ColorLanes_PackWordsUnsignedSaturate
-                   (pmulhw(*(uint64_t *)&g_ShadingIntensityScaleMmx[intensity],tintLanes));
+                   (pmulhw(*reinterpret_cast<const uint64_t *>(&g_ShadingIntensityScaleMmx[intensity]) /* the four word lanes as one MMX qword */,
+                           tintLanes));
 }
 
 /* Not in the original as a separate function: completes the twelve sample vertices: projected screen
@@ -398,7 +410,7 @@ static void GraphicsShadingGeneratedTexture_FillShadowPatchVertices
 
   for (sampleIndex = 0; sampleIndex < 12; sampleIndex++) {
     vertex = projectedBlocks + s_ShadowSampleVertexPair[sampleIndex];
-    vertex[0] = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(vertex + 1));
+    vertex[0] = Graphics_ProjectViewPoint(ShadowSample_ViewPoint(vertex));
   }
   gridStep = g_GraphicsShadingGridStepQ20;
   tileU = g_GraphicsShadingGeneratedTextureTileXQ20;
@@ -551,7 +563,7 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   }
   GraphicsShadingGeneratedTexture_FillShadowPatchVertices(projectedBlocks,modelNode);
   /* the first block's packet header (pair 12 of block 0): the generated texture's entry */
-  ((GraphicsPrimitivePacket *)projectedBlocks)->textureEntry =
+  reinterpret_cast<GraphicsPrimitivePacket *>(projectedBlocks)->textureEntry =
        g_GraphicsShadingTextureSet->entries + g_GraphicsShadingGeneratedTextureSubresourceIndex;
   GraphicsShadingGeneratedTexture_ShareShadowPatchVertices(projectedBlocks);
   /* The original tests the result the soft shadow traversal leaves (its return value here). */
@@ -581,6 +593,7 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
 
 {
   void *gridScratch;
+  void *assetAllocation;
   GraphicsTextureSourceAsset *asset;
   uint32_t *dwordCursor;
   uint32_t gridByteCount;
@@ -605,9 +618,9 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   gridDwordCount = gridByteCount >> 2;
   /* interior: gridDwordCount = gridHalfSize^2 bytes = gridHalfSize / 2 rows of 2 * gridHalfSize bytes, then
      gridHalfSize / 2 columns in */
-  g_GraphicsShadingGridScratchInterior = (void *)((uint8_t *)gridScratch + gridDwordCount + (gridHalfSize >> 1));
+  g_GraphicsShadingGridScratchInterior = static_cast<uint8_t *>(gridScratch) + gridDwordCount + (gridHalfSize >> 1);
   g_GraphicsShadingGridScratch = gridScratch;
-  dwordCursor = (uint32_t *)gridScratch;
+  dwordCursor = static_cast<uint32_t *>(gridScratch);
   for (dwordsRemaining = gridDwordCount; dwordsRemaining != 0; dwordsRemaining--) {
     *dwordCursor = 0;
     dwordCursor++;
@@ -615,7 +628,7 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   /* gfx layout: header and palette up to 0xA00, then one 0x20-byte source entry per image, then the pixels */
   assetByteCount = (textureDimension * textureDimension + GFX_SUBRESOURCE_RECORD_SIZE) * subresourceCount +
                    GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
-  allocError = g_MemoryApi.alloc(assetByteCount,(void **)&asset);
+  allocError = g_MemoryApi.alloc(assetByteCount,&assetAllocation);
   if (allocError != 0) {
     /* the original leaked the scratch grid here; freed and cleared so a later shutdown does not see it */
     g_MemoryApi.free(gridScratch);
@@ -623,8 +636,9 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
     g_GraphicsShadingGridScratchInterior = nullptr;
     return allocError;
   }
+  asset = static_cast<GraphicsTextureSourceAsset *>(assetAllocation);
   g_GraphicsShadingGeneratedAsset = asset;
-  dwordCursor = (uint32_t *)asset;
+  dwordCursor = static_cast<uint32_t *>(assetAllocation);
   for (dwordsRemaining = assetByteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
     *dwordCursor = 0;
     dwordCursor++;
@@ -636,7 +650,7 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   asset->tableDescriptor.subresourceTableOffset = GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
   /* palette at +0x200: 256 ARGB entries 8 bytes apart (up to 0xA00), white with alpha = index */
   paletteArgb = ARGB8888_RGB_MASK;
-  paletteEntry = (GraphicsTexturePaletteEntry *)((uint8_t *)asset + GFX_ASSET_HEADER_SIZE);
+  paletteEntry = Asset_RecordAt<GraphicsTexturePaletteEntry>(asset,GFX_ASSET_HEADER_SIZE);
   for (paletteEntriesRemaining = GRAPHICS_PALETTE_BANK_ENTRIES; paletteEntriesRemaining != 0;
        paletteEntriesRemaining--) {
     paletteEntry->argb8888 = paletteArgb;
@@ -645,7 +659,7 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   }
   g_GraphicsShadingSubresourceCount = subresourceCount;
   /* source entry table at 0xA00 */
-  sourceEntry = (GraphicsTextureSourceEntry *)((uint8_t *)asset + GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
+  sourceEntry = Asset_RecordAt<GraphicsTextureSourceEntry>(asset,GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
   pixelDataOffset = subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE + GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
   /* Original quirk: the count is tested at the end, so subresourceCount 0 would wrap around */
   do {
@@ -716,11 +730,9 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes()
   g_GeneratedTextureScratchRuntime.downsampleBorderOffset = g_TextureDownsampleShift << 2;
   /* asset + first source entry's dataOffset, moved half a tile down and right */
   g_GraphicsShadingGeneratedTexturePixelCursor =
-       (uint8_t *)g_GraphicsShadingGeneratedAsset +
+       GraphicsTextureSource_Bytes(g_GraphicsShadingGeneratedAsset) +
        ((g_GraphicsShadingTextureDimension + 1) * g_GraphicsShadingGridHalfSize >> 1) +
-       (int)((GraphicsTextureSourceEntry *)
-             ((uint8_t *)g_GraphicsShadingGeneratedAsset +
-              (g_GraphicsShadingGeneratedAsset->tableDescriptor).subresourceTableOffset))->dataOffset;
+       (int)GraphicsTextureSource_Entries(g_GraphicsShadingGeneratedAsset)->dataOffset;
   g_GraphicsShadingGeneratedTextureTileX = 0;
   g_GraphicsShadingGeneratedTextureTileY = 0;
   g_GraphicsShadingGeneratedTextureSubresourceIndex = 0;
@@ -729,12 +741,12 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes()
   g_GraphicsShadingGeneratedTextureCompletedTraversalCount = 0;
   tableOffset = (g_GraphicsShadingGeneratedAsset->tableDescriptor).subresourceTableOffset;
   /* pixels follow the 0x20-byte source entries; size = count * width * height of the first entry */
-  alphaCursor = (uint8_t *)g_GraphicsShadingGeneratedAsset +
+  alphaCursor = GraphicsTextureSource_Bytes(g_GraphicsShadingGeneratedAsset) +
                 g_GraphicsShadingSubresourceCount * GFX_SUBRESOURCE_RECORD_SIZE + tableOffset;
   for (dwordsRemaining = g_GraphicsShadingSubresourceCount *
-               ((GraphicsTextureSourceEntry *)((uint8_t *)g_GraphicsShadingGeneratedAsset + tableOffset))->pixelWidth *
-               ((GraphicsTextureSourceEntry *)((uint8_t *)g_GraphicsShadingGeneratedAsset +
-                                               tableOffset))->pixelHeight >> 2; dwordsRemaining != 0;
+               Asset_RecordAt<GraphicsTextureSourceEntry>(g_GraphicsShadingGeneratedAsset,tableOffset)->pixelWidth *
+               Asset_RecordAt<GraphicsTextureSourceEntry>(g_GraphicsShadingGeneratedAsset,tableOffset)->pixelHeight >> 2;
+       dwordsRemaining != 0;
       dwordsRemaining--) {
     alphaCursor[0] = 0;
     alphaCursor[1] = 0;
@@ -782,26 +794,26 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddre
   uint8_t *recordCursor;
   GraphicsTriangleInput *triangle;
 
-  vertexCount = ((ModelMeshHeader *)meshRecord)->vertexCount;
-  triangleCount = ((ModelMeshHeader *)meshRecord)->triangleCount;
-  if ((((ModelMeshHeader *)meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) != 0 || vertexCount == 0) {
+  vertexCount = reinterpret_cast<ModelMeshHeader *>(meshRecord)->vertexCount;
+  triangleCount = reinterpret_cast<ModelMeshHeader *>(meshRecord)->triangleCount;
+  if ((reinterpret_cast<ModelMeshHeader *>(meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) != 0 || vertexCount == 0) {
     return;
   }
-  recordCursor = (uint8_t *)meshRecord + sizeof(ModelMeshHeader);
+  recordCursor = reinterpret_cast<uint8_t *>(meshRecord) + sizeof(ModelMeshHeader);
   for (; vertexCount != 0; vertexCount--) {
     GraphicsShadingGeneratedTexture_TransformPointXYQuantized
-              ((GraphicsFixedVec2 *)(recordCursor + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
-               (GraphicsFixedVec3 *)recordCursor,
+              (Asset_RecordAt<GraphicsFixedVec2>(recordCursor,MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+               Asset_RecordAt<GraphicsFixedVec3>(recordCursor,0),
                &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
     recordCursor = recordCursor + MODEL_MESH_RECORD_SIZE;
   }
   for (; triangleCount != 0; triangleCount--) {
     /* 5f-format: GraphicsTriangleInput.vertex0/vertex1/vertex2 (MDL mesh triangle record) */
-    triangle = (GraphicsTriangleInput *)recordCursor;
+    triangle = Asset_RecordAt<GraphicsTriangleInput>(recordCursor,0);
     GraphicsShadingGeneratedTexture_RasterizeTriangleMask
-              ((GraphicsFixedVec2 *)((uint8_t *)triangle->vertex2 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
-               (GraphicsFixedVec2 *)((uint8_t *)triangle->vertex1 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
-               (GraphicsFixedVec2 *)((uint8_t *)triangle->vertex0 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET));
+              (Asset_RecordAt<GraphicsFixedVec2>(triangle->vertex2.get(),MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+               Asset_RecordAt<GraphicsFixedVec2>(triangle->vertex1.get(),MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+               Asset_RecordAt<GraphicsFixedVec2>(triangle->vertex0.get(),MODEL_MESH_VERTEX_SHADOW_XY_OFFSET));
     recordCursor = recordCursor + MODEL_MESH_RECORD_SIZE;
   }
 }
@@ -846,12 +858,12 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNo
      own size */
   meshGroupOffset = resourceView->shadowMeshGroupOffset;
   if (meshGroupOffset != 0) {
-    meshRecord = (uint8_t *)resourceView + meshGroupOffset + sizeof(ModelMeshGroupHeader);
-    for (meshesRemaining = ((ModelMeshGroupHeader *)((uint8_t *)resourceView + meshGroupOffset))->meshCount;
+    meshRecord = Asset_RecordAt(resourceView,meshGroupOffset) + sizeof(ModelMeshGroupHeader);
+    for (meshesRemaining = Asset_RecordAt<ModelMeshGroupHeader>(resourceView,meshGroupOffset)->meshCount;
          meshesRemaining != 0; meshesRemaining--) {
       GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh
                 ((ModelMeshGroupAddress32)meshRecord);
-      meshRecord = meshRecord + ((ModelMeshHeader *)meshRecord)->byteSize;
+      meshRecord = meshRecord + Asset_RecordAt<ModelMeshHeader>(meshRecord,0)->byteSize;
     }
   }
   childIndex = 0;
@@ -880,16 +892,16 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
   uintptr_t result;
 
   result = 0;
-  vertexCount = ((ModelMeshHeader *)meshRecord)->vertexCount;
-  triangleCount = ((ModelMeshHeader *)meshRecord)->triangleCount;
-  if (((((ModelMeshHeader *)meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) != 0) &&
-     (recordCursor = (GraphicsFixedVec3 *)(meshRecord + sizeof(ModelMeshHeader)), vertexCount != 0)) {
+  vertexCount = reinterpret_cast<ModelMeshHeader *>(meshRecord)->vertexCount;
+  triangleCount = reinterpret_cast<ModelMeshHeader *>(meshRecord)->triangleCount;
+  if (((reinterpret_cast<ModelMeshHeader *>(meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) != 0) &&
+     (recordCursor = reinterpret_cast<GraphicsFixedVec3 *>(meshRecord + sizeof(ModelMeshHeader)), vertexCount != 0)) {
     do {
       result = (uintptr_t)&recordCursor[2].z;
       GraphicsShadingGeneratedTexture_TransformPointXYQuantized
-                ((GraphicsFixedVec2 *)&recordCursor[2].z,recordCursor,
+                (ModelVertex_ShadowXY(recordCursor),recordCursor,
                  &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
-      recordCursor = (GraphicsFixedVec3 *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
+      recordCursor = Asset_RecordAt<GraphicsFixedVec3>(recordCursor,MODEL_MESH_RECORD_SIZE);
       vertexCount--;
     } while (vertexCount != 0);
     if (triangleCount != 0) {
@@ -897,10 +909,10 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
         /* 5f-format: GraphicsTriangleInput.vertex0/vertex1/vertex2 (MDL mesh triangle record, 32-bit vertex
            addresses; vertex0 read as recordCursor->x) */
         GraphicsShadingGeneratedTexture_RasterizeTriangleMask
-                  (Thandor_U32ToPointer<GraphicsFixedVec2>((int)((GraphicsTriangleInput *)recordCursor)->vertex2 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
-                   Thandor_U32ToPointer<GraphicsFixedVec2>((int)((GraphicsTriangleInput *)recordCursor)->vertex1 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+                  (Thandor_U32ToPointer<GraphicsFixedVec2>((int)reinterpret_cast<GraphicsTriangleInput *>(recordCursor)->vertex2 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+                   Thandor_U32ToPointer<GraphicsFixedVec2>((int)reinterpret_cast<GraphicsTriangleInput *>(recordCursor)->vertex1 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
                    Thandor_U32ToPointer<GraphicsFixedVec2>(recordCursor->x + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET));
-        recordCursor = (GraphicsFixedVec3 *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
+        recordCursor = Asset_RecordAt<GraphicsFixedVec3>(recordCursor,MODEL_MESH_RECORD_SIZE);
       }
       result = 1;
     }
@@ -952,14 +964,14 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(ModelRuntimeNode *m
      own size */
   meshGroupOffset = resourceView->shadowMeshGroupOffset;
   if (meshGroupOffset != 0) {
-    meshRecord = (uint8_t *)resourceView + meshGroupOffset + sizeof(ModelMeshGroupHeader);
-    for (meshesRemaining = ((ModelMeshGroupHeader *)((uint8_t *)resourceView + meshGroupOffset))->meshCount;
+    meshRecord = Asset_RecordAt(resourceView,meshGroupOffset) + sizeof(ModelMeshGroupHeader);
+    for (meshesRemaining = Asset_RecordAt<ModelMeshGroupHeader>(resourceView,meshGroupOffset)->meshCount;
          meshesRemaining != 0; meshesRemaining--) {
       /* Original quirk: each mesh overwrites the result (it does not accumulate) and the mesh-group offset is
          added to it; the caller only tests the sum for nonzero. */
       result = GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh((ModelMeshGroupAddress32)meshRecord) +
                meshGroupOffset;
-      meshRecord = meshRecord + ((ModelMeshHeader *)meshRecord)->byteSize;
+      meshRecord = meshRecord + Asset_RecordAt<ModelMeshHeader>(meshRecord,0)->byteSize;
     }
   }
   childIndex = 0;
@@ -986,14 +998,14 @@ void GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords(ModelM
   int verticesRemaining;
   GraphicsFixedVec3 *vertexCursor;
 
-  vertexCursor = (GraphicsFixedVec3 *)(meshRecord + sizeof(ModelMeshHeader));
-  for (verticesRemaining = ((ModelMeshHeader *)meshRecord)->vertexCount; verticesRemaining != 0; verticesRemaining--) {
+  vertexCursor = reinterpret_cast<GraphicsFixedVec3 *>(meshRecord + sizeof(ModelMeshHeader));
+  for (verticesRemaining = reinterpret_cast<ModelMeshHeader *>(meshRecord)->vertexCount; verticesRemaining != 0; verticesRemaining--) {
     GraphicsShadingGeneratedTexture_TransformPointXY
-              ((GraphicsFixedVec2 *)&vertexCursor[2].z,vertexCursor,
+              (ModelVertex_ShadowXY(vertexCursor),vertexCursor,
                &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
     vertexX = vertexCursor[2].z;
     vertexY = vertexCursor[3].x;
-    vertexCursor = (GraphicsFixedVec3 *)((uint8_t *)vertexCursor + MODEL_MESH_RECORD_SIZE);
+    vertexCursor = Asset_RecordAt<GraphicsFixedVec3>(vertexCursor,MODEL_MESH_RECORD_SIZE);
     if (vertexX < g_GeneratedTextureScratchRuntime.projectedMinX) {
       g_GeneratedTextureScratchRuntime.projectedMinX = vertexX;
     }
@@ -1046,12 +1058,12 @@ void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBoun
   resourceView = (modelNode->modelPayload).modelResource;
   meshGroupOffset = resourceView->shadowMeshGroupOffset;
   if (meshGroupOffset != 0) {
-    meshRecord = (uint8_t *)resourceView + meshGroupOffset + sizeof(ModelMeshGroupHeader);
-    for (meshesRemaining = ((ModelMeshGroupHeader *)((uint8_t *)resourceView + meshGroupOffset))->meshCount;
+    meshRecord = Asset_RecordAt(resourceView,meshGroupOffset) + sizeof(ModelMeshGroupHeader);
+    for (meshesRemaining = Asset_RecordAt<ModelMeshGroupHeader>(resourceView,meshGroupOffset)->meshCount;
          meshesRemaining != 0; meshesRemaining--) {
       GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords
                 ((ModelMeshGroupAddress32)meshRecord);
-      meshRecord = meshRecord + ((ModelMeshHeader *)meshRecord)->byteSize;
+      meshRecord = meshRecord + Asset_RecordAt<ModelMeshHeader>(meshRecord,0)->byteSize;
     }
   }
   childIndex = 0;
@@ -1130,7 +1142,7 @@ void GraphicsShadingGeneratedTexture_AdvanceTileCursor()
 /* The 16 bytes at byteOffset from a scratch grid position (two of the original's MMX quads). */
 static __m128i ShadingFilter_LoadPair(const uint8_t *scratchPosition,int byteOffset)
 {
-  return _mm_loadu_si128((const __m128i *)(scratchPosition + byteOffset));
+  return _mm_loadu_si128(reinterpret_cast<const __m128i *>(scratchPosition + byteOffset)); /* unaligned SSE load */
 }
 
 /* Filter value of the 16 scratch texels at center (each 0..7), byte-saturated: centre x4, the four direct taps
@@ -1209,14 +1221,15 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
                           g_GraphicsShadingTextureDimension * (g_GraphicsShadingGridHalfSize >> 1));
   /* pass 1: tile -> scratch, each texel reduced to 3 bits (the original's PSRLQ 5 and PAND per quad) */
   textureCursor = tileTopLeft;
-  scratchCursor = (uint8_t *)g_GraphicsShadingGridScratchInterior;
+  scratchCursor = static_cast<uint8_t *>(g_GraphicsShadingGridScratchInterior);
   /* Original quirk: both passes test the row count at the end, so gridHalfSize 0 would wrap around */
   rowsRemaining = g_GraphicsShadingGridHalfSize;
   do {
     for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
       for (halfIndex = 0; halfIndex < 2; halfIndex++) {
-        const __m128i texels = _mm_loadu_si128((const __m128i *)(textureCursor + halfIndex * 16));
-        _mm_storeu_si128((__m128i *)(scratchCursor + halfIndex * 16),
+        /* unaligned SSE load and store of 16 texels */
+        const __m128i texels = _mm_loadu_si128(reinterpret_cast<const __m128i *>(textureCursor + halfIndex * 16));
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(scratchCursor + halfIndex * 16),
                          _mm_and_si128(_mm_srli_epi64(texels,5),threeBitMask));
       }
       textureCursor = textureCursor + 32;
@@ -1229,12 +1242,12 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
   /* pass 2: weighted neighbourhood sums from the scratch grid back into the tile */
   tapRowStride = (int)(g_GraphicsShadingGridHalfSize * 2 * (uint32_t)tapStep);
   textureCursor = tileTopLeft;
-  scratchCursor = (uint8_t *)g_GraphicsShadingGridScratchInterior;
+  scratchCursor = static_cast<uint8_t *>(g_GraphicsShadingGridScratchInterior);
   rowsRemaining = g_GraphicsShadingGridHalfSize;
   do {
     for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
       for (halfIndex = 0; halfIndex < 2; halfIndex++) {
-        _mm_storeu_si128((__m128i *)(textureCursor + halfIndex * 16),
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(textureCursor + halfIndex * 16), /* unaligned SSE store */
                          ShadingFilter_WeightedNeighbourhoodSum(scratchCursor + halfIndex * 16,tapStep,
                                                                 tapRowStride));
       }
@@ -1294,14 +1307,15 @@ GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProje
   newBlockCount = usedBlockCount + 14;
   if (newBlockCount < blockPool->capacity) {
     blockPool->count = newBlockCount;
-    firstBlock = (GraphicsProjectedPointPair *)
-                 ((uint8_t *)blockPool->packetPool + usedBlockCount * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    /* the blocks are 0x80-byte packet slots of the pool, written as point pairs and read back as packets */
+    firstBlock = reinterpret_cast<GraphicsProjectedPointPair *>
+                 (reinterpret_cast<uint8_t *>(blockPool->packetPool.get()) + usedBlockCount * GRAPHICS_PROJECTED_BLOCK_BYTES);
     for (blockIndex = 0; blockIndex < 14; blockIndex++) {
       blockPool->primaryNodes[usedBlockCount + blockIndex].packet =
-           (GraphicsPrimitivePacket *)((uint8_t *)firstBlock + blockIndex * GRAPHICS_PROJECTED_BLOCK_BYTES);
+           reinterpret_cast<GraphicsPrimitivePacket *>(reinterpret_cast<uint8_t *>(firstBlock) + blockIndex * GRAPHICS_PROJECTED_BLOCK_BYTES);
     }
     /* the first block's packet header: modulation colour 0, flags textured + translucent */
-    firstPacket = (GraphicsPrimitivePacket *)firstBlock;
+    firstPacket = reinterpret_cast<GraphicsPrimitivePacket *>(firstBlock);
     firstPacket->modulationColor = 0;
     firstPacket->renderFlags = GRAPHICS_PRIMITIVE_FLAG_TEXTURED | GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT;
     return firstBlock;

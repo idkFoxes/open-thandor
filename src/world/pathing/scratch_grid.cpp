@@ -136,8 +136,8 @@ static void GridScratch_FloodFillFromPlacedRuntimeModels(WorldOwnerListNode *own
 
   do {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-        (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != 0) &&
-        ((int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex != 1)) {
+        (WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != 0) &&
+        ((int)WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex != 1)) {
       wideProductX = (int64_t)ownerNode->worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
       wideProductY = (int64_t)ownerNode->worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
       scaledRowTerm = FIXED_PRODUCT_SHR(wideProductY, Q20_SHIFT + 1);
@@ -371,12 +371,12 @@ Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outEr
   g_GridScratchWidth = fieldGrid->gridWidth * 4;
   g_GridScratchHeight = fieldGrid->gridHeight * 4;
   bytes = fieldGrid->gridWidth * (4 * sizeof(GridScratchCell)) * g_GridScratchHeight; /* scratch width * height * 8 */
-  allocError = g_MemoryApi.alloc(bytes,(void **)&newScratchBuffer);
+  allocError = g_MemoryApi.alloc(bytes,reinterpret_cast<void **>(&newScratchBuffer)); /* the arena stores the block address through void ** */
   previousScratchBuffer = g_GridScratchPrimary;
   if (allocError == 0) {
     g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
     g_MemoryApi.free(previousScratchBuffer);
-    allocError = g_MemoryApi.alloc(bytes,(void **)&newSecondaryScratchBuffer);
+    allocError = g_MemoryApi.alloc(bytes,reinterpret_cast<void **>(&newSecondaryScratchBuffer)); /* the arena stores the block address through void ** */
     previousSecondaryScratchBuffer = g_GridScratchSecondary;
     if (allocError == 0) {
       g_GridScratchSecondary = (GridScratchCell *)newSecondaryScratchBuffer;

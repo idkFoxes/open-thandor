@@ -371,9 +371,9 @@ Bool8 ModelRuntime_RaycastCandidateListNearest
             (&g_ModelRaycastWorldDirectionQ28,elevationAngle,azimuthAngle);
   nearestModelNode = nullptr;
   bestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
-  for (modelNodeRuntime = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+  for (modelNodeRuntime = WorldNode_View<ModelRuntimeNode>(worldRuntime->ownerListHead.get());
       modelNodeRuntime != nullptr;
-      modelNodeRuntime = (ModelRuntimeNode *)(modelNodeRuntime->common).nextNode) {
+      modelNodeRuntime = WorldNode_View<ModelRuntimeNode>(modelNodeRuntime->common.nextNode.get())) {
     if (modelNodeRuntime != excludedNode && modelNodeRuntime->ownerClassId == requiredOwnerId &&
         (modelNodeRuntime->runtimeFlags & MODEL_NODE_FLAG_RAY_TRANSPARENT) == 0 &&
         DepthBinMasks_Overlap(modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,

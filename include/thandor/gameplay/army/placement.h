@@ -70,7 +70,7 @@ Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
           uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
-          UiRootNode *inGameRoot,uint32_t *outPlacementValue);
+          WorldRuntimeContext *worldRuntime,uint32_t *outPlacementValue);
 
 Bool8 ArmyPlacement_CanPlaceBuilding
           (ArmyPlacementDispatchArg0 placementMode,

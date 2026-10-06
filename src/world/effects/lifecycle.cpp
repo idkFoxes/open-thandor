@@ -45,7 +45,7 @@ void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
                       (char)worldRuntime->activeFactionRuntimeIndex);
   modelNode->runtimeFlags = modelNode->runtimeFlags | resolvedMasks.runtimeFlags;
   effectRuntime->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
-  ModelNodeRuntime_RefreshStateTint((ModelRuntimeNode *)modelNode);
+  ModelNodeRuntime_RefreshStateTint(WorldNode_View<ModelRuntimeNode>(modelNode));
   if ((modelNode->tintArgb & 0xff000000) != 0) {
     modelNode->tintArgb =
          EffectTint_Modulate(effectRuntime->stateTintArgb,effectRuntime->definitionOrSavedId.definition->stateTintArgb);
@@ -77,7 +77,7 @@ static void EffectLifecycle_ReleaseShadingAndUnlink
 {
   InterpolationState_SetNegatedTargetAndRescaleProgress
             (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
-  WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
+  WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNode));
   effectSlot->modelNodeOrSavedOffset.modelNode = nullptr;
 }
 
@@ -110,8 +110,8 @@ static void EffectLifecycle_UpdateShadingOnFrameAdvance
   effectSlot->shadingStartCountdownTicksRemaining--;
   if ((effectSlot->shadingStartCountdownTicksRemaining == 0) && (modelNode->shadingRecord == nullptr)) {
     if (ModelLookupTable_FindPackedPoint
-          (0,MODEL_POINT_CLASS_LIGHT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
-      localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
+          (0,MODEL_POINT_CLASS_LIGHT,static_cast<ModelResource *>(effectDefinition->ownedNestedResource.get()),&packedPoint)) {
+      localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,WorldNode_View<ModelRuntimeNode>(modelNode));
       /* the alpha byte of the shading colour is the radius in 1/16 world units */
       modelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord
                          (effectDefinition->shadingTransitionDurationTicks,
@@ -185,9 +185,9 @@ static void EffectLifecycle_CountDownPeriodicEffect
   }
   effectSlot->periodicEffectCountdownTicks = effectDefinition->periodicEffectIntervalTicks;
   if (ModelLookupTable_FindPackedPoint
-        (1,MODEL_POINT_CLASS_EFFECT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
+        (1,MODEL_POINT_CLASS_EFFECT,static_cast<ModelResource *>(effectDefinition->ownedNestedResource.get()),&packedPoint)) {
     periodicDefinition = effectDefinition->periodicEffectDefinition;
-    localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
+    localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,WorldNode_View<ModelRuntimeNode>(modelNode));
     /* the periodic child effect always starts with rotation angle 1 at a quarter turn */
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },0,
@@ -211,8 +211,8 @@ static void EffectLifecycle_CountDownLinkedEffect
     return;
   }
   if (ModelLookupTable_FindPackedPoint
-        (0,MODEL_POINT_CLASS_EFFECT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
-    localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
+        (0,MODEL_POINT_CLASS_EFFECT,static_cast<ModelResource *>(effectDefinition->ownedNestedResource.get()),&packedPoint)) {
+    localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,WorldNode_View<ModelRuntimeNode>(modelNode));
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
                modelNode->modelPayload.worldRotationAngle2,
@@ -242,8 +242,8 @@ static void EffectLifecycle_CountDownLinkedShot
   effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex =
        effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex + 1;
   if (ModelLookupTable_FindPackedPoint
-        (shotPointIndex,MODEL_POINT_CLASS_SHOT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
-    localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
+        (shotPointIndex,MODEL_POINT_CLASS_SHOT,static_cast<ModelResource *>(effectDefinition->ownedNestedResource.get()),&packedPoint)) {
+    localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,WorldNode_View<ModelRuntimeNode>(modelNode));
     ShotRuntimePool_CreateProjectileFromDefinition
               (0,nullptr,
                (localPoint.zQ12 - modelNode->worldTransform.translation.z) * 2 +
@@ -277,7 +277,7 @@ static void EffectLifecycle_CountDownCompletionAction
     }
   }
   else if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
-    EffectLifecycle_SpawnArmyFromOwner(worldRuntime,(GameEntityRuntime *)owner.modelNode);
+    EffectLifecycle_SpawnArmyFromOwner(worldRuntime,owner.entityRuntime);
   }
   else if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) {
     impactColumns = owner.terrainImpactColumns;
@@ -309,7 +309,7 @@ static void EffectLifecycle_IntegrateLinearMotion
   modelNode->worldTransform.translation.x += scaledDirection.x;
   modelNode->worldTransform.translation.y += scaledDirection.y;
   modelNode->worldTransform.translation.z += scaledDirection.z;
-  ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
+  ModelNodeRuntime_RebuildTransformsFromRoot(WorldNode_View<ModelRuntimeNode>(modelNode));
   /* each step moves rotation angle 1 a 64th of the way towards a quarter turn */
   modelNode->modelPayload.worldRotationAngle1 =
        (int)(previousRotationAngle1 * 63 + FIXED_ANGLE16_QUARTER_TURN) >> 6;
@@ -382,7 +382,7 @@ static int EffectLifecycle_AdvanceTerrainRelativeMotion
   if ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) != 0) {
     modelNode->tintArgb = EffectTint_Modulate(newStateTintArgb,effectDefinition->stateTintArgb);
   }
-  ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
+  ModelNodeRuntime_RebuildTransformsFromRoot(WorldNode_View<ModelRuntimeNode>(modelNode));
   EffectLifecycle_CountDownCompletionAction(worldRuntime,modelNode,effectSlot);
   return 0;
 }

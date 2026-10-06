@@ -1,5 +1,5 @@
 {
- "revision": "dae1e27b",
+ "revision": "009b0264",
  "worktree": true,
  "files": 692,
  "metrics": {
@@ -116,12 +116,11 @@
   "cstyle_cast": {
    "audio": 23,
    "core": 57,
-   "gameplay": 549,
-   "graphics": 187,
+   "gameplay": 200,
    "movie": 41,
-   "platform": 239,
-   "ui": 1958,
-   "world": 289
+   "platform": 237,
+   "ui": 1955,
+   "world": 206
   },
   "ingame_ui": {
    "gameplay": 10,
@@ -161,7 +160,7 @@
    "platform": 330,
    "root": 7,
    "ui": 803,
-   "world": 179
+   "world": 177
   },
   "include_guard": {
    "assets": 34,

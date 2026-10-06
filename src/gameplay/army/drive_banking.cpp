@@ -44,7 +44,8 @@ static void ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint
   }
   classStateWord = &(modelRuntime->classState).behaviorState;
   *classStateWord = *classStateWord | 1;
-  soundIndex = ((ModelDefinition *)movementDefinition)->positionedSoundSlotIndex;
+  /* the full definition behind its ground-steering view */
+  soundIndex = reinterpret_cast<ModelDefinition *>(movementDefinition)->positionedSoundSlotIndex;
   if ((soundIndex == 0) || (soundIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == nullptr)) {
     return;
   }
@@ -242,7 +243,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
     rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
   }
   ArmyRuntime_UpdateActivationMetricAndPlayStartSound
-            (worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+            (worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   /* slide straight towards the route point (desiredHeading, not the model heading) */
   travelDistance = (modelRuntime->movementControl).movementAdvancePerTickQ12 * g_InGameSimulationStepTicks;
   if (travelDistance < (int)targetAngleLength->length >> 1) {
@@ -268,7 +269,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   if (blockingModelRuntime != nullptr) {
     collisionRootNode = modelRuntime->rootModelNode;
     ArmyRuntime_HandleCollisionPartner
-              ((ModelRuntimeSlot *)modelRuntime,(collisionRootNode->worldTransform).translation.y,
+              (ModelView_Cast<ModelRuntimeSlot>(modelRuntime),(collisionRootNode->worldTransform).translation.y,
                (collisionRootNode->worldTransform).translation.x,blockingModelRuntime,
                worldRuntime);
     (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
@@ -401,7 +402,7 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
   ArmyRuntimeClass_UpdateBankAngle(modelRuntime,rootNode,&targetAngleLength);
   if (((modelRuntime->classState).behaviorState & 2) == 0) {
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
-              (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+              (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
   }
   if (((previousWorldX != (rootNode->worldTransform).translation.x) ||
       (previousWorldY != (rootNode->worldTransform).translation.y)) ||
@@ -410,7 +411,7 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
     *ownerMovementFlags = *ownerMovementFlags & ~ARMY_MOVEMENT_STATIONARY;
   }
   movementDefinition = modelRuntime->modelDefinition;
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   ModelNodeRuntime_RebuildTransformsFromRoot(rootNode);
   ModelNodeRuntime_UpdateDepthBinMasks(movementDefinition->footprintRadius,rootNode);
 }

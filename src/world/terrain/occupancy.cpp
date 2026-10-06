@@ -68,14 +68,14 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldU
   if ((fieldGrid->cells[cellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
     return;
   }
-  centerMaskByte = &FIELD_CELL_OCCUPANCY_BYTE(&fieldGrid->cells[cellIndex],occupancyByteOffset);
+  centerMaskByte = &FieldGridCell_OccupancyByte(&fieldGrid->cells[cellIndex],occupancyByteOffset);
   *centerMaskByte = *centerMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
   /* Original quirk: each of the former walkers copied the byte index once from the shared selector union at its
      entry instead of taking it as an argument; it is read back from there once here. */
   markByteIndex = g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   TerrainHexScan_AllSectors(&fieldGrid->cells[cellIndex],
                             TerrainHexScan_MarkPolicy([markByteIndex](FieldGridCell *fieldCell) {
-                              FIELD_CELL_OCCUPANCY_BYTE(fieldCell,markByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
+                              FieldGridCell_OccupancyByte(fieldCell,markByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
                             }));
 }
 
@@ -278,8 +278,8 @@ void FieldGrid_SetOccupancyMaskByteBit0AllCells
   currentCell = fieldGrid->cells;
   for (rowsRemaining = fieldGrid->gridHeight; rowsRemaining != 0; rowsRemaining--) {
     for (columnsRemaining = gridWidth; columnsRemaining != 0; columnsRemaining--) {
-      ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] =
-           ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] |
+      FieldGridCell_OccupancyByte(currentCell,occupancyMaskByteIndex) =
+           FieldGridCell_OccupancyByte(currentCell,occupancyMaskByteIndex) |
            FIELD_CELL_OCCUPANCY_BIT0;
       currentCell++;
     }
@@ -303,8 +303,8 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
   currentCell = fieldGrid->cells;
   for (rowsRemaining = fieldGrid->gridHeight; rowsRemaining != 0; rowsRemaining--) {
     for (columnsRemaining = gridWidth; columnsRemaining != 0; columnsRemaining--) {
-      ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] =
-           ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] &
+      FieldGridCell_OccupancyByte(currentCell,occupancyMaskByteIndex) =
+           FieldGridCell_OccupancyByte(currentCell,occupancyMaskByteIndex) &
            (uint8_t)~FIELD_CELL_OCCUPANCY_BIT0;
       currentCell++;
     }
@@ -339,8 +339,8 @@ Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldR
     return true;
   }
   occupancyByte =
-       ((uint8_t *)&activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * gridRowIndex + gridColumnIndex)].occupancyMask)
-       [worldRuntime->activeFactionRuntimeIndex];
+       FieldGridCell_OccupancyByte(&activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * gridRowIndex + gridColumnIndex)],
+                                   worldRuntime->activeFactionRuntimeIndex);
   return (occupancyByte & FIELD_CELL_OCCUPANCY_BITS01) == 0;
 }
 

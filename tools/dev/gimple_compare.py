@@ -6,29 +6,40 @@ scheduler break ties by SSA version numbers (e.g. a cast `*(uint64_t *)p` replac
 helper Thandor_LoadU64(p): same loads, same arithmetic, but the extra inlining shifts every SSA number).
 
 Both versions are compiled with the file's own command from compile_commands.json plus
--fdump-tree-optimized; the dumps are normalised and diffed:
+-fdump-tree-optimized: the reference from a `git archive` of --rev (src/ and include/ unpacked into a temp
+dir, the repository's include directories pointed into it), so a package that changes header signatures or
+uses relative includes compiles against the reference's own headers; the new one from the working tree.
+The dumps are normalised and diffed:
   - declarations and `# DEBUG` bind statements (-g) dropped, SSA names renumbered in definition order (so only the statements count),
   - the two spellings of a load, `MEM[(T *)p]` and `MEM <T> [(char * {ref-all})p]` (memcpy), unified
     to `LOAD<T>(p)` (typedefs mapped with --alias, e.g. MmxPackedValue64="long long unsigned int"),
   - operands of commutative binary operators (* + & | ^ == !=) sorted,
+  - the numbers of scalar-replacement names (`ISRA.92`, `point$x_1.88`) and temporaries (`D.122377`) masked,
+  - a member read through a cast load of the struct, `LOAD<struct T>(p).f`, written as `p->f`,
   - the `;; Function` header lines reduced to the name (funcdef_no, decl_uid, cgraph_uid and symbol_order
     shift when the file gains or loses an inline helper or template instance),
   - every --alias typedef name also mapped where it names a type in a cast or MEM (`(Name *)`, `<Name>`).
 Equal normalised dumps mean the same operations in the same order on the same values; a real change
 (another offset, operator, width, order) shows as a difference.
 
+--objdump compares the machine code instead (objects built with -g0, `objdump -d -r`, addresses removed,
+branch targets as function offsets, relocations kept). Function labels carry the mangled name, so a changed
+signature shows as a changed label; an equal listing means identical instructions.
+
 usage:
-  python tools/dev/gimple_compare.py -p build-mingw-release [--rev HEAD] [--alias T=U ...] src/a.cpp [src/b.cpp ...]
+  python tools/dev/gimple_compare.py -p build-mingw-release [--rev HEAD] [--alias T=U ...] [--objdump] src/a.cpp [src/b.cpp ...]
 Exit 0 when every file is equal.
 """
 import argparse
 import difflib
 import glob
+import io
 import json
 import os
 import re
 import shlex
 import subprocess
+import tarfile
 import sys
 import tempfile
 
@@ -43,6 +54,14 @@ C_TYPES = {"unsigned long long": "long long unsigned int", "uint64_t": "long lon
            "unsigned int": "unsigned int", "uint32_t": "unsigned int",
            "unsigned short": "short unsigned int", "uint16_t": "short unsigned int"}
 
+
+# The per-compilation numbers of scalar-replacement names (`ISRA.92`, `point$x_1.88`) and of compiler
+# temporaries (`D.122377`), which shift like the SSA numbers when the file gains or loses an inline helper.
+# A member read through a cast load of the whole struct, `LOAD<const struct T>(p).f`: the same access as
+# `p->f` once p has the type T * (a parameter retyped from int * to T *).
+STRUCT_LOAD = re.compile(r"LOAD<(?:const )?struct [A-Za-z_][A-Za-z0-9_]*>\(([A-Za-z0-9_.()]+?)\)\.")
+
+SRA_NUMBER = re.compile(r"\bISRA\.\d+|(?<=[A-Za-z0-9_$]_\d)\.\d+(?=_D\b)|(?<=_\d\d)\.\d+(?=_D\b)|(?<=_\d\d\d)\.\d+(?=_D\b)|\bD\.\d+\b")
 
 # The per-compilation numbers in a header line `;; Function F (mangled, funcdef_no=N, decl_uid=N, ...)`.
 FUNC_NUMBERS = re.compile(r", funcdef_no=[^)]*\)")
@@ -92,6 +111,8 @@ def normalise(text, aliases):
 
         for line in stmts:
             line = SSA.sub(ren, line)
+            line = STRUCT_LOAD.sub(r"\1->", line)
+            line = SRA_NUMBER.sub(lambda m: m.group(0).split(".")[0] + ".N", line)
             m = COMM.match(line)
             if m:
                 a, b = sorted((m.group(2), m.group(4)))
@@ -100,12 +121,13 @@ def normalise(text, aliases):
     return out
 
 
-def compile_dump(cmd, directory, src_text, src_name, tmp, tag):
-    src = os.path.join(tmp, "%s_%s" % (tag, os.path.basename(src_name)))
-    with open(src, "w", encoding="utf-8", newline="") as fh:
-        fh.write(src_text)
+def tree_args(cmd, rel, tree, root):
+    """The file's compile command for the copy of the source tree at `tree`: include directories inside the
+    repository (root) that exist in `tree` are redirected there, so the reference is compiled against its own
+    headers; build directories (generated headers) are kept. -o, -c and the source are dropped."""
     args = shlex.split(cmd.replace("\\", "/"), posix=True)
-    new, skip = [], False
+    rootn = os.path.normcase(os.path.abspath(root)).replace("\\", "/").rstrip("/")
+    out, skip = [], False
     for a in args:
         if skip:
             skip = False
@@ -113,17 +135,67 @@ def compile_dump(cmd, directory, src_text, src_name, tmp, tag):
         if a == "-o":
             skip = True
             continue
-        if a == "-c" or a.replace("\\", "/").endswith(src_name.replace("\\", "/")):
+        if a == "-c" or a.endswith(rel):
             continue
-        new.append(a)
-    obj = os.path.join(tmp, tag + ".o")
-    subprocess.run(new + ["-fdump-tree-optimized", "-dumpdir", tmp + "/", "-c", src, "-o", obj],
+        for flag in ("-I", "-isystem"):
+            if a.startswith(flag) and len(a) > len(flag):
+                path = a[len(flag):]
+                pn = os.path.normcase(os.path.abspath(path)).replace("\\", "/")
+                if pn.startswith(rootn + "/"):
+                    moved = os.path.join(tree, pn[len(rootn) + 1:])
+                    if os.path.isdir(moved):
+                        a = flag + moved.replace("\\", "/")
+                break
+        out.append(a)
+    return out
+
+
+def compile_obj(cmd, directory, rel, tree, root, out_dir, extra):
+    """Compiles tree/rel (the file at its own place in the tree, so relative includes resolve there) into
+    out_dir/x.o with the extra flags."""
+    os.makedirs(out_dir)
+    obj = os.path.join(out_dir, "x.o")
+    subprocess.run(tree_args(cmd, rel, tree, root) + extra + ["-c", os.path.join(tree, rel), "-o", obj],
                    cwd=directory, check=True)
-    dumps = glob.glob(os.path.join(tmp, "*%s_*.optimized" % tag)) + glob.glob(os.path.join(tmp, "%s*.optimized" % tag))
+    return obj
+
+
+def gimple_dump(cmd, directory, rel, tree, root, out_dir):
+    compile_obj(cmd, directory, rel, tree, root, out_dir, ["-fdump-tree-optimized", "-dumpdir", out_dir + "/"])
+    dumps = glob.glob(os.path.join(out_dir, "*.optimized"))
     if not dumps:
-        sys.exit("gimple_compare: no dump written for " + src_name)
-    with open(sorted(set(dumps))[0], encoding="utf-8", errors="replace") as fh:
+        sys.exit("gimple_compare: no dump written for " + rel)
+    with open(dumps[0], encoding="utf-8", errors="replace") as fh:
         return fh.read()
+
+
+INSN = re.compile(r"^\s*[0-9a-f]+:\s+(.*)$")
+LABEL = re.compile(r"^[0-9a-f]+ (<.*>:)$")
+TARGET = re.compile(r"\b[0-9a-f]+ <([^>+]+)(\+0x[0-9a-f]+)?>")
+
+
+def objdump_listing(cmd, directory, rel, tree, root, out_dir):
+    """Machine code of the object without -g, address-normalised: instruction text without addresses and
+    comments, branch targets inside a function as <+offset>, relocations kept, function labels by mangled
+    name (a changed signature shows as a changed label)."""
+    obj = compile_obj(cmd, directory, rel, tree, root, out_dir, ["-g0"])
+    text = subprocess.run(["objdump", "-d", "-r", "--no-show-raw-insn", obj], capture_output=True, text=True,
+                          check=True).stdout
+    out = []
+    for line in text.splitlines():
+        m = LABEL.match(line)
+        if m:
+            out.append(m.group(1))
+            continue
+        if "R_X86_64" in line or "IMAGE_REL" in line:
+            out.append("  RELOC " + " ".join(line.split()[1:]))
+            continue
+        m = INSN.match(line)
+        if m:
+            ins = re.sub(r"\s+#.*$", "", m.group(1)).rstrip()
+            ins = TARGET.sub(lambda t: "<%s>" % (t.group(2) or t.group(1)), ins)
+            out.append("  " + ins)
+    return out
 
 
 def main():
@@ -131,31 +203,51 @@ def main():
     ap.add_argument("-p", required=True, help="build directory with compile_commands.json")
     ap.add_argument("--rev", default="HEAD", help="git revision of the reference (default HEAD)")
     ap.add_argument("--alias", action="append", default=[], help='TYPE="gimple type", e.g. MmxPackedValue64="long long unsigned int"')
+    ap.add_argument("--objdump", action="store_true",
+                    help="compare the machine code of the objects (objdump -d -r, address-normalised) instead of GIMPLE")
     ap.add_argument("files", nargs="+")
     a = ap.parse_args()
     aliases = dict(x.split("=", 1) for x in a.alias)
     root = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True).stdout.strip()
     db = json.load(open(os.path.join(a.p, "compile_commands.json")))
     rc = 0
-    for f in a.files:
-        rel = os.path.relpath(os.path.abspath(f), root).replace("\\", "/")
-        entry = next((e for e in db if e["file"].replace("\\", "/").endswith(rel)), None)
-        if entry is None:
-            sys.exit("gimple_compare: %s not in compile_commands.json" % rel)
-        cmd = entry.get("command") or " ".join(shlex.quote(x) for x in entry["arguments"])
-        ref_text = subprocess.run(["git", "show", "%s:%s" % (a.rev, rel)], capture_output=True, text=True,
-                                  encoding="utf-8", check=True, cwd=root).stdout
-        new_text = open(os.path.join(root, rel), encoding="utf-8", newline="").read()
-        with tempfile.TemporaryDirectory() as tmp:
-            ref = normalise(compile_dump(cmd, entry["directory"], ref_text, rel, tmp, "ref"), aliases)
-            new = normalise(compile_dump(cmd, entry["directory"], new_text, rel, tmp, "new"), aliases)
-        diff = list(difflib.unified_diff(ref, new, "ref", "new", lineterm="", n=1))
-        if diff:
-            rc = 1
-            print("%s: DIFFERENT (%d normalised lines, %d changed)" % (rel, len(new), sum(1 for d in diff if d[:1] in "+-") - 2))
-            print("\n".join(diff[:40]))
-        else:
-            print("%s: equal (%d normalised GIMPLE lines)" % (rel, len(new)))
+    with tempfile.TemporaryDirectory() as tmp:
+        # the reference: src/ and include/ of --rev (its own headers, relative includes next to the file)
+        ref_tree = os.path.join(tmp, "ref_tree")
+        os.makedirs(ref_tree)
+        archive = subprocess.run(["git", "archive", "--format=tar", a.rev, "src", "include"], cwd=root,
+                                 capture_output=True, check=True).stdout
+        with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+            if hasattr(tarfile, "data_filter"):
+                tar.extractall(ref_tree, filter="data")
+            else:
+                tar.extractall(ref_tree)
+        for n, f in enumerate(a.files):
+            rel = os.path.relpath(os.path.abspath(f), root).replace("\\", "/")
+            entry = next((e for e in db if e["file"].replace("\\", "/").endswith(rel)), None)
+            if entry is None:
+                sys.exit("gimple_compare: %s not in compile_commands.json" % rel)
+            if not os.path.isfile(os.path.join(ref_tree, rel)):
+                print("%s: not in %s" % (rel, a.rev))
+                rc = 1
+                continue
+            cmd = entry.get("command") or " ".join(shlex.quote(x) for x in entry["arguments"])
+            work = os.path.join(tmp, "f%d" % n)
+            if a.objdump:
+                ref = objdump_listing(cmd, entry["directory"], rel, ref_tree, root, os.path.join(work, "ref"))
+                new = objdump_listing(cmd, entry["directory"], rel, root, root, os.path.join(work, "new"))
+                what = "instructions"
+            else:
+                ref = normalise(gimple_dump(cmd, entry["directory"], rel, ref_tree, root, os.path.join(work, "ref")), aliases)
+                new = normalise(gimple_dump(cmd, entry["directory"], rel, root, root, os.path.join(work, "new")), aliases)
+                what = "normalised GIMPLE lines"
+            diff = list(difflib.unified_diff(ref, new, "ref", "new", lineterm="", n=1))
+            if diff:
+                rc = 1
+                print("%s: DIFFERENT (%d %s, %d changed)" % (rel, len(new), what, sum(1 for d in diff if d[:1] in "+-") - 2))
+                print("\n".join(diff[:40]))
+            else:
+                print("%s: equal (%d %s)" % (rel, len(new), what))
     return rc
 
 

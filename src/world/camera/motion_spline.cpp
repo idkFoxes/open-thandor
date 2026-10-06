@@ -12,7 +12,7 @@
 
 static float g_WorldMotionSplineCachedDerivatives[6] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 
-static int32_t g_WorldMotionSplineEquationCounts[6] = {};
+static CubicSplineEquationCount g_WorldMotionSplineEquationCounts[6] = {};
 
 float *g_WorldMotionSplineMatrixWorkspaces[6] = {};
 
@@ -135,32 +135,32 @@ void WorldMotionSpline_BuildSixChannelCurves
   /* the sixth argument is the channel's byte offset in the keyframe (channel n at n * 4) */
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[0],
-             (CubicSplineEquationCount *)g_WorldMotionSplineEquationCounts,
+             g_WorldMotionSplineEquationCounts,
              g_WorldMotionSplineCoefficientTables[0],g_WorldMotionSplineMatrixWorkspaces[0],
              keyframeCount,0,keyframes);
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[1],
-             (CubicSplineEquationCount *)(g_WorldMotionSplineEquationCounts + 1),
+             g_WorldMotionSplineEquationCounts + 1,
              g_WorldMotionSplineCoefficientTables[1],g_WorldMotionSplineMatrixWorkspaces[1],
              keyframeCount,4,keyframes);
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[2],
-             (CubicSplineEquationCount *)(g_WorldMotionSplineEquationCounts + 2),
+             g_WorldMotionSplineEquationCounts + 2,
              g_WorldMotionSplineCoefficientTables[2],g_WorldMotionSplineMatrixWorkspaces[2],
              keyframeCount,8,keyframes);
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[3],
-             (CubicSplineEquationCount *)(g_WorldMotionSplineEquationCounts + 3),
+             g_WorldMotionSplineEquationCounts + 3,
              g_WorldMotionSplineCoefficientTables[3],g_WorldMotionSplineMatrixWorkspaces[3],
              keyframeCount,12,keyframes);
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[4],
-             (CubicSplineEquationCount *)(g_WorldMotionSplineEquationCounts + 4),
+             g_WorldMotionSplineEquationCounts + 4,
              g_WorldMotionSplineCoefficientTables[4],g_WorldMotionSplineMatrixWorkspaces[4],
              keyframeCount,16,keyframes);
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[5],
-             (CubicSplineEquationCount *)(g_WorldMotionSplineEquationCounts + 5),
+             g_WorldMotionSplineEquationCounts + 5,
              g_WorldMotionSplineCoefficientTables[5],g_WorldMotionSplineMatrixWorkspaces[5],
              keyframeCount,20,keyframes);
   CubicSpline_SolveCoefficientSystem

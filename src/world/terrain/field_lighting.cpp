@@ -155,55 +155,55 @@ void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStri
      rightDelta = right, A = below, B = above, C = left, D = below-left, E = above-right. Second pass (surface):
      A = right, B = below, C = above, D = left, E = below-left, F = above-right. */
   rightDelta = cell[1].terrainHeight - cell->terrainHeight;
-  neighborDeltaA = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->terrainHeight - cell->terrainHeight;
-  neighborDeltaB = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->terrainHeight - cell->terrainHeight;
+  neighborDeltaA = FieldGridCell_AtByteOffset(cell,rowStrideBytes)->terrainHeight - cell->terrainHeight;
+  neighborDeltaB = FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->terrainHeight - cell->terrainHeight;
   neighborDeltaC = cell[-1].terrainHeight - cell->terrainHeight;
-  neighborDeltaD = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].terrainHeight - cell->terrainHeight;
-  neighborDeltaE = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].terrainHeight - cell->terrainHeight;
+  neighborDeltaD = FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].terrainHeight - cell->terrainHeight;
+  neighborDeltaE = FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].terrainHeight - cell->terrainHeight;
   normalAngles = FixedMath_VectorToAngles
-                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldY -
+                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->worldY -
                                     cell->worldY) * neighborDeltaA) - (cell[1].worldY - cell->worldY) * rightDelta
-                                 ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->worldY - cell->worldY)
+                                 ) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->worldY - cell->worldY)
                                      * neighborDeltaB) - (cell[-1].worldY - cell->worldY) * neighborDeltaC) -
-                              (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].worldY - cell->worldY)
+                              (FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].worldY - cell->worldY)
                               * neighborDeltaD) -
-                              (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].worldY - cell->worldY) * neighborDeltaE
-                     ,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldX - cell->worldX) *
+                              (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].worldY - cell->worldY) * neighborDeltaE
+                     ,((((-((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->worldX - cell->worldX) *
                            neighborDeltaA) - (cell[1].worldX - cell->worldX) * rightDelta) -
-                        (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->worldX - cell->worldX) * neighborDeltaB) -
+                        (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->worldX - cell->worldX) * neighborDeltaB) -
                        (cell[-1].worldX - cell->worldX) * neighborDeltaC) -
-                      (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].worldX - cell->worldX) * neighborDeltaD
-                      ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].worldX - cell->worldX) * neighborDeltaE);
+                      (FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].worldX - cell->worldX) * neighborDeltaD
+                      ) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].worldX - cell->worldX) * neighborDeltaE);
   cell->triangle0NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 16;
   neighborDeltaA = ((cell[1].terrainHeight + cell[1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  neighborDeltaB = ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->terrainHeight +
-           FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->waterSurfaceDelta) - cell->terrainHeight) -
+  neighborDeltaB = ((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->terrainHeight +
+           FieldGridCell_AtByteOffset(cell,rowStrideBytes)->waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  neighborDeltaC = ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->terrainHeight +
-           FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->waterSurfaceDelta) -
+  neighborDeltaC = ((FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->terrainHeight +
+           FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->waterSurfaceDelta) -
           cell->terrainHeight) - cell->waterSurfaceDelta;
   neighborDeltaD = ((cell[-1].terrainHeight + cell[-1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  neighborDeltaE = ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].terrainHeight +
-           FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].waterSurfaceDelta) - cell->terrainHeight) -
+  neighborDeltaE = ((FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].terrainHeight +
+           FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  neighborDeltaF = ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].terrainHeight +
-           FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].waterSurfaceDelta) -
+  neighborDeltaF = ((FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].terrainHeight +
+           FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].waterSurfaceDelta) -
           cell->terrainHeight) - cell->waterSurfaceDelta;
   normalAngles = FixedMath_VectorToAngles
-                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldY -
+                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->worldY -
                                     cell->worldY) * neighborDeltaB) - (cell[1].worldY - cell->worldY) * neighborDeltaA
-                                 ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->worldY - cell->worldY) * neighborDeltaC) -
+                                 ) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->worldY - cell->worldY) * neighborDeltaC) -
                                (cell[-1].worldY - cell->worldY) * neighborDeltaD) -
-                              (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].worldY - cell->worldY)
-                              * neighborDeltaE) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].worldY - cell->worldY) * neighborDeltaF
-                     ,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldX - cell->worldX) *
+                              (FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].worldY - cell->worldY)
+                              * neighborDeltaE) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].worldY - cell->worldY) * neighborDeltaF
+                     ,((((-((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->worldX - cell->worldX) *
                            neighborDeltaB) - (cell[1].worldX - cell->worldX) * neighborDeltaA) -
-                        (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->worldX - cell->worldX) * neighborDeltaC) -
+                        (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->worldX - cell->worldX) * neighborDeltaC) -
                        (cell[-1].worldX - cell->worldX) * neighborDeltaD) -
-                      (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].worldX - cell->worldX) * neighborDeltaE
-                      ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].worldX - cell->worldX) * neighborDeltaF);
+                      (FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].worldX - cell->worldX) * neighborDeltaE
+                      ) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].worldX - cell->worldX) * neighborDeltaF);
   cell->triangle1NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 16;
 }
 

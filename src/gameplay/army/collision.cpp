@@ -26,7 +26,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
   WorldOwnerListNode *ownerNode;
   Bool8 hit;
 
-  placementRadiusQ12 = ((ModelDefinition *)modelDefinition)->footprintRadius;
+  placementRadiusQ12 = reinterpret_cast<ModelDefinition *>(modelDefinition)->footprintRadius; /* byte view -> record */
   ownerNode = worldRuntime->ownerListHead;
   if ((placementRadiusQ12 != 0) && (ownerNode != nullptr)) {
     firstMaskHigh = DepthInterval_BuildBinMask(placementRadiusQ12,worldYQ12);
@@ -74,8 +74,8 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
   if (clearanceRadiusQ12 == 0) {
     return nullptr;
   }
-  for (candidateModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; candidateModelNode != nullptr;
-      candidateModelNode = (ModelRuntimeNode *)(candidateModelNode->common).nextNode) {
+  for (candidateModelNode = ModelView_Cast<ModelRuntimeNode>(worldRuntime->ownerListHead); candidateModelNode != nullptr;
+      candidateModelNode = ModelView_Cast<ModelRuntimeNode>((candidateModelNode->common).nextNode)) {
     if (candidateModelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -93,7 +93,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
     /* the unit's linked model and models linked to the unit never block it (the original also tests
        currentRuntime for NULL here, after it was already dereferenced, so that test never fired) */
     if ((candidateModelRuntime == currentRuntime->linkedRuntime) ||
-        ((ModelRuntimeSlot *)currentRuntime ==
+        (reinterpret_cast<ModelRuntimeSlot *>(currentRuntime) == /* the query view's model runtime */
          (candidateModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime)) {
       continue;
     }
@@ -201,7 +201,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   }
   else {
     /* the runtime's root node is also its world owner-list node */
-    candidateNode = (WorldOwnerListNode *)candidateRuntime->rootModelNodeOrSavedOffset.modelNode;
+    candidateNode = ModelView_Cast<WorldOwnerListNode>(candidateRuntime->rootModelNodeOrSavedOffset.modelNode);
     queryRadiusQ12 = (intptr_t)candidateRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius;
   }
   if (queryRadiusQ12 == 0) {
@@ -292,8 +292,8 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
     terrainTest = TerrainAuxHeightThreshold_TestAroundWorldPoint;
   }
   blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
-                    ((WorldOwnerListNode *)rootNode,(rootNode->worldTransform).translation.y,
-                     (rootNode->worldTransform).translation.x,(ModelRuntimeSlot *)modelRuntime,0,
+                    (ModelView_Cast<WorldOwnerListNode>(rootNode),(rootNode->worldTransform).translation.y,
+                     (rootNode->worldTransform).translation.x,ModelView_Cast<ModelRuntimeSlot>(modelRuntime),0,
                      worldRuntime);
   if (blocked) {
     return true;
@@ -316,13 +316,13 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
   if (blocked) {
     return true;
   }
-  ownerNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+  ownerNode = ModelView_Cast<ModelRuntimeNode>(worldRuntime->ownerListHead);
   if (ownerNode == nullptr) {
     return false;
   }
   /* support check: some same-faction model with a support radius (supportRadius of its definition) must lie
      within that radius plus our own margin */
-  for (; ownerNode != nullptr; ownerNode = (ModelRuntimeNode *)(ownerNode->common).nextNode) {
+  for (; ownerNode != nullptr; ownerNode = ModelView_Cast<ModelRuntimeNode>((ownerNode->common).nextNode)) {
     if ((ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || (ownerNode == rootNode)) {
       continue;
     }

@@ -151,7 +151,7 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   uint32_t writeError;
 
   imageSizeBytes = sourceImageDwords[1];
-  allocError = g_MemoryApi.alloc(imageSizeBytes,(void **)&fieldGridImageCopy);
+  allocError = g_MemoryApi.alloc(imageSizeBytes,reinterpret_cast<void **>(&fieldGridImageCopy)); /* the arena stores the block address through void ** */
   if (allocError != 0) {
     *outError = allocError;
     return false;

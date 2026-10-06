@@ -395,7 +395,7 @@ Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targ
   ownerEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
   lineOfFireBlocked = ArmyWeaponRuntime_TestTargetLineOfFire
                     (targetWorldZQ12,targetWorldYQ12,targetWorldXQ12,worldRuntime,modelRuntime);
-  ownerRootModelRuntime = (ModelRuntimeSlot *)(ownerEntity->common).ownership.definitionOrClassRecord;
+  ownerRootModelRuntime = (ownerEntity->common).ownership.modelRuntime();
   if (lineOfFireBlocked) {
     if (((modelRuntime == ownerRootModelRuntime->attachments[0].childModelRuntimeOrSavedOffset) ||
         (ownerRootModelRuntime->attachments[0].childModelRuntimeOrSavedOffset == nullptr)
@@ -811,7 +811,7 @@ Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetSt
   }
   /* two bits per faction; the upper one = the target is visible to that faction */
   visibilityMask = 2u << ((uint8_t)((targetState->common).ownership.ownerIndex * 2) & 31);
-  targetModelRuntime = (ModelRuntimeSlot *)(commandTargetEntity->common).ownership.definitionOrClassRecord;
+  targetModelRuntime = (commandTargetEntity->common).ownership.modelRuntime();
   if (((commandTargetEntity->common).damageState.factionVisibilityBits1C & visibilityMask) == 0) {
     /* the owner's faction lost sight of the target: drop it */
     (targetState->common).commandTarget.targetEntity = nullptr;
