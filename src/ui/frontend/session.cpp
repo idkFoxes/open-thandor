@@ -5,9 +5,16 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <thandor/core/bytes.h>
 #include <thandor/ui/frontend/session.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+
+/* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int (one reinterpretation). */
+static inline RuntimeSpinLockValue *FrontendSession_InGameTickLock()
+{
+  return reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock);
+}
 
 /* Module data. */
 
@@ -25,7 +32,7 @@ void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
           uint32_t unusedArgument3)
 
 {
-  Resource_Release((void *)g_FrontendLoadedCampaignAsset);
+  Resource_Release(reinterpret_cast<void *>(g_FrontendLoadedCampaignAsset));
   g_FrontendLoadedCampaignAsset = 0;
   g_FrontendScenarioInitializationCount = 0;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,2);
@@ -175,7 +182,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   FrontendUiImage *frontendUi;
 
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
-  frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,clientLobbyLeaveButton));
+  frontendUi = reinterpret_cast<FrontendUiImage *>(Thandor_Bytes(source) - offsetof(FrontendUiImage,clientLobbyLeaveButton));
   FrontendNetworkGamePage_Show(frontendUi);
   FrontendNetworkGamePage_ClearSessionList(frontendUi);
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
@@ -219,13 +226,14 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontend
   sourceRecord = g_FrontendSessionDiscoveryRecords;
   destinationRecord = g_FrontendSessionDiscoveryRecords;
   rowPointerCursor = g_FrontendSessionListRows;
-  /* the record field typed payloadByteCount holds the session's expiry ticks */
+  /* the record field typed payloadByteCount holds the session's expiry ticks; the records are compacted dword
+     by dword through uint32_t cursors, as in the original */
   for (rowsRemaining = frontendRuntime->sessionList.rowCount; rowsRemaining != 0; rowsRemaining--) {
     expiryTicks = &sourceRecord->advertisement.payloadByteCount;
     *expiryTicks = *expiryTicks - 1;
-    destinationDwordCursor = (uint32_t *)destinationRecord;
+    destinationDwordCursor = reinterpret_cast<uint32_t *>(destinationRecord);
     if (*expiryTicks == 0) {
-      sourceDwordCursor = (uint32_t *)(sourceRecord + 1);
+      sourceDwordCursor = reinterpret_cast<uint32_t *>(sourceRecord + 1);
       rowCountField = &frontendRuntime->sessionList.rowCount;
       *rowCountField = *rowCountField - 1;
       currentSelectedSlot = frontendRuntime->sessionList.selectedRowSlot;
@@ -239,13 +247,13 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontend
       }
     }
     else {
-      sourceDwordCursor = (uint32_t *)(sourceRecord + 1);
+      sourceDwordCursor = reinterpret_cast<uint32_t *>(sourceRecord + 1);
       *rowPointerCursor = destinationRecord;
-      destinationDwordCursor = (uint32_t *)(destinationRecord + 1);
+      destinationDwordCursor = reinterpret_cast<uint32_t *>(destinationRecord + 1);
       rowPointerCursor++;
       if (destinationDwordCursor != sourceDwordCursor) {
-        sourceDwordCursor = (uint32_t *)sourceRecord;
-        destinationDwordCursor = (uint32_t *)destinationRecord;
+        sourceDwordCursor = reinterpret_cast<uint32_t *>(sourceRecord);
+        destinationDwordCursor = reinterpret_cast<uint32_t *>(destinationRecord);
         for (dwordsRemaining = sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t); dwordsRemaining != 0;
             dwordsRemaining--) {
           *destinationDwordCursor = *sourceDwordCursor;
@@ -255,8 +263,9 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontend
       }
     }
     rowSlotCursor++;
-    sourceRecord = (FrontendSessionDiscoveryRecord *)sourceDwordCursor;
-    destinationRecord = (FrontendSessionDiscoveryRecord *)destinationDwordCursor;
+    /* the dword cursors end one record further on: read them back as the next records */
+    sourceRecord = reinterpret_cast<FrontendSessionDiscoveryRecord *>(sourceDwordCursor);
+    destinationRecord = reinterpret_cast<FrontendSessionDiscoveryRecord *>(destinationDwordCursor);
   }
   UiPointerList_RefreshSelectionAndQueueAction(UiListControl_AsPointerList(&frontendRuntime->sessionList));
 }
@@ -278,7 +287,7 @@ void FrontendSession_PeriodicTick()
   uint32_t networkTickInterval;
   static Bool8 s_loggedZeroTickInterval;
 
-  callResult = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  callResult = g_SpinLockTryAcquire(FrontendSession_InGameTickLock());
   inGameRoot = g_InGameRuntimeRoot;
   /* The original divides by g_SessionNetworkTickInterval as it is; 0 is taken as 1 here because the
      interval comes from the host's join ack (the result is the same for any other value). */
@@ -292,7 +301,7 @@ void FrontendSession_PeriodicTick()
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+      g_SpinLockRelease(FrontendSession_InGameTickLock());
       return;
     }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
@@ -304,13 +313,13 @@ void FrontendSession_PeriodicTick()
                g_SessionNetworkTickInterval) {
         while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
           FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+                    (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet));
         }
         callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
         if (callResult) {
           /* not every peer has synced yet: retry on the next timer tick */
           g_InGameNetworkTickCountdown = 1;
-          g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+          g_SpinLockRelease(FrontendSession_InGameTickLock());
           return;
         }
       }
@@ -321,22 +330,22 @@ void FrontendSession_PeriodicTick()
       /* client at an interval boundary: wait until the host's command batch has arrived */
       callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
       if (!callResult) {
-        g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+        g_SpinLockRelease(FrontendSession_InGameTickLock());
         return;
       }
       do {
         if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) break;
         callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
-                          ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+                          (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet));
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlag();
       if (callResult) {
-        g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+        g_SpinLockRelease(FrontendSession_InGameTickLock());
         return;
       }
     }
     else if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+      g_SpinLockRelease(FrontendSession_InGameTickLock());
       return;
     }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
@@ -346,7 +355,7 @@ void FrontendSession_PeriodicTick()
      (inGameRoot->activeEndMovieRuntime != nullptr)) {
     g_EndMoviePendingTicks++;
   }
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  g_SpinLockRelease(FrontendSession_InGameTickLock());
 }
 
 
@@ -561,7 +570,7 @@ void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *player
   parentCursor = playerListControl->base.parent;
   frontendRoot = playerListControl;
   while (parentCursor != UI_NODE_NONE) {
-    frontendRoot = (UiPointerListControl *)(frontendRoot->base).parent;
+    frontendRoot = UiNode_As<UiPointerListControl>(frontendRoot->base.parent.get());
     parentCursor = frontendRoot->base.parent;
   }
   if (playerListControl->selectedRowSlot == playerListControl->rowSlots) {

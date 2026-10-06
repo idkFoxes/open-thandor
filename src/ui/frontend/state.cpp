@@ -5,10 +5,17 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <thandor/core/bytes.h>
 #include <thandor/ui/frontend/state.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/ui/core/key_dispatch.h>
+
+/* g_FrontendStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int (one reinterpretation). */
+static inline RuntimeSpinLockValue *FrontendState_TickLock()
+{
+  return reinterpret_cast<RuntimeSpinLockValue *>(&g_FrontendStateTickSpinLock);
+}
 
 /* Module data. */
 
@@ -76,7 +83,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
   /* Each dispatch record names its handler by continuationEntryAddress, which only serves as the case label
      of the switch below. root is g_FrontendRootNode. Returns true = not handled. */
   UiCommandDispatchRecord *record = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30;
-  uint8_t *root = (uint8_t *)g_FrontendRootNode;
+  FrontendUiImage *root = FrontendUi_Image(g_FrontendRootNode);
   uint32_t target;
 
   (void)frontendRuntime;
@@ -101,7 +108,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
         UiActionQueue_Enqueue(0,root);
         break;
       }
-      Resource_Release((void *)(uintptr_t)g_FrontendLoadedCampaignAsset);
+      Resource_Release(reinterpret_cast<void *>(g_FrontendLoadedCampaignAsset));
       g_FrontendLoadedCampaignAsset = 0;
       g_FrontendScenarioInitializationCount = 0;
       g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
@@ -140,7 +147,8 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
            FrontendNetworkSetupPage_InitializeBackendMode) */
         g_FrontendPlayerRuntimeBlockCount = 1;
         g_LocalPlayerRuntimeId = 0;
-        *(uint32_t *)&player->playerName = 0; /* first two code units */
+        /* first two code units, cleared as one dword */
+        *reinterpret_cast<uint32_t *>(player->playerName.textUtf16) = 0;
         player->playerRuntimeId = 0;
         player->factionAssignment.roleStateFlags = 0;
         player->colourCycleFlags = 0;
@@ -179,7 +187,7 @@ void Frontend_StateTick()
   void *packet;
   void *packetEndpoint;
 
-  callResult = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+  callResult = g_SpinLockTryAcquire(FrontendState_TickLock());
   previousTickCounter = g_FrontendNetworkTickCounter;
   frontendRoot = g_FrontendRootNode;
   if (callResult) {
@@ -188,7 +196,7 @@ void Frontend_StateTick()
   switch(g_FrontendNetworkState) {
   case FRONTEND_NETWORK_STATE_IDLE:
     if (g_FrontendTimerCountdownTicks != 0) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease(FrontendState_TickLock());
       return;
     }
     g_FrontendNetworkTickCounter++;
@@ -204,12 +212,12 @@ void Frontend_StateTick()
       }
       while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
         FrontendTransfer_HandleSessionListAndJoinAckPackets
-                  ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
+                  (static_cast<UiTransferEndpointDescriptor *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet),
                    frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+    g_SpinLockRelease(FrontendState_TickLock());
     return;
   case FRONTEND_NETWORK_STATE_HOSTING:
     if (g_FrontendTimerCountdownTicks == 0) {
@@ -218,12 +226,12 @@ void Frontend_StateTick()
       FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(g_FrontendRootNode);
       while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
         FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
-                  ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
+                  (static_cast<UiTransferEndpointDescriptor *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet),
                    frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+    g_SpinLockRelease(FrontendState_TickLock());
     return;
   case FRONTEND_NETWORK_STATE_JOINED:
     if (g_FrontendTimerCountdownTicks == 0) {
@@ -234,30 +242,30 @@ void Frontend_StateTick()
       }
       while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
         FrontendTransfer_HandleHostSessionAndCommandBatchPackets
-                  ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
+                  (static_cast<UiTransferEndpointDescriptor *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet),
                    frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+    g_SpinLockRelease(FrontendState_TickLock());
     return;
   case FRONTEND_NETWORK_STATE_HOST_STARTING:
     if (g_FrontendTimerCountdownTicks != 0) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease(FrontendState_TickLock());
       return;
     }
     g_FrontendNetworkTickCounter++;
     g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
     while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
       FrontendNetwork_HandleHandshakeAndPlayerStatePackets
-                ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
+                (static_cast<UiTransferEndpointDescriptor *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet),
                  frontendRoot);
     }
     callResult = FrontendNetwork_HostTickCommandAndSnapshotTransfer(frontendRoot);
     if (callResult) {
       /* transfer still running: next tick at once */
       g_FrontendTimerCountdownTicks = 1;
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease(FrontendState_TickLock());
       return;
     }
     break;
@@ -265,26 +273,26 @@ void Frontend_StateTick()
     /* no pacing: works whenever a packet of this session has arrived */
     callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
     if (!callResult) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease(FrontendState_TickLock());
       return;
     }
     g_FrontendNetworkTickCounter++;
     do {
       if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) break;
       callResult = FrontendTransfer_HandleGameplayCommandAndRosterPackets
-                        ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
+                        (static_cast<UiTransferEndpointDescriptor *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet),
                          frontendRoot);
     } while (!callResult);
     callResult = FrontendTransfer_ConsumeProcessedFlagForMenuTick();
     if (callResult) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease(FrontendState_TickLock());
       return;
     }
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
   }
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+  g_SpinLockRelease(FrontendState_TickLock());
 }
 
 /* Title marker of one level on the game selection page: highlighted when one of the other players (records
@@ -330,8 +338,10 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   
   networkState = g_FrontendNetworkState;
   frontendRoot = FrontendUi_Image(g_FrontendRootNode);
+  /* the text box's lineCount and textLines slots are the count and entries of a pointer list */
   RecentTextHistory_SortAndBuildPointerList
-            (5,(RecentTextHistoryPointerList *)&FrontendUi_Image(g_FrontendRootNode)->chatMessageHistory.lineCount);
+            (5,reinterpret_cast<RecentTextHistoryPointerList *>
+                 (&FrontendUi_Image(g_FrontendRootNode)->chatMessageHistory.lineCount));
   switch(networkState) {
   case FRONTEND_NETWORK_STATE_BROWSING:
     FrontendSessionList_DecrementExpiryAndCompactRows(frontendRoot);
@@ -370,8 +380,8 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   }
   (*g_FrontendModelPointerContextVtable.pointerMove)
             (g_CursorOverrideY,g_CursorOverrideX,&FrontendUi_Image(frontendRoot)->menuRoomModelView.base);
-  hoveredNode = (*((UiNodeBase *)frontendRoot)->vtable->hitTest)
-                    (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)frontendRoot);
+  hoveredNode = (*frontendRoot->frontendRoot.root.base.vtable->hitTest)
+                    (g_CursorOverrideY,g_CursorOverrideX,&frontendRoot->frontendRoot.root.base);
   if (hoveredNode == UI_NODE_NONE) {
     g_GraphicsCursorSetFrame(0);
   }
@@ -392,8 +402,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
     /* none selected gives 3, never the single-games tab */
     if ((selectedTabIndex == SCENARIO_SELECTION_TAB_SINGLE_GAMES) && (g_ScenarioCatalog != nullptr)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
-      levelRecord = (ScenarioCatalogDisplayRecord *)
-                    ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
+      levelRecord = Thandor_At<ScenarioCatalogDisplayRecord>(g_ScenarioCatalog,g_ScenarioCatalog->levelRecordsOffset);
       /* level n has bit n of the players' scenarioAvailabilityMask0..2; its title starts with the rich-text
          code 0x8001 (highlighted) when one of the other players (records 1..) lacks it, else 0x8000.
          The three mask words cover at most 96 levels; further levels are left unmarked. */
