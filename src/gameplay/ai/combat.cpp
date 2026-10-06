@@ -425,7 +425,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
     return candidateScore;
   }
 
-  /* the weapon is the first or second attachment */
+  /* the weapon is the primary or, without one, the secondary weapon slot */
   sourceModelRuntime = (sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   candidateAimModelNode = candidateArmyRuntime->modelNodeRuntime;
   if (sourceModelRuntime->attachmentCount == 0) {
@@ -433,12 +433,12 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
   }
   candidateDefinition = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
           definitionOrSavedId).runtimeDefinition;
-  sourceWeaponModelRuntime = sourceModelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
+  sourceWeaponModelRuntime = sourceModelRuntime->attachments[ARMY_WEAPON_SLOT_PRIMARY].childModelRuntimeOrSavedOffset;
   if (sourceWeaponModelRuntime == nullptr) {
     if (sourceModelRuntime->attachmentCount == 1) {
       return candidateScore;
     }
-    sourceWeaponModelRuntime = sourceModelRuntime->attachments[1].childModelRuntimeOrSavedOffset;
+    sourceWeaponModelRuntime = sourceModelRuntime->attachments[ARMY_WEAPON_SLOT_SECONDARY].childModelRuntimeOrSavedOffset;
     if (sourceWeaponModelRuntime == nullptr) {
       return candidateScore;
     }

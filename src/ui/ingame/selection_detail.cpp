@@ -171,7 +171,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   /* Weapon names: the attached models of the first three attachment slots (the model runtime is re-read from
      the entity before each further slot). */
   if (modelRuntime->attachmentCount != 0) {
-    attachedModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
+    attachedModelRuntime = modelRuntime->attachments[ARMY_WEAPON_SLOT_PRIMARY].childModelRuntimeOrSavedOffset;
     if (attachedModelRuntime != nullptr) {
       InGameSelectionDetailPanel_CopyName
                 (g_InGameSelectionDetailWeaponName0TextUtf16,
@@ -180,7 +180,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
     }
     modelRuntime = (ModelRuntimeSlot *)entity->common.ownership.definitionOrClassRecord;
     if (1 < modelRuntime->attachmentCount) {
-      attachedModelRuntime = modelRuntime->attachments[1].childModelRuntimeOrSavedOffset;
+      attachedModelRuntime = modelRuntime->attachments[ARMY_WEAPON_SLOT_SECONDARY].childModelRuntimeOrSavedOffset;
       if (attachedModelRuntime != nullptr) {
         InGameSelectionDetailPanel_CopyName
                   (g_InGameSelectionDetailWeaponName1TextUtf16,
@@ -189,7 +189,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
       }
       modelRuntime = (ModelRuntimeSlot *)entity->common.ownership.definitionOrClassRecord;
       if (2 < modelRuntime->attachmentCount) {
-        attachedModelRuntime = modelRuntime->attachments[2].childModelRuntimeOrSavedOffset;
+        attachedModelRuntime = modelRuntime->attachments[ARMY_WEAPON_SLOT_TERTIARY].childModelRuntimeOrSavedOffset;
         if (attachedModelRuntime != nullptr) {
           InGameSelectionDetailPanel_CopyName
                     (g_InGameSelectionDetailWeaponName2TextUtf16,

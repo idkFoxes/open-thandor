@@ -35,6 +35,15 @@ typedef struct ArmyModelTreeNode {
     PckModelDefinitionIdCatalog linkedDefinitionIds[8]; /* +0x20 [0] default, others need a technology; 0 = none */
 } ArmyModelTreeNode;
 
+/* Weapon slots of a unit: the root's children[i] of the model tree, created in that order as the chassis model's
+   ModelRuntimeSlot.attachments[i] (ModelNodeRuntime_InstantiateLinkedChildrenRecursive). In the stock unit data
+   (docs/reference/army_units.md, tools/data/army_table.py) slot 0 holds the primary weapon and slot 1 the
+   secondary one (walkers and gliders: the lighter weapon or a second copy); no unit fills a third slot, which only
+   the selection panel reads. Buildings use the same slots for turrets (the Kraftwerk for four non-weapon parts). */
+#define ARMY_WEAPON_SLOT_PRIMARY 0
+#define ARMY_WEAPON_SLOT_SECONDARY 1
+#define ARMY_WEAPON_SLOT_TERTIARY 2
+
 uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset,uint32_t assetByteCount);
 
 Bool8 ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId);

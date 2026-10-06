@@ -374,9 +374,9 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
     unitModelRuntime = runtimeWorkspaceEntry->modelRuntime;
     /* a unit with a child model in attachment 0 or 1 (e.g. a weapon) */
     if (((unitModelRuntime != nullptr) && (unitModelRuntime->attachmentCount != 0)) &&
-        ((unitModelRuntime->attachments[0].childModelRuntimeOrSavedOffset != nullptr) ||
+        ((unitModelRuntime->attachments[ARMY_WEAPON_SLOT_PRIMARY].childModelRuntimeOrSavedOffset != nullptr) ||
          ((1 < unitModelRuntime->attachmentCount) &&
-          (unitModelRuntime->attachments[1].childModelRuntimeOrSavedOffset != nullptr)))) {
+          (unitModelRuntime->attachments[ARMY_WEAPON_SLOT_SECONDARY].childModelRuntimeOrSavedOffset != nullptr)))) {
       entriesStillNeeded--;
       if (entriesStillNeeded == 0) {
         *factionRuntimeFlags = *factionRuntimeFlags | 1;
