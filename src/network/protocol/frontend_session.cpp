@@ -8,6 +8,7 @@
 #include <thandor/network/protocol/frontend_session.h>
 #include <thandor/network/protocol/lockstep.h>
 #include <thandor/thandor.h>
+#include <thandor/network/protocol/packet_bytes.h>
 
 /* Module data. */
 
@@ -116,8 +117,8 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
     requestedPlayerIndex = packet->packet10004PlayerSnapshotRequest.requestedPlayerIndex;
     if (requestedPlayerIndex < g_FrontendPlayerRuntimeBlockCount) {
       /* the packet is filled from the first 0x60 bytes of the player record, then its header and fields are set */
-      snapshotSource = (const uint32_t *)(g_FrontendPlayerRuntimeBlocks + requestedPlayerIndex);
-      snapshotDestination = (uint32_t *)&g_FrontendPacket30005Buffer;
+      snapshotSource = Packet_Dwords(g_FrontendPlayerRuntimeBlocks + requestedPlayerIndex);
+      snapshotDestination = Packet_Dwords(&g_FrontendPacket30005Buffer);
       for (dwordCount = 0; dwordCount < sizeof(FrontendPacket30005PlayerSnapshot) / sizeof(uint32_t);
            dwordCount++) {
         snapshotDestination[dwordCount] = snapshotSource[dwordCount];
@@ -144,8 +145,8 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
       packetChunkOffset != playerRecord->snapshotChunkOffset) {
     return;
   }
-  chunkSource = (const uint32_t *)packet->packet8000ASnapshotChunk.packet10009Buffer;
-  payloadDestination = (uint32_t *)(playerRecord->snapshotPayload + packetChunkOffset);
+  chunkSource = Packet_Dwords(packet->packet8000ASnapshotChunk.packet10009Buffer);
+  payloadDestination = Packet_Dwords(playerRecord->snapshotPayload + packetChunkOffset);
   dwordCount = UI_TRANSFER_CHUNK_PAYLOAD_BYTES / sizeof(uint32_t);
   if (packetChunkOffset == FRONTEND_SNAPSHOT_LAST_CHUNK_OFFSET) {
     dwordCount = FRONTEND_SNAPSHOT_LAST_CHUNK_BYTES / sizeof(uint32_t);
@@ -198,7 +199,7 @@ static void FrontendNetwork_PublishSnapshots()
   uint32_t *outgoingCursor;
 
   packedSizeBytes = 0;
-  scratchCursor = (uint32_t *)g_PackageScratchBuffer;
+  scratchCursor = Packet_Dwords(g_PackageScratchBuffer);
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   for (remainingPlayers = g_FrontendPlayerRuntimeBlockCount; remainingPlayers != 0; remainingPlayers--) {
     playerFlags = playerRecord->snapshotTransferFlags;
@@ -206,7 +207,7 @@ static void FrontendNetwork_PublishSnapshots()
     scratchCursor++;
     packedSizeBytes = packedSizeBytes + FRONTEND_SNAPSHOT_FLAGS_BYTES;
     if ((playerFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) {
-      payloadSource = (const uint32_t *)playerRecord->snapshotPayload;
+      payloadSource = Packet_Dwords(playerRecord->snapshotPayload);
       for (payloadDwordIndex = 0; payloadDwordIndex < FRONTEND_SNAPSHOT_PAYLOAD_BYTES / sizeof(uint32_t);
            payloadDwordIndex++) {
         *scratchCursor = payloadSource[payloadDwordIndex];
@@ -218,7 +219,7 @@ static void FrontendNetwork_PublishSnapshots()
   }
   /* encoded behind the packed data, after a size dword; the size and the encoded bytes are then copied out */
   if (!PckCodec_EncodeHuffmanRle
-           (PACKAGE_SCRATCH_BUFFER_BYTES - 4 - packedSizeBytes,(uint8_t *)(scratchCursor + 1),packedSizeBytes,
+           (PACKAGE_SCRATCH_BUFFER_BYTES - 4 - packedSizeBytes,reinterpret_cast<uint8_t *>(scratchCursor + 1),packedSizeBytes, /* as bytes */
             g_PackageScratchBuffer,&encodedByteCount,nullptr)) {
     return;
   }
@@ -228,7 +229,7 @@ static void FrontendNetwork_PublishSnapshots()
     return;
   }
   /* Original quirk: only whole dwords are copied; up to 3 trailing encoded bytes stay uninitialised */
-  outgoingCursor = (uint32_t *)allocPayload;
+  outgoingCursor = static_cast<uint32_t *>(allocPayload);
   for (dwordCount = bufferSizeBytes >> 2; dwordCount != 0; dwordCount--) {
     *outgoingCursor = *scratchCursor;
     scratchCursor++;
@@ -328,13 +329,15 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
   g_NetworkBackendSlot1(); /* backend cleanup */
   frontendRootBase = g_FrontendRootNode;
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
-    UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
-    ((FrontendModelPointerContext *)FRONTEND_UI(frontendRootBase,menuRoomModelView))->contextFlags &=
+    UiPageStack_SetActiveIndex /* the node is a page stack */
+              (FRONTEND_PAGE_MAIN,reinterpret_cast<UiPageStackControl *>(FRONTEND_UI(g_FrontendRootNode,frontendPageStack)));
+    /* the menu room node is a model pointer context (a world runtime context below) */
+    reinterpret_cast<FrontendModelPointerContext *>(FRONTEND_UI(frontendRootBase,menuRoomModelView))->contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
     g_FrontendRomTransitionPageAction = 0;
     FrontendRomTransition_ActivateRecordById
-              (FRONTEND_ROM_RECORD_MAIN_MENU,(WorldRuntimeContext *)FRONTEND_UI(frontendRootBase,menuRoomModelView));
+              (FRONTEND_ROM_RECORD_MAIN_MENU,reinterpret_cast<WorldRuntimeContext *>(FRONTEND_UI(frontendRootBase,menuRoomModelView)));
   }
   /* player block 0 is the host's while connected */
   resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_HOST_LOST);
@@ -404,7 +407,7 @@ Bool8 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
       while (remainingCommands != 0) {
         CommandDispatch_ExecuteRecord
                   (INGAME_COMMAND_CODE_BASE,INGAME_COMMAND_HANDLER_REGION_END,&packet->command10011Or10021.command);
-        packet = (FrontendTransferPacketUnion *)(&packet->command10011Or10021 + 1);
+        packet = reinterpret_cast<FrontendTransferPacketUnion *>(&packet->command10011Or10021 + 1); /* the next record */
         remainingCommands--;
       }
       FrontendTransfer_SendCommandSubmit();
@@ -440,8 +443,8 @@ Bool8 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
         InGameRecentTextHistory_InsertAndRebuild8(resolvedText);
         if (remainingPlayers - 1 != 0) {
           /* close the gap: move the following records down by one */
-          nextPlayerRecord = (uint32_t *)(playerRecord + 1);
-          recordDwordCursor = (uint32_t *)playerRecord;
+          nextPlayerRecord = Packet_Dwords(playerRecord + 1);
+          recordDwordCursor = Packet_Dwords(playerRecord);
           for (dwordCount = (remainingPlayers - 1) * (sizeof(FrontendPlayerRuntimeRecord) / sizeof(uint32_t));
                dwordCount != 0; dwordCount--) {
             *recordDwordCursor = *nextPlayerRecord;
