@@ -8,16 +8,17 @@
 #include <thandor/ui/frontend/menu_room_scene.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
 uint32_t g_FrontendRomTransitionPageAction = 0;
 
-uintptr_t g_FrontendActiveRomRecord = 0;
+RomRecord *g_FrontendActiveRomRecord = nullptr;
 
 std::atomic<uint32_t> g_FrontendRomTransitionElapsedTicks{0};
 
-uintptr_t g_FrontendRomTransitionSplineKeyframes = 0;
+WorldMotionSplineKeyframe *g_FrontendRomTransitionSplineKeyframes = nullptr;
 
 uint32_t g_FrontendRomTransitionSplineKeyframeCount = 0;
 
@@ -26,6 +27,13 @@ std::atomic<uint32_t> g_FrontendRomTransitionTargetRecordId{0};
 /* the 100 frontend menu sound slots (slot 0 unused, Frontend_Init
    loads sound\menueNN.sam into slots 1..99; ROM action records select one by activationSoundIndex) */
 SoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {};
+
+/* The whole RomRecord behind a registry record (RomAssetRecordPrefix is its first 12 bytes): the record's header
+   read with its camera pose, visibleRecordMask, lights and entry count. */
+static inline RomRecord *RomRecord_Of(RomAssetRecordPrefix *record)
+{
+  return reinterpret_cast<RomRecord *>(record);
+}
 
 /* Executes entry recordIndex of the active frontend ROM action table (a menu-room hotspot or a scripted entry
    from the frontend main loop): plays its click sound, then either posts its page action / a close request, or
@@ -41,17 +49,17 @@ void FrontendRomActionTable_ExecuteRecord
   FrontendRomActionEntry *entry;
   RomRecord *targetRecord;
   int lastKeyframeIndex;
-  void *menuRoomView;
+  FrontendModelPointerContext *menuRoomView;
   WorldRuntimeContext *menuRoomCamera;
   Bool8 visibilityLookupFailed;
   RomRecordId pageAction;
   RomRecordId targetRecordId;
 
-  if (recordIndex >= ((RomRecord *)g_FrontendActiveRomRecord)->entryCount) {
+  if (recordIndex >= g_FrontendActiveRomRecord->entryCount) {
     return;
   }
-  entry = (FrontendRomActionEntry *)(recordIndex * FRONTEND_ROM_ACTION_ENTRY_SIZE +
-                                     FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE + g_FrontendActiveRomRecord);
+  entry = Thandor_At<FrontendRomActionEntry>
+            (g_FrontendActiveRomRecord,recordIndex * FRONTEND_ROM_ACTION_ENTRY_SIZE + FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE);
   menuRoomView = &FrontendUi_Image(g_FrontendRootNode)->menuRoomModelView;
   targetRecordId = entry->targetRecordId;
   pageAction = entry->pageAction;
@@ -100,7 +108,7 @@ void FrontendRomActionTable_ExecuteRecord
   lastKeyframeIndex = entry->keyframeCount - 1;
   /* Keyframe 0 = snapshot of the menu room camera (WorldRuntimeContext.motion of menuRoomModelView):
      position X/Y/Z, magnitude, heading, pitch; its timeQ12 is 0. */
-  menuRoomCamera = (WorldRuntimeContext *)menuRoomView;
+  menuRoomCamera = FrontendModelPointerContext_AsWorldRuntime(menuRoomView);
   entry->keyframes[0].channel0Q12 = menuRoomCamera->motion.positionXQ12;
   entry->keyframes[0].channel1Q12 = menuRoomCamera->motion.positionYQ12;
   entry->keyframes[0].channel2Q12 = menuRoomCamera->motion.positionZQ12;
@@ -108,7 +116,7 @@ void FrontendRomActionTable_ExecuteRecord
   entry->keyframes[0].channel4Q12 = menuRoomCamera->motion.headingAngle;
   entry->keyframes[0].channel5Q12 = menuRoomCamera->motion.pitchAngle;
   entry->keyframes[0].timeQ12 = 0;
-  targetRecord = (RomRecord *)RomRegistry_FindRecordById(targetRecordId);
+  targetRecord = RomRecord_Of(RomRegistry_FindRecordById(targetRecordId));
   if (targetRecord == nullptr) {
     return;
   }
@@ -147,13 +155,13 @@ Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
     slotRecord = slotCursor->record;
     if (slotRecord != nullptr) {
       modelNodeRuntime = RomRuntime_BuildNodeTreeRecursive
-                        (((RomRecord *)slotRecord)->nodeTintArgb,
+                        (RomRecord_Of(slotRecord)->nodeTintArgb,
                          Thandor_U32ToPointer<RomSerializedNodeHeader>(slotRecord->rootNodeOffsetOrPointer),worldRuntime); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
       if (modelNodeRuntime == nullptr) {
         return true;
       }
-      slotCursor->runtimeRootNode = (WorldRuntimeNode *)modelNodeRuntime;
-      WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
+      slotCursor->runtimeRootNode = WorldNode_View<WorldRuntimeNode>(modelNodeRuntime);
+      WorldRuntime_LinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNodeRuntime));
       ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
     }
     slotCursor = slotCursor + 1;
@@ -174,7 +182,8 @@ void FrontendRomTransition_ProcessPendingRecord()
   Bool8 splineStillRunning;
   uint32_t activateError;
 
-  const SpinLockGuard tickLock((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+  /* the lock word is declared uint32_t (lifecycle.cpp); the spin lock functions take it as int */
+  const SpinLockGuard tickLock(reinterpret_cast<RuntimeSpinLockValue *>(&g_FrontendStateTickSpinLock));
   /* g_FrontendRomTransitionTargetRecordId holds the target record id of the running flight (-1 = none to
      activate, 0 = no flight). */
   pendingRecordId = g_FrontendRomTransitionTargetRecordId;
@@ -182,7 +191,7 @@ void FrontendRomTransition_ProcessPendingRecord()
   if (g_FrontendRomTransitionTargetRecordId != 0) {
     splineStillRunning = WorldMotionSpline_EvaluateAndApplyAtTime
                       (g_FrontendRomTransitionSplineKeyframeCount,
-                       (WorldMotionSplineKeyframe *)g_FrontendRomTransitionSplineKeyframes,g_FrontendRomTransitionElapsedTicks,
+                       g_FrontendRomTransitionSplineKeyframes,g_FrontendRomTransitionElapsedTicks,
                        menuRoomView);
     if (!splineStillRunning) {
       g_FrontendRomTransitionTargetRecordId = 0;
@@ -213,7 +222,7 @@ static void RomRecord_ShowNodeAndCreateLights(RomAssetRecordPrefix *record,World
   uint32_t lightCount;
 
   rootNode->runtimeFlags = rootNode->runtimeFlags & ~ROM_NODE_FLAG_HIDDEN;
-  lightCount = ((RomRecord *)record)->lightCount;
+  lightCount = RomRecord_Of(record)->lightCount;
   for (lightIndex = 0; lightIndex < lightCount; lightIndex++) {
     RomRuntime_ApplyIndexedDescriptor(lightIndex,record);
   }
@@ -229,7 +238,7 @@ static void RomRecord_ShowNodeAndCreateLights(RomAssetRecordPrefix *record,World
 uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
 
 {
-  uint8_t *entryCursor;
+  FrontendRomActionEntry *entryCursor;
   RomAssetRecordPrefix *record;
   WorldRuntimeNode *rootNode;
   uint32_t transitionContextValue;
@@ -244,15 +253,15 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
   if (activeRecord == nullptr) {
     return FATAL_ERROR_ROM_RECORD_NOT_REGISTERED;
   }
-  g_FrontendActiveRomRecord = (uintptr_t)activeRecord;
+  g_FrontendActiveRomRecord = RomRecord_Of(activeRecord);
   /* mark the records linked from the entries (header + 0x200 * i) */
-  entryCursor = (uint8_t *)activeRecord + FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE;
-  for (entriesRemaining = ((RomRecord *)activeRecord)->entryCount; entriesRemaining != 0; entriesRemaining--) {
-    if (RomRegistry_FindSlotValueByRecordId(((FrontendRomActionEntry *)entryCursor)->linkedRecordId,
+  entryCursor = Thandor_At<FrontendRomActionEntry>(activeRecord,FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE);
+  for (entriesRemaining = RomRecord_Of(activeRecord)->entryCount; entriesRemaining != 0; entriesRemaining--) {
+    if (RomRegistry_FindSlotValueByRecordId(entryCursor->linkedRecordId,
                                             &linkedRootNode)) {
       linkedRootNode->runtimeFlags = linkedRootNode->runtimeFlags | ROM_NODE_FLAG_ACTION_TARGET;
     }
-    entryCursor = entryCursor + FRONTEND_ROM_ACTION_ENTRY_SIZE;
+    entryCursor = Thandor_At<FrontendRomActionEntry>(entryCursor,FRONTEND_ROM_ACTION_ENTRY_SIZE);
   }
   /* hide every record node, then show the active record and those in its visibleRecordMask */
   slotCursor = g_RomRegistrySlots;
@@ -262,7 +271,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
     if (record != nullptr) {
       rootNode->runtimeFlags = rootNode->runtimeFlags | ROM_NODE_FLAG_HIDDEN;
       if (activeRecord == record ||
-          (((RomRecord *)activeRecord)->visibleRecordMask[record->recordId >> 5] &
+          (RomRecord_Of(activeRecord)->visibleRecordMask[record->recordId >> 5] &
            1 << ((uint8_t)record->recordId & 31)) != 0) {
         RomRecord_ShowNodeAndCreateLights(record,rootNode);
       }
@@ -271,13 +280,13 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
   }
   transitionContextValue = g_FrontendRomTransitionPageAction;
   WorldRuntime_SetCameraPositionKeepingTarget
-            (((RomRecord *)activeRecord)->cameraZQ12,
-             ((RomRecord *)activeRecord)->cameraYQ12,
-             ((RomRecord *)activeRecord)->cameraXQ12,worldRuntime);
+            (RomRecord_Of(activeRecord)->cameraZQ12,
+             RomRecord_Of(activeRecord)->cameraYQ12,
+             RomRecord_Of(activeRecord)->cameraXQ12,worldRuntime);
   WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-            (2,((RomRecord *)activeRecord)->cameraPitchAngle,
-             ((RomRecord *)activeRecord)->cameraHeadingAngle,
-             ((RomRecord *)activeRecord)->cameraMagnitudeQ12,worldRuntime);
+            (2,RomRecord_Of(activeRecord)->cameraPitchAngle,
+             RomRecord_Of(activeRecord)->cameraHeadingAngle,
+             RomRecord_Of(activeRecord)->cameraMagnitudeQ12,worldRuntime);
   if (transitionContextValue != 0) {
     if ((int)transitionContextValue < 0) {
       UiActionQueue_Enqueue(0,worldRuntime);
@@ -325,10 +334,10 @@ Bool8 RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue
     if (record != nullptr) {
       rootNode->runtimeFlags = rootNode->runtimeFlags | ROM_NODE_FLAG_HIDDEN;
       maskWordIndex = record->recordId >> 5;
-      if (record == targetRecord || record == (RomAssetRecordPrefix *)g_FrontendActiveRomRecord ||
+      if (record == targetRecord || RomRecord_Of(record) == g_FrontendActiveRomRecord ||
           (1 << ((uint8_t)record->recordId & 31) &
-           (((RomRecord *)targetRecord)->visibleRecordMask[maskWordIndex] |
-            ((RomRecord *)g_FrontendActiveRomRecord)->visibleRecordMask[maskWordIndex])) != 0) {
+           (RomRecord_Of(targetRecord)->visibleRecordMask[maskWordIndex] |
+            g_FrontendActiveRomRecord->visibleRecordMask[maskWordIndex])) != 0) {
         RomRecord_ShowNodeAndCreateLights(record,rootNode);
       }
     }
@@ -344,7 +353,7 @@ static ModelPackedPointRecord *RomModel_FindChildAttachmentPoint(ModelResource *
   ModelPackedLookupTableEntryCount lookupEntriesRemaining;
   ModelPackedPointRecord *lookupEntry;
 
-  lookupEntry = (ModelPackedPointRecord *)((uint8_t *)model + model->packedLookupTableRelativeOffset);
+  lookupEntry = Thandor_At<ModelPackedPointRecord>(model,model->packedLookupTableRelativeOffset);
   for (lookupEntriesRemaining = model->packedLookupTableEntryCount; lookupEntriesRemaining != 0;
        lookupEntriesRemaining--) {
     if ((lookupEntry->packedLookupKey & 0xf) == 0 && childIndex == lookupEntry->packedLookupKey >> 4) {
@@ -378,7 +387,7 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   uint32_t childIndex;
   ModelPackedPointRecord *attachmentPoint;
 
-  newNode = (ModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldObjectArray);
+  newNode = WorldNode_View<ModelRuntimeNode>(WorldObjectArray_AllocateFreeRecord(worldObjectArray));
   if (newNode == nullptr) {
     return nullptr;
   }
@@ -400,14 +409,14 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   newNode->modelPayload.meshGroupMask = UINT32_MAX;
   newNode->runtimeFlags = newNode->runtimeFlags | 1;
   /* four byte stores in this form: indexing the bytes changes the store order in the build */
-  *(uint8_t *)&newNode->textureSubresourceBaseIndex = 0;
-  *((uint8_t *)&newNode->textureSubresourceBaseIndex + 1) = 0;
-  *((uint8_t *)&newNode->textureSubresourceBaseIndex + 2) = 0;
-  *((uint8_t *)&newNode->textureSubresourceBaseIndex + 3) = 0;
+  *Thandor_Bytes(&newNode->textureSubresourceBaseIndex) = 0;
+  *(Thandor_Bytes(&newNode->textureSubresourceBaseIndex) + 1) = 0;
+  *(Thandor_Bytes(&newNode->textureSubresourceBaseIndex) + 2) = 0;
+  *(Thandor_Bytes(&newNode->textureSubresourceBaseIndex) + 3) = 0;
   newNode->tintArgb = stateTintArgb;
-  centralTextureSet = (GraphicsTextureSet *)(uintptr_t)g_FrontendCentralTextureSet;
+  centralTextureSet = reinterpret_cast<GraphicsTextureSet *>(g_FrontendCentralTextureSet);
   spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;
-  newNode->modelPayload.paletteAsset = (GraphicsPaletteAsset *)(uintptr_t)g_FrontendCentralPaletteAsset;
+  newNode->modelPayload.paletteAsset = reinterpret_cast<GraphicsPaletteAsset *>(g_FrontendCentralPaletteAsset);
   boundingRadius = spriteModelResource->boundingRadiusQ12;
   newNode->modelPayload.textureSet = centralTextureSet;
   newNode->subtreeBoundingRadiusQ12 = boundingRadius;
@@ -453,10 +462,10 @@ void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitio
   g_FrontendRomTransitionElapsedTicks = 0;
   g_FrontendRomTransitionSplineKeyframeCount = entry->keyframeCount;
   g_FrontendRomTransitionTargetRecordId = transitionEnabled;
-  g_FrontendRomTransitionSplineKeyframes = (uintptr_t)entry->keyframes;
+  g_FrontendRomTransitionSplineKeyframes = entry->keyframes;
   WorldMotionSpline_BuildSixChannelCurves
             (g_FrontendRomTransitionSplineKeyframeCount,
-             (WorldMotionSplineKeyframe *)g_FrontendRomTransitionSplineKeyframes);
+             g_FrontendRomTransitionSplineKeyframes);
 }
 
 /* Creates light entryIndex of a ROM record: finds the point-light descriptor with that index in the sprite of
@@ -471,11 +480,11 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
   RomRecordLight *light;
   ModelResource *rootSprite;
 
-  if (entryIndex < ((RomRecord *)record)->lightCount) {
+  if (entryIndex < RomRecord_Of(record)->lightCount) {
     rootSprite = Thandor_U32ToPointer<RomSerializedNodeHeader>(record->rootNodeOffsetOrPointer)->spriteAssetReference.modelResource; /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
-    light = &((RomRecord *)record)->lights[entryIndex];
+    light = &RomRecord_Of(record)->lights[entryIndex];
     descriptorCursor =
-         (uint32_t *)((uint8_t *)rootSprite + (int)rootSprite->packedLookupTableRelativeOffset);
+         Thandor_At<uint32_t>(rootSprite,static_cast<int>(rootSprite->packedLookupTableRelativeOffset));
     for (descriptorsRemaining = rootSprite->packedLookupTableEntryCount;
         descriptorsRemaining != 0; descriptorsRemaining--) {
       if (((*descriptorCursor & ROM_NODE_DESCRIPTOR_KIND_MASK) == ROM_NODE_DESCRIPTOR_KIND_LIGHT) &&
