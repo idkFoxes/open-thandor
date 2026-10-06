@@ -11,6 +11,7 @@
 #include <string.h>
 #include <thandor/movie/runtime/playback.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
@@ -118,7 +119,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   }
   loadError = g_FileSystemReadExact(trackBytes,audioSample,handle);
   if (loadError == 0) {
-    loadError = g_SoundCreateSampleVoiceSet((SoundSampleAsset *)audioSample,&voiceSet);
+    loadError = g_SoundCreateSampleVoiceSet(static_cast<SoundSampleAsset *>(audioSample),&voiceSet);
     if (loadError == 0) {
       *outVoiceSet = voiceSet;
     }
@@ -191,7 +192,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   if (((movieOpenFlags & MOVIE_OPEN_PACKAGE_ONLY) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
               (g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
-    looseFileOpened = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle) == 0;
+    looseFileOpened = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&handle) == 0;
   }
   if (!looseFileOpened) {
     movieOpenFlags = movieOpenFlags & ~MOVIE_OPEN_PACKAGE_ONLY;
@@ -209,8 +210,8 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
     else {
       WidePath_CombineDirectoryAndLeaf
                 (g_FileSystemCombinedPathScratchUtf16,path,
-                 (uint16_t *)&g_ExecutableDirectoryUtf16);
-      openError = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);
+                 g_ExecutableDirectoryUtf16);
+      openError = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&handle);
       if (openError != 0) {
         openError = g_FileSystemOpen(0,path,&handle);
         if (openError != 0) {
@@ -227,7 +228,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   if (status != 0) {
     return Movie_OpenFail(handle,isSharedPackageHandle,status,outError);
   }
-  header = (MovieFileHeader *)g_PackageScratchBuffer;
+  header = reinterpret_cast<MovieFileHeader *>(g_PackageScratchBuffer);
   if ((header->common.magic != ASSET_MAGIC_FLM) ||
       ((uint32_t)header->common.converterVersion != MOVIE_FLM_CONVERTER_VERSION)) {
     return Movie_OpenFail(handle,isSharedPackageHandle,FATAL_ERROR_MOVIE_INVALID,outError);
@@ -244,20 +245,20 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   if (allocError != 0) {
     return Movie_OpenFail(handle,isSharedPackageHandle,allocError,outError);
   }
-  copySource = (uint32_t *)g_PackageScratchBuffer;
-  copyDestination = (uint32_t *)allocPayload;
+  copySource = reinterpret_cast<uint32_t *>(g_PackageScratchBuffer);
+  copyDestination = static_cast<uint32_t *>(allocPayload);
   for (copyCount = MOVIE_FILE_HEADER_BYTES / 4; copyCount != 0; copyCount--) {
     *copyDestination = *copySource;
     copySource++;
     copyDestination++;
   }
-  header = (MovieFileHeader *)allocPayload;
+  header = static_cast<MovieFileHeader *>(allocPayload);
   initialVideoBytes = header->videoStreamBytes;
   if ((MOVIE_INITIAL_VIDEO_MAX_BYTES < initialVideoBytes) && (movieOpenFlags != 0)) {
     initialVideoBytes = MOVIE_INITIAL_VIDEO_MAX_BYTES;
   }
   remainingByteCount = header->videoStreamBytes - initialVideoBytes;
-  loadedEnd = (uint8_t *)(header + 1) + initialVideoBytes;
+  loadedEnd = Thandor_At(header + 1, initialVideoBytes);
   status = g_FileSystemReadExact(initialVideoBytes,header + 1,handle);
   if (status != 0) {
     g_MemoryApi.free(header);
@@ -279,7 +280,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
     g_MemoryApi.free(header);
     return Movie_OpenFail(handle,isSharedPackageHandle,allocError,outError);
   }
-  movie = (MovieRuntime *)allocPayload;
+  movie = static_cast<MovieRuntime *>(allocPayload);
   g_ActiveMovie = movie;
   if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
     g_FileSystemClose(handle);
@@ -399,7 +400,7 @@ static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
         (Movie_WorkerActive(movie).load() == 0) || (movie->remainingVideoBytes == 0)) break;
     if (Movie_StreamState(movie).load() == MOVIE_STREAM_IDLE) continue;
     byteCount = movie->remainingVideoBytes;
-    if ((uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader) < MOVIE_REFILL_LIMIT_BYTES) {
+    if ((uint32_t)Thandor_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get()) < MOVIE_REFILL_LIMIT_BYTES) {
       handle = movie->streamHandle;
       if (MOVIE_REFILL_CHUNK_BYTES < byteCount) {
         byteCount = MOVIE_REFILL_CHUNK_BYTES;
@@ -527,12 +528,13 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
   uint32_t *copyDestination;
 
   readOffset = movie->videoStreamOffset;
-  loadedSize = (uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader);
+  loadedSize = (uint32_t)Thandor_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get());
   if ((MOVIE_COMPACT_SHIFT_BYTES + MOVIE_FILE_HEADER_BYTES - 1 < readOffset) && (readOffset < loadedSize)) {
     movie->videoStreamOffset = movie->videoStreamOffset - MOVIE_COMPACT_SHIFT_BYTES;
-    copyDestination = (uint32_t *)((uint8_t *)movie->fileHeader + readOffset - MOVIE_COMPACT_SHIFT_BYTES);
+    copyDestination =
+        reinterpret_cast<uint32_t *>(Thandor_Bytes(movie->fileHeader.get()) + readOffset - MOVIE_COMPACT_SHIFT_BYTES);
     movie->loadedVideoEnd = movie->loadedVideoEnd - MOVIE_COMPACT_SHIFT_BYTES;
-    copySource = (uint32_t *)((uint8_t *)copyDestination + MOVIE_COMPACT_SHIFT_BYTES);
+    copySource = Thandor_At<uint32_t>(copyDestination, MOVIE_COMPACT_SHIFT_BYTES);
     for (dwordsLeft = (loadedSize - readOffset) >> 2; dwordsLeft != 0; dwordsLeft--) {
       *copyDestination = *copySource;
       copySource++;
@@ -580,14 +582,14 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
   }
   if ((Movie_StreamState(movie).load() == MOVIE_STREAM_IDLE) && (Movie_WorkerActive(movie).load() != 0) &&
       (movie->remainingVideoBytes != 0) &&
-      ((uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader) < MOVIE_REFILL_LIMIT_BYTES)) {
+      ((uint32_t)Thandor_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get()) < MOVIE_REFILL_LIMIT_BYTES)) {
     /* only the worker leaves FILL_REQUESTED, so IDLE cannot change between the check and this store */
     Movie_StreamState(movie).store(MOVIE_STREAM_FILL_REQUESTED);
     ReleaseSemaphore(movie->refillSemaphore,1,nullptr);
   }
   flmHeader = movie->fileHeader;
   previousFrameIndex = movie->currentFrameIndex;
-  streamCursor = (uint8_t *)flmHeader + movie->videoStreamOffset;
+  streamCursor = Thandor_At(flmHeader, movie->videoStreamOffset);
   if ((previousFrameIndex == 0) && (movie->audioVoiceSet != nullptr)) {
     /* stored whether or not it plays (NULL on failure) */
     g_SoundPlayOneShot(movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet,&playedVoice);
@@ -605,7 +607,7 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
        advanced to the pixels further down. Callers keep the value as the movie only after the first-frame call, which cannot
        get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
     if (outMovie != nullptr) {
-      *outMovie = (MovieRuntime *)((uint8_t *)movie - MOVIE_RUNTIME_PIXELS_OFFSET);
+      *outMovie = reinterpret_cast<MovieRuntime *>(Thandor_Bytes(movie) - MOVIE_RUNTIME_PIXELS_OFFSET);
     }
     return true;
   }
@@ -613,7 +615,7 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
      in the original) */
   consumedBytes = Movie_DecodeFrame4x4Delta
                     (flmHeader->heightPixels,flmHeader->widthPixels,movie->argbPixels,streamCursor,
-                     (uint8_t *)flmHeader + Movie_StreamBufferBytes(flmHeader,movie->openFlags));
+                     Thandor_At(flmHeader, Movie_StreamBufferBytes(flmHeader,movie->openFlags)));
   movie->currentFrameIndex = nextFrameIndex;
   movie->videoStreamOffset = movie->videoStreamOffset + consumedBytes;
   DebugHook_MovieFrameDone(movie,consumedBytes);
