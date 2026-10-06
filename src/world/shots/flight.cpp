@@ -618,7 +618,7 @@ static void ShotProjectile_UpdateBallisticTrajectory(ShotRuntimeSlot *shotRuntim
   shotRuntime->ownerAndTrajectory.directionComponent2Q12 -=
        shotRuntime->definitionOrSavedId.definition->ballisticDivisorQ12;
   ballisticAngles = FixedMath_VectorToAnglesAndLengthVec3
-                         ((GraphicsFixedVec3 *)&shotRuntime->ownerAndTrajectory.directionComponent0Q12);
+                         (reinterpret_cast<GraphicsFixedVec3 *>(&shotRuntime->ownerAndTrajectory.directionComponent0Q12)) /* direction components 0..2 are consecutive */;
   shotRuntime->launchSpeedQ12 = ballisticAngles.lengthQ12;
   shotNode->modelPayload.worldRotationAngle0 = ballisticAngles.azimuthAngle;
   shotNode->modelPayload.worldRotationAngle1 = ballisticAngles.elevationAngle;
@@ -659,7 +659,7 @@ static Bool8 ShotProjectile_UpdateFixedRangeTrajectory
     nodeShadingRecord = shotNode->shadingRecord;
     if (shotRuntime->runtimeStateOrSavedOffset.runtimeState != 0) {
       ShotProjectile_ShiftOverTarget
-                ((ModelRuntimeSlot *)shotRuntime->runtimeStateOrSavedOffset.runtimeStatePointer,shotNode,
+                (shotRuntime->runtimeStateOrSavedOffset.targetModelRuntime,shotNode,
                  nodeShadingRecord);
     }
     return false;
@@ -687,7 +687,7 @@ static Bool8 ShotProjectile_UpdateFixedRangeTrajectory
     }
     nodeShadingRecord = shotNode->shadingRecord;
     ShotProjectile_ShiftOverTarget
-              ((ModelRuntimeSlot *)shotRuntime->runtimeStateOrSavedOffset.runtimeStatePointer,shotNode,
+              (shotRuntime->runtimeStateOrSavedOffset.targetModelRuntime,shotNode,
                nodeShadingRecord);
     shotNode->modelPayload.worldRotationAngle1 = -shotNode->modelPayload.worldRotationAngle1;
   }
@@ -738,7 +738,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
       }
       shotDefinition = shotRuntime->definitionOrSavedId.definition;
       ShotProjectile_MoveOneStep(modelNode,shotRuntime);
-      targetModelRuntime = (ModelRuntimeSlot *)shotRuntime->runtimeStateOrSavedOffset.runtimeStatePointer;
+      targetModelRuntime = shotRuntime->runtimeStateOrSavedOffset.targetModelRuntime;
       if ((shotDefinition->guidanceTurnLimitAngle16 != 0) && (targetModelRuntime != nullptr)) {
         modelNodeRuntime = shotRuntime->modelNodeOrSavedOffset.modelNode;
         ShotProjectile_SteerTowardsTarget(shotDefinition,targetModelRuntime,modelNodeRuntime);

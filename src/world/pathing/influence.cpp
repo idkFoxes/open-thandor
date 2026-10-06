@@ -155,7 +155,7 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode *enti
   /* Original quirk: the cells are cleared in whole blocks of 16 (at least one block), so a cell count that is not
      a multiple of 16 clears up to 15 cells past the end of the grid. */
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
-  stateMaskCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
+  stateMaskCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
   do {
     for (cellInBlock = 0; cellInBlock < 16; cellInBlock++) {
       stateMaskCursor[cellInBlock * 2] = stateMaskCursor[cellInBlock * 2] & ~GRID_SCRATCH_DISTANCE_BANDS;
@@ -247,16 +247,16 @@ static void GridInfluence_WalkDistanceBandsAroundWorldPoint
   /* centre row leftwards, walking up and down, until a column has nothing inside */
   leftCell = centerCell;
   leftCellWorldX = centerCellWorldX;
-  while (walkUp(worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,(uint32_t *)&leftCell->stateMask) != 0 &&
-         walkDown(worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,(uint32_t *)&leftCell->stateMask) != 0) {
+  while (walkUp(worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,GridScratchCell_StateMaskBits(leftCell)) != 0 &&
+         walkDown(worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,GridScratchCell_StateMaskBits(leftCell)) != 0) {
     leftCell--;
     leftCellWorldX = leftCellWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
   }
   /* centre row rightwards (the centre column again) */
   rightCell = centerCell;
   rightCellWorldX = centerCellWorldX;
-  while (walkUp(worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,(uint32_t *)&rightCell->stateMask) != 0 &&
-         walkDown(worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,(uint32_t *)&rightCell->stateMask) != 0) {
+  while (walkUp(worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,GridScratchCell_StateMaskBits(rightCell)) != 0 &&
+         walkDown(worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,GridScratchCell_StateMaskBits(rightCell)) != 0) {
     rightCell++;
     rightCellWorldX = rightCellWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
   }
@@ -266,13 +266,13 @@ static void GridInfluence_WalkDistanceBandsAroundWorldPoint
   aboveRightWorldX = centerCellWorldX + GRID_SCRATCH_HALF_COLUMN_WORLD_X;
   leftCell = aboveRowCell;
   while (walkUp(worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,aboveLeftWorldX,
-                (uint32_t *)&leftCell->stateMask) != 0) {
+                GridScratchCell_StateMaskBits(leftCell)) != 0) {
     leftCell--;
     aboveLeftWorldX = aboveLeftWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
   }
   rightCell = aboveRowCell + 1;
   while (walkUp(worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,aboveRightWorldX,
-                (uint32_t *)&rightCell->stateMask) != 0) {
+                GridScratchCell_StateMaskBits(rightCell)) != 0) {
     rightCell++;
     aboveRightWorldX = aboveRightWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
   }
@@ -282,13 +282,13 @@ static void GridInfluence_WalkDistanceBandsAroundWorldPoint
   belowLeftWorldX = centerCellWorldX - GRID_SCRATCH_HALF_COLUMN_WORLD_X;
   rightCell = belowRowCell;
   while (walkDown(worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,belowRightWorldX,
-                  (uint32_t *)&rightCell->stateMask) != 0) {
+                  GridScratchCell_StateMaskBits(rightCell)) != 0) {
     rightCell++;
     belowRightWorldX = belowRightWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
   }
   leftCell = belowRowCell - 1;
   while (walkDown(worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,belowLeftWorldX,
-                  (uint32_t *)&leftCell->stateMask) != 0) {
+                  GridScratchCell_StateMaskBits(leftCell)) != 0) {
     leftCell--;
     belowLeftWorldX = belowLeftWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
   }

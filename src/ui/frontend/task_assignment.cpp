@@ -70,7 +70,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_FACTION_SETUP,&frontendRootPage->primaryPageStack);
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRootPage,menuRoomModelView))->contextFlags;
+         &FRONTEND_UI(frontendRootPage,menuRoomModelView)->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   loadedLevel = g_FrontendLoadedLevelAsset;
@@ -245,7 +245,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
     FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
     FRONTEND_UI(frontendRootPage,factionSetupNextButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     FRONTEND_UI(frontendRootPage,factionSetupBackButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupBackButton))->selectable.stateFlags &=
+    FRONTEND_UI(frontendRootPage,factionSetupBackButton)->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
   }
   else {
@@ -253,21 +253,21 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
     FRONTEND_UI(frontendRootPage,factionRosterTable)->base.leftOffset = 0;
     FRONTEND_UI(frontendRootPage,factionRosterTable)->base.rightOffset = 0;
     FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupFinishButton))->selectable.stateFlags &=
+    FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     FRONTEND_UI(frontendRootPage,factionSetupNextButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
-      ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupNextButton))->selectable.stateFlags |=
+      FRONTEND_UI(frontendRootPage,factionSetupNextButton)->selectable.stateFlags |=
            FRONTEND_CONTROL_INACTIVE;
       FRONTEND_UI(frontendRootPage,factionSetupBackButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
-      ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupBackButton))->selectable.stateFlags |=
+      FRONTEND_UI(frontendRootPage,factionSetupBackButton)->selectable.stateFlags |=
            FRONTEND_CONTROL_INACTIVE;
     }
     else {
-      ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupNextButton))->selectable.stateFlags &=
+      FRONTEND_UI(frontendRootPage,factionSetupNextButton)->selectable.stateFlags &=
            ~FRONTEND_CONTROL_INACTIVE;
       FRONTEND_UI(frontendRootPage,factionSetupBackButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
-      ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupBackButton))->selectable.stateFlags &=
+      FRONTEND_UI(frontendRootPage,factionSetupBackButton)->selectable.stateFlags &=
            ~FRONTEND_CONTROL_INACTIVE;
     }
   }
@@ -359,7 +359,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     } while (remainingSearchCount != 0);
   }
   /* 0x230010 + 0x10 * level title + faction selects the task description of the local player's faction */
-  ((UiWrappedTextControl *)FRONTEND_UI(taskAssignmentRoot,taskDescriptionText))->text =
+  FRONTEND_UI(taskAssignmentRoot,taskDescriptionText)->text =
        (uint16_t *)(uintptr_t)
        (localFactionIndex + TEXT_ID_LEVEL_DESCRIPTION_BASE + g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
   /* Offsets from the control tables are control offsets in the page: + nodeFlags gives the control's nodeFlags
@@ -551,7 +551,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     playerName = playerName + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16);
   } while (remainingPlayers != 0);
   /* once the local player has pressed Finish, the faction rows are hidden */
-  if ((((UiSelectableControl *)FRONTEND_UI(taskAssignmentRoot,factionSetupFinishButton))->stateFlags &
+  if ((FRONTEND_UI(taskAssignmentRoot,factionSetupFinishButton)->selectable.stateFlags &
        UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
     for (row = 7; row != 0; row--) {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1];

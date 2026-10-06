@@ -53,6 +53,24 @@ struct GridScratchCell {
     GridScratchStateMask stateMask; 
     GridPathCost pathCost; 
 };
+/* Step 13 X7b: the scratch grid's byte-address views, each one named reinterpret_cast.
+   GridScratchCell_RowBelow/RowAbove: the cell one row (rowStrideBytes bytes) below/above; the stride keeps the
+   caller's integer type, as the (uint8_t *)cell +- rowStrideBytes arithmetic they replace did.
+   GridScratchCell_StateMaskBits: stateMask (an int) as the uint32_t the hex-line walkers and the dword loops over the
+   grid read and write. */
+template <class Stride> inline GridScratchCell *GridScratchCell_RowBelow(GridScratchCell *cell, Stride rowStrideBytes)
+{
+    return reinterpret_cast<GridScratchCell *>(reinterpret_cast<uint8_t *>(cell) + rowStrideBytes);
+}
+template <class Stride> inline GridScratchCell *GridScratchCell_RowAbove(GridScratchCell *cell, Stride rowStrideBytes)
+{
+    return reinterpret_cast<GridScratchCell *>(reinterpret_cast<uint8_t *>(cell) - rowStrideBytes);
+}
+inline uint32_t *GridScratchCell_StateMaskBits(GridScratchCell *cell)
+{
+    return reinterpret_cast<uint32_t *>(&cell->stateMask);
+}
+
 struct GridPathBestUnreachableCell {
     uint32_t bestCellByteOffset; /* in/out: byte offset from g_GridScratchPrimary. */
     GridPathCost bestCost;    /* in/out: best path metric; outer caller starts at 0x7fffffff. */

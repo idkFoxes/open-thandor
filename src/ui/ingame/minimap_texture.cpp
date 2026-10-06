@@ -369,7 +369,7 @@ void TerrainCompositeTexture_RebuildPlane0()
   pixelCursor = plane0Pixels;
   cellsRemaining = cellCount;
   do {
-    visibilityFlags = ((uint8_t *)&fieldCell->occupancyMask)[activeFactionIndex];
+    visibilityFlags = FieldGridCell_OccupancyByte(fieldCell,activeFactionIndex);
     pixelArgb = (uint32_t)visibilityFlags;
     if ((visibilityFlags & FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) == 0) {
       if ((visibilityFlags & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) {

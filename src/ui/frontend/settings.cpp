@@ -119,39 +119,39 @@ void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *f
   FrontendModelPointerContextFlags *menuRoomContextFlags;
   uint32_t persistedValue;
 
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,frontendPageStack)));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
+         &FRONTEND_UI(frontendRoot,menuRoomModelView)->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   UiSelectableControl_SetSelected
             (persistedValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF,
-             (UiSelectableControl *)FRONTEND_UI(frontendRoot,autoZoomOffCheckbox));
+             &FRONTEND_UI(frontendRoot,autoZoomOffCheckbox)->selectable);
   UiSelectableControl_SetSelected
             (persistedValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
-             (UiSelectableControl *)FRONTEND_UI(frontendRoot,autoRotationOffCheckbox));
+             &FRONTEND_UI(frontendRoot,autoRotationOffCheckbox)->selectable);
   /* Bit 4 is the "right button does not scroll" checkbox (its action 0x2049 handler is
      FrontendGameplaySettings_SetRightButtonDoesNotScroll), which hides the in-game side panel; the template
      calls this control hidePanelCheckbox. */
   UiSelectableControl_SetSelected(persistedValue & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,
-                                  (UiSelectableControl *)FRONTEND_UI(frontendRoot,hidePanelCheckbox));
+                                  &FRONTEND_UI(frontendRoot,hidePanelCheckbox)->selectable);
   persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   if ((persistedValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected
             (persistedValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM,
-             (UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationZoomCheckbox));
+             &FRONTEND_UI(frontendRoot,linkRotationZoomCheckbox)->selectable);
   if ((persistedValue & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected(persistedValue & PERSISTENT_LINK_OPTION_ROTATION_TILT,
-                                  (UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationTiltCheckbox));
+                                  &FRONTEND_UI(frontendRoot,linkRotationTiltCheckbox)->selectable);
   /* bit 4 of this word (hide panel, action 0x2051) is not loaded into its checkbox here */
   persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-  ((UiRangeSliderControl *)FRONTEND_UI(frontendRoot,scrollSpeedSlider))->value = persistedValue;
+  FRONTEND_UI(frontendRoot,scrollSpeedSlider)->value = persistedValue;
 }
 
 /* Handler of the options page's "3D" button (settings3DButton, action 0x2012, slot 18 of
@@ -174,9 +174,9 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,settings3DButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_GRAPHICS_SETTINGS,
-                             (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+                             UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendUi,frontendPageStack)));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    FRONTEND_UI(frontendUi,menuRoomModelView)->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);

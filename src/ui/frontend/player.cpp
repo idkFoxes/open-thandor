@@ -554,14 +554,14 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
 
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,hostLobbyBackButton));
   UiPageStack_SetActiveIndex
-            (FRONTEND_PAGE_HOST_GAME_SETUP,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+            (FRONTEND_PAGE_HOST_GAME_SETUP,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendUi,frontendPageStack)));
   sessionTickInterval = g_SessionNetworkTickInterval;
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    FRONTEND_UI(frontendUi,menuRoomModelView)->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
-  ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = sessionTickInterval >> 1;
+  FRONTEND_UI(frontendUi,networkSpeedSlider)->value = sessionTickInterval >> 1;
   firstPlayerBlock = g_FrontendPlayerRuntimeBlocks;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   g_FrontendPlayerRuntimeBlockCount = 1;

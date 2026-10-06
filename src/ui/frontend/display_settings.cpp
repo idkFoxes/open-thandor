@@ -154,7 +154,7 @@ static void FrontendDisplaySettingsPage_LayoutResolutionList(UiNodeBase *fronten
   UiNumericPairTextButton *row;
   uint32_t rowIndex;
 
-  scrollBox = (UiScrollableControl *)FRONTEND_UI(frontendRoot,displayResolutionScrollBox);
+  scrollBox = FRONTEND_UI(frontendRoot,displayResolutionScrollBox);
   rowPanel = &FRONTEND_UI(frontendRoot,displayResolutionRowPanel)->root.base;
   rowPanel->rightOffset = scrollBox->base.right - scrollBox->base.left;
   scrollBox->base.vtable->layout(&scrollBox->base);
@@ -195,13 +195,13 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   /* source is the frontend template's graphicsSettingsButton */
   frontendRoot = (UiNodeBase *)((uint8_t *)source - offsetof(FrontendUiImage,graphicsSettingsButton));
   UiPageStack_SetActiveIndex
-            (FRONTEND_PAGE_DISPLAY_SETTINGS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+            (FRONTEND_PAGE_DISPLAY_SETTINGS,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,frontendPageStack)));
   /* not in the original: page 6 is displayPageStack, the display settings are its first page */
   UiPageStack_SetActiveIndex
-            (FRONTEND_DISPLAY_SUBPAGE_DISPLAY,(UiPageStackControl *)FRONTEND_UI(frontendRoot,displayPageStack));
+            (FRONTEND_DISPLAY_SUBPAGE_DISPLAY,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,displayPageStack)));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
+         &FRONTEND_UI(frontendRoot,menuRoomModelView)->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   /* name and device of up to five adapters (the first one is always listed) */
@@ -300,11 +300,11 @@ static void FrontendDisplaySettings_FinishModeSwitch(void *control)
   }
   /* the new resolution decides whether the dialog pages cover the menu room */
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContext *)FRONTEND_UI(control,menuRoomModelView))->contextFlags |=
+    FRONTEND_UI(control,menuRoomModelView)->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   else {
-    ((FrontendModelPointerContext *)FRONTEND_UI(control,menuRoomModelView))->contextFlags &=
+    FRONTEND_UI(control,menuRoomModelView)->contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
 }
@@ -665,9 +665,9 @@ static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
   /* another limit (ini, environment): none selected; the stored value is kept until a choice is clicked */
   FrontendAdvancedSettingsPage_SelectChoice(selected,frameLimits,ADVANCED_FRAME_LIMIT_CHOICES);
   UiSelectableControl_SetSelected(SdlVideo_GetVsync(),
-                                  (UiSelectableControl *)FRONTEND_UI(frontendRoot,advancedVsyncCheckbox));
-  FRONTEND_UI_FIELD(frontendRoot,advancedNoteLabel,0x54,TextResourceId) =
-       gpu ? FrontendAdvancedSettingsPage_UiScaleNote() : TEXT_ID_ADVANCED_NOTE_SOFTWARE;
+                                  &FRONTEND_UI(frontendRoot,advancedVsyncCheckbox)->selectable);
+  FRONTEND_UI(frontendRoot,advancedNoteLabel)->text =
+       THANDOR_PTR32_BITS(gpu ? FrontendAdvancedSettingsPage_UiScaleNote() : TEXT_ID_ADVANCED_NOTE_SOFTWARE);
   UiNode_InvalidateRoot(&FRONTEND_UI(frontendRoot,advancedSettingsPage)->base);
 }
 
@@ -680,12 +680,12 @@ void FrontendAdvancedSettingsAction_OpenPage(UiNodeBase *sourceNode)
 
   frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
   UiPageStack_SetActiveIndex
-            (FRONTEND_PAGE_DISPLAY_SETTINGS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+            (FRONTEND_PAGE_DISPLAY_SETTINGS,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,frontendPageStack)));
   UiPageStack_SetActiveIndex
-            (FRONTEND_DISPLAY_SUBPAGE_ADVANCED,(UiPageStackControl *)FRONTEND_UI(frontendRoot,displayPageStack));
+            (FRONTEND_DISPLAY_SUBPAGE_ADVANCED,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,displayPageStack)));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
+         &FRONTEND_UI(frontendRoot,menuRoomModelView)->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   FrontendAdvancedSettingsPage_Refresh(frontendRoot);
