@@ -11,12 +11,54 @@
 
 /* Module data. */
 
+/* Node offsets in FrontendUiImage of the seven faction rows' controls: row number labels, mode buttons,
+   colour buttons, play checkboxes and participant labels. */
 FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAssignmentControlOffsets = {
-    .assignmentControls = {.offsets = {3264, 3356, 3448, 3540, 3632, 3724, 3816}},
-    .playerControls = {.offsets = {4580, 4676, 4772, 4868, 4964, 5060, 5156}},
-    .factionControls = {.offsets = {3908, 4004, 4100, 4196, 4292, 4388, 4484}},
-    .selectionRows = {.offsets = {5252, 5348, 5444, 5540, 5636, 5732, 5828}},
-    .statusRows = {.offsets = {5924, 6016, 6108, 6200, 6292, 6384, 6476}}};
+    .assignmentControls = {.offsets = {
+        offsetof(FrontendUiImage,factionRow1NumberLabel),
+        offsetof(FrontendUiImage,factionRow2NumberLabel),
+        offsetof(FrontendUiImage,factionRow3NumberLabel),
+        offsetof(FrontendUiImage,factionRow4NumberLabel),
+        offsetof(FrontendUiImage,factionRow5NumberLabel),
+        offsetof(FrontendUiImage,factionRow6NumberLabel),
+        offsetof(FrontendUiImage,factionRow7NumberLabel)
+    }},
+    .playerControls = {.offsets = {
+        offsetof(FrontendUiImage,factionRow1ModeButton),
+        offsetof(FrontendUiImage,factionRow2ModeButton),
+        offsetof(FrontendUiImage,factionRow3ModeButton),
+        offsetof(FrontendUiImage,factionRow4ModeButton),
+        offsetof(FrontendUiImage,factionRow5ModeButton),
+        offsetof(FrontendUiImage,factionRow6ModeButton),
+        offsetof(FrontendUiImage,factionRow7ModeButton)
+    }},
+    .factionControls = {.offsets = {
+        offsetof(FrontendUiImage,factionRow1ColourButton),
+        offsetof(FrontendUiImage,factionRow2ColourButton),
+        offsetof(FrontendUiImage,factionRow3ColourButton),
+        offsetof(FrontendUiImage,factionRow4ColourButton),
+        offsetof(FrontendUiImage,factionRow5ColourButton),
+        offsetof(FrontendUiImage,factionRow6ColourButton),
+        offsetof(FrontendUiImage,factionRow7ColourButton)
+    }},
+    .selectionRows = {.offsets = {
+        offsetof(FrontendUiImage,factionRow1PlayCheckbox),
+        offsetof(FrontendUiImage,factionRow2PlayCheckbox),
+        offsetof(FrontendUiImage,factionRow3PlayCheckbox),
+        offsetof(FrontendUiImage,factionRow4PlayCheckbox),
+        offsetof(FrontendUiImage,factionRow5PlayCheckbox),
+        offsetof(FrontendUiImage,factionRow6PlayCheckbox),
+        offsetof(FrontendUiImage,factionRow7PlayCheckbox)
+    }},
+    .statusRows = {.offsets = {
+        offsetof(FrontendUiImage,factionRow1ParticipantsLabel),
+        offsetof(FrontendUiImage,factionRow2ParticipantsLabel),
+        offsetof(FrontendUiImage,factionRow3ParticipantsLabel),
+        offsetof(FrontendUiImage,factionRow4ParticipantsLabel),
+        offsetof(FrontendUiImage,factionRow5ParticipantsLabel),
+        offsetof(FrontendUiImage,factionRow6ParticipantsLabel),
+        offsetof(FrontendUiImage,factionRow7ParticipantsLabel)
+    }}};
 
 /* Faction assignment indices of player records are 1..7 (row index + 1). The original indexes the row tables
    with index - 1 (and the roster texts with the index) without a check; bounded here because the records are
@@ -101,28 +143,28 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   rowCursor = 0;
   do {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.base.nodeFlags &=
          ~UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
-    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
+    rowTextId = &FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->textResourceId;
     *rowTextId = TEXT_ID_FACTION_MODE_COMPUTER;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(rowControlOffset)->selectable.base.nodeFlags &=
          ~UI_NODE_SUPPRESSED;
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(rowControlOffset)->selectable.stateFlags &=
          ~(FRONTEND_CONTROL_INACTIVE | UI_SELECTABLE_SELECTED_OR_CHECKED);
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     rowCursor++;
@@ -132,32 +174,32 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   /* Further active factions (computer only): mode button active, the rest of the row hidden and inactive. */
   for (; activeFactionsLeft != 0; activeFactionsLeft--) {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.base.nodeFlags &=
          ~UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
-    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
+    rowTextId = &FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->textResourceId;
     *rowTextId = TEXT_ID_FACTION_MODE_COMPUTER;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(rowControlOffset)->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(rowControlOffset)->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(rowControlOffset)->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     rowCursor++;
@@ -165,42 +207,42 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   /* Unused rows up to 7: everything hidden and inactive, caption "No-one", faction slot cleared. */
   for (; rowCursor < 7; rowCursor++) {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
-    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
+    rowTextId = &FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->textResourceId;
     *rowTextId = TEXT_ID_FACTION_MODE_NOBODY;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(rowControlOffset)->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(rowControlOffset)->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(rowControlOffset)->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags |=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiSingleLineTextControl>(rowControlOffset)->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] = 0;
   }
   /* Colour buttons of rows 7..1 show the faction name of the level's player slot; none is selected. */
   do {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor - 1];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId =
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->textResourceId =
          ((LevelPlayerSlotRecord *)((uint8_t *)loadedLevel->playerSlots +
                                     g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]))->aiClassOrMode +
          TEXT_ID_FACTION_NAME_BASE + rowCursor;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+    FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     rowCursor--;
   } while (rowCursor != 0);
@@ -214,7 +256,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   do {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[assignmentIndex - 1];
     playerRecord->factionAssignment.factionAssignmentIndex = assignmentIndex;
-    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
+    rowTextId = &FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->textResourceId;
     playerRecord->factionAssignment.readyOrWaitState = 0;
     playerRecord->factionAssignment.consensusValue = 0;
     *rowTextId = TEXT_ID_FACTION_MODE_PLAYER;
@@ -229,11 +271,9 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
     remainingPlayerRecords--;
   } while (remainingPlayerRecords != 0);
   /* tick and show the local player's play checkbox */
-  ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,
-       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[localPlayerRow]))
+  FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[localPlayerRow])
        ->selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
-  ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,
-       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[localPlayerRow]))
+  FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[localPlayerRow])
        ->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)frontendRootPage);
   rootVtable = frontendRootPage->rootNode.vtable;
@@ -285,24 +325,24 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
 static void FrontendTaskAssignmentPage_ShowRowControl(UiRootNode *taskAssignmentRoot, uint32_t controlOffset,
                                                       uint32_t controlSetMask, uint32_t controlClearMask)
 {
-  uint32_t *controlFlags;
+  UiNodeFlags *controlFlags; /* a nodeFlags or stateFlags field (both int) */
 
-  controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
+  controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
   *controlFlags = *controlFlags | controlSetMask;
-  controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
+  controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
   *controlFlags = *controlFlags & controlClearMask;
-  controlFlags = (uint32_t *)&((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags;
+  controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags;
   *controlFlags = *controlFlags & ~FRONTEND_CONTROL_INACTIVE;
 }
 
 /* Faction setup page: hides the row control at controlOffset and marks it inactive. */
 static void FrontendTaskAssignmentPage_DisableRowControl(UiRootNode *taskAssignmentRoot, uint32_t controlOffset)
 {
-  uint32_t *controlFlags;
+  UiNodeFlags *controlFlags; /* a nodeFlags or stateFlags field (both int) */
 
-  controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
+  controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
   *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
-  controlFlags = (uint32_t *)&((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags;
+  controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags;
   *controlFlags = *controlFlags | FRONTEND_CONTROL_INACTIVE;
 }
 
@@ -317,7 +357,7 @@ void
 FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot)
 
 {
-  uint32_t *controlFlags;
+  UiNodeFlags *controlFlags; /* a nodeFlags or stateFlags field (both int) */
   uint32_t controlOffset;
   FrontendFactionAssignmentIndex rosterFactionIndex;
   FrontendFactionAssignmentIndex localFactionIndex;
@@ -363,13 +403,12 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   FrontendUi_Image(taskAssignmentRoot)->taskDescriptionText.text =
        (uint16_t *)(uintptr_t)
        (localFactionIndex + TEXT_ID_LEVEL_DESCRIPTION_BASE + g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
-  /* Offsets from the control tables are control offsets in the page: + nodeFlags gives the control's nodeFlags
-     (UI_NODE_SUPPRESSED), + rootFlags its stateFlags (UI_SELECTABLE_SELECTED_OR_CHECKED,
-     FRONTEND_CONTROL_INACTIVE), + previousRoot its caption text id. Rows 7..1 (entry row - 1).
-     Some nodeFlags accesses add offsetof(UiNodeBase,nodeFlags) to the offset first (THANDOR_UI_FIELD): that
-     order is the one of the original code there. */
+  /* The control tables hold node offsets in the page (FrontendUiImage::NodeAt): nodeFlags (UI_NODE_SUPPRESSED), the
+     selectable stateFlags (UI_SELECTABLE_SELECTED_OR_CHECKED, FRONTEND_CONTROL_INACTIVE) and the mode buttons'
+     caption text id. Rows 7..1 (entry row - 1). Some nodeFlags accesses add offsetof(UiNodeBase,nodeFlags) to
+     the offset first (NodeAt<UiNodeFlags>): that order is the one of the original code there. */
   for (row = 7; row != 0; row--) {
-    if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1]))->stateFlags &
+    if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1])->stateFlags &
          UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
       FrontendTaskAssignmentPage_ShowRowControl(taskAssignmentRoot,
                                                 g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[row - 1],
@@ -380,11 +419,11 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
                                                    g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[row - 1]);
     }
     else if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
-             ((*(uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1])->nodeFlags &
+             ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1])->nodeFlags &
                UI_NODE_SUPPRESSED) != 0)) {
       /* not a client and the row's assignment control is suppressed */
       controlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1];
-      if ((((UiSingleLineTextControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->labelFlags &
+      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSingleLineTextControl>(controlOffset)->labelFlags &
            UI_LABEL_HIDE_WHILE_SUPPRESSED) != 0) {
         FrontendTaskAssignmentPage_DisableRowControl(taskAssignmentRoot,
                                                      g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[row - 1]);
@@ -398,9 +437,9 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
       /* network game (a client, or the row's assignment control is shown): hidden but active */
       controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[row - 1];
-      controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,controlOffset)->nodeFlags;
+      controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(controlOffset)->nodeFlags;
       *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
-      controlFlags = (uint32_t *)&((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags;
+      controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags;
       *controlFlags = *controlFlags & ~FRONTEND_CONTROL_INACTIVE;
     }
     else {
@@ -408,16 +447,16 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
                                                 g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[row - 1],
                                                 controlSetMask, controlClearMask);
     }
-    controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[row - 1] + offsetof(UiNodeBase,nodeFlags),uint32_t);
+    controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[row - 1] + offsetof(UiNodeBase,nodeFlags));
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
   }
   /* mode captions: nobody, computer for active factions, player where a player record has the faction */
   for (row = 7; row != 0; row--) {
     controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[row - 1];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->textResourceId = TEXT_ID_FACTION_MODE_NOBODY;
+    FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiFramedTextButtonControl>(controlOffset)->textResourceId = TEXT_ID_FACTION_MODE_NOBODY;
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[row] == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-      ((UiFramedTextButtonControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->textResourceId = TEXT_ID_FACTION_MODE_COMPUTER;
-      if ((*(uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1])->nodeFlags &
+      FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiFramedTextButtonControl>(controlOffset)->textResourceId = TEXT_ID_FACTION_MODE_COMPUTER;
+      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1])->nodeFlags &
            UI_NODE_SUPPRESSED) == 0) {
         FrontendTaskAssignmentPage_ShowRowControl(taskAssignmentRoot,
                                                   g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1],
@@ -437,7 +476,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   do {
     if (FrontendTaskAssignmentPage_IsValidFactionIndex(playerRecord->factionAssignment.factionAssignmentIndex)) {
-      ((UiFramedTextButtonControl *)THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[playerRecord->factionAssignment.factionAssignmentIndex - 1]))->textResourceId = TEXT_ID_FACTION_MODE_PLAYER;
+      FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiFramedTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[playerRecord->factionAssignment.factionAssignmentIndex - 1])->textResourceId = TEXT_ID_FACTION_MODE_PLAYER;
     }
     remainingPlayers--;
     playerRecord++;
@@ -449,13 +488,12 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
      confirmed); the masks are applied here because the original makes the flags depend on the heap layout. */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     for (row = 7; row != 0; row--) {
-      if ((((UiSingleLineTextControl *)THANDOR_UI_AT(taskAssignmentRoot,
-               g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1]))->labelFlags &
+      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSingleLineTextControl>(g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1])->labelFlags &
            UI_LABEL_HIDE_WHILE_SUPPRESSED) == 0) {
         controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[row - 1];
-        controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
+        controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
         *controlFlags = *controlFlags | controlSetMask;
-        controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
+        controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
         *controlFlags = *controlFlags & controlClearMask;
       }
     }
@@ -463,7 +501,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     do {
       if (FrontendTaskAssignmentPage_IsValidFactionIndex(playerRecord->factionAssignment.factionAssignmentIndex)) {
-        controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[playerRecord->factionAssignment.factionAssignmentIndex - 1])->nodeFlags;
+        controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[playerRecord->factionAssignment.factionAssignmentIndex - 1])->nodeFlags;
         *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       }
       remainingPlayers--;
@@ -556,8 +594,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
        UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
     for (row = 7; row != 0; row--) {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1];
-      if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
-        controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
+      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+        controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
         *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
       }
     }
@@ -565,8 +603,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   else {
     for (row = 7; row != 0; row--) {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1];
-      if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
-        controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,controlOffset)->nodeFlags;
+      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+        controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(controlOffset)->nodeFlags;
         *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       }
     }
@@ -591,7 +629,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
           return;
         }
       }
-      controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[localPlayerFaction - 1])->nodeFlags;
+      controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[localPlayerFaction - 1])->nodeFlags;
       *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       return;
     }

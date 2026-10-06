@@ -48,13 +48,13 @@ static void UiActionSlot_FrontendCallback_ReturnToMainPageOrDispatchState4(void 
 static void UiActionSlot_FrontendScenarioSelection_ActivateSelectedRecord(void *source)
 
 {
-  FrontendScenarioSelection_ActivateSelectedRecord((intptr_t)source);
+  FrontendScenarioSelection_ActivateSelectedRecord(static_cast<UiFramedTextButtonControl *>(source)); /* gameSelectStartButton */
 }
 
 static void UiActionSlot_FrontendNetworkSettings_PublishSelectedPlayerDescriptor(void *source)
 
 {
-  FrontendNetworkSettings_PublishSelectedPlayerDescriptor((FrontendNetworkSettingsControlView *)source);
+  FrontendNetworkSettings_PublishSelectedPlayerDescriptor(static_cast<UiFramedTextButtonControl *>(source));
 }
 
 /* Module data. */
