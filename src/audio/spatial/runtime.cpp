@@ -36,7 +36,7 @@ Bool8 SpatialSoundPool_Init(uint32_t *outError)
   SpatialSoundSlot *clearCursor;
   uint32_t allocError;
 
-  allocError = g_MemoryApi.alloc(SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot),(void **)&clearCursor);
+  allocError = g_MemoryApi.alloc(SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot),reinterpret_cast<void **>(&clearCursor));
   if (allocError != 0) {
     *outError = allocError;
     return false;

@@ -15,7 +15,7 @@
 #include <thandor/core/contracts.h>
 
 /* ArmyRuntime_UpdateMovementAndWaypoints: the route end (fallbackPosition) counts as reached within
-   +-0x40 exclusive, the final target (movementTarget*) within +-1.0 (Q12) inclusive on both axes */
+   +-0x40 exclusive, the final target (the movementTarget... fields) within +-1.0 (Q12) inclusive on both axes */
 #define ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 0x40
 #define ARMY_MOVEMENT_TARGET_RADIUS_Q12 0x1000
 

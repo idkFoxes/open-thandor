@@ -16,7 +16,7 @@
 uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet)
 
 {
-  *outVoiceSet = (SoundVoiceSet *)(intptr_t)-1;
+  *outVoiceSet = reinterpret_cast<SoundVoiceSet *>(static_cast<intptr_t>(-1));
   return 0;
 }
 

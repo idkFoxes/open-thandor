@@ -153,7 +153,7 @@ Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
   GraphicsTextureLogicalSize logicalSize;
 
   /* cursor images: the largest image size sizes the cursor buffers */
-  cursorAsset = (GraphicsTextureSourceAsset *)Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode);
+  cursorAsset = static_cast<GraphicsTextureSourceAsset *>(Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode));
   if (cursorAsset == nullptr) {
     *outError = cursorLoadErrorCode;
     return false;
@@ -181,7 +181,7 @@ Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
     return false;
   }
   remainingFrames = cursorFrameBytes / sizeof(GraphicsCursorFrameRecord);
-  frameRecord = (GraphicsCursorFrameRecord *)cursorFrameData;
+  frameRecord = static_cast<GraphicsCursorFrameRecord *>(cursorFrameData);
   g_CursorFrameRecords = frameRecord;
   g_CursorFrameCount = remainingFrames;
   /* every cursor starts on the first frame of its animations */
@@ -244,7 +244,7 @@ Bool8 GraphicsCursor_CreateBuffersAndCenter
   }
   g_CursorAlternateSavedBackground = newCursorFramebuffer;
   g_GraphicsTextureSourceConvertPaletteEntries
-            ((GraphicsPaletteTextureSourceAsset *)g_CursorSourceAsset);
+            (reinterpret_cast<GraphicsPaletteTextureSourceAsset *>(g_CursorSourceAsset));
   g_CursorOverrideX = framebufferWidth >> 1;
   g_CursorOverrideY = framebufferHeight >> 1;
   g_MouseX = g_CursorOverrideX;
