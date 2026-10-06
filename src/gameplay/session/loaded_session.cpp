@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
@@ -47,14 +48,15 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
   Bool8 terminatorFound;
 
   headerBuffer = g_PackageScratchBuffer;
-  sessionNameCursor = ((UiRequiredTextEditControl *)&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
+  sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
+                        (&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
   for (remainingCount = 32; remainingCount != 0; remainingCount--) {
     *sessionNameCursor = 0;
     sessionNameCursor++;
   }
   g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(saveHandle));
   g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,headerBuffer,THANDOR_PTR(saveHandle));
-  nameStart = (uint16_t *)(headerBuffer + 256);
+  nameStart = Asset_RecordAt<uint16_t>(headerBuffer,256);
   terminatorFound = false;
   scanEnd = nameStart;
   for (remainingCount = 36; remainingCount != 0 && !terminatorFound; remainingCount--) {
@@ -74,7 +76,8 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
   if (31 < copyCount) {
     copyCount = 31;
   }
-  sessionNameCursor = ((UiRequiredTextEditControl *)&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
+  sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
+                        (&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
   sourceCursor = nameStart;
   for (; copyCount != 0; copyCount--) {
     *sessionNameCursor = *sourceCursor;
@@ -93,7 +96,7 @@ static void InGameLoadedSession_ResetSessionState(uint32_t savedFactionIndex)
   uint32_t *clearCursor;
   int remainingCount;
 
-  clearCursor = (uint32_t *)g_SelectionPlayerBlocks;
+  clearCursor = reinterpret_cast<uint32_t *>(g_SelectionPlayerBlocks); /* dword clear */
   for (remainingCount = SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock) / sizeof(uint32_t);
        remainingCount != 0; remainingCount--) {
     *clearCursor = 0;
@@ -117,12 +120,13 @@ static Bool8 InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage
                                            uint32_t *outError)
 
 {
-  if (!InGameSession_CreateRoot((SelectionInfoEntitySlots *)g_SelectionPlayerBlocks,outRoot,outError)) {
+  /* block 0 starts with its selection slots (SelectionPointerArray32): the same 32 entity pointers */
+  if (!InGameSession_CreateRoot(reinterpret_cast<SelectionInfoEntitySlots *>(g_SelectionPlayerBlocks),outRoot,outError)) {
     return false;
   }
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,
-             (levelImage->header).levelFileNameUtf16,(uint16_t *)g_ScenarioLevelDirectoryUtf16);
+             (levelImage->header).levelFileNameUtf16,g_ScenarioLevelDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   return true;
 }
@@ -143,7 +147,7 @@ static Bool8 InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoa
 
   world = &inGameRoot->worldRuntime;
   if (!InGameSession_OpenLoadingMovieAndAttachObjects
-         (savePackagePath,(LevelAssetHeader *)levelImage,inGameRoot,outError)) {
+         (savePackagePath,reinterpret_cast<LevelAssetHeader *>(levelImage) /* the frontend view of the level image */,inGameRoot,outError)) {
     return false;
   }
   localFactionIndex = g_SelectionPlayerBlocks->factionIndex;
@@ -157,7 +161,7 @@ static Bool8 InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoa
     *outError = localFactionIndex;
     return false;
   }
-  fieldGrid = Package_LoadEntry((uint16_t *)g_FieldHexPathUtf16,&packageLoadErrorCode);
+  fieldGrid = Package_LoadEntry(g_FieldHexPathUtf16,&packageLoadErrorCode);
   if (fieldGrid == nullptr) {
     *outError = packageLoadErrorCode;
     return false;
@@ -182,7 +186,8 @@ static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inG
   WorldRuntimeContext *world;
 
   world = &inGameRoot->worldRuntime;
-  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  /* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int */
+  g_SpinLockAcquire(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
   InGameSession_RebuildUiGrids(inGameRoot);
   InGameSession_InitShadingAndMirrorViewOptions(world);
   if (!InGameSession_AllocateGridScratchAndRebuildDerived(world,outError)) {
@@ -216,11 +221,11 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
   }
   saveHandle = mountResult;
   InGameLoadedSession_ReadSessionName(saveHandle);
-  campaignAsset = Package_LoadEntry((uint16_t *)g_CampagneHexPathUtf16,nullptr);
+  campaignAsset = Package_LoadEntry(g_CampagneHexPathUtf16,nullptr);
   if (campaignAsset != nullptr) {
-    g_FrontendLoadedCampaignAsset = (uintptr_t)campaignAsset;
+    g_FrontendLoadedCampaignAsset = reinterpret_cast<uintptr_t>(campaignAsset);
   }
-  levelImage = (FrontendLoadedLevelAsset *)Package_LoadEntry((uint16_t *)g_LevelHexPathUtf16,&packageLoadErrorCode);
+  levelImage = static_cast<FrontendLoadedLevelAsset *>(Package_LoadEntry(g_LevelHexPathUtf16,&packageLoadErrorCode));
   if (levelImage == nullptr) {
     return InGameLoadedSession_Fail(nullptr,saveHandle,packageLoadErrorCode,outError);
   }
