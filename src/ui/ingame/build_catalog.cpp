@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/build_catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -24,6 +25,7 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
 {
   FactionRuntimeIndex factionIndex;
   UiCatalogEntryControl *root;
+  WorldRuntimeContext *worldRuntime;
   PckArmyAssetIdCatalog assetId;
   int entryIndex;
 
@@ -31,8 +33,10 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
     root = source;
     while ((root->command).sprite.selectable.base.parent != UI_NODE_NONE) {
-      root = (UiCatalogEntryControl *)(root->command).sprite.selectable.base.parent;
+      root = reinterpret_cast<UiCatalogEntryControl *>((root->command).sprite.selectable.base.parent.get());
     }
+    /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
+    worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
     entryIndex = BUILD_CATALOG_ENTRY_COUNT - 1;
     while ((int)((uintptr_t)source - (uintptr_t)root) !=
            g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][entryIndex]) {
@@ -43,12 +47,12 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
     }
     if (((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)
         == 0) {
-      factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+      factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup48Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_RegisterArmyAssetPointers>(1,assetId,factionIndex);
     }
     else {
-      factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+      factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup48Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_CancelQueuedArmyAssetsAndRefund>(1,assetId,factionIndex);
     }
@@ -63,6 +67,7 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
 {
   FactionRuntimeIndex factionIndex;
   UiCatalogEntryControl *root;
+  WorldRuntimeContext *worldRuntime;
   PckArmyAssetIdCatalog assetId;
   int entryIndex;
 
@@ -70,8 +75,10 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
     root = source;
     while ((root->command).sprite.selectable.base.parent != UI_NODE_NONE) {
-      root = (UiCatalogEntryControl *)(root->command).sprite.selectable.base.parent;
+      root = reinterpret_cast<UiCatalogEntryControl *>((root->command).sprite.selectable.base.parent.get());
     }
+    /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
+    worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
     entryIndex = SPECIAL_BUILD_CATALOG_ENTRY_COUNT - 1;
     while ((int)((uintptr_t)source - (uintptr_t)root) !=
            g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][entryIndex]) {
@@ -82,12 +89,12 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
     }
     if (((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)
         == 0) {
-      factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+      factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup42Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_RegisterArmyAssetPointers>(1,assetId,factionIndex);
     }
     else {
-      factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+      factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup42Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_CancelQueuedArmyAssetsAndRefund>(1,assetId,factionIndex);
     }
@@ -106,7 +113,7 @@ static void BuildCatalog_FillSlots(InGameRuntimeRootUiGridView *inGameUiGridView
   uint32_t slotIndex;
 
   for (slotIndex = 0; slotIndex < slotCount; slotIndex++) {
-    slotControl = (UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,slotOffsets[slotIndex]);
+    slotControl = Thandor_At<UiCatalogEntryControl>(inGameUiGridView,slotOffsets[slotIndex]);
     if (slotIndex < itemCount) {
       slotControl->command.sprite.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
       xeniteCost = records[slotIndex]->buildXeniteCostQ4;
@@ -157,7 +164,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
       if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
-      modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+      modelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
       definition = (modelRuntime->definitionOrSavedId).runtimeDefinition;
       if ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime->factionIndex != factionIndex) {
         continue;
@@ -256,7 +263,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    modelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
     if ((modelRuntime->definitionOrSavedId).runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11 &&
         (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime->factionIndex == factionIndex) {
       structureCount++;

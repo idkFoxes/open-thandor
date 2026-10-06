@@ -22,9 +22,33 @@ static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 
 
 static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16 = {};
 
-static int g_TechnologyPanelRowFlagOffsets[7] = {5444, 5548, 5652, 5756, 5860, 5964, 6068};
+/* The seven area tabs (technologyAreaTab1..7), the dwords in front of them and their icons, by area index. */
+static UiFramedTextButtonControl InGameUiImage::*const g_TechnologyPanelAreaTabs[TECHNOLOGY_AREA_TAB_COUNT] = {
+    &InGameUiImage::technologyAreaTab1,
+    &InGameUiImage::technologyAreaTab2,
+    &InGameUiImage::technologyAreaTab3,
+    &InGameUiImage::technologyAreaTab4,
+    &InGameUiImage::technologyAreaTab5,
+    &InGameUiImage::technologyAreaTab6,
+    &InGameUiImage::technologyAreaTab7};
 
-static int g_TechnologyPanelRowValueOffsets[7] = {6164, 6256, 6348, 6440, 6532, 6624, 6716};
+static UiTechnologyAreaTabPrefix InGameUiImage::*const g_TechnologyPanelAreaTabPrefixes[TECHNOLOGY_AREA_TAB_COUNT] = {
+    &InGameUiImage::technologyAreaTab1_prefix,
+    &InGameUiImage::technologyAreaTab2_prefix,
+    &InGameUiImage::technologyAreaTab3_prefix,
+    &InGameUiImage::technologyAreaTab4_prefix,
+    &InGameUiImage::technologyAreaTab5_prefix,
+    &InGameUiImage::technologyAreaTab6_prefix,
+    &InGameUiImage::technologyAreaTab7_prefix};
+
+static UiImagePanelControl InGameUiImage::*const g_TechnologyPanelAreaTabIcons[TECHNOLOGY_AREA_TAB_COUNT] = {
+    &InGameUiImage::technologyAreaTab1Icon,
+    &InGameUiImage::technologyAreaTab2Icon,
+    &InGameUiImage::technologyAreaTab3Icon,
+    &InGameUiImage::technologyAreaTab4Icon,
+    &InGameUiImage::technologyAreaTab5Icon,
+    &InGameUiImage::technologyAreaTab6Icon,
+    &InGameUiImage::technologyAreaTab7Icon};
 
 /* Parts of the cost rich-text stream g_InGameTechnologyCostRichText: the literal-colour command, its eight colour
    digits, then the xenite cost text. */
@@ -40,26 +64,28 @@ enum {
 void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl)
 
 {
-  UiRootNode *inGameRoot;
+  UiNodeBase *rootNode;
+  InGameUiImage *ui;
   Bool8 isSelected;
 
   /* climb to the in-game root */
-  inGameRoot = (UiRootNode *)selectableControl;
-  while ((inGameRoot->base).parent != UI_NODE_NONE) {
-    inGameRoot = (UiRootNode *)(inGameRoot->base).parent;
+  rootNode = &selectableControl->base;
+  while (rootNode->parent != UI_NODE_NONE) {
+    rootNode = rootNode->parent;
   }
+  ui = InGameUi_Image(rootNode);
   isSelected = (Bool8)UiSelectableControl_IsSelected(selectableControl);
   if (isSelected) {
     UiSelectableGroup_SelectExclusive(TECHNOLOGY_AREA_TAB_COUNT,&selectableControl->base,
-      INGAME_UI(inGameRoot,technologyAreaTab7),
-      INGAME_UI(inGameRoot,technologyAreaTab6),
-      INGAME_UI(inGameRoot,technologyAreaTab5),
-      INGAME_UI(inGameRoot,technologyAreaTab4),
-      INGAME_UI(inGameRoot,technologyAreaTab3),
-      INGAME_UI(inGameRoot,technologyAreaTab2),
-      INGAME_UI(inGameRoot,technologyAreaTab1));
+      &ui->technologyAreaTab7.selectable.base,
+      &ui->technologyAreaTab6.selectable.base,
+      &ui->technologyAreaTab5.selectable.base,
+      &ui->technologyAreaTab4.selectable.base,
+      &ui->technologyAreaTab3.selectable.base,
+      &ui->technologyAreaTab2.selectable.base,
+      &ui->technologyAreaTab1.selectable.base);
   }
-  InGameTechnologyPanel_Rebuild(inGameRoot);
+  InGameTechnologyPanel_Rebuild(&ui->inGameRootPanel.root);
 }
 
 /* Opens the technology panel for the first selected entity: suppresses the world view and releases its keyboard
@@ -76,18 +102,20 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
   ModelDefinition *definition;
   int slotIndex;
   uint32_t areaIndex;
+  InGameUiImage *ui;
 
-  INGAME_UI(inGameRoot,worldView)->nodeFlags |= UI_NODE_SUPPRESSED;
-  UiKeyboardFocus_ReleaseNode((UiNodeBase *)INGAME_UI(inGameRoot,worldView));
+  ui = InGameUi_Image(inGameRoot);
+  ui->worldView.base.nodeFlags |= UI_NODE_SUPPRESSED;
+  UiKeyboardFocus_ReleaseNode(&ui->worldView.base);
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
-  selectedModelRuntime = (ModelRuntimeSlot *)(firstSelectedEntity->common).ownership.definitionOrClassRecord;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab1))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab2))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab3))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab4))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab5))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab6))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab7))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  selectedModelRuntime = (firstSelectedEntity->common).ownership.modelRuntime();
+  ui->technologyAreaTab1.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  ui->technologyAreaTab2.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  ui->technologyAreaTab3.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  ui->technologyAreaTab4.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  ui->technologyAreaTab5.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  ui->technologyAreaTab6.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  ui->technologyAreaTab7.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
   if (((selectedModelRuntime->classState).stateFlags &
        (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) != 0) {
     /* The definition lists 28 technology ids (researchTechnologyIds[1..28]), cycling through the seven areas
@@ -96,8 +124,7 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
     areaIndex = 0;
     for (slotIndex = 1; slotIndex <= TECHNOLOGY_DEFINITION_SLOT_COUNT; slotIndex++) {
       if (definition->researchTechnologyIds[slotIndex] == selectedModelRuntime->researchTechnologyId) {
-        ((UiFramedTextButtonControl *)THANDOR_UI_AT(inGameRoot,g_TechnologyPanelRowFlagOffsets[areaIndex]))->
-          selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
+        (ui->*g_TechnologyPanelAreaTabs[areaIndex]).selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
         break;
       }
       areaIndex++;
@@ -123,27 +150,29 @@ void InGameTechnologyResearch_StartSelected(void *source)
   CommandPayload modelOffset;
   UiNodeBase *selectedAreaTab;
   UiNodeBase *inGameRoot;
+  InGameUiImage *ui;
 
   /* climb to the in-game root */
-  inGameRoot = (UiNodeBase *)source;
+  inGameRoot = static_cast<UiNodeBase *>(source);
   while (inGameRoot->parent != UI_NODE_NONE) {
     inGameRoot = inGameRoot->parent;
   }
-  INGAME_UI(inGameRoot,worldView)->nodeFlags &= ~UI_NODE_SUPPRESSED;
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(inGameRoot,gameWindowPageStack));
+  ui = InGameUi_Image(inGameRoot);
+  ui->worldView.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&ui->gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != nullptr) {
     modelOffset = (int)((intptr_t)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                         (intptr_t)g_ModelRuntimeRebaseDelta);
     doubledTechnologyId = 0;
     if (UiSelectableGroup_FindVisibleSelected(&selectedAreaTab,nullptr,TECHNOLOGY_AREA_TAB_COUNT,
-      INGAME_UI(inGameRoot,technologyAreaTab7),
-      INGAME_UI(inGameRoot,technologyAreaTab6),
-      INGAME_UI(inGameRoot,technologyAreaTab5),
-      INGAME_UI(inGameRoot,technologyAreaTab4),
-      INGAME_UI(inGameRoot,technologyAreaTab3),
-      INGAME_UI(inGameRoot,technologyAreaTab2),
-      INGAME_UI(inGameRoot,technologyAreaTab1))) {
+      &ui->technologyAreaTab7.selectable.base,
+      &ui->technologyAreaTab6.selectable.base,
+      &ui->technologyAreaTab5.selectable.base,
+      &ui->technologyAreaTab4.selectable.base,
+      &ui->technologyAreaTab3.selectable.base,
+      &ui->technologyAreaTab2.selectable.base,
+      &ui->technologyAreaTab1.selectable.base)) {
       /* the selected area tab's technologyAreaTabN_prefix holds its name text id, TECHNOLOGY_TEXT_ID_BASE +
          2 * technology id (see InGameTechnologyPanel_Rebuild) */
       doubledTechnologyId = TECHNOLOGY_AREA_TAB_PREFIX(selectedAreaTab).nameTextResourceId - TECHNOLOGY_TEXT_ID_BASE;
@@ -165,7 +194,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   UiScrollableControl *scrollableControl;
   ModelRuntimeSlot *entityModelRuntime;
   int technologyId;
-  int rowFlagOffset;
+  UiTechnologyAreaTabPrefix *areaTabPrefix;
   TechnologyXeniteCostQ4 xeniteCost;
   SelectionPlayerRuntimeBlock *playerBlock;
   TechnologyAsset *technologyAsset;
@@ -192,11 +221,13 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   UiNodeBase *selectedAreaTab;
   uint16_t *labelTemplate;
   UiActionId actionId;
-  
+  InGameUiImage *ui;
+
+  ui = InGameUi_Image(inGameRoot);
   previousTechnologyId = g_InGameSelectedTechnologyId;
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != nullptr) {
-    entityModelRuntime = (ModelRuntimeSlot *)(firstSelectedEntity->common).ownership.definitionOrClassRecord;
+    entityModelRuntime = (firstSelectedEntity->common).ownership.modelRuntime();
     definition = (entityModelRuntime->definitionOrSavedId).runtimeDefinition;
     if (((entityModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
       UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
@@ -206,11 +237,11 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
     }
     /* window title with the unit name patched in */
     titleText = TextResource_Resolve(TEXT_ID_TECHNOLOGY_WINDOW_TITLE);
-    resolvedName = TextResource_Resolve(((ModelDefinitionRecordPrefix *)definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
+    resolvedName = TextResource_Resolve(definition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
     RichTextCommandStream_PatchPayloadBySelector(0,resolvedName,titleText);
     /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in armyRecord) */
     ArmyAssetRegistry_FindById((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId,&armyRecord);
-    ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
+    ui->technologyDescriptionFrame.textureSource =
          Thandor_U32ToPointer<GraphicsTextureSourceAsset>(armyRecord[1].rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord +0x1C (dword read as texture source) */
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB1,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB2,&inGameRoot->base);
@@ -228,23 +259,18 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       if (isAvailable) {
         technologyId = definition->researchTechnologyIds[slotIndex];
         /* the area tab's icon (technologyAreaTabNIcon) shows subresource technologyId of tech.gfx */
-        ((UiImagePanelControl *)
-         THANDOR_UI_AT(inGameRoot,g_TechnologyPanelRowValueOffsets[areaIndex]))->
-        subresource = technologyId;
-        rowFlagOffset = g_TechnologyPanelRowFlagOffsets[areaIndex];
-        /* rowFlagOffset is the area tab technologyAreaTabN; its technologyAreaTabN_prefix (the dwords 8 and 4
-           bytes before it) holds the area's text id and a text pointer */
-        actionId = ((UiSelectableControl *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))->actionId;
-        TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).nameTextResourceId =
-             technologyId * 2 + TECHNOLOGY_TEXT_ID_BASE;
+        (ui->*g_TechnologyPanelAreaTabIcons[areaIndex]).subresource = technologyId;
+        /* the area tab technologyAreaTabN; its technologyAreaTabN_prefix (the dwords 8 and 4 bytes before it)
+           holds the area's text id and a text pointer */
+        actionId = (ui->*g_TechnologyPanelAreaTabs[areaIndex]).selectable.actionId;
+        areaTabPrefix = &(ui->*g_TechnologyPanelAreaTabPrefixes[areaIndex]);
+        areaTabPrefix->nameTextResourceId = technologyId * 2 + TECHNOLOGY_TEXT_ID_BASE;
         /* tab label: the technology name (payload 0) and Xenite cost (payload 1), the number formatted into the
            label text buffer at word 0xC0; the expanded label becomes the tab's tooltip text */
         labelTemplate = TextResource_Resolve(TEXT_ID_TECHNOLOGY_AREA_TAB_LABEL);
-        technologyName = TextResource_Resolve
-                                 (TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).
-                                  nameTextResourceId);
+        technologyName = TextResource_Resolve(areaTabPrefix->nameTextResourceId);
         RichTextCommandStream_PatchPayloadBySelector(0,technologyName,labelTemplate);
-        tooltipText = TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).tooltipText;
+        tooltipText = areaTabPrefix->tooltipText;
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                    (int)g_TechnologyAsset->records[definition->researchTechnologyIds[slotIndex]].xeniteCostQ4 >> 4,
@@ -259,32 +285,31 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       }
     }
     if (!UiSelectableGroup_FindVisibleSelected(&selectedAreaTab,nullptr,TECHNOLOGY_AREA_TAB_COUNT,
-      INGAME_UI(inGameRoot,technologyAreaTab7),
-      INGAME_UI(inGameRoot,technologyAreaTab6),
-      INGAME_UI(inGameRoot,technologyAreaTab5),
-      INGAME_UI(inGameRoot,technologyAreaTab4),
-      INGAME_UI(inGameRoot,technologyAreaTab3),
-      INGAME_UI(inGameRoot,technologyAreaTab2),
-      INGAME_UI(inGameRoot,technologyAreaTab1))) {
+      &ui->technologyAreaTab7.selectable.base,
+      &ui->technologyAreaTab6.selectable.base,
+      &ui->technologyAreaTab5.selectable.base,
+      &ui->technologyAreaTab4.selectable.base,
+      &ui->technologyAreaTab3.selectable.base,
+      &ui->technologyAreaTab2.selectable.base,
+      &ui->technologyAreaTab1.selectable.base)) {
+      /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
       playerBlock = g_SelectionPlayerRuntimeBlockPointers
-                    [((WorldRuntimeContext *)INGAME_UI(inGameRoot,worldView))->selection.activePlayerRuntimeId];
+                    [FrontendModelPointerContext_AsWorldRuntime(&ui->worldView)->selection.activePlayerRuntimeId];
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
       /* the text field holds a text resource id here, resolved when drawn */
-      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)TEXT_ID_TECHNOLOGY_GENERAL_DESCRIPTION;
-      ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId =
-           TEXT_ID_TECHNOLOGY_BUTTON_NO_AREA;
-      INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = 6;
-      INGAME_UI(inGameRoot,technologyDescriptionText)->bottomOffset = 6;
+      ui->technologyDescriptionText.text = THANDOR_PTR32_BITS(TEXT_ID_TECHNOLOGY_GENERAL_DESCRIPTION);
+      ui->technologyResearchButton.textResourceId = TEXT_ID_TECHNOLOGY_BUTTON_NO_AREA;
+      ui->technologyDescriptionText.base.rightOffset = 6;
+      ui->technologyDescriptionText.base.bottomOffset = 6;
       if ((playerBlock->heldResearchUnpaidFlag & ARMY_MODEL_STATE_RESEARCH_UNPAID) == 0) {
         UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
       }
-      scrollableControl = (UiScrollableControl *)INGAME_UI(inGameRoot,technologyDescriptionScroll);
+      scrollableControl = &ui->technologyDescriptionScroll;
       UiScrollableControl_RebuildViewportAndScrollbars(scrollableControl);
       UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,scrollableControl);
     }
     else {
-      ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId =
-           TEXT_ID_TECHNOLOGY_BUTTON_AREA_SELECTED;
+      ui->technologyResearchButton.textResourceId = TEXT_ID_TECHNOLOGY_BUTTON_AREA_SELECTED;
       technologyAsset = g_TechnologyAsset;
       /* the selected tab's name text id; the description is the next text */
       nameTextId = TECHNOLOGY_AREA_TAB_PREFIX(selectedAreaTab).nameTextResourceId;
@@ -302,8 +327,8 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int)xeniteCost >> 4,
                           &g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_XENITE]);
       /* behind the number: palette colour 0 again, then the terminator */
-      *(uint32_t *)((uint8_t *)&g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_XENITE] + writtenBytes) =
-           RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+      Thandor_StoreU32(reinterpret_cast<uint8_t *>(&g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_XENITE]) +
+                       writtenBytes,RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0);
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,energyCost,g_InGameTechnologyEnergyCostTextUtf16);
       /* Original quirk: the upper colour words are built from the energy cost shifted left by 16 combined with the
@@ -328,15 +353,15 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       RichTextCommandStream_PatchPayloadBySelector(2,g_InGameTechnologyResearchTimeTextUtf16,descriptionText);
       textExtent = RichTextCommandStream_MeasureWrappedBlock
                          (g_UiTextStyleNormal,descriptionText,
-                          ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->wrapWidth);
-      INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = textExtent.widthPixels + 6;
-      INGAME_UI(inGameRoot,technologyDescriptionText)->bottomOffset = textExtent.heightPixels + 6;
-      scrollableControl = (UiScrollableControl *)INGAME_UI(inGameRoot,technologyDescriptionScroll);
+                          ui->technologyDescriptionText.wrapWidth);
+      ui->technologyDescriptionText.base.rightOffset = textExtent.widthPixels + 6;
+      ui->technologyDescriptionText.base.bottomOffset = textExtent.heightPixels + 6;
+      scrollableControl = &ui->technologyDescriptionScroll;
       if (g_InGameSelectedTechnologyId != previousTechnologyId) {
         UiScrollableControl_RebuildViewportAndScrollbars(scrollableControl);
         UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,scrollableControl);
       }
-      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)(uintptr_t)descriptionTextId;
+      ui->technologyDescriptionText.text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(descriptionTextId));
     }
   }
 }
