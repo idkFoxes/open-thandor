@@ -18,6 +18,7 @@ x87 rounding and the MMX lane operations (with the original's wrap-around and sa
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <type_traits>
 
 /* The structure that contains the member p points at. */
 #define THANDOR_CONTAINER_OF(p, Outer, member) ((Outer *)((unsigned char *)(p) - offsetof(Outer, member)))
@@ -43,6 +44,63 @@ static __forceinline auto thandor_atomic_exchange(T *ptr, V value)
     }
 }
 #define THANDOR_ATOMIC_EXCHANGE(ptr, value) thandor_atomic_exchange((ptr), (value))
+
+/*
+Unaligned little-endian loads and stores of 16/32/64-bit values at any address, the portable form of the original's
+MOV/MOVQ through a cast pointer (`*(uint64_t *)(p + off)`). memcpy makes them alias-safe and alignment-safe; both
+compilers turn the fixed-size memcpy into a single load or store, so the code is the same as the cast.
+The const void * forms take any pointer. The unsigned char * forms are also constexpr (they assemble the bytes
+little-endian during constant evaluation; a void * cannot be read there).
+*/
+template <class U> static __forceinline U thandor_load_le(const void *p)
+{
+    U v;
+    memcpy(&v, p, sizeof v);
+    return v;
+}
+template <class U> static __forceinline void thandor_store_le(void *p, U v) { memcpy(p, &v, sizeof v); }
+template <class U> static __forceinline constexpr U thandor_load_le(const unsigned char *p)
+{
+    if (std::is_constant_evaluated()) {
+        U v = 0;
+        for (size_t i = 0; i < sizeof v; i++) v = (U)(v | ((U)p[i] << (8 * i)));
+        return v;
+    }
+    return thandor_load_le<U>((const void *)p);
+}
+template <class U> static __forceinline constexpr void thandor_store_le(unsigned char *p, U v)
+{
+    if (std::is_constant_evaluated()) {
+        for (size_t i = 0; i < sizeof v; i++) p[i] = (unsigned char)(v >> (8 * i));
+        return;
+    }
+    thandor_store_le<U>((void *)p, v);
+}
+
+static __forceinline uint16_t Thandor_LoadU16(const void *p) { return thandor_load_le<uint16_t>(p); }
+static __forceinline uint32_t Thandor_LoadU32(const void *p) { return thandor_load_le<uint32_t>(p); }
+static __forceinline uint64_t Thandor_LoadU64(const void *p) { return thandor_load_le<uint64_t>(p); }
+static __forceinline void Thandor_StoreU16(void *p, uint16_t v) { thandor_store_le<uint16_t>(p, v); }
+static __forceinline void Thandor_StoreU32(void *p, uint32_t v) { thandor_store_le<uint32_t>(p, v); }
+static __forceinline void Thandor_StoreU64(void *p, uint64_t v) { thandor_store_le<uint64_t>(p, v); }
+static __forceinline constexpr uint16_t Thandor_LoadU16(const unsigned char *p) { return thandor_load_le<uint16_t>(p); }
+static __forceinline constexpr uint32_t Thandor_LoadU32(const unsigned char *p) { return thandor_load_le<uint32_t>(p); }
+static __forceinline constexpr uint64_t Thandor_LoadU64(const unsigned char *p) { return thandor_load_le<uint64_t>(p); }
+static __forceinline constexpr void Thandor_StoreU16(unsigned char *p, uint16_t v) { thandor_store_le<uint16_t>(p, v); }
+static __forceinline constexpr void Thandor_StoreU32(unsigned char *p, uint32_t v) { thandor_store_le<uint32_t>(p, v); }
+static __forceinline constexpr void Thandor_StoreU64(unsigned char *p, uint64_t v) { thandor_store_le<uint64_t>(p, v); }
+
+/* Compile-time check of the constexpr forms (little-endian byte order, store/load round trip). */
+static_assert([] {
+    const unsigned char b[4] = {0x78, 0x56, 0x34, 0x12};
+    return Thandor_LoadU16(b) == 0x5678u && Thandor_LoadU32(b) == 0x12345678u;
+}());
+static_assert([] {
+    unsigned char b[8] = {};
+    Thandor_StoreU64(b, 0x0123456789abcdefull);
+    Thandor_StoreU16(b + 2, 0xbeefu);
+    return b[0] == 0xef && b[2] == 0xef && b[3] == 0xbe && b[7] == 0x01 && Thandor_LoadU64(b) == 0x01234567beefcdefull;
+}());
 
 /* ROUND(x): x87 FRNDINT in the default round-to-nearest-even mode. */
 #define ROUND(x) rint(x)
