@@ -311,6 +311,8 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
   ArmyAssetRecord *registeredRecord;
+  /* the in-game UI image at the 32-bit root address (zero-extended, as the address was taken) */
+  InGameUiImage *image = reinterpret_cast<InGameUiImage *>(static_cast<uintptr_t>(uiRootAddress));
 
   registryCursor = g_ArmyAssetRecordRegistry;
   for (registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
@@ -323,10 +325,10 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
     registryCursor++;
   }
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
-  ((UiImagePanelControl *)INGAME_UI(uiRootAddress,unitPlacementPreviewImage))->textureSource =
+  image->unitPlacementPreviewImage.textureSource =
        reinterpret_cast<GraphicsTextureSourceAsset *>(resolvedTexture);
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
-  ((UiImagePanelControl *)INGAME_UI(uiRootAddress,objectPlacementPreviewImage))->textureSource =
+  image->objectPlacementPreviewImage.textureSource =
        reinterpret_cast<GraphicsTextureSourceAsset *>(resolvedTexture);
 }
 
@@ -358,8 +360,8 @@ uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegi
       factionIndex = 0;
     }
     previewTexture = ArmyRuntime_RenderPreviewTexture
-                      (INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
-                       INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
+                      (InGameUi_Image(g_InGameRuntimeRoot)->modePreviewPageStack.base.layoutHeight,
+                       InGameUi_Image(g_InGameRuntimeRoot)->modePreviewPageStack.base.layoutHeight,
                        factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime);
     if (previewTexture == nullptr) {
       return 0;

@@ -106,18 +106,19 @@ void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
     rootNodeCursor = (((UiSelectableControl *)rootNodeCursor)->base).parent;
     parentNodeAddress = (uintptr_t)((UiNodeBase *)rootNodeCursor)->parent;
   }
+  InGameUiImage *image = InGameUi_Image(rootNodeCursor);
   UiSelectableGroup_SelectExclusive(3,&selectableControl->base,
-      INGAME_UI(rootNodeCursor,resultsTabThird),
-      INGAME_UI(rootNodeCursor,resultsTabEconomy),
-      INGAME_UI(rootNodeCursor,resultsTabMilitary));
+      &image->resultsTabThird.selectable.base,
+      &image->resultsTabEconomy.selectable.base,
+      &image->resultsTabMilitary.selectable.base);
   /* Original quirk: the result is not tested; with no visible tab selected the index is 3 (no page) */
   UiSelectableGroup_FindVisibleSelected(nullptr,&selectedTabIndex,3,
-      INGAME_UI(rootNodeCursor,resultsTabThird),
-      INGAME_UI(rootNodeCursor,resultsTabEconomy),
-      INGAME_UI(rootNodeCursor,resultsTabMilitary));
+      &image->resultsTabThird.selectable.base,
+      &image->resultsTabEconomy.selectable.base,
+      &image->resultsTabMilitary.selectable.base);
   UiPageStack_SetActiveIndex
             (selectedTabIndex,
-             (UiPageStackControl *)INGAME_UI(rootNodeCursor,resultsChartPageStack));
+             UiLayoutContainerControl_AsPageStack(&image->resultsChartPageStack));
 }
 
 /* UI action 0x1010 (also key F): toggles the in-game technology window (page 2 of the window page stack).
@@ -140,8 +141,9 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
   }
   if ((g_UiCommandRuntimeFlags &
        (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
-    INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
-    gameWindowStack = (UiPageStackControl *)INGAME_UI(source,gameWindowPageStack);
+    InGameUi_Image(source)->worldView.base.nodeFlags =
+         InGameUi_Image(source)->worldView.base.nodeFlags & ~UI_NODE_SUPPRESSED;
+    gameWindowStack = UiLayoutContainerControl_AsPageStack(&InGameUi_Image(source)->gameWindowPageStack);
     activePageIndex = UiPageStack_ActivePageIndex(gameWindowStack);
     if (activePageIndex == 2) {
       pageIndex = 0;
@@ -249,8 +251,8 @@ void InGameQuitMenu_RestartMission(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  UiSelectableControl_SetSelected(0,&InGameUi_Image(source)->inGameMenuButton.selectable);
+  InGameSettingsPage_ToggleAndSynchronizeControls(&InGameUi_Image(source)->inGameMenuButton.selectable);
   InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION);
 }
 
@@ -305,21 +307,22 @@ void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source
   while ((root->base).parent != UI_NODE_NONE) {
     root = (UiSelectableControl *)(root->base).parent;
   }
+  InGameUiImage *image = InGameUi_Image(root);
   UiSelectableGroup_SelectExclusive(2,&source->base,
-      INGAME_UI(root,resultsChartModeButtonB),
-      INGAME_UI(root,resultsChartModeButtonA));
+      &image->resultsChartModeButtonB.selectable.base,
+      &image->resultsChartModeButtonA.selectable.base);
   /* Original quirk: the result is not tested; with no visible button selected the index is 2 */
   UiSelectableGroup_FindVisibleSelected(nullptr,&selectedIndexValue,2,
-      INGAME_UI(root,resultsChartModeButtonA),
-      INGAME_UI(root,resultsChartModeButtonB));
+      &image->resultsChartModeButtonA.selectable.base,
+      &image->resultsChartModeButtonB.selectable.base);
   /* Mode 0/1 picks each chart's drawing path (modeFlags bit 0) and the results background image. */
-  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart1))->modeFlags =
+  reinterpret_cast<FrontendResultsColumnSequenceControl *>(&image->resultsChart1)->modeFlags =
        (uint32_t)selectedIndexValue;
-  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart2))->modeFlags =
+  reinterpret_cast<FrontendResultsColumnSequenceControl *>(&image->resultsChart2)->modeFlags =
        (uint32_t)selectedIndexValue;
-  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart3))->modeFlags =
+  reinterpret_cast<FrontendResultsColumnSequenceControl *>(&image->resultsChart3)->modeFlags =
        (uint32_t)selectedIndexValue;
-  ((UiImagePanelControl *)INGAME_UI(root,resultsScreenPanel))->subresource =
+  image->resultsScreenPanel.subresource =
        (GraphicsSubresourceIndex)selectedIndexValue;
 }
 
@@ -334,8 +337,8 @@ void InGameQuitMenu_AbortMission(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  UiSelectableControl_SetSelected(0,&InGameUi_Image(source)->inGameMenuButton.selectable);
+  InGameSettingsPage_ToggleAndSynchronizeControls(&InGameUi_Image(source)->inGameMenuButton.selectable);
   InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);
 }
 
@@ -350,8 +353,8 @@ void InGameQuitMenu_Surrender(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  UiSelectableControl_SetSelected(0,&InGameUi_Image(source)->inGameMenuButton.selectable);
+  InGameSettingsPage_ToggleAndSynchronizeControls(&InGameUi_Image(source)->inGameMenuButton.selectable);
   InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
 }
 
