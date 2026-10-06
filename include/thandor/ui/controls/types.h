@@ -255,6 +255,26 @@ struct UiPageStackControl {
     Ptr32<struct UiNodeBase> pages; 
 };
 
+/* Page stack of a template image with its page slots spelled out (g_UiLayoutContainerControlVtable, step 13 U1):
+   pageCount followed by PageCount page links (template offsets, UI_TEMPLATE_NO_LINK for an empty page; pointers
+   after relocation), 0x50 + 4 * PageCount bytes. The template instances have 1, 2, 3, 4, 8, 9 and 13 pages.
+   The class methods (container.cpp) take the one-slot view UiPageStackControl and index &pages[i]; reach it
+   with UiLayoutContainerControl_AsPageStack. */
+template <UiPageCount PageCount>
+struct UiLayoutContainerControl {
+    struct UiNodeBase base;
+    UiPageCount pageCount; // Equal to PageCount in every template instance.
+    Ptr32<struct UiNodeBase> pages[PageCount];
+};
+
+/* The UiPageStackControl view of a UiLayoutContainerControl<N> (same prefix: base, pageCount, first page slot). */
+template <UiPageCount PageCount>
+inline UiPageStackControl *UiLayoutContainerControl_AsPageStack(UiLayoutContainerControl<PageCount> *control)
+
+{
+  return reinterpret_cast<UiPageStackControl *>(control);
+}
+
 using GraphicsSubresourceEndIndex = uint32_t;
 
 using UiTextResourceId = uint32_t;
@@ -574,6 +594,19 @@ struct UiWrappedTextControl {
     Ptr32<uint16_t> text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
     UiPackedTextStyle styleOverride; // Packed style bits OR-ed over g_UiTextStyleNormal (top two bytes used).
 };
+
+/* Control types of the template vtables whose methods already work on one of the structs above (step 13 U1).
+   The template images (InGameUiImage, FrontendUiImage, the dialog images) name each node by its vtable; these
+   names give every such vtable its control type, so a member `UiNodeBase x; uint32_t x_fields[N];` can become
+   `UiFocusProxyControl x;` with the same bytes. A template member with more dwords than the type (e.g. 5 instead
+   of the 4 of UiSingleLineTextControl) is followed by data that belongs to the next node (mostly its tooltip text
+   id) and keeps those dwords as a separate trailing member.
+   - g_UiFocusProxyControlVtable: a single-line label that forwards focus, pointer, wheel, keyboard and tick to its
+     focusChild (UiSingleLineTextControl_* handlers, focus_proxy.cpp); 0x5C bytes, 4 dwords after UiNodeBase.
+   - g_UiListOffsetControlVtable: a wrapped multi-line text (UiWrappedTextControl_RelocateAndApplyDeferredOffset,
+     UiWrappedTextControl_DrawClipped); 0x5C bytes, 4 dwords after UiNodeBase. */
+using UiFocusProxyControl = UiSingleLineTextControl;
+using UiListOffsetControl = UiWrappedTextControl;
 
 /* Horizontal or vertical range slider with a draggable thumb (g_UiRangeSliderControlVtable); every value change
    enqueues actionId. 0x68 bytes; the display-settings template allocates only 0x64 bytes for its two color

@@ -468,6 +468,20 @@ struct UiCommandSpriteButtonControl {
     UiCommandActivationStateFlags activationInputState; 
 };
 
+/* Control types of the in-game template vtables that share a layout with an existing control (step 13 U1; see
+   UiFocusProxyControl in ui/controls/types.h).
+   - g_UiCommandSpriteButtonWithDetailsVtable: a command sprite button (UiCommandSpriteButtonControl_BeginPress,
+     _NonRightRelease, _RightRelease) whose pointerMove shows the hovered army stock slot in the selection detail
+     panel (InGameArmyStock_PointerMoveShowSlotDetails); the army stock slots and diplomacy relation buttons.
+     0x7C bytes, 12 dwords after UiNodeBase.
+   - g_UiCommandVisibilitySingleLineTextVtable: a single-line label drawn only while the world texts are shown
+     (UiCommandVisibilitySingleLineText_DrawWhenAllowed reads labelFlags 0x800/0x1000); 0x5C bytes.
+   - g_UiCommandVisibilityWrappedTextVtable: the wrapped counterpart (UiCommandVisibilityWrappedText_DrawWhenAllowed
+     reads labelFlags 0x800); 0x5C bytes. */
+using UiCommandSpriteButtonWithDetails = UiCommandSpriteButtonControl;
+using UiCommandVisibilitySingleLineText = UiSingleLineTextControl;
+using UiCommandVisibilityWrappedText = UiWrappedTextControl;
+
 struct UiCatalogEntryControl {
     struct UiCommandSpriteButtonControl command; 
     uint32_t runtimeDisplayValueQ4; 
