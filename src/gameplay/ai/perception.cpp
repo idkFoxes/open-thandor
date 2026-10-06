@@ -121,35 +121,35 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
 }
 
 /* Own structures of class 11 / 22 / 13 (among the 00 entries present before this step): the asset in production
-   (slot word 24) counts as an unassigned entry (00 for class 11, 01 otherwise) while their state word (46, 43 for
-   class 22) is 1. */
+   (slot word 24, classLinkState +0x60) counts as an unassigned entry (00 for class 11, 01 otherwise) while their
+   state word (46 = classState.behaviorState, 43 = classState.classStateAC for class 22) is 1. */
 static void AiPlanningRebuild_AddAssetsInProduction()
 
 {
   AiStructureWorkspaceEntry *structureEntry;
   uint32_t entriesRemaining;
-  int *slotWords;
+  ModelRuntimeSlot *slotRuntime;
   ModelDefinition *slotDefinition;
 
   structureEntry = g_AiWorkspace00Structures;
   for (entriesRemaining = g_AiWorkspace00Count; entriesRemaining != 0; entriesRemaining--) {
-    slotWords = (int *)structureEntry->runtimeSlotAddressOrZero;
-    if (slotWords != nullptr) {
-      slotDefinition = ((ModelRuntimeSlot *)slotWords)->definitionOrSavedId.runtimeDefinition;
+    slotRuntime = structureEntry->runtimeSlotAddressOrZero;
+    if (slotRuntime != nullptr) {
+      slotDefinition = slotRuntime->definitionOrSavedId.runtimeDefinition;
       if (slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) {
-        if (slotWords[46] == 1) {
-          AiPlanningRebuild_AddUnassignedStructureEntry(slotWords[24]);
+        if (slotRuntime->classState.behaviorState == 1) {
+          AiPlanningRebuild_AddUnassignedStructureEntry(slotRuntime->classLinkState.modelLinkOrState.signedScalarState);
         }
       }
       else if (slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
-        if (slotWords[43] == 1) {
+        if (slotRuntime->classState.classStateAC == 1) {
           AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,
-                                            nullptr,slotWords[24]);
+                                            nullptr,slotRuntime->classLinkState.modelLinkOrState.signedScalarState);
         }
       }
-      else if ((slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (slotWords[46] == 1)) {
+      else if ((slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (slotRuntime->classState.behaviorState == 1)) {
         AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,nullptr,
-                                          slotWords[24]);
+                                          slotRuntime->classLinkState.modelLinkOrState.signedScalarState);
       }
     }
     structureEntry++;
@@ -360,7 +360,7 @@ static void AiPlanningRebuild_CollectProducibleAssets(FactionRuntimeIndex factio
     if ((definitionNode != nullptr) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
       /* returns true while some technology of the hierarchy is still locked */
       technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
-                               (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode);
+                               (factionIndex,reinterpret_cast<ModelDefinitionHierarchyNodeAddress32>(definitionNode));
       if (!technologyLocked && ((definitionNode[1].selectionDetailTemplateVariantIndex & productionMask) != 0) &&
           ((definitionNode->registryId < ARM_0300_BUILDING_MDL0301) ||
            ((ARM_0340_BUILDING_MDL0314 - 1) < definitionNode->registryId)) &&
@@ -421,7 +421,7 @@ static void AiPlanningRebuild_CollectResearchCandidates(FactionRuntimeIndex fact
   factionRecordOffset = factionIndex * (int)sizeof(GameFactionRuntimeRecord);
   structureEntry = g_AiWorkspace00Structures;
   for (entriesRemaining = g_AiWorkspace00Count; entriesRemaining != 0; entriesRemaining--) {
-    modelRuntime = (ModelRuntimeSlot *)structureEntry->runtimeSlotAddressOrZero;
+    modelRuntime = structureEntry->runtimeSlotAddressOrZero;
     if (modelRuntime != nullptr) {
       slotDefinition = modelRuntime->definitionOrSavedId.runtimeDefinition;
       for (technologySlot = 28; technologySlot != 0; technologySlot--) {

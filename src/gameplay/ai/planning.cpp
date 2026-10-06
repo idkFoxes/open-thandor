@@ -87,10 +87,10 @@ void AiFactionRuntime_RebuildPlanningCapacityState()
     /* runtimePayload is the ModelRuntimeSlot: its definition's target class is the pressure channel;
        the owner army holds the owning faction and a faction mask terrainOccupancyMask0 (bit 3 + 2 * (f - 1) for
        faction f). */
-    ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    ownerArmy = WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if (ownerArmy->factionIndex == 0) continue;
     pressureChannel =
-         ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->targetClassIndex;
+         WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->targetClassIndex;
     factionBit = 8;
     pressureTargetRecord = g_GameFactionRuntimeImage.records;
     for (targetFactionIndex = 1; targetFactionIndex < 8; targetFactionIndex++) {
@@ -394,7 +394,7 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
     if (primaryEntry->runtimeSlotAddressOrZero != nullptr) {
       ModelRuntimeHierarchy_MarkDestroyedRecursive
                 (contextArg,
-                 ((ModelRuntimeSlot *)primaryEntry->runtimeSlotAddressOrZero)->ownerArmyRuntimeOrSavedOffset.
+                 primaryEntry->runtimeSlotAddressOrZero->ownerArmyRuntimeOrSavedOffset.
                  armyRuntime);
     }
     primaryEntry++;
