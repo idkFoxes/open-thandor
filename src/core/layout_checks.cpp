@@ -1610,6 +1610,41 @@ static_assert(sizeof(DisplaySettingsUiImage) == 0xBD4,
               "DisplaySettingsUiImage keeps its 32-bit layout");
 static_assert(sizeof(FourValueDialogUiImage) == 0x1A4,
               "FourValueDialogUiImage keeps its 32-bit layout");
+/* Step 13 U2: the typed nodes of the dialog images (tools/dev/ui_image_retype.py --asserts). */
+static_assert(offsetof(FatalErrorUiImage, fatalErrorPanel) == 0x0 && sizeof(UiPanelControl) == 0x58,
+              "FatalErrorUiImage.fatalErrorPanel is a UiPanelControl");
+static_assert(offsetof(FatalErrorUiImage, errorMessageText) == 0x58 && sizeof(UiListOffsetControl) == 0x5C,
+              "FatalErrorUiImage.errorMessageText is a UiListOffsetControl");
+static_assert(offsetof(FatalErrorUiImage, okButton_fields) == 0x100 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "FatalErrorUiImage.okButton_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(FourValueDialogUiImage, confirmModeDialogPanel) == 0x0 && sizeof(UiPanelControl) == 0x58,
+              "FourValueDialogUiImage.confirmModeDialogPanel is a UiPanelControl");
+static_assert(offsetof(FourValueDialogUiImage, revertButton_fields) == 0xA4 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "FourValueDialogUiImage.revertButton_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(FourValueDialogUiImage, keepModeButton_fields) == 0x100 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "FourValueDialogUiImage.keepModeButton_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(FourValueDialogUiImage, countdownMessageText) == 0x110 && sizeof(UiListOffsetControl) == 0x5C,
+              "FourValueDialogUiImage.countdownMessageText is a UiListOffsetControl");
+static_assert(offsetof(FourValueDialogUiImage, countdownMessageText_trailing) == 0x16C,
+              "FourValueDialogUiImage.countdownMessageText_trailing follows the control");
+static_assert(offsetof(DisplaySettingsUiImage, displaySettingsWindow) == 0x0 && sizeof(UiResizableWindowControl) == 0x78,
+              "DisplaySettingsUiImage.displaySettingsWindow is a UiResizableWindowControl");
+static_assert(offsetof(DisplaySettingsUiImage, applyButton) == 0xD4 && sizeof(UiDisplaySettingsApplyButton) == 0x8C,
+              "DisplaySettingsUiImage.applyButton is a UiDisplaySettingsApplyButton");
+static_assert(offsetof(DisplaySettingsUiImage, resolutionHeading) == 0x160 && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.resolutionHeading is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorDepthHeading) == 0x1BC && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.colorDepthHeading is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, adapterHeading) == 0x218 && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.adapterHeading is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorScaleSliderFrame) == 0x95C && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.colorScaleSliderFrame is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorBiasSliderFrame) == 0xA1C && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.colorBiasSliderFrame is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorScaleValueText) == 0xADC && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.colorScaleValueText is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorBiasValueText) == 0xB38 && sizeof(UiDisplaySettingsValueReadout) == 0x9C,
+              "DisplaySettingsUiImage.colorBiasValueText is a UiDisplaySettingsValueReadout");
 static_assert(sizeof(FrontendUiImage) == 0x78E8 && /* 0x5954 + the display mode kind, resolution list and advanced settings nodes of open-thandor */
               offsetof(FrontendUiImage, displayPageStack) == 0x71A0 &&
               offsetof(FrontendUiImage, advancedSettingsButton) == 0x71F8 &&
