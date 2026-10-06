@@ -368,7 +368,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
     UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendRoot,chatInputSlot));
   }
   (*g_FrontendModelPointerContextVtable.pointerMove)
-            (g_CursorOverrideY,g_CursorOverrideX,FRONTEND_UI(frontendRoot,menuRoomModelView));
+            (g_CursorOverrideY,g_CursorOverrideX,&FRONTEND_UI(frontendRoot,menuRoomModelView)->base);
   hoveredNode = (*((UiNodeBase *)frontendRoot)->vtable->hitTest)
                     (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)frontendRoot);
   if (hoveredNode == UI_NODE_NONE) {
@@ -385,9 +385,9 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
                      ((UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   if (activePageIndex == FRONTEND_PAGE_STACK_CHOOSE_GAME) {
     selectedTabIndex = UiSelectableGroup_SelectedIndex(3,
-      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
+      &FRONTEND_UI(g_FrontendRootNode,loadGameTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,campaignsTabButton)->selectable.base);
     /* none selected gives 3, never the single-games tab */
     if ((selectedTabIndex == SCENARIO_SELECTION_TAB_SINGLE_GAMES) && (g_ScenarioCatalog != nullptr)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
