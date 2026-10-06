@@ -1277,6 +1277,19 @@ template <class T> inline InGameUiImage *InGameUi_Image(T *root)
 {
   return reinterpret_cast<InGameUiImage *>(root);
 }
+/* The world view node of the in-game UI image behind root as the session's WorldRuntimeContext: the node is that
+   context (its interaction state starts with the node's UiNodeBase). */
+template <class T> inline WorldRuntimeContext *InGameUi_WorldRuntime(T *root)
+{
+  return reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(root)->worldView);
+}
+/* The twelve metric cells of the multi-selection page in grid order (the members behind the byte offsets of
+   g_InGameSelectionDetailGridCellOffsets). */
+inline constexpr UiArmyMetricsPanel InGameUiImage::*const g_InGameSelectionDetailGridCells[12] = {
+    &InGameUiImage::multiSelectionCell00, &InGameUiImage::multiSelectionCell01, &InGameUiImage::multiSelectionCell02,
+    &InGameUiImage::multiSelectionCell03, &InGameUiImage::multiSelectionCell04, &InGameUiImage::multiSelectionCell05,
+    &InGameUiImage::multiSelectionCell06, &InGameUiImage::multiSelectionCell07, &InGameUiImage::multiSelectionCell08,
+    &InGameUiImage::multiSelectionCell09, &InGameUiImage::multiSelectionCell10, &InGameUiImage::multiSelectionCell11};
 #pragma pack(pop)
 
 /* True for a control type that starts with a UiNodeBase (through its base, selectable, root, sprite or command

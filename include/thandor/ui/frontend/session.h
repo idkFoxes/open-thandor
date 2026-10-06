@@ -37,7 +37,7 @@ void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi);
 
 void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source);
 
-void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView *frontendRuntime);
+void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontendRuntime);
 
 void FrontendSession_PeriodicTick();
 

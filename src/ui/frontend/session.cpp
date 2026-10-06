@@ -199,7 +199,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
    whose expiry ran out by compacting the 0xB0-byte records in place, rebuilds the row pointers,
    keeps the selection on the same session (row 0 when the selected one went away) and refreshes the list.
 */
-void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView *frontendRuntime)
+void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontendRuntime)
 
 {
   UiTransferPayloadByteCount *expiryTicks;
@@ -215,26 +215,26 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
   uint32_t *sourceDwordCursor;
   uint32_t *destinationDwordCursor;
   
-  rowSlotCursor = frontendRuntime->sessionDiscoveryList.rowSlots;
+  rowSlotCursor = frontendRuntime->sessionList.rowSlots;
   sourceRecord = g_FrontendSessionDiscoveryRecords;
   destinationRecord = g_FrontendSessionDiscoveryRecords;
   rowPointerCursor = g_FrontendSessionListRows;
   /* the record field typed payloadByteCount holds the session's expiry ticks */
-  for (rowsRemaining = frontendRuntime->sessionDiscoveryList.rowCount; rowsRemaining != 0; rowsRemaining--) {
+  for (rowsRemaining = frontendRuntime->sessionList.rowCount; rowsRemaining != 0; rowsRemaining--) {
     expiryTicks = &sourceRecord->advertisement.payloadByteCount;
     *expiryTicks = *expiryTicks - 1;
     destinationDwordCursor = (uint32_t *)destinationRecord;
     if (*expiryTicks == 0) {
       sourceDwordCursor = (uint32_t *)(sourceRecord + 1);
-      rowCountField = &frontendRuntime->sessionDiscoveryList.rowCount;
+      rowCountField = &frontendRuntime->sessionList.rowCount;
       *rowCountField = *rowCountField - 1;
-      currentSelectedSlot = frontendRuntime->sessionDiscoveryList.selectedRowSlot;
+      currentSelectedSlot = frontendRuntime->sessionList.selectedRowSlot;
       if (rowSlotCursor == currentSelectedSlot) {
-        frontendRuntime->sessionDiscoveryList.selectedRowSlot =
-             frontendRuntime->sessionDiscoveryList.rowSlots;
+        frontendRuntime->sessionList.selectedRowSlot =
+             frontendRuntime->sessionList.rowSlots;
       }
       else if (rowSlotCursor <= currentSelectedSlot) {
-        selectedSlotField = &frontendRuntime->sessionDiscoveryList.selectedRowSlot;
+        selectedSlotField = &frontendRuntime->sessionList.selectedRowSlot;
         *selectedSlotField = *selectedSlotField - 1;
       }
     }
@@ -258,7 +258,7 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
     sourceRecord = (FrontendSessionDiscoveryRecord *)sourceDwordCursor;
     destinationRecord = (FrontendSessionDiscoveryRecord *)destinationDwordCursor;
   }
-  UiPointerList_RefreshSelectionAndQueueAction(&frontendRuntime->sessionDiscoveryList);
+  UiPointerList_RefreshSelectionAndQueueAction(UiListControl_AsPointerList(&frontendRuntime->sessionList));
 }
 
 
