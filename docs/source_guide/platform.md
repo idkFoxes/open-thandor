@@ -152,17 +152,17 @@ Campaign test aids (developer tools, THANDOR_DEV_TOOLS), reached through thandor
 
 [Source](../../src/platform/debug/font.cpp) · [Header](../../include/thandor/platform/debug/font.h)
 
-Built-in 5x7 debug font, drawn straight into the framebuffer (debug tools only).
+Built-in 5x7 debug font, drawn through the fill slot (debug tools only).
 
 **Functions** (1 public):
 
-- [`DebugFont_DrawText`](../../src/platform/debug/font.cpp#L322) - Draws text at 1x scale with a black box behind it; framebuffer: [0] pitch in pixels, [2] bytes per pixel, [3] pixels.
+- [`DebugFont_DrawText`](../../src/platform/debug/font.cpp#L325) - Draws text at 1x scale with a black box behind it through the fill slot (g_GraphicsFramebufferFillRectArgb): one fill for the box, then one per horizontal run of set pixels in each glyph row.
 
 **Data** (0 shared, 1 file-local): `g_DebugFont5x7`.
 
 **Called from** (1 files): [`platform/debug/movie_player`](#file-platform-debug-movie-player) (`DebugMovie_PlayOne`).
 
-**Depends on** (2 files, names used): [`graphics/resources/framebuffer`](graphics.md#file-graphics-resources-framebuffer) (2), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (2 files, names used): [`graphics/resources/framebuffer`](graphics.md#file-graphics-resources-framebuffer) (4), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 **Includes:** `string.h`.
 

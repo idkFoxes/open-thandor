@@ -422,7 +422,7 @@ Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Chang
 
 - [`autoshot.cpp / autoshot.h`](source_guide/platform.md#file-platform-debug-autoshot) - Automatic screenshots (test aid).
 - [`campaign.cpp / campaign.h`](source_guide/platform.md#file-platform-debug-campaign) - Campaign test aids (developer tools, THANDOR_DEV_TOOLS), reached through thandor/platform/debug/hooks.h from the scenario catalog and the in-game session runtime.
-- [`font.cpp / font.h`](source_guide/platform.md#file-platform-debug-font) - Built-in 5x7 debug font, drawn straight into the framebuffer (debug tools only).
+- [`font.cpp / font.h`](source_guide/platform.md#file-platform-debug-font) - Built-in 5x7 debug font, drawn through the fill slot (debug tools only).
 - [`hooks.cpp / hooks.h`](source_guide/platform.md#file-platform-debug-hooks) - The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compiled only with the CMake option THANDOR_DEV_TOOLS.
 - [`level_script.cpp`](source_guide/platform.md#file-platform-debug-level-script) - Level-script log (developer tools): hooks of InGameConditionRuntime_UpdateScheduledRecords (gameplay/session/level_script.cpp).
 - [`movie_decoder.cpp / movie_decoder.h`](source_guide/platform.md#file-platform-debug-movie-decoder) - Debug tool for the movie frame decoder, hooked into Movie_AdvanceFrame after Movie_DecodeFrame4x4Delta: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame and writes every tenth frame to ...
