@@ -54,7 +54,7 @@ static void UiActionSlot_FrontendScenarioSelection_ActivateSelectedRecord(void *
 static void UiActionSlot_FrontendNetworkSettings_PublishSelectedPlayerDescriptor(void *source)
 
 {
-  FrontendNetworkSettings_PublishSelectedPlayerDescriptor((FrontendNetworkSettingsControlView *)source);
+  FrontendNetworkSettings_PublishSelectedPlayerDescriptor(static_cast<UiFramedTextButtonControl *>(source));
 }
 
 /* Module data. */
