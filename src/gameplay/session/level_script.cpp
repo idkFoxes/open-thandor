@@ -111,11 +111,13 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     /* operand 0 is a byte offset into the cell records; operand 1 the percentage */
     fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
     cellCount = fieldGrid->gridWidth * fieldGrid->gridHeight;
-    cellBytes = (uint8_t *)fieldGrid->cells + operands[0];
+    cellBytes = reinterpret_cast<uint8_t *>(fieldGrid->cells) + operands[0];
     occupiedCellCount = 0;
     cellsLeft = cellCount;
     do {
-      cellOccupancyMask = (ResourceExtractionDescriptor32 *)(cellBytes + offsetof(FieldGridCell, occupancyMask));
+      /* the low dword of the 64-bit occupancy mask, operand 0 bytes further */
+      cellOccupancyMask =
+           reinterpret_cast<ResourceExtractionDescriptor32 *>(cellBytes + offsetof(FieldGridCell, occupancyMask));
       cellBytes = cellBytes + sizeof(FieldGridCell);
       occupiedCellCount = occupiedCellCount + ((*cellOccupancyMask & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0);
       cellsLeft--;
@@ -200,9 +202,9 @@ static void InGameConditionRuntime_RequestEndMovie(const InGameEndConditionTrigg
     }
   }
   g_EndMovieSelectionIndex = (uint32_t)endTrigger->endMovieSelectionIndex;
-  g_EndMoviePath = (uint16_t *)g_SessionEndMoviePathUtf16;
+  g_EndMoviePath = g_SessionEndMoviePathUtf16;
   if (g_EndMovieVariantIndex == 0) {
-    g_EndMoviePath = (uint16_t *)g_FlmEnde0001FlmPathUtf16;
+    g_EndMoviePath = g_FlmEnde0001FlmPathUtf16;
   }
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
 }
@@ -300,7 +302,8 @@ void InGameConditionRuntime_UpdateScheduledRecords()
     condition++;
   }
   DebugHook_LevelScriptAfterEvaluation(levelConditionStorage);
-  endTrigger = (InGameEndConditionTriggerRecord8 *)(levelConditionStorage->schedule).triggers;
+  /* the same 8-byte trigger records, viewed through the type the debug hook takes */
+  endTrigger = reinterpret_cast<InGameEndConditionTriggerRecord8 *>((levelConditionStorage->schedule).triggers);
   for (triggerIndex = 0; triggerIndex < INGAME_END_CONDITION_TRIGGER_COUNT; triggerIndex++, endTrigger++) {
     if ((endTrigger->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
        (((levelConditionStorage->schedule).conditions[endTrigger->conditionIndex].statusAndKind.raw &

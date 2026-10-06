@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/session/level.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
@@ -40,14 +41,14 @@ Bool8 LevelAsset_PrepareEndingMoviePath
   int remainingDwordCount;
   int32_t movieNumber;
   uint16_t *sourcePathCursor;
-  uint8_t *path;
+  uint16_t *path;
   
   if (((asset->common).magic == ASSET_MAGIC_LEV) &&
      ((asset->common).converterVersion == PCK_CONVERTER_LEV_00070001)) {
-    path = (uint8_t *)asset + (asset->pathOffsets).endingMovieBasePathOffset;
+    path = Asset_RecordAt<uint16_t>(asset,(asset->pathOffsets).endingMovieBasePathOffset);
     remainingDwordCount = 128; /* 256 UTF-16 code units of the level path */
     /* UTF-16 characters 4 and 5 of the movie path, read as one dword */
-    movieNameChars4And5 = *(int *)(path + 8);
+    movieNameChars4And5 = *Asset_RecordAt<int>(path,8);
     movieNumber = 0;
     if (movieNameChars4And5 == LEVEL_ENDING_MOVIE_NAME_W_UUML) {
       movieNumber = 2;
@@ -58,17 +59,18 @@ Bool8 LevelAsset_PrepareEndingMoviePath
     else if (movieNameChars4And5 == LEVEL_ENDING_MOVIE_NAME_LA) {
       movieNumber = 4;
     }
-    WidePath_SetExtensionCode(ASSET_MAGIC_FLM,(uint16_t *)path);
+    WidePath_SetExtensionCode(ASSET_MAGIC_FLM,path);
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,movieNumber,
-               (uint16_t *)(g_SessionEndMoviePathUtf16 + 8)); /* the "0000" */
+               g_SessionEndMoviePathUtf16 + 8); /* the "0000" */
     sourcePathCursor = g_LevelEndingMovieSourcePath;
     for (; remainingDwordCount != 0; remainingDwordCount--) {
-      *(uint32_t *)sourcePathCursor = *(uint32_t *)currentLevelPath;
+      /* two UTF-16 code units per dword */
+      *reinterpret_cast<uint32_t *>(sourcePathCursor) = *reinterpret_cast<uint32_t *>(currentLevelPath);
       currentLevelPath = currentLevelPath + 2;
       sourcePathCursor = sourcePathCursor + 2;
     }
-    *outMoviePath = (uint16_t *)path;
+    *outMoviePath = path;
     return true;
   }
   Package_SetLastErrorPath(currentLevelPath);
@@ -99,7 +101,8 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
   /* the original loops only when both the slot count and the slot array are non-zero */
   if (remainingSlotCount != 0 && soundSlotCursor != nullptr) {
     do {
-      SpatialSoundSlot_ReleaseSample((SpatialSoundSlot *)*soundSlotCursor);
+      /* the slot array keeps the slot pointers as integers */
+      SpatialSoundSlot_ReleaseSample(reinterpret_cast<SpatialSoundSlot *>(*soundSlotCursor));
       soundSlotCursor++;
       remainingSlotCount--;
     } while (remainingSlotCount != 0);
@@ -153,7 +156,7 @@ Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldV
   imageLoaded = Package_LoadEntryIntoBuffer(PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
                                             g_LevelEndingMovieSourcePath,&loadError);
   levelImageBytes = g_PackageScratchBuffer;
-  levelImage = (LevelAssetRuntimePrefix *)levelImageBytes;
+  levelImage = reinterpret_cast<LevelAssetRuntimePrefix *>(levelImageBytes); /* the loaded LEV bytes */
   if (!imageLoaded) {
     *outError = loadError;
     return false;
@@ -166,7 +169,7 @@ Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldV
   /* the loader adds 7 to this value for faction 7's class/mode, yet the editor stores the index of the
      faction it plays here */
   levelImage->playerSlots[6].aiClassOrMode = activeFactionIndex;
-  placementRecordCursor = (LevelInitialArmyPlacementRecord20 *)(levelImageBytes + placementTableOffset);
+  placementRecordCursor = Asset_RecordAt<LevelInitialArmyPlacementRecord20>(levelImageBytes,placementTableOffset);
   for (ownerListNode = (saveWorldView->worldRuntime).ownerListHead;
       ownerListNode != nullptr; ownerListNode = ownerListNode->nextNode) {
     if (ownerListNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
@@ -254,16 +257,16 @@ Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
     return true; /* nothing mounted, nothing to unmount */
   }
   if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
-                        (uint16_t *)g_LevelLevPatternUtf16,fileHandle,&matchCount) &&
+                        g_LevelLevPatternUtf16,fileHandle,&matchCount) &&
       matchCount != 0) {
-    levelAsset = (int *)Package_LoadEntry(g_LevelPackageFoundEntry.path,nullptr);
+    levelAsset = static_cast<int *>(Package_LoadEntry(g_LevelPackageFoundEntry.path,nullptr));
     if (levelAsset != nullptr) {
       /* dword 0: asset magic, dword 3: converter version */
       if (*levelAsset == ASSET_MAGIC_LEV && levelAsset[3] == PCK_CONVERTER_LEV_00070001) {
         levelTitleTextId = levelAsset[92]; /* LEV +0x170 */
         Resource_Release(levelAsset);
         if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
-                              (uint16_t *)g_LevelStrPatternUtf16,fileHandle,&matchCount) &&
+                              g_LevelStrPatternUtf16,fileHandle,&matchCount) &&
             matchCount != 0 &&
             !TextResourcePage_LoadCompatibilityAliases(levelTitleTextId,g_LevelPackageFoundEntry.path)) {
           return false; /* valid level: the package stays mounted */
