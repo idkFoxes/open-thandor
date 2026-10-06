@@ -463,7 +463,7 @@ void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 
 {
   INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId) =
-       (TextResourceId)(uintptr_t)((UiSingleLineTextControl *)INGAME_UI(inGameRoot,worldViewCyclingInfoText))->text; /* 5f-format: InGameUiImage.worldViewCyclingInfoText +0x54 (UI template text id dword) */
+       (TextResourceId)(uintptr_t)InGameUi_Image(inGameRoot)->worldViewCyclingInfoText.text; /* 5f-format: InGameUiImage.worldViewCyclingInfoText +0x54 (UI template text id dword) */
   FRONTEND_UI_FIELD(&g_FrontendRootInitializationTemplate,bottomBarStatusText,0x54,TextResourceId) =
        INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId);
 }
