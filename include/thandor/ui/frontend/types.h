@@ -978,522 +978,287 @@ using ScenarioCatalogRefreshSelectedRecordCallback = void (uint32_t arg0, uint32
    nodes of the advanced settings page). FRONTEND_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    FRONTEND_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FrontendUiImage {
-    UiNodeBase frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
-    uint32_t frontendRoot_fields[3];
-    UiNodeBase frontendViewModeStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack: page 0 = menu room (3D room view, dialog page stack, top/bottom bars), page 1 = full-screen movie view. */
-    uint32_t frontendViewModeStack_fields[3];
-    UiNodeBase chatInputSlot; /* +00B0 g_UiLayoutContainerControlVtable: Page stack inside the bottom bar (0x4694): empty page or the chat input line. */
-    uint32_t chatInputSlot_fields[3];
-    UiNodeBase chatInputEdit; /* +0108 g_UiRequiredTextEditControlVtable: Text edit for typing a network chat message; action 0x204C publishes it via the player message buffer. */
-    uint32_t chatInputEdit_fields[32];
-    UiNodeBase moviePlaybackView; /* +01D4 g_UiSoftwareTexturePreviewControlVtable: Software texture view that plays a movie; clicking (action 0x2048) closes the movie and returns to the main page. */
-    uint32_t moviePlaybackView_fields[8];
-    UiNodeBase movieLetterboxTopBar; /* +0240 g_UiFillPanelControlVtable: Black fill bar above the movie view (top 1/8 of the screen). */
-    uint32_t movieLetterboxTopBar_fields[4];
-    UiNodeBase movieLetterboxBottomBar; /* +029C g_UiFillPanelControlVtable: Black fill bar below the movie view (bottom 1/8 of the screen). */
-    uint32_t movieLetterboxBottomBar_fields[4];
-    UiNodeBase chatMessageHistory; /* +02F8 g_UiConditionalActionControlVtable: Top-left strip showing the five most recent chat messages (action 0x200E trims/sorts the recent-text history). */
-    uint32_t chatMessageHistory_fields[9];
-    UiNodeBase menuRoomModelView; /* +0368 g_FrontendModelPointerContextVtable: 3D model/pointer context rendering the main menu room between the top and bottom bars. */
-    uint32_t menuRoomModelView_fields[85];
-    UiNodeBase frontendPageStack; /* +0508 g_UiLayoutContainerControlVtable: Stack of 13 frontend dialog pages (0 none, 5 options, 9 quit, 10 game selection, 11 faction setup, 12 mission briefing; 1-4 and 6-8 are in part 2). */
-    uint32_t frontendPageStack_fields[14];
-    UiNodeBase missionBriefingPage; /* +058C g_UiImagePanelControlVtable: Mission briefing page (page 12): description text, image, opponent setting, Back/Begin or Exit/Save. */
-    uint32_t missionBriefingPage_fields[4];
-    UiNodeBase briefingBackButton; /* +05E8 g_UiFramedTextButtonControlVtable: "Back" button (action 0x2043); shown when the briefing is opened from the frontend. */
-    uint32_t briefingBackButton_fields[5];
-    UiNodeBase briefingExitButton; /* +0648 g_UiFramedTextButtonControlVtable: "Exit" button (action 0x204F); replaces Back when the briefing is opened in-game. */
-    uint32_t briefingExitButton_fields[5];
-    UiNodeBase briefingSaveButton; /* +06A8 g_UiFramedTextButtonControlVtable: "Save" button (action 0x2050); shown only in the in-game variant of the briefing. */
-    uint32_t briefingSaveButton_fields[5];
-    UiNodeBase briefingBeginButton; /* +0708 g_UiFramedTextButtonControlVtable: "Begin" button (action 0x2047) that starts the mission. */
-    uint32_t briefingBeginButton_fields[5];
-    UiNodeBase briefingTitleLabel; /* +0768 g_UiFocusProxyControlVtable: Title "Mission description (%s)". */
-    uint32_t briefingTitleLabel_fields[4];
-    UiNodeBase briefingTextScroller; /* +07C4 g_UiScrollableControlVtable: Scrollable frame holding the mission briefing text. */
-    uint32_t briefingTextScroller_fields[17];
-    UiNodeBase briefingText; /* +0854 g_UiListOffsetControlVtable: Mission description text; its text id is set from the level and it is resized to the text extent. */
-    uint32_t briefingText_fields[4];
+    UiPanelControl frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
+    UiLayoutContainerControl<2> frontendViewModeStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack: page 0 = menu room (3D room view, dialog page stack, top/bottom bars), page 1 = full-screen movie view. */
+    UiLayoutContainerControl<2> chatInputSlot; /* +00B0 g_UiLayoutContainerControlVtable: Page stack inside the bottom bar (0x4694): empty page or the chat input line. */
+    UiRequiredTextEditControl chatInputEdit; /* +0108 g_UiRequiredTextEditControlVtable: Text edit for typing a network chat message; action 0x204C publishes it via the player message buffer. */
+    uint32_t chatInputEdit_trailing[19]; /* +0188: template dwords behind the control */
+    UiSoftwareTexturePreviewControl moviePlaybackView; /* +01D4 g_UiSoftwareTexturePreviewControlVtable: Software texture view that plays a movie; clicking (action 0x2048) closes the movie and returns to the main page. */
+    UiFillPanelControl movieLetterboxTopBar; /* +0240 g_UiFillPanelControlVtable: Black fill bar above the movie view (top 1/8 of the screen). */
+    UiFillPanelControl movieLetterboxBottomBar; /* +029C g_UiFillPanelControlVtable: Black fill bar below the movie view (bottom 1/8 of the screen). */
+    UiConditionalActionControl chatMessageHistory; /* +02F8 g_UiConditionalActionControlVtable: Top-left strip showing the five most recent chat messages (action 0x200E trims/sorts the recent-text history). */
+    uint32_t chatMessageHistory_trailing[4]; /* +0358: template dwords behind the control */
+    FrontendModelPointerContext menuRoomModelView; /* +0368 g_FrontendModelPointerContextVtable: 3D model/pointer context rendering the main menu room between the top and bottom bars. */
+    uint32_t menuRoomModelView_trailing[9]; /* +04E4: template dwords behind the control */
+    UiLayoutContainerControl<13> frontendPageStack; /* +0508 g_UiLayoutContainerControlVtable: Stack of 13 frontend dialog pages (0 none, 5 options, 9 quit, 10 game selection, 11 faction setup, 12 mission briefing; 1-4 and 6-8 are in part 2). */
+    UiImagePanelControl missionBriefingPage; /* +058C g_UiImagePanelControlVtable: Mission briefing page (page 12): description text, image, opponent setting, Back/Begin or Exit/Save. */
+    UiFramedTextButtonControl briefingBackButton; /* +05E8 g_UiFramedTextButtonControlVtable: "Back" button (action 0x2043); shown when the briefing is opened from the frontend. */
+    UiFramedTextButtonControl briefingExitButton; /* +0648 g_UiFramedTextButtonControlVtable: "Exit" button (action 0x204F); replaces Back when the briefing is opened in-game. */
+    UiFramedTextButtonControl briefingSaveButton; /* +06A8 g_UiFramedTextButtonControlVtable: "Save" button (action 0x2050); shown only in the in-game variant of the briefing. */
+    UiFramedTextButtonControl briefingBeginButton; /* +0708 g_UiFramedTextButtonControlVtable: "Begin" button (action 0x2047) that starts the mission. */
+    UiFocusProxyControl briefingTitleLabel; /* +0768 g_UiFocusProxyControlVtable: Title "Mission description (%s)". */
+    UiScrollableControl briefingTextScroller; /* +07C4 g_UiScrollableControlVtable: Scrollable frame holding the mission briefing text. */
+    UiListOffsetControl briefingText; /* +0854 g_UiListOffsetControlVtable: Mission description text; its text id is set from the level and it is resized to the text extent. */
     UiNodeBase briefingImage; /* +08B0 g_UiImageActionControlVtable: Animated mission image next to the text; its first frame is set from the level. */
     uint32_t briefingImage_fields[6];
-    UiNodeBase opponentSettingsGroup; /* +0914 g_UiFocusProxyControlVtable: Group "Settings for computer opponent" with weak/strong labels and slider. */
-    uint32_t opponentSettingsGroup_fields[4];
-    UiNodeBase opponentWeakLabel; /* +0970 g_UiFocusProxyControlVtable: Label "weak" at the left end of the opponent slider. */
-    uint32_t opponentWeakLabel_fields[4];
-    UiNodeBase opponentStrongLabel; /* +09CC g_UiFocusProxyControlVtable: Label "strong" at the right end of the opponent slider. */
-    uint32_t opponentStrongLabel_fields[4];
-    UiNodeBase gameSpeedSlider; /* +0A28 g_UiRangeSliderControlVtable: Slider 80..120 (default 100); action 0x204A applies it as game-speed percent and persists it. */
-    uint32_t gameSpeedSlider_fields[7];
-    UiNodeBase factionSetupPage; /* +0A90 g_UiImagePanelControlVtable: Page 11 "Choose faction": faction roster (colour, mode, play checkbox, participants) and task description. */
-    uint32_t factionSetupPage_fields[4];
-    UiNodeBase factionSetupBackButton; /* +0AEC g_UiFramedTextButtonControlVtable: "Back" button (action 0x2040). */
-    uint32_t factionSetupBackButton_fields[5];
-    UiNodeBase factionSetupNextButton; /* +0B4C g_UiFramedTextButtonControlVtable: "Next" button (action 0x2041). */
-    uint32_t factionSetupNextButton_fields[5];
-    UiNodeBase factionSetupTitleLabel; /* +0BAC g_UiFocusProxyControlVtable: Title "Choose faction"; hint text says a network game waits until all players are ready. */
-    uint32_t factionSetupTitleLabel_fields[5];
-    UiNodeBase factionSetupFinishButton; /* +0C0C g_UiFramedTextButtonControlVtable: "Finish" button (action 0x2042); its flag bit 2 gates the roster row checks. */
-    uint32_t factionSetupFinishButton_fields[5];
-    UiNodeBase factionRosterTable; /* +0C6C g_UiLayoutContainerControlVtable: Single-page container holding the 7-row faction table and its column headers. */
-    uint32_t factionRosterTable_fields[2];
-    UiNodeBase factionRow1NumberLabel; /* +0CC0 g_UiFocusProxyControlVtable: Row number label "1." in the Faction column. */
-    uint32_t factionRow1NumberLabel_fields[4];
-    UiNodeBase factionRow2NumberLabel; /* +0D1C g_UiFocusProxyControlVtable: Row number label "2." in the Faction column. */
-    uint32_t factionRow2NumberLabel_fields[4];
-    UiNodeBase factionRow3NumberLabel; /* +0D78 g_UiFocusProxyControlVtable: Row number label "3." in the Faction column. */
-    uint32_t factionRow3NumberLabel_fields[4];
-    UiNodeBase factionRow4NumberLabel; /* +0DD4 g_UiFocusProxyControlVtable: Row number label "4." in the Faction column. */
-    uint32_t factionRow4NumberLabel_fields[4];
-    UiNodeBase factionRow5NumberLabel; /* +0E30 g_UiFocusProxyControlVtable: Row number label "5." in the Faction column. */
-    uint32_t factionRow5NumberLabel_fields[4];
-    UiNodeBase factionRow6NumberLabel; /* +0E8C g_UiFocusProxyControlVtable: Row number label "6." in the Faction column. */
-    uint32_t factionRow6NumberLabel_fields[4];
-    UiNodeBase factionRow7NumberLabel; /* +0EE8 g_UiFocusProxyControlVtable: Row number label "7." in the Faction column. */
-    uint32_t factionRow7NumberLabel_fields[4];
-    UiNodeBase factionRow1ColourButton; /* +0F44 g_UiFramedTextButtonControlVtable: Faction 1 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
-    uint32_t factionRow1ColourButton_fields[5];
-    UiNodeBase factionRow2ColourButton; /* +0FA4 g_UiFramedTextButtonControlVtable: Faction 2 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
-    uint32_t factionRow2ColourButton_fields[5];
-    UiNodeBase factionRow3ColourButton; /* +1004 g_UiFramedTextButtonControlVtable: Faction 3 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
-    uint32_t factionRow3ColourButton_fields[5];
-    UiNodeBase factionRow4ColourButton; /* +1064 g_UiFramedTextButtonControlVtable: Faction 4 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
-    uint32_t factionRow4ColourButton_fields[5];
-    UiNodeBase factionRow5ColourButton; /* +10C4 g_UiFramedTextButtonControlVtable: Faction 5 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
-    uint32_t factionRow5ColourButton_fields[5];
-    UiNodeBase factionRow6ColourButton; /* +1124 g_UiFramedTextButtonControlVtable: Faction 6 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
-    uint32_t factionRow6ColourButton_fields[5];
-    UiNodeBase factionRow7ColourButton; /* +1184 g_UiFramedTextButtonControlVtable: Faction 7 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
-    uint32_t factionRow7ColourButton_fields[5];
-    UiNodeBase factionRow1ModeButton; /* +11E4 g_UiFramedTextButtonControlVtable: Mode button of faction 1 (Player/Computer/No-one), action 0x2045 (playerControls table). */
-    uint32_t factionRow1ModeButton_fields[5];
-    UiNodeBase factionRow2ModeButton; /* +1244 g_UiFramedTextButtonControlVtable: Mode button of faction 2 (Player/Computer/No-one), action 0x2045 (playerControls table). */
-    uint32_t factionRow2ModeButton_fields[5];
-    UiNodeBase factionRow3ModeButton; /* +12A4 g_UiFramedTextButtonControlVtable: Mode button of faction 3 (Player/Computer/No-one), action 0x2045 (playerControls table). */
-    uint32_t factionRow3ModeButton_fields[5];
-    UiNodeBase factionRow4ModeButton; /* +1304 g_UiFramedTextButtonControlVtable: Mode button of faction 4 (Player/Computer/No-one), action 0x2045 (playerControls table). */
-    uint32_t factionRow4ModeButton_fields[5];
-    UiNodeBase factionRow5ModeButton; /* +1364 g_UiFramedTextButtonControlVtable: Mode button of faction 5 (Player/Computer/No-one), action 0x2045 (playerControls table). */
-    uint32_t factionRow5ModeButton_fields[5];
-    UiNodeBase factionRow6ModeButton; /* +13C4 g_UiFramedTextButtonControlVtable: Mode button of faction 6 (Player/Computer/No-one), action 0x2045 (playerControls table). */
-    uint32_t factionRow6ModeButton_fields[5];
-    UiNodeBase factionRow7ModeButton; /* +1424 g_UiFramedTextButtonControlVtable: Mode button of faction 7 (Player/Computer/No-one), action 0x2045 (playerControls table). */
-    uint32_t factionRow7ModeButton_fields[5];
-    UiNodeBase factionRow1PlayCheckbox; /* +1484 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 1 as the one to play, action 0x2046 (selectionRows table). */
-    uint32_t factionRow1PlayCheckbox_fields[5];
-    UiNodeBase factionRow2PlayCheckbox; /* +14E4 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 2 as the one to play, action 0x2046 (selectionRows table). */
-    uint32_t factionRow2PlayCheckbox_fields[5];
-    UiNodeBase factionRow3PlayCheckbox; /* +1544 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 3 as the one to play, action 0x2046 (selectionRows table). */
-    uint32_t factionRow3PlayCheckbox_fields[5];
-    UiNodeBase factionRow4PlayCheckbox; /* +15A4 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 4 as the one to play, action 0x2046 (selectionRows table). */
-    uint32_t factionRow4PlayCheckbox_fields[5];
-    UiNodeBase factionRow5PlayCheckbox; /* +1604 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 5 as the one to play, action 0x2046 (selectionRows table). */
-    uint32_t factionRow5PlayCheckbox_fields[5];
-    UiNodeBase factionRow6PlayCheckbox; /* +1664 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 6 as the one to play, action 0x2046 (selectionRows table). */
-    uint32_t factionRow6PlayCheckbox_fields[5];
-    UiNodeBase factionRow7PlayCheckbox; /* +16C4 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 7 as the one to play, action 0x2046 (selectionRows table). */
-    uint32_t factionRow7PlayCheckbox_fields[5];
-    UiNodeBase factionRow1ParticipantsLabel; /* +1724 g_UiFocusProxyControlVtable: Participant column text for faction 1: names of the network players assigned to it. */
-    uint32_t factionRow1ParticipantsLabel_fields[4];
-    UiNodeBase factionRow2ParticipantsLabel; /* +1780 g_UiFocusProxyControlVtable: Participant column text for faction 2: names of the network players assigned to it. */
-    uint32_t factionRow2ParticipantsLabel_fields[4];
-    UiNodeBase factionRow3ParticipantsLabel; /* +17DC g_UiFocusProxyControlVtable: Participant column text for faction 3: names of the network players assigned to it. */
-    uint32_t factionRow3ParticipantsLabel_fields[4];
-    UiNodeBase factionRow4ParticipantsLabel; /* +1838 g_UiFocusProxyControlVtable: Participant column text for faction 4: names of the network players assigned to it. */
-    uint32_t factionRow4ParticipantsLabel_fields[4];
-    UiNodeBase factionRow5ParticipantsLabel; /* +1894 g_UiFocusProxyControlVtable: Participant column text for faction 5: names of the network players assigned to it. */
-    uint32_t factionRow5ParticipantsLabel_fields[4];
-    UiNodeBase factionRow6ParticipantsLabel; /* +18F0 g_UiFocusProxyControlVtable: Participant column text for faction 6: names of the network players assigned to it. */
-    uint32_t factionRow6ParticipantsLabel_fields[4];
-    UiNodeBase factionRow7ParticipantsLabel; /* +194C g_UiFocusProxyControlVtable: Participant column text for faction 7: names of the network players assigned to it. */
-    uint32_t factionRow7ParticipantsLabel_fields[4];
-    UiNodeBase rosterFactionHeader; /* +19A8 g_UiFocusProxyControlVtable: Column header "Faction" (hint: click to make the faction appear in the game). */
-    uint32_t rosterFactionHeader_fields[5];
-    UiNodeBase rosterModeHeader; /* +1A08 g_UiFocusProxyControlVtable: Column header "Mode" (hint: click several times to cycle). */
-    uint32_t rosterModeHeader_fields[5];
-    UiNodeBase rosterColourHeader; /* +1A68 g_UiFocusProxyControlVtable: Column header "Colour" (hint: choose the faction to play). */
-    uint32_t rosterColourHeader_fields[5];
-    UiNodeBase rosterAcceptHeader; /* +1AC8 g_UiFocusProxyControlVtable: Column header "Accept" above the play checkboxes. */
-    uint32_t rosterAcceptHeader_fields[4];
-    UiNodeBase rosterParticipantHeader; /* +1B24 g_UiFocusProxyControlVtable: Column header "Participant"; hidden in local (non-network) games. */
-    uint32_t rosterParticipantHeader_fields[4];
-    UiNodeBase taskDescriptionLabel; /* +1B80 g_UiFocusProxyControlVtable: Label "Task description (%s):" for the selected faction. */
-    uint32_t taskDescriptionLabel_fields[4];
-    UiNodeBase taskDescriptionText; /* +1BDC g_UiListOffsetControlVtable: Faction task text from the level (text id 0x230010 + faction + level*0x10). */
-    uint32_t taskDescriptionText_fields[4];
-    UiNodeBase gameSelectPage; /* +1C38 g_UiImagePanelControlVtable: Page 10 "Choose game": tabs Load game / Single game / Campaigns with lists and descriptions. */
-    uint32_t gameSelectPage_fields[4];
-    UiNodeBase gameSelectCancelButton; /* +1C94 g_UiFramedTextButtonControlVtable: "Cancel" button (action 0x2034). */
-    uint32_t gameSelectCancelButton_fields[5];
-    UiNodeBase gameSelectStartButton; /* +1CF4 g_UiFramedTextButtonControlVtable: "Start" button (action 0x2038) starting the selected entry. */
-    uint32_t gameSelectStartButton_fields[5];
-    UiNodeBase loadGameTabButton; /* +1D54 g_UiFramedTextButtonControlVtable: Tab button "Load game" (action 0x2035). */
-    uint32_t loadGameTabButton_fields[5];
-    UiNodeBase singleGameTabButton; /* +1DB4 g_UiFramedTextButtonControlVtable: Tab button "Single game" (action 0x2036). */
-    uint32_t singleGameTabButton_fields[5];
-    UiNodeBase campaignsTabButton; /* +1E14 g_UiFramedTextButtonControlVtable: Tab button "Campaigns" (action 0x2037). */
-    uint32_t campaignsTabButton_fields[5];
-    UiNodeBase gameSelectTitleLabel; /* +1E74 g_UiFocusProxyControlVtable: Title "Choose game". */
-    uint32_t gameSelectTitleLabel_fields[4];
-    UiNodeBase gameSelectTabStack; /* +1ED0 g_UiLayoutContainerControlVtable: Three-page stack: saved games, individual missions, campaigns. */
-    uint32_t gameSelectTabStack_fields[4];
-    UiNodeBase savedGamesScroller; /* +1F2C g_UiScrollableControlVtable: Scroll frame of the saved-games list (Load game tab). */
-    uint32_t savedGamesScroller_fields[17];
-    UiNodeBase savedGamesList; /* +1FBC g_UiListControlVtable: List of saved games (name, time, date), action 0x2039. */
-    uint32_t savedGamesList_fields[13];
-    UiNodeBase savedGamesLabel; /* +203C g_UiFocusProxyControlVtable: Label "Games saved:" above the saved-games list. */
-    uint32_t savedGamesLabel_fields[4];
-    UiNodeBase savedGameDescriptionText; /* +2098 g_UiListOffsetControlVtable: Description text of the selected saved game. */
-    uint32_t savedGameDescriptionText_fields[4];
-    UiNodeBase missionsScroller; /* +20F4 g_UiScrollableControlVtable: Scroll frame of the individual-missions list (Single game tab). */
-    uint32_t missionsScroller_fields[17];
-    UiNodeBase missionsList; /* +2184 g_UiListControlVtable: List of single missions (map, planet, size, human/total factions), action 0x203A. */
-    uint32_t missionsList_fields[19];
-    UiNodeBase missionsLabel; /* +221C g_UiFocusProxyControlVtable: Label "Individual missions:". */
-    uint32_t missionsLabel_fields[4];
-    UiNodeBase missionDescriptionText; /* +2278 g_UiListOffsetControlVtable: Description text of the selected single mission. */
-    uint32_t missionDescriptionText_fields[4];
-    UiNodeBase campaignsScroller; /* +22D4 g_UiScrollableControlVtable: Scroll frame of the campaigns list (Campaigns tab). */
-    uint32_t campaignsScroller_fields[17];
-    UiNodeBase campaignsList; /* +2364 g_UiListControlVtable: List of campaigns (name, human/total factions), action 0x203B. */
-    uint32_t campaignsList_fields[15];
-    UiNodeBase campaignsLabel; /* +23EC g_UiFocusProxyControlVtable: Label "Campaigns:". */
-    uint32_t campaignsLabel_fields[4];
-    UiNodeBase campaignDescriptionText; /* +2448 g_UiListOffsetControlVtable: Description text of the selected campaign. */
-    uint32_t campaignDescriptionText_fields[4];
-    UiNodeBase quitConfirmPage; /* +24A4 g_UiImagePanelControlVtable: Page 9 "Exit programme" confirmation. */
-    uint32_t quitConfirmPage_fields[4];
-    UiNodeBase quitNoButton; /* +2500 g_UiFramedTextButtonControlVtable: "no" button (action 0x2033) closing the quit dialog. */
-    uint32_t quitNoButton_fields[5];
-    UiNodeBase quitYesButton; /* +2560 g_UiFramedTextButtonControlVtable: "yes" button (no action id in the template) that exits the programme. */
-    uint32_t quitYesButton_fields[5];
-    UiNodeBase quitTitleLabel; /* +25C0 g_UiFocusProxyControlVtable: Title "Exit programme". */
-    uint32_t quitTitleLabel_fields[4];
-    UiNodeBase optionsPage; /* +261C g_UiImagePanelControlVtable: Page 5 "Options": graphics/3D/sound sub-pages, panel, scroll speed, map and mouse settings. */
-    uint32_t optionsPage_fields[4];
-    UiNodeBase optionsOkButton; /* +2678 g_UiFramedTextButtonControlVtable: "Ok" button (action 0x2010) closing the options. */
-    uint32_t optionsOkButton_fields[5];
-    UiNodeBase optionsTitleLabel; /* +26D8 g_UiFocusProxyControlVtable: Title "Options". */
-    uint32_t optionsTitleLabel_fields[4];
-    UiNodeBase graphicsSettingsButton; /* +2734 g_UiFramedTextButtonControlVtable: "Graphics" button (action 0x2011) opening the graphics settings page. */
-    uint32_t graphicsSettingsButton_fields[5];
-    UiNodeBase settings3DButton; /* +2794 g_UiFramedTextButtonControlVtable: "3D" button (action 0x2012) opening the 3D settings page. */
-    uint32_t settings3DButton_fields[5];
-    UiNodeBase soundSettingsButton; /* +27F4 g_UiFramedTextButtonControlVtable: "Sound" button (action 0x2013) opening the sound settings page. */
-    uint32_t soundSettingsButton_fields[5];
-    UiNodeBase hidePanelCheckbox; /* +2854 g_UiTextButtonControlVtable: Checkbox "Hide panel" (action 0x2049, persisted bit 4). */
-    uint32_t hidePanelCheckbox_fields[5];
-    UiNodeBase scrollSpeedGroup; /* +28B4 g_UiFocusProxyControlVtable: Group "Scroll speed:" with slow/fast labels and slider. */
-    uint32_t scrollSpeedGroup_fields[4];
-    UiNodeBase scrollSpeedSlowLabel; /* +2910 g_UiFocusProxyControlVtable: Label "slow" of the scroll-speed slider. */
-    uint32_t scrollSpeedSlowLabel_fields[4];
-    UiNodeBase scrollSpeedFastLabel; /* +296C g_UiFocusProxyControlVtable: Label "fast" of the scroll-speed slider. */
-    uint32_t scrollSpeedFastLabel_fields[4];
-    UiNodeBase scrollSpeedSlider; /* +29C8 g_UiRangeSliderControlVtable: Scroll-speed slider 8..128 (action 0x204B, persisted). */
-    uint32_t scrollSpeedSlider_fields[7];
-    UiNodeBase generalMapGroup; /* +2A30 g_UiTitledWindowControlVtable: Titled box "General map:" with auto-zoom and auto-rotation options. */
-    uint32_t generalMapGroup_fields[2];
-    UiNodeBase autoZoomOffCheckbox; /* +2A84 g_UiTextButtonControlVtable: Checkbox "Automatic zoom off" (action 0x203C, bit 1). */
-    uint32_t autoZoomOffCheckbox_fields[5];
-    UiNodeBase autoRotationOffCheckbox; /* +2AE4 g_UiTextButtonControlVtable: Checkbox "Automatic rotation off" (action 0x203D, bit 2). */
-    uint32_t autoRotationOffCheckbox_fields[5];
-    UiNodeBase mouseCommandsGroup; /* +2B44 g_UiTitledWindowControlVtable: Titled box "Mouse commands:" with the mouse option checkboxes. */
-    uint32_t mouseCommandsGroup_fields[2];
-    UiNodeBase linkRotationZoomCheckbox; /* +2B98 g_UiTextButtonControlVtable: Checkbox "Link rotation/zoom" (action 0x203E, bit 1). */
-    uint32_t linkRotationZoomCheckbox_fields[5];
-    UiNodeBase linkRotationTiltCheckbox; /* +2BF8 g_UiTextButtonControlVtable: Checkbox "Link rotation/tilt" (action 0x203F, bit 2). */
-    uint32_t linkRotationTiltCheckbox_fields[5];
-    UiNodeBase rightButtonNoScrollCheckbox; /* +2C58 g_UiTextButtonControlVtable: Checkbox "Right button does not scroll" (action 0x2051). */
-    uint32_t rightButtonNoScrollCheckbox_fields[5];
-    UiNodeBase displaySettingsPage; /* +2CB8 g_UiImagePanelControlVtable: Page-stack page 6 (opened by action 0x2011; open-thandor: page 0 of displayPageStack): display adapter, resolution and colour-depth selection. */
-    uint32_t displaySettingsPage_fields[4];
-    UiNodeBase displaySettingsBackButton; /* +2D14 g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options menu page (page 5). */
-    uint32_t displaySettingsBackButton_fields[5];
-    UiNodeBase displaySettingsApplyButton; /* +2D74 g_UiFramedTextButtonControlVtable: Action 0x2031 FrontendDisplaySettings_ApplyMode: applies the pending display mode. */
-    uint32_t displaySettingsApplyButton_fields[5];
-    UiNodeBase displaySettingsTitle; /* +2DD4 g_UiFocusProxyControlVtable: Page title caption (text 0x2124) of the display settings page. */
-    uint32_t displaySettingsTitle_fields[4];
-    UiNodeBase displayAdapterGroup; /* +2E30 g_UiTitledWindowControlVtable: Titled box (text 0x2125) holding the five graphics-adapter choices. */
-    uint32_t displayAdapterGroup_fields[2];
-    UiNodeBase displayAdapterOption1; /* +2E84 g_UiPayloadPairTextButtonVtable: Adapter choice 0 (action 0x202C); label filled from g_GraphicsAdapters[0]. */
-    uint32_t displayAdapterOption1_fields[7];
-    UiNodeBase displayAdapterOption2; /* +2EEC g_UiPayloadPairTextButtonVtable: Adapter choice 1 (action 0x202D). */
-    uint32_t displayAdapterOption2_fields[7];
-    UiNodeBase displayAdapterOption3; /* +2F54 g_UiPayloadPairTextButtonVtable: Adapter choice 2 (action 0x202E). */
-    uint32_t displayAdapterOption3_fields[7];
-    UiNodeBase displayAdapterOption4; /* +2FBC g_UiPayloadPairTextButtonVtable: Adapter choice 3 (action 0x202F). */
-    uint32_t displayAdapterOption4_fields[7];
-    UiNodeBase displayAdapterOption5; /* +3024 g_UiPayloadPairTextButtonVtable: Adapter choice 4 (action 0x2030). */
-    uint32_t displayAdapterOption5_fields[7];
-    UiNodeBase displayResolutionGroup; /* +308C g_UiTitledWindowControlVtable: Titled box (text 0x2126) holding the ten resolution choices. */
-    uint32_t displayResolutionGroup_fields[2];
-    UiNodeBase displayResolutionOption1; /* +30E0 g_UiNumericPairTextButtonVtable: Resolution choice 1 (action 0x2022, width/height pair set at runtime). */
-    uint32_t displayResolutionOption1_fields[7];
-    UiNodeBase displayResolutionOption2; /* +3148 g_UiNumericPairTextButtonVtable: Resolution choice 2 (action 0x2023). */
-    uint32_t displayResolutionOption2_fields[7];
-    UiNodeBase displayResolutionOption3; /* +31B0 g_UiNumericPairTextButtonVtable: Resolution choice 3 (action 0x2024). */
-    uint32_t displayResolutionOption3_fields[7];
-    UiNodeBase displayResolutionOption4; /* +3218 g_UiNumericPairTextButtonVtable: Resolution choice 4 (action 0x2025). */
-    uint32_t displayResolutionOption4_fields[7];
-    UiNodeBase displayResolutionOption5; /* +3280 g_UiNumericPairTextButtonVtable: Resolution choice 5 (action 0x2026). */
-    uint32_t displayResolutionOption5_fields[7];
-    UiNodeBase displayResolutionOption6; /* +32E8 g_UiNumericPairTextButtonVtable: Resolution choice 6 (action 0x2027). */
-    uint32_t displayResolutionOption6_fields[7];
-    UiNodeBase displayResolutionOption7; /* +3350 g_UiNumericPairTextButtonVtable: Resolution choice 7 (action 0x2028). */
-    uint32_t displayResolutionOption7_fields[7];
-    UiNodeBase displayResolutionOption8; /* +33B8 g_UiNumericPairTextButtonVtable: Resolution choice 8 (action 0x2029). */
-    uint32_t displayResolutionOption8_fields[7];
-    UiNodeBase displayResolutionOption9; /* +3420 g_UiNumericPairTextButtonVtable: Resolution choice 9 (action 0x202A). */
-    uint32_t displayResolutionOption9_fields[7];
-    UiNodeBase displayResolutionOption10; /* +3488 g_UiNumericPairTextButtonVtable: Resolution choice 10 (action 0x202B). */
-    uint32_t displayResolutionOption10_fields[7];
+    UiFocusProxyControl opponentSettingsGroup; /* +0914 g_UiFocusProxyControlVtable: Group "Settings for computer opponent" with weak/strong labels and slider. */
+    UiFocusProxyControl opponentWeakLabel; /* +0970 g_UiFocusProxyControlVtable: Label "weak" at the left end of the opponent slider. */
+    UiFocusProxyControl opponentStrongLabel; /* +09CC g_UiFocusProxyControlVtable: Label "strong" at the right end of the opponent slider. */
+    UiRangeSliderControl gameSpeedSlider; /* +0A28 g_UiRangeSliderControlVtable: Slider 80..120 (default 100); action 0x204A applies it as game-speed percent and persists it. */
+    UiImagePanelControl factionSetupPage; /* +0A90 g_UiImagePanelControlVtable: Page 11 "Choose faction": faction roster (colour, mode, play checkbox, participants) and task description. */
+    UiFramedTextButtonControl factionSetupBackButton; /* +0AEC g_UiFramedTextButtonControlVtable: "Back" button (action 0x2040). */
+    UiFramedTextButtonControl factionSetupNextButton; /* +0B4C g_UiFramedTextButtonControlVtable: "Next" button (action 0x2041). */
+    UiFocusProxyControl factionSetupTitleLabel; /* +0BAC g_UiFocusProxyControlVtable: Title "Choose faction"; hint text says a network game waits until all players are ready. */
+    uint32_t factionSetupTitleLabel_trailing[1]; /* +0C08: template dwords behind the control */
+    UiFramedTextButtonControl factionSetupFinishButton; /* +0C0C g_UiFramedTextButtonControlVtable: "Finish" button (action 0x2042); its flag bit 2 gates the roster row checks. */
+    UiLayoutContainerControl<1> factionRosterTable; /* +0C6C g_UiLayoutContainerControlVtable: Single-page container holding the 7-row faction table and its column headers. */
+    UiFocusProxyControl factionRow1NumberLabel; /* +0CC0 g_UiFocusProxyControlVtable: Row number label "1." in the Faction column. */
+    UiFocusProxyControl factionRow2NumberLabel; /* +0D1C g_UiFocusProxyControlVtable: Row number label "2." in the Faction column. */
+    UiFocusProxyControl factionRow3NumberLabel; /* +0D78 g_UiFocusProxyControlVtable: Row number label "3." in the Faction column. */
+    UiFocusProxyControl factionRow4NumberLabel; /* +0DD4 g_UiFocusProxyControlVtable: Row number label "4." in the Faction column. */
+    UiFocusProxyControl factionRow5NumberLabel; /* +0E30 g_UiFocusProxyControlVtable: Row number label "5." in the Faction column. */
+    UiFocusProxyControl factionRow6NumberLabel; /* +0E8C g_UiFocusProxyControlVtable: Row number label "6." in the Faction column. */
+    UiFocusProxyControl factionRow7NumberLabel; /* +0EE8 g_UiFocusProxyControlVtable: Row number label "7." in the Faction column. */
+    UiFramedTextButtonControl factionRow1ColourButton; /* +0F44 g_UiFramedTextButtonControlVtable: Faction 1 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
+    UiFramedTextButtonControl factionRow2ColourButton; /* +0FA4 g_UiFramedTextButtonControlVtable: Faction 2 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
+    UiFramedTextButtonControl factionRow3ColourButton; /* +1004 g_UiFramedTextButtonControlVtable: Faction 3 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
+    UiFramedTextButtonControl factionRow4ColourButton; /* +1064 g_UiFramedTextButtonControlVtable: Faction 4 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
+    UiFramedTextButtonControl factionRow5ColourButton; /* +10C4 g_UiFramedTextButtonControlVtable: Faction 5 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
+    UiFramedTextButtonControl factionRow6ColourButton; /* +1124 g_UiFramedTextButtonControlVtable: Faction 6 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
+    UiFramedTextButtonControl factionRow7ColourButton; /* +1184 g_UiFramedTextButtonControlVtable: Faction 7 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour. */
+    UiFramedTextButtonControl factionRow1ModeButton; /* +11E4 g_UiFramedTextButtonControlVtable: Mode button of faction 1 (Player/Computer/No-one), action 0x2045 (playerControls table). */
+    UiFramedTextButtonControl factionRow2ModeButton; /* +1244 g_UiFramedTextButtonControlVtable: Mode button of faction 2 (Player/Computer/No-one), action 0x2045 (playerControls table). */
+    UiFramedTextButtonControl factionRow3ModeButton; /* +12A4 g_UiFramedTextButtonControlVtable: Mode button of faction 3 (Player/Computer/No-one), action 0x2045 (playerControls table). */
+    UiFramedTextButtonControl factionRow4ModeButton; /* +1304 g_UiFramedTextButtonControlVtable: Mode button of faction 4 (Player/Computer/No-one), action 0x2045 (playerControls table). */
+    UiFramedTextButtonControl factionRow5ModeButton; /* +1364 g_UiFramedTextButtonControlVtable: Mode button of faction 5 (Player/Computer/No-one), action 0x2045 (playerControls table). */
+    UiFramedTextButtonControl factionRow6ModeButton; /* +13C4 g_UiFramedTextButtonControlVtable: Mode button of faction 6 (Player/Computer/No-one), action 0x2045 (playerControls table). */
+    UiFramedTextButtonControl factionRow7ModeButton; /* +1424 g_UiFramedTextButtonControlVtable: Mode button of faction 7 (Player/Computer/No-one), action 0x2045 (playerControls table). */
+    UiTextButtonControl factionRow1PlayCheckbox; /* +1484 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 1 as the one to play, action 0x2046 (selectionRows table). */
+    UiTextButtonControl factionRow2PlayCheckbox; /* +14E4 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 2 as the one to play, action 0x2046 (selectionRows table). */
+    UiTextButtonControl factionRow3PlayCheckbox; /* +1544 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 3 as the one to play, action 0x2046 (selectionRows table). */
+    UiTextButtonControl factionRow4PlayCheckbox; /* +15A4 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 4 as the one to play, action 0x2046 (selectionRows table). */
+    UiTextButtonControl factionRow5PlayCheckbox; /* +1604 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 5 as the one to play, action 0x2046 (selectionRows table). */
+    UiTextButtonControl factionRow6PlayCheckbox; /* +1664 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 6 as the one to play, action 0x2046 (selectionRows table). */
+    UiTextButtonControl factionRow7PlayCheckbox; /* +16C4 g_UiTextButtonControlVtable: Checkbox under "Accept" choosing faction 7 as the one to play, action 0x2046 (selectionRows table). */
+    UiFocusProxyControl factionRow1ParticipantsLabel; /* +1724 g_UiFocusProxyControlVtable: Participant column text for faction 1: names of the network players assigned to it. */
+    UiFocusProxyControl factionRow2ParticipantsLabel; /* +1780 g_UiFocusProxyControlVtable: Participant column text for faction 2: names of the network players assigned to it. */
+    UiFocusProxyControl factionRow3ParticipantsLabel; /* +17DC g_UiFocusProxyControlVtable: Participant column text for faction 3: names of the network players assigned to it. */
+    UiFocusProxyControl factionRow4ParticipantsLabel; /* +1838 g_UiFocusProxyControlVtable: Participant column text for faction 4: names of the network players assigned to it. */
+    UiFocusProxyControl factionRow5ParticipantsLabel; /* +1894 g_UiFocusProxyControlVtable: Participant column text for faction 5: names of the network players assigned to it. */
+    UiFocusProxyControl factionRow6ParticipantsLabel; /* +18F0 g_UiFocusProxyControlVtable: Participant column text for faction 6: names of the network players assigned to it. */
+    UiFocusProxyControl factionRow7ParticipantsLabel; /* +194C g_UiFocusProxyControlVtable: Participant column text for faction 7: names of the network players assigned to it. */
+    UiFocusProxyControl rosterFactionHeader; /* +19A8 g_UiFocusProxyControlVtable: Column header "Faction" (hint: click to make the faction appear in the game). */
+    uint32_t rosterFactionHeader_trailing[1]; /* +1A04: template dwords behind the control */
+    UiFocusProxyControl rosterModeHeader; /* +1A08 g_UiFocusProxyControlVtable: Column header "Mode" (hint: click several times to cycle). */
+    uint32_t rosterModeHeader_trailing[1]; /* +1A64: template dwords behind the control */
+    UiFocusProxyControl rosterColourHeader; /* +1A68 g_UiFocusProxyControlVtable: Column header "Colour" (hint: choose the faction to play). */
+    uint32_t rosterColourHeader_trailing[1]; /* +1AC4: template dwords behind the control */
+    UiFocusProxyControl rosterAcceptHeader; /* +1AC8 g_UiFocusProxyControlVtable: Column header "Accept" above the play checkboxes. */
+    UiFocusProxyControl rosterParticipantHeader; /* +1B24 g_UiFocusProxyControlVtable: Column header "Participant"; hidden in local (non-network) games. */
+    UiFocusProxyControl taskDescriptionLabel; /* +1B80 g_UiFocusProxyControlVtable: Label "Task description (%s):" for the selected faction. */
+    UiListOffsetControl taskDescriptionText; /* +1BDC g_UiListOffsetControlVtable: Faction task text from the level (text id 0x230010 + faction + level*0x10). */
+    UiImagePanelControl gameSelectPage; /* +1C38 g_UiImagePanelControlVtable: Page 10 "Choose game": tabs Load game / Single game / Campaigns with lists and descriptions. */
+    UiFramedTextButtonControl gameSelectCancelButton; /* +1C94 g_UiFramedTextButtonControlVtable: "Cancel" button (action 0x2034). */
+    UiFramedTextButtonControl gameSelectStartButton; /* +1CF4 g_UiFramedTextButtonControlVtable: "Start" button (action 0x2038) starting the selected entry. */
+    UiFramedTextButtonControl loadGameTabButton; /* +1D54 g_UiFramedTextButtonControlVtable: Tab button "Load game" (action 0x2035). */
+    UiFramedTextButtonControl singleGameTabButton; /* +1DB4 g_UiFramedTextButtonControlVtable: Tab button "Single game" (action 0x2036). */
+    UiFramedTextButtonControl campaignsTabButton; /* +1E14 g_UiFramedTextButtonControlVtable: Tab button "Campaigns" (action 0x2037). */
+    UiFocusProxyControl gameSelectTitleLabel; /* +1E74 g_UiFocusProxyControlVtable: Title "Choose game". */
+    UiLayoutContainerControl<3> gameSelectTabStack; /* +1ED0 g_UiLayoutContainerControlVtable: Three-page stack: saved games, individual missions, campaigns. */
+    UiScrollableControl savedGamesScroller; /* +1F2C g_UiScrollableControlVtable: Scroll frame of the saved-games list (Load game tab). */
+    UiListControl savedGamesList; /* +1FBC g_UiListControlVtable: List of saved games (name, time, date), action 0x2039. */
+    uint32_t savedGamesList_trailing[3]; /* +2030: template dwords behind the control */
+    UiFocusProxyControl savedGamesLabel; /* +203C g_UiFocusProxyControlVtable: Label "Games saved:" above the saved-games list. */
+    UiListOffsetControl savedGameDescriptionText; /* +2098 g_UiListOffsetControlVtable: Description text of the selected saved game. */
+    UiScrollableControl missionsScroller; /* +20F4 g_UiScrollableControlVtable: Scroll frame of the individual-missions list (Single game tab). */
+    UiListControl missionsList; /* +2184 g_UiListControlVtable: List of single missions (map, planet, size, human/total factions), action 0x203A. */
+    uint32_t missionsList_trailing[9]; /* +21F8: template dwords behind the control */
+    UiFocusProxyControl missionsLabel; /* +221C g_UiFocusProxyControlVtable: Label "Individual missions:". */
+    UiListOffsetControl missionDescriptionText; /* +2278 g_UiListOffsetControlVtable: Description text of the selected single mission. */
+    UiScrollableControl campaignsScroller; /* +22D4 g_UiScrollableControlVtable: Scroll frame of the campaigns list (Campaigns tab). */
+    UiListControl campaignsList; /* +2364 g_UiListControlVtable: List of campaigns (name, human/total factions), action 0x203B. */
+    uint32_t campaignsList_trailing[5]; /* +23D8: template dwords behind the control */
+    UiFocusProxyControl campaignsLabel; /* +23EC g_UiFocusProxyControlVtable: Label "Campaigns:". */
+    UiListOffsetControl campaignDescriptionText; /* +2448 g_UiListOffsetControlVtable: Description text of the selected campaign. */
+    UiImagePanelControl quitConfirmPage; /* +24A4 g_UiImagePanelControlVtable: Page 9 "Exit programme" confirmation. */
+    UiFramedTextButtonControl quitNoButton; /* +2500 g_UiFramedTextButtonControlVtable: "no" button (action 0x2033) closing the quit dialog. */
+    UiFramedTextButtonControl quitYesButton; /* +2560 g_UiFramedTextButtonControlVtable: "yes" button (no action id in the template) that exits the programme. */
+    UiFocusProxyControl quitTitleLabel; /* +25C0 g_UiFocusProxyControlVtable: Title "Exit programme". */
+    UiImagePanelControl optionsPage; /* +261C g_UiImagePanelControlVtable: Page 5 "Options": graphics/3D/sound sub-pages, panel, scroll speed, map and mouse settings. */
+    UiFramedTextButtonControl optionsOkButton; /* +2678 g_UiFramedTextButtonControlVtable: "Ok" button (action 0x2010) closing the options. */
+    UiFocusProxyControl optionsTitleLabel; /* +26D8 g_UiFocusProxyControlVtable: Title "Options". */
+    UiFramedTextButtonControl graphicsSettingsButton; /* +2734 g_UiFramedTextButtonControlVtable: "Graphics" button (action 0x2011) opening the graphics settings page. */
+    UiFramedTextButtonControl settings3DButton; /* +2794 g_UiFramedTextButtonControlVtable: "3D" button (action 0x2012) opening the 3D settings page. */
+    UiFramedTextButtonControl soundSettingsButton; /* +27F4 g_UiFramedTextButtonControlVtable: "Sound" button (action 0x2013) opening the sound settings page. */
+    UiTextButtonControl hidePanelCheckbox; /* +2854 g_UiTextButtonControlVtable: Checkbox "Hide panel" (action 0x2049, persisted bit 4). */
+    UiFocusProxyControl scrollSpeedGroup; /* +28B4 g_UiFocusProxyControlVtable: Group "Scroll speed:" with slow/fast labels and slider. */
+    UiFocusProxyControl scrollSpeedSlowLabel; /* +2910 g_UiFocusProxyControlVtable: Label "slow" of the scroll-speed slider. */
+    UiFocusProxyControl scrollSpeedFastLabel; /* +296C g_UiFocusProxyControlVtable: Label "fast" of the scroll-speed slider. */
+    UiRangeSliderControl scrollSpeedSlider; /* +29C8 g_UiRangeSliderControlVtable: Scroll-speed slider 8..128 (action 0x204B, persisted). */
+    UiTitledWindowControl generalMapGroup; /* +2A30 g_UiTitledWindowControlVtable: Titled box "General map:" with auto-zoom and auto-rotation options. */
+    UiTextButtonControl autoZoomOffCheckbox; /* +2A84 g_UiTextButtonControlVtable: Checkbox "Automatic zoom off" (action 0x203C, bit 1). */
+    UiTextButtonControl autoRotationOffCheckbox; /* +2AE4 g_UiTextButtonControlVtable: Checkbox "Automatic rotation off" (action 0x203D, bit 2). */
+    UiTitledWindowControl mouseCommandsGroup; /* +2B44 g_UiTitledWindowControlVtable: Titled box "Mouse commands:" with the mouse option checkboxes. */
+    UiTextButtonControl linkRotationZoomCheckbox; /* +2B98 g_UiTextButtonControlVtable: Checkbox "Link rotation/zoom" (action 0x203E, bit 1). */
+    UiTextButtonControl linkRotationTiltCheckbox; /* +2BF8 g_UiTextButtonControlVtable: Checkbox "Link rotation/tilt" (action 0x203F, bit 2). */
+    UiTextButtonControl rightButtonNoScrollCheckbox; /* +2C58 g_UiTextButtonControlVtable: Checkbox "Right button does not scroll" (action 0x2051). */
+    UiImagePanelControl displaySettingsPage; /* +2CB8 g_UiImagePanelControlVtable: Page-stack page 6 (opened by action 0x2011; open-thandor: page 0 of displayPageStack): display adapter, resolution and colour-depth selection. */
+    UiFramedTextButtonControl displaySettingsBackButton; /* +2D14 g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options menu page (page 5). */
+    UiFramedTextButtonControl displaySettingsApplyButton; /* +2D74 g_UiFramedTextButtonControlVtable: Action 0x2031 FrontendDisplaySettings_ApplyMode: applies the pending display mode. */
+    UiFocusProxyControl displaySettingsTitle; /* +2DD4 g_UiFocusProxyControlVtable: Page title caption (text 0x2124) of the display settings page. */
+    UiTitledWindowControl displayAdapterGroup; /* +2E30 g_UiTitledWindowControlVtable: Titled box (text 0x2125) holding the five graphics-adapter choices. */
+    UiPayloadPairTextButton displayAdapterOption1; /* +2E84 g_UiPayloadPairTextButtonVtable: Adapter choice 0 (action 0x202C); label filled from g_GraphicsAdapters[0]. */
+    UiPayloadPairTextButton displayAdapterOption2; /* +2EEC g_UiPayloadPairTextButtonVtable: Adapter choice 1 (action 0x202D). */
+    UiPayloadPairTextButton displayAdapterOption3; /* +2F54 g_UiPayloadPairTextButtonVtable: Adapter choice 2 (action 0x202E). */
+    UiPayloadPairTextButton displayAdapterOption4; /* +2FBC g_UiPayloadPairTextButtonVtable: Adapter choice 3 (action 0x202F). */
+    UiPayloadPairTextButton displayAdapterOption5; /* +3024 g_UiPayloadPairTextButtonVtable: Adapter choice 4 (action 0x2030). */
+    UiTitledWindowControl displayResolutionGroup; /* +308C g_UiTitledWindowControlVtable: Titled box (text 0x2126) holding the ten resolution choices. */
+    UiNumericPairTextButton displayResolutionOption1; /* +30E0 g_UiNumericPairTextButtonVtable: Resolution choice 1 (action 0x2022, width/height pair set at runtime). */
+    UiNumericPairTextButton displayResolutionOption2; /* +3148 g_UiNumericPairTextButtonVtable: Resolution choice 2 (action 0x2023). */
+    UiNumericPairTextButton displayResolutionOption3; /* +31B0 g_UiNumericPairTextButtonVtable: Resolution choice 3 (action 0x2024). */
+    UiNumericPairTextButton displayResolutionOption4; /* +3218 g_UiNumericPairTextButtonVtable: Resolution choice 4 (action 0x2025). */
+    UiNumericPairTextButton displayResolutionOption5; /* +3280 g_UiNumericPairTextButtonVtable: Resolution choice 5 (action 0x2026). */
+    UiNumericPairTextButton displayResolutionOption6; /* +32E8 g_UiNumericPairTextButtonVtable: Resolution choice 6 (action 0x2027). */
+    UiNumericPairTextButton displayResolutionOption7; /* +3350 g_UiNumericPairTextButtonVtable: Resolution choice 7 (action 0x2028). */
+    UiNumericPairTextButton displayResolutionOption8; /* +33B8 g_UiNumericPairTextButtonVtable: Resolution choice 8 (action 0x2029). */
+    UiNumericPairTextButton displayResolutionOption9; /* +3420 g_UiNumericPairTextButtonVtable: Resolution choice 9 (action 0x202A). */
+    UiNumericPairTextButton displayResolutionOption10; /* +3488 g_UiNumericPairTextButtonVtable: Resolution choice 10 (action 0x202B). */
     /* The colour depth group and its four choices: unused since open-thandor runs in 32-bit colour only (not linked
        into the display settings page; kept so the image keeps its layout). */
-    UiNodeBase displayColorDepthGroup; /* +34F0 g_UiTitledWindowControlVtable: Titled box (text 0x2127) holding the four colour-depth choices. */
-    uint32_t displayColorDepthGroup_fields[2];
-    UiNodeBase displayColorDepthOption1; /* +3544 g_UiNumericPairTextButtonVtable: Lowest available bits-per-pixel choice (action 0x201E, value filled by action 0x2011). */
-    uint32_t displayColorDepthOption1_fields[7];
-    UiNodeBase displayColorDepthOption2; /* +35AC g_UiNumericPairTextButtonVtable: Second colour-depth choice (action 0x201F). */
-    uint32_t displayColorDepthOption2_fields[7];
-    UiNodeBase displayColorDepthOption3; /* +3614 g_UiNumericPairTextButtonVtable: Third colour-depth choice (action 0x2020). */
-    uint32_t displayColorDepthOption3_fields[7];
-    UiNodeBase displayColorDepthOption4; /* +367C g_UiNumericPairTextButtonVtable: Fourth colour-depth choice (action 0x2021). */
-    uint32_t displayColorDepthOption4_fields[7];
-    UiNodeBase graphicsSettingsPage; /* +36E4 g_UiImagePanelControlVtable: Page-stack page 7 (action 0x2012): shading, polygon detail and texture quality. */
-    uint32_t graphicsSettingsPage_fields[4];
-    UiNodeBase graphicsSettingsBackButton; /* +3740 g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options menu page. */
-    uint32_t graphicsSettingsBackButton_fields[5];
-    UiNodeBase graphicsSettingsTitle; /* +37A0 g_UiFocusProxyControlVtable: Page title caption (text 0x212E) of the graphics settings page. */
-    uint32_t graphicsSettingsTitle_fields[4];
-    UiNodeBase shadingEnabledCheckbox; /* +37FC g_UiTextButtonControlVtable: Toggle (action 0x2014 FrontendShadingSettings_SetEnabled) for shading on/off. */
-    uint32_t shadingEnabledCheckbox_fields[5];
-    UiNodeBase shadingLevelGroup; /* +385C g_UiTitledWindowControlVtable: Titled box (text 0x2130) with the six shading grid/depth levels. */
-    uint32_t shadingLevelGroup_fields[2];
-    UiNodeBase shadingLevelGrid32Depth32; /* +38B0 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x20, depth 0x20. */
-    uint32_t shadingLevelGrid32Depth32_fields[7];
-    UiNodeBase shadingLevelGrid32Depth64; /* +3918 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x20, depth 0x40. */
-    uint32_t shadingLevelGrid32Depth64_fields[7];
-    UiNodeBase shadingLevelGrid32Depth128; /* +3980 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x20, depth 0x80. */
-    uint32_t shadingLevelGrid32Depth128_fields[7];
-    UiNodeBase shadingLevelGrid64Depth64; /* +39E8 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x40, depth 0x40. */
-    uint32_t shadingLevelGrid64Depth64_fields[7];
-    UiNodeBase shadingLevelGrid64Depth128; /* +3A50 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x40, depth 0x80. */
-    uint32_t shadingLevelGrid64Depth128_fields[7];
-    UiNodeBase shadingLevelGrid128Depth128; /* +3AB8 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x80, depth 0x80. */
-    uint32_t shadingLevelGrid128Depth128_fields[7];
-    UiNodeBase polygonDetailLabel; /* +3B20 g_UiFocusProxyControlVtable: Caption (text 0x2131) bound to the polygon-detail slider 0x3C34. */
-    uint32_t polygonDetailLabel_fields[4];
-    UiNodeBase polygonDetailMinCaption; /* +3B7C g_UiFocusProxyControlVtable: Low-end caption (text 0x2134) under the polygon-detail slider. */
-    uint32_t polygonDetailMinCaption_fields[4];
-    UiNodeBase polygonDetailMaxCaption; /* +3BD8 g_UiFocusProxyControlVtable: High-end caption (text 0x2135) under the polygon-detail slider. */
-    uint32_t polygonDetailMaxCaption_fields[4];
-    UiNodeBase polygonDetailSlider; /* +3C34 g_UiRangeSliderControlVtable: Slider 0x4000..0x40000 (action 0x2016) setting the model LOD depth threshold. */
-    uint32_t polygonDetailSlider_fields[7];
-    UiNodeBase textureQualityGroup; /* +3C9C g_UiTitledWindowControlVtable: Titled box (text 0x2132) with the three texture-quality choices. */
-    uint32_t textureQualityGroup_fields[2];
-    UiNodeBase textureQualityLow; /* +3CF0 g_UiTextButtonControlVtable: Texture quality choice 1 (action 0x2017, text 0x2136). */
-    uint32_t textureQualityLow_fields[5];
-    UiNodeBase textureQualityMedium; /* +3D50 g_UiTextButtonControlVtable: Texture quality choice 2 (action 0x2017, text 0x2137). */
-    uint32_t textureQualityMedium_fields[5];
-    UiNodeBase textureQualityHigh; /* +3DB0 g_UiTextButtonControlVtable: Texture quality choice 3 (action 0x2017, text 0x2138). */
-    uint32_t textureQualityHigh_fields[5];
-    UiNodeBase audioSettingsPage; /* +3E10 g_UiImagePanelControlVtable: Page-stack page 8 (action 0x2013): sound toggles and volume sliders. */
-    uint32_t audioSettingsPage_fields[4];
-    UiNodeBase audioSettingsBackButton; /* +3E6C g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options menu page. */
-    uint32_t audioSettingsBackButton_fields[5];
-    UiNodeBase audioSettingsTitle; /* +3ECC g_UiFocusProxyControlVtable: Page title caption (text 0x213A) of the audio settings page. */
-    uint32_t audioSettingsTitle_fields[4];
-    UiNodeBase musicEnabledCheckbox; /* +3F28 g_UiTextButtonControlVtable: Toggle (action 0x2019) that starts/stops frontend music. */
-    uint32_t musicEnabledCheckbox_fields[5];
-    UiNodeBase soundEffectsEnabledCheckbox; /* +3F88 g_UiTextButtonControlVtable: Toggle (action 0x2018) for sound effects on/off. */
-    uint32_t soundEffectsEnabledCheckbox_fields[5];
-    UiNodeBase reverseStereoCheckbox; /* +3FE8 g_UiTextButtonControlVtable: Toggle (action 0x201A) that swaps left/right stereo channels. */
-    uint32_t reverseStereoCheckbox_fields[5];
-    UiNodeBase effectsVolumeLabel; /* +4048 g_UiFocusProxyControlVtable: Caption (text 0x213E) bound to the effects-volume slider 0x415C. */
-    uint32_t effectsVolumeLabel_fields[4];
-    UiNodeBase effectsVolumeMinCaption; /* +40A4 g_UiFocusProxyControlVtable: Low-end caption (text 0x2141) of the effects-volume slider. */
-    uint32_t effectsVolumeMinCaption_fields[4];
-    UiNodeBase effectsVolumeMaxCaption; /* +4100 g_UiFocusProxyControlVtable: High-end caption (text 0x2142) of the effects-volume slider. */
-    uint32_t effectsVolumeMaxCaption_fields[4];
-    UiNodeBase effectsVolumeSlider; /* +415C g_UiRangeSliderControlVtable: Slider 0..0x8000 (action 0x201B) setting the effects gain. */
-    uint32_t effectsVolumeSlider_fields[7];
-    UiNodeBase movieVolumeLabel; /* +41C4 g_UiFocusProxyControlVtable: Caption (text 0x213F) bound to the movie-volume slider 0x42D8. */
-    uint32_t movieVolumeLabel_fields[4];
-    UiNodeBase movieVolumeMinCaption; /* +4220 g_UiFocusProxyControlVtable: Low-end caption (text 0x2141) of the movie-volume slider. */
-    uint32_t movieVolumeMinCaption_fields[4];
-    UiNodeBase movieVolumeMaxCaption; /* +427C g_UiFocusProxyControlVtable: High-end caption (text 0x2142) of the movie-volume slider. */
-    uint32_t movieVolumeMaxCaption_fields[4];
-    UiNodeBase movieVolumeSlider; /* +42D8 g_UiRangeSliderControlVtable: Slider 0..0x8000 (action 0x201C) setting the default movie audio gain. */
-    uint32_t movieVolumeSlider_fields[7];
-    UiNodeBase musicVolumeLabel; /* +4340 g_UiFocusProxyControlVtable: Caption (text 0x2140) bound to the music-volume slider 0x4454. */
-    uint32_t musicVolumeLabel_fields[4];
-    UiNodeBase musicVolumeMinCaption; /* +439C g_UiFocusProxyControlVtable: Low-end caption (text 0x2141) of the music-volume slider. */
-    uint32_t musicVolumeMinCaption_fields[4];
-    UiNodeBase musicVolumeMaxCaption; /* +43F8 g_UiFocusProxyControlVtable: High-end caption (text 0x2142) of the music-volume slider. */
-    uint32_t musicVolumeMaxCaption_fields[4];
-    UiNodeBase musicVolumeSlider; /* +4454 g_UiRangeSliderControlVtable: Slider 0..0x8000 (action 0x201D) setting the music gain. */
-    uint32_t musicVolumeSlider_fields[7];
-    UiNodeBase movieEventVolumeLabel; /* +44BC g_UiFocusProxyControlVtable: Caption (text 0x2143) bound to the alternate movie-volume slider 0x45D0. */
-    uint32_t movieEventVolumeLabel_fields[4];
-    UiNodeBase movieEventVolumeMinCaption; /* +4518 g_UiFocusProxyControlVtable: Low-end caption (text 0x2141) of the alternate movie-volume slider. */
-    uint32_t movieEventVolumeMinCaption_fields[4];
-    UiNodeBase movieEventVolumeMaxCaption; /* +4574 g_UiFocusProxyControlVtable: High-end caption (text 0x2142) of the alternate movie-volume slider. */
-    uint32_t movieEventVolumeMaxCaption_fields[4];
-    UiNodeBase movieEventVolumeSlider; /* +45D0 g_UiRangeSliderControlVtable: Slider 0..0x8000 (action 0x204E) setting the alternate movie gain used by timed movie events. */
-    uint32_t movieEventVolumeSlider_fields[7];
-    UiNodeBase topBlackBar; /* +4638 g_UiFillPanelControlVtable: Black fill panel over the top eighth of the screen, sibling after the page stack. */
-    uint32_t topBlackBar_fields[4];
-    UiNodeBase bottomBar; /* +4694 g_UiFillPanelControlVtable: Black fill panel over the bottom eighth of the screen; holds the status text and the chat input container 0xB0. */
-    uint32_t bottomBar_fields[4];
-    UiNodeBase bottomBarConditionalAction; /* +46F0 g_UiConditionalActionControlVtable: Zero-size ConditionalAction control centred in the bottom bar (action -1); exact role unknown. */
-    uint32_t bottomBarConditionalAction_fields[5];
-    UiNodeBase bottomBarStatusText; /* +4750 g_UiFocusProxyControlVtable: Full-size caption (style 0xA, text 0x112) in the bottom bar; probably the status/help line (role inferred). */
-    uint32_t bottomBarStatusText_fields[4];
-    UiNodeBase transferProgressGauge; /* +47AC g_UiTransferProgressGaugeVtable: Horizontal gauge (UiHorizontalGaugeControl subclass) in the bottom-right corner of the bottom bar; reloads its range from the transfer mailbox before drawing: the file-transfer progress. */
-    uint32_t transferProgressGauge_fields[4];
-    UiNodeBase networkGamePage; /* +4808 g_UiImagePanelControlVtable: Page-stack page 1 (action 0x2003): network protocol, player name, host address and session list. */
-    uint32_t networkGamePage_fields[4];
-    UiNodeBase networkGameTitle; /* +4864 g_UiFocusProxyControlVtable: Page title caption (text 0x2107) of the network game page. */
-    uint32_t networkGameTitle_fields[4];
-    UiNodeBase networkGameBackButton; /* +48C0 g_UiFramedTextButtonControlVtable: Action 0x2000: resets networking and returns to the main menu. */
-    uint32_t networkGameBackButton_fields[5];
-    UiNodeBase networkGameHostButton; /* +4920 g_UiFramedTextButtonControlVtable: Action 0x2001: initialises the host (create game) setup page. */
-    uint32_t networkGameHostButton_fields[5];
-    UiNodeBase networkGameJoinButton; /* +4980 g_UiFramedTextButtonControlVtable: Action 0x2002: sends the join request (player descriptor) to the selected session. */
-    uint32_t networkGameJoinButton_fields[5];
-    UiNodeBase networkProtocolScrollBox; /* +49E0 g_UiScrollableControlVtable: Scroll frame around the network protocol/backend list. */
-    uint32_t networkProtocolScrollBox_fields[17];
-    UiNodeBase networkProtocolList; /* +4A70 g_UiTextListControlVtable: Text list of network backends (action 0x200F selects/opens the backend). */
-    uint32_t networkProtocolList_fields[7];
-    UiNodeBase sessionListScrollBox; /* +4AD8 g_UiScrollableControlVtable: Scroll frame around the list of discovered sessions. */
-    uint32_t sessionListScrollBox_fields[17];
-    UiNodeBase sessionList; /* +4B68 g_UiListControlVtable: List of discovered network sessions (g_FrontendSessionListRows, action 0x2009 updates Join availability). */
-    uint32_t sessionList_fields[14];
-    UiNodeBase hostAddressLabel; /* +4BEC g_UiFocusProxyControlVtable: Caption (text 0x2103) above the host address edit 0x4D5C. */
-    uint32_t hostAddressLabel_fields[4];
-    UiNodeBase playerNameLabel; /* +4C48 g_UiFocusProxyControlVtable: Caption (text 0x2106) above the player name edit 0x4E48. */
-    uint32_t playerNameLabel_fields[4];
-    UiNodeBase networkProtocolLabel; /* +4CA4 g_UiFocusProxyControlVtable: Caption (text 0x2105) above the network protocol list. */
-    uint32_t networkProtocolLabel_fields[4];
-    UiNodeBase sessionListLabel; /* +4D00 g_UiFocusProxyControlVtable: Caption (text 0x2104) above the session list. */
-    uint32_t sessionListLabel_fields[4];
-    UiNodeBase hostAddressEdit; /* +4D5C g_UiRequiredTextEditControlVtable: 64-char endpoint/address edit (action 0x200D validates and requests the session mailbox). */
-    uint32_t hostAddressEdit_fields[40];
-    UiNodeBase playerNameEdit; /* +4E48 g_UiRequiredTextEditControlVtable: 20-char player name edit (action 0x2032 persists the player name). */
-    uint32_t playerNameEdit_fields[18];
-    UiNodeBase hostGameSetupPage; /* +4EDC g_UiImagePanelControlVtable: Page-stack page 2: game name, player count and network speed for hosting. */
-    uint32_t hostGameSetupPage_fields[4];
-    UiNodeBase hostGameSetupTitle; /* +4F38 g_UiFocusProxyControlVtable: Page title caption (text 0x210C) of the host game setup page. */
-    uint32_t hostGameSetupTitle_fields[4];
-    UiNodeBase hostGameSetupBackButton; /* +4F94 g_UiFramedTextButtonControlVtable: Action 0x2003: returns to the network game page. */
-    uint32_t hostGameSetupBackButton_fields[5];
-    UiNodeBase hostGameCreateButton; /* +4FF4 g_UiFramedTextButtonControlVtable: Action 0x2004: creates the session with one local player and opens the host lobby. */
-    uint32_t hostGameCreateButton_fields[5];
-    UiNodeBase gameNameEdit; /* +5054 g_UiRequiredTextEditControlVtable: 20-char game name edit (action 0x2008 FrontendNetworkSettings_SetGameName). */
-    uint32_t gameNameEdit_fields[18];
-    UiNodeBase maxPlayersSlider; /* +50E8 g_UiRangeSliderControlVtable: Slider 2..8 (action 0x2007) setting the session player count. */
-    uint32_t maxPlayersSlider_fields[7];
-    UiNodeBase maxPlayersValueText; /* +5150 g_UiFocusProxyControlVtable: Text display bound to g_FrontendNetworkPlayerCountTextUtf16 showing the player count. */
-    uint32_t maxPlayersValueText_fields[4];
-    UiNodeBase networkSpeedSlider; /* +51AC g_UiRangeSliderControlVtable: Slider 1..7 (action 0x204D) setting g_SessionNetworkTickInterval and its label; 'speed' reading inferred. */
-    uint32_t networkSpeedSlider_fields[7];
-    UiNodeBase networkSpeedValueText; /* +5214 g_UiFocusProxyControlVtable: Text display bound to g_FrontendNetworkPlayerCountLabelUtf16 (label built by action 0x204D). */
-    uint32_t networkSpeedValueText_fields[4];
-    UiNodeBase maxPlayersLabel; /* +5270 g_UiFocusProxyControlVtable: Caption (text 0x210A) left of the player count slider. */
-    uint32_t maxPlayersLabel_fields[4];
-    UiNodeBase networkSpeedLabel; /* +52CC g_UiFocusProxyControlVtable: Caption (text 0x210D) left of the network tick-interval slider. */
-    uint32_t networkSpeedLabel_fields[4];
-    UiNodeBase gameNameLabel; /* +5328 g_UiFocusProxyControlVtable: Caption (text 0x210B) above the game name edit. */
-    uint32_t gameNameLabel_fields[4];
-    UiNodeBase hostLobbyPage; /* +5384 g_UiImagePanelControlVtable: Page-stack page 3: host waits for joining players, can kick them and start the game. */
-    uint32_t hostLobbyPage_fields[4];
-    UiNodeBase hostLobbyTitle; /* +53E0 g_UiFocusProxyControlVtable: Page title caption (text 0x2119) of the host lobby page. */
-    uint32_t hostLobbyTitle_fields[4];
-    UiNodeBase hostLobbyBackButton; /* +543C g_UiFramedTextButtonControlVtable: Action 0x2005: drops to local mode, resets the roster and returns to the host setup page. */
-    uint32_t hostLobbyBackButton_fields[5];
-    UiNodeBase hostLobbyKickPlayerButton; /* +549C g_UiFramedTextButtonControlVtable: Action 0x200B: expires/removes the selected joined player. */
-    uint32_t hostLobbyKickPlayerButton_fields[5];
-    UiNodeBase hostLobbyStartButton; /* +54FC g_UiFramedTextButtonControlVtable: Action 0x2006: seeds the random streams and starts the network game. */
-    uint32_t hostLobbyStartButton_fields[5];
-    UiNodeBase hostLobbyPlayerScrollBox; /* +555C g_UiScrollableControlVtable: Scroll frame around the host lobby player list. */
-    uint32_t hostLobbyPlayerScrollBox_fields[17];
-    UiNodeBase hostLobbyPlayerList; /* +55EC g_UiListControlVtable: List of joined players (g_FrontendPlayerRuntimeRecordPointers32, action 0x200C toggles Kick). */
-    uint32_t hostLobbyPlayerList_fields[14];
-    UiNodeBase hostLobbyPlayerListLabel; /* +5670 g_UiFocusProxyControlVtable: Caption (text 0x2117) above the host lobby player list. */
-    uint32_t hostLobbyPlayerListLabel_fields[4];
-    UiNodeBase clientLobbyPage; /* +56CC g_UiImagePanelControlVtable: Page-stack page 4 (join ack): client waits in the session and sees the player list. */
-    uint32_t clientLobbyPage_fields[4];
-    UiNodeBase clientLobbyTitle; /* +5728 g_UiFocusProxyControlVtable: Page title caption (text 0x211E) of the client lobby page. */
-    uint32_t clientLobbyTitle_fields[4];
-    UiNodeBase clientLobbyLeaveButton; /* +5784 g_UiFramedTextButtonControlVtable: Action 0x200A: leaves the session and reopens the network game page (also used on timeout). */
-    uint32_t clientLobbyLeaveButton_fields[5];
-    UiNodeBase clientLobbyPlayerScrollBox; /* +57E4 g_UiScrollableControlVtable: Scroll frame around the client lobby player list. */
-    uint32_t clientLobbyPlayerScrollBox_fields[17];
-    UiNodeBase clientLobbyPlayerList; /* +5874 g_UiListControlVtable: List of session players (g_FrontendPlayerListRows) filled from host packets. */
-    uint32_t clientLobbyPlayerList_fields[14];
-    UiNodeBase clientLobbyPlayerListLabel; /* +58F8 g_UiFocusProxyControlVtable: Caption (text 0x2117) above the client lobby player list. */
-    uint32_t clientLobbyPlayerListLabel_fields[4];
+    UiTitledWindowControl displayColorDepthGroup; /* +34F0 g_UiTitledWindowControlVtable: Titled box (text 0x2127) holding the four colour-depth choices. */
+    UiNumericPairTextButton displayColorDepthOption1; /* +3544 g_UiNumericPairTextButtonVtable: Lowest available bits-per-pixel choice (action 0x201E, value filled by action 0x2011). */
+    UiNumericPairTextButton displayColorDepthOption2; /* +35AC g_UiNumericPairTextButtonVtable: Second colour-depth choice (action 0x201F). */
+    UiNumericPairTextButton displayColorDepthOption3; /* +3614 g_UiNumericPairTextButtonVtable: Third colour-depth choice (action 0x2020). */
+    UiNumericPairTextButton displayColorDepthOption4; /* +367C g_UiNumericPairTextButtonVtable: Fourth colour-depth choice (action 0x2021). */
+    UiImagePanelControl graphicsSettingsPage; /* +36E4 g_UiImagePanelControlVtable: Page-stack page 7 (action 0x2012): shading, polygon detail and texture quality. */
+    UiFramedTextButtonControl graphicsSettingsBackButton; /* +3740 g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options menu page. */
+    UiFocusProxyControl graphicsSettingsTitle; /* +37A0 g_UiFocusProxyControlVtable: Page title caption (text 0x212E) of the graphics settings page. */
+    UiTextButtonControl shadingEnabledCheckbox; /* +37FC g_UiTextButtonControlVtable: Toggle (action 0x2014 FrontendShadingSettings_SetEnabled) for shading on/off. */
+    UiTitledWindowControl shadingLevelGroup; /* +385C g_UiTitledWindowControlVtable: Titled box (text 0x2130) with the six shading grid/depth levels. */
+    UiNumericPairTextButton shadingLevelGrid32Depth32; /* +38B0 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x20, depth 0x20. */
+    UiNumericPairTextButton shadingLevelGrid32Depth64; /* +3918 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x20, depth 0x40. */
+    UiNumericPairTextButton shadingLevelGrid32Depth128; /* +3980 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x20, depth 0x80. */
+    UiNumericPairTextButton shadingLevelGrid64Depth64; /* +39E8 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x40, depth 0x40. */
+    UiNumericPairTextButton shadingLevelGrid64Depth128; /* +3A50 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x40, depth 0x80. */
+    UiNumericPairTextButton shadingLevelGrid128Depth128; /* +3AB8 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x2015) with grid 0x80, depth 0x80. */
+    UiFocusProxyControl polygonDetailLabel; /* +3B20 g_UiFocusProxyControlVtable: Caption (text 0x2131) bound to the polygon-detail slider 0x3C34. */
+    UiFocusProxyControl polygonDetailMinCaption; /* +3B7C g_UiFocusProxyControlVtable: Low-end caption (text 0x2134) under the polygon-detail slider. */
+    UiFocusProxyControl polygonDetailMaxCaption; /* +3BD8 g_UiFocusProxyControlVtable: High-end caption (text 0x2135) under the polygon-detail slider. */
+    UiRangeSliderControl polygonDetailSlider; /* +3C34 g_UiRangeSliderControlVtable: Slider 0x4000..0x40000 (action 0x2016) setting the model LOD depth threshold. */
+    UiTitledWindowControl textureQualityGroup; /* +3C9C g_UiTitledWindowControlVtable: Titled box (text 0x2132) with the three texture-quality choices. */
+    UiTextButtonControl textureQualityLow; /* +3CF0 g_UiTextButtonControlVtable: Texture quality choice 1 (action 0x2017, text 0x2136). */
+    UiTextButtonControl textureQualityMedium; /* +3D50 g_UiTextButtonControlVtable: Texture quality choice 2 (action 0x2017, text 0x2137). */
+    UiTextButtonControl textureQualityHigh; /* +3DB0 g_UiTextButtonControlVtable: Texture quality choice 3 (action 0x2017, text 0x2138). */
+    UiImagePanelControl audioSettingsPage; /* +3E10 g_UiImagePanelControlVtable: Page-stack page 8 (action 0x2013): sound toggles and volume sliders. */
+    UiFramedTextButtonControl audioSettingsBackButton; /* +3E6C g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options menu page. */
+    UiFocusProxyControl audioSettingsTitle; /* +3ECC g_UiFocusProxyControlVtable: Page title caption (text 0x213A) of the audio settings page. */
+    UiTextButtonControl musicEnabledCheckbox; /* +3F28 g_UiTextButtonControlVtable: Toggle (action 0x2019) that starts/stops frontend music. */
+    UiTextButtonControl soundEffectsEnabledCheckbox; /* +3F88 g_UiTextButtonControlVtable: Toggle (action 0x2018) for sound effects on/off. */
+    UiTextButtonControl reverseStereoCheckbox; /* +3FE8 g_UiTextButtonControlVtable: Toggle (action 0x201A) that swaps left/right stereo channels. */
+    UiFocusProxyControl effectsVolumeLabel; /* +4048 g_UiFocusProxyControlVtable: Caption (text 0x213E) bound to the effects-volume slider 0x415C. */
+    UiFocusProxyControl effectsVolumeMinCaption; /* +40A4 g_UiFocusProxyControlVtable: Low-end caption (text 0x2141) of the effects-volume slider. */
+    UiFocusProxyControl effectsVolumeMaxCaption; /* +4100 g_UiFocusProxyControlVtable: High-end caption (text 0x2142) of the effects-volume slider. */
+    UiRangeSliderControl effectsVolumeSlider; /* +415C g_UiRangeSliderControlVtable: Slider 0..0x8000 (action 0x201B) setting the effects gain. */
+    UiFocusProxyControl movieVolumeLabel; /* +41C4 g_UiFocusProxyControlVtable: Caption (text 0x213F) bound to the movie-volume slider 0x42D8. */
+    UiFocusProxyControl movieVolumeMinCaption; /* +4220 g_UiFocusProxyControlVtable: Low-end caption (text 0x2141) of the movie-volume slider. */
+    UiFocusProxyControl movieVolumeMaxCaption; /* +427C g_UiFocusProxyControlVtable: High-end caption (text 0x2142) of the movie-volume slider. */
+    UiRangeSliderControl movieVolumeSlider; /* +42D8 g_UiRangeSliderControlVtable: Slider 0..0x8000 (action 0x201C) setting the default movie audio gain. */
+    UiFocusProxyControl musicVolumeLabel; /* +4340 g_UiFocusProxyControlVtable: Caption (text 0x2140) bound to the music-volume slider 0x4454. */
+    UiFocusProxyControl musicVolumeMinCaption; /* +439C g_UiFocusProxyControlVtable: Low-end caption (text 0x2141) of the music-volume slider. */
+    UiFocusProxyControl musicVolumeMaxCaption; /* +43F8 g_UiFocusProxyControlVtable: High-end caption (text 0x2142) of the music-volume slider. */
+    UiRangeSliderControl musicVolumeSlider; /* +4454 g_UiRangeSliderControlVtable: Slider 0..0x8000 (action 0x201D) setting the music gain. */
+    UiFocusProxyControl movieEventVolumeLabel; /* +44BC g_UiFocusProxyControlVtable: Caption (text 0x2143) bound to the alternate movie-volume slider 0x45D0. */
+    UiFocusProxyControl movieEventVolumeMinCaption; /* +4518 g_UiFocusProxyControlVtable: Low-end caption (text 0x2141) of the alternate movie-volume slider. */
+    UiFocusProxyControl movieEventVolumeMaxCaption; /* +4574 g_UiFocusProxyControlVtable: High-end caption (text 0x2142) of the alternate movie-volume slider. */
+    UiRangeSliderControl movieEventVolumeSlider; /* +45D0 g_UiRangeSliderControlVtable: Slider 0..0x8000 (action 0x204E) setting the alternate movie gain used by timed movie events. */
+    UiFillPanelControl topBlackBar; /* +4638 g_UiFillPanelControlVtable: Black fill panel over the top eighth of the screen, sibling after the page stack. */
+    UiFillPanelControl bottomBar; /* +4694 g_UiFillPanelControlVtable: Black fill panel over the bottom eighth of the screen; holds the status text and the chat input container 0xB0. */
+    UiConditionalActionControl bottomBarConditionalAction; /* +46F0 g_UiConditionalActionControlVtable: Zero-size ConditionalAction control centred in the bottom bar (action -1); exact role unknown. */
+    UiFocusProxyControl bottomBarStatusText; /* +4750 g_UiFocusProxyControlVtable: Full-size caption (style 0xA, text 0x112) in the bottom bar; probably the status/help line (role inferred). */
+    UiHorizontalGaugeControl transferProgressGauge; /* +47AC g_UiTransferProgressGaugeVtable: Horizontal gauge (UiHorizontalGaugeControl subclass) in the bottom-right corner of the bottom bar; reloads its range from the transfer mailbox before drawing: the file-transfer progress. */
+    UiImagePanelControl networkGamePage; /* +4808 g_UiImagePanelControlVtable: Page-stack page 1 (action 0x2003): network protocol, player name, host address and session list. */
+    UiFocusProxyControl networkGameTitle; /* +4864 g_UiFocusProxyControlVtable: Page title caption (text 0x2107) of the network game page. */
+    UiFramedTextButtonControl networkGameBackButton; /* +48C0 g_UiFramedTextButtonControlVtable: Action 0x2000: resets networking and returns to the main menu. */
+    UiFramedTextButtonControl networkGameHostButton; /* +4920 g_UiFramedTextButtonControlVtable: Action 0x2001: initialises the host (create game) setup page. */
+    UiFramedTextButtonControl networkGameJoinButton; /* +4980 g_UiFramedTextButtonControlVtable: Action 0x2002: sends the join request (player descriptor) to the selected session. */
+    UiScrollableControl networkProtocolScrollBox; /* +49E0 g_UiScrollableControlVtable: Scroll frame around the network protocol/backend list. */
+    UiTextListControl networkProtocolList; /* +4A70 g_UiTextListControlVtable: Text list of network backends (action 0x200F selects/opens the backend). */
+    UiScrollableControl sessionListScrollBox; /* +4AD8 g_UiScrollableControlVtable: Scroll frame around the list of discovered sessions. */
+    UiListControl sessionList; /* +4B68 g_UiListControlVtable: List of discovered network sessions (g_FrontendSessionListRows, action 0x2009 updates Join availability). */
+    uint32_t sessionList_trailing[4]; /* +4BDC: template dwords behind the control */
+    UiFocusProxyControl hostAddressLabel; /* +4BEC g_UiFocusProxyControlVtable: Caption (text 0x2103) above the host address edit 0x4D5C. */
+    UiFocusProxyControl playerNameLabel; /* +4C48 g_UiFocusProxyControlVtable: Caption (text 0x2106) above the player name edit 0x4E48. */
+    UiFocusProxyControl networkProtocolLabel; /* +4CA4 g_UiFocusProxyControlVtable: Caption (text 0x2105) above the network protocol list. */
+    UiFocusProxyControl sessionListLabel; /* +4D00 g_UiFocusProxyControlVtable: Caption (text 0x2104) above the session list. */
+    UiRequiredTextEditControl hostAddressEdit; /* +4D5C g_UiRequiredTextEditControlVtable: 64-char endpoint/address edit (action 0x200D validates and requests the session mailbox). */
+    uint32_t hostAddressEdit_trailing[27]; /* +4DDC: template dwords behind the control */
+    UiRequiredTextEditControl playerNameEdit; /* +4E48 g_UiRequiredTextEditControlVtable: 20-char player name edit (action 0x2032 persists the player name). */
+    uint32_t playerNameEdit_trailing[5]; /* +4EC8: template dwords behind the control */
+    UiImagePanelControl hostGameSetupPage; /* +4EDC g_UiImagePanelControlVtable: Page-stack page 2: game name, player count and network speed for hosting. */
+    UiFocusProxyControl hostGameSetupTitle; /* +4F38 g_UiFocusProxyControlVtable: Page title caption (text 0x210C) of the host game setup page. */
+    UiFramedTextButtonControl hostGameSetupBackButton; /* +4F94 g_UiFramedTextButtonControlVtable: Action 0x2003: returns to the network game page. */
+    UiFramedTextButtonControl hostGameCreateButton; /* +4FF4 g_UiFramedTextButtonControlVtable: Action 0x2004: creates the session with one local player and opens the host lobby. */
+    UiRequiredTextEditControl gameNameEdit; /* +5054 g_UiRequiredTextEditControlVtable: 20-char game name edit (action 0x2008 FrontendNetworkSettings_SetGameName). */
+    uint32_t gameNameEdit_trailing[5]; /* +50D4: template dwords behind the control */
+    UiRangeSliderControl maxPlayersSlider; /* +50E8 g_UiRangeSliderControlVtable: Slider 2..8 (action 0x2007) setting the session player count. */
+    UiFocusProxyControl maxPlayersValueText; /* +5150 g_UiFocusProxyControlVtable: Text display bound to g_FrontendNetworkPlayerCountTextUtf16 showing the player count. */
+    UiRangeSliderControl networkSpeedSlider; /* +51AC g_UiRangeSliderControlVtable: Slider 1..7 (action 0x204D) setting g_SessionNetworkTickInterval and its label; 'speed' reading inferred. */
+    UiFocusProxyControl networkSpeedValueText; /* +5214 g_UiFocusProxyControlVtable: Text display bound to g_FrontendNetworkPlayerCountLabelUtf16 (label built by action 0x204D). */
+    UiFocusProxyControl maxPlayersLabel; /* +5270 g_UiFocusProxyControlVtable: Caption (text 0x210A) left of the player count slider. */
+    UiFocusProxyControl networkSpeedLabel; /* +52CC g_UiFocusProxyControlVtable: Caption (text 0x210D) left of the network tick-interval slider. */
+    UiFocusProxyControl gameNameLabel; /* +5328 g_UiFocusProxyControlVtable: Caption (text 0x210B) above the game name edit. */
+    UiImagePanelControl hostLobbyPage; /* +5384 g_UiImagePanelControlVtable: Page-stack page 3: host waits for joining players, can kick them and start the game. */
+    UiFocusProxyControl hostLobbyTitle; /* +53E0 g_UiFocusProxyControlVtable: Page title caption (text 0x2119) of the host lobby page. */
+    UiFramedTextButtonControl hostLobbyBackButton; /* +543C g_UiFramedTextButtonControlVtable: Action 0x2005: drops to local mode, resets the roster and returns to the host setup page. */
+    UiFramedTextButtonControl hostLobbyKickPlayerButton; /* +549C g_UiFramedTextButtonControlVtable: Action 0x200B: expires/removes the selected joined player. */
+    UiFramedTextButtonControl hostLobbyStartButton; /* +54FC g_UiFramedTextButtonControlVtable: Action 0x2006: seeds the random streams and starts the network game. */
+    UiScrollableControl hostLobbyPlayerScrollBox; /* +555C g_UiScrollableControlVtable: Scroll frame around the host lobby player list. */
+    UiListControl hostLobbyPlayerList; /* +55EC g_UiListControlVtable: List of joined players (g_FrontendPlayerRuntimeRecordPointers32, action 0x200C toggles Kick). */
+    uint32_t hostLobbyPlayerList_trailing[4]; /* +5660: template dwords behind the control */
+    UiFocusProxyControl hostLobbyPlayerListLabel; /* +5670 g_UiFocusProxyControlVtable: Caption (text 0x2117) above the host lobby player list. */
+    UiImagePanelControl clientLobbyPage; /* +56CC g_UiImagePanelControlVtable: Page-stack page 4 (join ack): client waits in the session and sees the player list. */
+    UiFocusProxyControl clientLobbyTitle; /* +5728 g_UiFocusProxyControlVtable: Page title caption (text 0x211E) of the client lobby page. */
+    UiFramedTextButtonControl clientLobbyLeaveButton; /* +5784 g_UiFramedTextButtonControlVtable: Action 0x200A: leaves the session and reopens the network game page (also used on timeout). */
+    UiScrollableControl clientLobbyPlayerScrollBox; /* +57E4 g_UiScrollableControlVtable: Scroll frame around the client lobby player list. */
+    UiListControl clientLobbyPlayerList; /* +5874 g_UiListControlVtable: List of session players (g_FrontendPlayerListRows) filled from host packets. */
+    uint32_t clientLobbyPlayerList_trailing[4]; /* +58E8: template dwords behind the control */
+    UiFocusProxyControl clientLobbyPlayerListLabel; /* +58F8 g_UiFocusProxyControlVtable: Caption (text 0x2117) above the client lobby player list. */
     /* Not in the original (open-thandor): the display mode kind choice of the display settings page, appended
        after the original nodes and linked in after displayResolutionGroup. */
-    UiNodeBase displayModeKindGroup; /* +5954 g_UiTitledWindowControlVtable: Titled box "Anzeigemodus:" (TEXT_ID_DISPLAY_MODE_KIND_TITLE). */
-    uint32_t displayModeKindGroup_fields[2];
-    UiNodeBase displayModeKindWindow; /* +59A8 g_UiTextButtonControlVtable: "Fenster" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW). */
-    uint32_t displayModeKindWindow_fields[5];
-    UiNodeBase displayModeKindBorderless; /* +5A08 g_UiTextButtonControlVtable: "Vollbildfenster" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_BORDERLESS). */
-    uint32_t displayModeKindBorderless_fields[5];
-    UiNodeBase displayModeKindFullscreen; /* +5A68 g_UiTextButtonControlVtable: "Vollbild" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_FULLSCREEN). */
-    uint32_t displayModeKindFullscreen_fields[5];
+    UiTitledWindowControl displayModeKindGroup; /* +5954 g_UiTitledWindowControlVtable: Titled box "Anzeigemodus:" (TEXT_ID_DISPLAY_MODE_KIND_TITLE). */
+    UiTextButtonControl displayModeKindWindow; /* +59A8 g_UiTextButtonControlVtable: "Fenster" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW). */
+    UiTextButtonControl displayModeKindBorderless; /* +5A08 g_UiTextButtonControlVtable: "Vollbildfenster" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_BORDERLESS). */
+    UiTextButtonControl displayModeKindFullscreen; /* +5A68 g_UiTextButtonControlVtable: "Vollbild" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_FULLSCREEN). */
     /* Not in the original (open-thandor): the resolution choices as a scrollable list. displayResolutionGroup
        holds the scroll frame, the frame scrolls the row panel, the panel holds displayResolutionOption1..10
        followed by the extra rows (built at run time from displayResolutionOption1 when the page opens; zero
        in the template). */
-    UiNodeBase displayResolutionScrollBox; /* +5AC8 g_UiScrollableControlVtable: Scroll frame inside displayResolutionGroup (vertical bar only). */
-    uint32_t displayResolutionScrollBox_fields[17];
-    UiNodeBase displayResolutionRowPanel; /* +5B58 g_UiPanelControlVtable: Scrolled content: one radio row per resolution, size set at run time. */
-    uint32_t displayResolutionRowPanel_fields[3];
+    UiScrollableControl displayResolutionScrollBox; /* +5AC8 g_UiScrollableControlVtable: Scroll frame inside displayResolutionGroup (vertical bar only). */
+    UiPanelControl displayResolutionRowPanel; /* +5B58 g_UiPanelControlVtable: Scrolled content: one radio row per resolution, size set at run time. */
     UiNumericPairTextButton displayResolutionExtraOptions[FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS]; /* +5BB0 g_UiNumericPairTextButtonVtable: Resolution choices 11.. (action 0x2022). */
     /* Not in the original (open-thandor): the "Erweitert" settings page. frontendPageStack page 6 is
        displayPageStack, whose page 0 is displaySettingsPage ("Anzeige") and page 1 advancedSettingsPage; the
        options page gets a fourth button (advancedSettingsButton) below "Sound". */
-    UiNodeBase displayPageStack; /* +71A0 g_UiLayoutContainerControlVtable: Two-page stack in frontendPageStack page 6: display settings, advanced settings. */
-    uint32_t displayPageStack_fields[3];
-    UiNodeBase advancedSettingsButton; /* +71F8 g_UiFramedTextButtonControlVtable: "Erweitert" button of the options page (action FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS). */
-    uint32_t advancedSettingsButton_fields[5];
-    UiNodeBase advancedSettingsPage; /* +7258 g_UiImagePanelControlVtable: displayPageStack page 1: GPU edges, UI scale, frame limit, VSync. */
-    uint32_t advancedSettingsPage_fields[4];
-    UiNodeBase advancedSettingsBackButton; /* +72B4 g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options page. */
-    uint32_t advancedSettingsBackButton_fields[5];
-    UiNodeBase advancedSettingsTitle; /* +7314 g_UiFocusProxyControlVtable: Page title "Erweiterte Einstellungen". */
-    uint32_t advancedSettingsTitle_fields[4];
-    UiNodeBase advancedEdgesGroup; /* +7370 g_UiTitledWindowControlVtable: Titled box "3D-Kanten:" ([graphics] gpu_rasterization). */
-    uint32_t advancedEdgesGroup_fields[2];
-    UiNodeBase advancedEdgesSmooth; /* +73C4 g_UiTextButtonControlVtable: "Glatt" (action FRONTEND_ACTION_ADVANCED_EDGES). */
-    uint32_t advancedEdgesSmooth_fields[5];
-    UiNodeBase advancedEdgesExact; /* +7424 g_UiTextButtonControlVtable: "Original" (action FRONTEND_ACTION_ADVANCED_EDGES). */
-    uint32_t advancedEdgesExact_fields[5];
-    UiNodeBase advancedUiScaleGroup; /* +7484 g_UiTitledWindowControlVtable: Titled box "UI-Skalierung:" ([graphics] ui_scale). */
-    uint32_t advancedUiScaleGroup_fields[2];
-    UiNodeBase advancedUiScaleAuto; /* +74D8 g_UiTextButtonControlVtable: "Auto" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
-    uint32_t advancedUiScaleAuto_fields[5];
-    UiNodeBase advancedUiScale1; /* +7538 g_UiTextButtonControlVtable: "1x" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
-    uint32_t advancedUiScale1_fields[5];
-    UiNodeBase advancedUiScale2; /* +7598 g_UiTextButtonControlVtable: "2x" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
-    uint32_t advancedUiScale2_fields[5];
-    UiNodeBase advancedUiScale3; /* +75F8 g_UiTextButtonControlVtable: "3x" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
-    uint32_t advancedUiScale3_fields[5];
-    UiNodeBase advancedFrameLimitGroup; /* +7658 g_UiTitledWindowControlVtable: Titled box "Bildratenbegrenzung:". */
-    uint32_t advancedFrameLimitGroup_fields[2];
-    UiNodeBase advancedFrameLimitOff; /* +76AC g_UiTextButtonControlVtable: "Aus" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
-    uint32_t advancedFrameLimitOff_fields[5];
-    UiNodeBase advancedFrameLimit60; /* +770C g_UiTextButtonControlVtable: "60 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
-    uint32_t advancedFrameLimit60_fields[5];
-    UiNodeBase advancedFrameLimit120; /* +776C g_UiTextButtonControlVtable: "120 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
-    uint32_t advancedFrameLimit120_fields[5];
-    UiNodeBase advancedFrameLimit144; /* +77CC g_UiTextButtonControlVtable: "144 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
-    uint32_t advancedFrameLimit144_fields[5];
-    UiNodeBase advancedVsyncCheckbox; /* +782C g_UiTextButtonControlVtable: Checkbox "VSync" (action FRONTEND_ACTION_ADVANCED_VSYNC). */
-    uint32_t advancedVsyncCheckbox_fields[5];
-    UiNodeBase advancedNoteLabel; /* +788C g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
-    uint32_t advancedNoteLabel_fields[4];
+    UiLayoutContainerControl<2> displayPageStack; /* +71A0 g_UiLayoutContainerControlVtable: Two-page stack in frontendPageStack page 6: display settings, advanced settings. */
+    UiFramedTextButtonControl advancedSettingsButton; /* +71F8 g_UiFramedTextButtonControlVtable: "Erweitert" button of the options page (action FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS). */
+    UiImagePanelControl advancedSettingsPage; /* +7258 g_UiImagePanelControlVtable: displayPageStack page 1: GPU edges, UI scale, frame limit, VSync. */
+    UiFramedTextButtonControl advancedSettingsBackButton; /* +72B4 g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options page. */
+    UiFocusProxyControl advancedSettingsTitle; /* +7314 g_UiFocusProxyControlVtable: Page title "Erweiterte Einstellungen". */
+    UiTitledWindowControl advancedEdgesGroup; /* +7370 g_UiTitledWindowControlVtable: Titled box "3D-Kanten:" ([graphics] gpu_rasterization). */
+    UiTextButtonControl advancedEdgesSmooth; /* +73C4 g_UiTextButtonControlVtable: "Glatt" (action FRONTEND_ACTION_ADVANCED_EDGES). */
+    UiTextButtonControl advancedEdgesExact; /* +7424 g_UiTextButtonControlVtable: "Original" (action FRONTEND_ACTION_ADVANCED_EDGES). */
+    UiTitledWindowControl advancedUiScaleGroup; /* +7484 g_UiTitledWindowControlVtable: Titled box "UI-Skalierung:" ([graphics] ui_scale). */
+    UiTextButtonControl advancedUiScaleAuto; /* +74D8 g_UiTextButtonControlVtable: "Auto" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
+    UiTextButtonControl advancedUiScale1; /* +7538 g_UiTextButtonControlVtable: "1x" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
+    UiTextButtonControl advancedUiScale2; /* +7598 g_UiTextButtonControlVtable: "2x" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
+    UiTextButtonControl advancedUiScale3; /* +75F8 g_UiTextButtonControlVtable: "3x" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
+    UiTitledWindowControl advancedFrameLimitGroup; /* +7658 g_UiTitledWindowControlVtable: Titled box "Bildratenbegrenzung:". */
+    UiTextButtonControl advancedFrameLimitOff; /* +76AC g_UiTextButtonControlVtable: "Aus" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    UiTextButtonControl advancedFrameLimit60; /* +770C g_UiTextButtonControlVtable: "60 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    UiTextButtonControl advancedFrameLimit120; /* +776C g_UiTextButtonControlVtable: "120 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    UiTextButtonControl advancedFrameLimit144; /* +77CC g_UiTextButtonControlVtable: "144 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    UiTextButtonControl advancedVsyncCheckbox; /* +782C g_UiTextButtonControlVtable: Checkbox "VSync" (action FRONTEND_ACTION_ADVANCED_VSYNC). */
+    UiFocusProxyControl advancedNoteLabel; /* +788C g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
 } FrontendUiImage;
 #define FRONTEND_UI(root, node) (&((FrontendUiImage *)(uintptr_t)(root))->node)
 #define FRONTEND_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)FRONTEND_UI(root, node) + (offset)))

@@ -100,7 +100,7 @@ static void FrontendDisplaySettingsPage_BuildResolutionRows(UiNodeBase *frontend
     firstListed = resolutionCount - FRONTEND_DISPLAY_RESOLUTION_OPTIONS;
     resolutionCount = FRONTEND_DISPLAY_RESOLUTION_OPTIONS;
   }
-  rowPanel = FRONTEND_UI(frontendRoot,displayResolutionRowPanel);
+  rowPanel = &FRONTEND_UI(frontendRoot,displayResolutionRowPanel)->root.base;
   templateRow = FrontendDisplaySettingsPage_ResolutionRow(frontendRoot,0);
   previousRow = UI_NODE_NONE;
   for (rowIndex = 0; rowIndex < resolutionCount; rowIndex++) {
@@ -155,7 +155,7 @@ static void FrontendDisplaySettingsPage_LayoutResolutionList(UiNodeBase *fronten
   uint32_t rowIndex;
 
   scrollBox = (UiScrollableControl *)FRONTEND_UI(frontendRoot,displayResolutionScrollBox);
-  rowPanel = FRONTEND_UI(frontendRoot,displayResolutionRowPanel);
+  rowPanel = &FRONTEND_UI(frontendRoot,displayResolutionRowPanel)->root.base;
   rowPanel->rightOffset = scrollBox->base.right - scrollBox->base.left;
   scrollBox->base.vtable->layout(&scrollBox->base);
   rowPanel->rightOffset = scrollBox->viewportWidth;
@@ -454,11 +454,11 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   }
   /* push the 5 adapter choices */
   modeStackTop = DISPLAY_MODE_STACK_BASE;
-  modeStack[DISPLAY_MODE_STACK_BASE + 0] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption5);
-  modeStack[DISPLAY_MODE_STACK_BASE + 1] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption4);
-  modeStack[DISPLAY_MODE_STACK_BASE + 2] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
-  modeStack[DISPLAY_MODE_STACK_BASE + 3] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
-  modeStack[DISPLAY_MODE_STACK_BASE + 4] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
+  modeStack[DISPLAY_MODE_STACK_BASE + 0] = &FRONTEND_UI(frontendRoot,displayAdapterOption5)->base.selectable.base;
+  modeStack[DISPLAY_MODE_STACK_BASE + 1] = &FRONTEND_UI(frontendRoot,displayAdapterOption4)->base.selectable.base;
+  modeStack[DISPLAY_MODE_STACK_BASE + 2] = &FRONTEND_UI(frontendRoot,displayAdapterOption3)->base.selectable.base;
+  modeStack[DISPLAY_MODE_STACK_BASE + 3] = &FRONTEND_UI(frontendRoot,displayAdapterOption2)->base.selectable.base;
+  modeStack[DISPLAY_MODE_STACK_BASE + 4] = &FRONTEND_UI(frontendRoot,displayAdapterOption1)->base.selectable.base;
   modeStack[DISPLAY_MODE_STACK_END + 0] = nullptr;
   modeStack[DISPLAY_MODE_STACK_END + 1] = nullptr;
   modeStack[DISPLAY_MODE_STACK_END + 2] = nullptr;
@@ -472,7 +472,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1,frontendRoot);
   }
   if (adapterIndex == 0) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
+    modeStack[--modeStackTop] = &FRONTEND_UI(frontendRoot,displayAdapterOption1)->base.selectable.base;
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,1);
   if (modeCheckCarry) {
@@ -482,7 +482,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 1,frontendRoot);
   }
   if (adapterIndex == 1) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
+    modeStack[--modeStackTop] = &FRONTEND_UI(frontendRoot,displayAdapterOption2)->base.selectable.base;
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,2);
   if (modeCheckCarry) {
@@ -492,7 +492,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 2,frontendRoot);
   }
   if (adapterIndex == 2) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
+    modeStack[--modeStackTop] = &FRONTEND_UI(frontendRoot,displayAdapterOption3)->base.selectable.base;
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,3);
   if (modeCheckCarry) {
@@ -502,7 +502,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 3,frontendRoot);
   }
   if (adapterIndex == 3) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption4);
+    modeStack[--modeStackTop] = &FRONTEND_UI(frontendRoot,displayAdapterOption4)->base.selectable.base;
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,4);
   if (modeCheckCarry) {
@@ -512,7 +512,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 4,frontendRoot);
   }
   if (adapterIndex == 4) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption5);
+    modeStack[--modeStackTop] = &FRONTEND_UI(frontendRoot,displayAdapterOption5)->base.selectable.base;
   }
   /* SelectExclusive(5, top, next 5), then pop 1 + 5 (the stack is dropped at return anyway) */
   listCount = DISPLAY_MODE_STACK_END - (modeStackTop + 1);
@@ -529,13 +529,13 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   UiNodeList_UnsuppressActionId(FRONTEND_ACTION_DISPLAY_MODE_KIND_FULLSCREEN,frontendRoot);
   UiSelectableGroup_SelectExclusive(3,
       (s_pendingDisplayModeKind == PERSISTENT_DISPLAY_MODE_WINDOW) ?
-           (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindWindow) :
+           &FRONTEND_UI(frontendRoot,displayModeKindWindow)->selectable.base :
       (s_pendingDisplayModeKind == PERSISTENT_DISPLAY_MODE_FULLSCREEN) ?
-           (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindFullscreen) :
-           (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindBorderless),
-      (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindFullscreen),
-      (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindBorderless),
-      (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindWindow));
+           &FRONTEND_UI(frontendRoot,displayModeKindFullscreen)->selectable.base :
+           &FRONTEND_UI(frontendRoot,displayModeKindBorderless)->selectable.base,
+      &FRONTEND_UI(frontendRoot,displayModeKindFullscreen)->selectable.base,
+      &FRONTEND_UI(frontendRoot,displayModeKindBorderless)->selectable.base,
+      &FRONTEND_UI(frontendRoot,displayModeKindWindow)->selectable.base);
   /* the original compared the saved adapter index; here the saved renderer and display mode kind */
   persistedValue = SdlVideo_SavedAdapterIndex();
   if ((((persistedValue == adapterIndex) && (SdlVideo_SavedDisplayModeKind() == s_pendingDisplayModeKind) &&
@@ -556,10 +556,10 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
   while (frontendRoot->parent != UI_NODE_NONE) {
     frontendRoot = frontendRoot->parent;
   }
-  if (sourceNode == (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindWindow)) {
+  if (sourceNode == &FRONTEND_UI(frontendRoot,displayModeKindWindow)->selectable.base) {
     s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_WINDOW;
   }
-  else if (sourceNode == (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindFullscreen)) {
+  else if (sourceNode == &FRONTEND_UI(frontendRoot,displayModeKindFullscreen)->selectable.base) {
     s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_FULLSCREEN;
   }
   else {
@@ -641,16 +641,16 @@ static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
   uint32_t value;
   bool gpu;
 
-  edges[0] = FRONTEND_UI(frontendRoot,advancedEdgesSmooth);
-  edges[1] = FRONTEND_UI(frontendRoot,advancedEdgesExact);
-  uiScales[0] = FRONTEND_UI(frontendRoot,advancedUiScaleAuto);
-  uiScales[1] = FRONTEND_UI(frontendRoot,advancedUiScale1);
-  uiScales[2] = FRONTEND_UI(frontendRoot,advancedUiScale2);
-  uiScales[3] = FRONTEND_UI(frontendRoot,advancedUiScale3);
-  frameLimits[0] = FRONTEND_UI(frontendRoot,advancedFrameLimitOff);
-  frameLimits[1] = FRONTEND_UI(frontendRoot,advancedFrameLimit60);
-  frameLimits[2] = FRONTEND_UI(frontendRoot,advancedFrameLimit120);
-  frameLimits[3] = FRONTEND_UI(frontendRoot,advancedFrameLimit144);
+  edges[0] = &FRONTEND_UI(frontendRoot,advancedEdgesSmooth)->selectable.base;
+  edges[1] = &FRONTEND_UI(frontendRoot,advancedEdgesExact)->selectable.base;
+  uiScales[0] = &FRONTEND_UI(frontendRoot,advancedUiScaleAuto)->selectable.base;
+  uiScales[1] = &FRONTEND_UI(frontendRoot,advancedUiScale1)->selectable.base;
+  uiScales[2] = &FRONTEND_UI(frontendRoot,advancedUiScale2)->selectable.base;
+  uiScales[3] = &FRONTEND_UI(frontendRoot,advancedUiScale3)->selectable.base;
+  frameLimits[0] = &FRONTEND_UI(frontendRoot,advancedFrameLimitOff)->selectable.base;
+  frameLimits[1] = &FRONTEND_UI(frontendRoot,advancedFrameLimit60)->selectable.base;
+  frameLimits[2] = &FRONTEND_UI(frontendRoot,advancedFrameLimit120)->selectable.base;
+  frameLimits[3] = &FRONTEND_UI(frontendRoot,advancedFrameLimit144)->selectable.base;
   gpu = SdlVideo_GpuRendererActive();
   FrontendAdvancedSettingsPage_SelectChoice
             (edges[(SdlVideo_GpuRasterization() == PERSISTENT_GPU_RASTERIZATION_EXACT) ? 1 : 0],edges,2);
@@ -668,7 +668,7 @@ static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
                                   (UiSelectableControl *)FRONTEND_UI(frontendRoot,advancedVsyncCheckbox));
   FRONTEND_UI_FIELD(frontendRoot,advancedNoteLabel,0x54,TextResourceId) =
        gpu ? FrontendAdvancedSettingsPage_UiScaleNote() : TEXT_ID_ADVANCED_NOTE_SOFTWARE;
-  UiNode_InvalidateRoot(FRONTEND_UI(frontendRoot,advancedSettingsPage));
+  UiNode_InvalidateRoot(&FRONTEND_UI(frontendRoot,advancedSettingsPage)->base);
 }
 
 /* Handler of FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS (the options page's "Erweitert" button): shows the advanced
@@ -696,7 +696,7 @@ void FrontendAdvancedSettingsAction_SelectEdges(UiNodeBase *sourceNode)
 {
   UiNodeBase *frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
 
-  SdlVideo_SetGpuRasterization((sourceNode == FRONTEND_UI(frontendRoot,advancedEdgesExact)) ?
+  SdlVideo_SetGpuRasterization((sourceNode == &FRONTEND_UI(frontendRoot,advancedEdgesExact)->selectable.base) ?
                                     PERSISTENT_GPU_RASTERIZATION_EXACT : PERSISTENT_GPU_RASTERIZATION_SMOOTH);
   FrontendAdvancedSettingsPage_Refresh(frontendRoot);
 }
@@ -712,13 +712,13 @@ void FrontendAdvancedSettingsAction_SelectUiScale(UiNodeBase *sourceNode)
   uint32_t scale;
   uint32_t modeError;
 
-  if (sourceNode == FRONTEND_UI(frontendRoot,advancedUiScale1)) {
+  if (sourceNode == &FRONTEND_UI(frontendRoot,advancedUiScale1)->selectable.base) {
     scale = 1;
   }
-  else if (sourceNode == FRONTEND_UI(frontendRoot,advancedUiScale2)) {
+  else if (sourceNode == &FRONTEND_UI(frontendRoot,advancedUiScale2)->selectable.base) {
     scale = 2;
   }
-  else if (sourceNode == FRONTEND_UI(frontendRoot,advancedUiScale3)) {
+  else if (sourceNode == &FRONTEND_UI(frontendRoot,advancedUiScale3)->selectable.base) {
     scale = 3;
   }
   else {
@@ -741,8 +741,8 @@ void FrontendAdvancedSettingsAction_SelectFrameLimit(UiNodeBase *sourceNode)
 {
   UiNodeBase *frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
   UiNodeBase *const frameLimits[ADVANCED_FRAME_LIMIT_CHOICES] = {
-      FRONTEND_UI(frontendRoot,advancedFrameLimitOff),FRONTEND_UI(frontendRoot,advancedFrameLimit60),
-      FRONTEND_UI(frontendRoot,advancedFrameLimit120),FRONTEND_UI(frontendRoot,advancedFrameLimit144)};
+      &FRONTEND_UI(frontendRoot,advancedFrameLimitOff)->selectable.base,&FRONTEND_UI(frontendRoot,advancedFrameLimit60)->selectable.base,
+      &FRONTEND_UI(frontendRoot,advancedFrameLimit120)->selectable.base,&FRONTEND_UI(frontendRoot,advancedFrameLimit144)->selectable.base};
   uint32_t index;
 
   for (index = 0; index < ADVANCED_FRAME_LIMIT_CHOICES; index++) {

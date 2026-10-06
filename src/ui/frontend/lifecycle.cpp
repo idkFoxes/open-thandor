@@ -531,17 +531,17 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
          g_UiButtonSoundVoiceSets7[3];
     ((UiFramedTextButtonControl *)FRONTEND_UI(frontendUiState,advancedSettingsBackButton))->activationSound =
          g_UiButtonSoundVoiceSets7[3];
-    for (UiNodeBase *choice : {FRONTEND_UI(frontendUiState,advancedEdgesSmooth),
-                               FRONTEND_UI(frontendUiState,advancedEdgesExact),
-                               FRONTEND_UI(frontendUiState,advancedUiScaleAuto),
-                               FRONTEND_UI(frontendUiState,advancedUiScale1),
-                               FRONTEND_UI(frontendUiState,advancedUiScale2),
-                               FRONTEND_UI(frontendUiState,advancedUiScale3),
-                               FRONTEND_UI(frontendUiState,advancedFrameLimitOff),
-                               FRONTEND_UI(frontendUiState,advancedFrameLimit60),
-                               FRONTEND_UI(frontendUiState,advancedFrameLimit120),
-                               FRONTEND_UI(frontendUiState,advancedFrameLimit144),
-                               FRONTEND_UI(frontendUiState,advancedVsyncCheckbox)}) {
+    for (UiNodeBase *choice : {&FRONTEND_UI(frontendUiState,advancedEdgesSmooth)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedEdgesExact)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedUiScaleAuto)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedUiScale1)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedUiScale2)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedUiScale3)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedFrameLimitOff)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedFrameLimit60)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedFrameLimit120)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedFrameLimit144)->selectable.base,
+                               &FRONTEND_UI(frontendUiState,advancedVsyncCheckbox)->selectable.base}) {
       ((UiTextButtonControl *)choice)->activationSound = g_UiButtonSoundVoiceSets7[4];
     }
   }

@@ -1267,7 +1267,7 @@ void ComparePictures(int width, int height) noexcept
       difference[index] = inScene ? (grey << 16) | ((grey / 2) << 8) | (grey / 2) : (grey << 16) | (grey << 8) | grey;
     }
   }
-  CreateDirectoryA((LPCSTR) "shots", nullptr);
+  CreateDirectoryA(const_cast<LPCSTR>("shots"), nullptr);
   char path[64];
   std::snprintf(path, sizeof path, "shots\\gpucmp_%04u_sw.bmp", s_gpu.compareNumber);
   WriteBmp(path, software.data(), width, height);
@@ -2410,7 +2410,7 @@ bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexce
       std::memcpy(native.data() + static_cast<size_t>(row) * targetW, pixels + static_cast<size_t>(row) * rowPixels,
                   static_cast<size_t>(targetW) * 4);
     }
-    CreateDirectoryA((LPCSTR) "shots", nullptr);
+    CreateDirectoryA(const_cast<LPCSTR>("shots"), nullptr);
     char path[64];
     std::snprintf(path, sizeof path, "shots\\gpunative_%04u.bmp", nativeShotNumber++);
     WriteBmp(path, native.data(), targetW, targetH);

@@ -150,7 +150,7 @@ void FrontendNetworkGamePage_Show(FrontendUiImage *frontendUi)
 /* Empties the session list of the network game page and hides its Join button until a session is chosen. */
 void FrontendNetworkGamePage_ClearSessionList(FrontendUiImage *frontendUi)
 {
-  UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
+  UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&FRONTEND_UI(frontendUi,frontendRoot)->root.base);
   UiPointerList_InitializeColumnLayout
             (0,(Ptr32<void> *)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
 }
@@ -185,9 +185,9 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     g_NetworkBackendSlot7
               ((char *)g_FrontendNetworkEndpointTextUtf16,
                (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,FRONTEND_UI(frontendUi,frontendRoot));
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,FRONTEND_UI(frontendUi,frontendRoot));
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,&FRONTEND_UI(frontendUi,frontendRoot)->root.base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&FRONTEND_UI(frontendUi,frontendRoot)->root.base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&FRONTEND_UI(frontendUi,frontendRoot)->root.base);
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_LOBBY,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
     if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
       ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
@@ -238,7 +238,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
                g_FrontendNetworkEndpointTextUtf16,nullptr);
     FrontendNetworkGamePage_Show(frontendUi);
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,FRONTEND_UI(frontendUi,frontendRoot));
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,&FRONTEND_UI(frontendUi,frontendRoot)->root.base);
     FrontendNetworkGamePage_ClearSessionList(frontendUi);
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_CLIENT;
@@ -295,10 +295,10 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
   /* hosting needs a player name */
   if (g_FrontendLocalPlayerNameUtf16[0] == 0) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_HOST_GAME,FRONTEND_UI(frontendUi,frontendRoot));
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_HOST_GAME,&FRONTEND_UI(frontendUi,frontendRoot)->root.base);
   }
   else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,FRONTEND_UI(frontendUi,frontendRoot));
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,&FRONTEND_UI(frontendUi,frontendRoot)->root.base);
   }
   FrontendNetworkGamePage_ClearSessionList(frontendUi);
   UiTransfer_SendDiscoveryProbe();
@@ -307,7 +307,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   if (hostOption != nullptr) {
     *hostOption = 'h';
     FrontendNetworkSetupPage_InitializeFromCommandLine
-              (FRONTEND_UI(frontendUi,networkGameHostButton));
+              (&FRONTEND_UI(frontendUi,networkGameHostButton)->selectable.base);
   }
   else {
     FrontendNetworkSetupPage_ApplyClientOption();
@@ -483,7 +483,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   FrontendNetworkSettings_SetGameName((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   if (appliedOptionMask == 7) {
-    FrontendNetworkSetupPage_InitializeSingleLocalPlayer(FRONTEND_UI(frontendUi,hostGameCreateButton));
+    FrontendNetworkSetupPage_InitializeSingleLocalPlayer(&FRONTEND_UI(frontendUi,hostGameCreateButton)->selectable.base);
   }
 }
 
@@ -506,7 +506,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   Bool8 previewLoadFailed;
   
   frontendUi = (FrontendUiImage *)((uint8_t *)createButton - offsetof(FrontendUiImage,hostGameCreateButton));
-  UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,FRONTEND_UI(frontendUi,frontendRoot));
+  UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&FRONTEND_UI(frontendUi,frontendRoot)->root.base);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_LOBBY,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=

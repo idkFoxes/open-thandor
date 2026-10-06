@@ -1,5 +1,5 @@
 {
- "revision": "e63f3e9a",
+ "revision": "ece9a69f",
  "worktree": true,
  "files": 692,
  "metrics": {
@@ -116,10 +116,10 @@
   "cstyle_cast": {
    "audio": 23,
    "core": 57,
-   "gameplay": 277,
+   "gameplay": 200,
    "movie": 41,
-   "platform": 237,
-   "ui": 1955,
+   "platform": 158,
+   "ui": 1937,
    "world": 206
   },
   "ingame_ui": {
