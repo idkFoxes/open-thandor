@@ -16,13 +16,14 @@ logo, "DIE INVASION", www.thandor.de, drawn over the faded logo every credits pa
 the per-pixel minimum of the other credits pages (their texts sit in different places); the logo's mask is where
 page 12 differs from it, holes closed, the URL line cut off.
 
-Output (default: <repo>/build-installer-images, ignored by git): 24-bit BMPs
+Output (default: <repo>/build-installer-images, ignored by git; the committed set is tools/installer/images,
+made with --out tools/installer/images, see README.md): 24-bit BMPs
 wizard-image-<W>x<H>.bmp and wizard-small-image-<N>.bmp in every size of the Inno Setup 7 tables (the image
 area at 100 ... 250 % DPI, current and pre-6.6 layouts), plus wizard-files.txt with the WizardImageFile /
 WizardSmallImageFile lines. --preview DIR also writes PNG previews and compare.png (Patch 5's image, given with
 --original, beside ours at 100 %, and both enlarged 2x).
 
-The images contain the original game's art (logo, screenshot): they are generated, not committed."""
+The images contain the original game's art (logo, screenshot); the owner decided to commit the finished set."""
 import argparse
 import os
 import sys
