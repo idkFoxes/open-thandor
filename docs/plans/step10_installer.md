@@ -1,6 +1,6 @@
 # Step 10 (later): patch installer for Open Thandor 1.0.6
 
-Status: in progress. Done: WP0 (owner decisions), WP1+2 (version 1.0.6, version header, VERSIONINFO and icon
+Status: done (2026-10-06). Done: WP0 (owner decisions), WP1+2 (version 1.0.6, version header, VERSIONINFO and icon
 resource), WP3 (`tools/installer/thandor-patch.iss`, German readme, `build_installer.py`), WP4 (image generator
 `tools/installer/make_wizard_images.py`; the finished BMPs go into `tools/installer/images`, the installer uses them
 when present and Inno's placeholders otherwise), WP5 (CMake target `installer`, see `docs/BUILDING.md`, section
@@ -8,8 +8,8 @@ when present and Inno's placeholders otherwise), WP5 (CMake target `installer`, 
 (GitHub Actions workflow `.github/workflows/release.yml`: workflow_dispatch builds the installer as an artifact, a
 pushed tag `vX.Y.Z` that matches the CMake version builds it and creates the GitHub Release "Thandor Patch 6 - Open
 Thandor X.Y.Z" with `Thandor-Patch-6.exe` and its SHA-256; same toolchain as locally, pinned and checksummed; see
-`docs/BUILDING.md`, "Releases (GitHub Actions)"). Open: WP6
-(the full install and uninstall tests, including a non-admin game start). Step 10 is an installer that puts our build onto an existing Thandor installation as a
+`docs/BUILDING.md`, "Releases (GitHub Actions)"). WP6: the owner tested the admin install,
+the game and the uninstall by hand and approved. Step 10 is an installer that puts our build onto an existing Thandor installation as a
 patch, with the version bumped to 1.0.6 and a picture of the game, looking like the original `Thandor-Patch-5.exe`
 (a classic Windows installer). The owner decided the open points listed in work package 0 (section 7); see "Owner decisions" below.
 
