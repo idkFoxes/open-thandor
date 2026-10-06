@@ -8,13 +8,17 @@
 #ifndef THANDOR_UI_INGAME_TYPES_H
 #define THANDOR_UI_INGAME_TYPES_H
 
+#include <stddef.h> /* offsetof */
 #include <stdint.h>
+#include <type_traits>
+#include <utility>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/assets/army/types.h>
 #include <thandor/core/types.h>
 #include <thandor/gameplay/army/types.h>
 #include <thandor/graphics/resources/types.h>
 #include <thandor/ui/controls/types.h>
+#include <thandor/ui/dialogs/types.h> /* UiTextButtonTemplateFields: the fields of the truncated text button nodes */
 #include <thandor/ui/text/types.h>
 #include <thandor/world/terrain/types.h>
 
@@ -758,920 +762,538 @@ typedef struct UiTechnologyAreaTabPrefix {
 /* g_InGameRuntimeDefaultImageTemplate: 452 UI nodes. INGAME_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    INGAME_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct InGameUiImage {
-    UiNodeBase inGameRootPanel; /* +0000 g_UiPanelControlVtable: Root panel of the in-game UI; its only child is the primary page stack. */
-    uint32_t inGameRootPanel_fields[3];
-    UiNodeBase chatInputPageStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack (empty or chat input) inside the world view area that shows or hides the chat text entry line. */
-    uint32_t chatInputPageStack_fields[3];
-    UiNodeBase chatInputTextEdit; /* +00B0 g_UiRequiredTextEditControlVtable: Chat/command text entry (action 0x1024): sends the typed text to the selected players; in single player it checks the developer cheat phrase. */
-    uint32_t chatInputTextEdit_fields[32];
-    UiNodeBase primaryPageStack; /* +017C g_UiLayoutContainerControlVtable: Top-level page stack (InGameRuntimeRoot.primaryPageStack); page 1 is the end-movie/results view, it also lists the level movie page and the side panel stack 0x40AC. */
-    uint32_t primaryPageStack_fields[4];
-    UiNodeBase endMovieView; /* +01D8 g_UiImageActionControlVtable: Image/action surface that shows the end movie (activeEndMovieRuntime); action 0x1009 clears the playback flag to skip the movie. */
-    uint32_t endMovieView_fields[7];
-    UiNodeBase endMovieLetterboxTop; /* +0240 g_UiFillPanelControlVtable: Black fill bar over the top eighth of the screen while the end movie plays. */
-    uint32_t endMovieLetterboxTop_fields[4];
-    UiNodeBase endMovieLetterboxBottom; /* +029C g_UiFillPanelControlVtable: Black fill bar over the bottom eighth of the screen while the end movie plays. */
-    uint32_t endMovieLetterboxBottom_fields[4];
-    UiNodeBase endMoviePageStack; /* +02F8 g_UiLayoutContainerControlVtable: Two-page stack (movie only or results screen); set to page 1 after the end movie to show the results screen. */
-    uint32_t endMoviePageStack_fields[3];
-    UiNodeBase resultsScreenPanel; /* +0350 g_UiImagePanelControlVtable: End-of-game results screen background panel holding the chart tabs, charts and summary text; its image subresource is set to the chart mode index (action 0x1026). */
-    uint32_t resultsScreenPanel_fields[4];
-    UiNodeBase resultsChartPageStack; /* +03AC g_UiLayoutContainerControlVtable: Page stack switching between the three results charts; page chosen by the chart tab buttons (action 0x101C). */
-    uint32_t resultsChartPageStack_fields[4];
+    UiPanelControl inGameRootPanel; /* +0000 g_UiPanelControlVtable: Root panel of the in-game UI; its only child is the primary page stack. */
+    UiLayoutContainerControl<2> chatInputPageStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack (empty or chat input) inside the world view area that shows or hides the chat text entry line. */
+    UiRequiredTextEditControl chatInputTextEdit; /* +00B0 g_UiRequiredTextEditControlVtable: Chat/command text entry (action 0x1024): sends the typed text to the selected players; in single player it checks the developer cheat phrase. */
+    uint32_t chatInputTextEdit_trailing[19]; /* +0130: template dwords behind the control */
+    UiLayoutContainerControl<3> primaryPageStack; /* +017C g_UiLayoutContainerControlVtable: Top-level page stack (InGameRuntimeRoot.primaryPageStack); page 1 is the end-movie/results view, it also lists the level movie page and the side panel stack 0x40AC. */
+    UiImageActionControl endMovieView; /* +01D8 g_UiImageActionControlVtable: Image/action surface that shows the end movie (activeEndMovieRuntime); action 0x1009 clears the playback flag to skip the movie. */
+    UiFillPanelControl endMovieLetterboxTop; /* +0240 g_UiFillPanelControlVtable: Black fill bar over the top eighth of the screen while the end movie plays. */
+    UiFillPanelControl endMovieLetterboxBottom; /* +029C g_UiFillPanelControlVtable: Black fill bar over the bottom eighth of the screen while the end movie plays. */
+    UiLayoutContainerControl<2> endMoviePageStack; /* +02F8 g_UiLayoutContainerControlVtable: Two-page stack (movie only or results screen); set to page 1 after the end movie to show the results screen. */
+    UiImagePanelControl resultsScreenPanel; /* +0350 g_UiImagePanelControlVtable: End-of-game results screen background panel holding the chart tabs, charts and summary text; its image subresource is set to the chart mode index (action 0x1026). */
+    UiLayoutContainerControl<3> resultsChartPageStack; /* +03AC g_UiLayoutContainerControlVtable: Page stack switching between the three results charts; page chosen by the chart tab buttons (action 0x101C). */
     UiNodeBase resultsChart1; /* +0408 g_FrontendResultsTableVtable: First results statistics chart (graph control); which category (points/economy/military) is not verified. Its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     uint32_t resultsChart1_fields[12];
     UiNodeBase resultsChart2; /* +0484 g_FrontendResultsTableVtable: Second results statistics chart; its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     uint32_t resultsChart2_fields[12];
     UiNodeBase resultsChart3; /* +0500 g_FrontendResultsTableVtable: Third results statistics chart (8 series); its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     uint32_t resultsChart3_fields[14];
-    UiNodeBase resultsTabMilitary; /* +0584 g_UiFramedTextButtonControlVtable: Results chart tab button labelled Military (text 0x21B1); action 0x101C selects the chart page. */
-    uint32_t resultsTabMilitary_fields[5];
-    UiNodeBase resultsTabEconomy; /* +05E4 g_UiFramedTextButtonControlVtable: Results chart tab button labelled Economy (text 0x21B0); action 0x101C selects the chart page. */
-    uint32_t resultsTabEconomy_fields[5];
-    UiNodeBase resultsTabThird; /* +0644 g_UiFramedTextButtonControlVtable: Third results chart tab button (text 0x21AF, probably total/points); action 0x101C selects the chart page. */
-    uint32_t resultsTabThird_fields[5];
-    UiNodeBase resultsContinueButton; /* +06A4 g_UiFramedTextButtonControlVtable: Results screen continue/OK button (action 0x101B, text 0x21AE) that marks the results as done. */
-    uint32_t resultsContinueButton_fields[5];
-    UiNodeBase resultsSecondaryExitButton; /* +0704 g_UiFramedTextButtonControlVtable: Results button (action 0x1025, text 0x21C5) setting runtime flag 0x1000; suppressed in local games, likely a multiplayer leave/next option. */
-    uint32_t resultsSecondaryExitButton_fields[5];
-    UiNodeBase resultsChartModeButtonA; /* +0764 g_UiFramedTextButtonControlVtable: First of two exclusive chart mode buttons (action 0x1026, text 0x21C6); the mode index is mirrored into the charts. */
-    uint32_t resultsChartModeButtonA_fields[5];
-    UiNodeBase resultsChartModeButtonB; /* +07C4 g_UiFramedTextButtonControlVtable: Second of two exclusive chart mode buttons (action 0x1026, text 0x21C7). */
-    uint32_t resultsChartModeButtonB_fields[5];
-    UiNodeBase resultsSummaryText; /* +0824 g_UiListOffsetControlVtable: Results summary text 0x21C0 patched with the level title and elapsed game time. */
-    uint32_t resultsSummaryText_fields[4];
+    UiFramedTextButtonControl resultsTabMilitary; /* +0584 g_UiFramedTextButtonControlVtable: Results chart tab button labelled Military (text 0x21B1); action 0x101C selects the chart page. */
+    UiFramedTextButtonControl resultsTabEconomy; /* +05E4 g_UiFramedTextButtonControlVtable: Results chart tab button labelled Economy (text 0x21B0); action 0x101C selects the chart page. */
+    UiFramedTextButtonControl resultsTabThird; /* +0644 g_UiFramedTextButtonControlVtable: Third results chart tab button (text 0x21AF, probably total/points); action 0x101C selects the chart page. */
+    UiFramedTextButtonControl resultsContinueButton; /* +06A4 g_UiFramedTextButtonControlVtable: Results screen continue/OK button (action 0x101B, text 0x21AE) that marks the results as done. */
+    UiFramedTextButtonControl resultsSecondaryExitButton; /* +0704 g_UiFramedTextButtonControlVtable: Results button (action 0x1025, text 0x21C5) setting runtime flag 0x1000; suppressed in local games, likely a multiplayer leave/next option. */
+    UiFramedTextButtonControl resultsChartModeButtonA; /* +0764 g_UiFramedTextButtonControlVtable: First of two exclusive chart mode buttons (action 0x1026, text 0x21C6); the mode index is mirrored into the charts. */
+    UiFramedTextButtonControl resultsChartModeButtonB; /* +07C4 g_UiFramedTextButtonControlVtable: Second of two exclusive chart mode buttons (action 0x1026, text 0x21C7). */
+    UiListOffsetControl resultsSummaryText; /* +0824 g_UiListOffsetControlVtable: Results summary text 0x21C0 patched with the level title and elapsed game time. */
     UiNodeBase levelMovieView; /* +0880 g_UiImageActionControlVtable: Image/action surface playing the level movie (levelMovieRuntime lives in this node). */
     uint32_t levelMovieView_fields[6];
-    UiNodeBase playerStatusBox; /* +08E4 g_UiConditionalActionControlVtable: Multiplayer player status box (types.h: playerStatusNode): UiConditionalActionControl whose eight text lines are g_InGamePlayerStatusTextSlots; InGamePanel_RebuildPlayerStatusRows sets lineCount to the player count and sizes it. Invalidated during movie playback. */
-    uint32_t playerStatusBox_fields[12];
-    UiNodeBase messageHistoryPanel; /* +0960 g_UiConditionalActionControlVtable: Recent message history display (recentTextHistory lives inside it); action 0x100F trims the history to three lines. */
-    uint32_t messageHistoryPanel_fields[12];
-    UiNodeBase worldViewArea; /* +09DC g_UiLayoutContainerControlVtable: Container for the main play area left of the side panel (right offset set from the panel width); holds world view, windows, messages and chat input. */
-    uint32_t worldViewArea_fields[2];
-    UiNodeBase worldView; /* +0A30 g_FrontendModelPointerContextVtable: The 3D world view control (InGameRuntimeRoot.worldRuntime) that receives map pointer input and hosts the on-screen status texts. */
-    uint32_t worldView_fields[85];
-    UiNodeBase gameWindowPageStack; /* +0BD0 g_UiLayoutContainerControlVtable: Page stack of the in-game windows (types.h technologyPageStack0BD0): 0 none, 1 message, 2 technology, 3 game menu, 4 quit, 5 save, 6 graphics, 7 audio, 8 mission help. */
-    uint32_t gameWindowPageStack_fields[10];
-    UiNodeBase gameMenuWindow; /* +0C44 g_UiImagePanelControlVtable: Game menu / gameplay options window (page 3, action 0x1003) with save, quit, graphics, audio buttons and camera options. */
-    uint32_t gameMenuWindow_fields[4];
-    UiNodeBase quitGameWindow; /* +0CA0 g_UiImagePanelControlVtable: Leave/quit game window (page 4, opened by action 0x1200); its buttons (0x101D/0x101E/0x1027) are in another part. */
-    uint32_t quitGameWindow_fields[4];
-    UiNodeBase saveGameWindow; /* +0CFC g_UiImagePanelControlVtable: Save game window (page 5) with save list, save, delete and back buttons. */
-    uint32_t saveGameWindow_fields[4];
-    UiNodeBase graphicsSettingsWindow; /* +0D58 g_UiImagePanelControlVtable: Graphics settings window (page 6, opened by action 0x1202). */
-    uint32_t graphicsSettingsWindow_fields[4];
-    UiNodeBase audioSettingsWindow; /* +0DB4 g_UiImagePanelControlVtable: Audio settings window (page 7, opened by action 0x1203). */
-    uint32_t audioSettingsWindow_fields[4];
-    UiNodeBase missionHelpWindow; /* +0E10 g_UiImagePanelControlVtable: Mission info/help window (page 8, action 0x101F) with three tabs: mission briefing, keyboard help and mouse/cursor help. */
-    uint32_t missionHelpWindow_fields[4];
-    UiNodeBase technologyWindow; /* +0E6C g_UiImagePanelControlVtable: Technology research window (page 2, action 0x1010), sized from the tech.gfx texture. */
-    uint32_t technologyWindow_fields[4];
-    UiNodeBase missionHelpTitle; /* +0EC8 g_UiFocusProxyControlVtable: Title label of the mission help window (text 0x21CC). */
-    uint32_t missionHelpTitle_fields[4];
-    UiNodeBase missionHelpCloseButton; /* +0F24 g_UiFramedTextButtonControlVtable: Close button of the mission help window (action 0x1020, text 0x21CD). */
-    uint32_t missionHelpCloseButton_fields[5];
-    UiNodeBase missionHelpBriefingTab; /* +0F84 g_UiFramedTextButtonControlVtable: Tab 0 button (action 0x1021, text 0x21CE) showing the mission briefing text. */
-    uint32_t missionHelpBriefingTab_fields[5];
-    UiNodeBase missionHelpKeyboardTab; /* +0FE4 g_UiFramedTextButtonControlVtable: Tab 1 button (action 0x1022, text 0x21CF) showing the keyboard help (text page texte_tastatur). */
-    uint32_t missionHelpKeyboardTab_fields[5];
-    UiNodeBase missionHelpMouseTab; /* +1044 g_UiFramedTextButtonControlVtable: Tab 2 button (action 0x1023, text 0x21D0) showing help text 0x2402 with inline cursor icons (likely mouse controls). */
-    uint32_t missionHelpMouseTab_fields[5];
-    UiNodeBase missionHelpTabPageStack; /* +10A4 g_UiLayoutContainerControlVtable: Page stack holding the three scrollable help text pages. */
-    uint32_t missionHelpTabPageStack_fields[4];
-    UiNodeBase missionBriefingScroll; /* +1100 g_UiScrollableControlVtable: Scrollable view of the mission briefing text (InGameMissionHelpRootView.missionBriefingPanel). */
-    uint32_t missionBriefingScroll_fields[17];
-    UiNodeBase missionBriefingText; /* +1190 g_UiListOffsetControlVtable: Briefing text; its resource id is set from the level title and active faction when the window opens. */
-    uint32_t missionBriefingText_fields[4];
-    UiNodeBase keyboardHelpScroll; /* +11EC g_UiScrollableControlVtable: Scrollable view of the keyboard help (keyboardHelpPanel). */
-    uint32_t keyboardHelpScroll_fields[17];
-    UiNodeBase keyboardHelpKeyColumn; /* +127C g_UiListOffsetControlVtable: Keyboard help text 0x2400 (likely the key column). */
-    uint32_t keyboardHelpKeyColumn_fields[4];
-    UiNodeBase keyboardHelpDescriptionColumn; /* +12D8 g_UiListOffsetControlVtable: Keyboard help text 0x2401 next to the key column (likely the descriptions). */
-    uint32_t keyboardHelpDescriptionColumn_fields[4];
-    UiNodeBase mouseHelpScroll; /* +1334 g_UiScrollableControlVtable: Scrollable view of help text 0x2402 (mouseHelpPanel). */
-    uint32_t mouseHelpScroll_fields[17];
-    UiNodeBase mouseHelpText; /* +13C4 g_UiListOffsetControlVtable: Help text 0x2402 bound to the cursor texture (mouse/cursor explanations). */
-    uint32_t mouseHelpText_fields[4];
-    UiNodeBase technologyTitle; /* +1420 g_UiFocusProxyControlVtable: Title label of the technology window (text 0x217C). */
-    uint32_t technologyTitle_fields[4];
-    UiNodeBase technologyCloseButton; /* +147C g_UiFramedTextButtonControlVtable: Close button (action 0x1011): clears the selected army token and closes the window. */
-    uint32_t technologyCloseButton_fields[5];
-    UiNodeBase technologyResearchButton; /* +14DC g_UiFramedTextButtonControlVtable: Starts research of the selected technology (action 0x1013). */
-    uint32_t technologyResearchButton_fields[5];
+    UiConditionalActionTextBox<8> playerStatusBox; /* +08E4 g_UiConditionalActionControlVtable: Multiplayer player status box (types.h: playerStatusNode): UiConditionalActionControl whose eight text lines are g_InGamePlayerStatusTextSlots; InGamePanel_RebuildPlayerStatusRows sets lineCount to the player count and sizes it. Invalidated during movie playback. */
+    UiConditionalActionTextBox<8> messageHistoryPanel; /* +0960 g_UiConditionalActionControlVtable: Recent message history display (recentTextHistory lives inside it); action 0x100F trims the history to three lines. */
+    UiLayoutContainerControl<1> worldViewArea; /* +09DC g_UiLayoutContainerControlVtable: Container for the main play area left of the side panel (right offset set from the panel width); holds world view, windows, messages and chat input. */
+    FrontendModelPointerContext worldView; /* +0A30 g_FrontendModelPointerContextVtable: The 3D world view control (InGameRuntimeRoot.worldRuntime) that receives map pointer input and hosts the on-screen status texts. */
+    uint32_t worldView_trailing[9]; /* +0BAC: template dwords behind the control */
+    UiLayoutContainerControl<9> gameWindowPageStack; /* +0BD0 g_UiLayoutContainerControlVtable: Page stack of the in-game windows (types.h technologyPageStack0BD0): 0 none, 1 message, 2 technology, 3 game menu, 4 quit, 5 save, 6 graphics, 7 audio, 8 mission help. */
+    UiImagePanelControl gameMenuWindow; /* +0C44 g_UiImagePanelControlVtable: Game menu / gameplay options window (page 3, action 0x1003) with save, quit, graphics, audio buttons and camera options. */
+    UiImagePanelControl quitGameWindow; /* +0CA0 g_UiImagePanelControlVtable: Leave/quit game window (page 4, opened by action 0x1200); its buttons (0x101D/0x101E/0x1027) are in another part. */
+    UiImagePanelControl saveGameWindow; /* +0CFC g_UiImagePanelControlVtable: Save game window (page 5) with save list, save, delete and back buttons. */
+    UiImagePanelControl graphicsSettingsWindow; /* +0D58 g_UiImagePanelControlVtable: Graphics settings window (page 6, opened by action 0x1202). */
+    UiImagePanelControl audioSettingsWindow; /* +0DB4 g_UiImagePanelControlVtable: Audio settings window (page 7, opened by action 0x1203). */
+    UiImagePanelControl missionHelpWindow; /* +0E10 g_UiImagePanelControlVtable: Mission info/help window (page 8, action 0x101F) with three tabs: mission briefing, keyboard help and mouse/cursor help. */
+    UiImagePanelControl technologyWindow; /* +0E6C g_UiImagePanelControlVtable: Technology research window (page 2, action 0x1010), sized from the tech.gfx texture. */
+    UiFocusProxyControl missionHelpTitle; /* +0EC8 g_UiFocusProxyControlVtable: Title label of the mission help window (text 0x21CC). */
+    UiFramedTextButtonControl missionHelpCloseButton; /* +0F24 g_UiFramedTextButtonControlVtable: Close button of the mission help window (action 0x1020, text 0x21CD). */
+    UiFramedTextButtonControl missionHelpBriefingTab; /* +0F84 g_UiFramedTextButtonControlVtable: Tab 0 button (action 0x1021, text 0x21CE) showing the mission briefing text. */
+    UiFramedTextButtonControl missionHelpKeyboardTab; /* +0FE4 g_UiFramedTextButtonControlVtable: Tab 1 button (action 0x1022, text 0x21CF) showing the keyboard help (text page texte_tastatur). */
+    UiFramedTextButtonControl missionHelpMouseTab; /* +1044 g_UiFramedTextButtonControlVtable: Tab 2 button (action 0x1023, text 0x21D0) showing help text 0x2402 with inline cursor icons (likely mouse controls). */
+    UiLayoutContainerControl<3> missionHelpTabPageStack; /* +10A4 g_UiLayoutContainerControlVtable: Page stack holding the three scrollable help text pages. */
+    UiScrollableControl missionBriefingScroll; /* +1100 g_UiScrollableControlVtable: Scrollable view of the mission briefing text (InGameMissionHelpRootView.missionBriefingPanel). */
+    UiListOffsetControl missionBriefingText; /* +1190 g_UiListOffsetControlVtable: Briefing text; its resource id is set from the level title and active faction when the window opens. */
+    UiScrollableControl keyboardHelpScroll; /* +11EC g_UiScrollableControlVtable: Scrollable view of the keyboard help (keyboardHelpPanel). */
+    UiListOffsetControl keyboardHelpKeyColumn; /* +127C g_UiListOffsetControlVtable: Keyboard help text 0x2400 (likely the key column). */
+    UiListOffsetControl keyboardHelpDescriptionColumn; /* +12D8 g_UiListOffsetControlVtable: Keyboard help text 0x2401 next to the key column (likely the descriptions). */
+    UiScrollableControl mouseHelpScroll; /* +1334 g_UiScrollableControlVtable: Scrollable view of help text 0x2402 (mouseHelpPanel). */
+    UiListOffsetControl mouseHelpText; /* +13C4 g_UiListOffsetControlVtable: Help text 0x2402 bound to the cursor texture (mouse/cursor explanations). */
+    UiFocusProxyControl technologyTitle; /* +1420 g_UiFocusProxyControlVtable: Title label of the technology window (text 0x217C). */
+    UiFramedTextButtonControl technologyCloseButton; /* +147C g_UiFramedTextButtonControlVtable: Close button (action 0x1011): clears the selected army token and closes the window. */
+    UiFramedTextButtonControl technologyResearchButton; /* +14DC g_UiFramedTextButtonControlVtable: Starts research of the selected technology (action 0x1013). */
     UiTechnologyAreaTabPrefix technologyAreaTab1_prefix; /* +153C */
-    UiNodeBase technologyAreaTab1; /* +1544 g_UiFramedTextButtonControlVtable: Technology area tab 1 (action 0x1014) with an icon from tech.gfx. */
-    uint32_t technologyAreaTab1_fields[5];
+    UiFramedTextButtonControl technologyAreaTab1; /* +1544 g_UiFramedTextButtonControlVtable: Technology area tab 1 (action 0x1014) with an icon from tech.gfx. */
     UiTechnologyAreaTabPrefix technologyAreaTab2_prefix; /* +15A4 */
-    UiNodeBase technologyAreaTab2; /* +15AC g_UiFramedTextButtonControlVtable: Technology area tab 2 (action 0x1015). */
-    uint32_t technologyAreaTab2_fields[5];
+    UiFramedTextButtonControl technologyAreaTab2; /* +15AC g_UiFramedTextButtonControlVtable: Technology area tab 2 (action 0x1015). */
     UiTechnologyAreaTabPrefix technologyAreaTab3_prefix; /* +160C */
-    UiNodeBase technologyAreaTab3; /* +1614 g_UiFramedTextButtonControlVtable: Technology area tab 3 (action 0x1016). */
-    uint32_t technologyAreaTab3_fields[5];
+    UiFramedTextButtonControl technologyAreaTab3; /* +1614 g_UiFramedTextButtonControlVtable: Technology area tab 3 (action 0x1016). */
     UiTechnologyAreaTabPrefix technologyAreaTab4_prefix; /* +1674 */
-    UiNodeBase technologyAreaTab4; /* +167C g_UiFramedTextButtonControlVtable: Technology area tab 4 (action 0x1017). */
-    uint32_t technologyAreaTab4_fields[5];
+    UiFramedTextButtonControl technologyAreaTab4; /* +167C g_UiFramedTextButtonControlVtable: Technology area tab 4 (action 0x1017). */
     UiTechnologyAreaTabPrefix technologyAreaTab5_prefix; /* +16DC */
-    UiNodeBase technologyAreaTab5; /* +16E4 g_UiFramedTextButtonControlVtable: Technology area tab 5 (action 0x1018). */
-    uint32_t technologyAreaTab5_fields[5];
+    UiFramedTextButtonControl technologyAreaTab5; /* +16E4 g_UiFramedTextButtonControlVtable: Technology area tab 5 (action 0x1018). */
     UiTechnologyAreaTabPrefix technologyAreaTab6_prefix; /* +1744 */
-    UiNodeBase technologyAreaTab6; /* +174C g_UiFramedTextButtonControlVtable: Technology area tab 6 (action 0x1019). */
-    uint32_t technologyAreaTab6_fields[5];
+    UiFramedTextButtonControl technologyAreaTab6; /* +174C g_UiFramedTextButtonControlVtable: Technology area tab 6 (action 0x1019). */
     UiTechnologyAreaTabPrefix technologyAreaTab7_prefix; /* +17AC */
-    UiNodeBase technologyAreaTab7; /* +17B4 g_UiFramedTextButtonControlVtable: Technology area tab 7 (action 0x101A). */
-    uint32_t technologyAreaTab7_fields[5];
-    UiNodeBase technologyAreaTab1Icon; /* +1814 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 1. */
-    uint32_t technologyAreaTab1Icon_fields[4];
-    UiNodeBase technologyAreaTab2Icon; /* +1870 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 2. */
-    uint32_t technologyAreaTab2Icon_fields[4];
-    UiNodeBase technologyAreaTab3Icon; /* +18CC g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 3. */
-    uint32_t technologyAreaTab3Icon_fields[4];
-    UiNodeBase technologyAreaTab4Icon; /* +1928 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 4. */
-    uint32_t technologyAreaTab4Icon_fields[4];
-    UiNodeBase technologyAreaTab5Icon; /* +1984 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 5. */
-    uint32_t technologyAreaTab5Icon_fields[4];
-    UiNodeBase technologyAreaTab6Icon; /* +19E0 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 6. */
-    uint32_t technologyAreaTab6Icon_fields[4];
-    UiNodeBase technologyAreaTab7Icon; /* +1A3C g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 7. */
-    uint32_t technologyAreaTab7Icon_fields[4];
-    UiNodeBase technologyDescriptionFrame; /* +1A98 g_UiImagePanelControlVtable: Image panel beside the description area, widened by the panel texture subresource width; exact role unverified. */
-    uint32_t technologyDescriptionFrame_fields[4];
-    UiNodeBase technologyDescriptionScroll; /* +1AF4 g_UiScrollableControlVtable: Scrollable view of the selected technology description. */
-    uint32_t technologyDescriptionScroll_fields[17];
-    UiNodeBase technologyDescriptionText; /* +1B84 g_UiListOffsetControlVtable: Description text of the selected technology (default 0x217F); wrap width derived from the window width. */
-    uint32_t technologyDescriptionText_fields[4];
-    UiNodeBase messageWindow; /* +1BE0 g_UiImagePanelControlVtable: Send-message window (page 1): text entry, recipient mode buttons, player checkboxes and send/cancel buttons. */
-    uint32_t messageWindow_fields[4];
-    UiNodeBase messageWindowTitle; /* +1C3C g_UiFocusProxyControlVtable: Title label of the message window (text 0x2166). */
-    uint32_t messageWindowTitle_fields[4];
-    UiNodeBase messageTextEdit; /* +1C98 g_UiRequiredTextEditControlVtable: Message text entry whose text is sent as a 48-byte payload. */
-    uint32_t messageTextEdit_fields[32];
-    UiNodeBase messageCancelButton; /* +1D64 g_UiFramedTextButtonControlVtable: Closes the message window (action 0x1002, text 0x2168). */
-    uint32_t messageCancelButton_fields[5];
-    UiNodeBase messageSendAndCloseButton; /* +1DC4 g_UiFramedTextButtonControlVtable: Sends the message and closes the window (action 0x1005, text 0x2169). */
-    uint32_t messageSendAndCloseButton_fields[5];
-    UiNodeBase messageSendButton; /* +1E24 g_UiFramedTextButtonControlVtable: Sends the message with the current recipient mask (action 0x1004, text 0x2167). */
-    uint32_t messageSendButton_fields[5];
-    UiNodeBase messageRecipientPlayersTab; /* +1E84 g_UiTextButtonControlVtable: Recipient mode: fills the seven checkboxes from the active players (action 0x1006, text 0x216B). */
-    uint32_t messageRecipientPlayersTab_fields[5];
-    UiNodeBase messageRecipientGroupsTab; /* +1EE4 g_UiTextButtonControlVtable: Recipient mode: fills the seven checkboxes from the runtime record catalog, probably teams (action 0x1007, text 0x216C). */
-    uint32_t messageRecipientGroupsTab_fields[5];
-    UiNodeBase messageRecipientAllTab; /* +1F44 g_UiTextButtonControlVtable: Recipient mode that hides the checkbox list, likely send to all (action 0x1008, text 0x216A). */
-    uint32_t messageRecipientAllTab_fields[5];
-    UiNodeBase messageRecipientPageStack; /* +1FA4 g_UiLayoutContainerControlVtable: Two-page stack: recipient checkbox list or nothing. */
-    uint32_t messageRecipientPageStack_fields[3];
-    UiNodeBase messageRecipientScroll; /* +1FFC g_UiScrollableControlVtable: Scrollable view of the recipient checkbox list. */
-    uint32_t messageRecipientScroll_fields[17];
-    UiNodeBase messageRecipientList; /* +208C g_UiPanelControlVtable: Panel holding the seven recipient checkboxes. */
-    uint32_t messageRecipientList_fields[3];
-    UiNodeBase messageRecipientCheckbox1; /* +20E4 g_UiTextButtonControlVtable: Recipient slot 1 checkbox (text 0x216D, preselected). */
-    uint32_t messageRecipientCheckbox1_fields[5];
-    UiNodeBase messageRecipientCheckbox2; /* +2144 g_UiTextButtonControlVtable: Recipient slot 2 checkbox (text 0x216E). */
-    uint32_t messageRecipientCheckbox2_fields[5];
-    UiNodeBase messageRecipientCheckbox3; /* +21A4 g_UiTextButtonControlVtable: Recipient slot 3 checkbox (text 0x216F). */
-    uint32_t messageRecipientCheckbox3_fields[5];
-    UiNodeBase messageRecipientCheckbox4; /* +2204 g_UiTextButtonControlVtable: Recipient slot 4 checkbox (text 0x2170). */
-    uint32_t messageRecipientCheckbox4_fields[5];
-    UiNodeBase messageRecipientCheckbox5; /* +2264 g_UiTextButtonControlVtable: Recipient slot 5 checkbox (text 0x2171). */
-    uint32_t messageRecipientCheckbox5_fields[5];
-    UiNodeBase messageRecipientCheckbox6; /* +22C4 g_UiTextButtonControlVtable: Recipient slot 6 checkbox (text 0x2172). */
-    uint32_t messageRecipientCheckbox6_fields[5];
-    UiNodeBase messageRecipientCheckbox7; /* +2324 g_UiTextButtonControlVtable: Recipient slot 7 checkbox (text 0x2173). */
-    uint32_t messageRecipientCheckbox7_fields[5];
-    UiNodeBase worldViewCyclingInfoText; /* +2384 g_UiCommandVisibilitySingleLineTextVtable: Single-line world view text whose resource id a hotkey cycles through 0x112..0x117; the value is also published as the world-state mirror. */
-    uint32_t worldViewCyclingInfoText_fields[4];
-    UiNodeBase worldViewStatusTextA; /* +23E0 g_UiCommandVisibilitySingleLineTextVtable: Single-line world view text 0x21D1 shown for command flags 0x801 (a status message, unverified). */
-    uint32_t worldViewStatusTextA_fields[4];
-    UiNodeBase worldViewStatusTextB; /* +243C g_UiCommandVisibilitySingleLineTextVtable: Single-line world view text 0x21D5 shown for command flags 0x1001 (a status message, unverified). */
-    uint32_t worldViewStatusTextB_fields[4];
-    UiNodeBase worldViewWrappedStatusText; /* +2498 g_UiCommandVisibilityWrappedTextVtable: Wrapped world view text shown for command flag 0x10; exact message unverified. */
-    uint32_t worldViewWrappedStatusText_fields[4];
-    UiNodeBase gameMenuTitle; /* +24F4 g_UiFocusProxyControlVtable: Title label of the game menu window (text 0x2123). */
-    uint32_t gameMenuTitle_fields[4];
-    UiNodeBase gameMenuSaveButton; /* +2550 g_UiFramedTextButtonControlVtable: Opens the save game window and rebuilds the save list (action 0x120E, text 0x214D). */
-    uint32_t gameMenuSaveButton_fields[5];
-    UiNodeBase gameMenuQuitButton; /* +25B0 g_UiFramedTextButtonControlVtable: Opens the quit game window, page 4 (action 0x1200, text 0x2148). */
-    uint32_t gameMenuQuitButton_fields[5];
-    UiNodeBase gameMenuGraphicsButton; /* +2610 g_UiFramedTextButtonControlVtable: Opens the graphics settings window (action 0x1202, text 0x2121). */
-    uint32_t gameMenuGraphicsButton_fields[5];
-    UiNodeBase gameMenuAudioButton; /* +2670 g_UiFramedTextButtonControlVtable: Opens the audio settings window (action 0x1203, text 0x2122). */
-    uint32_t gameMenuAudioButton_fields[5];
-    UiNodeBase rightButtonNoScrollCheckbox; /* +26D0 g_UiTextButtonControlVtable: Option: right mouse button does not scroll (action 0x1216, text 0x21C8). */
-    uint32_t rightButtonNoScrollCheckbox_fields[5];
-    UiNodeBase scrollSpeedGroup; /* +2730 g_UiFocusProxyControlVtable: Labelled group for the camera scroll speed slider (text 0x21C9). */
-    uint32_t scrollSpeedGroup_fields[4];
-    UiNodeBase scrollSpeedMinLabel; /* +278C g_UiFocusProxyControlVtable: Scroll speed slider end label (text 0x21CA), probably slow. */
-    uint32_t scrollSpeedMinLabel_fields[4];
-    UiNodeBase scrollSpeedMaxLabel; /* +27E8 g_UiFocusProxyControlVtable: Scroll speed slider end label (text 0x21CB), probably fast. */
-    uint32_t scrollSpeedMaxLabel_fields[4];
-    UiNodeBase scrollSpeedSlider; /* +2844 g_UiRangeSliderControlVtable: Camera scroll step slider (action 0x1217). */
-    uint32_t scrollSpeedSlider_fields[7];
-    UiNodeBase autoCameraGroup; /* +28AC g_UiTitledWindowControlVtable: Titled group (text 0x215F) with the automatic zoom/rotation options. */
-    uint32_t autoCameraGroup_fields[2];
-    UiNodeBase autoZoomOffCheckbox; /* +2900 g_UiTextButtonControlVtable: Option: automatic zoom off (action 0x1212, text 0x2160). */
-    uint32_t autoZoomOffCheckbox_fields[5];
-    UiNodeBase autoRotationOffCheckbox; /* +2960 g_UiTextButtonControlVtable: Option: automatic rotation off (action 0x1213, text 0x2161). */
-    uint32_t autoRotationOffCheckbox_fields[5];
-    UiNodeBase cameraLinkGroup; /* +29C0 g_UiTitledWindowControlVtable: Titled group (text 0x2162) with the rotation link and hide panel options. */
-    uint32_t cameraLinkGroup_fields[2];
-    UiNodeBase linkRotationZoomCheckbox; /* +2A14 g_UiTextButtonControlVtable: Option: link rotation with zoom (action 0x1214, excludes 0x1215, text 0x2163). */
-    uint32_t linkRotationZoomCheckbox_fields[5];
-    UiNodeBase linkRotationTiltCheckbox; /* +2A74 g_UiTextButtonControlVtable: Option: link rotation with tilt (action 0x1215, excludes 0x1214, text 0x2164). */
-    uint32_t linkRotationTiltCheckbox_fields[5];
-    UiNodeBase hidePanelCheckbox; /* +2AD4 g_UiTextButtonControlVtable: Option: hide panel (action 0x121B, text 0x2165). */
-    uint32_t hidePanelCheckbox_fields[5];
-    UiNodeBase gameMenuCloseButton; /* +2B34 g_UiFramedTextButtonControlVtable: Closes the game menu (action 0x1201, text 0x211F). */
-    uint32_t gameMenuCloseButton_fields[5];
-    UiNodeBase saveGameBackButton; /* +2B94 g_UiFramedTextButtonControlVtable: Returns from the save window to the game menu (action 0x1218, text 0x214F). */
-    uint32_t saveGameBackButton_fields[5];
-    UiNodeBase saveGameTitle; /* +2BF4 g_UiFocusProxyControlVtable: Title label of the save game window (text 0x214E). */
-    uint32_t saveGameTitle_fields[4];
-    UiNodeBase saveGameSaveButton; /* +2C50 g_UiFramedTextButtonControlVtable: Saves to the selected or typed save name (action 0x1210, text 0x214D). */
-    uint32_t saveGameSaveButton_fields[5];
-    UiNodeBase saveGameDeleteButton; /* +2CB0 g_UiFramedTextButtonControlVtable: Deletes the selected save file and rebuilds the list (action 0x1219, text 0x2153). */
-    uint32_t saveGameDeleteButton_fields[5];
-    UiNodeBase saveGameListScroll; /* +2D10 g_UiScrollableControlVtable: Scrollable area of the save game list (children in part 2). */
-    uint32_t saveGameListScroll_fields[17];
-    UiNodeBase saveGameList; /* +2DA0 g_UiListControlVtable: Row list of save/*.sve catalog entries on the save-game page; selecting a row fires action 0x120F (InGameSaveGameList_SelectAndRefreshDetail). */
-    uint32_t saveGameList_fields[12];
-    UiNodeBase saveGameListHeaderLabel; /* +2E1C g_UiFocusProxyControlVtable: Static text 0x2150 above the save list on the save-game page (header caption). */
-    uint32_t saveGameListHeaderLabel_fields[4];
-    UiNodeBase saveGameDescriptionText; /* +2E78 g_UiListOffsetControlVtable: Text box below the list showing the selected save's description (text 0x215D, or 0x215E patched with save details). */
-    uint32_t saveGameDescriptionText_fields[4];
-    UiNodeBase saveNameEntryStack; /* +2ED4 g_UiLayoutContainerControlVtable: Detail page stack of the save page: page 0 empty, page 1 shows the save-name editor when the trailing new-save row is selected. */
-    uint32_t saveNameEntryStack_fields[3];
-    UiNodeBase saveNameEdit; /* +2F2C g_UiRequiredTextEditControlVtable: Required text edit for the new save name; action 0x1211 validates the name and enables the Save button (0x1210). */
-    uint32_t saveNameEdit_fields[24];
-    UiNodeBase saveNameLabel; /* +2FD8 g_UiFocusProxyControlVtable: Caption text 0x2152 above the save-name edit field. */
-    uint32_t saveNameLabel_fields[4];
-    UiNodeBase quitMenuBackButton; /* +3034 g_UiFramedTextButtonControlVtable: Quit page button (action 0x1218, text 0x2149) that returns to the in-game menu. */
-    uint32_t quitMenuBackButton_fields[5];
-    UiNodeBase quitMenuTitleLabel; /* +3094 g_UiFocusProxyControlVtable: Title text 0x2144 of the in-game quit page (menu page stack index 4). */
-    uint32_t quitMenuTitleLabel_fields[4];
-    UiNodeBase quitMenuAbortMissionButton; /* +30F0 g_UiFramedTextButtonControlVtable: Action 0x101D: closes the menu and issues operation 0x150 mode 0 (local player departs, runtime flag 0x20000 aborts back to the frontend); text 0x214A. */
-    uint32_t quitMenuAbortMissionButton_fields[5];
-    UiNodeBase quitMenuSurrenderButton; /* +3150 g_UiFramedTextButtonControlVtable: Action 0x101E: operation 0x150 mode 1, which destroys all armies of the local faction (give up); text 0x214B; label inferred from behaviour. */
-    uint32_t quitMenuSurrenderButton_fields[5];
-    UiNodeBase quitMenuRestartMissionButton; /* +31B0 g_UiFramedTextButtonControlVtable: Action 0x1027: operation 0x150 mode 2, sets runtime flag 0x10000 (session ends but keeps the scenario path, likely restart); text 0x214C; label unverified. */
-    uint32_t quitMenuRestartMissionButton_fields[5];
-    UiNodeBase graphicsOptionsBackButton; /* +3210 g_UiFramedTextButtonControlVtable: Graphics options page button (action 0x1218, text 0x211F) returning to the in-game menu. */
-    uint32_t graphicsOptionsBackButton_fields[5];
-    UiNodeBase graphicsOptionsTitleLabel; /* +3270 g_UiFocusProxyControlVtable: Title text 0x212E of the in-game graphics options page (menu page index 6). */
-    uint32_t graphicsOptionsTitleLabel_fields[4];
-    UiNodeBase shadingEnabledCheckbox; /* +32CC g_UiTextButtonControlVtable: Toggle (action 0x1204, text 0x212F) enabling shading (InGameShadingSettings_SetEnabled). */
-    uint32_t shadingEnabledCheckbox_fields[5];
-    UiNodeBase shadingLevelGroup; /* +332C g_UiTitledWindowControlVtable: Titled frame (text 0x2130) holding the six shading-level choice buttons. */
-    uint32_t shadingLevelGroup_fields[2];
-    UiNodeBase shadingLevel32x32Button; /* +3380 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x20/0x20. */
-    uint32_t shadingLevel32x32Button_fields[7];
-    UiNodeBase shadingLevel32x64Button; /* +33E8 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x20/0x40. */
-    uint32_t shadingLevel32x64Button_fields[7];
-    UiNodeBase shadingLevel32x128Button; /* +3450 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x20/0x80. */
-    uint32_t shadingLevel32x128Button_fields[7];
-    UiNodeBase shadingLevel64x64Button; /* +34B8 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x40/0x40. */
-    uint32_t shadingLevel64x64Button_fields[7];
-    UiNodeBase shadingLevel64x128Button; /* +3520 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x40/0x80. */
-    uint32_t shadingLevel64x128Button_fields[7];
-    UiNodeBase shadingLevel128x128Button; /* +3588 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x80/0x80. */
-    uint32_t shadingLevel128x128Button_fields[7];
-    UiNodeBase modelDetailGroup; /* +35F0 g_UiFocusProxyControlVtable: Captioned group (text 0x2131) around the model-LOD distance slider. */
-    uint32_t modelDetailGroup_fields[4];
-    UiNodeBase modelDetailMinLabel; /* +364C g_UiFocusProxyControlVtable: Left-aligned end caption (text 0x2134) of the model-LOD slider. */
-    uint32_t modelDetailMinLabel_fields[4];
-    UiNodeBase modelDetailMaxLabel; /* +36A8 g_UiFocusProxyControlVtable: Right-aligned end caption (text 0x2135) of the model-LOD slider. */
-    uint32_t modelDetailMaxLabel_fields[4];
-    UiNodeBase modelDetailSlider; /* +3704 g_UiRangeSliderControlVtable: Range slider (action 0x1206) setting the model LOD depth threshold Q8 (range 0x4000..0x40000). */
-    uint32_t modelDetailSlider_fields[7];
-    UiNodeBase textureQualityGroup; /* +376C g_UiTitledWindowControlVtable: Titled frame (text 0x2132) holding the three texture-quality radio buttons. */
-    uint32_t textureQualityGroup_fields[2];
-    UiNodeBase textureQualityLowButton; /* +37C0 g_UiTextButtonControlVtable: Texture quality choice Low (action 0x1207, text 0x2136): stores TEXTURE_QUALITY_LOW (downsample shift 2). */
-    uint32_t textureQualityLowButton_fields[5];
-    UiNodeBase textureQualityMediumButton; /* +3820 g_UiTextButtonControlVtable: Texture quality choice Medium (action 0x1207, text 0x2137). */
-    uint32_t textureQualityMediumButton_fields[5];
-    UiNodeBase textureQualityHighButton; /* +3880 g_UiTextButtonControlVtable: Texture quality choice High (action 0x1207, text 0x2138): stores TEXTURE_QUALITY_HIGH (no downsampling). */
-    uint32_t textureQualityHighButton_fields[5];
-    UiNodeBase soundOptionsBackButton; /* +38E0 g_UiFramedTextButtonControlVtable: Sound options page button (action 0x1218, text 0x211F) returning to the in-game menu. */
-    uint32_t soundOptionsBackButton_fields[5];
-    UiNodeBase soundOptionsTitleLabel; /* +3940 g_UiFocusProxyControlVtable: Title text 0x213A of the in-game sound options page (menu page index 7). */
-    uint32_t soundOptionsTitleLabel_fields[4];
-    UiNodeBase musicEnabledCheckbox; /* +399C g_UiTextButtonControlVtable: Toggle (action 0x1209, text 0x213B) enabling music (InGameAudioSettings_SetMusicEnabled). */
-    uint32_t musicEnabledCheckbox_fields[5];
-    UiNodeBase effectsEnabledCheckbox; /* +39FC g_UiTextButtonControlVtable: Toggle (action 0x1208, text 0x213C) enabling sound effects. */
-    uint32_t effectsEnabledCheckbox_fields[5];
-    UiNodeBase reverseStereoCheckbox; /* +3A5C g_UiTextButtonControlVtable: Toggle (action 0x120A, text 0x213D) swapping the stereo channels. */
-    uint32_t reverseStereoCheckbox_fields[5];
-    UiNodeBase effectsVolumeGroup; /* +3ABC g_UiFocusProxyControlVtable: Captioned group (text 0x213E) around the effects volume slider. */
-    uint32_t effectsVolumeGroup_fields[4];
-    UiNodeBase effectsVolumeMinLabel; /* +3B18 g_UiFocusProxyControlVtable: Left end caption (text 0x2141) of the effects volume slider. */
-    uint32_t effectsVolumeMinLabel_fields[4];
-    UiNodeBase effectsVolumeMaxLabel; /* +3B74 g_UiFocusProxyControlVtable: Right end caption (text 0x2142) of the effects volume slider. */
-    uint32_t effectsVolumeMaxLabel_fields[4];
-    UiNodeBase effectsVolumeSlider; /* +3BD0 g_UiRangeSliderControlVtable: Slider (action 0x120B) writing soundEffectsGainQ15. */
-    uint32_t effectsVolumeSlider_fields[7];
-    UiNodeBase movieVolumeGroup; /* +3C38 g_UiFocusProxyControlVtable: Captioned group (text 0x213F) around the default movie audio volume slider. */
-    uint32_t movieVolumeGroup_fields[4];
-    UiNodeBase movieVolumeMinLabel; /* +3C94 g_UiFocusProxyControlVtable: Left end caption (text 0x2141) of the movie volume slider. */
-    uint32_t movieVolumeMinLabel_fields[4];
-    UiNodeBase movieVolumeMaxLabel; /* +3CF0 g_UiFocusProxyControlVtable: Right end caption (text 0x2142) of the movie volume slider. */
-    uint32_t movieVolumeMaxLabel_fields[4];
-    UiNodeBase movieVolumeSlider; /* +3D4C g_UiRangeSliderControlVtable: Slider (action 0x120C) writing movieDefaultAudioGainQ15. */
-    uint32_t movieVolumeSlider_fields[7];
-    UiNodeBase musicVolumeGroup; /* +3DB4 g_UiFocusProxyControlVtable: Captioned group (text 0x2140) around the music volume slider. */
-    uint32_t musicVolumeGroup_fields[4];
-    UiNodeBase musicVolumeMinLabel; /* +3E10 g_UiFocusProxyControlVtable: Left end caption (text 0x2141) of the music volume slider. */
-    uint32_t musicVolumeMinLabel_fields[4];
-    UiNodeBase musicVolumeMaxLabel; /* +3E6C g_UiFocusProxyControlVtable: Right end caption (text 0x2142) of the music volume slider. */
-    uint32_t musicVolumeMaxLabel_fields[4];
-    UiNodeBase musicVolumeSlider; /* +3EC8 g_UiRangeSliderControlVtable: Slider (action 0x120D) writing musicGainQ15 to the looping music voice. */
-    uint32_t musicVolumeSlider_fields[7];
-    UiNodeBase messageMovieVolumeGroup; /* +3F30 g_UiFocusProxyControlVtable: Captioned group (text 0x2143) around the alternate movie volume slider used by timed in-mission movie events. */
-    uint32_t messageMovieVolumeGroup_fields[4];
-    UiNodeBase messageMovieVolumeMinLabel; /* +3F8C g_UiFocusProxyControlVtable: Left end caption (text 0x2141) of the alternate movie volume slider. */
-    uint32_t messageMovieVolumeMinLabel_fields[4];
-    UiNodeBase messageMovieVolumeMaxLabel; /* +3FE8 g_UiFocusProxyControlVtable: Right end caption (text 0x2142) of the alternate movie volume slider; sits in 0x3F30's sibling chain although its parent link says 0x3DB4. */
-    uint32_t messageMovieVolumeMaxLabel_fields[4];
-    UiNodeBase messageMovieVolumeSlider; /* +4044 g_UiRangeSliderControlVtable: Slider (action 0x121A) writing movieAlternateAudioGainQ15. */
-    uint32_t messageMovieVolumeSlider_fields[7];
-    UiNodeBase sidePanelStack; /* +40AC g_UiLayoutContainerControlVtable: Page stack for the right side panel frame: page 0 shows the side panel (game layout), page 1 is empty (editor layout, world view goes full width); toggled by a hotkey and settings bit 0x4. */
-    uint32_t sidePanelStack_fields[3];
-    UiNodeBase sidePanelFrameLeftEdge; /* +4104 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 0), full-height left border strip; its left offset defines the side panel width. */
-    uint32_t sidePanelFrameLeftEdge_fields[4];
-    UiNodeBase sidePanelFrameRightEdge; /* +4160 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 1), full-height right border strip. */
-    uint32_t sidePanelFrameRightEdge_fields[4];
-    UiNodeBase sidePanelFrameTopCap; /* +41BC g_UiImagePanelControlVtable: Side panel frame image (panel subresource 2), top piece between the edge strips. */
-    uint32_t sidePanelFrameTopCap_fields[4];
-    UiNodeBase sidePanelFrameMenuBar; /* +4218 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 3) below the top cap; the menu/objectives buttons and countdown are laid out over it. */
-    uint32_t sidePanelFrameMenuBar_fields[4];
-    UiNodeBase sidePanelFrameInfoSection; /* +4274 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 4), middle section whose rect positions the 0xB210..0xB590 controls. */
-    uint32_t sidePanelFrameInfoSection_fields[4];
-    UiNodeBase sidePanelFrameBottomCap; /* +42D0 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 5), bottom piece of the side panel frame. */
-    uint32_t sidePanelFrameBottomCap_fields[4];
-    UiNodeBase sidePanelMenuButtonStack; /* +432C g_UiLayoutContainerControlVtable: Two-page container (page 0 = menu button row, page 1 empty) holding the menu and objectives buttons and the countdown display. */
-    uint32_t sidePanelMenuButtonStack_fields[4];
-    UiNodeBase inGameMenuButton; /* +4388 g_UiSpriteButtonControlVtable: Sprite toggle (action 0x1003) that opens/closes the in-game menu page (InGameMissionHelpRootView.inGameMenuButton). */
-    uint32_t inGameMenuButton_fields[11];
-    UiNodeBase missionObjectivesButton; /* +4400 g_UiSpriteButtonControlVtable: Sprite toggle (action 0x101F) that opens menu page 8 (mission briefing/objectives text panels) and pauses local play. */
-    uint32_t missionObjectivesButton_fields[11];
-    UiNodeBase countdownDisplayPanel; /* +4478 g_UiImagePanelControlVtable: Image panel (subresource 9) next to the menu buttons that hosts the countdown text. */
-    uint32_t countdownDisplayPanel_fields[4];
-    UiNodeBase countdownText; /* +44D4 g_UiFocusProxyControlVtable: Text control bound to g_InGameCountdownTextUtf16 (mission countdown). */
-    uint32_t countdownText_fields[4];
-    UiNodeBase resourceBarModeStack; /* +4530 g_UiLayoutContainerControlVtable: Page stack switched by the game/editor layout toggle: page 1 = resource panel (game), page 2 = editor tab strip A (editor). */
-    uint32_t resourceBarModeStack_fields[4];
-    UiNodeBase resourcePanel; /* +458C g_UiImagePanelControlVtable: Image panel (subresource 6) in the game layout with the Xenite/Tritium/Energy gauges and their icons. */
-    uint32_t resourcePanel_fields[4];
-    UiNodeBase editorTabStripA; /* +45E8 g_UiImagePanelControlVtable: Image panel (subresource 0x26) shown in the editor layout; holds editor mode tabs G0..G2. */
-    uint32_t editorTabStripA_fields[4];
-    UiNodeBase gamePanelsModeStack; /* +4644 g_UiLayoutContainerControlVtable: Page stack switched by the game/editor layout toggle: page 1 = game panels area, page 2 = editor tab strip B. */
-    uint32_t gamePanelsModeStack_fields[4];
-    UiNodeBase gamePanelsArea; /* +46A0 g_UiImagePanelControlVtable: Image panel (subresource 7) in the game layout hosting the pop-up panels (diplomacy panel 0x4D0C, build catalog 0x5DB4, ...). */
-    uint32_t gamePanelsArea_fields[4];
-    UiNodeBase editorTabStripB; /* +46FC g_UiImagePanelControlVtable: Image panel (subresource 0x27) shown in the editor layout; holds editor mode tabs G3..G5. */
-    uint32_t editorTabStripB_fields[4];
-    UiNodeBase resourcePanelImageToggle8; /* +4758 g_UiImageControlVtable: Hover/selectable image control (image 8) on the resource panel with a nine-slice popup; exact role unknown, named from class and parent. */
-    uint32_t resourcePanelImageToggle8_fields[8];
-    UiNodeBase resourcePanelImageToggle8Popup; /* +47C4 g_UiNineSlicePanelControlVtable: Nine-slice panel parented to image control 0x4758 (popup background); role inferred from structure only. */
-    uint32_t resourcePanelImageToggle8Popup_fields[4];
-    UiNodeBase resourcePanelImageToggle9; /* +4820 g_UiImageControlVtable: Hover/selectable image control (image 9) on the resource panel with a nine-slice popup; exact role unknown, named from class and parent. */
-    uint32_t resourcePanelImageToggle9_fields[8];
-    UiNodeBase resourcePanelImageToggle9Popup; /* +488C g_UiNineSlicePanelControlVtable: Nine-slice panel parented to image control 0x4820 (tooltip id 0x180005); role inferred from structure only. */
-    uint32_t resourcePanelImageToggle9Popup_fields[5];
-    UiNodeBase resourcePanelIconButton; /* +48EC g_UiSpriteButtonControlVtable: Sprite button (sprite 0xA, no action, tooltip 0x180011) on the resource panel; exact role unknown, named from class and parent. */
-    uint32_t resourcePanelIconButton_fields[11];
-    UiNodeBase xeniteGauge; /* +4964 g_UiFormattedContainerVtable: Formatted value display for the primary resource Xenite (current/limit at root+0x49B4/0x49B8). */
-    uint32_t xeniteGauge_fields[19];
-    UiNodeBase tritiumGauge; /* +49FC g_UiFormattedContainerVtable: Formatted value display for the secondary resource Tritium (current/limit at root+0x4A4C/0x4A50). */
-    uint32_t tritiumGauge_fields[19];
-    UiNodeBase energyGauge; /* +4A94 g_UiFormattedContainerVtable: Two-value display for energy demand vs. generation capacity (root+0x4AE4/0x4AE8/0x4B28). */
-    uint32_t energyGauge_fields[25];
-    UiNodeBase xeniteAmountText; /* +4B44 g_UiFocusProxyControlVtable: Text control bound to g_FrontendCurrentFactionPrimaryResourceTextUtf16 (formatted Xenite amount). */
-    uint32_t xeniteAmountText_fields[5];
-    UiNodeBase editorModeTabTerrainHeight; /* +4BA4 g_UiSpriteButtonControlVtable: Editor mode tab G0 (action 0x1100, InGameCommandModeG_Select0): terrain height tool; syncs the three mode-G page stacks. */
-    uint32_t editorModeTabTerrainHeight_fields[11];
-    UiNodeBase editorModeTabTerrainMaterial; /* +4C1C g_UiSpriteButtonControlVtable: Editor mode tab G1 (action 0x1101, InGameCommandModeG_Select1): terrain material/texture palette tool. */
-    uint32_t editorModeTabTerrainMaterial_fields[11];
-    UiNodeBase editorModeTabTerrainSmoothing; /* +4C94 g_UiSpriteButtonControlVtable: Editor mode tab G2 (action 0x1102, InGameCommandModeG_Select2): terrain relaxation/smoothing tool (role partly resolved). */
-    uint32_t editorModeTabTerrainSmoothing_fields[11];
-    UiNodeBase diplomacyPanel; /* +4D0C g_UiImageControlVtable: Image-control window (image 0xC, InGameRuntimeRootUiGridView.diplomacyPanel) listing the other active players and relations. */
-    uint32_t diplomacyPanel_fields[8];
-    UiNodeBase diplomacyFrame; /* +4D78 g_UiNineSlicePanelControlVtable: Nine-slice frame of the diplomacy panel holding the seven player row stacks (rebuilt by InGameOtherPlayerCommand_RebuildTargetEntries). */
-    uint32_t diplomacyFrame_fields[4];
-    UiNodeBase diplomacyRow1; /* +4DD4 g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 1 (page 0 visible, page 1 hidden when fewer players). */
-    uint32_t diplomacyRow1_fields[3];
-    UiNodeBase diplomacyRow2; /* +4E2C g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 2 (page 0 visible, page 1 hidden when fewer players). */
-    uint32_t diplomacyRow2_fields[3];
-    UiNodeBase diplomacyRow3; /* +4E84 g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 3 (page 0 visible, page 1 hidden when fewer players). */
-    uint32_t diplomacyRow3_fields[3];
-    UiNodeBase diplomacyRow4; /* +4EDC g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 4 (page 0 visible, page 1 hidden when fewer players). */
-    uint32_t diplomacyRow4_fields[3];
-    UiNodeBase diplomacyRow5; /* +4F34 g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 5 (page 0 visible, page 1 hidden when fewer players). */
-    uint32_t diplomacyRow5_fields[3];
-    UiNodeBase diplomacyRow6; /* +4F8C g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 6 (page 0 visible, page 1 hidden when fewer players). */
-    uint32_t diplomacyRow6_fields[3];
-    UiNodeBase diplomacyRow7; /* +4FE4 g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 7 (page 0 visible, page 1 hidden when fewer players). */
-    uint32_t diplomacyRow7_fields[3];
-    UiNodeBase diplomacyRow1PlayerNumberLabel; /* +503C g_UiFocusProxyControlVtable: Player number text (0x2190 + faction index) of diplomacy row 1. */
-    uint32_t diplomacyRow1PlayerNumberLabel_fields[4];
-    UiNodeBase diplomacyRow2PlayerNumberLabel; /* +5098 g_UiFocusProxyControlVtable: Player number text of diplomacy row 2. */
-    uint32_t diplomacyRow2PlayerNumberLabel_fields[4];
-    UiNodeBase diplomacyRow3PlayerNumberLabel; /* +50F4 g_UiFocusProxyControlVtable: Player number text of diplomacy row 3. */
-    uint32_t diplomacyRow3PlayerNumberLabel_fields[4];
-    UiNodeBase diplomacyRow4PlayerNumberLabel; /* +5150 g_UiFocusProxyControlVtable: Player number text of diplomacy row 4. */
-    uint32_t diplomacyRow4PlayerNumberLabel_fields[4];
-    UiNodeBase diplomacyRow5PlayerNumberLabel; /* +51AC g_UiFocusProxyControlVtable: Player number text of diplomacy row 5. */
-    uint32_t diplomacyRow5PlayerNumberLabel_fields[4];
-    UiNodeBase diplomacyRow6PlayerNumberLabel; /* +5208 g_UiFocusProxyControlVtable: Player number text of diplomacy row 6. */
-    uint32_t diplomacyRow6PlayerNumberLabel_fields[4];
-    UiNodeBase diplomacyRow7PlayerNumberLabel; /* +5264 g_UiFocusProxyControlVtable: Player number text of diplomacy row 7. */
-    uint32_t diplomacyRow7PlayerNumberLabel_fields[4];
-    UiNodeBase diplomacyRow1FactionLabel; /* +52C0 g_UiFocusProxyControlVtable: Faction/race label text (0x2173 + faction record type) of diplomacy row 1. */
-    uint32_t diplomacyRow1FactionLabel_fields[4];
-    UiNodeBase diplomacyRow2FactionLabel; /* +531C g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 2. */
-    uint32_t diplomacyRow2FactionLabel_fields[4];
-    UiNodeBase diplomacyRow3FactionLabel; /* +5378 g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 3. */
-    uint32_t diplomacyRow3FactionLabel_fields[4];
-    UiNodeBase diplomacyRow4FactionLabel; /* +53D4 g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 4. */
-    uint32_t diplomacyRow4FactionLabel_fields[4];
-    UiNodeBase diplomacyRow5FactionLabel; /* +5430 g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 5. */
-    uint32_t diplomacyRow5FactionLabel_fields[4];
-    UiNodeBase diplomacyRow6FactionLabel; /* +548C g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 6. */
-    uint32_t diplomacyRow6FactionLabel_fields[4];
-    UiNodeBase diplomacyRow7FactionLabel; /* +54E8 g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 7. */
-    uint32_t diplomacyRow7FactionLabel_fields[4];
-    UiNodeBase diplomacyRow1RelationLabel; /* +5544 g_UiFocusProxyControlVtable: Diplomatic relation state text (0x21A3 + relation state) of diplomacy row 1. */
-    uint32_t diplomacyRow1RelationLabel_fields[4];
-    UiNodeBase diplomacyRow2RelationLabel; /* +55A0 g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 2. */
-    uint32_t diplomacyRow2RelationLabel_fields[4];
-    UiNodeBase diplomacyRow3RelationLabel; /* +55FC g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 3. */
-    uint32_t diplomacyRow3RelationLabel_fields[4];
-    UiNodeBase diplomacyRow4RelationLabel; /* +5658 g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 4. */
-    uint32_t diplomacyRow4RelationLabel_fields[4];
-    UiNodeBase diplomacyRow5RelationLabel; /* +56B4 g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 5. */
-    uint32_t diplomacyRow5RelationLabel_fields[4];
-    UiNodeBase diplomacyRow6RelationLabel; /* +5710 g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 6. */
-    uint32_t diplomacyRow6RelationLabel_fields[4];
-    UiNodeBase diplomacyRow7RelationLabel; /* +576C g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 7. */
-    uint32_t diplomacyRow7RelationLabel_fields[4];
-    UiNodeBase diplomacyRow1PlayerNameLabel; /* +57C8 g_UiFocusProxyControlVtable: Player name text (network player name, else empty) of diplomacy row 1. */
-    uint32_t diplomacyRow1PlayerNameLabel_fields[4];
-    UiNodeBase diplomacyRow2PlayerNameLabel; /* +5824 g_UiFocusProxyControlVtable: Player name text of diplomacy row 2. */
-    uint32_t diplomacyRow2PlayerNameLabel_fields[4];
-    UiNodeBase diplomacyRow3PlayerNameLabel; /* +5880 g_UiFocusProxyControlVtable: Player name text of diplomacy row 3. */
-    uint32_t diplomacyRow3PlayerNameLabel_fields[4];
-    UiNodeBase diplomacyRow4PlayerNameLabel; /* +58DC g_UiFocusProxyControlVtable: Player-name text of diplomacy row 4 (g_UiAction1012IconImageOffsets[3]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries. */
-    uint32_t diplomacyRow4PlayerNameLabel_fields[4];
-    UiNodeBase diplomacyRow5PlayerNameLabel; /* +5938 g_UiFocusProxyControlVtable: Player-name text of diplomacy row 5 (g_UiAction1012IconImageOffsets[4]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries. */
-    uint32_t diplomacyRow5PlayerNameLabel_fields[4];
-    UiNodeBase diplomacyRow6PlayerNameLabel; /* +5994 g_UiFocusProxyControlVtable: Player-name text of diplomacy row 6 (g_UiAction1012IconImageOffsets[5]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries. */
-    uint32_t diplomacyRow6PlayerNameLabel_fields[4];
-    UiNodeBase diplomacyRow7PlayerNameLabel; /* +59F0 g_UiFocusProxyControlVtable: Player-name text of diplomacy row 7 (g_UiAction1012IconImageOffsets[6]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries. */
-    uint32_t diplomacyRow7PlayerNameLabel_fields[4];
-    UiNodeBase diplomacyRow1RelationButton; /* +5A4C g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 1; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
-    uint32_t diplomacyRow1RelationButton_fields[12];
-    UiNodeBase diplomacyRow2RelationButton; /* +5AC8 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 2; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
-    uint32_t diplomacyRow2RelationButton_fields[12];
-    UiNodeBase diplomacyRow3RelationButton; /* +5B44 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 3; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
-    uint32_t diplomacyRow3RelationButton_fields[12];
-    UiNodeBase diplomacyRow4RelationButton; /* +5BC0 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 4; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
-    uint32_t diplomacyRow4RelationButton_fields[12];
-    UiNodeBase diplomacyRow5RelationButton; /* +5C3C g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 5; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
-    uint32_t diplomacyRow5RelationButton_fields[12];
-    UiNodeBase diplomacyRow6RelationButton; /* +5CB8 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 6; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
-    uint32_t diplomacyRow6RelationButton_fields[12];
-    UiNodeBase diplomacyRow7RelationButton; /* +5D34 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 7; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
-    uint32_t diplomacyRow7RelationButton_fields[13];
-    UiNodeBase buildCatalogPanel; /* +5DB4 g_UiImageControlVtable: Image-control window (id 0xD, InGameRuntimeRootUiGridView.buildCatalogPanel) holding the 48-entry build catalog of items the selected/owned production buildings can make; suppressed when empty (UiCatalogGroup48_RebuildGrid). */
-    uint32_t buildCatalogPanel_fields[8];
-    UiNodeBase buildCatalogFrame; /* +5E20 g_UiNineSlicePanelControlVtable: Nine-slice frame of the 48-entry build catalog (InGameRuntimeRootUiGridView.buildCatalogFrame); resized to the computed grid in UiCatalogGroup48_RebuildGrid. */
-    uint32_t buildCatalogFrame_fields[4];
-    UiNodeBase buildCatalogEntry00; /* +5E7C g_UiCatalogEntryControlVtable: Catalog entry 0 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[0] under column count 0). */
-    uint32_t buildCatalogEntry00_fields[13];
-    UiNodeBase buildCatalogEntry01; /* +5EFC g_UiCatalogEntryControlVtable: Catalog entry 1 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[1] under column count 0). */
-    uint32_t buildCatalogEntry01_fields[13];
-    UiNodeBase buildCatalogEntry02; /* +5F7C g_UiCatalogEntryControlVtable: Catalog entry 2 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[2] under column count 0). */
-    uint32_t buildCatalogEntry02_fields[13];
-    UiNodeBase buildCatalogEntry03; /* +5FFC g_UiCatalogEntryControlVtable: Catalog entry 3 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[3] under column count 0). */
-    uint32_t buildCatalogEntry03_fields[13];
-    UiNodeBase buildCatalogEntry04; /* +607C g_UiCatalogEntryControlVtable: Catalog entry 4 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[4] under column count 0). */
-    uint32_t buildCatalogEntry04_fields[13];
-    UiNodeBase buildCatalogEntry05; /* +60FC g_UiCatalogEntryControlVtable: Catalog entry 5 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[5] under column count 0). */
-    uint32_t buildCatalogEntry05_fields[13];
-    UiNodeBase buildCatalogEntry06; /* +617C g_UiCatalogEntryControlVtable: Catalog entry 6 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[6] under column count 0). */
-    uint32_t buildCatalogEntry06_fields[13];
-    UiNodeBase buildCatalogEntry07; /* +61FC g_UiCatalogEntryControlVtable: Catalog entry 7 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[7] under column count 0). */
-    uint32_t buildCatalogEntry07_fields[13];
-    UiNodeBase buildCatalogEntry08; /* +627C g_UiCatalogEntryControlVtable: Catalog entry 8 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[8] under column count 0). */
-    uint32_t buildCatalogEntry08_fields[13];
-    UiNodeBase buildCatalogEntry09; /* +62FC g_UiCatalogEntryControlVtable: Catalog entry 9 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[9] under column count 0). */
-    uint32_t buildCatalogEntry09_fields[13];
-    UiNodeBase buildCatalogEntry10; /* +637C g_UiCatalogEntryControlVtable: Catalog entry 10 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[10] under column count 0). */
-    uint32_t buildCatalogEntry10_fields[13];
-    UiNodeBase buildCatalogEntry11; /* +63FC g_UiCatalogEntryControlVtable: Catalog entry 11 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[11] under column count 0). */
-    uint32_t buildCatalogEntry11_fields[13];
-    UiNodeBase buildCatalogEntry12; /* +647C g_UiCatalogEntryControlVtable: Catalog entry 12 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[12] under column count 0). */
-    uint32_t buildCatalogEntry12_fields[13];
-    UiNodeBase buildCatalogEntry13; /* +64FC g_UiCatalogEntryControlVtable: Catalog entry 13 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[13] under column count 0). */
-    uint32_t buildCatalogEntry13_fields[13];
-    UiNodeBase buildCatalogEntry14; /* +657C g_UiCatalogEntryControlVtable: Catalog entry 14 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[14] under column count 0). */
-    uint32_t buildCatalogEntry14_fields[13];
-    UiNodeBase buildCatalogEntry15; /* +65FC g_UiCatalogEntryControlVtable: Catalog entry 15 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[15] under column count 0). */
-    uint32_t buildCatalogEntry15_fields[13];
-    UiNodeBase buildCatalogEntry16; /* +667C g_UiCatalogEntryControlVtable: Catalog entry 16 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[16] under column count 0). */
-    uint32_t buildCatalogEntry16_fields[13];
-    UiNodeBase buildCatalogEntry17; /* +66FC g_UiCatalogEntryControlVtable: Catalog entry 17 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[17] under column count 0). */
-    uint32_t buildCatalogEntry17_fields[13];
-    UiNodeBase buildCatalogEntry18; /* +677C g_UiCatalogEntryControlVtable: Catalog entry 18 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[18] under column count 0). */
-    uint32_t buildCatalogEntry18_fields[13];
-    UiNodeBase buildCatalogEntry19; /* +67FC g_UiCatalogEntryControlVtable: Catalog entry 19 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[19] under column count 0). */
-    uint32_t buildCatalogEntry19_fields[13];
-    UiNodeBase buildCatalogEntry20; /* +687C g_UiCatalogEntryControlVtable: Catalog entry 20 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[20] under column count 0). */
-    uint32_t buildCatalogEntry20_fields[13];
-    UiNodeBase buildCatalogEntry21; /* +68FC g_UiCatalogEntryControlVtable: Catalog entry 21 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[21] under column count 0). */
-    uint32_t buildCatalogEntry21_fields[13];
-    UiNodeBase buildCatalogEntry22; /* +697C g_UiCatalogEntryControlVtable: Catalog entry 22 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[22] under column count 0). */
-    uint32_t buildCatalogEntry22_fields[13];
-    UiNodeBase buildCatalogEntry23; /* +69FC g_UiCatalogEntryControlVtable: Catalog entry 23 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[23] under column count 0). */
-    uint32_t buildCatalogEntry23_fields[13];
-    UiNodeBase buildCatalogEntry24; /* +6A7C g_UiCatalogEntryControlVtable: Catalog entry 24 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[24] under column count 0). */
-    uint32_t buildCatalogEntry24_fields[13];
-    UiNodeBase buildCatalogEntry25; /* +6AFC g_UiCatalogEntryControlVtable: Catalog entry 25 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[25] under column count 0). */
-    uint32_t buildCatalogEntry25_fields[13];
-    UiNodeBase buildCatalogEntry26; /* +6B7C g_UiCatalogEntryControlVtable: Catalog entry 26 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[26] under column count 0). */
-    uint32_t buildCatalogEntry26_fields[13];
-    UiNodeBase buildCatalogEntry27; /* +6BFC g_UiCatalogEntryControlVtable: Catalog entry 27 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[27] under column count 0). */
-    uint32_t buildCatalogEntry27_fields[13];
-    UiNodeBase buildCatalogEntry28; /* +6C7C g_UiCatalogEntryControlVtable: Catalog entry 28 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[28] under column count 0). */
-    uint32_t buildCatalogEntry28_fields[13];
-    UiNodeBase buildCatalogEntry29; /* +6CFC g_UiCatalogEntryControlVtable: Catalog entry 29 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[29] under column count 0). */
-    uint32_t buildCatalogEntry29_fields[13];
-    UiNodeBase buildCatalogEntry30; /* +6D7C g_UiCatalogEntryControlVtable: Catalog entry 30 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[30] under column count 0). */
-    uint32_t buildCatalogEntry30_fields[13];
-    UiNodeBase buildCatalogEntry31; /* +6DFC g_UiCatalogEntryControlVtable: Catalog entry 31 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[31] under column count 0). */
-    uint32_t buildCatalogEntry31_fields[13];
-    UiNodeBase buildCatalogEntry32; /* +6E7C g_UiCatalogEntryControlVtable: Catalog entry 32 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[32] under column count 0). */
-    uint32_t buildCatalogEntry32_fields[13];
-    UiNodeBase buildCatalogEntry33; /* +6EFC g_UiCatalogEntryControlVtable: Catalog entry 33 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[33] under column count 0). */
-    uint32_t buildCatalogEntry33_fields[13];
-    UiNodeBase buildCatalogEntry34; /* +6F7C g_UiCatalogEntryControlVtable: Catalog entry 34 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[34] under column count 0). */
-    uint32_t buildCatalogEntry34_fields[13];
-    UiNodeBase buildCatalogEntry35; /* +6FFC g_UiCatalogEntryControlVtable: Catalog entry 35 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[35] under column count 0). */
-    uint32_t buildCatalogEntry35_fields[13];
-    UiNodeBase buildCatalogEntry36; /* +707C g_UiCatalogEntryControlVtable: Catalog entry 36 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[36] under column count 0). */
-    uint32_t buildCatalogEntry36_fields[13];
-    UiNodeBase buildCatalogEntry37; /* +70FC g_UiCatalogEntryControlVtable: Catalog entry 37 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[37] under column count 0). */
-    uint32_t buildCatalogEntry37_fields[13];
-    UiNodeBase buildCatalogEntry38; /* +717C g_UiCatalogEntryControlVtable: Catalog entry 38 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[38] under column count 0). */
-    uint32_t buildCatalogEntry38_fields[13];
-    UiNodeBase buildCatalogEntry39; /* +71FC g_UiCatalogEntryControlVtable: Catalog entry 39 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[39] under column count 0). */
-    uint32_t buildCatalogEntry39_fields[13];
-    UiNodeBase buildCatalogEntry40; /* +727C g_UiCatalogEntryControlVtable: Catalog entry 40 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[40] under column count 0). */
-    uint32_t buildCatalogEntry40_fields[13];
-    UiNodeBase buildCatalogEntry41; /* +72FC g_UiCatalogEntryControlVtable: Catalog entry 41 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[41] under column count 0). */
-    uint32_t buildCatalogEntry41_fields[13];
-    UiNodeBase buildCatalogEntry42; /* +737C g_UiCatalogEntryControlVtable: Catalog entry 42 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[42] under column count 0). */
-    uint32_t buildCatalogEntry42_fields[13];
-    UiNodeBase buildCatalogEntry43; /* +73FC g_UiCatalogEntryControlVtable: Catalog entry 43 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[43] under column count 0). */
-    uint32_t buildCatalogEntry43_fields[13];
-    UiNodeBase buildCatalogEntry44; /* +747C g_UiCatalogEntryControlVtable: Catalog entry 44 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[44] under column count 0). */
-    uint32_t buildCatalogEntry44_fields[13];
-    UiNodeBase buildCatalogEntry45; /* +74FC g_UiCatalogEntryControlVtable: Catalog entry 45 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[45] under column count 0). */
-    uint32_t buildCatalogEntry45_fields[13];
-    UiNodeBase buildCatalogEntry46; /* +757C g_UiCatalogEntryControlVtable: Catalog entry 46 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[46] under column count 0). */
-    uint32_t buildCatalogEntry46_fields[13];
-    UiNodeBase buildCatalogEntry47; /* +75FC g_UiCatalogEntryControlVtable: Catalog entry 47 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[47] under column count 0). */
-    uint32_t buildCatalogEntry47_fields[14];
-    UiNodeBase specialBuildCatalogPanel; /* +7680 g_UiImageControlVtable: Image-control window (id 0xE, InGameRuntimeRootUiGridView.specialBuildCatalogPanel) holding the 42-entry catalog of flag-0x10 army assets, only offered while the faction owns a model-class-0x0B structure (UiCatalogGroup42_RebuildGrid). */
-    uint32_t specialBuildCatalogPanel_fields[8];
-    UiNodeBase specialBuildCatalogFrame; /* +76EC g_UiNineSlicePanelControlVtable: Nine-slice frame of the 42-entry special build catalog (InGameRuntimeRootUiGridView.specialBuildCatalogFrame); resized to the computed grid. */
-    uint32_t specialBuildCatalogFrame_fields[4];
-    UiNodeBase specialBuildCatalogEntry00; /* +7748 g_UiCatalogEntryControlVtable: Catalog entry 0 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[0]). */
-    uint32_t specialBuildCatalogEntry00_fields[13];
-    UiNodeBase specialBuildCatalogEntry01; /* +77C8 g_UiCatalogEntryControlVtable: Catalog entry 1 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[1]). */
-    uint32_t specialBuildCatalogEntry01_fields[13];
-    UiNodeBase specialBuildCatalogEntry02; /* +7848 g_UiCatalogEntryControlVtable: Catalog entry 2 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[2]). */
-    uint32_t specialBuildCatalogEntry02_fields[13];
-    UiNodeBase specialBuildCatalogEntry03; /* +78C8 g_UiCatalogEntryControlVtable: Catalog entry 3 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[3]). */
-    uint32_t specialBuildCatalogEntry03_fields[13];
-    UiNodeBase specialBuildCatalogEntry04; /* +7948 g_UiCatalogEntryControlVtable: Catalog entry 4 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[4]). */
-    uint32_t specialBuildCatalogEntry04_fields[13];
-    UiNodeBase specialBuildCatalogEntry05; /* +79C8 g_UiCatalogEntryControlVtable: Catalog entry 5 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[5]). */
-    uint32_t specialBuildCatalogEntry05_fields[13];
-    UiNodeBase specialBuildCatalogEntry06; /* +7A48 g_UiCatalogEntryControlVtable: Catalog entry 6 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[6]). */
-    uint32_t specialBuildCatalogEntry06_fields[13];
-    UiNodeBase specialBuildCatalogEntry07; /* +7AC8 g_UiCatalogEntryControlVtable: Catalog entry 7 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[7]). */
-    uint32_t specialBuildCatalogEntry07_fields[13];
-    UiNodeBase specialBuildCatalogEntry08; /* +7B48 g_UiCatalogEntryControlVtable: Catalog entry 8 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[8]). */
-    uint32_t specialBuildCatalogEntry08_fields[13];
-    UiNodeBase specialBuildCatalogEntry09; /* +7BC8 g_UiCatalogEntryControlVtable: Catalog entry 9 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[9]). */
-    uint32_t specialBuildCatalogEntry09_fields[13];
-    UiNodeBase specialBuildCatalogEntry10; /* +7C48 g_UiCatalogEntryControlVtable: Catalog entry 10 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[10]). */
-    uint32_t specialBuildCatalogEntry10_fields[13];
-    UiNodeBase specialBuildCatalogEntry11; /* +7CC8 g_UiCatalogEntryControlVtable: Catalog entry 11 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[11]). */
-    uint32_t specialBuildCatalogEntry11_fields[13];
-    UiNodeBase specialBuildCatalogEntry12; /* +7D48 g_UiCatalogEntryControlVtable: Catalog entry 12 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[12]). */
-    uint32_t specialBuildCatalogEntry12_fields[13];
-    UiNodeBase specialBuildCatalogEntry13; /* +7DC8 g_UiCatalogEntryControlVtable: Catalog entry 13 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[13]). */
-    uint32_t specialBuildCatalogEntry13_fields[13];
-    UiNodeBase specialBuildCatalogEntry14; /* +7E48 g_UiCatalogEntryControlVtable: Catalog entry 14 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[14]). */
-    uint32_t specialBuildCatalogEntry14_fields[13];
-    UiNodeBase specialBuildCatalogEntry15; /* +7EC8 g_UiCatalogEntryControlVtable: Catalog entry 15 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[15]). */
-    uint32_t specialBuildCatalogEntry15_fields[13];
-    UiNodeBase specialBuildCatalogEntry16; /* +7F48 g_UiCatalogEntryControlVtable: Catalog entry 16 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[16]). */
-    uint32_t specialBuildCatalogEntry16_fields[13];
-    UiNodeBase specialBuildCatalogEntry17; /* +7FC8 g_UiCatalogEntryControlVtable: Catalog entry 17 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[17]). */
-    uint32_t specialBuildCatalogEntry17_fields[13];
-    UiNodeBase specialBuildCatalogEntry18; /* +8048 g_UiCatalogEntryControlVtable: Catalog entry 18 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[18]). */
-    uint32_t specialBuildCatalogEntry18_fields[13];
-    UiNodeBase specialBuildCatalogEntry19; /* +80C8 g_UiCatalogEntryControlVtable: Catalog entry 19 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[19]). */
-    uint32_t specialBuildCatalogEntry19_fields[13];
-    UiNodeBase specialBuildCatalogEntry20; /* +8148 g_UiCatalogEntryControlVtable: Catalog entry 20 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[20]). */
-    uint32_t specialBuildCatalogEntry20_fields[13];
-    UiNodeBase specialBuildCatalogEntry21; /* +81C8 g_UiCatalogEntryControlVtable: Catalog entry 21 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[21]). */
-    uint32_t specialBuildCatalogEntry21_fields[13];
-    UiNodeBase specialBuildCatalogEntry22; /* +8248 g_UiCatalogEntryControlVtable: Catalog entry 22 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[22]). */
-    uint32_t specialBuildCatalogEntry22_fields[13];
-    UiNodeBase specialBuildCatalogEntry23; /* +82C8 g_UiCatalogEntryControlVtable: Catalog entry 23 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[23]). */
-    uint32_t specialBuildCatalogEntry23_fields[13];
-    UiNodeBase specialBuildCatalogEntry24; /* +8348 g_UiCatalogEntryControlVtable: Catalog entry 24 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[24]). */
-    uint32_t specialBuildCatalogEntry24_fields[13];
-    UiNodeBase specialBuildCatalogEntry25; /* +83C8 g_UiCatalogEntryControlVtable: Catalog entry 25 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[25]). */
-    uint32_t specialBuildCatalogEntry25_fields[13];
-    UiNodeBase specialBuildCatalogEntry26; /* +8448 g_UiCatalogEntryControlVtable: Catalog entry 26 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[26]). */
-    uint32_t specialBuildCatalogEntry26_fields[13];
-    UiNodeBase specialBuildCatalogEntry27; /* +84C8 g_UiCatalogEntryControlVtable: Catalog entry 27 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[27]). */
-    uint32_t specialBuildCatalogEntry27_fields[13];
-    UiNodeBase specialBuildCatalogEntry28; /* +8548 g_UiCatalogEntryControlVtable: Catalog entry 28 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[28]). */
-    uint32_t specialBuildCatalogEntry28_fields[13];
-    UiNodeBase specialBuildCatalogEntry29; /* +85C8 g_UiCatalogEntryControlVtable: Catalog entry 29 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[29]). */
-    uint32_t specialBuildCatalogEntry29_fields[13];
-    UiNodeBase specialBuildCatalogEntry30; /* +8648 g_UiCatalogEntryControlVtable: Catalog entry 30 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[30]). */
-    uint32_t specialBuildCatalogEntry30_fields[13];
-    UiNodeBase specialBuildCatalogEntry31; /* +86C8 g_UiCatalogEntryControlVtable: Catalog entry 31 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[31]). */
-    uint32_t specialBuildCatalogEntry31_fields[13];
-    UiNodeBase specialBuildCatalogEntry32; /* +8748 g_UiCatalogEntryControlVtable: Catalog entry 32 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[32]). */
-    uint32_t specialBuildCatalogEntry32_fields[13];
-    UiNodeBase specialBuildCatalogEntry33; /* +87C8 g_UiCatalogEntryControlVtable: Catalog entry 33 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[33]). */
-    uint32_t specialBuildCatalogEntry33_fields[13];
-    UiNodeBase specialBuildCatalogEntry34; /* +8848 g_UiCatalogEntryControlVtable: Catalog entry 34 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[34]). */
-    uint32_t specialBuildCatalogEntry34_fields[13];
-    UiNodeBase specialBuildCatalogEntry35; /* +88C8 g_UiCatalogEntryControlVtable: Catalog entry 35 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[35]). */
-    uint32_t specialBuildCatalogEntry35_fields[13];
-    UiNodeBase specialBuildCatalogEntry36; /* +8948 g_UiCatalogEntryControlVtable: Catalog entry 36 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[36]). */
-    uint32_t specialBuildCatalogEntry36_fields[13];
-    UiNodeBase specialBuildCatalogEntry37; /* +89C8 g_UiCatalogEntryControlVtable: Catalog entry 37 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[37]). */
-    uint32_t specialBuildCatalogEntry37_fields[13];
-    UiNodeBase specialBuildCatalogEntry38; /* +8A48 g_UiCatalogEntryControlVtable: Catalog entry 38 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[38]). */
-    uint32_t specialBuildCatalogEntry38_fields[13];
-    UiNodeBase specialBuildCatalogEntry39; /* +8AC8 g_UiCatalogEntryControlVtable: Catalog entry 39 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[39]). */
-    uint32_t specialBuildCatalogEntry39_fields[13];
-    UiNodeBase specialBuildCatalogEntry40; /* +8B48 g_UiCatalogEntryControlVtable: Catalog entry 40 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[40]). */
-    uint32_t specialBuildCatalogEntry40_fields[13];
-    UiNodeBase specialBuildCatalogEntry41; /* +8BC8 g_UiCatalogEntryControlVtable: Catalog entry 41 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[41]). */
-    uint32_t specialBuildCatalogEntry41_fields[14];
-    UiNodeBase armyStockPanel; /* +8C4C g_UiImageControlVtable: Image-control window (id 0xF, InGameRuntimeRootUiGridView.armyStockPanel) showing up to 24 army assets held in the faction's primary army-asset pool (UiCommandSpriteVariantA_RebuildGrid). */
-    uint32_t armyStockPanel_fields[8];
-    UiNodeBase armyStockFrame; /* +8CB8 g_UiNineSlicePanelControlVtable: Nine-slice frame of the 24-slot army stock grid (InGameRuntimeRootUiGridView.armyStockFrame); resized/suppressed by the rebuild. */
-    uint32_t armyStockFrame_fields[4];
-    UiNodeBase armyStockSlot00; /* +8D14 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 0 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
-    uint32_t armyStockSlot00_fields[12];
-    UiNodeBase armyStockSlot01; /* +8D90 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 1 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
-    uint32_t armyStockSlot01_fields[12];
-    UiNodeBase armyStockSlot02; /* +8E0C g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 2 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
-    uint32_t armyStockSlot02_fields[12];
-    UiNodeBase armyStockSlot03; /* +8E88 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 3 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
-    uint32_t armyStockSlot03_fields[12];
-    UiNodeBase armyStockSlot04; /* +8F04 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 4 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
-    uint32_t armyStockSlot04_fields[12];
-    UiNodeBase armyStockSlot05; /* +8F80 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 5 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
-    uint32_t armyStockSlot05_fields[12];
-    UiNodeBase armyStockSlot06; /* +8FFC g_UiCommandSpriteButtonWithDetailsVtable: Slot 6 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot06_fields[12];
-    UiNodeBase armyStockSlot07; /* +9078 g_UiCommandSpriteButtonWithDetailsVtable: Slot 7 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot07_fields[12];
-    UiNodeBase armyStockSlot08; /* +90F4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 8 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot08_fields[12];
-    UiNodeBase armyStockSlot09; /* +9170 g_UiCommandSpriteButtonWithDetailsVtable: Slot 9 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot09_fields[12];
-    UiNodeBase armyStockSlot10; /* +91EC g_UiCommandSpriteButtonWithDetailsVtable: Slot 10 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot10_fields[12];
-    UiNodeBase armyStockSlot11; /* +9268 g_UiCommandSpriteButtonWithDetailsVtable: Slot 11 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot11_fields[12];
-    UiNodeBase armyStockSlot12; /* +92E4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 12 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot12_fields[12];
-    UiNodeBase armyStockSlot13; /* +9360 g_UiCommandSpriteButtonWithDetailsVtable: Slot 13 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot13_fields[12];
-    UiNodeBase armyStockSlot14; /* +93DC g_UiCommandSpriteButtonWithDetailsVtable: Slot 14 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot14_fields[12];
-    UiNodeBase armyStockSlot15; /* +9458 g_UiCommandSpriteButtonWithDetailsVtable: Slot 15 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot15_fields[12];
-    UiNodeBase armyStockSlot16; /* +94D4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 16 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot16_fields[12];
-    UiNodeBase armyStockSlot17; /* +9550 g_UiCommandSpriteButtonWithDetailsVtable: Slot 17 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot17_fields[12];
-    UiNodeBase armyStockSlot18; /* +95CC g_UiCommandSpriteButtonWithDetailsVtable: Slot 18 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot18_fields[12];
-    UiNodeBase armyStockSlot19; /* +9648 g_UiCommandSpriteButtonWithDetailsVtable: Slot 19 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot19_fields[12];
-    UiNodeBase armyStockSlot20; /* +96C4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 20 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot20_fields[12];
-    UiNodeBase armyStockSlot21; /* +9740 g_UiCommandSpriteButtonWithDetailsVtable: Slot 21 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot21_fields[12];
-    UiNodeBase armyStockSlot22; /* +97BC g_UiCommandSpriteButtonWithDetailsVtable: Slot 22 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
-    uint32_t armyStockSlot22_fields[12];
-    UiNodeBase armyStockSlot23; /* +9838 g_UiCatalogEntryControlVtable: Slot 23 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. Last slot; distinct class variant with extra text id 0x180019. */
-    uint32_t armyStockSlot23_fields[13];
-    UiNodeBase editorModeTabRegion; /* +98B8 g_UiSpriteButtonControlVtable: Editor mode tab G5 (action 0x1104, InGameCommandModeG_Select5): tool with two F variants that insert/remove player-pair ranges on the field grid; exact role unresolved. */
-    uint32_t editorModeTabRegion_fields[11];
-    UiNodeBase editorModeTabUnitPlacement; /* +9930 g_UiSpriteButtonControlVtable: Editor mode tab G3 (action 0x1105): place faction-owned army assets (flag 0x100 without 0x200, owner faction cyclable). */
-    uint32_t editorModeTabUnitPlacement_fields[11];
+    UiFramedTextButtonControl technologyAreaTab7; /* +17B4 g_UiFramedTextButtonControlVtable: Technology area tab 7 (action 0x101A). */
+    UiImagePanelControl technologyAreaTab1Icon; /* +1814 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 1. */
+    UiImagePanelControl technologyAreaTab2Icon; /* +1870 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 2. */
+    UiImagePanelControl technologyAreaTab3Icon; /* +18CC g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 3. */
+    UiImagePanelControl technologyAreaTab4Icon; /* +1928 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 4. */
+    UiImagePanelControl technologyAreaTab5Icon; /* +1984 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 5. */
+    UiImagePanelControl technologyAreaTab6Icon; /* +19E0 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 6. */
+    UiImagePanelControl technologyAreaTab7Icon; /* +1A3C g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 7. */
+    UiImagePanelControl technologyDescriptionFrame; /* +1A98 g_UiImagePanelControlVtable: Image panel beside the description area, widened by the panel texture subresource width; exact role unverified. */
+    UiScrollableControl technologyDescriptionScroll; /* +1AF4 g_UiScrollableControlVtable: Scrollable view of the selected technology description. */
+    UiListOffsetControl technologyDescriptionText; /* +1B84 g_UiListOffsetControlVtable: Description text of the selected technology (default 0x217F); wrap width derived from the window width. */
+    UiImagePanelControl messageWindow; /* +1BE0 g_UiImagePanelControlVtable: Send-message window (page 1): text entry, recipient mode buttons, player checkboxes and send/cancel buttons. */
+    UiFocusProxyControl messageWindowTitle; /* +1C3C g_UiFocusProxyControlVtable: Title label of the message window (text 0x2166). */
+    UiRequiredTextEditControl messageTextEdit; /* +1C98 g_UiRequiredTextEditControlVtable: Message text entry whose text is sent as a 48-byte payload. */
+    uint32_t messageTextEdit_trailing[19]; /* +1D18: template dwords behind the control */
+    UiFramedTextButtonControl messageCancelButton; /* +1D64 g_UiFramedTextButtonControlVtable: Closes the message window (action 0x1002, text 0x2168). */
+    UiFramedTextButtonControl messageSendAndCloseButton; /* +1DC4 g_UiFramedTextButtonControlVtable: Sends the message and closes the window (action 0x1005, text 0x2169). */
+    UiFramedTextButtonControl messageSendButton; /* +1E24 g_UiFramedTextButtonControlVtable: Sends the message with the current recipient mask (action 0x1004, text 0x2167). */
+    UiTextButtonControl messageRecipientPlayersTab; /* +1E84 g_UiTextButtonControlVtable: Recipient mode: fills the seven checkboxes from the active players (action 0x1006, text 0x216B). */
+    UiTextButtonControl messageRecipientGroupsTab; /* +1EE4 g_UiTextButtonControlVtable: Recipient mode: fills the seven checkboxes from the runtime record catalog, probably teams (action 0x1007, text 0x216C). */
+    UiTextButtonControl messageRecipientAllTab; /* +1F44 g_UiTextButtonControlVtable: Recipient mode that hides the checkbox list, likely send to all (action 0x1008, text 0x216A). */
+    UiLayoutContainerControl<2> messageRecipientPageStack; /* +1FA4 g_UiLayoutContainerControlVtable: Two-page stack: recipient checkbox list or nothing. */
+    UiScrollableControl messageRecipientScroll; /* +1FFC g_UiScrollableControlVtable: Scrollable view of the recipient checkbox list. */
+    UiPanelControl messageRecipientList; /* +208C g_UiPanelControlVtable: Panel holding the seven recipient checkboxes. */
+    UiTextButtonControl messageRecipientCheckbox1; /* +20E4 g_UiTextButtonControlVtable: Recipient slot 1 checkbox (text 0x216D, preselected). */
+    UiTextButtonControl messageRecipientCheckbox2; /* +2144 g_UiTextButtonControlVtable: Recipient slot 2 checkbox (text 0x216E). */
+    UiTextButtonControl messageRecipientCheckbox3; /* +21A4 g_UiTextButtonControlVtable: Recipient slot 3 checkbox (text 0x216F). */
+    UiTextButtonControl messageRecipientCheckbox4; /* +2204 g_UiTextButtonControlVtable: Recipient slot 4 checkbox (text 0x2170). */
+    UiTextButtonControl messageRecipientCheckbox5; /* +2264 g_UiTextButtonControlVtable: Recipient slot 5 checkbox (text 0x2171). */
+    UiTextButtonControl messageRecipientCheckbox6; /* +22C4 g_UiTextButtonControlVtable: Recipient slot 6 checkbox (text 0x2172). */
+    UiTextButtonControl messageRecipientCheckbox7; /* +2324 g_UiTextButtonControlVtable: Recipient slot 7 checkbox (text 0x2173). */
+    UiCommandVisibilitySingleLineText worldViewCyclingInfoText; /* +2384 g_UiCommandVisibilitySingleLineTextVtable: Single-line world view text whose resource id a hotkey cycles through 0x112..0x117; the value is also published as the world-state mirror. */
+    UiCommandVisibilitySingleLineText worldViewStatusTextA; /* +23E0 g_UiCommandVisibilitySingleLineTextVtable: Single-line world view text 0x21D1 shown for command flags 0x801 (a status message, unverified). */
+    UiCommandVisibilitySingleLineText worldViewStatusTextB; /* +243C g_UiCommandVisibilitySingleLineTextVtable: Single-line world view text 0x21D5 shown for command flags 0x1001 (a status message, unverified). */
+    UiCommandVisibilityWrappedText worldViewWrappedStatusText; /* +2498 g_UiCommandVisibilityWrappedTextVtable: Wrapped world view text shown for command flag 0x10; exact message unverified. */
+    UiFocusProxyControl gameMenuTitle; /* +24F4 g_UiFocusProxyControlVtable: Title label of the game menu window (text 0x2123). */
+    UiFramedTextButtonControl gameMenuSaveButton; /* +2550 g_UiFramedTextButtonControlVtable: Opens the save game window and rebuilds the save list (action 0x120E, text 0x214D). */
+    UiFramedTextButtonControl gameMenuQuitButton; /* +25B0 g_UiFramedTextButtonControlVtable: Opens the quit game window, page 4 (action 0x1200, text 0x2148). */
+    UiFramedTextButtonControl gameMenuGraphicsButton; /* +2610 g_UiFramedTextButtonControlVtable: Opens the graphics settings window (action 0x1202, text 0x2121). */
+    UiFramedTextButtonControl gameMenuAudioButton; /* +2670 g_UiFramedTextButtonControlVtable: Opens the audio settings window (action 0x1203, text 0x2122). */
+    UiTextButtonControl rightButtonNoScrollCheckbox; /* +26D0 g_UiTextButtonControlVtable: Option: right mouse button does not scroll (action 0x1216, text 0x21C8). */
+    UiFocusProxyControl scrollSpeedGroup; /* +2730 g_UiFocusProxyControlVtable: Labelled group for the camera scroll speed slider (text 0x21C9). */
+    UiFocusProxyControl scrollSpeedMinLabel; /* +278C g_UiFocusProxyControlVtable: Scroll speed slider end label (text 0x21CA), probably slow. */
+    UiFocusProxyControl scrollSpeedMaxLabel; /* +27E8 g_UiFocusProxyControlVtable: Scroll speed slider end label (text 0x21CB), probably fast. */
+    UiRangeSliderControl scrollSpeedSlider; /* +2844 g_UiRangeSliderControlVtable: Camera scroll step slider (action 0x1217). */
+    UiTitledWindowControl autoCameraGroup; /* +28AC g_UiTitledWindowControlVtable: Titled group (text 0x215F) with the automatic zoom/rotation options. */
+    UiTextButtonControl autoZoomOffCheckbox; /* +2900 g_UiTextButtonControlVtable: Option: automatic zoom off (action 0x1212, text 0x2160). */
+    UiTextButtonControl autoRotationOffCheckbox; /* +2960 g_UiTextButtonControlVtable: Option: automatic rotation off (action 0x1213, text 0x2161). */
+    UiTitledWindowControl cameraLinkGroup; /* +29C0 g_UiTitledWindowControlVtable: Titled group (text 0x2162) with the rotation link and hide panel options. */
+    UiTextButtonControl linkRotationZoomCheckbox; /* +2A14 g_UiTextButtonControlVtable: Option: link rotation with zoom (action 0x1214, excludes 0x1215, text 0x2163). */
+    UiTextButtonControl linkRotationTiltCheckbox; /* +2A74 g_UiTextButtonControlVtable: Option: link rotation with tilt (action 0x1215, excludes 0x1214, text 0x2164). */
+    UiTextButtonControl hidePanelCheckbox; /* +2AD4 g_UiTextButtonControlVtable: Option: hide panel (action 0x121B, text 0x2165). */
+    UiFramedTextButtonControl gameMenuCloseButton; /* +2B34 g_UiFramedTextButtonControlVtable: Closes the game menu (action 0x1201, text 0x211F). */
+    UiFramedTextButtonControl saveGameBackButton; /* +2B94 g_UiFramedTextButtonControlVtable: Returns from the save window to the game menu (action 0x1218, text 0x214F). */
+    UiFocusProxyControl saveGameTitle; /* +2BF4 g_UiFocusProxyControlVtable: Title label of the save game window (text 0x214E). */
+    UiFramedTextButtonControl saveGameSaveButton; /* +2C50 g_UiFramedTextButtonControlVtable: Saves to the selected or typed save name (action 0x1210, text 0x214D). */
+    UiFramedTextButtonControl saveGameDeleteButton; /* +2CB0 g_UiFramedTextButtonControlVtable: Deletes the selected save file and rebuilds the list (action 0x1219, text 0x2153). */
+    UiScrollableControl saveGameListScroll; /* +2D10 g_UiScrollableControlVtable: Scrollable area of the save game list (children in part 2). */
+    UiListControl saveGameList; /* +2DA0 g_UiListControlVtable: Row list of save/*.sve catalog entries on the save-game page; selecting a row fires action 0x120F (InGameSaveGameList_SelectAndRefreshDetail). */
+    uint32_t saveGameList_trailing[2]; /* +2E14: template dwords behind the control */
+    UiFocusProxyControl saveGameListHeaderLabel; /* +2E1C g_UiFocusProxyControlVtable: Static text 0x2150 above the save list on the save-game page (header caption). */
+    UiListOffsetControl saveGameDescriptionText; /* +2E78 g_UiListOffsetControlVtable: Text box below the list showing the selected save's description (text 0x215D, or 0x215E patched with save details). */
+    UiLayoutContainerControl<2> saveNameEntryStack; /* +2ED4 g_UiLayoutContainerControlVtable: Detail page stack of the save page: page 0 empty, page 1 shows the save-name editor when the trailing new-save row is selected. */
+    UiRequiredTextEditControl saveNameEdit; /* +2F2C g_UiRequiredTextEditControlVtable: Required text edit for the new save name; action 0x1211 validates the name and enables the Save button (0x1210). */
+    uint32_t saveNameEdit_trailing[11]; /* +2FAC: template dwords behind the control */
+    UiFocusProxyControl saveNameLabel; /* +2FD8 g_UiFocusProxyControlVtable: Caption text 0x2152 above the save-name edit field. */
+    UiFramedTextButtonControl quitMenuBackButton; /* +3034 g_UiFramedTextButtonControlVtable: Quit page button (action 0x1218, text 0x2149) that returns to the in-game menu. */
+    UiFocusProxyControl quitMenuTitleLabel; /* +3094 g_UiFocusProxyControlVtable: Title text 0x2144 of the in-game quit page (menu page stack index 4). */
+    UiFramedTextButtonControl quitMenuAbortMissionButton; /* +30F0 g_UiFramedTextButtonControlVtable: Action 0x101D: closes the menu and issues operation 0x150 mode 0 (local player departs, runtime flag 0x20000 aborts back to the frontend); text 0x214A. */
+    UiFramedTextButtonControl quitMenuSurrenderButton; /* +3150 g_UiFramedTextButtonControlVtable: Action 0x101E: operation 0x150 mode 1, which destroys all armies of the local faction (give up); text 0x214B; label inferred from behaviour. */
+    UiFramedTextButtonControl quitMenuRestartMissionButton; /* +31B0 g_UiFramedTextButtonControlVtable: Action 0x1027: operation 0x150 mode 2, sets runtime flag 0x10000 (session ends but keeps the scenario path, likely restart); text 0x214C; label unverified. */
+    UiFramedTextButtonControl graphicsOptionsBackButton; /* +3210 g_UiFramedTextButtonControlVtable: Graphics options page button (action 0x1218, text 0x211F) returning to the in-game menu. */
+    UiFocusProxyControl graphicsOptionsTitleLabel; /* +3270 g_UiFocusProxyControlVtable: Title text 0x212E of the in-game graphics options page (menu page index 6). */
+    UiTextButtonControl shadingEnabledCheckbox; /* +32CC g_UiTextButtonControlVtable: Toggle (action 0x1204, text 0x212F) enabling shading (InGameShadingSettings_SetEnabled). */
+    UiTitledWindowControl shadingLevelGroup; /* +332C g_UiTitledWindowControlVtable: Titled frame (text 0x2130) holding the six shading-level choice buttons. */
+    UiNumericPairTextButton shadingLevel32x32Button; /* +3380 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x20/0x20. */
+    UiNumericPairTextButton shadingLevel32x64Button; /* +33E8 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x20/0x40. */
+    UiNumericPairTextButton shadingLevel32x128Button; /* +3450 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x20/0x80. */
+    UiNumericPairTextButton shadingLevel64x64Button; /* +34B8 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x40/0x40. */
+    UiNumericPairTextButton shadingLevel64x128Button; /* +3520 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x40/0x80. */
+    UiNumericPairTextButton shadingLevel128x128Button; /* +3588 g_UiNumericPairTextButtonVtable: Shading level choice (action 0x1205) with value pair 0x80/0x80. */
+    UiFocusProxyControl modelDetailGroup; /* +35F0 g_UiFocusProxyControlVtable: Captioned group (text 0x2131) around the model-LOD distance slider. */
+    UiFocusProxyControl modelDetailMinLabel; /* +364C g_UiFocusProxyControlVtable: Left-aligned end caption (text 0x2134) of the model-LOD slider. */
+    UiFocusProxyControl modelDetailMaxLabel; /* +36A8 g_UiFocusProxyControlVtable: Right-aligned end caption (text 0x2135) of the model-LOD slider. */
+    UiRangeSliderControl modelDetailSlider; /* +3704 g_UiRangeSliderControlVtable: Range slider (action 0x1206) setting the model LOD depth threshold Q8 (range 0x4000..0x40000). */
+    UiTitledWindowControl textureQualityGroup; /* +376C g_UiTitledWindowControlVtable: Titled frame (text 0x2132) holding the three texture-quality radio buttons. */
+    UiTextButtonControl textureQualityLowButton; /* +37C0 g_UiTextButtonControlVtable: Texture quality choice Low (action 0x1207, text 0x2136): stores TEXTURE_QUALITY_LOW (downsample shift 2). */
+    UiTextButtonControl textureQualityMediumButton; /* +3820 g_UiTextButtonControlVtable: Texture quality choice Medium (action 0x1207, text 0x2137). */
+    UiTextButtonControl textureQualityHighButton; /* +3880 g_UiTextButtonControlVtable: Texture quality choice High (action 0x1207, text 0x2138): stores TEXTURE_QUALITY_HIGH (no downsampling). */
+    UiFramedTextButtonControl soundOptionsBackButton; /* +38E0 g_UiFramedTextButtonControlVtable: Sound options page button (action 0x1218, text 0x211F) returning to the in-game menu. */
+    UiFocusProxyControl soundOptionsTitleLabel; /* +3940 g_UiFocusProxyControlVtable: Title text 0x213A of the in-game sound options page (menu page index 7). */
+    UiTextButtonControl musicEnabledCheckbox; /* +399C g_UiTextButtonControlVtable: Toggle (action 0x1209, text 0x213B) enabling music (InGameAudioSettings_SetMusicEnabled). */
+    UiTextButtonControl effectsEnabledCheckbox; /* +39FC g_UiTextButtonControlVtable: Toggle (action 0x1208, text 0x213C) enabling sound effects. */
+    UiTextButtonControl reverseStereoCheckbox; /* +3A5C g_UiTextButtonControlVtable: Toggle (action 0x120A, text 0x213D) swapping the stereo channels. */
+    UiFocusProxyControl effectsVolumeGroup; /* +3ABC g_UiFocusProxyControlVtable: Captioned group (text 0x213E) around the effects volume slider. */
+    UiFocusProxyControl effectsVolumeMinLabel; /* +3B18 g_UiFocusProxyControlVtable: Left end caption (text 0x2141) of the effects volume slider. */
+    UiFocusProxyControl effectsVolumeMaxLabel; /* +3B74 g_UiFocusProxyControlVtable: Right end caption (text 0x2142) of the effects volume slider. */
+    UiRangeSliderControl effectsVolumeSlider; /* +3BD0 g_UiRangeSliderControlVtable: Slider (action 0x120B) writing soundEffectsGainQ15. */
+    UiFocusProxyControl movieVolumeGroup; /* +3C38 g_UiFocusProxyControlVtable: Captioned group (text 0x213F) around the default movie audio volume slider. */
+    UiFocusProxyControl movieVolumeMinLabel; /* +3C94 g_UiFocusProxyControlVtable: Left end caption (text 0x2141) of the movie volume slider. */
+    UiFocusProxyControl movieVolumeMaxLabel; /* +3CF0 g_UiFocusProxyControlVtable: Right end caption (text 0x2142) of the movie volume slider. */
+    UiRangeSliderControl movieVolumeSlider; /* +3D4C g_UiRangeSliderControlVtable: Slider (action 0x120C) writing movieDefaultAudioGainQ15. */
+    UiFocusProxyControl musicVolumeGroup; /* +3DB4 g_UiFocusProxyControlVtable: Captioned group (text 0x2140) around the music volume slider. */
+    UiFocusProxyControl musicVolumeMinLabel; /* +3E10 g_UiFocusProxyControlVtable: Left end caption (text 0x2141) of the music volume slider. */
+    UiFocusProxyControl musicVolumeMaxLabel; /* +3E6C g_UiFocusProxyControlVtable: Right end caption (text 0x2142) of the music volume slider. */
+    UiRangeSliderControl musicVolumeSlider; /* +3EC8 g_UiRangeSliderControlVtable: Slider (action 0x120D) writing musicGainQ15 to the looping music voice. */
+    UiFocusProxyControl messageMovieVolumeGroup; /* +3F30 g_UiFocusProxyControlVtable: Captioned group (text 0x2143) around the alternate movie volume slider used by timed in-mission movie events. */
+    UiFocusProxyControl messageMovieVolumeMinLabel; /* +3F8C g_UiFocusProxyControlVtable: Left end caption (text 0x2141) of the alternate movie volume slider. */
+    UiFocusProxyControl messageMovieVolumeMaxLabel; /* +3FE8 g_UiFocusProxyControlVtable: Right end caption (text 0x2142) of the alternate movie volume slider; sits in 0x3F30's sibling chain although its parent link says 0x3DB4. */
+    UiRangeSliderControl messageMovieVolumeSlider; /* +4044 g_UiRangeSliderControlVtable: Slider (action 0x121A) writing movieAlternateAudioGainQ15. */
+    UiLayoutContainerControl<2> sidePanelStack; /* +40AC g_UiLayoutContainerControlVtable: Page stack for the right side panel frame: page 0 shows the side panel (game layout), page 1 is empty (editor layout, world view goes full width); toggled by a hotkey and settings bit 0x4. */
+    UiImagePanelControl sidePanelFrameLeftEdge; /* +4104 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 0), full-height left border strip; its left offset defines the side panel width. */
+    UiImagePanelControl sidePanelFrameRightEdge; /* +4160 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 1), full-height right border strip. */
+    UiImagePanelControl sidePanelFrameTopCap; /* +41BC g_UiImagePanelControlVtable: Side panel frame image (panel subresource 2), top piece between the edge strips. */
+    UiImagePanelControl sidePanelFrameMenuBar; /* +4218 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 3) below the top cap; the menu/objectives buttons and countdown are laid out over it. */
+    UiImagePanelControl sidePanelFrameInfoSection; /* +4274 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 4), middle section whose rect positions the 0xB210..0xB590 controls. */
+    UiImagePanelControl sidePanelFrameBottomCap; /* +42D0 g_UiImagePanelControlVtable: Side panel frame image (panel subresource 5), bottom piece of the side panel frame. */
+    UiLayoutContainerControl<3> sidePanelMenuButtonStack; /* +432C g_UiLayoutContainerControlVtable: Two-page container (page 0 = menu button row, page 1 empty) holding the menu and objectives buttons and the countdown display. */
+    UiSpriteButtonControl inGameMenuButton; /* +4388 g_UiSpriteButtonControlVtable: Sprite toggle (action 0x1003) that opens/closes the in-game menu page (InGameMissionHelpRootView.inGameMenuButton). */
+    UiSpriteButtonControl missionObjectivesButton; /* +4400 g_UiSpriteButtonControlVtable: Sprite toggle (action 0x101F) that opens menu page 8 (mission briefing/objectives text panels) and pauses local play. */
+    UiImagePanelControl countdownDisplayPanel; /* +4478 g_UiImagePanelControlVtable: Image panel (subresource 9) next to the menu buttons that hosts the countdown text. */
+    UiFocusProxyControl countdownText; /* +44D4 g_UiFocusProxyControlVtable: Text control bound to g_InGameCountdownTextUtf16 (mission countdown). */
+    UiLayoutContainerControl<3> resourceBarModeStack; /* +4530 g_UiLayoutContainerControlVtable: Page stack switched by the game/editor layout toggle: page 1 = resource panel (game), page 2 = editor tab strip A (editor). */
+    UiImagePanelControl resourcePanel; /* +458C g_UiImagePanelControlVtable: Image panel (subresource 6) in the game layout with the Xenite/Tritium/Energy gauges and their icons. */
+    UiImagePanelControl editorTabStripA; /* +45E8 g_UiImagePanelControlVtable: Image panel (subresource 0x26) shown in the editor layout; holds editor mode tabs G0..G2. */
+    UiLayoutContainerControl<3> gamePanelsModeStack; /* +4644 g_UiLayoutContainerControlVtable: Page stack switched by the game/editor layout toggle: page 1 = game panels area, page 2 = editor tab strip B. */
+    UiImagePanelControl gamePanelsArea; /* +46A0 g_UiImagePanelControlVtable: Image panel (subresource 7) in the game layout hosting the pop-up panels (diplomacy panel 0x4D0C, build catalog 0x5DB4, ...). */
+    UiImagePanelControl editorTabStripB; /* +46FC g_UiImagePanelControlVtable: Image panel (subresource 0x27) shown in the editor layout; holds editor mode tabs G3..G5. */
+    UiImageControl resourcePanelImageToggle8; /* +4758 g_UiImageControlVtable: Hover/selectable image control (image 8) on the resource panel with a nine-slice popup; exact role unknown, named from class and parent. */
+    UiNineSlicePanelControl resourcePanelImageToggle8Popup; /* +47C4 g_UiNineSlicePanelControlVtable: Nine-slice panel parented to image control 0x4758 (popup background); role inferred from structure only. */
+    UiImageControl resourcePanelImageToggle9; /* +4820 g_UiImageControlVtable: Hover/selectable image control (image 9) on the resource panel with a nine-slice popup; exact role unknown, named from class and parent. */
+    UiNineSlicePanelControl resourcePanelImageToggle9Popup; /* +488C g_UiNineSlicePanelControlVtable: Nine-slice panel parented to image control 0x4820 (tooltip id 0x180005); role inferred from structure only. */
+    uint32_t resourcePanelImageToggle9Popup_trailing[1]; /* +48E8: template dwords behind the control */
+    UiSpriteButtonControl resourcePanelIconButton; /* +48EC g_UiSpriteButtonControlVtable: Sprite button (sprite 0xA, no action, tooltip 0x180011) on the resource panel; exact role unknown, named from class and parent. */
+    UiFormattedContainer xeniteGauge; /* +4964 g_UiFormattedContainerVtable: Formatted value display for the primary resource Xenite (current/limit at root+0x49B4/0x49B8). */
+    uint32_t xeniteGauge_trailing[1]; /* +49F8: template dwords behind the control */
+    UiFormattedContainer tritiumGauge; /* +49FC g_UiFormattedContainerVtable: Formatted value display for the secondary resource Tritium (current/limit at root+0x4A4C/0x4A50). */
+    uint32_t tritiumGauge_trailing[1]; /* +4A90: template dwords behind the control */
+    UiFormattedContainer energyGauge; /* +4A94 g_UiFormattedContainerVtable: Two-value display for energy demand vs. generation capacity (root+0x4AE4/0x4AE8/0x4B28). */
+    uint32_t energyGauge_trailing[7]; /* +4B28: template dwords behind the control */
+    UiFocusProxyControl xeniteAmountText; /* +4B44 g_UiFocusProxyControlVtable: Text control bound to g_FrontendCurrentFactionPrimaryResourceTextUtf16 (formatted Xenite amount). */
+    uint32_t xeniteAmountText_trailing[1]; /* +4BA0: template dwords behind the control */
+    UiSpriteButtonControl editorModeTabTerrainHeight; /* +4BA4 g_UiSpriteButtonControlVtable: Editor mode tab G0 (action 0x1100, InGameCommandModeG_Select0): terrain height tool; syncs the three mode-G page stacks. */
+    UiSpriteButtonControl editorModeTabTerrainMaterial; /* +4C1C g_UiSpriteButtonControlVtable: Editor mode tab G1 (action 0x1101, InGameCommandModeG_Select1): terrain material/texture palette tool. */
+    UiSpriteButtonControl editorModeTabTerrainSmoothing; /* +4C94 g_UiSpriteButtonControlVtable: Editor mode tab G2 (action 0x1102, InGameCommandModeG_Select2): terrain relaxation/smoothing tool (role partly resolved). */
+    UiImageControl diplomacyPanel; /* +4D0C g_UiImageControlVtable: Image-control window (image 0xC, InGameRuntimeRootUiGridView.diplomacyPanel) listing the other active players and relations. */
+    UiNineSlicePanelControl diplomacyFrame; /* +4D78 g_UiNineSlicePanelControlVtable: Nine-slice frame of the diplomacy panel holding the seven player row stacks (rebuilt by InGameOtherPlayerCommand_RebuildTargetEntries). */
+    UiLayoutContainerControl<2> diplomacyRow1; /* +4DD4 g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 1 (page 0 visible, page 1 hidden when fewer players). */
+    UiLayoutContainerControl<2> diplomacyRow2; /* +4E2C g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 2 (page 0 visible, page 1 hidden when fewer players). */
+    UiLayoutContainerControl<2> diplomacyRow3; /* +4E84 g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 3 (page 0 visible, page 1 hidden when fewer players). */
+    UiLayoutContainerControl<2> diplomacyRow4; /* +4EDC g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 4 (page 0 visible, page 1 hidden when fewer players). */
+    UiLayoutContainerControl<2> diplomacyRow5; /* +4F34 g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 5 (page 0 visible, page 1 hidden when fewer players). */
+    UiLayoutContainerControl<2> diplomacyRow6; /* +4F8C g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 6 (page 0 visible, page 1 hidden when fewer players). */
+    UiLayoutContainerControl<2> diplomacyRow7; /* +4FE4 g_UiLayoutContainerControlVtable: Slot page stack for diplomacy row 7 (page 0 visible, page 1 hidden when fewer players). */
+    UiFocusProxyControl diplomacyRow1PlayerNumberLabel; /* +503C g_UiFocusProxyControlVtable: Player number text (0x2190 + faction index) of diplomacy row 1. */
+    UiFocusProxyControl diplomacyRow2PlayerNumberLabel; /* +5098 g_UiFocusProxyControlVtable: Player number text of diplomacy row 2. */
+    UiFocusProxyControl diplomacyRow3PlayerNumberLabel; /* +50F4 g_UiFocusProxyControlVtable: Player number text of diplomacy row 3. */
+    UiFocusProxyControl diplomacyRow4PlayerNumberLabel; /* +5150 g_UiFocusProxyControlVtable: Player number text of diplomacy row 4. */
+    UiFocusProxyControl diplomacyRow5PlayerNumberLabel; /* +51AC g_UiFocusProxyControlVtable: Player number text of diplomacy row 5. */
+    UiFocusProxyControl diplomacyRow6PlayerNumberLabel; /* +5208 g_UiFocusProxyControlVtable: Player number text of diplomacy row 6. */
+    UiFocusProxyControl diplomacyRow7PlayerNumberLabel; /* +5264 g_UiFocusProxyControlVtable: Player number text of diplomacy row 7. */
+    UiFocusProxyControl diplomacyRow1FactionLabel; /* +52C0 g_UiFocusProxyControlVtable: Faction/race label text (0x2173 + faction record type) of diplomacy row 1. */
+    UiFocusProxyControl diplomacyRow2FactionLabel; /* +531C g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 2. */
+    UiFocusProxyControl diplomacyRow3FactionLabel; /* +5378 g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 3. */
+    UiFocusProxyControl diplomacyRow4FactionLabel; /* +53D4 g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 4. */
+    UiFocusProxyControl diplomacyRow5FactionLabel; /* +5430 g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 5. */
+    UiFocusProxyControl diplomacyRow6FactionLabel; /* +548C g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 6. */
+    UiFocusProxyControl diplomacyRow7FactionLabel; /* +54E8 g_UiFocusProxyControlVtable: Faction/race label text of diplomacy row 7. */
+    UiFocusProxyControl diplomacyRow1RelationLabel; /* +5544 g_UiFocusProxyControlVtable: Diplomatic relation state text (0x21A3 + relation state) of diplomacy row 1. */
+    UiFocusProxyControl diplomacyRow2RelationLabel; /* +55A0 g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 2. */
+    UiFocusProxyControl diplomacyRow3RelationLabel; /* +55FC g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 3. */
+    UiFocusProxyControl diplomacyRow4RelationLabel; /* +5658 g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 4. */
+    UiFocusProxyControl diplomacyRow5RelationLabel; /* +56B4 g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 5. */
+    UiFocusProxyControl diplomacyRow6RelationLabel; /* +5710 g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 6. */
+    UiFocusProxyControl diplomacyRow7RelationLabel; /* +576C g_UiFocusProxyControlVtable: Diplomatic relation state text of diplomacy row 7. */
+    UiFocusProxyControl diplomacyRow1PlayerNameLabel; /* +57C8 g_UiFocusProxyControlVtable: Player name text (network player name, else empty) of diplomacy row 1. */
+    UiFocusProxyControl diplomacyRow2PlayerNameLabel; /* +5824 g_UiFocusProxyControlVtable: Player name text of diplomacy row 2. */
+    UiFocusProxyControl diplomacyRow3PlayerNameLabel; /* +5880 g_UiFocusProxyControlVtable: Player name text of diplomacy row 3. */
+    UiFocusProxyControl diplomacyRow4PlayerNameLabel; /* +58DC g_UiFocusProxyControlVtable: Player-name text of diplomacy row 4 (g_UiAction1012IconImageOffsets[3]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries. */
+    UiFocusProxyControl diplomacyRow5PlayerNameLabel; /* +5938 g_UiFocusProxyControlVtable: Player-name text of diplomacy row 5 (g_UiAction1012IconImageOffsets[4]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries. */
+    UiFocusProxyControl diplomacyRow6PlayerNameLabel; /* +5994 g_UiFocusProxyControlVtable: Player-name text of diplomacy row 6 (g_UiAction1012IconImageOffsets[5]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries. */
+    UiFocusProxyControl diplomacyRow7PlayerNameLabel; /* +59F0 g_UiFocusProxyControlVtable: Player-name text of diplomacy row 7 (g_UiAction1012IconImageOffsets[6]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries. */
+    UiCommandSpriteButtonWithDetails diplomacyRow1RelationButton; /* +5A4C g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 1; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiCommandSpriteButtonWithDetails diplomacyRow2RelationButton; /* +5AC8 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 2; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiCommandSpriteButtonWithDetails diplomacyRow3RelationButton; /* +5B44 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 3; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiCommandSpriteButtonWithDetails diplomacyRow4RelationButton; /* +5BC0 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 4; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiCommandSpriteButtonWithDetails diplomacyRow5RelationButton; /* +5C3C g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 5; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiCommandSpriteButtonWithDetails diplomacyRow6RelationButton; /* +5CB8 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 6; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiCommandSpriteButtonWithDetails diplomacyRow7RelationButton; /* +5D34 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 7; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    uint32_t diplomacyRow7RelationButton_trailing[1]; /* +5DB0: template dwords behind the control */
+    UiImageControl buildCatalogPanel; /* +5DB4 g_UiImageControlVtable: Image-control window (id 0xD, InGameRuntimeRootUiGridView.buildCatalogPanel) holding the 48-entry build catalog of items the selected/owned production buildings can make; suppressed when empty (UiCatalogGroup48_RebuildGrid). */
+    UiNineSlicePanelControl buildCatalogFrame; /* +5E20 g_UiNineSlicePanelControlVtable: Nine-slice frame of the 48-entry build catalog (InGameRuntimeRootUiGridView.buildCatalogFrame); resized to the computed grid in UiCatalogGroup48_RebuildGrid. */
+    UiCatalogEntryControl buildCatalogEntry00; /* +5E7C g_UiCatalogEntryControlVtable: Catalog entry 0 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[0] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry01; /* +5EFC g_UiCatalogEntryControlVtable: Catalog entry 1 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[1] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry02; /* +5F7C g_UiCatalogEntryControlVtable: Catalog entry 2 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[2] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry03; /* +5FFC g_UiCatalogEntryControlVtable: Catalog entry 3 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[3] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry04; /* +607C g_UiCatalogEntryControlVtable: Catalog entry 4 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[4] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry05; /* +60FC g_UiCatalogEntryControlVtable: Catalog entry 5 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[5] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry06; /* +617C g_UiCatalogEntryControlVtable: Catalog entry 6 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[6] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry07; /* +61FC g_UiCatalogEntryControlVtable: Catalog entry 7 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[7] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry08; /* +627C g_UiCatalogEntryControlVtable: Catalog entry 8 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[8] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry09; /* +62FC g_UiCatalogEntryControlVtable: Catalog entry 9 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[9] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry10; /* +637C g_UiCatalogEntryControlVtable: Catalog entry 10 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[10] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry11; /* +63FC g_UiCatalogEntryControlVtable: Catalog entry 11 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[11] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry12; /* +647C g_UiCatalogEntryControlVtable: Catalog entry 12 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[12] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry13; /* +64FC g_UiCatalogEntryControlVtable: Catalog entry 13 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[13] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry14; /* +657C g_UiCatalogEntryControlVtable: Catalog entry 14 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[14] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry15; /* +65FC g_UiCatalogEntryControlVtable: Catalog entry 15 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[15] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry16; /* +667C g_UiCatalogEntryControlVtable: Catalog entry 16 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[16] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry17; /* +66FC g_UiCatalogEntryControlVtable: Catalog entry 17 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[17] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry18; /* +677C g_UiCatalogEntryControlVtable: Catalog entry 18 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[18] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry19; /* +67FC g_UiCatalogEntryControlVtable: Catalog entry 19 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[19] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry20; /* +687C g_UiCatalogEntryControlVtable: Catalog entry 20 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[20] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry21; /* +68FC g_UiCatalogEntryControlVtable: Catalog entry 21 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[21] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry22; /* +697C g_UiCatalogEntryControlVtable: Catalog entry 22 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[22] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry23; /* +69FC g_UiCatalogEntryControlVtable: Catalog entry 23 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[23] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry24; /* +6A7C g_UiCatalogEntryControlVtable: Catalog entry 24 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[24] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry25; /* +6AFC g_UiCatalogEntryControlVtable: Catalog entry 25 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[25] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry26; /* +6B7C g_UiCatalogEntryControlVtable: Catalog entry 26 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[26] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry27; /* +6BFC g_UiCatalogEntryControlVtable: Catalog entry 27 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[27] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry28; /* +6C7C g_UiCatalogEntryControlVtable: Catalog entry 28 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[28] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry29; /* +6CFC g_UiCatalogEntryControlVtable: Catalog entry 29 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[29] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry30; /* +6D7C g_UiCatalogEntryControlVtable: Catalog entry 30 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[30] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry31; /* +6DFC g_UiCatalogEntryControlVtable: Catalog entry 31 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[31] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry32; /* +6E7C g_UiCatalogEntryControlVtable: Catalog entry 32 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[32] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry33; /* +6EFC g_UiCatalogEntryControlVtable: Catalog entry 33 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[33] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry34; /* +6F7C g_UiCatalogEntryControlVtable: Catalog entry 34 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[34] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry35; /* +6FFC g_UiCatalogEntryControlVtable: Catalog entry 35 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[35] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry36; /* +707C g_UiCatalogEntryControlVtable: Catalog entry 36 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[36] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry37; /* +70FC g_UiCatalogEntryControlVtable: Catalog entry 37 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[37] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry38; /* +717C g_UiCatalogEntryControlVtable: Catalog entry 38 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[38] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry39; /* +71FC g_UiCatalogEntryControlVtable: Catalog entry 39 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[39] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry40; /* +727C g_UiCatalogEntryControlVtable: Catalog entry 40 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[40] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry41; /* +72FC g_UiCatalogEntryControlVtable: Catalog entry 41 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[41] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry42; /* +737C g_UiCatalogEntryControlVtable: Catalog entry 42 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[42] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry43; /* +73FC g_UiCatalogEntryControlVtable: Catalog entry 43 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[43] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry44; /* +747C g_UiCatalogEntryControlVtable: Catalog entry 44 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[44] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry45; /* +74FC g_UiCatalogEntryControlVtable: Catalog entry 45 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[45] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry46; /* +757C g_UiCatalogEntryControlVtable: Catalog entry 46 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[46] under column count 0). */
+    UiCatalogEntryControl buildCatalogEntry47; /* +75FC g_UiCatalogEntryControlVtable: Catalog entry 47 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[47] under column count 0). */
+    uint32_t buildCatalogEntry47_trailing[1]; /* +767C: template dwords behind the control */
+    UiImageControl specialBuildCatalogPanel; /* +7680 g_UiImageControlVtable: Image-control window (id 0xE, InGameRuntimeRootUiGridView.specialBuildCatalogPanel) holding the 42-entry catalog of flag-0x10 army assets, only offered while the faction owns a model-class-0x0B structure (UiCatalogGroup42_RebuildGrid). */
+    UiNineSlicePanelControl specialBuildCatalogFrame; /* +76EC g_UiNineSlicePanelControlVtable: Nine-slice frame of the 42-entry special build catalog (InGameRuntimeRootUiGridView.specialBuildCatalogFrame); resized to the computed grid. */
+    UiCatalogEntryControl specialBuildCatalogEntry00; /* +7748 g_UiCatalogEntryControlVtable: Catalog entry 0 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[0]). */
+    UiCatalogEntryControl specialBuildCatalogEntry01; /* +77C8 g_UiCatalogEntryControlVtable: Catalog entry 1 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[1]). */
+    UiCatalogEntryControl specialBuildCatalogEntry02; /* +7848 g_UiCatalogEntryControlVtable: Catalog entry 2 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[2]). */
+    UiCatalogEntryControl specialBuildCatalogEntry03; /* +78C8 g_UiCatalogEntryControlVtable: Catalog entry 3 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[3]). */
+    UiCatalogEntryControl specialBuildCatalogEntry04; /* +7948 g_UiCatalogEntryControlVtable: Catalog entry 4 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[4]). */
+    UiCatalogEntryControl specialBuildCatalogEntry05; /* +79C8 g_UiCatalogEntryControlVtable: Catalog entry 5 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[5]). */
+    UiCatalogEntryControl specialBuildCatalogEntry06; /* +7A48 g_UiCatalogEntryControlVtable: Catalog entry 6 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[6]). */
+    UiCatalogEntryControl specialBuildCatalogEntry07; /* +7AC8 g_UiCatalogEntryControlVtable: Catalog entry 7 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[7]). */
+    UiCatalogEntryControl specialBuildCatalogEntry08; /* +7B48 g_UiCatalogEntryControlVtable: Catalog entry 8 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[8]). */
+    UiCatalogEntryControl specialBuildCatalogEntry09; /* +7BC8 g_UiCatalogEntryControlVtable: Catalog entry 9 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[9]). */
+    UiCatalogEntryControl specialBuildCatalogEntry10; /* +7C48 g_UiCatalogEntryControlVtable: Catalog entry 10 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[10]). */
+    UiCatalogEntryControl specialBuildCatalogEntry11; /* +7CC8 g_UiCatalogEntryControlVtable: Catalog entry 11 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[11]). */
+    UiCatalogEntryControl specialBuildCatalogEntry12; /* +7D48 g_UiCatalogEntryControlVtable: Catalog entry 12 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[12]). */
+    UiCatalogEntryControl specialBuildCatalogEntry13; /* +7DC8 g_UiCatalogEntryControlVtable: Catalog entry 13 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[13]). */
+    UiCatalogEntryControl specialBuildCatalogEntry14; /* +7E48 g_UiCatalogEntryControlVtable: Catalog entry 14 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[14]). */
+    UiCatalogEntryControl specialBuildCatalogEntry15; /* +7EC8 g_UiCatalogEntryControlVtable: Catalog entry 15 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[15]). */
+    UiCatalogEntryControl specialBuildCatalogEntry16; /* +7F48 g_UiCatalogEntryControlVtable: Catalog entry 16 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[16]). */
+    UiCatalogEntryControl specialBuildCatalogEntry17; /* +7FC8 g_UiCatalogEntryControlVtable: Catalog entry 17 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[17]). */
+    UiCatalogEntryControl specialBuildCatalogEntry18; /* +8048 g_UiCatalogEntryControlVtable: Catalog entry 18 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[18]). */
+    UiCatalogEntryControl specialBuildCatalogEntry19; /* +80C8 g_UiCatalogEntryControlVtable: Catalog entry 19 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[19]). */
+    UiCatalogEntryControl specialBuildCatalogEntry20; /* +8148 g_UiCatalogEntryControlVtable: Catalog entry 20 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[20]). */
+    UiCatalogEntryControl specialBuildCatalogEntry21; /* +81C8 g_UiCatalogEntryControlVtable: Catalog entry 21 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[21]). */
+    UiCatalogEntryControl specialBuildCatalogEntry22; /* +8248 g_UiCatalogEntryControlVtable: Catalog entry 22 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[22]). */
+    UiCatalogEntryControl specialBuildCatalogEntry23; /* +82C8 g_UiCatalogEntryControlVtable: Catalog entry 23 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[23]). */
+    UiCatalogEntryControl specialBuildCatalogEntry24; /* +8348 g_UiCatalogEntryControlVtable: Catalog entry 24 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[24]). */
+    UiCatalogEntryControl specialBuildCatalogEntry25; /* +83C8 g_UiCatalogEntryControlVtable: Catalog entry 25 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[25]). */
+    UiCatalogEntryControl specialBuildCatalogEntry26; /* +8448 g_UiCatalogEntryControlVtable: Catalog entry 26 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[26]). */
+    UiCatalogEntryControl specialBuildCatalogEntry27; /* +84C8 g_UiCatalogEntryControlVtable: Catalog entry 27 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[27]). */
+    UiCatalogEntryControl specialBuildCatalogEntry28; /* +8548 g_UiCatalogEntryControlVtable: Catalog entry 28 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[28]). */
+    UiCatalogEntryControl specialBuildCatalogEntry29; /* +85C8 g_UiCatalogEntryControlVtable: Catalog entry 29 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[29]). */
+    UiCatalogEntryControl specialBuildCatalogEntry30; /* +8648 g_UiCatalogEntryControlVtable: Catalog entry 30 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[30]). */
+    UiCatalogEntryControl specialBuildCatalogEntry31; /* +86C8 g_UiCatalogEntryControlVtable: Catalog entry 31 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[31]). */
+    UiCatalogEntryControl specialBuildCatalogEntry32; /* +8748 g_UiCatalogEntryControlVtable: Catalog entry 32 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[32]). */
+    UiCatalogEntryControl specialBuildCatalogEntry33; /* +87C8 g_UiCatalogEntryControlVtable: Catalog entry 33 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[33]). */
+    UiCatalogEntryControl specialBuildCatalogEntry34; /* +8848 g_UiCatalogEntryControlVtable: Catalog entry 34 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[34]). */
+    UiCatalogEntryControl specialBuildCatalogEntry35; /* +88C8 g_UiCatalogEntryControlVtable: Catalog entry 35 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[35]). */
+    UiCatalogEntryControl specialBuildCatalogEntry36; /* +8948 g_UiCatalogEntryControlVtable: Catalog entry 36 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[36]). */
+    UiCatalogEntryControl specialBuildCatalogEntry37; /* +89C8 g_UiCatalogEntryControlVtable: Catalog entry 37 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[37]). */
+    UiCatalogEntryControl specialBuildCatalogEntry38; /* +8A48 g_UiCatalogEntryControlVtable: Catalog entry 38 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[38]). */
+    UiCatalogEntryControl specialBuildCatalogEntry39; /* +8AC8 g_UiCatalogEntryControlVtable: Catalog entry 39 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[39]). */
+    UiCatalogEntryControl specialBuildCatalogEntry40; /* +8B48 g_UiCatalogEntryControlVtable: Catalog entry 40 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[40]). */
+    UiCatalogEntryControl specialBuildCatalogEntry41; /* +8BC8 g_UiCatalogEntryControlVtable: Catalog entry 41 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[41]). */
+    uint32_t specialBuildCatalogEntry41_trailing[1]; /* +8C48: template dwords behind the control */
+    UiImageControl armyStockPanel; /* +8C4C g_UiImageControlVtable: Image-control window (id 0xF, InGameRuntimeRootUiGridView.armyStockPanel) showing up to 24 army assets held in the faction's primary army-asset pool (UiCommandSpriteVariantA_RebuildGrid). */
+    UiNineSlicePanelControl armyStockFrame; /* +8CB8 g_UiNineSlicePanelControlVtable: Nine-slice frame of the 24-slot army stock grid (InGameRuntimeRootUiGridView.armyStockFrame); resized/suppressed by the rebuild. */
+    UiCommandSpriteButtonWithDetails armyStockSlot00; /* +8D14 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 0 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot01; /* +8D90 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 1 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot02; /* +8E0C g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 2 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot03; /* +8E88 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 3 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot04; /* +8F04 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 4 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot05; /* +8F80 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 5 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot06; /* +8FFC g_UiCommandSpriteButtonWithDetailsVtable: Slot 6 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot07; /* +9078 g_UiCommandSpriteButtonWithDetailsVtable: Slot 7 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot08; /* +90F4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 8 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot09; /* +9170 g_UiCommandSpriteButtonWithDetailsVtable: Slot 9 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot10; /* +91EC g_UiCommandSpriteButtonWithDetailsVtable: Slot 10 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot11; /* +9268 g_UiCommandSpriteButtonWithDetailsVtable: Slot 11 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot12; /* +92E4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 12 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot13; /* +9360 g_UiCommandSpriteButtonWithDetailsVtable: Slot 13 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot14; /* +93DC g_UiCommandSpriteButtonWithDetailsVtable: Slot 14 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot15; /* +9458 g_UiCommandSpriteButtonWithDetailsVtable: Slot 15 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot16; /* +94D4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 16 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot17; /* +9550 g_UiCommandSpriteButtonWithDetailsVtable: Slot 17 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot18; /* +95CC g_UiCommandSpriteButtonWithDetailsVtable: Slot 18 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot19; /* +9648 g_UiCommandSpriteButtonWithDetailsVtable: Slot 19 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot20; /* +96C4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 20 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot21; /* +9740 g_UiCommandSpriteButtonWithDetailsVtable: Slot 21 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCommandSpriteButtonWithDetails armyStockSlot22; /* +97BC g_UiCommandSpriteButtonWithDetailsVtable: Slot 22 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiCatalogEntryControl armyStockSlot23; /* +9838 g_UiCatalogEntryControlVtable: Slot 23 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. Last slot; distinct class variant with extra text id 0x180019. */
+    UiSpriteButtonControl editorModeTabRegion; /* +98B8 g_UiSpriteButtonControlVtable: Editor mode tab G5 (action 0x1104, InGameCommandModeG_Select5): tool with two F variants that insert/remove player-pair ranges on the field grid; exact role unresolved. */
+    UiSpriteButtonControl editorModeTabUnitPlacement; /* +9930 g_UiSpriteButtonControlVtable: Editor mode tab G3 (action 0x1105): place faction-owned army assets (flag 0x100 without 0x200, owner faction cyclable). */
     UiNodeBase editorModeTabObjectPlacement; /* +99A8 g_UiSpriteButtonControlVtable: Editor mode tab G4 (action 0x1106): place ownerless army assets with flags 0x100|0x200 (objects). */
     uint32_t editorModeTabObjectPlacement_fields[10];
-    UiNodeBase minimapView; /* +9A1C g_UiSelectionGeometryControlVtable: Rotating minimap (UiSelectionGeometryControl draws a rotated/scaled texture); +0x50 holds the cursor grid position (InGameRuntimeRoot.minimapOriginGridPosition; +0x58..+0x60 are minimapSampleScaleQ12, minimapRotationAngle, minimapTextureSource). */
-    uint32_t minimapView_fields[9];
-    UiNodeBase modePreviewPageStack; /* +9A8C g_UiLayoutContainerControlVtable: 8-page stack synced by mode G (primary index table): page 0 normal game, pages 1-5/7 editor tool previews. */
-    uint32_t modePreviewPageStack_fields[9];
+    UiSelectionGeometryControl minimapView; /* +9A1C g_UiSelectionGeometryControlVtable: Rotating minimap (UiSelectionGeometryControl draws a rotated/scaled texture); +0x50 holds the cursor grid position (InGameRuntimeRoot.minimapOriginGridPosition; +0x58..+0x60 are minimapSampleScaleQ12, minimapRotationAngle, minimapTextureSource). */
+    UiLayoutContainerControl<8> modePreviewPageStack; /* +9A8C g_UiLayoutContainerControlVtable: 8-page stack synced by mode G (primary index table): page 0 normal game, pages 1-5/7 editor tool previews. */
     UiNodeBase notificationTargetButton; /* +9AFC g_UiImageActionControlVtable: Page 0 of ModePreviewPageStack: image button; left click (0x100D) jumps to/resolves the active notification target, right click (0x100E) cancels and restores the view. */
     uint32_t notificationTargetButton_fields[6];
-    UiNodeBase heightToolPreview; /* +9B60 g_UiImagePanelControlVtable: Page 1 (mode G0, terrain height tool) of ModePreviewPageStack; static image. */
-    uint32_t heightToolPreview_fields[4];
-    UiNodeBase materialToolSelectedSwatch; /* +9BBC g_UiImagePanelControlVtable: Page 2 (mode G1) of ModePreviewPageStack: shows the texture of the currently selected terrain material (set by UiCommandMatrix_SelectIndex). */
-    uint32_t materialToolSelectedSwatch_fields[4];
-    UiNodeBase smoothingToolPreview; /* +9C18 g_UiImagePanelControlVtable: Page 3 (mode G2) of ModePreviewPageStack; static image; G2 role (relaxation/smoothing tool) only partly resolved. */
-    uint32_t smoothingToolPreview_fields[4];
-    UiNodeBase unitPlacementPreviewFrame; /* +9C74 g_UiFillPanelControlVtable: Page 4 (mode G3) of ModePreviewPageStack: black fill frame around the unit preview. */
-    uint32_t unitPlacementPreviewFrame_fields[4];
-    UiNodeBase unitPlacementPreviewImage; /* +9CD0 g_UiImagePanelControlVtable: Preview texture of the army asset currently chosen for unit placement (g_UiCommandModeGArmyAssetId). */
-    uint32_t unitPlacementPreviewImage_fields[4];
-    UiNodeBase objectPlacementPreviewFrame; /* +9D2C g_UiFillPanelControlVtable: Page 5 (mode G4) of ModePreviewPageStack: black fill frame around the object preview. */
-    uint32_t objectPlacementPreviewFrame_fields[4];
-    UiNodeBase objectPlacementPreviewImage; /* +9D88 g_UiImagePanelControlVtable: Preview texture of the object asset currently chosen for placement (g_UiCommandMode4ArmyAssetId). */
-    uint32_t objectPlacementPreviewImage_fields[4];
-    UiNodeBase regionToolPreview; /* +9DE4 g_UiImagePanelControlVtable: Page 7 (mode G5) of ModePreviewPageStack; image panel. */
-    uint32_t regionToolPreview_fields[44];
-    UiNodeBase modeDetailPageStack; /* +9EE0 g_UiLayoutContainerControlVtable: 8-page stack synced by mode G (secondary index table): page 0 selection detail in normal game, other pages editor tool panels. */
-    uint32_t modeDetailPageStack_fields[9];
-    UiNodeBase selectionDetailPanel; /* +9F50 g_UiImagePanelControlVtable: Page 0 of ModeDetailPageStack: background image hosting the selection detail page stack. */
-    uint32_t selectionDetailPanel_fields[4];
-    UiNodeBase selectionDetailPageStack; /* +9FAC g_UiLayoutContainerControlVtable: Page stack switched by InGameSelectionDetailPanel_Rebuild: 1 single unit, 2 multi-selection grid, 3 hovered build item (root field selectionDetailPageStack). */
-    uint32_t selectionDetailPageStack_fields[5];
-    UiNodeBase singleSelectionMetrics; /* +A00C g_UiArmyMetricsPanelVtable: Single-selection page: army metrics panel (portrait/health/value) of the one selected own entity. */
-    uint32_t singleSelectionMetrics_fields[5];
-    UiNodeBase singleSelectionStatsText; /* +A06C g_UiListOffsetControlVtable: Single-selection page: text list with name/armour/energy/weapon lines of the selected entity. */
-    uint32_t singleSelectionStatsText_fields[5];
+    UiImagePanelControl heightToolPreview; /* +9B60 g_UiImagePanelControlVtable: Page 1 (mode G0, terrain height tool) of ModePreviewPageStack; static image. */
+    UiImagePanelControl materialToolSelectedSwatch; /* +9BBC g_UiImagePanelControlVtable: Page 2 (mode G1) of ModePreviewPageStack: shows the texture of the currently selected terrain material (set by UiCommandMatrix_SelectIndex). */
+    UiImagePanelControl smoothingToolPreview; /* +9C18 g_UiImagePanelControlVtable: Page 3 (mode G2) of ModePreviewPageStack; static image; G2 role (relaxation/smoothing tool) only partly resolved. */
+    UiFillPanelControl unitPlacementPreviewFrame; /* +9C74 g_UiFillPanelControlVtable: Page 4 (mode G3) of ModePreviewPageStack: black fill frame around the unit preview. */
+    UiImagePanelControl unitPlacementPreviewImage; /* +9CD0 g_UiImagePanelControlVtable: Preview texture of the army asset currently chosen for unit placement (g_UiCommandModeGArmyAssetId). */
+    UiFillPanelControl objectPlacementPreviewFrame; /* +9D2C g_UiFillPanelControlVtable: Page 5 (mode G4) of ModePreviewPageStack: black fill frame around the object preview. */
+    UiImagePanelControl objectPlacementPreviewImage; /* +9D88 g_UiImagePanelControlVtable: Preview texture of the object asset currently chosen for placement (g_UiCommandMode4ArmyAssetId). */
+    UiImagePanelControl regionToolPreview; /* +9DE4 g_UiImagePanelControlVtable: Page 7 (mode G5) of ModePreviewPageStack; image panel. */
+    uint32_t regionToolPreview_trailing[40]; /* +9E40: template dwords behind the control */
+    UiLayoutContainerControl<8> modeDetailPageStack; /* +9EE0 g_UiLayoutContainerControlVtable: 8-page stack synced by mode G (secondary index table): page 0 selection detail in normal game, other pages editor tool panels. */
+    UiImagePanelControl selectionDetailPanel; /* +9F50 g_UiImagePanelControlVtable: Page 0 of ModeDetailPageStack: background image hosting the selection detail page stack. */
+    UiLayoutContainerControl<4> selectionDetailPageStack; /* +9FAC g_UiLayoutContainerControlVtable: Page stack switched by InGameSelectionDetailPanel_Rebuild: 1 single unit, 2 multi-selection grid, 3 hovered build item (root field selectionDetailPageStack). */
+    UiArmyMetricsPanel singleSelectionMetrics; /* +A00C g_UiArmyMetricsPanelVtable: Single-selection page: army metrics panel (portrait/health/value) of the one selected own entity. */
+    UiListOffsetControl singleSelectionStatsText; /* +A06C g_UiListOffsetControlVtable: Single-selection page: text list with name/armour/energy/weapon lines of the selected entity. */
+    uint32_t singleSelectionStatsText_trailing[1]; /* +A0C8: template dwords behind the control */
     UiNodeBase singleSelectionUpgradeButton; /* +A0CC g_UiSpriteButtonControlVtable: Single-selection page: action 0x1010 button toggling the technology page stack to page 2 for the unit; suppressed unless technologies are available. */
     uint32_t singleSelectionUpgradeButton_fields[10];
-    UiNodeBase hoverItemIcon; /* +A140 g_UiImagePanelControlVtable: Hover page: icon texture of the hovered build/catalog record. */
-    uint32_t hoverItemIcon_fields[4];
-    UiNodeBase hoverItemStatsText; /* +A19C g_UiListOffsetControlVtable: Hover page: text list with armour, Xenite cost, build time and energy of the hovered record. */
-    uint32_t hoverItemStatsText_fields[4];
-    UiNodeBase multiSelectionCell00; /* +A1F8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 0 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell00_fields[5];
-    UiNodeBase multiSelectionCell01; /* +A258 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 1 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell01_fields[5];
-    UiNodeBase multiSelectionCell02; /* +A2B8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 2 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell02_fields[5];
-    UiNodeBase multiSelectionCell03; /* +A318 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 3 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell03_fields[5];
-    UiNodeBase multiSelectionCell04; /* +A378 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 4 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell04_fields[5];
-    UiNodeBase multiSelectionCell05; /* +A3D8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 5 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell05_fields[5];
-    UiNodeBase multiSelectionCell06; /* +A438 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 6 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell06_fields[5];
-    UiNodeBase multiSelectionCell07; /* +A498 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 7 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell07_fields[5];
-    UiNodeBase multiSelectionCell08; /* +A4F8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 8 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell08_fields[5];
-    UiNodeBase multiSelectionCell09; /* +A558 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 9 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell09_fields[5];
-    UiNodeBase multiSelectionCell10; /* +A5B8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 10 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell10_fields[5];
-    UiNodeBase multiSelectionCell11; /* +A618 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 11 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
-    uint32_t multiSelectionCell11_fields[5];
-    UiNodeBase heightToolPanel; /* +A678 g_UiImagePanelControlVtable: Page 1 (mode G0) of ModeDetailPageStack; background image. */
-    uint32_t heightToolPanel_fields[4];
-    UiNodeBase materialPalettePanel; /* +A6D4 g_UiImagePanelControlVtable: Page 2 (mode G1) of ModeDetailPageStack: background of the 12-swatch terrain material palette (swatches follow as siblings). */
-    uint32_t materialPalettePanel_fields[4];
-    UiNodeBase materialSwatch00; /* +A730 g_UiImagePanelControlVtable: Terrain material palette swatch 0 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch00_fields[4];
+    UiImagePanelControl hoverItemIcon; /* +A140 g_UiImagePanelControlVtable: Hover page: icon texture of the hovered build/catalog record. */
+    UiListOffsetControl hoverItemStatsText; /* +A19C g_UiListOffsetControlVtable: Hover page: text list with armour, Xenite cost, build time and energy of the hovered record. */
+    UiArmyMetricsPanel multiSelectionCell00; /* +A1F8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 0 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell01; /* +A258 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 1 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell02; /* +A2B8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 2 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell03; /* +A318 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 3 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell04; /* +A378 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 4 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell05; /* +A3D8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 5 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell06; /* +A438 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 6 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell07; /* +A498 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 7 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell08; /* +A4F8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 8 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell09; /* +A558 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 9 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell10; /* +A5B8 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 10 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiArmyMetricsPanel multiSelectionCell11; /* +A618 g_UiArmyMetricsPanelVtable: Multi-selection page: grid cell 11 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics. */
+    UiImagePanelControl heightToolPanel; /* +A678 g_UiImagePanelControlVtable: Page 1 (mode G0) of ModeDetailPageStack; background image. */
+    UiImagePanelControl materialPalettePanel; /* +A6D4 g_UiImagePanelControlVtable: Page 2 (mode G1) of ModeDetailPageStack: background of the 12-swatch terrain material palette (swatches follow as siblings). */
+    UiImagePanelControl materialSwatch00; /* +A730 g_UiImagePanelControlVtable: Terrain material palette swatch 0 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch00Selector; /* +A78C g_UiFramedTextButtonControlVtable: Selectable frame on swatch 0 (action 0x1110, g_UiMappedCommandControlOffsets[0]); click selects that terrain material. */
-    uint32_t materialSwatch00Selector_fields[4];
-    UiNodeBase materialSwatch01; /* +A7E8 g_UiImagePanelControlVtable: Terrain material palette swatch 1 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch01_fields[4];
+    UiTextButtonTemplateFields materialSwatch00Selector_fields;
+    UiImagePanelControl materialSwatch01; /* +A7E8 g_UiImagePanelControlVtable: Terrain material palette swatch 1 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch01Selector; /* +A844 g_UiFramedTextButtonControlVtable: Selectable frame on swatch 1 (action 0x1110, g_UiMappedCommandControlOffsets[1]); click selects that terrain material. */
-    uint32_t materialSwatch01Selector_fields[4];
-    UiNodeBase materialSwatch02; /* +A8A0 g_UiImagePanelControlVtable: Terrain material palette swatch 2 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch02_fields[4];
+    UiTextButtonTemplateFields materialSwatch01Selector_fields;
+    UiImagePanelControl materialSwatch02; /* +A8A0 g_UiImagePanelControlVtable: Terrain material palette swatch 2 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch02Selector; /* +A8FC g_UiFramedTextButtonControlVtable: Selectable frame on swatch 2 (action 0x1110, g_UiMappedCommandControlOffsets[2]); click selects that terrain material. */
-    uint32_t materialSwatch02Selector_fields[4];
-    UiNodeBase materialSwatch03; /* +A958 g_UiImagePanelControlVtable: Terrain material palette swatch 3 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch03_fields[4];
+    UiTextButtonTemplateFields materialSwatch02Selector_fields;
+    UiImagePanelControl materialSwatch03; /* +A958 g_UiImagePanelControlVtable: Terrain material palette swatch 3 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch03Selector; /* +A9B4 g_UiFramedTextButtonControlVtable: Selectable frame on swatch 3 (action 0x1110, g_UiMappedCommandControlOffsets[3]); click selects that terrain material. */
-    uint32_t materialSwatch03Selector_fields[4];
-    UiNodeBase materialSwatch04; /* +AA10 g_UiImagePanelControlVtable: Terrain material palette swatch 4 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch04_fields[4];
+    UiTextButtonTemplateFields materialSwatch03Selector_fields;
+    UiImagePanelControl materialSwatch04; /* +AA10 g_UiImagePanelControlVtable: Terrain material palette swatch 4 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch04Selector; /* +AA6C g_UiFramedTextButtonControlVtable: Selectable frame on swatch 4 (action 0x1110, g_UiMappedCommandControlOffsets[4]); click selects that terrain material. */
-    uint32_t materialSwatch04Selector_fields[4];
-    UiNodeBase materialSwatch05; /* +AAC8 g_UiImagePanelControlVtable: Terrain material palette swatch 5 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch05_fields[4];
+    UiTextButtonTemplateFields materialSwatch04Selector_fields;
+    UiImagePanelControl materialSwatch05; /* +AAC8 g_UiImagePanelControlVtable: Terrain material palette swatch 5 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch05Selector; /* +AB24 g_UiFramedTextButtonControlVtable: Selectable frame on swatch 5 (action 0x1110, g_UiMappedCommandControlOffsets[5]); click selects that terrain material. */
-    uint32_t materialSwatch05Selector_fields[4];
-    UiNodeBase materialSwatch06; /* +AB80 g_UiImagePanelControlVtable: Terrain material palette swatch 6 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch06_fields[4];
+    UiTextButtonTemplateFields materialSwatch05Selector_fields;
+    UiImagePanelControl materialSwatch06; /* +AB80 g_UiImagePanelControlVtable: Terrain material palette swatch 6 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch06Selector; /* +ABDC g_UiFramedTextButtonControlVtable: Selectable frame on swatch 6 (action 0x1110, g_UiMappedCommandControlOffsets[6]); click selects that terrain material. */
-    uint32_t materialSwatch06Selector_fields[4];
-    UiNodeBase materialSwatch07; /* +AC38 g_UiImagePanelControlVtable: Terrain material palette swatch 7 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch07_fields[4];
+    UiTextButtonTemplateFields materialSwatch06Selector_fields;
+    UiImagePanelControl materialSwatch07; /* +AC38 g_UiImagePanelControlVtable: Terrain material palette swatch 7 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch07Selector; /* +AC94 g_UiFramedTextButtonControlVtable: Selectable frame on swatch 7 (action 0x1110, g_UiMappedCommandControlOffsets[7]); click selects that terrain material. */
-    uint32_t materialSwatch07Selector_fields[4];
-    UiNodeBase materialSwatch08; /* +ACF0 g_UiImagePanelControlVtable: Terrain material palette swatch 8 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch08_fields[4];
+    UiTextButtonTemplateFields materialSwatch07Selector_fields;
+    UiImagePanelControl materialSwatch08; /* +ACF0 g_UiImagePanelControlVtable: Terrain material palette swatch 8 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch08Selector; /* +AD4C g_UiFramedTextButtonControlVtable: Selectable frame on swatch 8 (action 0x1110, g_UiMappedCommandControlOffsets[8]); click selects that terrain material. */
-    uint32_t materialSwatch08Selector_fields[4];
-    UiNodeBase materialSwatch09; /* +ADA8 g_UiImagePanelControlVtable: Terrain material palette swatch 9 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch09_fields[4];
+    UiTextButtonTemplateFields materialSwatch08Selector_fields;
+    UiImagePanelControl materialSwatch09; /* +ADA8 g_UiImagePanelControlVtable: Terrain material palette swatch 9 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch09Selector; /* +AE04 g_UiFramedTextButtonControlVtable: Selectable frame on swatch 9 (action 0x1110, g_UiMappedCommandControlOffsets[9]); click selects that terrain material. */
-    uint32_t materialSwatch09Selector_fields[4];
-    UiNodeBase materialSwatch10; /* +AE60 g_UiImagePanelControlVtable: Terrain material palette swatch 10 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch10_fields[4];
+    UiTextButtonTemplateFields materialSwatch09Selector_fields;
+    UiImagePanelControl materialSwatch10; /* +AE60 g_UiImagePanelControlVtable: Terrain material palette swatch 10 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch10Selector; /* +AEBC g_UiFramedTextButtonControlVtable: Selectable frame on swatch 10 (action 0x1110, g_UiMappedCommandControlOffsets[10]); click selects that terrain material. */
-    uint32_t materialSwatch10Selector_fields[4];
-    UiNodeBase materialSwatch11; /* +AF18 g_UiImagePanelControlVtable: Terrain material palette swatch 11 of 12 (3 columns); shows a material texture from the current scroll page. */
-    uint32_t materialSwatch11_fields[4];
+    UiTextButtonTemplateFields materialSwatch10Selector_fields;
+    UiImagePanelControl materialSwatch11; /* +AF18 g_UiImagePanelControlVtable: Terrain material palette swatch 11 of 12 (3 columns); shows a material texture from the current scroll page. */
     UiNodeBase materialSwatch11Selector; /* +AF74 g_UiFramedTextButtonControlVtable: Selectable frame on swatch 11 (action 0x1110, g_UiMappedCommandControlOffsets[11]); click selects that terrain material. */
-    uint32_t materialSwatch11Selector_fields[4];
-    UiNodeBase smoothingToolPanel; /* +AFD0 g_UiImagePanelControlVtable: Page 3 (mode G2) of ModeDetailPageStack; background image. */
-    uint32_t smoothingToolPanel_fields[4];
-    UiNodeBase unitPlacementPanel; /* +B02C g_UiImagePanelControlVtable: Page 4 (mode G3) of ModeDetailPageStack; background of the unit-placement info. */
-    uint32_t unitPlacementPanel_fields[4];
-    UiNodeBase unitPlacementStatsText; /* +B088 g_UiListOffsetControlVtable: Text list on UnitPlacementPanel with the stats of the unit chosen for placement. */
-    uint32_t unitPlacementStatsText_fields[4];
-    UiNodeBase objectPlacementPanel; /* +B0E4 g_UiImagePanelControlVtable: Page 5 (mode G4) of ModeDetailPageStack; background image. */
-    uint32_t objectPlacementPanel_fields[4];
-    UiNodeBase regionToolPanel; /* +B140 g_UiImagePanelControlVtable: Page 7 (mode G5) of ModeDetailPageStack; background image. */
-    uint32_t regionToolPanel_fields[4];
-    UiNodeBase modeCommandPageStack; /* +B19C g_UiLayoutContainerControlVtable: 8-page stack synced by mode G (tertiary index table): page 0 selection group buttons, other pages editor tool option buttons. */
-    uint32_t modeCommandPageStack_fields[10];
-    UiNodeBase selectionGroupButton0; /* +B210 g_UiCommandSpriteButtonControlVtable: Selection group button 0 (action 0x100A, g_UiAction100AControlOffsets[0]): store/recall/jump to faction group 0 depending on modifiers/double-click. */
-    uint32_t selectionGroupButton0_fields[13];
-    UiNodeBase selectionGroupButton1; /* +B290 g_UiCommandSpriteButtonControlVtable: Selection group button 1 (action 0x100A, g_UiAction100AControlOffsets[1]): store/recall/jump to faction group 1 depending on modifiers/double-click. */
-    uint32_t selectionGroupButton1_fields[13];
-    UiNodeBase selectionGroupButton2; /* +B310 g_UiCommandSpriteButtonControlVtable: Selection group button 2 (action 0x100A, g_UiAction100AControlOffsets[2]): store/recall/jump to faction group 2 depending on modifiers/double-click. */
-    uint32_t selectionGroupButton2_fields[13];
-    UiNodeBase selectionGroupButton3; /* +B390 g_UiCommandSpriteButtonControlVtable: Selection group button 3 (action 0x100A, g_UiAction100AControlOffsets[3]): store/recall/jump to faction group 3 depending on modifiers/double-click. */
-    uint32_t selectionGroupButton3_fields[13];
-    UiNodeBase selectionGroupButton4; /* +B410 g_UiCommandSpriteButtonControlVtable: Selection group button 4 (action 0x100A, g_UiAction100AControlOffsets[4]): store/recall/jump to faction group 4 depending on modifiers/double-click. */
-    uint32_t selectionGroupButton4_fields[13];
-    UiNodeBase selectionGroupButton5; /* +B490 g_UiCommandSpriteButtonControlVtable: Selection group button 5 (action 0x100A, g_UiAction100AControlOffsets[5]): store/recall/jump to faction group 5 depending on modifiers/double-click. */
-    uint32_t selectionGroupButton5_fields[13];
-    UiNodeBase selectionGroupButton6; /* +B510 g_UiCommandSpriteButtonControlVtable: Selection group button 6 (action 0x100A, g_UiAction100AControlOffsets[6]): store/recall/jump to faction group 6 depending on modifiers/double-click. */
-    uint32_t selectionGroupButton6_fields[13];
-    UiNodeBase selectionGroupButton7; /* +B590 g_UiCommandSpriteButtonControlVtable: Selection group button 7 (action 0x100A, g_UiAction100AControlOffsets[7]): store/recall/jump to faction group 7 depending on modifiers/double-click. */
-    uint32_t selectionGroupButton7_fields[13];
-    UiNodeBase heightToolOption0; /* +B610 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1108) selecting mode C=0; exact option label unresolved. */
-    uint32_t heightToolOption0_fields[11];
-    UiNodeBase heightToolOption1; /* +B688 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1109) selecting mode C=1; exact option label unresolved. */
-    uint32_t heightToolOption1_fields[11];
-    UiNodeBase heightToolOption2; /* +B700 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110A) selecting mode C=2; exact option label unresolved. */
-    uint32_t heightToolOption2_fields[11];
-    UiNodeBase heightToolOption3; /* +B778 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110B) selecting mode C=3; exact option label unresolved. */
-    uint32_t heightToolOption3_fields[11];
-    UiNodeBase materialToolOption0; /* +B7F0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110C) selecting mode D=0; exact option label unresolved. */
-    uint32_t materialToolOption0_fields[11];
-    UiNodeBase materialToolOption1; /* +B868 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110D) selecting mode D=1; exact option label unresolved. */
-    uint32_t materialToolOption1_fields[11];
-    UiNodeBase materialToolOption2; /* +B8E0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110E) selecting mode D=2; exact option label unresolved. */
-    uint32_t materialToolOption2_fields[11];
-    UiNodeBase materialToolOption3; /* +B958 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110F) selecting mode D=3; exact option label unresolved. */
-    uint32_t materialToolOption3_fields[11];
-    UiNodeBase smoothingToolOption0; /* +B9D0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1117) selecting mode E=0; exact option label unresolved. */
-    uint32_t smoothingToolOption0_fields[11];
-    UiNodeBase smoothingToolOption1; /* +BA48 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1118) selecting mode E=1; exact option label unresolved. */
-    uint32_t smoothingToolOption1_fields[11];
-    UiNodeBase smoothingToolOption2; /* +BAC0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1119) selecting mode E=2; exact option label unresolved. */
-    uint32_t smoothingToolOption2_fields[11];
-    UiNodeBase smoothingRelaxGatedButton; /* +BB38 g_UiSpriteButtonControlVtable: Mode G2 page: action 0x111A runs terrain relaxation passes (length 0x80, sign-gated) over the field. */
-    uint32_t smoothingRelaxGatedButton_fields[11];
-    UiNodeBase smoothingRelaxLandButton; /* +BBB0 g_UiSpriteButtonControlVtable: Mode G2 page: action 0x111B runs terrain relaxation passes (length 0x80, ungated land tool). */
-    uint32_t smoothingRelaxLandButton_fields[11];
-    UiNodeBase unitPlacementOption0; /* +BC28 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1111) selecting mode A=0; exact option label unresolved. */
-    uint32_t unitPlacementOption0_fields[11];
-    UiNodeBase unitPlacementOption2; /* +BCA0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1113) selecting mode A=2; exact option label unresolved. */
-    uint32_t unitPlacementOption2_fields[11];
-    UiNodeBase unitPlacementOption1; /* +BD18 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1112) selecting mode A=1; exact option label unresolved. */
-    uint32_t unitPlacementOption1_fields[11];
-    UiNodeBase objectPlacementOption0; /* +BD90 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1114) selecting mode B=0; exact option label unresolved. */
-    uint32_t objectPlacementOption0_fields[11];
-    UiNodeBase objectPlacementOption2; /* +BE08 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1116) selecting mode B=2; exact option label unresolved. */
-    uint32_t objectPlacementOption2_fields[11];
-    UiNodeBase objectPlacementOption1; /* +BE80 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1115) selecting mode B=1; exact option label unresolved. */
-    uint32_t objectPlacementOption1_fields[11];
-    UiNodeBase regionToolOption0; /* +BEF8 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x111C) selecting mode F=0; exact option label unresolved. */
-    uint32_t regionToolOption0_fields[11];
-    UiNodeBase regionToolOption1; /* +BF70 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x111D) selecting mode F=1; exact option label unresolved. */
-    uint32_t regionToolOption1_fields[266];
+    UiTextButtonTemplateFields materialSwatch11Selector_fields;
+    UiImagePanelControl smoothingToolPanel; /* +AFD0 g_UiImagePanelControlVtable: Page 3 (mode G2) of ModeDetailPageStack; background image. */
+    UiImagePanelControl unitPlacementPanel; /* +B02C g_UiImagePanelControlVtable: Page 4 (mode G3) of ModeDetailPageStack; background of the unit-placement info. */
+    UiListOffsetControl unitPlacementStatsText; /* +B088 g_UiListOffsetControlVtable: Text list on UnitPlacementPanel with the stats of the unit chosen for placement. */
+    UiImagePanelControl objectPlacementPanel; /* +B0E4 g_UiImagePanelControlVtable: Page 5 (mode G4) of ModeDetailPageStack; background image. */
+    UiImagePanelControl regionToolPanel; /* +B140 g_UiImagePanelControlVtable: Page 7 (mode G5) of ModeDetailPageStack; background image. */
+    UiLayoutContainerControl<9> modeCommandPageStack; /* +B19C g_UiLayoutContainerControlVtable: 8-page stack synced by mode G (tertiary index table): page 0 selection group buttons, other pages editor tool option buttons. */
+    UiCommandSpriteButtonControl selectionGroupButton0; /* +B210 g_UiCommandSpriteButtonControlVtable: Selection group button 0 (action 0x100A, g_UiAction100AControlOffsets[0]): store/recall/jump to faction group 0 depending on modifiers/double-click. */
+    uint32_t selectionGroupButton0_trailing[1]; /* +B28C: template dwords behind the control */
+    UiCommandSpriteButtonControl selectionGroupButton1; /* +B290 g_UiCommandSpriteButtonControlVtable: Selection group button 1 (action 0x100A, g_UiAction100AControlOffsets[1]): store/recall/jump to faction group 1 depending on modifiers/double-click. */
+    uint32_t selectionGroupButton1_trailing[1]; /* +B30C: template dwords behind the control */
+    UiCommandSpriteButtonControl selectionGroupButton2; /* +B310 g_UiCommandSpriteButtonControlVtable: Selection group button 2 (action 0x100A, g_UiAction100AControlOffsets[2]): store/recall/jump to faction group 2 depending on modifiers/double-click. */
+    uint32_t selectionGroupButton2_trailing[1]; /* +B38C: template dwords behind the control */
+    UiCommandSpriteButtonControl selectionGroupButton3; /* +B390 g_UiCommandSpriteButtonControlVtable: Selection group button 3 (action 0x100A, g_UiAction100AControlOffsets[3]): store/recall/jump to faction group 3 depending on modifiers/double-click. */
+    uint32_t selectionGroupButton3_trailing[1]; /* +B40C: template dwords behind the control */
+    UiCommandSpriteButtonControl selectionGroupButton4; /* +B410 g_UiCommandSpriteButtonControlVtable: Selection group button 4 (action 0x100A, g_UiAction100AControlOffsets[4]): store/recall/jump to faction group 4 depending on modifiers/double-click. */
+    uint32_t selectionGroupButton4_trailing[1]; /* +B48C: template dwords behind the control */
+    UiCommandSpriteButtonControl selectionGroupButton5; /* +B490 g_UiCommandSpriteButtonControlVtable: Selection group button 5 (action 0x100A, g_UiAction100AControlOffsets[5]): store/recall/jump to faction group 5 depending on modifiers/double-click. */
+    uint32_t selectionGroupButton5_trailing[1]; /* +B50C: template dwords behind the control */
+    UiCommandSpriteButtonControl selectionGroupButton6; /* +B510 g_UiCommandSpriteButtonControlVtable: Selection group button 6 (action 0x100A, g_UiAction100AControlOffsets[6]): store/recall/jump to faction group 6 depending on modifiers/double-click. */
+    uint32_t selectionGroupButton6_trailing[1]; /* +B58C: template dwords behind the control */
+    UiCommandSpriteButtonControl selectionGroupButton7; /* +B590 g_UiCommandSpriteButtonControlVtable: Selection group button 7 (action 0x100A, g_UiAction100AControlOffsets[7]): store/recall/jump to faction group 7 depending on modifiers/double-click. */
+    uint32_t selectionGroupButton7_trailing[1]; /* +B60C: template dwords behind the control */
+    UiSpriteButtonControl heightToolOption0; /* +B610 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1108) selecting mode C=0; exact option label unresolved. */
+    UiSpriteButtonControl heightToolOption1; /* +B688 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1109) selecting mode C=1; exact option label unresolved. */
+    UiSpriteButtonControl heightToolOption2; /* +B700 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110A) selecting mode C=2; exact option label unresolved. */
+    UiSpriteButtonControl heightToolOption3; /* +B778 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110B) selecting mode C=3; exact option label unresolved. */
+    UiSpriteButtonControl materialToolOption0; /* +B7F0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110C) selecting mode D=0; exact option label unresolved. */
+    UiSpriteButtonControl materialToolOption1; /* +B868 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110D) selecting mode D=1; exact option label unresolved. */
+    UiSpriteButtonControl materialToolOption2; /* +B8E0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110E) selecting mode D=2; exact option label unresolved. */
+    UiSpriteButtonControl materialToolOption3; /* +B958 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x110F) selecting mode D=3; exact option label unresolved. */
+    UiSpriteButtonControl smoothingToolOption0; /* +B9D0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1117) selecting mode E=0; exact option label unresolved. */
+    UiSpriteButtonControl smoothingToolOption1; /* +BA48 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1118) selecting mode E=1; exact option label unresolved. */
+    UiSpriteButtonControl smoothingToolOption2; /* +BAC0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1119) selecting mode E=2; exact option label unresolved. */
+    UiSpriteButtonControl smoothingRelaxGatedButton; /* +BB38 g_UiSpriteButtonControlVtable: Mode G2 page: action 0x111A runs terrain relaxation passes (length 0x80, sign-gated) over the field. */
+    UiSpriteButtonControl smoothingRelaxLandButton; /* +BBB0 g_UiSpriteButtonControlVtable: Mode G2 page: action 0x111B runs terrain relaxation passes (length 0x80, ungated land tool). */
+    UiSpriteButtonControl unitPlacementOption0; /* +BC28 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1111) selecting mode A=0; exact option label unresolved. */
+    UiSpriteButtonControl unitPlacementOption2; /* +BCA0 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1113) selecting mode A=2; exact option label unresolved. */
+    UiSpriteButtonControl unitPlacementOption1; /* +BD18 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1112) selecting mode A=1; exact option label unresolved. */
+    UiSpriteButtonControl objectPlacementOption0; /* +BD90 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1114) selecting mode B=0; exact option label unresolved. */
+    UiSpriteButtonControl objectPlacementOption2; /* +BE08 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1116) selecting mode B=2; exact option label unresolved. */
+    UiSpriteButtonControl objectPlacementOption1; /* +BE80 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1115) selecting mode B=1; exact option label unresolved. */
+    UiSpriteButtonControl regionToolOption0; /* +BEF8 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x111C) selecting mode F=0; exact option label unresolved. */
+    UiSpriteButtonControl regionToolOption1; /* +BF70 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x111D) selecting mode F=1; exact option label unresolved. */
+    uint32_t regionToolOption1_trailing[255]; /* +BFE8: template dwords behind the control */
 } InGameUiImage;
-#define INGAME_UI(root, node) (&((InGameUiImage *)(uintptr_t)(root))->node)
+/* INGAME_UI still yields a typed node as its UiNodeBase (transitional, step 13 U3: the users cast it to their
+   control type; U5-U9 drop those casts and switch the macro to the typed member). Other members (the
+   _prefix, _fields and _trailing members) keep their own type. */
+#define INGAME_UI(root, node) (reinterpret_cast<InGameUi_NodeView<decltype(InGameUiImage::node)> *>(&((InGameUiImage *)(uintptr_t)(root))->node))
 #define INGAME_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)INGAME_UI(root, node) + (offset)))
 #pragma pack(pop)
+
+/* True for a control type that starts with a UiNodeBase (through its base, selectable, root, sprite or command
+   member). */
+template <class T> constexpr bool InGameUi_IsNodeType()
+{
+  if constexpr (std::is_same_v<T, UiNodeBase>) {
+    return true;
+  } else if constexpr (requires(T &control) { control.base; }) {
+    return offsetof(T, base) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().base)>();
+  } else if constexpr (requires(T &control) { control.selectable; }) {
+    return offsetof(T, selectable) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().selectable)>();
+  } else if constexpr (requires(T &control) { control.root; }) {
+    return offsetof(T, root) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().root)>();
+  } else if constexpr (requires(T &control) { control.sprite; }) {
+    return offsetof(T, sprite) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().sprite)>();
+  } else if constexpr (requires(T &control) { control.command; }) {
+    return offsetof(T, command) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().command)>();
+  } else {
+    return false;
+  }
+}
+
+/* The type INGAME_UI yields for a member of type T: UiNodeBase for a control, T for the other members. */
+template <class T> using InGameUi_NodeView = std::conditional_t<InGameUi_IsNodeType<T>(), UiNodeBase, T>;
 
 #endif /* THANDOR_UI_INGAME_TYPES_H */
