@@ -1,0 +1,56 @@
+# Cheat check (run_game.py, start with -NOINTRO -KARTE="mittelpunkt", --shots 600000 so only the script shots are
+# taken): in the local skirmish Ctrl+Alt+X first does nothing (cheats off). Enter opens the chat line; the cheat
+# phrase "Oh grosser Thomas, erlöse mich!" (this file is UTF-8, the umlaut is typed as Windows-1252 0xF6) and Enter
+# toggle the cheats on and show "Hmmm, na gut... ;-)". Then, with the game paused (P), Ctrl+Alt+X adds 1000 Xenite
+# (the economy caps the stock at the storage limit every tick, the start stock of this map is already at it, so
+# the +1000 is only visible while paused and is cut back after P again); Ctrl+Alt+E adds 100 energy supply and
+# capacity, Ctrl+Alt+Z toggles fast build and research (command flag 0x100000), Ctrl+Alt+V reveals the whole map
+# (command flag 0x08, the minimap fills). "status" logs the command flags (cheats on 0x40000, phrase entered
+# 0x80000, paused 0x01) and each faction's Xenite, storage, energy supply and capacity; the shots
+# (shots\script_NNNN.bmp): 0 start, 1 typed chat line, 2 message, 3 paused +1000 Xenite in the HUD, 4 energy,
+# 5 revealed map.
+# Keys (decimal VK): 13 Enter, 17 Ctrl, 18 Alt, 69 E, 80 P, 86 V, 88 X, 90 Z.
+# Lines that do not start with a number are ignored (comments). Layout 1280x720 in an 800-high window: y = screen y - 40.
+0 layout 1280 720
+9000 clickuntilingame 840 500 3000
+0 ingame
+2000 status
+2100 shot
+2500 keydown 17
+2600 keydown 18
+2700 key 88
+2800 keyup 18
+2900 keyup 17
+3500 status
+4000 key 13
+4500 type Oh grosser Thomas, erlöse mich!
+7000 shot
+7500 key 13
+8000 status
+8100 shot
+9000 key 80
+10000 keydown 17
+10100 keydown 18
+10200 key 88
+10300 keyup 18
+10400 keyup 17
+11000 status
+11100 shot
+12000 key 80
+13000 status
+13500 keydown 17
+13600 keydown 18
+13700 key 69
+13800 key 90
+13900 keyup 18
+14000 keyup 17
+14500 status
+14600 shot
+15500 keydown 17
+15600 keydown 18
+15700 key 86
+15800 keyup 18
+15900 keyup 17
+17500 status
+17600 shot
+19000 quit

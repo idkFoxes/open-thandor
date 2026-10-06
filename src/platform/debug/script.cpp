@@ -23,11 +23,14 @@
      <ms> wheel <x> <y> <n>  pointer at x,y, then n mouse wheel notches (positive: up, negative: down)
      <ms> key <vk>          key press and release (Windows virtual-key code, decimal)
      <ms> keydown <vk> / keyup <vk>  press or release only (held modifiers: keydown 17, key 37, keyup 17)
-     <ms> type <text>       types the rest of the line (ASCII), one character per tick, as the window procedure
+     <ms> type <text>       types the rest of the line (ASCII; UTF-8 Latin-1 letters such as an umlaut are typed
+                            as their Windows-1252 character), one character per tick, as the window procedure
                             delivers it: space as VK_SPACE key-down/up (it gets no WM_CHAR), letters and digits
                             as key-down (swallowed by text edits), Keyboard_OnChar (the WM_CHAR) and key-up,
                             other characters as Keyboard_OnChar only
      <ms> shot              save the framebuffer now (shots\script_NNNN.bmp)
+     <ms> status            log the in-game command flags (g_UiCommandRuntimeFlags) and, per faction in the game,
+                            Xenite, its storage limit, energy supply and energy capacity (whole units)
      <ms> quit              end the process
      <ms> layout <w> <h>    the following coordinates are for a w x h screen; they are moved by half
                             the difference to the current resolution (dialogs and the view are centred)
@@ -126,6 +129,12 @@ void DebugScript_Tick()
     }
     else {
       typePosition++;
+      /* a two-byte UTF-8 sequence of U+0080..U+07FF (the script file is UTF-8): its Latin-1 character, as the
+         SDL3 backend turns text input into the Windows-1252 code of WM_CHAR (umlauts like U+00F6 = 0xF6) */
+      if (((character & 0xE0) == 0xC0) && (((unsigned char)typeText[typePosition] & 0xC0) == 0x80)) {
+        character = ((character & 0x1F) << 6) | ((unsigned char)typeText[typePosition] & 0x3F);
+        typePosition++;
+      }
       if (character == ' ') {
         Keyboard_OnKeyDown(VK_SPACE);
         Keyboard_OnKeyUp(VK_SPACE);
@@ -299,6 +308,18 @@ void DebugScript_Tick()
       Thandor_Log("script: type \"%s\"", typeText);
       typePosition = 0;
       return;
+    }
+    else if (strcmp(command, "status") == 0) {
+      Thandor_Log("script: command flags %08x", (unsigned)g_UiCommandRuntimeFlags);
+      for (int faction = 0; faction < 8; faction++) {
+        const GameFactionRuntimeRecord &record = g_GameFactionRuntimeImage.records[faction];
+        if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[faction] != 0) {
+          Thandor_Log("script: faction %d xenite %d (storage %d) energy supply %d capacity %d", faction,
+                      (int)(record.xeniteCurrentQ4 >> Q4_SHIFT), (int)(record.xeniteStorageLimitQ4 >> Q4_SHIFT),
+                      (int)(record.baselineEnergySupplyQ4 >> Q4_SHIFT),
+                      (int)(record.energyGenerationCapacityQ4 >> Q4_SHIFT));
+        }
+      }
     }
     else if (strcmp(command, "shot") == 0) {
       DebugAutoShot_SaveNow();

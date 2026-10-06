@@ -6,7 +6,8 @@
  */
 
 /* SDL3 backend: keyboard and mouse. Keys reach the game as the Windows virtual-key codes MainWindowProc passes to
-   Keyboard_OnKeyDown/OnKeyUp (Shift, Ctrl and Alt as VK_SHIFT, VK_CONTROL, VK_MENU), text as the Windows-1252
+   Keyboard_OnKeyDown/OnKeyUp (Shift, Ctrl and Alt as VK_SHIFT, VK_CONTROL, VK_MENU; AltGr as Ctrl+Alt, see
+   KeyIsAltGr), text as the Windows-1252
    characters of WM_CHAR (Keyboard_OnChar), suppressed for the keys Win32_ShouldTranslateMessageFlags does not
    translate, with the control characters 1-26 of Ctrl+A..Ctrl+Z. Mouse events go into the g_CursorInputEvents
    ring exactly as DirectInputMouse_PollBufferedEvents appends them (position clamped to the framebuffer, the
@@ -166,6 +167,28 @@ bool KeyProducesText(KeyboardVirtualKeyCode virtualKey) noexcept
   return (virtualKey != VK_BACK) && (virtualKey != VK_TAB) && (virtualKey != VK_RETURN) &&
          (virtualKey != VK_PAUSE) && (virtualKey != VK_ESCAPE) &&
          ((virtualKey < VK_SPACE) || ((VK_DELETE < virtualKey) && ((virtualKey < VK_NUMPAD0) || (VK_F12 < virtualKey))));
+}
+
+/* True for the right Alt key of a keyboard layout with AltGr. Windows sends such an AltGr press as a left Ctrl
+   followed by the right Alt, so the original game saw Ctrl+Alt (the Ctrl+Alt key commands such as the cheat keys
+   Ctrl+Alt+X/E/Z/V, and AltGr characters such as '@' arriving with Ctrl+Alt rather than as Alt shortcuts like
+   Alt+Q). SDL drops that left Ctrl, so the backend adds it back. A layout has AltGr when some character key gives
+   a character with SDL_KMOD_MODE (SDL's keymap asks Windows for Ctrl+Alt there). */
+bool KeyIsAltGr(const SDL_KeyboardEvent &event) noexcept
+{
+  if (event.scancode != SDL_SCANCODE_RALT) {
+    return false;
+  }
+  /* the letter, digit and punctuation keys (not Enter, Escape, Backspace, Tab and Space between them) */
+  for (int scancode = SDL_SCANCODE_A; scancode <= SDL_SCANCODE_SLASH; scancode++) {
+    if ((scancode >= SDL_SCANCODE_RETURN) && (scancode <= SDL_SCANCODE_SPACE)) {
+      continue;
+    }
+    if (SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(scancode), SDL_KMOD_MODE, false) != SDLK_UNKNOWN) {
+      return true;
+    }
+  }
+  return SDL_GetKeyFromScancode(SDL_SCANCODE_NONUSBACKSLASH, SDL_KMOD_MODE, false) != SDLK_UNKNOWN;
 }
 
 /* Windows-1252 code of a Unicode code point, 0 when it has none. */
@@ -359,6 +382,9 @@ void HandleKeyDown(const SDL_KeyboardEvent &event)
     s_translateText = true;
     return;
   }
+  if (KeyIsAltGr(event)) {
+    Keyboard_OnKeyDown(VK_CONTROL);
+  }
   Keyboard_OnKeyDown(virtualKey);
   s_translateText = KeyProducesText(virtualKey);
   /* Ctrl+A..Ctrl+Z: Windows' WM_CHAR 1..26 (SDL sends no text for control characters); Keyboard_OnChar turns
@@ -374,6 +400,9 @@ void HandleKeyUp(const SDL_KeyboardEvent &event)
 {
   const KeyboardVirtualKeyCode virtualKey = VirtualKeyOf(event);
   if (virtualKey != ToCode(VirtualKey::None)) {
+    if (KeyIsAltGr(event)) {
+      Keyboard_OnKeyUp(VK_CONTROL);
+    }
     Keyboard_OnKeyUp(virtualKey);
   }
 }
