@@ -47,8 +47,8 @@ static void FrontendEndMovie_SelectCampaignMoviePath(CampaignAsset *campaign)
       }
       /* four zero-padded digits over the "0000" of flm\ende0000.flm */
       g_WideNumberFormatUtf16
-                (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,endMovieNumber,(uint16_t *)(g_FrontendEndMoviePathUtf16 + 8));
-      g_EndMoviePath = (uint16_t *)g_FrontendEndMoviePathUtf16;
+                (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,endMovieNumber,g_FrontendEndMoviePathUtf16 + 8);
+      g_EndMoviePath = g_FrontendEndMoviePathUtf16;
       return;
     }
     levelRecord++;
@@ -81,7 +81,7 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
   TextResourceId levelTitleResourceId;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  FrontendResultsEightColumnTemplate *firstChart;
+  FrontendResultsTable<6> *firstChart;
   uint32_t previousColumnCount;
   int remainingColumns;
   uint32_t *copySource;
@@ -99,12 +99,10 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
     return;
   }
   /* row counts of the three results lists */
-  firstChart = reinterpret_cast<FrontendResultsEightColumnTemplate *>(&InGameUi_Image(runtimeRoot)->resultsChart1);
+  firstChart = &InGameUi_Image(runtimeRoot)->resultsChart1;
   firstChart->rowCount = activeFactionCount;
-  reinterpret_cast<FrontendResultsEightColumnTemplate *>(&InGameUi_Image(runtimeRoot)->resultsChart2)->rowCount =
-       activeFactionCount;
-  reinterpret_cast<FrontendResultsEightColumnTemplate *>(&InGameUi_Image(runtimeRoot)->resultsChart3)->rowCount =
-       activeFactionCount;
+  InGameUi_Image(runtimeRoot)->resultsChart2.rowCount = activeFactionCount;
+  InGameUi_Image(runtimeRoot)->resultsChart3.rowCount = activeFactionCount;
   /* elapsed minutes of the 80 Hz clock, rounded up, shown as hours and minutes */
   elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 4799) / 4800;
   g_LocaleFormatTimeFieldsUtf16
@@ -115,14 +113,14 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
   RichTextCommandStream_PatchPayloadBySelector(1,g_EndGameElapsedTimeScratchUtf16,resultsText);
   RichTextCommandStream_PatchPayloadBySelector(0,TextResource_Resolve(levelTitleResourceId),resultsText);
   /* the continue button; 0x1025 is the second results button, local games hide it */
-  UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)runtimeRoot);
+  UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,&runtimeRoot->rootUi.base);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_SECONDARY_EXIT,(UiNodeBase *)runtimeRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_SECONDARY_EXIT,&runtimeRoot->rootUi.base);
   }
   /* a host with other players waits for them instead of offering continue */
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL)
      && (1 < g_FrontendPlayerRuntimeBlockCount)) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)runtimeRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,&runtimeRoot->rootUi.base);
   }
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
@@ -179,7 +177,7 @@ void Frontend_PlaySelectedEndMovie()
     rootCallbacks->keyboardFallback = UI_SLOT(EndMovieSlot_KeyboardFallback);
     rootCallbacks->frameUpdate = UI_SLOT(EndMovieUiRuntime_HandleModeTransition);
     if (g_FrontendLoadedCampaignAsset != 0) {
-      FrontendEndMovie_SelectCampaignMoviePath((CampaignAsset *)g_FrontendLoadedCampaignAsset);
+      FrontendEndMovie_SelectCampaignMoviePath(reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset));
     }
     Movie_Close();
     /* clear both buffers to black */
@@ -206,7 +204,7 @@ void Frontend_PlaySelectedEndMovie()
               g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
             }
           }
-          UiNode_InvalidateRoot((UiNodeBase *)runtimeRoot);
+          UiNode_InvalidateRoot(&runtimeRoot->rootUi.base);
           UiFrame_ProcessAndPresent();
         } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0);
       }

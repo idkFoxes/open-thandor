@@ -540,6 +540,24 @@ inline UiConditionalActionControl *UiConditionalActionTextBox_AsControl(UiCondit
   return reinterpret_cast<UiConditionalActionControl *>(control);
 }
 
+/* A results chart of the end-of-game results screen (g_FrontendResultsTableVtable; the in-game template's
+   resultsChart1..3) with its column type list spelled out (step 13 X9e): 0x64 + 4 * ColumnSlots bytes. The class
+   methods (ui/frontend/results.cpp) take the one-slot view FrontendResultsColumnSequenceControl
+   (ui/frontend/types.h); reach it with FrontendResultsTable_AsControl. */
+struct FrontendResultsFactionWeightPair;
+template <uint32_t ColumnSlots>
+struct FrontendResultsTable {
+    struct UiNodeBase base;
+    uint32_t modeFlags; /* +0x4C bit 0 (FRONTEND_RESULTS_MODE_GRAPH): faction-weight graph instead of the table */
+    Ptr32<void (UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *)>
+        factionWeightRaster; /* +0x50 graph mode: draws one pixel column */
+    uint32_t columnTypeCount; /* +0x54 used entries of columnTypes */
+    uint32_t rowCount; /* +0x58 rows (active factions), set by the end-of-game results screen */
+    int headerBaselineOffsetPixels; /* +0x5C (UiPixelMetric) */
+    int rowAdvancePixels; /* +0x60 (UiPixelMetric) */
+    uint32_t columnTypes[ColumnSlots]; /* +0x64 FRONTEND_RESULTS_COLUMN_* */
+};
+
 struct UiFramedTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 

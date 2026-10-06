@@ -101,38 +101,38 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .pages = {
                 UI_TEMPLATE_LINK_BITS(0x408), UI_TEMPLATE_LINK_BITS(0x484), UI_TEMPLATE_LINK_BITS(0x500)}},
         { /* +0408 resultsChart1 g_FrontendResultsTableVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x3AC),
-            .vtable = THANDOR_PTR(&g_FrontendResultsTableVtable),
-            .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -306, .topOffset = -118, .rightOffset = 305, .bottomOffset = 90,
-            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
-            .layoutWidth = -1, .layoutHeight = -1},
-        {
-            0x00000000, Thandor_PointerToU32(FrontendResultsGraph_DrawFactionWeightSumColumn), /* 5f-format: InGameUiImage.resultsChart1_fields (UI template pointer dword) */
-            0x00000006, 0x00000000, 0x00000062, 0x00000055, 0x00000007, 0x00000002, 0x00000006, 0x00000003,
-            0x00000004, 0x00000005},
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x3AC),
+                .vtable = THANDOR_PTR(&g_FrontendResultsTableVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -306, .topOffset = -118, .rightOffset = 305, .bottomOffset = 90,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .modeFlags = 0x00000000, .factionWeightRaster = FrontendResultsGraph_DrawFactionWeightSumColumn,
+            .columnTypeCount = 0x00000006, .rowCount = 0x00000000, .headerBaselineOffsetPixels = 0x00000062, .rowAdvancePixels = 0x00000055,
+            .columnTypes = {0x00000007, 0x00000002, 0x00000006, 0x00000003, 0x00000004, 0x00000005}},
         { /* +0484 resultsChart2 g_FrontendResultsTableVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x3AC),
-            .vtable = THANDOR_PTR(&g_FrontendResultsTableVtable),
-            .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -306, .topOffset = -118, .rightOffset = 305, .bottomOffset = 90,
-            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
-            .layoutWidth = -1, .layoutHeight = -1},
-        {
-            0x00000000, Thandor_PointerToU32(FrontendResultsGraph_DrawFactionWeightLane0Column), /* 5f-format: InGameUiImage.resultsChart2_fields (UI template pointer dword) */
-            0x00000006, 0x00000000, 0x00000062, 0x00000055, 0x00000002, 0x00000008, 0x00000009, 0x0000000A,
-            0x0000000B, 0x00000003},
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x3AC),
+                .vtable = THANDOR_PTR(&g_FrontendResultsTableVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -306, .topOffset = -118, .rightOffset = 305, .bottomOffset = 90,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .modeFlags = 0x00000000, .factionWeightRaster = FrontendResultsGraph_DrawFactionWeightLane0Column,
+            .columnTypeCount = 0x00000006, .rowCount = 0x00000000, .headerBaselineOffsetPixels = 0x00000062, .rowAdvancePixels = 0x00000055,
+            .columnTypes = {0x00000002, 0x00000008, 0x00000009, 0x0000000A, 0x0000000B, 0x00000003}},
         { /* +0500 resultsChart3 g_FrontendResultsTableVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x3AC),
-            .vtable = THANDOR_PTR(&g_FrontendResultsTableVtable),
-            .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -306, .topOffset = -118, .rightOffset = 305, .bottomOffset = 90,
-            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
-            .layoutWidth = -1, .layoutHeight = -1},
-        {
-            0x00000000, Thandor_PointerToU32(FrontendResultsGraph_DrawFactionWeightLane1Column), /* 5f-format: InGameUiImage.resultsChart3_fields (UI template pointer dword) */
-            0x00000008, 0x00000000, 0x00000062, 0x00000055, 0x00000002, 0x0000000C, 0x0000000D, 0x0000000E,
-            0x0000000F, 0x00000010, 0x00000011, 0x00000004},
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x3AC),
+                .vtable = THANDOR_PTR(&g_FrontendResultsTableVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -306, .topOffset = -118, .rightOffset = 305, .bottomOffset = 90,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .modeFlags = 0x00000000, .factionWeightRaster = FrontendResultsGraph_DrawFactionWeightLane1Column,
+            .columnTypeCount = 0x00000008, .rowCount = 0x00000000, .headerBaselineOffsetPixels = 0x00000062, .rowAdvancePixels = 0x00000055,
+            .columnTypes = {0x00000002, 0x0000000C, 0x0000000D, 0x0000000E, 0x0000000F, 0x00000010, 0x00000011, 0x00000004}},
         { /* +0584 resultsTabMilitary g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {

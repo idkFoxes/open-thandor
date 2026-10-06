@@ -211,23 +211,25 @@ void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode)
 
 {
   FrontendModelPointerContextFlags *compactLayoutFlags;
-  uintptr_t parentNodeAddress;
-  FrontendRootPageState *frontendRootPage;
+  UiNodeBase *parentNode;
+  UiNodeBase *rootNode;
+  FrontendUiImage *frontendUi;
 
-  parentNodeAddress = (uintptr_t)sourceNode->parent;
-  frontendRootPage = (FrontendRootPageState *)sourceNode;
-  while ((UiNodeBase *)parentNodeAddress != UI_NODE_NONE) {
-    frontendRootPage = (FrontendRootPageState *)(frontendRootPage->rootNode).parent;
-    parentNodeAddress = (uintptr_t)(frontendRootPage->rootNode).parent;
+  /* the root of the source's tree: the frontend root panel */
+  parentNode = sourceNode->parent;
+  rootNode = sourceNode;
+  while (parentNode != UI_NODE_NONE) {
+    rootNode = rootNode->parent;
+    parentNode = rootNode->parent;
   }
-  if (sourceNode == &frontendRootPage->returnToMainActionControl) {
+  frontendUi = FrontendUi_Image(rootNode);
+  if (sourceNode == &frontendUi->optionsOkButton.selectable.base) {
     FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
     return;
   }
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    compactLayoutFlags =
-         &FrontendUi_Image(frontendRootPage)->menuRoomModelView.contextFlags;
+    compactLayoutFlags = &frontendUi->menuRoomModelView.contextFlags;
     *compactLayoutFlags = *compactLayoutFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,&frontendRootPage->primaryPageStack);
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
 }
