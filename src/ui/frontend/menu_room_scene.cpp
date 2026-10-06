@@ -178,7 +178,7 @@ void FrontendRomTransition_ProcessPendingRecord()
   /* g_FrontendRomTransitionTargetRecordId holds the target record id of the running flight (-1 = none to
      activate, 0 = no flight). */
   pendingRecordId = g_FrontendRomTransitionTargetRecordId;
-  menuRoomView = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
+  menuRoomView = FrontendModelPointerContext_AsWorldRuntime(FRONTEND_UI(g_FrontendRootNode,menuRoomModelView));
   if (g_FrontendRomTransitionTargetRecordId != 0) {
     splineStillRunning = WorldMotionSpline_EvaluateAndApplyAtTime
                       (g_FrontendRomTransitionSplineKeyframeCount,

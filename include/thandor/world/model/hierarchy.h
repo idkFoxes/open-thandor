@@ -54,7 +54,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeNode *modelNode);
 
-void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntimeId,int *modelRuntime);
+void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntimeId,ModelRuntimeSlot *modelRuntime);
 
 Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode);

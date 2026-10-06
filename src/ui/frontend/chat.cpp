@@ -19,7 +19,7 @@ void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text)
   
   /* lineCount + textLines of the chat history box form the pointer list. */
   output = (RecentTextHistoryPointerList *)
-           &((UiConditionalActionControl *)FRONTEND_UI(g_FrontendRootNode,chatMessageHistory))->lineCount;
+           &FRONTEND_UI(g_FrontendRootNode,chatMessageHistory)->lineCount;
   RecentTextHistory_Insert(text);
   RecentTextHistory_SortAndBuildPointerList(5,output); /* the box shows five lines */
 }

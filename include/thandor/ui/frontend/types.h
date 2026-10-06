@@ -976,7 +976,7 @@ using ScenarioCatalogRefreshSelectedRecordCallback = void (uint32_t arg0, uint32
 
 /* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
    nodes of the advanced settings page). FRONTEND_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
-   FRONTEND_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
+   typed as its control. */
 typedef struct FrontendUiImage {
     UiPanelControl frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
     UiLayoutContainerControl<2> frontendViewModeStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack: page 0 = menu room (3D room view, dialog page stack, top/bottom bars), page 1 = full-screen movie view. */
@@ -1261,7 +1261,15 @@ typedef struct FrontendUiImage {
     UiFocusProxyControl advancedNoteLabel; /* +788C g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
 } FrontendUiImage;
 #define FRONTEND_UI(root, node) (&((FrontendUiImage *)(uintptr_t)(root))->node)
-#define FRONTEND_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)FRONTEND_UI(root, node) + (offset)))
+
+/* The menu room node (menuRoomModelView) as the world runtime context the ROM transitions, the menu room scene
+   and the debug overlay work on: a FrontendModelPointerContext shares its storage with a WorldRuntimeContext
+   view (see the field comments of FrontendModelPointerContext). */
+inline WorldRuntimeContext *FrontendModelPointerContext_AsWorldRuntime(FrontendModelPointerContext *context)
+
+{
+  return reinterpret_cast<WorldRuntimeContext *>(context);
+}
 #pragma pack(pop)
 
 #endif /* THANDOR_UI_FRONTEND_TYPES_H */
