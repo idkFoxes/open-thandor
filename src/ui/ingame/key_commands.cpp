@@ -174,13 +174,11 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
   }
   case INGAME_KEY_NOTIFICATION_ADVANCE:
     InGameTargetingContext_AdvanceOrResolveTarget
-              ((InGameTargetingRootTraversalView *)
-               THANDOR_UI_SIBLING(world,InGameUiImage,worldView,notificationTargetButton));
+              (reinterpret_cast<InGameTargetingRootTraversalView *>(&THANDOR_CONTAINER_OF(world, InGameUiImage, worldView)->notificationTargetButton));
     break;
   case INGAME_KEY_NOTIFICATION_CANCEL:
     InGameTargetingContext_CancelAndRestoreState
-              ((InGameTargetingRootTraversalView *)
-               THANDOR_UI_SIBLING(world,InGameUiImage,worldView,notificationTargetButton));
+              (reinterpret_cast<InGameTargetingRootTraversalView *>(&THANDOR_CONTAINER_OF(world, InGameUiImage, worldView)->notificationTargetButton));
     break;
   case INGAME_KEY_CAMERA_TO_NOTIFICATION: {
     /* the in-game root that holds this world view */
@@ -253,14 +251,16 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     break;
   }
   case INGAME_KEY_UPGRADE_PAGE_TOGGLE: {
-    UiSpriteButtonControl *upgradeButton = (UiSpriteButtonControl *)
-         THANDOR_UI_SIBLING(world,InGameUiImage,worldView,singleSelectionUpgradeButton);
+    /* a sprite button; the template member is still an untyped node */
+    UiSpriteButtonControl *upgradeButton =
+         reinterpret_cast<UiSpriteButtonControl *>(&THANDOR_CONTAINER_OF(world, InGameUiImage, worldView)->singleSelectionUpgradeButton);
     if (commandsBlocked || (((upgradeButton->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
       break;
     }
     /* only while the single-selection page is shown */
     if (UiPageStack_ActivePageIndex
-              ((UiPageStackControl *)THANDOR_UI_SIBLING(world,InGameUiImage,worldView,selectionDetailPageStack))
+              (UiLayoutContainerControl_AsPageStack(
+                   &THANDOR_CONTAINER_OF(world, InGameUiImage, worldView)->selectionDetailPageStack))
         != 1) {
       break;
     }
@@ -281,8 +281,8 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     world->runtimeFlags = world->runtimeFlags ^ WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA;
     break;
   case INGAME_KEY_WRAPPED_STATUS_TEXT_TOGGLE:
-    THANDOR_UI_SIBLING(world,InGameUiImage,worldView,worldViewWrappedStatusText)->nodeFlags =
-         THANDOR_UI_SIBLING(world,InGameUiImage,worldView,worldViewWrappedStatusText)->nodeFlags ^
+    THANDOR_CONTAINER_OF(world, InGameUiImage, worldView)->worldViewWrappedStatusText.base.nodeFlags =
+         THANDOR_CONTAINER_OF(world, InGameUiImage, worldView)->worldViewWrappedStatusText.base.nodeFlags ^
          UI_NODE_SUPPRESSED;
     break;
   case INGAME_KEY_CHEAT_OCCUPANCY_TOGGLE:
@@ -301,8 +301,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     break;
   case INGAME_KEY_INFO_TEXT_NEXT:
     /* local display only: no command, no simulation state */
-    InGameWorldView_ShowNextInfoText((UiSingleLineTextControl *)
-         THANDOR_UI_SIBLING(world,InGameUiImage,worldView,worldViewCyclingInfoText));
+    InGameWorldView_ShowNextInfoText(&THANDOR_CONTAINER_OF(world, InGameUiImage, worldView)->worldViewCyclingInfoText);
     break;
   default:
     Thandor_Log("InGameUi dispatch: unhandled continuation %08x",target);
@@ -339,8 +338,9 @@ void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView)
 {
   UiImageActionControl *notificationButton;
 
-  notificationButton = (UiImageActionControl *)
-       THANDOR_UI_SIBLING(worldView,InGameUiImage,worldView,notificationTargetButton);
+  /* an image action control; the template member is still an untyped node */
+  notificationButton = reinterpret_cast<UiImageActionControl *>(
+       &THANDOR_CONTAINER_OF(worldView, InGameUiImage, worldView)->notificationTargetButton);
   if (notificationButton->cursorFrame == INGAME_NOTIFICATION_CURSOR_CANCEL) {
     notificationButton->cursorFrame = 0;
   }

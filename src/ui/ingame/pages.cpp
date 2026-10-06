@@ -264,11 +264,11 @@ void InGameQuitMenu_OpenAndRefreshButtons(InGameCommandPanelSourceAddress32 sour
 
 {
   UiNodeBase *firstNode;
-
   /* source is InGameUiImage.gameMenuQuitButton */
-  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_QUIT_MENU,(UiPageStackControl *)
-                             THANDOR_UI_SIBLING(source,InGameUiImage,gameMenuQuitButton,gameWindowPageStack));
-  firstNode = THANDOR_UI_AT(source,-(int)offsetof(InGameUiImage,gameMenuQuitButton)); /* the in-game UI root */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(reinterpret_cast<UiNodeBase *>(source), InGameUiImage, gameMenuQuitButton);
+
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_QUIT_MENU,UiLayoutContainerControl_AsPageStack(&image->gameWindowPageStack));
+  firstNode = &image->inGameRootPanel.root.base; /* the in-game UI root */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_QUIT_RESTART_MISSION,firstNode);
@@ -365,11 +365,12 @@ void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpBriefingTab of the in-game UI template copy */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(sourceNode, InGameUiImage, missionHelpBriefingTab);
   UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpMouseTab),
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpKeyboardTab),
+      &image->missionHelpMouseTab.selectable.base,
+      &image->missionHelpKeyboardTab.selectable.base,
       sourceNode);
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpTabPageStack));
+  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->missionHelpTabPageStack));
 }
 
 /* UI action 0x1022 (missionHelpKeyboardTab; g_InGameUiActionHandlersPage10[34]): selects tab 1 of the mission help
@@ -379,11 +380,12 @@ void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpKeyboardTab of the in-game UI template copy */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(sourceNode, InGameUiImage, missionHelpKeyboardTab);
   UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpMouseTab),
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpBriefingTab),
+      &image->missionHelpMouseTab.selectable.base,
+      &image->missionHelpBriefingTab.selectable.base,
       sourceNode);
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpTabPageStack));
+  UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&image->missionHelpTabPageStack));
 }
 
 /* UI action 0x1023 (missionHelpMouseTab; g_InGameUiActionHandlersPage10[35]): selects tab 2 of the mission help
@@ -393,9 +395,10 @@ void InGameMissionHelpPage_SelectMouseTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpMouseTab of the in-game UI template copy */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(sourceNode, InGameUiImage, missionHelpMouseTab);
   UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpBriefingTab),
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpKeyboardTab),
+      &image->missionHelpBriefingTab.selectable.base,
+      &image->missionHelpKeyboardTab.selectable.base,
       sourceNode);
-  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpTabPageStack));
+  UiPageStack_SetActiveIndex(2,UiLayoutContainerControl_AsPageStack(&image->missionHelpTabPageStack));
 }
