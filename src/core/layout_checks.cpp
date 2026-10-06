@@ -10,6 +10,7 @@
    mount and Huffman workspace, spatial sound slots) and the copies of Windows/DirectX structs are not listed. */
 
 #include <stddef.h>
+#include <type_traits>
 #include <thandor/thandor.h>
 #include <thandor/core/flags.h>
 
@@ -57,6 +58,14 @@ static_assert(sizeof(GameEntityOwnershipState10) == 0x10 &&
               offsetof(GameEntityOwnershipState10, modelNode) == 0x4 &&
               offsetof(GameEntityOwnershipState10, runtimeLink) == 0x8,
               "GameEntityOwnershipState10 keeps its 32-bit layout");
+/* Step 13 X3: the typed accessors (member functions) leave the record a trivially copyable standard-layout
+   aggregate: savegame pools and the GameEntityRuntime views copy and overlay it as raw bytes. */
+static_assert(std::is_trivially_copyable_v<GameEntityOwnershipState10> &&
+              std::is_standard_layout_v<GameEntityOwnershipState10> &&
+              std::is_aggregate_v<GameEntityOwnershipState10> &&
+              offsetof(GameEntityRuntimeCommon, ownership) == 0x0 &&
+              offsetof(GameEntityRuntime, common) == 0x0,
+              "GameEntityOwnershipState10 stays a plain 32-bit record at GameEntityRuntime +0x0");
 static_assert(sizeof(ShotDefinition) == 0x2E0 &&
               offsetof(ShotDefinition, primaryEffectDefinition) == 0x10 &&
               offsetof(ShotDefinition, terrainImpactEffectDefinitions31) == 0x14 &&

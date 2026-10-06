@@ -38,7 +38,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
                            ownerNode->modelDepthBinMaskNear);
         if (hit) {
           hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
-                            (placementRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+                            (placementRadiusQ12,worldXQ12,worldYQ12,WorldOwnerNode_ModelRuntime(ownerNode));
           if (hit) {
             return true;
           }
@@ -137,7 +137,7 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    modelClassId = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
+    modelClassId = WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
     hit = DepthBinMasks_Overlap
                       (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
                        ownerNode->modelDepthBinMaskNear);
@@ -152,13 +152,13 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
       continue;
     }
     hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
-                      (queryRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+                      (queryRadiusQ12,worldXQ12,worldYQ12,WorldOwnerNode_ModelRuntime(ownerNode));
     if (hit) {
       return true;
     }
     if (modelClassId == MODEL_RUNTIME_CLASS_13) {
       hit = ArmyPlacementCandidate_TestModelAnchorDistance
-                        (queryRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+                        (queryRadiusQ12,worldXQ12,worldYQ12,WorldOwnerNode_ModelRuntime(ownerNode));
       if (hit) {
         return true;
       }
@@ -220,7 +220,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
         continue;
       }
     }
-    ownerModelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    ownerModelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
     if ((candidateNode == ownerNode) || (ownerNode == excludedWorldObject)) {
       continue;
     }

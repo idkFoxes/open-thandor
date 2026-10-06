@@ -780,8 +780,34 @@ struct ArmyRuntimeLinkedChildSpawnParameters {
 struct GameEntityOwnershipState10 {
     Ptr32<void> definitionOrClassRecord; 
     Ptr32<struct ModelRuntimeNode> modelNode; 
-    Ptr32<void> runtimeLink; 
-    FactionRuntimeIndex ownerIndex; 
+    Ptr32<void> runtimeLink;
+    FactionRuntimeIndex ownerIndex;
+
+    /* Typed views of the two untyped references (step 13 X3; they replace the (T *)ownership.<field> casts and
+       compile to the same load). GameEntityRuntime is a view laid over more than one record, so what +0x0 and
+       +0x8 point to depends on the record under it; the caller picks the view, as it did with the cast:
+       - modelRuntime(): +0x0 as a ModelRuntimeSlot (the army entities of selection, commands, weapons, AI:
+         ArmyRuntimeSlot.modelRuntimeOrSavedOffset);
+       - modelDefinition(): +0x0 as a ModelDefinition (pathing route and grid influence handlers);
+       - linkedArmyRuntime() / linkedModelRuntime(): +0x8 as an ArmyRuntimeSlot (route, damage, AI) or as the
+         ModelRuntimeSlot the grid influence handlers keep their stored point in.
+       Not constexpr: a Ptr32 field holds an address as an integer. */
+    struct ModelRuntimeSlot *modelRuntime() const
+    {
+        return static_cast<struct ModelRuntimeSlot *>(definitionOrClassRecord.get());
+    }
+    struct ModelDefinition *modelDefinition() const
+    {
+        return static_cast<struct ModelDefinition *>(definitionOrClassRecord.get());
+    }
+    struct ArmyRuntimeSlot *linkedArmyRuntime() const
+    {
+        return static_cast<struct ArmyRuntimeSlot *>(runtimeLink.get());
+    }
+    struct ModelRuntimeSlot *linkedModelRuntime() const
+    {
+        return static_cast<struct ModelRuntimeSlot *>(runtimeLink.get());
+    }
 };
 
 union ModelRuntimeArmyLinkOrState {

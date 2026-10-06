@@ -129,7 +129,7 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
   ArmyRuntimeSlot *ownerArmy;
 
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-    modelRuntime = (ModelRuntimeSlot *)node->runtimePayload;
+    modelRuntime = WorldOwnerNode_ModelRuntime(node);
     ModelRuntimeHierarchy_ClearMatchingTargetRecursive(releasedObject,(int *)modelRuntime);
     /* the army that owns the model */
     ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
@@ -149,9 +149,9 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) &&
           (releasedObject ==
-           ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.
+           WorldOwnerNode_EffectRuntime(node)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.
            modelNode)) {
-    ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
+    WorldOwnerNode_EffectRuntime(node)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
          nullptr;
   }
 }
@@ -168,14 +168,14 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
 
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
     if (detachedObject ==
-        ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode) {
-      ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
+        WorldOwnerNode_EffectRuntime(node)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode) {
+      WorldOwnerNode_EffectRuntime(node)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
            nullptr;
     }
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     /* the linked model runtime and, for an aircraft, the linked base model runtime */
-    modelRuntime = (ModelRuntimeSlot *)node->runtimePayload;
+    modelRuntime = WorldOwnerNode_ModelRuntime(node);
     if (detachedObject == modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime) {
       modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
     }
@@ -186,8 +186,8 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&
           (detachedObject ==
-           ((ShotRuntimeSlot *)node->runtimePayload)->runtimeStateOrSavedOffset.runtimeStatePointer)) {
-    ((ShotRuntimeSlot *)node->runtimePayload)->runtimeStateOrSavedOffset.runtimeState = 0;
+           WorldOwnerNode_ShotRuntime(node)->runtimeStateOrSavedOffset.runtimeStatePointer)) {
+    WorldOwnerNode_ShotRuntime(node)->runtimeStateOrSavedOffset.runtimeState = 0;
   }
 }
 
@@ -203,14 +203,14 @@ void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutd
     ArmyRuntime_DestroyInstanceAndRefreshUi
               (shutdownContext,
                (GameEntityRuntime *)
-               ((ModelRuntimeSlot *)node->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
+               WorldOwnerNode_ModelRuntime(node)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) {
     node->runtimeFlags = node->runtimeFlags & ~(WORLD_OWNER_NODE_LINKED | WORLD_OBJECT_RECORD_ALLOCATED);
-    ((ShotRuntimeSlot *)node->runtimePayload)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
+    WorldOwnerNode_ShotRuntime(node)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
     node->runtimeFlags = node->runtimeFlags & ~(WORLD_OWNER_NODE_LINKED | WORLD_OBJECT_RECORD_ALLOCATED);
-    ((EffectRuntimeSlot *)node->runtimePayload)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
+    WorldOwnerNode_EffectRuntime(node)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
   }
 }
