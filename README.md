@@ -94,9 +94,22 @@ second compiler, kept building for the Visual Studio debugger: presets `release`
 `gpu-test`; CLion and Visual Studio pick the presets up from [`CMakePresets.json`](CMakePresets.json). Details in
 [docs/BUILDING.md](docs/BUILDING.md).
 
-To play, copy `thandor.exe` and `SDL3.dll` into a **copy** of an installed Thandor directory (the game data is not
-part of this repository) and start it there, e.g. `thandor.exe -NOINTRO`. Developer tools, test switches and the data tools are
-described in [docs/BUILDING.md](docs/BUILDING.md).
+## Playing
+
+The normal way to play is the patch installer **`Thandor-Patch-6.exe`** ("Thandor Patch 6", version 1.0.6). Like
+the original Patch 5 (version 1.05) it installs onto an **existing Thandor installation** (the game data is not
+part of this repository): it finds the game folder, keeps a copy of the old `thandor.exe` as `thandor-1.05.exe`, puts
+`thandor.exe`, `SDL3.dll` and `thandor.sym` into the folder and gives users write access to it and to `save\`
+(the 64-bit game writes `thandor.ini`, its logs and the saves next to itself). The game is started as before through
+`thandor.exe` in the game folder. Uninstalling (Windows "Apps", entry "Thandor Patch 6") restores version 1.05;
+the `*.PCK` files, `thandor.ini` and the saves are never touched. It needs 64-bit Windows 10 or newer and is not
+signed, so SmartScreen may warn. `cmake --build --preset mingw-release --target installer` builds it
+(`build-mingw-release\installer\Thandor-Patch-6.exe`, needs Inno Setup 7, see
+[docs/BUILDING.md](docs/BUILDING.md#patch-installer)).
+
+Without the installer, copy `thandor.exe` and `SDL3.dll` into a **copy** of an installed Thandor directory and start
+it there, e.g. `thandor.exe -NOINTRO`. Developer tools, test switches and the data tools are described in
+[docs/BUILDING.md](docs/BUILDING.md).
 
 ## Source tree
 

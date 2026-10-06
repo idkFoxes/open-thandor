@@ -520,3 +520,39 @@ if(THANDOR_DEV_TOOLS)
     )
     target_compile_definitions(thandor PRIVATE THANDOR_DEV_TOOLS=1)
 endif()
+
+# ---- Patch installer (step 10) ---------------------------------------------------------------------------------
+# `cmake --build --preset mingw-release --target installer` builds <build>/installer/Thandor-Patch-6.exe ("Thandor
+# Patch 6", version ${PROJECT_VERSION}) with Inno Setup 7: tools/installer/build_installer.py stages thandor.exe,
+# SDL3.dll, thandor.sym and the SDL3 licence in <build>/installer/stage (stripping debug sections where a file still
+# has them) and runs ISCC /DAppVersion=${PROJECT_VERSION} on tools/installer/thandor-patch.iss. The wizard images
+# come from tools/installer/images when it holds them, else Inno's placeholders stay. Only defined for a release
+# build without the developer tools, and only when ISCC (Inno Setup 7, per-user or machine-wide install, or on the
+# PATH, or THANDOR_ISCC=<path to ISCC.exe>) and Python 3 are found.
+if(NOT THANDOR_DEV_TOOLS)
+    set(THANDOR_ISCC_HINTS)
+    set(THANDOR_PROGRAM_FILES_X86 "ProgramFiles(x86)")
+    foreach(THANDOR_ISCC_ROOT "$ENV{LOCALAPPDATA}/Programs" "$ENV{ProgramFiles}" "$ENV{ProgramW6432}"
+                              "$ENV{${THANDOR_PROGRAM_FILES_X86}}")
+        if(THANDOR_ISCC_ROOT)
+            file(TO_CMAKE_PATH "${THANDOR_ISCC_ROOT}/Inno Setup 7" THANDOR_ISCC_HINT)
+            list(APPEND THANDOR_ISCC_HINTS "${THANDOR_ISCC_HINT}")
+        endif()
+    endforeach()
+    find_program(THANDOR_ISCC ISCC HINTS ${THANDOR_ISCC_HINTS} DOC "ISCC.exe of Inno Setup 7 (installer target)")
+    find_package(Python3 COMPONENTS Interpreter QUIET)
+    if(THANDOR_ISCC AND Python3_Interpreter_FOUND)
+        add_custom_target(installer
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/installer/build_installer.py
+                    $<TARGET_FILE_DIR:thandor> --iscc ${THANDOR_ISCC} --version ${PROJECT_VERSION}
+                    --out ${CMAKE_BINARY_DIR}/installer
+            DEPENDS thandor
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Building the patch installer installer/Thandor-Patch-6.exe (version ${PROJECT_VERSION})"
+            USES_TERMINAL
+            VERBATIM)
+        message(STATUS "Patch installer: target installer (ISCC ${THANDOR_ISCC})")
+    else()
+        message(STATUS "Patch installer: no target installer (Inno Setup 7 ISCC or Python 3 not found)")
+    endif()
+endif()
