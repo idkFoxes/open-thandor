@@ -11,6 +11,7 @@
 
 #include <stddef.h>
 #include <thandor/thandor.h>
+#include <thandor/core/flags.h>
 
 static_assert(sizeof(GraphicsTextureLogicalSize) == 0x8,
               "GraphicsTextureLogicalSize keeps its 32-bit layout");
@@ -1619,3 +1620,38 @@ static_assert(thandor_slot_is_view_of<UiCatalogEntryControl, UiNodeBase>() &&
                   thandor_slot_is_view_of<UiSelectableOptionRow68, UiNodeBase>() &&
                   !thandor_slot_is_view_of<UiNodeBase, UiImageControl>(),
               "UI node prefix registrations reach UiNodeBase");
+
+/* core/flags.h: THANDOR_FLAG_ENUM on a 32-bit flag set at global scope and an 8-bit one in a namespace. */
+enum class FlagsCheck32 : uint32_t { None = 0, A = 0x1, B = 0x2, High = 0x80000000u };
+THANDOR_FLAG_ENUM(FlagsCheck32);
+namespace flags_check {
+enum class Byte : uint8_t { None = 0, A = 0x1, B = 0x80 };
+THANDOR_FLAG_ENUM(Byte);
+enum class NotFlags : uint32_t { A = 1 };
+} // namespace flags_check
+
+constexpr FlagsCheck32 FlagsCheck_Compound()
+
+{
+  FlagsCheck32 flags = FlagsCheck32::A;
+  flags |= FlagsCheck32::High;
+  flags ^= FlagsCheck32::B;
+  flags &= ~FlagsCheck32::A;
+  return flags;
+}
+
+static_assert(ToBits(FlagsCheck32::A | FlagsCheck32::High) == 0x80000001u && ToBits(~FlagsCheck32::A) == 0xFFFFFFFEu &&
+                  (FlagsCheck32::A & FlagsCheck32::B) == FlagsCheck32::None &&
+                  ToBits(FlagsCheck32::A ^ (FlagsCheck32::A | FlagsCheck32::B)) == 0x2 &&
+                  FlagsCheck_Compound() == (FlagsCheck32::High | FlagsCheck32::B),
+              "THANDOR_FLAG_ENUM operators keep the bit values of a 32-bit flag set");
+static_assert(!Any(FlagsCheck32::None) && Any(FlagsCheck32::High) && FromBits<FlagsCheck32>(0x3) == (FlagsCheck32::A | FlagsCheck32::B) &&
+                  std::is_same_v<decltype(ToBits(FlagsCheck32::A)), uint32_t>,
+              "Any, ToBits and FromBits of a 32-bit flag set");
+static_assert(ToBits(~flags_check::Byte::A) == 0xFE && ToBits(flags_check::Byte::A | flags_check::Byte::B) == 0x81 &&
+                  FromBits<flags_check::Byte>(0xFF) == ~flags_check::Byte::None && Any(flags_check::Byte::B) &&
+                  std::is_same_v<decltype(ToBits(flags_check::Byte::A)), uint8_t>,
+              "THANDOR_FLAG_ENUM on an 8-bit flag set in a namespace stays 8 bits wide");
+static_assert(ThandorFlagEnum<FlagsCheck32> && ThandorFlagEnum<flags_check::Byte> &&
+                  !ThandorFlagEnum<flags_check::NotFlags> && !ThandorFlagEnum<uint32_t>,
+              "only enums marked with THANDOR_FLAG_ENUM are flag enums");
