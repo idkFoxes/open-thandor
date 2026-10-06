@@ -418,6 +418,7 @@ static void InGameUiRuntime_BindPanelTexture(UiRootNode *inGameRoot,GraphicsText
 static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   UiNodeBase *leftEdge;
   UiNodeBase *rightEdge;
   UiNodeBase *topCap;
@@ -429,15 +430,15 @@ static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
   UiNodeBase *modeDetail;
   int32_t size;
 
-  leftEdge = INGAME_UI(inGameRoot,sidePanelFrameLeftEdge);
-  rightEdge = INGAME_UI(inGameRoot,sidePanelFrameRightEdge);
-  topCap = INGAME_UI(inGameRoot,sidePanelFrameTopCap);
-  menuBar = INGAME_UI(inGameRoot,sidePanelFrameMenuBar);
-  infoSection = INGAME_UI(inGameRoot,sidePanelFrameInfoSection);
-  bottomCap = INGAME_UI(inGameRoot,sidePanelFrameBottomCap);
-  minimap = INGAME_UI(inGameRoot,minimapView);
-  modePreview = INGAME_UI(inGameRoot,modePreviewPageStack);
-  modeDetail = INGAME_UI(inGameRoot,modeDetailPageStack);
+  leftEdge = &ui->sidePanelFrameLeftEdge.base;
+  rightEdge = &ui->sidePanelFrameRightEdge.base;
+  topCap = &ui->sidePanelFrameTopCap.base;
+  menuBar = &ui->sidePanelFrameMenuBar.base;
+  infoSection = &ui->sidePanelFrameInfoSection.base;
+  bottomCap = &ui->sidePanelFrameBottomCap.base;
+  minimap = &ui->minimapView.base;
+  modePreview = &ui->modePreviewPageStack.base;
+  modeDetail = &ui->modeDetailPageStack.base;
   size = g_InGamePanelTextureSubresource01Width;
   leftEdge->leftOffset -= size;
   leftEdge->rightOffset -= size;
@@ -467,8 +468,8 @@ static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
   modePreview->leftOffset -= size;
   modeDetail->leftOffset -= size;
   leftEdge->leftOffset -= g_InGamePanelTextureSubresource00Width;
-  INGAME_UI(inGameRoot,resourcePanel)->leftOffset -= g_InGamePanelTextureSubresource06Width;
-  INGAME_UI(inGameRoot,gamePanelsArea)->leftOffset -= g_InGamePanelTextureSubresource07Width;
+  ui->resourcePanel.base.leftOffset -= g_InGamePanelTextureSubresource06Width;
+  ui->gamePanelsArea.base.leftOffset -= g_InGamePanelTextureSubresource07Width;
   size = g_InGamePanelTextureSubresource02Height;
   topCap->bottomOffset += size;
   menuBar->topOffset += size;
@@ -511,8 +512,8 @@ static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
   size = g_InGamePanelTextureSubresource05Height;
   bottomCap->topOffset -= size;
   modeDetail->bottomOffset -= size;
-  INGAME_UI(inGameRoot,resourcePanel)->bottomOffset += g_InGamePanelTextureSubresource06Height;
-  INGAME_UI(inGameRoot,gamePanelsArea)->topOffset -= g_InGamePanelTextureSubresource07Height;
+  ui->resourcePanel.base.bottomOffset += g_InGamePanelTextureSubresource06Height;
+  ui->gamePanelsArea.base.topOffset -= g_InGamePanelTextureSubresource07Height;
 }
 
 /* The menu buttons and the countdown share the menu bar's rows, the selection group buttons the info section's;
@@ -521,6 +522,7 @@ static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
 static void InGameUiRuntime_PlaceMenuAndSelectionGroupButtons(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   static const int32_t groupButtonColumnShifts[4] = { 5, 36, 66, 97 };
   static const int32_t groupButtonRowShifts[2] = { 17, 40 };
   UiNodeBase *groupButtons[8];
@@ -530,33 +532,33 @@ static void InGameUiRuntime_PlaceMenuAndSelectionGroupButtons(UiRootNode *inGame
   int32_t frameRight;
   int buttonIndex;
 
-  menuBar = INGAME_UI(inGameRoot,sidePanelFrameMenuBar);
-  infoSection = INGAME_UI(inGameRoot,sidePanelFrameInfoSection);
-  frameLeft = INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset;
-  frameRight = INGAME_UI(inGameRoot,sidePanelFrameRightEdge)->rightOffset;
+  menuBar = &ui->sidePanelFrameMenuBar.base;
+  infoSection = &ui->sidePanelFrameInfoSection.base;
+  frameLeft = ui->sidePanelFrameLeftEdge.base.leftOffset;
+  frameRight = ui->sidePanelFrameRightEdge.base.rightOffset;
   InGameUiRuntime_SetEdgeOffsets
-            (INGAME_UI(inGameRoot,inGameMenuButton),frameLeft,menuBar->topOffset,frameRight,menuBar->bottomOffset);
+            (&ui->inGameMenuButton.selectable.base,frameLeft,menuBar->topOffset,frameRight,menuBar->bottomOffset);
   InGameUiRuntime_SetEdgeOffsets
-            (INGAME_UI(inGameRoot,missionObjectivesButton),frameLeft,menuBar->topOffset,frameRight,
+            (&ui->missionObjectivesButton.selectable.base,frameLeft,menuBar->topOffset,frameRight,
              menuBar->bottomOffset);
   InGameUiRuntime_SetEdgeOffsets
-            (INGAME_UI(inGameRoot,countdownDisplayPanel),frameLeft,menuBar->topOffset,frameRight,
+            (&ui->countdownDisplayPanel.base,frameLeft,menuBar->topOffset,frameRight,
              menuBar->bottomOffset);
-  groupButtons[0] = INGAME_UI(inGameRoot,selectionGroupButton0);
-  groupButtons[1] = INGAME_UI(inGameRoot,selectionGroupButton1);
-  groupButtons[2] = INGAME_UI(inGameRoot,selectionGroupButton2);
-  groupButtons[3] = INGAME_UI(inGameRoot,selectionGroupButton3);
-  groupButtons[4] = INGAME_UI(inGameRoot,selectionGroupButton4);
-  groupButtons[5] = INGAME_UI(inGameRoot,selectionGroupButton5);
-  groupButtons[6] = INGAME_UI(inGameRoot,selectionGroupButton6);
-  groupButtons[7] = INGAME_UI(inGameRoot,selectionGroupButton7);
+  groupButtons[0] = &ui->selectionGroupButton0.sprite.selectable.base;
+  groupButtons[1] = &ui->selectionGroupButton1.sprite.selectable.base;
+  groupButtons[2] = &ui->selectionGroupButton2.sprite.selectable.base;
+  groupButtons[3] = &ui->selectionGroupButton3.sprite.selectable.base;
+  groupButtons[4] = &ui->selectionGroupButton4.sprite.selectable.base;
+  groupButtons[5] = &ui->selectionGroupButton5.sprite.selectable.base;
+  groupButtons[6] = &ui->selectionGroupButton6.sprite.selectable.base;
+  groupButtons[7] = &ui->selectionGroupButton7.sprite.selectable.base;
   for (buttonIndex = 0; buttonIndex < 8; buttonIndex++) {
     InGameUiRuntime_SetEdgeOffsets
               (groupButtons[buttonIndex],frameLeft + groupButtonColumnShifts[buttonIndex % 4],
                infoSection->topOffset + groupButtonRowShifts[buttonIndex / 4],frameRight,infoSection->bottomOffset);
   }
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,worldViewArea),0,0,frameLeft,0);
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,sidePanelStack),frameLeft,0,0,0);
+  InGameUiRuntime_SetEdgeOffsets(&ui->worldViewArea.base,0,0,frameLeft,0);
+  InGameUiRuntime_SetEdgeOffsets(&ui->sidePanelStack.base,frameLeft,0,0,0);
 }
 
 /* Sets the edges of one grid cell: edges[n] is the right/bottom edge of column/row n (counted from the bottom right
@@ -576,6 +578,7 @@ static void InGameUiRuntime_PlaceGridCell
 static void InGameUiRuntime_PlaceCatalogGridCells(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   int32_t columnEdges[9];
   int32_t rowEdges[8];
   int edgeIndex;
@@ -589,125 +592,125 @@ static void InGameUiRuntime_PlaceCatalogGridCells(UiRootNode *inGameRoot)
     rowEdges[edgeIndex] = rowEdges[edgeIndex - 1] - g_InGamePanelTextureSubresource34Height;
   }
   /* build catalog: 4x6 cells, then 4 columns of 6 */
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry00),columnEdges,rowEdges,0,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry01),columnEdges,rowEdges,1,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry02),columnEdges,rowEdges,2,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry03),columnEdges,rowEdges,3,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry04),columnEdges,rowEdges,0,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry05),columnEdges,rowEdges,1,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry06),columnEdges,rowEdges,2,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry07),columnEdges,rowEdges,3,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry08),columnEdges,rowEdges,0,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry09),columnEdges,rowEdges,1,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry10),columnEdges,rowEdges,2,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry11),columnEdges,rowEdges,3,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry12),columnEdges,rowEdges,0,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry13),columnEdges,rowEdges,1,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry14),columnEdges,rowEdges,2,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry15),columnEdges,rowEdges,3,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry16),columnEdges,rowEdges,0,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry17),columnEdges,rowEdges,1,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry18),columnEdges,rowEdges,2,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry19),columnEdges,rowEdges,3,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry20),columnEdges,rowEdges,0,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry21),columnEdges,rowEdges,1,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry22),columnEdges,rowEdges,2,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry23),columnEdges,rowEdges,3,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry24),columnEdges,rowEdges,4,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry25),columnEdges,rowEdges,4,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry26),columnEdges,rowEdges,4,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry27),columnEdges,rowEdges,4,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry28),columnEdges,rowEdges,4,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry29),columnEdges,rowEdges,4,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry30),columnEdges,rowEdges,5,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry31),columnEdges,rowEdges,5,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry32),columnEdges,rowEdges,5,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry33),columnEdges,rowEdges,5,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry34),columnEdges,rowEdges,5,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry35),columnEdges,rowEdges,5,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry36),columnEdges,rowEdges,6,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry37),columnEdges,rowEdges,6,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry38),columnEdges,rowEdges,6,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry39),columnEdges,rowEdges,6,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry40),columnEdges,rowEdges,6,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry41),columnEdges,rowEdges,6,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry42),columnEdges,rowEdges,7,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry43),columnEdges,rowEdges,7,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry44),columnEdges,rowEdges,7,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry45),columnEdges,rowEdges,7,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry46),columnEdges,rowEdges,7,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry47),columnEdges,rowEdges,7,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry00.command.sprite.selectable.base,columnEdges,rowEdges,0,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry01.command.sprite.selectable.base,columnEdges,rowEdges,1,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry02.command.sprite.selectable.base,columnEdges,rowEdges,2,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry03.command.sprite.selectable.base,columnEdges,rowEdges,3,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry04.command.sprite.selectable.base,columnEdges,rowEdges,0,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry05.command.sprite.selectable.base,columnEdges,rowEdges,1,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry06.command.sprite.selectable.base,columnEdges,rowEdges,2,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry07.command.sprite.selectable.base,columnEdges,rowEdges,3,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry08.command.sprite.selectable.base,columnEdges,rowEdges,0,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry09.command.sprite.selectable.base,columnEdges,rowEdges,1,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry10.command.sprite.selectable.base,columnEdges,rowEdges,2,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry11.command.sprite.selectable.base,columnEdges,rowEdges,3,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry12.command.sprite.selectable.base,columnEdges,rowEdges,0,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry13.command.sprite.selectable.base,columnEdges,rowEdges,1,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry14.command.sprite.selectable.base,columnEdges,rowEdges,2,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry15.command.sprite.selectable.base,columnEdges,rowEdges,3,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry16.command.sprite.selectable.base,columnEdges,rowEdges,0,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry17.command.sprite.selectable.base,columnEdges,rowEdges,1,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry18.command.sprite.selectable.base,columnEdges,rowEdges,2,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry19.command.sprite.selectable.base,columnEdges,rowEdges,3,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry20.command.sprite.selectable.base,columnEdges,rowEdges,0,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry21.command.sprite.selectable.base,columnEdges,rowEdges,1,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry22.command.sprite.selectable.base,columnEdges,rowEdges,2,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry23.command.sprite.selectable.base,columnEdges,rowEdges,3,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry24.command.sprite.selectable.base,columnEdges,rowEdges,4,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry25.command.sprite.selectable.base,columnEdges,rowEdges,4,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry26.command.sprite.selectable.base,columnEdges,rowEdges,4,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry27.command.sprite.selectable.base,columnEdges,rowEdges,4,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry28.command.sprite.selectable.base,columnEdges,rowEdges,4,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry29.command.sprite.selectable.base,columnEdges,rowEdges,4,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry30.command.sprite.selectable.base,columnEdges,rowEdges,5,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry31.command.sprite.selectable.base,columnEdges,rowEdges,5,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry32.command.sprite.selectable.base,columnEdges,rowEdges,5,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry33.command.sprite.selectable.base,columnEdges,rowEdges,5,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry34.command.sprite.selectable.base,columnEdges,rowEdges,5,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry35.command.sprite.selectable.base,columnEdges,rowEdges,5,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry36.command.sprite.selectable.base,columnEdges,rowEdges,6,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry37.command.sprite.selectable.base,columnEdges,rowEdges,6,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry38.command.sprite.selectable.base,columnEdges,rowEdges,6,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry39.command.sprite.selectable.base,columnEdges,rowEdges,6,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry40.command.sprite.selectable.base,columnEdges,rowEdges,6,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry41.command.sprite.selectable.base,columnEdges,rowEdges,6,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry42.command.sprite.selectable.base,columnEdges,rowEdges,7,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry43.command.sprite.selectable.base,columnEdges,rowEdges,7,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry44.command.sprite.selectable.base,columnEdges,rowEdges,7,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry45.command.sprite.selectable.base,columnEdges,rowEdges,7,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry46.command.sprite.selectable.base,columnEdges,rowEdges,7,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry47.command.sprite.selectable.base,columnEdges,rowEdges,7,5);
   /* special build catalog: 4x7 cells, then 2 columns of 7 */
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry00),columnEdges,rowEdges,0,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry01),columnEdges,rowEdges,1,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry02),columnEdges,rowEdges,2,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry03),columnEdges,rowEdges,3,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry04),columnEdges,rowEdges,0,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry05),columnEdges,rowEdges,1,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry06),columnEdges,rowEdges,2,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry07),columnEdges,rowEdges,3,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry08),columnEdges,rowEdges,0,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry09),columnEdges,rowEdges,1,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry10),columnEdges,rowEdges,2,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry11),columnEdges,rowEdges,3,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry12),columnEdges,rowEdges,0,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry13),columnEdges,rowEdges,1,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry14),columnEdges,rowEdges,2,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry15),columnEdges,rowEdges,3,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry16),columnEdges,rowEdges,0,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry17),columnEdges,rowEdges,1,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry18),columnEdges,rowEdges,2,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry19),columnEdges,rowEdges,3,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry20),columnEdges,rowEdges,0,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry21),columnEdges,rowEdges,1,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry22),columnEdges,rowEdges,2,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry23),columnEdges,rowEdges,3,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry24),columnEdges,rowEdges,0,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry25),columnEdges,rowEdges,1,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry26),columnEdges,rowEdges,2,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry27),columnEdges,rowEdges,3,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry28),columnEdges,rowEdges,4,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry29),columnEdges,rowEdges,4,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry30),columnEdges,rowEdges,4,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry31),columnEdges,rowEdges,4,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry32),columnEdges,rowEdges,4,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry33),columnEdges,rowEdges,4,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry34),columnEdges,rowEdges,4,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry35),columnEdges,rowEdges,5,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry36),columnEdges,rowEdges,5,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry37),columnEdges,rowEdges,5,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry38),columnEdges,rowEdges,5,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry39),columnEdges,rowEdges,5,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry40),columnEdges,rowEdges,5,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry41),columnEdges,rowEdges,5,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry00.command.sprite.selectable.base,columnEdges,rowEdges,0,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry01.command.sprite.selectable.base,columnEdges,rowEdges,1,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry02.command.sprite.selectable.base,columnEdges,rowEdges,2,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry03.command.sprite.selectable.base,columnEdges,rowEdges,3,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry04.command.sprite.selectable.base,columnEdges,rowEdges,0,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry05.command.sprite.selectable.base,columnEdges,rowEdges,1,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry06.command.sprite.selectable.base,columnEdges,rowEdges,2,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry07.command.sprite.selectable.base,columnEdges,rowEdges,3,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry08.command.sprite.selectable.base,columnEdges,rowEdges,0,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry09.command.sprite.selectable.base,columnEdges,rowEdges,1,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry10.command.sprite.selectable.base,columnEdges,rowEdges,2,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry11.command.sprite.selectable.base,columnEdges,rowEdges,3,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry12.command.sprite.selectable.base,columnEdges,rowEdges,0,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry13.command.sprite.selectable.base,columnEdges,rowEdges,1,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry14.command.sprite.selectable.base,columnEdges,rowEdges,2,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry15.command.sprite.selectable.base,columnEdges,rowEdges,3,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry16.command.sprite.selectable.base,columnEdges,rowEdges,0,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry17.command.sprite.selectable.base,columnEdges,rowEdges,1,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry18.command.sprite.selectable.base,columnEdges,rowEdges,2,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry19.command.sprite.selectable.base,columnEdges,rowEdges,3,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry20.command.sprite.selectable.base,columnEdges,rowEdges,0,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry21.command.sprite.selectable.base,columnEdges,rowEdges,1,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry22.command.sprite.selectable.base,columnEdges,rowEdges,2,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry23.command.sprite.selectable.base,columnEdges,rowEdges,3,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry24.command.sprite.selectable.base,columnEdges,rowEdges,0,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry25.command.sprite.selectable.base,columnEdges,rowEdges,1,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry26.command.sprite.selectable.base,columnEdges,rowEdges,2,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry27.command.sprite.selectable.base,columnEdges,rowEdges,3,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry28.command.sprite.selectable.base,columnEdges,rowEdges,4,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry29.command.sprite.selectable.base,columnEdges,rowEdges,4,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry30.command.sprite.selectable.base,columnEdges,rowEdges,4,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry31.command.sprite.selectable.base,columnEdges,rowEdges,4,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry32.command.sprite.selectable.base,columnEdges,rowEdges,4,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry33.command.sprite.selectable.base,columnEdges,rowEdges,4,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry34.command.sprite.selectable.base,columnEdges,rowEdges,4,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry35.command.sprite.selectable.base,columnEdges,rowEdges,5,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry36.command.sprite.selectable.base,columnEdges,rowEdges,5,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry37.command.sprite.selectable.base,columnEdges,rowEdges,5,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry38.command.sprite.selectable.base,columnEdges,rowEdges,5,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry39.command.sprite.selectable.base,columnEdges,rowEdges,5,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry40.command.sprite.selectable.base,columnEdges,rowEdges,5,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry41.command.sprite.selectable.base,columnEdges,rowEdges,5,6);
   /* army stock: 4x6 cells */
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot00),columnEdges,rowEdges,0,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot01),columnEdges,rowEdges,1,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot02),columnEdges,rowEdges,2,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot03),columnEdges,rowEdges,3,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot04),columnEdges,rowEdges,0,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot05),columnEdges,rowEdges,1,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot06),columnEdges,rowEdges,2,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot07),columnEdges,rowEdges,3,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot08),columnEdges,rowEdges,0,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot09),columnEdges,rowEdges,1,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot10),columnEdges,rowEdges,2,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot11),columnEdges,rowEdges,3,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot12),columnEdges,rowEdges,0,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot13),columnEdges,rowEdges,1,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot14),columnEdges,rowEdges,2,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot15),columnEdges,rowEdges,3,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot16),columnEdges,rowEdges,0,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot17),columnEdges,rowEdges,1,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot18),columnEdges,rowEdges,2,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot19),columnEdges,rowEdges,3,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot20),columnEdges,rowEdges,0,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot21),columnEdges,rowEdges,1,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot22),columnEdges,rowEdges,2,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot23),columnEdges,rowEdges,3,5);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot00.sprite.selectable.base,columnEdges,rowEdges,0,0);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot01.sprite.selectable.base,columnEdges,rowEdges,1,0);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot02.sprite.selectable.base,columnEdges,rowEdges,2,0);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot03.sprite.selectable.base,columnEdges,rowEdges,3,0);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot04.sprite.selectable.base,columnEdges,rowEdges,0,1);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot05.sprite.selectable.base,columnEdges,rowEdges,1,1);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot06.sprite.selectable.base,columnEdges,rowEdges,2,1);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot07.sprite.selectable.base,columnEdges,rowEdges,3,1);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot08.sprite.selectable.base,columnEdges,rowEdges,0,2);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot09.sprite.selectable.base,columnEdges,rowEdges,1,2);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot10.sprite.selectable.base,columnEdges,rowEdges,2,2);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot11.sprite.selectable.base,columnEdges,rowEdges,3,2);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot12.sprite.selectable.base,columnEdges,rowEdges,0,3);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot13.sprite.selectable.base,columnEdges,rowEdges,1,3);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot14.sprite.selectable.base,columnEdges,rowEdges,2,3);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot15.sprite.selectable.base,columnEdges,rowEdges,3,3);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot16.sprite.selectable.base,columnEdges,rowEdges,0,4);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot17.sprite.selectable.base,columnEdges,rowEdges,1,4);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot18.sprite.selectable.base,columnEdges,rowEdges,2,4);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot19.sprite.selectable.base,columnEdges,rowEdges,3,4);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot20.sprite.selectable.base,columnEdges,rowEdges,0,5);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot21.sprite.selectable.base,columnEdges,rowEdges,1,5);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot22.sprite.selectable.base,columnEdges,rowEdges,2,5);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot23.command.sprite.selectable.base,columnEdges,rowEdges,3,5);
   /* the technology description scroll's left edge and frame's right edge move one catalog cell width */
-  INGAME_UI(inGameRoot,technologyDescriptionScroll)->leftOffset += g_InGamePanelTextureSubresource34Width;
-  INGAME_UI(inGameRoot,technologyDescriptionFrame)->rightOffset += g_InGamePanelTextureSubresource34Width;
+  ui->technologyDescriptionScroll.base.leftOffset += g_InGamePanelTextureSubresource34Width;
+  ui->technologyDescriptionFrame.base.rightOffset += g_InGamePanelTextureSubresource34Width;
 }
 
 /* Shifts the right edge of one diplomacy row's label columns and places its relation button. */
@@ -727,6 +730,7 @@ static void InGameUiRuntime_ShiftDiplomacyRowLabels
 static void InGameUiRuntime_PlaceDiplomacyRows(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   UiNodeBase *rows[7];
   int32_t rowLeftOffset;
   int32_t rowRightOffset;
@@ -735,13 +739,13 @@ static void InGameUiRuntime_PlaceDiplomacyRows(UiRootNode *inGameRoot)
   int32_t labelShift;
   int rowIndex;
 
-  rows[0] = INGAME_UI(inGameRoot,diplomacyRow1);
-  rows[1] = INGAME_UI(inGameRoot,diplomacyRow2);
-  rows[2] = INGAME_UI(inGameRoot,diplomacyRow3);
-  rows[3] = INGAME_UI(inGameRoot,diplomacyRow4);
-  rows[4] = INGAME_UI(inGameRoot,diplomacyRow5);
-  rows[5] = INGAME_UI(inGameRoot,diplomacyRow6);
-  rows[6] = INGAME_UI(inGameRoot,diplomacyRow7);
+  rows[0] = &ui->diplomacyRow1.base;
+  rows[1] = &ui->diplomacyRow2.base;
+  rows[2] = &ui->diplomacyRow3.base;
+  rows[3] = &ui->diplomacyRow4.base;
+  rows[4] = &ui->diplomacyRow5.base;
+  rows[5] = &ui->diplomacyRow6.base;
+  rows[6] = &ui->diplomacyRow7.base;
   rowLeftOffset = g_InGamePanelTextureSubresource19Width;
   rowRightOffset = -g_InGamePanelTextureSubresource20Width;
   rowBottomShift = g_InGamePanelTextureSubresource23Height;
@@ -755,33 +759,33 @@ static void InGameUiRuntime_PlaceDiplomacyRows(UiRootNode *inGameRoot)
   }
   labelShift = -g_InGamePanelTextureSubresource33Width;
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow1RelationButton),INGAME_UI(inGameRoot,diplomacyRow1PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow1RelationLabel),INGAME_UI(inGameRoot,diplomacyRow1PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow1FactionLabel),labelShift);
+            (&ui->diplomacyRow1RelationButton.sprite.selectable.base,&ui->diplomacyRow1PlayerNumberLabel.base,
+             &ui->diplomacyRow1RelationLabel.base,&ui->diplomacyRow1PlayerNameLabel.base,
+             &ui->diplomacyRow1FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow2RelationButton),INGAME_UI(inGameRoot,diplomacyRow2PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow2RelationLabel),INGAME_UI(inGameRoot,diplomacyRow2PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow2FactionLabel),labelShift);
+            (&ui->diplomacyRow2RelationButton.sprite.selectable.base,&ui->diplomacyRow2PlayerNumberLabel.base,
+             &ui->diplomacyRow2RelationLabel.base,&ui->diplomacyRow2PlayerNameLabel.base,
+             &ui->diplomacyRow2FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow3RelationButton),INGAME_UI(inGameRoot,diplomacyRow3PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow3RelationLabel),INGAME_UI(inGameRoot,diplomacyRow3PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow3FactionLabel),labelShift);
+            (&ui->diplomacyRow3RelationButton.sprite.selectable.base,&ui->diplomacyRow3PlayerNumberLabel.base,
+             &ui->diplomacyRow3RelationLabel.base,&ui->diplomacyRow3PlayerNameLabel.base,
+             &ui->diplomacyRow3FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow4RelationButton),INGAME_UI(inGameRoot,diplomacyRow4PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow4RelationLabel),INGAME_UI(inGameRoot,diplomacyRow4PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow4FactionLabel),labelShift);
+            (&ui->diplomacyRow4RelationButton.sprite.selectable.base,&ui->diplomacyRow4PlayerNumberLabel.base,
+             &ui->diplomacyRow4RelationLabel.base,&ui->diplomacyRow4PlayerNameLabel.base,
+             &ui->diplomacyRow4FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow5RelationButton),INGAME_UI(inGameRoot,diplomacyRow5PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow5RelationLabel),INGAME_UI(inGameRoot,diplomacyRow5PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow5FactionLabel),labelShift);
+            (&ui->diplomacyRow5RelationButton.sprite.selectable.base,&ui->diplomacyRow5PlayerNumberLabel.base,
+             &ui->diplomacyRow5RelationLabel.base,&ui->diplomacyRow5PlayerNameLabel.base,
+             &ui->diplomacyRow5FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow6RelationButton),INGAME_UI(inGameRoot,diplomacyRow6PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow6RelationLabel),INGAME_UI(inGameRoot,diplomacyRow6PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow6FactionLabel),labelShift);
+            (&ui->diplomacyRow6RelationButton.sprite.selectable.base,&ui->diplomacyRow6PlayerNumberLabel.base,
+             &ui->diplomacyRow6RelationLabel.base,&ui->diplomacyRow6PlayerNameLabel.base,
+             &ui->diplomacyRow6FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow7RelationButton),INGAME_UI(inGameRoot,diplomacyRow7PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow7RelationLabel),INGAME_UI(inGameRoot,diplomacyRow7PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow7FactionLabel),labelShift);
+            (&ui->diplomacyRow7RelationButton.sprite.selectable.base,&ui->diplomacyRow7PlayerNumberLabel.base,
+             &ui->diplomacyRow7RelationLabel.base,&ui->diplomacyRow7PlayerNameLabel.base,
+             &ui->diplomacyRow7FactionLabel.base,labelShift);
 }
 
 /* Gives target the edge offsets (leftOffset..bottomOffset) of source. */
@@ -799,29 +803,30 @@ static void InGameUiRuntime_CopyEdgeOffsets(UiNodeBase *target,const UiNodeBase 
 static void InGameUiRuntime_PlaceEditorToolOptions(UiRootNode *inGameRoot)
 
 {
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,editorTabStripA),INGAME_UI(inGameRoot,resourcePanel));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,editorTabStripB),INGAME_UI(inGameRoot,gamePanelsArea));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,heightToolOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,materialToolOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingToolOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,unitPlacementOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,objectPlacementOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,regionToolOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,heightToolOption1),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,materialToolOption1),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingToolOption1),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,unitPlacementOption2),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,objectPlacementOption2),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,regionToolOption1),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,heightToolOption2),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,materialToolOption2),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingToolOption2),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,unitPlacementOption1),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,objectPlacementOption1),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingRelaxGatedButton),INGAME_UI(inGameRoot,selectionGroupButton6));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,heightToolOption3),INGAME_UI(inGameRoot,selectionGroupButton7));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,materialToolOption3),INGAME_UI(inGameRoot,selectionGroupButton7));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingRelaxLandButton),INGAME_UI(inGameRoot,selectionGroupButton7));
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->editorTabStripA.base,&ui->resourcePanel.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->editorTabStripB.base,&ui->gamePanelsArea.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->heightToolOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->materialToolOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingToolOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->unitPlacementOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->objectPlacementOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->regionToolOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->heightToolOption1.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->materialToolOption1.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingToolOption1.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->unitPlacementOption2.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->objectPlacementOption2.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->regionToolOption1.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->heightToolOption2.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->materialToolOption2.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingToolOption2.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->unitPlacementOption1.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->objectPlacementOption1.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingRelaxGatedButton.selectable.base,&ui->selectionGroupButton6.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->heightToolOption3.selectable.base,&ui->selectionGroupButton7.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->materialToolOption3.selectable.base,&ui->selectionGroupButton7.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingRelaxLandButton.selectable.base,&ui->selectionGroupButton7.sprite.selectable.base);
 }
 
 /* Selection detail page: icon/metrics box of one catalog cell plus a 2 pixel border with the text below it, the

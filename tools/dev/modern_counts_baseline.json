@@ -1,5 +1,5 @@
 {
- "revision": "cde607e4",
+ "revision": "51ea2c7d",
  "worktree": true,
  "files": 692,
  "metrics": {
@@ -124,7 +124,7 @@
   },
   "ingame_ui": {
    "gameplay": 10,
-   "ui": 850
+   "ui": 616
   },
   "ui_at_sibling": {
    "core": 3,
