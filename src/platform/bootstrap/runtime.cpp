@@ -161,6 +161,52 @@ DynamicApiBinding g_BootstrapApiBindings[6] = {
         /* 4 */ {.destination = THANDOR_PTR(g_BootstrapApiName_RegCloseKey), .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
         /* 5: terminator */ {}};
 
+/* Named casts of the bootstrap code, one place per pattern. */
+
+/* A bound g_BootstrapApiBindings slot called as its procedure type: DynAPI_Bootstrap stored the GetProcAddress
+   result in the void ** slot. */
+template <class Proc> static inline Proc *BootstrapApi_Procedure(uint32_t bindingIndex)
+{
+  return reinterpret_cast<Proc *>(g_BootstrapApiBindings[bindingIndex].destination); /* procedure address in the slot */
+}
+
+/* Until DynAPI_Bootstrap binds it, a slot holds its procedure name (char data in place of the address). */
+static inline void **BootstrapApi_NameAsSlot(char *procedureName)
+{
+  return reinterpret_cast<void **>(procedureName); /* the name stored in place of the address */
+}
+
+static inline char *BootstrapApi_SlotAsName(void **slot)
+{
+  return reinterpret_cast<char *>(slot); /* the procedure name of an unbound slot */
+}
+
+/* Text_CopyNarrowToUtf16 and the command-line scanner take narrow text as bytes. */
+static inline uint8_t *NarrowText_Bytes(char *text)
+{
+  return reinterpret_cast<uint8_t *>(text); /* char text as unsigned bytes */
+}
+
+/* The arena allocator and Resource_Load store the payload address through a void **; a typed pointer variable is
+   passed as that slot. */
+template <class T> static inline void **PointerSlot_AsVoid(T **slot)
+{
+  return reinterpret_cast<void **>(slot); /* T * and void * share size and representation */
+}
+
+/* The in-game and frontend handler tables define only the leading handlers of their 256-entry page; the page
+   pointer is the start of that prefix. */
+template <class PagePrefix> static inline UiActionHandlerPage *UiActionHandlerPage_FromPrefix(PagePrefix *prefix)
+{
+  return reinterpret_cast<UiActionHandlerPage *>(prefix); /* the prefix struct is the leading part of the page */
+}
+
+/* Slice sliceIndex of the core asset scratch block as UTF-16 text (a technology area tab tooltip). */
+static inline uint16_t *CoreAssets_ScratchSliceText(uint8_t *scratch,int sliceIndex)
+{
+  return reinterpret_cast<uint16_t *>(scratch + sliceIndex * CORE_ASSET_SCRATCH_SLICE_BYTES); /* text in the byte block */
+}
+
 HWND g_MainWindow = nullptr;
 
 /* ProcessEntry once the main window exists: initialises every subsystem, sets the initial 640x480 display
@@ -279,7 +325,7 @@ uint32_t GameData_ResetDefaults()
     dwordCursor++;
   }
   /* clears the eight records (0x3A00 bytes) dword by dword, not the image tail */
-  dwordCursor = (uint32_t *)g_GameFactionRuntimeImage.records;
+  dwordCursor = reinterpret_cast<uint32_t *>(g_GameFactionRuntimeImage.records); /* the records as raw dwords */
   for (remainingCount = sizeof g_GameFactionRuntimeImage.records / 4; remainingCount != 0; remainingCount--) {
     *dwordCursor = 0;
     dwordCursor++;
@@ -319,7 +365,7 @@ uint32_t GameData_ResetDefaults()
   }
   g_GameStatTableImage = allocPayload;
   g_MemoryApi.free(previousStatTable);
-  statTableCursor = (uint32_t *)allocPayload;
+  statTableCursor = static_cast<uint32_t *>(allocPayload);
   for (remainingCount = GAME_STAT_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
     *statTableCursor = 0;
     statTableCursor++;
@@ -353,18 +399,18 @@ Bool8 GameData_LoadExternalTables()
     clearCursor++;
   }
   if (!Package_LoadEntryIntoBuffer
-                    (GAME_FACTION_IMAGE_BYTES,(uint8_t *)&g_GameFactionRuntimeImage,
-                     (uint16_t *)g_DatenHexPathUtf16,nullptr)) {
+                    (GAME_FACTION_IMAGE_BYTES,reinterpret_cast<uint8_t *>(&g_GameFactionRuntimeImage), /* loaded as raw image bytes */
+                     g_DatenHexPathUtf16,nullptr)) {
     return true;
   }
-  statTable = Package_LoadEntry((uint16_t *)g_StatHexPathUtf16,nullptr);
+  statTable = Package_LoadEntry(g_StatHexPathUtf16,nullptr);
   previousStatTable = g_GameStatTableImage;
   if (statTable == nullptr) {
     return true;
   }
   g_GameStatTableImage = statTable;
   g_MemoryApi.free(previousStatTable);
-  oldUnitBuffer = (uint32_t *)Package_LoadEntry((uint16_t *)g_OldunitHexPathUtf16,nullptr);
+  oldUnitBuffer = static_cast<uint32_t *>(Package_LoadEntry(g_OldunitHexPathUtf16,nullptr));
   if (oldUnitBuffer == nullptr) {
     clearCursor = g_OldUnitPrimaryTable;
     for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
@@ -419,10 +465,10 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   uint32_t modulesRemaining;
   DynamicModuleEntry *moduleEntryCursor;
 
-  Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)procedureName);
+  Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,NarrowText_Bytes(procedureName));
   resolvedProcedure = GetProcAddress(module,procedureName);
   if (resolvedProcedure != nullptr) {
-    *destination = (void *)resolvedProcedure;
+    *destination = reinterpret_cast<void *>(resolvedProcedure); /* procedure address kept as void * */
     return 0;
   }
   moduleEntryCursor = g_DynamicModules;
@@ -431,7 +477,7 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   for (; modulesRemaining != 0; modulesRemaining = modulesRemaining - 1) {
     if (module == moduleEntryCursor->module) {
       /* name the module in the error detail */
-      Text_CopyNarrowToUtf16(256,g_FatalErrorDetail1Utf16,(uint8_t *)moduleEntryCursor->name);
+      Text_CopyNarrowToUtf16(256,g_FatalErrorDetail1Utf16,NarrowText_Bytes(moduleEntryCursor->name));
       break;
     }
     moduleEntryCursor = moduleEntryCursor + 1;
@@ -451,12 +497,12 @@ HINSTANCE DynDLL_Load(char *moduleName)
   HINSTANCE loadedModule;
   uint32_t moduleSlotIndex;
 
-  Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)moduleName);
+  Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,NarrowText_Bytes(moduleName));
   /* dynapi_9 is the string "LoadLibraryA": the slot still holds the name until DynAPI_Bootstrap binds it */
-  if ((g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination != (void **)dynapi_9) &&
+  if ((g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination != BootstrapApi_NameAsSlot(dynapi_9)) &&
       (g_DynamicModuleCount < DYNAMIC_MODULE_CAPACITY))
   {
-    loadedModule = (HINSTANCE)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)(moduleName);
+    loadedModule = BootstrapApi_Procedure<BootstrapLoadLibraryAProc>(BOOTSTRAP_API_LOAD_LIBRARY_A)(moduleName);
     moduleSlotIndex = g_DynamicModuleCount;
     if (loadedModule != nullptr) {
       g_DynamicModules[g_DynamicModuleCount].module = loadedModule;
@@ -485,7 +531,7 @@ void DynDLL_UnloadAll()
     if (moduleEntryCursor->module != nullptr) {
       loadedModule = moduleEntryCursor->module;
       moduleEntryCursor->module = nullptr;
-      ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[BOOTSTRAP_API_FREE_LIBRARY].destination)(loadedModule);
+      BootstrapApi_Procedure<BootstrapFreeLibraryProc>(BOOTSTRAP_API_FREE_LIBRARY)(loadedModule);
     }
     moduleEntryCursor++;
   }
@@ -583,13 +629,13 @@ static void CoreAssets_ReadCdPathFromRegistry()
   if (g_MemoryApi.alloc != ArenaHeap_Alloc) {
     return;
   }
-  status = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_OPEN_KEY_EX_A].destination)
+  status = BootstrapApi_Procedure<BootstrapRegOpenKeyExAProc>(BOOTSTRAP_API_REG_OPEN_KEY_EX_A)
              ((uintptr_t)(intptr_t)(int32_t)HKEY_LOCAL_MACHINE,g_SoftwarePlanet4ThandorAscii,0,KEY_READ | KEY_WOW64_32KEY,
               &g_InstallRegistryKeyHandle); /* predefined keys are sign-extended 32-bit values on x64 */
   if (status != ERROR_SUCCESS) {
     return;
   }
-  status = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_QUERY_VALUE_EX_A].destination)
+  status = BootstrapApi_Procedure<BootstrapRegQueryValueExAProc>(BOOTSTRAP_API_REG_QUERY_VALUE_EX_A)
              (g_InstallRegistryKeyHandle,g_InstallRegistryValueNameCD,nullptr,
               &g_InstallRegistryValueType,g_InstallRegistryValueDataA,
               &g_InstallRegistryValueDataCapacityBytes);
@@ -601,9 +647,9 @@ static void CoreAssets_ReadCdPathFromRegistry()
               (sizeof g_InstallDirectoryScratchUtf16 - (sizeof g_ThandorWindowTitleUtf16 - sizeof(uint16_t)),
                g_InstallDirectoryScratchUtf16,g_InstallRegistryValueDataA);
     WidePath_CombineDirectoryAndLeaf
-              (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)g_ThandorWindowTitleUtf16,g_InstallDirectoryScratchUtf16);
+              (g_LooseMoviePathPrefix.codeUnits,g_ThandorWindowTitleUtf16,g_InstallDirectoryScratchUtf16);
   }
-  ((BootstrapRegCloseKeyProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_CLOSE_KEY].destination)(g_InstallRegistryKeyHandle);
+  BootstrapApi_Procedure<BootstrapRegCloseKeyProc>(BOOTSTRAP_API_REG_CLOSE_KEY)(g_InstallRegistryKeyHandle);
 }
 
 
@@ -620,7 +666,7 @@ static void CoreAssets_UseLocalMovieFolder()
   int k;
 
   WidePath_CombineDirectoryAndLeaf
-            (localFlmPath,(uint16_t *)flmLeaf,g_ExecutableDirectoryUtf16);
+            (localFlmPath,const_cast<uint16_t *>(flmLeaf),g_ExecutableDirectoryUtf16); /* the leaf is only read */
   if (Thandor_DirectoryExistsW(localFlmPath)) {
     uint16_t *directory = g_ExecutableDirectoryUtf16;
     for (k = 0; (k < 255) && (directory[k] != 0); k++) {
@@ -668,14 +714,14 @@ static void CoreAssets_MountPackages()
   } while ('0' - 1 < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
   /* the original also kept the handles of the data, model, graphics, movie and level packages in globals
      that nothing read; only the sound package handle is used (level sound listing) */
-  Package_Mount((uint16_t *)g_DatenPckPathUtf16,&packageHandle);
-  Package_Mount((uint16_t *)g_ModellePckPathUtf16,&packageHandle);
-  Package_Mount((uint16_t *)g_GraphikPckPathUtf16,&packageHandle);
-  if (Package_Mount((uint16_t *)g_SoundPckPathUtf16,&packageHandle)) {
+  Package_Mount(g_DatenPckPathUtf16,&packageHandle);
+  Package_Mount(g_ModellePckPathUtf16,&packageHandle);
+  Package_Mount(g_GraphikPckPathUtf16,&packageHandle);
+  if (Package_Mount(g_SoundPckPathUtf16,&packageHandle)) {
     g_SoundPackageHandle = packageHandle;
   }
-  Package_Mount((uint16_t *)g_FilmePckPathUtf16,&packageHandle);
-  Package_Mount((uint16_t *)g_LevelPckPathUtf16,&packageHandle);
+  Package_Mount(g_FilmePckPathUtf16,&packageHandle);
+  Package_Mount(g_LevelPckPathUtf16,&packageHandle);
 }
 
 
@@ -689,7 +735,7 @@ static Bool8 CoreAssets_LoadButtonSound(uint16_t *samplePath,SoundVoiceSet **voi
   SoundVoiceSet *voiceSet;
   uint32_t voiceSetError;
 
-  if (!Resource_Load(samplePath,(void **)&sample,nullptr,error)) {
+  if (!Resource_Load(samplePath,PointerSlot_AsVoid(&sample),nullptr,error)) {
     return false;
   }
   voiceSetError = g_SoundCreateSampleVoiceSet(sample,&voiceSet);
@@ -799,14 +845,14 @@ static void CoreAssets_BindDebugOverlayTextsAndUiPages()
     RichTextCommandStream_PatchPayloadBySelector(13,g_FrontendDebugOverlayTextSlot13Utf16,resolvedText);
   }
   UiActionHandlers_SetPage
-            (UI_ACTION_PAGE_INGAME,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
+            (UI_ACTION_PAGE_INGAME,UiActionHandlerPage_FromPrefix(&g_InGameUiActionHandlersPage10));
   UiActionHandlers_SetPage
             (UI_ACTION_PAGE_INGAME_COMMAND_MODE,
-             (UiActionHandlerPage *)&g_InGameUiActionHandlersPage11);
+             UiActionHandlerPage_FromPrefix(&g_InGameUiActionHandlersPage11));
   UiActionHandlers_SetPage
-            (UI_ACTION_PAGE_INGAME_MENU,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
+            (UI_ACTION_PAGE_INGAME_MENU,UiActionHandlerPage_FromPrefix(&g_InGameUiActionHandlersPage12));
   UiActionHandlers_SetPage
-            (UI_ACTION_PAGE_FRONTEND,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
+            (UI_ACTION_PAGE_FRONTEND,UiActionHandlerPage_FromPrefix(&g_FrontendUiActionHandlersPage20));
 }
 
 
@@ -814,14 +860,14 @@ static void CoreAssets_BindDebugOverlayTextsAndUiPages()
 static Bool8 CoreAssets_LoadTextPages(uintptr_t *error)
 
 {
-  return TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)g_TexteNeterrorStrPathUtf16,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_HELP,(uint16_t *)g_TexteHelpStrPathUtf16,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_HILFE,(uint16_t *)g_TexteHilfeStrPathUtf16,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_MENUE,(uint16_t *)g_TexteMenueStrPathUtf16,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_TECHNO,(uint16_t *)g_TexteTechnoStrPathUtf16,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_LEVEL,(uint16_t *)g_TexteLevelStrPathUtf16,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_INHALT,(uint16_t *)g_TexteInhaltStrPathUtf16,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_TASTATUR,(uint16_t *)g_TexteTastaturStrPathUtf16,error);
+  return TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,g_TexteNeterrorStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_HELP,g_TexteHelpStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_HILFE,g_TexteHilfeStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_MENUE,g_TexteMenueStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_TECHNO,g_TexteTechnoStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_LEVEL,g_TexteLevelStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_INHALT,g_TexteInhaltStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_TASTATUR,g_TexteTastaturStrPathUtf16,error);
 }
 
 
@@ -881,15 +927,15 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
 
   allocError = g_MemoryApi.alloc
                    (RECENT_TEXT_HISTORY_SLOT_COUNT * sizeof(RecentTextHistorySlot),
-                    (void **)&g_RecentTextSlotStorage);
+                    PointerSlot_AsVoid(&g_RecentTextSlotStorage));
   if (allocError != 0) {
     return allocError;
   }
-  allocError = g_MemoryApi.alloc(OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&g_OldUnitSecondaryTable);
+  allocError = g_MemoryApi.alloc(OLD_UNIT_SECONDARY_TABLE_BYTES,PointerSlot_AsVoid(&g_OldUnitSecondaryTable));
   if (allocError != 0) {
     return allocError;
   }
-  allocError = g_MemoryApi.alloc(OLD_UNIT_PRIMARY_TABLE_BYTES,(void **)&g_OldUnitPrimaryTable);
+  allocError = g_MemoryApi.alloc(OLD_UNIT_PRIMARY_TABLE_BYTES,PointerSlot_AsVoid(&g_OldUnitPrimaryTable));
   if (allocError != 0) {
     return allocError;
   }
@@ -898,7 +944,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
   if (allocError != 0) {
     return allocError;
   }
-  playerListBase = (uintptr_t)allocPayload;
+  playerListBase = reinterpret_cast<uintptr_t>(allocPayload);
   g_FrontendPlayerListRows[1] = playerListBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
   g_FrontendPlayerListRows[2] = playerListBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
   g_FrontendPlayerListRows[3] = playerListBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
@@ -909,37 +955,39 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
   g_FrontendPlayerListRows[0] = playerListBase;
   allocError = g_MemoryApi.alloc
                    (ROM_REGISTRY_SLOT_COUNT * sizeof(RomRegistrySlot),
-                    (void **)&g_RomRegistrySlots);
+                    PointerSlot_AsVoid(&g_RomRegistrySlots));
   if (allocError != 0) {
     return allocError;
   }
   allocError = g_MemoryApi.alloc
                    (FRONTEND_SESSION_LIST_CAPACITY * sizeof(Ptr32<FrontendSessionDiscoveryRecord>),
-                    (void **)&g_FrontendSessionListRows);
+                    PointerSlot_AsVoid(&g_FrontendSessionListRows));
   if (allocError != 0) {
     return allocError;
   }
   allocError = g_MemoryApi.alloc
                    (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord),
-                    (void **)&g_FrontendSessionDiscoveryRecords);
+                    PointerSlot_AsVoid(&g_FrontendSessionDiscoveryRecords));
   if (allocError != 0) {
     return allocError;
   }
-  allocError = g_MemoryApi.alloc(INGAME_FACTION_STATUS_TEXT_BYTES,(void **)&textBuffer);
+  allocError = g_MemoryApi.alloc(INGAME_FACTION_STATUS_TEXT_BYTES,PointerSlot_AsVoid(&textBuffer));
   if (allocError != 0) {
     return allocError;
   }
   g_InGameFactionStatusTextScratchUtf16 = textBuffer;
   /* the in-game template's wrapped world view status text shows the same buffer */
-  ((UiWrappedTextControl *)&g_InGameRuntimeDefaultImageTemplate.worldViewWrappedStatusText)->text = textBuffer;
+  /* the UiNodeBase member holds a wrapped text control */
+  reinterpret_cast<UiWrappedTextControl *>(&g_InGameRuntimeDefaultImageTemplate.worldViewWrappedStatusText)->text =
+       textBuffer;
   allocError = g_MemoryApi.alloc
-                   (INGAME_PLAYER_LIST_TEXT_BYTES,(void **)&g_InGamePlayerListTextScratchUtf16);
+                   (INGAME_PLAYER_LIST_TEXT_BYTES,PointerSlot_AsVoid(&g_InGamePlayerListTextScratchUtf16));
   if (allocError != 0) {
     return allocError;
   }
   allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
                                  CUBIC_SPLINE_MATRIX_FLOATS * sizeof(float),
-                                 (void **)&splineBuffer);
+                                 PointerSlot_AsVoid(&splineBuffer));
   if (allocError != 0) {
     return allocError;
   }
@@ -952,7 +1000,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
   /* one coefficient vector of CUBIC_SPLINE_MATRIX_ORDER floats per channel */
   allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
                                  CUBIC_SPLINE_MATRIX_ORDER * sizeof(float),
-                                 (void **)&splineBuffer);
+                                 PointerSlot_AsVoid(&splineBuffer));
   if (allocError != 0) {
     return allocError;
   }
@@ -964,7 +1012,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
   g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
   allocError = g_MemoryApi.alloc
                    (SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock),
-                    (void **)&g_SelectionPlayerBlocks);
+                    PointerSlot_AsVoid(&g_SelectionPlayerBlocks));
   if (allocError != 0) {
     return allocError;
   }
@@ -972,20 +1020,20 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
   if (allocError != 0) {
     return allocError;
   }
-  g_FrontendLocalPlayerPcxPreview = (uintptr_t)allocPayload;
+  g_FrontendLocalPlayerPcxPreview = reinterpret_cast<uintptr_t>(allocPayload);
   allocError = g_MemoryApi.alloc(TERRAIN_REGION_COLLECTION_CAPACITY * 8,&allocPayload); /* 8-byte records */
   if (allocError != 0) {
     return allocError;
   }
-  g_TerrainRegionCollectionEntries = (uintptr_t)allocPayload;
+  g_TerrainRegionCollectionEntries = reinterpret_cast<uintptr_t>(allocPayload);
   allocError = g_MemoryApi.alloc(800,&allocPayload);
   if (allocError != 0) {
     return allocError;
   }
-  g_FrontendPlayerMessageBuffers = (uintptr_t)allocPayload;
+  g_FrontendPlayerMessageBuffers = reinterpret_cast<uintptr_t>(allocPayload);
   allocError = g_MemoryApi.alloc
                    (FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT * sizeof(FrontendPlayerRuntimeRecord),
-                    (void **)&playerRecordCursor);
+                    PointerSlot_AsVoid(&playerRecordCursor));
   if (allocError != 0) {
     return allocError;
   }
@@ -1012,24 +1060,24 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
   }
   allocError = g_MemoryApi.alloc
                    (CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES,
-                    (void **)&scratchCursor);
+                    PointerSlot_AsVoid(&scratchCursor));
   if (allocError != 0) {
     return allocError;
   }
   /* the slices are the tooltip texts of the seven technology area tabs of the in-game template */
   g_InGameRuntimeDefaultImageTemplate.technologyAreaTab2_prefix.tooltipText =
-       (uint16_t *)(scratchCursor + 1 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+       CoreAssets_ScratchSliceText(scratchCursor,1);
   g_InGameRuntimeDefaultImageTemplate.technologyAreaTab3_prefix.tooltipText =
-       (uint16_t *)(scratchCursor + 2 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+       CoreAssets_ScratchSliceText(scratchCursor,2);
   g_InGameRuntimeDefaultImageTemplate.technologyAreaTab4_prefix.tooltipText =
-       (uint16_t *)(scratchCursor + 3 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+       CoreAssets_ScratchSliceText(scratchCursor,3);
   g_InGameRuntimeDefaultImageTemplate.technologyAreaTab5_prefix.tooltipText =
-       (uint16_t *)(scratchCursor + 4 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+       CoreAssets_ScratchSliceText(scratchCursor,4);
   g_InGameRuntimeDefaultImageTemplate.technologyAreaTab6_prefix.tooltipText =
-       (uint16_t *)(scratchCursor + 5 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+       CoreAssets_ScratchSliceText(scratchCursor,5);
   g_InGameRuntimeDefaultImageTemplate.technologyAreaTab7_prefix.tooltipText =
-       (uint16_t *)(scratchCursor + 6 * CORE_ASSET_SCRATCH_SLICE_BYTES);
-  g_InGameRuntimeDefaultImageTemplate.technologyAreaTab1_prefix.tooltipText = (uint16_t *)scratchCursor;
+       CoreAssets_ScratchSliceText(scratchCursor,6);
+  g_InGameRuntimeDefaultImageTemplate.technologyAreaTab1_prefix.tooltipText = CoreAssets_ScratchSliceText(scratchCursor,0);
   for (remainingCount = CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES / 4;
        remainingCount != 0; remainingCount--) {
     scratchCursor[0] = 0;
@@ -1062,19 +1110,19 @@ uint32_t Game_LoadCoreAssets()
   CoreAssets_UseLocalMovieFolder();
   CoreAssets_MountPackages();
   if (!CoreAssets_LoadButtonSound
-         ((uint16_t *)g_SoundButton0SamPathUtf16,&g_UiButtonSoundVoiceSets7[0],&buttonSoundError) ||
+         (g_SoundButton0SamPathUtf16,&g_UiButtonSoundVoiceSets7[0],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)g_SoundButton1SamPathUtf16,&g_UiButtonSoundVoiceSets7[1],&buttonSoundError) ||
+         (g_SoundButton1SamPathUtf16,&g_UiButtonSoundVoiceSets7[1],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)g_SoundButton2SamPathUtf16,&g_UiButtonSoundVoiceSets7[2],&buttonSoundError) ||
+         (g_SoundButton2SamPathUtf16,&g_UiButtonSoundVoiceSets7[2],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)g_SoundButton3SamPathUtf16,&g_UiButtonSoundVoiceSets7[3],&buttonSoundError) ||
+         (g_SoundButton3SamPathUtf16,&g_UiButtonSoundVoiceSets7[3],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)g_SoundButton4SamPathUtf16,&g_UiButtonSoundVoiceSets7[4],&buttonSoundError) ||
+         (g_SoundButton4SamPathUtf16,&g_UiButtonSoundVoiceSets7[4],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)g_SoundButton5SamPathUtf16,&g_UiButtonSoundVoiceSets7[5],&buttonSoundError) ||
+         (g_SoundButton5SamPathUtf16,&g_UiButtonSoundVoiceSets7[5],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)g_SoundButton6SamPathUtf16,&g_UiButtonSoundVoiceSets7[6],&buttonSoundError)) {
+         (g_SoundButton6SamPathUtf16,&g_UiButtonSoundVoiceSets7[6],&buttonSoundError)) {
     return buttonSoundError;
   }
   CoreAssets_AdvanceScreenshotName();
@@ -1090,11 +1138,13 @@ uint32_t Game_LoadCoreAssets()
   /* engine\pcx.fnc (machine code in ENGINE.PCK) is no longer loaded: PCX files are read and
      written by graphics/resources/pcx_read.cpp and pcx_write.cpp. */
   panelTexture = g_GraphicsTextureSourceLoadPackageAsset
-                     ((uint16_t *)g_GfxPanelStatGfxPathUtf16,&panelTextureError);
+                     (g_GfxPanelStatGfxPathUtf16,&panelTextureError);
   if (panelTexture == nullptr) {
     return panelTextureError;
   }
-  ((UiImagePanelControl *)&g_InGameRuntimeDefaultImageTemplate.resultsScreenPanel)->textureSource = panelTexture;
+  /* the UiNodeBase member holds an image panel control */
+  reinterpret_cast<UiImagePanelControl *>(&g_InGameRuntimeDefaultImageTemplate.resultsScreenPanel)->textureSource =
+       panelTexture;
   return CoreAssets_AllocateRuntimeBuffers();
 }
 
@@ -1154,7 +1204,8 @@ static Bool8 IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
              ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)frameDimensions.height) >> 1) +
              (frameHeightSnapshot >> 3),
              (int)(g_FramebufferWidth - (int)frameDimensions.width) >> 1,0,
-             (GraphicsTextureSourceAsset *)introMovie,g_FramebufferAccess);
+             reinterpret_cast<GraphicsTextureSourceAsset *>(introMovie), /* the movie starts with its texture source */
+             g_FramebufferAccess);
   g_GraphicsFramebufferEndAccess();
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
   return true;
@@ -1192,7 +1243,7 @@ Bool8 Game_PlayIntroMovies()
   }
   if (g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro) == nullptr) {
     /* playbackRateHz: the rate from Movie_Open, passed on to TimerRegisterPeriodic */
-    while (Movie_Open(MOVIE_OPEN_STREAM,(uint16_t *)g_FlmIntro0FlmPathUtf16,&playbackRateHz,nullptr)) {
+    while (Movie_Open(MOVIE_OPEN_STREAM,g_FlmIntro0FlmPathUtf16,&playbackRateHz,nullptr)) {
       if (!Movie_AdvanceFrame(&introMovie,nullptr)) {
         Movie_Close();
         return true;
@@ -1235,14 +1286,14 @@ uint32_t DynAPI_Bootstrap()
     module = GetModuleHandleA(bindingCursor->moduleName);
     if (module == nullptr) {
       /* dynapi_9 is the string "LoadLibraryA": without its module nothing can be loaded */
-      if (bindingCursor->destination == (void **)dynapi_9) {
-        Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
+      if (bindingCursor->destination == BootstrapApi_NameAsSlot(dynapi_9)) {
+        Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,NarrowText_Bytes(bindingCursor->moduleName));
         return FATAL_ERROR_LOADER_MODULE_MISSING;
       }
-      module = ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)(bindingCursor->moduleName);
+      module = BootstrapApi_Procedure<BootstrapLoadLibraryAProc>(BOOTSTRAP_API_LOAD_LIBRARY_A)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
       if (module == nullptr) {
-        Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
+        Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,NarrowText_Bytes(bindingCursor->moduleName));
         return FATAL_ERROR_DLL_LOAD_FAILED;
       }
       g_DynamicModuleCount++;
@@ -1251,10 +1302,11 @@ uint32_t DynAPI_Bootstrap()
       g_DynamicModules[moduleSlotIndex].name = moduleName;
       procedureName = bindingCursor->destination;
     }
-    resolvedProcedure = (void **)GetProcAddress(module,(LPCSTR)procedureName);
+    /* the bound slot keeps the procedure address as a void ** */
+    resolvedProcedure = reinterpret_cast<void **>(GetProcAddress(module,BootstrapApi_SlotAsName(procedureName)));
     if (resolvedProcedure == nullptr) {
-      Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->destination);
-      Text_CopyNarrowToUtf16(256,g_FatalErrorDetail1Utf16,(uint8_t *)bindingCursor->moduleName);
+      Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,NarrowText_Bytes(BootstrapApi_SlotAsName(bindingCursor->destination)));
+      Text_CopyNarrowToUtf16(256,g_FatalErrorDetail1Utf16,NarrowText_Bytes(bindingCursor->moduleName));
       return FATAL_ERROR_DLL_PROCEDURE_MISSING;
     }
     bindingCursor->destination = resolvedProcedure;
@@ -1294,7 +1346,7 @@ uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option
       if (!comparedBytesEqual) break;
     }
     if (comparedBytesEqual) {
-      return (uint8_t *)storedOption;
+      return NarrowText_Bytes(storedOption);
     }
     /* skip to the byte after the NUL, at most to the end of optionBuffer (the original used the address of
        sz_MainWindowTitle, which directly followed optionBuffer in its image) */
@@ -1551,7 +1603,7 @@ void CommandLine_Parse()
   uint8_t currentChar;
 
   g_CommandLineFindOption = CommandLine_FindOption;
-  commandLineCursor = CommandLine_CopyExecutablePath((uint8_t *)GetCommandLineA());
+  commandLineCursor = CommandLine_CopyExecutablePath(NarrowText_Bytes(GetCommandLineA()));
   optionWrite = g_CommandLine.optionBuffer;
   /* options and positional arguments, until the terminating NUL (a NULL cursor: it ended inside one) */
   while (commandLineCursor != nullptr) {
@@ -1578,12 +1630,12 @@ void CommandLine_Parse()
   }
   Text_CopyNarrowToUtf16
             (sizeof g_CommandLineWideArguments.argument1,g_CommandLineWideArguments.argument1,
-             (uint8_t *)g_CommandLine.argument1);
+             NarrowText_Bytes(g_CommandLine.argument1));
   Text_CopyNarrowToUtf16
             (sizeof g_CommandLineWideArguments.argument2,g_CommandLineWideArguments.argument2,
-             (uint8_t *)g_CommandLine.argument2);
+             NarrowText_Bytes(g_CommandLine.argument2));
   Text_CopyNarrowToUtf16
             (sizeof g_CommandLineWideArguments.argument3,g_CommandLineWideArguments.argument3,
-             (uint8_t *)g_CommandLine.argument3);
+             NarrowText_Bytes(g_CommandLine.argument3));
 }
 
