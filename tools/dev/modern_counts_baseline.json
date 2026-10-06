@@ -1,5 +1,5 @@
 {
- "revision": "1cae1e00",
+ "revision": "4aea4c92",
  "worktree": true,
  "files": 692,
  "metrics": {
@@ -116,7 +116,7 @@
   "cstyle_cast": {
    "audio": 23,
    "core": 57,
-   "gameplay": 357,
+   "gameplay": 280,
    "graphics": 187,
    "movie": 41,
    "platform": 239,
