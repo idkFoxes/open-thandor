@@ -1,5 +1,5 @@
 {
- "revision": "b4176b73",
+ "revision": "ecccb460",
  "worktree": true,
  "files": 692,
  "metrics": {
@@ -119,7 +119,7 @@
    "gameplay": 357,
    "movie": 41,
    "platform": 237,
-   "ui": 1955,
+   "ui": 1937,
    "world": 289
   },
   "ingame_ui": {
