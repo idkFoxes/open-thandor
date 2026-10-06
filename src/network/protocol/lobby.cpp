@@ -9,13 +9,24 @@
 #include <thandor/thandor.h>
 #include <thandor/network/protocol/lockstep.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/version.h>
+
+#include <array>
 
 /* Module data. */
 
 THANDOR_ALIGN(16) int32_t g_FrontendPlayerRuntimeCount = 0;
 
-/* version string shown to joining players ("1.5.45") */
-static uint16_t g_GameVersionUtf16[7] = {'1', '.', '5', '.', '4', '5', 0}; /* L"1.5.45" */
+/* The version string in the session title shown to joining players (text 0x211A, selector 0). The original sends
+   its build string "1.5.45"; Open Thandor sends its own version, THANDOR_VERSION_STRING ("1.0.6"). It is display
+   only: no peer compares it (the compatibility checks are FRONTEND_PROTOCOL_MAGIC and the sequence token). */
+static std::array<uint16_t, sizeof THANDOR_VERSION_STRING> g_GameVersionUtf16 = [] {
+  std::array<uint16_t, sizeof THANDOR_VERSION_STRING> utf16 = {};
+  for (std::size_t index = 0; index < utf16.size(); index++) {
+    utf16[index] = static_cast<unsigned char>(THANDOR_VERSION_STRING[index]); /* ASCII; ends with the 0 */
+  }
+  return utf16;
+}();
 
 static FrontendPacket10000Handshake g_FrontendPacket10000Buffer = {};
 
@@ -387,7 +398,7 @@ static void FrontendTransfer_SendSessionAdvertisement
     g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_AVAILABLE;
   }
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_TITLE_TEMPLATE);
-  RichTextCommandStream_PatchPayloadBySelector(0,g_GameVersionUtf16,resolvedText);
+  RichTextCommandStream_PatchPayloadBySelector(0,g_GameVersionUtf16.data(),resolvedText);
   RichTextCommandStream_CopyExpanded
             (40,g_FrontendPacket50001Buffer.sessionTitleUtf16,resolvedText,nullptr);
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);

@@ -161,5 +161,7 @@ void UiFrame_Draw()
       (*((root->base).vtable)->drawClipped)(clipBottom,clipRight,clipTop,clipLeft,&root->base);
     }
   }
+  /* not in the original (open-thandor): the version at the bottom right of the main menu */
+  FrontendVersionLabel_Draw();
   UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);
 }

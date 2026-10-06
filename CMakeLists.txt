@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
-project(open_thandor CXX)
+# The single version source: the generated version header (include/thandor/version.h.in), the version resource of
+# thandor.exe (src/platform/bootstrap/thandor.rc.in) and the installer take it from here.
+project(open_thandor VERSION 1.0.6 LANGUAGES CXX RC)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -300,6 +302,16 @@ add_executable(thandor WIN32
     src/world/terrain/water_relaxation.cpp
 )
 target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# The version header <thandor/version.h> and the resources (icon, VERSIONINFO), generated from project(VERSION).
+configure_file(include/thandor/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor/version.h @ONLY)
+set(THANDOR_RC_ICON ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/bootstrap/thandor.ico)
+configure_file(src/platform/bootstrap/thandor.rc.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc @ONLY)
+# The resources compile in an object library of their own: it has no include directories, because windres hands
+# them to its preprocessor unquoted and fails on a path with spaces (the game's include directories, SDL3's).
+add_library(thandor_resources OBJECT ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc)
+set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc APPEND PROPERTY OBJECT_DEPENDS ${THANDOR_RC_ICON})
+target_link_libraries(thandor PRIVATE thandor_resources)
+target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
 target_link_libraries(thandor PRIVATE kernel32 user32 dbghelp)
 # The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
 # (/LARGEADDRESSAWARE:NO) so every pointer fits.

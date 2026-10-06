@@ -22,6 +22,7 @@
 #include <cstdlib>
 
 #include <thandor/thandor.h>
+#include <thandor/version.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
@@ -116,6 +117,7 @@ Bool8 SdlPlatform_CreateMainWindow(const char *title)
     SDL_SetWindowPosition(s_window.get(), x, y);
     Thandor_Log("test aid: windowed mode, window at %d,%d%s", x, y, minimized ? ", minimized" : "");
   }
+  Thandor_Log("%s", THANDOR_PRODUCT_VERSION_STRING);
   Thandor_Log("SDL %d.%d.%d%s", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION,
               s_windowed ? ", windowed (test aid)" : "");
   /* the window and taskbar icon: thandor.ico of the game directory, if there is one */
