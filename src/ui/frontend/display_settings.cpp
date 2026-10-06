@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdio>
 #include <cstring>
 
 /* Module data. */
@@ -574,7 +575,8 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
    scale, the UI laid out again), "Bildratenbegrenzung"
    and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync). Edges and UI scale only matter for the GPU renderers:
    with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
-   a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. */
+   a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. With a GPU renderer the
+   choice stays the saved one and the note names the scale in use when it differs (or auto chose it). */
 
 /* advancedFrameLimitOff, 60, 120, 144 (no 30: below 60 frames per second the simulation slows down) */
 static const uint32_t kAdvancedFrameLimits[] = {0,60,120,144};
@@ -599,8 +601,36 @@ static void FrontendAdvancedSettingsPage_SelectChoice(UiNodeBase *selected,UiNod
   }
 }
 
+/* Not in the original: the note line with a GPU renderer running: the UI scale in use when auto chose it ("Auto:
+   2x aktiv") or when it differs from the chosen one (a fixed scale lowered to keep the UI resolution at least
+   640x480: "3x gewaehlt, 2x aktiv (Aufloesung zu klein)"; OPEN_THANDOR_UI_SCALE overriding the choice: without the
+   reason); else no text. */
+static TextResourceId FrontendAdvancedSettingsPage_UiScaleNote()
+{
+  char note[96];
+  const uint32_t chosen = SdlVideo_SavedUiScale();
+  const uint32_t active = SdlVideo_AppliedUiScale();
+
+  if (chosen == PERSISTENT_UI_SCALE_AUTO) {
+    snprintf(note,sizeof(note),"UI-Skalierung Auto: %ux aktiv",active);
+  }
+  else if (active < chosen) {
+    snprintf(note,sizeof(note),"UI-Skalierung: %ux gew\xE4hlt, %ux aktiv (Aufl\xF6sung zu klein)",chosen,active);
+  }
+  else if (active != chosen) {
+    snprintf(note,sizeof(note),"UI-Skalierung: %ux gew\xE4hlt, %ux aktiv",chosen,active);
+  }
+  else {
+    return TEXT_RESOURCE_ID_NONE;
+  }
+  TextResource_SetUiScaleNote(note);
+  return TEXT_ID_ADVANCED_NOTE_UI_SCALE;
+}
+
 /* Shows the current values on the advanced settings page: the selected choices, the VSync checkbox and the note
-   (only with the software renderer: edges and UI scale need a GPU renderer). */
+   (with the software renderer: edges and UI scale need a GPU renderer; with a GPU renderer: the UI scale in use
+   when it is not simply the chosen one, FrontendAdvancedSettingsPage_UiScaleNote). Every choice and the page's
+   opening call it, so the note follows a scale change (which sets the display mode again) at once. */
 static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
 {
   UiNodeBase *edges[2];
@@ -637,7 +667,7 @@ static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
   UiSelectableControl_SetSelected(SdlVideo_GetVsync(),
                                   (UiSelectableControl *)FRONTEND_UI(frontendRoot,advancedVsyncCheckbox));
   FRONTEND_UI_FIELD(frontendRoot,advancedNoteLabel,0x54,TextResourceId) =
-       gpu ? TEXT_RESOURCE_ID_NONE : TEXT_ID_ADVANCED_NOTE_SOFTWARE;
+       gpu ? FrontendAdvancedSettingsPage_UiScaleNote() : TEXT_ID_ADVANCED_NOTE_SOFTWARE;
   UiNode_InvalidateRoot(FRONTEND_UI(frontendRoot,advancedSettingsPage));
 }
 
