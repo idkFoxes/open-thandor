@@ -103,6 +103,33 @@ typedef struct UiDisplayModeOptionPrefix {
     int32_t modeValue; /* -0x8: bits per pixel, resolution width or adapter index */
     uint32_t tooltipTextResourceId; /* -0x4 */
 } UiDisplayModeOptionPrefix;
+/* The display settings dialog's applyButton (a framed text button, g_UiFramedTextButtonControlVtable) with extra fields in
+   its tail: the selected mode tuple and colour bias/scale, then the same six values as they were when the
+   dialog opened. 0x8C bytes. */
+typedef struct UiDisplaySettingsApplyButton {
+    UiSelectableControl selectable;
+    UiTextResourceId textResourceId;
+    UiPackedTextStyle packedTextStyle;
+    int32_t selectedWidth;            /* +0x5C */
+    int32_t selectedHeight;           /* +0x60 */
+    uint32_t selectedBitsPerPixel;    /* +0x64 */
+    uint32_t selectedAdapterIndex;    /* +0x68 */
+    int32_t selectedColorBiasQ16;     /* +0x6C */
+    int32_t selectedColorScaleQ16;    /* +0x70 */
+    int32_t originalWidth;            /* +0x74 */
+    int32_t originalHeight;           /* +0x78 */
+    uint32_t originalBitsPerPixel;    /* +0x7C */
+    uint32_t originalAdapterIndex;    /* +0x80 */
+    int32_t originalColorBiasQ16;     /* +0x84 */
+    int32_t originalColorScaleQ16;    /* +0x88 */
+} UiDisplaySettingsApplyButton;
+/* The display settings dialog's colorBiasValueText label; its tail holds the number buffers of both readouts
+   (written by UiDisplaySettingsRoot_FormatColorReadouts). 0x9C bytes. */
+typedef struct UiDisplaySettingsValueReadout {
+    UiSingleLineTextControl label;
+    uint16_t colorScaleTextUtf16[16]; /* +0x5C, shown by colorScaleValueText */
+    uint16_t colorBiasTextUtf16[16];  /* +0x7C */
+} UiDisplaySettingsValueReadout;
 /* The <node>_prefix of the given type in front of a node the code only has as a pointer (the
    node of an action callback, a node chosen at runtime); with the node's name known,
    <TEMPLATE>_UI(root, <node>_prefix) names it directly. */
@@ -112,29 +139,22 @@ typedef struct UiDisplayModeOptionPrefix {
 /* g_FatalErrorUiRootTemplateImage: 3 UI nodes. FATAL_ERROR_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    FATAL_ERROR_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FatalErrorUiImage {
-    UiNodeBase fatalErrorPanel; /* +0000 g_UiPanelControlVtable: Panel root of the fatal error dialog; its leftOffset/rightOffset give the text wrap width. */
-    uint32_t fatalErrorPanel_fields[3];
-    UiNodeBase errorMessageText; /* +0058 g_UiListOffsetControlVtable: Rich text area showing the error (a UiWrappedTextControl); its leftOffset/rightOffset narrow the wrap width, its text is set in the template image. */
-    uint32_t errorMessageText_fields[4];
+    UiPanelControl fatalErrorPanel; /* +0000 g_UiPanelControlVtable: Panel root of the fatal error dialog; its leftOffset/rightOffset give the text wrap width. */
+    UiListOffsetControl errorMessageText; /* +0058 g_UiListOffsetControlVtable: Rich text area showing the error (a UiWrappedTextControl); its leftOffset/rightOffset narrow the wrap width, its text is set in the template image. */
     UiNodeBase okButton; /* +00B4 g_UiFramedTextButtonControlVtable: Bottom-right button, action 1, text 0x100 (OK), closes the dialog. */
-    uint32_t okButton_fields[4];
+    UiTextButtonTemplateFields okButton_fields;
 } FatalErrorUiImage;
 
 /* g_UiDisplaySettingsRootTemplate: 29 UI nodes. DISPLAY_SETTINGS_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    DISPLAY_SETTINGS_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct DisplaySettingsUiImage {
-    UiNodeBase displaySettingsWindow; /* +0000 g_UiResizableWindowControlVtable: Centered resizable window root of the display settings dialog; parent of all other nodes. */
-    UiResizableWindowTemplateFields displaySettingsWindow_fields;
+    UiResizableWindowControl displaySettingsWindow; /* +0000 g_UiResizableWindowControlVtable: Centered resizable window root of the display settings dialog; parent of all other nodes. */
     UiNodeBase cancelButton; /* +0078 g_UiFramedTextButtonControlVtable: Bottom-left button, action 0x20E, text 0x101 (Cancel); restores the previous pixel-pack color tables. */
     UiTextButtonTemplateFields cancelButton_fields;
-    UiNodeBase applyButton; /* +00D4 g_UiFramedTextButtonControlVtable: Bottom button, action 0x200, text 0x100 (OK); its extra fields hold the selected and original mode tuple plus color bias/scale, suppressed while nothing changed. */
-    UiDisplaySettingsApplyButtonTemplateFields applyButton_fields;
-    UiNodeBase resolutionHeading; /* +0160 g_UiFocusProxyControlVtable: Label text 0x10C above the resolution button column. */
-    UiLabelTemplateFields resolutionHeading_fields;
-    UiNodeBase colorDepthHeading; /* +01BC g_UiFocusProxyControlVtable: Label text 0x10D above the color depth button column. */
-    UiLabelTemplateFields colorDepthHeading_fields;
-    UiNodeBase adapterHeading; /* +0218 g_UiFocusProxyControlVtable: Label text 0x10F above the graphics adapter button column. */
-    UiLabelTemplateFields adapterHeading_fields;
+    UiDisplaySettingsApplyButton applyButton; /* +00D4 g_UiFramedTextButtonControlVtable: Bottom button, action 0x200, text 0x100 (OK); its extra fields hold the selected and original mode tuple plus color bias/scale, suppressed while nothing changed. */
+    UiFocusProxyControl resolutionHeading; /* +0160 g_UiFocusProxyControlVtable: Label text 0x10C above the resolution button column. */
+    UiFocusProxyControl colorDepthHeading; /* +01BC g_UiFocusProxyControlVtable: Label text 0x10D above the color depth button column. */
+    UiFocusProxyControl adapterHeading; /* +0218 g_UiFocusProxyControlVtable: Label text 0x10F above the graphics adapter button column. */
     UiDisplayModeOptionPrefix colorDepthOption1_prefix; /* +0274 */
     UiNodeBase colorDepthOption1; /* +0280 g_UiGraphicsAdapterTextButtonVtable: First color depth option button (action 0x201, group 0x480). */
     UiTextButtonTemplateFields colorDepthOption1_fields;
@@ -186,18 +206,14 @@ typedef struct DisplaySettingsUiImage {
     UiDisplayModeOptionPrefix adapterOption5_prefix; /* +08F4 */
     UiNodeBase adapterOption5; /* +0900 g_UiGraphicsAdapterTextButtonVtable: Fifth graphics adapter option button (action 0x213). */
     UiTextButtonTemplateFields adapterOption5_fields;
-    UiNodeBase colorScaleSliderFrame; /* +095C g_UiFocusProxyControlVtable: Framed column (text 0x10A) holding the color scale slider, likely contrast. */
-    UiLabelTemplateFields colorScaleSliderFrame_fields;
+    UiFocusProxyControl colorScaleSliderFrame; /* +095C g_UiFocusProxyControlVtable: Framed column (text 0x10A) holding the color scale slider, likely contrast. */
     UiNodeBase colorScaleSlider; /* +09B8 g_UiRangeSliderControlVtable: Vertical range slider for the pixel-pack color scale (Q16, 0.5 to 2.0). */
     UiRangeSliderTemplateFields colorScaleSlider_fields;
-    UiNodeBase colorBiasSliderFrame; /* +0A1C g_UiFocusProxyControlVtable: Framed column (text 0x10B) holding the color bias slider, likely brightness. */
-    UiLabelTemplateFields colorBiasSliderFrame_fields;
+    UiFocusProxyControl colorBiasSliderFrame; /* +0A1C g_UiFocusProxyControlVtable: Framed column (text 0x10B) holding the color bias slider, likely brightness. */
     UiNodeBase colorBiasSlider; /* +0A78 g_UiRangeSliderControlVtable: Vertical range slider for the pixel-pack color bias (Q16, -64 to +64). */
     UiRangeSliderTemplateFields colorBiasSlider_fields;
-    UiNodeBase colorScaleValueText; /* +0ADC g_UiFocusProxyControlVtable: Text readout below the color scale slider. */
-    UiLabelTemplateFields colorScaleValueText_fields;
-    UiNodeBase colorBiasValueText; /* +0B38 g_UiFocusProxyControlVtable: Text readout below the color bias slider; its tail holds both number buffers (0xB94 scale, 0xBB4 bias) written by UiDisplaySettingsRoot_FormatColorReadouts. */
-    UiDisplaySettingsReadoutTemplateFields colorBiasValueText_fields;
+    UiFocusProxyControl colorScaleValueText; /* +0ADC g_UiFocusProxyControlVtable: Text readout below the color scale slider. */
+    UiDisplaySettingsValueReadout colorBiasValueText; /* +0B38 g_UiFocusProxyControlVtable: Text readout below the color bias slider; its tail holds both number buffers (0xB94 scale, 0xBB4 bias) written by UiDisplaySettingsRoot_FormatColorReadouts. */
 } DisplaySettingsUiImage;
 #define DISPLAY_SETTINGS_UI(root, node) (&((DisplaySettingsUiImage *)(uintptr_t)(root))->node)
 /* A link to node `node` of the template (its offset in the template, made a pointer when the copy is linked). */
@@ -237,14 +253,13 @@ THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorBiasValueText) == 0x
 /* g_UiFourValueDialogTemplateImage: 4 UI nodes. FOUR_VALUE_DIALOG_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    FOUR_VALUE_DIALOG_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FourValueDialogUiImage {
-    UiNodeBase confirmModeDialogPanel; /* +0000 g_UiPanelControlVtable: Centered panel root of the confirm-new-display-mode dialog. */
-    uint32_t confirmModeDialogPanel_fields[3];
+    UiPanelControl confirmModeDialogPanel; /* +0000 g_UiPanelControlVtable: Centered panel root of the confirm-new-display-mode dialog. */
     UiNodeBase revertButton; /* +0058 g_UiFramedTextButtonControlVtable: Bottom-left button, action 0x20D, text 0x101 (Cancel); also enqueued when the countdown reaches zero to restore the previous mode. */
-    uint32_t revertButton_fields[4];
+    UiTextButtonTemplateFields revertButton_fields;
     UiNodeBase keepModeButton; /* +00B4 g_UiFramedTextButtonControlVtable: Bottom-right button, text 0x100 (OK), keeps the new display mode. */
-    uint32_t keepModeButton_fields[4];
-    UiNodeBase countdownMessageText; /* +0110 g_UiListOffsetControlVtable: Rich text 0x109 with the countdown seconds (+0x5C), tick counter (+0x60), previous mode tuple (+0x64..+0x70) and number buffer (+0x74). */
-    uint32_t countdownMessageText_fields[18];
+    UiTextButtonTemplateFields keepModeButton_fields;
+    UiListOffsetControl countdownMessageText; /* +0110 g_UiListOffsetControlVtable: Rich text 0x109 with the countdown seconds (+0x5C), tick counter (+0x60), previous mode tuple (+0x64..+0x70) and number buffer (+0x74). */
+    uint32_t countdownMessageText_trailing[14]; /* +016C: template dwords behind the control */
 } FourValueDialogUiImage;
 #define FOUR_VALUE_DIALOG_UI(root, node) (&((FourValueDialogUiImage *)(uintptr_t)(root))->node)
 #pragma pack(pop)

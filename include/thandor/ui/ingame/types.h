@@ -743,6 +743,10 @@ struct InGameTargetingRootTraversalView {
    template is copied and linked. */
 #define UI_TEMPLATE_LINK(offset) ((UiNodeBase *)(offset))
 #define UI_TEMPLATE_NO_LINK ((UiNodeBase *)-1)
+/* The same as initialisers of a Ptr32 field of a template image, constant at compile time
+   (tools/dev/ui_image_retype.py writes these). */
+#define UI_TEMPLATE_LINK_BITS(offset) THANDOR_PTR32_BITS(offset)
+#define UI_TEMPLATE_NO_LINK_BITS THANDOR_PTR32_BITS(0xFFFFFFFFu)
 /* The dwords in front of a technology area tab (InGameUiImage technologyAreaTabN_prefix): the name text
    id of the tab's technology and the tab's tooltip text (the expanded label), both set at runtime. */
 typedef struct UiTechnologyAreaTabPrefix {
