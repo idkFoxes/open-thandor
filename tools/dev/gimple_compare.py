@@ -10,7 +10,10 @@ Both versions are compiled with the file's own command from compile_commands.jso
   - declarations and `# DEBUG` bind statements (-g) dropped, SSA names renumbered in definition order (so only the statements count),
   - the two spellings of a load, `MEM[(T *)p]` and `MEM <T> [(char * {ref-all})p]` (memcpy), unified
     to `LOAD<T>(p)` (typedefs mapped with --alias, e.g. MmxPackedValue64="long long unsigned int"),
-  - operands of commutative binary operators (* + & | ^ == !=) sorted.
+  - operands of commutative binary operators (* + & | ^ == !=) sorted,
+  - the `;; Function` header lines reduced to the name (funcdef_no, decl_uid, cgraph_uid and symbol_order
+    shift when the file gains or loses an inline helper or template instance),
+  - every --alias typedef name also mapped where it names a type in a cast or MEM (`(Name *)`, `<Name>`).
 Equal normalised dumps mean the same operations in the same order on the same values; a real change
 (another offset, operator, width, order) shows as a difference.
 
@@ -41,6 +44,10 @@ C_TYPES = {"unsigned long long": "long long unsigned int", "uint64_t": "long lon
            "unsigned short": "short unsigned int", "uint16_t": "short unsigned int"}
 
 
+# The per-compilation numbers in a header line `;; Function F (mangled, funcdef_no=N, decl_uid=N, ...)`.
+FUNC_NUMBERS = re.compile(r", funcdef_no=[^)]*\)")
+
+
 def normalise(text, aliases):
     types = dict(C_TYPES)
     types.update(aliases)
@@ -49,8 +56,12 @@ def normalise(text, aliases):
         t = m.group(1).strip()
         return "LOAD<%s>(%s)" % (types.get(t, t), m.group(2))
 
+    alias_rx = [(re.compile(r"(?<=[(<])%s(?= ?[*>])" % re.escape(k)), v) for k, v in aliases.items()]
+
     funcs, cur = [], []
     for line in text.splitlines():
+        if line.startswith(";; Function"):
+            line = FUNC_NUMBERS.sub(")", line)
         if line.startswith(";; Function") and cur:
             funcs.append(cur)
             cur = []
@@ -66,6 +77,8 @@ def normalise(text, aliases):
                 continue
             line = LOAD_CAST.sub(load, line)
             line = LOAD_REFALL.sub(load, line)
+            for rx, v in alias_rx:
+                line = rx.sub(v, line)
             stmts.append(line)
         names = {}
         for line in stmts:
