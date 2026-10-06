@@ -759,8 +759,8 @@ typedef struct UiTechnologyAreaTabPrefix {
 } UiTechnologyAreaTabPrefix;
 #pragma pack(push, 1)
 
-/* g_InGameRuntimeDefaultImageTemplate: 452 UI nodes. INGAME_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
-   INGAME_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
+/* g_InGameRuntimeDefaultImageTemplate: 452 UI nodes. InGameUi_Image(root)->node is the node in a copy of it (or a
+   node's <node>_prefix), typed as its control. */
 typedef struct InGameUiImage {
     UiPanelControl inGameRootPanel; /* +0000 g_UiPanelControlVtable: Root panel of the in-game UI; its only child is the primary page stack. */
     UiLayoutContainerControl<2> chatInputPageStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack (empty or chat input) inside the world view area that shows or hides the chat text entry line. */
@@ -1262,13 +1262,8 @@ typedef struct InGameUiImage {
     UiSpriteButtonControl regionToolOption1; /* +BF70 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x111D) selecting mode F=1; exact option label unresolved. */
     uint32_t regionToolOption1_trailing[255]; /* +BFE8: template dwords behind the control */
 } InGameUiImage;
-/* INGAME_UI still yields a typed node as its UiNodeBase (transitional, step 13 U3: the users cast it to their
-   control type; U5-U9 drop those casts and switch the macro to the typed member). Other members (the
-   _prefix, _fields and _trailing members) keep their own type. */
-#define INGAME_UI(root, node) (reinterpret_cast<InGameUi_NodeView<decltype(InGameUiImage::node)> *>(&((InGameUiImage *)(uintptr_t)(root))->node))
-#define INGAME_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)INGAME_UI(root, node) + (offset)))
-/* The in-game UI image behind a root pointer (any pointer to the image start): the typed replacement for
-   INGAME_UI, e.g. &InGameUi_Image(rt)->chatInputTextEdit. One reinterpretation for all users. */
+/* The in-game UI image behind a root pointer (any pointer to the image start): the typed access to its nodes,
+   e.g. &InGameUi_Image(rt)->chatInputTextEdit. One reinterpretation for all users. */
 template <class T> inline InGameUiImage *InGameUi_Image(T *root)
 {
   return reinterpret_cast<InGameUiImage *>(root);
@@ -1287,29 +1282,5 @@ inline constexpr UiArmyMetricsPanel InGameUiImage::*const g_InGameSelectionDetai
     &InGameUiImage::multiSelectionCell06, &InGameUiImage::multiSelectionCell07, &InGameUiImage::multiSelectionCell08,
     &InGameUiImage::multiSelectionCell09, &InGameUiImage::multiSelectionCell10, &InGameUiImage::multiSelectionCell11};
 #pragma pack(pop)
-
-/* True for a control type that starts with a UiNodeBase (through its base, selectable, root, sprite or command
-   member). */
-template <class T> constexpr bool InGameUi_IsNodeType()
-{
-  if constexpr (std::is_same_v<T, UiNodeBase>) {
-    return true;
-  } else if constexpr (requires(T &control) { control.base; }) {
-    return offsetof(T, base) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().base)>();
-  } else if constexpr (requires(T &control) { control.selectable; }) {
-    return offsetof(T, selectable) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().selectable)>();
-  } else if constexpr (requires(T &control) { control.root; }) {
-    return offsetof(T, root) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().root)>();
-  } else if constexpr (requires(T &control) { control.sprite; }) {
-    return offsetof(T, sprite) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().sprite)>();
-  } else if constexpr (requires(T &control) { control.command; }) {
-    return offsetof(T, command) == 0 && InGameUi_IsNodeType<decltype(std::declval<T &>().command)>();
-  } else {
-    return false;
-  }
-}
-
-/* The type INGAME_UI yields for a member of type T: UiNodeBase for a control, T for the other members. */
-template <class T> using InGameUi_NodeView = std::conditional_t<InGameUi_IsNodeType<T>(), UiNodeBase, T>;
 
 #endif /* THANDOR_UI_INGAME_TYPES_H */

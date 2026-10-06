@@ -324,21 +324,22 @@ void InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNo
   uint32_t audioFlags;
   uint32_t gainQ15;
 
-#define AUDIO_PAGE THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)
-  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_SOUND_SETTINGS,&AUDIO_PAGE->settingsPageStack);
+  InGamePersistentSettingsPage3508 *audioPage =
+       THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode);
+
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_SOUND_SETTINGS,&audioPage->settingsPageStack);
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS,&AUDIO_PAGE->soundEffectsEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC,&AUDIO_PAGE->musicEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO,&AUDIO_PAGE->reverseStereoControl);
+  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS,&audioPage->soundEffectsEnabledControl);
+  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC,&audioPage->musicEnabledControl);
+  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO,&audioPage->reverseStereoControl);
   gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
-  (AUDIO_PAGE->soundEffectsGainControl).currentValue = gainQ15;
+  (audioPage->soundEffectsGainControl).currentValue = gainQ15;
   gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
-  (AUDIO_PAGE->movieDefaultAudioGainControl).currentValue = gainQ15;
+  (audioPage->movieDefaultAudioGainControl).currentValue = gainQ15;
   gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
-  (AUDIO_PAGE->movieAlternateAudioGainControl).currentValue = gainQ15;
+  (audioPage->movieAlternateAudioGainControl).currentValue = gainQ15;
   gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
-  (AUDIO_PAGE->musicGainControl).currentValue = gainQ15;
-#undef AUDIO_PAGE
+  (audioPage->musicGainControl).currentValue = gainQ15;
   while (settingsSourceNode->parent != UI_NODE_NONE) {
     settingsSourceNode = settingsSourceNode->parent;
   }
@@ -376,18 +377,18 @@ void InGameShadingSettings_SetEnabled(UiSelectableControl *control)
   uint8_t selectedState;
 
   selectedState = UiSelectableControl_IsSelected(control);
-  while ((control->base).parent != UI_NODE_NONE) {
-    control = (UiSelectableControl *)(control->base).parent;
+  UiNodeBase *uiRoot = &control->base;
+  while (uiRoot->parent != UI_NODE_NONE) {
+    uiRoot = uiRoot->parent;
   }
-  /* the world view node of the in-game UI root is the session's WorldRuntimeContext */
-  WorldRuntimeContext *world = reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(control)->worldView);
+  WorldRuntimeContext *world = InGameUi_WorldRuntime(uiRoot);
   if ((selectedState & 1) == 0) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_SHADING_LEVEL,&control->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_SHADING_LEVEL,uiRoot);
     world->runtimeFlags =
          world->runtimeFlags & ~WORLD_RUNTIME_FLAG_SHADING_ENABLED;
   }
   else {
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_SHADING_LEVEL,&control->base);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_SHADING_LEVEL,uiRoot);
     world->runtimeFlags =
          world->runtimeFlags | WORLD_RUNTIME_FLAG_SHADING_ENABLED;
   }
@@ -414,12 +415,15 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   uint32_t initError;
   uint32_t newSubresourceCount;
 
+  /* control is one of the shading level buttons (numeric pair text buttons) */
+  UiNumericPairTextButton *levelButton = THANDOR_CONTAINER_OF(control, UiNumericPairTextButton, base.selectable);
+
   /* the button's value pair is (grid half size, depth); the depth is stored as a quarter */
-  subresourceCount = (uint32_t)((UiNumericPairTextButton *)control)->secondValue >> 2;
+  subresourceCount = (uint32_t)levelButton->secondValue >> 2;
   newSubresourceCount = subresourceCount;
   /* The option control stores the grid half size in firstValue; the texture dimension is twice
      that. */
-  newGridHalfSize = (PersistentSettingsValue)((UiNumericPairTextButton *)control)->firstValue;
+  newGridHalfSize = (PersistentSettingsValue)levelButton->firstValue;
   newTextureDimension = newGridHalfSize * 2;
   GraphicsShadingRuntime_Shutdown();
   initError = GraphicsShadingRuntime_InitializeGeneratedTexture
@@ -530,36 +534,37 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
   isEnabled = (Bool8)UiSelectableControl_IsSelected(control);
   if (!isEnabled) {
-    g_SoundStopVoice((SoundVoice *)g_InGameActiveEffectVoice);
+    g_SoundStopVoice(g_InGameActiveEffectVoice);
     g_InGameActiveEffectVoice = nullptr;
   }
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   PersistentSettings_Write((uint32_t)isEnabled | audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS,
                            PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  while ((control->base).parent != UI_NODE_NONE) {
-    control = (UiSelectableControl *)(control->base).parent;
+  UiNodeBase *uiRoot = &control->base;
+  while (uiRoot->parent != UI_NODE_NONE) {
+    uiRoot = uiRoot->parent;
   }
   if (isEnabled) {
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,&control->base);
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_MOVIE_VOLUME,&control->base);
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,&control->base);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,uiRoot);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_MOVIE_VOLUME,uiRoot);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,uiRoot);
   }
   else {
-    UiNodeList_SuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,&control->base);
-    UiNodeList_SuppressActionId(INGAME_ACTION_MOVIE_VOLUME,&control->base);
-    UiNodeList_SuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,&control->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,uiRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_MOVIE_VOLUME,uiRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,uiRoot);
   }
   if ((audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_MUSIC_VOLUME,&control->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_MUSIC_VOLUME,uiRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_MUSIC_VOLUME,&control->base);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_MUSIC_VOLUME,uiRoot);
   }
   if (isEnabled == 0 && (audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_REVERSE_STEREO,&control->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_REVERSE_STEREO,uiRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_REVERSE_STEREO,&control->base);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_REVERSE_STEREO,uiRoot);
   }
   effectsGainQ15 = 0;
   if (isEnabled) {
@@ -596,37 +601,38 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
   }
   else {
-    g_SoundStopVoice((SoundVoice *)g_InGameActiveMusicVoice);
+    g_SoundStopVoice(g_InGameActiveMusicVoice);
     g_InGameActiveMusicVoice = nullptr;
     g_InGameMusicNextTrackCountdown = 1;
   }
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   PersistentSettings_Write(musicEnabledBit | audioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC,
                            PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  while ((control->base).parent != UI_NODE_NONE) {
-    control = (UiSelectableControl *)(control->base).parent;
+  UiNodeBase *uiRoot = &control->base;
+  while (uiRoot->parent != UI_NODE_NONE) {
+    uiRoot = uiRoot->parent;
   }
   if ((audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,&control->base);
-    UiNodeList_SuppressActionId(INGAME_ACTION_MOVIE_VOLUME,&control->base);
-    UiNodeList_SuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,&control->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,uiRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_MOVIE_VOLUME,uiRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,uiRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,&control->base);
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_MOVIE_VOLUME,&control->base);
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,&control->base);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,uiRoot);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_MOVIE_VOLUME,uiRoot);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,uiRoot);
   }
   if (musicEnabledBit == 0) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_MUSIC_VOLUME,&control->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_MUSIC_VOLUME,uiRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_MUSIC_VOLUME,&control->base);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_MUSIC_VOLUME,uiRoot);
   }
   if (musicEnabledBit == 0 && (audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_REVERSE_STEREO,&control->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_REVERSE_STEREO,uiRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_REVERSE_STEREO,&control->base);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_REVERSE_STEREO,uiRoot);
   }
 }
 
@@ -652,7 +658,7 @@ void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
   value = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_EFFECTS_GAIN);
   g_UiSoundGainQ15 = value;
   g_SoundEffectsGainQ15 = value;
-  g_SoundSetVoiceGains(value,value,(SoundVoice *)g_InGameActiveEffectVoice);
+  g_SoundSetVoiceGains(value,value,g_InGameActiveEffectVoice);
 }
 
 /* UI action 0x120C (movieVolumeSlider; g_InGameUiActionHandlersPage12[12]): stores the movie volume and
@@ -673,7 +679,7 @@ void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
   PersistentSettingsValue value;
 
   value = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MUSIC_GAIN);
-  g_SoundSetVoiceGains(value,value,(SoundVoice *)g_InGameActiveMusicVoice);
+  g_SoundSetVoiceGains(value,value,g_InGameActiveMusicVoice);
 }
 
 /* UI action 0x121A (messageMovieVolumeSlider; g_InGameUiActionHandlersPage12[26]): stores the volume of the

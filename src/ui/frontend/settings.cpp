@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/frontend/settings.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <thandor/ui/controls/settings_option.h>
 
@@ -173,7 +174,7 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   /* source is the frontend template's settings3DButton. */
   FrontendUiImage *frontendUi;
   
-  frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,settings3DButton));
+  frontendUi = reinterpret_cast<FrontendUiImage *>(Thandor_Bytes(source) - offsetof(FrontendUiImage,settings3DButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_GRAPHICS_SETTINGS,
                              UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
@@ -186,7 +187,7 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   rootNode = source;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    rootNode = (FrontendGraphicsRuntimeSettingsPageState *)(rootNode->base).parent;
+    rootNode = UiNode_As<FrontendGraphicsRuntimeSettingsPageState>((rootNode->base).parent.get());
     parentCursor = rootNode->base.parent;
   }
   if (persistedValue == 0) {
@@ -201,22 +202,22 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   shadingDepthQuarter = PersistentSettings_Read(16,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   shadingDepth = shadingDepthQuarter * 4;
   if (persistedValue == 32) {
-    selectedShadingRow = (UiNodeBase *)&source->shadingResolutionRows;
+    selectedShadingRow = &source->shadingResolutionRows.rows[0].control.base;
     if (shadingDepth == 64) {
-      selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 1);
+      selectedShadingRow = &source->shadingResolutionRows.rows[1].control.base;
     }
     else if (shadingDepth == 128) {
-      selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 2);
+      selectedShadingRow = &source->shadingResolutionRows.rows[2].control.base;
     }
   }
   else if (persistedValue == 64) {
-    selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 3);
+    selectedShadingRow = &source->shadingResolutionRows.rows[3].control.base;
     if (shadingDepth == 128) {
-      selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 4);
+      selectedShadingRow = &source->shadingResolutionRows.rows[4].control.base;
     }
   }
   else {
-    selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 5);
+    selectedShadingRow = &source->shadingResolutionRows.rows[5].control.base;
   }
   UiSelectableGroup_SelectExclusive(6,selectedShadingRow,
       &frontendUi->shadingLevelGrid128Depth128.base.selectable.base,
@@ -228,13 +229,13 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   /* texture rows: low, medium, high */
   persistedValue = PersistentSettings_Read(TEXTURE_QUALITY_MEDIUM,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (persistedValue == TEXTURE_QUALITY_HIGH) {
-    selectedTextureRow = (UiNodeBase *)(source->textureResolutionRows.rows + 2);
+    selectedTextureRow = &source->textureResolutionRows.rows[2].control.base;
   }
   else if (persistedValue == TEXTURE_QUALITY_MEDIUM) {
-    selectedTextureRow = (UiNodeBase *)(source->textureResolutionRows.rows + 1);
+    selectedTextureRow = &source->textureResolutionRows.rows[1].control.base;
   }
   else {
-    selectedTextureRow = (UiNodeBase *)&source->textureResolutionRows;
+    selectedTextureRow = &source->textureResolutionRows.rows[0].control.base;
   }
   UiSelectableGroup_SelectExclusive(3,selectedTextureRow,
       &frontendUi->textureQualityHigh.selectable.base,
@@ -316,7 +317,7 @@ void FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
   parentCursor = control->base.parent;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    control = (UiSelectableControl *)(control->base).parent;
+    control = UiNode_As<UiSelectableControl>((control->base).parent.get());
     parentCursor = control->base.parent;
   }
   if ((isSelected & 1) == 0) {
@@ -341,38 +342,38 @@ void FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
   uint32_t shadingDepthQuarter;
   UiNodeBase *selectedControl;
 
-  shadingGridSize = ((UiNumericPairTextButton *)control)->firstValue;
-  shadingDepthQuarter = (uint32_t)((UiNumericPairTextButton *)control)->secondValue >> 2;
+  shadingGridSize = UiNode_As<UiNumericPairTextButton>(&control->base)->firstValue;
+  shadingDepthQuarter = (uint32_t)UiNode_As<UiNumericPairTextButton>(&control->base)->secondValue >> 2;
   PersistentSettings_Write((int)shadingGridSize * 2,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
   PersistentSettings_Write((PersistentSettingsValue)shadingGridSize,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
   PersistentSettings_Write(shadingDepthQuarter,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   /* The parent is the frontend template's shadingLevelGroup. */
-  shadingLevelGroup = (FrontendShadingLevelGroup *)(control->base).parent;
+  shadingLevelGroup = UiNode_As<FrontendShadingLevelGroup>((control->base).parent.get());
   if (shadingGridSize == 32) {
-    selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[0] /* shadingLevelGrid32Depth32 */;
+    selectedControl = &shadingLevelGroup->levels[0].base.selectable.base /* shadingLevelGrid32Depth32 */;
     if (shadingDepthQuarter == 64 / 4) {
-      selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[1] /* shadingLevelGrid32Depth64 */;
+      selectedControl = &shadingLevelGroup->levels[1].base.selectable.base /* shadingLevelGrid32Depth64 */;
     }
     else if (shadingDepthQuarter == 128 / 4) {
-      selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[2] /* shadingLevelGrid32Depth128 */;
+      selectedControl = &shadingLevelGroup->levels[2].base.selectable.base /* shadingLevelGrid32Depth128 */;
     }
   }
   else if (shadingGridSize == 64) {
-    selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[3] /* shadingLevelGrid64Depth64 */;
+    selectedControl = &shadingLevelGroup->levels[3].base.selectable.base /* shadingLevelGrid64Depth64 */;
     if (shadingDepthQuarter == 128 / 4) {
-      selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[4] /* shadingLevelGrid64Depth128 */;
+      selectedControl = &shadingLevelGroup->levels[4].base.selectable.base /* shadingLevelGrid64Depth128 */;
     }
   }
   else {
-    selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[5] /* shadingLevelGrid128Depth128 */;
+    selectedControl = &shadingLevelGroup->levels[5].base.selectable.base /* shadingLevelGrid128Depth128 */;
   }
   UiSelectableGroup_SelectExclusive(6,selectedControl,
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[5],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[4],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[3],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[2],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[1],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[0]);
+      &shadingLevelGroup->levels[5].base.selectable.base,
+      &shadingLevelGroup->levels[4].base.selectable.base,
+      &shadingLevelGroup->levels[3].base.selectable.base,
+      &shadingLevelGroup->levels[2].base.selectable.base,
+      &shadingLevelGroup->levels[1].base.selectable.base,
+      &shadingLevelGroup->levels[0].base.selectable.base);
 }
 
 /* Handler of the graphics settings page's polygon detail slider (polygonDetailSlider, action 0x2016, slot 22 of
@@ -398,23 +399,23 @@ void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
   FrontendTextureQualityGroup *textureQualityGroup;
 
   /* The parent is the frontend template's textureQualityGroup. */
-  textureQualityGroup = (FrontendTextureQualityGroup *)(control->base).parent;
+  textureQualityGroup = UiNode_As<FrontendTextureQualityGroup>((control->base).parent.get());
   if (&textureQualityGroup->low.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_LOW;
-    selectedQualityControl = (UiNodeBase *)&textureQualityGroup->low;
+    selectedQualityControl = &textureQualityGroup->low.selectable.base;
   }
   if (&textureQualityGroup->medium.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_MEDIUM;
-    selectedQualityControl = (UiNodeBase *)&textureQualityGroup->medium;
+    selectedQualityControl = &textureQualityGroup->medium.selectable.base;
   }
   if (&textureQualityGroup->high.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_HIGH;
-    selectedQualityControl = (UiNodeBase *)&textureQualityGroup->high;
+    selectedQualityControl = &textureQualityGroup->high.selectable.base;
   }
   UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
-      (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->high,
-      (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->medium,
-      (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->low);
+      &textureQualityGroup->high.selectable.base,
+      &textureQualityGroup->medium.selectable.base,
+      &textureQualityGroup->low.selectable.base);
   PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel >> 1;
 }
@@ -442,7 +443,7 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   parentCursor = control->base.parent;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    control = (UiSelectableControl *)(control->base).parent;
+    control = UiNode_As<UiSelectableControl>((control->base).parent.get());
     parentCursor = control->base.parent;
   }
   if (isSelected) {
@@ -519,7 +520,7 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   parentCursor = control->base.parent;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    control = (UiSelectableControl *)(control->base).parent;
+    control = UiNode_As<UiSelectableControl>((control->base).parent.get());
     parentCursor = control->base.parent;
   }
   if ((newAudioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
