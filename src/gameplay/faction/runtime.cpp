@@ -140,7 +140,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
   exploredCellCount = 0;
   /* one byte per faction in the cell's occupancyMask; bits 3-7 set = the faction has explored the cell (0x80-byte cells).
      Original quirk: a grid with zero cells would count down from 0 (never happens). */
-  cellVisibilityCursor = (uint8_t *)&terrainGrid->cells[0].occupancyMask + factionIndex;
+  cellVisibilityCursor = reinterpret_cast<uint8_t *>(&terrainGrid->cells[0].occupancyMask) + factionIndex;
   cellsRemaining = cellCount;
   do {
     if ((*cellVisibilityCursor & FIELD_CELL_OCCUPANCY_EXPLORED_BITS) != 0) {
@@ -188,7 +188,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    ownerArmy = WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if ((factionIndex == ownerArmy->factionIndex) &&
         (ArmyAssetRegistry_FindById(ownerArmy->armyAssetId,&resolvedAsset) == 0)) {
       armyAssetValueSum = armyAssetValueSum + resolvedAsset[2].registryId;
@@ -228,7 +228,7 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
       if (slotsRemaining == 0) break;
       slotsRemaining--;
       nextSlotCursor = slotCursor + 1;
-      found = (ArmyRuntimeSlot *)runtimeEntry == *slotCursor;
+      found = reinterpret_cast<ArmyRuntimeSlot *>(runtimeEntry) == *slotCursor; /* prefix view of the army */
       slotCursor = nextSlotCursor;
     } while (!found);
     if (found) {

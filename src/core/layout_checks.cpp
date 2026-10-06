@@ -748,6 +748,11 @@ static_assert(sizeof(GraphicsProjectedVertexSource) == 0x38,
               "GraphicsProjectedVertexSource keeps its 32-bit layout");
 static_assert(sizeof(GraphicsPaletteTextureSourceAsset) == 0x208,
               "GraphicsPaletteTextureSourceAsset keeps its 32-bit layout");
+/* GraphicsTextureSet_AllocateMetadata reads the record table offset through either view of the same block */
+static_assert(offsetof(GraphicsPaletteTextureSourceAsset, subresourceTableOffset) == 0xB8 &&
+                  offsetof(GraphicsTextureSourceAsset, tableDescriptor) +
+                          offsetof(GraphicsTextureSourceTableDescriptor, subresourceTableOffset) == 0xB8,
+              "both texture source views hold subresourceTableOffset at +0xB8");
 static_assert(sizeof(SoftwareBgraWordLanes) == 0x8,
               "SoftwareBgraWordLanes keeps its 32-bit layout");
 static_assert(sizeof(SoftwarePixelFormatConfig) == 0x24,
@@ -1619,6 +1624,41 @@ static_assert(sizeof(DisplaySettingsUiImage) == 0xBD4,
               "DisplaySettingsUiImage keeps its 32-bit layout");
 static_assert(sizeof(FourValueDialogUiImage) == 0x1A4,
               "FourValueDialogUiImage keeps its 32-bit layout");
+/* Step 13 U2: the typed nodes of the dialog images (tools/dev/ui_image_retype.py --asserts). */
+static_assert(offsetof(FatalErrorUiImage, fatalErrorPanel) == 0x0 && sizeof(UiPanelControl) == 0x58,
+              "FatalErrorUiImage.fatalErrorPanel is a UiPanelControl");
+static_assert(offsetof(FatalErrorUiImage, errorMessageText) == 0x58 && sizeof(UiListOffsetControl) == 0x5C,
+              "FatalErrorUiImage.errorMessageText is a UiListOffsetControl");
+static_assert(offsetof(FatalErrorUiImage, okButton_fields) == 0x100 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "FatalErrorUiImage.okButton_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(FourValueDialogUiImage, confirmModeDialogPanel) == 0x0 && sizeof(UiPanelControl) == 0x58,
+              "FourValueDialogUiImage.confirmModeDialogPanel is a UiPanelControl");
+static_assert(offsetof(FourValueDialogUiImage, revertButton_fields) == 0xA4 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "FourValueDialogUiImage.revertButton_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(FourValueDialogUiImage, keepModeButton_fields) == 0x100 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "FourValueDialogUiImage.keepModeButton_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(FourValueDialogUiImage, countdownMessageText) == 0x110 && sizeof(UiListOffsetControl) == 0x5C,
+              "FourValueDialogUiImage.countdownMessageText is a UiListOffsetControl");
+static_assert(offsetof(FourValueDialogUiImage, countdownMessageText_trailing) == 0x16C,
+              "FourValueDialogUiImage.countdownMessageText_trailing follows the control");
+static_assert(offsetof(DisplaySettingsUiImage, displaySettingsWindow) == 0x0 && sizeof(UiResizableWindowControl) == 0x78,
+              "DisplaySettingsUiImage.displaySettingsWindow is a UiResizableWindowControl");
+static_assert(offsetof(DisplaySettingsUiImage, applyButton) == 0xD4 && sizeof(UiDisplaySettingsApplyButton) == 0x8C,
+              "DisplaySettingsUiImage.applyButton is a UiDisplaySettingsApplyButton");
+static_assert(offsetof(DisplaySettingsUiImage, resolutionHeading) == 0x160 && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.resolutionHeading is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorDepthHeading) == 0x1BC && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.colorDepthHeading is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, adapterHeading) == 0x218 && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.adapterHeading is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorScaleSliderFrame) == 0x95C && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.colorScaleSliderFrame is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorBiasSliderFrame) == 0xA1C && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.colorBiasSliderFrame is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorScaleValueText) == 0xADC && sizeof(UiFocusProxyControl) == 0x5C,
+              "DisplaySettingsUiImage.colorScaleValueText is a UiFocusProxyControl");
+static_assert(offsetof(DisplaySettingsUiImage, colorBiasValueText) == 0xB38 && sizeof(UiDisplaySettingsValueReadout) == 0x9C,
+              "DisplaySettingsUiImage.colorBiasValueText is a UiDisplaySettingsValueReadout");
 static_assert(sizeof(FrontendUiImage) == 0x78E8 && /* 0x5954 + the display mode kind, resolution list and advanced settings nodes of open-thandor */
               offsetof(FrontendUiImage, displayPageStack) == 0x71A0 &&
               offsetof(FrontendUiImage, advancedSettingsButton) == 0x71F8 &&
@@ -1691,3 +1731,26 @@ static_assert(ToBits(~flags_check::Byte::A) == 0xFE && ToBits(flags_check::Byte:
 static_assert(ThandorFlagEnum<FlagsCheck32> && ThandorFlagEnum<flags_check::Byte> &&
                   !ThandorFlagEnum<flags_check::NotFlags> && !ThandorFlagEnum<uint32_t>,
               "only enums marked with THANDOR_FLAG_ENUM are flag enums");
+
+/* Step 13 X4 (gameplay/ai casts): the field names the AI now reads instead of the decompiled views sit at the
+   offsets the original used. */
+static_assert(offsetof(ModelRuntimeNode, tintArgb) == 0x58 && offsetof(ArmyRuntimeSlot, movementPosition0Q12) == 0x58,
+              "the created model node's tint is the word the AI planners cleared as ArmyRuntimeSlot.movementPosition0Q12");
+static_assert(offsetof(ModelDefinition, removalEffectDefinitionReference) == 0x190 &&
+                  offsetof(ModelRuntimeSlot, attachments) + 2 * sizeof(ModelRuntimeAttachmentDescriptor) +
+                          offsetof(ModelRuntimeAttachmentDescriptor, childLocalRotationAngle0) == 0x190 &&
+                  offsetof(ArmyRuntimeSlot, modelRuntimeOrSavedOffset) == 0x0 &&
+                  offsetof(ModelRuntimeSlot, definitionOrSavedId) == 0x0,
+              "the AI planners' construction effect is ModelDefinition.removalEffectDefinitionReference");
+static_assert(offsetof(ModelRuntimeSlot, classLinkState) == 24 * 4 &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, classStateAC) == 43 * 4 &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, behaviorState) == 46 * 4 &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, stateFlags) == 59 * 4,
+              "ModelRuntimeSlot words 24, 43, 46 and 59 the AI reads by name");
+static_assert(sizeof(AiStructureWorkspaceEntry) == sizeof(AiRuntimeWorkspaceEntry) &&
+                  offsetof(AiStructureWorkspaceEntry, runtimeSlotAddressOrZero) == offsetof(AiRuntimeWorkspaceEntry, modelRuntime) &&
+                  offsetof(AiStructureWorkspaceEntry, armyAssetId) == offsetof(AiRuntimeWorkspaceEntry, armyAssetId) &&
+                  offsetof(AiScoredSiteWorkspaceEntry, cellWorldXQ12) == 0x0 &&
+                  offsetof(AiScoredSiteWorkspaceEntry, cellWorldYQ12) == 0x4 &&
+                  offsetof(AiScoredSiteWorkspaceEntry, score) == 0x8,
+              "AI workspace entries the AI walks as each other");

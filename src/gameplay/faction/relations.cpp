@@ -422,8 +422,8 @@ void PlayerPairList_RemoveFirstMatch
   if (recordsRemaining < PLAYER_PAIR_LIST_CAPACITY) {
     for (; recordsRemaining != 0; recordsRemaining--) {
       if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
-        copySourceDword = (uint32_t *)(pairRecordCursor + 1);
-        copyTargetDword = (uint32_t *)pairRecordCursor;
+        copySourceDword = reinterpret_cast<uint32_t *>(pairRecordCursor + 1); /* dword copy, see below */
+        copyTargetDword = reinterpret_cast<uint32_t *>(pairRecordCursor);
         /* the records behind the match move down one dword at a time, as in the original */
         trailingDwordsToMove = recordsRemaining * 2 - 2;
         playerRuntimeBlock->markedCellCount--;
@@ -597,7 +597,7 @@ void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10()
       Technology_UnlockForFaction(0,0,sourceTechnologyIndex,otherFactionIndex);
     }
   }
-  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameOtherPlayerCommand_RebuildTargetEntries(&g_InGameRuntimeRoot->rootUi.base);
 }
 
 /* Returns true when the relation of factionIndex towards otherFactionIndex is in one of the pending states
@@ -690,7 +690,7 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   for (ownerNode = (runtimeRoot->worldRuntime).ownerListHead; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     /* re-own the absorbed faction's models (their army's factionIndex) and repaint them in the survivor's colours */
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      armyRuntime = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+      armyRuntime = WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
       if (armyRuntime->factionIndex == absorbedFactionIndex) {
         armyRuntime->factionIndex = survivingFactionIndex;
         ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
@@ -715,9 +715,10 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   cellsRemaining = terrainGrid->gridWidth * terrainGrid->gridHeight;
   gridCell = terrainGrid->cells;
   do {
-    ((uint8_t *)&gridCell->occupancyMask)[survivingFactionIndex] =
-         ((uint8_t *)&gridCell->occupancyMask)[survivingFactionIndex] |
-         ((uint8_t *)&gridCell->occupancyMask)[absorbedFactionIndex];
+    /* byte view of the 64-bit mask: one byte per faction */
+    reinterpret_cast<uint8_t *>(&gridCell->occupancyMask)[survivingFactionIndex] =
+         reinterpret_cast<uint8_t *>(&gridCell->occupancyMask)[survivingFactionIndex] |
+         reinterpret_cast<uint8_t *>(&gridCell->occupancyMask)[absorbedFactionIndex];
     gridCell++;
     cellsRemaining--;
   } while (cellsRemaining != 0);
@@ -772,9 +773,9 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   GameFactionRuntime_AppendArmyAssetList(&survivor->secondaryArmyAssetCount,
                                          survivor->secondaryArmyAssetPointersOrIds,
                                          absorbed->secondaryArmyAssetCount,absorbed->secondaryArmyAssetPointersOrIds);
-  InGameArmyStock_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameArmyStock_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
+  InGameSpecialBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
+  InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
 }
 
 /* Changes the diplomatic relation between two factions: notifies the shown faction (text code + 500), stores
@@ -879,7 +880,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
     }
     GameFactionRuntime_MergeAbsorbedFaction(firstFactionIndex,secondFactionIndex);
   }
-  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameOtherPlayerCommand_RebuildTargetEntries(&g_InGameRuntimeRoot->rootUi.base);
 }
 
 /* Diplomatic side effects of a shot hitting an army (called by the projectile maintenance in
@@ -913,10 +914,10 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
     if (shotRuntime->definitionOrSavedId.definition->targetClassImpactDamageQ12[0] < 0) {
       /* a condition ratio of 1.0 means the target is fully repaired */
       conditionRatio = ModelRuntime_QueryHierarchyConditionRatioQ12
-                        ((RuntimeModelFactionPrefix *)targetEntity);
+                        (reinterpret_cast<RuntimeModelFactionPrefix *>(targetEntity)); /* the army's prefix view */
       if (conditionRatio == Q12_ONE &&
           (shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
-          targetEntity == (GameEntityRuntime *)shooterArmy->commandTargetArmyRuntime) {
+          targetEntity == static_cast<GameEntityRuntime *>(shooterArmy->commandTargetArmyRuntime)) {
         ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(shooterArmy);
         shooterArmy->commandGeneration = 1;
       }
