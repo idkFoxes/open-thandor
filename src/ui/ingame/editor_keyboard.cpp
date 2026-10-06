@@ -137,14 +137,6 @@ static void InGameEditorKeyboard_ShowObjectPlacementArmy(UiRootNode *uiRoot)
   InGameUi_Image(uiRoot)->objectPlacementPreviewImage.textureSource = previewTexture;
 }
 
-/* The editor mode tab G4 as the selectable control InGameCommandModeG_Select4 takes. The image keeps the node as
-   UiNodeBase + fields because it is one dword short of a UiSpriteButtonControl (minimapView follows at +0x74);
-   its selectable part lies inside. */
-static UiSelectableControl *InGameEditorKeyboard_ObjectPlacementTab(InGameUiImage *image)
-{
-  return reinterpret_cast<UiSelectableControl *>(&image->editorModeTabObjectPlacement);
-}
-
 /* Arrow key with Ctrl and/or Shift: Ctrl turns the light direction, Shift turns the auxiliary angles (moves
    the field origin), each by the given elevation and azimuth deltas, directly or through the command queue. */
 static void InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(uint32_t keyboardStateMask,int deltaElevation,
@@ -370,7 +362,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     break;
   case 0x56efb0: /* N */
     if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-      InGameCommandModeG_Select4(InGameEditorKeyboard_ObjectPlacementTab(image));
+      InGameCommandModeG_Select4(InGameUi_ObjectPlacementTab(image));
       InGameCommandModeB_Select0(&image->objectPlacementOption0);
     }
     else {
@@ -381,7 +373,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     break;
   case 0x56f020: /* L */
     if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-      InGameCommandModeG_Select4(InGameEditorKeyboard_ObjectPlacementTab(image));
+      InGameCommandModeG_Select4(InGameUi_ObjectPlacementTab(image));
       InGameCommandModeB_Select1(&image->objectPlacementOption1);
     }
     else {
@@ -392,7 +384,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     break;
   case 0x56f090: /* V */
     if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-      InGameCommandModeG_Select4(InGameEditorKeyboard_ObjectPlacementTab(image));
+      InGameCommandModeG_Select4(InGameUi_ObjectPlacementTab(image));
       InGameCommandModeB_Select2(&image->objectPlacementOption2);
     }
     else {
@@ -405,7 +397,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     InGameCommandModeG_Select3(&image->editorModeTabUnitPlacement.selectable);
     break;
   case 0x56f120: /* B */
-    InGameCommandModeG_Select4(InGameEditorKeyboard_ObjectPlacementTab(image));
+    InGameCommandModeG_Select4(InGameUi_ObjectPlacementTab(image));
     break;
   case 0x56f140: /* R */
     InGameCommandModeG_Select5(&image->editorModeTabRegion.selectable);

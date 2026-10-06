@@ -97,7 +97,7 @@ void InGameCommandModeF_Select0(UiSpriteButtonControl *source);
 
 void InGameCommandModeF_Select1(UiSpriteButtonControl *source);
 
-void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime);
+void UiCommandModeG_ApplyMaskedColorVariant(WorldRuntimeContext *worldRuntime);
 
 void UiCommandModeG_ShowRegionMarkers(WorldRuntimeContext *context);
 
@@ -119,7 +119,7 @@ void UiCommandModeG_HideTerrainPointMarkers(WorldRuntimeContext *context);
 
 void UiCommandModeG_ClearSecondarySurfaceOnly(WorldRuntimeContext *context);
 
-void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime);
+void UiCommandModeG_ApplyRawColorVariant(WorldRuntimeContext *worldRuntime);
 
 void UiCommandModeG_HideRegionMarkers(WorldRuntimeContext *context);
 
@@ -136,5 +136,33 @@ extern uint32_t g_UiCommandModeF;
 extern void (*g_UiCommandModeGHandlers[6])(UiSelectableControl *);
 
 extern uint32_t g_UiCommandModeGColorVariantLimit; /* uint32_t ARGB mask applied to terrain vertex diffuse colours (0x00FFFFFF raw, other value in masked command mode); its alpha byte also switches overlay/projection paths */
+
+/* The editor mode tab G4 (object placement) as the selectable control InGameCommandModeG_Select4 takes. The image
+   keeps the node as UiNodeBase + fields because it is one dword short of a UiSpriteButtonControl (minimapView
+   follows at +0x74); its selectable part lies inside. */
+inline UiSelectableControl *InGameUi_ObjectPlacementTab(InGameUiImage *image)
+{
+  return reinterpret_cast<UiSelectableControl *>(&image->editorModeTabObjectPlacement);
+}
+
+/* The tab control of an editor mode (EDITOR_MODE_*, 0..5), the control g_UiCommandModeGHandlers[editorMode] takes;
+   the original looked its image offset up in a six-entry table (g_UiCommandModeGControlOffsets). */
+inline UiSelectableControl *InGameUi_EditorModeTab(InGameUiImage *image,uint32_t editorMode)
+{
+  switch (editorMode) {
+  case EDITOR_MODE_TERRAIN_HEIGHT:
+    return &image->editorModeTabTerrainHeight.selectable;
+  case EDITOR_MODE_TERRAIN_MATERIAL:
+    return &image->editorModeTabTerrainMaterial.selectable;
+  case EDITOR_MODE_TERRAIN_SMOOTHING:
+    return &image->editorModeTabTerrainSmoothing.selectable;
+  case EDITOR_MODE_UNIT_PLACEMENT:
+    return &image->editorModeTabUnitPlacement.selectable;
+  case EDITOR_MODE_OBJECT_PLACEMENT:
+    return InGameUi_ObjectPlacementTab(image);
+  default: /* EDITOR_MODE_REGION */
+    return &image->editorModeTabRegion.selectable;
+  }
+}
 
 #endif /* THANDOR_UI_INGAME_EDITOR_TOOL_SELECTION_H */
