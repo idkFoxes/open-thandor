@@ -329,15 +329,14 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
   g_NetworkBackendSlot1(); /* backend cleanup */
   frontendRootBase = g_FrontendRootNode;
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
-    UiPageStack_SetActiveIndex /* the node is a page stack */
-              (FRONTEND_PAGE_MAIN,reinterpret_cast<UiPageStackControl *>(FRONTEND_UI(g_FrontendRootNode,frontendPageStack)));
-    /* the menu room node is a model pointer context (a world runtime context below) */
-    reinterpret_cast<FrontendModelPointerContext *>(FRONTEND_UI(frontendRootBase,menuRoomModelView))->contextFlags &=
+    UiPageStack_SetActiveIndex
+              (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(g_FrontendRootNode,frontendPageStack)));
+    FRONTEND_UI(frontendRootBase,menuRoomModelView)->contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
     g_FrontendRomTransitionPageAction = 0;
     FrontendRomTransition_ActivateRecordById
-              (FRONTEND_ROM_RECORD_MAIN_MENU,reinterpret_cast<WorldRuntimeContext *>(FRONTEND_UI(frontendRootBase,menuRoomModelView)));
+              (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(FRONTEND_UI(frontendRootBase,menuRoomModelView)));
   }
   /* player block 0 is the host's while connected */
   resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_HOST_LOST);

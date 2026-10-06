@@ -238,7 +238,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       }
       UiPointerList_InitializeColumnLayout
                 (playerCount,reinterpret_cast<Ptr32<void> *>(g_FrontendPlayerListRows), /* the UPtr32 rows as the list's slots */
-                 reinterpret_cast<UiPointerListControl *>(FRONTEND_UI(frontendRuntime,clientLobbyPlayerList)));
+                 UiListControl_AsPointerList(FRONTEND_UI(frontendRuntime,clientLobbyPlayerList)));
     }
     g_SessionTransferTimeoutTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
     /* the host starts the session: this many player snapshots follow */
@@ -246,8 +246,8 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       g_FrontendPlayerRuntimeBlockCount = 0;
       g_FrontendExpectedPlayerRuntimeBlockCount =
            packet->packet40008LobbyRosterSnapshot.pendingSessionPlayerCount;
-      UiPageStack_SetActiveIndex /* the node is a page stack */
-              (FRONTEND_PAGE_MAIN,reinterpret_cast<UiPageStackControl *>(FRONTEND_UI(frontendRuntime,frontendPageStack)));
+      UiPageStack_SetActiveIndex
+              (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRuntime,frontendPageStack)));
       FrontendState_DispatchCode(1);
       g_FrontendNetworkState = FRONTEND_NETWORK_STATE_CLIENT_STARTING;
       FrontendTransfer_SendLobbyCommandAndSnapshotRequest();
@@ -406,7 +406,7 @@ static void FrontendTransfer_SendSessionAdvertisement
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);
   /* the game name typed into gameNameEdit */
   RichTextCommandStream_PatchPayloadBySelector
-            (0,reinterpret_cast<UiTextEditControl *>(FRONTEND_UI(frontendRootNode,gameNameEdit))->textBuffer,resolvedText); /* a text edit node */
+            (0,FRONTEND_UI(frontendRootNode,gameNameEdit)->textBuffer,resolvedText);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
   RichTextCommandStream_CopyExpanded
             (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText,nullptr);
@@ -635,8 +635,8 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
   UiRangeSliderControl *maxPlayersSlider;
 
   /* the template nodes are a pointer list and a range slider */
-  hostLobbyPlayerList = reinterpret_cast<UiPointerListControl *>(FRONTEND_UI(frontendRuntime,hostLobbyPlayerList));
-  maxPlayersSlider = reinterpret_cast<UiRangeSliderControl *>(FRONTEND_UI(frontendRuntime,maxPlayersSlider));
+  hostLobbyPlayerList = UiListControl_AsPointerList(FRONTEND_UI(frontendRuntime,hostLobbyPlayerList));
+  maxPlayersSlider = FRONTEND_UI(frontendRuntime,maxPlayersSlider);
   if (packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_10000_HANDSHAKE) {
     FrontendTransfer_SendSessionAdvertisement(senderEndpoint,packet,hostLobbyPlayerList,maxPlayersSlider);
   }
@@ -724,7 +724,7 @@ void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRu
   int peerCount;
 
   roundRobinCounter = g_FrontendHostPublishRoundRobinCounter;
-  rowCount = reinterpret_cast<UiPointerListControl *>(FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount; /* a list node */
+  rowCount = FRONTEND_UI(frontendRuntime,hostLobbyPlayerList)->rowCount;
   peerCount = rowCount - 1;
   if (peerCount != 0 && 0 < (int)rowCount) {
     FrontendTransfer_SendSessionPlayerRowToPeers(roundRobinCounter,rowCount,peerCount);
@@ -829,7 +829,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
   if (packet->packet10000Handshake.header.packedTypeAndUnitCount ==
       FRONTEND_PACKET_50001_SESSION_ADVERTISEMENT) {
     FrontendTransfer_StoreSessionAdvertisement
-              (senderEndpoint,packet,reinterpret_cast<UiPointerListControl *>(FRONTEND_UI(frontendRuntime,sessionList))); /* a list node */
+              (senderEndpoint,packet,UiListControl_AsPointerList(FRONTEND_UI(frontendRuntime,sessionList)));
   }
   else if ((packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_10003_JOIN_ACK) &&
            (g_FrontendSessionToken == packet->packet10000Handshake.header.sequenceToken) &&
@@ -864,8 +864,8 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
                     (unsigned)g_SessionNetworkTickInterval);
       }
     }
-    UiPageStack_SetActiveIndex /* the node is a page stack */
-              (FRONTEND_PAGE_CLIENT_LOBBY,reinterpret_cast<UiPageStackControl *>(FRONTEND_UI(frontendRuntime,frontendPageStack)));
+    UiPageStack_SetActiveIndex
+              (FRONTEND_PAGE_CLIENT_LOBBY,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRuntime,frontendPageStack)));
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_JOINED;
     g_SessionTransferTimeoutTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_CLIENT;
@@ -876,7 +876,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
     }
     UiPointerList_InitializeColumnLayout
               (0,reinterpret_cast<Ptr32<void> *>(g_FrontendPlayerListRows), /* the UPtr32 rows as the list's slots */
-               reinterpret_cast<UiPointerListControl *>(FRONTEND_UI(frontendRuntime,clientLobbyPlayerList)));
+               UiListControl_AsPointerList(FRONTEND_UI(frontendRuntime,clientLobbyPlayerList)));
   }
 }
 

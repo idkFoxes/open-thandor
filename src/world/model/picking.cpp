@@ -188,7 +188,7 @@ static ModelMeshGroupRelativeOffset *ModelResource_FindRaycastMeshGroup(ModelRes
     meshGroupsToSkip--;
   }
   for (; meshGroupsToSkip != 0; meshGroupsToSkip--) {
-    meshGroupCursor = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroupCursor + *meshGroupCursor);
+    meshGroupCursor = reinterpret_cast<ModelMeshGroupRelativeOffset *>(reinterpret_cast<uint8_t *>(meshGroupCursor) + *meshGroupCursor); /* each group starts with its byte size */
   }
   return meshGroupCursor;
 }
@@ -225,6 +225,7 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
   ModelPackedGeometryRecordCount meshRecordsRemaining;
   ModelMeshGroupRelativeOffset *meshGroupCursor;
   ModelRaycastTriangleDescriptor *triangle;
+  ModelMeshHeader *meshHeader;
   ModelRuntimeNode *nearestModelNode;
   ModelRuntimeNode *childNearestModelNode;
   Q12 nearestDistanceQ12;
@@ -297,15 +298,15 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
   triangle = nullptr;
   meshRecordsRemaining = 0;
   if (meshGroupCursor != nullptr) {
-    triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
+    triangle = reinterpret_cast<ModelRaycastTriangleDescriptor *>(meshGroupCursor + 8); /* the group's first mesh header */
     meshRecordsRemaining = meshGroupCursor[1];
   }
   for (; meshRecordsRemaining != 0; meshRecordsRemaining--) {
     /* triangle points at a ModelMeshHeader here: skip it and its vertex records */
-    triangleCountField = &((ModelMeshHeader *)triangle)->triangleCount;
-    triangle = (ModelRaycastTriangleDescriptor *)
-               ((uint8_t *)((ModelMeshHeader *)triangle + 1) +
-                ((ModelMeshHeader *)triangle)->vertexCount * MODEL_MESH_RECORD_SIZE);
+    meshHeader = reinterpret_cast<ModelMeshHeader *>(triangle);
+    triangleCountField = &meshHeader->triangleCount;
+    triangle = reinterpret_cast<ModelRaycastTriangleDescriptor *>
+               (reinterpret_cast<uint8_t *>(meshHeader + 1) + meshHeader->vertexCount * MODEL_MESH_RECORD_SIZE);
     for (trianglesRemaining = *triangleCountField; trianglesRemaining != 0; trianglesRemaining--) {
       if (ModelMesh_IntersectTriangleRayDistance(triangle,&triangleDistanceQ12) &&
           (triangleDistanceQ12 <= nearestDistanceQ12)) {

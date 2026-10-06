@@ -315,9 +315,10 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   UiDisplaySettingsApplyButton *applyButton;
 
   applyButton = DISPLAY_SETTINGS_UI(root,applyButton);
-  /* the slider values (UiRangeSliderControl.value) */
-  colorBiasQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value;
-  colorScaleQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value;
+  /* the slider values (UiRangeSliderControl.value; the template slider nodes are 0x64 bytes, UiNodeBase +
+     UiRangeSliderTemplateFields) */
+  colorBiasQ16 = reinterpret_cast<UiRangeSliderControl *>(DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value;
+  colorScaleQ16 = reinterpret_cast<UiRangeSliderControl *>(DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value;
   if ((colorBiasQ16 != applyButton->selectedColorBiasQ16) ||
       (colorScaleQ16 != applyButton->selectedColorScaleQ16)) {
     applyButton->selectedColorBiasQ16 = colorBiasQ16;
@@ -389,7 +390,7 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
   UiFourValueDialogCountdownText *countdownText;
 
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
+  countdownText = reinterpret_cast<UiFourValueDialogCountdownText *>(FOUR_VALUE_DIALOG_UI(root,countdownMessageText));
   modeWidth = countdownText->previousWidth;
   modeHeight = countdownText->previousHeight;
   bitsPerPixel = countdownText->previousBitsPerPixel;
@@ -510,7 +511,7 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
   int32_t *countdownField;
   UiFourValueDialogCountdownText *countdownText;
 
-  countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
+  countdownText = reinterpret_cast<UiFourValueDialogCountdownText *>(FOUR_VALUE_DIALOG_UI(root,countdownMessageText));
   stepTicksField = &countdownText->stepTicks;
   *stepTicksField = *stepTicksField - 1;
   if (*stepTicksField == 0) {
@@ -615,8 +616,9 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   applyButton->selectedColorScaleQ16 = colorScaleQ16;
   applyButton->originalColorBiasQ16 = colorBiasQ16;
   applyButton->originalColorScaleQ16 = colorScaleQ16;
-  ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value = colorBiasQ16;
-  ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value = colorScaleQ16;
+  /* the 0x64-byte template slider nodes (UiNodeBase + UiRangeSliderTemplateFields) */
+  reinterpret_cast<UiRangeSliderControl *>(DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value = colorBiasQ16;
+  reinterpret_cast<UiRangeSliderControl *>(DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value = colorScaleQ16;
   /* The two readouts show the number buffers kept in the tail of colorBiasValueText. */
   DISPLAY_SETTINGS_UI(root,colorBiasValueText)->label.text =
        DISPLAY_SETTINGS_UI(root,colorBiasValueText)->colorBiasTextUtf16;
@@ -823,7 +825,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
     /* copy the 0x1A4-byte template, one dword per step */
     templateCursor = (uint32_t *)&g_UiFourValueDialogTemplateImage;
     copyCursor = (uint32_t *)root;
-    countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
+    countdownText = reinterpret_cast<UiFourValueDialogCountdownText *>(FOUR_VALUE_DIALOG_UI(root,countdownMessageText));
     for (remainingDwords = sizeof(g_UiFourValueDialogTemplateImage) / 4; remainingDwords != 0; remainingDwords--) {
       *copyCursor = *templateCursor;
       templateCursor++;
