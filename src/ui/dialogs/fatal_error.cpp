@@ -19,7 +19,7 @@ static UiRootCallbacks g_FatalErrorDialogRootCallbacks = {
     .method08 = UI_SLOT(FatalErrorDialog_BlockMissedPointerPress),
     .pointerMissPolicy = UI_SLOT(FatalErrorDialog_BlockMissedPointerMotion)};
 
-static FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
+FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
         { /* +0000 fatalErrorPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
             .vtable = THANDOR_PTR(&g_UiPanelControlVtable),

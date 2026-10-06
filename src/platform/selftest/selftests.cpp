@@ -1220,6 +1220,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestKeyMatch();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "uitemplate") == 0) {
+        Thandor_SelfTestUiTemplate();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "movieenc") == 0) {
         Thandor_SelfTestMovieEncode();
         return 1;

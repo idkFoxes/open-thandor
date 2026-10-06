@@ -35,6 +35,10 @@
      keymatch       the key command modifier matcher (keymatch_selftest.cpp): literal copies of the four old
                     predicates against UiKeyModifiers_Match for every table class and held 0..0x3F, and
                     UiCommandDispatch_Find against the old scan; logs mismatches and one hash line
+     uitemplate     the bytes of the five UI template images (InGameUiImage, FrontendUiImage,
+                    DisplaySettingsUiImage, FourValueDialogUiImage, FatalErrorUiImage) and of an in-game root
+                    copied and relocated from its template (uitemplate_selftest.cpp), pointers to module objects
+                    hashed by name and offset and links by image offset; one hash line per image
      tables         hashes of the tables computed at startup (sine table built with sin(), .sam cosine
                     matrices, lighting/shading/software factor tables), to compare builds or compilers
      sam            the .sam decoder on LCG bytes and an encoder round trip of a synthetic waveform, one hash
@@ -60,6 +64,9 @@ void Thandor_SelfTestHexScan(void);
 
 /* OPEN_THANDOR_SELFTEST=keymatch (keymatch_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestKeyMatch(void);
+
+/* OPEN_THANDOR_SELFTEST=uitemplate (uitemplate_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestUiTemplate();
 
 /* OPEN_THANDOR_SELFTEST=uiatlas (uiatlas_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestUiAtlas();
