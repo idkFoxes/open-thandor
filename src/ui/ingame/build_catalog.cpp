@@ -154,7 +154,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   int panelHeight;
   UiGridDimensions gridDimensions;
 
-  inGameUiGridView = (InGameRuntimeRootUiGridView *)UiNode_GetRoot(node);
+  inGameUiGridView = UiNode_As<InGameRuntimeRootUiGridView>(UiNode_GetRoot(node));
   /* the local (active) faction */
   factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
   capabilityFlags = SelectionInfo_CollectCapabilityFlags();
@@ -180,7 +180,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   memset(g_UiCatalogGroup48Records,0,sizeof(g_UiCatalogGroup48Records));
   itemCount = 0;
   for (registryIndex = 0; registryIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registryIndex++) {
-    catalogRecord = (UiCommandRuntimeRecordPrefix *)g_ArmyAssetRecordRegistry[registryIndex];
+    catalogRecord = ModelView_Cast<UiCommandRuntimeRecordPrefix>(g_ArmyAssetRecordRegistry[registryIndex]);
     if (catalogRecord != nullptr &&
         (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_BUILDABLE) != 0 &&
         !ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
@@ -189,9 +189,9 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
         catalogRecord->textureSource != nullptr &&
         itemCount < BUILD_CATALOG_ENTRY_COUNT &&
         (catalogRecord->assetFlags14 & capabilityFlags) != 0 &&
-        (!FactionRuntime_IsArmyAssetNotPending(factionIndex,(ArmyAssetRecordPrefix *)catalogRecord) ||
+        (!FactionRuntime_IsArmyAssetNotPending(factionIndex,ModelView_Cast<ArmyAssetRecordPrefix>(catalogRecord)) ||
          !ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
-              (factionIndex,capabilityFlags,(ArmyAssetRecordPrefix *)catalogRecord))) {
+              (factionIndex,capabilityFlags,ModelView_Cast<ArmyAssetRecordPrefix>(catalogRecord)))) {
       g_UiCatalogGroup48Records[itemCount] = catalogRecord;
       itemCount++;
     }
@@ -254,7 +254,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   int panelHeight;
   UiGridDimensions gridDimensions;
 
-  inGameUiGridView = (InGameRuntimeRootUiGridView *)UiNode_GetRoot(node);
+  inGameUiGridView = UiNode_As<InGameRuntimeRootUiGridView>(UiNode_GetRoot(node));
   factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
   /* count the faction's class-11 models */
   structureCount = 0;
@@ -272,7 +272,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   memset(g_UiCatalogGroup42Records,0,sizeof(g_UiCatalogGroup42Records));
   itemCount = 0;
   for (registryIndex = 0; registryIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registryIndex++) {
-    catalogRecord = (UiCommandRuntimeRecordPrefix *)g_ArmyAssetRecordRegistry[registryIndex];
+    catalogRecord = ModelView_Cast<UiCommandRuntimeRecordPrefix>(g_ArmyAssetRecordRegistry[registryIndex]);
     if (catalogRecord != nullptr &&
         (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_BUILDABLE) != 0 &&
         !ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
@@ -281,9 +281,9 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
         catalogRecord->textureSource != nullptr &&
         itemCount < SPECIAL_BUILD_CATALOG_ENTRY_COUNT &&
         structureCount != 0 &&
-        (!FactionRuntime_IsArmyAssetNotPending(factionIndex,(ArmyAssetRecordPrefix *)catalogRecord) ||
+        (!FactionRuntime_IsArmyAssetNotPending(factionIndex,ModelView_Cast<ArmyAssetRecordPrefix>(catalogRecord)) ||
          !ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
-              (factionIndex,BUILD_CATALOG_ASSET_FLAG_SPECIAL,(ArmyAssetRecordPrefix *)catalogRecord))) {
+              (factionIndex,BUILD_CATALOG_ASSET_FLAG_SPECIAL,ModelView_Cast<ArmyAssetRecordPrefix>(catalogRecord)))) {
       g_UiCatalogGroup42Records[itemCount] = catalogRecord;
       itemCount++;
     }

@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/catalog_entry.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <stdarg.h>
 
 /* Module data. */
@@ -158,7 +159,7 @@ static void UiCatalogEntryControl_DrawOwnedCount
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCount,g_UiCatalogEntryRichTextScratchUtf16 + 1);
   entryTop = (control->command).sprite.selectable.base.top;
   /* ' ' and the terminator */
-  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 2) = ' ';
+  *Thandor_At<uint32_t>(g_UiCatalogEntryRichTextScratchUtf16,size_t{textLength} + 2) = ' ';
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,textStyle,g_UiCatalogEntryRichTextScratchUtf16,entryTop + 2,
              (control->command).sprite.selectable.base.left);
@@ -192,8 +193,8 @@ static int UiCatalogEntryControl_FindGroup42BuildPercent
   int bestPercent;
 
   bestPercent = -1;
-  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != nullptr;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+  for (modelNode = WorldNode_View<ModelRuntimeNode>((g_InGameRuntimeRoot->worldRuntime).ownerListHead.get()); modelNode != nullptr;
+      modelNode = WorldNode_View<ModelRuntimeNode>((modelNode->common).nextNode.get())) {
     if (modelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -221,8 +222,8 @@ static int UiCatalogEntryControl_FindGroup48BuildPercent
 
   factionIndex = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
   bestPercent = -1;
-  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != nullptr;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+  for (modelNode = WorldNode_View<ModelRuntimeNode>((g_InGameRuntimeRoot->worldRuntime).ownerListHead.get()); modelNode != nullptr;
+      modelNode = WorldNode_View<ModelRuntimeNode>((modelNode->common).nextNode.get())) {
     if (modelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -261,9 +262,9 @@ static void UiCatalogEntryControl_DrawBuildPercent
   g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
   textLength = g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,percent,g_UiCatalogEntryRichTextScratchUtf16 + 1);
-  *(uint16_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 2) = '%';
+  *Thandor_At<uint16_t>(g_UiCatalogEntryRichTextScratchUtf16,size_t{textLength} + 2) = '%';
   /* ' ' and the terminator */
-  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 4) = ' ';
+  *Thandor_At<uint32_t>(g_UiCatalogEntryRichTextScratchUtf16,size_t{textLength} + 4) = ' ';
   textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,textStyle,g_UiCatalogEntryRichTextScratchUtf16,
@@ -348,7 +349,7 @@ void UiCatalogEntryControl_DrawClipped
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->runtimeDisplayValueQ4 >> 4,
                      g_UiCatalogEntryRichTextScratchUtf16 + 1);
   /* ' ' and the terminator */
-  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 2) = ' ';
+  *Thandor_At<uint32_t>(g_UiCatalogEntryRichTextScratchUtf16,size_t{textLength} + 2) = ' ';
   textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
@@ -356,7 +357,7 @@ void UiCatalogEntryControl_DrawClipped
              ((int)((control->command).sprite.selectable.base.layoutWidth - textExtent.widthPixels) >> 1)
              + (control->command).sprite.selectable.base.left);
   for (recordIndex = 42 - 1; recordIndex >= 0; recordIndex--) {
-    if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
+    if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
         g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndex]) {
       catalogArmyAssetId = g_UiCatalogGroup42Records[recordIndex]->armyAssetId;
       UiCatalogEntryControl_DrawOwnedCount
@@ -370,7 +371,7 @@ void UiCatalogEntryControl_DrawClipped
     }
   }
   for (recordIndex = 48 - 1; recordIndex >= 0; recordIndex--) {
-    if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
+    if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
         g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][recordIndex]) {
       catalogArmyAssetId = g_UiCatalogGroup48Records[recordIndex]->armyAssetId;
       UiCatalogEntryControl_DrawOwnedCount
@@ -401,7 +402,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
   if (((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     recordIndex = 42 - 1; /* the last group-42 record */
     do {
-      if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
+      if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
           g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndex]) {
         g_UiHoverSelectionRecord = g_UiCatalogGroup42Records[recordIndex];
         InGameSelectionDetailPanel_Rebuild();
@@ -412,7 +413,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
     if (recordIndex < 0) {
       group48Index = 48 - 1; /* the last group-48 record */
       do {
-        if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
+        if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
             g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][group48Index]) {
           g_UiHoverSelectionRecord = g_UiCatalogGroup48Records[group48Index];
           InGameSelectionDetailPanel_Rebuild();
@@ -454,6 +455,6 @@ void UiCatalogEntryControl_NonRightRelease
                  (control->command).sprite.activationSound,nullptr);
     }
     UiActionQueue_Enqueue((control->command).sprite.selectable.actionId,control);
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&(control->command).sprite.selectable.base);
   }
 }

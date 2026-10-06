@@ -238,13 +238,13 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .actionId = -1,
             .textLines = {
                 THANDOR_PTR(&g_InGamePlayerStatusTextSlots),
-                THANDOR_PTR((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x80),
-                THANDOR_PTR((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x100),
-                THANDOR_PTR((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x180),
-                THANDOR_PTR((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x200),
-                THANDOR_PTR((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x280),
-                THANDOR_PTR((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x300),
-                THANDOR_PTR((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x380)}},
+                THANDOR_PTR(&g_InGamePlayerStatusTextSlots[1]),
+                THANDOR_PTR(&g_InGamePlayerStatusTextSlots[2]),
+                THANDOR_PTR(&g_InGamePlayerStatusTextSlots[3]),
+                THANDOR_PTR(&g_InGamePlayerStatusTextSlots[4]),
+                THANDOR_PTR(&g_InGamePlayerStatusTextSlots[5]),
+                THANDOR_PTR(&g_InGamePlayerStatusTextSlots[6]),
+                THANDOR_PTR(&g_InGamePlayerStatusTextSlots[7])}},
         { /* +0960 messageHistoryPanel g_UiConditionalActionControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0x4530), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x9DC),

@@ -3229,6 +3229,14 @@ static_assert(ThandorFlagEnum<FlagsCheck32> && ThandorFlagEnum<flags_check::Byte
                   !ThandorFlagEnum<flags_check::NotFlags> && !ThandorFlagEnum<uint32_t>,
               "only enums marked with THANDOR_FLAG_ENUM are flag enums");
 
+/* Step 13 X10 (ui/ingame casts): the world input read the owner army of a model runtime as the dword at
+   runtimePayload + 8. */
+static_assert(offsetof(ModelRuntimeSlot, ownerArmyRuntimeOrSavedOffset) == 0x8,
+              "ModelRuntimeSlot.ownerArmyRuntimeOrSavedOffset is the dword at +8 of the owner-list payload");
+static_assert(offsetof(ArmyArticulatedRuntimeSlotView, articulatedContact) ==
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, classStateAC),
+              "the selection panel's terrain contact mode is ModelRuntimeSlot classStateAC");
+
 /* Step 13 X4 (gameplay/ai casts): the field names the AI now reads instead of the decompiled views sit at the
    offsets the original used. */
 static_assert(offsetof(ModelRuntimeNode, tintArgb) == 0x58 && offsetof(ArmyRuntimeSlot, movementPosition0Q12) == 0x58,

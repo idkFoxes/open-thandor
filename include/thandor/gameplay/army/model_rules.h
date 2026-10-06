@@ -24,7 +24,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariants
 
 void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextArg,ArmyRuntimeSlot *armyRuntime);
 
-int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot);
+int ModelRuntimeHierarchy_SumArmour(ArmyRuntimeSlot *armyRuntime);
 
 void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(ModelRuntimeSlot *modelRuntime);
 

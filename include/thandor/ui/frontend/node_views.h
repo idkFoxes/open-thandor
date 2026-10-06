@@ -12,6 +12,7 @@
 
 #include <thandor/core/slot.h>
 #include <thandor/ui/frontend/types.h>
+#include <thandor/ui/frontend/settings.h>
 #include <thandor/ui/controls/node_views.h>
 
 #ifdef __cplusplus
@@ -29,6 +30,9 @@ THANDOR_SLOT_PREFIX(FrontendPointerSceneRuntimeView, base);
 THANDOR_SLOT_PREFIX(FrontendTaskAssignmentPageInitView, rootNode);
 THANDOR_SLOT_PREFIX(FrontendResultsColumnSequenceControl, base);
 THANDOR_SLOT_PREFIX(FrontendModelPointerContext, base);
+/* The graphics settings page's option boxes (the parent of their choice buttons). */
+THANDOR_SLOT_PREFIX(FrontendShadingLevelGroup, frame);
+THANDOR_SLOT_PREFIX(FrontendTextureQualityGroup, frame);
 #endif /* __cplusplus */
 
 #endif /* THANDOR_UI_FRONTEND_NODE_VIEWS_H */
