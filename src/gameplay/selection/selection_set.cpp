@@ -31,7 +31,8 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken;
   if (primaryEntityOffset != 0) {
-    target = (GameEntityRuntime *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
+    target = reinterpret_cast<GameEntityRuntime *> /* army token */
+             (reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne) + primaryEntityOffset);
     /* the result is ignored: the primary entity is moved whether or not it is still selected */
     SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -72,7 +73,8 @@ void SelectionPlayerRuntime_RotatePrimarySelectionBy
 
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken;
   if (primaryEntityOffset != 0) {
-    target = (GameEntityRuntime *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
+    target = reinterpret_cast<GameEntityRuntime *> /* army token */
+             (reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne) + primaryEntityOffset);
     /* the result is ignored, as in SelectionPlayerRuntime_MovePrimarySelectionBy */
     SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -107,7 +109,7 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
       }
       entriesRemainingInBlock--;
       selectionEntryCursor =
-           (SelectionPlayerRuntimeBlock *)((currentSelectionEntry->selection).entries + 1);
+           reinterpret_cast<SelectionPlayerRuntimeBlock *>((currentSelectionEntry->selection).entries + 1);
     } while (entriesRemainingInBlock != 0);
     entriesRemainingInBlock = SELECTION_ENTRY_CAPACITY;
     playerBlocksRemaining--;
@@ -115,7 +117,7 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
        chatRecipientMaskAndWriteOffset lies exactly sizeof(SelectionPlayerRuntimeBlock) further on, at the first
        entry of the next block */
     selectionEntryCursor =
-         (SelectionPlayerRuntimeBlock *)&currentSelectionEntry->chatRecipientMaskAndWriteOffset;
+         reinterpret_cast<SelectionPlayerRuntimeBlock *>(&currentSelectionEntry->chatRecipientMaskAndWriteOffset);
   } while (playerBlocksRemaining != 0);
 }
 
@@ -216,7 +218,7 @@ void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
     }
     /* model payload: the ModelRuntimeSlot; its owner army is the entity */
     entityRuntime =
-         (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+         WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if ((sourceArmyAssetId == (entityRuntime->common).runtimeIdentityOrArmyAssetId) &&
        (sourceFactionIndex == (entityRuntime->common).ownership.ownerIndex)) {
       SelectionPointerArray_InsertUniqueAndRecenter(entityRuntime,selection);
@@ -369,6 +371,6 @@ void SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
   /* array is advanced as a cursor over its entries */
   for (entriesRemaining = SELECTION_ENTRY_CAPACITY; entriesRemaining != 0; entriesRemaining--) {
     array->entries[0] = nullptr;
-    array = (SelectionPointerArray32 *)&array->entries[1];
+    array = reinterpret_cast<SelectionPointerArray32 *>(&array->entries[1]); /* cursor: the next entry */
   }
 }

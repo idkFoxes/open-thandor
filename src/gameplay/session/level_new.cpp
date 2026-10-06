@@ -621,7 +621,7 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
       if (ownerListNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
-      modelSlot = (ModelRuntimeSlot *)ownerListNode->runtimePayload;
+      modelSlot = WorldOwnerNode_ModelRuntime(ownerListNode);
       if (factionIndex == modelSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) {
         modelClassId = modelSlot->definitionOrSavedId.runtimeDefinition->runtimeClassId;
         if (modelClassId == MODEL_RUNTIME_CLASS_18) {

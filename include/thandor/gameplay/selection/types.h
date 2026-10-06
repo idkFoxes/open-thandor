@@ -48,7 +48,7 @@ struct SelectionPlayerRuntimeBlock {
     uint32_t placedArmyToken; // army placed/picked in the editor, as an offset from g_ArmyRuntimeRebaseBaseMinusOne; moved and turned by the placement commands.
     UPtr32 pendingPlacementArmyAsset; // ArmyAssetRecordPrefix * taken from the faction's army stock for placement, 0 when none.
     uint32_t chatRecipientMaskAndWriteOffset; // chat recipient mask (bits 8+faction, 16+player) and, in the low byte, the write offset in chatStagingText.
-    UPtr32 technologyPageBuilding; // building (ModelRuntimeSlot *) whose technology page the player has open.
+    UPtr32 technologyPageBuilding; // building (a ModelRuntimeSlot) whose technology page the player has open.
     uint32_t heldResearchUnpaidFlag; // its ARMY_MODEL_STATE_RESEARCH_UNPAID bit, taken away while the page is open.
     uint32_t sessionFlags;
     InGameSimulationStepBatchTicks simulationStepTicks; 
