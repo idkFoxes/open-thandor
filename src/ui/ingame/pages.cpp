@@ -23,12 +23,14 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   RichTextExtent wrappedExtent;
   uint16_t *resolvedText;
   InGameMissionHelpRootView *uiRoot;
+  UiNodeBase *rootNode;
 
-  uiRoot = (InGameMissionHelpRootView *)source;
-  while ((uiRoot->rootUi).base.parent != UI_NODE_NONE) {
-    uiRoot = (InGameMissionHelpRootView *)(uiRoot->rootUi).base.parent;
+  rootNode = source;
+  while (rootNode->parent != UI_NODE_NONE) {
+    rootNode = rootNode->parent;
   }
-  isSelected = (Bool8)UiSelectableControl_IsSelected((UiSelectableControl *)source);
+  uiRoot = reinterpret_cast<InGameMissionHelpRootView *>(rootNode); /* the mission help view of the in-game root */
+  isSelected = (Bool8)UiSelectableControl_IsSelected(THANDOR_CONTAINER_OF(source, UiSelectableControl, base));
   if (!isSelected) {
     UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,&uiRoot->gameWindowPageStack);
     /* UI_NODE_SUPPRESSED on the world view: a window blocks the world input */
@@ -51,7 +53,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   UiSelectableControl_SetSelected(0,&uiRoot->inGameMenuButton);
   interactionFlagsField = &(uiRoot->worldRuntime).interaction.nodeFlags;
   *interactionFlagsField = *interactionFlagsField | UI_NODE_SUPPRESSED;
-  UiKeyboardFocus_ReleaseNode((UiNodeBase *)&uiRoot->worldRuntime);
+  UiKeyboardFocus_ReleaseNode(reinterpret_cast<UiNodeBase *>(&uiRoot->worldRuntime)); /* the world view node */
   UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_MISSION_HELP,&uiRoot->gameWindowPageStack);
   (uiRoot->missionBriefingPanel).textResourceId =
        (uiRoot->worldRuntime).activeFactionRuntimeIndex + TEXT_ID_MISSION_HELP_BASE +
@@ -96,15 +98,12 @@ void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
 
 {
   uint32_t selectedTabIndex;
-  uintptr_t parentNodeAddress;
-  void *rootNodeCursor;
+  UiNodeBase *rootNodeCursor;
 
   /* climb to the UI root (parent -1) */
-  parentNodeAddress = (uintptr_t)(selectableControl->base).parent;
-  rootNodeCursor = selectableControl;
-  while (parentNodeAddress != (uintptr_t)-1) {
-    rootNodeCursor = (((UiSelectableControl *)rootNodeCursor)->base).parent;
-    parentNodeAddress = (uintptr_t)((UiNodeBase *)rootNodeCursor)->parent;
+  rootNodeCursor = &selectableControl->base;
+  while (rootNodeCursor->parent != UI_NODE_NONE) {
+    rootNodeCursor = rootNodeCursor->parent;
   }
   InGameUiImage *image = InGameUi_Image(rootNodeCursor);
   UiSelectableGroup_SelectExclusive(3,&selectableControl->base,
@@ -136,8 +135,8 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
   CommandPayload modelOffset;
   uint32_t activePageIndex;
 
-  while ((((UiRootNode *)source)->base).parent != UI_NODE_NONE) {
-    source = (((UiRootNode *)source)->base).parent;
+  while (source->parent != UI_NODE_NONE) {
+    source = source->parent;
   }
   if ((g_UiCommandRuntimeFlags &
        (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
@@ -158,7 +157,7 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
     firstSelectedEntity = SelectionInfo_GetFirstEntry();
     if (firstSelectedEntity != nullptr) {
       definitionRecord = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
-      InGameTechnologyPanel_ResetAndSelectCurrentArea((UiRootNode *)source);
+      InGameTechnologyPanel_ResetAndSelectCurrentArea(&InGameUi_Image(source)->inGameRootPanel.root);
       /* network-safe form of the pointer: offset from g_ModelRuntimeRebaseDelta */
       modelOffset = (int)((intptr_t)definitionRecord - (intptr_t)g_ModelRuntimeRebaseDelta);
       InGameCommand_Issue<FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch>(0,0,modelOffset);
@@ -300,12 +299,12 @@ void InGameResultsScreen_CloseLocally(UiNodeBase *source)
 void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
 
 {
-  UiSelectableControl *root;
+  UiNodeBase *root;
   uint32_t selectedIndexValue;
 
-  root = source;
-  while ((root->base).parent != UI_NODE_NONE) {
-    root = (UiSelectableControl *)(root->base).parent;
+  root = &source->base;
+  while (root->parent != UI_NODE_NONE) {
+    root = root->parent;
   }
   InGameUiImage *image = InGameUi_Image(root);
   UiSelectableGroup_SelectExclusive(2,&source->base,

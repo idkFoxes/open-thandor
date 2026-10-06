@@ -182,8 +182,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     break;
   case INGAME_KEY_CAMERA_TO_NOTIFICATION: {
     /* the in-game root that holds this world view */
-    InGameRuntimeRoot *root = (InGameRuntimeRoot *)
-         ((uint8_t *)world - offsetof(InGameRuntimeRoot,worldRuntime));
+    InGameRuntimeRoot *root = THANDOR_CONTAINER_OF(world, InGameRuntimeRoot, worldRuntime);
     FixedVectorQ12 point;
     if ((root->targetingWorldXQ12 == 0) ||
         (root->targetingWorldYQ12 == 0)) {
@@ -213,13 +212,13 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     WorldOwnerListNode *ownerNode = world->ownerListHead;
     uint32_t faction = world->activeFactionRuntimeIndex;
     for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
-      uint8_t *modelRuntime;
+      ModelRuntimeSlot *modelRuntime;
       if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
-      modelRuntime = (uint8_t *)ownerNode->runtimePayload;
-      if ((faction == (uint32_t)((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
-          (((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11)) {
+      modelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
+      if ((faction == (uint32_t)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
+          (modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11)) {
         WorldRuntime_PointCameraAtTarget
                   ((world->motion).pitchAngle,(world->motion).headingAngle,(world->motion).committedDistanceQ12,
                    ownerNode->worldZQ12,ownerNode->worldYQ12,ownerNode->worldXQ12,world);
@@ -267,7 +266,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
         if ((((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (upgradeButton->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,upgradeButton->activationSound,nullptr);
     }
-    InGameTechnologyPanel_ToggleForSelection((UiNodeBase *)world);
+    InGameTechnologyPanel_ToggleForSelection(reinterpret_cast<UiNodeBase *>(world)); /* the world view node */
     break;
   }
   case INGAME_KEY_SELECT_OWNED_CLASS16:
@@ -323,11 +322,11 @@ void InGameWorldView_ShowNextInfoText(UiSingleLineTextControl *infoText)
 {
   uint32_t resourceId;
 
-  resourceId = (uint32_t)(uintptr_t)(uint16_t *)infoText->text + 1;
+  resourceId = static_cast<uint32_t>(infoText->text) + 1; /* the slot holds a text id */
   if (resourceId > TEXT_ID_WORLD_VIEW_INFO_LAST) {
     resourceId = TEXT_ID_WORLD_VIEW_INFO_FIRST;
   }
-  infoText->text = (uint16_t *)(uintptr_t)resourceId;
+  infoText->text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(resourceId));
 }
 
 /* The world view's fieldRegion.clearTransientStateCallback: resets the notification target button's cursor
