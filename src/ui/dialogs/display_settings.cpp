@@ -52,21 +52,21 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
             .leftOffset = 160, .topOffset = 8, .rightOffset = 248, .bottomOffset = 28,
             .layoutWidth = -1, .layoutHeight = -1},
-        .text = Thandor_U32ToPointer<uint16_t>(TEXT_ID_DISPLAY_RESOLUTION_HEADING)},
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_RESOLUTION_HEADING)},
     .colorDepthHeading = { /* g_UiFocusProxyControlVtable */
         .base = {
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
             .leftOffset = 24, .topOffset = 8, .rightOffset = 120, .bottomOffset = 28,
             .layoutWidth = -1, .layoutHeight = -1},
-        .text = Thandor_U32ToPointer<uint16_t>(TEXT_ID_DISPLAY_COLOR_DEPTH_HEADING)},
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_COLOR_DEPTH_HEADING)},
     .adapterHeading = { /* g_UiFocusProxyControlVtable */
         .base = {
             .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
             .leftOffset = 24, .topOffset = 112, .rightOffset = 120, .bottomOffset = 132,
             .layoutWidth = -1, .layoutHeight = -1},
-        .text = Thandor_U32ToPointer<uint16_t>(TEXT_ID_DISPLAY_ADAPTER_HEADING)},
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_ADAPTER_HEADING)},
     .colorDepthOption1_prefix = {},
     .colorDepthOption1 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption2), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
@@ -193,7 +193,7 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
             .leftOffset = 256, .topOffset = 8, .rightOffset = 336, .bottomOffset = 208,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
         .labelFlags = UI_LABEL_CENTER_X, .focusChild = DISPLAY_SETTINGS_LINK(colorScaleSlider),
-        .text = Thandor_U32ToPointer<uint16_t>(TEXT_ID_DISPLAY_COLOR_SCALE)},
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_COLOR_SCALE)},
     .colorScaleSlider = { /* g_UiRangeSliderControlVtable */
         .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(colorScaleSliderFrame),
         .vtable = THANDOR_PTR(&g_UiRangeSliderControlVtable),
@@ -208,7 +208,7 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
             .leftOffset = 336, .topOffset = 8, .rightOffset = 416, .bottomOffset = 208,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
         .labelFlags = UI_LABEL_CENTER_X, .focusChild = DISPLAY_SETTINGS_LINK(colorBiasSlider),
-        .text = Thandor_U32ToPointer<uint16_t>(TEXT_ID_DISPLAY_COLOR_BIAS)},
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_COLOR_BIAS)},
     .colorBiasSlider = { /* g_UiRangeSliderControlVtable */
         .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(colorBiasSliderFrame),
         .vtable = THANDOR_PTR(&g_UiRangeSliderControlVtable),
@@ -299,7 +299,7 @@ FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
                 .leftOffset = 8, .topOffset = 8, .rightOffset = -8, .bottomOffset = -40,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .labelFlags = 0x00000004, .text = Thandor_U32ToPointer<uint16_t>(0x00000109)},
+            .labelFlags = 0x00000004, .text = THANDOR_PTR32_BITS(0x00000109)},
         {0x0000000F, 0x00000014},
 };
 

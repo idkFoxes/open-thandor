@@ -49,9 +49,11 @@ fields block: positional dwords or designated fields of the old struct) is turne
 items; each item is placed on the field of the new type at the same offset. Literals are split or joined when
 the new fields are narrower or wider (1/2-byte fields from a dword, little-endian), written signed for signed
 fields (0xFFFFFFFF into int32_t becomes -1) and unsigned for unsigned ones; zero literals are dropped (the
-field is zero either way). A value going into a ``Ptr32<UiNodeBase>`` field becomes ``UI_TEMPLATE_LINK(x)`` /
-``UI_TEMPLATE_NO_LINK``, into another ``Ptr32<T>`` ``Thandor_U32ToPointer<T>(x)`` (e.g. a text resource id in
-``UiSingleLineTextControl::text``), into an ``enum class`` field ``static_cast<E>(x)``. The check that the bytes
+field is zero either way). An integer value going into a ``Ptr32<UiNodeBase>`` field becomes
+``UI_TEMPLATE_LINK_BITS(x)`` / ``UI_TEMPLATE_NO_LINK_BITS``, into another ``Ptr32<T>`` ``THANDOR_PTR32_BITS(x)``
+(e.g. a text resource id in ``UiSingleLineTextControl::text``): Ptr32's constexpr Ptr32Bits constructor keeps such
+values constant data instead of moving them into the image's dynamic initialiser. Values that already were
+pointers stay as they are. Into an ``enum class`` field a value becomes ``static_cast<E>(x)``. The check that the bytes
 did not change is the ``uitemplate`` self-test (golden_cmp.ps1 -Tests uitemplate) plus the sizeof/offsetof
 asserts: run both after every use.
 
@@ -504,16 +506,17 @@ class Placer:
             unwrapped = re.match(r"^Thandor_PointerToU32\((.*)\)$", text or "", re.S)
             if unwrapped and value is None:
                 return "THANDOR_PTR(%s)" % unwrapped.group(1).strip()
+            # integer values stay compile-time constants (constant data, no dynamic initialiser)
             if target == NODE_BASE:
                 if value is not None:
-                    return "UI_TEMPLATE_NO_LINK" if value == 0xFFFFFFFF else "UI_TEMPLATE_LINK(0x%X)" % value
+                    return "UI_TEMPLATE_NO_LINK_BITS" if value == 0xFFFFFFFF else "UI_TEMPLATE_LINK_BITS(0x%X)" % value
                 if re.match(r"^\w*LINK\b", text):
                     return text
             if value is None or (text is not None and not text.startswith("-")):
                 arg = text
             else:
-                arg = fmt_unsigned(value)
-            return "Thandor_U32ToPointer<%s>(%s)" % (target, arg)
+                arg = "0x%Xu" % value
+            return "THANDOR_PTR32_BITS(%s)" % arg
         if value is None:
             if typ.kind == "enum" and typ.scoped and (oldtyp is None or oldtyp.name != typ.name):
                 return "static_cast<%s>(%s)" % (typ.name, text)
