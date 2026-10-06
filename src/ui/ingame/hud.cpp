@@ -15,17 +15,39 @@ THANDOR_ALIGN(4) uint16_t *g_InGameFactionStatusTextScratchUtf16 = nullptr;
 
 static uint16_t g_InGameHudNumberTextUtf16[16] = {};
 
-static int32_t g_UiAction1012PlayerIndexTextOffsets[7] = {20540, 20632, 20724, 20816, 20908, 21000, 21092};
+/* The controls of one of the seven diplomacy rows (action 0x1012) in the in-game UI image. The original kept
+   one byte-offset table per control. */
+struct InGameDiplomacyRowControls {
+  UiLayoutContainerControl<2> InGameUiImage::*page; /* page 0 filled row, page 1 empty row */
+  UiFocusProxyControl InGameUiImage::*factionLabel;
+  UiFocusProxyControl InGameUiImage::*playerNumberLabel;
+  UiFocusProxyControl InGameUiImage::*relationLabel;
+  UiFocusProxyControl InGameUiImage::*playerNameLabel;
+  UiCommandSpriteButtonWithDetails InGameUiImage::*relationButton;
+};
 
-static int32_t g_UiAction1012PlayerLabelTextOffsets[7] = {21184, 21276, 21368, 21460, 21552, 21644, 21736};
-
-static int32_t g_UiAction1012IconImageOffsets[7] = {22472, 22564, 22656, 22748, 22840, 22932, 23024};
-
-static int32_t g_UiAction1012StateTextOffsets[7] = {0x5544, 0x55A0, 0x55FC, 0x5658, 0x56B4, 0x5710, 0x576C};
-
-static int32_t g_UiAction1012ControlOffsets[7] = {23116, 23240, 23364, 23488, 23612, 23736, 23860};
-
-static int32_t g_UiAction1012SlotPageOffsets[7] = {19924, 20012, 20100, 20188, 20276, 20364, 20452};
+static constexpr InGameDiplomacyRowControls g_InGameDiplomacyRows[7] = {
+    {&InGameUiImage::diplomacyRow1, &InGameUiImage::diplomacyRow1FactionLabel, &InGameUiImage::diplomacyRow1PlayerNumberLabel,
+     &InGameUiImage::diplomacyRow1RelationLabel, &InGameUiImage::diplomacyRow1PlayerNameLabel,
+     &InGameUiImage::diplomacyRow1RelationButton},
+    {&InGameUiImage::diplomacyRow2, &InGameUiImage::diplomacyRow2FactionLabel, &InGameUiImage::diplomacyRow2PlayerNumberLabel,
+     &InGameUiImage::diplomacyRow2RelationLabel, &InGameUiImage::diplomacyRow2PlayerNameLabel,
+     &InGameUiImage::diplomacyRow2RelationButton},
+    {&InGameUiImage::diplomacyRow3, &InGameUiImage::diplomacyRow3FactionLabel, &InGameUiImage::diplomacyRow3PlayerNumberLabel,
+     &InGameUiImage::diplomacyRow3RelationLabel, &InGameUiImage::diplomacyRow3PlayerNameLabel,
+     &InGameUiImage::diplomacyRow3RelationButton},
+    {&InGameUiImage::diplomacyRow4, &InGameUiImage::diplomacyRow4FactionLabel, &InGameUiImage::diplomacyRow4PlayerNumberLabel,
+     &InGameUiImage::diplomacyRow4RelationLabel, &InGameUiImage::diplomacyRow4PlayerNameLabel,
+     &InGameUiImage::diplomacyRow4RelationButton},
+    {&InGameUiImage::diplomacyRow5, &InGameUiImage::diplomacyRow5FactionLabel, &InGameUiImage::diplomacyRow5PlayerNumberLabel,
+     &InGameUiImage::diplomacyRow5RelationLabel, &InGameUiImage::diplomacyRow5PlayerNameLabel,
+     &InGameUiImage::diplomacyRow5RelationButton},
+    {&InGameUiImage::diplomacyRow6, &InGameUiImage::diplomacyRow6FactionLabel, &InGameUiImage::diplomacyRow6PlayerNumberLabel,
+     &InGameUiImage::diplomacyRow6RelationLabel, &InGameUiImage::diplomacyRow6PlayerNameLabel,
+     &InGameUiImage::diplomacyRow6RelationButton},
+    {&InGameUiImage::diplomacyRow7, &InGameUiImage::diplomacyRow7FactionLabel, &InGameUiImage::diplomacyRow7PlayerNumberLabel,
+     &InGameUiImage::diplomacyRow7RelationLabel, &InGameUiImage::diplomacyRow7PlayerNameLabel,
+     &InGameUiImage::diplomacyRow7RelationButton}};
 
 /* uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state */
 static const uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB};
@@ -62,18 +84,18 @@ void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl)
   /* isometric grid to world: x = (2*gx + gy) * FIELD_GRID_WORLD_COLUMN_STEP_X / 2^13,
      y = gy * FIELD_GRID_WORLD_ROW_STEP_Y / 2^12 (64-bit products) */
   scaledProduct = (int64_t)(yComponent + ((UiSelectionGeometryControl *)mapControl)->selectedSourceXQ12 * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
-/* the world runtime is the worldView node of the same in-game UI copy */
-#define MAP_WORLD ((WorldRuntimeContext *)THANDOR_UI_SIBLING(mapControl,InGameUiImage,minimapView,worldView))
+  /* the world runtime is the worldView node of the same in-game UI copy */
+  WorldRuntimeContext *const mapWorld =
+       InGameUi_WorldRuntime(THANDOR_CONTAINER_OF(mapControl, InGameUiImage, minimapView));
   xDelta = (FIXED_PRODUCT_SHR(scaledProduct, Q12_SHIFT + 1)) -
-          MAP_WORLD->motion.targetPositionXQ12;
+          mapWorld->motion.targetPositionXQ12;
   yComponent = FIXED_PRODUCT_SHR((int64_t)yComponent * FIELD_GRID_WORLD_ROW_STEP_Y, Q12_SHIFT) -
-          MAP_WORLD->motion.targetPositionYQ12;
-  MAP_WORLD->motion.targetPositionXQ12 = MAP_WORLD->motion.targetPositionXQ12 + xDelta;
-  MAP_WORLD->motion.targetPositionYQ12 = MAP_WORLD->motion.targetPositionYQ12 + yComponent;
-  MAP_WORLD->motion.positionXQ12 = MAP_WORLD->motion.positionXQ12 + xDelta;
-  MAP_WORLD->motion.positionYQ12 = MAP_WORLD->motion.positionYQ12 + yComponent;
-  WorldRuntime_ClearFieldGridDirtyFlag(MAP_WORLD);
-#undef MAP_WORLD
+          mapWorld->motion.targetPositionYQ12;
+  mapWorld->motion.targetPositionXQ12 = mapWorld->motion.targetPositionXQ12 + xDelta;
+  mapWorld->motion.targetPositionYQ12 = mapWorld->motion.targetPositionYQ12 + yComponent;
+  mapWorld->motion.positionXQ12 = mapWorld->motion.positionXQ12 + xDelta;
+  mapWorld->motion.positionYQ12 = mapWorld->motion.positionYQ12 + yComponent;
+  WorldRuntime_ClearFieldGridDirtyFlag(mapWorld);
 }
 
 /* Network games: writes the roster of faction factionIndex into g_InGamePlayerListTextScratchUtf16 (player
@@ -389,41 +411,37 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
 
 {
   uint32_t relationState;
-  int playerNameTextOffset;
-  int iconButtonOffset;
+  UiFocusProxyControl *playerNameText;
+  UiCommandSpriteButtonWithDetails *iconButton;
   uint32_t iconSubresource;
-  uint32_t *controlFlags;
   FrontendPlayerRuntimeRecord *playerBlock;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
+  InGameUiImage *image = InGameUi_Image(node);
+  const InGameDiplomacyRowControls &row = g_InGameDiplomacyRows[slotIndex];
 
   g_UiAction1012TargetPlayerIndices[slotIndex] = factionIndex;
-  UiPageStack_SetActiveIndex
-            (0,(UiPageStackControl *)
-               THANDOR_UI_AT(node,g_UiAction1012SlotPageOffsets[slotIndex]));
+  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&(image->*row.page)));
   /* the text fields hold text resource ids; the colour name of the faction's colorIndex */
-  ((UiSingleLineTextControl *)((uint8_t *)node +g_UiAction1012PlayerLabelTextOffsets[slotIndex]))->text =
-       (uint16_t *)(uintptr_t)(factionRecord->colorIndex + TEXT_ID_FACTION_NAME_BASE);
-  ((UiSingleLineTextControl *)((uint8_t *)node +g_UiAction1012PlayerIndexTextOffsets[slotIndex]))->text =
-       (uint16_t *)(uintptr_t)(factionIndex + TEXT_ID_PLAYER_NUMBER_BASE);
+  (image->*row.factionLabel).text = (uint16_t *)(uintptr_t)(factionRecord->colorIndex + TEXT_ID_FACTION_NAME_BASE);
+  (image->*row.playerNumberLabel).text = (uint16_t *)(uintptr_t)(factionIndex + TEXT_ID_PLAYER_NUMBER_BASE);
   relationState = g_GameFactionRuntimeImage.records
-                  [reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(node)->worldView)->activeFactionRuntimeIndex]
+                  [InGameUi_WorldRuntime(image)->activeFactionRuntimeIndex]
                   .packedRelationStates >> ((uint8_t)(factionIndex << 2) & SHIFT_COUNT_MASK) &
                   FACTION_RELATION_STATE_MASK;
   /* the original shifts the index left and back right around the nibble shift, which only clears its top
      two bits: the index itself is unchanged */
   factionIndex = factionIndex & 0x3fffffff;
-  ((UiSingleLineTextControl *)((uint8_t *)node +g_UiAction1012StateTextOffsets[slotIndex]))->text =
-       (uint16_t *)(uintptr_t)(relationState + TEXT_ID_DIPLOMATIC_RELATION_BASE);
+  (image->*row.relationLabel).text = (uint16_t *)(uintptr_t)(relationState + TEXT_ID_DIPLOMATIC_RELATION_BASE);
   /* player name: empty, or in network games the name of the player assigned to this faction */
-  playerNameTextOffset = g_UiAction1012IconImageOffsets[slotIndex];
-  ((UiSingleLineTextControl *)((uint8_t *)node +playerNameTextOffset))->text = g_EmptyFrontendPlayerNameUtf16;
+  playerNameText = &(image->*row.playerNameLabel);
+  playerNameText->text = g_EmptyFrontendPlayerNameUtf16;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
     /* The original is a do-while that runs once and then wraps on a player count of 0; skipped here. */
     for (; remainingPlayerBlocks != 0; remainingPlayerBlocks--) {
       if ((playerBlock->factionAssignment).factionAssignmentIndex == factionIndex) {
-        ((UiSingleLineTextControl *)((uint8_t *)node +playerNameTextOffset))->text = (uint16_t *)&playerBlock->playerName;
+        playerNameText->text = (uint16_t *)&playerBlock->playerName;
         break;
       }
       playerBlock++;
@@ -431,18 +449,15 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
   }
   /* the row's relation icon button: shown, with the sprite of the relation state; hidden again by the
      relationUiFlags rules */
-  iconButtonOffset = g_UiAction1012ControlOffsets[slotIndex];
+  iconButton = &(image->*row.relationButton);
   iconSubresource = g_UiAction1012SubresourceByState[relationState];
-  controlFlags = (uint32_t *)&THANDOR_UI_AT(node,iconButtonOffset)->nodeFlags;
-  *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
-  ((UiCommandSpriteButtonControl *)((uint8_t *)node +iconButtonOffset))->sprite.normalSubresourceStartOrDescriptor =
-       iconSubresource;
+  iconButton->sprite.selectable.base.nodeFlags = iconButton->sprite.selectable.base.nodeFlags & ~UI_NODE_SUPPRESSED;
+  iconButton->sprite.normalSubresourceStartOrDescriptor = iconSubresource;
   if (((g_GameFactionRuntimeImage.tail.relationUiFlags & 1) != 0) &&
      ((7 < relationState ||
       (((g_GameFactionRuntimeImage.tail.relationUiFlags & 2) != 0 &&
        ((3 < relationState || ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) != 0)))))))) {
-    controlFlags = (uint32_t *)&THANDOR_UI_AT(node,iconButtonOffset)->nodeFlags;
-    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+    iconButton->sprite.selectable.base.nodeFlags = iconButton->sprite.selectable.base.nodeFlags | UI_NODE_SUPPRESSED;
   }
 }
 
@@ -535,14 +550,12 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
     }
   }
   for (; slotIndex < 7; slotIndex++) {
-    UiPageStack_SetActiveIndex
-              (1,(UiPageStackControl *)
-                 THANDOR_UI_AT(node,g_UiAction1012SlotPageOffsets[slotIndex]));
+    UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&(image->*g_InGameDiplomacyRows[slotIndex].page)));
   }
 }
 
 /* UI action 0x1012 (g_InGameUiActionHandlersPage10[18]): one of the seven relation buttons of the diplomacy
-   rows. Finds the button's row through g_UiAction1012ControlOffsets and advances the relation of the local
+   rows. Finds the button's row through g_InGameDiplomacyRows and advances the relation of the local
    faction towards that row's faction (g_UiAction1012TargetPlayerIndices), or resets it when the activation
    carries UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK. Ignored while paused or with world input disabled.
 */
@@ -568,7 +581,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
       rootControl = (UiCommandSpriteButtonControl *)(rootControl->sprite).selectable.base.parent;
     }
     slotIndex = 6;
-    while ((int)((uintptr_t)control - (uintptr_t)rootControl) != g_UiAction1012ControlOffsets[slotIndex]) {
+    while (control != &(InGameUi_Image(rootControl)->*g_InGameDiplomacyRows[slotIndex].relationButton)) {
       slotIndex--;
       if (slotIndex < 0) {
         return;
