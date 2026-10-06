@@ -1,0 +1,109 @@
+﻿THANDOR - DIE INVASION
+Open Thandor 1.0.6 ("Thandor Patch 6")
+=======================================
+
+Was ist das?
+------------
+Open Thandor ist eine quelloffene Neuumsetzung des Spiels Thandor (Innonics,
+1999) in C++ für 64-Bit-Windows. Dieser Patch ersetzt nur die Programmdatei
+thandor.exe Ihrer vorhandenen Thandor-Installation (Version 1.05 / Patch 5).
+Spieldaten, Karten, Filme, Spielstände und Einstellungen bleiben, wie sie sind.
+
+Projekt und Fehlermeldungen: https://github.com/idkFoxes/open-thandor
+
+Voraussetzungen
+---------------
+- Windows 10 oder 11, 64 Bit
+- eine installierte Thandor-Vollversion (der Ordner mit DATEN.PCK und
+  thandor.exe). Patch 5 wird nicht vorausgesetzt.
+- keine weitere Software: die nötigen Laufzeitbibliotheken sind Teil von
+  Windows bzw. von thandor.exe.
+
+Was installiert wird
+--------------------
+Im Thandor-Ordner:
+  thandor.exe                 das neue Spielprogramm (Version 1.0.6)
+  SDL3.dll                    Bibliothek für Fenster, Grafik, Ton und Eingabe
+  thandor.sym                 Funktionsnamen für Absturzberichte (crash.log)
+  OpenThandor-liesmich.txt    diese Datei
+  thandor-1.05.exe            Sicherung der bisherigen thandor.exe (wird bei
+                              der Deinstallation wieder zu thandor.exe)
+  OpenThandor\                Deinstallationsprogramm und Lizenz von SDL3
+
+Nicht verändert werden: alle *.PCK-Dateien, thandor.dat, der Ordner save mit
+Ihren Spielständen, flm, die alte liesmich.txt und die Registry-Einträge des
+Spiels. Es wird kein Startmenü-Eintrag angelegt: Thandor wird wie bisher über
+thandor.exe im Spielordner (oder Ihre vorhandene Verknüpfung) gestartet.
+
+Grafik: Darstellung wählen
+--------------------------
+Im Spiel unter Optionen -> Grafik:
+- Darstellung: "Vulkan (GPU)" (Standard), "DirectX 12 (GPU)" oder
+  "Software (CPU)". Angeboten werden nur die Verfahren, die Ihr Grafiktreiber
+  unterstützt. Startet ein GPU-Verfahren nicht, weicht das Spiel selbst auf
+  DirectX 12 bzw. Software aus.
+- Anzeigemodus: Fenster, Vollbildfenster oder Vollbild.
+- Auflösung: alle Auflösungen Ihres Bildschirms ab 640x480.
+"Anwenden" schaltet sofort um und speichert die Wahl.
+
+Sollte das Spiel mit der GPU-Darstellung gar nicht starten, hilft der Start
+mit dem Parameter -SOFTWARE (z. B. in einer Verknüpfung:
+"...\thandor.exe" -SOFTWARE) oder der Eintrag renderer = software in
+thandor.ini.
+
+Einstellungen: thandor.ini
+--------------------------
+Die Einstellungen stehen jetzt in der Textdatei thandor.ini im Spielordner.
+Beim ersten Start übernimmt das Spiel Ihre bisherigen Einstellungen aus
+thandor.dat (diese Datei selbst wird nie verändert). thandor.ini enthält zu
+jedem Eintrag einen Kommentar und darf bei beendetem Spiel mit einem
+Texteditor bearbeitet werden, zum Beispiel:
+  [display]   renderer, display_mode, width, height
+  [graphics]  gpu_rasterization (smooth oder exact), ui_scale, vsync,
+              frame_limit
+  [sound]     Lautstärken
+Wird thandor.ini gelöscht, gelten wieder die Einstellungen aus thandor.dat.
+
+Das Spiel schreibt außerdem thandor.log (Protokoll) und bei einem Absturz
+crash.log in den Spielordner. Bitte legen Sie diese Dateien einer
+Fehlermeldung bei.
+
+Schreibrechte im Spielordner
+----------------------------
+Thandor liegt meist unter C:\Programme (x86)\Thandor. Dort dürfen normale
+Benutzer nichts schreiben, und anders als die alte 32-Bit-thandor.exe wird das
+64-Bit-Programm von Windows nicht in einen Ersatzordner (VirtualStore)
+umgeleitet. Damit Einstellungen und Spielstände gespeichert werden können,
+erteilt die Installation der Gruppe "Benutzer" Änderungsrechte auf den
+Spielordner und den Ordner save. Diese Rechte bleiben nach einer
+Deinstallation bestehen; bei Bedarf können sie in den Ordnereigenschaften
+(Registerkarte Sicherheit) wieder entfernt werden.
+
+Hinweis: Spielstände, die die alte thandor.exe in den VirtualStore
+geschrieben hat (%LOCALAPPDATA%\VirtualStore\Program Files (x86)\Thandor\save),
+sieht das neue Programm nicht. Kopieren Sie sie bei Bedarf von Hand in den
+Ordner save des Spiels.
+
+Deinstallation
+--------------
+Über Einstellungen -> Apps -> Installierte Apps -> "Thandor Patch 6" (oder
+OpenThandor\unins000.exe im Spielordner). Die Deinstallation entfernt
+thandor.exe, SDL3.dll, thandor.sym und diese Datei und stellt die
+gesicherte alte thandor.exe (Version 1.05) wieder her. Spielstände,
+thandor.ini und die Protokolle bleiben erhalten.
+
+Windows SmartScreen und Virenscanner
+------------------------------------
+Das Installationsprogramm und thandor.exe sind nicht digital signiert (wie
+schon Patch 5). Windows SmartScreen kann deshalb "Der Computer wurde durch
+Windows geschützt" anzeigen; über "Weitere Informationen" -> "Trotzdem
+ausführen" lässt sich die Installation starten. Einzelne Virenscanner melden
+unsignierte, neu erstellte Programme gelegentlich fälschlich. Laden Sie den
+Patch nur von der Projektseite herunter.
+
+Rechtliches
+-----------
+Thandor - Die Invasion (c) 1999 Innonics GmbH. Open Thandor ist ein
+unabhängiges Fanprojekt und enthält keine Spieldaten; es benötigt Ihre
+gekaufte Thandor-Installation. SDL3 steht unter der zlib-Lizenz
+(OpenThandor\LICENSE-SDL3.txt).

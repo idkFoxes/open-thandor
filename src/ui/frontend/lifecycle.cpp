@@ -8,7 +8,9 @@
 #include <thandor/ui/frontend/lifecycle.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/version.h>
 
+#include <array>
 #include <initializer_list>
 
 /* Module data. */
@@ -597,4 +599,54 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   g_FrontendMusicVoiceSet = nullptr;
   SpriteAssetRegistry_Reset();
   UiFrame_FlushInputAndResetPendingTicks();
+}
+
+/* Not in the original (open-thandor): "Open Thandor 1.0.6" (THANDOR_PRODUCT_VERSION_STRING) at the bottom right of
+   the main menu, in the small grey game font with its shadow. Shown while the frontend is the front root and the
+   menu room shows the entry hall (ROM record FRONTEND_ROM_RECORD_MAIN_MENU) with no dialog page open: centred in
+   the black bar below the room, or just above the bottom edge where the room reaches it. Called by UiFrame_Draw
+   after the roots, before the tooltip. */
+void FrontendVersionLabel_Draw()
+{
+  constexpr uint32_t kStyle = (0u << TEXT_STYLE_FONT_SHIFT) | (2u << TEXT_STYLE_PALETTE_SHIFT) | TEXT_STYLE_ALIGN_RIGHT;
+  constexpr int kMargin = 8;
+  static std::array<uint16_t, sizeof THANDOR_PRODUCT_VERSION_STRING> s_textUtf16 = [] {
+    std::array<uint16_t, sizeof THANDOR_PRODUCT_VERSION_STRING> utf16 = {};
+    for (std::size_t index = 0; index < utf16.size(); index++) {
+      utf16[index] = static_cast<unsigned char>(THANDOR_PRODUCT_VERSION_STRING[index]); /* ASCII; ends with the 0 */
+    }
+    return utf16;
+  }();
+  const uintptr_t frontendRoot = g_FrontendRootNode;
+  uint32_t lineHeight;
+  int barTop;
+  int lineTop;
+
+  if ((frontendRoot == 0) || (g_UiRootNode != (UiRootNode *)frontendRoot) || (g_FrontendActiveRomRecord == 0) ||
+      (((const RomRecord *)g_FrontendActiveRomRecord)->recordId != FRONTEND_ROM_RECORD_MAIN_MENU) ||
+      (UiPageStack_ActivePageIndex((UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendViewModeStack)) != 0) ||
+      (UiPageStack_ActivePageIndex((UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack)) !=
+       FRONTEND_PAGE_MAIN)) {
+    return;
+  }
+  const FrontendModelPointerContext *room =
+       (const FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView);
+  if ((room->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED) != 0) {
+    return;
+  }
+  FontGlyph_GetLogicalSizeForStyle(kStyle,0,&lineHeight);
+  barTop = room->base.bottom;
+  if ((barTop < 0) || ((int)g_FramebufferHeight - barTop < (int)lineHeight + 4)) {
+    lineTop = (int)g_FramebufferHeight - (int)lineHeight - kMargin;
+  }
+  else {
+    lineTop = barTop + ((int)g_FramebufferHeight - barTop - (int)lineHeight) / 2;
+  }
+  if (g_GraphicsFramebufferBeginAccess()) {
+    return;
+  }
+  RichTextCommandStream_DrawSingleLine
+            (g_FramebufferHeight,g_FramebufferWidth,0,0,kStyle,s_textUtf16.data(),lineTop,
+             (int)g_FramebufferWidth - kMargin);
+  g_GraphicsFramebufferEndAccess();
 }

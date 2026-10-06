@@ -1,6 +1,15 @@
 # Step 10 (later): patch installer for Open Thandor 1.0.6
 
-Status: planned, not started. Step 10 is an installer that puts our build onto an existing Thandor installation as a
+Status: done (2026-10-06). Done: WP0 (owner decisions), WP1+2 (version 1.0.6, version header, VERSIONINFO and icon
+resource), WP3 (`tools/installer/thandor-patch.iss`, German readme, `build_installer.py`), WP4 (image generator
+`tools/installer/make_wizard_images.py`; the finished BMPs go into `tools/installer/images`, the installer uses them
+when present and Inno's placeholders otherwise), WP5 (CMake target `installer`, see `docs/BUILDING.md`, section
+"Patch installer"; a silent install / reinstall / uninstall smoke test on a copy passed), WP7 (docs) and WP8
+(GitHub Actions workflow `.github/workflows/release.yml`: workflow_dispatch builds the installer as an artifact, a
+pushed tag `vX.Y.Z` that matches the CMake version builds it and creates the GitHub Release "Thandor Patch 6 - Open
+Thandor X.Y.Z" with `Thandor-Patch-6.exe` and its SHA-256; same toolchain as locally, pinned and checksummed; see
+`docs/BUILDING.md`, "Releases (GitHub Actions)"). WP6: the owner tested the admin install,
+the game and the uninstall by hand and approved. Step 10 is an installer that puts our build onto an existing Thandor installation as a
 patch, with the version bumped to 1.0.6 and a picture of the game, looking like the original `Thandor-Patch-5.exe`
 (a classic Windows installer). The owner decided the open points listed in work package 0 (section 7); see "Owner decisions" below.
 
@@ -12,10 +21,11 @@ and not verified.
 ## Owner decisions (2026-10-04)
 
 1. **Tool: Inno Setup 7** (7.1.0 of 2026-08-12, 64-bit edition recommended by the vendor), not 6. Free for
-   non-commercial / open-source use. Check that `WizardStyle=classic` and the German messages work the same in 7;
-   the sections below still say "Inno Setup 6" where they were written, read them as "7".
-2. **Name and display in the style of the original:** "Thandor Patch 6", "Version 1.06" in the wizard (numeric
-   version 1.0.6 / 1.0.6.0 in the resources).
+   non-commercial / open-source use. `WizardStyle=classic` and the German messages work the same in 7 (the
+   implementation uses 7). The analysis in sections 4 and 6 was written for Inno Setup 6; read it as "7".
+2. **Name and display in the style of the original:** "Thandor Patch 6". **The version string is "1.0.6"
+   everywhere** (wizard "Version 1.0.6", menu label, resources 1.0.6 / 1.0.6.0); the spelling "1.06" considered
+   below was dropped by a later owner decision.
 3. **Icon in the repository** (the game's `thandor.ico`, for the exe resource and the installer). **The wizard image
    is new:** an in-game screenshot crop plus the Thandor lettering (section 5), not the Patch 5 picture.
 4. **Write access: the installer grants users modify rights** on the game folder and `save\` (option (a) in
@@ -143,7 +153,7 @@ The bump "1.0.6" therefore matches the series, with two caveats:
 
 - To match the original spelling, the wizard could say "Version 1.06". **Suggestion:** use the numeric version
   1.0.6 (resource `1,0,6,0`) and display "1.06" in the installer, so the name reads like the Patch 5 installer. The
-  owner decides.
+  owner decided: "1.0.6" everywhere, no "1.06".
 - Our exe has no version resource yet, so 1.0.6 is the first version our build reports.
 
 ### Version places in our code
@@ -244,7 +254,8 @@ lives in `WOW6432Node`. So the `CD` value (movie lookup on the CD) is never foun
 | Command-line compiler | `ISCC.exe script.iss /DAppVersion=1.0.6` | `makensis /DVERSION=...` | `wix build` |
 | Licence | free. **Note (verify before use):** since Inno Setup 6.3 (2024) the licence says commercial use needs a paid licence; non-commercial and open-source hobby use stays free | zlib/libpng, free | MS-RL; WiX v5+ adds the "Open Source Maintenance Fee" for commercial users **(verify)** |
 
-**Recommendation: Inno Setup 6 (latest 6.x), `WizardStyle=classic`, German only.** It is the same framework as
+**Recommendation: Inno Setup 6 (latest 6.x), `WizardStyle=classic`, German only.** (Implemented with Inno Setup 7,
+see the owner decisions.) It is the same framework as
 the original, so the "quasi normal Windows installer" look comes for free. Backup and restore is a few lines of
 Pascal. None of the three tools is installed on this PC (checked Program Files and PATH); **installing Inno Setup
 needs the owner's permission.** It is a single installer from jrsoftware.org, and a portable `ISCC` in
@@ -261,7 +272,7 @@ Sketch of the script (`tools/installer/thandor-patch.iss`):
 [Setup]
 AppId={{<new GUID>}             ; new id, not "Thandor Patch 5"
 AppName=Thandor Patch 6 (Open Thandor)   ; owner decides; Patch 5 used "Thandor Patch 5"
-AppVerName=Version 1.06
+AppVerName=Version {#AppVersion}            ; "Version 1.0.6" (owner decision)
 AppVersion={#AppVersion}
 AppPublisher=Open Thandor
 VersionInfoVersion={#AppVersion}.0
@@ -270,7 +281,7 @@ DirExistsWarning=no
 DisableProgramGroupPage=yes          ; or keep the group page like Patch 5
 CreateUninstallRegKey=yes
 UninstallFilesDir={app}\OpenThandor  ; or {app} like Patch 5 (would collide with unins000 of Patch 5)
-UninstallDisplayName=Thandor 1.06 (Open Thandor)
+UninstallDisplayName=Thandor Patch 6 (Version 1.0.6)
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
@@ -318,7 +329,7 @@ downscaled crop stays sharp.
 3. The main menu hangar with the mechs (static and easy to reproduce, but less "game").
 
 **Composition** like Patch 5: a portrait crop (164:314, roughly 0.52 aspect) from the playfield (exclude the right
-command panel), then a darker band at the top with the Thandor logo and "1.06" (or "Open Thandor 1.06"), and the
+command panel), then a darker band at the top with the Thandor logo and "1.0.6" (or "Open Thandor 1.0.6"), and the
 project URL at the bottom.
 
 - The logo can be cut from the game's own menu graphics, or the top of `original_wizard_image_164x314.png` can be
@@ -357,7 +368,11 @@ From there:
 - Optionally a top-level `VERSION` file read by CMake (`file(READ ...)`). It is easier for scripts, but
   `project(VERSION)` is enough.
 
-**Installer target**, only if ISCC is found (like the optional fxc/dxc):
+**Installer target**, only if ISCC is found (like the optional fxc/dxc). The sketch below was the plan; the
+implemented target (end of `CMakeLists.txt`) searches `Inno Setup 7` under `%LOCALAPPDATA%\Programs` (per-user
+install), `Program Files` and `Program Files (x86)`, needs Python 3 as well and calls
+`tools/installer/build_installer.py <build dir> --iscc <ISCC> --version ${PROJECT_VERSION} --out <build>/installer`,
+which stages, strips where needed and runs ISCC with `/DAppVersion`:
 
 ```cmake
 find_program(THANDOR_ISCC ISCC HINTS "$ENV{ProgramFiles\(x86\)}/Inno Setup 6" "$ENV{ProgramFiles}/Inno Setup 6")
@@ -396,6 +411,7 @@ endif()
 | 5 | CMake `installer` target (stage, strip, ISCC with version) | S | `cmake --build --preset mingw-release --target installer` produces `Thandor-Patch-6.exe`; its version resource is 1.0.6 |
 | 6 | Install and uninstall tests on copies of the game folder (record the MD5s before and after) | M | (1) Install into the copy: `thandor.exe` = ours, `SDL3.dll` and `thandor.sym` present, backup `thandor-1.05.exe` has MD5 `bd565d4c...8873`, PCK/dat/ini/save MD5s unchanged; the game starts as a **non-admin user** and saves settings and a game (proves the ACL). (2) Reinstall over itself: the backup is not overwritten by our exe. (3) Uninstall: `thandor.exe` MD5 is back to `bd565d4c...`, read-only attribute restored, `SDL3.dll`/`thandor.sym`/uninstaller gone, saves and `thandor.ini` still there, the Apps & Features entry is gone. (4) The wrong folder (no DATEN.PCK) is refused. (5) Silent mode `/SILENT /DIR=...` for an automated test with `tools/test`. (6) Optional: a 32-bit Windows VM refuses to install |
 | 7 | Docs: `README.md:93-95` (playing: installer as the normal path), `docs/BUILDING.md` (installer target), CHANGELOG | S | Review |
+| 8 | GitHub Actions release workflow (`.github/workflows/release.yml`): build on `windows-2025` with the local toolchain (MinGW-Builds GCC 15.2.0, Ninja 1.13.2, vcpkg pinned, Inno Setup 7.1.0), tag/version check, GitHub Release with the installer and its SHA-256 | S | YAML check; the workflow's configure and build commands run locally in a fresh `build-mingw-release`; the toolchain install, cache and release upload only on GitHub (first `workflow_dispatch` run) |
 
 Sizes: S = less than half a day, M = about a day. Total roughly 3–4 days including the owner decisions and image work.
 

@@ -1,0 +1,40 @@
+# Screenshots for the installer's wizard image (tools/installer/take_wizard_shots.py starts it with
+# -NOINTRO -KARTE="<map>" in a 1920x1080 window, Vulkan, UI scale 1). The skirmish setup page is laid out for
+# 1280x720 and centred, so its start button (840,500) is given in that layout. In the game the cheats are switched
+# on with the chat phrase (as tools/test/skirmish_cheats.txt does; this file is UTF-8, the umlaut is typed as
+# Windows-1252 0xF6) and Ctrl+Alt+V reveals the whole map, so the picture has no black fog. The pointer then parks
+# on the side panel (cut off by make_wizard_images.py) and shots are taken while the base starts working; the
+# camera is then scrolled with the arrow keys for a few more views.
+# Keys (decimal VK): 13 Enter, 17 Ctrl, 18 Alt, 86 V, 37-40 arrows.
+# Lines that do not start with a number are ignored (comments).
+0 layout 1280 720
+9000 clickuntilingame 840 500 3000
+0 ingame
+0 layout 1920 1080
+500 move 1910 1070
+1500 key 13
+2000 type Oh grosser Thomas, erlöse mich!
+4500 key 13
+5000 keydown 17
+5100 keydown 18
+5200 key 86
+5300 keyup 18
+5400 keyup 17
+5500 move 1910 1070
+14000 shot
+20000 shot
+26000 shot
+32000 shot
+32500 keydown 37
+33300 keyup 37
+35000 shot
+35500 keydown 40
+36300 keyup 40
+38000 shot
+38500 keydown 39
+40100 keyup 39
+42000 shot
+42500 keydown 38
+44100 keyup 38
+46000 shot
+47000 quit

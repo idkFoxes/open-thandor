@@ -1,0 +1,209 @@
+# Builds the patch installer Thandor-Patch-6.exe (docs/BUILDING.md, "Patch installer" and "Releases").
+#
+#   push of a tag vX.Y.Z  -> build, then a GitHub Release "Thandor Patch 6 - Open Thandor X.Y.Z" with
+#                            Thandor-Patch-6.exe and Thandor-Patch-6.exe.sha256 attached
+#   workflow_dispatch     -> build only; the installer is a workflow artifact, no release
+#
+# The tag must match project(open_thandor VERSION X.Y.Z) in CMakeLists.txt. The build reproduces the local
+# toolchain: MinGW-Builds GCC 15.2.0 (UCRT, win32 threads, SEH), vcpkg pinned to the commit the local SDL3 3.2.16
+# came from (sdl3[vulkan]:x64-mingw-dynamic, directx-dxc:x64-windows for the SPIR-V shaders), fxc of the Windows SDK
+# for the DXBC shaders, Inno Setup 7.1.0, preset mingw-release (never the developer-tools build).
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  MINGW_ARCHIVE: x86_64-15.2.0-release-win32-seh-ucrt-rt_v13-rev1
+  MINGW_URL: https://github.com/niXman/mingw-builds-binaries/releases/download/15.2.0-rt_v13-rev1/x86_64-15.2.0-release-win32-seh-ucrt-rt_v13-rev1.7z
+  MINGW_SHA256: 1afa658ae7a86c13ea4a4222a2ea746dc657f7c23dfbdb756f86d9f910ee2749
+  NINJA_URL: https://github.com/ninja-build/ninja/releases/download/v1.13.2/ninja-win.zip
+  NINJA_SHA256: 07fc8261b42b20e71d1720b39068c2e14ffcee6396b76fb7a795fb460b78dc65
+  INNO_URL: https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0-x64.exe
+  INNO_SHA256: 0362a383ed217d4c4239b5933866dd96d3eb2102737da92f80f6057a4b40df2f
+  VCPKG_COMMIT: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
+  VCPKG_PACKAGES: sdl3[vulkan]:x64-mingw-dynamic directx-dxc:x64-windows   # change the cache key below with it
+  # fixed paths without spaces (vcpkg's windres step fails on a path with a space)
+  MINGW_ROOT: C:\ot-ci\mingw64
+  VCPKG_ROOT: C:\ot-ci\vcpkg
+  VCPKG_DEFAULT_BINARY_CACHE: C:\ot-ci\vcpkg-cache
+  VCPKG_DISABLE_METRICS: '1'
+
+jobs:
+  build:
+    name: Build Thandor-Patch-6.exe
+    runs-on: windows-2025
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check the version
+        id: version
+        run: |
+          $match = Select-String -Path CMakeLists.txt -Pattern '^project\(open_thandor VERSION (\d+\.\d+\.\d+)'
+          if (-not $match) { Write-Error 'no project(open_thandor VERSION X.Y.Z) in CMakeLists.txt'; exit 1 }
+          $version = $match.Matches[0].Groups[1].Value
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            if ($env:GITHUB_REF_NAME -ne "v$version") {
+              Write-Error "tag $env:GITHUB_REF_NAME does not match the project version $version in CMakeLists.txt (expected v$version)"
+              exit 1
+            }
+          }
+          Write-Host "Open Thandor $version"
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: MinGW-w64 GCC 15.2.0 (MinGW-Builds, UCRT) and Ninja
+        run: |
+          New-Item -ItemType Directory -Force C:\ot-ci | Out-Null
+          $archive = "$env:RUNNER_TEMP\$env:MINGW_ARCHIVE.7z"
+          Invoke-WebRequest $env:MINGW_URL -OutFile $archive
+          $hash = (Get-FileHash $archive -Algorithm SHA256).Hash
+          if ($hash -ne $env:MINGW_SHA256) { Write-Error "MinGW archive SHA256 $hash, expected $env:MINGW_SHA256"; exit 1 }
+          7z x -y -oC:\ot-ci $archive | Out-Null
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $gxx = & "$env:MINGW_ROOT\bin\g++.exe" --version | Select-Object -First 1
+          Write-Host $gxx
+          if ($gxx -notmatch ' 15\.2\.0$') { Write-Error "unexpected compiler: $gxx"; exit 1 }
+          # Ninja 1.13.2 next to g++ (the local C:\mingw64\bin holds the same ninja.exe)
+          $zip = "$env:RUNNER_TEMP\ninja-win.zip"
+          Invoke-WebRequest $env:NINJA_URL -OutFile $zip
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash
+          if ($hash -ne $env:NINJA_SHA256) { Write-Error "Ninja SHA256 $hash, expected $env:NINJA_SHA256"; exit 1 }
+          Expand-Archive $zip -DestinationPath "$env:MINGW_ROOT\bin" -Force
+          "$env:MINGW_ROOT\bin" >> $env:GITHUB_PATH
+
+      - name: Inno Setup 7.1.0
+        run: |
+          $setup = "$env:RUNNER_TEMP\innosetup-7.1.0-x64.exe"
+          Invoke-WebRequest $env:INNO_URL -OutFile $setup
+          $hash = (Get-FileHash $setup -Algorithm SHA256).Hash
+          if ($hash -ne $env:INNO_SHA256) { Write-Error "Inno Setup SHA256 $hash, expected $env:INNO_SHA256"; exit 1 }
+          $process = Start-Process -FilePath $setup -Wait -PassThru `
+            -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', '/CURRENTUSER'
+          if ($process.ExitCode) { Write-Error "Inno Setup install failed ($($process.ExitCode))"; exit 1 }
+          $iscc = "$env:LOCALAPPDATA\Programs\Inno Setup 7\ISCC.exe"
+          if (-not (Test-Path $iscc)) { Write-Error "no $iscc"; exit 1 }
+          "THANDOR_ISCC=$iscc" >> $env:GITHUB_ENV
+
+      - name: vcpkg (pinned)
+        run: |
+          git init -q $env:VCPKG_ROOT
+          git -C $env:VCPKG_ROOT fetch -q --depth 1 https://github.com/microsoft/vcpkg.git $env:VCPKG_COMMIT
+          git -C $env:VCPKG_ROOT checkout -q FETCH_HEAD
+          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          New-Item -ItemType Directory -Force $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+
+      - name: Restore the vcpkg binary cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: C:\ot-ci\vcpkg-cache
+          key: vcpkg-${{ env.VCPKG_COMMIT }}-${{ env.MINGW_ARCHIVE }}-sdl3-vulkan-mingw-dynamic-dxc-v1
+
+      - name: SDL3 and dxc from vcpkg
+        run: |
+          & "$env:VCPKG_ROOT\vcpkg.exe" install --clean-after-build $env:VCPKG_PACKAGES.Split(' ')
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Save the vcpkg binary cache
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: C:\ot-ci\vcpkg-cache
+          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
+
+      - name: Configure (preset mingw-release)
+        run: |
+          $python = (Get-Command python).Source
+          cmake --preset mingw-release "-DTHANDOR_ISCC=$env:THANDOR_ISCC" "-DPython3_EXECUTABLE=$python" |
+            Tee-Object -FilePath "$env:RUNNER_TEMP/configure.log"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          # the same shaders and installer target as the local release build, or no release
+          $log = Get-Content "$env:RUNNER_TEMP/configure.log" -Raw
+          foreach ($expected in 'mingw-x64: C:/ot-ci/mingw64', 'DXBC from fxc', 'SPIR-V from dxc',
+                                'Patch installer: target installer') {
+            if (-not $log.Contains($expected)) { Write-Error "configure output lacks '$expected'"; exit 1 }
+          }
+          $cache = Get-Content build-mingw-release\CMakeCache.txt
+          if ($cache -match '^THANDOR_DEV_TOOLS:BOOL=ON') { Write-Error 'developer-tools build'; exit 1 }
+
+      - name: Build the installer
+        run: |
+          cmake --build --preset mingw-release --target installer
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Checksum
+        working-directory: build-mingw-release\installer
+        run: |
+          if (-not (Test-Path Thandor-Patch-6.exe)) { Write-Error 'no Thandor-Patch-6.exe'; exit 1 }
+          $hash = (Get-FileHash Thandor-Patch-6.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          # sha256sum format: certutil -hashfile Thandor-Patch-6.exe SHA256, or sha256sum -c
+          [IO.File]::WriteAllText("$PWD\Thandor-Patch-6.exe.sha256", "$hash *Thandor-Patch-6.exe`n")
+          Get-Content Thandor-Patch-6.exe.sha256
+          (Get-Item Thandor-Patch-6.exe).VersionInfo | Format-List ProductName, ProductVersion, FileVersion
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Thandor-Patch-6-${{ steps.version.outputs.version }}
+          path: |
+            build-mingw-release/installer/Thandor-Patch-6.exe
+            build-mingw-release/installer/Thandor-Patch-6.exe.sha256
+          if-no-files-found: error
+
+      # for symbolizing crash logs of the released build (thandor.debug for gdb/addr2line, thandor.map)
+      - uses: actions/upload-artifact@v7
+        with:
+          name: symbols-${{ steps.version.outputs.version }}
+          path: |
+            build-mingw-release/thandor.debug
+            build-mingw-release/thandor.map
+            build-mingw-release/thandor.sym
+          if-no-files-found: error
+
+  release:
+    name: GitHub Release
+    needs: build
+    # only a pushed tag releases; workflow_dispatch (even on a tag) builds the artifact only
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: tools/installer/release-notes.md
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: Thandor-Patch-6-${{ needs.build.outputs.version }}
+          path: dist
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          sed "s/@VERSION@/${VERSION}/g" tools/installer/release-notes.md > notes.md
+          printf '\nSHA256 (Thandor-Patch-6.exe): `%s`\n' "$(cut -d' ' -f1 dist/Thandor-Patch-6.exe.sha256)" >> notes.md
+          gh release create "$GITHUB_REF_NAME" dist/Thandor-Patch-6.exe dist/Thandor-Patch-6.exe.sha256 \
+            --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "Thandor Patch 6 - Open Thandor ${VERSION}" --notes-file notes.md

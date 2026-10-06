@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
-project(open_thandor CXX)
+# The single version source: the generated version header (include/thandor/version.h.in), the version resource of
+# thandor.exe (src/platform/bootstrap/thandor.rc.in) and the installer take it from here.
+project(open_thandor VERSION 1.0.6 LANGUAGES CXX RC)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -300,6 +302,16 @@ add_executable(thandor WIN32
     src/world/terrain/water_relaxation.cpp
 )
 target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# The version header <thandor/version.h> and the resources (icon, VERSIONINFO), generated from project(VERSION).
+configure_file(include/thandor/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor/version.h @ONLY)
+set(THANDOR_RC_ICON ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/bootstrap/thandor.ico)
+configure_file(src/platform/bootstrap/thandor.rc.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc @ONLY)
+# The resources compile in an object library of their own: it has no include directories, because windres hands
+# them to its preprocessor unquoted and fails on a path with spaces (the game's include directories, SDL3's).
+add_library(thandor_resources OBJECT ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc)
+set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc APPEND PROPERTY OBJECT_DEPENDS ${THANDOR_RC_ICON})
+target_link_libraries(thandor PRIVATE thandor_resources)
+target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
 target_link_libraries(thandor PRIVATE kernel32 user32 dbghelp)
 # The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
 # (/LARGEADDRESSAWARE:NO) so every pointer fits.
@@ -507,4 +519,40 @@ if(THANDOR_DEV_TOOLS)
         src/platform/selftest/uiatlas_selftest.cpp
     )
     target_compile_definitions(thandor PRIVATE THANDOR_DEV_TOOLS=1)
+endif()
+
+# ---- Patch installer (step 10) ---------------------------------------------------------------------------------
+# `cmake --build --preset mingw-release --target installer` builds <build>/installer/Thandor-Patch-6.exe ("Thandor
+# Patch 6", version ${PROJECT_VERSION}) with Inno Setup 7: tools/installer/build_installer.py stages thandor.exe,
+# SDL3.dll, thandor.sym and the SDL3 licence in <build>/installer/stage (stripping debug sections where a file still
+# has them) and runs ISCC /DAppVersion=${PROJECT_VERSION} on tools/installer/thandor-patch.iss. The wizard images
+# come from tools/installer/images when it holds them, else Inno's placeholders stay. Only defined for a release
+# build without the developer tools, and only when ISCC (Inno Setup 7, per-user or machine-wide install, or on the
+# PATH, or THANDOR_ISCC=<path to ISCC.exe>) and Python 3 are found.
+if(NOT THANDOR_DEV_TOOLS)
+    set(THANDOR_ISCC_HINTS)
+    set(THANDOR_PROGRAM_FILES_X86 "ProgramFiles(x86)")
+    foreach(THANDOR_ISCC_ROOT "$ENV{LOCALAPPDATA}/Programs" "$ENV{ProgramFiles}" "$ENV{ProgramW6432}"
+                              "$ENV{${THANDOR_PROGRAM_FILES_X86}}")
+        if(THANDOR_ISCC_ROOT)
+            file(TO_CMAKE_PATH "${THANDOR_ISCC_ROOT}/Inno Setup 7" THANDOR_ISCC_HINT)
+            list(APPEND THANDOR_ISCC_HINTS "${THANDOR_ISCC_HINT}")
+        endif()
+    endforeach()
+    find_program(THANDOR_ISCC ISCC HINTS ${THANDOR_ISCC_HINTS} DOC "ISCC.exe of Inno Setup 7 (installer target)")
+    find_package(Python3 COMPONENTS Interpreter QUIET)
+    if(THANDOR_ISCC AND Python3_Interpreter_FOUND)
+        add_custom_target(installer
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/installer/build_installer.py
+                    $<TARGET_FILE_DIR:thandor> --iscc ${THANDOR_ISCC} --version ${PROJECT_VERSION}
+                    --out ${CMAKE_BINARY_DIR}/installer
+            DEPENDS thandor
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Building the patch installer installer/Thandor-Patch-6.exe (version ${PROJECT_VERSION})"
+            USES_TERMINAL
+            VERBATIM)
+        message(STATUS "Patch installer: target installer (ISCC ${THANDOR_ISCC})")
+    else()
+        message(STATUS "Patch installer: no target installer (Inno Setup 7 ISCC or Python 3 not found)")
+    endif()
 endif()

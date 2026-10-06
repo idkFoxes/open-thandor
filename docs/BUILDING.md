@@ -257,6 +257,83 @@ Internally the game still works on the original 200-byte layout (`PersistentSett
 [`include/thandor/core/settings/persistent.h`](../include/thandor/core/settings/persistent.h)); each key of the
 table in `persistent.cpp` maps to one offset. The self-test `OPEN_THANDOR_SELFTEST=settings` checks the format.
 
+## Patch installer
+
+`Thandor-Patch-6.exe` ("Thandor Patch 6", version 1.0.6) installs a release build onto an existing Thandor
+installation, like the original `Thandor-Patch-5.exe` (version 1.05) did; plan and design in
+[plans/step10_installer.md](plans/step10_installer.md). It is made with **Inno Setup 7** (free for non-commercial
+use, [jrsoftware.org](https://jrsoftware.org/isinfo.php); the per-user install in
+`%LOCALAPPDATA%\Programs\Inno Setup 7` is enough) and **Python 3**:
+
+```bat
+cmake --preset mingw-release
+cmake --build --preset mingw-release --target installer
+```
+
+The result is `build-mingw-release\installer\Thandor-Patch-6.exe`. The `installer` target exists only in a build
+without the developer tools (`THANDOR_DEV_TOOLS=OFF`; the test build must never be shipped) and only when CMake finds
+`ISCC.exe` (in `Inno Setup 7` under `%LOCALAPPDATA%\Programs`, `Program Files` or `Program Files (x86)`, on the
+`PATH`, or given as `-DTHANDOR_ISCC=<path to ISCC.exe>`); the configure step prints `Patch installer: ...` either
+way. The target runs [`tools/installer/build_installer.py`](../tools/installer/build_installer.py), which stages
+`thandor.exe`, `SDL3.dll`, `thandor.sym` and the SDL3 licence in `build-mingw-release\installer\stage` (debug
+sections stripped where a file still has them; the GCC build strips `thandor.exe` itself), then compiles
+[`tools/installer/thandor-patch.iss`](../tools/installer/thandor-patch.iss) with `ISCC /DAppVersion=<project
+version>`. The version comes from `project(... VERSION ...)` in `CMakeLists.txt`, so Setup's version resource is
+1.0.6.0 like the one of `thandor.exe`. The script can also be run by hand: `python
+tools/installer/build_installer.py build-mingw-release` (options in the script).
+
+What the installer does: a classic German wizard; it finds the game folder (`Planet4\Thandor\Pfad` of the original
+setup, then `Software\Thandor\GamePath`, then `Program Files (x86)\Thandor`) and refuses folders without
+`DATEN.PCK` and `thandor.exe` and a running game; it copies the existing `thandor.exe` once to `thandor-1.05.exe`,
+installs `thandor.exe`, `SDL3.dll`, `thandor.sym` and `OpenThandor-liesmich.txt`, puts its uninstaller into
+`OpenThandor\` and gives the Users group modify rights on the game folder and `save\`. Uninstalling puts
+`thandor-1.05.exe` back as `thandor.exe` (version 1.05 again); `*.PCK`, `thandor.dat`, `thandor.ini`, the logs and
+`save\` are never touched. It needs 64-bit Windows 10 or newer and is not signed.
+
+**Wizard images:** the finished BMPs in `tools/installer/images` (`wizard-image-<W>x<H>.bmp`,
+`wizard-small-image-<N>.bmp`, every DPI size) are used when that folder holds them; otherwise Inno's own
+placeholder pictures stay. They are made from the game's own art by
+[`tools/installer/make_wizard_images.py`](../tools/installer/make_wizard_images.py) (see
+[`tools/installer/README.md`](../tools/installer/README.md)); `build_installer.py --wizard-image ...
+--wizard-small-image ...` uses other files. The Setup icon is
+[`src/platform/bootstrap/thandor.ico`](../src/platform/bootstrap/thandor.ico).
+
+**Testing:** only on a copy of the game folder, never on the real installation. `build_installer.py BUILD_DIR -D TestLowPriv
+--out <other folder>` (never for a release) builds a Setup that installs without admin rights, for silent tests:
+`Thandor-Patch-6.exe /VERYSILENT /SUPPRESSMSGBOXES /DIR="<copy>"`, then `<copy>\OpenThandor\unins000.exe
+/VERYSILENT /SUPPRESSMSGBOXES`.
+
+### Releases (GitHub Actions)
+
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) builds the installer on a GitHub Windows runner
+(`windows-2025`) with the same toolchain as the local release build: MinGW-Builds GCC 15.2.0 (UCRT, win32 threads,
+SEH) plus Ninja 1.13.2, vcpkg pinned to the commit of the local SDL3 3.2.16 (`sdl3[vulkan]:x64-mingw-dynamic`,
+`directx-dxc:x64-windows` for the SPIR-V shaders; the vcpkg binary packages are cached with `actions/cache`), `fxc`
+of the runner's Windows SDK for the DXBC shaders, Inno Setup 7.1.0 (per-user install) and Python 3.13. The downloads
+are checked against pinned SHA-256 sums. It configures `cmake --preset mingw-release` (never a developer-tools
+build), fails unless the configure output shows `DXBC from fxc`, `SPIR-V from dxc` and the `installer` target, and
+runs `cmake --build --preset mingw-release --target installer`.
+
+- **Run workflow** (workflow_dispatch, Actions tab): builds only; `Thandor-Patch-6.exe` and its `.sha256` are a
+  workflow artifact `Thandor-Patch-6-<version>`, the symbols (`thandor.debug`, `thandor.map`, `thandor.sym`) a
+  second artifact `symbols-<version>`.
+- **Tag `vX.Y.Z` pushed:** builds, checks that the tag is `v` + the version in `project(open_thandor VERSION ...)`
+  of `CMakeLists.txt` (else the run fails before building), then creates the GitHub Release
+  "Thandor Patch 6 - Open Thandor X.Y.Z" with `Thandor-Patch-6.exe` and `Thandor-Patch-6.exe.sha256` attached. Its
+  text is [`tools/installer/release-notes.md`](../tools/installer/release-notes.md) (`@VERSION@` replaced) plus the
+  SHA-256. Only the release job has `contents: write`.
+
+Making a release:
+
+1. Set the version in `CMakeLists.txt` (`project(open_thandor VERSION 1.0.7 ...)`), update `CHANGELOG.md`, build and
+   check locally, commit and push the branch.
+2. Tag that commit and push the tag: `git tag v1.0.7` and `git push origin v1.0.7`.
+3. Wait for the "Release" workflow; the release appears under Releases. A failed run creates no release: delete the
+   tag (`git push origin :refs/tags/v1.0.7`, `git tag -d v1.0.7`), fix, and tag again.
+
+The local paths are not needed on the runner: `cmake/mingw-x64.cmake` takes the toolchain from the environment
+variable `MINGW_ROOT`, SDL3 and dxc come from `%VCPKG_ROOT%`, and the workflow passes `-DTHANDOR_ISCC`.
+
 ## Platform layer (SDL3)
 
 The window, the event pump, keyboard and mouse, the periodic timers, the video presentation and the audio run on
@@ -517,7 +594,7 @@ it were removed from the tree after the code no longer needed them; they are in 
 
 | Script | Output |
 |---|---|
-| `fld.py`, `lev.py`, `pck.py`, `mdl2obj.py` | readers/converters for the game's file formats |
+| `fld.py`, `lev.py`, `pck.py`, `gfx.py`, `mdl2obj.py` | readers/converters for the game's file formats (`gfx.py`: list a `.gfx` image set or export its images as PNG) |
 | `symbolize.py <crash_raw.log> <thandor.map>` | names for the raw crash dump |
 
 ## Documentation generator (`tools/docs`)

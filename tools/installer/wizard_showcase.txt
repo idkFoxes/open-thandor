@@ -1,0 +1,28 @@
+# Screenshots of the showcase level (make_showcase_level.py, started by take_wizard_shots.py with the map name
+# "showcase"). Order: start the skirmish (the start page is laid out for 1280x720 and centred, start button
+# 840,500), zoom in with the mouse wheel at the view centre (positive notches: closer), then clear the selection
+# (right click on empty ground right of the group, 1560,700, outside the crop of make_wizard_images.py), then park
+# the pointer: first on that empty ground (the hover frame, a green bar under a unit, follows the last playfield
+# position of the pointer), then outside the playfield on the side panel (cut off by make_wizard_images.py), then
+# take the shots. Shots: shots\script_NNNN.bmp (0: 4 notches, 1-3: 5 notches, a second apart).
+# Lines that do not start with a number are ignored (comments).
+0 layout 1280 720
+9000 clickuntilingame 840 500 3000
+0 ingame
+0 layout 1920 1080
+0 move 1560 700
+1500 wheel 815 540 4
+2000 move 1560 700
+2200 rclick 1560 700
+2500 move 1560 700
+2700 move 1910 1070
+4000 shot
+4500 wheel 815 540 1
+5000 move 1560 700
+5200 rclick 1560 700
+5500 move 1560 700
+5700 move 1910 1070
+7000 shot
+8000 shot
+9000 shot
+10000 quit
