@@ -32,7 +32,7 @@ void ArmyRuntimeMaintenance_DispatchClassMethodDRecursive
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *ownerNode)
 
 {
-  ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(worldRuntime,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+  ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(worldRuntime,WorldOwnerNode_ModelRuntime(ownerNode));
 }
 
 /* Army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
@@ -49,7 +49,7 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
   ArmyRuntimeSlot *armyRuntime;
   int ownerFactionIndex;
   
-  modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+  modelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
   armyRuntime = (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime;
   ownerFactionIndex = armyRuntime->factionIndex;
   ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive(worldRuntime,modelRuntime);
@@ -83,8 +83,8 @@ void ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
     node->runtimeFlags = node->runtimeFlags & ~(TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE | TERRAIN_OCCUPANCY_FLAG_PRESENT);
     /* the owning army runtime (+8) of the node's model runtime */
     ArmyRuntime_InitializeTerrainOccupancyFlags
-              (armyContext,((ModelRuntimeSlot *)node->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
-    ModelNodeRuntime_RefreshStateTint((ModelRuntimeNode *)node);
+              (armyContext,WorldOwnerNode_ModelRuntime(node)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
+    ModelNodeRuntime_RefreshStateTint(ModelView_Cast<ModelRuntimeNode>(node));
   }
 }
 
@@ -114,7 +114,7 @@ void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
   /* node->worldXQ12 goes to the callees' worldYQ12 and node->worldYQ12 to their worldXQ12,
      as in the original; one of the two namings is swapped. */
   worldYQ12 = node->worldXQ12;
-  ownerArmy = ((ModelRuntimeSlot *)node->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+  ownerArmy = WorldOwnerNode_ModelRuntime(node)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   worldXQ12 = node->worldYQ12;
   /* faction 0 = none */
   if (ownerArmy->factionIndex == 0) {
@@ -154,9 +154,9 @@ Bool8 ArmyRuntimeNode_DispatchTypedCallback(Ptr32<ArmyRuntimeSlot> *armyRuntimeH
 
   /* the view's first field (modelDefinition) is the army's model runtime pointer */
   accepted = (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation
-            [((ModelRuntimePlacementValidationView *)*armyRuntimeHolder)->modelDefinition->
+            [reinterpret_cast<ModelRuntimePlacementValidationView *>(armyRuntimeHolder->get())->modelDefinition->
              runtimeClassId])
-                    (worldRuntime,(ModelRuntimePlacementValidationView *)*armyRuntimeHolder);
+                    (worldRuntime,reinterpret_cast<ModelRuntimePlacementValidationView *>(armyRuntimeHolder->get())); /* army slot read as the view */
   return accepted;
 }
 
@@ -249,7 +249,8 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
       if (definition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
         /* a pad also refunds its unlaunched linked assets */
         linkedAssetRefund = ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
-                              ((ArmyRuntimeLinkedChildMaskSlotView *)modelRuntime);
+                              (/* the pad's model runtime read through the linked-child mask view */
+                               reinterpret_cast<ArmyRuntimeLinkedChildMaskSlotView *>(modelRuntime));
         g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
              g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + linkedAssetRefund;
       }
@@ -371,7 +372,7 @@ static Bool8 ArmyPlacementSlot_CanPlaceBuilding
 {
   return ArmyPlacement_CanPlaceBuilding
            (placementMode,(ArmyPlacementClearancePaddingQ12)placementClearancePaddingQ12,placementHeading,
-            terrainHeightQ12,worldYQ12,worldXQ12,(ModelDefinition *)modelDefinition,ownerFactionIndex,worldRuntime,
+            terrainHeightQ12,worldYQ12,worldXQ12,ModelView_Cast<ModelDefinition>(modelDefinition),ownerFactionIndex,worldRuntime,
             outPlacementValue);
 }
 
@@ -382,7 +383,7 @@ static Bool8 ArmyPlacementSlot_CanPlaceAnchoredModel
 {
   return ArmyPlacement_CanPlaceAnchoredModel
            (placementMode,(ArmyPlacementClearancePaddingQ12)placementClearancePaddingQ12,placementHeading,
-            terrainHeightQ12,worldYQ12,worldXQ12,(ModelDefinition *)modelDefinition,ownerFactionIndex,worldRuntime,
+            terrainHeightQ12,worldYQ12,worldXQ12,ModelView_Cast<ModelDefinition>(modelDefinition),ownerFactionIndex,worldRuntime,
             outPlacementValue);
 }
 
