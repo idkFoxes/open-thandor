@@ -1527,6 +1527,33 @@ static_assert(sizeof(UiSingleLineTextControl) == 0x5C &&
 static_assert(sizeof(UiWrappedTextControl) == 0x5C &&
               offsetof(UiWrappedTextControl, text) == 0x54,
               "UiWrappedTextControl keeps its 32-bit layout");
+
+/* Step 13 U1: the control types of the six template vtables that had none (UiNodeBase + N dwords each). */
+static_assert(sizeof(UiFocusProxyControl) == 0x4C + 4 * 4 && offsetof(UiFocusProxyControl, labelFlags) == 0x4C &&
+                  offsetof(UiFocusProxyControl, focusChild) == 0x50 && offsetof(UiFocusProxyControl, text) == 0x54 &&
+                  offsetof(UiFocusProxyControl, styleOverride) == 0x58,
+              "UiFocusProxyControl is UiNodeBase + 4 dwords (g_UiFocusProxyControlVtable)");
+static_assert(sizeof(UiListOffsetControl) == 0x4C + 4 * 4 && offsetof(UiListOffsetControl, labelFlags) == 0x4C &&
+                  offsetof(UiListOffsetControl, wrapWidth) == 0x50 && offsetof(UiListOffsetControl, text) == 0x54 &&
+                  offsetof(UiListOffsetControl, styleOverride) == 0x58,
+              "UiListOffsetControl is UiNodeBase + 4 dwords (g_UiListOffsetControlVtable)");
+static_assert(sizeof(UiLayoutContainerControl<1>) == 0x54 && sizeof(UiLayoutContainerControl<2>) == 0x58 &&
+                  sizeof(UiLayoutContainerControl<3>) == 0x5C && sizeof(UiLayoutContainerControl<4>) == 0x60 &&
+                  sizeof(UiLayoutContainerControl<8>) == 0x70 && sizeof(UiLayoutContainerControl<9>) == 0x74 &&
+                  sizeof(UiLayoutContainerControl<13>) == 0x84,
+              "UiLayoutContainerControl<N> is UiNodeBase + pageCount + N page slots");
+static_assert(offsetof(UiLayoutContainerControl<13>, pageCount) == offsetof(UiPageStackControl, pageCount) &&
+                  offsetof(UiLayoutContainerControl<13>, pages) == offsetof(UiPageStackControl, pages) &&
+                  sizeof(UiLayoutContainerControl<1>) == sizeof(UiPageStackControl),
+              "UiLayoutContainerControl<N> keeps the UiPageStackControl prefix");
+static_assert(sizeof(UiCommandSpriteButtonWithDetails) == 0x4C + 12 * 4 &&
+                  offsetof(UiCommandSpriteButtonWithDetails, activationInputState) == 0x78,
+              "UiCommandSpriteButtonWithDetails is UiNodeBase + 12 dwords (g_UiCommandSpriteButtonWithDetailsVtable)");
+static_assert(sizeof(UiCommandVisibilitySingleLineText) == 0x4C + 4 * 4 &&
+                  offsetof(UiCommandVisibilitySingleLineText, labelFlags) == 0x4C &&
+                  sizeof(UiCommandVisibilityWrappedText) == 0x4C + 4 * 4 &&
+                  offsetof(UiCommandVisibilityWrappedText, labelFlags) == 0x4C,
+              "the command-visibility texts are UiNodeBase + 4 dwords");
 static_assert(sizeof(UiRangeSliderControl) == 0x68 &&
               offsetof(UiRangeSliderControl, clickSound) == 0x64,
               "UiRangeSliderControl keeps its 32-bit layout");
