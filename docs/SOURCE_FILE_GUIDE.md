@@ -632,7 +632,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 
 Module header: [`text.h`](../include/thandor/ui/text.h)
 
-- [`font.cpp / font.h`](source_guide/ui.md#file-ui-text-font) - no file comment; main functions `FontGlyph_GetLogicalSizeActiveFont`, `FontGlyph_GetLogicalSizeForStyle`, `FontRuntime_Init`
+- [`font.cpp / font.h`](source_guide/ui.md#file-ui-text-font) - no file comment; main functions `FontGlyph_GetLogicalSizeForStyle`, `FontGlyph_GetLogicalSizeActiveFont`, `FontRuntime_Init`
 - [`richtext_render.cpp / richtext_render.h`](source_guide/ui.md#file-ui-text-richtext-render) - no file comment; main functions `RichTextCommandStream_DrawSingleLine`, `RichTextCommandStream_MeasureLine`, `RichTextCommandStream_MeasureWrappedBlock`
 - [`types.h`](source_guide/ui.md#file-ui-text-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
