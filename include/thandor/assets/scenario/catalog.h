@@ -28,7 +28,7 @@
 /* Campaign asset (level\<name>.cgn, g_FrontendLoadedCampaignAsset): a 0x200-byte header followed by
    levelRecordCount level records of 0x180 bytes. The original walks the records with a cursor that starts at
    the asset base and advances by 0x180, reading the fields at cursor + 0x200 + field offset; the port keeps
-   that cursor and reads ((CampaignAsset *)cursor)->levels[0] (= record i of the real asset). */
+   that cursor and reads levels[0] of a CampaignAsset view at the cursor (= record i of the real asset). */
 typedef struct CampaignLevelRecord {
     int32_t successorLevelIds[8];        /* +0x000 next level id per end selection (g_EndMovieSelectionIndex), <0 = end */
     int32_t endMovieNumbersVariant[8];   /* +0x020 end movie number per end selection, nonzero g_EndMovieVariantIndex */

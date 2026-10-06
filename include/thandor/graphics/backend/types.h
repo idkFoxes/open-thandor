@@ -81,6 +81,12 @@ struct SoftwareFramebufferAccess {
     Ptr32<uint8_t> pixels; 
 };
 
+/* The pixels of a 4-byte framebuffer as ARGB dwords (the pixel block is dword aligned). */
+static inline uint32_t *SoftwareFramebuffer_Pixels32(const SoftwareFramebufferAccess *framebuffer)
+{
+    return reinterpret_cast<uint32_t *>(framebuffer->pixels.get()); /* 32-bit pixels of the byte block */
+}
+
 struct SoftwarePixelPackTables {
     uint32_t blue[256]; 
     uint32_t green[256]; 
