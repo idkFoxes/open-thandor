@@ -22,9 +22,33 @@ static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 
 
 static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16 = {};
 
-static int g_TechnologyPanelRowFlagOffsets[7] = {5444, 5548, 5652, 5756, 5860, 5964, 6068};
+/* The seven area tabs (technologyAreaTab1..7), the dwords in front of them and their icons, by area index. */
+static UiFramedTextButtonControl InGameUiImage::*const g_TechnologyPanelAreaTabs[TECHNOLOGY_AREA_TAB_COUNT] = {
+    &InGameUiImage::technologyAreaTab1,
+    &InGameUiImage::technologyAreaTab2,
+    &InGameUiImage::technologyAreaTab3,
+    &InGameUiImage::technologyAreaTab4,
+    &InGameUiImage::technologyAreaTab5,
+    &InGameUiImage::technologyAreaTab6,
+    &InGameUiImage::technologyAreaTab7};
 
-static int g_TechnologyPanelRowValueOffsets[7] = {6164, 6256, 6348, 6440, 6532, 6624, 6716};
+static UiTechnologyAreaTabPrefix InGameUiImage::*const g_TechnologyPanelAreaTabPrefixes[TECHNOLOGY_AREA_TAB_COUNT] = {
+    &InGameUiImage::technologyAreaTab1_prefix,
+    &InGameUiImage::technologyAreaTab2_prefix,
+    &InGameUiImage::technologyAreaTab3_prefix,
+    &InGameUiImage::technologyAreaTab4_prefix,
+    &InGameUiImage::technologyAreaTab5_prefix,
+    &InGameUiImage::technologyAreaTab6_prefix,
+    &InGameUiImage::technologyAreaTab7_prefix};
+
+static UiImagePanelControl InGameUiImage::*const g_TechnologyPanelAreaTabIcons[TECHNOLOGY_AREA_TAB_COUNT] = {
+    &InGameUiImage::technologyAreaTab1Icon,
+    &InGameUiImage::technologyAreaTab2Icon,
+    &InGameUiImage::technologyAreaTab3Icon,
+    &InGameUiImage::technologyAreaTab4Icon,
+    &InGameUiImage::technologyAreaTab5Icon,
+    &InGameUiImage::technologyAreaTab6Icon,
+    &InGameUiImage::technologyAreaTab7Icon};
 
 /* Parts of the cost rich-text stream g_InGameTechnologyCostRichText: the literal-colour command, its eight colour
    digits, then the xenite cost text. */
@@ -100,8 +124,7 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
     areaIndex = 0;
     for (slotIndex = 1; slotIndex <= TECHNOLOGY_DEFINITION_SLOT_COUNT; slotIndex++) {
       if (definition->researchTechnologyIds[slotIndex] == selectedModelRuntime->researchTechnologyId) {
-        ((UiFramedTextButtonControl *)THANDOR_UI_AT(inGameRoot,g_TechnologyPanelRowFlagOffsets[areaIndex]))->
-          selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
+        (ui->*g_TechnologyPanelAreaTabs[areaIndex]).selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
         break;
       }
       areaIndex++;
@@ -171,7 +194,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   UiScrollableControl *scrollableControl;
   ModelRuntimeSlot *entityModelRuntime;
   int technologyId;
-  int rowFlagOffset;
+  UiTechnologyAreaTabPrefix *areaTabPrefix;
   TechnologyXeniteCostQ4 xeniteCost;
   SelectionPlayerRuntimeBlock *playerBlock;
   TechnologyAsset *technologyAsset;
@@ -236,23 +259,18 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       if (isAvailable) {
         technologyId = definition->researchTechnologyIds[slotIndex];
         /* the area tab's icon (technologyAreaTabNIcon) shows subresource technologyId of tech.gfx */
-        ((UiImagePanelControl *)
-         THANDOR_UI_AT(inGameRoot,g_TechnologyPanelRowValueOffsets[areaIndex]))->
-        subresource = technologyId;
-        rowFlagOffset = g_TechnologyPanelRowFlagOffsets[areaIndex];
-        /* rowFlagOffset is the area tab technologyAreaTabN; its technologyAreaTabN_prefix (the dwords 8 and 4
-           bytes before it) holds the area's text id and a text pointer */
-        actionId = ((UiSelectableControl *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))->actionId;
-        TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).nameTextResourceId =
-             technologyId * 2 + TECHNOLOGY_TEXT_ID_BASE;
+        (ui->*g_TechnologyPanelAreaTabIcons[areaIndex]).subresource = technologyId;
+        /* the area tab technologyAreaTabN; its technologyAreaTabN_prefix (the dwords 8 and 4 bytes before it)
+           holds the area's text id and a text pointer */
+        actionId = (ui->*g_TechnologyPanelAreaTabs[areaIndex]).selectable.actionId;
+        areaTabPrefix = &(ui->*g_TechnologyPanelAreaTabPrefixes[areaIndex]);
+        areaTabPrefix->nameTextResourceId = technologyId * 2 + TECHNOLOGY_TEXT_ID_BASE;
         /* tab label: the technology name (payload 0) and Xenite cost (payload 1), the number formatted into the
            label text buffer at word 0xC0; the expanded label becomes the tab's tooltip text */
         labelTemplate = TextResource_Resolve(TEXT_ID_TECHNOLOGY_AREA_TAB_LABEL);
-        technologyName = TextResource_Resolve
-                                 (TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).
-                                  nameTextResourceId);
+        technologyName = TextResource_Resolve(areaTabPrefix->nameTextResourceId);
         RichTextCommandStream_PatchPayloadBySelector(0,technologyName,labelTemplate);
-        tooltipText = TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).tooltipText;
+        tooltipText = areaTabPrefix->tooltipText;
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                    (int)g_TechnologyAsset->records[definition->researchTechnologyIds[slotIndex]].xeniteCostQ4 >> 4,

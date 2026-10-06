@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/build_catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -112,7 +113,7 @@ static void BuildCatalog_FillSlots(InGameRuntimeRootUiGridView *inGameUiGridView
   uint32_t slotIndex;
 
   for (slotIndex = 0; slotIndex < slotCount; slotIndex++) {
-    slotControl = (UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,slotOffsets[slotIndex]);
+    slotControl = Thandor_At<UiCatalogEntryControl>(inGameUiGridView,slotOffsets[slotIndex]);
     if (slotIndex < itemCount) {
       slotControl->command.sprite.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
       xeniteCost = records[slotIndex]->buildXeniteCostQ4;

@@ -8,6 +8,7 @@
 #include <thandor/ui/ingame/selection_detail.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -31,7 +32,21 @@ UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailEnergyTextUtf16 = {};
 
 UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16 = {};
 
-int g_InGameSelectionDetailGridCellOffsets[12] = {41464, 41560, 41656, 41752, 41848, 41944, 42040, 42136, 42232, 42328, 42424, 42520};
+/* Byte offsets of the 12 grid cells of the multi-selection page (multiSelectionCell00..11, UiArmyMetricsPanel) in
+   the in-game UI image. */
+int g_InGameSelectionDetailGridCellOffsets[12] = {
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell00)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell01)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell02)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell03)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell04)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell05)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell06)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell07)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell08)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell09)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell10)),
+    static_cast<int>(offsetof(InGameUiImage,multiSelectionCell11))};
 
 /* Copies a 64-character name text into one of the selection detail text slots. */
 static void InGameSelectionDetailPanel_CopyName(uint16_t *destination,const uint16_t *source)
@@ -246,7 +261,7 @@ static void InGameSelectionDetailPanel_ShowEntityGrid(InGameRuntimeRoot *root,Ui
   int *gridCellOffset;
   int remainingCells;
   int slotIndex;
-  int cellOffset;
+  UiArmyMetricsPanel *cell;
   Ptr32<GameEntityRuntime> *entitySlots;
   GameEntityRuntime *entity;
   ArmyAssetRecordPrefix *foundArmyAsset;
@@ -259,19 +274,19 @@ static void InGameSelectionDetailPanel_ShowEntityGrid(InGameRuntimeRoot *root,Ui
   for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
     entity = entitySlots[slotIndex];
     if ((entity != nullptr) && (remainingCells != 0)) {
-      cellOffset = *gridCellOffset;
-      ((UiArmyMetricsPanel *)THANDOR_UI_AT(root,cellOffset))->entity = (RuntimeModelFactionPrefix *)entity;
+      cell = Thandor_At<UiArmyMetricsPanel>(root,*gridCellOffset);
+      cell->entity = (RuntimeModelFactionPrefix *)entity;
       /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
          foundArmyAsset) */
       ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);
-      ((UiArmyMetricsPanel *)THANDOR_UI_AT(root,cellOffset))->base.textureSource =
+      cell->base.textureSource =
            Thandor_U32ToPointer<GraphicsTextureSourceAsset>(foundArmyAsset[1].registryId); /* 5f-format: ArmyAssetRecord +0x18 (dword read as texture source) */
       remainingCells--;
       gridCellOffset++;
     }
   }
   for (; remainingCells != 0; remainingCells--) {
-    clearedControlBytes = (uint8_t *)&((UiArmyMetricsPanel *)THANDOR_UI_AT(root,*gridCellOffset))->base.textureSource;
+    clearedControlBytes = Thandor_Bytes(&Thandor_At<UiArmyMetricsPanel>(root,*gridCellOffset)->base.textureSource);
     clearedControlBytes[0] = 0;
     clearedControlBytes[1] = 0;
     clearedControlBytes[2] = 0;

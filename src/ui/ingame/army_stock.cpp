@@ -7,13 +7,37 @@
 
 #include <thandor/ui/ingame/army_stock.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
+/* Byte offsets of the 24 army stock slots (armyStockSlot00..23, UiCommandSpriteButtonControl; slot 23 is typed
+   UiCatalogEntryControl, whose command part is the same control) in the in-game UI image. */
 static int32_t g_UiCommandSpriteVariantAOffsets[24] = {
-    /*  0 */ 36116, 36240, 36364, 36488, 36612, 36736, 36860, 36984,
-    /*  8 */ 37108, 37232, 37356, 37480, 37604, 37728, 37852, 37976,
-    /* 16 */ 38100, 38224, 38348, 38472, 38596, 38720, 38844, 38968};
+    /*  0 */ static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot00)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot01)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot02)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot03)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot04)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot05)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot06)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot07)),
+    /*  8 */ static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot08)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot09)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot10)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot11)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot12)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot13)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot14)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot15)),
+    /* 16 */ static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot16)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot17)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot18)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot19)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot20)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot21)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot22)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot23))};
 
 static uint32_t g_UiCommandSpriteVariantAColumnCount = 0;
 
@@ -72,6 +96,7 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
   int remainingSlots;
   int panelWidth;
   int slotOffset;
+  UiCommandSpriteButtonControl *slotControl;
   uint32_t itemCount;
   FactionArmyAssetCount remainingAssets;
   int panelHeight;
@@ -141,15 +166,16 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
   offsetTable = g_UiCommandSpriteVariantAOffsetTables[columnCount];
   for (slotIndex = 0; slotIndex < ARMY_STOCK_ENTRY_COUNT; slotIndex++) {
     slotOffset = offsetTable[slotIndex];
+    slotControl = Thandor_At<UiCommandSpriteButtonControl>(ui,slotOffset);
     if (slotIndex < itemCount) {
-      THANDOR_UI_AT(node,slotOffset)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+      slotControl->sprite.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
       slotTexture = g_UiCommandSpriteVariantARecords[slotIndex]->textureSource;
     }
     else {
-      THANDOR_UI_AT(node,slotOffset)->nodeFlags |= UI_NODE_SUPPRESSED;
+      slotControl->sprite.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
       slotTexture = nullptr;
     }
-    ((UiCommandSpriteButtonControl *)THANDOR_UI_AT(node,slotOffset))->sprite.primaryTextureSource = slotTexture;
+    slotControl->sprite.primaryTextureSource = slotTexture;
   }
   ui->armyStockPanel.selectable.base.vtable->layout(&ui->armyStockPanel.selectable.base);
 }

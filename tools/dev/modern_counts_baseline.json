@@ -1,5 +1,5 @@
 {
- "revision": "1f715bf9",
+ "revision": "886a4b70",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -118,15 +118,15 @@
    "core": 5,
    "gameplay": 22,
    "platform": 18,
-   "ui": 1134,
+   "ui": 1048,
    "world": 66
   },
   "ingame_ui": {
-   "ui": 85
+   "ui": 4
   },
   "ui_at_sibling": {
    "core": 3,
-   "ui": 251
+   "ui": 238
   },
   "frontend_ui": {
    "gameplay": 10,
