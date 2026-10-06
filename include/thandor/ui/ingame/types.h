@@ -745,8 +745,8 @@ struct InGameTargetingRootTraversalView {
 
 /* UI template node links: offsets from the template start, made into pointers when the
    template is copied and linked. */
-#define UI_TEMPLATE_LINK(offset) ((UiNodeBase *)(offset))
-#define UI_TEMPLATE_NO_LINK ((UiNodeBase *)-1)
+#define UI_TEMPLATE_LINK(offset) (reinterpret_cast<UiNodeBase *>(static_cast<intptr_t>(offset)))
+#define UI_TEMPLATE_NO_LINK (reinterpret_cast<UiNodeBase *>(static_cast<intptr_t>(-1)))
 /* The same as initialisers of a Ptr32 field of a template image, constant at compile time
    (tools/dev/ui_image_retype.py writes these). */
 #define UI_TEMPLATE_LINK_BITS(offset) THANDOR_PTR32_BITS(offset)
@@ -1280,7 +1280,7 @@ template <class T> inline InGameUiImage *InGameUi_Image(T *root)
    context (its interaction state starts with the node's UiNodeBase). */
 template <class T> inline WorldRuntimeContext *InGameUi_WorldRuntime(T *root)
 {
-  return reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(root)->worldView);
+  return FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
 }
 /* The twelve metric cells of the multi-selection page in grid order (the members behind the byte offsets of
    g_InGameSelectionDetailGridCellOffsets). */
