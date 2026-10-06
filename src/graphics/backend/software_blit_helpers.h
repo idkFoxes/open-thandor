@@ -8,7 +8,9 @@
 #define THANDOR_GRAPHICS_BACKEND_SOFTWARE_BLIT_HELPERS_H
 
 #include <thandor/core/types.h>
+#include <thandor/core/x86_emulation.h>
 #include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/resources/texture.h>
 #include <thandor/graphics/resources/types.h>
 #include <thandor/ui/controls/types.h>
 #include "software_raster.h"
@@ -59,12 +61,12 @@ static inline int Blit_IsOpaque(uint32_t argb)
 /* The two dwords of a palette entry: +0 ARGB colour, +4 converted pixel with the alpha on top. */
 static inline uint32_t Blit_PaletteColor(const BlitRegion *region, uint8_t index)
 {
-    return *(const uint32_t *)(region->palette + index * 8u);
+    return Thandor_LoadU32(region->palette + index * 8u);
 }
 
 static inline uint32_t Blit_PalettePixel(const BlitRegion *region, uint8_t index)
 {
-    return *(const uint32_t *)(region->palette + index * 8u + 4u);
+    return Thandor_LoadU32(region->palette + index * 8u + 4u);
 }
 
 /* ARGB -> framebuffer pixel through the g_SoftwarePixelPackTables channel tables. The alpha byte is
@@ -164,7 +166,7 @@ static inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *source
                                           SoftwareFramebufferAccess *framebuffer, int pixelBytes, int drawX, int drawY,
                                           int clipMaxY, int clipMaxX, int clipMinY, int clipMinX, BlitRegion *region)
 {
-    const uint8_t *asset = (const uint8_t *)sourceAsset;
+    const uint8_t *asset = GraphicsTextureSource_Bytes(sourceAsset);
     const GraphicsTextureSourceEntry *entry;
     int left;
     int top;
@@ -176,8 +178,7 @@ static inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *source
         (int)framebuffer->bytesPerPixel != pixelBytes) {
         return 0;
     }
-    entry = (const GraphicsTextureSourceEntry *)(asset + sourceAsset->tableDescriptor.subresourceTableOffset) +
-            subresourceIndex;
+    entry = GraphicsTextureSource_Entries(sourceAsset) + subresourceIndex;
     if (entry->paletteIndex == -1) {
         region->texelBytes = 4;
         region->palette = nullptr;

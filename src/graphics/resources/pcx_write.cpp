@@ -67,7 +67,7 @@ static void Pcx_BuildCanvas(uint8_t *canvas,const uint8_t *assetBase,const Graph
 
   memset(canvas,0,rowStride * entry->logicalHeight);
   if (planeCount == 3) {
-    const uint32_t *sourcePixel = (const uint32_t *)(assetBase + entry->dataOffset);
+    const uint32_t *sourcePixel = reinterpret_cast<const uint32_t *>(assetBase + entry->dataOffset); /* ARGB pixels */
     for (row = 0; row < entry->pixelHeight; row++) {
       for (column = 0; column < entry->pixelWidth; column++) {
         uint32_t argb = *sourcePixel++;
@@ -168,7 +168,7 @@ static Bool8 Pcx_EncodeScanLines(uint8_t **cursor,int32_t *budget,const uint8_t 
 Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBytes,uint32_t *outByteCount,
                        uint32_t *outError)
 {
-  const uint8_t *assetBase = (const uint8_t *)capture;
+  const uint8_t *assetBase = reinterpret_cast<const uint8_t *>(capture); /* offsets are asset-relative */
   const GraphicsTextureSourceEntry *entry;
   Bool8 directColor;
   uint32_t planeCount;
@@ -176,6 +176,7 @@ Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBy
   uint32_t reserve;
   uint8_t *canvas;
   uint8_t *output;
+  void *block;
   uint32_t blockSize;
   uint8_t *cursor;
   int32_t budget;
@@ -187,7 +188,7 @@ Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBy
     *outError = FATAL_ERROR_GENERAL_FAILURE;
     return false;
   }
-  entry = (const GraphicsTextureSourceEntry *)(assetBase + (capture->tableDescriptor).subresourceTableOffset);
+  entry = reinterpret_cast<const GraphicsTextureSourceEntry *>(assetBase + (capture->tableDescriptor).subresourceTableOffset);
   if (entry->logicalWidth == 0 || entry->logicalHeight == 0) {
     *outError = FATAL_ERROR_GENERAL_FAILURE;
     return false;
@@ -197,14 +198,16 @@ Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBy
   reserve = directColor ? PCX_RESERVE_DIRECT_COLOR : PCX_RESERVE_PALETTE;
   bytesPerLine = (entry->logicalWidth + 1) & ~1u;
 
-  status = g_MemoryApi.alloc(bytesPerLine * entry->logicalHeight * planeCount,(void **)&canvas);
+  status = g_MemoryApi.alloc(bytesPerLine * entry->logicalHeight * planeCount,&block);
   if (status != 0) {
     *outError = status;
     return false;
   }
+  canvas = static_cast<uint8_t *>(block);
   Pcx_BuildCanvas(canvas,assetBase,entry,bytesPerLine,planeCount);
 
-  status = g_MemoryApi.allocLargestFreeBlock((void **)&output,&blockSize);
+  status = g_MemoryApi.allocLargestFreeBlock(&block,&blockSize);
+  output = static_cast<uint8_t *>(block);
   if (status != 0) {
     g_MemoryApi.free(canvas);
     *outError = status;

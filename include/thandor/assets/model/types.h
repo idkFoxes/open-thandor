@@ -217,4 +217,24 @@ struct ModelAssetHeader {
     uint8_t reservedB4_1FF[332];
 };
 
+/* One MDL definition record, three views: the registry (g_ModelDefinitionRegistry) keeps the
+   ModelDefinitionRecordPrefix (its first 0xC bytes), registration works on ModelDefinitionResolveView, the
+   runtime reads ModelDefinition. These convert between the views of the same record bytes. */
+static_assert(offsetof(ModelDefinition, byteSize) == offsetof(ModelDefinitionRecordPrefix, byteSize));
+static_assert(offsetof(ModelDefinition, definitionId) == offsetof(ModelDefinitionRecordPrefix, definitionId));
+static_assert(offsetof(ModelDefinitionResolveView, definitionId) == offsetof(ModelDefinition, definitionId));
+static_assert(sizeof(ModelDefinitionResolveView) <= sizeof(ModelDefinition));
+static inline ModelDefinition *ModelDefinition_FromPrefix(ModelDefinitionRecordPrefix *prefix)
+{
+  return reinterpret_cast<ModelDefinition *>(prefix);
+}
+static inline ModelDefinition *ModelDefinition_FromResolveView(ModelDefinitionResolveView *view)
+{
+  return reinterpret_cast<ModelDefinition *>(view);
+}
+static inline ModelDefinitionRecordPrefix *ModelDefinitionResolveView_Prefix(ModelDefinitionResolveView *view)
+{
+  return reinterpret_cast<ModelDefinitionRecordPrefix *>(view);
+}
+
 #endif /* THANDOR_ASSETS_MODEL_TYPES_H */

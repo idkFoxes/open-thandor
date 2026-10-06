@@ -7,6 +7,7 @@
 
 #include <thandor/assets/rom/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -30,18 +31,18 @@ uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
 
   if (asset->recordCountHeader.common.magic == ASSET_MAGIC_ROM &&
       asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_ROM_00010005) {
-    record = (RomAssetRecordPrefix *)(asset + 1);
+    record = Asset_RecordAfter<RomAssetRecordPrefix>(asset);
     for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
       registrationError = RomAssetRecord_RegisterAndRelocate(record,asset);
       if (registrationError != 0) {
         return registrationError;
       }
       /* advance by the record's leading byte size */
-      record = (RomAssetRecordPrefix *)((uint8_t *)record + record->byteSize);
+      record = Asset_RecordAt<RomAssetRecordPrefix>(record,record->byteSize);
     }
     return 0;
   }
-  Package_SetLastErrorPath((uint16_t *)g_EngineZentraleRomPathUtf16);
+  Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
   /* an invalid header also fails with the registry-full code */
   return FATAL_ERROR_ROM_REGISTRY_FULL;
 }
@@ -121,7 +122,7 @@ RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue sl
 
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
-    if ((WorldRuntimeNode *)slotValue == slotCursor->runtimeRootNode) {
+    if (reinterpret_cast<WorldRuntimeNode *>(slotValue) == slotCursor->runtimeRootNode) { /* the slot value is a node address */
       return slotCursor->record;
     }
     slotCursor++;
@@ -136,15 +137,17 @@ void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
 
 {
   int recordsRemaining;
+  RomRecord *cursor;
 
-  recordsRemaining = ((RomRecord *)recordTable)->entryCount;
+  cursor = static_cast<RomRecord *>(recordTable);
+  recordsRemaining = cursor->entryCount;
   /* the cursor starts at the header, so the entry it tests lies one header size further on */
   while (recordsRemaining != 0) {
-    if (recordId == ((FrontendRomActionEntry *)((RomRecord *)recordTable + 1))->linkedRecordId) {
-      return (RomRecord *)recordTable + 1;
+    if (recordId == Asset_RecordAfter<FrontendRomActionEntry>(cursor)->linkedRecordId) {
+      return cursor + 1;
     }
     recordsRemaining--;
-    recordTable = (uint8_t *)recordTable + FRONTEND_ROM_ACTION_ENTRY_SIZE;
+    cursor = Asset_RecordAt<RomRecord>(cursor,FRONTEND_ROM_ACTION_ENTRY_SIZE);
   }
   return nullptr;
 }
@@ -157,16 +160,18 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
 {
   int recordIndex;
   int recordsRemaining;
+  RomRecord *cursor;
 
-  recordsRemaining = ((RomRecord *)table)->entryCount;
+  cursor = static_cast<RomRecord *>(table);
+  recordsRemaining = cursor->entryCount;
   recordIndex = 0;
   while (recordsRemaining != 0) {
-    if (recordId == ((FrontendRomActionEntry *)((RomRecord *)table + 1))->linkedRecordId) {
+    if (recordId == Asset_RecordAfter<FrontendRomActionEntry>(cursor)->linkedRecordId) {
       return recordIndex;
     }
     recordIndex++;
     recordsRemaining--;
-    table = (uint8_t *)table + FRONTEND_ROM_ACTION_ENTRY_SIZE;
+    cursor = Asset_RecordAt<RomRecord>(cursor,FRONTEND_ROM_ACTION_ENTRY_SIZE);
   }
   return UINT32_MAX;
 }
@@ -176,20 +181,22 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
    or registering fails. */
 static Bool8 RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t *outError)
 {
-  RomAssetHeader *asset;
+  SpriteAssetHeader *asset;
   SpriteAssetHeader *existingSprite;
+  uint16_t *spritePath;
   uint32_t loadErrorCode;
   uint32_t spriteRegisterError;
 
   /* the sprite file name (UTF-16) follows the node header */
   /* cannot fail */
-  WidePath_SetExtensionCode(ASSET_MAGIC_SPR,(uint16_t *)(node + 1));
-  asset = (RomAssetHeader *)Package_LoadEntry((uint16_t *)(node + 1),&loadErrorCode);
+  spritePath = Asset_RecordAfter<uint16_t>(node);
+  WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
+  asset = static_cast<SpriteAssetHeader *>(Package_LoadEntry(spritePath,&loadErrorCode));
   if (asset == nullptr) {
     *outError = loadErrorCode;
     return true;
   }
-  existingSprite = SpriteAssetRegistry_FindById(((SpriteAssetHeader *)asset)->registryHeader.registryId);
+  existingSprite = SpriteAssetRegistry_FindById(asset->registryHeader.registryId);
   if (existingSprite != nullptr) {
     node->spriteAssetReference.spriteAsset = existingSprite;
     Resource_Release(asset);
@@ -197,8 +204,8 @@ static Bool8 RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t
   }
   /* set only for sprites this node loaded itself */
   node->ownedNestedResourcePresent++;
-  node->spriteAssetReference.spriteAsset = (SpriteAssetHeader *)asset;
-  spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
+  node->spriteAssetReference.spriteAsset = asset;
+  spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers(asset);
   if (spriteRegisterError != 0) {
     *outError = spriteRegisterError;
     return true;
@@ -225,7 +232,7 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
        depth check; bounded here because a malformed ROM would write past both. */
     if (depth >= ROM_NODE_TREE_MAX_DEPTH) {
       Thandor_Log("RomAssetRecord_RegisterAndRelocate: node tree deeper than %d, rejected",ROM_NODE_TREE_MAX_DEPTH);
-      Package_SetLastErrorPath((uint16_t *)g_EngineZentraleRomPathUtf16);
+      Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
       return FATAL_ERROR_ROM_REGISTRY_FULL;
     }
     if (RomSerializedNode_LoadSprite(node,&loadError)) {
@@ -233,7 +240,7 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
     }
     if (node->childCount > ROM_NODE_MAX_CHILDREN) {
       Thandor_Log("RomAssetRecord_RegisterAndRelocate: node with %u children, rejected",node->childCount);
-      Package_SetLastErrorPath((uint16_t *)g_EngineZentraleRomPathUtf16);
+      Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
       return FATAL_ERROR_ROM_REGISTRY_FULL;
     }
     frames[depth].node = node;
@@ -245,7 +252,7 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
       depth--;
     }
     if (depth != 0) {
-      child = (uint32_t *)&frames[depth - 1].node->childReferences[frames[depth - 1].nextChild];
+      child = &frames[depth - 1].node->childReferences[frames[depth - 1].nextChild].savedOffset;
       *child = *child + Thandor_PointerToU32(assetBase); /* 5f-format: RomSerializedNodeHeader.childReferences (relocated in place) */
       frames[depth - 1].nextChild++;
       frames[depth - 1].remaining--;
@@ -276,13 +283,13 @@ uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAsse
         return 0;
       }
       /* asset start + serialized offset */
-      record->rootNodeOffsetOrPointer = Thandor_PointerToU32((uint8_t *)assetBase + record->rootNodeOffsetOrPointer); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
+      record->rootNodeOffsetOrPointer = Thandor_PointerToU32(Asset_RecordAt(assetBase,record->rootNodeOffsetOrPointer)); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
       return RomSerializedNodeTree_LoadSpritesAndRelocate
-                       ((RomSerializedNodeHeader *)((uint8_t *)assetBase + rootNodeOffset),assetBase);
+                       (Asset_RecordAt<RomSerializedNodeHeader>(assetBase,rootNodeOffset),assetBase);
     }
     slotCursor++;
   }
-  Package_SetLastErrorPath((uint16_t *)g_EngineZentraleRomPathUtf16);
+  Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
   return FATAL_ERROR_ROM_REGISTRY_FULL;
 }
 
