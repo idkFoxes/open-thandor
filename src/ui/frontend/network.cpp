@@ -674,8 +674,7 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,&rootNode->base);
-    FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick /* the page view at the session list */
-              (reinterpret_cast<FrontendNetworkSettingsControlView *>(&FrontendUi_Image(rootNode)->sessionList));
+    FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick(&FrontendUi_Image(rootNode)->sessionList);
     PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,FrontendNetwork_Dwords(control->textBuffer),
                                   PERSISTENT_SETTING_PLAYER_NAME);
     sourceDwordCursor = FrontendNetwork_Dwords(control->textBuffer);
@@ -737,40 +736,34 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
    holds a session (advertisement.joinAvailableFlag) and the local player has a name; if then bit 2 of the
    list's listStateFlags is set
    (presumably a double click), it is cleared and the join request is sent at once, as if Join had been pressed.
-   The field names of FrontendNetworkSettingsControlView used here do not fit a list (text edit overlay).
 */
-void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
-          (FrontendNetworkSettingsControlView *networkSettings)
+void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick(UiListControl *sessionList)
 
 {
   UiListStateFlags *dirtyFlagsSlot;
   UiNodeBase *parentCursor;
-  FrontendNetworkSettingsControlView *rootNode;
-  UiListControl *sessionList;
+  UiNodeBase *rootNode;
 
-  parentCursor = networkSettings->commonState.commonPrefix.parent;
-  rootNode = networkSettings;
+  parentCursor = sessionList->base.parent;
+  rootNode = &sessionList->base;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    rootNode = reinterpret_cast<FrontendNetworkSettingsControlView *>
-                (rootNode->commonState.commonPrefix.parent.get()); /* the parent node read through the page view */
-    parentCursor = rootNode->commonState.commonPrefix.parent;
+    rootNode = rootNode->parent;
+    parentCursor = rootNode->parent;
   }
-  /* networkSettings is the sessionList node (a UiListControl of FrontendSessionDiscoveryRecord rows). */
-  sessionList = reinterpret_cast<UiListControl *>(networkSettings);
+  /* sessionList is a UiListControl of FrontendSessionDiscoveryRecord rows */
   if (((sessionList->rowCount == 0) ||
       (static_cast<FrontendSessionDiscoveryRecord *>(sessionList->selectedRowSlot->get())->advertisement.
        joinAvailableFlag == 0)) ||
      (g_FrontendLocalPlayerNameUtf16[0] == 0)) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&rootNode->nodeView.base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,rootNode);
   }
   else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_JOIN_GAME,&rootNode->nodeView.base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_JOIN_GAME,rootNode);
     if ((sessionList->listStateFlags & 4) != 0) {
       dirtyFlagsSlot = &sessionList->listStateFlags;
       *dirtyFlagsSlot = *dirtyFlagsSlot & ~4;
-      FrontendNetworkSettings_PublishSelectedPlayerDescriptor /* the page view at the Join button */
-                (reinterpret_cast<FrontendNetworkSettingsControlView *>(&FrontendUi_Image(rootNode)->networkGameJoinButton));
+      FrontendNetworkSettings_PublishSelectedPlayerDescriptor(&FrontendUi_Image(rootNode)->networkGameJoinButton);
     }
   }
 }
@@ -781,7 +774,7 @@ void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
    of the selected row (selectedRowSlot) of the sibling sessionList and sends the join request (player
    descriptor packet 0x20002) to it. Returns the result of UiTransfer_SendPlayerDescriptor.
 */
-Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings)
+Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(UiFramedTextButtonControl *joinButton)
 
 {
   int remainingDwords;
@@ -789,13 +782,15 @@ Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSet
   uint32_t *selectedEndpointDwordCursor;
   Bool8 sendCarry;
   
-  /* networkSettings is the frontend template's networkGameJoinButton; the session list is a sibling. */
+  /* joinButton is the frontend template's networkGameJoinButton; the session list is a sibling. */
   g_FrontendSessionToken =
        static_cast<FrontendSessionDiscoveryRecord *>
-       (FrontendUi_Image(Thandor_Bytes(networkSettings) - offsetof(FrontendUiImage,networkGameJoinButton))->sessionList.selectedRowSlot->get())->advertisement.header.sequenceToken;
+       (FrontendUi_Image(Thandor_Bytes(joinButton)
+ - offsetof(FrontendUiImage,networkGameJoinButton))->sessionList.selectedRowSlot->get())->advertisement.header.sequenceToken;
   selectedPlayerRecordDwordCursor =
        FrontendNetwork_Dwords(&static_cast<FrontendSessionDiscoveryRecord *>
-                     (FrontendUi_Image(Thandor_Bytes(networkSettings) -
+                     (FrontendUi_Image(Thandor_Bytes(joinButton)
+ -
                                        offsetof(FrontendUiImage,networkGameJoinButton))->sessionList.selectedRowSlot->get())->senderEndpoint);
 
   selectedEndpointDwordCursor = FrontendNetwork_Dwords(&g_FrontendSelectedNetworkEndpoint);
