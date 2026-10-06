@@ -12,6 +12,13 @@
 
 uint32_t g_AiCollectedEntityCount = 0;
 
+/* The movement orders take the army slot through their ArmyMovementRuntime view (the same record: entity/model
+   references, faction and movement state at the slot's offsets). */
+static ArmyMovementRuntime *AiUnit_MovementView(ArmyRuntimeSlot *armyRuntime)
+{
+  return reinterpret_cast<ArmyMovementRuntime *>(armyRuntime);
+}
+
 /* Per AI tick for the faction's own units (workspace 01): clears the collected-army list, lets busy units
    (ARMY_MOVEMENT_ACTIVE / _ROUTE_POINT_REACHED in the movement state, the entity's common.commandFlags) wait
    for their behaviour cooldown (common.aiCommandCooldownTicks), skips units with ARMY_MOVEMENT_LOCKED, and
@@ -48,8 +55,8 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
         (*behaviorCooldownTicks)++;
       }
     }
-    modelDefinition =
-         (MdlDefinitionSemanticPrefix *)unitModelRuntime->definitionOrSavedId.runtimeDefinition;
+    modelDefinition = reinterpret_cast<MdlDefinitionSemanticPrefix *>( /* field view of the ModelDefinition */
+         unitModelRuntime->definitionOrSavedId.runtimeDefinition.get());
     if (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) {
       AiUnitBehavior_UpdatePioneerVehicle
                 (modelDefinition,unitModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime,factionIndex,
@@ -106,12 +113,13 @@ void AiUnitBehavior_SelectBestAnchorAction
                     (currentBestScore,modelDefinition,armyRuntimeSlot);
   if (secondarySelection.score != currentBestScore) {
     selectedAnchorActionKind = 3;
-    selectedWorkspaceEntry = (AiScoredSiteWorkspaceEntry *)secondarySelection.selectedEntry;
+    /* a target entry (same leading X/Y); only action kind 1 uses selectedWorkspaceEntry */
+    selectedWorkspaceEntry = reinterpret_cast<AiScoredSiteWorkspaceEntry *>(secondarySelection.selectedEntry.get());
   }
   if (selectedAnchorActionKind != 0) {
     if (selectedAnchorActionKind == 1) {
       AiUnitCommand_AssignWorkspacePoint
-                ((uint32_t *)selectedWorkspaceEntry,armyRuntimeSlot,worldRuntime);
+                (selectedWorkspaceEntry,armyRuntimeSlot,worldRuntime);
       return;
     }
     if (selectedAnchorActionKind < 3) {
@@ -268,7 +276,7 @@ AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDi
        (modelRuntime, armyAssetId) of ws03[2i]: the second half of the walk reads stale entries of an earlier
        rebuild, for count > 256 past the 0x1000-byte buffer. Kept: it feeds the AI decisions and the AI hash. */
     recordsRemaining = g_AiWorkspace03Count;
-    workspaceRecordCursor = (AiTargetWorkspaceEntry *)g_AiWorkspace03UnseenHostiles;
+    workspaceRecordCursor = reinterpret_cast<AiTargetWorkspaceEntry *>(g_AiWorkspace03UnseenHostiles); /* the quirk's stride */
   }
   for (; recordsRemaining != 0; recordsRemaining--) {
     negAbsDeltaXQ12 = (armyRuntimeSlot->modelNodeRuntime->worldTransform).translation.x -
@@ -309,15 +317,15 @@ AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDi
    AiUnitBehavior_ComputeGeneralSiteDistanceScore adds for it, so the next unit is less drawn there) and queues
    the move. worldRuntimeContext is not used.
 */
-void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
+void AiUnitCommand_AssignWorkspacePoint(AiScoredSiteWorkspaceEntry *workspacePoint,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext)
 
 {
   armyRuntime->aiUnitState = AI_UNIT_COMMANDED_STATE;
   armyRuntime->aiUnitFlags = armyRuntime->aiUnitFlags & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
-  workspacePoint[2] = 0; /* AiScoredSiteWorkspaceEntry.score */
+  workspacePoint->score = 0;
   ArmyRuntime_StartRoutedMoveCommand
-            (workspacePoint[1],*workspacePoint,(ArmyMovementRuntime *)armyRuntime);
+            (workspacePoint->cellWorldYQ12,workspacePoint->cellWorldXQ12,AiUnit_MovementView(armyRuntime));
 }
 
 
@@ -343,7 +351,7 @@ void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,Arm
   armyRuntime->aiUnitState = AI_UNIT_COMMANDED_STATE;
   armyRuntime->aiUnitFlags = armyRuntime->aiUnitFlags & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
   ArmyRuntime_StartRoutedMoveCommand
-            (targetWorldY,targetWorldX,(ArmyMovementRuntime *)armyRuntime);
+            (targetWorldY,targetWorldX,AiUnit_MovementView(armyRuntime));
 }
 
 
@@ -465,7 +473,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
   workspace00Count = g_AiWorkspace00Count;
   if (((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) == 0) &&
      (ArmyRuntime_UpdateMovementAndWaypoints
-        (worldRuntime,(ArmyMovementRuntime *)armyRuntime,&steerWorldXQ12,&steerWorldYQ12))) {
+        (worldRuntime,AiUnit_MovementView(armyRuntime),&steerWorldXQ12,&steerWorldYQ12))) {
     if (workspace00Count == workspace04Count) {
       modelNode = armyRuntime->modelNodeRuntime;
       headingOffset = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,5 * FIELD_GRID_WORLD_COLUMN_STEP_X);
@@ -474,7 +482,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
       armyRuntime->aiUnitState = 8;
       ArmyRuntime_StartRoutedMoveCommand
                 (headingOffset.sinValue + unitWorldY,headingOffset.cosValue + unitWorldX,
-                 (ArmyMovementRuntime *)armyRuntime);
+                 AiUnit_MovementView(armyRuntime));
     }
     else if (((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) == 0) && (g_AiWorkspace08Count != 0)) {
       bestScore = 0;
@@ -517,7 +525,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
       if (bestScore != 0) {
         armyRuntime->aiUnitState = 8;
         ArmyRuntime_StartRoutedMoveCommand
-                  (bestCell->worldY,bestCell->worldX,(ArmyMovementRuntime *)armyRuntime);
+                  (bestCell->worldY,bestCell->worldX,AiUnit_MovementView(armyRuntime));
       }
     }
   }

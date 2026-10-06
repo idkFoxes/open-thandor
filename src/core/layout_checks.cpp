@@ -1696,3 +1696,26 @@ static_assert(ToBits(~flags_check::Byte::A) == 0xFE && ToBits(flags_check::Byte:
 static_assert(ThandorFlagEnum<FlagsCheck32> && ThandorFlagEnum<flags_check::Byte> &&
                   !ThandorFlagEnum<flags_check::NotFlags> && !ThandorFlagEnum<uint32_t>,
               "only enums marked with THANDOR_FLAG_ENUM are flag enums");
+
+/* Step 13 X4 (gameplay/ai casts): the field names the AI now reads instead of the decompiled views sit at the
+   offsets the original used. */
+static_assert(offsetof(ModelRuntimeNode, tintArgb) == 0x58 && offsetof(ArmyRuntimeSlot, movementPosition0Q12) == 0x58,
+              "the created model node's tint is the word the AI planners cleared as ArmyRuntimeSlot.movementPosition0Q12");
+static_assert(offsetof(ModelDefinition, removalEffectDefinitionReference) == 0x190 &&
+                  offsetof(ModelRuntimeSlot, attachments) + 2 * sizeof(ModelRuntimeAttachmentDescriptor) +
+                          offsetof(ModelRuntimeAttachmentDescriptor, childLocalRotationAngle0) == 0x190 &&
+                  offsetof(ArmyRuntimeSlot, modelRuntimeOrSavedOffset) == 0x0 &&
+                  offsetof(ModelRuntimeSlot, definitionOrSavedId) == 0x0,
+              "the AI planners' construction effect is ModelDefinition.removalEffectDefinitionReference");
+static_assert(offsetof(ModelRuntimeSlot, classLinkState) == 24 * 4 &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, classStateAC) == 43 * 4 &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, behaviorState) == 46 * 4 &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, stateFlags) == 59 * 4,
+              "ModelRuntimeSlot words 24, 43, 46 and 59 the AI reads by name");
+static_assert(sizeof(AiStructureWorkspaceEntry) == sizeof(AiRuntimeWorkspaceEntry) &&
+                  offsetof(AiStructureWorkspaceEntry, runtimeSlotAddressOrZero) == offsetof(AiRuntimeWorkspaceEntry, modelRuntime) &&
+                  offsetof(AiStructureWorkspaceEntry, armyAssetId) == offsetof(AiRuntimeWorkspaceEntry, armyAssetId) &&
+                  offsetof(AiScoredSiteWorkspaceEntry, cellWorldXQ12) == 0x0 &&
+                  offsetof(AiScoredSiteWorkspaceEntry, cellWorldYQ12) == 0x4 &&
+                  offsetof(AiScoredSiteWorkspaceEntry, score) == 0x8,
+              "AI workspace entries the AI walks as each other");

@@ -126,7 +126,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
   accumulatedScaleRatio = 0;
   for (collectedIndex = 0; collectedIndex < collectedCount; collectedIndex++) {
     collectedConditionRatioQ12 =
-         ModelRuntime_QueryHierarchyConditionRatioQ12((RuntimeModelFactionPrefix *)collectedArmies[collectedIndex]);
+         ModelRuntime_QueryHierarchyConditionRatioQ12(reinterpret_cast<RuntimeModelFactionPrefix *>(collectedArmies[collectedIndex])); /* the army slot header as the hierarchy metric view */
     accumulatedScaleRatio =
          accumulatedScaleRatio + (uint32_t)(collectedConditionRatioQ12 << 8) / (uint32_t)Q12_ONE;
     if (accumulatedScaleRatio >= AI_UNIT_GROUP_ATTACK_STRENGTH) {
@@ -148,7 +148,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
        earlier rebuild, for count > 256 past the 0x1000-byte buffer. Kept: it feeds the AI decisions and the AI
        hash; a loaded game can see a different stale tail than an uninterrupted one. */
     targetCandidateCount = g_AiWorkspace03Count;
-    targetCandidateRecords = (AiTargetWorkspaceEntry *)g_AiWorkspace03UnseenHostiles;
+    targetCandidateRecords = reinterpret_cast<AiTargetWorkspaceEntry *>(g_AiWorkspace03UnseenHostiles); /* the quirk's stride */
     if (g_AiWorkspace03Count == 0) {
       return;
     }
@@ -257,8 +257,8 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
       if (ownerNodeCursor->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
-      candidateEntityRuntime = (GameEntityRuntime *)ownerNodeCursor->runtimePayload;
-      candidateArmyRuntime = (ArmyRuntimeSlot *)(candidateEntityRuntime->common).ownership.runtimeLink;
+      candidateEntityRuntime = WorldOwnerNode_EntityRuntime(ownerNodeCursor);
+      candidateArmyRuntime = candidateEntityRuntime->common.ownership.linkedArmyRuntime();
       /* a negative sum skips entities flagged 0x400 */
       if ((sourceClassCount < 0) &&
           (((candidateEntityRuntime->common).runtimeFlags & ARMY_MODEL_STATE_NO_REGENERATION) != 0)) {
@@ -403,7 +403,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
   classBaseScore =
        g_AiCombatTargetClassBaseScores[candidateDefinition->runtimeClassId] *
        g_AiCombatTargetClassBaseScoreMultiplier;
-  conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12((RuntimeModelFactionPrefix *)candidateArmyRuntime);
+  conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(reinterpret_cast<RuntimeModelFactionPrefix *>(candidateArmyRuntime)); /* the army slot header as the hierarchy metric view */
   /* a friendly search needs condition < 1.0 (unsigned compare as in the original) */
   if ((sourceClassCount < 0) && ((uint32_t)conditionRatioQ12 >= (uint32_t)Q12_ONE)) {
     return 0;
