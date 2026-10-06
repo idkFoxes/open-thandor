@@ -93,7 +93,7 @@ uint32_t ModelRuntimePool_Init()
   int allocationDwordsRemaining;
   uint32_t allocError;
 
-  allocError = g_MemoryApi.alloc(MODEL_RUNTIME_POOL_BYTES,(void **)&modelRuntimePool);
+  allocError = g_MemoryApi.alloc(MODEL_RUNTIME_POOL_BYTES,reinterpret_cast<void **>(&modelRuntimePool)); /* the arena stores the block address through void ** */
   if (allocError != 0) {
     return allocError;
   }

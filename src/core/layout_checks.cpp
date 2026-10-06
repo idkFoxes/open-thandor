@@ -45,7 +45,8 @@ static_assert(sizeof(EffectRuntimeOwnerReference) == 0x4 &&
               offsetof(EffectRuntimeOwnerReference, modelNode) == 0x0 &&
               offsetof(EffectRuntimeOwnerReference, modelRuntime) == 0x0 &&
               offsetof(EffectRuntimeOwnerReference, armyRuntime) == 0x0 &&
-              offsetof(EffectRuntimeOwnerReference, terrainImpactColumns) == 0x0,
+              offsetof(EffectRuntimeOwnerReference, terrainImpactColumns) == 0x0 &&
+              offsetof(EffectRuntimeOwnerReference, entityRuntime) == 0x0,
               "EffectRuntimeOwnerReference keeps its 32-bit layout");
 static_assert(sizeof(EffectRuntimeOwnerAndDefinitionState) == 0x8,
               "EffectRuntimeOwnerAndDefinitionState keeps its 32-bit layout");

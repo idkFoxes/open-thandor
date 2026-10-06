@@ -542,7 +542,7 @@ Bool8 FieldGrid_TestWorldPointBlocked
     return true;
   }
   occupancyByte =
-       ((uint8_t *)&fieldGrid->cells[(int32_t)(fieldGrid->gridWidth * gridRowIndex + gridColumnIndex)].occupancyMask)[factionSlot];
+       FieldGridCell_OccupancyByte(&fieldGrid->cells[(int32_t)(fieldGrid->gridWidth * gridRowIndex + gridColumnIndex)],factionSlot);
   return (occupancyByte & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0;
 }
 

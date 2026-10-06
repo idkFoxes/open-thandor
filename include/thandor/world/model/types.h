@@ -184,4 +184,24 @@ inline GameEntityRuntime *WorldOwnerNode_EntityRuntime(const WorldOwnerListNode 
     return static_cast<GameEntityRuntime *>(node->runtimePayload.get());
 }
 
+/* Views of one world-object record (step 13 X7). A record of the world-object array
+   (WorldObjectArray_AllocateFreeRecord) is read as WorldObjectRecord (allocation), WorldRuntimeNode and
+   WorldOwnerListNode (owner-list links and scans), ModelRuntimeNode (model hierarchy), ShotModelRuntimeNode or
+   EffectModelRuntimeNode (the node of a shot or effect model). They share the WorldRuntimeNodeCommon prefix
+   but are separate C++ types, so changing the view is a reinterpret_cast; it is done here, restricted to these
+   types, and compiles to nothing (the (T *)node casts it replaces). */
+struct WorldObjectRecord;
+struct WorldRuntimeNode;
+struct ShotModelRuntimeNode;
+struct EffectModelRuntimeNode;
+template <class T>
+concept WorldNodeView =
+    std::is_same_v<T, WorldObjectRecord> || std::is_same_v<T, WorldRuntimeNode> ||
+    std::is_same_v<T, WorldOwnerListNode> || std::is_same_v<T, ModelRuntimeNode> ||
+    std::is_same_v<T, ShotModelRuntimeNode> || std::is_same_v<T, EffectModelRuntimeNode>;
+template <WorldNodeView To, WorldNodeView From> inline To *WorldNode_View(From *node)
+{
+    return reinterpret_cast<To *>(node);
+}
+
 #endif /* THANDOR_WORLD_MODEL_TYPES_H */

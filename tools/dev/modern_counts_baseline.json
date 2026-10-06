@@ -1,5 +1,5 @@
 {
- "revision": "b4176b73",
+ "revision": "6512463b",
  "worktree": true,
  "files": 692,
  "metrics": {
@@ -120,7 +120,7 @@
    "movie": 41,
    "platform": 237,
    "ui": 1955,
-   "world": 289
+   "world": 206
   },
   "ingame_ui": {
    "gameplay": 10,
@@ -160,7 +160,7 @@
    "platform": 330,
    "root": 7,
    "ui": 803,
-   "world": 179
+   "world": 177
   },
   "include_guard": {
    "assets": 34,
