@@ -34,7 +34,7 @@ static AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibl
   if (candidateDefinition == nullptr) {
     return 0;
   }
-  runtimeClassId = ((ModelDefinition *)candidateDefinition)->runtimeClassId;
+  runtimeClassId = reinterpret_cast<ModelDefinition *>(candidateDefinition)->runtimeClassId; /* prefix view -> full definition */
   if (runtimeClassId != MODEL_RUNTIME_CLASS_01_GROUND) {
     if (runtimeClassId != MODEL_RUNTIME_CLASS_21_AIRCRAFT && runtimeClassId != MODEL_RUNTIME_CLASS_02_TRACKED &&
         runtimeClassId != MODEL_RUNTIME_CLASS_03_ARTICULATED_WALKER &&
@@ -42,7 +42,7 @@ static AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibl
         runtimeClassId != MODEL_RUNTIME_CLASS_19_WATER_SURFACE) {
       /* Original quirk: the original returns the definition pointer here, so every other class "scores"
          with its record address (on x64 its low 32 bits). */
-      return (AiTechnologyCandidateScore)(intptr_t)candidateDefinition;
+      return static_cast<AiTechnologyCandidateScore>(reinterpret_cast<intptr_t>(candidateDefinition));
     }
     relationScaleQ8 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(candidateDefinition);
     return (relationScaleQ8 * AI_TECHNOLOGY_RELATION_SCORE_FACTOR >> 8) *
@@ -85,7 +85,7 @@ Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
 
   workspaceEntry = g_AiWorkspace00Structures;
   for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
-    structureRuntime = (ModelRuntimeSlot *)workspaceEntry->runtimeSlotAddressOrZero;
+    structureRuntime = workspaceEntry->runtimeSlotAddressOrZero;
     if (structureRuntime != nullptr &&
         (structureRuntime->classState.stateFlags &
          (ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED)) != 0 &&
@@ -94,8 +94,8 @@ Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
     }
     workspaceEntry++;
   }
-  factionRecord = (const GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
-                                                     factionRecordOffset);
+  factionRecord = reinterpret_cast<const GameFactionRuntimeRecord *>(
+       reinterpret_cast<const uint8_t *>(g_GameFactionRuntimeImage.records) + factionRecordOffset); /* byte offset */
   /* already unlocked (bit in the faction record's technologyMasks256Bits) */
   if ((factionRecord->technologyMasks256Bits[technologyIndex >> 5] & 1 << ((uint8_t)technologyIndex & 31)) != 0) {
     return true;
@@ -159,8 +159,8 @@ void AiTechnologyPlanning_AddCandidateRecord(ModelRuntimeSlot *sourceModelRuntim
   g_AiWorkspace12Count++;
   candidate->scoreKind08 = AiTechnologyPlanning_SelectScoreKind
                              (technologyId,
-                              (MdlDefinitionSemanticPrefix *)
-                              sourceModelRuntime->definitionOrSavedId.runtimeDefinition);
+                              reinterpret_cast<MdlDefinitionSemanticPrefix *>(
+                                   sourceModelRuntime->definitionOrSavedId.runtimeDefinition.get()));
 }
 
 

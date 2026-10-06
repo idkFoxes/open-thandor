@@ -65,7 +65,7 @@ static Bool8 InGameTick_RunHostOrLocalLockstep()
         break;
       }
       FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+                (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet));
     }
     FrontendTransfer_DispatchStagedCommandRecords();
     g_HostCommandBatchSyncSentThisInterval = 0;
@@ -74,7 +74,7 @@ static Bool8 InGameTick_RunHostOrLocalLockstep()
     /* within the interval: handle sync requests and broadcast the batch as soon as every peer is ready */
     while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
       FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+                (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet));
     }
     if ((g_HostCommandBatchSyncSentThisInterval == 0) &&
         !FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(0)) {
@@ -100,7 +100,7 @@ static Bool8 InGameTick_RunClientLockstep()
     }
     while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
       if (FrontendNetwork_HandleCommandBatchAndPlayerTimeout
-                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet)) {
+                    (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet))) {
         break;
       }
     }
@@ -122,7 +122,7 @@ static void InGameTick_RefreshEntityTerrainStates(WorldRuntimeContext *worldRunt
   ModelRuntimeNode *modelNode;
 
   for (modelNode = firstNode; modelNode != nullptr;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+      modelNode = static_cast<ModelRuntimeNode *>((modelNode->common).nextNode)) {
     (*(&g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.army)
       [modelNode->ownerClassId])(worldRuntime,modelNode);
   }
@@ -152,7 +152,7 @@ static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPh
     break;
   case 3:
     /* field-grid clamp; with entities present: their terrain state, then the clamp once more */
-    firstModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+    firstModelNode = static_cast<ModelRuntimeNode *>(worldRuntime->ownerListHead);
     FieldGrid_ApplyByteClampLookupToCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
     if (firstModelNode != nullptr) {
       InGameTick_RefreshEntityTerrainStates(worldRuntime,firstModelNode);
@@ -180,7 +180,7 @@ static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPh
         (*(&g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.army)[worldNode->ownerClassId])
                   (worldRuntime,worldNode);
       }
-      InGameTick_RefreshEntityTerrainStates(worldRuntime,(ModelRuntimeNode *)worldRuntime->ownerListHead);
+      InGameTick_RefreshEntityTerrainStates(worldRuntime,static_cast<ModelRuntimeNode *>(worldRuntime->ownerListHead));
       FieldGrid_ApplyByteClampLookupToCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
       GridScratch_PropagateFieldOccupancyMaskNeighborhood(worldRuntime->fieldGrid);
     }
@@ -221,12 +221,12 @@ static void InGameTick_RunReducedUpdate(InGameRuntimeRoot *inGameRoot)
   ModelRuntimeNode *modelNode;
   ModelDefinition *modelDefinition;
 
-  modelNode = (ModelRuntimeNode *)(inGameRoot->worldRuntime).ownerListHead;
+  modelNode = static_cast<ModelRuntimeNode *>((inGameRoot->worldRuntime).ownerListHead);
   g_GameFactionRuntimeImage.tail.simulationTick++;
   if ((g_GameFactionRuntimeImage.tail.simulationTick & 1) != 0) {
     return;
   }
-  for (; modelNode != nullptr; modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+  for (; modelNode != nullptr; modelNode = static_cast<ModelRuntimeNode *>((modelNode->common).nextNode)) {
     if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).runtimeDefinition;
       g_ArmyPlacementContactKindDispatchTable.callbacks[modelDefinition->placementContactKindIndex]
@@ -289,7 +289,8 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
   Bool8 stepDue;
   InGameRuntimeRoot *inGameRoot;
 
-  lockAlreadyHeld = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  /* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int */
+  lockAlreadyHeld = g_SpinLockTryAcquire(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
   inGameRoot = g_InGameRuntimeRoot;
   if (lockAlreadyHeld) {
     return;
@@ -297,7 +298,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* do not run ahead of the renderer by more than a few steps */
     if (2 < (int)g_InGamePendingSimulationTicks) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+      g_SpinLockRelease(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
       return;
     }
     g_InGamePendingSimulationTicks++;
@@ -309,7 +310,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     stepDue = InGameTick_RunClientLockstep();
   }
   if (!stepDue) {
-    g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+    g_SpinLockRelease(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
     return;
   }
   g_SessionNetworkTickCounter++;
@@ -320,5 +321,5 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
            (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
     InGameTick_RunSimulationStep(inGameRoot);
   }
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  g_SpinLockRelease(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
 }

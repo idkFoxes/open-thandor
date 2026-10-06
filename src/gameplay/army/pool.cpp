@@ -206,7 +206,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   SelectionPlayerRuntimeBlock *playerSelectionBlock;
 
-  modelRuntime = (ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord;
+  modelRuntime = (entityRuntime->common).ownership.modelRuntime();
   if (modelRuntime != nullptr) {
     (entityRuntime->common).ownership.definitionOrClassRecord = nullptr;
     ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,modelRuntime);
@@ -312,7 +312,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
       (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
     selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                       (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
-    ((ModelDefinition *)selectedDefinition)->builtCount++;
+    ModelView_Cast<ModelDefinition>(selectedDefinition)->builtCount++;
   }
   /* the graphics bindings exist for faction slots 0-7 only */
   if (7 < (uint32_t)factionIndex) {
@@ -389,7 +389,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
     /* Original quirk: the error is worldYQ12 (see above). */
     return ArmyRuntime_FailCreateInstance((uint32_t)worldYQ12,outError);
   }
-  WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
+  WorldRuntime_LinkOwnerListNode(ModelView_Cast<WorldOwnerListNode>(modelNodeRuntime));
   ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
   /* terrain contact by the definition's contact kind; depth class by its model class; depth radius from the
      definition */

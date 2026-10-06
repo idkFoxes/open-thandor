@@ -28,7 +28,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
           (FieldGridCell *terrainFeatureCell,uint32_t gridScratchRowStrideBytes);
 
 Bool8 AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
-          ArmyPlacementContext placementContext,UiRootNode *inGameRoot);
+          ArmyPlacementContext placementContext,WorldRuntimeContext *worldRuntime);
 
 Bool8 AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);

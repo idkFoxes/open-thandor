@@ -126,7 +126,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
           /* reloaded and the line of fire is free */
           if ((modelRuntime->attachmentReloadCountdownTicks == 0) &&
               (!ArmyRuntimeCommand_UpdateTargetFollowingState
-                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,(ModelRuntimeSlot *)modelRuntime))) {
+                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime)))) {
             /* fire: reload, recoil the barrel, rock the owner back and launch the projectiles */
             recoilTicks = weaponDefinition->sharedInterShotTicks;
             recoilScale = weaponDefinition->backwardStepScale;
@@ -158,7 +158,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
     }
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Turret with two alternating barrels (runtimeUpdate slot 8 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
@@ -295,7 +295,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
           /* reloaded and the line of fire is free */
           if ((modelRuntime->attachmentReloadCountdownTicks == 0) &&
               (!ArmyRuntimeCommand_UpdateTargetFollowingState
-                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,(ModelRuntimeSlot *)modelRuntime))) {
+                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime)))) {
             /* fire from the next barrel in turn */
             recoilTicks = weaponDefinition->sharedInterShotTicks;
             recoilScale = weaponDefinition->backwardStepScale;
@@ -336,7 +336,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
     }
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Moves the local translation of the model node at vectorState along its own direction:
@@ -351,7 +351,7 @@ void FixedVector_StepBackwardAlongOwnDirection
 {
   FixedDirection stepDirection;
   FixedElevationAzimuth vectorAngles;
-  ModelRuntimeNode *node = (ModelRuntimeNode *)vectorState;
+  ModelRuntimeNode *node = reinterpret_cast<ModelRuntimeNode *>(vectorState); /* the node's address as an integer */
 
   vectorAngles = FixedMath_VectorToAnglesVec3((GraphicsFixedVec3 *)&node->modelPayload.localTranslationXQ12);
   stepDirection = FixedMath_DirectionFromAnglesScaled(vectorAngles.elevationAngle,vectorAngles.azimuthAngle,

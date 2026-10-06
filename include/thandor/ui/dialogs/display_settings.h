@@ -41,33 +41,8 @@
 #define UI_DISPLAY_MODE_WIDTH_SCALE 0x10000
 #define UI_DISPLAY_MODE_HEIGHT_MASK 0xffff
 #define UI_DISPLAY_MODE_NONE 0xffffffffu
-/* The display settings dialog's applyButton (a framed text button, g_UiFramedTextButtonControlVtable) with extra fields in
-   its tail: the selected mode tuple and colour bias/scale, then the same six values as they were when the
-   dialog opened. 0x8C bytes. */
-typedef struct UiDisplaySettingsApplyButton {
-    UiSelectableControl selectable;
-    UiTextResourceId textResourceId;
-    UiPackedTextStyle packedTextStyle;
-    int32_t selectedWidth;            /* +0x5C */
-    int32_t selectedHeight;           /* +0x60 */
-    uint32_t selectedBitsPerPixel;    /* +0x64 */
-    uint32_t selectedAdapterIndex;    /* +0x68 */
-    int32_t selectedColorBiasQ16;     /* +0x6C */
-    int32_t selectedColorScaleQ16;    /* +0x70 */
-    int32_t originalWidth;            /* +0x74 */
-    int32_t originalHeight;           /* +0x78 */
-    uint32_t originalBitsPerPixel;    /* +0x7C */
-    uint32_t originalAdapterIndex;    /* +0x80 */
-    int32_t originalColorBiasQ16;     /* +0x84 */
-    int32_t originalColorScaleQ16;    /* +0x88 */
-} UiDisplaySettingsApplyButton;
-/* The display settings dialog's colorBiasValueText label; its tail holds the number buffers of both readouts
-   (written by UiDisplaySettingsRoot_FormatColorReadouts). 0x9C bytes. */
-typedef struct UiDisplaySettingsValueReadout {
-    UiSingleLineTextControl label;
-    uint16_t colorScaleTextUtf16[16]; /* +0x5C, shown by colorScaleValueText */
-    uint16_t colorBiasTextUtf16[16];  /* +0x7C */
-} UiDisplaySettingsValueReadout;
+/* UiDisplaySettingsApplyButton and UiDisplaySettingsValueReadout (the typed applyButton and colorBiasValueText
+   nodes of DisplaySettingsUiImage) are declared with the template in ui/dialogs/types.h. */
 /* UiDisplayModeOptionPrefix (the mode values in front of each display settings option button,
    DISPLAY_SETTINGS_UI(root, <button>_prefix)) is declared with the template in ui/dialogs/types.h. */
 /* The UiDisplayModeOptionPrefix in front of an option button the code has only as a node pointer. */

@@ -33,12 +33,12 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
   FieldGridAsset *activeFieldGrid;
 
   /* classParameterC0: the resource selector (0 Xenite, 1 Tritium), classParameterC4: the storage the model adds */
-  storageContribution = ((ModelDefinition *)modelDefinition)->classParameterC4;
+  storageContribution = ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC4;
   factionOffset =
        ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex *
        GAME_FACTION_RUNTIME_RECORD_BYTES;
   limitOffset = factionOffset + 4; /* xeniteStorageLimitQ4 */
-  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
+  if (ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0 != 0) {
     limitOffset = factionOffset + 20; /* tritiumStorageLimitQ4 */
   }
   storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + limitOffset;
@@ -88,12 +88,12 @@ void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefi
   int storageLimitOffset;
 
   /* classParameterC0: the resource selector (0 Xenite, 1 Tritium), classParameterC4: the storage the model adds */
-  storageContribution = ((ModelDefinition *)modelDefinition)->classParameterC4;
+  storageContribution = ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC4;
   factionOffset =
        ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex *
        GAME_FACTION_RUNTIME_RECORD_BYTES;
   storageLimitOffset = factionOffset + 4; /* xeniteStorageLimitQ4 */
-  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
+  if (ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0 != 0) {
     storageLimitOffset = factionOffset + 20; /* tritiumStorageLimitQ4 */
   }
   storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;

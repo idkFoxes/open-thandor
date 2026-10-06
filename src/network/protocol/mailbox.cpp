@@ -8,6 +8,7 @@
 #include <thandor/network/protocol/mailbox.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/network/protocol/packet_bytes.h>
 
 /* Module data. */
 
@@ -35,10 +36,10 @@ UiTransferMailboxState g_UiTransferMailbox = {};
    0x31,0,1,0 = FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST, 0x30,0,8,0 = FRONTEND_PACKET_80030_MAILBOX_CHUNK.
    Round keys 12..15 of g_UiTransferRoundKeys are not a string, although their bytes spell "mohTG sakere!!!e".
    In the original image the packet directly follows the key table. */
-#define UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES ((uint8_t *)&g_UiTransferChunkPacket.packetHeader)
-#define UI_TRANSFER_CHUNK_PACKET_OFFSET (*(UiTransferMailboxByteOffset *)(g_UiTransferChunkPacket.payload + 0))
-#define UI_TRANSFER_CHUNK_PACKET_BYTE_COUNT (*(UiTransferMailboxByteCount *)(g_UiTransferChunkPacket.payload + 4))
-#define UI_TRANSFER_CHUNK_PACKET_DATA ((uint32_t *)(g_UiTransferChunkPacket.payload + 8))
+#define UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES (reinterpret_cast<uint8_t *>(&g_UiTransferChunkPacket.packetHeader))
+#define UI_TRANSFER_CHUNK_PACKET_OFFSET (*Packet_At<UiTransferMailboxByteOffset>(g_UiTransferChunkPacket.payload,0))
+#define UI_TRANSFER_CHUNK_PACKET_BYTE_COUNT (*Packet_At<UiTransferMailboxByteCount>(g_UiTransferChunkPacket.payload,4))
+#define UI_TRANSFER_CHUNK_PACKET_DATA (Packet_Dwords(g_UiTransferChunkPacket.payload + 8))
 
 /* Descrambles the received datagram in place and checks its XOR checksum: the XOR of all dwords of the packet
    (unit count * 8 dwords, checksum field zeroed) must equal the transmitted checksum. See the checksum quirk
@@ -64,7 +65,7 @@ static Bool8 UiTransferMailbox_DecryptAndVerifyRecord(UiRuntimeRecord *ringRecor
     return false;
   }
   dwordsRemaining = (int)(unitCount << 3);
-  packetDwordCursor = (const uint32_t *)ringRecord;
+  packetDwordCursor = Packet_Dwords(ringRecord);
   do {
     checksum = checksum ^ *packetDwordCursor;
     packetDwordCursor++;
@@ -87,7 +88,7 @@ static void UiTransferMailbox_RequestNextChunk(UiTransferEndpointDescriptor *hos
   UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[3] = 0;
   g_UiTransferChunkPacket.packetHeader.sequenceToken = g_UiTransferSequenceToken;
   UiTransfer_StagePacketAndSend
-            (hostEndpoint,(UiTransferPacketHeader *)UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES);
+            (hostEndpoint,&g_UiTransferChunkPacket.packetHeader);
 }
 
 /* Client: a chunk (0x80030) of the transfer from the host of this session; payload = offset, total size, data. */
@@ -110,8 +111,9 @@ static void UiTransferMailbox_ReceiveChunk
     return;
   }
   g_SessionTransferTimeoutTicks = g_SessionTransferTimeoutTicks + UI_TRANSFER_CHUNK_TIMEOUT_EXTENSION_TICKS;
-  chunkOffset = *(int *)ringRecord->payload;
-  totalByteCount = *(uint32_t *)(ringRecord->payload + 4);
+  /* the payload starts at +0x10 of the 4-aligned ring record: its dwords are aligned */
+  chunkOffset = *Packet_At<int>(ringRecord->payload,0);
+  totalByteCount = *Packet_At<uint32_t>(ringRecord->payload,4);
   /* receivedAllocation: NULL = no transfer requested, UI_TRANSFER_MAILBOX_UNAVAILABLE = requested,
      first chunk still missing (allocated here), otherwise the buffer being filled */
   if (g_UiTransferMailbox.receivedAllocation == nullptr) {
@@ -149,15 +151,15 @@ static void UiTransferMailbox_ReceiveChunk
     chunkSize = bytesRemaining;
   }
   g_UiTransferMailbox.receivedRemainingBytes = g_UiTransferMailbox.receivedRemainingBytes - chunkSize;
-  receivedChunkSourceDwords = (const uint32_t *)(ringRecord->payload + 8);
-  receivedChunkDestinationDwords = (uint32_t *)((uint8_t *)g_UiTransferMailbox.receivedAllocation + chunkOffset);
+  receivedChunkSourceDwords = Packet_Dwords(ringRecord->payload + 8);
+  receivedChunkDestinationDwords = Packet_At<uint32_t>(static_cast<uint8_t *>(g_UiTransferMailbox.receivedAllocation),chunkOffset);
   for (dwordsRemaining = chunkSize >> 2; dwordsRemaining != 0; dwordsRemaining--) {
     *receivedChunkDestinationDwords = *receivedChunkSourceDwords;
     receivedChunkSourceDwords++;
     receivedChunkDestinationDwords++;
   }
   if (g_UiTransferMailbox.receivedRemainingBytes != 0) {
-    UiTransferMailbox_RequestNextChunk((UiTransferEndpointDescriptor *)senderEndpointSlot);
+    UiTransferMailbox_RequestNextChunk(&senderEndpointSlot->endpoint);
   }
 }
 
@@ -191,12 +193,12 @@ static void UiTransferMailbox_ServeChunkRequest
      here because the offset comes from the peer: an offset past the outgoing size is dropped. Valid requesters
      only ask for offsets below the size (the chunk is then clipped to the rest). Logged once: a peer may repeat
      the request every frame. */
-  if (*(UiTransferMailboxByteOffset *)ringRecord->payload > g_UiTransferMailbox.outgoingByteCount) {
+  if (*Packet_At<UiTransferMailboxByteOffset>(ringRecord->payload,0) > g_UiTransferMailbox.outgoingByteCount) {
     static Bool8 s_loggedOutOfRangeRequest = false;
     if (!s_loggedOutOfRangeRequest) {
       s_loggedOutOfRangeRequest = true;
       Thandor_Log("UiTransferMailbox_ServeChunkRequest: rejected chunk request at offset %u (transfer %u bytes)",
-                  *(UiTransferMailboxByteOffset *)ringRecord->payload,
+                  *Packet_At<UiTransferMailboxByteOffset>(ringRecord->payload,0),
                   (uint32_t)g_UiTransferMailbox.outgoingByteCount);
     }
     return;
@@ -205,7 +207,7 @@ static void UiTransferMailbox_ServeChunkRequest
      comment */
   senderEndpointSlot->chunkTimeoutScratchNeverRead =
        senderEndpointSlot->chunkTimeoutScratchNeverRead + UI_TRANSFER_CHUNK_TIMEOUT_EXTENSION_TICKS;
-  UI_TRANSFER_CHUNK_PACKET_OFFSET = *(UiTransferMailboxByteOffset *)ringRecord->payload;
+  UI_TRANSFER_CHUNK_PACKET_OFFSET = *Packet_At<UiTransferMailboxByteOffset>(ringRecord->payload,0);
   playerRecord->transferProgressBytes = UI_TRANSFER_CHUNK_PAYLOAD_BYTES;
   UI_TRANSFER_CHUNK_PACKET_BYTE_COUNT = g_UiTransferMailbox.outgoingByteCount;
   playerRecord->transferProgressBytes = playerRecord->transferProgressBytes + UI_TRANSFER_CHUNK_PACKET_OFFSET;
@@ -220,7 +222,7 @@ static void UiTransferMailbox_ServeChunkRequest
     chunkSize = bytesRemaining;
   }
   mailboxSourceDwords =
-       (const uint32_t *)((uint8_t *)g_UiTransferMailbox.outgoingAllocation + UI_TRANSFER_CHUNK_PACKET_OFFSET);
+       Packet_At<uint32_t>(static_cast<uint8_t *>(g_UiTransferMailbox.outgoingAllocation),UI_TRANSFER_CHUNK_PACKET_OFFSET);
   chunkPayloadCursor = UI_TRANSFER_CHUNK_PACKET_DATA;
   for (dwordsRemaining = chunkSize >> 2; dwordsRemaining != 0; dwordsRemaining--) {
     *chunkPayloadCursor = *mailboxSourceDwords;
@@ -229,8 +231,7 @@ static void UiTransferMailbox_ServeChunkRequest
   }
   g_UiTransferChunkPacket.packetHeader.sequenceToken = g_UiTransferSequenceToken;
   UiTransfer_StagePacketAndSend
-            ((UiTransferEndpointDescriptor *)senderEndpointSlot,
-             (UiTransferPacketHeader *)UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES);
+            (&senderEndpointSlot->endpoint,&g_UiTransferChunkPacket.packetHeader);
 }
 
 /* Ping answer (0x10033): stores the round trip in ticks and "<ticks * 4>ms" (half the round trip) as text in
@@ -249,11 +250,11 @@ static void UiTransferMailbox_StorePingRoundTrip
   for (playersRemaining = g_FrontendPlayerRuntimeCount; playersRemaining > 0; playersRemaining--) {
     if ((ringRecord->packetHeader.sequenceToken == playerRecord->peerSequenceToken) &&
         (senderEndpointSlot->endpoint.ipv4AddressNetworkOrder == playerRecord->endpoint.ipv4AddressNetworkOrder)) {
-      roundTripTicks = g_UiTransferMailboxTickCounter - *(int *)ringRecord->payload;
+      roundTripTicks = g_UiTransferMailboxTickCounter - *Packet_At<int>(ringRecord->payload,0);
       playerRecord->pingRoundTripTicks = roundTripTicks;
-      latencyTextCursor = (uint8_t *)playerRecord->pingTextUtf16;
+      latencyTextCursor = reinterpret_cast<uint8_t *>(playerRecord->pingTextUtf16); /* the text as bytes */
       numberByteCount = g_WideNumberFormatUtf16
-                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,roundTripTicks * 4,(uint16_t *)latencyTextCursor);
+                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,roundTripTicks * 4,playerRecord->pingTextUtf16);
       latencySuffixCursor = latencyTextCursor + numberByteCount;
       latencySuffixCursor[0] = 'm'; /* UTF-16 "ms" and terminator */
       latencySuffixCursor[1] = 0;
@@ -303,17 +304,17 @@ void UiTransferMailbox_ServiceAndRetransmitTimer()
      the matching 0x80-byte slot of the auxiliary buffer; the slot is only kept (write index advanced)
      for packets that are not handled here. */
   while (g_NetworkBackendSlot4
-                  ((WinSockAddress *)
+                  (reinterpret_cast<WinSockAddress *> /* the endpoint slot's address is computed as an integer */
                    (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + (uintptr_t)g_UiRuntimeRecordEndpointSlots),256,
-                   (uint8_t *)(g_UiRuntimeRecordRing + g_UiRuntimeRecordWriteIndex))) {
+                   reinterpret_cast<uint8_t *>(g_UiRuntimeRecordRing + g_UiRuntimeRecordWriteIndex))) { /* datagram bytes */
     slotIndex = g_UiRuntimeRecordWriteIndex;
     nextSlotIndex = slotIndex + 1;
     ringRecord = g_UiRuntimeRecordRing + slotIndex;
     if (!UiTransferMailbox_DecryptAndVerifyRecord(ringRecord)) {
       continue;
     }
-    senderEndpointSlot =
-         (UiTransferSenderEndpointSlot *)(slotIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + (uintptr_t)g_UiRuntimeRecordEndpointSlots);
+    senderEndpointSlot = reinterpret_cast<UiTransferSenderEndpointSlot *> /* address computed as an integer */
+         (slotIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + (uintptr_t)g_UiRuntimeRecordEndpointSlots);
     if (ringRecord->packetHeader.packedTypeAndUnitCount == FRONTEND_PACKET_80030_MAILBOX_CHUNK) {
       UiTransferMailbox_ReceiveChunk(ringRecord,senderEndpointSlot);
     }
@@ -322,11 +323,11 @@ void UiTransferMailbox_ServiceAndRetransmitTimer()
     }
     else if (ringRecord->packetHeader.packedTypeAndUnitCount == FRONTEND_PACKET_10032_PING) {
       /* ping: echo the sender's tick count back as 0x10033 */
-      g_UiTransferPingEchoPacket.backendSessionValue = *(uint32_t *)ringRecord->payload;
+      g_UiTransferPingEchoPacket.backendSessionValue = *Packet_At<uint32_t>(ringRecord->payload,0);
       g_UiTransferPingEchoPacket.header.packedTypeAndUnitCount = FRONTEND_PACKET_10033_PING_ECHO;
       g_UiTransferPingEchoPacket.header.sequenceToken = g_UiTransferSequenceToken;
       UiTransfer_StagePacketAndSend
-                ((UiTransferEndpointDescriptor *)senderEndpointSlot,&g_UiTransferPingEchoPacket.header);
+                (&senderEndpointSlot->endpoint,&g_UiTransferPingEchoPacket.header);
     }
     else if (ringRecord->packetHeader.packedTypeAndUnitCount == FRONTEND_PACKET_10033_PING_ECHO) {
       UiTransferMailbox_StorePingRoundTrip(ringRecord,senderEndpointSlot);
@@ -452,7 +453,7 @@ Bool8 UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTra
     endpointOffset = 0;
     g_UiTransferUnitCursor = unitCount;
   }
-  outputBlocks = (uint32_t *)(g_UiTransferDataBuffer + dataOffset);
+  outputBlocks = Packet_Dwords(g_UiTransferDataBuffer + dataOffset);
   endpointBufferBase = g_UiTransferEndpointBuffer->zeroPadding;
   byteCount = unitCount << 5;
   packet->xorChecksum = 0;
@@ -462,7 +463,7 @@ Bool8 UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTra
      not above 3 (a byte count of 0 still XORs the first dword) */
   checksum = 0;
   bytesRemaining = byteCount;
-  packetDwordCursor = (const uint32_t *)packet;
+  packetDwordCursor = Packet_Dwords(packet);
   do {
     checksum = checksum ^ *packetDwordCursor;
     packetDwordCursor++;
@@ -471,15 +472,16 @@ Bool8 UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTra
   } while (bytesRemaining != 0 && moreBytes);
   packet->xorChecksum = checksum;
   UiTransfer_EncryptPacketBlocks
-            (g_UiTransferRoundKeys,outputBlocks,byteCount,(uint32_t *)packet);
+            (g_UiTransferRoundKeys,outputBlocks,byteCount,Packet_Dwords(packet));
   /* endpointBufferBase points 8 bytes into the endpoint ring, so "- 8" is the endpoint slot itself */
-  endpointDestinationDwordCursor = (uint32_t *)(endpointBufferBase + endpointOffset + -8);
-  endpointSourceDwords = (const uint32_t *)endpoint;
+  endpointDestinationDwordCursor = Packet_Dwords(endpointBufferBase + endpointOffset + -8);
+  endpointSourceDwords = Packet_Dwords(endpoint);
   for (dwordCount = 4; dwordCount != 0; dwordCount--) {
     *endpointDestinationDwordCursor = *endpointSourceDwords;
     endpointSourceDwords++;
     endpointDestinationDwordCursor++;
   }
   return !g_NetworkBackendSlot5
-                ((WinSockAddress *)(endpointBufferBase + endpointOffset + -8),byteCount,(uint8_t *)outputBlocks);
+                (reinterpret_cast<WinSockAddress *>(endpointBufferBase + endpointOffset + -8),byteCount, /* the endpoint copy */
+                 reinterpret_cast<uint8_t *>(outputBlocks));
 }
