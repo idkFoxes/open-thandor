@@ -1228,6 +1228,7 @@ static GraphicsTextureSourceAsset *InGameUiRuntime_ReplaceTexturePackage
 Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   uint32_t textureLoadError;
   GraphicsTextureSourceAsset *panelTexture;
   GraphicsTextureSourceAsset *diagramTexture;
@@ -1257,9 +1258,9 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
     *outError = textureLoadError;
     return false;
   }
-  ((UiFormattedContainer *)INGAME_UI(inGameRoot,xeniteGauge))->textureSource = diagramTexture;
-  ((UiFormattedContainer *)INGAME_UI(inGameRoot,tritiumGauge))->textureSource = diagramTexture;
-  ((UiFormattedContainer *)INGAME_UI(inGameRoot,energyGauge))->textureSource = diagramTexture;
+  ui->xeniteGauge.textureSource = diagramTexture;
+  ui->tritiumGauge.textureSource = diagramTexture;
+  ui->energyGauge.textureSource = diagramTexture;
 
   windowTexture = InGameUiRuntime_ReplaceTexturePackage
                     ((uint16_t *)g_GfxPanelWindowGfxPathUtf16,
@@ -1268,14 +1269,14 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
     *outError = textureLoadError;
     return false;
   }
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,messageWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,gameMenuWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,quitGameWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,saveGameWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,graphicsSettingsWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,audioSettingsWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,missionHelpWindow))->textureSource = windowTexture;
+  ui->technologyWindow.textureSource = windowTexture;
+  ui->messageWindow.textureSource = windowTexture;
+  ui->gameMenuWindow.textureSource = windowTexture;
+  ui->quitGameWindow.textureSource = windowTexture;
+  ui->saveGameWindow.textureSource = windowTexture;
+  ui->graphicsSettingsWindow.textureSource = windowTexture;
+  ui->audioSettingsWindow.textureSource = windowTexture;
+  ui->missionHelpWindow.textureSource = windowTexture;
 
   techTexture = InGameUiRuntime_ReplaceTexturePackage
                   ((uint16_t *)g_GfxPanelTechGfxPathUtf16,
@@ -1284,13 +1285,13 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
     *outError = textureLoadError;
     return false;
   }
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab1Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab2Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab3Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab4Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab5Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab6Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab7Icon))->textureSource = techTexture;
+  ui->technologyAreaTab1Icon.textureSource = techTexture;
+  ui->technologyAreaTab2Icon.textureSource = techTexture;
+  ui->technologyAreaTab3Icon.textureSource = techTexture;
+  ui->technologyAreaTab4Icon.textureSource = techTexture;
+  ui->technologyAreaTab5Icon.textureSource = techTexture;
+  ui->technologyAreaTab6Icon.textureSource = techTexture;
+  ui->technologyAreaTab7Icon.textureSource = techTexture;
   InGameUiRuntime_SizeTechnologyWindow(inGameRoot,techTexture);
   InGameUiRuntime_AssignClickSounds(inGameRoot);
   return true;
