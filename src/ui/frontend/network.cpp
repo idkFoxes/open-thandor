@@ -331,9 +331,9 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
      and the 0x40-code-unit hostAddressEdit text). */
   g_FrontendRootInitializationTemplate.bottomBarStatusText.text =
        FrontendUi_Image(root)->bottomBarStatusText.text;
-  sourceCursor = (int32_t *)FrontendUi_Image(root)->hostAddressEdit.textBuffer;
-  destinationCursor =
-       (int32_t *)g_FrontendRootInitializationTemplate.hostAddressEdit.textBuffer;
+  /* the UTF-16 text buffers, copied as dwords */
+  sourceCursor = reinterpret_cast<int32_t *>(FrontendUi_Image(root)->hostAddressEdit.textBuffer);
+  destinationCursor = reinterpret_cast<int32_t *>(g_FrontendRootInitializationTemplate.hostAddressEdit.textBuffer);
   INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId) =
        static_cast<TextResourceId>(g_FrontendRootInitializationTemplate.bottomBarStatusText.text);
   for (dwordsRemaining = 32; dwordsRemaining != 0; dwordsRemaining--) { /* 0x40 code units */

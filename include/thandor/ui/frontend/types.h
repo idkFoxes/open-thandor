@@ -9,6 +9,8 @@
 #define THANDOR_UI_FRONTEND_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/bytes.h> /* Thandor_At: FrontendUi_ImageOfNode */
+#include <thandor/core/contracts.h> /* Thandor_AddressBytes: FrontendUiImage::NodeAt */
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/memory/types.h>
 #include <thandor/core/types.h>
@@ -238,7 +240,6 @@ struct FrontendNetworkSetupPageState {
 
 using UiPixelMetric = int;
 
-using FrontendScenarioSelectionControlAddress32 = intptr_t; /* address of the gameSelectStartButton node (5f) */
 
 using TechnologyIndexOrRestoreCode = uint32_t;
 
@@ -1259,6 +1260,14 @@ typedef struct FrontendUiImage {
     UiTextButtonControl advancedFrameLimit144; /* +77CC g_UiTextButtonControlVtable: "144 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
     UiTextButtonControl advancedVsyncCheckbox; /* +782C g_UiTextButtonControlVtable: Checkbox "VSync" (action FRONTEND_ACTION_ADVANCED_VSYNC). */
     UiFocusProxyControl advancedNoteLabel; /* +788C g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
+
+    /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
+       byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is
+       added as a signed 32-bit value to the image's integer address, as the original does. */
+    template <class T> T *NodeAt(uint32_t offset)
+    {
+        return reinterpret_cast<T *>(Thandor_AddressBytes(this) + static_cast<int32_t>(offset));
+    }
 } FrontendUiImage;
 /* The frontend UI image behind a root pointer (any pointer to the image start): the typed access to its nodes,
    e.g. &FrontendUi_Image(root)->chatInputEdit. One reinterpretation for all users. */
@@ -1270,6 +1279,12 @@ template <class T> inline FrontendUiImage *FrontendUi_Image(T *root)
 inline FrontendUiImage *FrontendUi_Image(uintptr_t root)
 {
   return reinterpret_cast<FrontendUiImage *>(root);
+}
+/* The frontend image copy that contains `node` as its member at byte offset nodeOffset
+   (offsetof(FrontendUiImage, x)): the typed access from a handler's own node to its sibling nodes. */
+template <class T> inline FrontendUiImage *FrontendUi_ImageOfNode(T *node, size_t nodeOffset)
+{
+  return Thandor_At<FrontendUiImage>(node, -static_cast<int32_t>(nodeOffset));
 }
 
 /* The menu room node (menuRoomModelView) as the world runtime context the ROM transitions, the menu room scene
