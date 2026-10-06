@@ -4,7 +4,11 @@ Status: in progress. Done: WP0 (owner decisions), WP1+2 (version 1.0.6, version 
 resource), WP3 (`tools/installer/thandor-patch.iss`, German readme, `build_installer.py`), WP4 (image generator
 `tools/installer/make_wizard_images.py`; the finished BMPs go into `tools/installer/images`, the installer uses them
 when present and Inno's placeholders otherwise), WP5 (CMake target `installer`, see `docs/BUILDING.md`, section
-"Patch installer"; a silent install / reinstall / uninstall smoke test on a copy passed) and WP7 (docs). Open: WP6
+"Patch installer"; a silent install / reinstall / uninstall smoke test on a copy passed), WP7 (docs) and WP8
+(GitHub Actions workflow `.github/workflows/release.yml`: workflow_dispatch builds the installer as an artifact, a
+pushed tag `vX.Y.Z` that matches the CMake version builds it and creates the GitHub Release "Thandor Patch 6 - Open
+Thandor X.Y.Z" with `Thandor-Patch-6.exe` and its SHA-256; same toolchain as locally, pinned and checksummed; see
+`docs/BUILDING.md`, "Releases (GitHub Actions)"). Open: WP6
 (the full install and uninstall tests, including a non-admin game start). Step 10 is an installer that puts our build onto an existing Thandor installation as a
 patch, with the version bumped to 1.0.6 and a picture of the game, looking like the original `Thandor-Patch-5.exe`
 (a classic Windows installer). The owner decided the open points listed in work package 0 (section 7); see "Owner decisions" below.
@@ -407,6 +411,7 @@ endif()
 | 5 | CMake `installer` target (stage, strip, ISCC with version) | S | `cmake --build --preset mingw-release --target installer` produces `Thandor-Patch-6.exe`; its version resource is 1.0.6 |
 | 6 | Install and uninstall tests on copies of the game folder (record the MD5s before and after) | M | (1) Install into the copy: `thandor.exe` = ours, `SDL3.dll` and `thandor.sym` present, backup `thandor-1.05.exe` has MD5 `bd565d4c...8873`, PCK/dat/ini/save MD5s unchanged; the game starts as a **non-admin user** and saves settings and a game (proves the ACL). (2) Reinstall over itself: the backup is not overwritten by our exe. (3) Uninstall: `thandor.exe` MD5 is back to `bd565d4c...`, read-only attribute restored, `SDL3.dll`/`thandor.sym`/uninstaller gone, saves and `thandor.ini` still there, the Apps & Features entry is gone. (4) The wrong folder (no DATEN.PCK) is refused. (5) Silent mode `/SILENT /DIR=...` for an automated test with `tools/test`. (6) Optional: a 32-bit Windows VM refuses to install |
 | 7 | Docs: `README.md:93-95` (playing: installer as the normal path), `docs/BUILDING.md` (installer target), CHANGELOG | S | Review |
+| 8 | GitHub Actions release workflow (`.github/workflows/release.yml`): build on `windows-2025` with the local toolchain (MinGW-Builds GCC 15.2.0, Ninja 1.13.2, vcpkg pinned, Inno Setup 7.1.0), tag/version check, GitHub Release with the installer and its SHA-256 | S | YAML check; the workflow's configure and build commands run locally in a fresh `build-mingw-release`; the toolchain install, cache and release upload only on GitHub (first `workflow_dispatch` run) |
 
 Sizes: S = less than half a day, M = about a day. Total roughly 3–4 days including the owner decisions and image work.
 
