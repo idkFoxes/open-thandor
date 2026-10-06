@@ -541,11 +541,13 @@ void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *ro
 {
   uint32_t pageEnd;
   uint32_t pageBase;
+  InGameUiImage *image;
   
+  image = InGameUi_Image(root);
   g_UiCommandAbsoluteSelectionIndex = absoluteIndex;
   /* The original reads entries[0] of the material's set without a check; bounded here because the empty
      materials (no texture set, NULL) would crash: the selected swatch then shows nothing. */
-  ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource =
+  image->materialToolSelectedSwatch.textureSource =
        TerrainMaterial_SwatchTexture(absoluteIndex);
   pageEnd = g_UiCommandSelectionPageBaseIndex + MATERIAL_SWATCH_COUNT;
   pageBase = g_UiCommandSelectionPageBaseIndex;
@@ -559,18 +561,18 @@ void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *ro
     pageEnd = pageEnd + MATERIAL_SWATCH_ROW_LENGTH;
   }
   g_UiCommandSelectionPageBaseIndex = pageBase;
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch00))->textureSource = TerrainMaterial_SwatchTexture(pageBase);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch01))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 1);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch02))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 2);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch03))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 3);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch04))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 4);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch05))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 5);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch06))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 6);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch07))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 7);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch08))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 8);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch09))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 9);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch10))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 10);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch11))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 11);
+  image->materialSwatch00.textureSource = TerrainMaterial_SwatchTexture(pageBase);
+  image->materialSwatch01.textureSource = TerrainMaterial_SwatchTexture(pageBase + 1);
+  image->materialSwatch02.textureSource = TerrainMaterial_SwatchTexture(pageBase + 2);
+  image->materialSwatch03.textureSource = TerrainMaterial_SwatchTexture(pageBase + 3);
+  image->materialSwatch04.textureSource = TerrainMaterial_SwatchTexture(pageBase + 4);
+  image->materialSwatch05.textureSource = TerrainMaterial_SwatchTexture(pageBase + 5);
+  image->materialSwatch06.textureSource = TerrainMaterial_SwatchTexture(pageBase + 6);
+  image->materialSwatch07.textureSource = TerrainMaterial_SwatchTexture(pageBase + 7);
+  image->materialSwatch08.textureSource = TerrainMaterial_SwatchTexture(pageBase + 8);
+  image->materialSwatch09.textureSource = TerrainMaterial_SwatchTexture(pageBase + 9);
+  image->materialSwatch10.textureSource = TerrainMaterial_SwatchTexture(pageBase + 10);
+  image->materialSwatch11.textureSource = TerrainMaterial_SwatchTexture(pageBase + 11);
   /* The original pushes all twelve command controls (offsets 11..0) as the variadic list. */
   UiSelectableGroup_SelectExclusive
             (MATERIAL_SWATCH_COUNT,THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[absoluteIndex - pageBase]),
@@ -706,34 +708,36 @@ InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeInd
 
 {
   InGameRuntimeRoot *root;
+  InGameUiImage *image;
 
   root = (InGameRuntimeRoot *)source;
   while ((root->rootUi).base.parent != UI_NODE_NONE) {
     root = (InGameRuntimeRoot *)(root->rootUi).base.parent;
   }
+  image = InGameUi_Image(root);
   UiSelectableGroup_FindVisibleSelected(nullptr,nullptr,6,
-      INGAME_UI(root,editorModeTabRegion),
-      INGAME_UI(root,editorModeTabObjectPlacement),
-      INGAME_UI(root,editorModeTabUnitPlacement),
-      INGAME_UI(root,editorModeTabTerrainSmoothing),
-      INGAME_UI(root,editorModeTabTerrainMaterial),
-      INGAME_UI(root,editorModeTabTerrainHeight));
+      &image->editorModeTabRegion.selectable.base,
+      &image->editorModeTabObjectPlacement,
+      &image->editorModeTabUnitPlacement.selectable.base,
+      &image->editorModeTabTerrainSmoothing.selectable.base,
+      &image->editorModeTabTerrainMaterial.selectable.base,
+      &image->editorModeTabTerrainHeight.selectable.base);
   UiSelectableGroup_SelectExclusive(6,&source->base,
-      INGAME_UI(root,editorModeTabRegion),
-      INGAME_UI(root,editorModeTabObjectPlacement),
-      INGAME_UI(root,editorModeTabUnitPlacement),
-      INGAME_UI(root,editorModeTabTerrainSmoothing),
-      INGAME_UI(root,editorModeTabTerrainMaterial),
-      INGAME_UI(root,editorModeTabTerrainHeight));
+      &image->editorModeTabRegion.selectable.base,
+      &image->editorModeTabObjectPlacement,
+      &image->editorModeTabUnitPlacement.selectable.base,
+      &image->editorModeTabTerrainSmoothing.selectable.base,
+      &image->editorModeTabTerrainMaterial.selectable.base,
+      &image->editorModeTabTerrainHeight.selectable.base);
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGPrimaryPageIndices[modeIndex],
-             (UiPageStackControl *)INGAME_UI(root,modePreviewPageStack));
+             UiLayoutContainerControl_AsPageStack(&image->modePreviewPageStack));
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGSecondaryPageIndices[modeIndex],
-             (UiPageStackControl *)INGAME_UI(root,modeDetailPageStack));
+             UiLayoutContainerControl_AsPageStack(&image->modeDetailPageStack));
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGTertiaryPageIndices[modeIndex],
-             (UiPageStackControl *)INGAME_UI(root,modeCommandPageStack));
+             UiLayoutContainerControl_AsPageStack(&image->modeCommandPageStack));
   g_UiCommandModeG = modeIndex;
   return root;
 }
