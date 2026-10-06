@@ -356,7 +356,7 @@ static UiNodeBase *UiPointer_FindNonRightPressTarget
     opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,hoverTarget);
     g_UiImageControlHoverTarget = nullptr;
     if (opaqueHit != UI_NODE_NONE) {
-      return (UiNodeBase *)hoverTarget;
+      return UiNode_As<UiNodeBase>(hoverTarget);
     }
     stateFlagsField = &(hoverTarget->selectable).stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;

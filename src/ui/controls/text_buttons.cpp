@@ -146,7 +146,7 @@ void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDe
     bottomOffsetField = &(control->selectable).base.bottomOffset;
     *bottomOffsetField = *bottomOffsetField + frameInset;
   }
-  UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
+  UiContainer_RelocateChildren(relocationDelta,UiNode_As<UiNodeBase>(control));
 }
 
 /* Draws a framed text button (drawClipped slot of g_UiFramedTextButtonControlVtable): the normal, selected or disabled
@@ -344,7 +344,7 @@ void UiFramedTextButtonControl_DrawClipped
   }
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     UiContainer_DrawIntersectingChildren
-              (clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
+              (clipBottom,clipRight,clipTop,clipLeft,UiNode_As<UiNodeBase>(control));
   }
 }
 
@@ -366,7 +366,7 @@ void UiFramedTextButtonControl_NonRightPress
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
@@ -379,7 +379,7 @@ void UiFramedTextButtonControl_NonRightPress
       toggleStateFlagsField = &(control->selectable).stateFlags;
       *toggleStateFlagsField = *toggleStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
       UiActionQueue_Enqueue((control->selectable).actionId,control);
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
@@ -392,7 +392,7 @@ void UiFramedTextButtonControl_NonRightPress
       selectedStateFlagsField = &(control->selectable).stateFlags;
       *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
       UiActionQueue_Enqueue((control->selectable).actionId,control);
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
     }
   }
 }
@@ -419,7 +419,7 @@ void UiFramedTextButtonControl_NonRightRelease
     stateFlagsField = &(control->selectable).stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     UiActionQueue_Enqueue((control->selectable).actionId,control);
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
   }
 }
 
@@ -461,12 +461,12 @@ void UiFramedTextButtonControl_NonRightDrag
     if (!UiFramedTextButtonControl_ContainsPoint(pointerY,pointerX,control)) {
       if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
         (control->selectable).stateFlags = (control->selectable).stateFlags & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-        UiNode_InvalidateRoot((UiNodeBase *)control);
+        UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       }
     }
     else if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       (control->selectable).stateFlags = (control->selectable).stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
     }
   }
 }
@@ -481,7 +481,7 @@ UiNodeBase * UiFramedTextButtonControl_HitTestRect
 {
   if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      (UiFramedTextButtonControl_ContainsPoint(pointerY,pointerX,control))) {
-    return (UiNodeBase *)control;
+    return UiNode_As<UiNodeBase>(control);
   }
   return UI_NODE_NONE;
 }
@@ -493,7 +493,7 @@ UiNodeBase * UiFramedTextButtonControl_HitTestRect
 void UiTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiTextButtonControl *control)
 
 {
-  UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
+  UiContainer_RelocateChildren(relocationDelta,UiNode_As<UiNodeBase>(control));
 }
 
 /* Primary button press on a text button (nonRightPress slot of g_UiTextButtonControlVtable,
@@ -528,7 +528,7 @@ void UiTextButtonControl_NonRightPress
           stateFlagsField = &(control->selectable).stateFlags;
           *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
           UiActionQueue_Enqueue((control->selectable).actionId,control);
-          UiNode_InvalidateRoot((UiNodeBase *)control);
+          UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
           return;
         }
       }
@@ -549,7 +549,7 @@ void UiTextButtonControl_NonRightPress
         clearedStateFlagsField = &(control->selectable).stateFlags;
         *clearedStateFlagsField = *clearedStateFlagsField & ~UI_BUTTON_ALTERNATE_STATE;
         UiActionQueue_Enqueue((control->selectable).actionId,control);
-        UiNode_InvalidateRoot((UiNodeBase *)control);
+        UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       }
     }
   }
@@ -572,7 +572,7 @@ Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
   UiSelectableStateFlags *selectionStateFlagsField;
   
   if ((((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) && (keyCode == KEYBOARD_KEY_CODE_SPACE)) &&
-      (control == (UiTextButtonControl *)g_UiKeyboardFocusNode)) &&
+      (control == UiNode_As<UiTextButtonControl>(g_UiKeyboardFocusNode))) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
@@ -586,7 +586,7 @@ Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
       selectionStateFlagsField = &(control->selectable).stateFlags;
       *selectionStateFlagsField = *selectionStateFlagsField & ~UI_BUTTON_ALTERNATE_STATE;
       UiActionQueue_Enqueue((control->selectable).actionId,control);
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       return false;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
@@ -599,12 +599,12 @@ Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
       selectedStateFlagsField = &(control->selectable).stateFlags;
       *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
       UiActionQueue_Enqueue((control->selectable).actionId,control);
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       return false;
     }
   }
   delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext
-                    (keyboardStateMask,keyCode,(UiNodeBase *)control);
+                    (keyboardStateMask,keyCode,UiNode_As<UiNodeBase>(control));
   return delegatedResult;
 }
 

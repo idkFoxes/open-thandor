@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/focus_proxy.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -97,13 +98,13 @@ void UiSingleLineTextControl_RelocateChild(UiSerializedRelocationDelta relocatio
   }
   UiContainer_RelocateChildren(relocationDelta,&controlReg->base);
   if (controlReg->focusChild != nullptr) {
-    controlReg->focusChild = (UiNodeBase *)((uint8_t *)controlReg->focusChild + relocationDelta);
+    controlReg->focusChild = Thandor_At<UiNodeBase>(controlReg->focusChild.get(), relocationDelta);
     childNodeFlagsField = &(controlReg->focusChild)->nodeFlags;
     *childNodeFlagsField =
          *childNodeFlagsField & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
   }
   if ((control->labelFlags & UI_LABEL_TEXT_NEEDS_RELOCATION) != 0) {
-    control->text = (uint16_t *)((uint8_t *)control->text + relocationDelta);
+    control->text = Thandor_At<uint16_t>(control->text.get(), relocationDelta);
     control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
 }

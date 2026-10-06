@@ -40,12 +40,12 @@ Bool8 PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t 
   *sanitizedPathCursor = 0;
   WidePath_CombineDirectoryAndLeaf
             (g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
-             (uint16_t *)&g_ExecutableDirectoryUtf16);
+             g_ExecutableDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_PCX,g_LevelResourcePathScratchUtf16);
   if (Resource_Load(g_LevelResourcePathScratchUtf16,&sourceBytes,&sourceByteCount,nullptr)) {
     /* the original called pcx.fnc export 2 here and accepted only a paletted record (direct-colour 3-plane
        files were rejected as well) */
-    if (Pcx_DecodeIndexed8((const uint8_t *)sourceBytes,sourceByteCount,&image)) {
+    if (Pcx_DecodeIndexed8(static_cast<const uint8_t *>(sourceBytes),sourceByteCount,&image)) {
       if (image.width == 64 && image.height == 64) {
         /* Original quirk: each colour dword 0xFFRRGGBB was stored whole with the output advancing by 3
            bytes, the 0xFF byte being overwritten by the next colour (the last one by the first pixels).

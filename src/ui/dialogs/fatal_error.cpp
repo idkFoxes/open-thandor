@@ -105,7 +105,7 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
     /* no dialog state allocated yet: FatalError_Exit, which does not return */
     error = FatalError_ExitIfFailed(error,true);
   }
-  stream = (uint16_t *)error;
+  stream = reinterpret_cast<uint16_t *>(error); /* a rich-text stream passed as an address */
   if (FATAL_ERROR_IS_CODE(error)) {
     /* only resolved error-page texts get the payload selectors 0..3 patched (FatalError_Exit patches
        every stream) */
@@ -118,8 +118,8 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
   /* the message text goes into the template image itself, which is then copied */
   g_FatalErrorUiRootTemplateImage.errorMessageText.text = stream;
   /* copy the dialog template image into the allocated root node, one dword per step */
-  templateImageCursor = (const uint32_t *)&g_FatalErrorUiRootTemplateImage;
-  templateCopyCursor = (uint32_t *)g_FatalErrorUiRootTemplate;
+  templateImageCursor = reinterpret_cast<const uint32_t *>(&g_FatalErrorUiRootTemplateImage);
+  templateCopyCursor = reinterpret_cast<uint32_t *>(g_FatalErrorUiRootTemplate);
   for (remainingDwords = sizeof g_FatalErrorUiRootTemplateImage / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {
     *templateCopyCursor = *templateImageCursor;
@@ -161,6 +161,6 @@ void ErrorRuntime_InstallUiHandlerAndAllocateState()
 
   if (g_MemoryApi.alloc(sizeof g_FatalErrorUiRootTemplateImage,&allocPayload) == 0) {
     g_FatalErrorReportHandler = FatalErrorRuntime_DispatchPendingError;
-    g_FatalErrorUiRootTemplate = (UiRootNode *)allocPayload;
+    g_FatalErrorUiRootTemplate = static_cast<UiRootNode *>(allocPayload);
   }
 }

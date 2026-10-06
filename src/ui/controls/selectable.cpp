@@ -147,7 +147,7 @@ Bool8 UiSelectableGroup_FindVisibleSelected
   }
   va_end(controlArgs);
   if (outNode != nullptr) {
-    *outNode = (UiNodeBase *)control;
+    *outNode = UiNode_As<UiNodeBase>(control);
   }
   if (outIndex != nullptr) {
     *outIndex = controlIndex;

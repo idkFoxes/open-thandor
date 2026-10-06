@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-GraphicsTextureSourceAsset *g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)(intptr_t)-1; /* 0xFFFFFFFF in the original */
+GraphicsTextureSourceAsset *g_UiWindowTextureSource = reinterpret_cast<GraphicsTextureSourceAsset *>(intptr_t{-1}); /* 0xFFFFFFFF in the original */
 
 GraphicsTextureSourceAsset *g_UiWindowClassTextureSource = nullptr;
 
@@ -405,7 +405,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
     }
     g_GraphicsFramebufferEndAccess();
   }
-  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
+  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,UiNode_As<UiNodeBase>(control));
 }
 
 /* drawClipped of g_UiTitledWindowControlVtable: draws the group-box frame with the title text set into its
@@ -501,7 +501,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
                rightEdgeX,0,rightCapX + textureSize.logicalWidthPixels,control);
     g_GraphicsFramebufferEndAccess();
   }
-  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
+  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,UiNode_As<UiNodeBase>(control));
 }
 
 /* Restores the rectangle saved when the window was maximized and lays the window out again. */
@@ -558,7 +558,7 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
     }
     UiResizableWindowControl_SaveRectangleAndCoverFramebuffer(control);
   }
-  UiNode_InvalidateRoot((UiNodeBase *)control);
+  UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
   control->root.rootFlags = control->root.rootFlags & ~UI_ROOT_POINTER_STATE;
 }
 
@@ -586,12 +586,12 @@ Bool8 UiResizableWindowControl_HandleWindowHotkeys
       }
       else {
         UiResizableWindowControl_SaveRectangleAndCoverFramebuffer(control);
-        UiNode_InvalidateRoot((UiNodeBase *)control);
+        UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       }
       return false;
     }
   }
-  delegateResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,(UiNodeBase *)control);
+  delegateResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,UiNode_As<UiNodeBase>(control));
   return delegateResult;
 }
 
@@ -611,7 +611,7 @@ void UiWindowControl_RelocateWithFrameInset(UiSerializedRelocationDelta relocati
     control->selectable.base.rightOffset = control->selectable.base.rightOffset + frameInset;
     control->selectable.base.bottomOffset = control->selectable.base.bottomOffset + frameInset;
   }
-  UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
+  UiContainer_RelocateChildren(relocationDelta,UiNode_As<UiNodeBase>(control));
 }
 
 /* layout of g_UiTitledWindowControlVtable: lays out the children inside the frame, i.e. with the rectangle
@@ -649,7 +649,7 @@ void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *co
   rightInset = cornerSize.logicalWidthPixels;
   control->base.right = control->base.right - rightInset;
   control->base.bottom = control->base.bottom - bottomInset;
-  UiContainer_LayoutChildren((UiNodeBase *)control);
+  UiContainer_LayoutChildren(UiNode_As<UiNodeBase>(control));
   control->base.right = control->base.right + rightInset;
   control->base.bottom = control->base.bottom + bottomInset;
   control->base.layoutWidth = control->base.layoutWidth + rightInset;
@@ -668,7 +668,7 @@ void UiResizableWindowControl_RelocateAndRefreshInteractionState
           (UiSerializedRelocationDelta relocationDelta,UiResizableWindowControl *control)
 
 {
-  UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
+  UiContainer_RelocateChildren(relocationDelta,UiNode_As<UiNodeBase>(control));
   if ((control->root.rootFlags & (UI_ROOT_CLOSE_BUTTON | UI_ROOT_MAXIMIZE_BUTTON)) == 0) {
     control->root.base.nodeFlags =
          control->root.base.nodeFlags & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
@@ -773,8 +773,8 @@ static void UiResizableWindowControl_ResizeToPointer
   if (oldLeft != control->root.base.left || oldTop != control->root.base.top ||
       oldRight != control->root.base.right || oldBottom != control->root.base.bottom) {
     UiRootStack_InvalidateAll();
-    control->root.base.vtable->layout((UiNodeBase *)control);
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    control->root.base.vtable->layout(UiNode_As<UiNodeBase>(control));
+    UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
   }
 }
 
@@ -807,8 +807,8 @@ void UiResizableWindowControl_UpdateMoveOrResize
       control->root.base.top = control->root.base.top + moveY;
       control->root.base.right = control->root.base.right + moveX;
       control->root.base.bottom = control->root.base.bottom + moveY;
-      control->root.base.vtable->layout((UiNodeBase *)control);
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      control->root.base.vtable->layout(UiNode_As<UiNodeBase>(control));
+      UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
     }
   }
   else if ((control->root.rootFlags & UI_ROOT_CLOSE_PRESSED) != 0) {
@@ -818,7 +818,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
     if (UiResizableWindowControl_UpdateArmedFlag(overButton,UI_ROOT_CLOSE_ARMED,control)) {
       /* result unused */
       g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON,g_UiWindowTextureSource);
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
     }
   }
   else if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_PRESSED) != 0) {
@@ -829,7 +829,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
                       (localY,localX,0,control->root.base.layoutWidth - buttonSize.logicalWidthPixels,
                        UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON,g_UiWindowTextureSource);
     if (UiResizableWindowControl_UpdateArmedFlag(overButton,UI_ROOT_MAXIMIZE_ARMED,control)) {
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
     }
   }
   else if ((control->root.rootFlags & UI_ROOT_RESIZING) != 0) {
@@ -850,18 +850,20 @@ void UiWindowResources_Init()
   uintptr_t pageLoadError;
   Bool8 pageLoaded;
 
-  loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_UiWindowTexturePathUtf16,&textureLoadError);
+  loadedTexture = g_GraphicsTextureSourceLoadPackageAsset(g_UiWindowTexturePathUtf16,&textureLoadError);
   checkedValue = FatalError_ExitIfFailed(loadedTexture != nullptr ? (uintptr_t)loadedTexture : textureLoadError,
                                           loadedTexture == nullptr);
-  g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedValue;
+  /* FatalError_ExitIfFailed passes the loaded pointer through as an address */
+  g_UiWindowTextureSource = reinterpret_cast<GraphicsTextureSourceAsset *>(checkedValue);
   loadedTexture = g_GraphicsTextureSourceLoadPackageAsset(g_UiWindowClassTexturePathUtf16,&textureLoadError);
   checkedValue = FatalError_ExitIfFailed(loadedTexture != nullptr ? (uintptr_t)loadedTexture : textureLoadError,
                                           loadedTexture == nullptr);
-  g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedValue;
+  g_UiWindowClassTextureSource = reinterpret_cast<GraphicsTextureSourceAsset *>(checkedValue);
   /* the out value is the error code on failure; on success it is only passed through unused */
-  pageLoaded = TextResourcePage_Load(1,(uint16_t *)g_UiWindowClassTextPathUtf16,&pageLoadError);
+  pageLoaded = TextResourcePage_Load(1,g_UiWindowClassTextPathUtf16,&pageLoadError);
   FatalError_ExitIfFailed(pageLoadError,!pageLoaded);
-  UiActionHandlers_SetPage(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
+  /* a two-slot table as a handler page: only its first two action ids are ever queued */
+  UiActionHandlers_SetPage(0,reinterpret_cast<UiActionHandlerPage *>(&g_UiRootStackActionHandlerPage));
   g_UiRootNode = UI_ROOT_STACK_END;
 }
 
@@ -1019,10 +1021,12 @@ void UiWindow_BlitTiledInterior(UiPixelCoordinate clipBottom,UiPixelCoordinate c
           void *node)
 
 {
+  const UiNodeBase *base = static_cast<const UiNodeBase *>(node);
+
   g_GraphicsTextureSourceBlitTiledSourceAlpha
-            (clipBottom,clipRight,clipTop,clipLeft,tileBottom + ((UiNodeBase *)node)->top,
-             tileRight + ((UiNodeBase *)node)->left,tileTop + ((UiNodeBase *)node)->top,
-             tileLeft + ((UiNodeBase *)node)->left,subresource,g_UiWindowTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,tileBottom + base->top,
+             tileRight + base->left,tileTop + base->top,
+             tileLeft + base->left,subresource,g_UiWindowTextureSource,
              g_FramebufferAccess);
 }
 
@@ -1036,9 +1040,11 @@ void UiWindow_BlitTiledVerticalEdge(UiPixelCoordinate clipBottom,UiPixelCoordina
           UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,void *node)
 
 {
+  const UiNodeBase *base = static_cast<const UiNodeBase *>(node);
+
   g_GraphicsTextureSourceBlitTiledSourceAlpha
-            (clipBottom,clipRight,clipTop,clipLeft,tileBottom + ((UiNodeBase *)node)->top,INT32_MIN,
-             tileTop + ((UiNodeBase *)node)->top,tileLeft + ((UiNodeBase *)node)->left,subresource,
+            (clipBottom,clipRight,clipTop,clipLeft,tileBottom + base->top,INT32_MIN,
+             tileTop + base->top,tileLeft + base->left,subresource,
              g_UiWindowTextureSource,g_FramebufferAccess);
 }
 
@@ -1053,10 +1059,12 @@ void UiWindow_BlitTiledHorizontalEdge
           UiPixelCoordinate tileRight,UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,void *node)
 
 {
+  const UiNodeBase *base = static_cast<const UiNodeBase *>(node);
+
   g_GraphicsTextureSourceBlitTiledSourceAlpha
             (clipBottom,clipRight,clipTop,clipLeft,INT32_MIN,
-             tileRight + ((UiNodeBase *)node)->left,tileTop + ((UiNodeBase *)node)->top,
-             tileLeft + ((UiNodeBase *)node)->left,subresource,g_UiWindowTextureSource,
+             tileRight + base->left,tileTop + base->top,
+             tileLeft + base->left,subresource,g_UiWindowTextureSource,
              g_FramebufferAccess);
 }
 

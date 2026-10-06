@@ -1184,7 +1184,7 @@ UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
       ((int)control->contentOriginY <= localPointerY)) &&
      (((int)(localPointerX - control->viewportWidth) < (int)control->contentOriginX &&
       ((int)(localPointerY - control->viewportHeight) < (int)control->contentOriginY)))) {
-    control = (UiScrollableControl *)UiContainer_HitTestChildren(pointerY,pointerX,&control->base);
+    control = UiNode_As<UiScrollableControl>(UiContainer_HitTestChildren(pointerY,pointerX,&control->base));
   }
   return &control->base;
 }

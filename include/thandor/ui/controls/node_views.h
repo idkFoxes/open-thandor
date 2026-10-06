@@ -50,6 +50,28 @@ THANDOR_SLOT_PREFIX(UiNineSlicePanelControl, base);
 THANDOR_SLOT_PREFIX(UiSoftwareTexturePreviewControl, base);
 THANDOR_SLOT_PREFIX(UiFormattedContainer, base);
 THANDOR_SLOT_PREFIX(UiFormattedContainerWithMarker, base);
+
+/* UiNode_As<To>(node): the named cast between a UI node and the control it is, in either direction (step 13 X8;
+   replaces the C-style casts of the control methods: a vtable method receives a UiNodeBase * and works on its
+   control, and passes the control on as a UiNodeBase *). It compiles only when one type is registered as starting
+   with the other (THANDOR_SLOT_PREFIX above and in ui/ingame, ui/frontend node_views.h, also over several
+   registrations: UiImageControl -> UiSelectableControl -> UiNodeBase) or both start with the same registered
+   base, so it cannot reach an unrelated type. The conversion is the reinterpret_cast the C-style cast was (the
+   base is at offset 0: same address, no adjustment); const is kept, never dropped. */
+template <class To, class From> inline To *UiNode_As(From *node)
+{
+    using ToBare = std::remove_cv_t<To>;
+    using FromBare = std::remove_cv_t<From>;
+    static_assert(thandor_slot_is_view_of<ToBare, FromBare>() || thandor_slot_is_view_of<FromBare, ToBare>() ||
+                      (thandor_slot_is_view_of<ToBare, UiNodeBase>() && thandor_slot_is_view_of<FromBare, UiNodeBase>()),
+                  "UiNode_As: the types are not registered views of one UI node");
+    return reinterpret_cast<To *>(node);
+}
+/* The same for a node link (the load of the 32-bit field, then the cast). */
+template <class To, class From> inline To *UiNode_As(const Ptr32<From> &link)
+{
+    return UiNode_As<To>(link.get());
+}
 #endif /* __cplusplus */
 
 #endif /* THANDOR_UI_CONTROLS_NODE_VIEWS_H */
