@@ -58,10 +58,10 @@ Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outE
     return false;
   }
   /* pool address - 1 */
-  g_ShotRuntimeRebaseBaseMinusOne = (uint8_t *)pool - 1;
+  g_ShotRuntimeRebaseBaseMinusOne = reinterpret_cast<uint8_t *>(pool) - 1;
   g_ShotRuntimeSlots = pool;
   /* clears the pool dword by dword */
-  poolDword = (uint32_t *)pool;
+  poolDword = reinterpret_cast<uint32_t *>(pool); /* zeroed dword by dword, as the original */
   for (poolDwordsRemaining = SHOT_RUNTIME_POOL_BYTES / 4; poolDwordsRemaining != 0; poolDwordsRemaining--) {
     *poolDword = 0;
     poolDword++;
@@ -154,7 +154,7 @@ void ShotRuntime_RebaseSlotsAfterLoad()
     if (shotSlot->modelNodeOrSavedOffset.modelNode != nullptr) {
       if (rebasedRuntimeState != nullptr) {
         /* 5f-format: ShotRuntimeSlot.runtimeStateOrSavedOffset */
-        rebasedRuntimeState = (void *)(Thandor_PointerToI32(rebasedRuntimeState) + g_ModelRuntimeRebaseDelta);
+        rebasedRuntimeState = reinterpret_cast<void *>(Thandor_PointerToI32(rebasedRuntimeState) + g_ModelRuntimeRebaseDelta);
       }
       rebasedOwnerArmy = nullptr;
       if (savedOwnerArmy != nullptr) {
@@ -164,7 +164,7 @@ void ShotRuntime_RebaseSlotsAfterLoad()
       /* saved model node offset + g_RuntimeObjectRebaseBaseMinusOne */
       /* 5f-format: ShotRuntimeSlot.modelNodeOrSavedOffset */
       shotSlot->modelNodeOrSavedOffset.modelNode =
-           (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)shotSlot->modelNodeOrSavedOffset.modelNode);
+           reinterpret_cast<ModelRuntimeNode *>(g_RuntimeObjectRebaseBaseMinusOne + (int)shotSlot->modelNodeOrSavedOffset.modelNode);
       shotSlot->runtimeStateOrSavedOffset.runtimeStatePointer = rebasedRuntimeState;
       shotSlot->ownerAndTrajectory.ownerArmyRuntime = rebasedOwnerArmy;
       /* the slot still holds the saved definition id in its definition field */

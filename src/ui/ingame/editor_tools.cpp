@@ -360,14 +360,14 @@ static void InGameEditorPointer_BeginPlacementTool
   if (ownerNodeUnderPointer != nullptr) {
     if (placementSubMode == 1) {
       armyToken = ArmyRuntime_Token
-                  (((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
+                  (WorldOwnerNode_ModelRuntime(ownerNodeUnderPointer)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
       InGameCommand_Issue<FrontendPlayerSelection_ApplyEntryOrAll>(0,0,armyToken);
       return;
     }
     g_UiCommandDragStartScreenX = mapControl->pointerPressX;
     g_UiCommandDragStartScreenY = mapControl->pointerPressY;
     armyToken = ArmyRuntime_Token
-                (((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
+                (WorldOwnerNode_ModelRuntime(ownerNodeUnderPointer)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     InGameCommand_Issue<PlayerRuntime_SetPlacementArmy>(0,0,armyToken);
     g_UiCommandDragReferenceX = pointerY;
     g_UiCommandDragReferenceY = pointerX;
@@ -494,7 +494,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
     if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) == 0) continue;
     static_assert(offsetof(ModelRuntimeSlot,ownerArmyRuntimeOrSavedOffset) == 8,
                   "the owner army is the dword at payload + 8");
-    entry = ((ModelRuntimeSlot *)runtimeNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
+    entry = WorldOwnerNode_ModelRuntime(runtimeNode)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) == 0 ||
         ownerFactionIndex != (entry->common).ownership.ownerIndex) continue;
     payloadValue = ArmyRuntime_Token(entry);
@@ -526,7 +526,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
     }
   }
   if (g_InGameSelectionRemoveTripletDwordCount != 0) {
-    tripletEntry = (CommandPayload *)g_InGameSelectionRemoveTripletDwords;
+    tripletEntry = g_InGameSelectionRemoveTripletDwords;
     do {
       InGameCommand_Issue<FrontendPlayerSelection_RemoveThreeEntriesAndRefresh>
                 (tripletEntry[2],tripletEntry[1],*tripletEntry);
@@ -536,7 +536,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
     } while (g_InGameSelectionRemoveTripletDwordCount != 0 && 2 < (int)tripletDwordCount);
   }
   if (g_InGameSelectionInsertTripletDwordCount != 0) {
-    tripletEntry = (CommandPayload *)g_InGameSelectionInsertTripletDwords;
+    tripletEntry = g_InGameSelectionInsertTripletDwords;
     do {
       InGameCommand_Issue<FrontendPlayerSelection_InsertThreeEntriesAndRefresh>
                 (tripletEntry[2],tripletEntry[1],*tripletEntry);
@@ -922,7 +922,7 @@ static Bool8 EditorSlot_KeyboardFallback(UiKeyboardStateMask keyboardStateMask,U
 static void EditorSlot_RebuildTerrainOccupancyAndVisualState(void *callbackContext,WorldOwnerListNode *node)
 
 {
-  ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback((WorldRuntimeContext *)callbackContext,node);
+  ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback(static_cast<WorldRuntimeContext *>(callbackContext),node);
 }
 
 static void EditorSlot_ResetNotificationButtonCursor(WorldRuntimeContext *worldRuntime)
@@ -955,8 +955,9 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
   WorldRuntimeContext *node;
   GraphicsTextureSet *materialTextureSet;
   ArmyAssetRecordPrefix *armyAsset;
-  uint8_t *pageStackBlock;
+  UiPageStackControl *modePreviewPageStack;
   InGameRuntimeRoot *root;
+  InGameUiImage *image;
   uint32_t editorMode;
   uint32_t materialIndex;
   int remainingCount;
@@ -970,28 +971,30 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
 
   editorMode = g_UiCommandModeG;
   root = g_InGameRuntimeRoot;
+  image = InGameUi_Image(root);
   if ((activeStateFlags & EDITOR_ACTIVE_STATE_LEAVE) == 0) {
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
-      pageStackBlock = (uint8_t *)INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack);
+      modePreviewPageStack =
+           UiLayoutContainerControl_AsPageStack(&InGameUi_Image(g_InGameRuntimeRoot)->modePreviewPageStack);
       g_UiCommandRuntimeFlags =
            g_UiCommandRuntimeFlags |
            (UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
       runtimeFlagsField = &(g_InGameRuntimeRoot->worldRuntime).runtimeFlags;
       *runtimeFlagsField = *runtimeFlagsField | INGAME_WORLD_FLAG_EDITOR; /* cleared on leaving */
       UiPageStack_SetActiveIndex
-                (g_UiCommandModeGPrimaryPageIndices[editorMode],(UiPageStackControl *)pageStackBlock);
+                (g_UiCommandModeGPrimaryPageIndices[editorMode],modePreviewPageStack);
       UiPageStack_SetActiveIndex
                 (g_UiCommandModeGSecondaryPageIndices[editorMode],
-                 (UiPageStackControl *)INGAME_UI(root,modeDetailPageStack));
+                 UiLayoutContainerControl_AsPageStack(&image->modeDetailPageStack));
       UiPageStack_SetActiveIndex
                 (g_UiCommandModeGTertiaryPageIndices[editorMode],
-                 (UiPageStackControl *)INGAME_UI(root,modeCommandPageStack));
+                 UiLayoutContainerControl_AsPageStack(&image->modeCommandPageStack));
       activePageIndex = UiPageStack_ActivePageIndex(&root->sidePanelPageStack);
       if (activePageIndex == 0) {
         UiPageStack_SetActiveIndex(1,&root->resourceBarModePageStack);
         UiPageStack_SetActiveIndex(1,&root->gamePanelsModePageStack);
       }
-      UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(root,sidePanelMenuButtonStack));
+      UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&image->sidePanelMenuButtonStack));
       root->worldOverlayCallback = nullptr;
       (root->worldRuntime).selection.dispatchCommandCallback =
            InGameCameraCommand_DispatchByCodeAndModifierFlags;
@@ -1011,7 +1014,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
                 ((UiSelectableControl *)
                  THANDOR_UI_AT(root,g_UiCommandModeGControlOffsets[editorMode]));
       /* zeroes the first 32 dwords of the notification queue (dword by dword, not record by record) */
-      queueDwords = (uint32_t *)root->notificationQueue;
+      queueDwords = reinterpret_cast<uint32_t *>(root->notificationQueue);
       for (index = 0; index < 32; index++) {
         queueDwords[index] = 0;
       }
@@ -1029,14 +1032,16 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
         swatchTextureSource = materialTextureSet->entries[0].sourceAsset;
       }
       root->notificationButtonSubresource = INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE;
-      ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource = swatchTextureSource;
-      UiCommandMatrix_SelectIndex(g_UiCommandAbsoluteSelectionIndex,(UiNodeBase *)root);
+      image->materialToolSelectedSwatch.textureSource = swatchTextureSource;
+      UiCommandMatrix_SelectIndex(g_UiCommandAbsoluteSelectionIndex,&root->rootUi.base);
       g_UiCommandModeGArmyAssetId = ArmyAssetRegistry_NormalizeIdToPlaceableUnit(g_UiCommandModeGArmyAssetId);
-      ((UiImagePanelControl *)INGAME_UI(root,unitPlacementPreviewImage))->textureSource =
-           (GraphicsTextureSourceAsset *)ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
+      image->unitPlacementPreviewImage.textureSource =
+           reinterpret_cast<GraphicsTextureSourceAsset *>
+           (ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId));
       g_UiCommandMode4ArmyAssetId = ArmyAssetRegistry_NormalizeIdToPlaceableObject(g_UiCommandMode4ArmyAssetId);
-      ((UiImagePanelControl *)INGAME_UI(root,objectPlacementPreviewImage))->textureSource =
-           (GraphicsTextureSourceAsset *)ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
+      image->objectPlacementPreviewImage.textureSource =
+           reinterpret_cast<GraphicsTextureSourceAsset *>
+           (ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId));
       FieldGrid_SetOccupancyMaskByteBit0AllCells
                 ((root->worldRuntime).activeFactionRuntimeIndex,
                  (root->worldRuntime).fieldGrid);
@@ -1069,15 +1074,15 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
          g_UiCommandRuntimeFlags &
          ~(UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
     UiPageStack_SetActiveIndex
-              (0,(UiPageStackControl *)INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack));
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(root,modeDetailPageStack));
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(root,modeCommandPageStack));
+              (0,UiLayoutContainerControl_AsPageStack(&InGameUi_Image(g_InGameRuntimeRoot)->modePreviewPageStack));
+    UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->modeDetailPageStack));
+    UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->modeCommandPageStack));
     activePageIndex = UiPageStack_ActivePageIndex(&root->sidePanelPageStack);
     if (activePageIndex == 0) {
       UiPageStack_SetActiveIndex(0,&root->resourceBarModePageStack);
       UiPageStack_SetActiveIndex(0,&root->gamePanelsModePageStack);
     }
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(root,sidePanelMenuButtonStack));
+    UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->sidePanelMenuButtonStack));
     UiCommandModeG_HideSurfacePointMarker(&root->worldRuntime);
     root->worldOverlayCallback = InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
     (root->worldRuntime).selection.dispatchCommandCallback =

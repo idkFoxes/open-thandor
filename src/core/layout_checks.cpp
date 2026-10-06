@@ -192,7 +192,8 @@ static_assert(sizeof(ShotModelNodeReferenceOrSavedOffset) == 0x4 &&
               offsetof(ShotModelNodeReferenceOrSavedOffset, modelNode) == 0x0,
               "ShotModelNodeReferenceOrSavedOffset keeps its 32-bit layout");
 static_assert(sizeof(ShotModelRuntimeStateOrSavedOffset) == 0x4 &&
-              offsetof(ShotModelRuntimeStateOrSavedOffset, runtimeStatePointer) == 0x0,
+              offsetof(ShotModelRuntimeStateOrSavedOffset, runtimeStatePointer) == 0x0 &&
+              offsetof(ShotModelRuntimeStateOrSavedOffset, targetModelRuntime) == 0x0,
               "ShotModelRuntimeStateOrSavedOffset keeps its 32-bit layout");
 static_assert(sizeof(ShotRuntimeSlot) == 0x40,
               "ShotRuntimeSlot keeps its 32-bit layout");

@@ -132,9 +132,9 @@ static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *front
     g_FrontendNetworkBackendNameRows[backendIndex] = backendDisplayName;
     backendDisplayName = backendDisplayName + 128; /* 0x100 bytes */
   }
-  UiPointerList_InitializeMeasuredTextRows
+  UiPointerList_InitializeMeasuredTextRows /* networkProtocolList is a text list: the same prefix as a pointer list */
             (backendCount,(Ptr32<void> *)g_FrontendNetworkBackendNameRows,
-             (UiPointerListControl *)FRONTEND_UI(frontendUiState,networkProtocolList));
+             reinterpret_cast<UiPointerListControl *>(FRONTEND_UI(frontendUiState,networkProtocolList)));
 }
 
 /* Adapters from the generic model-pointer callback slots (FrontendModelPointerContext, graphics/render/types.h) to
@@ -329,7 +329,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     return false;
   }
   frontendUiState = (FrontendRootResourceSlots *)allocPayload;
-  worldRuntime = (WorldRuntimeContext *)FRONTEND_UI(frontendUiState,menuRoomModelView);
+  worldRuntime = FrontendModelPointerContext_AsWorldRuntime(FRONTEND_UI(frontendUiState,menuRoomModelView));
   templateDwords = (uint32_t *)&g_FrontendRootInitializationTemplate;
   g_FrontendRootNode = (uintptr_t)frontendUiState;
   rootDwords = (uint32_t *)frontendUiState;
@@ -349,7 +349,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   FrontendInit_InstallMenuRoomPointerCallbacks((FrontendModelPointerContext *)worldRuntime);
   RecentTextHistory_SortAndBuildPointerList
             (5,(RecentTextHistoryPointerList *)
-               &((UiConditionalActionControl *)FRONTEND_UI(frontendUiState,chatMessageHistory))->lineCount);
+               &FRONTEND_UI(frontendUiState,chatMessageHistory)->lineCount);
   WorldRuntime_SetTerrainLightingConfiguration(0,0,0xffffffff,0,0,0,0,0,worldRuntime);
   WorldRuntime_AttachObjectArray(FRONTEND_WORLD_OBJECT_RECORD_COUNT,g_FrontendWorldObjectRecords,worldRuntime);
   if (RomRuntime_BuildAllRegistryNodeTrees(worldRuntime)) {
@@ -369,15 +369,15 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   savedPlayerName = (uint32_t *)PersistentSettings_GetRegionOrFallback
                       (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_PLAYER_NAME);
   FrontendInit_CopyNameDwords
-            ((uint32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(frontendUiState,playerNameEdit))->textBuffer,
+            ((uint32_t *)FRONTEND_UI(frontendUiState,playerNameEdit)->textBuffer,
              savedPlayerName);
   FrontendInit_CopyNameDwords((uint32_t *)THANDOR_PTR(g_FrontendLocalPlayerNameUtf16),savedPlayerName);
   FrontendInit_CopyNameDwords
-            ((uint32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(frontendUiState,gameNameEdit))->textBuffer,
+            ((uint32_t *)FRONTEND_UI(frontendUiState,gameNameEdit)->textBuffer,
              (const uint32_t *)PersistentSettings_GetRegionOrFallback
                        (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_GAME_NAME));
   settingValue = PersistentSettings_Read(4,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);
-  ((UiRangeSliderControl *)FRONTEND_UI(frontendUiState,maxPlayersSlider))->value = settingValue;
+  FRONTEND_UI(frontendUiState,maxPlayersSlider)->value = settingValue;
   UiFrame_FlushInputAndResetPendingTicks();
   g_SpinLockAcquire((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   WorldMotionSpline_ClearCachedDerivatives();
@@ -526,10 +526,10 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
     frontendUiState->buttonVoiceSet6_50BC = buttonVoiceSet;
     /* not in the original: the advanced settings page (background, and the sounds of the options page's buttons
        and of the display settings page's choices) */
-    ((UiImagePanelControl *)FRONTEND_UI(frontendUiState,advancedSettingsPage))->textureSource = menuTexture;
-    ((UiFramedTextButtonControl *)FRONTEND_UI(frontendUiState,advancedSettingsButton))->activationSound =
+    FRONTEND_UI(frontendUiState,advancedSettingsPage)->textureSource = menuTexture;
+    FRONTEND_UI(frontendUiState,advancedSettingsButton)->activationSound =
          g_UiButtonSoundVoiceSets7[3];
-    ((UiFramedTextButtonControl *)FRONTEND_UI(frontendUiState,advancedSettingsBackButton))->activationSound =
+    FRONTEND_UI(frontendUiState,advancedSettingsBackButton)->activationSound =
          g_UiButtonSoundVoiceSets7[3];
     for (UiNodeBase *choice : {&FRONTEND_UI(frontendUiState,advancedEdgesSmooth)->selectable.base,
                                &FRONTEND_UI(frontendUiState,advancedEdgesExact)->selectable.base,
@@ -624,13 +624,13 @@ void FrontendVersionLabel_Draw()
 
   if ((frontendRoot == 0) || (g_UiRootNode != (UiRootNode *)frontendRoot) || (g_FrontendActiveRomRecord == 0) ||
       (((const RomRecord *)g_FrontendActiveRomRecord)->recordId != FRONTEND_ROM_RECORD_MAIN_MENU) ||
-      (UiPageStack_ActivePageIndex((UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendViewModeStack)) != 0) ||
-      (UiPageStack_ActivePageIndex((UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack)) !=
+      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,frontendViewModeStack))) != 0) ||
+      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,frontendPageStack))) !=
        FRONTEND_PAGE_MAIN)) {
     return;
   }
   const FrontendModelPointerContext *room =
-       (const FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView);
+       FRONTEND_UI(frontendRoot,menuRoomModelView);
   if ((room->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED) != 0) {
     return;
   }

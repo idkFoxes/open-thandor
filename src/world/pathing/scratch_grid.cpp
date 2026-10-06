@@ -361,8 +361,8 @@ Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outEr
 {
   GridScratchCell *previousSecondaryScratchBuffer;
   GridScratchCell **previousCostQueueBuffer;
-  uint32_t *newScratchBuffer;
-  uint32_t *newSecondaryScratchBuffer;
+  GridScratchCell *newScratchBuffer;
+  GridScratchCell *newSecondaryScratchBuffer;
   void *newAuxiliaryBuffer;
   uint32_t bytes;
   uint32_t allocError;
@@ -374,18 +374,18 @@ Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outEr
   allocError = g_MemoryApi.alloc(bytes,reinterpret_cast<void **>(&newScratchBuffer)); /* the arena stores the block address through void ** */
   previousScratchBuffer = g_GridScratchPrimary;
   if (allocError == 0) {
-    g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
+    g_GridScratchPrimary = newScratchBuffer;
     g_MemoryApi.free(previousScratchBuffer);
     allocError = g_MemoryApi.alloc(bytes,reinterpret_cast<void **>(&newSecondaryScratchBuffer)); /* the arena stores the block address through void ** */
     previousSecondaryScratchBuffer = g_GridScratchSecondary;
     if (allocError == 0) {
-      g_GridScratchSecondary = (GridScratchCell *)newSecondaryScratchBuffer;
+      g_GridScratchSecondary = newSecondaryScratchBuffer;
       g_MemoryApi.free(previousSecondaryScratchBuffer);
       allocError = g_MemoryApi.alloc(GRID_PATH_COST_QUEUE_BYTES,&newAuxiliaryBuffer);
       previousCostQueueBuffer = g_GridPathCostQueueBegin;
       if (allocError == 0) {
-        g_GridPathCostQueueEnd = (GridScratchCell **)((uintptr_t)newAuxiliaryBuffer + GRID_PATH_COST_QUEUE_BYTES);
-        g_GridPathCostQueueBegin = (GridScratchCell **)newAuxiliaryBuffer;
+        g_GridPathCostQueueEnd = reinterpret_cast<GridScratchCell **>(static_cast<uint8_t *>(newAuxiliaryBuffer) + GRID_PATH_COST_QUEUE_BYTES);
+        g_GridPathCostQueueBegin = static_cast<GridScratchCell **>(newAuxiliaryBuffer);
         g_MemoryApi.free(previousCostQueueBuffer);
         return true;
       }
@@ -432,7 +432,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
   rowsRemaining = fieldGrid->gridHeight;
   columnsRemaining = gridWidth;
   currentFieldCell = fieldGrid->cells;
-  scratchCellCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
+  scratchCellCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
   do {
     do {
       /* the original advances first and then tests the flags of the current cell */
@@ -575,8 +575,8 @@ void GridScratch_CopyPrimaryToSecondary()
   uint32_t *secondaryWriteCursor;
 
   scratchDwordsRemaining = g_GridScratchWidth * g_GridScratchHeight * 2;
-  primaryReadCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
-  secondaryWriteCursor = (uint32_t *)&g_GridScratchSecondary->stateMask;
+  primaryReadCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
+  secondaryWriteCursor = GridScratchCell_StateMaskBits(g_GridScratchSecondary);
   for (; scratchDwordsRemaining != 0; scratchDwordsRemaining--) {
     *secondaryWriteCursor = *primaryReadCursor;
     primaryReadCursor++;
@@ -625,15 +625,15 @@ void GridScratch_FloodFillConnectedCells
   /* the row above is scanned from the span's first cell up to the column of the right stopping cell, the row
      below from the column of the left stopping cell up to the span's last cell (addresses as in the original).
      Both ranges are never empty, so testing before the first cell is the same as the original's do-while. */
-  rowAboveLastCell = (GridScratchCell *)((uint8_t *)rightStopCell - rowStrideBytes);
-  for (rowAboveCell = (GridScratchCell *)((uint8_t *)(leftStopCell + 1) - rowStrideBytes);
+  rowAboveLastCell = GridScratchCell_RowAbove(rightStopCell,rowStrideBytes);
+  for (rowAboveCell = GridScratchCell_RowAbove(leftStopCell + 1,rowStrideBytes);
        rowAboveCell <= rowAboveLastCell; rowAboveCell++) {
     if ((rowAboveCell->stateMask & traversalMask) == 0) {
       GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowAboveCell);
     }
   }
-  rowBelowEndCell = (GridScratchCell *)((uint8_t *)rightStopCell + rowStrideBytes);
-  for (rowBelowCell = (GridScratchCell *)((uint8_t *)leftStopCell + rowStrideBytes);
+  rowBelowEndCell = GridScratchCell_RowBelow(rightStopCell,rowStrideBytes);
+  for (rowBelowCell = GridScratchCell_RowBelow(leftStopCell,rowStrideBytes);
        rowBelowCell < rowBelowEndCell; rowBelowCell++) {
     if ((rowBelowCell->stateMask & traversalMask) == 0) {
       GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowBelowCell);
@@ -652,7 +652,7 @@ void GridScratch_ResetTraversalFlagsAndCosts()
   Bool8 fullRecordBlockRemaining;
 
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
-  scratchRecordCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
+  scratchRecordCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
   do {
     *scratchRecordCursor = *scratchRecordCursor & ~GRID_SCRATCH_TRAVERSAL_VISITED;
     scratchRecordCursor[1] = GRID_PATH_COST_UNREACHED;

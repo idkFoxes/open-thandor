@@ -10,6 +10,7 @@
 #include <string.h>
 #include <thandor/movie/runtime/flm_encoder.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
@@ -62,10 +63,13 @@ static inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
 }
 
 /* Pixels of a provider frame, a gfx texture source: those of its first subresource entry. */
-#define MOVIE_FRAME_PIXELS(frame) \
-  ((uint32_t *)((uint8_t *)(frame) + \
-                ((GraphicsTextureSourceEntry *)((uint8_t *)(frame) + \
-                  ((GraphicsTextureSourceAsset *)(frame))->tableDescriptor.subresourceTableOffset))->dataOffset))
+static inline uint32_t *Movie_FramePixels(void *frame)
+{
+  const GraphicsTextureSourceEntry *firstEntry = Thandor_At<GraphicsTextureSourceEntry>
+      (frame, static_cast<GraphicsTextureSourceAsset *>(frame)->tableDescriptor.subresourceTableOffset);
+
+  return Thandor_At<uint32_t>(frame, firstEntry->dataOffset);
+}
 
 /* Encodes a whole FLM movie into outputBuffer: writes the 0x200-byte MovieFileHeader, encodes the first frame
    the provider returns as a keyframe and every further frame as a delta against it (the delta encoder keeps
@@ -92,7 +96,7 @@ Bool8 Movie_EncodeFlmBufferFromFrameProvider
   uint32_t *outputCursor;
   FrameProviderResult providerResult;
 
-  header = (MovieFileHeader *)outputBuffer;
+  header = reinterpret_cast<MovieFileHeader *>(outputBuffer);
   outputCursor = outputBuffer;
   for (clearCount = MOVIE_FILE_HEADER_BYTES / 4; clearCount != 0; clearCount--) {
     *outputCursor = 0;
@@ -125,28 +129,28 @@ Bool8 Movie_EncodeFlmBufferFromFrameProvider
   frameCount = 1;
   firstFrame = providerResult.frameOrError;
   /* a frame is a gfx texture source; its pixels are those of the first subresource entry */
-  firstFramePixels = MOVIE_FRAME_PIXELS(firstFrame);
+  firstFramePixels = Movie_FramePixels(firstFrame);
   byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels);
-  outputCursor = (uint32_t *)((uint8_t *)outputCursor + byteCount);
+  outputCursor = Thandor_At<uint32_t>(outputCursor, byteCount);
   providerResult = frameProvider(nullptr);
   while (!providerResult.noFrame) {
     frame = providerResult.frameOrError;
     frameCount++;
     byteCount = Movie_EncodeFrame4x4Delta
-                      (frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels,MOVIE_FRAME_PIXELS(frame));
-    outputCursor = (uint32_t *)((uint8_t *)outputCursor + byteCount);
+                      (frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels,Movie_FramePixels(frame));
+    outputCursor = Thandor_At<uint32_t>(outputCursor, byteCount);
     frameProvider(frame); /* release */
     providerResult = frameProvider(nullptr);
   }
   frameProvider(firstFrame); /* release */
-  byteCount = (uint32_t)((uint8_t *)outputCursor - (uint8_t *)outputBuffer);
+  byteCount = (uint32_t)Thandor_ByteDistance(outputCursor, outputBuffer);
   header->frameCount = frameCount;
   header->frameIntervalMilliseconds = 16;
   header->common.allocationSizeBytes = byteCount;
   /* video stream bytes once the header is subtracted below */
   header->videoStreamBytes = byteCount;
   /* the provider ends the sequence with the error 0xFFFFFFFF; any other error fails the encode */
-  if (providerResult.frameOrError != (void *)(intptr_t)-1) {
+  if (providerResult.frameOrError != Thandor_U32ToPointer(-1)) {
     return false;
   }
   header->videoStreamBytes = header->videoStreamBytes - MOVIE_FILE_HEADER_BYTES;
@@ -188,7 +192,7 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
     blockRowsLeft--;
     blocksLeftInRow = frameWidthPixels >> 2;
   } while (blockRowsLeft != 0);
-  return (uint32_t)((uint8_t *)outputCursor - (uint8_t *)encodedOutput);
+  return (uint32_t)Thandor_ByteDistance(outputCursor, encodedOutput);
 }
 
 /* Whether a 4x4 block of the current frame differs from the same block of the reference frame under
@@ -201,8 +205,8 @@ static int MovieDeltaEncode_BlockChanged(const uint8_t *currentBlock,const uint8
   int row;
 
   for (row = 0; row < 4; row++) {
-    currentRow = (const uint64_t *)(currentBlock + row * rowStrideBytes);
-    referenceRow = (const uint64_t *)(referenceBlock + row * rowStrideBytes);
+    currentRow = reinterpret_cast<const uint64_t *>(currentBlock + row * rowStrideBytes);
+    referenceRow = reinterpret_cast<const uint64_t *>(referenceBlock + row * rowStrideBytes);
     changedBits = changedBits |
                   (currentRow[0] & g_MovieDeltaRgbHighNibbleMask2Pixels ^ referenceRow[0]) |
                   (currentRow[1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^ referenceRow[1]);
@@ -218,8 +222,8 @@ static void MovieDeltaEncode_CopyBlock(uint8_t *referenceBlock,const uint8_t *cu
   int row;
 
   for (row = 0; row < 4; row++) {
-    currentRow = (const uint64_t *)(currentBlock + row * rowStrideBytes);
-    referenceRow = (uint64_t *)(referenceBlock + row * rowStrideBytes);
+    currentRow = reinterpret_cast<const uint64_t *>(currentBlock + row * rowStrideBytes);
+    referenceRow = reinterpret_cast<uint64_t *>(referenceBlock + row * rowStrideBytes);
     referenceRow[0] = currentRow[0];
     referenceRow[1] = currentRow[1];
   }
@@ -234,10 +238,13 @@ static uint8_t *MovieDeltaEncode_WriteSkipToken(uint8_t *output,uint32_t skipped
     return output + 1;
   }
   if (skippedBlocks < MOVIE_SKIP_MEDIUM_MAX_BLOCKS + 1) {
-    *(uint16_t *)output = ((short)skippedBlocks - (MOVIE_SKIP_SHORT_MAX_BLOCKS + 1)) * (MOVIE_TOKEN_MASK + 1) | MOVIE_TOKEN_SKIP_MEDIUM;
+    Thandor_StoreU16(output,
+                   (uint16_t)(((short)skippedBlocks - (MOVIE_SKIP_SHORT_MAX_BLOCKS + 1)) * (MOVIE_TOKEN_MASK + 1) |
+                              MOVIE_TOKEN_SKIP_MEDIUM));
     return output + 2;
   }
-  *(uint32_t *)output = (skippedBlocks - (MOVIE_SKIP_MEDIUM_MAX_BLOCKS + 1)) * (MOVIE_TOKEN_MASK + 1) | MOVIE_TOKEN_SKIP_LONG;
+  Thandor_StoreU32(output,
+                   (skippedBlocks - (MOVIE_SKIP_MEDIUM_MAX_BLOCKS + 1)) * (MOVIE_TOKEN_MASK + 1) | MOVIE_TOKEN_SKIP_LONG);
   return output + 4;
 }
 
@@ -389,9 +396,9 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
   rowStrideBytes = frameWidthPixels * 4;
   blockRowsLeft = frameHeightPixels >> 2;
   pendingSkipCount = 0;
-  currentBlock = (const uint8_t *)currentFramePixels;
-  referenceBlock = (uint8_t *)previousFramePixels;
-  outputCursor = (uint8_t *)encodedOutput;
+  currentBlock = Thandor_Bytes(currentFramePixels);
+  referenceBlock = Thandor_Bytes(previousFramePixels);
+  outputCursor = Thandor_Bytes(encodedOutput);
   do {
     blocksLeftInRow = frameWidthPixels >> 2;
     do {
@@ -404,7 +411,8 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
           pendingSkipCount = 0;
         }
         MovieDeltaEncode_CopyBlock(referenceBlock,currentBlock,rowStrideBytes);
-        MovieDeltaEncode_Block((uint32_t *)outputCursor,(const PackedRgb24 *)currentBlock,frameWidthPixels);
+        MovieDeltaEncode_Block(reinterpret_cast<uint32_t *>(outputCursor),reinterpret_cast<const PackedRgb24 *>(currentBlock),
+                               frameWidthPixels);
         outputCursor = outputCursor + 8;
       }
       currentBlock = currentBlock + 16;
@@ -419,7 +427,7 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
   if (pendingSkipCount != 0) {
     outputCursor = MovieDeltaEncode_WriteSkipToken(outputCursor,pendingSkipCount);
   }
-  return (uint32_t)(outputCursor - (uint8_t *)encodedOutput + 7) & ~7u;
+  return (uint32_t)(Thandor_ByteDistance(outputCursor, encodedOutput) + 7) & ~7u;
 }
 
 /* FLM chroma code of a colour for the block encoders, already shifted left by 5 so the 5-bit luma fits below

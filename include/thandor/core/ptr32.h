@@ -37,7 +37,7 @@ struct ThandorAnyPtr {
     void *ptr;
     template <class T>
         requires(!std::is_function_v<T>)
-    operator T *() const { return (T *)ptr; }
+    operator T *() const { return static_cast<T *>(ptr); }
 };
 /* THANDOR_SLOT(function) values (core/slot.h). */
 template <auto Fn> struct ThandorSlot;
@@ -47,11 +47,23 @@ template <auto Fn> struct ThandorSlot;
 
 static __forceinline int32_t thandor_ptr32_pack(const volatile void *pointer)
 {
-    intptr_t value = (intptr_t)pointer;
+    intptr_t value = reinterpret_cast<intptr_t>(pointer);
     if ((intptr_t)(int32_t)value != value) {
         Thandor_Ptr32Overflow((uintptr_t)value);
     }
     return (int32_t)value;
+}
+
+/* The address of a data or function pointer as a const volatile void * for thandor_ptr32_pack (a function
+   pointer only converts by reinterpret_cast). */
+template <class P> static __forceinline const volatile void *thandor_ptr32_address(P *pointer)
+{
+    if constexpr (std::is_function_v<P>) {
+        return reinterpret_cast<const volatile void *>(pointer);
+    }
+    else {
+        return pointer;
+    }
 }
 
 /* THANDOR_PTR32_BITS(value) values: the raw 32 bits of a pointer field given as an integer (a UI template's
@@ -67,14 +79,14 @@ template <class T> struct Ptr32 {
 
     Ptr32() = default;
     constexpr Ptr32(Ptr32Bits raw) : value(static_cast<int32_t>(raw.bits)) {}
-    Ptr32(T *pointer) : value(thandor_ptr32_pack((const void *)pointer)) {}
+    Ptr32(T *pointer) : value(thandor_ptr32_pack(thandor_ptr32_address(pointer))) {}
     Ptr32(ThandorAnyPtr pointer)
         requires(!std::is_function_v<T>)
         : value(thandor_ptr32_pack(pointer.ptr)) {}
     /* field = THANDOR_SLOT(function), also as an element of an array initialiser (an exact match, so MSVC does not
        weigh it against Ptr32(T *) over the slot's function-pointer conversion) */
     template <auto Fn> Ptr32(ThandorSlot<Fn>) : Ptr32(ThandorSlot<Fn>::template pick<T>()) {}
-    Ptr32 &operator=(T *pointer) { value = thandor_ptr32_pack((const void *)pointer); return *this; }
+    Ptr32 &operator=(T *pointer) { value = thandor_ptr32_pack(thandor_ptr32_address(pointer)); return *this; }
     Ptr32 &operator=(ThandorAnyPtr pointer)
         requires(!std::is_function_v<T>)
     { value = thandor_ptr32_pack(pointer.ptr); return *this; }
@@ -82,11 +94,11 @@ template <class T> struct Ptr32 {
        copy assignment) */
     template <auto Fn> Ptr32 &operator=(ThandorSlot<Fn>) { return *this = ThandorSlot<Fn>::template pick<T>(); }
 
-    T *get() const { return (T *)(intptr_t)value; }
+    T *get() const { return reinterpret_cast<T *>(static_cast<intptr_t>(value)); }
     operator T *() const { return get(); }
     T *operator->() const { return get(); }
     /* (U *)field and (integer)field as for a pointer */
-    template <class U> explicit operator U *() const { return (U *)(intptr_t)value; }
+    template <class U> explicit operator U *() const { return reinterpret_cast<U *>(static_cast<intptr_t>(value)); }
     explicit operator int32_t() const { return value; }
     explicit operator uint32_t() const { return (uint32_t)value; }
     explicit operator intptr_t() const { return (intptr_t)value; }
@@ -105,10 +117,10 @@ struct UPtr32 {
     int32_t value;
 
     UPtr32() = default;
-    UPtr32(uintptr_t bits) : value(thandor_ptr32_pack((const void *)bits)) {}
-    UPtr32 &operator=(uintptr_t bits) { value = thandor_ptr32_pack((const void *)bits); return *this; }
+    UPtr32(uintptr_t bits) : value(thandor_ptr32_pack(reinterpret_cast<const void *>(bits))) {}
+    UPtr32 &operator=(uintptr_t bits) { value = thandor_ptr32_pack(reinterpret_cast<const void *>(bits)); return *this; }
     operator uintptr_t() const { return (uintptr_t)(intptr_t)value; }
-    template <class U> explicit operator U *() const { return (U *)(intptr_t)value; }
+    template <class U> explicit operator U *() const { return reinterpret_cast<U *>(static_cast<intptr_t>(value)); }
     UPtr32 &operator+=(uintptr_t count) { return *this = (uintptr_t)*this + count; }
     UPtr32 &operator-=(uintptr_t count) { return *this = (uintptr_t)*this - count; }
 };
@@ -129,11 +141,11 @@ integer (uintptr_t) does not compile: it is not a 32-bit value.
 */
 template <class P> static __forceinline int32_t Thandor_PointerToI32(P *pointer)
 {
-    return thandor_ptr32_pack((const volatile void *)pointer);
+    return thandor_ptr32_pack(thandor_ptr32_address(pointer));
 }
 template <class P> static __forceinline uint32_t Thandor_PointerToU32(P *pointer)
 {
-    return (uint32_t)thandor_ptr32_pack((const volatile void *)pointer);
+    return (uint32_t)thandor_ptr32_pack(thandor_ptr32_address(pointer));
 }
 /* A Ptr32 field already holds the 32-bit value. */
 template <class P> static __forceinline int32_t Thandor_PointerToI32(const Ptr32<P> &field)
@@ -148,14 +160,42 @@ template <class T = void, class I> static __forceinline T *Thandor_U32ToPointer(
 {
     static_assert((std::is_integral_v<I> || std::is_enum_v<I>) && sizeof(I) <= 4,
                   "Thandor_U32ToPointer takes a 32-bit integer");
-    return (T *)(intptr_t)(int32_t)value;
+    return reinterpret_cast<T *>(static_cast<intptr_t>(static_cast<int32_t>(value)));
 }
 #endif /* __cplusplus */
 
 #ifdef __cplusplus
+/* The address an untyped-address macro argument stands for (THANDOR_PTR, THANDOR_PTR32_AT), as a void *: the
+   argument may be a data pointer (also to const, which the original's tables ignore), a function pointer, an
+   integer holding an address, or a Ptr32/UPtr32 field (its explicit pointer conversion). The same conversions as
+   the former C-style cast to void *, spelled out per kind. */
+template <class P> static __forceinline void *thandor_any_address(P p)
+{
+    if constexpr (std::is_pointer_v<P>) {
+        if constexpr (std::is_function_v<std::remove_pointer_t<P>>) {
+            return reinterpret_cast<void *>(p);
+        }
+        else {
+            return const_cast<void *>(static_cast<const volatile void *>(p));
+        }
+    }
+    else if constexpr (std::is_integral_v<P> || std::is_enum_v<P>) {
+        return reinterpret_cast<void *>(p);
+    }
+    else {
+        return static_cast<void *>(p);
+    }
+}
+
+/* THANDOR_PTR(p) (core/contracts.h): p's address as a ThandorAnyPtr. */
+template <class P> static __forceinline ThandorAnyPtr Thandor_AnyPtr(P p)
+{
+    return ThandorAnyPtr{thandor_any_address(p)};
+}
+
 /* The 32-bit pointer slot (a Ptr32<T> lvalue) at address p inside an original layout: a pointer in a text
    command stream, a pointer field reached by byte offset. */
-#define THANDOR_PTR32_AT(T, p) (*(Ptr32<T> *)(p))
+#define THANDOR_PTR32_AT(T, p) (*static_cast<Ptr32<T> *>(thandor_any_address(p)))
 #endif
 
 /* Bytes of a 32-bit pointer field (sizeof(Ptr32<void>)). */

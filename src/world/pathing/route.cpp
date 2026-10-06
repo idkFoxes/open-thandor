@@ -11,6 +11,10 @@
 #include <thandor/world/pathing/route.h>
 #include <thandor/thandor.h>
 
+/* EntityPathing_UpdateRouteSegment reads a GameEntityRuntime through its ownership-prefix view (step 13 X7b:
+   ModelView_Cast between the two instead of C-style casts; only this file converts between them). */
+THANDOR_SLOT_OVERLAY(EntityPathingRouteEntityRuntimeView, GameEntityRuntime);
+
 /* The 32 pairs g_EntityPathingPriorityPairs points at (EntityPathing_RebuildOverlappingGroupRoutes
    fills at most ENTITY_PATHING_PRIORITY_PAIR_CAPACITY of them and heap-sorts them in place) */
 #define ENTITY_PATHING_PRIORITY_PAIR_CAPACITY 32
@@ -224,7 +228,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       /* the start cell again: one row below routeScratchCell */
       backtrackReachedTarget = GridPathCost_BacktrackBestHexRoute
                          (callerBlockingMask,startRow,startColumn,
-                          (GridScratchCell *)((uint8_t *)routeScratchCell + rowStrideBytes),
+                          GridScratchCell_RowBelow(routeScratchCell,rowStrideBytes),
                           &backtrackRow,&backtrackColumn,&backtrackRouteStateMask);
     }
     if (segmentBlocked && !backtrackReachedTarget) {
@@ -393,7 +397,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
     } while (1 < heapSize);
     do {
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-        [((ModelDefinition *)(influencePair->entity->common).ownership.definitionOrClassRecord)->runtimeClassId])
+        [influencePair->entity->common.ownership.modelDefinition()->runtimeClassId])
                 (influencePair->entity);
       pairsRemaining--;
       routesRemaining = g_EntityPathingPriorityPairCount;
@@ -415,12 +419,12 @@ EntityPathing_RebuildOverlappingGroupRoutes
       else if (candidateEntity == routeEntityRuntime) {
         routeTarget = EntityPathing_UpdateRouteSegment
                            (targetWorldY,targetWorldX,routeEntityRuntime,
-                            (EntityPathingRouteEntityRuntimeView *)candidateEntity);
+                            ModelView_Cast<EntityPathingRouteEntityRuntimeView>(candidateEntity));
       }
       else {
         /* the others keep their own movement target (the 0,0 target is replaced inside) */
         EntityPathing_UpdateRouteSegment
-                  (0,0,routeEntityRuntime,(EntityPathingRouteEntityRuntimeView *)candidateEntity);
+                  (0,0,routeEntityRuntime,ModelView_Cast<EntityPathingRouteEntityRuntimeView>(candidateEntity));
       }
       routesRemaining--;
       pairCursor++;
@@ -487,9 +491,9 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   leftCellWorldX = centerCellWorldX;
   leftWalkCursor = centerCellCursor;
   while ((GridFootprint_ClearTraversalFlagsDiagonalPositive
-            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,(uint32_t *)&leftWalkCursor->stateMask) != 0) &&
+            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,GridScratchCell_StateMaskBits(leftWalkCursor)) != 0) &&
          (GridFootprint_ClearTraversalFlagsDiagonalNegative
-            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,(uint32_t *)&leftWalkCursor->stateMask) != 0)) {
+            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,GridScratchCell_StateMaskBits(leftWalkCursor)) != 0)) {
     leftWalkCursor--;
     leftCellWorldX = leftCellWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
   }
@@ -497,9 +501,9 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   rightCellWorldX = centerCellWorldX;
   rightWalkCursor = centerCellCursor;
   while ((GridFootprint_ClearTraversalFlagsDiagonalPositive
-            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,(uint32_t *)&rightWalkCursor->stateMask) != 0) &&
+            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,GridScratchCell_StateMaskBits(rightWalkCursor)) != 0) &&
          (GridFootprint_ClearTraversalFlagsDiagonalNegative
-            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,(uint32_t *)&rightWalkCursor->stateMask) != 0)) {
+            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,GridScratchCell_StateMaskBits(rightWalkCursor)) != 0)) {
     rightWalkCursor++;
     rightCellWorldX = rightCellWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
   }
@@ -510,13 +514,13 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   rightWalkCursor = leftWalkCursor + 1;
   while (GridFootprint_ClearTraversalFlagsDiagonalPositive
            (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,sideRowLeftWorldX,
-            (uint32_t *)&leftWalkCursor->stateMask) != 0) {
+            GridScratchCell_StateMaskBits(leftWalkCursor)) != 0) {
     leftWalkCursor--;
     sideRowLeftWorldX = sideRowLeftWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
   }
   while (GridFootprint_ClearTraversalFlagsDiagonalPositive
            (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,sideRowRightWorldX,
-            (uint32_t *)&rightWalkCursor->stateMask) != 0) {
+            GridScratchCell_StateMaskBits(rightWalkCursor)) != 0) {
     sideRowRightWorldX = sideRowRightWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
     rightWalkCursor++;
   }
@@ -527,13 +531,13 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   leftWalkCursor = rightWalkCursor - 1;
   while (GridFootprint_ClearTraversalFlagsDiagonalNegative
            (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,sideRowRightWorldX,
-            (uint32_t *)&rightWalkCursor->stateMask) != 0) {
+            GridScratchCell_StateMaskBits(rightWalkCursor)) != 0) {
     rightWalkCursor++;
     sideRowRightWorldX = sideRowRightWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
   }
   while (GridFootprint_ClearTraversalFlagsDiagonalNegative
            (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,sideRowLeftWorldX,
-            (uint32_t *)&leftWalkCursor->stateMask) != 0) {
+            GridScratchCell_StateMaskBits(leftWalkCursor)) != 0) {
     sideRowLeftWorldX = sideRowLeftWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
     leftWalkCursor--;
   }
@@ -572,7 +576,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   entityModelNode = routeEntityRuntime->modelNode;
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
     [routeEntityRuntime->modelDefinition->runtimeClassId])
-            ((GameEntityRuntime *)routeEntityRuntime);
+            (ModelView_Cast<GameEntityRuntime>(routeEntityRuntime));
   /* start cell from the model position, clamped to 1..size-2 */
   wideProductX = (int64_t)(entityModelNode->worldTransform).translation.x * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
   wideProductY = (int64_t)(entityModelNode->worldTransform).translation.y * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
@@ -597,7 +601,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   startColumn = columnLimit - 2;
   startRow = rowLimit - 2;
   entityMovement = routeEntityRuntime->movementRuntime;
-  if ((GameEntityRuntime *)routeEntityRuntime != sourceRouteEntityRuntime) {
+  if (ModelView_Cast<GameEntityRuntime>(routeEntityRuntime) != sourceRouteEntityRuntime) {
     targetWorldXQ12 = entityMovement->movementWorldXQ12;
     targetWorldYQ12 = entityMovement->movementWorldYQ12;
   }
@@ -686,7 +690,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
     }
   }
   entityMovement = routeEntityRuntime->movementRuntime;
-  if (((GameEntityRuntime *)routeEntityRuntime != sourceRouteEntityRuntime) &&
+  if ((ModelView_Cast<GameEntityRuntime>(routeEntityRuntime) != sourceRouteEntityRuntime) &&
      ((targetWorldXQ12 != entityMovement->movementWorldXQ12 ||
       (targetWorldYQ12 != entityMovement->movementWorldYQ12)))) {
     ArmyRuntime_SetPendingMoveTarget(targetWorldYQ12,targetWorldXQ12,entityMovement);

@@ -78,10 +78,10 @@ Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *ou
     return false;
   }
   /* pool base - 1 (the rebase value for saved offsets) */
-  g_EffectRuntimeRebaseBaseMinusOne = (uint8_t *)poolMemory - 1;
-  g_EffectRuntimeSlots = (EffectRuntimeSlot *)poolMemory;
+  g_EffectRuntimeRebaseBaseMinusOne = static_cast<uint8_t *>(poolMemory) - 1;
+  g_EffectRuntimeSlots = static_cast<EffectRuntimeSlot *>(poolMemory);
   /* zero the pool dword by dword */
-  poolDword = (uint32_t *)poolMemory;
+  poolDword = static_cast<uint32_t *>(poolMemory); /* zeroed dword by dword, as the original */
   for (poolDwordIndex = 0; poolDwordIndex < EFFECT_RUNTIME_POOL_BYTES / 4; poolDwordIndex++) {
     poolDword[poolDwordIndex] = 0;
   }
@@ -150,7 +150,7 @@ void EffectRuntime_RebaseSlotsAfterLoad()
     ownerModelNode = effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
     if (ownerModelNode != nullptr) {
       if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
-        ownerModelNode = (ModelRuntimeNode *)((uint8_t *)ownerModelNode + g_ModelRuntimeRebaseDelta);
+        ownerModelNode = reinterpret_cast<ModelRuntimeNode *>(reinterpret_cast<uint8_t *>(ownerModelNode) + g_ModelRuntimeRebaseDelta);
       }
       else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
         /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.ownerAndDefinition.owner (saved offset) */
@@ -159,7 +159,7 @@ void EffectRuntime_RebaseSlotsAfterLoad()
     }
     /* 5f-format: EffectRuntimeSlot.modelNodeOrSavedOffset */
     effectSlot->modelNodeOrSavedOffset.modelNode =
-         (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)effectSlot->modelNodeOrSavedOffset.modelNode);
+         reinterpret_cast<ModelRuntimeNode *>(g_RuntimeObjectRebaseBaseMinusOne + (int)effectSlot->modelNodeOrSavedOffset.modelNode);
     effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = ownerModelNode;
     /* the slot holds the saved definition id here */
     registryDefinition = nullptr;
