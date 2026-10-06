@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
 #include <thandor/platform/sdl3/window_icon.h>
@@ -34,9 +35,9 @@ static void Thandor_SelfTestCodec()
         int noisy = t >= 3;
         unsigned capacity = PACKAGE_SCRATCH_BUFFER_BYTES - 2 * PCK_ENTRY_HEADER_BYTES; /* as Package_UpsertEntry */
         unsigned guard = SELFTEST_GUARD_BYTES;
-        uint8_t *source = (uint8_t *)malloc(size);
-        uint8_t *packed = (uint8_t *)malloc(capacity + guard);
-        uint8_t *unpacked = (uint8_t *)malloc(size + guard);
+        auto *source = static_cast<uint8_t *>(malloc(size));
+        auto *packed = static_cast<uint8_t *>(malloc(capacity + guard));
+        auto *unpacked = static_cast<uint8_t *>(malloc(size + guard));
         unsigned i;
         unsigned seed = 12345;
         Bool8 encodeOk;
@@ -117,7 +118,7 @@ static void Thandor_SelfTestStretch()
     static uint32_t asset[2 * GFX_ASSET_HEADER_SIZE / sizeof(uint32_t)];
     static uint32_t target[8 * 4];
     uint32_t framebuffer[4] = {8, 0, 4, 0};
-    GraphicsTextureSourceAsset *header = (GraphicsTextureSourceAsset *)asset;
+    auto *header = reinterpret_cast<GraphicsTextureSourceAsset *>(asset);
     GraphicsTextureSourceEntry *entry;
     uint32_t *pixels;
     int x;
@@ -126,7 +127,7 @@ static void Thandor_SelfTestStretch()
     header->common.magic = ASSET_MAGIC_GFX;
     header->tableDescriptor.subresourceCount = 1;
     header->tableDescriptor.subresourceTableOffset = offsetof(GraphicsTextureSourceAsset, unusedText);
-    entry = (GraphicsTextureSourceEntry *)header->unusedText;
+    entry = reinterpret_cast<GraphicsTextureSourceEntry *>(header->unusedText);
     entry->paletteIndex = -1; /* direct ARGB8888 pixels */
     entry->dataOffset = GFX_ASSET_HEADER_SIZE;
     entry->pixelWidth = 4;
@@ -137,9 +138,9 @@ static void Thandor_SelfTestStretch()
             pixels[y * 4 + x] = ARGB8888_ALPHA_MASK | ((uint32_t)(x * 85) << 16) | ((uint32_t)(y * 255) << 8);
         }
     }
-    framebuffer[3] = (uint32_t)(uintptr_t)target;
+    framebuffer[3] = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(target));
     SoftwareTextureSource_StretchDirectColorBilinear32(4, 8, 0, 0, 0, header,
-                                                       (SoftwareFramebufferAccess *)framebuffer);
+                                                       reinterpret_cast<SoftwareFramebufferAccess *>(framebuffer));
     for (y = 0; y < 4; y++) {
         Thandor_Log("stretch selftest row %d: %08x %08x %08x %08x %08x %08x %08x %08x", y,
                     target[y * 8 + 0], target[y * 8 + 1], target[y * 8 + 2], target[y * 8 + 3],
@@ -235,18 +236,18 @@ static void Thandor_SelfTestCodecNegative()
     }
     grid[46] = 2;
     grid[47] = 2;
-    ok = PckCodec_EncodeFieldGrid((uint32_t)packed.size(), packed.data(), gridBytes, (FieldGridAsset *)grid.data(),
+    ok = PckCodec_EncodeFieldGrid((uint32_t)packed.size(), packed.data(), gridBytes, reinterpret_cast<FieldGridAsset *>(grid.data()),
                                   &packedSize, &value);
     CODEC_NEG_EXPECT("grid encode", ok);
     CODEC_NEG_EXPECT("grid decode",
-                     PckCodec_DecodeFieldGrid(gridBytes, (FieldGridAsset *)decodedGrid.data(), packedSize,
+                     PckCodec_DecodeFieldGrid(gridBytes, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()), packedSize,
                                               packed.data(), &value, &value) &&
                      decodedGrid[46] == 2 && decodedGrid[47] == 2);
     CODEC_NEG_EXPECT("grid capacity too small",
-                     !PckCodec_DecodeFieldGrid(gridBytes - 1, (FieldGridAsset *)decodedGrid.data(), packedSize,
+                     !PckCodec_DecodeFieldGrid(gridBytes - 1, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()), packedSize,
                                                packed.data(), &value, &value));
     CODEC_NEG_EXPECT("grid source shorter than the prefix",
-                     !PckCodec_DecodeFieldGrid(gridBytes, (FieldGridAsset *)decodedGrid.data(), 8, packed.data(),
+                     !PckCodec_DecodeFieldGrid(gridBytes, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()), 8, packed.data(),
                                                &value, &value));
     /* a compact image of 4 cells whose header claims 100x100, and one of 0 cells */
     for (i = 0; i < compact.size(); i++) {
@@ -254,20 +255,20 @@ static void Thandor_SelfTestCodecNegative()
     }
     compact[46] = 100;
     compact[47] = 100;
-    *(uint32_t *)packed.data() = compactBytes;
+    *reinterpret_cast<uint32_t *>(packed.data()) = compactBytes;
     ok = PckCodec_EncodeHuffmanRle((uint32_t)packed.size() - PCK_FIELD_GRID_PREFIX_BYTES,
                                    packed.data() + PCK_FIELD_GRID_PREFIX_BYTES, compactBytes,
-                                   (uint8_t *)compact.data(), &packedSize, &value);
+                                   reinterpret_cast<uint8_t *>(compact.data()), &packedSize, &value);
     CODEC_NEG_EXPECT("grid larger than its image",
-                     ok && !PckCodec_DecodeFieldGrid(0x7FFFFFFF, (FieldGridAsset *)decodedGrid.data(),
+                     ok && !PckCodec_DecodeFieldGrid(0x7FFFFFFF, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()),
                                                      packedSize + PCK_FIELD_GRID_PREFIX_BYTES, packed.data(),
                                                      &value, &value));
     compact[46] = 0;
     ok = PckCodec_EncodeHuffmanRle((uint32_t)packed.size() - PCK_FIELD_GRID_PREFIX_BYTES,
                                    packed.data() + PCK_FIELD_GRID_PREFIX_BYTES, compactBytes,
-                                   (uint8_t *)compact.data(), &packedSize, &value);
+                                   reinterpret_cast<uint8_t *>(compact.data()), &packedSize, &value);
     CODEC_NEG_EXPECT("grid of 0 cells",
-                     ok && !PckCodec_DecodeFieldGrid(gridBytes, (FieldGridAsset *)decodedGrid.data(),
+                     ok && !PckCodec_DecodeFieldGrid(gridBytes, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()),
                                                      packedSize + PCK_FIELD_GRID_PREFIX_BYTES, packed.data(),
                                                      &value, &value));
 #undef CODEC_NEG_EXPECT
@@ -302,7 +303,7 @@ static void Thandor_SelfTestPcx()
     }
     else {
         for (i = 0; i < PCX_PALETTE_COLOR_COUNT * 4; i++) {
-            hash = (hash ^ ((const uint8_t *)image.paletteColors)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(image.paletteColors)[i]) * 16777619u;
         }
         for (i = 0; i < image.width * image.height; i++) {
             hash = (hash ^ image.pixels[i]) * 16777619u;
@@ -370,17 +371,17 @@ static void Thandor_SelfTestMovieEncode()
             byteCount = Movie_EncodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, encoded, reference, current);
         }
         for (i = 0; i < byteCount && i < sizeof encoded; i++) {
-            hash = (hash ^ ((const uint8_t *)encoded)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(encoded)[i]) * 16777619u;
         }
         for (i = 0; i < sizeof reference; i++) {
-            hash = (hash ^ ((const uint8_t *)reference)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(reference)[i]) * 16777619u;
         }
         /* decode the frame on top of the previous decoded picture, as the player does */
-        consumed = Movie_DecodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, decoded, (const uint8_t *)encoded,
-                                             (const uint8_t *)encoded + sizeof encoded);
+        consumed = Movie_DecodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, decoded, reinterpret_cast<const uint8_t *>(encoded),
+                                             reinterpret_cast<const uint8_t *>(encoded) + sizeof encoded);
         hash = (hash ^ consumed) * 16777619u;
         for (i = 0; i < sizeof decoded; i++) {
-            hash = (hash ^ ((const uint8_t *)decoded)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(decoded)[i]) * 16777619u;
         }
         Thandor_Log("movieenc: frame %u %u bytes (decoder %u), hash so far %08X", frame, byteCount, consumed, hash);
     }
@@ -432,13 +433,13 @@ static void Thandor_SelfTestTriangleSetup()
             v->diffuseColor = SelfTest_TriangleRandom(&seed) * 257u;
         }
         packet.modulationColor = SelfTest_TriangleRandom(&seed);
-        packet.textureEntry = (GraphicsTextureSetEntry *)textureEntry;
+        packet.textureEntry = reinterpret_cast<GraphicsTextureSetEntry *>(textureEntry);
         packet.renderFlags = (GraphicsPrimitiveDispatchFlags)((SelfTest_TriangleRandom(&seed) % 32) << 12);
         g_SoftwareDepthEpoch = (int32_t)(SelfTest_TriangleRandom(&seed) % 0x1000000u);
         SoftwareRenderer_PrepareTrianglePacket(&packet);
         packet.textureEntry = nullptr; /* the pointer differs between runs */
         for (i = 0; i < sizeof packet; i++) {
-            hash = (hash ^ ((const uint8_t *)&packet)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(&packet)[i]) * 16777619u;
         }
     }
     Thandor_Log("trianglesetup: 20000 triangles, hash %08X", hash);
@@ -504,7 +505,7 @@ static uint32_t SelfTest_HashBytes(uint32_t hash, const void *bytes, uint32_t co
 {
     uint32_t i;
     for (i = 0; i < count; i++) {
-        hash = (hash ^ ((const uint8_t *)bytes)[i]) * 16777619u;
+        hash = (hash ^ static_cast<const uint8_t *>(bytes)[i]) * 16777619u;
     }
     return hash;
 }
@@ -550,7 +551,7 @@ static void Thandor_SelfTestFixedMath()
             GraphicsFixedMatrix3x4 input;
             GraphicsFixedMatrix3x4 output;
             for (j = 0; j < sizeof input / 4; j++) {
-                ((int32_t *)&input)[j] = (int32_t)SelfTest_FixedRandom(&seed) >> (j % 3 == 0 ? 2 : 4);
+                reinterpret_cast<int32_t *>(&input)[j] = (int32_t)SelfTest_FixedRandom(&seed) >> (j % 3 == 0 ? 2 : 4);
             }
             memset(&output, 0, sizeof output);
             FixedTransform_InvertRigidQ28(&output, &input);
@@ -888,7 +889,7 @@ static void Thandor_SelfTestScanAddresses()
                                      "MODELLE.PCK", "PATCH00.PCK", "PATCH01.PCK", "SOUND.PCK"};
     unsigned p;
     FILE *out = fopen("scanaddr.txt", "w");
-    uint8_t *packed = (uint8_t *)malloc(PACKAGE_SCRATCH_BUFFER_BYTES);
+    auto *packed = static_cast<uint8_t *>(malloc(PACKAGE_SCRATCH_BUFFER_BYTES));
     unsigned totalEntries = 0;
     unsigned totalHits = 0;
     if (out == nullptr || packed == nullptr) {
@@ -943,7 +944,7 @@ static void Thandor_SelfTestScanAddresses()
             if (fread(packed, 1, header.packedSize, pck) != header.packedSize) {
                 break;
             }
-            unpacked = (uint8_t *)malloc(header.unpackedSize + 4);
+            unpacked = static_cast<uint8_t *>(malloc(header.unpackedSize + 4));
             if (unpacked == nullptr) {
                 break;
             }
@@ -981,7 +982,7 @@ static void Thandor_SelfTestScanAddresses()
                     }
                 }
                 for (i = 0; i + 4 <= header.unpackedSize; i += 4) {
-                    uint32_t value = *(uint32_t *)(unpacked + i);
+                    uint32_t value = *Asset_RecordAt<uint32_t>(unpacked, i);
                     if ((value >= ORIGINAL_TEXT_START && value < ORIGINAL_TEXT_END) ||
                         (value >= REBUILT_IMAGE_BASE && value < REBUILT_IMAGE_BASE + SCANADDR_REBUILT_IMAGE_SPAN)) {
                         fprintf(out, "%s %s %08x %x %08x\n", list[p], name, (uint32_t)header.typeTag, i, value);
@@ -1253,7 +1254,7 @@ int SelfTest_Run(const char *name)
         return 1;
     }
     if (name != nullptr && strcmp(name, "crash") == 0) {
-        *(volatile int *)nullptr = 1; /* exercises the crash handler */
+        *static_cast<volatile int *>(nullptr) = 1; /* exercises the crash handler */
     }
     return 0;
 }
