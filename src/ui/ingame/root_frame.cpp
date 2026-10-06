@@ -462,8 +462,9 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache()
 void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 
 {
-  INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId) =
-       (TextResourceId)(uintptr_t)InGameUi_Image(inGameRoot)->worldViewCyclingInfoText.text; /* 5f-format: InGameUiImage.worldViewCyclingInfoText +0x54 (UI template text id dword) */
+  /* the text slots hold a TextResourceId (labelFlags & 0x10 clear), stored as the slot's 32 bits */
+  g_InGameRuntimeDefaultImageTemplate.worldViewCyclingInfoText.text = THANDOR_PTR32_BITS(
+       (TextResourceId)(uintptr_t)InGameUi_Image(inGameRoot)->worldViewCyclingInfoText.text);
   g_FrontendRootInitializationTemplate.bottomBarStatusText.text = THANDOR_PTR32_BITS(
-       INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId));
+       g_InGameRuntimeDefaultImageTemplate.worldViewCyclingInfoText.text.value);
 }
