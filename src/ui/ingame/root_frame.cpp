@@ -133,7 +133,7 @@ static void InGameUiRoot_UpdateEffectSounds
     InGameSelectionDetailPanel_Rebuild();
   }
   if (g_InGameEffectsEnabled == 0) {
-    if (g_SoundIsVoiceFinished((SoundVoice *)g_InGameActiveEffectVoice)) {
+    if (g_SoundIsVoiceFinished(g_InGameActiveEffectVoice)) {
       g_InGameActiveEffectVoice = nullptr;
       randomValue = Random_NextPrimary();
       g_InGameEffectsEnabled = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
@@ -175,7 +175,7 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
     return;
   }
   if (g_InGameMusicNextTrackCountdown == 0) {
-    if (g_SoundIsVoiceFinished((SoundVoice *)g_InGameActiveMusicVoice)) {
+    if (g_SoundIsVoiceFinished(g_InGameActiveMusicVoice)) {
       g_InGameActiveMusicVoice = nullptr;
       randomValue = Random_NextPrimary();
       g_InGameMusicNextTrackCountdown = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
@@ -309,7 +309,7 @@ static void InGameUiRoot_UpdateCountdownText(InGameRuntimeRootFrameView *inGameR
   uint32_t minutesByteLength;
 
   schedule = &g_InGameLevelRuntimeGlobalBlock.conditionStorage->schedule;
-  countdownText = (uint8_t *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0);
+  countdownText = reinterpret_cast<uint8_t *>(g_InGameCountdownTextUtf16);
   inGameRoot->countdownPanelNodeFlags = inGameRoot->countdownPanelNodeFlags & ~UI_NODE_SUPPRESSED;
   for (conditionIndex = 0; conditionIndex < INGAME_SCHEDULED_CONDITION_COUNT; conditionIndex++) {
     if ((schedule->conditions[conditionIndex].statusAndKind.kind & INGAME_SCHEDULED_CONDITION_KIND_MASK) ==
@@ -328,11 +328,11 @@ static void InGameUiRoot_UpdateCountdownText(InGameRuntimeRootFrameView *inGameR
           secondsLeft = INGAME_COUNTDOWN_MAX_SECONDS;
         }
         minutesByteLength = g_WideNumberFormatUtf16
-                           (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,secondsLeft / 60,(uint16_t *)countdownText);
-        *(uint16_t *)(countdownText + minutesByteLength) = ':';
+                           (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,secondsLeft / 60,reinterpret_cast<uint16_t *>(countdownText));
+        *reinterpret_cast<uint16_t *>(countdownText + minutesByteLength) = ':';
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,secondsLeft % 60,
-                   (uint16_t *)(countdownText + minutesByteLength + 2));
+                   reinterpret_cast<uint16_t *>(countdownText + minutesByteLength + 2));
         return;
       }
     }
@@ -369,7 +369,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     InGameUiRoot_UpdatePlacementOverlay(inGameRoot);
     cursorFrame = 0;
     hoveredNode = (*((inGameRoot->rootUi).base.vtable)->hitTest)
-                       (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)inGameRoot);
+                       (g_CursorOverrideY,g_CursorOverrideX,&(inGameRoot->rootUi).base);
     if (hoveredNode != UI_NODE_NONE) { /* hit test found a node */
       cursorFrame = hoveredNode->vtable->pointerMove(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
     }

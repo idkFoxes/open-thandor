@@ -63,7 +63,7 @@ static void InGameSaveGame_ShowRecordDescription(UiWrappedTextControl *descripti
     levelTitleId = record->levelTitleTextId;
     /* Original quirk: the colour command is written into the shared resolved title text. */
     *levelTitleText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-    descriptionBox->text = (uint16_t *)(uintptr_t)levelTitleId; /* a text id in the pointer field */
+    descriptionBox->text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(levelTitleId)); /* a text id in the pointer field */
   }
   else {
     campaignTitleText = InGameSaveGame_ResolveTitleText(record->campaignTitleTextId);
@@ -74,7 +74,7 @@ static void InGameSaveGame_ShowRecordDescription(UiWrappedTextControl *descripti
     *levelTitleText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
     RichTextCommandStream_PatchPayloadBySelector(1,levelTitleText,templateText);
     RichTextCommandStream_PatchPayloadBySelector(0,campaignTitleText,templateText);
-    descriptionBox->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
+    descriptionBox->text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE));
   }
 }
 
@@ -105,7 +105,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   rowSlotArray = catalogList->rowSlots;
   lastRowIndex = catalogList->rowCount - 1;
   selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(catalogList,&selectionConfirmed);
-  selectedRowRecord = (ScenarioCatalogSaveRecord *)rowSlotArray[selectedIndex];
+  selectedRowRecord = static_cast<ScenarioCatalogSaveRecord *>(rowSlotArray[selectedIndex]);
   isNewSaveRow = selectedIndex == lastRowIndex;
   /* page 1 of the stack is the name edit, shown only for the "new savegame" row */
   UiPageStack_SetActiveIndex((uint32_t)isNewSaveRow,saveNameEntryStack);
@@ -118,7 +118,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   }
   else {
     /* the text box holds a text id here, not a string */
-    descriptionBox->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
+    descriptionBox->text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_SCENARIO_DESCRIPTION_EMPTY));
     if (!isNewSaveRow) {
       InGameSaveGame_ShowRecordDescription(descriptionBox,selectedRowRecord);
       rootNode = UiNode_GetRoot(&saveNameEntryStack->base);
@@ -162,10 +162,10 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
   /* the trailing "new savegame" row has no file */
   if (selectedIndex + 1 != saveList->rowCount) {
     /* the row record starts with the save's name, used as the file name */
-    leaf = (uint16_t *)saveList->rowSlots[selectedIndex];
+    leaf = static_cast<uint16_t *>(saveList->rowSlots[selectedIndex]);
     WidePath_CombineDirectoryAndLeaf
-              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
-               (uint16_t *)&g_ExecutableDirectoryUtf16);
+              (g_ScenarioCatalogPathScratchUtf16,g_SaveDirectoryUtf16,
+               g_ExecutableDirectoryUtf16);
     WidePath_CombineDirectoryAndLeaf
               (g_ScenarioCatalogPathScratchUtf16,leaf,
                g_ScenarioCatalogPathScratchUtf16);
@@ -210,36 +210,36 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   UiListRowIndex selectedIndex;
 
   WidePath_CombineDirectoryAndLeaf
-            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveSvePatternUtf16,
-             (uint16_t *)&g_ExecutableDirectoryUtf16);
+            (g_ScenarioCatalogPathScratchUtf16,g_SaveSvePatternUtf16,
+             g_ExecutableDirectoryUtf16);
   rowCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
                (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
-                (uint8_t *)g_ScenarioCatalogPathScratchUtf16);
+                reinterpret_cast<uint8_t *>(g_ScenarioCatalogPathScratchUtf16));
   g_MemoryApi.free(g_ScenarioCatalog);
   g_ScenarioCatalog = nullptr;
   /* per row a pointer and a 0x100-byte record: the row pointers first, then the records */
-  allocError = g_MemoryApi.alloc((uint32_t)((rowCount + 1) * (sizeof(Ptr32<void>) + 256)),(void **)&rowSlot);
+  allocError = g_MemoryApi.alloc((uint32_t)((rowCount + 1) * (sizeof(Ptr32<void>) + 256)),reinterpret_cast<void **>(&rowSlot));
   if (allocError != 0) {
     return;
   }
-  record = (uint32_t *)(rowSlot + rowCount + 1); /* behind the rowCount + 1 row pointers */
-  g_ScenarioCatalog = (ScenarioCatalogHeader *)rowSlot;
+  record = reinterpret_cast<uint32_t *>(rowSlot + rowCount + 1); /* behind the rowCount + 1 row pointers */
+  g_ScenarioCatalog = reinterpret_cast<ScenarioCatalogHeader *>(rowSlot);
   enumRecord = g_PackageScratchBuffer; /* each enumeration record starts with the file name */
   for (remainingCount = rowCount; remainingCount != 0; remainingCount--) {
     *rowSlot = record;
     *record = 0;
     WidePath_CombineDirectoryAndLeaf
-              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
-               (uint16_t *)&g_ExecutableDirectoryUtf16);
+              (g_ScenarioCatalogPathScratchUtf16,g_SaveDirectoryUtf16,
+               g_ExecutableDirectoryUtf16);
     WidePath_CombineDirectoryAndLeaf
-              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)enumRecord,
+              (g_ScenarioCatalogPathScratchUtf16,reinterpret_cast<uint16_t *>(enumRecord),
                g_ScenarioCatalogPathScratchUtf16);
     openError = g_FileSystemOpen
                       (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,g_ScenarioCatalogPathScratchUtf16,&handle);
     /* the catalog record is the second 0x100 bytes of the .sve; for a save that cannot be opened only the first
        dword is cleared */
     if (openError == 0) {
-      saveRecord = (ScenarioCatalogSaveRecord *)record;
+      saveRecord = reinterpret_cast<ScenarioCatalogSaveRecord *>(record);
       readError = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,256,handle);
       if (readError == 0) {
         readError = g_FileSystemReadExact(sizeof(ScenarioCatalogSaveRecord),record,handle);
@@ -247,7 +247,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
       g_FileSystemClose(handle);
       if (readError == 0) {
         /* open-thandor: the name is used as file name leaf and list text; a crafted save may lack its NUL */
-        ((uint16_t *)saveRecord)[SAVE_RECORD_NAME_LAST_UNIT] = 0;
+        reinterpret_cast<uint16_t *>(saveRecord)[SAVE_RECORD_NAME_LAST_UNIT] = 0;
         /* level index -> level title text, campaign index -> campaign title text (unsigned: a crafted index
            must not overflow; InGameSaveGame_ResolveTitleText rejects out-of-range ids) */
         saveRecord->levelTitleTextId =
@@ -274,15 +274,15 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
     record[clearIndex] = 0;
   }
   newRowText = TextResource_Resolve(TEXT_ID_SAVE_GAME_NEW_ROW);
-  RichTextCommandStream_CopyExpanded(256,(uint16_t *)record,newRowText,nullptr);
+  RichTextCommandStream_CopyExpanded(256,reinterpret_cast<uint16_t *>(record),newRowText,nullptr);
   /* The action source is the game menu's Save button (InGameUiImage.gameMenuSaveButton). */
   inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
   saveList = reinterpret_cast<UiPointerListControl *>(&inGameUi->saveGameList); /* the list's 0x64-byte prefix view */
   descriptionText = &inGameUi->saveGameDescriptionText;
   /* sort only the saves, then append the new row and select it */
-  UiPointerList_InitializeColumnLayout(rowCount,(Ptr32<void> *)g_ScenarioCatalog,saveList);
+  UiPointerList_InitializeColumnLayout(rowCount,reinterpret_cast<Ptr32<void> *>(g_ScenarioCatalog),saveList);
   UiPointerList_SortByDwordPairFieldDescending(240,saveList);
-  UiPointerList_InitializeColumnLayout(rowCount + 1,(Ptr32<void> *)g_ScenarioCatalog,saveList);
+  UiPointerList_InitializeColumnLayout(rowCount + 1,reinterpret_cast<Ptr32<void> *>(g_ScenarioCatalog),saveList);
   UiPointerList_SelectColumnListIndex(rowCount,saveList);
   UiPageStack_SetActiveIndex(5,UiLayoutContainerControl_AsPageStack(&inGameUi->gameWindowPageStack));
   UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&inGameUi->saveNameEntryStack));
@@ -298,9 +298,9 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   listRowCount = saveList->rowCount;
   rowSlots = saveList->rowSlots;
   selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(saveList,nullptr);
-  selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectedIndex];
+  selectedRecord = static_cast<ScenarioCatalogSaveRecord *>(rowSlots[selectedIndex]);
   /* The description text holds a TextResourceId (labelFlags & 0x10 clear); the last row is the new save. */
-  descriptionText->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
+  descriptionText->text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_SCENARIO_DESCRIPTION_EMPTY));
   if (listRowCount - 1 != selectedIndex) {
     InGameSaveGame_ShowRecordDescription(descriptionText,selectedRecord);
   }
@@ -328,11 +328,11 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
   /* the typed name of the trailing new-save row, else the selected row's file name */
   leaf = image->saveNameEdit.textBuffer;
   if (rowOrdinal != saveList->rowCount) {
-    leaf = (uint16_t *)saveList->rowSlots[rowOrdinal - 1];
+    leaf = static_cast<uint16_t *>(saveList->rowSlots[rowOrdinal - 1]);
   }
   WidePath_CombineDirectoryAndLeaf
-            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
-             (uint16_t *)&g_ExecutableDirectoryUtf16);
+            (g_ScenarioCatalogPathScratchUtf16,g_SaveDirectoryUtf16,
+             g_ExecutableDirectoryUtf16);
   WidePath_CombineDirectoryAndLeaf
             (g_ScenarioCatalogPathScratchUtf16,leaf,
              g_ScenarioCatalogPathScratchUtf16);
@@ -368,7 +368,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
   uint32_t forbiddenIndex;
   Bool8 nameValid;
 
-  nameEdit = (UiTextEditControl *)nameControl;
+  nameEdit = reinterpret_cast<UiTextEditControl *>(nameControl); /* the save name edit */
   /* up to the root node (its parent is -1) */
   firstNode = nameControl;
   while (firstNode->parent != UI_NODE_NONE) {

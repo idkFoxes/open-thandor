@@ -1,5 +1,5 @@
 {
- "revision": "25de6b0a",
+ "revision": "0475870e",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -114,7 +114,7 @@
  },
  "counts": {
   "cstyle_cast": {
-   "ui": 862,
+   "ui": 733,
    "world": 61
   },
   "ingame_ui": {
@@ -148,7 +148,7 @@
    "network": 165,
    "platform": 330,
    "root": 7,
-   "ui": 799,
+   "ui": 798,
    "world": 177
   },
   "include_guard": {
