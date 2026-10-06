@@ -1,7 +1,7 @@
 {
- "revision": "7b553084",
+ "revision": "f88e91b6",
  "worktree": true,
- "files": 690,
+ "files": 691,
  "metrics": {
   "cstyle_cast": {
    "item": 1,
@@ -114,7 +114,6 @@
  },
  "counts": {
   "cstyle_cast": {
-   "assets": 216,
    "audio": 23,
    "core": 57,
    "gameplay": 812,
@@ -166,7 +165,7 @@
    "world": 179
   },
   "include_guard": {
-   "assets": 33,
+   "assets": 34,
    "audio": 12,
    "core": 31,
    "gameplay": 67,

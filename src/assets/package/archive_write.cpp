@@ -7,6 +7,7 @@
 
 #include <thandor/assets/package/archive_write.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the
@@ -24,13 +25,15 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
 
 {
   uint8_t *destination; /* archive header, then the new entry header, then (encoded) its payload */
+  PckArchiveHeader *archiveHeader; /* the archive header read to offset 0 of destination */
   PckEntryHeader *newEntry; /* the entry header behind the archive header */
   uint32_t packedByteCount;
   FileIoByteCount byteCount;
   uint32_t alignedByteCount;
 
   destination = g_PackageScratchBuffer;
-  newEntry = (PckEntryHeader *)(destination + PCK_ENTRY_HEADER_BYTES);
+  archiveHeader = reinterpret_cast<PckArchiveHeader *>(destination);
+  newEntry = Asset_RecordAt<PckEntryHeader>(destination,PCK_ENTRY_HEADER_BYTES);
   if (Package_FindEntryInMount(path,fileHandle) != nullptr) {
     if (!Package_DeleteEntry(path,fileHandle,nullptr)) {
       return false;
@@ -45,13 +48,12 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
   if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle)) != 0) {
     return false;
   }
-  ((PckArchiveHeader *)destination)->entryCount++;
+  archiveHeader->entryCount++;
   if (compressionMethod == PCK_COMPRESSION_STORED) {
     alignedByteCount = unpackedSize + 3 & PACKAGE_DWORD_ALIGN_MASK;
     newEntry->packedSize = alignedByteCount;
     newEntry->compressionMethod = PCK_COMPRESSION_STORED;
-    *(uint32_t *)(destination + PCK_ARCHIVE_SIZE) =
-         *(int *)(destination + PCK_ARCHIVE_SIZE) + alignedByteCount + PCK_ENTRY_HEADER_BYTES;
+    archiveHeader->archiveSize = archiveHeader->archiveSize + alignedByteCount + PCK_ENTRY_HEADER_BYTES;
     newEntry->runtimePayloadOffset = 0;
     newEntry->typeTag = (PckAssetTypeTag)*sourceData;
     newEntry->unpackedSize = unpackedSize;
@@ -74,13 +76,14 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
     /* encode straight behind the new entry header, so both are written in one go */
     if (!g_PckEncoderTable[compressionMethod]
             (PACKAGE_SCRATCH_BUFFER_BYTES - 2 * PCK_ENTRY_HEADER_BYTES,
-             destination + 2 * PCK_ENTRY_HEADER_BYTES,unpackedSize,(uint8_t *)sourceData,&packedByteCount,nullptr)) {
+             destination + 2 * PCK_ENTRY_HEADER_BYTES,unpackedSize,reinterpret_cast<uint8_t *>(sourceData),&packedByteCount,
+             nullptr)) { /* the encoder reads the payload as bytes */
       return false;
     }
     newEntry->packedSize = packedByteCount;
     byteCount = packedByteCount + PCK_ENTRY_HEADER_BYTES;
     newEntry->compressionMethod = compressionMethod;
-    *(FileIoByteCount *)(destination + PCK_ARCHIVE_SIZE) = *(int *)(destination + PCK_ARCHIVE_SIZE) + byteCount;
+    archiveHeader->archiveSize = archiveHeader->archiveSize + byteCount;
     newEntry->runtimePayloadOffset = 0;
     newEntry->typeTag = (PckAssetTypeTag)*sourceData;
     newEntry->unpackedSize = unpackedSize;
@@ -106,6 +109,7 @@ static uint32_t Package_ShrinkArchiveHeader(PckStoredByteCount entryPackedSize,u
                                             EngineFileHandle fileHandle,int *outArchiveEndOffset)
 {
   uint32_t statusCode;
+  PckArchiveHeader *archiveHeader = reinterpret_cast<PckArchiveHeader *>(destination); /* read to offset 0 */
 
   statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
@@ -115,10 +119,9 @@ static uint32_t Package_ShrinkArchiveHeader(PckStoredByteCount entryPackedSize,u
   if (statusCode != 0) {
     return statusCode;
   }
-  *outArchiveEndOffset = *(int *)(destination + PCK_ARCHIVE_SIZE);
-  ((PckArchiveHeader *)destination)->entryCount--;
-  *(PckStoredByteCount *)(destination + PCK_ARCHIVE_SIZE) =
-       *(int *)(destination + PCK_ARCHIVE_SIZE) - (entryPackedSize + PCK_ENTRY_HEADER_BYTES);
+  *outArchiveEndOffset = static_cast<int>(archiveHeader->archiveSize);
+  archiveHeader->entryCount--;
+  archiveHeader->archiveSize = archiveHeader->archiveSize - (entryPackedSize + PCK_ENTRY_HEADER_BYTES);
   statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;

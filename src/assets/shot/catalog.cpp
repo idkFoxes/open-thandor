@@ -7,6 +7,7 @@
 
 #include <thandor/assets/shot/catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -33,7 +34,7 @@ uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset)
 
   if ((asset->entryCountHeader.common.magic == ASSET_MAGIC_SHT) &&
      (asset->entryCountHeader.common.converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
-    definition = (ShotDefinition *)(asset + 1);
+    definition = Asset_RecordAfter<ShotDefinition>(asset);
     for (entriesRemaining = asset->entryCountHeader.entryCount; entriesRemaining != 0; entriesRemaining--) {
       registrationError = ShotDefinition_RegisterAndResolveReferences(definition);
       if (registrationError != 0) {
@@ -145,7 +146,7 @@ static uint32_t ShotDefinition_LoadSprite(ShotDefinition *definition)
        failing .spr extension switch returns FATAL_ERROR_SHOT_ID_NOT_FOUND */
     return FATAL_ERROR_SHOT_ID_NOT_FOUND;
   }
-  loadedSprite = (SpriteAssetHeader *)Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
+  loadedSprite = static_cast<SpriteAssetHeader *>(Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode));
   if (loadedSprite == nullptr) {
     return loadErrorCode;
   }
