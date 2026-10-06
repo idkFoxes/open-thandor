@@ -257,6 +257,52 @@ Internally the game still works on the original 200-byte layout (`PersistentSett
 [`include/thandor/core/settings/persistent.h`](../include/thandor/core/settings/persistent.h)); each key of the
 table in `persistent.cpp` maps to one offset. The self-test `OPEN_THANDOR_SELFTEST=settings` checks the format.
 
+## Patch installer
+
+`Thandor-Patch-6.exe` ("Thandor Patch 6", version 1.0.6) installs a release build onto an existing Thandor
+installation, like the original `Thandor-Patch-5.exe` (version 1.05) did; plan and design in
+[plans/step10_installer.md](plans/step10_installer.md). It is made with **Inno Setup 7** (free for non-commercial
+use, [jrsoftware.org](https://jrsoftware.org/isinfo.php); the per-user install in
+`%LOCALAPPDATA%\Programs\Inno Setup 7` is enough) and **Python 3**:
+
+```bat
+cmake --preset mingw-release
+cmake --build --preset mingw-release --target installer
+```
+
+The result is `build-mingw-release\installer\Thandor-Patch-6.exe`. The `installer` target exists only in a build
+without the developer tools (`THANDOR_DEV_TOOLS=OFF`; the test build must never be shipped) and only when CMake finds
+`ISCC.exe` (in `Inno Setup 7` under `%LOCALAPPDATA%\Programs`, `Program Files` or `Program Files (x86)`, on the
+`PATH`, or given as `-DTHANDOR_ISCC=<path to ISCC.exe>`); the configure step prints `Patch installer: ...` either
+way. The target runs [`tools/installer/build_installer.py`](../tools/installer/build_installer.py), which stages
+`thandor.exe`, `SDL3.dll`, `thandor.sym` and the SDL3 licence in `build-mingw-release\installer\stage` (debug
+sections stripped where a file still has them; the GCC build strips `thandor.exe` itself), then compiles
+[`tools/installer/thandor-patch.iss`](../tools/installer/thandor-patch.iss) with `ISCC /DAppVersion=<project
+version>`. The version comes from `project(... VERSION ...)` in `CMakeLists.txt`, so Setup's version resource is
+1.0.6.0 like the one of `thandor.exe`. The script can also be run by hand: `python
+tools/installer/build_installer.py build-mingw-release` (options in the script).
+
+What the installer does: a classic German wizard; it finds the game folder (`Planet4\Thandor\Pfad` of the original
+setup, then `Software\Thandor\GamePath`, then `Program Files (x86)\Thandor`) and refuses folders without
+`DATEN.PCK` and `thandor.exe` and a running game; it copies the existing `thandor.exe` once to `thandor-1.05.exe`,
+installs `thandor.exe`, `SDL3.dll`, `thandor.sym` and `OpenThandor-liesmich.txt`, puts its uninstaller into
+`OpenThandor\` and gives the Users group modify rights on the game folder and `save\`. Uninstalling puts
+`thandor-1.05.exe` back as `thandor.exe` (version 1.05 again); `*.PCK`, `thandor.dat`, `thandor.ini`, the logs and
+`save\` are never touched. It needs 64-bit Windows 10 or newer and is not signed.
+
+**Wizard images:** the finished BMPs in `tools/installer/images` (`wizard-image-<W>x<H>.bmp`,
+`wizard-small-image-<N>.bmp`, every DPI size) are used when that folder holds them; otherwise Inno's own
+placeholder pictures stay. They are made from the game's own art by
+[`tools/installer/make_wizard_images.py`](../tools/installer/make_wizard_images.py) (see
+[`tools/installer/README.md`](../tools/installer/README.md)); `build_installer.py --wizard-image ...
+--wizard-small-image ...` uses other files. The Setup icon is
+[`src/platform/bootstrap/thandor.ico`](../src/platform/bootstrap/thandor.ico).
+
+**Testing:** only on a copy of the game folder, never on the real installation. `build_installer.py BUILD_DIR -D TestLowPriv
+--out <other folder>` (never for a release) builds a Setup that installs without admin rights, for silent tests:
+`Thandor-Patch-6.exe /VERYSILENT /SUPPRESSMSGBOXES /DIR="<copy>"`, then `<copy>\OpenThandor\unins000.exe
+/VERYSILENT /SUPPRESSMSGBOXES`.
+
 ## Platform layer (SDL3)
 
 The window, the event pump, keyboard and mouse, the periodic timers, the video presentation and the audio run on

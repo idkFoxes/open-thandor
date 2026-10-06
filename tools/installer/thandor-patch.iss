@@ -9,8 +9,10 @@
 ;   Stage             folder with thandor.exe, SDL3.dll and optionally thandor.sym and LICENSE-SDL3.txt,
 ;                     default <repo>\build-mingw-release\installer\stage
 ;   OutDir            output folder (ISCC /O wins), default <repo>\build-mingw-release\installer
-;   WizardImage       large wizard image(s), e.g. "a-164.bmp,a-328.bmp"; default: Inno's own placeholder
-;   WizardSmallImage  small wizard image(s); default: Inno's own placeholder
+;   WizardImage       large wizard image(s), e.g. "a-164.bmp,a-328.bmp"; default: every
+;                     tools\installer\images\wizard-image-*.bmp, else Inno's own placeholder
+;   WizardSmallImage  small wizard image(s); default: every tools\installer\images\wizard-small-image-*.bmp,
+;                     else Inno's own placeholder
 ;   SetupIcon         .ico of Setup and the uninstaller; default src\platform\bootstrap\thandor.ico if present
 ;   TestLowPriv       (defined = on) TEST ONLY: install without admin rights (PrivilegesRequired=lowest), so the
 ;                     silent install/uninstall tests can run on a copy of the game folder without UAC
@@ -41,6 +43,36 @@
 #ifndef SetupIcon
   #if FileExists(RepoDir + "\src\platform\bootstrap\thandor.ico")
     #define SetupIcon RepoDir + "\src\platform\bootstrap\thandor.ico"
+  #endif
+#endif
+; Wizard images: without WizardImage / WizardSmallImage the finished BMPs in tools\installer\images are used
+; (wizard-image-<W>x<H>.bmp, wizard-small-image-<N>.bmp, made by make_wizard_images.py, see README.md); when that
+; folder holds none, Inno's own placeholders stay.
+#define ImageDir RepoDir + "\tools\installer\images"
+#define FindHandle
+#define FindResult
+#define FoundImages ""
+#sub AddFoundImage
+  #define public FoundImages FoundImages + (FoundImages == "" ? "" : ",") + ImageDir + "\" + FindGetFileName(FindHandle)
+#endsub
+#ifndef WizardImage
+  #define FoundImages ""
+  #for {FindHandle = FindResult = FindFirst(ImageDir + "\wizard-image-*.bmp", 0); FindResult; FindResult = FindNext(FindHandle)} AddFoundImage
+  #if FindHandle
+    #expr FindClose(FindHandle)
+  #endif
+  #if FoundImages != ""
+    #define WizardImage FoundImages
+  #endif
+#endif
+#ifndef WizardSmallImage
+  #define FoundImages ""
+  #for {FindHandle = FindResult = FindFirst(ImageDir + "\wizard-small-image-*.bmp", 0); FindResult; FindResult = FindNext(FindHandle)} AddFoundImage
+  #if FindHandle
+    #expr FindClose(FindHandle)
+  #endif
+  #if FoundImages != ""
+    #define WizardSmallImage FoundImages
   #endif
 #endif
 #if !FileExists(Stage + "\thandor.exe") || !FileExists(Stage + "\SDL3.dll")
