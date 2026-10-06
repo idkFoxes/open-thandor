@@ -38,7 +38,7 @@ AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDi
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot);
 
-void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
+void AiUnitCommand_AssignWorkspacePoint(AiScoredSiteWorkspaceEntry *workspacePoint,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext);
 
 void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime,

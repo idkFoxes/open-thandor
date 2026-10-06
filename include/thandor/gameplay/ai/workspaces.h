@@ -94,7 +94,7 @@ extern AiRuntimeWorkspaceEntry *g_AiWorkspace04RequestedAssets;
 extern uint32_t g_AiWorkspace04Count;
 extern AiScoredSiteWorkspaceEntry *g_AiWorkspace05GeneralSites;
 extern uint32_t g_AiWorkspace05Count;
-extern uint8_t *g_AiWorkspace06FlaggedSites;
+extern AiScoredSiteWorkspaceEntry *g_AiWorkspace06FlaggedSites;
 extern uint32_t g_AiWorkspace06Count;
 extern AiTargetWorkspaceEntry *g_AiWorkspace07Targets;
 extern uint32_t g_AiWorkspace07Count;

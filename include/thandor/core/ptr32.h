@@ -54,10 +54,19 @@ static __forceinline int32_t thandor_ptr32_pack(const volatile void *pointer)
     return (int32_t)value;
 }
 
+/* THANDOR_PTR32_BITS(value) values: the raw 32 bits of a pointer field given as an integer (a UI template's
+   link offset or no-link sentinel, a text resource id kept in a text pointer field). Unlike a T * they convert
+   to a Ptr32 at compile time, so a template image initialised with them stays constant data. */
+struct Ptr32Bits {
+    uint32_t bits;
+};
+#define THANDOR_PTR32_BITS(value) (Ptr32Bits{static_cast<uint32_t>(value)})
+
 template <class T> struct Ptr32 {
     int32_t value;
 
     Ptr32() = default;
+    constexpr Ptr32(Ptr32Bits raw) : value(static_cast<int32_t>(raw.bits)) {}
     Ptr32(T *pointer) : value(thandor_ptr32_pack((const void *)pointer)) {}
     Ptr32(ThandorAnyPtr pointer)
         requires(!std::is_function_v<T>)

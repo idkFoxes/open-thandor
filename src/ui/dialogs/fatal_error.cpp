@@ -21,30 +21,31 @@ static UiRootCallbacks g_FatalErrorDialogRootCallbacks = {
 
 FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
         { /* +0000 fatalErrorPanel g_UiPanelControlVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
-            .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
-            .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -160, .rightOffset = 160, .bottomOffset = 44,
-            .leftAnchorQ31 = 0x50000000, .topAnchorQ31 = 0x50000000, .rightAnchorQ31 = 0x50000000, .bottomAnchorQ31 = 0x50000000,
-            .layoutWidth = -1, .layoutHeight = -1},
-        {
-            0x00000003, 0xFFFFFFFF, 0xFFFFFFFF},
+            .root = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
+                    .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = -160, .rightOffset = 160, .bottomOffset = 44,
+                    .leftAnchorQ31 = 0x50000000, .topAnchorQ31 = 0x50000000, .rightAnchorQ31 = 0x50000000, .bottomAnchorQ31 = 0x50000000,
+                    .layoutWidth = -1, .layoutHeight = -1},
+                .rootFlags = 0x00000003, .callbacks = THANDOR_PTR32_BITS(0xFFFFFFFF),
+                .previousRoot = THANDOR_PTR32_BITS(0xFFFFFFFF)}},
         { /* +0058 errorMessageText g_UiListOffsetControlVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
-            .leftOffset = 6, .topOffset = 6, .rightOffset = -6, .bottomOffset = -38,
-            .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
-            .layoutWidth = -1, .layoutHeight = -1},
-        {
-            0x00000015},
+            .base = {
+                .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+                .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
+                .leftOffset = 6, .topOffset = 6, .rightOffset = -6, .bottomOffset = -38,
+                .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .labelFlags = 0x00000015},
         { /* +00B4 okButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = -108, .topOffset = -32, .rightOffset = -12, .bottomOffset = -6,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
-        {
-            0x0000000C, 0x00000001, 0x00000100},
+        {.stateFlags = 0x0000000C, .actionId = 0x00000001, .textResourceId = 0x00000100},
 };
 
 /* method08 of g_FatalErrorDialogRootCallbacks, the callbacks of the fatal-error dialog root: always returns true, so
@@ -115,7 +116,7 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
     RichTextCommandStream_PatchPayloadBySelector(3,g_FatalErrorDetail3Utf16,stream);
   }
   /* the message text goes into the template image itself, which is then copied */
-  ((UiWrappedTextControl *)&g_FatalErrorUiRootTemplateImage.errorMessageText)->text = stream;
+  g_FatalErrorUiRootTemplateImage.errorMessageText.text = stream;
   /* copy the dialog template image into the allocated root node, one dword per step */
   templateImageCursor = (const uint32_t *)&g_FatalErrorUiRootTemplateImage;
   templateCopyCursor = (uint32_t *)g_FatalErrorUiRootTemplate;
@@ -130,11 +131,11 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
      right - left offset) narrowed by the text's left and right insets, all read from the template image */
   wrappedExtent = RichTextCommandStream_MeasureWrappedBlock
                     (g_UiTextStyleNormal,
-                     ((UiWrappedTextControl *)&g_FatalErrorUiRootTemplateImage.errorMessageText)->text,
-                     ((g_FatalErrorUiRootTemplateImage.fatalErrorPanel.rightOffset -
-                       g_FatalErrorUiRootTemplateImage.fatalErrorPanel.leftOffset) +
-                     g_FatalErrorUiRootTemplateImage.errorMessageText.rightOffset) -
-                    g_FatalErrorUiRootTemplateImage.errorMessageText.leftOffset);
+                     g_FatalErrorUiRootTemplateImage.errorMessageText.text,
+                     ((g_FatalErrorUiRootTemplateImage.fatalErrorPanel.root.base.rightOffset -
+                       g_FatalErrorUiRootTemplateImage.fatalErrorPanel.root.base.leftOffset) +
+                     g_FatalErrorUiRootTemplateImage.errorMessageText.base.rightOffset) -
+                    g_FatalErrorUiRootTemplateImage.errorMessageText.base.leftOffset);
   dialogRoot->base.topOffset = dialogRoot->base.topOffset - wrappedExtent.heightPixels;
   UiRootStack_Push(&g_FatalErrorDialogRootCallbacks,g_FatalErrorUiRootTemplate);
   g_UiPointerCaptureTarget = UI_NODE_NONE;
