@@ -46,7 +46,13 @@
 #define TEXT_ID_ADVANCED_FRAME_LIMIT_OFF (TEXT_ID_PROJECT_BASE + 17) /* "Aus" (60, 120, 144 Bilder/s follow) */
 #define TEXT_ID_ADVANCED_VSYNC (TEXT_ID_PROJECT_BASE + 21) /* "VSync" */
 #define TEXT_ID_ADVANCED_NOTE_SOFTWARE (TEXT_ID_PROJECT_BASE + 22) /* edges and UI scale need a GPU renderer */
-#define TEXT_ID_PROJECT_COUNT 23
+/* the effective UI scale when it differs from the chosen one, or the one auto chose; written by
+   TextResource_SetUiScaleNote */
+#define TEXT_ID_ADVANCED_NOTE_UI_SCALE (TEXT_ID_PROJECT_BASE + 23)
+#define TEXT_ID_PROJECT_COUNT 24
+
+/* Not in the original: sets the text of TEXT_ID_ADVANCED_NOTE_UI_SCALE (Latin-1, cut to its buffer). */
+void TextResource_SetUiScaleNote(const char *text);
 
 Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 
