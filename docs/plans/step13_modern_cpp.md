@@ -1,6 +1,6 @@
 # Step 13 (later): modern C++ - typed UI, named casts, constants, enums, RAII, bool, loops
 
-Status: planned, not started. Step 13 takes the idiomatic-C++ backlog that step 8 left for "a later step of its own"
+Status: planned, not started; it starts after step 10. Step 13 takes the idiomatic-C++ backlog that step 8 left for "a later step of its own"
 ([step 8 owner decisions](step8_idiomatic_cpp.md#owner-decisions-2026-10-04)): the decompiler's C-style casts, the
 UI reached through byte offsets into template images, `#define` constants, `typedef struct`, raw allocation,
 `Bool8`, the original key-dispatch addresses, the 0x90 fill leftovers and the decompiled `do { } while` counting
@@ -9,7 +9,7 @@ compare.
 
 This plan is a read-only analysis of `dev` at 3de753df (683 files, 165,760 lines in `src/` and `include/`). Counts
 were taken with `grep` (the regexes are in section 9); line numbers refer to that commit and will move. Items marked
-**(guess)** are estimates, not measured. The owner decisions in section 2 are open.
+**(guess)** are estimates, not measured. The owner accepted all recommendations of section 2 (D1-D9) on 2026-10-06.
 
 ## 1. Ground rules
 
@@ -42,7 +42,9 @@ New for step 13:
   (0 new warnings), the self-tests against the reference build and `golden_cmp.ps1`. The full
   `tools/test/run_checks.py` runs once at the end of the step, with the game windows minimized.
 
-## 2. Owner decisions needed
+## 2. Owner decisions
+
+Decided 2026-10-06: every recommendation below (D1-D9) is accepted as written.
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|
