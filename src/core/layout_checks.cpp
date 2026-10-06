@@ -1659,6 +1659,509 @@ static_assert(offsetof(DisplaySettingsUiImage, colorScaleValueText) == 0xADC && 
               "DisplaySettingsUiImage.colorScaleValueText is a UiFocusProxyControl");
 static_assert(offsetof(DisplaySettingsUiImage, colorBiasValueText) == 0xB38 && sizeof(UiDisplaySettingsValueReadout) == 0x9C,
               "DisplaySettingsUiImage.colorBiasValueText is a UiDisplaySettingsValueReadout");
+/* Step 13 U4: the typed nodes of the frontend image (tools/dev/ui_image_retype.py --asserts). */
+static_assert(offsetof(FrontendUiImage, frontendRoot) == 0x0 && sizeof(UiPanelControl) == 0x58,
+              "FrontendUiImage.frontendRoot is a UiPanelControl");
+static_assert(offsetof(FrontendUiImage, frontendViewModeStack) == 0x58 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "FrontendUiImage.frontendViewModeStack is a UiLayoutContainerControl<2>");
+static_assert(offsetof(FrontendUiImage, chatInputSlot) == 0xB0 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "FrontendUiImage.chatInputSlot is a UiLayoutContainerControl<2>");
+static_assert(offsetof(FrontendUiImage, chatInputEdit) == 0x108 && sizeof(UiRequiredTextEditControl) == 0x80,
+              "FrontendUiImage.chatInputEdit is a UiRequiredTextEditControl");
+static_assert(offsetof(FrontendUiImage, moviePlaybackView) == 0x1D4 && sizeof(UiSoftwareTexturePreviewControl) == 0x6C,
+              "FrontendUiImage.moviePlaybackView is a UiSoftwareTexturePreviewControl");
+static_assert(offsetof(FrontendUiImage, movieLetterboxTopBar) == 0x240 && sizeof(UiFillPanelControl) == 0x5C,
+              "FrontendUiImage.movieLetterboxTopBar is a UiFillPanelControl");
+static_assert(offsetof(FrontendUiImage, movieLetterboxBottomBar) == 0x29C && sizeof(UiFillPanelControl) == 0x5C,
+              "FrontendUiImage.movieLetterboxBottomBar is a UiFillPanelControl");
+static_assert(offsetof(FrontendUiImage, chatMessageHistory) == 0x2F8 && sizeof(UiConditionalActionControl) == 0x60,
+              "FrontendUiImage.chatMessageHistory is a UiConditionalActionControl");
+static_assert(offsetof(FrontendUiImage, menuRoomModelView) == 0x368 && sizeof(FrontendModelPointerContext) == 0x17C,
+              "FrontendUiImage.menuRoomModelView is a FrontendModelPointerContext");
+static_assert(offsetof(FrontendUiImage, frontendPageStack) == 0x508 && sizeof(UiLayoutContainerControl<13>) == 0x84,
+              "FrontendUiImage.frontendPageStack is a UiLayoutContainerControl<13>");
+static_assert(offsetof(FrontendUiImage, missionBriefingPage) == 0x58C && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.missionBriefingPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, briefingBackButton) == 0x5E8 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.briefingBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, briefingExitButton) == 0x648 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.briefingExitButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, briefingSaveButton) == 0x6A8 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.briefingSaveButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, briefingBeginButton) == 0x708 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.briefingBeginButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, briefingTitleLabel) == 0x768 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.briefingTitleLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, briefingTextScroller) == 0x7C4 && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.briefingTextScroller is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, briefingText) == 0x854 && sizeof(UiListOffsetControl) == 0x5C,
+              "FrontendUiImage.briefingText is a UiListOffsetControl");
+static_assert(offsetof(FrontendUiImage, opponentSettingsGroup) == 0x914 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.opponentSettingsGroup is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, opponentWeakLabel) == 0x970 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.opponentWeakLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, opponentStrongLabel) == 0x9CC && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.opponentStrongLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, gameSpeedSlider) == 0xA28 && sizeof(UiRangeSliderControl) == 0x68,
+              "FrontendUiImage.gameSpeedSlider is a UiRangeSliderControl");
+static_assert(offsetof(FrontendUiImage, factionSetupPage) == 0xA90 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.factionSetupPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, factionSetupBackButton) == 0xAEC && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionSetupBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionSetupNextButton) == 0xB4C && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionSetupNextButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionSetupTitleLabel) == 0xBAC && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionSetupTitleLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionSetupFinishButton) == 0xC0C && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionSetupFinishButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRosterTable) == 0xC6C && sizeof(UiLayoutContainerControl<1>) == 0x54,
+              "FrontendUiImage.factionRosterTable is a UiLayoutContainerControl<1>");
+static_assert(offsetof(FrontendUiImage, factionRow1NumberLabel) == 0xCC0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow1NumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow2NumberLabel) == 0xD1C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow2NumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow3NumberLabel) == 0xD78 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow3NumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow4NumberLabel) == 0xDD4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow4NumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow5NumberLabel) == 0xE30 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow5NumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow6NumberLabel) == 0xE8C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow6NumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow7NumberLabel) == 0xEE8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow7NumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow1ColourButton) == 0xF44 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow1ColourButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow2ColourButton) == 0xFA4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow2ColourButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow3ColourButton) == 0x1004 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow3ColourButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow4ColourButton) == 0x1064 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow4ColourButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow5ColourButton) == 0x10C4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow5ColourButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow6ColourButton) == 0x1124 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow6ColourButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow7ColourButton) == 0x1184 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow7ColourButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow1ModeButton) == 0x11E4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow1ModeButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow2ModeButton) == 0x1244 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow2ModeButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow3ModeButton) == 0x12A4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow3ModeButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow4ModeButton) == 0x1304 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow4ModeButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow5ModeButton) == 0x1364 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow5ModeButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow6ModeButton) == 0x13C4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow6ModeButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow7ModeButton) == 0x1424 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow7ModeButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow1PlayCheckbox) == 0x1484 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow1PlayCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow2PlayCheckbox) == 0x14E4 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow2PlayCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow3PlayCheckbox) == 0x1544 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow3PlayCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow4PlayCheckbox) == 0x15A4 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow4PlayCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow5PlayCheckbox) == 0x1604 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow5PlayCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow6PlayCheckbox) == 0x1664 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow6PlayCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow7PlayCheckbox) == 0x16C4 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.factionRow7PlayCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, factionRow1ParticipantsLabel) == 0x1724 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow1ParticipantsLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow2ParticipantsLabel) == 0x1780 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow2ParticipantsLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow3ParticipantsLabel) == 0x17DC && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow3ParticipantsLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow4ParticipantsLabel) == 0x1838 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow4ParticipantsLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow5ParticipantsLabel) == 0x1894 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow5ParticipantsLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow6ParticipantsLabel) == 0x18F0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow6ParticipantsLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, factionRow7ParticipantsLabel) == 0x194C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.factionRow7ParticipantsLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, rosterFactionHeader) == 0x19A8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.rosterFactionHeader is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, rosterModeHeader) == 0x1A08 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.rosterModeHeader is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, rosterColourHeader) == 0x1A68 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.rosterColourHeader is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, rosterAcceptHeader) == 0x1AC8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.rosterAcceptHeader is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, rosterParticipantHeader) == 0x1B24 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.rosterParticipantHeader is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, taskDescriptionLabel) == 0x1B80 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.taskDescriptionLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, taskDescriptionText) == 0x1BDC && sizeof(UiListOffsetControl) == 0x5C,
+              "FrontendUiImage.taskDescriptionText is a UiListOffsetControl");
+static_assert(offsetof(FrontendUiImage, gameSelectPage) == 0x1C38 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.gameSelectPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, gameSelectCancelButton) == 0x1C94 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.gameSelectCancelButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, gameSelectStartButton) == 0x1CF4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.gameSelectStartButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, loadGameTabButton) == 0x1D54 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.loadGameTabButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, singleGameTabButton) == 0x1DB4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.singleGameTabButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, campaignsTabButton) == 0x1E14 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.campaignsTabButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, gameSelectTitleLabel) == 0x1E74 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.gameSelectTitleLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, gameSelectTabStack) == 0x1ED0 && sizeof(UiLayoutContainerControl<3>) == 0x5C,
+              "FrontendUiImage.gameSelectTabStack is a UiLayoutContainerControl<3>");
+static_assert(offsetof(FrontendUiImage, savedGamesScroller) == 0x1F2C && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.savedGamesScroller is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, savedGamesList) == 0x1FBC && sizeof(UiListControl) == 0x74,
+              "FrontendUiImage.savedGamesList is a UiListControl");
+static_assert(offsetof(FrontendUiImage, savedGamesLabel) == 0x203C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.savedGamesLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, savedGameDescriptionText) == 0x2098 && sizeof(UiListOffsetControl) == 0x5C,
+              "FrontendUiImage.savedGameDescriptionText is a UiListOffsetControl");
+static_assert(offsetof(FrontendUiImage, missionsScroller) == 0x20F4 && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.missionsScroller is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, missionsList) == 0x2184 && sizeof(UiListControl) == 0x74,
+              "FrontendUiImage.missionsList is a UiListControl");
+static_assert(offsetof(FrontendUiImage, missionsLabel) == 0x221C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.missionsLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, missionDescriptionText) == 0x2278 && sizeof(UiListOffsetControl) == 0x5C,
+              "FrontendUiImage.missionDescriptionText is a UiListOffsetControl");
+static_assert(offsetof(FrontendUiImage, campaignsScroller) == 0x22D4 && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.campaignsScroller is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, campaignsList) == 0x2364 && sizeof(UiListControl) == 0x74,
+              "FrontendUiImage.campaignsList is a UiListControl");
+static_assert(offsetof(FrontendUiImage, campaignsLabel) == 0x23EC && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.campaignsLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, campaignDescriptionText) == 0x2448 && sizeof(UiListOffsetControl) == 0x5C,
+              "FrontendUiImage.campaignDescriptionText is a UiListOffsetControl");
+static_assert(offsetof(FrontendUiImage, quitConfirmPage) == 0x24A4 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.quitConfirmPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, quitNoButton) == 0x2500 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.quitNoButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, quitYesButton) == 0x2560 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.quitYesButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, quitTitleLabel) == 0x25C0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.quitTitleLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, optionsPage) == 0x261C && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.optionsPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, optionsOkButton) == 0x2678 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.optionsOkButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, optionsTitleLabel) == 0x26D8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.optionsTitleLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, graphicsSettingsButton) == 0x2734 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.graphicsSettingsButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, settings3DButton) == 0x2794 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.settings3DButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, soundSettingsButton) == 0x27F4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.soundSettingsButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, hidePanelCheckbox) == 0x2854 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.hidePanelCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, scrollSpeedGroup) == 0x28B4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.scrollSpeedGroup is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, scrollSpeedSlowLabel) == 0x2910 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.scrollSpeedSlowLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, scrollSpeedFastLabel) == 0x296C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.scrollSpeedFastLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, scrollSpeedSlider) == 0x29C8 && sizeof(UiRangeSliderControl) == 0x68,
+              "FrontendUiImage.scrollSpeedSlider is a UiRangeSliderControl");
+static_assert(offsetof(FrontendUiImage, generalMapGroup) == 0x2A30 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.generalMapGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, autoZoomOffCheckbox) == 0x2A84 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.autoZoomOffCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, autoRotationOffCheckbox) == 0x2AE4 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.autoRotationOffCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, mouseCommandsGroup) == 0x2B44 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.mouseCommandsGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, linkRotationZoomCheckbox) == 0x2B98 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.linkRotationZoomCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, linkRotationTiltCheckbox) == 0x2BF8 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.linkRotationTiltCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, rightButtonNoScrollCheckbox) == 0x2C58 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.rightButtonNoScrollCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, displaySettingsPage) == 0x2CB8 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.displaySettingsPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, displaySettingsBackButton) == 0x2D14 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.displaySettingsBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, displaySettingsApplyButton) == 0x2D74 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.displaySettingsApplyButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, displaySettingsTitle) == 0x2DD4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.displaySettingsTitle is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, displayAdapterGroup) == 0x2E30 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.displayAdapterGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, displayAdapterOption1) == 0x2E84 && sizeof(UiPayloadPairTextButton) == 0x68,
+              "FrontendUiImage.displayAdapterOption1 is a UiPayloadPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayAdapterOption2) == 0x2EEC && sizeof(UiPayloadPairTextButton) == 0x68,
+              "FrontendUiImage.displayAdapterOption2 is a UiPayloadPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayAdapterOption3) == 0x2F54 && sizeof(UiPayloadPairTextButton) == 0x68,
+              "FrontendUiImage.displayAdapterOption3 is a UiPayloadPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayAdapterOption4) == 0x2FBC && sizeof(UiPayloadPairTextButton) == 0x68,
+              "FrontendUiImage.displayAdapterOption4 is a UiPayloadPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayAdapterOption5) == 0x3024 && sizeof(UiPayloadPairTextButton) == 0x68,
+              "FrontendUiImage.displayAdapterOption5 is a UiPayloadPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionGroup) == 0x308C && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.displayResolutionGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption1) == 0x30E0 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption1 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption2) == 0x3148 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption2 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption3) == 0x31B0 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption3 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption4) == 0x3218 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption4 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption5) == 0x3280 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption5 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption6) == 0x32E8 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption6 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption7) == 0x3350 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption7 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption8) == 0x33B8 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption8 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption9) == 0x3420 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption9 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayResolutionOption10) == 0x3488 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayResolutionOption10 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayColorDepthGroup) == 0x34F0 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.displayColorDepthGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, displayColorDepthOption1) == 0x3544 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayColorDepthOption1 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayColorDepthOption2) == 0x35AC && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayColorDepthOption2 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayColorDepthOption3) == 0x3614 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayColorDepthOption3 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, displayColorDepthOption4) == 0x367C && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.displayColorDepthOption4 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, graphicsSettingsPage) == 0x36E4 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.graphicsSettingsPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, graphicsSettingsBackButton) == 0x3740 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.graphicsSettingsBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, graphicsSettingsTitle) == 0x37A0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.graphicsSettingsTitle is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, shadingEnabledCheckbox) == 0x37FC && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.shadingEnabledCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, shadingLevelGroup) == 0x385C && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.shadingLevelGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, shadingLevelGrid32Depth32) == 0x38B0 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.shadingLevelGrid32Depth32 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, shadingLevelGrid32Depth64) == 0x3918 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.shadingLevelGrid32Depth64 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, shadingLevelGrid32Depth128) == 0x3980 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.shadingLevelGrid32Depth128 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, shadingLevelGrid64Depth64) == 0x39E8 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.shadingLevelGrid64Depth64 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, shadingLevelGrid64Depth128) == 0x3A50 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.shadingLevelGrid64Depth128 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, shadingLevelGrid128Depth128) == 0x3AB8 && sizeof(UiNumericPairTextButton) == 0x68,
+              "FrontendUiImage.shadingLevelGrid128Depth128 is a UiNumericPairTextButton");
+static_assert(offsetof(FrontendUiImage, polygonDetailLabel) == 0x3B20 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.polygonDetailLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, polygonDetailMinCaption) == 0x3B7C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.polygonDetailMinCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, polygonDetailMaxCaption) == 0x3BD8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.polygonDetailMaxCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, polygonDetailSlider) == 0x3C34 && sizeof(UiRangeSliderControl) == 0x68,
+              "FrontendUiImage.polygonDetailSlider is a UiRangeSliderControl");
+static_assert(offsetof(FrontendUiImage, textureQualityGroup) == 0x3C9C && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.textureQualityGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, textureQualityLow) == 0x3CF0 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.textureQualityLow is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, textureQualityMedium) == 0x3D50 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.textureQualityMedium is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, textureQualityHigh) == 0x3DB0 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.textureQualityHigh is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, audioSettingsPage) == 0x3E10 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.audioSettingsPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, audioSettingsBackButton) == 0x3E6C && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.audioSettingsBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, audioSettingsTitle) == 0x3ECC && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.audioSettingsTitle is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, musicEnabledCheckbox) == 0x3F28 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.musicEnabledCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, soundEffectsEnabledCheckbox) == 0x3F88 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.soundEffectsEnabledCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, reverseStereoCheckbox) == 0x3FE8 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.reverseStereoCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, effectsVolumeLabel) == 0x4048 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.effectsVolumeLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, effectsVolumeMinCaption) == 0x40A4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.effectsVolumeMinCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, effectsVolumeMaxCaption) == 0x4100 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.effectsVolumeMaxCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, effectsVolumeSlider) == 0x415C && sizeof(UiRangeSliderControl) == 0x68,
+              "FrontendUiImage.effectsVolumeSlider is a UiRangeSliderControl");
+static_assert(offsetof(FrontendUiImage, movieVolumeLabel) == 0x41C4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.movieVolumeLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, movieVolumeMinCaption) == 0x4220 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.movieVolumeMinCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, movieVolumeMaxCaption) == 0x427C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.movieVolumeMaxCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, movieVolumeSlider) == 0x42D8 && sizeof(UiRangeSliderControl) == 0x68,
+              "FrontendUiImage.movieVolumeSlider is a UiRangeSliderControl");
+static_assert(offsetof(FrontendUiImage, musicVolumeLabel) == 0x4340 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.musicVolumeLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, musicVolumeMinCaption) == 0x439C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.musicVolumeMinCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, musicVolumeMaxCaption) == 0x43F8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.musicVolumeMaxCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, musicVolumeSlider) == 0x4454 && sizeof(UiRangeSliderControl) == 0x68,
+              "FrontendUiImage.musicVolumeSlider is a UiRangeSliderControl");
+static_assert(offsetof(FrontendUiImage, movieEventVolumeLabel) == 0x44BC && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.movieEventVolumeLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, movieEventVolumeMinCaption) == 0x4518 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.movieEventVolumeMinCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, movieEventVolumeMaxCaption) == 0x4574 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.movieEventVolumeMaxCaption is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, movieEventVolumeSlider) == 0x45D0 && sizeof(UiRangeSliderControl) == 0x68,
+              "FrontendUiImage.movieEventVolumeSlider is a UiRangeSliderControl");
+static_assert(offsetof(FrontendUiImage, topBlackBar) == 0x4638 && sizeof(UiFillPanelControl) == 0x5C,
+              "FrontendUiImage.topBlackBar is a UiFillPanelControl");
+static_assert(offsetof(FrontendUiImage, bottomBar) == 0x4694 && sizeof(UiFillPanelControl) == 0x5C,
+              "FrontendUiImage.bottomBar is a UiFillPanelControl");
+static_assert(offsetof(FrontendUiImage, bottomBarConditionalAction) == 0x46F0 && sizeof(UiConditionalActionControl) == 0x60,
+              "FrontendUiImage.bottomBarConditionalAction is a UiConditionalActionControl");
+static_assert(offsetof(FrontendUiImage, bottomBarStatusText) == 0x4750 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.bottomBarStatusText is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, transferProgressGauge) == 0x47AC && sizeof(UiHorizontalGaugeControl) == 0x5C,
+              "FrontendUiImage.transferProgressGauge is a UiHorizontalGaugeControl");
+static_assert(offsetof(FrontendUiImage, networkGamePage) == 0x4808 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.networkGamePage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, networkGameTitle) == 0x4864 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.networkGameTitle is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, networkGameBackButton) == 0x48C0 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.networkGameBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, networkGameHostButton) == 0x4920 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.networkGameHostButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, networkGameJoinButton) == 0x4980 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.networkGameJoinButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, networkProtocolScrollBox) == 0x49E0 && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.networkProtocolScrollBox is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, networkProtocolList) == 0x4A70 && sizeof(UiTextListControl) == 0x68,
+              "FrontendUiImage.networkProtocolList is a UiTextListControl");
+static_assert(offsetof(FrontendUiImage, sessionListScrollBox) == 0x4AD8 && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.sessionListScrollBox is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, sessionList) == 0x4B68 && sizeof(UiListControl) == 0x74,
+              "FrontendUiImage.sessionList is a UiListControl");
+static_assert(offsetof(FrontendUiImage, hostAddressLabel) == 0x4BEC && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.hostAddressLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, playerNameLabel) == 0x4C48 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.playerNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, networkProtocolLabel) == 0x4CA4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.networkProtocolLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, sessionListLabel) == 0x4D00 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.sessionListLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, hostAddressEdit) == 0x4D5C && sizeof(UiRequiredTextEditControl) == 0x80,
+              "FrontendUiImage.hostAddressEdit is a UiRequiredTextEditControl");
+static_assert(offsetof(FrontendUiImage, playerNameEdit) == 0x4E48 && sizeof(UiRequiredTextEditControl) == 0x80,
+              "FrontendUiImage.playerNameEdit is a UiRequiredTextEditControl");
+static_assert(offsetof(FrontendUiImage, hostGameSetupPage) == 0x4EDC && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.hostGameSetupPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, hostGameSetupTitle) == 0x4F38 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.hostGameSetupTitle is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, hostGameSetupBackButton) == 0x4F94 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.hostGameSetupBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, hostGameCreateButton) == 0x4FF4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.hostGameCreateButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, gameNameEdit) == 0x5054 && sizeof(UiRequiredTextEditControl) == 0x80,
+              "FrontendUiImage.gameNameEdit is a UiRequiredTextEditControl");
+static_assert(offsetof(FrontendUiImage, maxPlayersSlider) == 0x50E8 && sizeof(UiRangeSliderControl) == 0x68,
+              "FrontendUiImage.maxPlayersSlider is a UiRangeSliderControl");
+static_assert(offsetof(FrontendUiImage, maxPlayersValueText) == 0x5150 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.maxPlayersValueText is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, networkSpeedSlider) == 0x51AC && sizeof(UiRangeSliderControl) == 0x68,
+              "FrontendUiImage.networkSpeedSlider is a UiRangeSliderControl");
+static_assert(offsetof(FrontendUiImage, networkSpeedValueText) == 0x5214 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.networkSpeedValueText is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, maxPlayersLabel) == 0x5270 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.maxPlayersLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, networkSpeedLabel) == 0x52CC && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.networkSpeedLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, gameNameLabel) == 0x5328 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.gameNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, hostLobbyPage) == 0x5384 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.hostLobbyPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, hostLobbyTitle) == 0x53E0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.hostLobbyTitle is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, hostLobbyBackButton) == 0x543C && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.hostLobbyBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, hostLobbyKickPlayerButton) == 0x549C && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.hostLobbyKickPlayerButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, hostLobbyStartButton) == 0x54FC && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.hostLobbyStartButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, hostLobbyPlayerScrollBox) == 0x555C && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.hostLobbyPlayerScrollBox is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, hostLobbyPlayerList) == 0x55EC && sizeof(UiListControl) == 0x74,
+              "FrontendUiImage.hostLobbyPlayerList is a UiListControl");
+static_assert(offsetof(FrontendUiImage, hostLobbyPlayerListLabel) == 0x5670 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.hostLobbyPlayerListLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, clientLobbyPage) == 0x56CC && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.clientLobbyPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, clientLobbyTitle) == 0x5728 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.clientLobbyTitle is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, clientLobbyLeaveButton) == 0x5784 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.clientLobbyLeaveButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, clientLobbyPlayerScrollBox) == 0x57E4 && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.clientLobbyPlayerScrollBox is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, clientLobbyPlayerList) == 0x5874 && sizeof(UiListControl) == 0x74,
+              "FrontendUiImage.clientLobbyPlayerList is a UiListControl");
+static_assert(offsetof(FrontendUiImage, clientLobbyPlayerListLabel) == 0x58F8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.clientLobbyPlayerListLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, displayModeKindGroup) == 0x5954 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.displayModeKindGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, displayModeKindWindow) == 0x59A8 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.displayModeKindWindow is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, displayModeKindBorderless) == 0x5A08 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.displayModeKindBorderless is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, displayModeKindFullscreen) == 0x5A68 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.displayModeKindFullscreen is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, displayResolutionScrollBox) == 0x5AC8 && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.displayResolutionScrollBox is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, displayResolutionRowPanel) == 0x5B58 && sizeof(UiPanelControl) == 0x58,
+              "FrontendUiImage.displayResolutionRowPanel is a UiPanelControl");
+static_assert(offsetof(FrontendUiImage, displayPageStack) == 0x71A0 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "FrontendUiImage.displayPageStack is a UiLayoutContainerControl<2>");
+static_assert(offsetof(FrontendUiImage, advancedSettingsButton) == 0x71F8 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedSettingsButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedSettingsPage) == 0x7258 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.advancedSettingsPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, advancedSettingsBackButton) == 0x72B4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedSettingsBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedSettingsTitle) == 0x7314 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.advancedSettingsTitle is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, advancedEdgesGroup) == 0x7370 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.advancedEdgesGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, advancedEdgesSmooth) == 0x73C4 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedEdgesSmooth is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedEdgesExact) == 0x7424 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedEdgesExact is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedUiScaleGroup) == 0x7484 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.advancedUiScaleGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, advancedUiScaleAuto) == 0x74D8 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedUiScaleAuto is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedUiScale1) == 0x7538 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedUiScale1 is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedUiScale2) == 0x7598 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedUiScale2 is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedUiScale3) == 0x75F8 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedUiScale3 is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedFrameLimitGroup) == 0x7658 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.advancedFrameLimitGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, advancedFrameLimitOff) == 0x76AC && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedFrameLimitOff is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedFrameLimit60) == 0x770C && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedFrameLimit60 is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedFrameLimit120) == 0x776C && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedFrameLimit120 is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedFrameLimit144) == 0x77CC && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedFrameLimit144 is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedVsyncCheckbox) == 0x782C && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedVsyncCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedNoteLabel) == 0x788C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.advancedNoteLabel is a UiFocusProxyControl");
 static_assert(sizeof(FrontendUiImage) == 0x78E8 && /* 0x5954 + the display mode kind, resolution list and advanced settings nodes of open-thandor */
               offsetof(FrontendUiImage, displayPageStack) == 0x71A0 &&
               offsetof(FrontendUiImage, advancedSettingsButton) == 0x71F8 &&
