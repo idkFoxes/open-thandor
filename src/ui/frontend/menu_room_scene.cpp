@@ -52,7 +52,7 @@ void FrontendRomActionTable_ExecuteRecord
   }
   entry = (FrontendRomActionEntry *)(recordIndex * FRONTEND_ROM_ACTION_ENTRY_SIZE +
                                      FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE + g_FrontendActiveRomRecord);
-  menuRoomView = FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
+  menuRoomView = &FrontendUi_Image(g_FrontendRootNode)->menuRoomModelView;
   targetRecordId = entry->targetRecordId;
   pageAction = entry->pageAction;
   /* gameplay settings, quit confirmation, credits and closing are refused in network sessions, network
@@ -178,7 +178,7 @@ void FrontendRomTransition_ProcessPendingRecord()
   /* g_FrontendRomTransitionTargetRecordId holds the target record id of the running flight (-1 = none to
      activate, 0 = no flight). */
   pendingRecordId = g_FrontendRomTransitionTargetRecordId;
-  menuRoomView = FrontendModelPointerContext_AsWorldRuntime(FRONTEND_UI(g_FrontendRootNode,menuRoomModelView));
+  menuRoomView = FrontendModelPointerContext_AsWorldRuntime(&FrontendUi_Image(g_FrontendRootNode)->menuRoomModelView);
   if (g_FrontendRomTransitionTargetRecordId != 0) {
     splineStillRunning = WorldMotionSpline_EvaluateAndApplyAtTime
                       (g_FrontendRomTransitionSplineKeyframeCount,

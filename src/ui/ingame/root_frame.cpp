@@ -465,6 +465,6 @@ void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
   /* the text slots hold a TextResourceId (labelFlags & 0x10 clear), stored as the slot's 32 bits */
   g_InGameRuntimeDefaultImageTemplate.worldViewCyclingInfoText.text = THANDOR_PTR32_BITS(
        (TextResourceId)(uintptr_t)InGameUi_Image(inGameRoot)->worldViewCyclingInfoText.text);
-  FRONTEND_UI(&g_FrontendRootInitializationTemplate,bottomBarStatusText)->text = THANDOR_PTR32_BITS(
+  g_FrontendRootInitializationTemplate.bottomBarStatusText.text = THANDOR_PTR32_BITS(
        g_InGameRuntimeDefaultImageTemplate.worldViewCyclingInfoText.text.value);
 }

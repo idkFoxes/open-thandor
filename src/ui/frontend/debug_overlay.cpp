@@ -84,7 +84,7 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates()
     g_RenderedFrameCountSinceDebugRefresh = 0;
     g_PrimitiveDrawCallCount = 0;
   }
-  world = FrontendModelPointerContext_AsWorldRuntime(FRONTEND_UI(g_FrontendRootNode,menuRoomModelView));
+  world = FrontendModelPointerContext_AsWorldRuntime(&FrontendUi_Image(g_FrontendRootNode)->menuRoomModelView);
   worldVector0 = WorldRuntime_GetCameraPosition(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
