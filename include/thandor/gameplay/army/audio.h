@@ -13,6 +13,20 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
+/* The sound slot of a sound index (step 13 X5b): WorldRuntimeContext.dwordArray keeps the SpatialSoundSlot
+   addresses as pointer-sized integers. ArmySound_VoiceSetRef is the same address as the voice-set reference the
+   play functions take (the slot's first field, voiceSet). The caller checks the index and the array, as before;
+   the index keeps its own type (template) so the address arithmetic is unchanged. */
+template <class Index> inline SpatialSoundSlot *ArmySound_Slot(const WorldRuntimeContext *worldRuntime,Index index)
+{
+    return reinterpret_cast<SpatialSoundSlot *>(worldRuntime->dwordArray[index]);
+}
+template <class Index> inline SoundVoiceSet **ArmySound_VoiceSetRef(const WorldRuntimeContext *worldRuntime,
+          Index index)
+{
+    return reinterpret_cast<SoundVoiceSet **>(worldRuntime->dwordArray[index]);
+}
+
 void ArmyRuntimeAudio_UpdateTurnAndMoveSounds
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 

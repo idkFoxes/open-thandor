@@ -27,7 +27,8 @@ void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
   placementContactKind = modelRuntime->modelDefinition->placementContactKindIndex;
   if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) != 0) {
     AiUnitBehavior_UpdatePioneerVehicle
-              ((MdlDefinitionSemanticPrefix *)modelRuntime->modelDefinition,armyRuntime,
+              (reinterpret_cast<MdlDefinitionSemanticPrefix *>(modelRuntime->modelDefinition.get()), /* definition view */
+               armyRuntime,
                armyRuntime->factionIndex,worldRuntime);
   }
   if (placementContactKind == ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
@@ -220,7 +221,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
   else {
     ownerArmy = modelRuntime->ownerArmyRuntime;
     ArmyRuntime_UpdateMovementAndWaypoints
-              (worldRuntime,(ArmyMovementRuntime *)ownerArmy,&waypointWorldXQ12,&waypointWorldYQ12);
+              (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(ownerArmy),&waypointWorldXQ12,&waypointWorldYQ12);
     nextPosition.xQ12 = waypointWorldXQ12;
     nextPosition.yQ12 = waypointWorldYQ12;
     ownerMovementFlags = &ownerArmy->movementStateFlags;
@@ -231,7 +232,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
   heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
   blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                      (nextPosition.yQ12,nextPosition.xQ12,
-                      (RuntimeCollisionQueryView *)modelRuntime,worldRuntime);
+                      ModelView_Cast<RuntimeCollisionQueryView>(modelRuntime),worldRuntime);
   if (blockingModelRuntime != nullptr) {
     /* stay where we are and let the collision partner react (water surface: it is not notified) */
     blockedRootNode = modelRuntime->rootModelNode;
@@ -393,7 +394,7 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   /* alive and still on its way to a route point */
   if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
       !ArmyRuntime_UpdateMovementAndWaypoints
-         (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime,&waypointWorldXQ12,
+         (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(modelRuntime->ownerArmyRuntime),&waypointWorldXQ12,
           &waypointWorldYQ12)) {
     placedRootNode = ArmyGroundMovement_SteerAndDrive
                        (worldRuntime,ModelView_Cast<ModelRuntimeGroundMovementSteeringView>(modelRuntime),rootNode,
@@ -477,7 +478,7 @@ void ArmyRuntimeClass_UpdateGroundMovement
   /* alive and still on its way to a route point */
   if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
       !ArmyRuntime_UpdateMovementAndWaypoints
-         (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime,&waypointWorldXQ12,
+         (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(modelRuntime->ownerArmyRuntime),&waypointWorldXQ12,
           &waypointWorldYQ12)) {
     rootNode = ArmyGroundMovement_SteerAndDrive
                          (worldRuntime,modelRuntime,rootNode,waypointWorldXQ12,waypointWorldYQ12,true);
@@ -544,7 +545,7 @@ void ArmyRuntimeClass_UpdateWaterSurfaceMovement
   /* alive and still on its way to a route point */
   if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
       !ArmyRuntime_UpdateMovementAndWaypoints
-         (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime,&waypointWorldXQ12,
+         (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(modelRuntime->ownerArmyRuntime),&waypointWorldXQ12,
           &waypointWorldYQ12)) {
     rootNode = ArmyGroundMovement_SteerAndDrive
                          (worldRuntime,modelRuntime,rootNode,waypointWorldXQ12,waypointWorldYQ12,false);

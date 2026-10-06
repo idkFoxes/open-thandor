@@ -27,11 +27,11 @@ void DebugCampaign_AutoWinTick()
   static unsigned sessionStart;
   static int done;
   const char *value = getenv("OPEN_THANDOR_AUTOWIN");
-  CampaignAsset *campaign = reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset); /* address as uintptr_t */
+  CampaignAsset *campaign = (CampaignAsset *)g_FrontendLoadedCampaignAsset;
   CampaignLevelRecord *level = nullptr;
-  InGameEndConditionTriggerRecord8ReferenceView *chosen = nullptr;
+  InGameEndConditionTriggerRecord8 *chosen = nullptr;
   int chosenScore = 0;
-  InGameEndConditionTriggerRecord8ReferenceView *trigger;
+  InGameEndConditionTriggerRecord8 *trigger;
   WorldOwnerListNode *ownerNode;
   uint32_t localFaction;
   int index;
@@ -71,7 +71,7 @@ void DebugCampaign_AutoWinTick()
      the campaign end (2), else another known level (1); a trigger ending another faction than the local one wins
      a tie. A successor equal to the current level (replay) or unknown is never chosen, except as the last resort
      in a level without any other trigger. */
-  trigger = (g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule.triggers;
+  trigger = (InGameEndConditionTriggerRecord8 *)(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule.triggers;
   for (index = 0; index < INGAME_END_CONDITION_TRIGGER_COUNT; index++, trigger++) {
     uint32_t selection = trigger->endMovieSelectionIndex;
     int successor;
@@ -110,7 +110,7 @@ void DebugCampaign_AutoWinTick()
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    model = WorldOwnerNode_ModelRuntime(ownerNode);
+    model = (ModelRuntimeSlot *)ownerNode->runtimePayload;
     /* units already inside the zone stay where they are (many levels use centre 0,0 with a radius covering the
        whole map, i.e. everything is carried over at its position); radius 0 means no carry-over */
     if (level->exitZoneRadius[localFaction] <= 0 ||
@@ -132,9 +132,9 @@ void DebugCampaign_AutoWinTick()
     g_EndMovieVariantIndex = chosen->movieVariantSelector ^ 1;
   }
   g_EndMovieSelectionIndex = chosen->endMovieSelectionIndex;
-  g_EndMoviePath = g_SessionEndMoviePathUtf16;
+  g_EndMoviePath = (uint16_t *)g_SessionEndMoviePathUtf16;
   if (g_EndMovieVariantIndex == 0) {
-    g_EndMoviePath = g_FlmEnde0001FlmPathUtf16;
+    g_EndMoviePath = (uint16_t *)g_FlmEnde0001FlmPathUtf16;
   }
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
   Thandor_Log("test aid: auto-win: level %d, end selection %u -> level %d, exit zone radius %d, "
@@ -218,16 +218,16 @@ int DebugCampaign_ApplyScenarioOptions()
   used = 1;
   if (getenv("OPEN_THANDOR_LIST_SCENARIOS") != nullptr) {
     ScenarioCatalog_RebuildLevelRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
-    list = reinterpret_cast<UiListControl *>(FRONTEND_UI(g_FrontendRootNode,missionsList)); /* a list control */
+    list = (UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList);
     for (row = 0; row < list->rowCount; row++) {
       Thandor_Log("scenario: single \"%s\"",
-                  DebugCampaign_RowName(static_cast<const uint16_t *>(list->rowSlots[row].get()),name,sizeof name));
+                  DebugCampaign_RowName((const uint16_t *)list->rowSlots[row],name,sizeof name));
     }
     ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
-    list = reinterpret_cast<UiListControl *>(FRONTEND_UI(g_FrontendRootNode,campaignsList)); /* a list control */
+    list = (UiListControl *)FRONTEND_UI(g_FrontendRootNode,campaignsList);
     for (row = 0; row < list->rowCount; row++) {
       Thandor_Log("scenario: campaign %u \"%s\"",row,
-                  DebugCampaign_RowName(static_cast<const uint16_t *>(list->rowSlots[row].get()),name,sizeof name));
+                  DebugCampaign_RowName((const uint16_t *)list->rowSlots[row],name,sizeof name));
     }
     ExitProcess(0);
   }
@@ -236,9 +236,9 @@ int DebugCampaign_ApplyScenarioOptions()
     return 0;
   }
   ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
-  list = reinterpret_cast<UiListControl *>(FRONTEND_UI(g_FrontendRootNode,campaignsList)); /* a list control */
+  list = (UiListControl *)FRONTEND_UI(g_FrontendRootNode,campaignsList);
   for (row = 0; row < list->rowCount; row++) {
-    DebugCampaign_RowName(static_cast<const uint16_t *>(list->rowSlots[row].get()),name,sizeof name);
+    DebugCampaign_RowName((const uint16_t *)list->rowSlots[row],name,sizeof name);
     if (_stricmp(name,wanted) == 0 ||
         (wanted[0] >= '0' && wanted[0] <= '9' && (uint32_t)atoi(wanted) == row)) {
       Thandor_Log("test aid: starting campaign %u \"%s\"",row,name);
@@ -255,7 +255,7 @@ int DebugCampaign_ApplyScenarioOptions()
    OPEN_THANDOR_CAMPAIGN_LEVEL=<n>, makes its n-th level (1-based, in record order) the first one. */
 void DebugCampaign_SelectCampaignLevel(uint8_t *campaignBytes)
 {
-  CampaignAsset *campaign = reinterpret_cast<CampaignAsset *>(campaignBytes);
+  CampaignAsset *campaign = (CampaignAsset *)campaignBytes;
   const char *wanted = getenv("OPEN_THANDOR_CAMPAIGN_LEVEL");
   int count = campaign->levelRecordCount;
   int index;

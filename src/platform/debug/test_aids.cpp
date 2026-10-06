@@ -85,8 +85,8 @@ void Thandor_TestAidLogDatagram(const char *direction, const void *sockaddrIn, u
                                 const void *buffer)
 {
     static int enabled = -1;
-    const auto *address = static_cast<const unsigned char *>(sockaddrIn);
-    const auto *words = static_cast<const unsigned *>(buffer);
+    const unsigned char *address = (const unsigned char *)sockaddrIn;
+    const unsigned *words = (const unsigned *)buffer;
     if (enabled < 0) {
         const char *value = getenv("OPEN_THANDOR_NETLOG");
         enabled = value != nullptr && value[0] == '1';
@@ -136,6 +136,6 @@ void Thandor_TestAidRestoreWindowWhenDue(void *window)
     }
     afterMs = 0;
     /* SW_SHOWNOACTIVATE: restores the minimized window without taking the focus */
-    ShowWindow(static_cast<HWND>(window), SW_SHOWNOACTIVATE);
+    ShowWindow((HWND)window, SW_SHOWNOACTIVATE);
     Thandor_Log("test aid: window restored (OPEN_THANDOR_RESTORE_AFTER_MS)");
 }
