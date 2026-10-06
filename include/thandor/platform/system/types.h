@@ -101,7 +101,7 @@ struct HWND__ {
     int unused;
 };
 
-using LPCSTR = CHAR *;
+using LPCSTR = const CHAR *; /* const as in the Windows SDK (the imports are extern "C": same symbols) */
 
 using PLONG = LONG *;
 

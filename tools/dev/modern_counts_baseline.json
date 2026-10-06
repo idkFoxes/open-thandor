@@ -1,5 +1,5 @@
 {
- "revision": "ece9a69f",
+ "revision": "7f1c20f8",
  "worktree": true,
  "files": 692,
  "metrics": {
@@ -118,7 +118,7 @@
    "core": 57,
    "gameplay": 200,
    "movie": 41,
-   "platform": 158,
+   "platform": 18,
    "ui": 1937,
    "world": 206
   },
