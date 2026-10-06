@@ -892,7 +892,7 @@ static void InGameUiRuntime_LayoutSelectionDetailPage(UiRootNode *inGameRoot)
   cellLeft = 0;
   cellTop = 0;
   for (cellIndex = 0; cellIndex < 12; cellIndex++) {
-    cell = THANDOR_UI_AT(inGameRoot,g_InGameSelectionDetailGridCellOffsets[cellIndex]);
+    cell = &(ui->*g_InGameSelectionDetailGridCells[cellIndex]).base.base;
     cell->leftOffset = cellLeft;
     cell->topOffset = cellTop;
     cell->rightOffset = cellLeft + cellSize;
