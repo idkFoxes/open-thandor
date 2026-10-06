@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/session/level_new.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
@@ -101,9 +102,9 @@ Bool8 NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *o
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
   }
-  copySourceCursor = (uint32_t *)levelImage;
-  copyTargetCursor = (uint32_t *)conditionStorage;
-  g_InGameLevelRuntimeGlobalBlock.conditionStorage = (InGameLevelConditionStorage *)conditionStorage;
+  copySourceCursor = reinterpret_cast<uint32_t *>(levelImage); /* dword copy of the level prefix */
+  copyTargetCursor = static_cast<uint32_t *>(conditionStorage);
+  g_InGameLevelRuntimeGlobalBlock.conditionStorage = static_cast<InGameLevelConditionStorage *>(conditionStorage);
   for (remainingDwordCount = prefixByteSize >> 2; remainingDwordCount != 0; remainingDwordCount--) {
     *copyTargetCursor = *copySourceCursor;
     copySourceCursor++;
@@ -121,9 +122,9 @@ Bool8 NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t *outE
   TechnologyAsset *loadedTechnologyAsset;
   uint32_t loadErrorCode;
 
-  technologyPath = (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.technologyPathOffset);
+  technologyPath = Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.technologyPathOffset);
   WidePath_SetExtensionCode(ASSET_MAGIC_TEC,technologyPath);
-  loadedTechnologyAsset = (TechnologyAsset *)Package_LoadEntry(technologyPath,&loadErrorCode);
+  loadedTechnologyAsset = static_cast<TechnologyAsset *>(Package_LoadEntry(technologyPath,&loadErrorCode));
   if (loadedTechnologyAsset == nullptr) {
     return NewLevel_Fail(outError,loadErrorCode);
   }
@@ -203,14 +204,14 @@ Bool8 NewLevel_PrepareEffectAsset(void *asset,uint32_t assetByteCount,uint32_t *
 
 {
   (void)assetByteCount;
-  return EffectAsset_PrepareEntries((EffectAssetHeader *)asset,outError);
+  return EffectAsset_PrepareEntries(static_cast<EffectAssetHeader *>(asset),outError);
 }
 
 Bool8 NewLevel_PrepareShotAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
   (void)assetByteCount;
-  *outError = ShotAsset_PrepareEntries((ShotAssetHeader *)asset);
+  *outError = ShotAsset_PrepareEntries(static_cast<ShotAssetHeader *>(asset));
   return *outError == 0;
 }
 
@@ -218,13 +219,13 @@ Bool8 NewLevel_PrepareModelAsset(void *asset,uint32_t assetByteCount,uint32_t *o
 
 {
   (void)assetByteCount;
-  return ModelAsset_PrepareRecords((ModelAssetHeader *)asset,outError);
+  return ModelAsset_PrepareRecords(static_cast<ModelAssetHeader *>(asset),outError);
 }
 
 Bool8 NewLevel_PrepareArmyAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
-  *outError = ArmyAsset_PrepareRecords((ArmyAssetHeader *)asset,assetByteCount);
+  *outError = ArmyAsset_PrepareRecords(static_cast<ArmyAssetHeader *>(asset),assetByteCount);
   return *outError == 0;
 }
 
@@ -243,7 +244,7 @@ Bool8 NewLevel_LoadAssetList
   uint32_t loadedByteCount;
   uint32_t prepareError;
 
-  assetPathCursor = (uint16_t *)((uint8_t *)levelImage + pathTableOffset);
+  assetPathCursor = Asset_RecordAt<uint16_t>(levelImage,pathTableOffset);
   for (; remainingRecordCount != 0; remainingRecordCount--) {
     WidePath_SetExtensionCode(extensionCode,assetPathCursor);
     if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) {
@@ -253,7 +254,8 @@ Bool8 NewLevel_LoadAssetList
        record walks of the prepare step */
     loadedAsset = Package_LoadEntryWithSize(assetPathCursor,&loadedByteCount,&loadErrorCode);
     if (loadedAsset == nullptr) {
-      Thandor_Log("NewLevel_LoadAssetList: loading \"%ls\" failed (error 0x%08X)",(wchar_t *)assetPathCursor,
+      Thandor_Log("NewLevel_LoadAssetList: loading \"%ls\" failed (error 0x%08X)",
+                  reinterpret_cast<wchar_t *>(assetPathCursor), /* UTF-16 for %ls */
                   loadErrorCode);
       return NewLevel_Fail(outError,loadErrorCode);
     }
@@ -284,9 +286,9 @@ static Bool8 NewLevel_InitTerrainAndGraphics
   g_MoviePlaybackScheduleCounter = 0;
   g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
   if (!TerrainVisualResources_LoadPrimary
-         ((uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.surfaceTextureBasePathOffset),
-          (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.groundTextureBasePathOffset),
-          Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),&stepError)) { /* 32-bit format field: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
+         (Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.surfaceTextureBasePathOffset),
+          Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.groundTextureBasePathOffset),
+          Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),&stepError)) { /* 32-bit format field: LevelAsset +0x0B0 levelPathOffset, a FieldGridAsset pointer */
     return NewLevel_Fail(outError,stepError);
   }
   stepError = ShotDefinitions_ValidateTerrainMaterialReferences();
@@ -301,9 +303,9 @@ static Bool8 NewLevel_InitTerrainAndGraphics
     return NewLevel_Fail(outError,stepError);
   }
   armyTextureBasePath =
-       (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.armyTextureBasePathOffset);
+       Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.armyTextureBasePathOffset);
   effectTextureBasePath =
-       (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.effectTextureBasePathOffset);
+       Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.effectTextureBasePathOffset);
   if (!ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath,&stepError)) {
     return NewLevel_Fail(outError,stepError);
   }
@@ -311,7 +313,7 @@ static Bool8 NewLevel_InitTerrainAndGraphics
   g_MoviePlaybackScheduleCounter = 0;
   g_MoviePlaybackScheduleSpan = 4;
   if (!ShotRuntime_InitGraphicsResources
-         ((uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.shotTextureBasePathOffset),
+         (Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.shotTextureBasePathOffset),
           &stepError)) {
     return NewLevel_Fail(outError,stepError);
   }
@@ -353,9 +355,9 @@ static void NewLevel_PlaceStartCameraAndLightFieldRegion
   MoviePlayback_AdvanceScheduledFrameAndTick();
   playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[localFactionIndex - 1];
   WorldRuntime_AttachFieldGridAsset
-            (Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),worldRuntime); /* 32-bit format field: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
+            (Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),worldRuntime); /* 32-bit format field: LevelAsset +0x0B0 levelPathOffset, a FieldGridAsset pointer */
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  startSlot = (struct LevelPlayerSlotRecord *)((uint8_t *)&levelImage->playerSlots[0] + playerSlotByteOffset);
+  startSlot = Asset_RecordAt<LevelPlayerSlotRecord>(&levelImage->playerSlots[0],playerSlotByteOffset);
   packedHeadingLow16PitchHigh16 = startSlot->packedHeadingLow16PitchHigh16;
   WorldRuntime_SetCameraPositionKeepingTarget
             (startSlot->startCameraZQ12,startSlot->startCameraYQ12,startSlot->startCameraXQ12,worldRuntime);
@@ -382,9 +384,8 @@ static Bool8 NewLevel_SpawnInitialArmies
   uint32_t armyCreateError;
 
   remainingRecordCount = (levelImage->header).initialArmyPlacementRecordCount;
-  placementCursor = (LevelInitialArmyPlacementRecord20 *)
-                    ((uint8_t *)levelImage +
-                     (levelImage->header).resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset);
+  placementCursor = Asset_RecordAt<LevelInitialArmyPlacementRecord20>
+                    (levelImage,(levelImage->header).resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset);
   MoviePlayback_AdvanceScheduledFrameAndTick();
   for (; remainingRecordCount != 0; remainingRecordCount--) {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[placementCursor->factionIndex] ==
@@ -434,7 +435,7 @@ static Bool8 NewLevel_LoadSpatialSounds
     soundSlotCursor++;
   }
   soundDirectoryPath =
-       (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.soundBasePathOffset);
+       Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.soundBasePathOffset);
   WidePath_SetExtensionCode(ASSET_MAGIC_SAM,soundDirectoryPath);
   WidePath_SplitParentAndLeaf
             (g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
@@ -443,13 +444,14 @@ static Bool8 NewLevel_LoadSpatialSounds
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
   }
-  soundsInPackage = Package_FindEntry(listingCapacityBytes,(PckEntryHeader *)directoryListing,soundDirectoryPath,
-                                      g_SoundPackageHandle,&listedSoundCount);
+  soundsInPackage = Package_FindEntry(listingCapacityBytes,static_cast<PckEntryHeader *>(directoryListing),
+                                      soundDirectoryPath,g_SoundPackageHandle,&listedSoundCount);
   soundDirectoryRecordSizeBytes = PCK_ENTRY_HEADER_BYTES;
   if (!soundsInPackage) {
     listedSoundCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,(uint8_t *)directoryListing,
-                          (uint8_t *)soundDirectoryPath);
+                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,
+                          static_cast<uint8_t *>(directoryListing),
+                          reinterpret_cast<uint8_t *>(soundDirectoryPath)); /* the UTF-16 path as bytes */
     soundDirectoryRecordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
   }
   g_MoviePlaybackBaseFrameGroup = 6;
@@ -463,7 +465,7 @@ static Bool8 NewLevel_LoadSpatialSounds
   if (worldRuntime->dwordArrayCount < listedSoundCount) {
     listedSoundCount = worldRuntime->dwordArrayCount;
   }
-  listedSoundPath = (uint16_t *)directoryListing;
+  listedSoundPath = static_cast<uint16_t *>(directoryListing);
   for (; listedSoundCount != 0; listedSoundCount--) {
     soundSlotCursor = worldRuntime->dwordArray;
     soundIndex = WidePath_ParseTrailingNumberBeforeExtension(listedSoundPath);
@@ -482,7 +484,7 @@ static Bool8 NewLevel_LoadSpatialSounds
         g_MemoryApi.free(directoryListing);
         return NewLevel_Fail(outError,loadErrorCode);
       }
-      soundSlot = SpatialSoundSlot_CreateFromSampleAsset((SoundSampleAsset *)loadedSample);
+      soundSlot = SpatialSoundSlot_CreateFromSampleAsset(static_cast<SoundSampleAsset *>(loadedSample));
       if (soundSlot != nullptr) {
         soundSlotCursor[soundIndex] = (uintptr_t)soundSlot;
       }
@@ -490,7 +492,7 @@ static Bool8 NewLevel_LoadSpatialSounds
       MoviePlayback_AdvanceScheduledFrameAndTick();
     }
     /* advance by one directory record */
-    listedSoundPath = (uint16_t *)((uint8_t *)listedSoundPath + soundDirectoryRecordSizeBytes);
+    listedSoundPath = Asset_RecordAt<uint16_t>(listedSoundPath,soundDirectoryRecordSizeBytes);
   }
   g_MemoryApi.free(directoryListing);
   return true;
@@ -510,10 +512,10 @@ static void NewLevel_LoadLevelSample(uint32_t sampleNumber,uint16_t *pathTemplat
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,sampleNumber,pathTemplate + 11);
   if (Resource_Load(pathTemplate,&loadedSampleBuffer,nullptr,nullptr)) {
-    if (g_SoundCreateSampleVoiceSet((SoundSampleAsset *)loadedSampleBuffer,&createdVoiceSet) == 0) {
+    if (g_SoundCreateSampleVoiceSet(static_cast<SoundSampleAsset *>(loadedSampleBuffer),&createdVoiceSet) == 0) {
       *outVoiceSet = createdVoiceSet;
     }
-    Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
+    Resource_Release(loadedSampleBuffer);
   }
 }
 
@@ -582,7 +584,9 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
   class10ArmyDefinition = nullptr;
   for (registrySlot = 0; registrySlot < ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlot++) {
     registryArmyDefinition = g_ArmyAssetRecordRegistry[registrySlot];
-    if ((registryArmyDefinition == nullptr) || ((((ArmyAssetRecord *)registryArmyDefinition)->flags & 1) == 0)) {
+    /* the registry keeps the record prefix; the full army record starts at the same address */
+    if ((registryArmyDefinition == nullptr) ||
+        ((reinterpret_cast<ArmyAssetRecord *>(registryArmyDefinition)->flags & 1) == 0)) {
       continue;
     }
     rootModelDefinition = ModelDefinitionRegistry_FindById
@@ -590,9 +594,10 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
                         linkedDefinitionIds[0]);
     if (rootModelDefinition == nullptr) {
       /* Original quirk: a failed lookup is not checked; its error code is read as the definition */
-      rootModelDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
+      rootModelDefinition = Thandor_U32ToPointer<ModelDefinitionRecordPrefix>(FATAL_ERROR_MODEL_DEFINITION_MISSING);
     }
-    rootClassId = ((ModelDefinition *)rootModelDefinition)->runtimeClassId;
+    /* the registry returns the record prefix; the full definition record starts at the same address */
+    rootClassId = reinterpret_cast<ModelDefinition *>(rootModelDefinition)->runtimeClassId;
     if (rootClassId == MODEL_RUNTIME_CLASS_11) {
       class0BArmyDefinition = registryArmyDefinition;
     }
@@ -600,7 +605,7 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
       class10ArmyDefinition = registryArmyDefinition;
     }
     else if (rootClassId == MODEL_RUNTIME_CLASS_14) {
-      if (((ModelDefinition *)rootModelDefinition)->classParameterC0 == 0) {
+      if (reinterpret_cast<ModelDefinition *>(rootModelDefinition)->classParameterC0 == 0) {
         class0ENoExtraArmyDefinition = registryArmyDefinition;
       }
       else {
@@ -706,7 +711,8 @@ Bool8 InGameLevelRuntime_LoadResourcesAfterDefaultReset
   uint32_t allocError;
   uint32_t stepError;
 
-  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * sizeof(Ptr32<void>),(void **)&loadedResourceCursor);
+  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * sizeof(Ptr32<void>),
+                                 reinterpret_cast<void **>(&loadedResourceCursor));
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
   }
