@@ -975,7 +975,7 @@ using ScenarioCatalogRefreshSelectedRecordCallback = void (uint32_t arg0, uint32
 #define FRONTEND_DISPLAY_RESOLUTION_ROW_INSET 3 /* the rows' left/top/right offsets in the panel */
 
 /* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
-   nodes of the advanced settings page). FRONTEND_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
+   nodes of the advanced settings page). FrontendUi_Image(root)->node is the node in a copy of it (or a node's <node>_prefix),
    typed as its control. */
 typedef struct FrontendUiImage {
     UiPanelControl frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
@@ -1260,7 +1260,17 @@ typedef struct FrontendUiImage {
     UiTextButtonControl advancedVsyncCheckbox; /* +782C g_UiTextButtonControlVtable: Checkbox "VSync" (action FRONTEND_ACTION_ADVANCED_VSYNC). */
     UiFocusProxyControl advancedNoteLabel; /* +788C g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
 } FrontendUiImage;
-#define FRONTEND_UI(root, node) (&((FrontendUiImage *)(uintptr_t)(root))->node)
+/* The frontend UI image behind a root pointer (any pointer to the image start): the typed access to its nodes,
+   e.g. &FrontendUi_Image(root)->chatInputEdit. One reinterpretation for all users. */
+template <class T> inline FrontendUiImage *FrontendUi_Image(T *root)
+{
+  return reinterpret_cast<FrontendUiImage *>(root);
+}
+/* The same for a root held as an address (g_FrontendRootNode and the handlers that copy it). */
+inline FrontendUiImage *FrontendUi_Image(uintptr_t root)
+{
+  return reinterpret_cast<FrontendUiImage *>(root);
+}
 
 /* The menu room node (menuRoomModelView) as the world runtime context the ROM transitions, the menu room scene
    and the debug overlay work on: a FrontendModelPointerContext shares its storage with a WorldRuntimeContext

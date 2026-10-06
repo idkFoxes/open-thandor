@@ -319,7 +319,7 @@ void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
     if (playerId != g_LocalPlayerRuntimeId) {
       return;
     }
-    FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
+    FrontendUi_Image(g_FrontendRootNode)->briefingBeginButton.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
     return;
   }
   /* only the host keeps track */
@@ -338,7 +338,7 @@ void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
   }
   playerBlock->factionAssignment.readyOrWaitState = 1;
   if (FrontendPlayerRuntime_AreAllClientsReady()) {
-    FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FrontendUi_Image(g_FrontendRootNode)->briefingBeginButton.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   }
 }
 
@@ -554,14 +554,14 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
 
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,hostLobbyBackButton));
   UiPageStack_SetActiveIndex
-            (FRONTEND_PAGE_HOST_GAME_SETUP,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendUi,frontendPageStack)));
+            (FRONTEND_PAGE_HOST_GAME_SETUP,UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
   sessionTickInterval = g_SessionNetworkTickInterval;
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI(frontendUi,menuRoomModelView)->contextFlags |=
+    frontendUi->menuRoomModelView.contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
-  FRONTEND_UI(frontendUi,networkSpeedSlider)->value = sessionTickInterval >> 1;
+  frontendUi->networkSpeedSlider.value = sessionTickInterval >> 1;
   firstPlayerBlock = g_FrontendPlayerRuntimeBlocks;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   g_FrontendPlayerRuntimeBlockCount = 1;
@@ -1193,12 +1193,12 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
         remainingBlocks--;
       } while (remainingBlocks != 0);
       if (combinedConsensus == 0) {
-        nextButtonFlags = &FRONTEND_UI(g_FrontendRootNode,factionSetupNextButton)->selectable.base.nodeFlags;
+        nextButtonFlags = &FrontendUi_Image(g_FrontendRootNode)->factionSetupNextButton.selectable.base.nodeFlags;
         *nextButtonFlags = *nextButtonFlags | UI_NODE_SUPPRESSED;
       }
       else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL
               ) {
-        nextButtonFlags = &FRONTEND_UI(g_FrontendRootNode,factionSetupNextButton)->selectable.base.nodeFlags;
+        nextButtonFlags = &FrontendUi_Image(g_FrontendRootNode)->factionSetupNextButton.selectable.base.nodeFlags;
         *nextButtonFlags = *nextButtonFlags & ~UI_NODE_SUPPRESSED;
       }
       FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(taskAssignmentRoot);
