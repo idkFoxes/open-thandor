@@ -1,5 +1,5 @@
 {
- "revision": "4e8f9549",
+ "revision": "f2805802",
  "worktree": true,
  "files": 690,
  "metrics": {
@@ -115,15 +115,15 @@
  "counts": {
   "cstyle_cast": {
    "assets": 216,
-   "audio": 983,
+   "audio": 23,
    "core": 57,
-   "gameplay": 818,
+   "gameplay": 812,
    "graphics": 343,
    "movie": 41,
    "network": 197,
    "platform": 239,
    "ui": 1958,
-   "world": 308
+   "world": 289
   },
   "ingame_ui": {
    "gameplay": 10,
@@ -181,9 +181,10 @@
   },
   "constexpr": {
    "core": 44,
+   "gameplay": 1,
    "platform": 52,
    "ui": 5,
-   "world": 12
+   "world": 13
   },
   "typedef_struct": {
    "assets": 54,
