@@ -850,7 +850,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
   hintValue = 0;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
      (UiPageStack_ActivePageIndex(&frontendRuntime->activePageStack) == 0)) {
-    pointedRomRecord = RomRegistry_FindRecordBySlotValue((RomRegistrySlotValue)pointedModelNode);
+    pointedRomRecord = RomRegistry_FindRecordBySlotValue(reinterpret_cast<RomRegistrySlotValue>(pointedModelNode));
     recordId = FRONTEND_ROM_RECORD_ID_NONE;
     if (pointedRomRecord != nullptr) {
       recordId = pointedRomRecord->recordId;
@@ -1053,7 +1053,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
       bestModelNode = modelNode;
     }
   }
-  return ((uint64_t)(uintptr_t)bestModelNode << 32) | (uint64_t)bestHitMetric;
+  return (static_cast<uint64_t>(reinterpret_cast<uintptr_t>(bestModelNode)) << 32) | (uint64_t)bestHitMetric;
 }
 
 /* unaligned in the original; one NOP byte after it dropped */
