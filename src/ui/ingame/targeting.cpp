@@ -38,7 +38,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
   /* walk up to the in-game root node */
   root = targetingContext;
   while (root->base.parent != UI_NODE_NONE) {
-    root = InGameUiNode_As<InGameTargetingRootTraversalView>(root->base.parent.get());
+    root = UiNode_As<InGameTargetingRootTraversalView>(root->base.parent.get());
   }
   payloadKind = root->activeNotificationPayload.payloadKind;
   if ((root->worldRuntime.runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
@@ -100,7 +100,7 @@ void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalVi
     targetingContext->actionState = INGAME_TARGETING_OBSERVED_IDLE;
     parentCursor = targetingContext->base.parent;
     while (parentCursor != UI_NODE_NONE) {
-      targetingContext = InGameUiNode_As<InGameTargetingRootTraversalView>(targetingContext->base.parent.get());
+      targetingContext = UiNode_As<InGameTargetingRootTraversalView>(targetingContext->base.parent.get());
       parentCursor = targetingContext->base.parent;
     }
     runtimeFlagsField = &targetingContext->worldRuntime.runtimeFlags;

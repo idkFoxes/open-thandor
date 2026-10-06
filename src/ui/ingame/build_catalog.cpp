@@ -154,7 +154,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   int panelHeight;
   UiGridDimensions gridDimensions;
 
-  inGameUiGridView = InGameUiNode_As<InGameRuntimeRootUiGridView>(UiNode_GetRoot(node));
+  inGameUiGridView = UiNode_As<InGameRuntimeRootUiGridView>(UiNode_GetRoot(node));
   /* the local (active) faction */
   factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
   capabilityFlags = SelectionInfo_CollectCapabilityFlags();
@@ -254,7 +254,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   int panelHeight;
   UiGridDimensions gridDimensions;
 
-  inGameUiGridView = InGameUiNode_As<InGameRuntimeRootUiGridView>(UiNode_GetRoot(node));
+  inGameUiGridView = UiNode_As<InGameRuntimeRootUiGridView>(UiNode_GetRoot(node));
   factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
   /* count the faction's class-11 models */
   structureCount = 0;

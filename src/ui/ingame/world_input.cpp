@@ -377,7 +377,7 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
       continue;
     }
     payloadValue = ArmyRuntime_Token(entry);
-    if (WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,InGameUiNode_As<WorldRuntimeExtendedMapControlView>(inGameRuntime))) {
+    if (WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,UiNode_As<WorldRuntimeExtendedMapControlView>(inGameRuntime))) {
       if (SelectionInfo_IsEntryAbsent(entry) &&
           !InGameCommandQueue_ContainsTripletValue
                 (payloadValue,INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_INSERT)) {

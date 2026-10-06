@@ -144,10 +144,10 @@ void UiCommandVisibilityWrappedText_DrawWhenAllowed
 
 {
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) == 0 &&
-      (((InGameUiNode_As<UiWrappedTextControl>(control))->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) == 0 ||
+      (((UiNode_As<UiWrappedTextControl>(control))->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) == 0 ||
        (g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) &&
       (control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    UiWrappedTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,InGameUiNode_As<UiWrappedTextControl>(control));
+    UiWrappedTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,UiNode_As<UiWrappedTextControl>(control));
   }
 }
 
@@ -163,7 +163,7 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
   UiSingleLineTextControl *textControl;
   int drawOffsetAdjust;
 
-  textControl = InGameUiNode_As<UiSingleLineTextControl>(control);
+  textControl = UiNode_As<UiSingleLineTextControl>(control);
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) != 0) {
     return;
   }

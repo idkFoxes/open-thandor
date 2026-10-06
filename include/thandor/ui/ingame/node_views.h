@@ -39,16 +39,6 @@ THANDOR_SLOT_OVERLAY(RuntimeModelFactionPrefix, ArmyRuntimeSlot);
    then the flags and the catalog texture source; ModelView_Cast converts between the two. */
 THANDOR_SLOT_OVERLAY(UiCommandRuntimeRecordPrefix, ArmyAssetRecordPrefix);
 
-/* InGameUiNode_As<T>(node): the named downcast from a node (or from the base struct of a control) to the node type
-   T laid over it (step 13 X10; replaces the C-style casts of the in-game UI). It compiles only when T is
-   registered as a prefixed view or overlay of From (THANDOR_SLOT_PREFIX / THANDOR_SLOT_OVERLAY, here and in
-   ui/controls/node_views.h), so it cannot reach an unrelated type; same address, no adjustment. */
-template <class T, class From> inline T *InGameUiNode_As(From *node)
-{
-    static_assert(thandor_slot_is_view_of<std::remove_cv_t<T>, std::remove_cv_t<From>>(),
-                  "InGameUiNode_As: T is not a registered view of the node type");
-    return reinterpret_cast<T *>(node);
-}
 #endif /* __cplusplus */
 
 #endif /* THANDOR_UI_INGAME_NODE_VIEWS_H */
