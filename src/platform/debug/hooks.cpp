@@ -134,7 +134,7 @@ int DebugHook_ScenarioPageOpened()
 
 void DebugHook_CampaignLoaded(void *campaignAsset)
 {
-  DebugCampaign_SelectCampaignLevel((uint8_t *)campaignAsset);
+  DebugCampaign_SelectCampaignLevel(static_cast<uint8_t *>(campaignAsset));
 }
 
 void DebugHook_CampaignCarryOver(int afterMerge)

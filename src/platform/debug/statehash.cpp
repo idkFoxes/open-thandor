@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/statehash.h>
 
@@ -47,7 +48,7 @@ static int32_t DebugStateHash_ArmyIndex(const void *army)
   if (army == nullptr) {
     return -1;
   }
-  return (int32_t)(((const uint8_t *)army - (const uint8_t *)g_ArmyRuntimeSlots) / (int)sizeof(ArmyRuntimeSlot));
+  return (int32_t)(Asset_ByteDistance(army, g_ArmyRuntimeSlots) / (int)sizeof(ArmyRuntimeSlot));
 }
 
 void DebugStateHash_SessionInitializing()
@@ -135,10 +136,10 @@ static void DebugArena_MoveOrders(unsigned tick)
       /* the engine takes Y first: translation.y, then translation.x */
       ArmyRuntime_StartRoutedMoveCommand(y + direction * ARENA_MOVE_ROWS * ARENA_ROW_STEP_Y,
                                          x + direction * ARENA_MOVE_ROWS * ARENA_ROW_STEP_X,
-                                         (ArmyMovementRuntime *)army);
+                                         reinterpret_cast<ArmyMovementRuntime *>(army) /* movement view of the slot */);
     }
     else if (s_armyHomeX[slotIndex] != 0 || s_armyHomeY[slotIndex] != 0) {
-      ArmyRuntime_StartRoutedMoveCommand(s_armyHomeY[slotIndex], s_armyHomeX[slotIndex], (ArmyMovementRuntime *)army);
+      ArmyRuntime_StartRoutedMoveCommand(s_armyHomeY[slotIndex], s_armyHomeX[slotIndex], reinterpret_cast<ArmyMovementRuntime *>(army) /* movement view of the slot */);
     }
   }
 }
@@ -176,7 +177,7 @@ static void DebugArena_ProductionOrders(unsigned tick)
         /* true = available (locked, prerequisites met, not researched elsewhere) */
         if (Technology_IsAvailableForFaction((PckTechnologyIdCatalog)tech, army->factionIndex)) {
           Technology_ApplyRecordToEntity((PckTechnologyIdCatalog)tech,
-                                         (GameEntityRuntime *)army->modelRuntimeOrSavedOffset.modelRuntime);
+                                         reinterpret_cast<GameEntityRuntime *>(army->modelRuntimeOrSavedOffset.modelRuntime.get()));
           Thandor_Log("test aid: arena: faction %u lab %u researches technology %d", (unsigned)army->factionIndex,
                       labs[index].assetId, tech);
           break;
@@ -304,7 +305,7 @@ void DebugStateHash_AfterStep()
     StateHash_Add(&hash, (uint32_t)army->commandGeneration);
     StateHash_Add(&hash, army->aiUnitState);
     StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex(army->commandTargetArmyRuntime));
-    StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex((const void *)(uintptr_t)army->assignedTargetArmyRuntime));
+    StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex(reinterpret_cast<const void *>(static_cast<uintptr_t>(army->assignedTargetArmyRuntime))));
     StateHash_Add(&hash, health);
     armies++;
     if (detail) {
@@ -313,7 +314,7 @@ void DebugStateHash_AfterStep()
               (unsigned)army->movementStateFlags, (unsigned)army->commandModeFlags,
               (unsigned)army->commandGeneration, (unsigned)army->aiUnitState,
               DebugStateHash_ArmyIndex(army->commandTargetArmyRuntime),
-              DebugStateHash_ArmyIndex((const void *)(uintptr_t)army->assignedTargetArmyRuntime), (unsigned)health,
+              DebugStateHash_ArmyIndex(reinterpret_cast<const void *>(static_cast<uintptr_t>(army->assignedTargetArmyRuntime))), (unsigned)health,
               army->modelNodeRuntime->worldTransform.translation.x,
               army->modelNodeRuntime->worldTransform.translation.y,
               army->modelNodeRuntime->worldTransform.translation.z);

@@ -716,9 +716,9 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   gridCell = terrainGrid->cells;
   do {
     /* byte view of the 64-bit mask: one byte per faction */
-    reinterpret_cast<uint8_t *>(&gridCell->occupancyMask)[survivingFactionIndex] =
-         reinterpret_cast<uint8_t *>(&gridCell->occupancyMask)[survivingFactionIndex] |
-         reinterpret_cast<uint8_t *>(&gridCell->occupancyMask)[absorbedFactionIndex];
+    FieldGridCell_OccupancyByte(gridCell,survivingFactionIndex) =
+         FieldGridCell_OccupancyByte(gridCell,survivingFactionIndex) |
+         FieldGridCell_OccupancyByte(gridCell,absorbedFactionIndex);
     gridCell++;
     cellsRemaining--;
   } while (cellsRemaining != 0);

@@ -17,7 +17,7 @@
 */
 
 Bool8 ArmyCollision_TestPointAgainstRuntimeList
-          (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime)
+          (Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,WorldRuntimeContext *worldRuntime)
 
 {
   int placementRadiusQ12;
@@ -26,7 +26,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
   WorldOwnerListNode *ownerNode;
   Bool8 hit;
 
-  placementRadiusQ12 = reinterpret_cast<ModelDefinition *>(modelDefinition)->footprintRadius; /* byte view -> record */
+  placementRadiusQ12 = modelDefinition->footprintRadius;
   ownerNode = worldRuntime->ownerListHead;
   if ((placementRadiusQ12 != 0) && (ownerNode != nullptr)) {
     firstMaskHigh = DepthInterval_BuildBinMask(placementRadiusQ12,worldYQ12);
@@ -93,7 +93,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
     /* the unit's linked model and models linked to the unit never block it (the original also tests
        currentRuntime for NULL here, after it was already dereferenced, so that test never fired) */
     if ((candidateModelRuntime == currentRuntime->linkedRuntime) ||
-        (reinterpret_cast<ModelRuntimeSlot *>(currentRuntime) == /* the query view's model runtime */
+        (ModelView_Cast<ModelRuntimeSlot>(currentRuntime) ==
          (candidateModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime)) {
       continue;
     }

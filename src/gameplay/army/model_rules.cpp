@@ -74,7 +74,7 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
 int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
 
 {
-  return ModelRuntimeHierarchy_SumArmourFrom((ModelRuntimeSlot *)(uintptr_t)*modelRuntimeRoot);
+  return ModelRuntimeHierarchy_SumArmourFrom(Thandor_U32ToPointer<ModelRuntimeSlot>(*modelRuntimeRoot));
 }
 
 /* Folds one model runtime and its attached children into the owning army's selection figures (cleared by
@@ -209,7 +209,9 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
         totalMetric = totalMetric + childMetric;
       }
       /* steps the cursor by one 0x20-byte attachments[] entry */
-      modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
+      /* the slot pointer moves by one descriptor's bytes (so attachments[0] is the next descriptor) */
+      modelRuntime = reinterpret_cast<ModelRuntimeSlot *>(reinterpret_cast<uint8_t *>(modelRuntime) +
+                                                          sizeof(ModelRuntimeAttachmentDescriptor));
     }
   }
   energyDemand.activeQ4 = activeMetricTotal;

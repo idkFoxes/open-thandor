@@ -32,7 +32,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
   Q12 cellWorldYQ12;
   uint32_t phaseSeedBitWidth;
 
-  phaseSeedBitWidth = *(uint32_t *)((uint8_t *)g_TerrainSurfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES);
+  phaseSeedBitWidth = Thandor_LoadU32(static_cast<uint8_t *>(g_TerrainSurfacePacketTablePayload) - TERRAIN_PACKET_TABLE_HEADER_BYTES);
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
   cellsPerRow = fieldGrid->gridWidth;
   cell = fieldGrid->cells;
@@ -156,13 +156,13 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
     *outError = allocError;
     return false;
   }
-  copyDestinationDwords = (uint32_t *)fieldGridImageCopy;
+  copyDestinationDwords = reinterpret_cast<uint32_t *>(fieldGridImageCopy); /* copied dword by dword, as the original */
   for (dwordsLeft = imageSizeBytes >> 2; dwordsLeft != 0; dwordsLeft--) {
     *copyDestinationDwords = *sourceImageDwords;
     sourceImageDwords++;
     copyDestinationDwords++;
   }
-  fieldGridCellSaveView = (FieldGridCellSaveImageView *)fieldGridImageCopy->cells;
+  fieldGridCellSaveView = reinterpret_cast<FieldGridCellSaveImageView *>(fieldGridImageCopy->cells); /* the save-image view of the cells */
   fieldGridImageCopy->fieldFlags = 0;
   cellsRemaining = fieldGridImageCopy->gridWidth * fieldGridImageCopy->gridHeight;
   do {
@@ -193,7 +193,7 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
     fieldGridImageCopy->fieldFlags =
          fieldGridImageCopy->fieldFlags |
          1 << ((uint8_t)fieldGridCellSaveView->flagsAndMaterial & 31);
-    occupancyBytes = (uint8_t *)&fieldGridCellSaveView->occupancyMask;
+    occupancyBytes = reinterpret_cast<uint8_t *>(&fieldGridCellSaveView->occupancyMask);
     for (occupancyBytesLeft = 8; occupancyBytesLeft != 0; occupancyBytesLeft--) {
       *occupancyBytes = 0;
       occupancyBytes++;
@@ -256,18 +256,18 @@ FieldGridAsset *FieldGrid_LoadValidated(uint16_t *path,uint32_t *outErrorCode)
 
   loadedEntry = Package_LoadEntryWithSize(path,&loadedByteCount,&loadErrorCode);
   if (loadedEntry == nullptr) {
-    Thandor_Log("FieldGrid_LoadValidated failed: \"%ls\" (error 0x%08X)",(wchar_t *)path,loadErrorCode);
+    Thandor_Log("FieldGrid_LoadValidated failed: \"%ls\" (error 0x%08X)",reinterpret_cast<wchar_t *>(path),loadErrorCode); /* UTF-16 path for %ls (Windows wchar_t) */
     if (outErrorCode != nullptr) {
       *outErrorCode = loadErrorCode;
     }
     return nullptr;
   }
-  if (!FieldGrid_ValidateLoadedImage((FieldGridAsset *)loadedEntry,loadedByteCount)) {
+  if (!FieldGrid_ValidateLoadedImage(static_cast<FieldGridAsset *>(loadedEntry),loadedByteCount)) {
     g_MemoryApi.free(loadedEntry);
     if (outErrorCode != nullptr) {
       *outErrorCode = FATAL_ERROR_FIELD_ASSET_INVALID;
     }
     return nullptr;
   }
-  return (FieldGridAsset *)loadedEntry;
+  return static_cast<FieldGridAsset *>(loadedEntry);
 }

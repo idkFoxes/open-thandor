@@ -276,7 +276,7 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
   *storageLimitQ4 += ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC4;
   if ((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
       (3 < rootModelNode->childCount) && (rootModelNode->childNodes[3] != nullptr)) {
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[3]);
+    WorldRuntime_UnlinkOwnerListNode(ModelView_Cast<WorldOwnerListNode>(rootModelNode->childNodes[3]));
     rootModelNode->childNodes[3] = nullptr;
   }
 }
@@ -308,7 +308,7 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
   *storageLimitQ4 += ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC4;
   if ((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
       (1 < rootModelNode->childCount) && (rootModelNode->childNodes[1] != nullptr)) {
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[1]);
+    WorldRuntime_UnlinkOwnerListNode(ModelView_Cast<WorldOwnerListNode>(rootModelNode->childNodes[1]));
     rootModelNode->childNodes[1] = nullptr;
   }
 }
@@ -363,7 +363,7 @@ void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRunt
   if (linkedModelRuntime != nullptr) {
     /* 32-bit format field: ModelRuntimeSlot.classLinkState.modelLinkOrState (saved offset) */
     modelRuntime->classLinkState.modelLinkOrState.modelRuntime =
-         (ModelRuntimeSlot *)(Thandor_PointerToI32(linkedModelRuntime) - g_ModelRuntimeRebaseDelta);
+         reinterpret_cast<ModelRuntimeSlot *>(Thandor_PointerToI32(linkedModelRuntime) - g_ModelRuntimeRebaseDelta);
   }
 }
 
@@ -380,7 +380,8 @@ void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntim
   linkedModelRuntime = modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime;
   if (linkedModelRuntime != nullptr) {
     modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime =
-         (ModelRuntimeSlot *)((uint8_t *)linkedModelRuntime + g_ModelRuntimeRebaseDelta);
+         /* saved offset + rebase delta: the pointer moves by the delta in bytes */
+         reinterpret_cast<ModelRuntimeSlot *>(reinterpret_cast<uint8_t *>(linkedModelRuntime) + g_ModelRuntimeRebaseDelta);
   }
 }
 

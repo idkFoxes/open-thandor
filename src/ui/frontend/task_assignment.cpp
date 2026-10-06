@@ -240,33 +240,33 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     /* local game: roster left/right offsets 96 (no participant column); Back and Next, no Finish */
-    FRONTEND_UI(frontendRootPage,factionRosterTable)->leftOffset = 96;
-    FRONTEND_UI(frontendRootPage,factionRosterTable)->rightOffset = 96;
-    FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->nodeFlags |= UI_NODE_SUPPRESSED;
-    FRONTEND_UI(frontendRootPage,factionSetupNextButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
-    FRONTEND_UI(frontendRootPage,factionSetupBackButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->base.leftOffset = 96;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->base.rightOffset = 96;
+    FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRootPage,factionSetupNextButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRootPage,factionSetupBackButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupBackButton))->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
   }
   else {
     /* network game: full-width roster, Finish instead of Next; a client cannot go back */
-    FRONTEND_UI(frontendRootPage,factionRosterTable)->leftOffset = 0;
-    FRONTEND_UI(frontendRootPage,factionRosterTable)->rightOffset = 0;
-    FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->base.leftOffset = 0;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->base.rightOffset = 0;
+    FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupFinishButton))->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    FRONTEND_UI(frontendRootPage,factionSetupNextButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRootPage,factionSetupNextButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
       ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupNextButton))->selectable.stateFlags |=
            FRONTEND_CONTROL_INACTIVE;
-      FRONTEND_UI(frontendRootPage,factionSetupBackButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+      FRONTEND_UI(frontendRootPage,factionSetupBackButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
       ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupBackButton))->selectable.stateFlags |=
            FRONTEND_CONTROL_INACTIVE;
     }
     else {
       ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupNextButton))->selectable.stateFlags &=
            ~FRONTEND_CONTROL_INACTIVE;
-      FRONTEND_UI(frontendRootPage,factionSetupBackButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+      FRONTEND_UI(frontendRootPage,factionSetupBackButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
       ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupBackButton))->selectable.stateFlags &=
            ~FRONTEND_CONTROL_INACTIVE;
     }
@@ -477,13 +477,13 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     textRowCursor = (FrontendTaskAssignmentFactionTextRow *)(textRowCursor->textUtf16 + 2); /* one dword */
   }
   /* the participant column exists only in a network game */
-  FRONTEND_UI(taskAssignmentRoot,rosterParticipantHeader)->nodeFlags |= UI_NODE_SUPPRESSED;
+  FRONTEND_UI(taskAssignmentRoot,rosterParticipantHeader)->base.nodeFlags |= UI_NODE_SUPPRESSED;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     return;
   }
-  FRONTEND_UI(taskAssignmentRoot,rosterParticipantHeader)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+  FRONTEND_UI(taskAssignmentRoot,rosterParticipantHeader)->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerName = &playerRecord->playerName;
   /* Append every player's name to the roster row of its faction; playerName walks the player records.

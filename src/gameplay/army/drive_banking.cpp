@@ -49,7 +49,7 @@ static void ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint
   if ((soundIndex == 0) || (soundIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
+  voiceSetRef = ArmySound_VoiceSetRef(worldRuntime,soundIndex);
   if (voiceSetRef == nullptr) {
     return;
   }
@@ -254,7 +254,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   else {
     ownerArmy = modelRuntime->ownerArmyRuntime;
     ArmyRuntime_UpdateMovementAndWaypoints
-              (worldRuntime,(ArmyMovementRuntime *)ownerArmy,&reachedWorldXQ12,&reachedWorldYQ12);
+              (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(ownerArmy),&reachedWorldXQ12,&reachedWorldYQ12);
     nextPosition.xQ12 = reachedWorldXQ12;
     nextPosition.yQ12 = reachedWorldYQ12;
     ownerMovementFlags = &ownerArmy->movementStateFlags;
@@ -265,7 +265,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
   blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                      (nextPosition.yQ12,nextPosition.xQ12,
-                      (RuntimeCollisionQueryView *)modelRuntime,worldRuntime);
+                      ModelView_Cast<RuntimeCollisionQueryView>(modelRuntime),worldRuntime);
   if (blockingModelRuntime != nullptr) {
     collisionRootNode = modelRuntime->rootModelNode;
     ArmyRuntime_HandleCollisionPartner
@@ -389,7 +389,7 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
       ArmyRuntimeClass_SpinBankingChildParts(modelRuntime,rootNode);
     }
     waypointArrived = ArmyRuntime_UpdateMovementAndWaypoints
-                       (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime,&waypointWorldXQ12,
+                       (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(modelRuntime->ownerArmyRuntime),&waypointWorldXQ12,
                         &waypointWorldYQ12);
     if (waypointArrived) {
       rootNode = ArmyRuntimeClass_PlaceBankingUnitStationary(worldRuntime,modelRuntime);

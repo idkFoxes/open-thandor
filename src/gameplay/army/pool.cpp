@@ -135,8 +135,8 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
       previewTexture = ArmyRuntime_RenderPreviewTexture
                          (g_InGamePanelTextureSubresource34Height,
                           g_InGamePanelTextureSubresource34Width,
-                          ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
-                          (WorldRuntimeContext *)ownerContext);
+                          static_cast<WorldRuntimeContext *>(ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
+                          static_cast<WorldRuntimeContext *>(ownerContext));
       if (previewTexture != nullptr) {
         armyAsset[1].rootNodeOffsetOrPointer = Thandor_PointerToU32(previewTexture); /* 32-bit format field: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
         previewHeight =
@@ -144,8 +144,8 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
              ((uint64_t)(int64_t)g_InGamePanelTextureSubresource02Width / 3);
         previewTexture = ArmyRuntime_RenderPreviewTexture
                            (previewHeight,previewHeight,
-                            ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
-                            (WorldRuntimeContext *)ownerContext);
+                            static_cast<WorldRuntimeContext *>(ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
+                            static_cast<WorldRuntimeContext *>(ownerContext));
         if (previewTexture != nullptr) {
           armyAsset[1].registryId = Thandor_PointerToI32(previewTexture); /* 32-bit format field: ArmyAssetRecord[1].registryId (preview texture) */
         }

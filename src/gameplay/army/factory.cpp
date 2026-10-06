@@ -206,7 +206,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
   behaviorState = (modelRuntime->classState).behaviorState;
   factoryDefinition = modelRuntime->modelDefinition;
   if ((3 < rootNode->childCount) && (rootNode->childNodes[3] != nullptr)) {
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNode->childNodes[3]);
+    WorldRuntime_UnlinkOwnerListNode(ModelView_Cast<WorldOwnerListNode>(rootNode->childNodes[3]));
     rootNode->childNodes[3] = nullptr;
   }
   switch(behaviorState) {
@@ -248,7 +248,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
         ArmyRuntime_StartMoveCommandWithAuxiliaryValues
                   ((modelRuntime->classLinkState).classState7C,
                    (modelRuntime->classLinkState).classState78,localPoint.yQ12,localPoint.xQ12,
-                   (ArmyMovementRuntime *)linkedArmyRuntime);
+                   ModelView_Cast<ArmyMovementRuntime>(linkedArmyRuntime));
         (linkedModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime =
              ModelView_Cast<ModelRuntimeSlot>(modelRuntime);
       }
@@ -464,8 +464,7 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
   slotMaskState->linkedChildSlotMask = slotMaskState->linkedChildSlotMask | slotBit;
   armyRuntime->fallbackWorldYQ12 = armyRuntime->fallbackWorldYQ12 - 1;
   /* the aircraft's home pad, state 1 = parked (behaviorState), attack point and heading (classState70..78) */
-  /* the pad's model runtime (armyRuntime is its linked-child mask view) */
-  childModelRuntime->classLinkState.modelLinkOrState.modelRuntime = reinterpret_cast<ModelRuntimeSlot *>(armyRuntime);
+  childModelRuntime->classLinkState.modelLinkOrState.modelRuntime = ModelView_Cast<ModelRuntimeSlot>(armyRuntime);
   childModelRuntime->classState.behaviorState = ARMY_AIRCRAFT_STATE_PARKED;
   modelNode = childModelRuntime->rootModelNodeOrSavedOffset.modelNode;
   childModelRuntime->classLinkState.classState70 = inheritedValue70;

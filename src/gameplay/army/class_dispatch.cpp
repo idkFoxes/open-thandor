@@ -249,8 +249,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
       if (definition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
         /* a pad also refunds its unlaunched linked assets */
         linkedAssetRefund = ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
-                              (/* the pad's model runtime read through the linked-child mask view */
-                               reinterpret_cast<ArmyRuntimeLinkedChildMaskSlotView *>(modelRuntime));
+                              (ModelView_Cast<ArmyRuntimeLinkedChildMaskSlotView>(modelRuntime));
         g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
              g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + linkedAssetRefund;
       }
