@@ -47,7 +47,7 @@ static void AiPlanningRebuild_CollectWorldEntities(FactionRuntimeIndex factionIn
       continue;
     }
     /* the node's model runtime; entityRuntime is its owning army */
-    modelRuntime = (ModelRuntimeSlot *)worldNode->runtimePayload;
+    modelRuntime = WorldOwnerNode_ModelRuntime(worldNode);
     entityRuntime = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if (factionIndex == entityRuntime->common.ownership.ownerIndex) {
       assetId = entityRuntime->common.runtimeIdentityOrArmyAssetId;
@@ -72,7 +72,7 @@ static void AiPlanningRebuild_CollectWorldEntities(FactionRuntimeIndex factionIn
       if (((visibilityBits & 2) == 0) &&
           (((visibilityBits & 1) == 0 ||
             (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
-             [((ModelRuntimeSlot *)entityRuntime->common.ownership.definitionOrClassRecord)->definitionOrSavedId.
+             [entityRuntime->common.ownership.modelRuntime()->definitionOrSavedId.
               runtimeDefinition->runtimeClassId] != ArmyRuntime_ClassCommandHandlerGroupA)))) {
         AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace03UnseenHostiles,&g_AiWorkspace03Count,
                                           AI_WORKSPACE03_CAPACITY,modelRuntime,

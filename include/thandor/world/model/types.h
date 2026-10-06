@@ -159,4 +159,29 @@ struct ModelRelativeDirectionAngles {
     AngleTurn32 relativePitchAngle; // Transformed elevation/pitch angle retained from FixedMath_VectorToAngles.
 };
 
+/* Typed views of WorldOwnerListNode.runtimePayload (step 13 X3; they replace the (T *)node->runtimePayload casts
+   and compile to the same load). The field stays Ptr32<void> (ui/ingame/types.h) because the record it points to
+   depends on ownerClassId: WORLD_OWNER_RUNTIME_MODEL -> ModelRuntimeSlot, _SHOT -> ShotRuntimeSlot,
+   _EFFECT -> EffectRuntimeSlot. The accessors do not check the class: the caller checks it (or knows its list),
+   as it did with the cast. A ModelRuntimeNode has the same payload already typed (runtimePayload.modelRuntime ...).
+   Not constexpr: a Ptr32 field holds an address as an integer. */
+inline ModelRuntimeSlot *WorldOwnerNode_ModelRuntime(const WorldOwnerListNode *node)
+{
+    return static_cast<ModelRuntimeSlot *>(node->runtimePayload.get());
+}
+inline ShotRuntimeSlot *WorldOwnerNode_ShotRuntime(const WorldOwnerListNode *node)
+{
+    return static_cast<ShotRuntimeSlot *>(node->runtimePayload.get());
+}
+inline EffectRuntimeSlot *WorldOwnerNode_EffectRuntime(const WorldOwnerListNode *node)
+{
+    return static_cast<EffectRuntimeSlot *>(node->runtimePayload.get());
+}
+/* The GameEntityRuntime view of the payload (AI combat scan, pathing route and influence: the entity whose
+   ownership references are then read through GameEntityOwnershipState10's accessors). */
+inline GameEntityRuntime *WorldOwnerNode_EntityRuntime(const WorldOwnerListNode *node)
+{
+    return static_cast<GameEntityRuntime *>(node->runtimePayload.get());
+}
+
 #endif /* THANDOR_WORLD_MODEL_TYPES_H */
