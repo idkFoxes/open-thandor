@@ -317,58 +317,47 @@ static const uint8_t g_DebugFont5x7[][8] = {
 #undef o
 #undef FONT_ROW
 
-/* Draws text at 1x scale with a black box behind it; framebuffer: [0] pitch in pixels,
-   [2] bytes per pixel, [3] pixels. */
+/* Draws text at 1x scale with a black box behind it through the fill slot (g_GraphicsFramebufferFillRectArgb):
+   one fill for the box, then one per horizontal run of set pixels in each glyph row. Going through the slot
+   (instead of writing the framebuffer pixels) lets the GPU backend record the label as Draw2D FILL items. Both
+   colours are opaque, so the software fill writes them through the pixel pack tables, which are the identity
+   unless the display settings changed brightness or contrast. */
 void DebugFont_DrawText(int x0, int y0, const char *text)
 {
-  uint32_t *fb = (uint32_t *)g_FramebufferAccess;
-  int scale = 1;
+  SoftwareFramebufferAccess *framebuffer = g_FramebufferAccess;
   int length = (int)strlen(text);
-  int boxWidth = length * 6 * scale + 2 * scale;
-  int boxHeight = 9 * scale;
-  uint32_t pitch;
-  uint32_t bpp;
-  uint8_t *pixels;
-  int x;
-  int y;
+  int boxWidth = length * 6 + 2;
+  int clipMaxX;
+  int clipMaxY;
   int c;
-  if (fb == nullptr) {
+  if ((framebuffer == nullptr) || (framebuffer->bytesPerPixel != 4)) {
     return;
   }
-  pitch = fb[0];
-  bpp = fb[2];
-  pixels = (uint8_t *)(uintptr_t)fb[3];
-  if ((pixels == nullptr) || (bpp != 4)) {
-    return;
-  }
-  if (x0 + boxWidth > (int)g_FramebufferWidth) boxWidth = (int)g_FramebufferWidth - x0;
-#define DEBUG_PUT(px, py, white)                                                          \
-  do {                                                                                    \
-    ((uint32_t *)pixels)[(py) * pitch + (px)] = (white) ? DEBUG_FONT_TEXT_COLOR_32BPP : DEBUG_FONT_BOX_COLOR_32BPP; \
-  } while (0)
-  for (y = 0; y < boxHeight; y++) {
-    for (x = 0; x < boxWidth; x++) {
-      DEBUG_PUT(x0 + x, y0 + y, 0);
-    }
-  }
+  clipMaxX = (int)g_FramebufferWidth;
+  clipMaxY = (int)g_FramebufferHeight;
+  g_GraphicsFramebufferFillRectArgb(clipMaxY, clipMaxX, 0, 0, y0 + 9, x0 + boxWidth, y0, x0,
+                                    DEBUG_FONT_BOX_COLOR_32BPP, framebuffer);
   for (c = 0; c < length; c++) {
     char ch = text[c];
     const uint8_t *glyph = nullptr;
     unsigned g;
+    int y;
     if ((ch >= 'A') && (ch <= 'Z')) ch = (char)(ch - 'A' + 'a');
     for (g = 0; g < sizeof g_DebugFont5x7 / sizeof g_DebugFont5x7[0]; g++) {
       if (g_DebugFont5x7[g][0] == (uint8_t)ch) { glyph = g_DebugFont5x7[g] + 1; break; }
     }
     if (glyph == nullptr) continue;
-    for (y = 0; y < 7 * scale; y++) {
-      for (x = 0; x < 5 * scale; x++) {
-        int px = x0 + scale + c * 6 * scale + x;
-        if (px >= (int)g_FramebufferWidth) break;
-        if ((glyph[y / scale] >> (4 - x / scale)) & 1) {
-          DEBUG_PUT(px, y0 + scale + y, 1);
-        }
+    for (y = 0; y < 7; y++) {
+      int x = 0;
+      while (x < 5) {
+        int runStart;
+        if (((glyph[y] >> (4 - x)) & 1) == 0) { x++; continue; }
+        runStart = x;
+        while ((x < 5) && ((glyph[y] >> (4 - x)) & 1)) x++;
+        g_GraphicsFramebufferFillRectArgb(clipMaxY, clipMaxX, 0, 0, y0 + 1 + y + 1, x0 + 1 + c * 6 + x,
+                                          y0 + 1 + y, x0 + 1 + c * 6 + runStart, DEBUG_FONT_TEXT_COLOR_32BPP,
+                                          framebuffer);
       }
     }
   }
-#undef DEBUG_PUT
 }
