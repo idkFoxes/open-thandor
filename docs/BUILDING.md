@@ -517,7 +517,7 @@ it were removed from the tree after the code no longer needed them; they are in 
 
 | Script | Output |
 |---|---|
-| `fld.py`, `lev.py`, `pck.py`, `mdl2obj.py` | readers/converters for the game's file formats |
+| `fld.py`, `lev.py`, `pck.py`, `gfx.py`, `mdl2obj.py` | readers/converters for the game's file formats (`gfx.py`: list a `.gfx` image set or export its images as PNG) |
 | `symbolize.py <crash_raw.log> <thandor.map>` | names for the raw crash dump |
 
 ## Documentation generator (`tools/docs`)
