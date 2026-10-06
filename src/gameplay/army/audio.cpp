@@ -272,7 +272,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
   capabilityClear = GameFactionRuntime_TestCapabilityBitClear(activeFactionIndex,factionIndex);
   /* the active faction's byte of the cell's occupancy mask */
   if ((capabilityClear) &&
-      ((((uint8_t *)&fieldGrid->cells[(int32_t)(gridWidthCells * cellRow + cellColumn)].occupancyMask)[activeFactionIndex] &
+      ((FieldGridCell_OccupancyByte(&fieldGrid->cells[(int32_t)(gridWidthCells * cellRow + cellColumn)],activeFactionIndex) &
         ARMY_DEPTH_BIN_STRUCTURE_BIT) != 0) &&
       (16 < g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick)) {
     g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick = 0;

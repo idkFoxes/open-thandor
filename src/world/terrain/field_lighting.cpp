@@ -118,7 +118,7 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors()
     previousPackedAngles = currentDirectionRecord->packedAngles;
     /* one 32-bit add advances both packed angles by rateA (low word) and rateB (high word); a carry out
        of angle A moves angle B by one more */
-    currentDirectionRecord->packedAngles = currentDirectionRecord->packedAngles + *(int *)&currentDirectionRecord->rateA;
+    currentDirectionRecord->packedAngles = currentDirectionRecord->packedAngles + *reinterpret_cast<int *>(&currentDirectionRecord->rateA);
     scaledSinCosPair = FixedMath_SinCosScaled(previousPackedAngles & FIXED_ANGLE16_MASK,currentDirectionRecord->scaleA);
     currentDirectionRecord->angleAComponent0ScaledQ28 = scaledSinCosPair.cosValue;
     currentDirectionRecord->angleAComponent1ScaledQ28 = scaledSinCosPair.sinValue;
@@ -355,6 +355,12 @@ static inline uint32_t WorldLighting_BlendColors
   return packed;
 }
 
+/* The high 16 bits of a packed pair field, read as the original does: the upper uint16_t in memory. */
+template <class PackedPair> static inline uint16_t WorldLighting_PackedHigh16(const PackedPair *pair)
+{
+  return reinterpret_cast<const uint16_t *>(pair)[1];
+}
+
 /* Triangular blend of two 16-bit values over the phase byte (0 = primary, 0x80 = alternate, back towards
    primary at 0xff); the value that would lie below the other one gets WORLD_LIGHTING_PACKED_HALF_WRAP
    added, so the blend runs forward through the 16-bit wrap. Returns the low 16 bits of the result. */
@@ -465,16 +471,15 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting()
          WorldLighting_BlendPackedLow16((uint16_t)settings->packedFieldRegionHeightHigh16WidthLow16,
                                         (uint16_t)settings->alternatePackedFieldRegionHeightHigh16WidthLow16,
                                         phaseByte);
-    /* ((uint16_t *)&pair)[1]: the high 16 bits of a packed pair */
     WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-              ((int)((uint32_t)((uint16_t *)&settings->alternatePackedFieldRegionHeightHigh16WidthLow16)[1] *
+              ((int)((uint32_t)WorldLighting_PackedHigh16(&settings->alternatePackedFieldRegionHeightHigh16WidthLow16) *
                      inverseBlendWeight +
-                     (uint32_t)((uint16_t *)&settings->packedFieldRegionHeightHigh16WidthLow16)[1] *
+                     (uint32_t)WorldLighting_PackedHigh16(&settings->packedFieldRegionHeightHigh16WidthLow16) *
                      (256 - inverseBlendWeight)) >> 8,
                blendedAuxiliaryAzimuth,
-               (int)((uint32_t)((uint16_t *)&settings->alternatePackedFieldRegionOriginYHigh16XLow16)[1] *
+               (int)((uint32_t)WorldLighting_PackedHigh16(&settings->alternatePackedFieldRegionOriginYHigh16XLow16) *
                      inverseBlendWeight +
-                     ((uint16_t *)&settings->packedFieldRegionOriginYHigh16XLow16)[1] * blendWeight) >> 8,
+                     WorldLighting_PackedHigh16(&settings->packedFieldRegionOriginYHigh16XLow16) * blendWeight) >> 8,
                blendedLightAzimuth,worldRuntime);
   }
 }

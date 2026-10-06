@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
+#include <thandor/core/slot.h> /* THANDOR_SLOT_OVERLAY */
 #include <thandor/assets/army/types.h>
 #include <thandor/assets/rom/types.h>
 #include <thandor/core/types.h>
@@ -153,6 +154,10 @@ union ModelRaycastNearestNodeOrScratch4 {
     Ptr32<struct ModelRuntimeNode> nearestModelNode; // nearest node, valid when the raycast reports a hit
     int scratchSigned; // arithmetic/scratch value when there is no hit or before the hit is stored
 };
+
+/* The save-image view of a model runtime slot (ModelRuntimePool_UnrebaseBeforeSave): ModelView_Cast between the two
+   (step 13 X7b). */
+THANDOR_SLOT_OVERLAY(ModelRuntimeSlotUnrebaseView, ModelRuntimeSlot);
 
 struct ModelRelativeDirectionAngles {
     AngleTurn32 relativeYawAngle; // Wrapped yaw/azimuth relative to model local rotation.
