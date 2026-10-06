@@ -15,7 +15,15 @@ THANDOR_ALIGN(4) uint32_t g_UiCommandModeGColorVariantLimit = 16777215;
 
 static uint32_t g_UiCommandSelectionPageBaseIndex = 0;
 
-static int32_t g_UiMappedCommandControlOffsets[12] = {42892, 43076, 43260, 43444, 43628, 43812, 43996, 44180, 44364, 44548, 44732, 44916};
+/* The twelve material swatch selector frames (action 0x1110) in swatch order; the original kept their byte offsets
+   in the image (g_UiMappedCommandControlOffsets: 0xA78C, 0xA844, ... 0xAF74). */
+static constexpr UiNodeBase InGameUiImage::*g_UiMappedCommandControls[MATERIAL_SWATCH_COUNT] = {
+    &InGameUiImage::materialSwatch00Selector, &InGameUiImage::materialSwatch01Selector,
+    &InGameUiImage::materialSwatch02Selector, &InGameUiImage::materialSwatch03Selector,
+    &InGameUiImage::materialSwatch04Selector, &InGameUiImage::materialSwatch05Selector,
+    &InGameUiImage::materialSwatch06Selector, &InGameUiImage::materialSwatch07Selector,
+    &InGameUiImage::materialSwatch08Selector, &InGameUiImage::materialSwatch09Selector,
+    &InGameUiImage::materialSwatch10Selector, &InGameUiImage::materialSwatch11Selector};
 
 /* uint32_t render-state flag word copied into terrain packets (graphics/terrain/terrain_render.cpp); the mode-G handlers below set/clear the masked G-colour variant bit */
 uint32_t g_UiCommandModeGColorVariantFlags = 0x10000;
@@ -27,6 +35,15 @@ uint32_t g_UiCommandModeA = 0;
 uint32_t g_UiCommandModeB = 0;
 
 uint32_t g_UiCommandModeF = 0;
+
+/* The in-game runtime root view of an in-game UI image: both start at the image start, and the root's worldRuntime
+   is the image's worldView node. */
+static InGameRuntimeRoot *InGameEditorToolSelection_Root(InGameUiImage *image)
+{
+  static_assert(offsetof(InGameRuntimeRoot,worldRuntime) == offsetof(InGameUiImage,worldView),
+                "the root view's world runtime is the image's worldView node");
+  return reinterpret_cast<InGameRuntimeRoot *>(image);
+}
 
 /* Editor mode tab G0, terrain height tool (action 0x1100: g_InGameUiActionHandlersPage11[0],
    g_UiCommandModeGHandlers[0]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp). Selects the tab, shows
@@ -117,9 +134,10 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
   UiCommandModeG_ApplyRawColorVariant(worldRuntime);
   UiCommandModeG_HideRegionMarkers(worldRuntime);
   lookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&armyRecord);
-  checkedAssetLookup = FatalError_ExitIfFailed(lookupError != 0 ? lookupError : (uintptr_t)armyRecord,
+  checkedAssetLookup = FatalError_ExitIfFailed(lookupError != 0 ? lookupError
+                                                                : reinterpret_cast<uintptr_t>(armyRecord),
                                                lookupError != 0);
-  g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup;
+  g_UiHoverSelectionRecord = reinterpret_cast<UiCommandRuntimeRecordPrefix *>(checkedAssetLookup);
   InGameSelectionDetailPanel_Rebuild();
 }
 
@@ -168,13 +186,14 @@ void InGameCommandModeG_Select5(UiSelectableControl *source)
 }
 
 /* Terrain material swatch click (action 0x1110, g_InGameUiActionHandlersPage11[16]): finds which of the
-   twelve swatch controls (g_UiMappedCommandControlOffsets) was clicked and selects the material at that position
+   twelve swatch controls (g_UiMappedCommandControls) was clicked and selects the material at that position
    of the current page. Clicks on other controls are ignored.
 */
 void InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
 
 {
   UiNodeBase *root;
+  InGameUiImage *image;
   int mappingsRemaining;
   int mappingIndex;
 
@@ -182,9 +201,10 @@ void InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
   while (root->parent != UI_NODE_NONE) {
     root = root->parent;
   }
+  image = InGameUi_Image(root);
   for (mappingIndex = 0, mappingsRemaining = MATERIAL_SWATCH_COUNT; mappingsRemaining != 0;
        mappingIndex++, mappingsRemaining--) {
-    if ((int)((uintptr_t)source - (uintptr_t)root) == g_UiMappedCommandControlOffsets[mappingIndex]) {
+    if (source == &(image->*g_UiMappedCommandControls[mappingIndex])) {
       UiCommandMatrix_SelectIndex(mappingIndex + g_UiCommandSelectionPageBaseIndex,root);
       return;
     }
@@ -206,11 +226,14 @@ void UiCommandModeG_HideGridVertexMarkers(WorldRuntimeContext *context)
 void InGameCommandModeC_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption0,heightToolOption3),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption0,heightToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption0,heightToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption0,heightToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,heightToolOption0);
+  UiSelectableGroup_SelectExclusive(4,&source->selectable.base,
+      &image->heightToolOption3.selectable.base,
+      &image->heightToolOption2.selectable.base,
+      &image->heightToolOption1.selectable.base,
+      &image->heightToolOption0.selectable.base);
   g_UiCommandModeC = 0;
 }
 
@@ -220,11 +243,14 @@ void InGameCommandModeC_Select0(UiSpriteButtonControl *source)
 void InGameCommandModeC_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption1,heightToolOption3),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption1,heightToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption1,heightToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption1,heightToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,heightToolOption1);
+  UiSelectableGroup_SelectExclusive(4,&source->selectable.base,
+      &image->heightToolOption3.selectable.base,
+      &image->heightToolOption2.selectable.base,
+      &image->heightToolOption1.selectable.base,
+      &image->heightToolOption0.selectable.base);
   g_UiCommandModeC = 1;
 }
 
@@ -234,11 +260,14 @@ void InGameCommandModeC_Select1(UiSpriteButtonControl *source)
 void InGameCommandModeC_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption2,heightToolOption3),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption2,heightToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption2,heightToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption2,heightToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,heightToolOption2);
+  UiSelectableGroup_SelectExclusive(4,&source->selectable.base,
+      &image->heightToolOption3.selectable.base,
+      &image->heightToolOption2.selectable.base,
+      &image->heightToolOption1.selectable.base,
+      &image->heightToolOption0.selectable.base);
   g_UiCommandModeC = 2;
 }
 
@@ -248,11 +277,14 @@ void InGameCommandModeC_Select2(UiSpriteButtonControl *source)
 void InGameCommandModeC_Select3(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption3,heightToolOption3),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption3,heightToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption3,heightToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption3,heightToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,heightToolOption3);
+  UiSelectableGroup_SelectExclusive(4,&source->selectable.base,
+      &image->heightToolOption3.selectable.base,
+      &image->heightToolOption2.selectable.base,
+      &image->heightToolOption1.selectable.base,
+      &image->heightToolOption0.selectable.base);
   g_UiCommandModeC = 3;
 }
 
@@ -263,11 +295,14 @@ void InGameCommandModeC_Select3(UiSpriteButtonControl *source)
 void InGameCommandModeD_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption0,materialToolOption3),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption0,materialToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption0,materialToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption0,materialToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,materialToolOption0);
+  UiSelectableGroup_SelectExclusive(4,&source->selectable.base,
+      &image->materialToolOption3.selectable.base,
+      &image->materialToolOption2.selectable.base,
+      &image->materialToolOption1.selectable.base,
+      &image->materialToolOption0.selectable.base);
   g_UiCommandModeD = 0;
 }
 
@@ -278,11 +313,14 @@ void InGameCommandModeD_Select0(UiSpriteButtonControl *source)
 void InGameCommandModeD_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption1,materialToolOption3),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption1,materialToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption1,materialToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption1,materialToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,materialToolOption1);
+  UiSelectableGroup_SelectExclusive(4,&source->selectable.base,
+      &image->materialToolOption3.selectable.base,
+      &image->materialToolOption2.selectable.base,
+      &image->materialToolOption1.selectable.base,
+      &image->materialToolOption0.selectable.base);
   g_UiCommandModeD = 1;
 }
 
@@ -293,11 +331,14 @@ void InGameCommandModeD_Select1(UiSpriteButtonControl *source)
 void InGameCommandModeD_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption2,materialToolOption3),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption2,materialToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption2,materialToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption2,materialToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,materialToolOption2);
+  UiSelectableGroup_SelectExclusive(4,&source->selectable.base,
+      &image->materialToolOption3.selectable.base,
+      &image->materialToolOption2.selectable.base,
+      &image->materialToolOption1.selectable.base,
+      &image->materialToolOption0.selectable.base);
   g_UiCommandModeD = 2;
 }
 
@@ -308,11 +349,14 @@ void InGameCommandModeD_Select2(UiSpriteButtonControl *source)
 void InGameCommandModeD_Select3(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption3,materialToolOption3),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption3,materialToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption3,materialToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption3,materialToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,materialToolOption3);
+  UiSelectableGroup_SelectExclusive(4,&source->selectable.base,
+      &image->materialToolOption3.selectable.base,
+      &image->materialToolOption2.selectable.base,
+      &image->materialToolOption1.selectable.base,
+      &image->materialToolOption0.selectable.base);
   g_UiCommandModeD = 3;
 }
 
@@ -323,10 +367,13 @@ void InGameCommandModeD_Select3(UiSpriteButtonControl *source)
 void InGameCommandModeA_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption0,unitPlacementOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption0,unitPlacementOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption0,unitPlacementOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,unitPlacementOption0);
+  UiSelectableGroup_SelectExclusive(3,&source->selectable.base,
+      &image->unitPlacementOption1.selectable.base,
+      &image->unitPlacementOption2.selectable.base,
+      &image->unitPlacementOption0.selectable.base);
   g_UiCommandModeA = 0;
 }
 
@@ -337,10 +384,13 @@ void InGameCommandModeA_Select0(UiSpriteButtonControl *source)
 void InGameCommandModeA_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption1,unitPlacementOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption1,unitPlacementOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption1,unitPlacementOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,unitPlacementOption1);
+  UiSelectableGroup_SelectExclusive(3,&source->selectable.base,
+      &image->unitPlacementOption1.selectable.base,
+      &image->unitPlacementOption2.selectable.base,
+      &image->unitPlacementOption0.selectable.base);
   g_UiCommandModeA = 1;
 }
 
@@ -351,10 +401,13 @@ void InGameCommandModeA_Select1(UiSpriteButtonControl *source)
 void InGameCommandModeA_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption2,unitPlacementOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption2,unitPlacementOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption2,unitPlacementOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,unitPlacementOption2);
+  UiSelectableGroup_SelectExclusive(3,&source->selectable.base,
+      &image->unitPlacementOption1.selectable.base,
+      &image->unitPlacementOption2.selectable.base,
+      &image->unitPlacementOption0.selectable.base);
   g_UiCommandModeA = 2;
 }
 
@@ -365,10 +418,13 @@ void InGameCommandModeA_Select2(UiSpriteButtonControl *source)
 void InGameCommandModeB_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption0,objectPlacementOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption0,objectPlacementOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption0,objectPlacementOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,objectPlacementOption0);
+  UiSelectableGroup_SelectExclusive(3,&source->selectable.base,
+      &image->objectPlacementOption1.selectable.base,
+      &image->objectPlacementOption2.selectable.base,
+      &image->objectPlacementOption0.selectable.base);
   g_UiCommandModeB = 0;
 }
 
@@ -379,10 +435,13 @@ void InGameCommandModeB_Select0(UiSpriteButtonControl *source)
 void InGameCommandModeB_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption1,objectPlacementOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption1,objectPlacementOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption1,objectPlacementOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,objectPlacementOption1);
+  UiSelectableGroup_SelectExclusive(3,&source->selectable.base,
+      &image->objectPlacementOption1.selectable.base,
+      &image->objectPlacementOption2.selectable.base,
+      &image->objectPlacementOption0.selectable.base);
   g_UiCommandModeB = 1;
 }
 
@@ -393,10 +452,13 @@ void InGameCommandModeB_Select1(UiSpriteButtonControl *source)
 void InGameCommandModeB_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption2,objectPlacementOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption2,objectPlacementOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption2,objectPlacementOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,objectPlacementOption2);
+  UiSelectableGroup_SelectExclusive(3,&source->selectable.base,
+      &image->objectPlacementOption1.selectable.base,
+      &image->objectPlacementOption2.selectable.base,
+      &image->objectPlacementOption0.selectable.base);
   g_UiCommandModeB = 2;
 }
 
@@ -407,11 +469,14 @@ void InGameCommandModeB_Select2(UiSpriteButtonControl *source)
 void InGameCommandModeE_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption0,smoothingRelaxLandButton),
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption0,smoothingToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption0,smoothingToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption0,smoothingToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,smoothingToolOption0);
+  UiSelectableGroup_SelectExclusive(4,&source->selectable.base,
+      &image->smoothingRelaxLandButton.selectable.base,
+      &image->smoothingToolOption2.selectable.base,
+      &image->smoothingToolOption1.selectable.base,
+      &image->smoothingToolOption0.selectable.base);
   g_UiCommandModeE = 0;
 }
 
@@ -422,10 +487,13 @@ void InGameCommandModeE_Select0(UiSpriteButtonControl *source)
 void InGameCommandModeE_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption1,smoothingToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption1,smoothingToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption1,smoothingToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,smoothingToolOption1);
+  UiSelectableGroup_SelectExclusive(3,&source->selectable.base,
+      &image->smoothingToolOption2.selectable.base,
+      &image->smoothingToolOption1.selectable.base,
+      &image->smoothingToolOption0.selectable.base);
   g_UiCommandModeE = 1;
 }
 
@@ -436,10 +504,13 @@ void InGameCommandModeE_Select1(UiSpriteButtonControl *source)
 void InGameCommandModeE_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption2,smoothingToolOption2),
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption2,smoothingToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption2,smoothingToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,smoothingToolOption2);
+  UiSelectableGroup_SelectExclusive(3,&source->selectable.base,
+      &image->smoothingToolOption2.selectable.base,
+      &image->smoothingToolOption1.selectable.base,
+      &image->smoothingToolOption0.selectable.base);
   g_UiCommandModeE = 2;
 }
 
@@ -472,12 +543,14 @@ void InGameCommandRange_DispatchState1(UiNodeBase *source)
 void InGameCommandModeF_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(2,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption0,regionToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption0,regionToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,regionToolOption0);
+  UiSelectableGroup_SelectExclusive(2,&source->selectable.base,
+      &image->regionToolOption1.selectable.base,
+      &image->regionToolOption0.selectable.base);
   g_UiCommandModeF = 0;
-  ((WorldRuntimeContext *)THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption0,worldView))
-       ->fieldRegion.regionToolMode = 0;
+  InGameEditorToolSelection_Root(image)->worldRuntime.fieldRegion.regionToolMode = 0;
 }
 
 /* Region tool option 1 (action 0x111D, g_InGameUiActionHandlersPage11[29]): selects regionToolOption1 and
@@ -486,12 +559,14 @@ void InGameCommandModeF_Select0(UiSpriteButtonControl *source)
 void InGameCommandModeF_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(2,(UiNodeBase *)source,
-      THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption1,regionToolOption1),
-      THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption1,regionToolOption0));
+  InGameUiImage *image;
+
+  image = THANDOR_CONTAINER_OF(source,InGameUiImage,regionToolOption1);
+  UiSelectableGroup_SelectExclusive(2,&source->selectable.base,
+      &image->regionToolOption1.selectable.base,
+      &image->regionToolOption0.selectable.base);
   g_UiCommandModeF = 1;
-  ((WorldRuntimeContext *)THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption1,worldView))
-       ->fieldRegion.regionToolMode = 1;
+  InGameEditorToolSelection_Root(image)->worldRuntime.fieldRegion.regionToolMode = 1;
 }
 
 /* Terrain colours of the smoothing tool (InGameCommandModeG_Select2): rebuilds the terrain lighting colour ramp
@@ -499,16 +574,16 @@ void InGameCommandModeF_Select1(UiSpriteButtonControl *source)
    colour (secondaryColorArgb) made opaque, relights the field grid with the light angles stored in the root, then sets
    UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED and the limit read by the terrain triangle and marker drawing.
 */
-void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
+void UiCommandModeG_ApplyMaskedColorVariant(WorldRuntimeContext *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (((WorldRuntimeContext *)worldRuntime)->lighting.secondaryColorArgb | ARGB8888_ALPHA_MASK,
-             ((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb & 0xffffff,
-             ((WorldRuntimeContext *)worldRuntime)->lighting.rampStepColorArgb & 0xffffff);
+            (worldRuntime->lighting.secondaryColorArgb | ARGB8888_ALPHA_MASK,
+             worldRuntime->lighting.baseColorArgb & 0xffffff,
+             worldRuntime->lighting.rampStepColorArgb & 0xffffff);
   FieldGrid_RecomputeInteriorDirectionalLighting
             (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightElevationAngle,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightAzimuthAngle,
-             ((WorldRuntimeContext *)worldRuntime)->fieldGrid);
+             worldRuntime->fieldGrid);
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags | UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED;
   g_UiCommandModeGColorVariantLimit = UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED;
 }
@@ -541,11 +616,13 @@ void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *ro
 {
   uint32_t pageEnd;
   uint32_t pageBase;
+  InGameUiImage *image;
   
+  image = InGameUi_Image(root);
   g_UiCommandAbsoluteSelectionIndex = absoluteIndex;
   /* The original reads entries[0] of the material's set without a check; bounded here because the empty
      materials (no texture set, NULL) would crash: the selected swatch then shows nothing. */
-  ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource =
+  image->materialToolSelectedSwatch.textureSource =
        TerrainMaterial_SwatchTexture(absoluteIndex);
   pageEnd = g_UiCommandSelectionPageBaseIndex + MATERIAL_SWATCH_COUNT;
   pageBase = g_UiCommandSelectionPageBaseIndex;
@@ -559,33 +636,33 @@ void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *ro
     pageEnd = pageEnd + MATERIAL_SWATCH_ROW_LENGTH;
   }
   g_UiCommandSelectionPageBaseIndex = pageBase;
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch00))->textureSource = TerrainMaterial_SwatchTexture(pageBase);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch01))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 1);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch02))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 2);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch03))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 3);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch04))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 4);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch05))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 5);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch06))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 6);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch07))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 7);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch08))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 8);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch09))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 9);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch10))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 10);
-  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch11))->textureSource = TerrainMaterial_SwatchTexture(pageBase + 11);
+  image->materialSwatch00.textureSource = TerrainMaterial_SwatchTexture(pageBase);
+  image->materialSwatch01.textureSource = TerrainMaterial_SwatchTexture(pageBase + 1);
+  image->materialSwatch02.textureSource = TerrainMaterial_SwatchTexture(pageBase + 2);
+  image->materialSwatch03.textureSource = TerrainMaterial_SwatchTexture(pageBase + 3);
+  image->materialSwatch04.textureSource = TerrainMaterial_SwatchTexture(pageBase + 4);
+  image->materialSwatch05.textureSource = TerrainMaterial_SwatchTexture(pageBase + 5);
+  image->materialSwatch06.textureSource = TerrainMaterial_SwatchTexture(pageBase + 6);
+  image->materialSwatch07.textureSource = TerrainMaterial_SwatchTexture(pageBase + 7);
+  image->materialSwatch08.textureSource = TerrainMaterial_SwatchTexture(pageBase + 8);
+  image->materialSwatch09.textureSource = TerrainMaterial_SwatchTexture(pageBase + 9);
+  image->materialSwatch10.textureSource = TerrainMaterial_SwatchTexture(pageBase + 10);
+  image->materialSwatch11.textureSource = TerrainMaterial_SwatchTexture(pageBase + 11);
   /* The original pushes all twelve command controls (offsets 11..0) as the variadic list. */
   UiSelectableGroup_SelectExclusive
-            (MATERIAL_SWATCH_COUNT,THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[absoluteIndex - pageBase]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[0]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[1]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[2]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[3]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[4]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[5]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[6]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[7]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[8]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[9]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[10]),
-      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[11]));
+            (MATERIAL_SWATCH_COUNT,&(image->*g_UiMappedCommandControls[absoluteIndex - pageBase]),
+      &(image->*g_UiMappedCommandControls[0]),
+      &(image->*g_UiMappedCommandControls[1]),
+      &(image->*g_UiMappedCommandControls[2]),
+      &(image->*g_UiMappedCommandControls[3]),
+      &(image->*g_UiMappedCommandControls[4]),
+      &(image->*g_UiMappedCommandControls[5]),
+      &(image->*g_UiMappedCommandControls[6]),
+      &(image->*g_UiMappedCommandControls[7]),
+      &(image->*g_UiMappedCommandControls[8]),
+      &(image->*g_UiMappedCommandControls[9]),
+      &(image->*g_UiMappedCommandControls[10]),
+      &(image->*g_UiMappedCommandControls[11]));
 }
 
 /* Hides the surface point marker of the world view (clears WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
@@ -667,15 +744,15 @@ void UiCommandModeG_ClearSecondarySurfaceOnly(WorldRuntimeContext *context)
    angles stored in the root, clears bit 0x1000 of g_UiCommandModeGColorVariantFlags and sets the limit to 0x00FFFFFF. The
    counterpart of UiCommandModeG_ApplyMaskedColorVariant.
 */
-void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime)
+void UiCommandModeG_ApplyRawColorVariant(WorldRuntimeContext *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (((WorldRuntimeContext *)worldRuntime)->lighting.secondaryColorArgb,((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb,
-             ((WorldRuntimeContext *)worldRuntime)->lighting.rampStepColorArgb);
+            (worldRuntime->lighting.secondaryColorArgb,worldRuntime->lighting.baseColorArgb,
+             worldRuntime->lighting.rampStepColorArgb);
   FieldGrid_RecomputeInteriorDirectionalLighting
             (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightElevationAngle,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightAzimuthAngle,
-             ((WorldRuntimeContext *)worldRuntime)->fieldGrid);
+             worldRuntime->fieldGrid);
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags & ~UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED;
   g_UiCommandModeGColorVariantLimit = UI_COMMAND_MODE_G_COLOR_LIMIT_RAW;
 }
@@ -706,34 +783,38 @@ InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeInd
 
 {
   InGameRuntimeRoot *root;
+  UiNodeBase *rootNode;
+  InGameUiImage *image;
 
-  root = (InGameRuntimeRoot *)source;
-  while ((root->rootUi).base.parent != UI_NODE_NONE) {
-    root = (InGameRuntimeRoot *)(root->rootUi).base.parent;
+  rootNode = &source->base;
+  while (rootNode->parent != UI_NODE_NONE) {
+    rootNode = rootNode->parent;
   }
+  root = THANDOR_CONTAINER_OF(rootNode,InGameRuntimeRoot,rootUi);
+  image = InGameUi_Image(root);
   UiSelectableGroup_FindVisibleSelected(nullptr,nullptr,6,
-      INGAME_UI(root,editorModeTabRegion),
-      INGAME_UI(root,editorModeTabObjectPlacement),
-      INGAME_UI(root,editorModeTabUnitPlacement),
-      INGAME_UI(root,editorModeTabTerrainSmoothing),
-      INGAME_UI(root,editorModeTabTerrainMaterial),
-      INGAME_UI(root,editorModeTabTerrainHeight));
+      &image->editorModeTabRegion.selectable.base,
+      &image->editorModeTabObjectPlacement,
+      &image->editorModeTabUnitPlacement.selectable.base,
+      &image->editorModeTabTerrainSmoothing.selectable.base,
+      &image->editorModeTabTerrainMaterial.selectable.base,
+      &image->editorModeTabTerrainHeight.selectable.base);
   UiSelectableGroup_SelectExclusive(6,&source->base,
-      INGAME_UI(root,editorModeTabRegion),
-      INGAME_UI(root,editorModeTabObjectPlacement),
-      INGAME_UI(root,editorModeTabUnitPlacement),
-      INGAME_UI(root,editorModeTabTerrainSmoothing),
-      INGAME_UI(root,editorModeTabTerrainMaterial),
-      INGAME_UI(root,editorModeTabTerrainHeight));
+      &image->editorModeTabRegion.selectable.base,
+      &image->editorModeTabObjectPlacement,
+      &image->editorModeTabUnitPlacement.selectable.base,
+      &image->editorModeTabTerrainSmoothing.selectable.base,
+      &image->editorModeTabTerrainMaterial.selectable.base,
+      &image->editorModeTabTerrainHeight.selectable.base);
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGPrimaryPageIndices[modeIndex],
-             (UiPageStackControl *)INGAME_UI(root,modePreviewPageStack));
+             UiLayoutContainerControl_AsPageStack(&image->modePreviewPageStack));
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGSecondaryPageIndices[modeIndex],
-             (UiPageStackControl *)INGAME_UI(root,modeDetailPageStack));
+             UiLayoutContainerControl_AsPageStack(&image->modeDetailPageStack));
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGTertiaryPageIndices[modeIndex],
-             (UiPageStackControl *)INGAME_UI(root,modeCommandPageStack));
+             UiLayoutContainerControl_AsPageStack(&image->modeCommandPageStack));
   g_UiCommandModeG = modeIndex;
   return root;
 }

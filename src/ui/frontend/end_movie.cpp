@@ -99,10 +99,12 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
     return;
   }
   /* row counts of the three results lists */
-  firstChart = (FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1);
+  firstChart = reinterpret_cast<FrontendResultsEightColumnTemplate *>(&InGameUi_Image(runtimeRoot)->resultsChart1);
   firstChart->rowCount = activeFactionCount;
-  ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart2))->rowCount = activeFactionCount;
-  ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart3))->rowCount = activeFactionCount;
+  reinterpret_cast<FrontendResultsEightColumnTemplate *>(&InGameUi_Image(runtimeRoot)->resultsChart2)->rowCount =
+       activeFactionCount;
+  reinterpret_cast<FrontendResultsEightColumnTemplate *>(&InGameUi_Image(runtimeRoot)->resultsChart3)->rowCount =
+       activeFactionCount;
   /* elapsed minutes of the 80 Hz clock, rounded up, shown as hours and minutes */
   elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 4799) / 4800;
   g_LocaleFormatTimeFieldsUtf16
@@ -188,7 +190,8 @@ void Frontend_PlaySelectedEndMovie()
     if (movieOpened) {
       g_EndMoviePendingTicks = 0;
       g_TimerRegisterPeriodic(playbackRateHz,FrontendSession_PeriodicTick);
-      UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(runtimeRoot,primaryPageStack));
+      UiPageStack_SetActiveIndex(1,
+           UiLayoutContainerControl_AsPageStack(&InGameUi_Image(runtimeRoot)->primaryPageStack));
       endMovieRuntime = runtimeRoot->activeEndMovieRuntime;
       endMovieAdvanced = Movie_AdvanceFrame(&endMovieRuntime,nullptr);
       runtimeRoot->activeEndMovieRuntime = endMovieRuntime;

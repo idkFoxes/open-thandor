@@ -226,7 +226,7 @@ void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode)
   }
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     compactLayoutFlags =
-         &FRONTEND_UI(frontendRootPage,menuRoomModelView)->contextFlags;
+         &FrontendUi_Image(frontendRootPage)->menuRoomModelView.contextFlags;
     *compactLayoutFlags = *compactLayoutFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,&frontendRootPage->primaryPageStack);

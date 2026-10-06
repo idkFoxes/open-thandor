@@ -21,9 +21,9 @@ void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
     source = source->parent;
   }
   /* source is now the in-game UI root (template start) */
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,missionObjectivesButton));
+  UiSelectableControl_SetSelected(0,&InGameUi_Image(source)->missionObjectivesButton.selectable);
   InGameSettingsPage_ToggleAndSynchronizeControls
-            ((UiSelectableControl *)INGAME_UI(source,missionObjectivesButton));
+            (&InGameUi_Image(source)->missionObjectivesButton.selectable);
 }
 
 /* UI action 0x1201 (gameMenuCloseButton; g_InGameUiActionHandlersPage12[1]): closes the game menu by
@@ -36,8 +36,8 @@ void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  UiSelectableControl_SetSelected(0,&InGameUi_Image(source)->inGameMenuButton.selectable);
+  InGameSettingsPage_ToggleAndSynchronizeControls(&InGameUi_Image(source)->inGameMenuButton.selectable);
 }
 
 /* UI action 0x1218 (the Back buttons of the save, quit, graphics and sound pages;
@@ -51,8 +51,8 @@ void InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  UiSelectableControl_SetSelected(1,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  UiSelectableControl_SetSelected(1,&InGameUi_Image(source)->inGameMenuButton.selectable);
+  InGameSettingsPage_ToggleAndSynchronizeControls(&InGameUi_Image(source)->inGameMenuButton.selectable);
 }
 
 /* In-game command handler (keys G / Alt+G): changes the player's simulation step batch by stepDelta, kept within
@@ -381,15 +381,17 @@ void InGameShadingSettings_SetEnabled(UiSelectableControl *control)
   while ((control->base).parent != UI_NODE_NONE) {
     control = (UiSelectableControl *)(control->base).parent;
   }
+  /* the world view node of the in-game UI root is the session's WorldRuntimeContext */
+  WorldRuntimeContext *world = reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(control)->worldView);
   if ((selectedState & 1) == 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_SHADING_LEVEL,&control->base);
-    ((WorldRuntimeContext *)INGAME_UI(control,worldView))->runtimeFlags =
-         ((WorldRuntimeContext *)INGAME_UI(control,worldView))->runtimeFlags & ~WORLD_RUNTIME_FLAG_SHADING_ENABLED;
+    world->runtimeFlags =
+         world->runtimeFlags & ~WORLD_RUNTIME_FLAG_SHADING_ENABLED;
   }
   else {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_SHADING_LEVEL,&control->base);
-    ((WorldRuntimeContext *)INGAME_UI(control,worldView))->runtimeFlags =
-         ((WorldRuntimeContext *)INGAME_UI(control,worldView))->runtimeFlags | WORLD_RUNTIME_FLAG_SHADING_ENABLED;
+    world->runtimeFlags =
+         world->runtimeFlags | WORLD_RUNTIME_FLAG_SHADING_ENABLED;
   }
   PersistentSettings_Write(selectedState & 1,PERSISTENT_SETTING_SHADING_ENABLED);
 }
@@ -699,10 +701,12 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
   while (uiRoot->parent != UI_NODE_NONE) {
     uiRoot = uiRoot->parent;
   }
+  InGameUiImage *image = InGameUi_Image(uiRoot);
   isSelected = (Bool8)UiSelectableControl_IsSelected(settingsToggle);
   if (!isSelected) {
-    UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
-    INGAME_UI(uiRoot,worldView)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,
+                               UiLayoutContainerControl_AsPageStack(&image->gameWindowPageStack));
+    image->worldView.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW) == 0) {
@@ -717,32 +721,33 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
     }
     return;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(uiRoot,missionObjectivesButton));
-  INGAME_UI(uiRoot,worldView)->nodeFlags |= UI_NODE_SUPPRESSED;
-  UiKeyboardFocus_ReleaseNode(INGAME_UI(uiRoot,worldView));
-  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_GAME_MENU,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
+  UiSelectableControl_SetSelected(0,&image->missionObjectivesButton.selectable);
+  image->worldView.base.nodeFlags |= UI_NODE_SUPPRESSED;
+  UiKeyboardFocus_ReleaseNode(&image->worldView.base);
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_GAME_MENU,
+                             UiLayoutContainerControl_AsPageStack(&image->gameWindowPageStack));
   settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   UiSelectableControl_SetSelected(settingValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF,
-                                  (UiSelectableControl *)INGAME_UI(uiRoot,autoZoomOffCheckbox));
+                                  &image->autoZoomOffCheckbox.selectable);
   UiSelectableControl_SetSelected(settingValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
-                                  (UiSelectableControl *)INGAME_UI(uiRoot,autoRotationOffCheckbox));
+                                  &image->autoRotationOffCheckbox.selectable);
   /* "right button does not scroll" per the frontend settings page (the Tab key also toggles this bit) */
   UiSelectableControl_SetSelected
-            (settingValue & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,(UiSelectableControl *)INGAME_UI(uiRoot,rightButtonNoScrollCheckbox));
+            (settingValue & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,&image->rightButtonNoScrollCheckbox.selectable);
   /* rotation is linked with zoom or with tilt; each excludes the other */
   settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   if ((settingValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_TILT,uiRoot);
   }
   UiSelectableControl_SetSelected
-            (settingValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationZoomCheckbox));
+            (settingValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM,&image->linkRotationZoomCheckbox.selectable);
   if ((settingValue & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_ZOOM,uiRoot);
   }
   UiSelectableControl_SetSelected
-            (settingValue & PERSISTENT_LINK_OPTION_ROTATION_TILT,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationTiltCheckbox));
+            (settingValue & PERSISTENT_LINK_OPTION_ROTATION_TILT,&image->linkRotationTiltCheckbox.selectable);
   settingValue = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-  ((UiRangeSliderControl *)INGAME_UI(uiRoot,scrollSpeedSlider))->value = settingValue;
+  image->scrollSpeedSlider.value = settingValue;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE) == 0) {

@@ -1,5 +1,5 @@
 {
- "revision": "47117f1e",
+ "revision": "b17d0947",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -116,25 +116,19 @@
   "cstyle_cast": {
    "audio": 23,
    "core": 5,
-   "gameplay": 24,
+   "gameplay": 22,
    "platform": 18,
-   "ui": 1769,
+   "ui": 1006,
    "world": 66
   },
   "ingame_ui": {
-   "gameplay": 10,
-   "ui": 1070
+   "ui": 4
   },
   "ui_at_sibling": {
    "core": 3,
-   "ui": 251
+   "ui": 158
   },
-  "frontend_ui": {
-   "gameplay": 10,
-   "network": 16,
-   "platform": 3,
-   "ui": 288
-  },
+  "frontend_ui": {},
   "define_numeric": {
    "assets": 102,
    "audio": 15,
@@ -158,7 +152,7 @@
    "network": 165,
    "platform": 330,
    "root": 7,
-   "ui": 802,
+   "ui": 801,
    "world": 177
   },
   "include_guard": {
@@ -180,7 +174,7 @@
    "gameplay": 2,
    "network": 2,
    "platform": 52,
-   "ui": 12,
+   "ui": 13,
    "world": 13
   },
   "typedef_struct": {

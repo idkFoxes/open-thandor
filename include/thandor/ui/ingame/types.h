@@ -657,7 +657,7 @@ struct WorldRuntimeExtendedMapControlView {
     WorldRuntimeControlFlags runtimeControlFlags;
     Ptr32<uint32_t> tickSpinLock;
     Ptr32<void ()> simulationAndNetworkTickCallback;
-    Ptr32<struct WorldRuntimeNode> ownerListHead;
+    Ptr32<struct WorldOwnerListNode> ownerListHead;
     struct WorldRuntimeSelectionState selection;
     struct WorldLightingState lighting;
     struct WorldMotionSnapshot snapshot;

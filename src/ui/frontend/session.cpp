@@ -49,14 +49,14 @@ void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
     parentNode = source->parent;
   }
   Movie_Close();
-  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(source,frontendViewModeStack)));
+  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(source)->frontendViewModeStack));
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage
-            (FRONTEND_UI(source,moviePlaybackView)->textureSource);
-  g_MemoryApi.free(FRONTEND_UI(source,moviePlaybackView)->blendFactorPixels);
-  g_MemoryApi.free(FRONTEND_UI(source,moviePlaybackView)->blendedSourcePixels);
-  FRONTEND_UI(source,moviePlaybackView)->textureSource = nullptr;
-  FRONTEND_UI(source,moviePlaybackView)->blendFactorPixels = nullptr;
-  FRONTEND_UI(source,moviePlaybackView)->blendedSourcePixels = nullptr;
+            (FrontendUi_Image(source)->moviePlaybackView.textureSource);
+  g_MemoryApi.free(FrontendUi_Image(source)->moviePlaybackView.blendFactorPixels);
+  g_MemoryApi.free(FrontendUi_Image(source)->moviePlaybackView.blendedSourcePixels);
+  FrontendUi_Image(source)->moviePlaybackView.textureSource = nullptr;
+  FrontendUi_Image(source)->moviePlaybackView.blendFactorPixels = nullptr;
+  FrontendUi_Image(source)->moviePlaybackView.blendedSourcePixels = nullptr;
   g_CursorVisibilityToken++;
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
 }
@@ -114,7 +114,7 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
     source = source->parent;
     parentNode = source->parent;
   }
-  g_FrontendPlayerRuntimeBlockCount = FRONTEND_UI(source,hostLobbyPlayerList)->rowCount;
+  g_FrontendPlayerRuntimeBlockCount = FrontendUi_Image(source)->hostLobbyPlayerList.rowCount;
   g_FrontendExpectedPlayerRuntimeBlockCount = 0;
   g_FrontendPendingSessionPlayerCount = g_FrontendPlayerRuntimeBlockCount;
   seed = Random_NextPrimary();
@@ -141,7 +141,7 @@ void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unuse
           GameSpeedPercent gameSpeedPercent)
 
 {
-  FRONTEND_UI(g_FrontendRootNode,gameSpeedSlider)->value = gameSpeedPercent;
+  FrontendUi_Image(g_FrontendRootNode)->gameSpeedSlider.value = gameSpeedPercent;
 }
 
 
@@ -152,9 +152,9 @@ void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
 
 {
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_QUIT_CONFIRM,
-                             UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendUi,frontendPageStack)));
+                             UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI(frontendUi,menuRoomModelView)->contextFlags |=
+    frontendUi->menuRoomModelView.contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
 }
@@ -502,9 +502,9 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
   Movie_Close();
   /* percent * 256 / 100 */
   g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
-       (uint32_t)(FRONTEND_UI(frontendRootAddress,gameSpeedSlider)->value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
+       (uint32_t)(FrontendUi_Image(frontendRootAddress)->gameSpeedSlider.value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
   /* briefingImage: an image action control, its template node is shorter than the class */
-  displayFlags = &reinterpret_cast<UiImageActionControl *>(FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
+  displayFlags = &reinterpret_cast<UiImageActionControl *>(&FrontendUi_Image(frontendRootAddress)->briefingImage)->displayFlags;
   *displayFlags = *displayFlags | 8;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,romActionIndex);
 }
@@ -522,8 +522,8 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
   uintptr_t frontendRootAddress;
 
   frontendRootAddress = g_FrontendRootNode;
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(g_FrontendRootNode,frontendPageStack)));
-  FRONTEND_UI(frontendRootAddress,menuRoomModelView)->contextFlags &=
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(g_FrontendRootNode)->frontendPageStack));
+  FrontendUi_Image(frontendRootAddress)->menuRoomModelView.contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(romActionIndex);
 }
