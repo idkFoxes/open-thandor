@@ -1270,6 +1270,12 @@ typedef struct InGameUiImage {
    _prefix, _fields and _trailing members) keep their own type. */
 #define INGAME_UI(root, node) (reinterpret_cast<InGameUi_NodeView<decltype(InGameUiImage::node)> *>(&((InGameUiImage *)(uintptr_t)(root))->node))
 #define INGAME_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)INGAME_UI(root, node) + (offset)))
+/* The in-game UI image behind a root pointer (any pointer to the image start): the typed replacement for
+   INGAME_UI, e.g. &InGameUi_Image(rt)->chatInputTextEdit. One reinterpretation for all users. */
+template <class T> inline InGameUiImage *InGameUi_Image(T *root)
+{
+  return reinterpret_cast<InGameUiImage *>(root);
+}
 #pragma pack(pop)
 
 /* True for a control type that starts with a UiNodeBase (through its base, selectable, root, sprite or command
