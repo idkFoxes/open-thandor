@@ -10,7 +10,6 @@
 #include <string.h>
 #include <thandor/platform/system/win32.h>
 #include <thandor/thandor.h>
-#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/autoshot.h>
 
@@ -29,7 +28,7 @@ void DebugAutoShot_Tick()
     const char *value = getenv("OPEN_THANDOR_AUTOSHOT");
     interval = (value != nullptr) ? atoi(value) : 0;
     if (interval > 0) {
-      CreateDirectoryA(const_cast<LPCSTR>("shots"), nullptr);
+      CreateDirectoryA((LPCSTR)"shots", nullptr);
     }
     last = Thandor_TickCount();
   }
@@ -51,7 +50,7 @@ void DebugAutoShot_SaveNow()
     Thandor_Log("script shot: no framebuffer yet");
     return;
   }
-  CreateDirectoryA(const_cast<LPCSTR>("shots"), nullptr);
+  CreateDirectoryA((LPCSTR)"shots", nullptr);
   DebugAutoShot_Save("script", &number);
 }
 
@@ -66,7 +65,7 @@ static void DebugAutoShot_Save(const char *prefix, unsigned *number)
   }
   if (capture != nullptr) {
     GraphicsTextureSourceEntry *entry = &capture->sourceEntry;
-    const uint32_t *pixels = Asset_RecordAt<const uint32_t>(capture, entry->dataOffset);
+    const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture + entry->dataOffset);
     uint32_t width = entry->pixelWidth;
     uint32_t height = entry->pixelHeight;
     char name[64];

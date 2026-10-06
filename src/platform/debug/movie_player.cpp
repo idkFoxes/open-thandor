@@ -94,8 +94,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
       if (stretch) {
         g_GraphicsTextureSourceStretchDirectColorBilinear
                   (g_FramebufferHeight,g_FramebufferWidth,0,0,0,
-                   reinterpret_cast<GraphicsTextureSourceAsset *>(movie) /* starts with a texture source header */,
-                   g_FramebufferAccess);
+                   (GraphicsTextureSourceAsset *)movie,g_FramebufferAccess);
       }
       else {
         MovieFrameDimensions size = Movie_GetFrameDimensions();
@@ -104,8 +103,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
                   (g_FramebufferHeight,g_FramebufferWidth,0,0,
                    ((int)((height - (height >> 2)) - (int)size.height) >> 1) + (height >> 3),
                    (int)(g_FramebufferWidth - (int)size.width) >> 1,0,
-                   reinterpret_cast<GraphicsTextureSourceAsset *>(movie) /* starts with a texture source header */,
-                   g_FramebufferAccess);
+                   (GraphicsTextureSourceAsset *)movie,g_FramebufferAccess);
       }
       sprintf(label, "Video %d/%d: %s.flm  Frame %u/%u", index, count, name,
               g_ActiveMovie->currentFrameIndex, g_ActiveMovie->fileHeader->frameCount);
@@ -145,7 +143,7 @@ void DebugMovie_ExportOne(const char *name)
   }
   path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
   path[pathLength] = 0;
-  CreateDirectoryA(const_cast<LPCSTR>("moviedump"), nullptr);
+  CreateDirectoryA((LPCSTR)"moviedump", nullptr);
   if (!Movie_Open(MOVIE_OPEN_STREAM,path,&playbackRateHz,&openError)) {
     Thandor_Log("movie export %s: Movie_Open failed (eax=%08x)", name, openError);
     return;

@@ -115,10 +115,10 @@ static Bool8 ArticulatedWalker_StepEndReachedRoutePoint(WorldRuntimeContext *wor
   uint32_t waypointDistance;
 
   if (ArmyRuntime_UpdateMovementAndWaypoints
-           (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime,&waypointWorldXQ12,
+           (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(modelRuntime->ownerArmyRuntime),&waypointWorldXQ12,
             &waypointWorldYQ12)) {
     if (GameEntityRuntime_ResolveCommandTargetPosition
-             ((GameEntityRuntime *)modelRuntime->ownerArmyRuntime,&commandTargetPosition)) {
+             (ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime),&commandTargetPosition)) {
       targetHeading = FixedMath_Atan2Angle16
                         (commandTargetPosition.yQ12 - (rootNode->worldTransform).translation.y,
                          commandTargetPosition.xQ12 - (rootNode->worldTransform).translation.x);
@@ -147,7 +147,7 @@ static void ArticulatedWalker_AdvanceWaypoint(WorldRuntimeContext *worldRuntime,
 
   *stepState = *stepState & ~(ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_TURN);
   if (!ArmyRuntime_UpdateMovementAndWaypoints
-            (worldRuntime,(ArmyMovementRuntime *)ownerArmy,&waypointWorldXQ12,&waypointWorldYQ12)) {
+            (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(ownerArmy),&waypointWorldXQ12,&waypointWorldYQ12)) {
     ownerArmy->movementStateFlags = ownerArmy->movementStateFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
   }
 }
@@ -166,14 +166,14 @@ static void ArticulatedWalker_StartClosingStep(WorldRuntimeContext *worldRuntime
     *stepState = *stepState |
          (ARMY_ARTICULATED_STEP_CLOSE | ARMY_ARTICULATED_STEP_LEFT_LAST | ARMY_ARTICULATED_STEP_LEFT);
     ArmyArticulatedRuntime_InitializeLeftTerrainContact
-              ((AngleTurn16Stored32)closingHeading,(ArmyArticulatedRuntimeSlotView *)modelRuntime,worldRuntime);
+              ((AngleTurn16Stored32)closingHeading,ModelView_Cast<ArmyArticulatedRuntimeSlotView>(modelRuntime),worldRuntime);
   }
   else {
     *stepState = *stepState & ~(ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_TURN | ARMY_ARTICULATED_STEP_RIGHT_LAST | ARMY_ARTICULATED_STEP_LEFT_LAST | ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT);
     *stepState = *stepState |
          (ARMY_ARTICULATED_STEP_CLOSE | ARMY_ARTICULATED_STEP_RIGHT_LAST | ARMY_ARTICULATED_STEP_RIGHT);
     ArmyArticulatedRuntime_InitializeRightTerrainContact
-              ((AngleTurn16Stored32)closingHeading,(ArmyArticulatedRuntimeSlotView *)modelRuntime,worldRuntime);
+              ((AngleTurn16Stored32)closingHeading,ModelView_Cast<ArmyArticulatedRuntimeSlotView>(modelRuntime),worldRuntime);
   }
 }
 
@@ -194,11 +194,11 @@ static ArticulatedRouteStep ArticulatedWalker_TryStartRouteStep(WorldRuntimeCont
   uint32_t walkOnAngle;
 
   if (ArmyRuntime_UpdateMovementAndWaypoints
-           (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime,&waypointWorldXQ12,
+           (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(modelRuntime->ownerArmyRuntime),&waypointWorldXQ12,
             &waypointWorldYQ12)) {
     /* no route: only turn towards the command target */
     if (!GameEntityRuntime_ResolveCommandTargetPosition
-              ((GameEntityRuntime *)modelRuntime->ownerArmyRuntime,&commandTargetPosition)) {
+              (ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime),&commandTargetPosition)) {
       return ARTICULATED_ROUTE_STEP_NONE;
     }
     targetAngleLength.angle =
@@ -231,7 +231,7 @@ static ArticulatedRouteStep ArticulatedWalker_TryStartRouteStep(WorldRuntimeCont
              (ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_LEFT_LAST | ARMY_ARTICULATED_STEP_LEFT);
         ArmyArticulatedRuntime_UpdateLeftTerrainContact
                   (targetAngleLength.angle,targetAngleLength.length,
-                   (ArmyArticulatedRuntimeSlotView *)modelRuntime,worldRuntime);
+                   ModelView_Cast<ArmyArticulatedRuntimeSlotView>(modelRuntime),worldRuntime);
       }
       else {
         *stepState = *stepState & ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK;
@@ -239,7 +239,7 @@ static ArticulatedRouteStep ArticulatedWalker_TryStartRouteStep(WorldRuntimeCont
              (ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_RIGHT_LAST | ARMY_ARTICULATED_STEP_RIGHT);
         ArmyArticulatedRuntime_UpdateRightTerrainContact
                   (targetAngleLength.angle,targetAngleLength.length,
-                   (ArmyArticulatedRuntimeSlotView *)modelRuntime,worldRuntime);
+                   ModelView_Cast<ArmyArticulatedRuntimeSlotView>(modelRuntime),worldRuntime);
       }
       return ARTICULATED_ROUTE_STEP_STARTED;
     }
@@ -255,7 +255,7 @@ static ArticulatedRouteStep ArticulatedWalker_TryStartRouteStep(WorldRuntimeCont
       (steerAngle < FIXED_ANGLE16_FULL_TURN - ARMY_ARTICULATED_TURN_ANGLE16))) {
     /* turn on the spot, with the foot on the side of the turn */
     ArmyArticulatedRuntime_UpdateSelectedTerrainContact
-              ((AngleTurn32)steerAngle,(ArmyArticulatedRuntimeSlotView *)modelRuntime,worldRuntime);
+              ((AngleTurn32)steerAngle,ModelView_Cast<ArmyArticulatedRuntimeSlotView>(modelRuntime),worldRuntime);
     *stepState = *stepState &
          ~(ARMY_ARTICULATED_STEP_CLOSE | ARMY_ARTICULATED_STEP_TURN | ARMY_ARTICULATED_STEP_RIGHT_LAST |
            ARMY_ARTICULATED_STEP_LEFT_LAST | ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT);
@@ -443,7 +443,7 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   Q12 worldYQ12;
   ArmyArticulatedRuntimeSlotView *articulatedRuntime;
 
-  articulatedRuntime = (ArmyArticulatedRuntimeSlotView *)(modelNodeRuntime->runtimePayload).modelRuntime;
+  articulatedRuntime = ModelView_Cast<ArmyArticulatedRuntimeSlotView>((modelNodeRuntime->runtimePayload).modelRuntime);
   worldXQ12 = (modelNodeRuntime->worldTransform).translation.x;
   worldYQ12 = (modelNodeRuntime->worldTransform).translation.y;
   terrainHeight = 0;
@@ -483,7 +483,8 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   /* ground normals: elevation a quarter turn (straight up), azimuth 0 */
   articulatedRuntime->ownerValue68 = ARMY_ARTICULATED_NORMAL_UP;
   articulatedRuntime->fallbackWorldYQ12 = ARMY_ARTICULATED_NORMAL_UP;
-  articulatedRuntime->linkedArmyRuntimeOrSavedOffset = (ArmyRuntimeSlot *)ARMY_ARTICULATED_NORMAL_UP;
+  /* the +0x6C dword holds a ground normal here, not an army pointer */
+  articulatedRuntime->linkedArmyRuntimeOrSavedOffset = Thandor_U32ToPointer<ArmyRuntimeSlot>(ARMY_ARTICULATED_NORMAL_UP);
   articulatedRuntime->fallbackWorldXQ12 = ARMY_ARTICULATED_NORMAL_UP;
 }
 
@@ -633,7 +634,7 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   }
   else {
     ArmyRuntime_UpdateMovementAndWaypoints
-              (worldRuntime,(ArmyMovementRuntime *)armyRuntime->linkedEntityRuntime,&waypointWorldXQ12,
+              (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(armyRuntime->linkedEntityRuntime),&waypointWorldXQ12,
                &waypointWorldYQ12);
     aheadY = waypointWorldYQ12;
     aheadX = waypointWorldXQ12;
@@ -656,7 +657,7 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
     sampledFootY = armyRuntime->runtimeState98;
     sampledFootZ = armyRuntime->articulatedHeightOrStateA0;
     blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
-                       (sampledFootY,armyRuntime->runtimeState90,(RuntimeCollisionQueryView *)armyRuntime
+                       (sampledFootY,armyRuntime->runtimeState90,ModelView_Cast<RuntimeCollisionQueryView>(armyRuntime)
                         ,worldRuntime);
     if (blockingModelRuntime == nullptr) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
@@ -665,7 +666,7 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
       return;
     }
     ArmyRuntime_HandleCollisionPartner
-              (reinterpret_cast<ModelRuntimeSlot *>(armyRuntime), /* the walker's model runtime under its slot view */
+              (ModelView_Cast<ModelRuntimeSlot>(armyRuntime),
                (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
                blockingModelRuntime,worldRuntime);
@@ -777,7 +778,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   }
   else {
     ArmyRuntime_UpdateMovementAndWaypoints
-              (worldRuntime,(ArmyMovementRuntime *)armyRuntime->linkedEntityRuntime,&waypointWorldXQ12,
+              (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(armyRuntime->linkedEntityRuntime),&waypointWorldXQ12,
                &waypointWorldYQ12);
     aheadY = waypointWorldYQ12;
     aheadX = waypointWorldXQ12;
@@ -799,7 +800,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
     sampledFootY = armyRuntime->articulatedCoordinateOrState9C;
     sampledFootZ = armyRuntime->runtimeStateA4;
     blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
-                       (sampledFootY,armyRuntime->runtimeState94,(RuntimeCollisionQueryView *)armyRuntime
+                       (sampledFootY,armyRuntime->runtimeState94,ModelView_Cast<RuntimeCollisionQueryView>(armyRuntime)
                         ,worldRuntime);
     if (blockingModelRuntime == nullptr) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
@@ -808,7 +809,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
       return;
     }
     ArmyRuntime_HandleCollisionPartner
-              (reinterpret_cast<ModelRuntimeSlot *>(armyRuntime), /* the walker's model runtime under its slot view */
+              (ModelView_Cast<ModelRuntimeSlot>(armyRuntime),
                (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
                blockingModelRuntime,worldRuntime);
@@ -840,7 +841,7 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
   soundIndex = definition->classParameterCC;
   voiceSetRef = nullptr;
   if ((soundIndex != 0) && (soundIndex < worldRuntime->dwordArrayCount) && (worldRuntime->dwordArray != nullptr)) {
-    voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
+    voiceSetRef = ArmySound_VoiceSetRef(worldRuntime,soundIndex);
   }
   if (voiceSetRef != nullptr) {
     worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
@@ -1023,7 +1024,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   ModelRuntimeNode *rightNode;
   ModelRuntimeNode *leftNode;
 
-  articulatedRuntime = (ArmyArticulatedRuntimeSlotView *)(modelNodeRuntime->runtimePayload).armyRuntime;
+  articulatedRuntime = ModelView_Cast<ArmyArticulatedRuntimeSlotView>((modelNodeRuntime->runtimePayload).modelRuntime);
   /* left foot position along its step (progress in runtimeStateA8) */
   leftNode = modelNodeRuntime->childNodes[0]->childNodes[0]->childNodes[0]->childNodes[0];
   leftBlendQ12 = articulatedRuntime->runtimeStateA8;
@@ -1168,7 +1169,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   /* bone lengths from the left leg (knee and ankle joint offsets), used for both legs */
   leftNode = leftNode->childNodes[0];
   thighLengthQ12 = FixedMath_LengthVec3
-                     ((GraphicsFixedVec3 *)&(leftNode->modelPayload).localTranslationXQ12);
+                     (reinterpret_cast<GraphicsFixedVec3 *>(&(leftNode->modelPayload).localTranslationXQ12)); /* the three consecutive Q12 coordinates localTranslationX/Y/ZQ12 as one vector */
   shinLengthQ12 =
        FixedMath_LengthVec3
                  ((GraphicsFixedVec3 *)

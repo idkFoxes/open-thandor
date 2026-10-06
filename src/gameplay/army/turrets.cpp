@@ -51,7 +51,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
   /* switched off or destroyed: the turret does nothing this tick */
   if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
     weaponDefinition = modelRuntime->modelDefinition;
-    ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
+    ownerEntity = ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime);
     recoilCountdown = modelRuntime->attachment0BackwardStepCountdownTicks;
     if (modelRuntime->attachmentReloadCountdownTicks != 0) {
       /* spin the barrel for the reload ticks that elapsed (at most the remaining countdown) */
@@ -96,7 +96,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
     aimWorldX = aimPoint.x;
     if (!aimPointFound) {
       waypointArrived = ArmyRuntime_UpdateMovementAndWaypoints
-                         (worldRuntime,(ArmyMovementRuntime *)ownerEntity,&waypointWorldXQ12,&waypointWorldYQ12);
+                         (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(ownerEntity),&waypointWorldXQ12,&waypointWorldYQ12);
       if (((!waypointArrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
          (modelRuntime->yawTurnVelocityAngle16 != 0)) {
         partNode = modelRuntime->rootModelNode;
@@ -204,7 +204,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   /* switched off or destroyed: the turret does nothing this tick */
   if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
     weaponDefinition = modelRuntime->modelDefinition;
-    ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
+    ownerEntity = ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime);
     barrel0RecoilCountdown = modelRuntime->attachment0BackwardStepCountdownTicks;
     if (modelRuntime->attachmentReloadCountdownTicks != 0) {
       /* spin the first barrel for the reload ticks that elapsed */
@@ -265,7 +265,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
     aimWorldX = aimPoint.x;
     if (!aimPointFound) {
       waypointArrived = ArmyRuntime_UpdateMovementAndWaypoints
-                         (worldRuntime,(ArmyMovementRuntime *)ownerEntity,&waypointWorldXQ12,&waypointWorldYQ12);
+                         (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(ownerEntity),&waypointWorldXQ12,&waypointWorldYQ12);
       if (((!waypointArrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
          (modelRuntime->yawTurnVelocityAngle16 != 0)) {
         partNode = modelRuntime->rootModelNode;
@@ -353,7 +353,8 @@ void FixedVector_StepBackwardAlongOwnDirection
   FixedElevationAzimuth vectorAngles;
   ModelRuntimeNode *node = reinterpret_cast<ModelRuntimeNode *>(vectorState); /* the node's address as an integer */
 
-  vectorAngles = FixedMath_VectorToAnglesVec3((GraphicsFixedVec3 *)&node->modelPayload.localTranslationXQ12);
+  /* the three consecutive Q12 coordinates localTranslationX/Y/ZQ12 as one vector */
+  vectorAngles = FixedMath_VectorToAnglesVec3(reinterpret_cast<GraphicsFixedVec3 *>(&node->modelPayload.localTranslationXQ12));
   stepDirection = FixedMath_DirectionFromAnglesScaled(vectorAngles.elevationAngle,vectorAngles.azimuthAngle,
                                                           directionScale);
   node->modelPayload.localTranslationXQ12 -= stepDirection.x * stepMultiplier;

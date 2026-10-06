@@ -302,7 +302,7 @@ Bool8 ArmyPlacement_TestGridRuntimeAndFieldBlocking
   if (ArmyCollision_FindBlockingRuntimeForCurrentUnit
                     ((modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,
-                     (RuntimeCollisionQueryView *)modelRuntime,worldRuntime) != nullptr) {
+                     ModelView_Cast<RuntimeCollisionQueryView>(modelRuntime),worldRuntime) != nullptr) {
     return true;
   }
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
@@ -339,7 +339,7 @@ Bool8 ArmyPlacement_CanPlaceMobileUnit
     return false;
   }
   blocked = ArmyCollision_TestPointAgainstRuntimeList
-                    (worldXQ12,worldYQ12,(uint8_t *)modelDefinition,worldRuntime);
+                    (worldXQ12,worldYQ12,modelDefinition,worldRuntime);
   if (blocked) {
     return false;
   }
@@ -661,7 +661,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   /* 32-bit format field: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
   definitionRecord = ModelDefinitionRegistry_FindById
                     (Thandor_U32ToPointer<AiLinkedDefinitionListView>(
-                      ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->definitionIds[0]);
+                      static_cast<ArmyAssetRecordPrefix *>(sourceRuntime)->rootNodeOffsetOrPointer)->definitionIds[0]);
   if (definitionRecord == nullptr) {
     return;
   }

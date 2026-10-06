@@ -1,5 +1,5 @@
 {
- "revision": "ece9a69f",
+ "revision": "3a53087d",
  "worktree": true,
  "files": 692,
  "metrics": {
@@ -116,9 +116,9 @@
   "cstyle_cast": {
    "audio": 23,
    "core": 57,
-   "gameplay": 200,
+   "gameplay": 102,
    "movie": 41,
-   "platform": 158,
+   "platform": 237,
    "ui": 1937,
    "world": 206
   },
@@ -178,7 +178,7 @@
   },
   "constexpr": {
    "core": 45,
-   "gameplay": 1,
+   "gameplay": 2,
    "network": 2,
    "platform": 52,
    "ui": 5,

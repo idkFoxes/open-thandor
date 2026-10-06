@@ -14,7 +14,7 @@
 #include <thandor/core/contracts.h>
 
 Bool8 ArmyCollision_TestPointAgainstRuntimeList
-          (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime);
+          (Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,WorldRuntimeContext *worldRuntime);
 
 ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
           (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryView *currentRuntime,

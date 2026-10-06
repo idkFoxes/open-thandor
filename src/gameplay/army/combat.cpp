@@ -119,7 +119,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
   if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
     ArmyWeaponRuntime_CountDownReloadTimers(modelRuntime,barrelNode,g_InGameSimulationStepTicks);
     weaponDefinitionView = modelRuntime->modelDefinition;
-    ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
+    ownerEntity = ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime);
     rootNode = modelRuntime->rootModelNode;
     aimPointFound = ArmyRuntime_ResolveShotAimPoint
                        ((rootNode->worldTransform).translation.z,
@@ -132,7 +132,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
     if (!aimPointFound) {
       /* no target: move, and turn the turret back to rest while moving or still turning */
       movementArrived = ArmyRuntime_UpdateMovementAndWaypoints
-                         (worldRuntime,(ArmyMovementRuntime *)ownerEntity,&steerWorldXQ12,&steerWorldYQ12);
+                         (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(ownerEntity),&steerWorldXQ12,&steerWorldYQ12);
       if (((!movementArrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
          (modelRuntime->yawTurnVelocityAngle16 != 0)) {
         rootNode = modelRuntime->rootModelNode;
@@ -297,7 +297,8 @@ Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorld
   /* modelRuntime is the weapon's model runtime; ownEntity is its owning army */
   originNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   ownEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
-  weaponDefinition = (ArmyWeaponDefinitionView *)modelRuntime->definitionOrSavedId.runtimeDefinition;
+  /* the weapon view of the model definition */
+  weaponDefinition = reinterpret_cast<ArmyWeaponDefinitionView *>(modelRuntime->definitionOrSavedId.runtimeDefinition.get());
   deltaX = targetWorldXQ12 - (originNode->worldTransform).translation.x;
   minPitchAngle = weaponDefinition->minimumPitchAngle;
   maxPitchAngle = weaponDefinition->maximumPitchAngle;
