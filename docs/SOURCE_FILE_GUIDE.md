@@ -84,7 +84,7 @@ Module header: [`sprite.h`](../include/thandor/assets/sprite.h) · Changelog: `c
 
 Module header: [`text.h`](../include/thandor/assets/text.h) · Changelog: `resources` [full](../CHANGELOG_FULL.md#module-assets-text-resources); `richtext` [dev](../CHANGELOG.md#module-assets-text-richtext) · [full](../CHANGELOG_FULL.md#module-assets-text-richtext)
 
-- [`resources.cpp / resources.h`](source_guide/assets.md#file-assets-text-resources) - no file comment; main functions `TextResource_Resolve`, `TextResourcePage_Load`, `TextResourcePage_LoadCompatibilityAliases`
+- [`resources.cpp / resources.h`](source_guide/assets.md#file-assets-text-resources) - no file comment; main functions `TextResource_Resolve`, `TextResourcePage_Load`, `TextResource_SetUiScaleNote`
 - [`richtext.cpp / richtext.h`](source_guide/assets.md#file-assets-text-richtext) - no file comment; main functions `RichTextCommandStream_PatchPayloadBySelector`, `RichTextCommandStream_CopyExpanded`, `RichTextCommandStream_CopyToNarrow`
 - [`richtext_markup.cpp / richtext_markup.h`](source_guide/assets.md#file-assets-text-richtext-markup) - no file comment; main functions `RichTextMarkup_ParseAndBuildStringAsset`
 - [`types.h`](source_guide/assets.md#file-assets-text-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
