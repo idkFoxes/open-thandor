@@ -13,7 +13,7 @@
    each is guarded in case a translation unit includes the SDK header after all. */
 
 #ifndef MAKEINTRESOURCEA
-#define MAKEINTRESOURCEA(id) ((LPSTR)(uintptr_t)(uint16_t)(id))
+#define MAKEINTRESOURCEA(id) (reinterpret_cast<LPSTR>(static_cast<uintptr_t>(static_cast<uint16_t>(id))))
 #endif
 
 /* SetPriorityClass / SetThreadPriority */
@@ -127,7 +127,7 @@
 #define FALSE 0
 #endif
 #ifndef INVALID_HANDLE_VALUE
-#define INVALID_HANDLE_VALUE ((HANDLE)(intptr_t)-1)
+#define INVALID_HANDLE_VALUE (reinterpret_cast<HANDLE>(static_cast<intptr_t>(-1)))
 #endif
 #ifndef INVALID_FILE_SIZE
 #define INVALID_FILE_SIZE ((DWORD)0xFFFFFFFF)

@@ -83,7 +83,7 @@ extern void *g_ArmyRuntimeRebaseBaseMinusOne;
    (network/protocol/commands.cpp) checks received ones. armyRuntime may be any view of the slot. */
 static inline int32_t ArmyRuntime_Token(const void *armyRuntime)
 {
-  return (int32_t)((uintptr_t)armyRuntime - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+  return (int32_t)(reinterpret_cast<uintptr_t>(armyRuntime) - reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne));
 }
 
 /* The army runtime an army token names; NULL for token 0. */
@@ -92,7 +92,7 @@ static inline ArmyRuntimeSlot *ArmyRuntime_FromToken(int32_t token)
   if (token == 0) {
     return nullptr;
   }
-  return (ArmyRuntimeSlot *)((uintptr_t)(uint32_t)token + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+  return reinterpret_cast<ArmyRuntimeSlot *>((uintptr_t)(uint32_t)token + reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne));
 }
 
 #endif /* THANDOR_GAMEPLAY_ARMY_POOL_H */

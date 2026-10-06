@@ -81,7 +81,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
         modelRuntime->attachment0BackwardStepCountdownTicks = 0;
       }
       partNode = partNode->childNodes[0];
-      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,(FixedVectorStateAddress32)partNode);
+      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
       nodeFlags = &partNode->runtimeFlags;
       *nodeFlags = *nodeFlags | 1;
     }
@@ -136,7 +136,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
                  modelRuntime->attachment0BackwardStepCountdownTicks + recoilTicks;
             partNode = pitchNode->childNodes[0];
             FixedVector_StepBackwardAlongOwnDirection
-                      (recoilTicks,recoilScale,(FixedVectorStateAddress32)partNode);
+                      (recoilTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
             partNode->runtimeFlags = partNode->runtimeFlags | 1;
             ArmyRuntime_SetNonzeroActionVector
                       (launchAngles.headingAngle,weaponDefinition->postLaunchVector1Q12,weaponDefinition->postLaunchVector0Q12
@@ -234,7 +234,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
         modelRuntime->attachment0BackwardStepCountdownTicks = 0;
       }
       partNode = partNode->childNodes[0];
-      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,(FixedVectorStateAddress32)partNode);
+      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
       nodeFlags = &partNode->runtimeFlags;
       *nodeFlags = *nodeFlags | 1;
     }
@@ -250,7 +250,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
         modelRuntime->attachment1BackwardStepCountdownTicks = 0;
       }
       partNode = partNode->childNodes[1];
-      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,(FixedVectorStateAddress32)partNode);
+      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
       nodeFlags = &partNode->runtimeFlags;
       *nodeFlags = *nodeFlags | 1;
     }
@@ -315,7 +315,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
             }
             modelRuntime->alternatingAttachmentSequence++;
             FixedVector_StepBackwardAlongOwnDirection
-                      (recoilTicks,recoilScale,(FixedVectorStateAddress32)partNode);
+                      (recoilTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
             partNode->runtimeFlags = partNode->runtimeFlags | 1;
             ArmyRuntime_SetNonzeroActionVector
                       (launchAngles.headingAngle,weaponDefinition->postLaunchVector1Q12,weaponDefinition->postLaunchVector0Q12

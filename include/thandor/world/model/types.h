@@ -164,7 +164,7 @@ struct ModelRelativeDirectionAngles {
     AngleTurn32 relativePitchAngle; // Transformed elevation/pitch angle retained from FixedMath_VectorToAngles.
 };
 
-/* Typed views of WorldOwnerListNode.runtimePayload (step 13 X3; they replace the (T *)node->runtimePayload casts
+/* Typed views of WorldOwnerListNode.runtimePayload (step 13 X3; they replace the C-style T * casts of node->runtimePayload
    and compile to the same load). The field stays Ptr32<void> (ui/ingame/types.h) because the record it points to
    depends on ownerClassId: WORLD_OWNER_RUNTIME_MODEL -> ModelRuntimeSlot, _SHOT -> ShotRuntimeSlot,
    _EFFECT -> EffectRuntimeSlot. The accessors do not check the class: the caller checks it (or knows its list),
@@ -194,7 +194,7 @@ inline GameEntityRuntime *WorldOwnerNode_EntityRuntime(const WorldOwnerListNode 
    WorldOwnerListNode (owner-list links and scans), ModelRuntimeNode (model hierarchy), ShotModelRuntimeNode or
    EffectModelRuntimeNode (the node of a shot or effect model). They share the WorldRuntimeNodeCommon prefix
    but are separate C++ types, so changing the view is a reinterpret_cast; it is done here, restricted to these
-   types, and compiles to nothing (the (T *)node casts it replaces). */
+   types, and compiles to nothing (the C-style T * casts of node it replaces). */
 struct WorldObjectRecord;
 struct WorldRuntimeNode;
 struct ShotModelRuntimeNode;

@@ -162,7 +162,7 @@ static void InGameFactionEconomy_CapStocksAtStorageLimits()
    energy demand). */
 static void InGameFactionEconomy_FillEnergyConsumer(FactionEnergyConsumerEntry *consumer,int *modelRuntime)
 {
-  consumer->modelRuntime = (uint32_t)(uintptr_t)modelRuntime;
+  consumer->modelRuntime = (uint32_t)reinterpret_cast<uintptr_t>(modelRuntime);
   consumer->factionIndex = reinterpret_cast<ModelRuntimeSlot *>(modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex;
   consumer->demandQ4 = modelRuntime[61];
   consumer->priority =
