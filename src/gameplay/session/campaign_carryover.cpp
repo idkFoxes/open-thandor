@@ -112,7 +112,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
       continue;
     }
     /* the owner army holds the faction and the army asset id */
-    modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    modelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
     unitFactionIndex = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex;
     if (scenarioLevel->exitZoneRadius[unitFactionIndex] <= 0) {
       continue;

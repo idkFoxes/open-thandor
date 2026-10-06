@@ -65,15 +65,15 @@ void Technology_UnlockForFaction
   for (ownerNode = (root->worldRuntime).ownerListHead; ownerNode != nullptr;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+      ownerArmy = WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
       if (factionIndex == ownerArmy->factionIndex) {
         ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(factionIndex,ownerArmy);
       }
     }
   }
   if (factionIndex == (root->worldRuntime).activeFactionRuntimeIndex) {
-    InGameBuildCatalog_RebuildGrid((UiNodeBase *)root);
-    InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)root);
+    InGameBuildCatalog_RebuildGrid(&root->rootUi.base);
+    InGameSpecialBuildCatalog_RebuildGrid(&root->rootUi.base);
   }
 }
 
@@ -84,7 +84,8 @@ void Technology_UnlockForFaction
 Bool8 Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
-  if ((*(uint32_t *)(factionIndex * (int)sizeof(GameFactionRuntimeRecord) +
+  /* the mask dword at an address computed as an integer (factionIndex records on from the image) */
+  if ((*reinterpret_cast<uint32_t *>(factionIndex * (int)sizeof(GameFactionRuntimeRecord) +
                     THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,technologyMasks256Bits)) +
                     (technologyIndex >> 5) * 4) &
       1 << ((uint8_t)technologyIndex & 31)) != 0) {
@@ -125,7 +126,7 @@ Bool8 Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fa
   for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != nullptr;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      researchingModel = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+      researchingModel = WorldOwnerNode_ModelRuntime(ownerNode);
       if ((researchingModel->classState.stateFlags & ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING) != 0 &&
           factionIndex == researchingModel->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex &&
           technologyIndex == researchingModel->researchTechnologyId) {
@@ -197,11 +198,12 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks()
   for (registrySlotIndex = 0; registrySlotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotIndex++) {
     armyAssetRecord = g_ArmyAssetRecordRegistry[registrySlotIndex];
     if ((armyAssetRecord != nullptr) &&
-       ((((ArmyAssetRecord *)armyAssetRecord)->flags & 1) != 0)) {
+       ((reinterpret_cast<ArmyAssetRecord *>(armyAssetRecord)->flags & 1) != 0)) { /* full record view */
       /* the root node's model definition id (ArmyModelTreeNode.linkedDefinitionIds[0]) */
-      definitionRecord = (ModelDefinition *)ModelDefinitionRegistry_FindById
+      /* the registry returns the record prefix; the full definition view of the same record */
+      definitionRecord = reinterpret_cast<ModelDefinition *>(ModelDefinitionRegistry_FindById
                         (*Thandor_U32ToPointer<PckModelDefinitionIdCatalog>(
-                          armyAssetRecord->rootNodeOffsetOrPointer + 32)); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                          armyAssetRecord->rootNodeOffsetOrPointer + 32))); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
       if (definitionRecord != nullptr) {
         /* per target class (targetClassIndex) the largest armour (maximumHealth); for mobile models
            (accelerationPerTick) the top speed (movementSpeed) */
@@ -256,7 +258,8 @@ ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefiniti
                          (ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,linkedDefinitionList));
   if (selectedDefinition == nullptr) {
     /* Original quirk: the error code of the failed lookup is returned as the definition */
-    selectedDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
+    selectedDefinition = reinterpret_cast<ModelDefinitionRecordPrefix *>
+                         (static_cast<uintptr_t>(FATAL_ERROR_MODEL_DEFINITION_MISSING));
   }
   return selectedDefinition;
 }
@@ -286,7 +289,7 @@ void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 {
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   ModelDefinitionHierarchy_UnlockFrom(
-       factionIndex,Thandor_U32ToPointer<ArmyModelTreeNode>(((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer)); /* 32-bit format field: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+       factionIndex,Thandor_U32ToPointer<ArmyModelTreeNode>(reinterpret_cast<ArmyAssetRecordPrefix *>(static_cast<uintptr_t>(definitionNode))->rootNodeOffsetOrPointer)); /* 32-bit format field: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 /* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true as soon as
@@ -319,7 +322,7 @@ Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   return ModelDefinitionHierarchy_AnyTechnologyFrom
                    (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                    Thandor_U32ToPointer<ArmyModelTreeNode>(((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer)); /* 32-bit format field: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+                    Thandor_U32ToPointer<ArmyModelTreeNode>(reinterpret_cast<ArmyAssetRecordPrefix *>(static_cast<uintptr_t>(definitionNode))->rootNodeOffsetOrPointer)); /* 32-bit format field: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 /* Same selection as ModelDefinition_SelectFactionUnlockedLinkedDefinition, but returns the chosen id
@@ -335,10 +338,10 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
   PckModelDefinitionIdCatalog selectedDefinitionId;
   Bool8 technologyLocked;
 
-  selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
+  selectedDefinitionId = reinterpret_cast<ArmyModelTreeNode *>(linkedDefinitionList)->linkedDefinitionIds[0];
   for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
     /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
-    linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
+    linkedDefinitionId = reinterpret_cast<ArmyModelTreeNode *>(linkedDefinitionList)->linkedDefinitionIds[0];
     if (linkedDefinitionId != 0) {
       /* true means the technology is still locked */
       technologyLocked = ModelDefinition_IsFactionTechnologyLocked
@@ -365,7 +368,7 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
   modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
   if (modelDefinition != nullptr) {
     Technology_UnlockForFaction
-              (0,0,((ModelDefinition *)modelDefinition)->researchTechnologyIds[0],factionIndex);
+              (0,0,reinterpret_cast<ModelDefinition *>(modelDefinition)->researchTechnologyIds[0],factionIndex);
   }
 }
 
@@ -384,6 +387,6 @@ Bool8 ModelDefinition_IsFactionTechnologyLocked
   if (modelDefinition == nullptr) {
     return true;
   }
-  technologyBitIndex = ((ModelDefinition *)modelDefinition)->requiredTechnologyBit;
+  technologyBitIndex = reinterpret_cast<ModelDefinition *>(modelDefinition)->requiredTechnologyBit;
   return (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 31)) == 0;
 }

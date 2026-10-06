@@ -32,8 +32,8 @@ void InGameSelection_SelectAllOwnAircraftPads
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       /* model payload: the ModelRuntimeSlot; its owner army is the entity */
       entityRuntime =
-           (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-      if ((((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
+           WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
+      if ((WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
            MODEL_RUNTIME_CLASS_22) &&
          ((entityRuntime->common).ownership.ownerIndex ==
           g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->factionIndex))
@@ -46,7 +46,7 @@ void InGameSelection_SelectAllOwnAircraftPads
   }
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
-    InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+    InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
   }
 }
 
@@ -62,14 +62,16 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
   ArmyRuntimeSlot *sourceArmyRuntime;
 
   if (armyRuntimeIndex != 0) {
-    sourceArmyRuntime = (ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex);
+    /* army token: byte offset from g_ArmyRuntimeRebaseBaseMinusOne */
+    sourceArmyRuntime = reinterpret_cast<ArmyRuntimeSlot *>
+                        (reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne) + armyRuntimeIndex);
     SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
     if (sourceArmyRuntime->modelNodeRuntime != nullptr) {
       SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
                 (sourceArmyRuntime,&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
       if (playerId == g_LocalPlayerRuntimeId) {
         InGameSelectionDetailPanel_Rebuild();
-        InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+        InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
       }
     }
   }
@@ -111,11 +113,13 @@ void InGamePlayerSelection_SelectArmyRuntimeIndex
           RuntimeToken armyRuntimeIndex)
 
 {
+  /* army token: byte offset from g_ArmyRuntimeRebaseBaseMinusOne */
   if ((armyRuntimeIndex != 0) &&
-     (((ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex))->
-      modelNodeRuntime != nullptr)) {
+     (reinterpret_cast<ArmyRuntimeSlot *>
+      (reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne) + armyRuntimeIndex)->modelNodeRuntime != nullptr)) {
     SelectionPointerArray_ApplyArmyRuntimeTarget
-              ((ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex),
+              (reinterpret_cast<ArmyRuntimeSlot *>
+               (reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne) + armyRuntimeIndex),
                &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   }
 }
@@ -140,7 +144,7 @@ void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId player
 
 {
   SelectionRuntime_ResetMovementPruneAndRecenterEntries
-            ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            (g_SelectionPlayerRuntimeBlockPointers[playerId]->selection.entries);
 }
 
 /* In-game command handler 0xE30 (Shift+S): resets the movement anchors of the eligible entries of the player's
@@ -153,7 +157,7 @@ void PlayerSelection_StopMovement
 
 {
   SelectionRuntime_StopMovement
-            ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            (g_SelectionPlayerRuntimeBlockPointers[playerId]->selection.entries);
 }
 
 /* In-game command handler 0xE50 (Alt+S): interrupts the active targets of the eligible entries of the player's
@@ -165,7 +169,7 @@ void PlayerSelection_CancelTargets
 
 {
   SelectionRuntime_CancelTargets
-            ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            (g_SelectionPlayerRuntimeBlockPointers[playerId]->selection.entries);
 }
 
 /* In-game command handler 0xE70 (Alt+D): applies the model hierarchy flags 0x418 to the eligible entries of the
@@ -177,7 +181,7 @@ void PlayerSelection_SelfDestruct
 
 {
   SelectionRuntime_SelfDestruct
-            ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            (g_SelectionPlayerRuntimeBlockPointers[playerId]->selection.entries);
 }
 
 /* Pointer-mode handler for lane 1 (g_InGamePointerModeHandlers[1], chosen in ui/ingame/world_input.cpp when the
@@ -233,7 +237,7 @@ void SelectionPointerArray_ApplyMoveCommand
   entryTargetY = targetWorldY;
   entryTargetX = targetWorldX;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
-    movementRuntime = (ArmyMovementRuntime *)selection->entries[entryIndex];
+    movementRuntime = static_cast<ArmyMovementRuntime *>(selection->entries[entryIndex]); /* view of the army */
     if (movementRuntime == nullptr) {
       continue;
     }
@@ -267,7 +271,7 @@ void SelectionPointerArray_ApplyMoveCommand
     }
   }
   if ((selectedEntryCount == 1) && (singleClass13Entry != nullptr)) {
-    class13Record = (ModelRuntimeSlot *)(singleClass13Entry->common).ownership.definitionOrClassRecord;
+    class13Record = (singleClass13Entry->common).ownership.modelRuntime();
     class13Record->classLinkState.classState78 = targetWorldX;
     class13Record->classLinkState.classState7C = targetWorldY;
     class13Record->classState.stateFlags = class13Record->classState.stateFlags | ARMY_MODEL_STATE_RALLY_POINT_SET;
@@ -297,7 +301,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(Ptr32<GameEntityRunti
   ModelWorldPoint localPoint;
 
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
-    entryArmy = (ArmyRuntimeSlot *)selectionEntries[entryIndex];
+    entryArmy = static_cast<ArmyRuntimeSlot *>(selectionEntries[entryIndex]);
     if ((entryArmy == nullptr) || ((entryArmy->movementStateFlags & ARMY_MOVEMENT_LOCKED) != 0)) {
       continue;
     }
@@ -313,7 +317,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(Ptr32<GameEntityRunti
   selectedEntryCount = 0;
   singleClass13Entry = nullptr;
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition
-            ((SelectionPointerArray32 *)selectionEntries);
+            (reinterpret_cast<SelectionPointerArray32 *>(selectionEntries)); /* the entries are the whole array */
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     selectedEntry = selectionEntries[entryIndex];
     if (selectedEntry == nullptr) {
@@ -329,14 +333,14 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(Ptr32<GameEntityRunti
     }
   }
   if ((selectedEntryCount == 1) && (singleClass13Entry != nullptr)) {
-    class13Record = (ModelRuntimeSlot *)(singleClass13Entry->common).ownership.definitionOrClassRecord;
+    class13Record = (singleClass13Entry->common).ownership.modelRuntime();
     modelNodeRuntime = (singleClass13Entry->common).ownership.modelNode;
     class13Record->classState.stateFlags = class13Record->classState.stateFlags & ~ARMY_MODEL_STATE_RALLY_POINT_SET;
     if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
       localPoint = ModelNodeRuntime_TransformLocalPoint(anchorRecord,modelNodeRuntime);
       class13Record->classLinkState.classState78 = localPoint.xQ12;
       class13Record->classLinkState.classState7C = localPoint.yQ12;
-      SelectionPointerArray_Clear32((SelectionPointerArray32 *)selectionEntries);
+      SelectionPointerArray_Clear32(reinterpret_cast<SelectionPointerArray32 *>(selectionEntries));
     }
   }
 }
@@ -368,7 +372,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
         targetWorldY = targetWorldY + movementRuntime->ownerValue64;
       }
     }
-    selection = (SelectionPointerArray32 *)&selection->entries[1]; /* next entry */
+    selection = reinterpret_cast<SelectionPointerArray32 *>(&selection->entries[1]); /* next entry */
     entriesRemaining--;
   } while (entriesRemaining != 0);
 }
@@ -399,7 +403,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
         runtimeState->movementStateFlags = runtimeState->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
       }
     }
-    selection = (SelectionPointerArray32 *)&selection->entries[1]; /* next entry */
+    selection = reinterpret_cast<SelectionPointerArray32 *>(&selection->entries[1]); /* next entry */
     entriesRemaining--;
   } while (entriesRemaining != 0);
 }
@@ -431,7 +435,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
         runtimeState->commandGeneration = runtimeState->commandGeneration << 2;
       }
     }
-    selection = (SelectionPointerArray32 *)&selection->entries[1]; /* next entry */
+    selection = reinterpret_cast<SelectionPointerArray32 *>(&selection->entries[1]); /* next entry */
     entriesRemaining--;
   } while (entriesRemaining != 0);
 }
@@ -467,17 +471,17 @@ void SelectionRuntime_StopMovement(Ptr32<GameEntityRuntime> *selectionEntries)
 void SelectionRuntime_CancelTargets(Ptr32<GameEntityRuntime> *selectionEntries)
 
 {
-  GameEntityRuntime *armyRuntime;
+  ArmyRuntimeSlot *armyRuntime;
   int entriesRemaining;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
-    armyRuntime = *selectionEntries;
+    armyRuntime = static_cast<ArmyRuntimeSlot *>(*selectionEntries);
     if ((armyRuntime != nullptr) &&
-       ((((ArmyRuntimeSlot *)armyRuntime)->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
-      ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration((ArmyRuntimeSlot *)armyRuntime);
-      ((ArmyRuntimeSlot *)armyRuntime)->commandModeFlags =
-           ((ArmyRuntimeSlot *)armyRuntime)->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
+       ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
+      ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(armyRuntime);
+      armyRuntime->commandModeFlags =
+           armyRuntime->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
     }
     selectionEntries = selectionEntries + 1;
     entriesRemaining--;
@@ -500,7 +504,7 @@ void SelectionRuntime_SelfDestruct(Ptr32<GameEntityRuntime> *selectionEntries)
     modelRuntime = *selectionEntries;
     if ((modelRuntime != nullptr) &&
        (((modelRuntime->common).commandFlags & 2) == 0)) {
-      ModelRuntimeHierarchy_MarkDestroyedRecursive(contextArg,(ArmyRuntimeSlot *)modelRuntime);
+      ModelRuntimeHierarchy_MarkDestroyedRecursive(contextArg,static_cast<ArmyRuntimeSlot *>(*selectionEntries));
     }
     selectionEntries = selectionEntries + 1;
     entriesRemaining--;
