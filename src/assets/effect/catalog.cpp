@@ -7,6 +7,7 @@
 
 #include <thandor/assets/effect/catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
@@ -39,7 +40,7 @@ Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
     return false;
   }
   registrationStatusCode = FATAL_ERROR_EFFECT_ASSET_INVALID;
-  definition = (EffectDefinition *)(asset + 1);
+  definition = Asset_RecordAfter<EffectDefinition>(asset);
   for (remainingEntryCount = asset->entryCountHeader.entryCount; remainingEntryCount != 0;
        remainingEntryCount--) {
     if (!EffectDefinition_RegisterAndLoadSprite(definition,&registrationStatusCode)) {
@@ -139,7 +140,7 @@ Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32
     *outError = FATAL_ERROR_EFFECT_ID_NOT_FOUND;
     return false;
   }
-  loadedSpriteAsset = (SpriteAssetHeader *)Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
+  loadedSpriteAsset = static_cast<SpriteAssetHeader *>(Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode));
   if (loadedSpriteAsset == nullptr) {
     *outError = loadErrorCode;
     return false;

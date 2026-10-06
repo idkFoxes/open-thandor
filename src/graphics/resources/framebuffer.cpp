@@ -61,7 +61,7 @@ void GraphicsFramebuffer_InitCaptureAsset
   uint32_t remainingDwords;
   uint32_t packedTimestamp;
 
-  clearDword = (uint32_t *)capturedAsset;
+  clearDword = reinterpret_cast<uint32_t *>(capturedAsset); /* the whole block, cleared dword by dword */
   for (remainingDwords = allocationSize >> 2; remainingDwords != 0; remainingDwords--) {
     *clearDword = 0;
     clearDword++;

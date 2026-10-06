@@ -7,6 +7,7 @@
 
 #include <thandor/assets/scenario/catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -49,8 +50,9 @@ static uint32_t ScenarioCatalog_FreeRecordSlots()
 static void ScenarioCatalog_CopyFileIntoSection
           (ScenarioCatalogRecord *sectionRecords,const void *fileBytes,uint32_t byteCount)
 {
-  uint32_t *destinationDword = (uint32_t *)sectionRecords;
-  const uint32_t *sourceDword = (const uint32_t *)fileBytes;
+  /* the file's bytes are copied as dwords over the records */
+  uint32_t *destinationDword = reinterpret_cast<uint32_t *>(sectionRecords);
+  const uint32_t *sourceDword = static_cast<const uint32_t *>(fileBytes);
   uint32_t dwordsRemaining;
 
   for (dwordsRemaining = byteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
@@ -105,9 +107,9 @@ static ScenarioCatalogRecordCount ScenarioCatalog_MergeAddOnFiles
   do {
     if (Resource_Load(pathTemplate,&loadedBuffer,&loadedByteCount,nullptr)) {
       recordCount = ScenarioCatalog_MergeRecordsByName
-                        (loadedByteCount,(ScenarioCatalogRecord *)loadedBuffer,recordCount,sectionRecords,
+                        (loadedByteCount,static_cast<ScenarioCatalogRecord *>(loadedBuffer),recordCount,sectionRecords,
                          maxRecordCount);
-      Resource_Release((ScenarioCatalogRecord *)loadedBuffer);
+      Resource_Release(loadedBuffer);
     }
     decimalDigits->codeUnits[1]++;
     if (decimalDigits->codeUnits[1] >= '9' + 1) {
@@ -147,7 +149,7 @@ void ScenarioCatalog_Rebuild()
   g_MemoryApi.free(g_ScenarioCatalog);
   allocationError = g_MemoryApi.alloc(SCENARIO_CATALOG_CAPACITY,&allocationPayload);
   checkedValue = FatalError_ExitIfFailed(allocationError != 0 ? allocationError : (uintptr_t)allocationPayload,allocationError != 0);
-  catalog = (ScenarioCatalogHeader *)checkedValue;
+  catalog = reinterpret_cast<ScenarioCatalogHeader *>(checkedValue); /* the allocation, passed through as an integer */
   g_ScenarioCatalogUsedBytes = SCENARIO_CATALOG_HEADER_SIZE;
   g_ScenarioCatalog = catalog;
   catalog->levelRecordsOffset = SCENARIO_CATALOG_HEADER_SIZE;
@@ -156,13 +158,12 @@ void ScenarioCatalog_Rebuild()
   catalog->levelRecordCount = 0;
   catalog->campaignRecordCount = 0;
   catalog->saveRecordCount = 0;
-  loaded = Resource_Load((uint16_t *)g_LevelLevelDatPathUtf16,&loadedBuffer,&loadedByteCount,nullptr);
+  loaded = Resource_Load(g_LevelLevelDatPathUtf16,&loadedBuffer,&loadedByteCount,nullptr);
   catalog = g_ScenarioCatalog;
   if (loaded) {
-    recordsBase = (ScenarioCatalogRecord *)
-             ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
+    recordsBase = Asset_RecordAt<ScenarioCatalogRecord>(g_ScenarioCatalog,g_ScenarioCatalog->levelRecordsOffset);
     recordCount = ScenarioCatalog_CopyDataFileIntoSection(recordsBase,loadedBuffer,loadedByteCount,"level.dat");
-    Resource_Release((uint32_t *)loadedBuffer);
+    Resource_Release(loadedBuffer);
     loaded = recordCount != 0;
   }
   if (loaded) {
@@ -179,14 +180,13 @@ void ScenarioCatalog_Rebuild()
       recordCount--;
     } while (recordCount != 0);
   }
-  loaded = Resource_Load((uint16_t *)g_LevelCampagneDatPathUtf16,&loadedBuffer,&loadedByteCount,nullptr);
+  loaded = Resource_Load(g_LevelCampagneDatPathUtf16,&loadedBuffer,&loadedByteCount,nullptr);
   catalog = g_ScenarioCatalog;
   if (loaded) {
-    recordsBase = (ScenarioCatalogRecord *)
-             ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->campaignRecordsOffset);
+    recordsBase = Asset_RecordAt<ScenarioCatalogRecord>(g_ScenarioCatalog,g_ScenarioCatalog->campaignRecordsOffset);
     recordCount = ScenarioCatalog_CopyDataFileIntoSection(recordsBase,loadedBuffer,loadedByteCount,
                                                           "campagne.dat");
-    Resource_Release((uint32_t *)loadedBuffer);
+    Resource_Release(loadedBuffer);
     loaded = recordCount != 0;
   }
   if (loaded) {
@@ -203,15 +203,13 @@ void ScenarioCatalog_Rebuild()
     } while (recordCount != 0);
   }
   WidePath_CombineDirectoryAndLeaf
-            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveSvePatternUtf16,
-             (uint16_t *)&g_ExecutableDirectoryUtf16);
+            (g_ScenarioCatalogPathScratchUtf16,g_SaveSvePatternUtf16,g_ExecutableDirectoryUtf16);
   saveFilesRemaining = g_FileSystemEnumerateDirectoryOrVolumeEntries
                      (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
-                      (uint8_t *)g_ScenarioCatalogPathScratchUtf16);
+                      reinterpret_cast<uint8_t *>(g_ScenarioCatalogPathScratchUtf16)); /* the UTF-16 pattern, passed as bytes */
   catalog = g_ScenarioCatalog;
   if (saveFilesRemaining != 0) {
-    saveRecord = (ScenarioCatalogSaveRecord *)
-                 ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->saveRecordsOffset);
+    saveRecord = Asset_RecordAt<ScenarioCatalogSaveRecord>(g_ScenarioCatalog,g_ScenarioCatalog->saveRecordsOffset);
     saveFileEntry = g_PackageScratchBuffer;
     do {
       if (ScenarioCatalog_FreeRecordSlots() == 0) {
@@ -221,10 +219,9 @@ void ScenarioCatalog_Rebuild()
         break;
       }
       WidePath_CombineDirectoryAndLeaf
-                (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
-                 (uint16_t *)&g_ExecutableDirectoryUtf16);
+                (g_ScenarioCatalogPathScratchUtf16,g_SaveDirectoryUtf16,g_ExecutableDirectoryUtf16);
       WidePath_CombineDirectoryAndLeaf
-                (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)saveFileEntry,
+                (g_ScenarioCatalogPathScratchUtf16,reinterpret_cast<uint16_t *>(saveFileEntry), /* the entry starts with the UTF-16 name */
                  g_ScenarioCatalogPathScratchUtf16);
       openError = g_FileSystemOpen
                          (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,g_ScenarioCatalogPathScratchUtf16,
@@ -273,8 +270,9 @@ void ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,u
 static Bool8 ScenarioCatalog_RecordIdentifiersEqual
           (const ScenarioCatalogRecord *firstRecord,const ScenarioCatalogRecord *secondRecord)
 {
-  const uint32_t *firstDwords = (const uint32_t *)firstRecord->identifier;
-  const uint32_t *secondDwords = (const uint32_t *)secondRecord->identifier;
+  /* the UTF-16 identifiers compared as dwords */
+  const uint32_t *firstDwords = reinterpret_cast<const uint32_t *>(firstRecord->identifier);
+  const uint32_t *secondDwords = reinterpret_cast<const uint32_t *>(secondRecord->identifier);
   uint32_t dwordIndex;
 
   for (dwordIndex = 0; dwordIndex < sizeof(firstRecord->identifier) / 4; dwordIndex++) {

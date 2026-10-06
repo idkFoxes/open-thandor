@@ -748,6 +748,11 @@ static_assert(sizeof(GraphicsProjectedVertexSource) == 0x38,
               "GraphicsProjectedVertexSource keeps its 32-bit layout");
 static_assert(sizeof(GraphicsPaletteTextureSourceAsset) == 0x208,
               "GraphicsPaletteTextureSourceAsset keeps its 32-bit layout");
+/* GraphicsTextureSet_AllocateMetadata reads the record table offset through either view of the same block */
+static_assert(offsetof(GraphicsPaletteTextureSourceAsset, subresourceTableOffset) == 0xB8 &&
+                  offsetof(GraphicsTextureSourceAsset, tableDescriptor) +
+                          offsetof(GraphicsTextureSourceTableDescriptor, subresourceTableOffset) == 0xB8,
+              "both texture source views hold subresourceTableOffset at +0xB8");
 static_assert(sizeof(SoftwareBgraWordLanes) == 0x8,
               "SoftwareBgraWordLanes keeps its 32-bit layout");
 static_assert(sizeof(SoftwarePixelFormatConfig) == 0x24,
