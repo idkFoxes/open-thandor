@@ -698,8 +698,8 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
                 ((control->base).layoutHeight,(control->base).layoutWidth,(control->base).top,(control->base).left,
                  control->blendedSourcePixels,control->blendFactorPixels,
                  control->incomingSubresource,
-                 control->outgoingSubresource,(int *)control->textureSource,
-                 (int *)g_FramebufferAccess);
+                 control->outgoingSubresource,control->textureSource,
+                 g_FramebufferAccess);
       g_GraphicsFramebufferEndAccess();
     }
   }

@@ -755,6 +755,15 @@ struct ModelResource {
     ModelPackedGeometryRecordCount packedGeometryRecordCount; 
     uint8_t reserved208_20B[4]; 
     ModelResourceHitTestFlags hitTestFlags20C; 
+
+    /* The packed point table: packedLookupTableEntryCount records at the resource-relative byte offset
+       packedLookupTableRelativeOffset (step 13 X5; replaces the byte-offset casts to ModelPackedPointRecord at the
+       users, same address arithmetic). */
+    ModelPackedPointRecord *packedPointRecords()
+    {
+        return reinterpret_cast<ModelPackedPointRecord *>(reinterpret_cast<uint8_t *>(this) +
+                                                          packedLookupTableRelativeOffset);
+    }
 };
 
 union GameEntityDamageCounterOrTerminalReference4 {

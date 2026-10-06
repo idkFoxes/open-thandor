@@ -113,7 +113,7 @@ Bool8 ArmyPlacement_TestModelTerrainAndRuntimeClearance
            (anchorWorldPoint.zQ12 - placementDefinition->placementHeightOffsetQ12) -
            ((modelNodeRuntime->modelPayload).modelResource)->placementHeightOffsetQ12;
       blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
-                        ((WorldOwnerListNode *)modelNodeRuntime,worldXQ12,worldYQ12,
+                        (ModelView_Cast<WorldOwnerListNode>(modelNodeRuntime),worldXQ12,worldYQ12,
                          nullptr,ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,worldRuntime);
       if (!blocked) {
         if (modelRuntime->modelDefinition->placementContactKindIndex == ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
@@ -164,7 +164,7 @@ Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
   g_ArmyPlacementValidatedWorldYQ12 = worldYQ12;
   if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                          (placementMode,0,placementHeading,worldYQ12,worldXQ12,armyAssetId,
-                          ownerFactionId,(UiRootNode *)inGameRuntime,nullptr)) {
+                          ownerFactionId,static_cast<WorldRuntimeContext *>(inGameRuntime),nullptr)) {
     return false;
   }
   for (corner = 0; corner < 4; corner++) {
@@ -172,7 +172,7 @@ Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
     Q12 y = (Q12)(((uint32_t)worldYQ12 & 0xffffff00) + cornerDy[corner]);
     if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                            (placementMode,0,placementHeading,y,x,armyAssetId,ownerFactionId,
-                            (UiRootNode *)inGameRuntime,nullptr)) {
+                            static_cast<WorldRuntimeContext *>(inGameRuntime),nullptr)) {
       g_ArmyPlacementValidatedWorldXQ12 = x;
       g_ArmyPlacementValidatedWorldYQ12 = y;
       return false;
@@ -209,7 +209,7 @@ Bool8 ArmyPlacement_CanPlaceResourceExtractor
 
   if (!ArmyPlacement_CanPlaceBuilding
                     (placementMode,placementClearancePaddingQ12,placementHeading,terrainHeightQ12,
-                     worldYQ12,worldXQ12,(ModelDefinition *)modelDefinition,
+                     worldYQ12,worldXQ12,ModelView_Cast<ModelDefinition>(modelDefinition),
                      ownerFactionIndex,worldRuntime,&clearanceValue)) {
     return false;
   }
@@ -223,7 +223,7 @@ Bool8 ArmyPlacement_CanPlaceResourceExtractor
       (cellColumn < (int)activeFieldGrid->gridWidth) && (cellRow < (int)activeFieldGrid->gridHeight)) {
     /* the resource field selector of an extractor is its class parameter classParameterC0 */
     if ((activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * cellRow + cellColumn)].flagsAndMaterial &
-        FIELD_CELL_XENITE_SUPPORT << ((uint8_t)((ModelDefinition *)modelDefinition)->classParameterC0 & 31)) != 0) {
+        FIELD_CELL_XENITE_SUPPORT << ((uint8_t)ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0 & 31)) != 0) {
       *outPlacementValue = clearanceValue;
       return true;
     }
@@ -252,7 +252,7 @@ Bool8 ArmyPlacement_TestGridOccupancyMask
   
   rootNode = modelRuntime->rootModelNode;
   blocked = ArmyPlacementCollision_TestCurrentRuntime
-                    (worldRuntime,(ModelRuntimePlacementValidationView *)modelRuntime);
+                    (worldRuntime,ModelView_Cast<ModelRuntimePlacementValidationView>(modelRuntime));
   if (!blocked) {
     gridCoordinates = FieldGrid_WorldToGridQ12
                       ((rootNode->worldTransform).translation.y,
@@ -383,7 +383,7 @@ Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
           uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
-          UiRootNode *inGameRoot,uint32_t *outPlacementValue)
+          WorldRuntimeContext *worldRuntime,uint32_t *outPlacementValue)
 
 {
   uint32_t assetClassIndex;
@@ -401,14 +401,13 @@ Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
   if (modelDefinition == nullptr) {
     return false;
   }
-  assetClassIndex = ((ModelDefinition *)modelDefinition)->runtimeClassId;
-  /* placementContactKindIndex selects the height interpolation mode; the field grid is the in-game
-     runtime's worldRuntime.fieldGrid, read here through the UiRootNode view (previousRoot) */
-  (*g_FieldGridInterpolationCallbacks5.callbacks[((ModelDefinition *)modelDefinition)->placementContactKindIndex])
-            (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot,&terrainHeightQ12);
+  assetClassIndex = ModelView_Cast<ModelDefinition>(modelDefinition)->runtimeClassId;
+  /* placementContactKindIndex selects the height interpolation mode on the world's field grid */
+  (*g_FieldGridInterpolationCallbacks5.callbacks[ModelView_Cast<ModelDefinition>(modelDefinition)->placementContactKindIndex])
+            (worldYQ12,worldXQ12,worldRuntime->fieldGrid,&terrainHeightQ12);
   if (!(*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex])
             (placementMode,placementClearancePaddingQ12,placementHeading,terrainHeightQ12,
-             worldYQ12,worldXQ12,modelDefinition,ownerFactionIndex,(WorldRuntimeContext *)inGameRoot,
+             worldYQ12,worldXQ12,modelDefinition,ownerFactionIndex,worldRuntime,
              &placementValue)) {
     return false;
   }
@@ -495,7 +494,7 @@ Bool8 ArmyPlacement_CanPlaceBuilding
     }
     /* the model's definition: support radius (supportRadius) and class id; the owner army holds the owner
        faction */
-    supporter = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    supporter = WorldOwnerNode_ModelRuntime(ownerNode);
     supporterDefinition = supporter->definitionOrSavedId.runtimeDefinition;
     supportReachQ12 = supporterDefinition->supportRadius;
     if ((supportReachQ12 == 0) ||
@@ -668,21 +667,21 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   }
   overlayExtent = UINT32_MAX;
   ownerNode = worldRuntime->ownerListHead;
-  overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags;
+  overlayBaseOffset = ModelView_Cast<ModelDefinition>(definitionRecord)->placementFlags;
   if (ownerNode == nullptr) {
     return;
   }
-  if (((ModelDefinition *)definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
+  if (ModelView_Cast<ModelDefinition>(definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
     overlayExtent =
-         FIELD_CELL_XENITE_SUPPORT << ((uint8_t)((ModelDefinition *)definitionRecord)->classParameterC0 & 31);
+         FIELD_CELL_XENITE_SUPPORT << ((uint8_t)ModelView_Cast<ModelDefinition>(definitionRecord)->classParameterC0 & 31);
   }
   overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
-           [((ModelDefinition *)definitionRecord)->placementContactKindIndex];
+           [ModelView_Cast<ModelDefinition>(definitionRecord)->placementContactKindIndex];
   for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    modelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
     if (worldRuntime->activeFactionRuntimeIndex !=
         modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) {
       continue;

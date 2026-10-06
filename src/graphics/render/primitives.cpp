@@ -18,7 +18,7 @@ static const uint64_t g_VertexColorAlphaPreserveMaskMMX = 0xFF000000ull;
 
 static const uint64_t g_VertexColorRgbHalveMaskMMX = 0xFEFEFEull;
 
-static uint32_t g_PrimitiveRadixBucketWords[256] = {};
+static GraphicsPrimitiveRadixBucket g_PrimitiveRadixBuckets[256] = {};
 
 static uint32_t g_PrimitiveQueuePoolCapacity = 0;
 
@@ -35,7 +35,7 @@ static uint32_t GraphicsPrimitiveQueue_RenderSortKey(const GraphicsPrimitivePack
 }
 
 /* One stable radix pass of GraphicsPrimitiveQueue_RadixSortForRendering over the key byte at keyShift: counts
-   the keys per bucket in g_PrimitiveRadixBucketWords, turns the counts into write cursors into destination
+   the keys per bucket in g_PrimitiveRadixBuckets, turns the counts into write cursors into destination
    (bucket 0xFF first, so the order is descending) and copies sortKey and packet of every source node, in source
    order, to its bucket's next slot. The links of the nodes are not copied. */
 static void GraphicsPrimitiveQueue_RadixPass(const GraphicsPrimitiveQueueNode *source,
@@ -49,7 +49,7 @@ static void GraphicsPrimitiveQueue_RadixPass(const GraphicsPrimitiveQueueNode *s
   uint32_t nodeIndex;
   int bucketIndex;
 
-  buckets = (GraphicsPrimitiveRadixBucket *)g_PrimitiveRadixBucketWords;
+  buckets = g_PrimitiveRadixBuckets;
   for (bucketIndex = 0; bucketIndex < 256; bucketIndex++) {
     buckets[bucketIndex].count = 0;
   }
@@ -151,16 +151,16 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
 uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity)
 
 {
-  GraphicsPrimitiveQueue *allocatedQueueStorage;
+  void *allocatedQueueStorage;
   uint32_t allocError;
 
   g_PrimitiveQueuePoolCapacity = packetCapacity;
   allocError = g_MemoryApi.alloc(packetCapacity * GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET +
-                                 GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES,(void **)&allocatedQueueStorage);
+                                 GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES,&allocatedQueueStorage);
   if (allocError != 0) {
     return allocError;
   }
-  g_PrimitiveQueueStorage = allocatedQueueStorage;
+  g_PrimitiveQueueStorage = static_cast<GraphicsPrimitiveQueue *>(allocatedQueueStorage);
   return 0;
 }
 
@@ -182,8 +182,9 @@ GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal()
   g_PrimitiveQueueStorage->capacity = g_PrimitiveQueuePoolCapacity;
   globalQueue->count = 0;
   globalQueue->radixScratchPool = globalQueue->primaryNodes + poolCapacity;
+  /* the packets are the rest of the same block, after the two node arrays */
   globalQueue->packetPool =
-       (GraphicsPrimitivePacket *)(globalQueue->primaryNodes + poolCapacity + poolCapacity);
+       reinterpret_cast<GraphicsPrimitivePacket *>(globalQueue->primaryNodes + poolCapacity + poolCapacity);
   return globalQueue;
 }
 

@@ -24,7 +24,7 @@
 #define GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET \
     ((uint32_t)(2 * sizeof(GraphicsPrimitiveQueueNode) + sizeof(GraphicsPrimitivePacket)))
 /* GraphicsPrimitiveQueue_RadixSortForRendering ends the sorted traversal list with this node pointer */
-#define GRAPHICS_PRIMITIVE_QUEUE_END_NODE ((GraphicsPrimitiveQueueNode *)(intptr_t)-1) /* 0xffffffff in the original */
+#define GRAPHICS_PRIMITIVE_QUEUE_END_NODE (Thandor_U32ToPointer<GraphicsPrimitiveQueueNode>(-1)) /* 0xffffffff in the original */
 /* GraphicsPrimitivePacket.renderFlags: bits 12..17 select the raster handler ((flags & 0x3f000) >> 12). Bit 16
    marks a textured packet, bits 12..14 the blend mode. */
 #define GRAPHICS_PRIMITIVE_FLAG_TEXTURED 0x10000

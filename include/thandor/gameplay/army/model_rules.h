@@ -26,7 +26,7 @@ void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextAr
 
 int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot);
 
-void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime);
+void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(ModelRuntimeSlot *modelRuntime);
 
 Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntime);
 
@@ -36,7 +36,7 @@ Bool8 ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime
 
 uint32_t ModelNodeRuntime_SmoothPitchTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetPitchAngle16);
 
-void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,int *modelRuntime);
+void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,ModelRuntimeSlot *modelRuntime);
 
 Q12 ModelRuntime_QueryHierarchyConditionRatioQ12(RuntimeModelFactionPrefix *runtimeEntry);
 

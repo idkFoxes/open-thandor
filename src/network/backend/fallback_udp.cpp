@@ -18,7 +18,7 @@ static NetworkSocketHandle32 g_NetworkFallbackSocket = 0xFFFFFFFF;
 /* uint32_t: nonzero value (0xFFFFFFFF) passed to setsockopt(SO_BROADCAST) and ioctlsocket(FIONBIO) */
 static uint32_t g_NetworkFallbackSocketOptionOn = 4294967295u;
 
-static uint32_t g_NetworkFallbackAddressLength = 0;
+static int g_NetworkFallbackAddressLength = 0;
 
 static WinSockAddress g_NetworkFallbackBindEndpoint = {};
 
@@ -155,7 +155,7 @@ static NetworkIpv4AddressNetworkOrder NetworkFallback_ResolveIpOptionAddress()
     hostEntry = g_WinSock_gethostbyname(g_PackageScratchBuffer);
     bindAddress = 0;
     if (hostEntry != nullptr) {
-      bindAddress = *(NetworkIpv4AddressNetworkOrder *)*hostEntry->addressList;
+      bindAddress = Thandor_LoadU32(*hostEntry->addressList); /* the first h_addr_list entry: 4 address bytes */
     }
   }
   return bindAddress;
@@ -222,7 +222,7 @@ uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
   }
   /* g_NetworkFallbackSocketOptionOn holds a nonzero value (0xFFFFFFFF): enable SO_BROADCAST and non-blocking mode */
   if (g_WinSock_setsockopt(socketHandle,SOL_SOCKET,SO_BROADCAST,
-                           (uint8_t *)&g_NetworkFallbackSocketOptionOn,4) != 0) {
+                           reinterpret_cast<uint8_t *>(&g_NetworkFallbackSocketOptionOn),4) != 0) { /* option value as bytes */
     return NetworkFallback_FailSocketSetup(socketHandle);
   }
   if (g_WinSock_ioctlsocket(socketHandle,FIONBIO,&g_NetworkFallbackSocketOptionOn) != 0) {
@@ -276,7 +276,7 @@ Bool8 NetworkFallback_ReceiveDatagram
   receivedByteCount =
        g_WinSock_recvfrom
                  (g_NetworkFallbackSocket,buffer,byteCount,0,sourceAddress,
-                  (int *)&g_NetworkFallbackAddressLength);
+                  &g_NetworkFallbackAddressLength);
   if (receivedByteCount < 0) {
     return false;
   }
@@ -325,7 +325,7 @@ Bool8 NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDe
   WinSockHostEnt32 *resolvedHostEntry;
 
   if (!RichTextCommandStream_CopyToNarrow
-                    (255,g_NetworkEndpointTextScratchA,(uint16_t *)endpointText)) {
+                    (255,g_NetworkEndpointTextScratchA,reinterpret_cast<uint16_t *>(endpointText))) { /* UTF-16 text in a char * slot */
     return true;
   }
   /* empty text: the broadcast address of the local descriptor */
@@ -338,7 +338,7 @@ Bool8 NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDe
       if (resolvedHostEntry == nullptr) {
         return true;
       }
-      ipv4AddressNetworkOrder = *(NetworkIpv4AddressNetworkOrder *)*resolvedHostEntry->addressList;
+      ipv4AddressNetworkOrder = Thandor_LoadU32(*resolvedHostEntry->addressList); /* the first h_addr_list entry */
     }
   }
   bindAddressHeader = g_NetworkFallbackBindEndpoint.addressHeader;
@@ -366,7 +366,7 @@ void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAd
 
   dottedAddress = g_WinSock_inet_ntoa(socketAddress->ipv4AddressNetworkOrder);
   if (dottedAddress != nullptr) {
-    Text_CopyNarrowToUtf16(512,(uint16_t *)outputText,dottedAddress);
+    Text_CopyNarrowToUtf16(512,reinterpret_cast<uint16_t *>(outputText),dottedAddress); /* UTF-16 into a char * slot */
     return;
   }
   /* outputText is really UTF-16: the four zero bytes are an empty string (a single dword store) */

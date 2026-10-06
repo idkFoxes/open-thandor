@@ -9,6 +9,7 @@
 #include <thandor/network/protocol/lockstep.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/network/protocol/packet_bytes.h>
 
 /* Module data. */
 
@@ -38,8 +39,8 @@ void FrontendTransfer_CopyCommandRecord
   const uint32_t *sourceDwords;
   int dwordCount;
 
-  destinationDwords = (uint32_t *)destination;
-  sourceDwords = (const uint32_t *)source;
+  destinationDwords = Packet_Dwords(destination);
+  sourceDwords = Packet_Dwords(source);
   for (dwordCount = sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t); dwordCount != 0; dwordCount--) {
     *destinationDwords = *sourceDwords;
     sourceDwords++;
@@ -116,8 +117,8 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
         resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
         RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText);
         FrontendRecentTextHistory_InsertAndRebuild5(resolvedText);
-        nextPlayerCursor = (uint32_t *)(playerRecord + 1);
-        recordDwordCursor = (uint32_t *)playerRecord;
+        nextPlayerCursor = Packet_Dwords(playerRecord + 1);
+        recordDwordCursor = Packet_Dwords(playerRecord);
         for (dwordCount = (playersRemaining - 1) * (sizeof(FrontendPlayerRuntimeRecord) / sizeof(uint32_t));
              dwordCount != 0; dwordCount--) {
           *recordDwordCursor = *nextPlayerCursor;
@@ -140,8 +141,8 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
       Random_SetBothSeeds(packet->packet30005PlayerSnapshot.secondaryRandomSeed);
       Random_SelectSecondaryStream();
       g_FrontendPlayerRuntimeBlockCount++;
-      packetCursor = (uint32_t *)packet;
-      recordDwordCursor = (uint32_t *)(g_FrontendPlayerRuntimeBlocks + playerIndex);
+      packetCursor = Packet_Dwords(packet);
+      recordDwordCursor = Packet_Dwords(g_FrontendPlayerRuntimeBlocks + playerIndex);
       /* the first 0x60 bytes of the packet become the head of the player's record */
       for (dwordCount = 24; dwordCount != 0; dwordCount--) {
         *recordDwordCursor = *packetCursor;
@@ -171,8 +172,8 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
     }
     g_FrontendPacket8000ABuffer.snapshotChunkOffset =
          packet->packet10009SnapshotChunkRequest.snapshotChunkOffset;
-    chunkDestinationCursor = (uint32_t *)g_FrontendPacket8000ABuffer.packet10009Buffer;
-    previewSourceCursor = (uint32_t *)
+    chunkDestinationCursor = Packet_Dwords(g_FrontendPacket8000ABuffer.packet10009Buffer);
+    previewSourceCursor = reinterpret_cast<uint32_t *> /* the preview's address is kept as an integer */
              (g_FrontendLocalPlayerPcxPreview + g_FrontendPacket8000ABuffer.snapshotChunkOffset);
     g_FrontendPacket8000ABuffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_8000A_SNAPSHOT_CHUNK;
     /* 0xE8-byte chunks; the last one at 0x1220 has 0xE0 bytes (the preview is 0x1300 bytes) */
@@ -300,8 +301,8 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
   if (packetSenderContext != commandRecord->header.senderContext) {
     playerRecord->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
     /* copy the whole 0x20-byte packet, header included, into the slot */
-    copySource = (uint32_t *)packet;
-    copyDestination = (uint32_t *)commandRecord;
+    copySource = Packet_Dwords(packet);
+    copyDestination = Packet_Dwords(commandRecord);
     for (dwordCount = sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t); dwordCount != 0; dwordCount--) {
       *copyDestination = *copySource;
       copySource++;

@@ -10,6 +10,7 @@
 
 #include <thandor/core/types.h>
 #include <thandor/graphics/render/types.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/core/contracts.h>
 
 /* Rows of g_ModelLightingMmxMultiplierRows (one table in the original). Both vertex
@@ -74,6 +75,33 @@ typedef struct ModelMeshHeader {
     uint32_t flags;          /* +0x10 MODEL_MESH_SOFT_SHADOW */
     uint8_t unknown14_1F[12];
 } ModelMeshHeader;
+
+/* A mesh vertex record (MODEL_MESH_RECORD_SIZE bytes, no struct of its own) is walked as GraphicsFixedVec3 words:
+   [0] local position, +0x10 normal, +0x1C packed colour, +0x20 view position (the shadow pass stores its projected
+   XY there), +0x2C lit colour, +0x30/+0x34 projected X/Y, +0x38 lighting flags. These give the members that do
+   not start on a GraphicsFixedVec3 boundary. */
+static inline GraphicsFixedVec3 *ModelVertex_Words(GraphicsProjectedVertexSource *vertex)
+{
+    return reinterpret_cast<GraphicsFixedVec3 *>(vertex); /* the same vertex record, as the words above */
+}
+static inline GraphicsFixedVec3 *ModelVertex_Normal(GraphicsFixedVec3 *vertex)
+{
+    return reinterpret_cast<GraphicsFixedVec3 *>(&vertex[1].y);
+}
+static inline GraphicsFixedVec3 *ModelVertex_ViewPosition(GraphicsFixedVec3 *vertex)
+{
+    return reinterpret_cast<GraphicsFixedVec3 *>(&vertex[2].z);
+}
+static inline GraphicsFixedVec2 *ModelVertex_ShadowXY(GraphicsFixedVec3 *vertex)
+{
+    return reinterpret_cast<GraphicsFixedVec2 *>(&vertex[2].z);
+}
+
+/* The triangle's plane normal (planeNormalX/Y/ZQ12) as one vector. */
+static inline GraphicsFixedVec3 *ModelTriangle_PlaneNormal(GraphicsTriangleInput *triangle)
+{
+    return reinterpret_cast<GraphicsFixedVec3 *>(&triangle->planeNormalXQ12);
+}
 
 PackedArgb32 ModelRender_ComputeVertexIntensityDefaultPath (PackedArgb32 vertexPackedColor,int *vertexPositionQ12, GraphicsDistanceAttenuationTableAddress32 distanceAttenuationTable, PackedArgb32 scenePackedColor0,PackedArgb32 scenePackedColor1, GraphicsFixedVec3 *lightDirectionQ12,PackedArgb32 materialPackedColor, GraphicsFixedVec3 *surfaceNormalQ12);
 
