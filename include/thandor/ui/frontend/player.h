@@ -42,7 +42,8 @@
 #define PLAYER_CHAT_LAST_PIECE_OFFSET 0x24
 /* The player record whose playerName field name points at (loops that walk the records by their names). */
 #define FRONTEND_PLAYER_RECORD_OF_NAME(name) \
-  ((FrontendPlayerRuntimeRecord *)((uint8_t *)(name) - offsetof(FrontendPlayerRuntimeRecord,playerName)))
+  (reinterpret_cast<FrontendPlayerRuntimeRecord *>(reinterpret_cast<uint8_t *>(name) - \
+                                                   offsetof(FrontendPlayerRuntimeRecord,playerName)))
 
 void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl);
 
@@ -148,7 +149,8 @@ void FrontendPlayerMessageBuffer_AppendTripleById
 void FrontendPlayerMessageBuffer_PublishTextById(PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,
           uint32_t unusedArg3);
 
-void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsRuntimeView *frontendRoot);
+void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendUiImage *frontendRoot);
+
 
 void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
           (FactionRuntimeIndex playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,

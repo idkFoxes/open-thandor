@@ -315,7 +315,7 @@ static uint16_t FrontendScenarioList_LevelAvailabilityMarker(uint32_t maskWordIn
 void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbackContext)
 
 {
-  FrontendNetworkListsRuntimeView *frontendRoot;
+  FrontendUiImage *frontendRoot;
   uint32_t networkState;
   UiNodeBase *hoveredNode;
   ScenarioCatalogDisplayRecord *levelRecord;
@@ -329,7 +329,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   uint16_t availabilityMarker;
   
   networkState = g_FrontendNetworkState;
-  frontendRoot = (FrontendNetworkListsRuntimeView *)g_FrontendRootNode;
+  frontendRoot = FrontendUi_Image(g_FrontendRootNode);
   RecentTextHistory_SortAndBuildPointerList
             (5,(RecentTextHistoryPointerList *)&FrontendUi_Image(g_FrontendRootNode)->chatMessageHistory.lineCount);
   switch(networkState) {
