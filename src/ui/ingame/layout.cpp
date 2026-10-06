@@ -1237,7 +1237,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
 
   InGameUiRuntime_SelectDisplayModeLayout(inGameRoot);
   panelTexture = InGameUiRuntime_ReplaceTexturePackage
-                   ((uint16_t *)g_GfxPanelPanel0GfxPathUtf16,&g_InGamePanelTextureSource,&textureLoadError);
+                   (g_GfxPanelPanel0GfxPathUtf16,&g_InGamePanelTextureSource,&textureLoadError);
   if (panelTexture == nullptr) {
     *outError = textureLoadError;
     return false;
@@ -1252,8 +1252,8 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   InGameUiRuntime_LayoutSelectionDetailPage(inGameRoot);
 
   diagramTexture = InGameUiRuntime_ReplaceTexturePackage
-                     ((uint16_t *)g_GfxPanelDiagram0GfxPathUtf16,
-                      (GraphicsTextureSourceAsset **)&g_InGameDiagramTextureSource,&textureLoadError);
+                     (g_GfxPanelDiagram0GfxPathUtf16,
+                      &g_InGameDiagramTextureSource,&textureLoadError);
   if (diagramTexture == nullptr) {
     *outError = textureLoadError;
     return false;
@@ -1263,8 +1263,8 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   ui->energyGauge.textureSource = diagramTexture;
 
   windowTexture = InGameUiRuntime_ReplaceTexturePackage
-                    ((uint16_t *)g_GfxPanelWindowGfxPathUtf16,
-                     (GraphicsTextureSourceAsset **)&g_InGameWindowTextureSource,&textureLoadError);
+                    (g_GfxPanelWindowGfxPathUtf16,
+                     &g_InGameWindowTextureSource,&textureLoadError);
   if (windowTexture == nullptr) {
     *outError = textureLoadError;
     return false;
@@ -1279,8 +1279,8 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   ui->missionHelpWindow.textureSource = windowTexture;
 
   techTexture = InGameUiRuntime_ReplaceTexturePackage
-                  ((uint16_t *)g_GfxPanelTechGfxPathUtf16,
-                   (GraphicsTextureSourceAsset **)&g_InGameTechnologyTextureSource,&textureLoadError);
+                  (g_GfxPanelTechGfxPathUtf16,
+                   &g_InGameTechnologyTextureSource,&textureLoadError);
   if (techTexture == nullptr) {
     *outError = textureLoadError;
     return false;

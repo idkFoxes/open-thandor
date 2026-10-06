@@ -78,12 +78,14 @@ void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl)
   int xDelta;
   int yComponent;
   
-  yComponent = ((UiSelectionGeometryControl *)mapControl)->selectedSourceYQ12;
-  ((UiSelectionGeometryControl *)mapControl)->sourceOriginXQ12 = ((UiSelectionGeometryControl *)mapControl)->selectedSourceXQ12;
-  ((UiSelectionGeometryControl *)mapControl)->sourceOriginYQ12 = yComponent;
+  UiSelectionGeometryControl *minimap = THANDOR_CONTAINER_OF(mapControl, UiSelectionGeometryControl, base);
+
+  yComponent = minimap->selectedSourceYQ12;
+  minimap->sourceOriginXQ12 = minimap->selectedSourceXQ12;
+  minimap->sourceOriginYQ12 = yComponent;
   /* isometric grid to world: x = (2*gx + gy) * FIELD_GRID_WORLD_COLUMN_STEP_X / 2^13,
      y = gy * FIELD_GRID_WORLD_ROW_STEP_Y / 2^12 (64-bit products) */
-  scaledProduct = (int64_t)(yComponent + ((UiSelectionGeometryControl *)mapControl)->selectedSourceXQ12 * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
+  scaledProduct = (int64_t)(yComponent + minimap->selectedSourceXQ12 * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
   /* the world runtime is the worldView node of the same in-game UI copy */
   WorldRuntimeContext *const mapWorld =
        InGameUi_WorldRuntime(THANDOR_CONTAINER_OF(mapControl, InGameUiImage, minimapView));
@@ -152,7 +154,7 @@ static int InGameHud_FormatFactionRoster(uint32_t factionIndex)
     }
     if (RichTextCommandStream_CopyExpanded
           (nameCapacityBytes,rosterCursor,(playerBlock->playerName).textUtf16,&copiedByteCount)) {
-      rosterCursor = (uint16_t *)((uint8_t *)rosterCursor + copiedByteCount);
+      rosterCursor = reinterpret_cast<uint16_t *>(reinterpret_cast<uint8_t *>(rosterCursor) + copiedByteCount);
       selectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId];
       stepTicks = selectionBlock->simulationStepTicks;
       if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_PAUSE_REQUESTED) != 0) {
@@ -318,7 +320,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts()
   g_LocaleFormatTimeFieldsUtf16
             ((uint32_t)(elapsedMinutes / 60),(uint32_t)(elapsedMinutes % 60),g_FrontendDebugOverlayTextSlot13Utf16);
   /* faction 0 is skipped */
-  factionRecord = (GameFactionRuntimeRecord *)THANDOR_ADDR(g_GameFactionRuntimeImage,sizeof(GameFactionRuntimeRecord));
+  factionRecord = &g_GameFactionRuntimeImage.records[1];
   destination = g_InGameFactionStatusTextScratchUtf16;
   for (factionIndex = 1; factionIndex <= 7; factionIndex++, factionRecord++) {
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) &&
@@ -326,7 +328,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts()
         FACTION_RUNTIME_LIFECYCLE_ENDED_OR_TRANSITIONED)) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 factionRecord->economyProgressScore + factionRecord->relationScore,(uint16_t *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0));
+                 factionRecord->economyProgressScore + factionRecord->relationScore,g_InGameHudNumberTextUtf16);
       rosterCount = 0;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -345,9 +347,9 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts()
       statusTemplate = TextResource_Resolve(TEXT_ID_FACTION_STATUS_TEMPLATE);
       RichTextCommandStream_PatchPayloadBySelector(0,factionName,statusTemplate);
       RichTextCommandStream_PatchPayloadBySelector(1,rosterText,statusTemplate);
-      RichTextCommandStream_PatchPayloadBySelector(2,(void *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0),statusTemplate);
+      RichTextCommandStream_PatchPayloadBySelector(2,g_InGameHudNumberTextUtf16,statusTemplate);
       if (RichTextCommandStream_CopyExpanded(1024,destination,statusTemplate,&copiedByteCount)) {
-        destination = (uint16_t *)((uint8_t *)destination + copiedByteCount);
+        destination = reinterpret_cast<uint16_t *>(reinterpret_cast<uint8_t *>(destination) + copiedByteCount);
       }
     }
   }
@@ -371,14 +373,14 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
   GraphicsTextureLogicalSize windowTextureSize;
   UiConditionalActionControl *statusBox;
 
-  const SpinLockGuard tickLock((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  const SpinLockGuard tickLock(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
     windowTextureSize = g_GraphicsTextureSourceGetLogicalSize(114,g_UiWindowTextureSource);
     textExtent = RichTextCommandStream_MeasureLine
-                      (g_UiTextStyleNormal,(uint16_t *)g_GfxPanelPanel0GfxPathUtf16);
+                      (g_UiTextStyleNormal,g_GfxPanelPanel0GfxPathUtf16);
     panelHalfHeight = (textExtent.heightPixels * remainingPlayers >> 1) + windowTextureSize.logicalHeightPixels;
     destination = g_InGamePlayerStatusTextSlots;
     statusBox = UiConditionalActionTextBox_AsControl(&InGameUi_Image(inGameRoot)->playerStatusBox);
@@ -422,8 +424,8 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
   g_UiAction1012TargetPlayerIndices[slotIndex] = factionIndex;
   UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&(image->*row.page)));
   /* the text fields hold text resource ids; the colour name of the faction's colorIndex */
-  (image->*row.factionLabel).text = (uint16_t *)(uintptr_t)(factionRecord->colorIndex + TEXT_ID_FACTION_NAME_BASE);
-  (image->*row.playerNumberLabel).text = (uint16_t *)(uintptr_t)(factionIndex + TEXT_ID_PLAYER_NUMBER_BASE);
+  (image->*row.factionLabel).text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(factionRecord->colorIndex + TEXT_ID_FACTION_NAME_BASE));
+  (image->*row.playerNumberLabel).text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(factionIndex + TEXT_ID_PLAYER_NUMBER_BASE));
   relationState = g_GameFactionRuntimeImage.records
                   [InGameUi_WorldRuntime(image)->activeFactionRuntimeIndex]
                   .packedRelationStates >> ((uint8_t)(factionIndex << 2) & SHIFT_COUNT_MASK) &
@@ -431,7 +433,7 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
   /* the original shifts the index left and back right around the nibble shift, which only clears its top
      two bits: the index itself is unchanged */
   factionIndex = factionIndex & 0x3fffffff;
-  (image->*row.relationLabel).text = (uint16_t *)(uintptr_t)(relationState + TEXT_ID_DIPLOMATIC_RELATION_BASE);
+  (image->*row.relationLabel).text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(relationState + TEXT_ID_DIPLOMATIC_RELATION_BASE));
   /* player name: empty, or in network games the name of the player assigned to this faction */
   playerNameText = &(image->*row.playerNameLabel);
   playerNameText->text = g_EmptyFrontendPlayerNameUtf16;
@@ -441,7 +443,7 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
     /* The original is a do-while that runs once and then wraps on a player count of 0; skipped here. */
     for (; remainingPlayerBlocks != 0; remainingPlayerBlocks--) {
       if ((playerBlock->factionAssignment).factionAssignmentIndex == factionIndex) {
-        playerNameText->text = (uint16_t *)&playerBlock->playerName;
+        playerNameText->text = playerBlock->playerName.textUtf16;
         break;
       }
       playerBlock++;
@@ -539,7 +541,7 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
   /* fill one row per other active faction, then switch the unused rows to their empty page */
   slotIndex = 0;
   candidateFactionIndex = 1;
-  candidateRecord = (GameFactionRuntimeRecord *)THANDOR_ADDR(g_GameFactionRuntimeImage,sizeof(GameFactionRuntimeRecord)); /* records[1] */
+  candidateRecord = &g_GameFactionRuntimeImage.records[1];
   for (remainingRows = otherActiveCount; remainingRows != 0; candidateFactionIndex++, candidateRecord++) {
     if ((candidateFactionIndex != world->activeFactionRuntimeIndex) &&
        (g_GameFactionRuntimeImage.tail.factionLifecycleStates[candidateFactionIndex] ==
@@ -562,7 +564,7 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
 void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *control)
 
 {
-  UiCommandSpriteButtonControl *rootControl;
+  UiNodeBase *rootControl;
   CommandPayload rowFactionIndex;
   FactionRuntimeIndex rootFactionValue;
   int slotIndex;
@@ -576,9 +578,9 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
 
   if ((g_UiCommandRuntimeFlags &
        (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
-    rootControl = control;
-    while ((rootControl->sprite).selectable.base.parent != UI_NODE_NONE) {
-      rootControl = (UiCommandSpriteButtonControl *)(rootControl->sprite).selectable.base.parent;
+    rootControl = &control->sprite.selectable.base;
+    while (rootControl->parent != UI_NODE_NONE) {
+      rootControl = rootControl->parent;
     }
     slotIndex = 6;
     while (control != &(InGameUi_Image(rootControl)->*g_InGameDiplomacyRows[slotIndex].relationButton)) {
@@ -592,12 +594,12 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
        reads it as rootControl[21].sprite.primaryTextureSource, see the static_assert above) */
     if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0) {
       rootFactionValue =
-           reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(rootControl)->worldView)->activeFactionRuntimeIndex;
+           InGameUi_WorldRuntime(rootControl)->activeFactionRuntimeIndex;
       InGameCommand_Issue<GameFactionRuntime_AdvancePairwiseRelationState>(0,rowFactionIndex,rootFactionValue);
     }
     else {
       rootFactionValue =
-           reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(rootControl)->worldView)->activeFactionRuntimeIndex;
+           InGameUi_WorldRuntime(rootControl)->activeFactionRuntimeIndex;
       InGameCommand_Issue<GameFactionRuntime_ResetPairwiseRelationState>(0,rowFactionIndex,rootFactionValue);
     }
   }
