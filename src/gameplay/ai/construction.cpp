@@ -322,7 +322,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
        (ArmyPlacement_CanPlaceAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,
                            candidateCell->worldY,candidateCell->worldX,armyAssetId,factionIndex,
-                           AiPlacement_WorldAsPlacementRoot(worldRuntime),nullptr))) {
+                           worldRuntime,nullptr))) {
       bestCell = candidateCell;
       bestScore = candidateScore;
     }
@@ -394,7 +394,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
     if ((candidateScore < bestScore) &&
        (ArmyPlacement_CanPlaceAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
-                           candidateCell->worldX,armyAssetId,factionIndex,AiPlacement_WorldAsPlacementRoot(worldRuntime),
+                           candidateCell->worldX,armyAssetId,factionIndex,worldRuntime,
                            nullptr))) {
       regionUnreachable = GridReachability_RebuildConnectedRegionAroundWorldPoint
                             (radiusMetric,candidateCell->worldY,candidateCell->worldX);

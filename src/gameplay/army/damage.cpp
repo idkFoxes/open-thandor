@@ -41,7 +41,7 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
     childNode->runtimeFlags = childNode->runtimeFlags | 1;
     ModelNodeRuntime_RebuildTransformsFromRoot(rootModelNodeRuntime);
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Runtime update of army class 4 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[4]):
@@ -57,10 +57,10 @@ void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
      ((modelRuntime->modelDefinition->timedEffectsRequireStateBit40 == 0 ||
       (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0)))) {
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
-              (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
-    ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+              (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
+    ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Applies an impact's damage to a living army (health, capped at the definition's maximumHealth). When the
@@ -324,7 +324,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
   (targetEntityRuntime->common).pathingAndImpactState.impactReaction.state0B = 0;
   if (0 < (targetEntityRuntime->common).damageState.remainingIntegrity) {
     maximumIntegrity =
-         ((ModelDefinition *)(targetEntityRuntime->common).ownership.definitionOrClassRecord)->
+         (targetEntityRuntime->common).ownership.modelDefinition()->
          maximumHealth;
     integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
     previousIntegrity = *integrityField;
@@ -340,8 +340,8 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
       (targetEntityRuntime->common).damageState.remainingIntegrity = 0;
       if (parentNode == nullptr) {
         definitionRecord = (targetEntityRuntime->common).ownership.definitionOrClassRecord;
-        if ((((ModelDefinition *)definitionRecord)->runtimeClassId == 0) &&
-           (((ModelDefinition *)definitionRecord)->placementContactKindIndex == 0)) {
+        if ((static_cast<ModelDefinition *>(definitionRecord)->runtimeClassId == 0) &&
+           (static_cast<ModelDefinition *>(definitionRecord)->placementContactKindIndex == 0)) {
           (((targetEntityRuntime->common).ownership.modelNode)->modelPayload).worldRotationAngle0 =
                impactAngle;
         }
@@ -350,9 +350,9 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
              on an AMD Zen 3: unchanged), so it still holds the impactValue == 0 test, whose own branch already left
              for zero; the branch is never taken and the counters are always updated. This code follows that. */
           victimFactionIndex =
-               ((ArmyRuntimeSlot *)(targetEntityRuntime->common).ownership.runtimeLink)->factionIndex;
+               (targetEntityRuntime->common).ownership.linkedArmyRuntime()->factionIndex;
           victimClassId =
-               ((ModelDefinition *)(targetEntityRuntime->common).ownership.definitionOrClassRecord)->
+               (targetEntityRuntime->common).ownership.modelDefinition()->
                runtimeClassId;
           relationCounter = &g_GameFactionRuntimeImage.records[victimFactionIndex].relationCounterC;
           *relationCounter = *relationCounter + 1;
