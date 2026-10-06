@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/selection_overlay.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/debug/hooks.h>
 
 /* Module data. */
@@ -50,7 +51,7 @@ void SelectionOverlay_RenderSelectedArmyMetrics
       SelectionPanel_RenderArmyRuntimeMetrics
                 (clipBottom,clipRight,clipTop,clipLeft,g_ModelProjectedBoundsPixels.maxY,
                  g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
-                 g_ModelProjectedBoundsPixels.minX,(RuntimeModelFactionPrefix *)selectedEntity);
+                 g_ModelProjectedBoundsPixels.minX,ModelView_Cast<RuntimeModelFactionPrefix>(selectedEntity));
     }
   }
 }
@@ -90,7 +91,7 @@ void SelectionOverlay_RenderArmyMetricsForEntity
                 (clipBottom,clipRight,clipTop,clipLeft,g_ModelProjectedBoundsPixels.maxY,
                  g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
                  g_ModelProjectedBoundsPixels.minX,
-                 (RuntimeModelFactionPrefix *)entity);
+                 ModelView_Cast<RuntimeModelFactionPrefix>(entity));
       g_SelectionPanelTextureSource = savedTextureSource;
       g_SelectionPanelData = savedPanelData;
     }
@@ -209,7 +210,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
           g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = terrainPoint.zQ12;
           FixedTransform_ApplyPoint
                     (&g_GraphicsTransformInputScratchVec3,
-                     (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,
+                     reinterpret_cast<GraphicsFixedVec3 *>(&g_GraphicsTransformScratchMatrix3x4) /* basisRow0: the point */,
                      &g_ViewProjectionMatrixFixed);
           if (16 < g_GraphicsTransformInputScratchVec3.z) { /* in front of the near plane */
             projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
@@ -266,7 +267,7 @@ void SelectionOverlay_DrawWorldPointMarker
   g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = markerPoint.zQ12;
   FixedTransform_ApplyPoint
             (&g_GraphicsTransformInputScratchVec3,
-             (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,&g_ViewProjectionMatrixFixed)
+             reinterpret_cast<GraphicsFixedVec3 *>(&g_GraphicsTransformScratchMatrix3x4) /* basisRow0: the point */,&g_ViewProjectionMatrixFixed)
   ;
   projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
   accessFailed = g_GraphicsFramebufferBeginAccess();
@@ -314,7 +315,7 @@ void SelectionOverlay_DrawGridVertexMarkers
     columnCount = gridColumns >> 2;
     rowsRemaining = fieldGrid->gridHeight >> 2;
     /* row 1, column 1 */
-    vertexCursor = (uint8_t *)&fieldGrid->cells[gridColumns + 1];
+    vertexCursor = Thandor_Bytes(&fieldGrid->cells[gridColumns + 1]);
     columnsRemaining = columnCount;
     rowStart = vertexCursor;
     if ((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0) {
@@ -322,9 +323,9 @@ void SelectionOverlay_DrawGridVertexMarkers
     }
     do {
       do {
-        if ((*(uint32_t *)(vertexCursor + 80) & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) {
-          screenX = *(int *)(vertexCursor + coordinateOffset + 12) >> Q12_SHIFT;
-          screenY = *(int *)(vertexCursor + coordinateOffset + 16) >> Q12_SHIFT;
+        if ((*Thandor_At<uint32_t>(vertexCursor,80) & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) {
+          screenX = *Thandor_At<int>(vertexCursor + coordinateOffset,12) >> Q12_SHIFT;
+          screenY = *Thandor_At<int>(vertexCursor + coordinateOffset,16) >> Q12_SHIFT;
           blitTextureId = SELECTION_OVERLAY_MARKER_GRID_VERTEX;
           blitTextureSource = g_SelectionPanelTextureSource;
           blitFramebuffer = g_FramebufferAccess;

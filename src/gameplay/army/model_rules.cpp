@@ -68,13 +68,13 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
   }
 }
 
-/* Returns the armour of a model hierarchy (shown in the in-game selection detail): the sum of the current
+/* Returns the armour of an army's model hierarchy (shown in the in-game selection detail): the sum of the current
    armour points (ModelRuntimeSlot.health) of every node, walked depth-first.
 */
-int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
+int ModelRuntimeHierarchy_SumArmour(ArmyRuntimeSlot *armyRuntime)
 
 {
-  return ModelRuntimeHierarchy_SumArmourFrom(Thandor_U32ToPointer<ModelRuntimeSlot>(*modelRuntimeRoot));
+  return ModelRuntimeHierarchy_SumArmourFrom(armyRuntime->modelRuntimeOrSavedOffset.modelRuntime);
 }
 
 /* Folds one model runtime and its attached children into the owning army's selection figures (cleared by

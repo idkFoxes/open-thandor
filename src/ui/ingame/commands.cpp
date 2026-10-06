@@ -56,11 +56,11 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   uintptr_t pendingEntry;
   uint32_t ownerFactionIndex;
   SelectionPlayerRuntimeBlock *playerBlock;
-  ArmyRuntimeSlot *modelNodeRuntime;
-  ArmyRuntimeSlot *armySlot;
-  ModelRuntimeSlot *slotModelRuntime;
+  ModelRuntimeNode *modelNodeRuntime;
+  ModelRuntimeSlot *createdModelRuntime;
+  ModelDefinition *createdModelDefinition;
   InGameRuntimeRoot *runtimeRoot;
-  Ptr32<ArmyRuntimeSlot> *createdArmySlots;
+  ArmyRuntimeSlot *createdArmy;
   WorldRuntimeContext *worldRuntime;
   Bool8 placementRejected;
 
@@ -78,33 +78,34 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                        worldRuntime);
     if (!placementRejected) {
       /* the validator leaves the accepted (possibly snapped) point in g_ArmyPlacementValidatedWorldX/YQ12 */
-      createdArmySlots = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
+      createdArmy = ArmyRuntime_CreateInstanceFromAsset
                         (4,headingAngle,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->factionIndex,
                          reinterpret_cast<ArmyAssetRecordPrefix *>(pendingEntry)->registryId,worldRuntime,nullptr);
-      if (createdArmySlots != nullptr) {
+      if (createdArmy != nullptr) {
         ownerFactionIndex = playerBlock->factionIndex;
-        modelNodeRuntime = createdArmySlots[1];
-        armySlot = *createdArmySlots;
-        modelNodeRuntime->movementPosition0Q12 = 0;
+        modelNodeRuntime = createdArmy->modelNodeRuntime;
+        createdModelRuntime = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
+        /* the node tint (the word the decompiled code wrote as ArmyRuntimeSlot.movementPosition0Q12, layout_checks.cpp) */
+        modelNodeRuntime->tintArgb = 0;
         if (ownerFactionIndex == (runtimeRoot->worldRuntime).activeFactionRuntimeIndex) {
-          modelNodeRuntime->movementPosition0Q12 = INT32_MAX;
+          modelNodeRuntime->tintArgb = INT32_MAX;
         }
         relationCounter = &g_GameFactionRuntimeImage.records[ownerFactionIndex].relationCounterB;
         *relationCounter = *relationCounter + 1;
-        slotModelRuntime = (armySlot->modelRuntimeOrSavedOffset).modelRuntime;
-        ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
-        ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdArmySlots,worldRuntime); /* the created army */
+        createdModelDefinition = createdModelRuntime->definitionOrSavedId.runtimeDefinition;
+        ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+        ArmyRuntime_DispatchClassCommand(createdArmy,worldRuntime);
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
-                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-                   Thandor_U32ToPointer<EffectDefinition>(slotModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 (saved model pool) */
+                   modelNodeRuntime->modelPayload.worldRotationAngle2,
+                   modelNodeRuntime->modelPayload.worldRotationAngle1,
+                   modelNodeRuntime->modelPayload.worldRotationAngle0,
+                   modelNodeRuntime->worldTransform.translation.z,
+                   modelNodeRuntime->worldTransform.translation.y,
+                   modelNodeRuntime->worldTransform.translation.x,
+                   createdModelDefinition->removalEffectDefinitionReference.definition,
                    worldRuntime);
         InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
         InGameSpecialBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
@@ -257,7 +258,7 @@ void InGameCommand_HandlePlayerDeparture
       }
       if (playerOrFactionId == (runtimeRoot->worldRuntime).selection.activePlayerRuntimeId) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT;
-        Resource_Release((void *)(uintptr_t)g_FrontendLoadedCampaignAsset);
+        Resource_Release(reinterpret_cast<void *>(g_FrontendLoadedCampaignAsset)); /* the asset address kept as an integer */
         g_FrontendLoadedCampaignAsset = 0;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {

@@ -79,7 +79,7 @@ static uint32_t InGameWorldInput_ResolveCandidateConditionCursor(GameEntityRunti
   if (GameFactionRuntime_TestCapabilityBitClear((entry->common).ownership.ownerIndex,ownerIndex)) {
     return WORLD_CURSOR_TARGET_REJECTED;
   }
-  conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12((RuntimeModelFactionPrefix *)entry);
+  conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(ModelView_Cast<RuntimeModelFactionPrefix>(entry));
   if (conditionRatioQ12 != Q12_ONE) {
     if (SelectionInfo_IsEntryAbsent(entry)) {
       return WORLD_CURSOR_TARGET;
@@ -149,7 +149,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
         (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
         ((int)(candidateHeightQ12 - Q12_ONE) <= (int)pickedHeightQ12) &&
         !GameFactionRuntime_TestCapabilityBitClear
-              (((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->
+              (WorldOwnerNode_ModelRuntime(candidateNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->
                factionIndex,
                ownerIndex)) {
       g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags | WORLD_POINTER_STATE_OVER_OWN_ARMY;
@@ -182,8 +182,8 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
      entry stays NULL without a candidate army */
   entry = nullptr;
   if ((candidateNode != nullptr) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
-    entry = (GameEntityRuntime *)
-            ((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    entry = ModelView_Cast<GameEntityRuntime>
+            (WorldOwnerNode_ModelRuntime(candidateNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     if (((int)pickedHeightQ12 < (int)(candidateHeightQ12 - Q12_ONE)) ||
         ((entry->common).ownership.ownerIndex == 0)) {
       entry = nullptr;
@@ -281,7 +281,7 @@ void InGameWorldInput_BeginPointerCapture
   }
   /* command mode: an own army under the pointer is selected right away */
   if ((candidateNode != nullptr) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
-    candidateArmy = ((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    candidateArmy = WorldOwnerNode_ModelRuntime(candidateNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if (((int)(candidateHeightQ12 - Q12_ONE) <= (int)pickedHeightQ12) &&
         !GameFactionRuntime_TestCapabilityBitClear(candidateArmy->factionIndex,ownerIndex)) {
       modelToken = ArmyRuntime_Token(candidateArmy);
@@ -370,14 +370,14 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
     if ((runtimeNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || ((runtimeNode->runtimeFlags & 2) == 0)) {
       continue;
     }
-    entry = (GameEntityRuntime *)
-            ((ModelRuntimeSlot *)runtimeNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    entry = ModelView_Cast<GameEntityRuntime>
+            (WorldOwnerNode_ModelRuntime(runtimeNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     if (((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) == 0) ||
         (ownerIndex != (entry->common).ownership.ownerIndex)) {
       continue;
     }
     payloadValue = ArmyRuntime_Token(entry);
-    if (WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,(WorldRuntimeExtendedMapControlView *)inGameRuntime)) {
+    if (WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,UiNode_As<WorldRuntimeExtendedMapControlView>(inGameRuntime))) {
       if (SelectionInfo_IsEntryAbsent(entry) &&
           !InGameCommandQueue_ContainsTripletValue
                 (payloadValue,INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_INSERT)) {
@@ -403,7 +403,7 @@ static void InGameWorldInput_FlushDragSelectionBatches()
   int32_t countBeforeTriplet;
 
   if (g_InGameSelectionRemoveTripletDwordCount != 0) {
-    tripletCursor = (CommandPayload *)g_InGameSelectionRemoveTripletDwords;
+    tripletCursor = g_InGameSelectionRemoveTripletDwords;
     do {
       InGameCommand_Issue<FrontendPlayerSelection_RemoveThreeEntriesAndRefresh>
                 (tripletCursor[2],tripletCursor[1],*tripletCursor);
@@ -413,7 +413,7 @@ static void InGameWorldInput_FlushDragSelectionBatches()
     } while (g_InGameSelectionRemoveTripletDwordCount != 0 && 2 < countBeforeTriplet);
   }
   if (g_InGameSelectionInsertTripletDwordCount != 0) {
-    tripletCursor = (CommandPayload *)g_InGameSelectionInsertTripletDwords;
+    tripletCursor = g_InGameSelectionInsertTripletDwords;
     do {
       InGameCommand_Issue<FrontendPlayerSelection_InsertThreeEntriesAndRefresh>
                 (tripletCursor[2],tripletCursor[1],*tripletCursor);
@@ -531,7 +531,8 @@ static void InGameWorldInput_CommitCommandModeRelease
   /* The original pushes the same four arguments locally (local player id) and networked (the handler's code in
      the in-game command table; in the original its address minus INGAME_COMMAND_CODE_BASE). */
   InGameCommand_IssueHandler
-            ((CommandQueueHandlerProc *)modeHandler,g_InGameCommandPreviewHeading16,pointerWorldXQ12,
+            (reinterpret_cast<CommandQueueHandlerProc *>(modeHandler) /* int first parameter: same ABI */,
+             g_InGameCommandPreviewHeading16,pointerWorldXQ12,
              pointerWorldYQ12);
   InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
 }
@@ -577,7 +578,7 @@ static void InGameWorldInput_CommitCandidateConditionClick
   if (capabilityClear) {
     return;
   }
-  conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12((RuntimeModelFactionPrefix *)entry);
+  conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(ModelView_Cast<RuntimeModelFactionPrefix>(entry));
   if (conditionRatioQ12 != Q12_ONE) {
     InGameWorldInput_SelectCandidateArmy(entry);
     return;
@@ -624,7 +625,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
   entry = nullptr;
   if ((candidateNode != nullptr) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
-    entry = THANDOR_PTR32_AT(GameEntityRuntime, (uint8_t *)candidateNode->runtimePayload + 8);
+    entry = ModelView_Cast<GameEntityRuntime>(WorldOwnerNode_ModelRuntime(candidateNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     if (((int)pickedHeightQ12 < (int)(candidateHeightQ12 - Q12_ONE)) ||
         ((entry->common).ownership.ownerIndex == 0)) {
       entry = nullptr;
@@ -762,7 +763,7 @@ Bool8 WorldRuntimeNode_IsPositionInsideBounds
   GraphicsProjectedPointPair projectedPosition;
   
   FixedTransform_ApplyPoint
-            (&g_GraphicsProjectionScratchVec3,(GraphicsFixedVec3 *)&runtimeNode->worldXQ12,
+            (&g_GraphicsProjectionScratchVec3,reinterpret_cast<GraphicsFixedVec3 *>(&runtimeNode->worldXQ12) /* worldX/Y/ZQ12 */,
              &g_ViewProjectionMatrixFixed);
   projectedPosition = Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3);
   boundsMinX = boundsControl->pointerPressX;
