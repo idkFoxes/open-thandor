@@ -46,8 +46,7 @@ void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *list
     return;
   }
   FrontendScenarioSelection_ActivateSelectedRecord
-            ((FrontendScenarioSelectionControlAddress32)
-             (uintptr_t)THANDOR_UI_SIBLING(listControl,FrontendUiImage,savedGamesList,gameSelectStartButton));
+            (&FrontendUi_ImageOfNode(listControl,offsetof(FrontendUiImage,savedGamesList))->gameSelectStartButton);
 }
 
 /* Handler of FRONTEND_ACTION_SELECT_SINGLE_GAME, the single-games list (slot 58 of
@@ -67,8 +66,7 @@ void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listCont
     return;
   }
   FrontendScenarioSelection_ActivateSelectedRecord
-            ((FrontendScenarioSelectionControlAddress32)
-             (uintptr_t)THANDOR_UI_SIBLING(listControl,FrontendUiImage,missionsList,gameSelectStartButton));
+            (&FrontendUi_ImageOfNode(listControl,offsetof(FrontendUiImage,missionsList))->gameSelectStartButton);
 }
 
 /* Handler of FRONTEND_ACTION_SELECT_CAMPAIGN, the campaigns list (slot 59 of
@@ -88,8 +86,7 @@ void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listC
     return;
   }
   FrontendScenarioSelection_ActivateSelectedRecord
-            ((FrontendScenarioSelectionControlAddress32)
-             (uintptr_t)THANDOR_UI_SIBLING(listControl,FrontendUiImage,campaignsList,gameSelectStartButton));
+            (&FrontendUi_ImageOfNode(listControl,offsetof(FrontendUiImage,campaignsList))->gameSelectStartButton);
 }
 
 /* Compares unitCount UTF-16 code units, stopping at the first difference. */
@@ -169,7 +166,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
   do {
     if (FrontendScenarioSelectionPage_CodeUnitsEqual
             (levelName,
-             (const uint16_t *)FrontendUi_Image(g_FrontendRootNode)->missionsList.rowSlots[selectionIndex],
+             static_cast<const uint16_t *>(FrontendUi_Image(g_FrontendRootNode)->missionsList.rowSlots[selectionIndex]),
              compareUnitCount)) {
       controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
       *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
@@ -562,7 +559,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
 
   frontendRoot = g_FrontendRootNode;
   rowPointers =
-       (Ptr32<ScenarioCatalogSaveRecord> *)FrontendUi_Image(g_FrontendRootNode)->savedGamesList.rowSlots;
+       static_cast<Ptr32<ScenarioCatalogSaveRecord> *>(FrontendUi_Image(g_FrontendRootNode)->savedGamesList.rowSlots);
   control = UiListControl_AsPointerList(&FrontendUi_Image(g_FrontendRootNode)->savedGamesList);
   FrontendUi_Image(g_FrontendRootNode)->savedGameDescriptionText.text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
@@ -634,7 +631,7 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
    the campaign bundle (locally or on every peer through the frontend command queue), or, for a saved game,
    puts save\<name>.sve into g_FrontendScenarioPathScratchUtf16 and returns to the main page with code 2.
 */
-void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionControlAddress32 selectionControl)
+void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl *selectionControl)
 
 {
   UiListRowIndex selectedRowIndex;
@@ -642,10 +639,11 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
   Ptr32<void> *scenarioPathPointerTable;
 
   /* selectionControl is the frontend template's gameSelectStartButton; the other nodes are its siblings. */
+  FrontendUiImage *ui = FrontendUi_ImageOfNode(selectionControl,offsetof(FrontendUiImage,gameSelectStartButton));
   if (!UiSelectableGroup_FindVisibleSelected(nullptr,&selectedTabIndex,3,
-      THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,loadGameTabButton),
-      THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,singleGameTabButton),
-      THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsTabButton))) {
+      &ui->loadGameTabButton.selectable.base,
+      &ui->singleGameTabButton.selectable.base,
+      &ui->campaignsTabButton.selectable.base)) {
     return;
   }
   if (selectedTabIndex != 0) {
@@ -653,7 +651,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
       Resource_Release((void *)g_FrontendLoadedCampaignAsset);
       g_FrontendLoadedCampaignAsset = 0;
       selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
-                        ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,missionsList),
+                        (UiListControl_AsPointerList(&ui->missionsList),
                          nullptr);
       FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestLevelAsset>(0,0,selectedRowIndex);
       return;
@@ -661,22 +659,22 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
     Resource_Release((void *)g_FrontendLoadedCampaignAsset);
     g_FrontendLoadedCampaignAsset = 0;
     selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
-                      ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsList),
+                      (UiListControl_AsPointerList(&ui->campaignsList),
                        nullptr);
     FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestCampaignBundle>(0,0,selectedRowIndex);
     return;
   }
   scenarioPathPointerTable =
-       ((UiListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList))->rowSlots;
+       ui->savedGamesList.rowSlots;
   Resource_Release((void *)g_FrontendLoadedCampaignAsset);
   g_FrontendLoadedCampaignAsset = 0;
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
-                    ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList),
+                    (UiListControl_AsPointerList(&ui->savedGamesList),
                      nullptr);
   /* The original uses the row even when the saved-games list has no selected row (or no rows); bounded here
      because the row pointer table would be read outside its rows. */
   if (selectedRowIndex >=
-      ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList))->rowCount) {
+      ui->savedGamesList.rowCount) {
     FrontendScenarioSelection_LogRejectedRowIndex(selectedRowIndex);
     return;
   }

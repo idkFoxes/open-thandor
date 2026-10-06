@@ -360,8 +360,7 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
   sourceCursor = reinterpret_cast<int32_t *>(FrontendUi_Image(root)->hostAddressEdit.textBuffer) /* the text dword by dword */;
   destinationCursor =
        reinterpret_cast<int32_t *>(g_FrontendRootInitializationTemplate.hostAddressEdit.textBuffer) /* the text dword by dword */;
-  INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId) =
-       static_cast<TextResourceId>(g_FrontendRootInitializationTemplate.bottomBarStatusText.text);
+  g_InGameRuntimeDefaultImageTemplate.worldViewCyclingInfoText.text = g_FrontendRootInitializationTemplate.bottomBarStatusText.text;
   for (dwordsRemaining = 32; dwordsRemaining != 0; dwordsRemaining--) { /* 0x40 code units */
     *destinationCursor = *sourceCursor;
     sourceCursor++;

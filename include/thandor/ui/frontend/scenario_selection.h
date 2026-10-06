@@ -66,7 +66,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
 void ScenarioCatalog_SelectCampaignAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
-void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionControlAddress32 selectionControl);
+void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl *selectionControl);
 
 void ScenarioCatalog_SelectLevelAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);

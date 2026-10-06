@@ -368,12 +368,13 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
      saved game name into the game-name field (10 dwords = 0x28 bytes each). */
   savedPlayerName = (uint32_t *)PersistentSettings_GetRegionOrFallback
                       (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_PLAYER_NAME);
+  /* the name fields' UTF-16 text buffers, copied as dwords */
   FrontendInit_CopyNameDwords
-            ((uint32_t *)FrontendUi_Image(frontendUiState)->playerNameEdit.textBuffer,
+            (reinterpret_cast<uint32_t *>(FrontendUi_Image(frontendUiState)->playerNameEdit.textBuffer),
              savedPlayerName);
   FrontendInit_CopyNameDwords((uint32_t *)THANDOR_PTR(g_FrontendLocalPlayerNameUtf16),savedPlayerName);
   FrontendInit_CopyNameDwords
-            ((uint32_t *)FrontendUi_Image(frontendUiState)->gameNameEdit.textBuffer,
+            (reinterpret_cast<uint32_t *>(FrontendUi_Image(frontendUiState)->gameNameEdit.textBuffer),
              (const uint32_t *)PersistentSettings_GetRegionOrFallback
                        (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_GAME_NAME));
   settingValue = PersistentSettings_Read(4,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);
@@ -498,11 +499,11 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
     controlIndex = 7;
     /* the seven faction, player and selection-row controls of the faction setup page (entries 1..7) */
     do {
-      ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendUiState,g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[controlIndex - 1]))->activationSound =
+      FrontendUi_Image(frontendUiState)->NodeAt<UiFramedTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[controlIndex - 1])->activationSound =
            buttonVoiceSet;
-      ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendUiState,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[controlIndex - 1]))->activationSound =
+      FrontendUi_Image(frontendUiState)->NodeAt<UiFramedTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[controlIndex - 1])->activationSound =
            buttonVoiceSet;
-      ((UiTextButtonControl *)THANDOR_UI_AT(frontendUiState,g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[controlIndex - 1]))->activationSound =
+      FrontendUi_Image(frontendUiState)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[controlIndex - 1])->activationSound =
            buttonVoiceSet;
       buttonVoiceSet5 = g_UiButtonSoundVoiceSets7[5];
       controlIndex--;
