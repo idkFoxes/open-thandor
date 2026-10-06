@@ -77,7 +77,9 @@ using CHAR = char;
 
 typedef struct _OVERLAPPED *LPOVERLAPPED;
 
-using PTHREAD_START_ROUTINE = DWORD (__stdcall *)(LPVOID);
+using ThreadStartRoutineFunction = DWORD __stdcall (LPVOID); /* function type of a thread entry (__stdcall, as in the SDK) */
+
+using PTHREAD_START_ROUTINE = ThreadStartRoutineFunction *;
 
 using LPTHREAD_START_ROUTINE = PTHREAD_START_ROUTINE;
 
