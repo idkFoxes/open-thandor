@@ -140,8 +140,8 @@ using GraphicsGreyScaleImageProc = void (GraphicsPixelDimension destinationHeigh
                                          GraphicsScreenCoordinate destinationTop,
                                          GraphicsScreenCoordinate destinationLeft, uint64_t *blendedSourcePixels,
                                          uint64_t *blendFactorPixels, GraphicsSubresourceIndex sourceSubresourceIndexA,
-                                         GraphicsSubresourceIndex sourceSubresourceIndexB, int *graphicsTextureAsset,
-                                         int *framebufferAccess);
+                                         GraphicsSubresourceIndex sourceSubresourceIndexB, const GraphicsTextureSourceAsset *graphicsTextureAsset,
+                                         const SoftwareFramebufferAccess *framebufferAccess);
 
 extern GraphicsMinimapDrawProc *g_GraphicsMinimapDraw;
 

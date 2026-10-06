@@ -209,7 +209,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
     return ArmyGroundMovement_PlaceStationary(worldRuntime,modelRuntime);
   }
   ArmyRuntime_UpdateActivationMetricAndPlayStartSound
-            (worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+            (worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   /* drive forward, or jump onto the route point once it is closer than twice this tick's travel */
   travelDistance = (modelRuntime->movementControl).movementAdvancePerTickQ12 * g_InGameSimulationStepTicks;
   if (travelDistance < (int)targetDistance >> 1) {
@@ -237,7 +237,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
     blockedRootNode = modelRuntime->rootModelNode;
     if (notifyBlockingArmy) {
       ArmyRuntime_HandleCollisionPartner
-                ((ModelRuntimeSlot *)modelRuntime,(blockedRootNode->worldTransform).translation.y,
+                (ModelView_Cast<ModelRuntimeSlot>(modelRuntime),(blockedRootNode->worldTransform).translation.y,
                  (blockedRootNode->worldTransform).translation.x,blockingModelRuntime,
                  worldRuntime);
     }
@@ -387,7 +387,7 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   if (movementDefinition->waterDamageThreshold < waterDelta) {
     waterDamage = waterDelta * movementDefinition->waterDamageMultiplier >> 7;
     if (-1 < waterDamage) {
-      ArmyRuntime_ApplyDamageAndPropagateToParent(waterDamage,(ModelRuntimeSlot *)modelRuntime);
+      ArmyRuntime_ApplyDamageAndPropagateToParent(waterDamage,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
     }
   }
   /* alive and still on its way to a route point */
@@ -396,14 +396,14 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
          (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime,&waypointWorldXQ12,
           &waypointWorldYQ12)) {
     placedRootNode = ArmyGroundMovement_SteerAndDrive
-                       (worldRuntime,(ModelRuntimeGroundMovementSteeringView *)modelRuntime,rootNode,
+                       (worldRuntime,ModelView_Cast<ModelRuntimeGroundMovementSteeringView>(modelRuntime),rootNode,
                         waypointWorldXQ12,waypointWorldYQ12,true);
   }
   else {
     (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
     (modelRuntime->movementControl).turnVelocityAngle16 = 0;
     placedRootNode = ArmyGroundMovement_PlaceStationary
-                       (worldRuntime,(ModelRuntimeGroundMovementSteeringView *)modelRuntime);
+                       (worldRuntime,ModelView_Cast<ModelRuntimeGroundMovementSteeringView>(modelRuntime));
   }
   /* Track animation */
   TrackedMovement_ScrollTrackTextures
@@ -413,12 +413,12 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
      (previousRotationAngle != (placedRootNode->modelPayload).worldRotationAngle2)) {
     ownerArmy = modelRuntime->ownerArmyRuntime;
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
-              (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+              (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
     ownerMovementFlags = &ownerArmy->movementStateFlags;
     *ownerMovementFlags = *ownerMovementFlags & ~ARMY_MOVEMENT_STATIONARY;
   }
   movementDefinition = modelRuntime->modelDefinition;
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   ModelNodeRuntime_RebuildTransformsFromRoot(placedRootNode);
   ModelNodeRuntime_UpdateDepthBinMasks(movementDefinition->footprintRadius,placedRootNode);
 }
@@ -471,7 +471,7 @@ void ArmyRuntimeClass_UpdateGroundMovement
   if (movementDefinition->waterDamageThreshold < waterDelta) {
     waterDamage = waterDelta * movementDefinition->waterDamageMultiplier >> 7;
     if (-1 < waterDamage) {
-      ArmyRuntime_ApplyDamageAndPropagateToParent(waterDamage,(ModelRuntimeSlot *)modelRuntime);
+      ArmyRuntime_ApplyDamageAndPropagateToParent(waterDamage,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
     }
   }
   /* alive and still on its way to a route point */
@@ -492,12 +492,12 @@ void ArmyRuntimeClass_UpdateGroundMovement
      (previousRotationAngle != (rootNode->modelPayload).worldRotationAngle2)) {
     ownerArmy = modelRuntime->ownerArmyRuntime;
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
-              (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+              (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
     ownerMovementFlags = &ownerArmy->movementStateFlags;
     *ownerMovementFlags = *ownerMovementFlags & ~ARMY_MOVEMENT_STATIONARY;
   }
   movementDefinition = modelRuntime->modelDefinition;
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   ModelNodeRuntime_RebuildTransformsFromRoot(rootNode);
   ModelNodeRuntime_UpdateDepthBinMasks(movementDefinition->footprintRadius,rootNode);
 }
@@ -559,12 +559,12 @@ void ArmyRuntimeClass_UpdateWaterSurfaceMovement
      (previousRotationAngle != (rootNode->modelPayload).worldRotationAngle2)) {
     ownerArmy = modelRuntime->ownerArmyRuntime;
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
-              (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+              (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
     ownerMovementFlags = &ownerArmy->movementStateFlags;
     *ownerMovementFlags = *ownerMovementFlags & ~ARMY_MOVEMENT_STATIONARY;
   }
   movementDefinition = modelRuntime->modelDefinition;
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   ModelNodeRuntime_RebuildTransformsFromRoot(rootNode);
   ModelNodeRuntime_UpdateDepthBinMasks(movementDefinition->footprintRadius,rootNode);
 }

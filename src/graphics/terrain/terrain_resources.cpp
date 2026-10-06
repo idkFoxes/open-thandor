@@ -41,7 +41,7 @@ static TerrainMaterialSuffixEntry *TerrainVisualResources_FindPathSuffixEntry(ui
 
   for (pathLength = 0; (pathLength < 255) && (resourcePath[pathLength] != 0); pathLength++) {
   }
-  return (TerrainMaterialSuffixEntry *)(resourcePath + pathLength);
+  return reinterpret_cast<TerrainMaterialSuffixEntry *>(resourcePath + pathLength); /* the suffix record is written over the path's end */
 }
 
 /* Loads the 26 material texture sets <secondary>a..z.gfx into g_TerrainMaterialTextureSets: those whose bit is
@@ -109,7 +109,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
     return false;
   }
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  g_TerrainSurfacePacketTablePayload = (uint8_t *)packetTable + TERRAIN_PACKET_TABLE_HEADER_BYTES;
+  g_TerrainSurfacePacketTablePayload = static_cast<uint8_t *>(packetTable) + TERRAIN_PACKET_TABLE_HEADER_BYTES;
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
   primaryTextureSet = g_GraphicsTextureSetLoadPackage(primaryResourcePath,&loadErrorCode);
   if (primaryTextureSet == nullptr) {
@@ -145,7 +145,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
     return false;
   }
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  g_TerrainSoilPacketTablePayload = (uint8_t *)packetTable + TERRAIN_PACKET_TABLE_HEADER_BYTES;
+  g_TerrainSoilPacketTablePayload = static_cast<uint8_t *>(packetTable) + TERRAIN_PACKET_TABLE_HEADER_BYTES;
   return true;
 }
 
@@ -170,7 +170,8 @@ static void TerrainDirectionTable_RandomizeRecords()
       rotationRate = -rotationRate;
     }
     directionRecord->rateA = rotationRate;
-    ((short *)&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
+    /* packedAngles holds the two 16-bit angles in its low and high word */
+    reinterpret_cast<short *>(&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
     randomValue = Random_NextPrimary();
     directionRecord->scaleB = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
     rotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
@@ -180,7 +181,7 @@ static void TerrainDirectionTable_RandomizeRecords()
       rotationRate = -rotationRate;
     }
     directionRecord->rateB = rotationRate;
-    ((short *)&directionRecord->packedAngles)[1] = (short)randomValue; /* angle B */
+    reinterpret_cast<short *>(&directionRecord->packedAngles)[1] = (short)randomValue; /* angle B */
     directionRecord->angleAComponent0ScaledQ28 = 0;
     directionRecord->angleAComponent1ScaledQ28 = 0;
     directionRecord->angleBComponent0ScaledQ28 = 0;
@@ -299,10 +300,10 @@ void TerrainVisualResources_Shutdown()
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainPrimaryPalette);
   surfacePacketTablePayload = g_TerrainSurfacePacketTablePayload;
   if (g_TerrainSoilPacketTablePayload != nullptr) {
-    Resource_Release((void *)((uintptr_t)g_TerrainSoilPacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
+    Resource_Release(reinterpret_cast<void *>((uintptr_t)g_TerrainSoilPacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
   if (surfacePacketTablePayload != nullptr) {
-    Resource_Release((void *)((uintptr_t)surfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
+    Resource_Release(reinterpret_cast<void *>((uintptr_t)surfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
   g_TerrainPrimaryTextureSet = nullptr;
   g_TerrainSecondaryPalette = nullptr;

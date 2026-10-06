@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/session/level_saved.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Loading stages 1 to 5 of a saved game: as NewLevel_InitTerrainAndGraphics, but the terrain loader also clears
    the cell overlay flags, and the army references of the saved faction image are rebased before the terrain
@@ -23,9 +24,9 @@ static Bool8 SavedLevel_InitTerrainAndGraphics
   g_MoviePlaybackScheduleCounter = 0;
   g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
   if (!TerrainVisualResources_LoadAndClearCellOverlayFlags
-         ((uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.surfaceTextureBasePathOffset),
-          (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.groundTextureBasePathOffset),
-          Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),&stepError)) { /* 32-bit format field: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
+         (Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.surfaceTextureBasePathOffset),
+          Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.groundTextureBasePathOffset),
+          Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),&stepError)) { /* 32-bit format field: LevelAsset +0x0B0 levelPathOffset, a FieldGridAsset pointer */
     return NewLevel_Fail(outError,stepError);
   }
   stepError = ShotDefinitions_ValidateTerrainMaterialReferences();
@@ -40,9 +41,9 @@ static Bool8 SavedLevel_InitTerrainAndGraphics
     return NewLevel_Fail(outError,stepError);
   }
   armyTextureBasePath =
-       (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.armyTextureBasePathOffset);
+       Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.armyTextureBasePathOffset);
   effectTextureBasePath =
-       (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.effectTextureBasePathOffset);
+       Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.effectTextureBasePathOffset);
   if (!ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath,&stepError)) {
     return NewLevel_Fail(outError,stepError);
   }
@@ -50,7 +51,7 @@ static Bool8 SavedLevel_InitTerrainAndGraphics
   g_MoviePlaybackScheduleCounter = 0;
   g_MoviePlaybackScheduleSpan = 4;
   if (!ShotRuntime_InitGraphicsResources
-         ((uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.shotTextureBasePathOffset),
+         (Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.shotTextureBasePathOffset),
           &stepError)) {
     return NewLevel_Fail(outError,stepError);
   }
@@ -93,9 +94,9 @@ static void SavedLevel_PlaceStartCameraAndLightFieldRegion
   MoviePlayback_AdvanceScheduledFrameAndTick();
   playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[localFactionIndex - 1];
   WorldRuntime_AttachFieldGridAsset
-            (Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),worldRuntime); /* 32-bit format field: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
+            (Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),worldRuntime); /* 32-bit format field: LevelAsset +0x0B0 levelPathOffset, a FieldGridAsset pointer */
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  startSlot = (struct LevelPlayerSlotRecord *)((uint8_t *)&levelImage->playerSlots[0] + playerSlotByteOffset);
+  startSlot = Asset_RecordAt<LevelPlayerSlotRecord>(&levelImage->playerSlots[0],playerSlotByteOffset);
   packedHeadingLow16PitchHigh16 = startSlot->packedHeadingLow16PitchHigh16;
   WorldRuntime_SetCameraPositionKeepingTarget
             (startSlot->startCameraZQ12,startSlot->startCameraYQ12,startSlot->startCameraXQ12,worldRuntime);
@@ -142,7 +143,7 @@ static Bool8 SavedLevel_LoadSpatialSounds
     soundSlotCursor++;
   }
   soundDirectoryPath =
-       (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.soundBasePathOffset);
+       Asset_RecordAt<uint16_t>(levelImage,(levelImage->header).pathOffsets.soundBasePathOffset);
   WidePath_SetExtensionCode(ASSET_MAGIC_SAM,soundDirectoryPath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
   WidePath_SplitParentAndLeaf
@@ -152,13 +153,14 @@ static Bool8 SavedLevel_LoadSpatialSounds
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
   }
-  soundsInPackage = Package_FindEntry(listingCapacityBytes,(PckEntryHeader *)directoryListing,soundDirectoryPath,
-                                      g_SoundPackageHandle,&listedSoundCount);
+  soundsInPackage = Package_FindEntry(listingCapacityBytes,static_cast<PckEntryHeader *>(directoryListing),
+                                      soundDirectoryPath,g_SoundPackageHandle,&listedSoundCount);
   soundDirectoryRecordSizeBytes = PCK_ENTRY_HEADER_BYTES;
   if (!soundsInPackage) {
     listedSoundCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,(uint8_t *)directoryListing,
-                          (uint8_t *)soundDirectoryPath);
+                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,
+                          static_cast<uint8_t *>(directoryListing),
+                          reinterpret_cast<uint8_t *>(soundDirectoryPath)); /* the UTF-16 path as bytes */
     soundDirectoryRecordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
   }
   g_MoviePlaybackBaseFrameGroup = 6;
@@ -172,7 +174,7 @@ static Bool8 SavedLevel_LoadSpatialSounds
   if (worldRuntime->dwordArrayCount < listedSoundCount) {
     listedSoundCount = worldRuntime->dwordArrayCount;
   }
-  listedSoundPath = (uint16_t *)directoryListing;
+  listedSoundPath = static_cast<uint16_t *>(directoryListing);
   for (; listedSoundCount != 0; listedSoundCount--) {
     soundSlotCursor = worldRuntime->dwordArray;
     soundIndex = WidePath_ParseTrailingNumberBeforeExtension(listedSoundPath);
@@ -191,15 +193,15 @@ static Bool8 SavedLevel_LoadSpatialSounds
         g_MemoryApi.free(directoryListing);
         return NewLevel_Fail(outError,loadErrorCode);
       }
-      soundSlot = SpatialSoundSlot_CreateFromSampleAsset((SoundSampleAsset *)loadedSample);
+      soundSlot = SpatialSoundSlot_CreateFromSampleAsset(static_cast<SoundSampleAsset *>(loadedSample));
       if (soundSlot != nullptr) {
-        soundSlotCursor[soundIndex] = (uintptr_t)soundSlot;
+        soundSlotCursor[soundIndex] = reinterpret_cast<uintptr_t>(soundSlot); /* kept as an integer slot */
       }
       Resource_Release(loadedSample);
       MoviePlayback_AdvanceScheduledFrameAndTick();
     }
     /* advance by one directory record */
-    listedSoundPath = (uint16_t *)((uint8_t *)listedSoundPath + soundDirectoryRecordSizeBytes);
+    listedSoundPath = Asset_RecordAt<uint16_t>(listedSoundPath,soundDirectoryRecordSizeBytes);
   }
   g_MemoryApi.free(directoryListing);
   return true;
@@ -222,8 +224,9 @@ Bool8 InGameLevelRuntime_LoadResourcesAfterExternalTables
   uint32_t stepError;
 
   /* the same LEV image, viewed through the type the shared NewLevel_ steps take (identical layout) */
-  levelPrefix = (LevelAssetRuntimePrefix *)levelImage;
-  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * sizeof(Ptr32<void>),(void **)&loadedResourceCursor);
+  levelPrefix = reinterpret_cast<LevelAssetRuntimePrefix *>(levelImage);
+  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * sizeof(Ptr32<void>),
+                                 reinterpret_cast<void **>(&loadedResourceCursor));
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
   }

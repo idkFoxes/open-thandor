@@ -109,7 +109,7 @@ static void InGameWorldOverlay_BuildPlacementPreviewArmy
   g_ArmyPlacementLateRejectionCount = 1;
   placeable = ArmyPlacement_CanPlaceAssetAtFieldPoint
                    (1,0,g_InGamePlacementHeading16,validatedWorldYQ12,validatedWorldXQ12,armyAssetId,
-                    worldRuntime->activeFactionRuntimeIndex,(UiRootNode *)worldRuntime,nullptr);
+                    worldRuntime->activeFactionRuntimeIndex,worldRuntime,nullptr);
   if ((!placeable) && (g_ArmyPlacementLateRejectionCount < 2)) {
     previewTint = previewTint & OVERLAY_PREVIEW_TINT_BLOCKED_MASK;
   }

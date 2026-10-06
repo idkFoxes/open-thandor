@@ -162,7 +162,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
           weaponDefinitionView = modelRuntime->modelDefinition;
           if (modelRuntime->sharedInterShotTicks == 0) {
             targetFollowingFailed = ArmyRuntimeCommand_UpdateTargetFollowingState
-                                      (aimZQ12,aimYQ12,aimXQ12,worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+                                      (aimZQ12,aimYQ12,aimXQ12,worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
             if (!targetFollowingFailed) {
               ArmyWeaponRuntime_FireFromFirstLoadedAttachment
                         (worldRuntime,modelRuntime,weaponDefinitionView,pitchNode,aimZQ12,aimYQ12,aimXQ12,
@@ -174,7 +174,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
     }
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Owner test for a model in the line of fire: it blocks unless it is the shooter's command target or passes
@@ -372,7 +372,7 @@ Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorld
   targetEntity = (modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandTarget.targetEntity;
   if (targetEntity != nullptr) {
     targetDistance = (int)(targetDistance * 2 -
-                 ((ModelRuntimeSlot *)(targetEntity->common).ownership.definitionOrClassRecord)->
+                 (targetEntity->common).ownership.modelRuntime()->
                  definitionOrSavedId.runtimeDefinition->footprintRadius
                  ) >> 1;
   }

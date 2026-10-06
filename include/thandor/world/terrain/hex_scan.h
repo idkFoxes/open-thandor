@@ -48,15 +48,15 @@ inline FieldGridCell *TerrainHexScan_Neighbor(FieldGridCell *cell)
   if constexpr (Direction == 0) {
     return cell + 1;
   } else if constexpr (Direction == 1) {
-    return FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes);
+    return FieldGridCell_AtByteOffset(cell + 1,-g_TerrainScanRowStrideBytes);
   } else if constexpr (Direction == 2) {
-    return FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes);
+    return FieldGridCell_AtByteOffset(cell,-g_TerrainScanRowStrideBytes);
   } else if constexpr (Direction == 3) {
     return cell - 1;
   } else if constexpr (Direction == 4) {
-    return FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes);
+    return FieldGridCell_AtByteOffset(cell - 1,g_TerrainScanRowStrideBytes);
   } else {
-    return FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes);
+    return FieldGridCell_AtByteOffset(cell,g_TerrainScanRowStrideBytes);
   }
 }
 

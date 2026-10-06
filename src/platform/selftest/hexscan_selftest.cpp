@@ -91,7 +91,7 @@ static uint32_t HexscanTest_Hash(uint32_t hash, const void *bytes, size_t count)
 {
     size_t i;
     for (i = 0; i < count; i++) {
-        hash = (hash ^ ((const uint8_t *)bytes)[i]) * 16777619u;
+        hash = (hash ^ static_cast<const uint8_t *>(bytes)[i]) * 16777619u;
     }
     return hash;
 }
@@ -357,8 +357,8 @@ void Thandor_SelfTestHexScan(void)
     uint32_t savedReferenceHeight = g_TerrainScanReferenceHeight;
     size_t gridBytes =
         offsetof(FieldGridAsset, cells) + (size_t)HEXSCAN_TEST_WIDTH * HEXSCAN_TEST_HEIGHT * sizeof(FieldGridCell);
-    FieldGridAsset *grid = (FieldGridAsset *)calloc(1, gridBytes);
-    FieldGridAsset *reset = (FieldGridAsset *)calloc(1, gridBytes);
+    auto *grid = static_cast<FieldGridAsset *>(calloc(1, gridBytes));
+    auto *reset = static_cast<FieldGridAsset *>(calloc(1, gridBytes));
     uint32_t summary = 2166136261u;
     int driver;
 

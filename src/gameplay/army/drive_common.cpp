@@ -97,7 +97,7 @@ void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q1
   }
   if (collisionPartnerModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
       MODEL_RUNTIME_CLASS_23) {
-    platformRuntime = (ModelRuntimeVerticalDeploymentView *)collisionPartnerModelRuntime;
+    platformRuntime = ModelView_Cast<ModelRuntimeVerticalDeploymentView>(collisionPartnerModelRuntime);
     if ((platformRuntime->ownerArmyRuntime->factionIndex ==
          currentModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
        ((platformRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime == nullptr)) {
