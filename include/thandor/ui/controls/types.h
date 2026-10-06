@@ -513,6 +513,26 @@ struct UiConditionalActionControl {
     Ptr32<uint16_t> textLines[1];
 };
 
+/* A UiConditionalActionControl of a template image with its text line slots spelled out (step 13 U3):
+   0x5C + 4 * LineSlots bytes, same prefix. The class methods (buttons.cpp) take the one-slot view; reach it
+   with UiConditionalActionTextBox_AsControl. */
+template <uint32_t LineSlots>
+struct UiConditionalActionTextBox {
+    struct UiNodeBase base;
+    uint32_t field4C;
+    GraphicsCursorFrameIndex cursorFrame;
+    UiActionId actionId;
+    uint32_t lineCount;
+    Ptr32<uint16_t> textLines[LineSlots];
+};
+
+/* The UiConditionalActionControl view of a UiConditionalActionTextBox<N> (same prefix and first line slot). */
+template <uint32_t LineSlots>
+inline UiConditionalActionControl *UiConditionalActionTextBox_AsControl(UiConditionalActionTextBox<LineSlots> *control)
+{
+  return reinterpret_cast<UiConditionalActionControl *>(control);
+}
+
 struct UiFramedTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
