@@ -183,15 +183,15 @@ static Bool8 AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,u
           FactionRuntimeIndex factionIndex)
 
 {
-  return (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[0],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[gridWidth - 1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
+  return (FieldGridCell_OccupancyByte(&cellAbove[0],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
+         (FieldGridCell_OccupancyByte(&cellAbove[1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
+         (FieldGridCell_OccupancyByte(&cellAbove[gridWidth - 1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
           0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[gridWidth + 1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
+         (FieldGridCell_OccupancyByte(&cellAbove[gridWidth + 1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
           0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[gridWidth * 2 - 1],factionIndex) &
+         (FieldGridCell_OccupancyByte(&cellAbove[gridWidth * 2 - 1],factionIndex) &
           FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[gridWidth * 2],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
+         (FieldGridCell_OccupancyByte(&cellAbove[gridWidth * 2],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
           0;
 }
 
@@ -223,7 +223,7 @@ static void AiPlanningRebuild_ScanSiteCell(FactionRuntimeIndex factionIndex,Fiel
   /* general site: an occupied, unblocked cell at the edge of the faction's presence where also one of the active
      mask classes is missing around it (both conditions, not either) */
   if (((scratchCell[scratchRowStride].stateMask & GRID_SCRATCH_BLOCKED) == 0) &&
-      ((FIELD_CELL_OCCUPANCY_BYTE(currentCell,factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) &&
+      ((FieldGridCell_OccupancyByte(currentCell,factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) &&
       AiPlanningRebuild_HasUnoccupiedNeighbour(cellAbove,gridWidth,factionIndex) &&
       (AiPlanningRebuild_LacksActiveMaskClass
                  (scratchCell[scratchRowStride].stateMask |
@@ -231,7 +231,7 @@ static void AiPlanningRebuild_ScanSiteCell(FactionRuntimeIndex factionIndex,Fiel
     AiSiteCandidate_AddGeneralCellIfSeparated(currentCell);
   }
   /* flagged site: occupancy bit 4 set and one of the terrain classes 24/25/28 absent around it */
-  if (((FIELD_CELL_OCCUPANCY_BYTE(currentCell,factionIndex) & 0x10) != 0) &&
+  if (((FieldGridCell_OccupancyByte(currentCell,factionIndex) & 0x10) != 0) &&
       ((scratchCell[scratchRowStride].stateMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_LOW_BAND0)) == 0)) {
     neighborhoodMask = scratchCell[scratchRowStride].stateMask |
                        AiPlanningRebuild_ScratchFootprintMask(scratchCell,scratchRowStride,4);
@@ -242,7 +242,7 @@ static void AiPlanningRebuild_ScanSiteCell(FactionRuntimeIndex factionIndex,Fiel
       AiSiteCandidate_AddFlaggedCellIfSeparated(currentCell);
     }
   }
-  if (((FIELD_CELL_OCCUPANCY_BYTE(currentCell,factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0) ||
+  if (((FieldGridCell_OccupancyByte(currentCell,factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0) ||
       ((scratchCell[scratchRowStride].stateMask &
         (AI_SITE_SCRATCH_OBSTACLE_BITS | AI_SITE_SCRATCH_BANDS_CLASSES_0_TO_5)) != 0)) {
     return;

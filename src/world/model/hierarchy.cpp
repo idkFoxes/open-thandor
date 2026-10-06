@@ -551,7 +551,7 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
     *outNode = nullptr;
     return true;
   }
-  newNode = (ModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldRuntime);
+  newNode = WorldNode_View<ModelRuntimeNode>(WorldObjectArray_AllocateFreeRecord(worldRuntime));
   if (newNode == nullptr) {
     return false; /* world object pool exhausted */
   }
@@ -692,7 +692,7 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
       childSlotCursor = (ModelRuntimeNode *)((uint32_t *)childSlotCursor + 1);
     }
   }
-  WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)node);
+  WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(node));
 }
 
 
@@ -743,7 +743,7 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
       if (currentChild != nullptr) {
         /* the scratch matrix (rotation basis plus translation) forms the child's local transform */
         FixedTransform_BuildRotationBasis
-                  ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
+                  (&g_ModelTransformScratchMatrix,
                    currentChild->modelPayload.localRotationAngle2,
                    currentChild->modelPayload.localRotationAngle1,
                    currentChild->modelPayload.localRotationAngle0);
@@ -752,7 +752,7 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
         g_ModelTransformScratchMatrix.translation.z = currentChild->modelPayload.localTranslationZQ12;
         FixedTransform_Compose
                   (&currentChild->worldTransform,
-                   (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
+                   &g_ModelTransformScratchMatrix,
                    &modelNodeRuntime->worldTransform);
         childEulerAngles = FixedTransform_ExtractEulerAngles(&currentChild->worldTransform);
         currentChild->modelPayload.worldRotationAngle2 = childEulerAngles.rollAngle;

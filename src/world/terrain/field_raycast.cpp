@@ -253,7 +253,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
         else {
           rowClampOffset = cellRowIndex - maxRowIndex;
         }
-        sampleCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(sampleCell,-rowClampOffset * rowStrideBytes);
+        sampleCell = FieldGridCell_AtByteOffset(sampleCell,-rowClampOffset * rowStrideBytes);
         cornerHeight3Q12 = sampleCell->terrainHeight;
         cornerHeight2Q12 = sampleCell->terrainHeight;
         cornerHeight1Q12 = sampleCell->terrainHeight;
@@ -267,7 +267,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
       }
     }
     else if (cellRowIndex < 0) {
-      sampleCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(currentCell,-cellRowIndex * rowStrideBytes);
+      sampleCell = FieldGridCell_AtByteOffset(currentCell,-cellRowIndex * rowStrideBytes);
       if (cellColumnIndex < maxColumnIndex) {
         cornerHeight3Q12 = sampleCell->terrainHeight;
         cornerHeight2Q12 = sampleCell[1].terrainHeight;
@@ -291,7 +291,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
         sampleCell = currentCell;
       }
       else {
-        sampleCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(currentCell,-(cellRowIndex - maxRowIndex) * rowStrideBytes);
+        sampleCell = FieldGridCell_AtByteOffset(currentCell,-(cellRowIndex - maxRowIndex) * rowStrideBytes);
         cornerHeight3Q12 = sampleCell->terrainHeight;
         cornerHeight2Q12 = sampleCell[1].terrainHeight;
         cornerHeight1Q12 = sampleCell->terrainHeight;
@@ -302,7 +302,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
       sampleCell = currentCell + -(cellColumnIndex - maxColumnIndex);
       if (maxRowIndex <= cellRowIndex) {
         /* both clamped: the single corner cell */
-        sampleCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(sampleCell,-(cellRowIndex - maxRowIndex) * rowStrideBytes);
+        sampleCell = FieldGridCell_AtByteOffset(sampleCell,-(cellRowIndex - maxRowIndex) * rowStrideBytes);
         cornerHeight3Q12 = sampleCell->terrainHeight;
         cornerHeight2Q12 = sampleCell->terrainHeight;
         cornerHeight1Q12 = sampleCell->terrainHeight;

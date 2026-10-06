@@ -63,7 +63,7 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
                       (char)worldRuntime->activeFactionRuntimeIndex);
   modelNode->runtimeFlags = modelNode->runtimeFlags | resolvedMasks.runtimeFlags;
   shotRuntime->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
-  ModelNodeRuntime_RefreshStateTint((ModelRuntimeNode *)modelNode);
+  ModelNodeRuntime_RefreshStateTint(WorldNode_View<ModelRuntimeNode>(modelNode));
   nodeTintArgb = modelNode->tintArgb;
   definitionTintArgb = shotRuntime->definitionOrSavedId.definition->stateTintArgb;
   /* per channel (a * 0x101 >> 4) * (b * 0x101 >> 4) >> 16, about a * b / 256 (MMX in the original) */
@@ -104,7 +104,7 @@ void ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
   if (soundSlotIndex >= worldRuntime->dwordArrayCount) {
     return;
   }
-  slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+  slot = reinterpret_cast<SpatialSoundSlot *>(worldRuntime->dwordArray[soundSlotIndex]); /* the workspace keeps pointers as uintptr_t */
   worldPosition = &modelNode->worldTransform.translation;
   if (slot == nullptr) {
     return;
@@ -162,7 +162,7 @@ static void ShotModel_ReleaseAndUnlink
 {
   InterpolationState_SetNegatedTargetAndRescaleProgress
             (shotDefinition->shadingReleaseTransitionDurationTicks,modelNodeRuntime->shadingRecord);
-  WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
+  WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNodeRuntime));
   shotRuntime->modelNodeOrSavedOffset.modelNode = nullptr;
 }
 
@@ -182,8 +182,8 @@ static void ShotModel_EmitSecondaryTrailEffect
   }
   shotRuntime->ownerAndTrajectory.secondaryEffectCountdownTicks = shotDefinition->secondaryEffectIntervalTicks;
   if (ModelLookupTable_FindPackedPoint
-        (1,MODEL_POINT_CLASS_EFFECT,(ModelResource *)shotDefinition->ownedNestedResource,&emitterRecord)) {
-    emitterWorldPoint = ModelNodeRuntime_TransformLocalPoint(emitterRecord,(ModelRuntimeNode *)modelNode);
+        (1,MODEL_POINT_CLASS_EFFECT,static_cast<ModelResource *>(shotDefinition->ownedNestedResource.get()),&emitterRecord)) {
+    emitterWorldPoint = ModelNodeRuntime_TransformLocalPoint(emitterRecord,WorldNode_View<ModelRuntimeNode>(modelNode));
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },0,
                FIXED_ANGLE16_QUARTER_TURN,0,
@@ -454,7 +454,7 @@ static void ShotProjectile_ImpactArmy
   if (effectDefinition != nullptr) {
     ShotModel_EmitArmyImpactEffect(worldRuntime,modelNode,hits->armyHitDistance,effectDefinition);
   }
-  WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
+  WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNode));
   shotRuntime->modelNodeOrSavedOffset.modelNode = nullptr;
   ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(impactAngle,ownerFactionIndex,impactValue,hitModelRuntime);
 }
@@ -480,7 +480,7 @@ static Bool8 ShotProjectile_ApplyNearestHit
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
                FIXED_ANGLE16_QUARTER_TURN,0,hits->secondaryHitDistance,modelNode,
                shotDefinition->primaryEffectDefinition,worldRuntime);
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
+    WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNode));
     shotRuntime->modelNodeOrSavedOffset.modelNode = nullptr;
     return true;
   case SHOT_NEAREST_HIT_ARMY:
@@ -498,7 +498,7 @@ static Bool8 ShotProjectile_ApplyNearestHit
               (shotDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
     ShotModel_EmitTerrainImpactEffect
               (worldRuntime,modelNode,shotDefinition,hits->terrainMaterialIndex,hits->terrainHitDistance);
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
+    WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNode));
     return true;
   }
 }
@@ -722,7 +722,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
     shotDefinition = shotRuntime->definitionOrSavedId.definition;
     ShotModel_AgeAndAdvanceAnimation(modelNode,shotRuntime,shotDefinition);
     shotRuntime->lifetimeTicksRemaining = shotRuntime->lifetimeTicksRemaining - 1;
-    modelNodeRuntime = (ModelRuntimeNode *)modelNode;
+    modelNodeRuntime = WorldNode_View<ModelRuntimeNode>(modelNode);
     if (shotRuntime->lifetimeTicksRemaining == 0) {
       ShotModel_ReleaseAndUnlink(shotRuntime,shotDefinition,modelNodeRuntime);
       return;
