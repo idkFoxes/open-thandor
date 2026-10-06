@@ -1,5 +1,5 @@
 {
- "revision": "3f198c28",
+ "revision": "368beed9",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -114,16 +114,13 @@
  },
  "counts": {
   "cstyle_cast": {
-   "ui": 967,
+   "ui": 892,
    "world": 61
   },
   "ingame_ui": {
    "ui": 4
   },
-  "ui_at_sibling": {
-   "core": 3,
-   "ui": 79
-  },
+  "ui_at_sibling": {},
   "frontend_ui": {},
   "define_numeric": {
    "assets": 102,
@@ -140,7 +137,7 @@
   "define_all": {
    "assets": 159,
    "audio": 28,
-   "core": 237,
+   "core": 234,
    "gameplay": 274,
    "generated": 1,
    "graphics": 206,
