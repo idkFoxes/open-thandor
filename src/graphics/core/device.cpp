@@ -36,8 +36,8 @@ uint32_t Graphics_AllocateTables()
   if (allocError != 0) {
     return allocError;
   }
-  g_GraphicsTextureSlots = (GraphicsTextureResource **)allocation;
-  zeroCursor = (uint32_t *)allocation;
+  g_GraphicsTextureSlots = static_cast<GraphicsTextureResource **>(allocation);
+  zeroCursor = static_cast<uint32_t *>(allocation);
   for (remainingDwords = GRAPHICS_TEXTURE_SLOT_CAPACITY * sizeof(GraphicsTextureResource *) / 4; remainingDwords != 0;
        remainingDwords--) {
     *zeroCursor = 0;
@@ -47,8 +47,8 @@ uint32_t Graphics_AllocateTables()
   if (allocError != 0) {
     return allocError;
   }
-  g_TexturePaletteEntries = (GraphicsPaletteEntry *)allocation;
-  zeroCursor = (uint32_t *)allocation;
+  g_TexturePaletteEntries = static_cast<GraphicsPaletteEntry *>(allocation);
+  zeroCursor = static_cast<uint32_t *>(allocation);
   for (remainingDwords = 256; remainingDwords != 0; remainingDwords--) {
     *zeroCursor = 0;
     zeroCursor++;
@@ -58,13 +58,13 @@ uint32_t Graphics_AllocateTables()
     return allocError;
   }
   g_GraphicsAdapterCount = 0;
-  g_GraphicsAdapters = (GraphicsAdapterRecord *)allocation;
+  g_GraphicsAdapters = static_cast<GraphicsAdapterRecord *>(allocation);
   allocError = g_MemoryApi.alloc(GRAPHICS_DISPLAY_MODE_CAPACITY * sizeof(GraphicsDisplayMode),&allocation);
   if (allocError != 0) {
     return allocError;
   }
   g_GraphicsDisplayModeCount = 0;
-  g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocation;
+  g_GraphicsDisplayModes = static_cast<GraphicsDisplayMode *>(allocation);
   return 0;
 }
 

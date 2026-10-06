@@ -404,8 +404,8 @@ static void RasterTest_BilinearBlendScale(uint64_t *seed, RasterTestState *state
             factors[f] = ((uint64_t)RasterTest_Random(seed) << 32) | RasterTest_Random(seed);
         }
         SoftwareTexture_BilinearBlendScaleSubresources((uint32_t)height, (uint32_t)width, top, left, blended.data(),
-                                                       factors.data(), 6, 5, (int *)asset->header,
-                                                       (int *)&state->framebuffer);
+                                                       factors.data(), 6, 5, asset->header,
+                                                       &state->framebuffer);
     }
 }
 

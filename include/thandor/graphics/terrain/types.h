@@ -44,6 +44,17 @@ struct TerrainProjectedVertexWorkRecord {
     uint8_t reserved6C_7F[20]; // Unresolved tail to proven 0x80 grid stride
 };
 
+/* The primitive queue takes the terrain vertices with the GraphicsProjectedVertexSource type (the model vertex
+   record) and reads them back as TerrainProjectedVertexWorkRecords: the same 0x80-byte record either way. */
+static inline GraphicsProjectedVertexSource *TerrainVertex_AsProjectedSource(TerrainProjectedVertexWorkRecord *vertex)
+{
+    return reinterpret_cast<GraphicsProjectedVertexSource *>(vertex);
+}
+static inline const TerrainProjectedVertexWorkRecord *TerrainVertex_FromProjectedSource(const GraphicsProjectedVertexSource *vertex)
+{
+    return reinterpret_cast<const TerrainProjectedVertexWorkRecord *>(vertex);
+}
+
 struct TriangleBarycentricWeightsQ12 {
     Q12 weightVertexB_Q12; // Interpolation weight applied to vertex B relative to vertex C.
     Q12 weightVertexA_Q12; // Interpolation weight applied to vertex A relative to vertex C.
