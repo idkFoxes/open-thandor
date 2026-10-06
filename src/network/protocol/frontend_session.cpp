@@ -330,13 +330,13 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
   frontendRootBase = g_FrontendRootNode;
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
     UiPageStack_SetActiveIndex
-              (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(g_FrontendRootNode,frontendPageStack)));
-    FRONTEND_UI(frontendRootBase,menuRoomModelView)->contextFlags &=
+              (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(g_FrontendRootNode)->frontendPageStack));
+    FrontendUi_Image(frontendRootBase)->menuRoomModelView.contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
     g_FrontendRomTransitionPageAction = 0;
     FrontendRomTransition_ActivateRecordById
-              (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(FRONTEND_UI(frontendRootBase,menuRoomModelView)));
+              (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(&FrontendUi_Image(frontendRootBase)->menuRoomModelView));
   }
   /* player block 0 is the host's while connected */
   resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_HOST_LOST);

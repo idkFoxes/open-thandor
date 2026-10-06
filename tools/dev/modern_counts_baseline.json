@@ -1,5 +1,5 @@
 {
- "revision": "fe8b4558",
+ "revision": "b41104af",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -118,7 +118,7 @@
    "core": 5,
    "gameplay": 22,
    "platform": 18,
-   "ui": 1048,
+   "ui": 1047,
    "world": 66
   },
   "ingame_ui": {
@@ -128,12 +128,7 @@
    "core": 3,
    "ui": 238
   },
-  "frontend_ui": {
-   "gameplay": 10,
-   "network": 16,
-   "platform": 3,
-   "ui": 288
-  },
+  "frontend_ui": {},
   "define_numeric": {
    "assets": 102,
    "audio": 15,
@@ -157,7 +152,7 @@
    "network": 165,
    "platform": 330,
    "root": 7,
-   "ui": 802,
+   "ui": 801,
    "world": 177
   },
   "include_guard": {

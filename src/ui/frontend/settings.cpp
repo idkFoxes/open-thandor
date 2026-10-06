@@ -116,42 +116,43 @@ void FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *frontendRoot)
 
 {
+  FrontendUiImage *ui = FrontendUi_Image(frontendRoot);
   FrontendModelPointerContextFlags *menuRoomContextFlags;
   uint32_t persistedValue;
 
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,frontendPageStack)));
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,UiLayoutContainerControl_AsPageStack(&ui->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &FRONTEND_UI(frontendRoot,menuRoomModelView)->contextFlags;
+         &ui->menuRoomModelView.contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   UiSelectableControl_SetSelected
             (persistedValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF,
-             &FRONTEND_UI(frontendRoot,autoZoomOffCheckbox)->selectable);
+             &ui->autoZoomOffCheckbox.selectable);
   UiSelectableControl_SetSelected
             (persistedValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
-             &FRONTEND_UI(frontendRoot,autoRotationOffCheckbox)->selectable);
+             &ui->autoRotationOffCheckbox.selectable);
   /* Bit 4 is the "right button does not scroll" checkbox (its action 0x2049 handler is
      FrontendGameplaySettings_SetRightButtonDoesNotScroll), which hides the in-game side panel; the template
      calls this control hidePanelCheckbox. */
   UiSelectableControl_SetSelected(persistedValue & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,
-                                  &FRONTEND_UI(frontendRoot,hidePanelCheckbox)->selectable);
+                                  &ui->hidePanelCheckbox.selectable);
   persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   if ((persistedValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected
             (persistedValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM,
-             &FRONTEND_UI(frontendRoot,linkRotationZoomCheckbox)->selectable);
+             &ui->linkRotationZoomCheckbox.selectable);
   if ((persistedValue & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected(persistedValue & PERSISTENT_LINK_OPTION_ROTATION_TILT,
-                                  &FRONTEND_UI(frontendRoot,linkRotationTiltCheckbox)->selectable);
+                                  &ui->linkRotationTiltCheckbox.selectable);
   /* bit 4 of this word (hide panel, action 0x2051) is not loaded into its checkbox here */
   persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-  FRONTEND_UI(frontendRoot,scrollSpeedSlider)->value = persistedValue;
+  ui->scrollSpeedSlider.value = persistedValue;
 }
 
 /* Handler of the options page's "3D" button (settings3DButton, action 0x2012, slot 18 of
@@ -174,9 +175,9 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,settings3DButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_GRAPHICS_SETTINGS,
-                             UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendUi,frontendPageStack)));
+                             UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI(frontendUi,menuRoomModelView)->contextFlags |=
+    frontendUi->menuRoomModelView.contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
@@ -218,12 +219,12 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
     selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 5);
   }
   UiSelectableGroup_SelectExclusive(6,selectedShadingRow,
-      &FRONTEND_UI(frontendUi,shadingLevelGrid128Depth128)->base.selectable.base,
-      &FRONTEND_UI(frontendUi,shadingLevelGrid64Depth128)->base.selectable.base,
-      &FRONTEND_UI(frontendUi,shadingLevelGrid64Depth64)->base.selectable.base,
-      &FRONTEND_UI(frontendUi,shadingLevelGrid32Depth128)->base.selectable.base,
-      &FRONTEND_UI(frontendUi,shadingLevelGrid32Depth64)->base.selectable.base,
-      &FRONTEND_UI(frontendUi,shadingLevelGrid32Depth32)->base.selectable.base);
+      &frontendUi->shadingLevelGrid128Depth128.base.selectable.base,
+      &frontendUi->shadingLevelGrid64Depth128.base.selectable.base,
+      &frontendUi->shadingLevelGrid64Depth64.base.selectable.base,
+      &frontendUi->shadingLevelGrid32Depth128.base.selectable.base,
+      &frontendUi->shadingLevelGrid32Depth64.base.selectable.base,
+      &frontendUi->shadingLevelGrid32Depth32.base.selectable.base);
   /* texture rows: low, medium, high */
   persistedValue = PersistentSettings_Read(TEXTURE_QUALITY_MEDIUM,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (persistedValue == TEXTURE_QUALITY_HIGH) {
@@ -236,9 +237,9 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
     selectedTextureRow = (UiNodeBase *)&source->textureResolutionRows;
   }
   UiSelectableGroup_SelectExclusive(3,selectedTextureRow,
-      &FRONTEND_UI(frontendUi,textureQualityHigh)->selectable.base,
-      &FRONTEND_UI(frontendUi,textureQualityMedium)->selectable.base,
-      &FRONTEND_UI(frontendUi,textureQualityLow)->selectable.base);
+      &frontendUi->textureQualityHigh.selectable.base,
+      &frontendUi->textureQualityMedium.selectable.base,
+      &frontendUi->textureQualityLow.selectable.base);
   persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_MODEL_LOD_DEPTH_THRESHOLD,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
   source->polygonResolutionLodThresholdQ8 = persistedValue;
 }
