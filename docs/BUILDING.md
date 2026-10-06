@@ -578,6 +578,19 @@ MSVC target on Windows and parses the GCC command lines against the MSVC headers
 GCC headers through the compiler path in the database. Review the diff and run the usual build, self-test and
 determinism checks afterwards.
 
+### Modernisation counts (`tools/dev/modern_counts.py`)
+
+Counts the step 13 metrics ([plan](plans/step13_modern_cpp.md), section 9 regexes: C-style pointer casts, UI
+offset macros, numeric `#define`s, `typedef struct`, libc/arena allocation and `mem*` calls, `Bool8`, original
+0x5xxxxx addresses, 0x90909090 fill, `do { } while`) per area below `src/` and `include/thandor/` and prints a
+metric x area table; `--rev <commit>` counts a commit instead of the work tree, `--json <file>` writes the counts
+as a baseline, `--check <baseline.json>` exits 1 and names metric and area for every checked count that rose.
+The baseline of the start of step 13 is `tools/dev/modern_counts_baseline.json`.
+
+```bat
+python tools/dev/modern_counts.py --check tools/dev/modern_counts_baseline.json
+```
+
 ## Source files that are not ordinary module code
 
 | File | Notes |
