@@ -886,7 +886,7 @@ void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
 {
   g_SessionTransferTimeoutTicks--;
   if (g_SessionTransferTimeoutTicks == 0) {
-    FrontendTransferPage_ResetSessionOpenAndRequestMailbox(FRONTEND_UI(frontendRoot,clientLobbyLeaveButton));
+    FrontendTransferPage_ResetSessionOpenAndRequestMailbox(&FRONTEND_UI(frontendRoot,clientLobbyLeaveButton)->selectable.base);
   }
 }
 

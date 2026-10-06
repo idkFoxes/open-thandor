@@ -218,26 +218,26 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     *controlFlags = *controlFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   if (!UiSelectableGroup_FindVisibleSelected(nullptr,&activeTabIndex,3,
-      FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
-      FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
-      FRONTEND_UI(scenarioSelectionPage,campaignsTabButton))) {
+      &FRONTEND_UI(scenarioSelectionPage,loadGameTabButton)->selectable.base,
+      &FRONTEND_UI(scenarioSelectionPage,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(scenarioSelectionPage,campaignsTabButton)->selectable.base)) {
     activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
-      FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
-      FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
-      FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
+    UiSelectableGroup_SelectExclusive(3,&FRONTEND_UI(scenarioSelectionPage,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(scenarioSelectionPage,loadGameTabButton)->selectable.base,
+      &FRONTEND_UI(scenarioSelectionPage,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(scenarioSelectionPage,campaignsTabButton)->selectable.base);
     activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
   /* option name "KARTE=\"" (7 characters) */
   mapOption = g_CommandLineFindOption(7,g_NameClientKarteKeywordsAscii + 14);
   if (mapOption != nullptr) {
-    UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
-      FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
-      FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
-      FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
+    UiSelectableGroup_SelectExclusive(3,&FRONTEND_UI(scenarioSelectionPage,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(scenarioSelectionPage,loadGameTabButton)->selectable.base,
+      &FRONTEND_UI(scenarioSelectionPage,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(scenarioSelectionPage,campaignsTabButton)->selectable.base);
     activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
   /* Rebuild the tab's list, then refresh the description of its selected entry. */
@@ -359,10 +359,10 @@ void ScenarioCatalog_RebuildSaveRecordListPage
   Ptr32<void> *rowPointerCursor;
   
   firstNode = (UiNodeBase *)(uintptr_t)g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
-      FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton));
+  UiSelectableGroup_SelectExclusive(3,&FRONTEND_UI(g_FrontendRootNode,loadGameTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,campaignsTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,loadGameTabButton)->selectable.base);
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SAVED_GAMES,
                              (UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
   if (g_ScenarioCatalog != nullptr) {
@@ -412,10 +412,10 @@ void ScenarioCatalog_RebuildLevelRecordListPage
   Ptr32<ScenarioCatalogDisplayRecord> *rowPointers;
   
   firstNode = (UiNodeBase *)(uintptr_t)g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
-      FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton));
+  UiSelectableGroup_SelectExclusive(3,&FRONTEND_UI(g_FrontendRootNode,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,campaignsTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,loadGameTabButton)->selectable.base);
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SINGLE_GAMES,
                              (UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
   if (g_ScenarioCatalog != nullptr) {
@@ -492,10 +492,10 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
   Ptr32<void> *rowPointers;
   
   firstNode = (UiNodeBase *)(uintptr_t)g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
-      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
-      FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton));
+  UiSelectableGroup_SelectExclusive(3,&FRONTEND_UI(g_FrontendRootNode,campaignsTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,campaignsTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,singleGameTabButton)->selectable.base,
+      &FRONTEND_UI(g_FrontendRootNode,loadGameTabButton)->selectable.base);
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_CAMPAIGNS,
                              (UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
   if (g_ScenarioCatalog != nullptr) {

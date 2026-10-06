@@ -319,7 +319,7 @@ void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
     if (playerId != g_LocalPlayerRuntimeId) {
       return;
     }
-    FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
     return;
   }
   /* only the host keeps track */
@@ -338,7 +338,7 @@ void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
   }
   playerBlock->factionAssignment.readyOrWaitState = 1;
   if (FrontendPlayerRuntime_AreAllClientsReady()) {
-    FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   }
 }
 
@@ -1193,12 +1193,12 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
         remainingBlocks--;
       } while (remainingBlocks != 0);
       if (combinedConsensus == 0) {
-        nextButtonFlags = &FRONTEND_UI(g_FrontendRootNode,factionSetupNextButton)->nodeFlags;
+        nextButtonFlags = &FRONTEND_UI(g_FrontendRootNode,factionSetupNextButton)->selectable.base.nodeFlags;
         *nextButtonFlags = *nextButtonFlags | UI_NODE_SUPPRESSED;
       }
       else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL
               ) {
-        nextButtonFlags = &FRONTEND_UI(g_FrontendRootNode,factionSetupNextButton)->nodeFlags;
+        nextButtonFlags = &FRONTEND_UI(g_FrontendRootNode,factionSetupNextButton)->selectable.base.nodeFlags;
         *nextButtonFlags = *nextButtonFlags & ~UI_NODE_SUPPRESSED;
       }
       FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(taskAssignmentRoot);

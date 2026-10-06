@@ -218,12 +218,12 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
     selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 5);
   }
   UiSelectableGroup_SelectExclusive(6,selectedShadingRow,
-      FRONTEND_UI(frontendUi,shadingLevelGrid128Depth128),
-      FRONTEND_UI(frontendUi,shadingLevelGrid64Depth128),
-      FRONTEND_UI(frontendUi,shadingLevelGrid64Depth64),
-      FRONTEND_UI(frontendUi,shadingLevelGrid32Depth128),
-      FRONTEND_UI(frontendUi,shadingLevelGrid32Depth64),
-      FRONTEND_UI(frontendUi,shadingLevelGrid32Depth32));
+      &FRONTEND_UI(frontendUi,shadingLevelGrid128Depth128)->base.selectable.base,
+      &FRONTEND_UI(frontendUi,shadingLevelGrid64Depth128)->base.selectable.base,
+      &FRONTEND_UI(frontendUi,shadingLevelGrid64Depth64)->base.selectable.base,
+      &FRONTEND_UI(frontendUi,shadingLevelGrid32Depth128)->base.selectable.base,
+      &FRONTEND_UI(frontendUi,shadingLevelGrid32Depth64)->base.selectable.base,
+      &FRONTEND_UI(frontendUi,shadingLevelGrid32Depth32)->base.selectable.base);
   /* texture rows: low, medium, high */
   persistedValue = PersistentSettings_Read(TEXTURE_QUALITY_MEDIUM,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (persistedValue == TEXTURE_QUALITY_HIGH) {
@@ -236,9 +236,9 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
     selectedTextureRow = (UiNodeBase *)&source->textureResolutionRows;
   }
   UiSelectableGroup_SelectExclusive(3,selectedTextureRow,
-      FRONTEND_UI(frontendUi,textureQualityHigh),
-      FRONTEND_UI(frontendUi,textureQualityMedium),
-      FRONTEND_UI(frontendUi,textureQualityLow));
+      &FRONTEND_UI(frontendUi,textureQualityHigh)->selectable.base,
+      &FRONTEND_UI(frontendUi,textureQualityMedium)->selectable.base,
+      &FRONTEND_UI(frontendUi,textureQualityLow)->selectable.base);
   persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_MODEL_LOD_DEPTH_THRESHOLD,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
   source->polygonResolutionLodThresholdQ8 = persistedValue;
 }

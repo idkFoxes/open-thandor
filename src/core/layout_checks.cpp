@@ -2162,6 +2162,38 @@ static_assert(offsetof(FrontendUiImage, advancedVsyncCheckbox) == 0x782C && size
               "FrontendUiImage.advancedVsyncCheckbox is a UiTextButtonControl");
 static_assert(offsetof(FrontendUiImage, advancedNoteLabel) == 0x788C && sizeof(UiFocusProxyControl) == 0x5C,
               "FrontendUiImage.advancedNoteLabel is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, chatInputEdit_trailing) == 0x188,
+              "FrontendUiImage.chatInputEdit_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, chatMessageHistory_trailing) == 0x358,
+              "FrontendUiImage.chatMessageHistory_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, menuRoomModelView_trailing) == 0x4E4,
+              "FrontendUiImage.menuRoomModelView_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, factionSetupTitleLabel_trailing) == 0xC08,
+              "FrontendUiImage.factionSetupTitleLabel_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, rosterFactionHeader_trailing) == 0x1A04,
+              "FrontendUiImage.rosterFactionHeader_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, rosterModeHeader_trailing) == 0x1A64,
+              "FrontendUiImage.rosterModeHeader_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, rosterColourHeader_trailing) == 0x1AC4,
+              "FrontendUiImage.rosterColourHeader_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, savedGamesList_trailing) == 0x2030,
+              "FrontendUiImage.savedGamesList_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, missionsList_trailing) == 0x21F8,
+              "FrontendUiImage.missionsList_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, campaignsList_trailing) == 0x23D8,
+              "FrontendUiImage.campaignsList_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, sessionList_trailing) == 0x4BDC,
+              "FrontendUiImage.sessionList_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, hostAddressEdit_trailing) == 0x4DDC,
+              "FrontendUiImage.hostAddressEdit_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, playerNameEdit_trailing) == 0x4EC8,
+              "FrontendUiImage.playerNameEdit_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, gameNameEdit_trailing) == 0x50D4,
+              "FrontendUiImage.gameNameEdit_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, hostLobbyPlayerList_trailing) == 0x5660,
+              "FrontendUiImage.hostLobbyPlayerList_trailing follows the control");
+static_assert(offsetof(FrontendUiImage, clientLobbyPlayerList_trailing) == 0x58E8,
+              "FrontendUiImage.clientLobbyPlayerList_trailing follows the control");
 static_assert(sizeof(FrontendUiImage) == 0x78E8 && /* 0x5954 + the display mode kind, resolution list and advanced settings nodes of open-thandor */
               offsetof(FrontendUiImage, displayPageStack) == 0x71A0 &&
               offsetof(FrontendUiImage, advancedSettingsButton) == 0x71F8 &&
