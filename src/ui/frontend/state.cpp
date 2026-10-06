@@ -87,7 +87,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
   target = (uint32_t)record->continuationEntryAddress;
   switch (target) {
   case 0x548140:
-    if (UiPageStack_ActivePageIndex((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)) ==
+    if (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(FRONTEND_UI(root,frontendPageStack))) ==
         FRONTEND_PAGE_FACTION_SETUP) {
       FrontendCommand_Issue<FrontendPlayerRuntime_XorStateMaskByPlayerId>(0,0,1);
     }
@@ -107,12 +107,12 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
       g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
       g_NetworkBackendSlot3();
       g_NetworkBackendSlot1();
-      UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
-      ((FrontendModelPointerContext *)FRONTEND_UI(root,menuRoomModelView))->contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+      UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(root,frontendPageStack)));
+      FRONTEND_UI(root,menuRoomModelView)->contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
       g_FrontendRomTransitionPageAction = 0;
       FrontendRomTransition_ActivateRecordById
-                (FRONTEND_ROM_RECORD_MAIN_MENU,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
+                (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(FRONTEND_UI(root,menuRoomModelView)));
       break;
     }
     /* Leaving a network session. An earlier transcription named bit 0 the host and bit 1 the client, but
@@ -124,13 +124,13 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
       g_FrontendScenarioInitializationCount = 0;
       g_NetworkBackendSlot3();
       g_NetworkBackendSlot1();
-      UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
-      ((FrontendModelPointerContext *)FRONTEND_UI(root,menuRoomModelView))->contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+      UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(root,frontendPageStack)));
+      FRONTEND_UI(root,menuRoomModelView)->contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
       g_FrontendRomTransitionPageAction = 0;
       player = g_FrontendPlayerRuntimeBlocks;
       FrontendRomTransition_ActivateRecordById
-                (FRONTEND_ROM_RECORD_MAIN_MENU,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
+                (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(FRONTEND_UI(root,menuRoomModelView)));
       /* chat history notice with the first player's name */
       text = TextResource_Resolve(wasClient ? TEXT_ID_NETWORK_SESSION_LEFT : TEXT_ID_NETWORK_SESSION_CLOSED);
       RichTextCommandStream_PatchPayloadBySelector(0,&player->playerName,text);
@@ -331,7 +331,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   networkState = g_FrontendNetworkState;
   frontendRoot = (FrontendNetworkListsRuntimeView *)g_FrontendRootNode;
   RecentTextHistory_SortAndBuildPointerList
-            (5,(RecentTextHistoryPointerList *)&((UiConditionalActionControl *)FRONTEND_UI(g_FrontendRootNode,chatMessageHistory))->lineCount);
+            (5,(RecentTextHistoryPointerList *)&FRONTEND_UI(g_FrontendRootNode,chatMessageHistory)->lineCount);
   switch(networkState) {
   case FRONTEND_NETWORK_STATE_BROWSING:
     FrontendSessionList_DecrementExpiryAndCompactRows(frontendRoot);
@@ -350,22 +350,23 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
-    if ((((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource != nullptr) &&
+    /* briefingImage: an image action control, its template node is shorter than the class */
+    if ((reinterpret_cast<UiImageActionControl *>(FRONTEND_UI(frontendRoot,briefingImage))->textureSource != nullptr) &&
        !Movie_AdvanceFrame(nullptr,nullptr)) {
       Movie_Rewind();
     }
-    if (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(frontendRoot,moviePlaybackView))->textureSource != nullptr) {
-      SoftwareMaskBuffer_AdvancePatternByPercentTick
-                ((SoftwareMaskRuntimeView *)FRONTEND_UI(frontendRoot,moviePlaybackView));
+    if (FRONTEND_UI(frontendRoot,moviePlaybackView)->textureSource != nullptr) {
+      SoftwareMaskBuffer_AdvancePatternByPercentTick /* the mask view of the texture preview */
+                (reinterpret_cast<SoftwareMaskRuntimeView *>(FRONTEND_UI(frontendRoot,moviePlaybackView)));
     }
   }
   /* bottom bar: empty page in a local game, the chat input line in a network game */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(frontendRoot,chatInputSlot));
+    UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,chatInputSlot)));
   }
   else {
-    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendRoot,chatInputSlot));
+    UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,chatInputSlot)));
   }
   (*g_FrontendModelPointerContextVtable.pointerMove)
             (g_CursorOverrideY,g_CursorOverrideX,&FRONTEND_UI(frontendRoot,menuRoomModelView)->base);
@@ -382,7 +383,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
     g_FrontendPlayerRuntimeBlocks->capabilityFlags = FRONTEND_CAPABILITY_CD;
   }
   activePageIndex = UiPageStack_ActivePageIndex
-                     ((UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+                     (UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,frontendPageStack)));
   if (activePageIndex == FRONTEND_PAGE_STACK_CHOOSE_GAME) {
     selectedTabIndex = UiSelectableGroup_SelectedIndex(3,
       &FRONTEND_UI(g_FrontendRootNode,loadGameTabButton)->selectable.base,

@@ -365,6 +365,13 @@ struct UiListControl {
     struct UiListColumn columns[1];
 };
 
+/* The UiPointerListControl view of a UiListControl (same first 0x64 bytes); the UiPointerList_* methods take it. */
+inline UiPointerListControl *UiListControl_AsPointerList(UiListControl *control)
+
+{
+  return reinterpret_cast<UiPointerListControl *>(control);
+}
+
 struct UiScrollableControl {
     struct UiNodeBase base; 
     UiScrollableStateFlags scrollStateFlags; 

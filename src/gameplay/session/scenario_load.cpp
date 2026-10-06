@@ -26,9 +26,6 @@ FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = nullptr;
 
 uint16_t g_FrontendScenarioPathScratchUtf16[256] = {};
 
-/* The FrontendUiImage nodes are still untyped (UiNodeBase + fields) here, so their controls are reached through
-   a reinterpret_cast of the FRONTEND_UI node address; this goes away once the image members are typed. */
-
 /* Handler of action 0x2041 (slot 65 of g_FrontendUiActionHandlersPage20.handlers00_54): loads the selected
    level's field grid (FrontendScenarioSession_LoadOrRequestFieldGrid), directly in a local game or on every
    peer through the frontend command queue.
@@ -230,7 +227,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     WidePath_CombineDirectoryAndLeaf
               (g_FrontendScenarioPathScratchUtf16,
                static_cast<uint16_t *>
-                    (reinterpret_cast<UiListControl *>(FRONTEND_UI(frontendRoot,campaignsList))->rowSlots
+                    (FRONTEND_UI(frontendRoot,campaignsList)->rowSlots
                      [selectedRecordIndex]),
                g_CampaignLevelDirectoryUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_CGN,g_FrontendScenarioPathScratchUtf16);
@@ -328,11 +325,11 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     UiTransferMailbox_MarkUnavailable();
     g_FrontendScenarioTransferState = SCENARIO_TRANSFER_CAMPAIGN_BUNDLE;
   }
-  reinterpret_cast<FrontendModelPointerContext *>(FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags =
-       reinterpret_cast<FrontendModelPointerContext *>(FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags &
+  FRONTEND_UI(frontendRoot,menuRoomModelView)->contextFlags =
+       FRONTEND_UI(frontendRoot,menuRoomModelView)->contextFlags &
        ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   UiPageStack_SetActiveIndex
-            (FRONTEND_PAGE_MAIN,reinterpret_cast<UiPageStackControl *>(FRONTEND_UI(frontendRoot,frontendPageStack)));
+            (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendRoot,frontendPageStack)));
   OldUnitRuntime_ResetPendingTables();
   FrontendState_DispatchCode(3); /* ROM action table entry 3 */
 }
@@ -373,17 +370,17 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   Bool8 levelLoadedLocally;
 
   frontendRoot = g_FrontendRootNode;
-  pageStack = reinterpret_cast<UiPageStackControl *>(FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
+  pageStack = UiLayoutContainerControl_AsPageStack(FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,
              static_cast<uint16_t *>
-                  (reinterpret_cast<UiListControl *>(FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
+                  (FRONTEND_UI(g_FrontendRootNode,missionsList)->rowSlots
                    [selectedRowIndex]),
              g_ScenarioLevelDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
-  reinterpret_cast<FrontendModelPointerContext *>(FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags =
-       reinterpret_cast<FrontendModelPointerContext *>(FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags &
+  FRONTEND_UI(frontendRoot,menuRoomModelView)->contextFlags =
+       FRONTEND_UI(frontendRoot,menuRoomModelView)->contextFlags &
        ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(1); /* ROM action table entry 1 */
   FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
@@ -422,7 +419,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
        mask dword (offset >> 13) and bit ((offset >> 8) & 31); there are three mask dwords (96 levels). */
     levelRecordOffset = (uint32_t)Asset_ByteDistance
                           (static_cast<uint8_t *>
-                                (reinterpret_cast<UiListControl *>(FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
+                                (FRONTEND_UI(g_FrontendRootNode,missionsList)->rowSlots
                                  [selectedRowIndex]),g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
     maskWordIndex = levelRecordOffset >> 13;
     /* Client: load the level locally when the local player's level mask has it, else request it. */
@@ -454,7 +451,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   g_FrontendLoadedLevelAsset = levelAsset;
   levelRecordOffset = (uint32_t)Asset_ByteDistance
                         (static_cast<uint8_t *>
-                              (reinterpret_cast<UiListControl *>(FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
+                              (FRONTEND_UI(g_FrontendRootNode,missionsList)->rowSlots
                                [selectedRowIndex]),g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
   maskWordIndex = levelRecordOffset >> 13;
   if (maskWordIndex < 3) {

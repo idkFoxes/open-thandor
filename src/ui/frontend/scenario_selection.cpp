@@ -161,7 +161,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
     if (codeUnit == 0) break;
   }
   compareUnitCount = (uint32_t)(levelNameEnd - levelName);
-  rowsRemaining = ((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowCount;
+  rowsRemaining = FRONTEND_UI(g_FrontendRootNode,missionsList)->rowCount;
   if (rowsRemaining == 0) {
     return false;
   }
@@ -169,7 +169,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
   do {
     if (FrontendScenarioSelectionPage_CodeUnitsEqual
             (levelName,
-             (const uint16_t *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots[selectionIndex],
+             (const uint16_t *)FRONTEND_UI(g_FrontendRootNode,missionsList)->rowSlots[selectionIndex],
              compareUnitCount)) {
       controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
       *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
@@ -297,7 +297,7 @@ void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode)
   while (sourceNode->parent != UI_NODE_NONE) {
     sourceNode = sourceNode->parent;
   }
-  ((UiWrappedTextControl *)FRONTEND_UI(sourceNode,savedGameDescriptionText))->text =
+  FRONTEND_UI(sourceNode,savedGameDescriptionText)->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   FrontendCommand_Issue<ScenarioCatalog_RebuildSaveRecordListPage>(0,0,0);
   FrontendCommand_Issue<ScenarioCatalog_SelectSavedGameAndShowDescription>(0,0,0);
@@ -316,7 +316,7 @@ void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode)
   while (sourceNode->parent != UI_NODE_NONE) {
     sourceNode = sourceNode->parent;
   }
-  ((UiWrappedTextControl *)FRONTEND_UI(sourceNode,missionDescriptionText))->text =
+  FRONTEND_UI(sourceNode,missionDescriptionText)->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   FrontendCommand_Issue<ScenarioCatalog_RebuildLevelRecordListPage>(0,0,0);
   FrontendCommand_Issue<ScenarioCatalog_SelectLevelAndShowDescription>(0,0,0);
@@ -334,7 +334,7 @@ void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
   while (sourceNode->parent != UI_NODE_NONE) {
     sourceNode = sourceNode->parent;
   }
-  ((UiWrappedTextControl *)FRONTEND_UI(sourceNode,campaignDescriptionText))->text =
+  FRONTEND_UI(sourceNode,campaignDescriptionText)->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   FrontendCommand_Issue<ScenarioCatalog_RebuildCampaignRecordListPage>(0,0,0);
   FrontendCommand_Issue<ScenarioCatalog_SelectCampaignAndShowDescription>(0,0,0);
@@ -350,7 +350,7 @@ void ScenarioCatalog_RebuildSaveRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
-  int32_t *control;
+  UiPointerListControl *control;
   UiListRowCount rowCount;
   UiNodeBase *firstNode;
   UiListRowCount remainingRows;
@@ -364,7 +364,7 @@ void ScenarioCatalog_RebuildSaveRecordListPage
       &FRONTEND_UI(g_FrontendRootNode,singleGameTabButton)->selectable.base,
       &FRONTEND_UI(g_FrontendRootNode,loadGameTabButton)->selectable.base);
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SAVED_GAMES,
-                             (UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
+                             UiLayoutContainerControl_AsPageStack(FRONTEND_UI(firstNode,gameSelectTabStack)));
   if (g_ScenarioCatalog != nullptr) {
     rowCount = g_ScenarioCatalog->saveRecordCount;
     /* the section offsets count from the catalog start; the row pointer array is built behind the records */
@@ -377,17 +377,17 @@ void ScenarioCatalog_RebuildSaveRecordListPage
       rowPointerCursor++;
       saveRecord = (void *)((uintptr_t)saveRecord + SCENARIO_CATALOG_RECORD_SIZE);
     }
-    control = (int32_t *)FRONTEND_UI(firstNode,savedGamesList);
+    control = UiListControl_AsPointerList(FRONTEND_UI(firstNode,savedGamesList));
     if (rowCount != 0) {
-      UiPointerList_InitializeColumnLayout(rowCount,rowPointers,(UiPointerListControl *)control);
-      UiPointerList_SortByDwordPairFieldDescending(240,(UiPointerListControl *)control);
-      UiPointerList_SelectColumnListIndex(0,(UiPointerListControl *)control);
+      UiPointerList_InitializeColumnLayout(rowCount,rowPointers,control);
+      UiPointerList_SortByDwordPairFieldDescending(240,control);
+      UiPointerList_SelectColumnListIndex(0,control);
       UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
       return;
     }
   }
   UiPointerList_InitializeColumnLayout
-            (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,savedGamesList));
+            (0,nullptr,UiListControl_AsPointerList(FRONTEND_UI(firstNode,savedGamesList)));
   UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
 }
 
@@ -402,7 +402,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
-  int32_t *control;
+  UiPointerListControl *control;
   UiNodeBase *firstNode;
   UiListRowCount remainingRows;
   ScenarioCatalogDisplayRecord *scenarioRecord;
@@ -417,7 +417,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
       &FRONTEND_UI(g_FrontendRootNode,singleGameTabButton)->selectable.base,
       &FRONTEND_UI(g_FrontendRootNode,loadGameTabButton)->selectable.base);
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SINGLE_GAMES,
-                             (UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
+                             UiLayoutContainerControl_AsPageStack(FRONTEND_UI(firstNode,gameSelectTabStack)));
   if (g_ScenarioCatalog != nullptr) {
     remainingRows = g_ScenarioCatalog->levelRecordCount;
     scenarioRecord =
@@ -445,13 +445,13 @@ void ScenarioCatalog_RebuildLevelRecordListPage
       rowPointerCursor++;
       scenarioRecord++;
     }
-    control = (int32_t *)FRONTEND_UI(firstNode,missionsList);
+    control = UiListControl_AsPointerList(FRONTEND_UI(firstNode,missionsList));
     if (rowCount != 0) {
-      UiPointerList_InitializeColumnLayout(rowCount,(Ptr32<void> *)rowPointers,(UiPointerListControl *)control);
+      UiPointerList_InitializeColumnLayout(rowCount,(Ptr32<void> *)rowPointers,control);
       /* sorted by the jump record of the level title */
       UiPointerList_SortByExpandedTextFieldAscending
-                (offsetof(ScenarioCatalogDisplayRecord,scenarioDisplayTag),(UiPointerListControl *)control);
-      UiPointerList_SelectColumnListIndex(0,(UiPointerListControl *)control);
+                (offsetof(ScenarioCatalogDisplayRecord,scenarioDisplayTag),control);
+      UiPointerList_SelectColumnListIndex(0,control);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_SELECT_SINGLE_GAME,firstNode);
@@ -460,12 +460,12 @@ void ScenarioCatalog_RebuildLevelRecordListPage
     }
     else {
       UiPointerList_InitializeColumnLayout
-                (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
+                (0,nullptr,UiListControl_AsPointerList(FRONTEND_UI(firstNode,missionsList)));
     }
   }
   else {
     UiPointerList_InitializeColumnLayout
-              (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
+              (0,nullptr,UiListControl_AsPointerList(FRONTEND_UI(firstNode,missionsList)));
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
   UiNodeList_SuppressActionId(FRONTEND_ACTION_SELECT_SINGLE_GAME,firstNode);
@@ -482,7 +482,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
-  int32_t *control;
+  UiPointerListControl *control;
   UiNodeBase *firstNode;
   UiListRowCount remainingRows;
   void *campaignRecord;
@@ -497,7 +497,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
       &FRONTEND_UI(g_FrontendRootNode,singleGameTabButton)->selectable.base,
       &FRONTEND_UI(g_FrontendRootNode,loadGameTabButton)->selectable.base);
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_CAMPAIGNS,
-                             (UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
+                             UiLayoutContainerControl_AsPageStack(FRONTEND_UI(firstNode,gameSelectTabStack)));
   if (g_ScenarioCatalog != nullptr) {
     remainingRows = g_ScenarioCatalog->campaignRecordCount;
     campaignRecord = (void *)((uint8_t *)g_ScenarioCatalog +
@@ -516,12 +516,12 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
       rowPointerCursor++;
       campaignRecord = (void *)((uintptr_t)campaignRecord + SCENARIO_CATALOG_RECORD_SIZE);
     }
-    control = (int32_t *)FRONTEND_UI(firstNode,campaignsList);
+    control = UiListControl_AsPointerList(FRONTEND_UI(firstNode,campaignsList));
     if (rowCount != 0) {
-      UiPointerList_InitializeColumnLayout(rowCount,rowPointers,(UiPointerListControl *)control);
+      UiPointerList_InitializeColumnLayout(rowCount,rowPointers,control);
       UiPointerList_SortByDwordFieldAscending
-                (offsetof(ScenarioCatalogDisplayRecord,titleTextResourceId),(UiPointerListControl *)control);
-      UiPointerList_SelectColumnListIndex(0,(UiPointerListControl *)control);
+                (offsetof(ScenarioCatalogDisplayRecord,titleTextResourceId),control);
+      UiPointerList_SelectColumnListIndex(0,control);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_SELECT_CAMPAIGN,firstNode);
@@ -530,12 +530,12 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
     }
     else {
       UiPointerList_InitializeColumnLayout
-                (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList));
+                (0,nullptr,UiListControl_AsPointerList(FRONTEND_UI(firstNode,campaignsList)));
     }
   }
   else {
     UiPointerList_InitializeColumnLayout
-              (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList));
+              (0,nullptr,UiListControl_AsPointerList(FRONTEND_UI(firstNode,campaignsList)));
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
   UiNodeList_SuppressActionId(FRONTEND_ACTION_SELECT_CAMPAIGN,firstNode);
@@ -561,9 +561,9 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
 
   frontendRoot = g_FrontendRootNode;
   rowPointers =
-       (Ptr32<ScenarioCatalogSaveRecord> *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,savedGamesList))->rowSlots;
-  control = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,savedGamesList);
-  ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,savedGameDescriptionText))->text =
+       (Ptr32<ScenarioCatalogSaveRecord> *)FRONTEND_UI(g_FrontendRootNode,savedGamesList)->rowSlots;
+  control = UiListControl_AsPointerList(FRONTEND_UI(g_FrontendRootNode,savedGamesList));
+  FRONTEND_UI(g_FrontendRootNode,savedGameDescriptionText)->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowPointers != nullptr) {
     UiPointerList_SelectColumnListIndex(selectionIndex,control);
@@ -579,7 +579,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
       primaryText = TextResource_Resolve(resourceId);
       /* the first code unit becomes palette colour 0 */
       *primaryText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-      ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,savedGameDescriptionText))->text = (uint16_t *)(uintptr_t)resourceId;
+      FRONTEND_UI(frontendRoot,savedGameDescriptionText)->text = (uint16_t *)(uintptr_t)resourceId;
     }
     else {
       primaryText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
@@ -588,7 +588,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
       RichTextCommandStream_PatchPayloadBySelector(1,fieldText,primaryText);
       fieldText = TextResource_Resolve(saveRecord->campaignTitleTextId);
       RichTextCommandStream_PatchPayloadBySelector(0,fieldText,primaryText);
-      ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,savedGameDescriptionText))->text =
+      FRONTEND_UI(frontendRoot,savedGameDescriptionText)->text =
            (uint16_t *)(uintptr_t)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
     }
   }
@@ -608,9 +608,9 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
   uintptr_t frontendRoot;
   
   frontendRoot = g_FrontendRootNode;
-  rowPointers = ((UiListControl *)FRONTEND_UI(g_FrontendRootNode,campaignsList))->rowSlots;
-  control = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,campaignsList);
-  ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,campaignDescriptionText))->text =
+  rowPointers = FRONTEND_UI(g_FrontendRootNode,campaignsList)->rowSlots;
+  control = UiListControl_AsPointerList(FRONTEND_UI(g_FrontendRootNode,campaignsList));
+  FRONTEND_UI(g_FrontendRootNode,campaignDescriptionText)->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowPointers != nullptr) {
     UiPointerList_SelectColumnListIndex(selectionIndex,control);
@@ -620,7 +620,7 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
       FrontendScenarioSelection_LogRejectedRowIndex(selectionIndex);
       return;
     }
-    ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,campaignDescriptionText))->text =
+    FRONTEND_UI(frontendRoot,campaignDescriptionText)->text =
          (uint16_t *)(uintptr_t)(((ScenarioCatalogDisplayRecord *)rowPointers[selectionIndex])->
                         titleTextResourceId +
                       TEXT_ID_CAMPAIGN_DESCRIPTION_BASE);
@@ -700,9 +700,9 @@ void ScenarioCatalog_SelectLevelAndShowDescription
   uintptr_t frontendRoot;
 
   frontendRoot = g_FrontendRootNode;
-  rowPointers = ((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots;
-  listControl = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList);
-  ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,missionDescriptionText))->text =
+  rowPointers = FRONTEND_UI(g_FrontendRootNode,missionsList)->rowSlots;
+  listControl = UiListControl_AsPointerList(FRONTEND_UI(g_FrontendRootNode,missionsList));
+  FRONTEND_UI(g_FrontendRootNode,missionDescriptionText)->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowPointers != nullptr) {
     UiPointerList_SelectColumnListIndex(selectionIndex,listControl);
@@ -712,7 +712,7 @@ void ScenarioCatalog_SelectLevelAndShowDescription
       FrontendScenarioSelection_LogRejectedRowIndex(selectionIndex);
       return;
     }
-    ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,missionDescriptionText))->text =
+    FRONTEND_UI(frontendRoot,missionDescriptionText)->text =
          (uint16_t *)(uintptr_t)(((ScenarioCatalogDisplayRecord *)rowPointers[selectionIndex])->
                         scenarioTextResourceId * TEXT_ID_LEVEL_DESCRIPTION_STRIDE +
                       TEXT_ID_LEVEL_DESCRIPTION_BASE);
