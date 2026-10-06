@@ -80,7 +80,9 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
       /* FrontendSession_PeriodicTick keeps running under the in-game tick lock while the end movie plays */
-      UiRuntime_SetSynchronizationHooks(FrontendSession_PeriodicTick,(RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+      /* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int */
+      UiRuntime_SetSynchronizationHooks
+                (FrontendSession_PeriodicTick,reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
       Frontend_PlaySelectedEndMovie();
       OldUnitRuntime_RebuildScenarioReplayTables();
       UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
@@ -157,10 +159,10 @@ void InGameRuntime_ShutdownAndReleaseResources()
   g_InGameWorldObjectRecords = nullptr;
   Movie_Close();
   TerrainCompositeTexture_Destroy();
-  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage((GraphicsTextureSourceAsset *)g_InGameDiagramTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameDiagramTextureSource);
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGamePanelTextureSource);
-  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage((GraphicsTextureSourceAsset *)g_InGameTechnologyTextureSource);
-  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage((GraphicsTextureSourceAsset *)g_InGameWindowTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameTechnologyTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameWindowTextureSource);
   g_InGameDiagramTextureSource = nullptr;
   g_InGamePanelTextureSource = nullptr;
   g_InGameTechnologyTextureSource = nullptr;
@@ -224,7 +226,7 @@ void InGameSession_InstallStepTimerAndHooks()
   g_InGameStateTickSpinLock = 0;
   g_TimerRegisterPeriodic(INGAME_PERIODIC_TIMER_HZ,InGameRuntime_PeriodicCountdownAndClockTick);
   UiRuntime_SetSynchronizationHooks
-            (InGameRuntime_UpdateSimulationAndNetworkTick,(RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+            (InGameRuntime_UpdateSimulationAndNetworkTick,reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
 }
 
 /* Allocates the zeroed world object pool, the selection info panel resources of the local player
@@ -252,9 +254,9 @@ Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,In
     *outError = allocationError;
     return false;
   }
-  g_RuntimeObjectRebaseBaseMinusOne = (uint8_t *)objectPool - 1;
-  g_InGameWorldObjectRecords = (WorldObjectRecord *)objectPool;
-  clearCursor = (uint32_t *)objectPool;
+  g_RuntimeObjectRebaseBaseMinusOne = static_cast<uint8_t *>(objectPool) - 1;
+  g_InGameWorldObjectRecords = static_cast<WorldObjectRecord *>(objectPool);
+  clearCursor = static_cast<uint32_t *>(objectPool);
   for (remainingCount = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingCount != 0;
        remainingCount--) {
     *clearCursor = 0;
@@ -264,21 +266,21 @@ Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,In
     *outError = stepError;
     return false;
   }
-  allocationError = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot),(void **)&inGameRoot);
+  allocationError = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot),reinterpret_cast<void **>(&inGameRoot));
   if (allocationError != 0) {
     *outError = allocationError;
     return false;
   }
-  templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
+  templateCursor = reinterpret_cast<uint32_t *>(&g_InGameRuntimeDefaultImageTemplate); /* dword copy */
   g_InGameRuntimeRoot = inGameRoot;
   /* copy the in-game root template (sizeof(InGameRuntimeRoot) / 4 dwords) */
-  copyCursor = (uint32_t *)inGameRoot;
+  copyCursor = reinterpret_cast<uint32_t *>(inGameRoot);
   for (remainingCount = sizeof(InGameRuntimeRoot) / 4; remainingCount != 0; remainingCount--) {
     *copyCursor = *templateCursor;
     templateCursor++;
     copyCursor++;
   }
-  if (!InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot,&stepError)) {
+  if (!InGameUiRuntime_InitializeControlTreeResources(&inGameRoot->rootUi,&stepError)) {
     *outError = stepError;
     return false;
   }
@@ -310,7 +312,7 @@ Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,In
   localPlayerBlock = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
   inGameRoot->localPlayerMarkedCellCount = 0;
   inGameRoot->localPlayerMarkedCells = localPlayerBlock->markedCells;
-  UiRootStack_Push(&g_InGameUiRootCallbacks,(UiRootNode *)inGameRoot);
+  UiRootStack_Push(&g_InGameUiRootCallbacks,&inGameRoot->rootUi);
   *outRoot = inGameRoot;
   return true;
 }
@@ -363,7 +365,7 @@ Bool8 InGameSession_ClearNotificationsAndCreateTerrainTexture(InGameRuntimeRoot 
   uint32_t stepError;
 
   /* clear the four notification queue records (0x80 bytes) */
-  clearCursor = (uint32_t *)inGameRoot->notificationQueue;
+  clearCursor = reinterpret_cast<uint32_t *>(inGameRoot->notificationQueue);
   for (remainingCount = 32; remainingCount != 0; remainingCount--) {
     *clearCursor = 0;
     clearCursor++;
@@ -425,10 +427,10 @@ Bool8 InGameSession_AllocateGridScratchAndRebuildDerived(WorldRuntimeContext *wo
 void InGameSession_RebuildUiGrids(InGameRuntimeRoot *inGameRoot)
 
 {
-  InGameBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
-  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
-  InGameArmyStock_RebuildGrid((UiNodeBase *)inGameRoot);
-  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
+  InGameBuildCatalog_RebuildGrid(&inGameRoot->rootUi.base);
+  InGameSpecialBuildCatalog_RebuildGrid(&inGameRoot->rootUi.base);
+  InGameArmyStock_RebuildGrid(&inGameRoot->rootUi.base);
+  InGameOtherPlayerCommand_RebuildTargetEntries(&inGameRoot->rootUi.base);
 }
 
 /* Reports this player as loaded (in-game command 0x550), releases the step spin lock taken before the world
@@ -438,7 +440,7 @@ void InGameSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inGameRoot)
 
 {
   InGameCommand_Issue<FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus>(0u,0u,0u);
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  g_SpinLockRelease(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
   UiFrame_FlushInputAndResetPendingTicks();
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   g_CursorVisibilityToken++;
