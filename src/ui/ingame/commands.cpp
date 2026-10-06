@@ -171,7 +171,7 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
     root = reinterpret_cast<UiCommandSpriteButtonControl *>((root->sprite).selectable.base.parent.get());
   }
   /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
-  worldRuntime = reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(root)->worldView);
+  worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
   /* find the group of the clicked button */
   groupIndex = SELECTION_GROUP_COUNT - 1;
   while ((int)((uintptr_t)control - (uintptr_t)root) != g_UiAction100AControlOffsets[groupIndex]) {

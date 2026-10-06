@@ -88,7 +88,7 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
   }
   ui = InGameUi_Image(node);
   /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
-  worldRuntime = reinterpret_cast<WorldRuntimeContext *>(&ui->worldView);
+  worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&ui->worldView);
   recordCursor = g_UiCommandSpriteVariantARecords;
   for (remainingSlots = ARMY_STOCK_ENTRY_COUNT; remainingSlots != 0; remainingSlots--) {
     *recordCursor = nullptr;
@@ -162,7 +162,7 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
 void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
 
 {
-  UiNodeBase *root;
+  UiCommandSpriteButtonControl *root;
   InGameUiImage *ui;
   WorldRuntimeContext *worldRuntime;
   UiCommandRuntimeRecordPrefix *runtimeRecord;
@@ -172,13 +172,13 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
 
   if ((g_UiCommandRuntimeFlags &
       (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
-    root = &control->sprite.selectable.base;
-    while (root->parent != UI_NODE_NONE) {
-      root = root->parent;
+    root = control;
+    while ((root->sprite).selectable.base.parent != UI_NODE_NONE) {
+      root = reinterpret_cast<UiCommandSpriteButtonControl *>((root->sprite).selectable.base.parent.get());
     }
     ui = InGameUi_Image(root);
     /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
-    worldRuntime = reinterpret_cast<WorldRuntimeContext *>(&ui->worldView);
+    worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&ui->worldView);
     /* end any hover of the stock panel (image control) */
     g_UiImageControlHoverTarget = nullptr;
     ui->armyStockPanel.selectable.stateFlags &= ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;

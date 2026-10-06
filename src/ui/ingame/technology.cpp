@@ -276,7 +276,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       &ui->technologyAreaTab1.selectable.base)) {
       /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
       playerBlock = g_SelectionPlayerRuntimeBlockPointers
-                    [reinterpret_cast<WorldRuntimeContext *>(&ui->worldView)->selection.activePlayerRuntimeId];
+                    [FrontendModelPointerContext_AsWorldRuntime(&ui->worldView)->selection.activePlayerRuntimeId];
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
       /* the text field holds a text resource id here, resolved when drawn */
       ui->technologyDescriptionText.text = THANDOR_PTR32_BITS(TEXT_ID_TECHNOLOGY_GENERAL_DESCRIPTION);

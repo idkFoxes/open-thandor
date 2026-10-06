@@ -35,7 +35,7 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       root = reinterpret_cast<UiCatalogEntryControl *>((root->command).sprite.selectable.base.parent.get());
     }
     /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
-    worldRuntime = reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(root)->worldView);
+    worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
     entryIndex = BUILD_CATALOG_ENTRY_COUNT - 1;
     while ((int)((uintptr_t)source - (uintptr_t)root) !=
            g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][entryIndex]) {
@@ -77,7 +77,7 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       root = reinterpret_cast<UiCatalogEntryControl *>((root->command).sprite.selectable.base.parent.get());
     }
     /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
-    worldRuntime = reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(root)->worldView);
+    worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
     entryIndex = SPECIAL_BUILD_CATALOG_ENTRY_COUNT - 1;
     while ((int)((uintptr_t)source - (uintptr_t)root) !=
            g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][entryIndex]) {
