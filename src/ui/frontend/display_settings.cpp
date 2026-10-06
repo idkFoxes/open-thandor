@@ -8,6 +8,7 @@
 #include <thandor/ui/frontend/display_settings.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/core/bytes.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -61,7 +62,8 @@ static const std::size_t kTemplateResolutionRowOffsets[FRONTEND_DISPLAY_RESOLUTI
 static UiNumericPairTextButton *FrontendDisplaySettingsPage_ResolutionRow(UiNodeBase *frontendRoot,uint32_t rowIndex)
 {
   if (rowIndex < FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS) {
-    return (UiNumericPairTextButton *)((uint8_t *)frontendRoot + kTemplateResolutionRowOffsets[rowIndex]);
+    /* the row at its template byte offset (the rows are named members; the table holds their offsets) */
+    return reinterpret_cast<UiNumericPairTextButton *>(reinterpret_cast<uint8_t *>(frontendRoot) + kTemplateResolutionRowOffsets[rowIndex]);
   }
   return &FrontendUi_Image(frontendRoot)->displayResolutionExtraOptions
               [rowIndex - FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS];
@@ -193,7 +195,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   uint32_t adapterIndex;
 
   /* source is the frontend template's graphicsSettingsButton */
-  frontendRoot = (UiNodeBase *)((uint8_t *)source - offsetof(FrontendUiImage,graphicsSettingsButton));
+  frontendRoot = reinterpret_cast<UiNodeBase *>(Thandor_Bytes(source) - offsetof(FrontendUiImage,graphicsSettingsButton));
   UiPageStack_SetActiveIndex
             (FRONTEND_PAGE_DISPLAY_SETTINGS,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendPageStack));
   /* not in the original: page 6 is displayPageStack, the display settings are its first page */
@@ -262,9 +264,9 @@ void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButt
 
 {
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
-       ((UiNumericPairTextButton *)optionButton)->firstValue;
+       UiNode_As<UiNumericPairTextButton>(optionButton)->firstValue;
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
-       ((UiNumericPairTextButton *)optionButton)->secondValue;
+       UiNode_As<UiNumericPairTextButton>(optionButton)->secondValue;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(optionButton);
 }
 
@@ -272,6 +274,12 @@ void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButt
    advanced settings page's UI scale): lays the UI out again, converts the palette-based UI textures to the new
    pixel format, shows the cursor again, refreshes the display settings page and decides whether the dialog pages
    cover the menu room. control is any node of the frontend template. */
+/* The palette view of a loaded texture source (the asset's palette-based header; a genuine reinterpretation). */
+static inline GraphicsPaletteTextureSourceAsset *FrontendDisplaySettings_PaletteSource(GraphicsTextureSourceAsset *asset)
+{
+  return reinterpret_cast<GraphicsPaletteTextureSourceAsset *>(asset);
+}
+
 static void FrontendDisplaySettings_FinishModeSwitch(void *control)
 {
   int remainingFonts;
@@ -280,23 +288,23 @@ static void FrontendDisplaySettings_FinishModeSwitch(void *control)
 
   UiRootStack_Relayout();
   g_GraphicsTextureSourceConvertPaletteEntries
-            ((GraphicsPaletteTextureSourceAsset *)g_FrontendMenuTextureSource);
+            (FrontendDisplaySettings_PaletteSource(g_FrontendMenuTextureSource));
   g_GraphicsTextureSourceConvertPaletteEntries
-            ((GraphicsPaletteTextureSourceAsset *)g_UiWindowTextureSource);
+            (FrontendDisplaySettings_PaletteSource(g_UiWindowTextureSource));
   g_GraphicsTextureSourceConvertPaletteEntries
-            ((GraphicsPaletteTextureSourceAsset *)g_UiWindowClassTextureSource);
+            (FrontendDisplaySettings_PaletteSource(g_UiWindowClassTextureSource));
   fontTextureSource = g_FontTextureSources;
   for (remainingFonts = 2; remainingFonts != 0; remainingFonts--) { /* both fonts */
-    g_GraphicsTextureSourceConvertPaletteEntries((GraphicsPaletteTextureSourceAsset *)*fontTextureSource);
+    g_GraphicsTextureSourceConvertPaletteEntries(FrontendDisplaySettings_PaletteSource(*fontTextureSource));
     fontTextureSource++;
   }
   g_CursorVisibilityToken++;
-  FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)control);
+  FrontendDisplaySettingsPage_UpdateModeActionAvailability(static_cast<UiNodeBase *>(control));
   /* walk up the parent links to the frontend template root */
-  parentCursor = ((UiNodeBase *)control)->parent;
+  parentCursor = static_cast<UiNodeBase *>(control)->parent;
   while (parentCursor != UI_NODE_NONE) {
-    control = ((UiNodeBase *)control)->parent;
-    parentCursor = ((UiNodeBase *)control)->parent;
+    control = static_cast<UiNodeBase *>(control)->parent;
+    parentCursor = static_cast<UiNodeBase *>(control)->parent;
   }
   /* the new resolution decides whether the dialog pages cover the menu room */
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
@@ -371,7 +379,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
          PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
     bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
-    FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)control);
+    FrontendDisplaySettingsPage_UpdateModeActionAvailability(static_cast<UiNodeBase *>(control));
     return;
   }
   /* not in the original: the renderer and the display mode kind are saved in their own settings */
@@ -597,7 +605,7 @@ static void FrontendAdvancedSettingsPage_SelectChoice(UiNodeBase *selected,UiNod
   uint32_t index;
 
   for (index = 0; index < count; index++) {
-    UiSelectableControl_SetSelected(choices[index] == selected,(UiSelectableControl *)choices[index]);
+    UiSelectableControl_SetSelected(choices[index] == selected,UiNode_As<UiSelectableControl>(choices[index]));
   }
 }
 
@@ -757,6 +765,7 @@ void FrontendAdvancedSettingsAction_SelectFrameLimit(UiNodeBase *sourceNode)
 /* Handler of FRONTEND_ACTION_ADVANCED_VSYNC (the "VSync" checkbox; the click has toggled it). */
 void FrontendAdvancedSettingsAction_SetVsync(UiNodeBase *sourceNode)
 {
-  SdlVideo_SetVsync(UiSelectableControl_IsSelected((UiSelectableControl *)sourceNode) != 0);
+  SdlVideo_SetVsync(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
+
   FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
 }
