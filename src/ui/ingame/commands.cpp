@@ -74,7 +74,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
     /* the pending entry is the chosen army asset record */
     placementRejected = ArmyPlacement_ValidateAssetAtPointAndCellCorners
                       (0,headingAngle,worldXQ12,worldYQ12,
-                       (ArmyPlacementContext)((ArmyAssetRecordPrefix *)pendingEntry)->registryId,playerBlock->factionIndex,
+                       (ArmyPlacementContext)reinterpret_cast<ArmyAssetRecordPrefix *>(pendingEntry)->registryId,playerBlock->factionIndex,
                        worldRuntime);
     if (!placementRejected) {
       /* the validator leaves the accepted (possibly snapped) point in g_ArmyPlacementValidatedWorldX/YQ12 */
@@ -82,7 +82,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                         (4,headingAngle,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->factionIndex,
-                         ((ArmyAssetRecordPrefix *)pendingEntry)->registryId,worldRuntime,nullptr);
+                         reinterpret_cast<ArmyAssetRecordPrefix *>(pendingEntry)->registryId,worldRuntime,nullptr);
       if (createdArmySlots != nullptr) {
         ownerFactionIndex = playerBlock->factionIndex;
         modelNodeRuntime = createdArmySlots[1];
@@ -106,8 +106,8 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                    ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
                    Thandor_U32ToPointer<EffectDefinition>(slotModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 (saved model pool) */
                    worldRuntime);
-        InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-        InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+        InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
+        InGameSpecialBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
         if (playerId != g_LocalPlayerRuntimeId) {
           return;
         }
@@ -135,8 +135,9 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
   while (control->parent != UI_NODE_NONE) {
     control = control->parent;
   }
-  INGAME_UI(control,worldView)->nodeFlags &= ~UI_NODE_SUPPRESSED;
-  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,(UiPageStackControl *)INGAME_UI(control,gameWindowPageStack));
+  InGameUi_Image(control)->worldView.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,
+                             UiLayoutContainerControl_AsPageStack(&InGameUi_Image(control)->gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != nullptr) {
     modelOffset = (int)((intptr_t)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
@@ -156,6 +157,7 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
 
 {
   UiCommandSpriteButtonControl *root;
+  WorldRuntimeContext *worldRuntime;
   FactionRuntimeIndex factionIndex;
   CommandPayload groupIndex;
   CommandPayload transferModeFlags;
@@ -166,8 +168,10 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
   }
   root = control;
   while ((root->sprite).selectable.base.parent != UI_NODE_NONE) {
-    root = (UiCommandSpriteButtonControl *)(root->sprite).selectable.base.parent;
+    root = reinterpret_cast<UiCommandSpriteButtonControl *>((root->sprite).selectable.base.parent.get());
   }
+  /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
+  worldRuntime = reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(root)->worldView);
   /* find the group of the clicked button */
   groupIndex = SELECTION_GROUP_COUNT - 1;
   while ((int)((uintptr_t)control - (uintptr_t)root) != g_UiAction100AControlOffsets[groupIndex]) {
@@ -188,10 +192,10 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
   }
   if ((transferModeFlags != 0) &&
       SelectionInfo_AllEntriesEmptyOrMatchOwner
-           ((FactionRuntimeIndex)((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex)) {
+           ((FactionRuntimeIndex)worldRuntime->activeFactionRuntimeIndex)) {
     return;
   }
-  factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+  factionIndex = worldRuntime->activeFactionRuntimeIndex;
   InGameCommand_Issue<FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh>
             ((CommandPayload)factionIndex,transferModeFlags,groupIndex);
 }
@@ -234,8 +238,8 @@ void InGameCommand_HandlePlayerDeparture
     for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
         ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        entityRuntime = (GameEntityRuntime *)
-             (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime;
+        entityRuntime = ModelView_Cast<GameEntityRuntime>
+             ((WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset).armyRuntime);
         if (factionToken == (entityRuntime->common).ownership.ownerIndex) {
           ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
         }
