@@ -17,6 +17,7 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
+#include <thandor/ui/controls/node_views.h> /* UiNode_As */
 
 typedef union UiCommandPayloadTextBatch48 UiCommandPayloadTextBatch48, *PUiCommandPayloadTextBatch48;
 typedef struct UiCommandPayloadTriple UiCommandPayloadTriple, *PUiCommandPayloadTriple;
@@ -1272,13 +1273,7 @@ inline FrontendUiImage *FrontendUi_Image(uintptr_t root)
   return reinterpret_cast<FrontendUiImage *>(root);
 }
 
-/* The control behind a node pointer: the UI passes a control to its action handlers and callbacks as its
-   UiNodeBase (every control starts with it, through its base chain), and parent links hold UiNodeBase pointers.
-   The downcast along that chain, in one place; Control must start with a UiNodeBase. */
-template <class Control> inline Control *UiNode_As(UiNodeBase *node)
-{
-  return reinterpret_cast<Control *>(node);
-}
+/* UiNode_As<Control>(node), the control behind a node pointer, is in ui/controls/node_views.h. */
 
 
 /* The menu room node (menuRoomModelView) as the world runtime context the ROM transitions, the menu room scene
