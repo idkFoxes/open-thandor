@@ -27,7 +27,7 @@ From a vcvars64 prompt:
 
 ```bat
 call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
-cmake -S . -B build-rel -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+cmake -S . -B build-rel -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
       -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows
 cmake --build build-rel
 ```
@@ -394,7 +394,7 @@ a second instance, the UDP port and datagram log, the watchdog - are compiled in
 `THANDOR_DEV_TOOLS` (default `OFF`):
 
 ```bat
-cmake -S . -B build-test -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+cmake -S . -B build-test -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
       -DTHANDOR_DEV_TOOLS=ON -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows
 cmake --build build-test
 ```
