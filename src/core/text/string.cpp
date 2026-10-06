@@ -7,6 +7,7 @@
 
 #include <thandor/core/text/string.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -152,7 +153,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
   if ((flags & WIDE_FORMAT_WRITE_TERMINATOR) != 0) {
     *destinationCursor = 0;
   }
-  return (uint8_t *)destinationCursor - (uint8_t *)destination;
+  return Thandor_ByteDistance(destinationCursor, destination);
 }
 
 

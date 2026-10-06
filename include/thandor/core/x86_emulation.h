@@ -20,8 +20,14 @@ x87 rounding and the MMX lane operations (with the original's wrap-around and sa
 #include <string.h>
 #include <type_traits>
 
-/* The structure that contains the member p points at. */
-#define THANDOR_CONTAINER_OF(p, Outer, member) ((Outer *)((unsigned char *)(p) - offsetof(Outer, member)))
+/* The structure that contains the member p points at (memberOffset bytes into it). Like the former C-style cast
+   it also takes a pointer to const and yields a mutable Outer *. */
+template <class Outer, class P> static __forceinline Outer *thandor_container_of(P *p, size_t memberOffset)
+{
+    return reinterpret_cast<Outer *>(const_cast<unsigned char *>(reinterpret_cast<const volatile unsigned char *>(p)) -
+                                     memberOffset);
+}
+#define THANDOR_CONTAINER_OF(p, Outer, member) (thandor_container_of<Outer>((p), offsetof(Outer, member)))
 
 /*
 THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly locked) on a 32-bit
@@ -35,12 +41,14 @@ template <typename T, typename V>
 static __forceinline auto thandor_atomic_exchange(T *ptr, V value)
 {
     if constexpr (sizeof(T) == 8) {
-        return (uintptr_t)_InterlockedExchangePointer((void *volatile *)(ptr), (void *)(uintptr_t)(value));
+        return reinterpret_cast<uintptr_t>(_InterlockedExchangePointer(reinterpret_cast<void *volatile *>(ptr),
+                                                                       reinterpret_cast<void *>(static_cast<uintptr_t>(value))));
     }
     else
     {
         static_assert(sizeof(T) == 4, "THANDOR_ATOMIC_EXCHANGE needs a 4-byte or pointer-sized location");
-        return (uint32_t)_InterlockedExchange((volatile long *)(ptr), (long)(uintptr_t)(value));
+        return static_cast<uint32_t>(_InterlockedExchange(reinterpret_cast<volatile long *>(ptr),
+                                                          static_cast<long>(static_cast<uintptr_t>(value))));
     }
 }
 #define THANDOR_ATOMIC_EXCHANGE(ptr, value) thandor_atomic_exchange((ptr), (value))
@@ -66,7 +74,7 @@ template <class U> static __forceinline constexpr U thandor_load_le(const unsign
         for (size_t i = 0; i < sizeof v; i++) v = (U)(v | ((U)p[i] << (8 * i)));
         return v;
     }
-    return thandor_load_le<U>((const void *)p);
+    return thandor_load_le<U>(static_cast<const void *>(p));
 }
 template <class U> static __forceinline constexpr void thandor_store_le(unsigned char *p, U v)
 {
@@ -74,7 +82,7 @@ template <class U> static __forceinline constexpr void thandor_store_le(unsigned
         for (size_t i = 0; i < sizeof v; i++) p[i] = (unsigned char)(v >> (8 * i));
         return;
     }
-    thandor_store_le<U>((void *)p, v);
+    thandor_store_le<U>(static_cast<void *>(p), v);
 }
 
 static __forceinline uint16_t Thandor_LoadU16(const void *p) { return thandor_load_le<uint16_t>(p); }

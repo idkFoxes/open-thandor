@@ -7,6 +7,7 @@
 
 #include <thandor/core/math/spline.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -93,7 +94,7 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
   }
   /* In the matrix loops floatCursor points at the top-left of segment s's 4x4 diagonal block and steps one
      block (4 rows and 4 columns) per segment; indices below are written as row * order + column. */
-  firstChannelValue = (int *)((uint8_t *)&keyframes->channel0Q12 + channelByteOffset);
+  firstChannelValue = Thandor_At<int>(&keyframes->channel0Q12, channelByteOffset);
   *outEquationCount = keyframeCount * 4 - 4;
   floatCursor = matrix32x32;
   for (remainingCount = CUBIC_SPLINE_MATRIX_ORDER * CUBIC_SPLINE_MATRIX_ORDER; remainingCount != 0;

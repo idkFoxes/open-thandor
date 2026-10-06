@@ -42,8 +42,9 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
 
 {
   /* The record table holds the original game's continuation addresses inside this function; they are only
-     used as keys here, each continuation is one case of the switch below. rt is the runtime root. */
-  uint8_t *rt = (uint8_t *)inGameRoot;
+     used as keys here, each continuation is one case of the switch below. image is the in-game UI image
+     of the runtime root. */
+  InGameUiImage *image = InGameUi_Image(inGameRoot);
   Bool8 localSession = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0;
 
   /* A record without modifier class matches only without Ctrl and Alt; otherwise exactly the named
@@ -63,65 +64,67 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     break;
   case 0x567200: /* Ctrl+Alt+X, cheat: +1000 Xenite (xeniteCurrentQ4 += 1000 << Q4_SHIFT) */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
-      g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(rt,
-           worldView))->activeFactionRuntimeIndex].xeniteCurrentQ4 += 1000 << Q4_SHIFT;
+      g_GameFactionRuntimeImage.records[reinterpret_cast<WorldRuntimeContext *>(
+           &image->worldView)->activeFactionRuntimeIndex].xeniteCurrentQ4 += 1000 << Q4_SHIFT;
     }
     break;
   case 0x567230: /* Ctrl+Alt+E, cheat: +100 energy supply and capacity (Q4) */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
-      g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(rt,
-           worldView))->activeFactionRuntimeIndex].baselineEnergySupplyQ4 += 100 << Q4_SHIFT;
-      g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(rt,
-           worldView))->activeFactionRuntimeIndex].energyGenerationCapacityQ4 += 100 << Q4_SHIFT;
+      g_GameFactionRuntimeImage.records[reinterpret_cast<WorldRuntimeContext *>(
+           &image->worldView)->activeFactionRuntimeIndex].baselineEnergySupplyQ4 += 100 << Q4_SHIFT;
+      g_GameFactionRuntimeImage.records[reinterpret_cast<WorldRuntimeContext *>(
+           &image->worldView)->activeFactionRuntimeIndex].energyGenerationCapacityQ4 += 100 << Q4_SHIFT;
     }
     break;
   case 0x567270: /* Enter: open the chat line */
-    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(rt,chatInputPageStack));
-    ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->cursorIndex = 0;
-    ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->selectionStart = 0;
-    ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->selectionEnd = 0;
+    UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&image->chatInputPageStack));
+    image->chatInputTextEdit.cursorIndex = 0;
+    image->chatInputTextEdit.selectionStart = 0;
+    image->chatInputTextEdit.selectionEnd = 0;
     if (!localSession) {
       UiNodeBase *recipientTab;
       int i;
       for (i = 0; i < 24; i++) {
-        ((uint32_t *)((InGameCommandTextEditControlCC *)INGAME_UI(rt,chatInputTextEdit))->textBuffer)[i] = 0;
+        reinterpret_cast<uint32_t *>(
+            reinterpret_cast<InGameCommandTextEditControlCC *>(&image->chatInputTextEdit)->textBuffer)[i] = 0;
       }
       /* Original quirk: the result is not tested; with no tab selected this is the last tab */
-      UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,INGAME_UI(rt,messageRecipientAllTab),
-                                            INGAME_UI(rt,messageRecipientGroupsTab),
-                                            INGAME_UI(rt,messageRecipientPlayersTab));
-      g_InGameUiActionHandlersPage10.handlers[((UiSelectableControl *)recipientTab)->actionId & 0xff]
+      UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,&image->messageRecipientAllTab.selectable.base,
+                                            &image->messageRecipientGroupsTab.selectable.base,
+                                            &image->messageRecipientPlayersTab.selectable.base);
+      g_InGameUiActionHandlersPage10.handlers[reinterpret_cast<UiSelectableControl *>(recipientTab)->actionId & 0xff]
                 (recipientTab);
     }
-    UiKeyboardFocus_Set(INGAME_UI(rt,chatInputTextEdit));
+    UiKeyboardFocus_Set(&image->chatInputTextEdit.base);
     break;
   case 0x567340: /* Alt+F4: game menu on the quit page */
   case 0x5673a0: /* F2: game menu on the save page (local games only) */
   case 0x567410: /* Esc: game menu */
   case 0x567460: { /* F1: mission objectives */
+    UiSpriteButtonControl *toggleButton;
     UiSelectableControl *toggle;
     if ((target == 0x5673a0) && !localSession) {
       break;
     }
-    toggle = (UiSelectableControl *)(target == 0x567460 ? INGAME_UI(rt,missionObjectivesButton) :
-                                                     INGAME_UI(rt,inGameMenuButton));
+    toggleButton = (target == 0x567460) ? &image->missionObjectivesButton : &image->inGameMenuButton;
+    toggle = &toggleButton->selectable;
     UiSelectableControl_SetSelected(1,toggle);
     if (((toggle->stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
-        (((UiSpriteButtonControl *)toggle)->activationSound != nullptr)) {
+        (toggleButton->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,
-                            ((UiSpriteButtonControl *)toggle)->activationSound,nullptr);
+                            toggleButton->activationSound,nullptr);
     }
     if (target == 0x567460) {
-      InGameMissionHelpPage_Toggle((UiNodeBase *)toggle);
+      InGameMissionHelpPage_Toggle(&toggle->base);
       break;
     }
     InGameSettingsPage_ToggleAndSynchronizeControls(toggle);
     if (target == 0x567340) {
-      InGameQuitMenu_OpenAndRefreshButtons((InGameCommandPanelSourceAddress32)INGAME_UI(rt,
-           gameMenuQuitButton));
+      InGameQuitMenu_OpenAndRefreshButtons(
+           reinterpret_cast<InGameCommandPanelSourceAddress32>(&image->gameMenuQuitButton));
     }
     else if (target == 0x5673a0) {
-      InGameSaveGamePage_RebuildCatalog(INGAME_UI(rt,gameMenuSaveButton));
+      InGameSaveGamePage_RebuildCatalog(&image->gameMenuSaveButton.selectable.base);
     }
     break;
   }
@@ -133,28 +136,29 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     if (localSession) {
       break;
     }
-    stack = (UiPageStackControl *)INGAME_UI(rt,gameWindowPageStack);
+    stack = UiLayoutContainerControl_AsPageStack(&image->gameWindowPageStack);
     index = (UiPageStack_ActivePageIndex(stack) == 1) ? 0 : 1;
     UiPageStack_SetActiveIndex(index,stack);
-    INGAME_UI(rt,worldView)->nodeFlags =
-         INGAME_UI(rt,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
+    image->worldView.base.nodeFlags =
+         image->worldView.base.nodeFlags & ~UI_NODE_SUPPRESSED;
     if (index != 1) {
       break;
     }
-    INGAME_UI(rt,worldView)->nodeFlags =
-         INGAME_UI(rt,worldView)->nodeFlags | UI_NODE_SUPPRESSED;
-    UiKeyboardFocus_ReleaseNode(INGAME_UI(rt,worldView));
-    ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->cursorIndex = 0;
-    ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->selectionStart = 0;
-    ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->selectionEnd = 0;
+    image->worldView.base.nodeFlags =
+         image->worldView.base.nodeFlags | UI_NODE_SUPPRESSED;
+    UiKeyboardFocus_ReleaseNode(&image->worldView.base);
+    image->messageTextEdit.cursorIndex = 0;
+    image->messageTextEdit.selectionStart = 0;
+    image->messageTextEdit.selectionEnd = 0;
     for (i = 0; i < 24; i++) {
-      ((uint32_t *)((InGameCommandTextEditControlCC *)INGAME_UI(rt,messageTextEdit))->textBuffer)[i] = 0;
+      reinterpret_cast<uint32_t *>(
+          reinterpret_cast<InGameCommandTextEditControlCC *>(&image->messageTextEdit)->textBuffer)[i] = 0;
     }
     /* Original quirk: the result is not tested; with no tab selected this is the last tab */
-    UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,INGAME_UI(rt,messageRecipientAllTab),
-                                          INGAME_UI(rt,messageRecipientGroupsTab),
-                                          INGAME_UI(rt,messageRecipientPlayersTab));
-    g_InGameUiActionHandlersPage10.handlers[((UiSelectableControl *)recipientTab)->actionId & 0xff]
+    UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,&image->messageRecipientAllTab.selectable.base,
+                                          &image->messageRecipientGroupsTab.selectable.base,
+                                          &image->messageRecipientPlayersTab.selectable.base);
+    g_InGameUiActionHandlersPage10.handlers[reinterpret_cast<UiSelectableControl *>(recipientTab)->actionId & 0xff]
               (recipientTab);
     g_KeyboardFlushEvents();
     break;
@@ -170,22 +174,22 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
   }
   case 0x5676a0: { /* Tab: hide or show the side panel; bit 2 of the map/mouse settings remembers it */
     uint32_t settings = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-    UiPageStackControl *stack = (UiPageStackControl *)INGAME_UI(rt,sidePanelStack);
+    UiPageStackControl *stack = UiLayoutContainerControl_AsPageStack(&image->sidePanelStack);
     if (UiPageStack_ActivePageIndex(stack) != 0) {
       UiPageStack_SetActiveIndex(0,stack);
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,resourceBarModeStack));
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,gamePanelsModeStack));
-      INGAME_UI(rt,worldViewArea)->rightOffset = INGAME_UI(rt,sidePanelFrameLeftEdge)->leftOffset;
+      UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->resourceBarModeStack));
+      UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->gamePanelsModeStack));
+      image->worldViewArea.base.rightOffset = image->sidePanelFrameLeftEdge.base.leftOffset;
       settings = settings & ~PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN;
     }
     else {
       UiPageStack_SetActiveIndex(1,stack);
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,resourceBarModeStack));
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,gamePanelsModeStack));
-      INGAME_UI(rt,worldViewArea)->rightOffset = 0;
+      UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->resourceBarModeStack));
+      UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->gamePanelsModeStack));
+      image->worldViewArea.base.rightOffset = 0;
       settings = settings | PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN;
     }
-    UiContainer_LayoutChildren((UiNodeBase *)rt);
+    UiContainer_LayoutChildren(&image->inGameRootPanel.root.base);
     PersistentSettings_Write(settings,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
     break;
   }
