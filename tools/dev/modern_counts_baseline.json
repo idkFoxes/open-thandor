@@ -1,7 +1,7 @@
 {
- "revision": "40e3f8c8",
+ "revision": "8b41fb4a",
  "worktree": true,
- "files": 691,
+ "files": 692,
  "metrics": {
   "cstyle_cast": {
    "item": 1,
@@ -119,7 +119,6 @@
    "gameplay": 549,
    "graphics": 187,
    "movie": 41,
-   "network": 197,
    "platform": 239,
    "ui": 1958,
    "world": 289
@@ -158,7 +157,7 @@
    "generated": 1,
    "graphics": 206,
    "movie": 37,
-   "network": 164,
+   "network": 165,
    "platform": 330,
    "root": 7,
    "ui": 803,
@@ -172,7 +171,7 @@
    "generated": 1,
    "graphics": 41,
    "movie": 6,
-   "network": 15,
+   "network": 16,
    "platform": 33,
    "root": 1,
    "ui": 101,
@@ -181,6 +180,7 @@
   "constexpr": {
    "core": 45,
    "gameplay": 1,
+   "network": 2,
    "platform": 52,
    "ui": 5,
    "world": 13

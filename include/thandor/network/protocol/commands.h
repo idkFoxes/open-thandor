@@ -152,6 +152,13 @@ CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint
    record with an unknown player (in-game) or a payload out of range for its handler is dropped (logged once). */
 void CommandDispatch_ExecuteRecord(uint32_t codeBase,uint32_t originalRegionEnd,const UiCommandQueueRecord *record);
 
+/* A command handler's address as the const void * key of the command tables (a function pointer to an object
+   pointer, hence reinterpret_cast). */
+template <class Proc> static inline const void *CommandDispatch_HandlerKey(Proc *handler)
+{
+  return reinterpret_cast<const void *>(handler);
+}
+
 /* Rebuild helper: the command code of handler in the table of codeBase, or 0xFFFFFFFF. */
 uint32_t CommandDispatch_CodeOfHandler(uint32_t codeBase,const void *handler);
 
@@ -161,13 +168,13 @@ template<uint32_t CodeBase,auto Handler>
 inline uint32_t CommandDispatch_CachedCodeOf()
 
 {
-  static const uint32_t s_code = CommandDispatch_CodeOfHandler(CodeBase,(const void *)Handler);
+  static const uint32_t s_code = CommandDispatch_CodeOfHandler(CodeBase,CommandDispatch_HandlerKey(Handler));
   static Bool8 s_loggedMissing;
 
   if (s_code == 0xFFFFFFFFu && s_loggedMissing == 0) {
     s_loggedMissing = 1;
     Thandor_Log("network: handler %p is not in the command table of base 0x%08X, command dropped",
-                (const void *)Handler,CodeBase);
+                CommandDispatch_HandlerKey(Handler),CodeBase);
   }
   return s_code;
 }

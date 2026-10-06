@@ -14,7 +14,7 @@
 
 /* g_UiTransferMailbox.receivedAllocation sentinel published by UiTransferMailbox_MarkUnavailable when a
    requested transfer cannot be served; UiTransferMailbox_GetReceivedBuffer reports it like an empty mailbox. */
-#define UI_TRANSFER_MAILBOX_UNAVAILABLE ((void *)(intptr_t)-1) /* all bits set, as 0xffffffff in the original */
+#define UI_TRANSFER_MAILBOX_UNAVAILABLE (Thandor_U32ToPointer(-1)) /* all bits set, as 0xffffffff in the original */
 
 /* In-game lockstep command exchange. packedTypeAndUnitCount holds the packet type in the low word and the
    number of 0x20-byte units in the high word. Each tick interval the host collects one command record per
