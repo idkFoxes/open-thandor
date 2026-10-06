@@ -1,7 +1,7 @@
 {
- "revision": "c3248f72",
+ "revision": "4e8f9549",
  "worktree": true,
- "files": 688,
+ "files": 691,
  "metrics": {
   "cstyle_cast": {
    "item": 1,
@@ -114,9 +114,8 @@
  },
  "counts": {
   "cstyle_cast": {
-   "assets": 216,
-   "audio": 985,
-   "core": 54,
+   "audio": 983,
+   "core": 57,
    "gameplay": 818,
    "graphics": 343,
    "movie": 41,
@@ -147,28 +146,28 @@
    "graphics": 147,
    "movie": 30,
    "network": 136,
-   "platform": 226,
+   "platform": 229,
    "ui": 671,
    "world": 117
   },
   "define_all": {
    "assets": 159,
    "audio": 28,
-   "core": 233,
+   "core": 235,
    "gameplay": 274,
    "generated": 1,
    "graphics": 206,
    "movie": 37,
    "network": 164,
-   "platform": 325,
+   "platform": 330,
    "root": 7,
    "ui": 801,
    "world": 179
   },
   "include_guard": {
-   "assets": 33,
+   "assets": 34,
    "audio": 12,
-   "core": 30,
+   "core": 31,
    "gameplay": 67,
    "generated": 1,
    "graphics": 41,
@@ -180,7 +179,7 @@
    "world": 50
   },
   "constexpr": {
-   "core": 21,
+   "core": 44,
    "platform": 52,
    "ui": 5,
    "world": 12
@@ -198,13 +197,14 @@
    "world": 46
   },
   "enum_class": {
+   "core": 4,
    "network": 1,
    "platform": 1,
    "ui": 1
   },
   "libc_alloc": {
    "core": 3,
-   "platform": 27
+   "platform": 33
   },
   "arena": {
    "assets": 24,
@@ -220,11 +220,11 @@
   },
   "mem_funcs": {
    "audio": 2,
-   "core": 11,
+   "core": 13,
    "gameplay": 7,
    "graphics": 8,
    "movie": 1,
-   "platform": 68,
+   "platform": 77,
    "ui": 6
   },
   "bool8": {

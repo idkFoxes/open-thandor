@@ -33,7 +33,7 @@ void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path)
   uint16_t *nameUnits;
   int unitIndex;
 
-  nameUnits = (uint16_t *)nameDestination;
+  nameUnits = reinterpret_cast<uint16_t *>(nameDestination); /* the entry header starts with its UTF-16 path */
   unitIndex = 0;
   while (unitIndex < PCK_ENTRY_PATH_UNITS) {
     nameUnits[unitIndex] = path[unitIndex];
@@ -92,8 +92,8 @@ Bool8 Package_LoadEntryIntoBuffer
     else {
       WidePath_CombineDirectoryAndLeaf
                 (g_FileSystemCombinedPathScratchUtf16,path,
-                 (uint16_t *)&g_ExecutableDirectoryUtf16);
-      statusCode = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);
+                 g_ExecutableDirectoryUtf16);
+      statusCode = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&handle);
       if (statusCode != 0) {
         statusCode = g_FileSystemOpen(0,path,&handle);
       }
@@ -141,15 +141,16 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
 {
   void *handle;
   PckEntryHeader *allocatedEntryHeaders;
+  void *directoryBlock;
   uint32_t openError;
   uint32_t allocError;
   uint32_t errorCode;
 
   WidePath_CombineDirectoryAndLeaf
             (g_FileSystemCombinedPathScratchUtf16,path,
-             (uint16_t *)&g_ExecutableDirectoryUtf16);
+             g_ExecutableDirectoryUtf16);
   openError = g_FileSystemOpen
-                    (FILESYSTEM_OPEN_WRITE_ACCESS,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);
+                    (FILESYSTEM_OPEN_WRITE_ACCESS,g_FileSystemCombinedPathScratchUtf16,&handle);
   if (openError != 0) {
     openError = g_FileSystemOpen(FILESYSTEM_OPEN_WRITE_ACCESS,path,&handle);
   }
@@ -157,8 +158,9 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
     errorCode = openError;
   }
   else {
-    allocError = g_MemoryApi.alloc(PACKAGE_DIRECTORY_BYTES,(void **)&allocatedEntryHeaders);
+    allocError = g_MemoryApi.alloc(PACKAGE_DIRECTORY_BYTES,&directoryBlock);
     if (allocError == 0) {
+      allocatedEntryHeaders = static_cast<PckEntryHeader *>(directoryBlock);
       mountSlot->fileHandle = (EngineFileHandle)handle;
       mountSlot->entryHeaders = allocatedEntryHeaders;
       mountSlot->entryCount = 0;
@@ -171,7 +173,8 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
         }
         return true;
       }
-      Thandor_Log("Package_Mount: \"%ls\" has no readable directory (error 0x%08X)",(wchar_t *)path,errorCode);
+      Thandor_Log("Package_Mount: \"%ls\" has no readable directory (error 0x%08X)",
+                  reinterpret_cast<wchar_t *>(path),errorCode); /* UTF-16 for %ls */
       g_MemoryApi.free(allocatedEntryHeaders);
       mountSlot->fileHandle = 0;
       mountSlot->entryHeaders = nullptr;
@@ -244,7 +247,7 @@ void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *
         errorCode = allocError;
       }
       else {
-        if (Package_DecodeEntryInto((uint8_t *)buffer,entry,entryFileHandle,nullptr,&decodeErrorCode)) {
+        if (Package_DecodeEntryInto(static_cast<uint8_t *>(buffer),entry,entryFileHandle,nullptr,&decodeErrorCode)) {
           if (outByteCount != nullptr) {
             *outByteCount = entry->unpackedSize;
           }
@@ -278,7 +281,7 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
     return buffer;
   }
   if (loggedFailures++ < 8) {
-    Thandor_Log("Package_LoadEntry failed: \"%ls\" (error 0x%08X)", (wchar_t *)path, errorCode);
+    Thandor_Log("Package_LoadEntry failed: \"%ls\" (error 0x%08X)", reinterpret_cast<wchar_t *>(path), errorCode);
     Thandor_LogStack("  load failure stack", errorCode);
   }
   if (outErrorCode != nullptr) {
@@ -346,8 +349,9 @@ static Bool8 Package_FoundEntryIsSmaller(const PckEntryHeader *later,const PckEn
   const uint16_t *frontUnits;
   int unitIndex;
 
-  laterUnits = (const uint16_t *)later;
-  frontUnits = (const uint16_t *)front;
+  /* the whole records compared as UTF-16 code units */
+  laterUnits = reinterpret_cast<const uint16_t *>(later);
+  frontUnits = reinterpret_cast<const uint16_t *>(front);
   for (unitIndex = 0; unitIndex < PCK_ENTRY_HEADER_BYTES / 2; unitIndex++) {
     if (laterUnits[unitIndex] != frontUnits[unitIndex]) {
       return laterUnits[unitIndex] < frontUnits[unitIndex];
@@ -365,8 +369,9 @@ static void Package_SwapFoundEntries(PckEntryHeader *first,PckEntryHeader *secon
   uint32_t swappedDword;
   int dwordIndex;
 
-  firstDwords = (uint32_t *)first;
-  secondDwords = (uint32_t *)second;
+  /* the whole records swapped as dwords */
+  firstDwords = reinterpret_cast<uint32_t *>(first);
+  secondDwords = reinterpret_cast<uint32_t *>(second);
   for (dwordIndex = 0; dwordIndex < PCK_ENTRY_HEADER_BYTES / 4; dwordIndex++) {
     swappedDword = firstDwords[dwordIndex];
     firstDwords[dwordIndex] = secondDwords[dwordIndex];
@@ -504,7 +509,7 @@ Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineF
       (entryCompression == PCK_COMPRESSION_STORED &&
        entry->packedSize > (entry->unpackedSize + 3 & PACKAGE_DWORD_ALIGN_MASK))) {
     Thandor_Log("Package_DecodeEntryInto: \"%ls\" has method %d, packed %u, unpacked %u; entry rejected",
-                (wchar_t *)entry->path,entryCompression,(unsigned)entry->packedSize,
+                reinterpret_cast<wchar_t *>(entry->path),entryCompression, /* UTF-16 for %ls */(unsigned)entry->packedSize,
                 (unsigned)entry->unpackedSize);
     decoderStatusCode = FATAL_ERROR_GENERAL_FAILURE;
     Package_SetLastErrorPath(entry->path);
@@ -715,7 +720,7 @@ static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFile
   if (statusCode != 0) {
     return statusCode;
   }
-  entryCount = ((PckArchiveHeader *)g_PackageScratchBuffer)->entryCount;
+  entryCount = reinterpret_cast<PckArchiveHeader *>(g_PackageScratchBuffer)->entryCount; /* the archive header read there */
   if (entryCount > PACKAGE_DIRECTORY_BYTES / PCK_ENTRY_HEADER_BYTES) {
     Thandor_Log("Package_ReadDirectory: %u entries, at most %u fit; package rejected",
                 (unsigned)entryCount,(unsigned)(PACKAGE_DIRECTORY_BYTES / PCK_ENTRY_HEADER_BYTES));
