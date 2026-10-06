@@ -1,5 +1,5 @@
 {
- "revision": "b17d0947",
+ "revision": "edd93015",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -114,12 +114,8 @@
  },
  "counts": {
   "cstyle_cast": {
-   "audio": 23,
-   "core": 5,
-   "gameplay": 22,
-   "platform": 18,
    "ui": 1006,
-   "world": 66
+   "world": 61
   },
   "ingame_ui": {
    "ui": 4

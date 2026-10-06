@@ -9,7 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* The sound slots (g_Sound*) the game plays through, with the silent backend that fills them until SdlAudio_Init
+/* The sound slots (the g_Sound... pointers) the game plays through, with the silent backend that fills them until SdlAudio_Init
    installs the SDL3 audio backend. The original's DirectSound backend is replaced by platform/sdl3/audio.cpp. */
 
 /* Module data. */

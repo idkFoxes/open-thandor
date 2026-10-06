@@ -7,6 +7,7 @@
 
 #include <thandor/audio/codec/sam_encoder.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Forward cosine transform of the .sam codec (the encoder side; the decoders run the transposed matrix in the
    other direction): turns 256 mono 16-bit PCM samples into 256 coefficients,
@@ -1022,7 +1023,7 @@ uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *i
   coefficientsRemaining = SAM_BLOCK_SAMPLE_COUNT;
   pendingBitCount = 0;
   bitAccumulator = 0;
-  outputCursor = (uint32_t *)encodedBlock;
+  outputCursor = reinterpret_cast<uint32_t *>(encodedBlock);
   do {
     coefficientValue = (uint32_t)*inputCoefficients;
     /* -1, 0 and +1 all become the 1-bit zero code (a 0 bit, nothing to OR in) */
@@ -1061,23 +1062,23 @@ uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *i
     if (pendingBitCount < 24) {
       if (pendingBitCount < 16) {
         if (7 < pendingBitCount) {
-          *(char *)outputCursor = (char)bitAccumulator;
+          *reinterpret_cast<char *>(outputCursor) = (char)bitAccumulator;
           bitAccumulator = bitAccumulator >> 8;
-          outputCursor = (uint32_t *)((uintptr_t)outputCursor + 1);
+          outputCursor = Thandor_At<uint32_t>(outputCursor,1);
           pendingBitCount = pendingBitCount - 8;
         }
       }
       else {
-        *(short *)outputCursor = (short)bitAccumulator;
+        *reinterpret_cast<short *>(outputCursor) = (short)bitAccumulator;
         bitAccumulator = bitAccumulator >> 16;
-        outputCursor = (uint32_t *)((uintptr_t)outputCursor + 2);
+        outputCursor = Thandor_At<uint32_t>(outputCursor,2);
         pendingBitCount = pendingBitCount - 16;
       }
     }
     else {
       *outputCursor = bitAccumulator;
       bitAccumulator = bitAccumulator >> 24;
-      outputCursor = (uint32_t *)((uintptr_t)outputCursor + 3);
+      outputCursor = Thandor_At<uint32_t>(outputCursor,3);
       pendingBitCount = pendingBitCount - 24;
     }
     inputCoefficients++;
@@ -1086,14 +1087,14 @@ uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *i
   /* write out the last partial byte (fewer than 8 bits remain after the flush above) */
   if (pendingBitCount < 8) {
     if (pendingBitCount != 0) {
-      *(char *)outputCursor = (char)bitAccumulator;
-      outputCursor = (uint32_t *)((uintptr_t)outputCursor + 1);
+      *reinterpret_cast<char *>(outputCursor) = (char)bitAccumulator;
+      outputCursor = Thandor_At<uint32_t>(outputCursor,1);
     }
   }
   else {
-    *(short *)outputCursor = (short)bitAccumulator;
-    outputCursor = (uint32_t *)((uintptr_t)outputCursor + 2);
+    *reinterpret_cast<short *>(outputCursor) = (short)bitAccumulator;
+    outputCursor = Thandor_At<uint32_t>(outputCursor,2);
   }
   /* bytes written, rounded up to a dword */
-  return (uint32_t)((((uintptr_t)outputCursor + 3U) & ~(uintptr_t)3) - (uintptr_t)encodedBlock);
+  return (uint32_t)(((reinterpret_cast<uintptr_t>(outputCursor) + 3U) & ~(uintptr_t)3) - reinterpret_cast<uintptr_t>(encodedBlock));
 }

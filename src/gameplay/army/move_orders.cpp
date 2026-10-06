@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/move_orders.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -222,8 +223,7 @@ void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
   WorldRuntimeContext *worldRuntime;
   PathingDestination resolvedDestination;
 
-  if (*(int *)((uintptr_t)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
-              24) != 0) {
+  if (*Thandor_At<int>((movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord.get(),24) != 0) {
     if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
       movementRuntime->movementStateFlags =
@@ -265,8 +265,7 @@ void ArmyRuntime_StartNextQueuedWaypointMove(Q12 targetWorldY,Q12 targetWorldX,A
   WorldRuntimeContext *worldRuntime;
   PathingDestination resolvedDestination;
 
-  if (*(int *)((uintptr_t)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
-              24) != 0) {
+  if (*Thandor_At<int>((movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord.get(),24) != 0) {
     if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
       movementRuntime->movementStateFlags =

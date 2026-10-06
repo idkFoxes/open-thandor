@@ -792,7 +792,7 @@ struct GameEntityOwnershipState10 {
     Ptr32<void> runtimeLink;
     FactionRuntimeIndex ownerIndex;
 
-    /* Typed views of the two untyped references (step 13 X3; they replace the (T *)ownership.<field> casts and
+    /* Typed views of the two untyped references (step 13 X3; they replace the C-style T * casts of ownership.<field> and
        compile to the same load). GameEntityRuntime is a view laid over more than one record, so what +0x0 and
        +0x8 point to depends on the record under it; the caller picks the view, as it did with the cast:
        - modelRuntime(): +0x0 as a ModelRuntimeSlot (the army entities of selection, commands, weapons, AI:

@@ -263,7 +263,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
     return;
   }
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  playerBlock->pendingPlacementArmyAsset = (uintptr_t)armyDefinition;
+  playerBlock->pendingPlacementArmyAsset = reinterpret_cast<uintptr_t>(armyDefinition);
   if (!GameFactionRuntime_RemoveFirstPrimaryArmyAsset(&g_GameFactionRuntimeImage.records[factionIndex],
                                                       armyDefinition)) {
     playerBlock->pendingPlacementArmyAsset = 0;
@@ -277,7 +277,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
     return;
   }
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING;
-  g_InGamePendingPlacementArmyAsset = (intptr_t)armyDefinition;
+  g_InGamePendingPlacementArmyAsset = reinterpret_cast<intptr_t>(armyDefinition);
   g_InGamePlacementSurfaceHeightQ12OrSentinel = INT32_MAX; /* no surface picked yet */
 }
 

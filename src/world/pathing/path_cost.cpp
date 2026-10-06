@@ -110,7 +110,7 @@ Bool8 GridPathCost_BacktrackBestHexRoute
   }
   *outRouteStateMask = callerBlockingMask;
   if (currentCell->pathCost != 0) {
-    selectedCellIndex = (uint32_t)((uintptr_t)currentCell - (uintptr_t)g_GridScratchPrimary) >> 3;
+    selectedCellIndex = (uint32_t)(reinterpret_cast<uintptr_t>(currentCell) - reinterpret_cast<uintptr_t>(g_GridScratchPrimary)) >> 3;
     *outRow = selectedCellIndex / g_GridScratchWidth;
     *outColumn = selectedCellIndex % g_GridScratchWidth;
     return false;

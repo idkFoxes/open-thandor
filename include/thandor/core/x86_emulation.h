@@ -55,7 +55,7 @@ static __forceinline auto thandor_atomic_exchange(T *ptr, V value)
 
 /*
 Unaligned little-endian loads and stores of 16/32/64-bit values at any address, the portable form of the original's
-MOV/MOVQ through a cast pointer (`*(uint64_t *)(p + off)`). memcpy makes them alias-safe and alignment-safe; both
+MOV/MOVQ through a cast pointer (a uint64_t read through p + off). memcpy makes them alias-safe and alignment-safe; both
 compilers turn the fixed-size memcpy into a single load or store, so the code is the same as the cast.
 The const void * forms take any pointer. The unsigned char * forms are also constexpr (they assemble the bytes
 little-endian during constant evaluation; a void * cannot be read there).

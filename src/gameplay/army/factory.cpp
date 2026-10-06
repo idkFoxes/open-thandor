@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/factory.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Takes the first queued secondary asset whose flags match the factory definition's buildable mask
@@ -80,7 +81,7 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
   rootNode = modelRuntime->rootModelNode;
   /* Original quirk: the voice set is read from rootNode + index * 4, not from
      worldRuntime->dwordArray, which is only tested for NULL. */
-  soundVoiceSet = THANDOR_PTR32_AT(SoundVoiceSet *, (uint8_t *)rootNode + soundIndex * 4);
+  soundVoiceSet = THANDOR_PTR32_AT(SoundVoiceSet *, Thandor_At(rootNode,soundIndex * 4));
   translationVec = &(rootNode->worldTransform).translation;
   if (soundVoiceSet == nullptr) {
     return;
@@ -330,7 +331,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
             if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
               buildTicks = (buildTicks >> 4) + 1;
             }
-            selectedAssetLink = *(ModelRuntimeSlotLinkOrState *)&candidateAsset->registryId;
+            selectedAssetLink = *reinterpret_cast<ModelRuntimeSlotLinkOrState *>(&candidateAsset->registryId);
             (modelRuntime->classLinkState).classState68 = buildTicks;
             (modelRuntime->classLinkState).classState74 = assetEnergyValue;
             (modelRuntime->classLinkState).modelLinkOrState = selectedAssetLink;
@@ -387,7 +388,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
                  g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount + 1;
             if (activeFactionIndex == ownerArmyRuntime->factionIndex) {
               linkedRootNodeOffset = assetRecord->rootNodeOffsetOrPointer; /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
-              InGameArmyStock_RebuildGrid((UiNodeBase *)worldRuntime);
+              InGameArmyStock_RebuildGrid(reinterpret_cast<UiNodeBase *>(worldRuntime)); /* the world runtime as the node, as in the original */
               linkedModelDefinition = ModelView_Cast<ModelDefinition>(ModelDefinition_SelectFactionUnlockedLinkedDefinition
                                  (ownerArmyRuntime->factionIndex,linkedRootNodeOffset));
               rootNode = modelRuntime->rootModelNode;

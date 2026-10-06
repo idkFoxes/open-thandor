@@ -7,6 +7,7 @@
 
 #include <thandor/audio/codec/sam.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -1880,9 +1881,9 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
     outputWord3 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x30);
     outputWord2 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x20);
     /* every output word becomes a left/right stereo pair with the same sample (w * 0x10001 = w:w). */
-    *(uint64_t *)outputStereoPcm =
+    *reinterpret_cast<uint64_t *>(outputStereoPcm) =
          ((uint64_t)((uint32_t)outputWord1 * 0x10001) << 32) | (uint32_t)(uint16_t)mm0PackedValue32 * 0x10001;
-    *(uint64_t *)(outputStereoPcm + 4) =
+    *reinterpret_cast<uint64_t *>(outputStereoPcm + 4) =
          ((uint64_t)((uint32_t)outputWord3 * 0x10001) << 32) | (uint32_t)outputWord2 * 0x10001;
     outputGroupsRemaining--;
     outputStereoPcm = outputStereoPcm + 8;
@@ -1908,9 +1909,9 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
   int coefficientsRemaining;
 
   coefficientsRemaining = SAM_BLOCK_SAMPLE_COUNT;
-  bitAccumulator = *(uint32_t *)encodedBlock;
+  bitAccumulator = *reinterpret_cast<uint32_t *>(encodedBlock);
   availableBitCount = 32;
-  inputCursor = (uint16_t *)(encodedBlock + 4);
+  inputCursor = reinterpret_cast<uint16_t *>(encodedBlock + 4);
   do {
     /* the value fields are sign-extended by shifting them to the top of a 32-bit int and back */
     if ((bitAccumulator & 1) == 0) {
@@ -1939,8 +1940,8 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
     /* refill whole bytes above the remaining bits so that at least 25 bits are available again */
     refillShift = (uint8_t)availableBitCount;
     if (availableBitCount < 9) {
-      refillDword = *(int *)inputCursor;
-      inputCursor = (uint16_t *)((uintptr_t)inputCursor + 3);
+      refillDword = *reinterpret_cast<int *>(inputCursor);
+      inputCursor = Thandor_At<uint16_t>(inputCursor,3);
       availableBitCount = availableBitCount + 24;
       bitAccumulator = bitAccumulator | refillDword << (refillShift & 0x1f);
     }
@@ -1952,7 +1953,7 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
     }
     else if (availableBitCount < 25) {
       refillWord = *inputCursor;
-      inputCursor = (uint16_t *)((uintptr_t)inputCursor + 1);
+      inputCursor = Thandor_At<uint16_t>(inputCursor,1);
       availableBitCount = availableBitCount + 8;
       bitAccumulator = bitAccumulator | (uint32_t)(uint8_t)refillWord << (refillShift & 0x1f);
     }
@@ -1960,12 +1961,12 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
     coefficientsRemaining--;
   } while (coefficientsRemaining != 0);
   if (availableBitCount == 32) {
-    inputCursor = (uint16_t *)((uintptr_t)inputCursor - 1);
+    inputCursor = reinterpret_cast<uint16_t *>(reinterpret_cast<uintptr_t>(inputCursor) - 1);
   }
   else if (availableBitCount < 24) {
-    inputCursor = (uint16_t *)((uintptr_t)inputCursor + 1);
+    inputCursor = Thandor_At<uint16_t>(inputCursor,1);
   }
-  return (uint32_t)(((uintptr_t)inputCursor & ~(uintptr_t)3) - (uintptr_t)encodedBlock);
+  return (uint32_t)((reinterpret_cast<uintptr_t>(inputCursor) & ~(uintptr_t)3) - reinterpret_cast<uintptr_t>(encodedBlock));
 }
 
 /* Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by
@@ -1988,7 +1989,7 @@ uint32_t CosineDerivedLookupTables_Init()
   uint32_t secondAngleIndex16;
   uint32_t allocError;
 
-  allocError = g_MemoryApi.alloc(2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ORDER * sizeof(short),(void **)&outputCursor);
+  allocError = g_MemoryApi.alloc(2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ORDER * sizeof(short),reinterpret_cast<void **>(&outputCursor));
   if (allocError != 0) {
     return allocError;
   }
