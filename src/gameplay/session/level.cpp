@@ -174,7 +174,7 @@ Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldV
     }
     levelImage->header.initialArmyPlacementRecordCount++;
     levelImage->header.common.allocationSizeBytes += sizeof(LevelInitialArmyPlacementRecord20);
-    armyRuntime = ((ModelRuntimeSlot *)ownerListNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    armyRuntime = WorldOwnerNode_ModelRuntime(ownerListNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     /* worldYQ12 receives the node's world X and worldXQ12 its world Y, the reverse of the placement record's field
        names (which follow the parameters the loader passes them to, ArmyRuntime_CreateInstanceFromAsset) */
     placementRecordCursor->worldYQ12 = ownerListNode->worldXQ12;

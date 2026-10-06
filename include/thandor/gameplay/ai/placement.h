@@ -15,6 +15,15 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
+/* ArmyPlacement_CanPlaceAssetAtFieldPoint (gameplay/army/placement.h) declares its world argument as UiRootNode *;
+   what every caller passes, and what it reads (previousRoot = WorldRuntimeContext.fieldGrid, then the whole
+   context), is the WorldRuntimeContext. The AI passes its world through this one named reinterpretation; it goes
+   away when that parameter gets its real type. */
+inline UiRootNode *AiPlacement_WorldAsPlacementRoot(WorldRuntimeContext *worldRuntime)
+{
+    return reinterpret_cast<UiRootNode *>(worldRuntime);
+}
+
 Bool8 AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
@@ -28,7 +37,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
           (FieldGridCell *terrainFeatureCell,uint32_t gridScratchRowStrideBytes);
 
 Bool8 AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
-          ArmyPlacementContext placementContext,UiRootNode *inGameRoot);
+          ArmyPlacementContext placementContext,WorldRuntimeContext *worldRuntime);
 
 Bool8 AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);

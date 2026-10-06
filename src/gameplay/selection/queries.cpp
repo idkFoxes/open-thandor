@@ -118,7 +118,7 @@ Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex owner
     if (currentEntry == nullptr) {
       continue;
     }
-    classRecord = (ModelRuntimeSlot *)(currentEntry->common).ownership.definitionOrClassRecord; /* the model runtime */
+    classRecord = (currentEntry->common).ownership.modelRuntime(); /* the model runtime */
     if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
       return true;
     }
@@ -224,7 +224,7 @@ Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,
       continue;
     }
     selectedModelNode = (selectedEntity->common).ownership.modelNode;
-    if (((ModelRuntimeSlot *)(selectedEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+    if ((selectedEntity->common).ownership.modelRuntime()->definitionOrSavedId.
         runtimeDefinition->accelerationPerTick != 0) {
       break;
     }
@@ -238,7 +238,9 @@ Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,
   (selectedModelNode->worldTransform).translation.x = worldYQ12;
   savedTranslationY = (selectedModelNode->worldTransform).translation.y;
   (selectedModelNode->worldTransform).translation.y = worldXQ12;
-  testResult = ArmyRuntimeNode_DispatchTypedCallback((Ptr32<ArmyRuntimeSlot> *)selectedEntity,inGameRuntime);
+  /* the entity's first dword (ownership.definitionOrClassRecord) is read as the holder the dispatch takes */
+  testResult = ArmyRuntimeNode_DispatchTypedCallback
+                 (reinterpret_cast<Ptr32<ArmyRuntimeSlot> *>(selectedEntity),inGameRuntime);
   (selectedModelNode->worldTransform).translation.x = savedTranslationX;
   (selectedModelNode->worldTransform).translation.y = savedTranslationY;
   return testResult;
@@ -251,7 +253,7 @@ Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,
 Bool8 SelectionInfo_TestNoEntryHasWeaponDamage()
 
 {
-  GameEntityRuntime *armyRuntime;
+  ArmyRuntimeSlot *armyRuntime;
   int entriesRemaining;
   Ptr32<GameEntityRuntime> *selectionEntryCursor;
   Bool8 stateTestResult;
@@ -259,11 +261,11 @@ Bool8 SelectionInfo_TestNoEntryHasWeaponDamage()
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    armyRuntime = *selectionEntryCursor;
+    armyRuntime = static_cast<ArmyRuntimeSlot *>(*selectionEntryCursor);
     if (armyRuntime != nullptr) {
-      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative((ArmyRuntimeSlot *)armyRuntime);
+      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative(armyRuntime);
       if (stateTestResult) {
-        stateTestResult = ArmyRuntime_TestHasNoWeaponDamage((ArmyRuntimeSlot *)armyRuntime);
+        stateTestResult = ArmyRuntime_TestHasNoWeaponDamage(armyRuntime);
         if (!stateTestResult) {
           return false;
         }
@@ -289,7 +291,7 @@ Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative()
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (*selectionEntryCursor != nullptr) {
-      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative((ArmyRuntimeSlot *)*selectionEntryCursor);
+      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative(static_cast<ArmyRuntimeSlot *>(*selectionEntryCursor));
       if (stateTestResult) {
         return true;
       }
@@ -363,7 +365,8 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask()
     if (selectedEntry != nullptr) {
       effectVariantMask |=
            ArmyRuntime_GetAttachmentEffectVariantMask
-              ((ModelRuntimeLinkedChildSpawnAndBuildView *)(selectedEntry->common).ownership.definitionOrClassRecord);
+              (static_cast<ModelRuntimeLinkedChildSpawnAndBuildView *>
+               ((selectedEntry->common).ownership.definitionOrClassRecord.get()));
     }
   }
   return effectVariantMask;

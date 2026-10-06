@@ -1,5 +1,5 @@
 {
- "revision": "53d04cef",
+ "revision": "6b5e87bf",
  "worktree": true,
  "files": 691,
  "metrics": {
@@ -116,12 +116,12 @@
   "cstyle_cast": {
    "audio": 23,
    "core": 57,
-   "gameplay": 812,
+   "gameplay": 549,
    "graphics": 234,
    "movie": 41,
    "network": 197,
    "platform": 239,
-   "ui": 1973,
+   "ui": 1958,
    "world": 289
   },
   "ingame_ui": {
@@ -153,7 +153,7 @@
   "define_all": {
    "assets": 159,
    "audio": 28,
-   "core": 235,
+   "core": 236,
    "gameplay": 274,
    "generated": 1,
    "graphics": 206,
@@ -161,7 +161,7 @@
    "network": 164,
    "platform": 330,
    "root": 7,
-   "ui": 801,
+   "ui": 803,
    "world": 179
   },
   "include_guard": {
@@ -179,7 +179,7 @@
    "world": 50
   },
   "constexpr": {
-   "core": 44,
+   "core": 45,
    "gameplay": 1,
    "platform": 52,
    "ui": 5,

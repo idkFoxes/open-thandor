@@ -47,7 +47,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (operands[0] ==
-          ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) {
+          WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) {
         return false;
       }
     }
@@ -57,9 +57,9 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
           (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
-           [((ModelRuntimeSlot *)worldNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId] ==
+           [WorldOwnerNode_ModelRuntime(worldNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId] ==
            ArmyRuntime_ClassCommandHandlerGroupA)) &&
-         (((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
+         (WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
           operands[0])) {
         return false;
       }
@@ -69,7 +69,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        army = ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+        army = WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
         if ((operands[0] == army->factionIndex) && (army->armyAssetId == operands[2])) {
           return false;
         }
@@ -96,9 +96,9 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-         (((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
+         (WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
           operands[0]) &&
-         (((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->armyAssetId ==
+         (WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->armyAssetId ==
           operands[2])) {
         armiesStillNeeded--;
         if (armiesStillNeeded == 0) {
@@ -136,7 +136,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         runtimeClassId =
-             ((ModelRuntimeSlot *)worldNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
+             WorldOwnerNode_ModelRuntime(worldNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
         if ((g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[runtimeClassId] !=
              ArmyRuntime_ClassCommandHandlerGroupA) && (runtimeClassId == operands[0])) {
           return false;
@@ -229,7 +229,7 @@ static void InGameConditionRuntime_EndTriggerFaction(const InGameEndConditionTri
     if (worldNode != nullptr) {
       for (; worldNode != nullptr; worldNode = worldNode->nextNode) {
         if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-          army = ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+          army = WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
           if (endedFactionIndex == army->factionIndex) {
             ModelRuntimeHierarchy_MarkDestroyedRecursive(worldRuntime,army);
           }
