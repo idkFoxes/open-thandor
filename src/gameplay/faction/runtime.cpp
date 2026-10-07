@@ -142,6 +142,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
      Original quirk: a grid with zero cells would count down from 0 (never happens). */
   cellVisibilityCursor = reinterpret_cast<uint8_t *>(&terrainGrid->cells[0].occupancyMask) + factionIndex;
   cellsRemaining = cellCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if ((*cellVisibilityCursor & FIELD_CELL_OCCUPANCY_EXPLORED_BITS) != 0) {
       exploredCellCount++;

@@ -557,6 +557,7 @@ static void UiPointerList_ReselectRecordAfterSort(void *selectedRecord,UiPointer
   rowSlotCursor = control->rowSlots;
   remainingRows = control->rowCount;
   selectedRowTop = 0;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     if (selectedRecord == *rowSlotCursor) break;
     selectedRowTop = selectedRowTop + control->rowHeight;
@@ -650,7 +651,7 @@ void UiTextListControl_DrawRowsAndSelection
     if (rowSlot <= lastRowSlot) {
       framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
       if (!framebufferUnavailable) {
-        do {
+        while (rowSlot <= lastRowSlot) {
           if (rowSlot == control->selectedRowSlot) {
             rowExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,*rowSlot);
             highlightWidth = rowExtent.widthPixels + 6;
@@ -683,7 +684,7 @@ void UiTextListControl_DrawRowsAndSelection
                      rowTop + 1 + (control->base).top,(control->base).left + 3);
           rowSlot++;
           rowTop = rowTop + control->rowHeight;
-        } while (rowSlot <= lastRowSlot);
+        }
         g_GraphicsFramebufferEndAccess();
       }
     }
@@ -774,14 +775,14 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
     scanSlot = control->rowTextSlots;
     if (remainingRows != 0) {
       /* Stops at the first row that is not below the typed character, else at the last row. */
-      do {
+      while (remainingRows != 0) {
         candidateSlot = scanSlot;
         rowBelowKey = g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags
                           (keyCode,*reinterpret_cast<uint32_t *>(candidateSlot->get())); /* the row's first two code units as one dword */
         if (!rowBelowKey) break;
         remainingRows--;
         scanSlot = candidateSlot + 1;
-      } while (remainingRows != 0);
+      }
       control->selectedRowSlot = candidateSlot;
     }
   }

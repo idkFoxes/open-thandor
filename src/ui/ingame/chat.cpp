@@ -187,7 +187,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   factionIndexCursor = 1;
   /* a faction is named after its colour: colorIndex of the faction record selects the name text */
   factionRecord = &g_GameFactionRuntimeImage.records[1];
-  do {
+  while (factionIndexCursor < 8) {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndexCursor] != 0) {
       resolvedText = TextResource_Resolve(resourceId);
       stream = resolvedText;
@@ -202,7 +202,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
     }
     factionIndexCursor++;
     factionRecord++;
-  } while (factionIndexCursor < 8);
+  }
   image->messageRecipientList.root.base.bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
   UiScrollableControl_RebuildViewportAndScrollbars
             (&image->messageRecipientScroll);
@@ -240,6 +240,7 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
   UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->messageRecipientPageStack));
   resourceId = TEXT_ID_MESSAGE_RECIPIENT_LABEL_BASE;
   filledSlotCount = 0;
+  /* Original quirk: a do/while, so it runs once even with a count of 0 (kept as in the original; step 11). */
   do {
     resolvedText = TextResource_Resolve(resourceId);
     selectionBlock = g_SelectionPlayerRuntimeBlockPointers

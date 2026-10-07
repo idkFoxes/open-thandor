@@ -263,6 +263,7 @@ static void ArmyAircraft_UpdateAttackRun(WorldRuntimeContext *worldRuntime,Model
             (modelRuntime,definition,definition->verticalArcCoefficient,
              (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12 - terrainHeightQ12);
   remainingTicks = g_InGameSimulationStepTicks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     (modelRuntime->classLinkState).armyLinkOrState.classState =
          (modelRuntime->classLinkState).armyLinkOrState.classState - 1; /* the drop countdown */
@@ -438,11 +439,10 @@ static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpa
          g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
     /* Remove the entry: shift the rest of the queue down by one. Original quirk: it shifts remainingAssetCount
        entries, i.e. it also copies the slot just behind the last queued entry (as in the factory queue). */
-    do {
+    for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
       *queueEntry = queueEntry[1];
       queueEntry = queueEntry + 1;
-      remainingAssetCount = remainingAssetCount - 1;
-    } while (remainingAssetCount != 0);
+    }
     padRuntime->secondaryArmyAssetBuildState = 1;
     padRuntime->linkedChildRuntimeFlags = padRuntime->linkedChildRuntimeFlags | ARMY_MODEL_STATE_PRODUCING;
     return;

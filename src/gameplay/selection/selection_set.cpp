@@ -101,24 +101,22 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
   playerBlocksRemaining = 8;
   entriesRemainingInBlock = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionPlayerBlocks;
-  do {
-    do {
+  for (; playerBlocksRemaining != 0; playerBlocksRemaining--) {
+    for (; entriesRemainingInBlock != 0; entriesRemainingInBlock--) {
       currentSelectionEntry = selectionEntryCursor;
       if (target == (currentSelectionEntry->selection).entries[0]) {
         (currentSelectionEntry->selection).entries[0] = nullptr;
       }
-      entriesRemainingInBlock--;
       selectionEntryCursor =
            reinterpret_cast<SelectionPlayerRuntimeBlock *>((currentSelectionEntry->selection).entries + 1);
-    } while (entriesRemainingInBlock != 0);
+    }
     entriesRemainingInBlock = SELECTION_ENTRY_CAPACITY;
-    playerBlocksRemaining--;
     /* currentSelectionEntry points at the last entry (entries[31]); seen through that pointer,
        chatRecipientMaskAndWriteOffset lies exactly sizeof(SelectionPlayerRuntimeBlock) further on, at the first
        entry of the next block */
     selectionEntryCursor =
          reinterpret_cast<SelectionPlayerRuntimeBlock *>(&currentSelectionEntry->chatRecipientMaskAndWriteOffset);
-  } while (playerBlocksRemaining != 0);
+  }
 }
 
 /* Removes an entity from one 32-entry selection array: only the first matching entry is set to NULL

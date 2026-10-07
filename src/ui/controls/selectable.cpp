@@ -167,6 +167,7 @@ uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...)
 
   va_start(controlArgs,controlCount);
   controlIndex = 0;
+  /* Original quirk: a do/while, so it runs once even with a count of 0 (kept as in the original; step 11). */
   do {
     if ((va_arg(controlArgs,UiSelectableControl *)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
       va_end(controlArgs);
@@ -190,6 +191,7 @@ void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *s
 
   va_start(controlArgs,selectedControl);
   controlIndex = 0;
+  /* Original quirk: a do/while, so it runs once even with a count of 0 (kept as in the original; step 11). */
   do {
     node = va_arg(controlArgs,UiSelectableControl *);
     if (&node->base == selectedControl) {

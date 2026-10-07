@@ -27,21 +27,19 @@ void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void 
   factionsRemaining = 8;
   groupSlotsRemaining = 256;
   groupSlotIndex = 0;
-  do {
-    do {
+  for (; factionsRemaining != 0; factionsRemaining--) {
+    for (; groupSlotsRemaining != 0; groupSlotsRemaining--) {
       if (runtimeGroupMember ==
           factionRecordCursor->runtimeGroupMembers8x32[groupSlotIndex]) {
         factionRecordCursor->runtimeGroupMembers8x32[groupSlotIndex] = nullptr;
       }
       groupSlotIndex++;
-      groupSlotsRemaining--;
-    } while (groupSlotsRemaining != 0);
+    }
     /* the cursor steps one faction record (0x740 bytes) at a time */
     factionRecordCursor++;
     groupSlotsRemaining = 256;
     groupSlotIndex = 0;
-    factionsRemaining--;
-  } while (factionsRemaining != 0);
+  }
 }
 
 /* Checks whether the faction already has armyAssetRecord pending: in its secondary army-asset list, or in
@@ -101,6 +99,7 @@ void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId
   factionRecord = &g_GameFactionRuntimeImage.records[factionIndex];
   /* Original quirk: the count is tested after the first append, so repetitionCount 0 wraps around and fills
      the list up to its capacity. */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (factionRecord->secondaryArmyAssetCount >= FACTION_ARMY_ASSET_LIST_CAPACITY) {
       return;

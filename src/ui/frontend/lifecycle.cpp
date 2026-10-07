@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/frontend/lifecycle.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/version.h>
@@ -210,14 +211,8 @@ static void FrontendInit_InstallMenuRoomPointerCallbacks(FrontendModelPointerCon
 /* Copies one saved name (PERSISTENT_SETTINGS_NAME_BYTES, 10 dwords) dword by dword. */
 static void FrontendInit_CopyNameDwords(uint32_t *destination,const uint32_t *source)
 {
-  int remainingDwords;
 
-  for (remainingDwords = PERSISTENT_SETTINGS_NAME_BYTES / sizeof(uint32_t); remainingDwords != 0;
-       remainingDwords--) {
-    *destination = *source;
-    source++;
-    destination++;
-  }
+  std::copy_n(source,PERSISTENT_SETTINGS_NAME_BYTES / sizeof(uint32_t),destination);
 }
 
 /* Builds the frontend (menu) at the ROM record initialRomRecordId: clears the screen, loads the central
@@ -244,7 +239,6 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   uint32_t *zeroCursor;
   uint32_t *templateDwords;
   uint32_t *rootDwords;
-  int remainingDwords;
   FrontendRootResourceSlots *frontendUiState;
   WorldRuntimeContext *worldRuntime;
   uint32_t *savedPlayerName;
@@ -255,6 +249,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       playerBlock->factionAssignment.readyOrWaitState = 0;
       playerBlock->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
@@ -318,11 +313,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   /* the world object records of the 3D menu room, zeroed */
   g_FrontendWorldObjectRecords = static_cast<WorldObjectRecord *>(allocPayload);
   zeroCursor = static_cast<uint32_t *>(allocPayload);
-  for (remainingDwords = FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingDwords != 0;
-       remainingDwords--) {
-    *zeroCursor = 0;
-    zeroCursor++;
-  }
+  std::fill_n(zeroCursor,FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4,0);
   error = g_MemoryApi.alloc(sizeof(FrontendUiImage),&allocPayload);
   if (error != 0) {
     *outError = error;
@@ -334,11 +325,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   templateDwords = reinterpret_cast<uint32_t *>(&g_FrontendRootInitializationTemplate);
   g_FrontendRootNode = FrontendUi_Image(frontendUiState);
   rootDwords = reinterpret_cast<uint32_t *>(frontendUiState);
-  for (remainingDwords = sizeof(FrontendUiImage) / 4; remainingDwords != 0; remainingDwords--) {
-    *rootDwords = *templateDwords;
-    templateDwords++;
-    rootDwords++;
-  }
+  std::copy_n(templateDwords,sizeof(FrontendUiImage) / 4,rootDwords);
   FrontendMenu_BindSharedResources(frontendUiState);
   UiRootStack_Push(&g_FrontendUiRootCallbacks,&FrontendUi_Image(frontendUiState)->frontendRoot.root);
   if ((PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS) &
@@ -497,9 +484,8 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
     frontendUiState->buttonVoiceSet4_3FE4 = buttonVoiceSet;
     frontendUiState->buttonVoiceSet4_4044 = buttonVoiceSet;
     frontendUiState->buttonVoiceSet4_28B0 = buttonVoiceSet;
-    controlIndex = 7;
     /* the seven faction, player and selection-row controls of the faction setup page (entries 1..7) */
-    do {
+    for (controlIndex = 7; controlIndex != 0; controlIndex--) {
       FrontendUi_Image(frontendUiState)->NodeAt<UiFramedTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[controlIndex - 1])->activationSound =
            buttonVoiceSet;
       FrontendUi_Image(frontendUiState)->NodeAt<UiFramedTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[controlIndex - 1])->activationSound =
@@ -507,8 +493,7 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
       FrontendUi_Image(frontendUiState)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[controlIndex - 1])->activationSound =
            buttonVoiceSet;
       buttonVoiceSet5 = g_UiButtonSoundVoiceSets7[5];
-      controlIndex--;
-    } while (controlIndex != 0);
+    }
     frontendUiState->buttonVoiceSet5_3C98 = g_UiButtonSoundVoiceSets7[5];
     frontendUiState->buttonVoiceSet5_41C0 = buttonVoiceSet5;
     frontendUiState->buttonVoiceSet5_433C = buttonVoiceSet5;
@@ -587,15 +572,13 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   g_FrontendMenuTextureSource = nullptr;
   /* all 100 menu sound slots (Frontend_Init fills 1..99) */
   voiceSetCursor = g_FrontendMenuSoundVoiceSets;
-  voiceSetsRemaining = 100;
-  do {
+  for (voiceSetsRemaining = 100; voiceSetsRemaining != 0; voiceSetsRemaining--) {
     if (*voiceSetCursor != nullptr) {
       g_SoundReleaseSampleVoiceSet(*voiceSetCursor);
     }
     *voiceSetCursor = nullptr;
     voiceSetCursor++;
-    voiceSetsRemaining--;
-  } while (voiceSetsRemaining != 0);
+  }
   g_SoundStopVoice(g_FrontendMusicActiveBuffer);
   g_SoundReleaseSampleVoiceSet(g_FrontendMusicVoiceSet);
   g_FrontendMusicActiveBuffer = nullptr;

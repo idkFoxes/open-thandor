@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <thandor/movie/runtime/flm_encoder.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -88,7 +89,6 @@ Bool8 Movie_EncodeFlmBufferFromFrameProvider
   uint32_t packedTime;
   uint32_t packedDate;
   uint32_t byteCount;
-  int clearCount;
   uint32_t frameCount;
   void *firstFrame;
   uint32_t *firstFramePixels;
@@ -98,10 +98,7 @@ Bool8 Movie_EncodeFlmBufferFromFrameProvider
 
   header = reinterpret_cast<MovieFileHeader *>(outputBuffer);
   outputCursor = outputBuffer;
-  for (clearCount = MOVIE_FILE_HEADER_BYTES / 4; clearCount != 0; clearCount--) {
-    *outputCursor = 0;
-    outputCursor++;
-  }
+  outputCursor = std::fill_n(outputCursor,MOVIE_FILE_HEADER_BYTES / 4,0);
   /* outputCursor now points at the video stream, right after the cleared header */
   header->common.magic = ASSET_MAGIC_FLM;
   header->common.allocationSizeBytes = MOVIE_FILE_HEADER_BYTES; /* the final size is stored at the end */

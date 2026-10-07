@@ -113,9 +113,8 @@ void SoftwarePixelFormat_BuildChannelPackTables
   uint32_t channelIndex;
   SoftwarePixelPackTables *packTables;
   
-  channelIndex = 0;
   packTables = g_SoftwarePixelPackTables;
-  do {
+  for (channelIndex = 0; channelIndex < 256; channelIndex++) {
     /* 0x400000 = 64.0 in Q16, the pivot of the scale */
     transformedChannelValueQ16 = (channelIndex - 64) * colorScaleQ16 + (64 << 16) + colorBiasQ16;
     if ((int)transformedChannelValueQ16 < 0) {
@@ -138,8 +137,7 @@ void SoftwarePixelFormat_BuildChannelPackTables
          (transformedChannelValueQ16 >>
          ((24U - (char)g_SoftwarePixelFormatConfig.redBitCount) & SHIFT_COUNT_MASK)) <<
          ((uint8_t)g_SoftwarePixelFormatConfig.redShift & SHIFT_COUNT_MASK);
-    channelIndex++;
-  } while (channelIndex < 256);
+  }
   g_SoftwareColorBiasQ16 = colorBiasQ16;
   g_SoftwareColorScaleQ16 = colorScaleQ16;
 }

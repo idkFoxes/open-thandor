@@ -638,8 +638,19 @@ def parse_image(db, header_text, image):
     first_line = header_text[:m.start(1)].count("\n")
     members = []
     in_comment = False
+    func = None  # [brace depth, a body brace seen] while inside a member function (e.g. FrontendUiImage::NodeAt)
     for k, line in enumerate(m.group(1).split("\n")):
         stripped = line.strip()
+        if func is None and not in_comment and (stripped.startswith("template") or
+                                                re.match(r"^[\w:<>\s\*&]+\([^;]*\)\s*(const\s*)?(\{.*)?$", stripped)):
+            func = [0, False]  # a member function: no data, its declaration and body are skipped
+        if func is not None:
+            code = re.sub(r"//.*|/\*.*?\*/", "", stripped)
+            func[0] += code.count("{") - code.count("}")
+            func[1] = func[1] or "{" in code
+            if (func[1] and func[0] == 0) or (not func[1] and code.endswith(";")):
+                func = None
+            continue
         if in_comment or stripped.startswith("/*") or stripped.startswith("//"):
             # a comment line or block between members (kept as it is)
             in_comment = (in_comment or stripped.startswith("/*")) and "*/" not in stripped

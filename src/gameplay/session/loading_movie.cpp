@@ -55,12 +55,12 @@ void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 
   frameIndex = g_MoviePlaybackCurrentFrame;
   if (g_MoviePlaybackCurrentFrame < targetFrame) {
-    do {
+    while (frameIndex < targetFrame) { /* true on entry: frameIndex starts below targetFrame */
       frameIndex++;
       if (!Movie_AdvanceFrame(nullptr,nullptr)) {
         return;
       }
-    } while (frameIndex < targetFrame);
+    }
     g_MoviePlaybackCurrentFrame = frameIndex;
     UiRootStack_InvalidateAll();
     UiFrame_Draw();

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/frontend/network.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
 
@@ -197,7 +198,6 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   FrontendPlayerRuntimeRecord *firstPlayerRecord;
   UiListRowIndex backendIndex;
   uint32_t backendError; /* 0 or a FATAL_ERROR_NETWORK_* code */
-  int dwordsRemaining;
   uint32_t *localEndpointCursor;
   uint32_t *localPlayerNameDwordCursor;
   uint32_t *endpointSourceDwordCursor;
@@ -233,20 +233,10 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     firstPlayerRecord->peerSequenceToken = sequenceToken;
     localPlayerNameDwordCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
     localPlayerRecordDwordCursor = FrontendNetwork_Dwords(&firstPlayerRecord->playerName);
-    for (dwordsRemaining = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); dwordsRemaining != 0;
-         dwordsRemaining--) {
-      *localPlayerRecordDwordCursor = *localPlayerNameDwordCursor;
-      localPlayerNameDwordCursor++;
-      localPlayerRecordDwordCursor++;
-    }
+    localPlayerRecordDwordCursor = std::copy_n(localPlayerNameDwordCursor,sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t),localPlayerRecordDwordCursor);
     /* the cursor continues into firstPlayerRecord->endpoint and then commandSyncPending */
     endpointSourceDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
-    for (dwordsRemaining = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); dwordsRemaining != 0;
-         dwordsRemaining--) {
-      *localPlayerRecordDwordCursor = *endpointSourceDwordCursor;
-      endpointSourceDwordCursor++;
-      localPlayerRecordDwordCursor++;
-    }
+    localPlayerRecordDwordCursor = std::copy_n(endpointSourceDwordCursor,sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t),localPlayerRecordDwordCursor);
     *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING;
     g_FrontendPendingSessionPlayerCount = 0;
     g_FrontendPlayerRuntimeCount = 1;
@@ -288,6 +278,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   if (FrontendNetworkSetupPage_OpenBackend(backendIndex) != 0) {
     /* the selected backend fails: try every backend from the first one (the selected one again included) */
     backendIndex = 0;
+    /* Original quirk: a do-while, with no network backend it still opens backend 0 once (D8: kept) */
     do {
       backendError = FrontendNetworkSetupPage_OpenBackend(backendIndex);
       if (backendError == 0) {
@@ -308,12 +299,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   localEndpointCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
   endpointDestinationDwordCursor = FrontendNetwork_Dwords(&g_FrontendNetworkEndpointScratch);
   /* copies the 16-byte local endpoint dword by dword */
-  for (dwordsRemaining = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); dwordsRemaining != 0;
-       dwordsRemaining--) {
-    *endpointDestinationDwordCursor = *localEndpointCursor;
-    localEndpointCursor++;
-    endpointDestinationDwordCursor++;
-  }
+  std::copy_n(localEndpointCursor,sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t),endpointDestinationDwordCursor);
   FrontendNetworkSetupPage_ApplyNameOption();
   g_NetworkBackendSlot7
             (FrontendNetwork_TextBytes(g_FrontendNetworkEndpointTextUtf16),
@@ -525,7 +511,6 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   FrontendUiImage *frontendUi;
   uint32_t sequenceToken;
   FrontendPlayerRuntimeRecord *firstPlayerRecord;
-  int remainingDwords;
   uint32_t *localPlayerNameCursor;
   uint32_t *localEndpointDwordCursor;
   uint32_t *localPlayerRecordDwordCursor;
@@ -551,19 +536,9 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   firstPlayerRecord->playerRuntimeId = 0;
   localPlayerNameCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
   localPlayerRecordDwordCursor = FrontendNetwork_Dwords(&firstPlayerRecord->playerName);
-  for (remainingDwords = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); remainingDwords != 0;
-       remainingDwords--) {
-    *localPlayerRecordDwordCursor = *localPlayerNameCursor;
-    localPlayerNameCursor++;
-    localPlayerRecordDwordCursor++;
-  }
+  localPlayerRecordDwordCursor = std::copy_n(localPlayerNameCursor,sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t),localPlayerRecordDwordCursor);
   localEndpointDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
-  for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
-       remainingDwords--) {
-    *localPlayerRecordDwordCursor = *localEndpointDwordCursor;
-    localEndpointDwordCursor++;
-    localPlayerRecordDwordCursor++;
-  }
+  localPlayerRecordDwordCursor = std::copy_n(localEndpointDwordCursor,sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t),localPlayerRecordDwordCursor);
   /* the cursor now points at commandSyncPending of the player record; the indices below are dwords from there */
   *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING; /* commandSyncPending */
   g_FrontendPendingSessionPlayerCount = 0;
@@ -600,7 +575,6 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
 
 {
   UiListRowIndex selectedBackendIndex;
-  int remainingDwords;
   uint32_t *endpointSourceDwordCursor;
   uint32_t *endpointDestinationDwordCursor;
   uint32_t backendError; /* 0 or a FATAL_ERROR_NETWORK_* code */
@@ -619,12 +593,7 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
     if (backendError == 0) {
       endpointSourceDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
       endpointDestinationDwordCursor = FrontendNetwork_Dwords(&g_FrontendNetworkEndpointScratch);
-      for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
-           remainingDwords--) {
-        *endpointDestinationDwordCursor = *endpointSourceDwordCursor;
-        endpointSourceDwordCursor++;
-        endpointDestinationDwordCursor++;
-      }
+      std::copy_n(endpointSourceDwordCursor,sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t),endpointDestinationDwordCursor);
       g_NetworkBackendSlot7
                 (FrontendNetwork_TextBytes(g_FrontendNetworkEndpointTextUtf16),
                  FrontendNetwork_SocketAddress(&g_FrontendNetworkEndpointScratch));
@@ -656,7 +625,6 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
 {
   UiNodeBase *parentCursor;
   UiTextEditControl *rootNode;
-  int remainingDwords;
   uint32_t *sourceDwordCursor;
   uint32_t *playerNameDwordCursor;
 
@@ -679,12 +647,7 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
                                   PERSISTENT_SETTING_PLAYER_NAME);
     sourceDwordCursor = FrontendNetwork_Dwords(control->textBuffer);
     playerNameDwordCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
-    for (remainingDwords = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); remainingDwords != 0;
-         remainingDwords--) {
-      *playerNameDwordCursor = *sourceDwordCursor;
-      sourceDwordCursor++;
-      playerNameDwordCursor++;
-    }
+    std::copy_n(sourceDwordCursor,sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t),playerNameDwordCursor);
   }
 }
 
@@ -777,7 +740,6 @@ void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick(UiListControl 
 Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(UiFramedTextButtonControl *joinButton)
 
 {
-  int remainingDwords;
   uint32_t *selectedPlayerRecordDwordCursor;
   uint32_t *selectedEndpointDwordCursor;
   Bool8 sendCarry;
@@ -794,12 +756,7 @@ Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(UiFramedTextButton
                                        offsetof(FrontendUiImage,networkGameJoinButton))->sessionList.selectedRowSlot->get())->senderEndpoint);
 
   selectedEndpointDwordCursor = FrontendNetwork_Dwords(&g_FrontendSelectedNetworkEndpoint);
-  for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
-       remainingDwords--) {
-    *selectedEndpointDwordCursor = *selectedPlayerRecordDwordCursor;
-    selectedPlayerRecordDwordCursor++;
-    selectedEndpointDwordCursor++;
-  }
+  std::copy_n(selectedPlayerRecordDwordCursor,sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t),selectedEndpointDwordCursor);
   g_FrontendSelectedPlayerToken = 0xffffffff;
   sendCarry = UiTransfer_SendPlayerDescriptor();
   return sendCarry;

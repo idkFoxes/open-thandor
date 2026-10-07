@@ -401,7 +401,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
   
   if (((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     recordIndex = 42 - 1; /* the last group-42 record */
-    do {
+    while (-1 < recordIndex) {
       if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
           g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndex]) {
         g_UiHoverSelectionRecord = g_UiCatalogGroup42Records[recordIndex];
@@ -409,10 +409,10 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
         break;
       }
       recordIndex--;
-    } while (-1 < recordIndex);
+    }
     if (recordIndex < 0) {
       group48Index = 48 - 1; /* the last group-48 record */
-      do {
+      while (-1 < group48Index) {
         if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
             g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][group48Index]) {
           g_UiHoverSelectionRecord = g_UiCatalogGroup48Records[group48Index];
@@ -420,7 +420,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
           break;
         }
         group48Index--;
-      } while (-1 < group48Index);
+      }
     }
   }
   cursorFrame = 10;

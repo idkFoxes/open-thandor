@@ -771,7 +771,6 @@ static void PersistentSettings_LoadImage()
 {
   uint32_t *clearCursor;
   void *fileHandle;
-  int dwordsRemaining;
   uint32_t byteCount;
   PersistentSettingsImage *image;
   uint32_t pathByteCount;
@@ -786,10 +785,7 @@ static void PersistentSettings_LoadImage()
   if (g_MemoryApi.alloc(PERSISTENT_SETTINGS_IMAGE_BYTES,reinterpret_cast<void **>(&clearCursor)) /* the payload as dwords */ != 0) {
     return;
   }
-  for (dwordsRemaining = PERSISTENT_SETTINGS_IMAGE_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
-    *clearCursor = 0;
-    clearCursor++;
-  }
+  clearCursor = std::fill_n(clearCursor,PERSISTENT_SETTINGS_IMAGE_BYTES / 4,0);
   image = reinterpret_cast<PersistentSettingsImage *>(clearCursor - PERSISTENT_SETTINGS_IMAGE_BYTES / 4);
   if (PersistentSettings_LoadIni(image)) {
     return;

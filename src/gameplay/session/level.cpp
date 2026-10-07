@@ -100,12 +100,11 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
   soundSlotCursor = worldRuntime->dwordArray;
   /* the original loops only when both the slot count and the slot array are non-zero */
   if (remainingSlotCount != 0 && soundSlotCursor != nullptr) {
-    do {
+    for (; remainingSlotCount != 0; remainingSlotCount--) {
       /* the slot array keeps the slot pointers as integers */
       SpatialSoundSlot_ReleaseSample(reinterpret_cast<SpatialSoundSlot *>(*soundSlotCursor));
       soundSlotCursor++;
-      remainingSlotCount--;
-    } while (remainingSlotCount != 0);
+    }
   }
   g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSets[0]);
   g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSets[1]);

@@ -97,6 +97,7 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
   gridWidth = fieldGrid->gridWidth;
   currentCell = fieldGrid->cells;
   columnsRemaining = gridWidth;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       /* 5f-format: FieldGridCell.persistedAux54 */
@@ -122,6 +123,7 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
 
   cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     currentCell->overlayColor = argbColor;
     currentCell++;
@@ -139,6 +141,7 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
 Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError)
 
 {
+  ArenaScoped imageCopyBlock; /* freed on return; only the result stores follow the write */
   FieldGridAsset *fieldGridImageCopy;
   uint32_t imageSizeBytes;
   uint32_t dwordsLeft;
@@ -151,11 +154,12 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   uint32_t writeError;
 
   imageSizeBytes = sourceImageDwords[1];
-  allocError = g_MemoryApi.alloc(imageSizeBytes,reinterpret_cast<void **>(&fieldGridImageCopy)); /* the arena stores the block address through void ** */
+  allocError = imageCopyBlock.allocate(imageSizeBytes);
   if (allocError != 0) {
     *outError = allocError;
     return false;
   }
+  fieldGridImageCopy = imageCopyBlock.as<FieldGridAsset>();
   copyDestinationDwords = reinterpret_cast<uint32_t *>(fieldGridImageCopy); /* copied dword by dword, as the original */
   for (dwordsLeft = imageSizeBytes >> 2; dwordsLeft != 0; dwordsLeft--) {
     *copyDestinationDwords = *sourceImageDwords;
@@ -165,6 +169,7 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   fieldGridCellSaveView = reinterpret_cast<FieldGridCellSaveImageView *>(fieldGridImageCopy->cells); /* the save-image view of the cells */
   fieldGridImageCopy->fieldFlags = 0;
   cellsRemaining = fieldGridImageCopy->gridWidth * fieldGridImageCopy->gridHeight;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     fieldGridCellSaveView->surfacePacketIndex = 0;
     fieldGridCellSaveView->triangle0NormalAngles = FIXED_ANGLE16_QUARTER_TURN << 16; /* elevation: straight up */
@@ -204,7 +209,6 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   writeError = FileSystem_WriteBufferToPath
                     ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
                      g_LevelResourcePathScratchUtf16);
-  g_MemoryApi.free(fieldGridImageCopy);
   if (writeError != 0) {
     *outError = writeError;
     return false;

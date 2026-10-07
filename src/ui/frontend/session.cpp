@@ -7,6 +7,7 @@
 
 #include <thandor/core/bytes.h>
 #include <thandor/ui/frontend/session.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -121,14 +122,12 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
   seed = Random_NextPrimary();
   Random_SetBothSeeds(seed);
   Random_SelectSecondaryStream();
-  recordsRemaining = 8;
   playerRecordCursor = g_FrontendPlayerRuntimeBlocks;
-  do {
+  for (recordsRemaining = 8; recordsRemaining != 0; recordsRemaining--) {
     playerRecordCursor->factionAssignment.roleStateFlags = 0;
     playerRecordCursor->colourCycleFlags = 0;
     playerRecordCursor++;
-    recordsRemaining--;
-  } while (recordsRemaining != 0);
+  }
   g_FrontendHostSnapshotTransferCountdown = FRONTEND_SNAPSHOT_REQUEST_RETRY_TICKS;
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,1);
 }
@@ -210,7 +209,6 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontend
   FrontendSessionDiscoveryRecord *sourceRecord;
   FrontendSessionDiscoveryRecord *destinationRecord;
   UiListRowCount rowsRemaining;
-  int dwordsRemaining;
   Ptr32<void> *rowSlotCursor;
   Ptr32<FrontendSessionDiscoveryRecord> *rowPointerCursor;
   uint32_t *sourceDwordCursor;
@@ -248,12 +246,8 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontend
       if (destinationDwordCursor != sourceDwordCursor) {
         sourceDwordCursor = reinterpret_cast<uint32_t *>(sourceRecord);
         destinationDwordCursor = reinterpret_cast<uint32_t *>(destinationRecord);
-        for (dwordsRemaining = sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t); dwordsRemaining != 0;
-            dwordsRemaining--) {
-          *destinationDwordCursor = *sourceDwordCursor;
-          sourceDwordCursor++;
-          destinationDwordCursor++;
-        }
+        destinationDwordCursor = std::copy_n(sourceDwordCursor,sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t),destinationDwordCursor);
+        sourceDwordCursor += sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t);
       }
     }
     rowSlotCursor++;

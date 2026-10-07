@@ -245,7 +245,7 @@ int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBu
 
   variantMask = 0;
   attachmentEffectSlotsRemaining = 13;
-  do {
+  for (; attachmentEffectSlotsRemaining != 0; attachmentEffectSlotsRemaining--) {
     /* completedSecondaryArmyAssetIds[0] of the current window; the runtime pointer itself moves one dword per
        slot below */
     attachmentAssetId = linkedChildRuntime->completedSecondaryArmyAssetIds[0];
@@ -261,8 +261,7 @@ int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBu
     /* the view moves by one dword (the next slot's fields line up) */
     linkedChildRuntime = reinterpret_cast<ModelRuntimeLinkedChildSpawnAndBuildView *>(
          reinterpret_cast<uint8_t *>(linkedChildRuntime) + 4);
-    attachmentEffectSlotsRemaining--;
-  } while (attachmentEffectSlotsRemaining != 0);
+  }
   return variantMask;
 }
 

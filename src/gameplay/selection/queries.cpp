@@ -32,7 +32,7 @@ Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPo
   selectionSlotsRemaining = SELECTION_ENTRY_CAPACITY;
   selectedEntityCount = 0;
   selectionEntitySlotCursor = g_SelectionInfoEntitySlots->entries;
-  do {
+  for (; selectionSlotsRemaining != 0; selectionSlotsRemaining--) {
     if (*selectionEntitySlotCursor != nullptr) {
       slotModelNode = ((*selectionEntitySlotCursor)->common).ownership.modelNode;
       worldXAggregateQ12 = worldXAggregateQ12 + (slotModelNode->worldTransform).translation.x;
@@ -41,8 +41,7 @@ Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPo
       selectedEntityCount++;
     }
     selectionEntitySlotCursor++;
-    selectionSlotsRemaining--;
-  } while (selectionSlotsRemaining != 0);
+  }
   if (selectedEntityCount != 0) {
     worldXAggregateQ12 = worldXAggregateQ12 / selectedEntityCount;
     worldYAggregateQ12 = worldYAggregateQ12 / selectedEntityCount;
@@ -260,7 +259,7 @@ Bool8 SelectionInfo_TestNoEntryHasWeaponDamage()
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     armyRuntime = static_cast<ArmyRuntimeSlot *>(*selectionEntryCursor);
     if (armyRuntime != nullptr) {
       stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative(armyRuntime);
@@ -272,8 +271,7 @@ Bool8 SelectionInfo_TestNoEntryHasWeaponDamage()
       }
     }
     selectionEntryCursor++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
   return true;
 }
 
@@ -289,7 +287,7 @@ Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative()
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     if (*selectionEntryCursor != nullptr) {
       stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative(static_cast<ArmyRuntimeSlot *>(*selectionEntryCursor));
       if (stateTestResult) {
@@ -297,8 +295,7 @@ Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative()
       }
     }
     selectionEntryCursor++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
   return false;
 }
 

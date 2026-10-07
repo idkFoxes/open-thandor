@@ -595,7 +595,7 @@ Bool8 AiPlacement_FindNearestPlaceableBaseSite
     bestDistance = INT32_MAX;
     remainingCount = g_AiWorkspace09Count;
     gridCellCursor = g_AiWorkspace09Cells;
-    do {
+    for (; remainingCount != 0; remainingCount--) {
       candidateCell = *gridCellCursor;
       deltaX = referenceWorldXQ12 - candidateCell->worldX;
       if (deltaX < 0) {
@@ -615,8 +615,7 @@ Bool8 AiPlacement_FindNearestPlaceableBaseSite
         }
       }
       gridCellCursor++;
-      remainingCount--;
-    } while (remainingCount != 0);
+    }
     if ((int)bestDistance < INT32_MAX) {
       *outWorldXQ12 = bestCell->worldX;
       *outWorldYQ12 = bestCell->worldY;
