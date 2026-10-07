@@ -3440,3 +3440,11 @@ static_assert(std::is_same_v<std::underlying_type_t<FieldCellPackedFlagsAndMater
                   FieldCell_MaterialId(FieldCell_FromRawWord(0x800012ABu)) == 0xAB &&
                   FieldCell_ResourceSupportBit(1) == FIELD_CELL_TRITIUM_SUPPORT,
               "THANDOR_SIGNED_WORD_FLAG_ENUM: the cell word stays the int it was, the helpers keep its bits");
+
+/* Step 13 field-cell mask (FieldCellFlagMask as the cell-word flag enum): the shared scan selector keeps its dword. */
+static_assert(sizeof(TerrainScanSelectorUnion) == 4 && offsetof(TerrainScanSelectorUnion, fieldCellFlagMask) == 0 &&
+                  sizeof(TerrainScanSelectorUnion::fieldCellFlagMask) == 4,
+              "TerrainScanSelectorUnion.fieldCellFlagMask is its dword");
+static_assert(std::is_same_v<std::underlying_type_t<WideNumberFormatFlags>, int32_t> && ThandorFlagEnum<WideNumberFormatFlags> &&
+                  ToBits(WIDE_FORMAT_WRITE_TERMINATOR | WIDE_FORMAT_SIGNED_VALUE) == 0x41,
+              "WideNumberFormatFlags keeps the int option bits of WideNumber_FormatUtf16");
