@@ -23,14 +23,14 @@
 #include <thandor/platform/selftest/selftest.h>
 #include <vector>
 
-#define RASTER_TEST_WIDTH 320
-#define RASTER_TEST_HEIGHT 200
-#define RASTER_TEST_AUX_WIDTH 96
-#define RASTER_TEST_AUX_HEIGHT 64
-#define RASTER_TEST_TRIANGLES 48
-#define RASTER_TEST_BLITS 48
-#define RASTER_TEST_DEPTH_EPOCH 0x10000000
-#define RASTER_TEST_MAX_IMAGES 8 /* the subresource table lives in the header's 256-byte unusedText */
+constexpr auto RASTER_TEST_WIDTH = 320;
+constexpr auto RASTER_TEST_HEIGHT = 200;
+constexpr auto RASTER_TEST_AUX_WIDTH = 96;
+constexpr auto RASTER_TEST_AUX_HEIGHT = 64;
+constexpr auto RASTER_TEST_TRIANGLES = 48;
+constexpr auto RASTER_TEST_BLITS = 48;
+constexpr auto RASTER_TEST_DEPTH_EPOCH = 0x10000000;
+constexpr auto RASTER_TEST_MAX_IMAGES = 8; /* the subresource table lives in the header's 256-byte unusedText */
 
 typedef struct RasterTestImage {
     int widthLog2; /* raster textures: width = 1 << widthLog2; blit images use width/height */

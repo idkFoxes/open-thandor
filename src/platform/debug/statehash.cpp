@@ -41,7 +41,7 @@ static int s_speedStepTicks;    /* OPEN_THANDOR_STATEHASH_SPEED, 0 = keep the ga
    load, and every step scales movement, timers and production by g_InGameSimulationStepTicks, so applying the
    speed at the session start made the runs diverge (seen as a statehash.txt starting at tick 3 or 4). Tick 2 is
    where the speed took effect in the usual unloaded run, so those runs keep their hashes. */
-#define STATEHASH_SPEED_AFTER_TICK 2u
+constexpr auto STATEHASH_SPEED_AFTER_TICK = 2u;
 
 static int32_t DebugStateHash_ArmyIndex(const void *army)
 {
@@ -102,12 +102,12 @@ void DebugStateHash_SessionStart()
    number of recorded steps: under load the first recorded tick can differ by one); they run in the next step, as
    the game's own commands do. The ticks equal the step numbers 100, 500 and 20 of the first version plus the two
    ticks before the first recorded one, so the stored references stay valid. */
-#define ARENA_MOVE_OUT_TICK 102
-#define ARENA_MOVE_BACK_TICK 502
-#define ARENA_MOVE_ROWS 20
-#define ARENA_PRODUCTION_TICK 22
-#define ARENA_ROW_STEP_X 0x480   /* world X per grid row (isometric lattice, see tools/data/fld.py) */
-#define ARENA_ROW_STEP_Y (-1999) /* world Y per grid row */
+constexpr auto ARENA_MOVE_OUT_TICK = 102;
+constexpr auto ARENA_MOVE_BACK_TICK = 502;
+constexpr auto ARENA_MOVE_ROWS = 20;
+constexpr auto ARENA_PRODUCTION_TICK = 22;
+constexpr auto ARENA_ROW_STEP_X = 0x480; /* world X per grid row (isometric lattice, see tools/data/fld.py) */
+constexpr auto ARENA_ROW_STEP_Y = -1999; /* world Y per grid row */
 
 static Q12 s_armyHomeX[ARMY_RUNTIME_SLOT_COUNT];
 static Q12 s_armyHomeY[ARMY_RUNTIME_SLOT_COUNT];

@@ -21,18 +21,18 @@
    client (COMMAND_SUBMIT), then broadcasts all records as one COMMAND_BATCH; every peer executes the batch.
    A client that still lacks the batch gets it again, a client whose command already arrived gets
    COMMAND_WAIT and answers COMMAND_WAIT_ACK, which only refreshes its timeout on the host. */
-#define FRONTEND_PACKET_TYPE_MASK 0xffff
-#define FRONTEND_PACKET_UNIT_COUNT_SHIFT 16
+inline constexpr auto FRONTEND_PACKET_TYPE_MASK = 0xffff;
+inline constexpr auto FRONTEND_PACKET_UNIT_COUNT_SHIFT = 16;
 /* Most 0x20-byte units a received packet can have: the 0x100-byte receive ring slot (and receive buffer). */
-#define FRONTEND_PACKET_MAX_UNIT_COUNT 8
+inline constexpr auto FRONTEND_PACKET_MAX_UNIT_COUNT = 8;
 
 /* Mailbox transfer (UiTransferMailbox_ServiceAndRetransmitTimer): data bytes per 0x80030 chunk packet (0x100
    bytes minus the 0x10-byte header and the offset/total-size dwords), and the timer ticks (8 ms each) after
    which an unanswered 0x10031 chunk request is repeated. */
-#define UI_TRANSFER_CHUNK_PAYLOAD_BYTES 0xE8
-#define UI_TRANSFER_CHUNK_RETRY_TICKS 4
+inline constexpr auto UI_TRANSFER_CHUNK_PAYLOAD_BYTES = 0xE8;
+inline constexpr auto UI_TRANSFER_CHUNK_RETRY_TICKS = 4;
 /* Every accepted chunk packet extends the peer's timeout by 0x40 timer ticks (512 ms). */
-#define UI_TRANSFER_CHUNK_TIMEOUT_EXTENSION_TICKS 0x40
+inline constexpr auto UI_TRANSFER_CHUNK_TIMEOUT_EXTENSION_TICKS = 0x40;
 /* Byte 0 of the chunk packet header, which is written byte by byte: the low byte of the packet type (byte 1 is
    the zero high byte, bytes 2..3 the unit count: 1 for the request, 8 for the chunk). */
 #define UI_TRANSFER_CHUNK_REQUEST_TYPE_BYTE ((uint8_t)FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST) /* 0x31 */
@@ -40,7 +40,7 @@
 
 /* protocolMagic of the 0x10000 discovery probe (UiTransfer_SendDiscoveryProbe); a host answers only
    probes carrying it. */
-#define FRONTEND_PROTOCOL_MAGIC 0x2931
+inline constexpr auto FRONTEND_PROTOCOL_MAGIC = 0x2931;
 
 void UiTransferMailbox_ServiceAndRetransmitTimer();
 
