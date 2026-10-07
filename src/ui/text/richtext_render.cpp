@@ -145,7 +145,7 @@ void RichTextCommandStream_DrawWrappedBlock
    to place the baseline below lineTopY, then interprets glyphs, colour, font, nested-stream and inline-image
    commands until the end of the stream or a line break.
 */
-Bool8 RichTextCommandStream_DrawSingleLine
+bool RichTextCommandStream_DrawSingleLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPackedTextStyle packedStyle,uint16_t *commandStream,
           UiPixelCoordinate lineTopY,UiPixelCoordinate penX)
@@ -473,7 +473,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
    image height of the line in *lineHeight (also for the last line) and returns true while more lines follow,
    false when this line ends the text.
 */
-Bool8 RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight)
+bool RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight)
 
 {
   uint32_t glyphLineHeight;
@@ -493,8 +493,8 @@ Bool8 RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,Ui
 
 /* End of RichTextCommandStream_DrawNextWrappedLine: the next line starts at nextLine; stores the line height
    and passes moreLinesFollow through. */
-static Bool8 RichTextCommandStream_EndWrappedLine
-          (uint16_t *nextLine,uint32_t lineHeight,UiPixelExtent *lineAdvance,Bool8 moreLinesFollow)
+static bool RichTextCommandStream_EndWrappedLine
+          (uint16_t *nextLine,uint32_t lineHeight,UiPixelExtent *lineAdvance,bool moreLinesFollow)
 {
   g_RichTextRuntimeBufferUsedWords = (uint32_t)Thandor_ByteDistance(nextLine, g_FontRuntimeBuffer) >> 1;
   *lineAdvance = lineHeight;
@@ -508,7 +508,7 @@ static Bool8 RichTextCommandStream_EndWrappedLine
    *lineAdvance (also for the last line) and returns true while more lines follow, false when this line ends
    the text. Called directly by RichTextCommandStream_DrawWrappedBlock.
 */
-Bool8 RichTextCommandStream_DrawNextWrappedLine
+bool RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX,UiPixelExtent *lineAdvance)

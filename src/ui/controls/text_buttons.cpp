@@ -169,8 +169,8 @@ void UiFramedTextButtonControl_DrawClipped
   int focusTileX;
   int focusMarkRightX;
   uint32_t textStyle;
-  Bool8 framebufferUnavailable;
-  Bool8 drawFrame;
+  bool framebufferUnavailable;
+  bool drawFrame;
   RichTextExtent textExtent;
   GraphicsTextureLogicalSize cornerTileSize;
   GraphicsTextureLogicalSize rightCapSize;
@@ -425,7 +425,7 @@ void UiFramedTextButtonControl_NonRightRelease
 
 /* True when the point lies inside the framed button's box (with UI_BUTTON_FRAME_INSET: inside its frame,
    g_UiWindowFrameInset pixels in from every edge). */
-static Bool8 UiFramedTextButtonControl_ContainsPoint
+static bool UiFramedTextButtonControl_ContainsPoint
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFramedTextButtonControl *control)
 
 {
@@ -508,7 +508,7 @@ void UiTextButtonControl_NonRightPress
 
 {
   UiSelectableStateFlags *clearedStateFlagsField;
-  Bool8 pixelHit;
+  bool pixelHit;
   UiSelectableStateFlags *toggleStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
   
@@ -567,7 +567,7 @@ bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
 
 {
   UiSelectableStateFlags *selectedStateFlagsField;
-  Bool8 delegatedResult;
+  bool delegatedResult;
   UiSelectableStateFlags *stateFlagsField;
   UiSelectableStateFlags *selectionStateFlagsField;
   

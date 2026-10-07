@@ -223,7 +223,7 @@ static void FrontendInit_CopyNameDwords(uint32_t *destination,const uint32_t *so
    Returns true on success (the root is g_FrontendRootNode); false with the failing call's error in *outError.
    FrontendRuntime_ShutdownAndReleaseResources undoes it.
 */
-Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
+bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
 
 {
   uint32_t settingValue;

@@ -154,7 +154,7 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate c
           UiPixelCoordinate clipLeft,UiImageControl *control)
 
 {
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsSubresourceIndex subresource;
 
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
@@ -191,7 +191,7 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
 
 {
   UiSelectableStateFlags *pressStateFlagsField;
-  Bool8 opaqueHit;
+  bool opaqueHit;
   UiSelectableStateFlags *stateFlagsField;
 
   if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
@@ -248,7 +248,7 @@ void UiImageControl_NonRightRelease
   UiNodeBase *previousActiveChild;
   UiSelectableStateFlags *stateFlagsField;
   UiNodeVtable *activeChildVtable;
-  Bool8 preserveHover;
+  bool preserveHover;
 
   previousActiveChild = control->activeChild;
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
@@ -292,7 +292,7 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
 
 {
   UiNodeBase *hitNode;
-  Bool8 opaqueHit;
+  bool opaqueHit;
 
   if (Any(control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return UI_NODE_NONE;
@@ -355,7 +355,7 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
 {
   UiImageControl *hitControl;
   GraphicsCursorFrameIndex cursorFrame;
-  Bool8 overOpaquePixel;
+  bool overOpaquePixel;
 
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE)) {

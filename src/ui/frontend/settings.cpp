@@ -71,7 +71,7 @@ void FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
   PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_ROTATION_ZOOM,
-                                 [control](Bool8 isSelected) {
+                                 [control](bool isSelected) {
     if (isSelected) {
       UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,control->base.parent);
     }
@@ -89,7 +89,7 @@ void FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
   PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_ROTATION_TILT,
-                                 [control](Bool8 isSelected) {
+                                 [control](bool isSelected) {
     if (isSelected) {
       UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,control->base.parent);
     }
@@ -435,9 +435,9 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   AudioMixerGainQ15 effectsGain;
   MovieAudioGainQ15 movieDefaultGain;
   MovieAudioGainQ15 movieAlternateGain;
-  Bool8 isSelected;
+  bool isSelected;
 
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
+  isSelected = UiSelectableControl_IsSelected(control);
   audioFlags = PersistentSettings_ReadSoundOptions();
   /* isSelected is the PERSISTENT_SOUND_OPTION_EFFECTS bit */
   PersistentSettings_WriteSoundOptions(FromBits<PersistentSoundOptionFlags>((uint32_t)isSelected) |
@@ -500,10 +500,10 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   PersistentSoundOptionFlags savedAudioFlags;
   PersistentSoundOptionFlags musicEnabledBit;
   PersistentSoundOptionFlags newAudioFlags;
-  Bool8 isSelected;
+  bool isSelected;
 
   musicEnabledBit = {};
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
+  isSelected = UiSelectableControl_IsSelected(control);
   if (isSelected) {
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
     g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
@@ -557,7 +557,7 @@ void FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
   PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_SOUND_OPTION_FLAGS,PERSISTENT_SOUND_OPTION_REVERSE_STEREO,
-                                 [](Bool8 isSelected) { g_ReverseStereoMask = isSelected ? -1 : 0; },
+                                 [](bool isSelected) { g_ReverseStereoMask = isSelected ? -1 : 0; },
                                  PERSISTENT_SOUND_OPTION_DEFAULT);
 }
 

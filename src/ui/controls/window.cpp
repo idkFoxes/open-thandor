@@ -297,7 +297,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
   int bottomEdgeY;
   int rightEdgeX;
   int rightCapX;
-  Bool8 beginAccessFailed;
+  bool beginAccessFailed;
   uint16_t *titleText;
   GraphicsTextureLogicalSize textureSize;
   GraphicsTextureLogicalSize rightCapSize;
@@ -424,7 +424,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
   int rightEdgeX;
   int titleTextX;
   int rightCapX;
-  Bool8 beginAccessFailed;
+  bool beginAccessFailed;
   RichTextExtent titleExtent;
   uint16_t *titleText;
   GraphicsTextureLogicalSize textureSize;
@@ -571,7 +571,7 @@ bool UiResizableWindowControl_HandleWindowHotkeys
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control)
 
 {
-  Bool8 delegateResult;
+  bool delegateResult;
 
   if (Any(keyboardStateMask & KEYBOARD_STATE_ALT)) {
     if (Any(control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) && (keyCode == 'c')) {
@@ -680,8 +680,8 @@ void UiResizableWindowControl_RelocateAndRefreshInteractionState
 
 /* Sets or clears armedFlag (UI_ROOT_CLOSE_ARMED / UI_ROOT_MAXIMIZE_ARMED) of a pressed window button to match
    overButton. Returns true when the flag changed (the button needs a redraw). */
-static Bool8 UiResizableWindowControl_UpdateArmedFlag
-          (Bool8 overButton,UiRootFlags armedFlag,UiResizableWindowControl *control)
+static bool UiResizableWindowControl_UpdateArmedFlag
+          (bool overButton,UiRootFlags armedFlag,UiResizableWindowControl *control)
 
 {
   if (overButton) {
@@ -792,7 +792,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
   int localY;
   int moveX;
   int moveY;
-  Bool8 overButton;
+  bool overButton;
   GraphicsTextureLogicalSize buttonSize;
 
   localX = pointerX - control->root.base.left;
@@ -848,7 +848,7 @@ void UiWindowResources_Init()
   uint32_t textureLoadError;
   uintptr_t checkedValue;
   uintptr_t pageLoadError;
-  Bool8 pageLoaded;
+  bool pageLoaded;
 
   loadedTexture = g_GraphicsTextureSourceLoadPackageAsset(g_UiWindowTexturePathUtf16,&textureLoadError);
   checkedValue = FatalError_ExitIfFailed(loadedTexture != nullptr ? (uintptr_t)loadedTexture : textureLoadError,
@@ -881,7 +881,7 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
   uint32_t localY;
   UiRootFlags resizeFlags;
   int bottomBorderY;
-  Bool8 hitOpaque;
+  bool hitOpaque;
   GraphicsTextureLogicalSize textureSize;
 
   localX = pointerX - control->root.base.left;

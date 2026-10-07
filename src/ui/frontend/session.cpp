@@ -269,11 +269,11 @@ void FrontendSession_PeriodicTick()
 
 {
   InGameRuntimeRoot *inGameRoot;
-  Bool8 callResult;
+  bool callResult;
   void *packet;
   void *packetEndpoint;
   uint32_t networkTickInterval;
-  static Bool8 s_loggedZeroTickInterval;
+  static bool s_loggedZeroTickInterval;
 
   callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
@@ -361,7 +361,7 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers()
   FrontendPlayerRuntimeBlockCount recipientsRemaining;
   int playersRemaining;
   int removedCount;
-  Bool8 expired;
+  bool expired;
   FrontendPlayerRuntimeRecord *sourcePlayer;
   FrontendPlayerRuntimeRecord *destinationPlayer;
   FrontendCommandPacketRecord *sourceCommandRecord;

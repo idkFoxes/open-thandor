@@ -16,7 +16,7 @@ static uint16_t g_FrontendMissionBriefingMoviePathUtf16[16] = {'f', 'l', 'm', '\
 
 /* True when one of the players' records has factionSlot as its faction assignment (the player list is assumed
    to hold at least one record). */
-static Bool8 FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
+static bool FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
 {
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendPlayerRuntimeBlockCount playersRemaining;

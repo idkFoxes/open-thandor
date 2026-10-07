@@ -51,7 +51,7 @@ void FrontendRomActionTable_ExecuteRecord
   int lastKeyframeIndex;
   FrontendModelPointerContext *menuRoomView;
   WorldRuntimeContext *menuRoomCamera;
-  Bool8 visibilityLookupFailed;
+  bool visibilityLookupFailed;
   FrontendPageAction pageAction;
   RomRecordId targetRecordId;
 
@@ -142,7 +142,7 @@ void FrontendRomActionTable_ExecuteRecord
    its root in the registry slot, links it into its world's owner list and computes its transforms. Returns
    true when a node allocation fails.
 */
-Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
+bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
 
 {
   RomAssetRecordPrefix *slotRecord;
@@ -179,7 +179,7 @@ void FrontendRomTransition_ProcessPendingRecord()
 {
   RomRecordId pendingRecordId;
   WorldRuntimeContext *menuRoomView;
-  Bool8 splineStillRunning;
+  bool splineStillRunning;
   uint32_t activateError;
 
   const SpinLockGuard tickLock(&g_FrontendStateTickSpinLock);
@@ -301,7 +301,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
    value and, when recordId is registered, shows only the target record, the active record and the records in
    either one's visibleRecordMask, creating their lights. Returns true when recordId is not registered.
 */
-Bool8 RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
+bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
 
 {
   RomAssetRecordPrefix *record;

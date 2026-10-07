@@ -41,7 +41,7 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
   int fillEndX;
   uint32_t divisionRemainder;
   uint16_t *commandStream;
-  Bool8 beginAccessFailed;
+  bool beginAccessFailed;
   GraphicsTextureLogicalSize textureSize;
 
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();

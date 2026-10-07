@@ -16,6 +16,6 @@
    the 64x64 player preview pictures of PcxPreview_Load64x64PaletteAndPixels. */
 inline constexpr int32_t WIDE_PATH_EXTENSION_PCX = 0x786370;
 
-Bool8 PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
+bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
 
 #endif /* THANDOR_UI_CORE_PCX_PREVIEW_H */

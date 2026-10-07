@@ -27,7 +27,7 @@ void UiImagePanelControl_DrawAlignedTextureAndChildren
   int slackHeight;
   int clippedTop;
   int drawY;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   GraphicsTextureLogicalSize textureSize;
   
   if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED)) {
@@ -100,14 +100,14 @@ UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,i
                                                                   UiImagePanelControl *control)
 
 {
-  Bool8 childrenAlreadyRetried;
-  Bool8 skipTextureTest;
+  bool childrenAlreadyRetried;
+  bool skipTextureTest;
   UiNodeBase *hitNode;
   int slackWidth;
   int drawX;
   int slackHeight;
   int drawY;
-  Bool8 opaqueHit;
+  bool opaqueHit;
   GraphicsTextureLogicalSize textureSize;
   
   hitNode = UI_NODE_NONE;
@@ -202,7 +202,7 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
   int controlLeft;
   uint32_t tileHeight;
   int32_t tileTop;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   GraphicsTextureLogicalSize tileSize;
 
   controlRight = (control->base).right;
@@ -260,7 +260,7 @@ void UiNineSlicePanelControl_DrawTextureFrameAndChildren
   int topEdgeY;
   int bottomEdgeY;
   int rightEdgeX;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   GraphicsTextureLogicalSize slice0Size;
   GraphicsTextureLogicalSize slice1Size;
   GraphicsTextureLogicalSize slice2Size;
@@ -386,7 +386,7 @@ void UiFormattedContainer_RelocateWithPatchedTextPayloads
 
 /* Fill colour variant of a gauge (frame offset 3..18, three frames each) by the fill percentage: rising from
    80% on, or for the two-sided scale also rising the further it falls below 40%. */
-static int UiFormattedContainer_FillVariantOffset(uint32_t fillPercent,Bool8 twoSidedScale)
+static int UiFormattedContainer_FillVariantOffset(uint32_t fillPercent,bool twoSidedScale)
 
 {
   if (!twoSidedScale) {
@@ -617,7 +617,7 @@ void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
   int slackHeight;
   int clippedTop;
   int drawY;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   GraphicsTextureLogicalSize textureSize;
   
   if (!Any((control->base).base.nodeFlags & UI_NODE_SUPPRESSED)) {
@@ -691,7 +691,7 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
           UiPixelCoordinate clipLeft,UiSoftwareTexturePreviewControl *control)
 
 {
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   
   if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED) &&
      (control->textureSource != nullptr)) {
@@ -864,7 +864,7 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
   uint32_t cornerHeight;
   int bottomEdgeY;
   int rightEdgeX;
-  Bool8 beginAccessFailed;
+  bool beginAccessFailed;
   GraphicsTextureLogicalSize cornerSize;
 
   if (Any(control->root.rootFlags & (UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME))) {
