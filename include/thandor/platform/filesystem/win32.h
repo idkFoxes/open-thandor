@@ -15,9 +15,9 @@
 
 /* Size of one UTF-16 name record written by Win32FileSystem_EnumerateDirectoryOrVolumeEntries (0x100 code
    units, NUL-padded); returned to the caller as the record stride */
-#define FILESYSTEM_ENUMERATION_RECORD_BYTES 0x200
+inline constexpr auto FILESYSTEM_ENUMERATION_RECORD_BYTES = 0x200;
 /* The DOS volume-label file attribute (_A_VOLID); file enumeration skips such entries like directories */
-#define FILESYSTEM_ATTRIBUTE_VOLUME_LABEL 0x08
+inline constexpr auto FILESYSTEM_ATTRIBUTE_VOLUME_LABEL = 0x08;
 
 uintptr_t FileSystem_Init();
 

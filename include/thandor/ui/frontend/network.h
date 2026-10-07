@@ -16,7 +16,7 @@
 
 /* -CLIENT="host address": characters scanned for the closing quote (effectively unbounded; the scan stops at
    the terminator or a control character first). */
-#define FRONTEND_CLIENT_OPTION_SCAN_LIMIT 0x7FFFFF
+inline constexpr int32_t FRONTEND_CLIENT_OPTION_SCAN_LIMIT = 0x7FFFFF;
 
 void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi);
 
