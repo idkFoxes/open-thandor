@@ -323,8 +323,6 @@ using UiPackedTextStyle = uint32_t;
 
 using UiPageIndex = uint32_t;
 
-using UiPointerButtonMask = uint32_t;
-
 using UiFrameCount = uint32_t;
 
 using SerializedImageRelocationDelta = int;

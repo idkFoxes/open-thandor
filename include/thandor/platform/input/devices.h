@@ -131,6 +131,6 @@ extern KeyboardFlushEventsProc *g_KeyboardFlushEvents;
 extern UiPixelCoordinate g_CursorOverrideX;
 extern UiPixelCoordinate g_CursorOverrideY;
 extern int32_t g_CursorVisibilityToken;
-extern uint32_t g_CursorButtonState;
+extern GraphicsCursorButtonState g_CursorButtonState;
 
 #endif /* THANDOR_PLATFORM_INPUT_DEVICES_H */

@@ -398,6 +398,10 @@ static_assert(sizeof(SelectionInfoEntitySlots) == 0x80 &&
               "SelectionInfoEntitySlots keeps its 32-bit layout");
 static_assert(sizeof(GraphicsCursorInputEvent18) == 0x18,
               "GraphicsCursorInputEvent18 keeps its 32-bit layout");
+static_assert(offsetof(GraphicsCursorInputEvent18, eventType) == 0x0 && sizeof(GraphicsCursorInputEvent18::eventType) == 4 &&
+                  offsetof(GraphicsCursorInputEvent18, buttonState) == 0x4 &&
+                  sizeof(GraphicsCursorInputEvent18::buttonState) == 4 && alignof(GraphicsCursorInputEvent18) == 4,
+              "GraphicsCursorInputEvent18 event type and button state stay 4-byte fields at +0x0/+0x4");
 static_assert(sizeof(UiTextEditControl) == 0x80 &&
               offsetof(UiTextEditControl, activationSound) == 0x68,
               "UiTextEditControl keeps its 32-bit layout");
@@ -1207,6 +1211,10 @@ static_assert(sizeof(FrontendCreditsUiStateView) == 0x240,
               "FrontendCreditsUiStateView keeps its 32-bit layout");
 static_assert(sizeof(CursorPointerEvent) == 0x14,
               "CursorPointerEvent keeps its 32-bit layout");
+static_assert(offsetof(CursorPointerEvent, eventType) == 0x0 && sizeof(CursorPointerEvent::eventType) == 4 &&
+                  offsetof(CursorPointerEvent, buttonState) == 0x4 && sizeof(CursorPointerEvent::buttonState) == 4 &&
+                  alignof(CursorPointerEvent) == 4,
+              "CursorPointerEvent event type and button state stay 4-byte fields at +0x0/+0x4");
 static_assert(sizeof(GraphicsTextureSourceHeaderView) == 0xBC,
               "GraphicsTextureSourceHeaderView keeps its 32-bit layout");
 static_assert(sizeof(InGameLevelSaveWorldView) == 0x180,

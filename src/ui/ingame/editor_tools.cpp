@@ -774,7 +774,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
     if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
-    if ((g_CursorButtonState & 4) != 0) {
+    if (Any(g_CursorButtonState & RIGHT)) {
       g_UiCommandDragStartScreenX = mapControl->pointerX;
       g_UiCommandDragStartScreenY = mapControl->pointerY;
       pointerYMoveDelta = pointerY - g_UiCommandDragReferenceX;

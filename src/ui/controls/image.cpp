@@ -120,7 +120,7 @@ void UiImageControl_TickHover(UiImageControl *control)
 
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED) == 0) {
-      if ((g_CursorButtonState & RIGHT) != 0) {
+      if (Any(g_CursorButtonState & RIGHT)) {
         hitControl = (UiImageControl *)
                      UiImageControl_HitTestOpaque(g_CursorOverrideY,g_CursorOverrideX,control);
         stateFlagsField = &(control->selectable).stateFlags;
@@ -139,7 +139,7 @@ void UiImageControl_TickHover(UiImageControl *control)
         }
       }
     }
-    else if ((g_CursorButtonState & RIGHT) == 0) {
+    else if (!Any(g_CursorButtonState & RIGHT)) {
       clearStateFlagsField = &(control->selectable).stateFlags;
       *clearStateFlagsField = *clearStateFlagsField & ~UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED;
     }

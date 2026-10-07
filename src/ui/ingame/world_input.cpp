@@ -433,7 +433,7 @@ static void InGameWorldInput_RotateHeadingByPointerTravel
 {
   int deltaX;
 
-  if ((g_CursorButtonState & 4) == 0) {
+  if (!Any(g_CursorButtonState & RIGHT)) {
     /* The original adds the horizontal mouse delta since capture (computed before snapping the
        pointer back) - not the pointer function's return value. */
     deltaX = THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX - *captureX;

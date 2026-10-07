@@ -16,7 +16,7 @@ THANDOR_ALIGN(4) UiPixelCoordinate g_CursorOverrideY = 0;
 
 THANDOR_ALIGN(4) int32_t g_CursorVisibilityToken = -1;
 
-THANDOR_ALIGN(8) uint32_t g_CursorButtonState = 0;
+THANDOR_ALIGN(8) GraphicsCursorButtonState g_CursorButtonState = CURSOR_BUTTON_NONE;
 
 THANDOR_ALIGN(16) uint8_t g_KeyboardSpecialKeyDown[32] = {};
 
@@ -60,7 +60,7 @@ UiPixelCoordinate g_MouseX = 0;
 
 UiPixelCoordinate g_MouseY = 0;
 
-GraphicsCursorButtonState g_MouseButtonMask = 0;
+GraphicsCursorButtonState g_MouseButtonMask = CURSOR_BUTTON_NONE;
 
 KeyboardReadEventProc *g_KeyboardReadEvent = &Keyboard_ReadNextEvent;
 
