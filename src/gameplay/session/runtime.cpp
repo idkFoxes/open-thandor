@@ -23,6 +23,6 @@ uint32_t g_SessionNetworkTickCounter = 0;
 
 uint32_t g_InGameNetworkTickCountdown = 0;
 
-uint32_t g_InGameStateTickSpinLock = 0;
+RuntimeSpinLockValue g_InGameStateTickSpinLock = 0;
 
 InGameSimulationStepBatchTicks g_InGameSimulationStepTicks = 0;

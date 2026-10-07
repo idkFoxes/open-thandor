@@ -186,8 +186,7 @@ static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inG
   WorldRuntimeContext *world;
 
   world = &inGameRoot->worldRuntime;
-  /* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int */
-  g_SpinLockAcquire(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+  g_SpinLockAcquire(&g_InGameStateTickSpinLock);
   InGameSession_RebuildUiGrids(inGameRoot);
   InGameSession_InitShadingAndMirrorViewOptions(world);
   if (!InGameSession_AllocateGridScratchAndRebuildDerived(world,outError)) {

@@ -10,12 +10,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int (one reinterpretation). */
-static inline RuntimeSpinLockValue *FrontendSession_InGameTickLock()
-{
-  return reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock);
-}
-
 /* Module data. */
 
 FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords = nullptr;
@@ -287,7 +281,7 @@ void FrontendSession_PeriodicTick()
   uint32_t networkTickInterval;
   static Bool8 s_loggedZeroTickInterval;
 
-  callResult = g_SpinLockTryAcquire(FrontendSession_InGameTickLock());
+  callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   /* The original divides by g_SessionNetworkTickInterval as it is; 0 is taken as 1 here because the
      interval comes from the host's join ack (the result is the same for any other value). */
@@ -301,7 +295,7 @@ void FrontendSession_PeriodicTick()
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease(FrontendSession_InGameTickLock());
+      g_SpinLockRelease(&g_InGameStateTickSpinLock);
       return;
     }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
@@ -319,7 +313,7 @@ void FrontendSession_PeriodicTick()
         if (callResult) {
           /* not every peer has synced yet: retry on the next timer tick */
           g_InGameNetworkTickCountdown = 1;
-          g_SpinLockRelease(FrontendSession_InGameTickLock());
+          g_SpinLockRelease(&g_InGameStateTickSpinLock);
           return;
         }
       }
@@ -330,7 +324,7 @@ void FrontendSession_PeriodicTick()
       /* client at an interval boundary: wait until the host's command batch has arrived */
       callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
       if (!callResult) {
-        g_SpinLockRelease(FrontendSession_InGameTickLock());
+        g_SpinLockRelease(&g_InGameStateTickSpinLock);
         return;
       }
       do {
@@ -340,12 +334,12 @@ void FrontendSession_PeriodicTick()
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlag();
       if (callResult) {
-        g_SpinLockRelease(FrontendSession_InGameTickLock());
+        g_SpinLockRelease(&g_InGameStateTickSpinLock);
         return;
       }
     }
     else if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease(FrontendSession_InGameTickLock());
+      g_SpinLockRelease(&g_InGameStateTickSpinLock);
       return;
     }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
@@ -355,7 +349,7 @@ void FrontendSession_PeriodicTick()
      (inGameRoot->activeEndMovieRuntime != nullptr)) {
     g_EndMoviePendingTicks++;
   }
-  g_SpinLockRelease(FrontendSession_InGameTickLock());
+  g_SpinLockRelease(&g_InGameStateTickSpinLock);
 }
 
 

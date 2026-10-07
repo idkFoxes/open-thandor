@@ -80,9 +80,8 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
       /* FrontendSession_PeriodicTick keeps running under the in-game tick lock while the end movie plays */
-      /* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int */
       UiRuntime_SetSynchronizationHooks
-                (FrontendSession_PeriodicTick,reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+                (FrontendSession_PeriodicTick,&g_InGameStateTickSpinLock);
       Frontend_PlaySelectedEndMovie();
       OldUnitRuntime_RebuildScenarioReplayTables();
       UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
@@ -226,7 +225,7 @@ void InGameSession_InstallStepTimerAndHooks()
   g_InGameStateTickSpinLock = 0;
   g_TimerRegisterPeriodic(INGAME_PERIODIC_TIMER_HZ,InGameRuntime_PeriodicCountdownAndClockTick);
   UiRuntime_SetSynchronizationHooks
-            (InGameRuntime_UpdateSimulationAndNetworkTick,reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+            (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
 }
 
 /* Allocates the zeroed world object pool, the selection info panel resources of the local player
@@ -440,7 +439,7 @@ void InGameSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inGameRoot)
 
 {
   InGameCommand_Issue<FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus>(0u,0u,0u);
-  g_SpinLockRelease(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+  g_SpinLockRelease(&g_InGameStateTickSpinLock);
   UiFrame_FlushInputAndResetPendingTicks();
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   g_CursorVisibilityToken++;
