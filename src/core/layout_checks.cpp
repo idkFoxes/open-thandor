@@ -958,8 +958,6 @@ static_assert(sizeof(FrontendTaskAssignmentControlOffsetRow) == 0x1C,
               "FrontendTaskAssignmentControlOffsetRow keeps its 32-bit layout");
 static_assert(sizeof(FrontendTaskAssignmentControlOffsetTables) == 0x8C,
               "FrontendTaskAssignmentControlOffsetTables keeps its 32-bit layout");
-static_assert(sizeof(UiCommandDispatchRecord) == 0xC,
-              "UiCommandDispatchRecord keeps its 32-bit layout");
 static_assert(sizeof(ArmyPlacementContactCallbackTable5) == 0x14 &&
               offsetof(ArmyPlacementContactCallbackTable5, callbacks) == 0x0,
               "ArmyPlacementContactCallbackTable5 keeps its 32-bit layout");

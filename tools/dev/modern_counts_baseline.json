@@ -1,5 +1,5 @@
 {
- "revision": "6de86282",
+ "revision": "048ad9e7",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -123,7 +123,6 @@
   "define_numeric": {
    "assets": 102,
    "audio": 15,
-   "core": 161,
    "graphics": 147,
    "movie": 30,
    "network": 136,
@@ -134,7 +133,7 @@
   "define_all": {
    "assets": 159,
    "audio": 28,
-   "core": 234,
+   "core": 73,
    "gameplay": 89,
    "generated": 1,
    "graphics": 206,
@@ -160,7 +159,7 @@
    "world": 50
   },
   "constexpr": {
-   "core": 50,
+   "core": 211,
    "gameplay": 187,
    "network": 2,
    "platform": 52,
@@ -176,7 +175,7 @@
    "movie": 4,
    "network": 34,
    "platform": 35,
-   "ui": 183,
+   "ui": 182,
    "world": 46
   },
   "enum_class": {
