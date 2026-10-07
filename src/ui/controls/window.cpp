@@ -573,7 +573,7 @@ Bool8 UiResizableWindowControl_HandleWindowHotkeys
 {
   Bool8 delegateResult;
 
-  if ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) {
+  if (Any(keyboardStateMask & KEYBOARD_STATE_ALT)) {
     if (Any(control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) && (keyCode == 'c')) {
       UiActionQueue_Enqueue(UI_ACTION_CLOSE_ROOT,control);
       return false;

@@ -424,7 +424,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
     }
   }
   cursorFrame = 10;
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+  if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
     cursorFrame = 12;
   }
   return cursorFrame;
@@ -442,7 +442,7 @@ void UiCatalogEntryControl_NonRightRelease
   UiSelectableStateFlags *stateFlagsField;
   uint32_t activationInputState;
   
-  activationInputState = g_KeyboardStateMask;
+  activationInputState = ToBits(g_KeyboardStateMask);
   if (!Any((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
      (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     stateFlagsField = &(control->command).sprite.selectable.stateFlags;

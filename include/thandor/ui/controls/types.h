@@ -194,7 +194,31 @@ using UiSerializedRelocationDelta = int;
 
 using UiPixelCoordinate = int;
 
-using UiKeyboardStateMask = uint32_t;
+/* Keyboard state word: g_KeyboardStateMask, KeyboardInputEvent.stateMask, the keyboard event handlers' first
+   argument and the key command records' modifier classes. Bits without an enumerator stay valid; the
+   enumerators are also visible unscoped (using enum below). */
+enum class UiKeyboardStateMask : uint32_t {
+    KEYBOARD_STATE_NONE = 0,
+    /* Modifier bits (Keyboard_OnKeyDown): left/right Shift 0x01/0x02, left/right Ctrl 0x04/0x08, left/right Alt
+       0x10/0x20 */
+    KEYBOARD_STATE_LEFT_SHIFT = 0x01,
+    KEYBOARD_STATE_RIGHT_SHIFT = 0x02,
+    KEYBOARD_STATE_LEFT_CTRL = 0x04,
+    KEYBOARD_STATE_RIGHT_CTRL = 0x08,
+    KEYBOARD_STATE_LEFT_ALT = 0x10,
+    KEYBOARD_STATE_RIGHT_ALT = 0x20,
+    KEYBOARD_STATE_SHIFT = 0x03,
+    KEYBOARD_STATE_CTRL = 0x0C,
+    KEYBOARD_STATE_ALT = 0x30,
+    KEYBOARD_STATE_ANY_MODIFIER = 0x3F,
+    /* Lock-key bits, seeded from the system's lock-key state (SdlInput_Init at startup and again when the window
+       regains the focus) */
+    KEYBOARD_STATE_NUM_LOCK = 0x10000,
+    KEYBOARD_STATE_SCROLL_LOCK = 0x20000,
+    KEYBOARD_STATE_CAPS_LOCK = 0x40000
+};
+THANDOR_FLAG_ENUM(UiKeyboardStateMask);
+using enum UiKeyboardStateMask;
 
 using UiKeyboardEventCode = uint32_t;
 

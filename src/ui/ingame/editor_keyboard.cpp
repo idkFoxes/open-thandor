@@ -50,13 +50,13 @@ static_assert(sizeof(UiKeyCommandRecord<InGameEditorKeyAction>) == 0xC, "a key c
 
 /* 36 records and the terminator record [36] (key code 0 ends the dispatch scan) */
 static UiKeyCommandRecord<InGameEditorKeyAction> g_InGameKeyboardDispatchRecords[37] = {
-    /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .action = InGameEditorKeyAction::LeaveEditorAndSession},
-    /*  1 */ {.commandCode = 0x30069, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::InfoTextNext},
+    /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameEditorKeyAction::LeaveEditorAndSession},
+    /*  1 */ {.commandCode = 0x30069, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = InGameEditorKeyAction::InfoTextNext},
     /*  2 */ {.commandCode = 0x20002, .action = InGameEditorKeyAction::SaveMap},
-    /*  3 */ {.commandCode = 0x30070, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Screenshot},
-    /*  4 */ {.commandCode = 0x30069, .modifierClassFlags = 0x30, .action = InGameEditorKeyAction::ToggleSidePanel},
-    /*  5 */ {.commandCode = 0x30065, .modifierClassFlags = 0x30, .action = InGameEditorKeyAction::LeaveEditor},
-    /*  6 */ {.commandCode = 0x30075, .modifierClassFlags = 0x30, .action = InGameEditorKeyAction::CommitTerrainEdits},
+    /*  3 */ {.commandCode = 0x30070, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = InGameEditorKeyAction::Screenshot},
+    /*  4 */ {.commandCode = 0x30069, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameEditorKeyAction::ToggleSidePanel},
+    /*  5 */ {.commandCode = 0x30065, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameEditorKeyAction::LeaveEditor},
+    /*  6 */ {.commandCode = 0x30075, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameEditorKeyAction::CommitTerrainEdits},
     /*  7 */ {.commandCode = 0x30075, .action = InGameEditorKeyAction::CommitTerrainEdits},
     /*  8 */ {.commandCode = 0x10012, .action = InGameEditorKeyAction::NextUnitOwnerFaction},
     /*  9 */ {.commandCode = 0x1001A, .action = InGameEditorKeyAction::PreviousUnitOwnerFaction},
@@ -64,10 +64,10 @@ static UiKeyCommandRecord<InGameEditorKeyAction> g_InGameKeyboardDispatchRecords
     /* 11 */ {.commandCode = 0x10016, .action = InGameEditorKeyAction::Right},
     /* 12 */ {.commandCode = 0x10011, .action = InGameEditorKeyAction::Up},
     /* 13 */ {.commandCode = 0x10019, .action = InGameEditorKeyAction::Down},
-    /* 14 */ {.commandCode = 0x10014, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Left},
-    /* 15 */ {.commandCode = 0x10016, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Right},
-    /* 16 */ {.commandCode = 0x10011, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Up},
-    /* 17 */ {.commandCode = 0x10019, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Down},
+    /* 14 */ {.commandCode = 0x10014, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = InGameEditorKeyAction::Left},
+    /* 15 */ {.commandCode = 0x10016, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = InGameEditorKeyAction::Right},
+    /* 16 */ {.commandCode = 0x10011, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = InGameEditorKeyAction::Up},
+    /* 17 */ {.commandCode = 0x10019, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = InGameEditorKeyAction::Down},
     /* 18 */ {.commandCode = 0x30061, .action = InGameEditorKeyAction::HeightTool0},
     /* 19 */ {.commandCode = 0x30068, .action = InGameEditorKeyAction::HeightTool1},
     /* 20 */ {.commandCode = 0x30067, .action = InGameEditorKeyAction::HeightTool2},
@@ -176,13 +176,13 @@ static void InGameEditorKeyboard_ShowObjectPlacementArmy(UiRootNode *uiRoot)
 
 /* Arrow key with Ctrl and/or Shift: Ctrl turns the light direction, Shift turns the auxiliary angles (moves
    the field origin), each by the given elevation and azimuth deltas, directly or through the command queue. */
-static void InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(uint32_t keyboardStateMask,int deltaElevation,
+static void InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(UiKeyboardStateMask keyboardStateMask,int deltaElevation,
           int deltaAzimuth)
 {
-  if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+  if (Any(keyboardStateMask & KEYBOARD_STATE_CTRL)) {
     InGameCommand_Issue<TerrainLighting_AdjustDirectionAndRecomputeField>(0,deltaElevation,deltaAzimuth);
   }
-  if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
+  if (Any(keyboardStateMask & KEYBOARD_STATE_SHIFT)) {
     InGameCommand_Issue<WorldRuntime_TurnAuxiliaryAnglesClamped>(0,deltaElevation,deltaAzimuth);
   }
 }
@@ -194,7 +194,7 @@ static void InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(uint32_t keyboardSta
    the editor. Editor commands go through the command queue in network games.
 */
 void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
-          (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot)
+          (UiKeyboardStateMask keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot)
 
 {
   InGameUiImage *image;
@@ -248,7 +248,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     }
     break;
   case InGameEditorKeyAction::Left: /* Left: previous material / army; Ctrl: turn the light, Shift: move the field origin */
-    if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
+    if (!Any(keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL))) {
       if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         InGameEditorKeyboard_SelectMaterialBackward(1,uiRoot);
       }
@@ -268,7 +268,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     }
     break;
   case InGameEditorKeyAction::Right: /* Right: next material / army; Ctrl: turn the light, Shift: move the field origin */
-    if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
+    if (!Any(keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL))) {
       if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         InGameEditorKeyboard_SelectMaterialForward(1,uiRoot);
       }
@@ -286,7 +286,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     }
     break;
   case InGameEditorKeyAction::Up: /* Up: third material back / step the army list; Ctrl: light, Shift: field origin */
-    if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
+    if (!Any(keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL))) {
       if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         InGameEditorKeyboard_SelectMaterialBackward(MATERIAL_SWATCH_ROW_LENGTH,uiRoot);
       }
@@ -304,7 +304,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     }
     break;
   case InGameEditorKeyAction::Down: /* Down: third material ahead / step the army list; Ctrl: light, Shift: field origin */
-    if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
+    if (!Any(keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL))) {
       if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         InGameEditorKeyboard_SelectMaterialForward(MATERIAL_SWATCH_ROW_LENGTH,uiRoot);
       }

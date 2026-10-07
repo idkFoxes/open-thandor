@@ -253,7 +253,7 @@ Bool8 UiRangeSliderControl_HandleKeyboard
     increaseKey = KEYBOARD_KEY_CODE_UP;
   }
   if (keyCode == decreaseKey) {
-    if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+    if (Any(keyboardStateMask & KEYBOARD_STATE_CTRL)) {
       adjustedSliderValue = control->minimumValue;
     }
     else {
@@ -264,7 +264,7 @@ Bool8 UiRangeSliderControl_HandleKeyboard
     }
   }
   else if (keyCode == increaseKey) {
-    if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+    if (Any(keyboardStateMask & KEYBOARD_STATE_CTRL)) {
       adjustedSliderValue = control->maximumValue;
     }
     else {

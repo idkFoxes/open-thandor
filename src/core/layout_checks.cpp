@@ -411,6 +411,9 @@ static_assert(sizeof(UiTextEditControl) == 0x80 &&
               "UiTextEditControl keeps its 32-bit layout");
 static_assert(sizeof(KeyboardInputEvent) == 0x8,
               "KeyboardInputEvent keeps its 32-bit layout");
+static_assert(offsetof(KeyboardInputEvent, keyCode) == 0x0 && offsetof(KeyboardInputEvent, stateMask) == 0x4 &&
+                  sizeof(KeyboardInputEvent::stateMask) == 4 && alignof(KeyboardInputEvent) == 4,
+              "KeyboardInputEvent.stateMask stays the 4-byte keyboard state word at +0x4");
 static_assert(sizeof(LevelAssetResourceTables) == 0x24,
               "LevelAssetResourceTables keeps its 32-bit layout");
 static_assert(sizeof(LevelAssetPathOffsets) == 0x28,
@@ -535,6 +538,9 @@ static_assert(sizeof(NetworkSessionContext) == 0x100,
               "NetworkSessionContext keeps its 32-bit layout");
 static_assert(sizeof(InGameCameraCommandDispatchRecord) == 0xC,
               "InGameCameraCommandDispatchRecord keeps its 32-bit layout");
+static_assert(offsetof(InGameCameraCommandDispatchRecord, requiredModifierMask) == 0x4 &&
+                  sizeof(InGameCameraCommandDispatchRecord::requiredModifierMask) == 4,
+              "InGameCameraCommandDispatchRecord.requiredModifierMask stays a 4-byte modifier class at +0x4");
 static_assert(offsetof(InGameCameraCommandDispatchRecord, action) == 0x8 && sizeof(InGameCameraKeyAction) == 4,
               "the camera key action keeps the 32-bit continuation slot");
 static_assert(sizeof(InGameCameraCommandDispatchTable) == 0xD0,

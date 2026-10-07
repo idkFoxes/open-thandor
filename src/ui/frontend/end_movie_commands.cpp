@@ -28,9 +28,9 @@ static_assert(sizeof(UiKeyCommandRecord<EndMovieCommandAction>) == 0xC, "a key c
    terminator was only 8 bytes long and code followed it, so the terminator's action is not original data
    (never read). */
 static const UiKeyCommandRecord<EndMovieCommandAction> g_EndMovieCommandDispatchRecords[3] = {
-    /* 0 */ {.commandCode = 0x71, .modifierClassFlags = 0x30, .action = EndMovieCommandAction::SkipEndMovie},
-    /* 1 */ {.commandCode = 0x70, .modifierClassFlags = 0xC, .action = EndMovieCommandAction::Screenshot},
-    /* 2 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090}};
+    /* 0 */ {.commandCode = 0x71, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = EndMovieCommandAction::SkipEndMovie},
+    /* 1 */ {.commandCode = 0x70, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = EndMovieCommandAction::Screenshot},
+    /* 2 */ {.commandCode = 0x0, .modifierClassFlags = FromBits<UiKeyboardStateMask>(0x90909090)}};
 
 /* Update callback of the end-movie UI in a network game: keeps the frontend session alive while the end
    movie plays by running the session tick of the local role. Does nothing in a local game. Note that the
@@ -66,7 +66,7 @@ void EndMovieUiRuntime_DispatchCommandByFlags
      root. */
   /* the record's modifier class demands exactly none, Ctrl, Alt or Ctrl+Alt (Shift is ignored) */
   const UiKeyCommandRecord<EndMovieCommandAction> *record = UiCommandDispatch_Find(g_EndMovieCommandDispatchRecords,
-      (uint32_t)commandCode, (uint32_t)modifierFlags, UiKeyModifierRule::ExactShiftIgnored);
+      (uint32_t)commandCode, modifierFlags, UiKeyModifierRule::ExactShiftIgnored);
   if (record == nullptr) {
     return;
   }

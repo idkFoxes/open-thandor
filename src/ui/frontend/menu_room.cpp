@@ -111,7 +111,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   }
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN) != 0)
   {
-    if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+    if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
       if (Any(g_CursorButtonState & LEFT)) {
         return 17;
       }
@@ -126,11 +126,11 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   {
     return 0;
   }
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+  if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
     return 15;
   }
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_ALT) == 0) {
-    if ((g_KeyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
+  if (!Any(g_KeyboardStateMask & KEYBOARD_STATE_ALT)) {
+    if (Any(g_KeyboardStateMask & KEYBOARD_STATE_SHIFT)) {
       return 37;
     }
     if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIDE_PANEL) ==
@@ -628,7 +628,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
   }
   else if ((callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN) != 0) {
     if (!Any(g_CursorButtonState & LEFT)) {
-      if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
+      if (!Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_MOVE;
         WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
@@ -644,7 +644,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
         WorldMotion_AdjustPitchClampAndClearFieldGridDirty(pointerDeltaY,callbackContext);
       }
     }
-    else if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
+    else if (!Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_MOVE;
       WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(pointerDeltaY,callbackContext);
@@ -659,17 +659,17 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
     if ((callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE) == 0) {
       return;
     }
-    if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+    if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_PITCH;
       WorldMotion_AdjustPitchClampAndRecomputePosition(pointerDeltaY,callbackContext);
     }
-    else if ((g_KeyboardStateMask & KEYBOARD_STATE_ALT) != 0) {
+    else if (Any(g_KeyboardStateMask & KEYBOARD_STATE_ALT)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_PITCH);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_DISTANCE;
       WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
     }
-    else if ((g_KeyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
+    else if (Any(g_KeyboardStateMask & KEYBOARD_STATE_SHIFT)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_HEADING;
       WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
@@ -731,7 +731,7 @@ void FrontendModelPointerContext_PointerWheel
      ((callbackContext->runtimeFlags &
       (FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN | FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE |
        FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT)) != 0)) {
-    if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
+    if (!Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
       scaledWheelDelta = wheelDelta * g_WorldMotionPointerWheelInputScale;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_PITCH);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_DISTANCE;

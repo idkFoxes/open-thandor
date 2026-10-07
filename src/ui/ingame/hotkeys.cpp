@@ -36,21 +36,21 @@ static_assert(sizeof(UiKeyCommandRecord<InGameHotkeyAction>) == 0xC, "a key comm
 /* 15 command records and the terminator
    record (commandCode 0) that ends the dispatcher's scan */
 static const UiKeyCommandRecord<InGameHotkeyAction> g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[16] = {
-    /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .action = InGameHotkeyAction::LeaveGame},
+    /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::LeaveGame},
     /*  1 */ {.commandCode = 0x10001, .action = InGameHotkeyAction::OpenChatLine},
     /*  2 */ {.commandCode = 0x30063, .action = InGameHotkeyAction::ToggleMessageWindow},
     /*  3 */ {.commandCode = 0x10000, .action = InGameHotkeyAction::OpenGameMenu},
     /*  4 */ {.commandCode = 0x20001, .action = InGameHotkeyAction::ToggleMissionObjectives},
     /*  5 */ {.commandCode = 0x20002, .action = InGameHotkeyAction::OpenSavePage},
-    /*  6 */ {.commandCode = 0x20004, .modifierClassFlags = 0x30, .action = InGameHotkeyAction::OpenQuitPage},
+    /*  6 */ {.commandCode = 0x20004, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::OpenQuitPage},
     /*  7 */ {.commandCode = 0x30070, .action = InGameHotkeyAction::TogglePause},
-    /*  8 */ {.commandCode = 0x30067, .modifierClassFlags = 0x30, .action = InGameHotkeyAction::SlowerGameSpeed},
+    /*  8 */ {.commandCode = 0x30067, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::SlowerGameSpeed},
     /*  9 */ {.commandCode = 0x30067, .action = InGameHotkeyAction::FasterGameSpeed},
     /* 10 */ {.commandCode = 0x10002, .action = InGameHotkeyAction::ToggleSidePanel},
-    /* 11 */ {.commandCode = 0x30070, .modifierClassFlags = 0x30, .action = InGameHotkeyAction::Screenshot},
-    /* 12 */ {.commandCode = 0x30078, .modifierClassFlags = 0x3C, .action = InGameHotkeyAction::CheatAddXenite},
-    /* 13 */ {.commandCode = 0x30065, .modifierClassFlags = 0x3C, .action = InGameHotkeyAction::CheatAddEnergy},
-    /* 14 */ {.commandCode = 0x3007A, .modifierClassFlags = 0x3C, .action = InGameHotkeyAction::CheatToggleFastBuild},
+    /* 11 */ {.commandCode = 0x30070, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::Screenshot},
+    /* 12 */ {.commandCode = 0x30078, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatAddXenite},
+    /* 13 */ {.commandCode = 0x30065, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatAddEnergy},
+    /* 14 */ {.commandCode = 0x3007A, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatToggleFastBuild},
     /* 15 */ {.commandCode = 0x0}}; /* terminator: commandCode 0 (the original's other two dwords were NOP fill, never read) */
 
 /* Keyboard fallback of the in-game UI root: looks the key up in the hotkey table (key code plus required Ctrl/Alt
@@ -71,7 +71,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
      combination (Ctrl, Alt, or both) must be held. Shift is ignored. */
   const UiKeyCommandRecord<InGameHotkeyAction> *record = UiCommandDispatch_Find(
       g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30, (uint32_t)commandCode,
-      (uint32_t)modifierFlags, UiKeyModifierRule::ExactShiftIgnored);
+      modifierFlags, UiKeyModifierRule::ExactShiftIgnored);
   if (record == nullptr) {
     return false;
   }
