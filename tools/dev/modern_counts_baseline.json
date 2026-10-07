@@ -1,5 +1,5 @@
 {
- "revision": "48d5b63d",
+ "revision": "9b4bacb6",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -201,7 +201,6 @@
    "core": 2,
    "gameplay": 1,
    "movie": 1,
-   "ui": 81,
    "world": 110
   },
   "addr_5xxxxx": {},
