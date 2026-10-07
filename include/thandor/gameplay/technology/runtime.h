@@ -19,10 +19,10 @@
    RESEARCH_RUNNING whose researchTechnologyId holds the technology as already researching it;
    Technology_ApplyRecordToEntity stores the technology in common.commandState (the same slot) and sets
    RESEARCH_ASSIGNED, and does nothing while either bit is set. */
-#define ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING 0x40
-#define ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED 0x80
+inline constexpr int ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING = 0x40;
+inline constexpr int ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED = 0x80;
 /* tech.tec holds 256 technology records; a faction's unlock mask has one bit per record (8 dwords). */
-#define TECHNOLOGY_RECORD_COUNT 256
+inline constexpr int TECHNOLOGY_RECORD_COUNT = 256;
 
 void Technology_UnlockForFaction
           (GraphicsWorldCoordinateQ12 notificationXQ12,GraphicsWorldCoordinateQ12 notificationYQ12,

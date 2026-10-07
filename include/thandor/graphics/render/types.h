@@ -340,6 +340,14 @@ struct FrontendModelPointerContext {
     uint32_t reserved178; // Trailing dword; never accessed.
 };
 
+/* A FrontendModelPointerContext as the world runtime context it shares its storage with (see the field comments
+   above): the menu room node of the frontend (ROM transitions, menu room scene, debug overlay) and the world view
+   node of the in-game UI (InGameUi_WorldRuntime). */
+inline WorldRuntimeContext *FrontendModelPointerContext_AsWorldRuntime(FrontendModelPointerContext *context)
+{
+  return reinterpret_cast<WorldRuntimeContext *>(context);
+}
+
 /* GraphicsShadingGeneratedTexture_* view of the FrontendModelPointerContext it is called with; the spans follow
    that struct's offsets (0x54, 0xB8, 0xC8 on 32-bit), so the view stays right where pointers are wider (5f). */
 struct GeneratedTextureRenderContextView {

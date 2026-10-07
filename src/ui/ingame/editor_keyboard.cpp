@@ -12,45 +12,82 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(16) UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37] = {
-    /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56F1C0},
-    /*  1 */ {.commandCode = 0x30069, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E670},
-    /*  2 */ {.commandCode = 0x20002, .continuationEntryAddress = 0x56E6A0},
-    /*  3 */ {.commandCode = 0x30070, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56F160},
-    /*  4 */ {.commandCode = 0x30069, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56E5E0},
-    /*  5 */ {.commandCode = 0x30065, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56E6E0},
-    /*  6 */ {.commandCode = 0x30075, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56E720},
-    /*  7 */ {.commandCode = 0x30075, .continuationEntryAddress = 0x56E720},
-    /*  8 */ {.commandCode = 0x10012, .continuationEntryAddress = 0x56ED80},
-    /*  9 */ {.commandCode = 0x1001A, .continuationEntryAddress = 0x56EDC0},
-    /* 10 */ {.commandCode = 0x10014, .continuationEntryAddress = 0x56E7C0},
-    /* 11 */ {.commandCode = 0x10016, .continuationEntryAddress = 0x56E930},
-    /* 12 */ {.commandCode = 0x10011, .continuationEntryAddress = 0x56EAA0},
-    /* 13 */ {.commandCode = 0x10019, .continuationEntryAddress = 0x56EC10},
-    /* 14 */ {.commandCode = 0x10014, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E7C0},
-    /* 15 */ {.commandCode = 0x10016, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E930},
-    /* 16 */ {.commandCode = 0x10011, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56EAA0},
-    /* 17 */ {.commandCode = 0x10019, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56EC10},
-    /* 18 */ {.commandCode = 0x30061, .continuationEntryAddress = 0x56EE00},
-    /* 19 */ {.commandCode = 0x30068, .continuationEntryAddress = 0x56EE20},
-    /* 20 */ {.commandCode = 0x30067, .continuationEntryAddress = 0x56EE40},
-    /* 21 */ {.commandCode = 0x30073, .continuationEntryAddress = 0x56EE60},
-    /* 22 */ {.commandCode = 0x30070, .continuationEntryAddress = 0x56EEB0},
-    /* 23 */ {.commandCode = 0x30066, .continuationEntryAddress = 0x56EED0},
-    /* 24 */ {.commandCode = 0x30074, .continuationEntryAddress = 0x56EEF0},
-    /* 25 */ {.commandCode = 0x3006C, .continuationEntryAddress = 0x56F020},
-    /* 26 */ {.commandCode = 0x3006E, .continuationEntryAddress = 0x56EFB0},
-    /* 27 */ {.commandCode = 0x30076, .continuationEntryAddress = 0x56F090},
-    /* 28 */ {.commandCode = 0x30065, .continuationEntryAddress = 0x56F100},
-    /* 29 */ {.commandCode = 0x30062, .continuationEntryAddress = 0x56F120},
-    /* 30 */ {.commandCode = 0x30063, .continuationEntryAddress = 0x56EF70},
-    /* 31 */ {.commandCode = 0x30064, .continuationEntryAddress = 0x56EF90},
-    /* 32 */ {.commandCode = 0x30077, .continuationEntryAddress = 0x56EF10},
-    /* 33 */ {.commandCode = 0x30071, .continuationEntryAddress = 0x56EF30},
-    /* 34 */ {.commandCode = 0x30079, .continuationEntryAddress = 0x56EF50},
-    /* 35 */ {.commandCode = 0x30072, .continuationEntryAddress = 0x56F140},
-    /* 36: terminator (key code 0 ends the scan; the other two dwords are 0x90 fill) */
-    {.commandCode = 0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}};
+/* Actions of the map editor's keyboard table (InGameEditorKeyboard dispatch below). */
+enum class InGameEditorKeyAction : uint32_t {
+    LeaveEditorAndSession = 1,     /* Alt+Q */
+    InfoTextNext = 2,              /* Ctrl+I */
+    SaveMap = 3,                   /* F2 */
+    Screenshot = 4,                /* Ctrl+P */
+    ToggleSidePanel = 5,           /* Alt+I */
+    LeaveEditor = 6,               /* Alt+E */
+    CommitTerrainEdits = 7,        /* U, Alt+U */
+    NextUnitOwnerFaction = 8,      /* Page Up */
+    PreviousUnitOwnerFaction = 9,  /* Page Down */
+    Left = 10,                     /* Left, Ctrl+Left */
+    Right = 11,                    /* Right, Ctrl+Right */
+    Up = 12,                       /* Up, Ctrl+Up */
+    Down = 13,                     /* Down, Ctrl+Down */
+    HeightTool0 = 14,              /* A */
+    HeightTool1 = 15,              /* H */
+    HeightTool2 = 16,              /* G */
+    HeightOrMaterialTool3 = 17,    /* S */
+    MaterialTool0 = 18,            /* P */
+    MaterialTool1 = 19,            /* F */
+    MaterialTool2 = 20,            /* T */
+    PlacementOption1 = 21,         /* L */
+    PlacementOption0 = 22,         /* N */
+    PlacementOption2 = 23,         /* V */
+    UnitPlacementTab = 24,         /* E */
+    ObjectPlacementTab = 25,       /* B */
+    SmoothingRelaxGated = 26,      /* C */
+    SmoothingRelaxLand = 27,       /* D */
+    SmoothingTool0 = 28,           /* W */
+    SmoothingTool1 = 29,           /* Q */
+    SmoothingTool2 = 30,           /* Y */
+    RegionTab = 31,                /* R */
+};
+static_assert(sizeof(UiKeyCommandRecord<InGameEditorKeyAction>) == 0xC, "a key command record keeps the original 12 bytes");
+
+/* 36 records and the terminator record [36] (key code 0 ends the dispatch scan) */
+static UiKeyCommandRecord<InGameEditorKeyAction> g_InGameKeyboardDispatchRecords[37] = {
+    /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .action = InGameEditorKeyAction::LeaveEditorAndSession},
+    /*  1 */ {.commandCode = 0x30069, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::InfoTextNext},
+    /*  2 */ {.commandCode = 0x20002, .action = InGameEditorKeyAction::SaveMap},
+    /*  3 */ {.commandCode = 0x30070, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Screenshot},
+    /*  4 */ {.commandCode = 0x30069, .modifierClassFlags = 0x30, .action = InGameEditorKeyAction::ToggleSidePanel},
+    /*  5 */ {.commandCode = 0x30065, .modifierClassFlags = 0x30, .action = InGameEditorKeyAction::LeaveEditor},
+    /*  6 */ {.commandCode = 0x30075, .modifierClassFlags = 0x30, .action = InGameEditorKeyAction::CommitTerrainEdits},
+    /*  7 */ {.commandCode = 0x30075, .action = InGameEditorKeyAction::CommitTerrainEdits},
+    /*  8 */ {.commandCode = 0x10012, .action = InGameEditorKeyAction::NextUnitOwnerFaction},
+    /*  9 */ {.commandCode = 0x1001A, .action = InGameEditorKeyAction::PreviousUnitOwnerFaction},
+    /* 10 */ {.commandCode = 0x10014, .action = InGameEditorKeyAction::Left},
+    /* 11 */ {.commandCode = 0x10016, .action = InGameEditorKeyAction::Right},
+    /* 12 */ {.commandCode = 0x10011, .action = InGameEditorKeyAction::Up},
+    /* 13 */ {.commandCode = 0x10019, .action = InGameEditorKeyAction::Down},
+    /* 14 */ {.commandCode = 0x10014, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Left},
+    /* 15 */ {.commandCode = 0x10016, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Right},
+    /* 16 */ {.commandCode = 0x10011, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Up},
+    /* 17 */ {.commandCode = 0x10019, .modifierClassFlags = 0xC, .action = InGameEditorKeyAction::Down},
+    /* 18 */ {.commandCode = 0x30061, .action = InGameEditorKeyAction::HeightTool0},
+    /* 19 */ {.commandCode = 0x30068, .action = InGameEditorKeyAction::HeightTool1},
+    /* 20 */ {.commandCode = 0x30067, .action = InGameEditorKeyAction::HeightTool2},
+    /* 21 */ {.commandCode = 0x30073, .action = InGameEditorKeyAction::HeightOrMaterialTool3},
+    /* 22 */ {.commandCode = 0x30070, .action = InGameEditorKeyAction::MaterialTool0},
+    /* 23 */ {.commandCode = 0x30066, .action = InGameEditorKeyAction::MaterialTool1},
+    /* 24 */ {.commandCode = 0x30074, .action = InGameEditorKeyAction::MaterialTool2},
+    /* 25 */ {.commandCode = 0x3006C, .action = InGameEditorKeyAction::PlacementOption1},
+    /* 26 */ {.commandCode = 0x3006E, .action = InGameEditorKeyAction::PlacementOption0},
+    /* 27 */ {.commandCode = 0x30076, .action = InGameEditorKeyAction::PlacementOption2},
+    /* 28 */ {.commandCode = 0x30065, .action = InGameEditorKeyAction::UnitPlacementTab},
+    /* 29 */ {.commandCode = 0x30062, .action = InGameEditorKeyAction::ObjectPlacementTab},
+    /* 30 */ {.commandCode = 0x30063, .action = InGameEditorKeyAction::SmoothingRelaxGated},
+    /* 31 */ {.commandCode = 0x30064, .action = InGameEditorKeyAction::SmoothingRelaxLand},
+    /* 32 */ {.commandCode = 0x30077, .action = InGameEditorKeyAction::SmoothingTool0},
+    /* 33 */ {.commandCode = 0x30071, .action = InGameEditorKeyAction::SmoothingTool1},
+    /* 34 */ {.commandCode = 0x30079, .action = InGameEditorKeyAction::SmoothingTool2},
+    /* 35 */ {.commandCode = 0x30072, .action = InGameEditorKeyAction::RegionTab},
+    /* 36: terminator (key code 0 ends the scan; the original's other two dwords were NOP fill, never read) */
+    {.commandCode = 0}};
 
 UiCommandRuntimeRecordPrefix *g_UiHoverSelectionRecord = nullptr;
 
@@ -162,20 +199,20 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
 {
   InGameUiImage *image;
   UiPageStackControl *sidePanelStack;
-  const UiCommandDispatchRecord *dispatchRecord;
+  const UiKeyCommandRecord<InGameEditorKeyAction> *dispatchRecord;
   uint32_t activePageIndex;
 
   /* First record with this key whose modifier class matches: a zero class matches only while neither Ctrl nor
-     Alt is held, otherwise any modifier of the class must be held. The table ends with a zero key code. The
-     cases below are the original handler addresses stored in the records. */
+     Alt is held, otherwise any modifier of the class must be held. The table ends with a zero key code. Each
+     record names its action, one case below. */
   dispatchRecord = UiCommandDispatch_Find(g_InGameKeyboardDispatchRecords,keyboardEventCode,keyboardStateMask,
                                           UiKeyModifierRule::AnyOfMask);
   if (dispatchRecord == nullptr) {
     return;
   }
   image = InGameUi_Image(uiRoot);
-  switch(dispatchRecord->continuationEntryAddress) {
-  case 0x56e5e0: /* Alt+I: show or hide the side panel */
+  switch(dispatchRecord->action) {
+  case InGameEditorKeyAction::ToggleSidePanel: /* Alt+I: show or hide the side panel */
     sidePanelStack = UiLayoutContainerControl_AsPageStack(&image->sidePanelStack);
     activePageIndex = UiPageStack_ActivePageIndex(sidePanelStack);
     if (activePageIndex == 0) {
@@ -193,16 +230,16 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       UiContainer_LayoutChildren(&uiRoot->base);
     }
     break;
-  case 0x56e670: /* Ctrl+I: next of the world view info texts (the text field holds the text resource id) */
+  case InGameEditorKeyAction::InfoTextNext: /* Ctrl+I: next of the world view info texts (the text field holds the text resource id) */
     InGameWorldView_ShowNextInfoText(&image->worldViewCyclingInfoText);
     break;
-  case 0x56e6a0: /* F2: save the map */
+  case InGameEditorKeyAction::SaveMap: /* F2: save the map */
     InGameCommand_Issue<InGameUiCommand_SaveFieldAndLevelAssetImages>(0,0,0);
     break;
-  case 0x56e6e0: /* Alt+E: leave the editor */
+  case InGameEditorKeyAction::LeaveEditor: /* Alt+E: leave the editor */
     InGameCommand_Issue<InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState>(0,0,EDITOR_ACTIVE_STATE_LEAVE);
     break;
-  case 0x56e720: /* U / Alt+U: commit the height or material edits */
+  case InGameEditorKeyAction::CommitTerrainEdits: /* U / Alt+U: commit the height or material edits */
     if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_HEIGHT) {
       InGameCommand_Issue<TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting>(0,0,0);
     }
@@ -210,7 +247,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameCommand_Issue<TerrainEditBuffer_CommitFlagsAndMaterialDeltas>(0,0,0);
     }
     break;
-  case 0x56e7c0: /* Left: previous material / army; Ctrl: turn the light, Shift: move the field origin */
+  case InGameEditorKeyAction::Left: /* Left: previous material / army; Ctrl: turn the light, Shift: move the field origin */
     if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
       if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         InGameEditorKeyboard_SelectMaterialBackward(1,uiRoot);
@@ -230,7 +267,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(keyboardStateMask,0,-EDITOR_ADJUST_STEP);
     }
     break;
-  case 0x56e930: /* Right: next material / army; Ctrl: turn the light, Shift: move the field origin */
+  case InGameEditorKeyAction::Right: /* Right: next material / army; Ctrl: turn the light, Shift: move the field origin */
     if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
       if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         InGameEditorKeyboard_SelectMaterialForward(1,uiRoot);
@@ -248,7 +285,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(keyboardStateMask,0,EDITOR_ADJUST_STEP);
     }
     break;
-  case 0x56eaa0: /* Up: third material back / step the army list; Ctrl: light, Shift: field origin */
+  case InGameEditorKeyAction::Up: /* Up: third material back / step the army list; Ctrl: light, Shift: field origin */
     if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
       if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         InGameEditorKeyboard_SelectMaterialBackward(MATERIAL_SWATCH_ROW_LENGTH,uiRoot);
@@ -266,7 +303,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(keyboardStateMask,-EDITOR_ADJUST_STEP,0);
     }
     break;
-  case 0x56ec10: /* Down: third material ahead / step the army list; Ctrl: light, Shift: field origin */
+  case InGameEditorKeyAction::Down: /* Down: third material ahead / step the army list; Ctrl: light, Shift: field origin */
     if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
       if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         InGameEditorKeyboard_SelectMaterialForward(MATERIAL_SWATCH_ROW_LENGTH,uiRoot);
@@ -284,7 +321,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(keyboardStateMask,EDITOR_ADJUST_STEP,0);
     }
     break;
-  case 0x56ed80: /* Page Up: next owner faction for unit placement */
+  case InGameEditorKeyAction::NextUnitOwnerFaction: /* Page Up: next owner faction for unit placement */
     if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
       g_UiCommandModeGOwnerFactionIndex++;
       if (g_GameFactionRuntimeImage.tail.activeFactionCount <
@@ -295,7 +332,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
                 (static_cast<uint32_t>(reinterpret_cast<uintptr_t>(uiRoot)));
     }
     break;
-  case 0x56edc0: /* Page Down: previous owner faction for unit placement */
+  case InGameEditorKeyAction::PreviousUnitOwnerFaction: /* Page Down: previous owner faction for unit placement */
     if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
       g_UiCommandModeGOwnerFactionIndex--;
       if (g_UiCommandModeGOwnerFactionIndex == 0) {
@@ -306,19 +343,19 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     }
     break;
   /* Letter keys: editor tab and tool */
-  case 0x56ee00: /* A */
+  case InGameEditorKeyAction::HeightTool0: /* A */
     InGameCommandModeG_Select0(&image->editorModeTabTerrainHeight.selectable);
     InGameCommandModeC_Select0(&image->heightToolOption0);
     break;
-  case 0x56ee20: /* H */
+  case InGameEditorKeyAction::HeightTool1: /* H */
     InGameCommandModeG_Select0(&image->editorModeTabTerrainHeight.selectable);
     InGameCommandModeC_Select1(&image->heightToolOption1);
     break;
-  case 0x56ee40: /* G */
+  case InGameEditorKeyAction::HeightTool2: /* G */
     InGameCommandModeG_Select0(&image->editorModeTabTerrainHeight.selectable);
     InGameCommandModeC_Select2(&image->heightToolOption2);
     break;
-  case 0x56ee60: /* S */
+  case InGameEditorKeyAction::HeightOrMaterialTool3: /* S */
     if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
       InGameCommandModeG_Select1(&image->editorModeTabTerrainMaterial.selectable);
       InGameCommandModeD_Select3(&image->materialToolOption3);
@@ -328,39 +365,39 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameCommandModeC_Select3(&image->heightToolOption3);
     }
     break;
-  case 0x56eeb0: /* P */
+  case InGameEditorKeyAction::MaterialTool0: /* P */
     InGameCommandModeG_Select1(&image->editorModeTabTerrainMaterial.selectable);
     InGameCommandModeD_Select0(&image->materialToolOption0);
     break;
-  case 0x56eed0: /* F */
+  case InGameEditorKeyAction::MaterialTool1: /* F */
     InGameCommandModeG_Select1(&image->editorModeTabTerrainMaterial.selectable);
     InGameCommandModeD_Select1(&image->materialToolOption1);
     break;
-  case 0x56eef0: /* T */
+  case InGameEditorKeyAction::MaterialTool2: /* T */
     InGameCommandModeG_Select1(&image->editorModeTabTerrainMaterial.selectable);
     InGameCommandModeD_Select2(&image->materialToolOption2);
     break;
-  case 0x56ef10: /* W */
+  case InGameEditorKeyAction::SmoothingTool0: /* W */
     InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
     InGameCommandModeE_Select0(&image->smoothingToolOption0);
     break;
-  case 0x56ef30: /* Q */
+  case InGameEditorKeyAction::SmoothingTool1: /* Q */
     InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
     InGameCommandModeE_Select1(&image->smoothingToolOption1);
     break;
-  case 0x56ef50: /* Y */
+  case InGameEditorKeyAction::SmoothingTool2: /* Y */
     InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
     InGameCommandModeE_Select2(&image->smoothingToolOption2);
     break;
-  case 0x56ef70: /* C */
+  case InGameEditorKeyAction::SmoothingRelaxGated: /* C */
     InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
     InGameCommandRange_DispatchState0(&image->smoothingRelaxGatedButton.selectable.base);
     break;
-  case 0x56ef90: /* D */
+  case InGameEditorKeyAction::SmoothingRelaxLand: /* D */
     InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
     InGameCommandRange_DispatchState1(&image->smoothingRelaxLandButton.selectable.base);
     break;
-  case 0x56efb0: /* N */
+  case InGameEditorKeyAction::PlacementOption0: /* N */
     if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
       InGameCommandModeG_Select4(InGameUi_ObjectPlacementTab(image));
       InGameCommandModeB_Select0(&image->objectPlacementOption0);
@@ -371,7 +408,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameEditorKeyboard_HoverUnitPlacementArmy();
     }
     break;
-  case 0x56f020: /* L */
+  case InGameEditorKeyAction::PlacementOption1: /* L */
     if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
       InGameCommandModeG_Select4(InGameUi_ObjectPlacementTab(image));
       InGameCommandModeB_Select1(&image->objectPlacementOption1);
@@ -382,7 +419,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameEditorKeyboard_HoverUnitPlacementArmy();
     }
     break;
-  case 0x56f090: /* V */
+  case InGameEditorKeyAction::PlacementOption2: /* V */
     if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
       InGameCommandModeG_Select4(InGameUi_ObjectPlacementTab(image));
       InGameCommandModeB_Select2(&image->objectPlacementOption2);
@@ -393,23 +430,23 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameEditorKeyboard_HoverUnitPlacementArmy();
     }
     break;
-  case 0x56f100: /* E */
+  case InGameEditorKeyAction::UnitPlacementTab: /* E */
     InGameCommandModeG_Select3(&image->editorModeTabUnitPlacement.selectable);
     break;
-  case 0x56f120: /* B */
+  case InGameEditorKeyAction::ObjectPlacementTab: /* B */
     InGameCommandModeG_Select4(InGameUi_ObjectPlacementTab(image));
     break;
-  case 0x56f140: /* R */
+  case InGameEditorKeyAction::RegionTab: /* R */
     InGameCommandModeG_Select5(&image->editorModeTabRegion.selectable);
     break;
-  case 0x56f160: /* Ctrl+P: screenshot to screenNN.pcx, counting the two digits up */
+  case InGameEditorKeyAction::Screenshot: /* Ctrl+P: screenshot to screenNN.pcx, counting the two digits up */
     /* The original calls the capture without passing its four arguments (it reads stale stack values) and
        writes the raw capture asset to the .pcx file without freeing it; saved here like the in-game Alt+P and
        end-movie screenshot commands (whole framebuffer, PCX-encoded, capture freed) because the raw dump is
        no PCX and leaks one capture per press. */
     Screenshot_SaveFramebufferAsPcx();
     break;
-  case 0x56f1c0: /* Alt+Q: leave the editor and the session */
+  case InGameEditorKeyAction::LeaveEditorAndSession: /* Alt+Q: leave the editor and the session */
     InGameCommand_Issue<InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState>(0,0,EDITOR_ACTIVE_STATE_LEAVE);
     InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);
   }

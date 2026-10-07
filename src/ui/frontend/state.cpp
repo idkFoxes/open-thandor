@@ -30,13 +30,20 @@ static_assert(FrontendHotkey_ClassIsNotShiftOnly(FRONTEND_HOTKEY_CLASS_ALT) &&
               FrontendHotkey_ClassIsNotShiftOnly(FRONTEND_HOTKEY_CLASS_CTRL),
               "a Shift-only class would differ between the original frontend matcher and ExactWithShift");
 
+/* Actions of the frontend hotkey table. */
+enum class FrontendHotkeyAction : uint32_t {
+    Leave = 1,                    /* Alt+Q, Alt+F4 */
+    ToggleFactionSetupReady = 2,  /* Ctrl+F1 */
+};
+static_assert(sizeof(UiKeyCommandRecord<FrontendHotkeyAction>) == 0xC, "a key command record keeps the original 12 bytes");
+
 /* 3 command records and the terminator record
    (commandCode 0) that ends the dispatcher's scan */
-static UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[4] = {
-    /* 0 */ {.commandCode = 0x30071, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_ALT, .continuationEntryAddress = 0x548190},
-    /* 1 */ {.commandCode = 0x20004, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_ALT, .continuationEntryAddress = 0x548190},
-    /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_CTRL, .continuationEntryAddress = 0x548140},
-    /* 3 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
+static UiKeyCommandRecord<FrontendHotkeyAction> g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[4] = {
+    /* 0 */ {.commandCode = 0x30071, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_ALT, .action = FrontendHotkeyAction::Leave},
+    /* 1 */ {.commandCode = 0x20004, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_ALT, .action = FrontendHotkeyAction::Leave},
+    /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_CTRL, .action = FrontendHotkeyAction::ToggleFactionSetupReady},
+    /* 3 */ {.commandCode = 0x0}}; /* terminator: commandCode 0 (the original's other two dwords were NOP fill, never read) */
 
 /* Periodic timer callback of the frontend (80 Hz): counts g_FrontendTimerCountdownTicks down to zero.
    Frontend_StateTick uses the countdown to pace its network polling.
@@ -76,24 +83,24 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
 {
   /* Each dispatch record names its handler by continuationEntryAddress, which only serves as the case label
      of the switch below. root is g_FrontendRootNode. Returns true = not handled. */
-  UiCommandDispatchRecord *record = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30;
+  UiKeyCommandRecord<FrontendHotkeyAction> *record = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30;
   FrontendUiImage *root = g_FrontendRootNode;
-  uint32_t target;
+  FrontendHotkeyAction target;
 
   (void)frontendRuntime;
   record = UiCommandDispatch_Find(record,commandCode,modifierFlags,UiKeyModifierRule::ExactWithShift);
   if (record == nullptr) {
     return true;
   }
-  target = (uint32_t)record->continuationEntryAddress;
+  target = record->action;
   switch (target) {
-  case 0x548140:
+  case FrontendHotkeyAction::ToggleFactionSetupReady:
     if (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(root)->frontendPageStack)) ==
         FRONTEND_PAGE_FACTION_SETUP) {
       FrontendCommand_Issue<FrontendPlayerRuntime_XorStateMaskByPlayerId>(0,0,1);
     }
     break;
-  case 0x548190: {
+  case FrontendHotkeyAction::Leave: {
     FrontendPlayerRuntimeRecord *player;
     uint16_t *text;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0) {
@@ -152,7 +159,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
     break;
   }
   default:
-    Thandor_Log("Frontend dispatch: unhandled continuation %08x",target);
+    Thandor_Log("Frontend dispatch: unhandled action %u",static_cast<uint32_t>(target));
     break;
   }
   return false;
@@ -354,8 +361,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
-    /* briefingImage: an image action control, its template node is shorter than the class */
-    if ((reinterpret_cast<UiImageActionControl *>(&frontendRoot->briefingImage)->textureSource != nullptr) &&
+    if ((frontendRoot->briefingImage.textureSource != nullptr) &&
        !Movie_AdvanceFrame(nullptr,nullptr)) {
       Movie_Rewind();
     }

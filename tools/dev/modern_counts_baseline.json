@@ -1,5 +1,5 @@
 {
- "revision": "205e1914",
+ "revision": "3eaee5b6",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -114,7 +114,7 @@
  },
  "counts": {
   "cstyle_cast": {
-   "ui": 104,
+   "ui": 4,
    "world": 61
   },
   "ingame_ui": {},
@@ -124,7 +124,6 @@
    "assets": 102,
    "audio": 15,
    "core": 161,
-   "gameplay": 185,
    "graphics": 147,
    "movie": 30,
    "network": 136,
@@ -136,7 +135,7 @@
    "assets": 159,
    "audio": 28,
    "core": 234,
-   "gameplay": 274,
+   "gameplay": 89,
    "generated": 1,
    "graphics": 206,
    "movie": 36,
@@ -162,7 +161,7 @@
   },
   "constexpr": {
    "core": 50,
-   "gameplay": 2,
+   "gameplay": 187,
    "network": 2,
    "platform": 52,
    "ui": 9,
@@ -177,14 +176,14 @@
    "movie": 4,
    "network": 34,
    "platform": 35,
-   "ui": 184,
+   "ui": 183,
    "world": 46
   },
   "enum_class": {
    "core": 4,
    "network": 1,
    "platform": 1,
-   "ui": 1
+   "ui": 8
   },
   "libc_alloc": {
    "core": 3,
@@ -223,14 +222,12 @@
    "ui": 297,
    "world": 127
   },
-  "addr_5xxxxx": {
-   "ui": 225
-  },
+  "addr_5xxxxx": {},
   "fill_90": {
    "gameplay": 1,
-   "graphics": 16,
+   "graphics": 14,
    "platform": 1,
-   "ui": 10
+   "ui": 2
   },
   "do_while": {
    "assets": 28,

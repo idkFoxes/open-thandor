@@ -35,7 +35,6 @@ typedef struct FrontendRootPageState FrontendRootPageState, *PFrontendRootPageSt
 typedef struct FrontendSessionDiscoveryRecord FrontendSessionDiscoveryRecord, *PFrontendSessionDiscoveryRecord;
 typedef struct RuntimeModelClassPriorityTable24 RuntimeModelClassPriorityTable24, *PRuntimeModelClassPriorityTable24;
 typedef struct FrontendModelPointerHitContext FrontendModelPointerHitContext, *PFrontendModelPointerHitContext;
-typedef struct FrontendResultsRowMetrics FrontendResultsRowMetrics, *PFrontendResultsRowMetrics;
 typedef struct UiSettingsValueControl UiSettingsValueControl, *PUiSettingsValueControl;
 typedef struct SoftwareMaskRuntimeView SoftwareMaskRuntimeView, *PSoftwareMaskRuntimeView;
 typedef struct FrontendDisplaySettingsPageOptionState FrontendDisplaySettingsPageOptionState, *PFrontendDisplaySettingsPageOptionState;
@@ -312,12 +311,6 @@ struct FrontendModelPointerHitContext {
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonPressCallback; // Non-right button press (FrontendModelPointerContext_NonRightPress).
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonDragCallback; // Non-right button drag (FrontendModelPointerContext_NonRightDrag).
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonReleaseCallback; // Non-right button release (FrontendModelPointerContext_NonRightRelease).
-};
-
-struct FrontendResultsRowMetrics {
-    uint8_t reserved00_5B[92]; 
-    UiPixelMetric headerBaselineOffsetPixels; 
-    UiPixelMetric rowAdvancePixels; 
 };
 
 struct UiSettingsValueControl {
@@ -989,8 +982,7 @@ typedef struct FrontendUiImage {
     UiFocusProxyControl briefingTitleLabel; /* +0768 g_UiFocusProxyControlVtable: Title "Mission description (%s)". */
     UiScrollableControl briefingTextScroller; /* +07C4 g_UiScrollableControlVtable: Scrollable frame holding the mission briefing text. */
     UiListOffsetControl briefingText; /* +0854 g_UiListOffsetControlVtable: Mission description text; its text id is set from the level and it is resized to the text extent. */
-    UiNodeBase briefingImage; /* +08B0 g_UiImageActionControlVtable: Animated mission image next to the text; its first frame is set from the level. */
-    uint32_t briefingImage_fields[6];
+    UiImageActionTemplateNode briefingImage; /* +08B0 g_UiImageActionControlVtable: Animated mission image next to the text; its first frame is set from the level. */
     UiFocusProxyControl opponentSettingsGroup; /* +0914 g_UiFocusProxyControlVtable: Group "Settings for computer opponent" with weak/strong labels and slider. */
     UiFocusProxyControl opponentWeakLabel; /* +0970 g_UiFocusProxyControlVtable: Label "weak" at the left end of the opponent slider. */
     UiFocusProxyControl opponentStrongLabel; /* +09CC g_UiFocusProxyControlVtable: Label "strong" at the right end of the opponent slider. */
@@ -1273,14 +1265,6 @@ template <class T> inline FrontendUiImage *FrontendUi_ImageOfNode(T *node, size_
 
 
 
-/* The menu room node (menuRoomModelView) as the world runtime context the ROM transitions, the menu room scene
-   and the debug overlay work on: a FrontendModelPointerContext shares its storage with a WorldRuntimeContext
-   view (see the field comments of FrontendModelPointerContext). */
-inline WorldRuntimeContext *FrontendModelPointerContext_AsWorldRuntime(FrontendModelPointerContext *context)
-
-{
-  return reinterpret_cast<WorldRuntimeContext *>(context);
-}
 #pragma pack(pop)
 
 #endif /* THANDOR_UI_FRONTEND_TYPES_H */

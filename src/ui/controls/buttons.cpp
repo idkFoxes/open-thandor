@@ -12,8 +12,8 @@
    visited before its next sibling, at every depth. */
 static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node) {
   while (node != UI_NODE_NONE) {
-    if (node->vtable == (UiNodeVtable *)&g_UiSpriteButtonControlVtable) {
-      UiSpriteButtonControl_AdvanceAnimation((UiSpriteButtonControl *)node);
+    if (node->vtable == &g_UiSpriteButtonControlVtable) {
+      UiSpriteButtonControl_AdvanceAnimation(UiNode_As<UiSpriteButtonControl>(node));
     }
     UiTree_AdvanceSpriteButtonAnimationsFrom(node->firstChild);
     node = node->nextSibling;
@@ -61,7 +61,7 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
       control->animationFrameOffset = randomValue % normalFrameCount;
     }
   }
-  UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
+  UiContainer_RelocateChildren(relocationDelta,&control->selectable.base);
 }
 
 /* drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable
@@ -180,7 +180,7 @@ void UiSpriteButtonControl_NonRightPress
            control->animationFrameOffset + control->selectedSubresourceStart)))) {
         control->animationFrameOffset = 0;
       }
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(&control->selectable.base);
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
@@ -207,7 +207,7 @@ void UiSpriteButtonControl_NonRightPress
       if (queueAction) {
         UiActionQueue_Enqueue((control->selectable).actionId,control);
       }
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(&control->selectable.base);
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
@@ -233,7 +233,7 @@ void UiSpriteButtonControl_NonRightPress
       if (queueAction) {
         UiActionQueue_Enqueue((control->selectable).actionId,control);
       }
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(&control->selectable.base);
     }
   }
 }
@@ -268,7 +268,7 @@ void UiSpriteButtonControl_NonRightRelease
     }
     (control->selectable).stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     UiActionQueue_Enqueue((control->selectable).actionId,control);
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&control->selectable.base);
   }
 }
 
@@ -323,13 +323,13 @@ void UiSpriteButtonControl_NonRightDrag
       return;
     }
     (control->selectable).stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&control->selectable.base);
     return;
   }
   /* Pointer outside: drop the pressed state. */
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
     (control->selectable).stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&control->selectable.base);
   }
 }
 
@@ -348,7 +348,7 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
     return UI_NODE_NONE;
   }
   if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_RECT_HIT_TEST) != 0) {
-    return (UiNodeBase *)control;
+    return &control->selectable.base;
   }
   if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) == 0) {
     if (control->primaryTextureSource == nullptr) {
@@ -369,7 +369,7 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
   if (!spritePixelHit) {
     return UI_NODE_NONE;
   }
-  return (UiNodeBase *)control;
+  return &control->selectable.base;
 }
 
 /* drawClipped slot of g_UiImageActionControlVtable (briefing image, movie views). Draws the image 1:1, or
@@ -688,7 +688,7 @@ void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
     }
     (control->selectable).stateFlags &= ~UI_SPRITE_BUTTON_ACTION_PENDING;
   }
-  UiNode_InvalidateRoot((UiNodeBase *)control);
+  UiNode_InvalidateRoot(&control->selectable.base);
 }
 
 UiNodeVtable g_UiSpriteButtonControlVtable = {

@@ -482,8 +482,6 @@ static_assert(sizeof(GraphicsProjectedPoint2i) == 0x8,
 static_assert(sizeof(EntityPathingPriorityPair) == 0x8 &&
               offsetof(EntityPathingPriorityPair, entity) == 0x0,
               "EntityPathingPriorityPair keeps its 32-bit layout");
-static_assert(sizeof(FrontendResultsRowMetrics) == 0x64,
-              "FrontendResultsRowMetrics keeps its 32-bit layout");
 static_assert(sizeof(UiTransferPacket) == 0x40,
               "UiTransferPacket keeps its 32-bit layout");
 static_assert(sizeof(UiScrollableControl) == 0x90,
@@ -505,6 +503,8 @@ static_assert(sizeof(NetworkSessionContext) == 0x100,
               "NetworkSessionContext keeps its 32-bit layout");
 static_assert(sizeof(InGameCameraCommandDispatchRecord) == 0xC,
               "InGameCameraCommandDispatchRecord keeps its 32-bit layout");
+static_assert(offsetof(InGameCameraCommandDispatchRecord, action) == 0x8 && sizeof(InGameCameraKeyAction) == 4,
+              "the camera key action keeps the 32-bit continuation slot");
 static_assert(sizeof(InGameCameraCommandDispatchTable) == 0xD0,
               "InGameCameraCommandDispatchTable keeps its 32-bit layout");
 static_assert(sizeof(SelectionPlayerPairRecord) == 0x8,
@@ -1712,6 +1712,15 @@ static_assert(offsetof(FrontendUiImage, briefingTextScroller) == 0x7C4 && sizeof
               "FrontendUiImage.briefingTextScroller is a UiScrollableControl");
 static_assert(offsetof(FrontendUiImage, briefingText) == 0x854 && sizeof(UiListOffsetControl) == 0x5C,
               "FrontendUiImage.briefingText is a UiListOffsetControl");
+static_assert(offsetof(FrontendUiImage, briefingImage) == 0x8B0 &&
+              offsetof(FrontendUiImage, opponentSettingsGroup) - offsetof(FrontendUiImage, briefingImage) == 0x64,
+              "FrontendUiImage.briefingImage is a 0x64-byte image action node");
+static_assert(sizeof(UiImageActionTemplateNode) == 0x64 &&
+              offsetof(UiImageActionTemplateNode, displayFlags) == offsetof(UiImageActionControl, displayFlags) &&
+              offsetof(UiImageActionTemplateNode, textureSource) == offsetof(UiImageActionControl, textureSource) &&
+              offsetof(UiImageActionTemplateNode, subresource) == offsetof(UiImageActionControl, subresource) &&
+              offsetof(UiImageActionTemplateNode, secondaryActionId) == offsetof(UiImageActionControl, secondaryActionId),
+              "UiImageActionTemplateNode is UiImageActionControl without letterboxWidth");
 static_assert(offsetof(FrontendUiImage, opponentSettingsGroup) == 0x914 && sizeof(UiFocusProxyControl) == 0x5C,
               "FrontendUiImage.opponentSettingsGroup is a UiFocusProxyControl");
 static_assert(offsetof(FrontendUiImage, opponentWeakLabel) == 0x970 && sizeof(UiFocusProxyControl) == 0x5C,

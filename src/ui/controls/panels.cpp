@@ -368,18 +368,19 @@ void UiFormattedContainer_RelocateWithPatchedTextPayloads
   uint16_t *resolvedText;
   
   if (((control->base).nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) != 0) {
-    resolvedText = TextResource_Resolve(((TextResourceId *)control)[-1]);
+    /* the template stores the tooltip's text id in the dword just before the node */
+    resolvedText = TextResource_Resolve(reinterpret_cast<TextResourceId *>(control)[-1]);
     stream = resolvedText;
     RichTextCommandStream_PatchPayloadBySelector(0,control->currentValueTextUtf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,control->limitValueTextUtf16,stream);
     if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
-      RichTextCommandStream_PatchPayloadBySelector(2,((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16,
+      RichTextCommandStream_PatchPayloadBySelector(2,UiNode_As<UiFormattedContainerWithMarker>(control)->markerValueTextUtf16,
                                                    stream);
-      *(uint32_t *)((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16 = 0;
+      Thandor_StoreU32(UiNode_As<UiFormattedContainerWithMarker>(control)->markerValueTextUtf16,0);
     }
   }
-  *(uint32_t *)control->currentValueTextUtf16 = 0;
-  *(uint32_t *)control->limitValueTextUtf16 = 0;
+  Thandor_StoreU32(control->currentValueTextUtf16,0); /* the first two code units */
+  Thandor_StoreU32(control->limitValueTextUtf16,0);
   UiContainer_RelocateChildren(relocationDelta,&control->base);
 }
 
@@ -498,6 +499,8 @@ void UiFormattedContainer_DrawClipped
                 (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,barEndX,
                  (control->base).top,barStartX,textureFrame + UI_GAUGE_FRAME_TRACK,
                  control->textureSource,g_FramebufferAccess);
+      /* the marker fields, read only with UI_GAUGE_HAS_MARKER set */
+      const UiFormattedContainerWithMarker *marked = UiNode_As<UiFormattedContainerWithMarker>(control);
       currentValue = control->currentValue;
       scaleRange = control->initialScaleRange;
       barSpan = barEndX - barStartX;
@@ -508,33 +511,33 @@ void UiFormattedContainer_DrawClipped
         static int s_loggedScaleRange;
         if (s_loggedScaleRange == 0) {
           s_loggedScaleRange = 1;
-          Thandor_Log("gauge %p: initial scale range %d, started at 1",(void *)control,scaleRange);
+          Thandor_Log("gauge %p: initial scale range %d, started at 1",static_cast<void *>(control),scaleRange);
         }
         scaleRange = 1;
       }
       while (((scaleRange < currentValue) || (scaleRange < control->limitValue) ||
               (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) &&
-               (scaleRange < ((UiFormattedContainerWithMarker *)control)->markerValue))) &&
+               (scaleRange < marked->markerValue))) &&
              (scaleRange <= (INT32_MAX >> 2))) {
         scaleRange = scaleRange << 2;
       }
       if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
         markerOffsetX =
-             (int)(((int64_t)((UiFormattedContainerWithMarker *)control)->markerValue * (int64_t)barSpan) /
+             (int)(((int64_t)marked->markerValue * (int64_t)barSpan) /
                    (int64_t)scaleRange);
       }
       limitValue = control->limitValue;
       scaleLimit = control->limitValue;
       if (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) &&
-          (((UiFormattedContainerWithMarker *)control)->markerValue < scaleLimit)) {
-        scaleLimit = ((UiFormattedContainerWithMarker *)control)->markerValue;
+          (marked->markerValue < scaleLimit)) {
+        scaleLimit = marked->markerValue;
       }
       if (scaleLimit == 0) {
         /* The original divides by zero here (marker value 0); bounded here because that crashes. */
         static int s_loggedScaleLimit;
         if (s_loggedScaleLimit == 0) {
           s_loggedScaleLimit = 1;
-          Thandor_Log("gauge %p: marker value 0, fill percentage taken against 1",(void *)control);
+          Thandor_Log("gauge %p: marker value 0, fill percentage taken against 1",static_cast<void *>(control));
         }
         scaleLimit = 1;
       }
@@ -589,8 +592,8 @@ void UiFormattedContainer_DrawClipped
              control->limitValueTextUtf16);
   if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
     g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,((UiFormattedContainerWithMarker *)control)->markerValue,
-               ((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16);
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,UiNode_As<UiFormattedContainerWithMarker>(control)->markerValue,
+               UiNode_As<UiFormattedContainerWithMarker>(control)->markerValueTextUtf16);
   }
 }
 
@@ -956,7 +959,7 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
       g_GraphicsFramebufferEndAccess();
     }
   }
-  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
+  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->root.base);
 }
 
 /* hitTest of g_UiFillPanelControlVtable: like UiContainer_HitTestChildren, but the container itself is never
