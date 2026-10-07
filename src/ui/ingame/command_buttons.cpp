@@ -90,13 +90,13 @@ void UiCommandSpriteButtonControl_NonRightRelease
   UiSelectableStateFlags *stateFlagsField;
   
   if (!Any((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
-     (((control->sprite).selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
+     (Any((control->sprite).selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
     inputStateBits = FromBits<UiCommandActivationStateFlags>(ToBits(g_KeyboardStateMask)) &
             ~(UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON|UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK);
     stateFlagsField = &(control->sprite).selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     control->activationInputState = control->activationInputState | inputStateBits;
-    if ((((control->sprite).selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
+    if (Any((control->sprite).selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&
        ((control->sprite).activationSound != nullptr)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -119,11 +119,11 @@ void UiCommandSpriteButtonControl_RightRelease
   UiCommandActivationStateFlags inputStateBits;
 
   if (!Any((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
-      (((control->sprite).selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
+      (Any((control->sprite).selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
     inputStateBits = FromBits<UiCommandActivationStateFlags>(ToBits(g_KeyboardStateMask)) & ~UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK;
     (control->sprite).selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     control->activationInputState = inputStateBits | UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON;
-    if ((((control->sprite).selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
+    if (Any((control->sprite).selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&
        ((control->sprite).activationSound != nullptr)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,

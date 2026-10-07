@@ -16,9 +16,9 @@
    ANIMATED cycles the frames of the normal/selected range (UiSpriteButtonControl_AdvanceAnimation);
    ACTION_AFTER_ANIMATION defers the action of an activation until the animation reaches its last frame;
    ACTION_PENDING marks such a deferred action. */
-inline constexpr int32_t UI_SPRITE_BUTTON_ANIMATED = 0x80;
-inline constexpr int32_t UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION = 0x800;
-inline constexpr int32_t UI_SPRITE_BUTTON_ACTION_PENDING = 0x1000;
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ANIMATED = FromBits<UiSelectableStateFlags>(0x80);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION = FromBits<UiSelectableStateFlags>(0x800);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ACTION_PENDING = FromBits<UiSelectableStateFlags>(0x1000);
 /* Further UiSpriteButtonControl stateFlags bits (UiSpriteButtonControl_DrawClipped, _HitTestOpaque,
    _NonRightPress/_Release/_Drag, _Relocate): RECT_HIT_TEST hit-tests the node rectangle instead of opaque
    sprite pixels; NORMAL_UNDER_SELECTED draws the normal frame below the selected one; SERIALIZED_DESCRIPTOR
@@ -26,12 +26,12 @@ inline constexpr int32_t UI_SPRITE_BUTTON_ACTION_PENDING = 0x1000;
    _Relocate expands; ACTIVATION_SOUND plays activationSound on activation; SELECTED_ONLY draws the button
    only while selected and hit-tests its selected frame. Without ANIMATED, the ACTION_AFTER_ANIMATION bit
    (0x800) instead selects alternateTextureSource for the selected frame. */
-inline constexpr int32_t UI_SPRITE_BUTTON_RECT_HIT_TEST = 0x20;
-inline constexpr int32_t UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED = 0x40;
-inline constexpr int32_t UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR = 0x100;
-inline constexpr int32_t UI_SPRITE_BUTTON_ACTIVATION_SOUND = 0x200;
-inline constexpr int32_t UI_SPRITE_BUTTON_SELECTED_ONLY = 0x400;
-inline constexpr int32_t UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE = 0x800;
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_RECT_HIT_TEST = FromBits<UiSelectableStateFlags>(0x20);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED = FromBits<UiSelectableStateFlags>(0x40);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR = FromBits<UiSelectableStateFlags>(0x100);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ACTIVATION_SOUND = FromBits<UiSelectableStateFlags>(0x200);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_SELECTED_ONLY = FromBits<UiSelectableStateFlags>(0x400);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE = FromBits<UiSelectableStateFlags>(0x800);
 /* Colour the sprite shadow is drawn with (ARGB, half-transparent black; UiSpriteButtonControl_DrawClipped). */
 inline constexpr int32_t UI_SPRITE_BUTTON_SHADOW_ARGB = 0x7F000000;
 /* UiImageActionControl displayFlags (UiImageActionControl_DrawImageAndChildren/_HandleKeyboardActivation). */

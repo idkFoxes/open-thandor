@@ -739,7 +739,7 @@ static void Thandor_SelfTestNumberFormat()
             value = (int32_t)SelfTest_FixedRandom(&seed) >> shift;
         }
         memset(buffer, 0, sizeof buffer);
-        written = WideNumber_FormatUtf16((WideNumberFormatFlags)flags, fractionalDigits, integerDigitLimit, denominator,
+        written = WideNumber_FormatUtf16(FromBits<WideNumberFormatFlags>(flags), fractionalDigits, integerDigitLimit, denominator,
                                          value, buffer);
         hash = SelfTest_HashBytes(hash, &written, 4);
         hash = SelfTest_HashBytes(hash, buffer, sizeof buffer);

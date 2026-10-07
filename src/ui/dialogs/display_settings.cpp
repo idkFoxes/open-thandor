@@ -36,7 +36,7 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
         .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
         .leftOffset = 16, .topOffset = 232, .rightOffset = 112, .bottomOffset = 256,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_PREFERRED_FOCUS_TARGET},
-    .cancelButton_fields = {.stateFlags = 0x8, .actionId = UI_DISPLAY_MODE_ACTION_CANCEL, .textResourceId = TEXT_ID_CANCEL},
+    .cancelButton_fields = {.stateFlags = FromBits<UiSelectableStateFlags>(0x8), .actionId = UI_DISPLAY_MODE_ACTION_CANCEL, .textResourceId = TEXT_ID_CANCEL},
     .applyButton = { /* g_UiFramedTextButtonControlVtable */
         .selectable = {
             .base = {
@@ -286,14 +286,14 @@ FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
             .leftOffset = 16, .topOffset = -32, .rightOffset = 112, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_PREFERRED_FOCUS_TARGET},
-        {.stateFlags = 0x00000008, .actionId = 0x0000020D, .textResourceId = 0x00000101},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000008), .actionId = 0x0000020D, .textResourceId = 0x00000101},
         { /* +00B4 keepModeButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x110), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = 128, .topOffset = -32, .rightOffset = 240, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
-        {.stateFlags = 0x00000004, .textResourceId = 0x00000100},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000004), .textResourceId = 0x00000100},
         { /* +0110 countdownMessageText g_UiListOffsetControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),

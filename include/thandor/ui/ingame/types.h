@@ -496,7 +496,7 @@ struct InGameRuntimeRoot {
     uint8_t reserved4584_4643[192];
     struct UiPageStackControl gamePanelsModePageStack; // Switched by the game/editor layout toggle.
     uint8_t reserved4698_4937[672];
-    uint32_t minimapResourceButtonStateFlags; // UiSelectableControl.stateFlags of the resource panel sprite button (+0x48EC); UI_SELECTABLE_SELECTED_OR_CHECKED shows the resource plane on the minimap.
+    UiSelectableStateFlags minimapResourceButtonStateFlags; // UiSelectableControl.stateFlags of the resource panel sprite button (+0x48EC); UI_SELECTABLE_SELECTED_OR_CHECKED shows the resource plane on the minimap.
     uint8_t reserved493C_49B3[120];
     int primaryResourceDisplayCurrent;
     int primaryResourceDisplayLimit;
@@ -509,7 +509,7 @@ struct InGameRuntimeRoot {
     uint8_t reserved4AEC_4B27[60];
     int baselineEnergySupplyDisplay; // Baseline energy supply plus the (unshifted) tritium extraction rate.
     uint8_t reserved4B2C_4D53[552];
-    uint32_t diplomacyPanelNodeFlags; // UiNodeBase.nodeFlags of the diplomacy panel (+0x4D0C).
+    UiNodeFlags diplomacyPanelNodeFlags; // UiNodeBase.nodeFlags of the diplomacy panel (+0x4D54 in InGameRuntimeRoot).
     uint8_t reserved4D58_9A6B[19732];
     FieldGridCoordinates minimapOriginGridPosition; // Minimap (UiSelectionGeometryControl at +0x9A1C) source origin: the camera target in grid coordinates.
     Q12 minimapSampleScaleQ12; // Minimap sampleScaleQ12, follows the camera distance unless automatic zoom is off.
@@ -641,7 +641,7 @@ struct InGameRuntimeRootUiGridView {
     uint8_t reserved4584_4643[192];
     struct UiPageStackControl gamePanelsModePageStack;
     uint8_t reserved4698_4937[672];
-    uint32_t minimapResourceButtonStateFlags;
+    UiSelectableStateFlags minimapResourceButtonStateFlags;
     uint8_t reserved493C_49B3[120];
     int primaryResourceDisplayCurrent;
     int primaryResourceDisplayLimit;

@@ -18,7 +18,7 @@
 inline constexpr GraphicsCursorButtonState UI_POINTER_BUTTON_REPEAT_CLICK = GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK;
 /* UiImageControl stateFlags bits 0, 1, 9 and 10, cleared when a hovered image control loses the pointer
    (UiPointer_Dispatch*Press, UiImageControl pointer handlers). */
-inline constexpr int32_t UI_IMAGE_CONTROL_HOVER_STATE_BITS = 0x603;
+inline constexpr UiSelectableStateFlags UI_IMAGE_CONTROL_HOVER_STATE_BITS = FromBits<UiSelectableStateFlags>(0x603);
 
 void UiPointer_DispatchPendingEvents();
 

@@ -265,7 +265,7 @@ static uint32_t HexscanTest_RunDriver(int driver, FieldGridAsset *grid, FieldGri
         switch (driver) {
         case HEXSCAN_OVERLAY_A:
         case HEXSCAN_OVERLAY_B: {
-            FieldCellFlagMask mask = 1u << HexscanTest_Range(&seed, 0, 24);
+            FieldCellFlagMask mask = FieldCell_FromRawWord(1u << HexscanTest_Range(&seed, 0, 24));
             TerrainOverlayCellRuntimeValue value = (TerrainOverlayCellRuntimeValue)HexscanTest_Random(&seed);
             Bool8 rejected = driver == HEXSCAN_OVERLAY_A
                                  ? FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint(mask, value, radius, worldY,

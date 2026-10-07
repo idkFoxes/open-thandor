@@ -117,7 +117,7 @@ void FrontendPlayerConsensus_SubmitSelectedValue(UiNodeBase *source)
 {
   uint32_t consensusValue;
   
-  consensusValue = UiNode_As<UiSelectableControl>(source)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED;
+  consensusValue = ToBits(UiNode_As<UiSelectableControl>(source)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED);
   FrontendCommand_Issue<FrontendPlayerRuntime_SetConsensusValueAndRefresh>(0,0,consensusValue);
 }
 
