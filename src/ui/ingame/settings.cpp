@@ -73,6 +73,7 @@ void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
     g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->simulationStepTicks = stepTicks;
     remainingCount = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       if (g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->simulationStepTicks <
           stepTicks) {

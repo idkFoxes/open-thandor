@@ -64,7 +64,7 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
 
   if (((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     recordIndex = ARMY_STOCK_ENTRY_COUNT - 1;
-    do {
+    while (-1 < recordIndex) {
       if ((int)((uintptr_t)control - (uintptr_t)g_InGameRuntimeRoot) ==
           g_UiCommandSpriteVariantAOffsetTables[g_UiCommandSpriteVariantAColumnCount][recordIndex])
       {
@@ -73,7 +73,7 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
         break;
       }
       recordIndex--;
-    } while (-1 < recordIndex);
+    }
   }
   cursorFrame = INGAME_CURSOR_FRAME_ARMY_STOCK;
   if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
