@@ -389,35 +389,35 @@ uint32_t Locale_GetPackedCurrentTime()
 /* Guesses the player's telephone country code from the Windows user language: English 44, German 49,
    French 33, Italian 39, Spanish 34, Russian 7, anything else 0.
 */
-uint32_t Locale_GetDefaultTelephoneCountryCode()
+LocaleTelephoneCountryCode Locale_GetDefaultTelephoneCountryCode()
 
 {
   LCID userLocaleId;
   uint32_t primaryLanguageId;
-  uint32_t telephoneCountryCode;
+  LocaleTelephoneCountryCode telephoneCountryCode;
 
   userLocaleId = GetUserDefaultLCID();
   primaryLanguageId = userLocaleId & LOCALE_PRIMARY_LANGUAGE_MASK;
   if (primaryLanguageId == LANG_ENGLISH) {
-    telephoneCountryCode = LOCALE_COUNTRY_GREAT_BRITAIN;
+    telephoneCountryCode = LocaleTelephoneCountryCode::LOCALE_COUNTRY_GREAT_BRITAIN;
   }
   else if (primaryLanguageId == LANG_GERMAN) {
-    telephoneCountryCode = LOCALE_COUNTRY_GERMANY;
+    telephoneCountryCode = LocaleTelephoneCountryCode::LOCALE_COUNTRY_GERMANY;
   }
   else if (primaryLanguageId == LANG_FRENCH) {
-    telephoneCountryCode = LOCALE_COUNTRY_FRANCE;
+    telephoneCountryCode = LocaleTelephoneCountryCode::LOCALE_COUNTRY_FRANCE;
   }
   else if (primaryLanguageId == LANG_ITALIAN) {
-    telephoneCountryCode = LOCALE_COUNTRY_ITALY;
+    telephoneCountryCode = LocaleTelephoneCountryCode::LOCALE_COUNTRY_ITALY;
   }
   else if (primaryLanguageId == LANG_SPANISH) {
-    telephoneCountryCode = LOCALE_COUNTRY_SPAIN;
+    telephoneCountryCode = LocaleTelephoneCountryCode::LOCALE_COUNTRY_SPAIN;
   }
   else if (primaryLanguageId == LANG_RUSSIAN) {
-    telephoneCountryCode = 7;
+    telephoneCountryCode = LocaleTelephoneCountryCode::LOCALE_COUNTRY_RUSSIA;
   }
   else {
-    telephoneCountryCode = LOCALE_COUNTRY_GENERIC;
+    telephoneCountryCode = LocaleTelephoneCountryCode::LOCALE_COUNTRY_GENERIC;
   }
   return telephoneCountryCode;
 }

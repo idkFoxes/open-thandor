@@ -12,7 +12,7 @@
 
 /* Module data. */
 
-uint32_t g_FrontendRomTransitionPageAction = 0;
+FrontendPageAction g_FrontendRomTransitionPageAction = FRONTEND_PAGE_ACTION_NONE;
 
 RomRecord *g_FrontendActiveRomRecord = nullptr;
 
@@ -52,7 +52,7 @@ void FrontendRomActionTable_ExecuteRecord
   FrontendModelPointerContext *menuRoomView;
   WorldRuntimeContext *menuRoomCamera;
   Bool8 visibilityLookupFailed;
-  RomRecordId pageAction;
+  FrontendPageAction pageAction;
   RomRecordId targetRecordId;
 
   if (recordIndex >= g_FrontendActiveRomRecord->entryCount) {
@@ -62,7 +62,7 @@ void FrontendRomActionTable_ExecuteRecord
             (g_FrontendActiveRomRecord,recordIndex * FRONTEND_ROM_ACTION_ENTRY_SIZE + FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE);
   menuRoomView = &g_FrontendRootNode->menuRoomModelView;
   targetRecordId = entry->targetRecordId;
-  pageAction = entry->pageAction;
+  pageAction = static_cast<FrontendPageAction>(entry->pageAction); /* ROM int32_t, negative: close */
   /* gameplay settings, quit confirmation, credits and closing are refused in network sessions, network
      setup without a network backend */
   if (!(((pageAction != FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE &&
@@ -120,7 +120,7 @@ void FrontendRomActionTable_ExecuteRecord
   if (targetRecord == nullptr) {
     return;
   }
-  pageAction = entry->pageAction;
+  pageAction = static_cast<FrontendPageAction>(entry->pageAction); /* ROM int32_t, negative: close */
   /* The six channels of the last keyframe become the target record's camera pose; its timeQ12 comes
      from the action entry. */
   entry->keyframes[lastKeyframeIndex].channel0Q12 = targetRecord->cameraXQ12;
@@ -240,7 +240,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
   FrontendRomActionEntry *entryCursor;
   RomAssetRecordPrefix *record;
   WorldRuntimeNode *rootNode;
-  uint32_t transitionContextValue;
+  FrontendPageAction transitionContextValue;
   RomRecordTableCount entriesRemaining;
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
@@ -286,7 +286,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
             (2,RomRecord_Of(activeRecord)->cameraPitchAngle,
              RomRecord_Of(activeRecord)->cameraHeadingAngle,
              RomRecord_Of(activeRecord)->cameraMagnitudeQ12,worldRuntime);
-  if (transitionContextValue != 0) {
+  if (transitionContextValue != FRONTEND_PAGE_ACTION_NONE) {
     if ((int)transitionContextValue < 0) {
       UiActionQueue_Enqueue(0,worldRuntime);
     }

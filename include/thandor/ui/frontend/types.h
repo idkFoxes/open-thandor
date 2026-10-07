@@ -180,9 +180,45 @@ using FrontendMessageValueB = uint32_t;
 
 using FrontendMessageValueC = uint32_t;
 
-using RomVisibilityFrontendValue = uint32_t;
-
 using FrontendReadyFlagMask = uint32_t;
+
+/* Frontend menu state machine (Frontend_MainLoop).
+   g_FrontendPendingPageAction holds the next step of the menu. A ROM action-table record writes it when the
+   player activates a menu entry (FrontendRomActionTable_ExecuteRecord; 3, 4 and 9 are refused in a network
+   session, 2 needs a network backend), Frontend_MainLoop writes it after re-initialising the frontend. Every
+   frame Frontend_MainLoop performs the pending action and resets it to FRONTEND_PAGE_ACTION_NONE; the
+   "wait" actions stay pending until every player block has reached the matching FRONTEND_PLAYER_STATE_* bit.
+   The values come from the ROM action table (FrontendRomActionEntry.pageAction, an int32_t: a negative one closes
+   the menu-room view and is never stored); any other value tears the frontend down and rebuilds it at the entry
+   record, so the uint32_t of the enum also holds values without an enumerator. */
+enum class FrontendPageAction : uint32_t {
+    FRONTEND_PAGE_ACTION_NONE = 0,
+    FRONTEND_PAGE_ACTION_START_SESSION = 1, /* leave the frontend, run a new session of the loaded level */
+    FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE = 2,
+    FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE = 3,
+    FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE = 4, /* quit confirmation, page-stack page 9 (FrontendSession_ShowQuitConfirmPage) */
+    FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE = 5, /* waits for the scenario catalogue exchange */
+    FRONTEND_PAGE_ACTION_RESUME_SAVED_SESSION = 6, /* leave the frontend, run the loaded save (load flag 1) */
+    FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE = 7, /* waits until every player is ready for it */
+    FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE = 8, /* waits until every player has the level */
+    FRONTEND_PAGE_ACTION_CREDITS = 9,
+};
+using enum FrontendPageAction;
+using RomVisibilityFrontendValue = FrontendPageAction; /* the pending transition value */
+
+/* g_FrontendNetworkState, dispatched by Frontend_StateTick (values 3..5 are set by network/protocol/transfer). */
+enum class FrontendNetworkState : uint32_t {
+    FRONTEND_NETWORK_STATE_IDLE = 0,
+    FRONTEND_NETWORK_STATE_BROWSING = 1, /* network game page: polls for sessions, handles join acks */
+    FRONTEND_NETWORK_STATE_HOSTING = 2, /* host lobby: publishes the session, handles joining players */
+    FRONTEND_NETWORK_STATE_JOINED = 3, /* client in the host lobby after the join ack
+                                          (FrontendTransfer_HandleSessionListAndJoinAckPackets) */
+    FRONTEND_NETWORK_STATE_HOST_STARTING = 4, /* host sends commands and player snapshots to the clients
+                                                 (FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands) */
+    FRONTEND_NETWORK_STATE_CLIENT_STARTING = 5, /* client receives the session start
+                                                   (FrontendTransfer_HandleHostSessionAndCommandBatchPackets) */
+};
+using enum FrontendNetworkState;
 
 /* Bits of FrontendPlayerRuntimeRecord.factionAssignment.roleStateFlags: per-player progress through the
    network menu handshake, set locally or from the peer's packets (ui/frontend/player, assets/scenario/catalog). */

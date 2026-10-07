@@ -30,7 +30,7 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination);
 
 uint32_t Locale_GetPackedCurrentTime();
 
-uint32_t Locale_GetDefaultTelephoneCountryCode();
+LocaleTelephoneCountryCode Locale_GetDefaultTelephoneCountryCode();
 
 void Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination);
 

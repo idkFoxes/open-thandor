@@ -76,6 +76,9 @@ static_assert(sizeof(ShotDefinition) == 0x2E0 &&
               offsetof(ShotDefinition, secondaryEffectDefinition) == 0x268 &&
               offsetof(ShotDefinition, ownedNestedResource) == 0x294,
               "ShotDefinition keeps its 32-bit layout");
+static_assert(offsetof(ShotDefinition, trajectoryMode) == 0x0 && sizeof(ShotDefinition::trajectoryMode) == 4 &&
+                  alignof(ShotDefinition) == 4,
+              "ShotDefinition.trajectoryMode stays the 4-byte SHT trajectory selector at +0x0");
 static_assert(sizeof(WorldRuntimeSelectionState) == 0x44 &&
               offsetof(WorldRuntimeSelectionState, selectedEntity) == 0x20 &&
               offsetof(WorldRuntimeSelectionState, dispatchCommandCallback) == 0x24 &&
@@ -211,6 +214,9 @@ static_assert(sizeof(EffectDefinition) == 0xC0 &&
               offsetof(EffectDefinition, periodicEffectDefinition) == 0x48 &&
               offsetof(EffectDefinition, ownedNestedResource) == 0x74,
               "EffectDefinition keeps its 32-bit layout");
+static_assert(offsetof(EffectDefinition, creationFlags) == 0x30 && sizeof(EffectDefinition::creationFlags) == 4 &&
+                  alignof(EffectDefinition) == 4,
+              "EffectDefinition.creationFlags stays the 4-byte EFF creation flag word at +0x30");
 static_assert(sizeof(ModelRuntimePayloadReference4) == 0x4 &&
               offsetof(ModelRuntimePayloadReference4, modelRuntime) == 0x0 &&
               offsetof(ModelRuntimePayloadReference4, armyRuntime) == 0x0 &&
@@ -487,6 +493,20 @@ static_assert(sizeof(UiTransferPacket) == 0x40,
               "UiTransferPacket keeps its 32-bit layout");
 static_assert(sizeof(UiScrollableControl) == 0x90,
               "UiScrollableControl keeps its 32-bit layout");
+/* The 32-bit state flag fields of the text edits, lists and scrollables (flag enums since E1d): offset and size. */
+static_assert(offsetof(UiNumericTextControl, editStateFlags) == 0x4C && sizeof(UiNumericTextControl::editStateFlags) == 4 &&
+              offsetof(UiTextEditControl, editStateFlags) == 0x4C && sizeof(UiTextEditControl::editStateFlags) == 4 &&
+              offsetof(UiRequiredTextEditControl, editStateFlags) == 0x4C &&
+              sizeof(UiRequiredTextEditControl::editStateFlags) == 4 &&
+              offsetof(InGameCommandTextEditControlCC, editStateFlags) == 0x4C &&
+              sizeof(InGameCommandTextEditControlCC::editStateFlags) == 4 &&
+              offsetof(UiPointerListControl, listStateFlags) == 0x4C && sizeof(UiPointerListControl::listStateFlags) == 4 &&
+              offsetof(UiTextListControl, listStateFlags) == 0x4C && sizeof(UiTextListControl::listStateFlags) == 4 &&
+              offsetof(UiListControl, listStateFlags) == 0x4C && sizeof(UiListControl::listStateFlags) == 4 &&
+              offsetof(UiScrollableControl, scrollStateFlags) == 0x4C &&
+              sizeof(UiScrollableControl::scrollStateFlags) == 4 &&
+              alignof(decltype(UiScrollableControl::scrollStateFlags)) == 4,
+              "the control state flag fields keep offset 0x4C and 4 bytes");
 static_assert(sizeof(ModelRaycastTriangleDescriptor) == 0x40 &&
               offsetof(ModelRaycastTriangleDescriptor, vertex0) == 0x0 &&
               offsetof(ModelRaycastTriangleDescriptor, vertex1) == 0xC &&
@@ -712,6 +732,9 @@ static_assert(sizeof(PckArchiveHeader) == 0x200,
               "PckArchiveHeader keeps its 32-bit layout");
 static_assert(sizeof(PckEntryHeader) == 0x200,
               "PckEntryHeader keeps its 32-bit layout");
+static_assert(offsetof(PckEntryHeader, typeTag) == 0x1F4 && sizeof(PckEntryHeader::typeTag) == 4 &&
+                  offsetof(PckEntryHeader, compressionMethod) == 0x1FC && alignof(PckEntryHeader) == 4,
+              "PckEntryHeader.typeTag stays the 4-byte asset type tag at +0x1F4");
 static_assert(sizeof(ModelRuntimeSlotUnrebaseView) == 0x200,
               "ModelRuntimeSlotUnrebaseView keeps its 32-bit layout");
 static_assert(sizeof(ArmyAssetRecordPrefix) == 0x10,
@@ -771,8 +794,10 @@ static_assert(sizeof(TextResourceLocaleCountHeader) == 0xB4,
               "TextResourceLocaleCountHeader keeps its 32-bit layout");
 static_assert(sizeof(TextResourceAssetHeader) == 0x200,
               "TextResourceAssetHeader keeps its 32-bit layout");
-static_assert(sizeof(TextResourceLocaleBlockPrefix) == 0x10,
-              "TextResourceLocaleBlockPrefix keeps its 32-bit layout");
+static_assert(sizeof(TextResourceLocaleBlockPrefix) == 0x10 &&
+              offsetof(TextResourceLocaleBlockPrefix, countryCode) == 0x8 &&
+              sizeof(TextResourceLocaleBlockPrefix::countryCode) == 4,
+              "TextResourceLocaleBlockPrefix keeps its 32-bit layout (countryCode is the file dword at +8)");
 static_assert(sizeof(TextResourcePageBinding) == 0x8 &&
               offsetof(TextResourcePageBinding, selectedLocaleBlock) == 0x0 &&
               offsetof(TextResourcePageBinding, asset) == 0x4,

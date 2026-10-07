@@ -602,12 +602,12 @@ struct GraphicsFixedMatrix3x4 {
 
 using ModelDefinitionHierarchyNodeAddress32 = intptr_t; /* address of a definition hierarchy node, pointer-sized (5f) */
 
-enum {
+/* g_FileSystemEnumerateDirectoryOrVolumeEntries: what to list. */
+enum class FileSystemEnumerationMode : int {
     FILESYSTEM_ENUMERATE_FILES=0,
     FILESYSTEM_ENUMERATE_VOLUME_LABEL=1,
     FILESYSTEM_ENUMERATE_DIRECTORIES=2
 };
-using FileSystemEnumerationMode = int;
 
 enum {
     FILESYSTEM_SEEK_BEGIN=0,

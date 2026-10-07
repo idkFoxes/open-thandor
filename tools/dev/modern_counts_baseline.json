@@ -1,5 +1,5 @@
 {
- "revision": "ece4aaaa",
+ "revision": "68ce0a79",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -152,7 +152,7 @@
    "world": 50
   },
   "constexpr": {
-   "assets": 102,
+   "assets": 99,
    "audio": 15,
    "core": 211,
    "gameplay": 187,
@@ -160,18 +160,19 @@
    "movie": 28,
    "network": 129,
    "platform": 162,
-   "ui": 640,
+   "ui": 614,
    "world": 115
   },
   "typedef_struct": {},
   "enum_class": {
-   "core": 8,
+   "assets": 5,
+   "core": 10,
    "gameplay": 6,
-   "graphics": 3,
+   "graphics": 4,
    "movie": 2,
    "network": 7,
-   "platform": 3,
-   "ui": 19,
+   "platform": 4,
+   "ui": 30,
    "world": 4
   },
   "libc_alloc": {},

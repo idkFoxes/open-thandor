@@ -44,7 +44,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .topOffset = -24,
                 .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .editStateFlags = 0x00000E00, .actionId = 0x0000204C, .bufferCapacityCodeUnits = 0x00000030},
+            .editStateFlags = FromBits<UiRequiredTextEditStateFlags>(0x00000E00), .actionId = 0x0000204C, .bufferCapacityCodeUnits = 0x00000030},
         {},
         { /* +01D4 moviePlaybackView g_UiSoftwareTexturePreviewControlVtable */
             .base = {
@@ -173,7 +173,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = 4, .topOffset = -128, .rightOffset = 288, .bottomOffset = 56,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +0854 briefingText g_UiListOffsetControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7C4),
@@ -809,14 +809,14 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = -176, .topOffset = -112, .rightOffset = 304, .bottomOffset = 64,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x00000480, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x00000480), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +1FBC savedGamesList g_UiListControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1F2C),
                 .vtable = THANDOR_PTR(&g_UiListControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .listStateFlags = 0x0000000A, .actionId = 0x00002039, .columnCount = 0x00000002,
+            .listStateFlags = FromBits<UiListStateFlags>(0x0000000A), .actionId = 0x00002039, .columnCount = 0x00000002,
             .columns = {{.width = 0x00000100}}},
         {0x000000C9, 0x000000C0, 0x000021DD},
         { /* +203C savedGamesLabel g_UiFocusProxyControlVtable */
@@ -845,14 +845,14 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = -176, .topOffset = -112, .rightOffset = 304, .bottomOffset = 64,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x00000480, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x00000480), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +2184 missionsList g_UiListControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x20F4),
                 .vtable = THANDOR_PTR(&g_UiListControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .listStateFlags = 0x0000000A, .actionId = 0x0000203A, .columnCount = 0x00000005,
+            .listStateFlags = FromBits<UiListStateFlags>(0x0000000A), .actionId = 0x0000203A, .columnCount = 0x00000005,
             .columns = {{.width = 0x000000C0, .rowTextOffset = 0x00000074}}},
         {0x0000005C, 0x00000054, 0x0000005C, 0x00000084, 0x00000030, 0x00000040, 0x00000021, 0x00000048, 0x000021DB},
         { /* +221C missionsLabel g_UiFocusProxyControlVtable */
@@ -881,14 +881,14 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = -176, .topOffset = -112, .rightOffset = 304, .bottomOffset = 64,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x00000480, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x00000480), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +2364 campaignsList g_UiListControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x22D4),
                 .vtable = THANDOR_PTR(&g_UiListControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .listStateFlags = 0x0000000A, .actionId = 0x0000203B, .columnCount = 0x00000003,
+            .listStateFlags = FromBits<UiListStateFlags>(0x0000000A), .actionId = 0x0000203B, .columnCount = 0x00000003,
             .columns = {{.width = 0x00000179, .rowTextOffset = 0x00000054}}},
         {0x00000030, 0x00000040, 0x00000020, 0x00000048, 0x000021DC},
         { /* +23EC campaignsLabel g_UiFocusProxyControlVtable */
@@ -1947,14 +1947,14 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = 16, .topOffset = -116, .rightOffset = 256, .bottomOffset = -48,
                 .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +4A70 networkProtocolList g_UiTextListControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x49E0),
                 .vtable = THANDOR_PTR(&g_UiTextListControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .listStateFlags = 0x0000000A, .actionId = 0x0000200F},
+            .listStateFlags = FromBits<UiTextListStateFlags>(0x0000000A), .actionId = 0x0000200F},
         { /* +4AD8 sessionListScrollBox g_UiScrollableControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0x4BEC), .firstChild = UI_TEMPLATE_LINK(0x4B68), .parent = UI_TEMPLATE_LINK(0x4808),
@@ -1963,14 +1963,14 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = -256, .topOffset = -16, .rightOffset = 256, .bottomOffset = 112,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +4B68 sessionList g_UiListControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4AD8),
                 .vtable = THANDOR_PTR(&g_UiListControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .listStateFlags = 0x0000000A, .actionId = 0x00002009, .columnCount = 0x00000003,
+            .listStateFlags = FromBits<UiListStateFlags>(0x0000000A), .actionId = 0x00002009, .columnCount = 0x00000003,
             .columns = {{.width = -128, .rowTextOffset = 0x00000018}}},
         {0x00000148, 0x00000040, 0x00000030, 0x00000098},
         { /* +4BEC hostAddressLabel g_UiFocusProxyControlVtable */
@@ -2017,7 +2017,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = -256, .topOffset = -65, .rightOffset = -16, .bottomOffset = -48,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .editStateFlags = 0x00000608, .actionId = 0x0000200D, .bufferCapacityCodeUnits = 0x00000040},
+            .editStateFlags = FromBits<UiRequiredTextEditStateFlags>(0x00000608), .actionId = 0x0000200D, .bufferCapacityCodeUnits = 0x00000040},
         {},
         { /* +4E48 playerNameEdit g_UiRequiredTextEditControlVtable */
             .base = {
@@ -2027,7 +2027,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = -256, .topOffset = -116, .rightOffset = -16, .bottomOffset = -99,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .editStateFlags = 0x00000408, .actionId = 0x00002032, .bufferCapacityCodeUnits = 0x00000014},
+            .editStateFlags = FromBits<UiRequiredTextEditStateFlags>(0x00000408), .actionId = 0x00002032, .bufferCapacityCodeUnits = 0x00000014},
         {},
         { /* +4EDC hostGameSetupPage g_UiImagePanelControlVtable */
             .base = {
@@ -2076,7 +2076,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = -192, .topOffset = -89, .rightOffset = 192, .bottomOffset = -72,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .editStateFlags = 0x00000408, .actionId = 0x00002008, .bufferCapacityCodeUnits = 0x00000014},
+            .editStateFlags = FromBits<UiRequiredTextEditStateFlags>(0x00000408), .actionId = 0x00002008, .bufferCapacityCodeUnits = 0x00000014},
         {},
         { /* +50E8 maxPlayersSlider g_UiRangeSliderControlVtable */
             .base = {
@@ -2201,14 +2201,14 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = -256, .topOffset = -112, .rightOffset = 256, .bottomOffset = 112,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +55EC hostLobbyPlayerList g_UiListControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x555C),
                 .vtable = THANDOR_PTR(&g_UiListControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .listStateFlags = 0x0000000A, .actionId = 0x0000200C, .columnCount = 0x00000003,
+            .listStateFlags = FromBits<UiListStateFlags>(0x0000000A), .actionId = 0x0000200C, .columnCount = 0x00000003,
             .columns = {{.width = 0x00000180, .rowTextOffset = 0x00000018}}},
         {0x00000038, 0x00000078, 0x00000040, 0x00000094},
         { /* +5670 hostLobbyPlayerListLabel g_UiFocusProxyControlVtable */
@@ -2256,7 +2256,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftOffset = -256, .topOffset = -112, .rightOffset = 256, .bottomOffset = 112,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +5874 clientLobbyPlayerList g_UiListControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x57E4),
@@ -2330,7 +2330,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x00000080, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x00000080), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +5B58 displayResolutionRowPanel g_UiPanelControlVtable */
             .root = {
                 .base = {

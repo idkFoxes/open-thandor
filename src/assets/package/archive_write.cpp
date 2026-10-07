@@ -55,7 +55,7 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
     newEntry->compressionMethod = PCK_COMPRESSION_STORED;
     archiveHeader->archiveSize = archiveHeader->archiveSize + alignedByteCount + PCK_ENTRY_HEADER_BYTES;
     newEntry->runtimePayloadOffset = 0;
-    newEntry->typeTag = (PckAssetTypeTag)*sourceData;
+    newEntry->typeTag = static_cast<PckAssetTypeTag>(*sourceData);
     newEntry->unpackedSize = unpackedSize;
     if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
       return false;
@@ -85,7 +85,7 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
     newEntry->compressionMethod = compressionMethod;
     archiveHeader->archiveSize = archiveHeader->archiveSize + byteCount;
     newEntry->runtimePayloadOffset = 0;
-    newEntry->typeTag = (PckAssetTypeTag)*sourceData;
+    newEntry->typeTag = static_cast<PckAssetTypeTag>(*sourceData);
     newEntry->unpackedSize = unpackedSize;
     if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
       return false;
