@@ -187,6 +187,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   /* one 16-cell block per field cell */
   blocksToClear = fieldGridWidth * rowsRemaining;
   scratchCursor = g_GridScratchPrimary;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     scratchCursor->stateMask = scratchCursor->stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
     scratchCursor[1].stateMask = scratchCursor[1].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
@@ -211,6 +212,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   fieldCell = fieldGridAsset->cells;
   columnsRemaining = fieldGridWidth;
   scratchCursor = g_GridScratchPrimary;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       cellClassMask = GridScratch_ClassifyFieldCell(fieldCell);
@@ -285,6 +287,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   cellsToPromote = g_GridScratchHeight * g_GridScratchWidth;
   scratchCursor = g_GridScratchPrimary + (int32_t)(g_GridScratchWidth * -4);
   cellsRemaining = cellsToPromote;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     scratchCursor[scratchStride * 4].stateMask =
          scratchCursor[scratchStride * 4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
@@ -300,6 +303,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
     cellsRemaining--;
   } while (cellsRemaining != 0);
   promoteCursor = g_GridScratchPrimary;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     if ((promoteCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) {
       promoteCursor->stateMask = promoteCursor->stateMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
@@ -317,6 +321,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                GRID_SCRATCH_TERRAIN_CLASS_BIT28 | GRID_SCRATCH_TRAVERSAL_VISITED);
     cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT30|GRID_SCRATCH_TERRAIN_CLASS_BIT29|
@@ -336,6 +341,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                GRID_SCRATCH_TERRAIN_CLASS_BIT26 | GRID_SCRATCH_TERRAIN_CLASS_BIT25 | GRID_SCRATCH_TRAVERSAL_VISITED);
     cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT27|GRID_SCRATCH_TERRAIN_CLASS_BIT26|
@@ -433,6 +439,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
   columnsRemaining = gridWidth;
   currentFieldCell = fieldGrid->cells;
   scratchCellCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       /* the original advances first and then tests the flags of the current cell */
