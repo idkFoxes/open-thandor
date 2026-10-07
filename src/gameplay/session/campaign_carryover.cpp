@@ -41,7 +41,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
   uint32_t *technologyMasks;
   uint32_t *secondaryTableCursor;
   uint32_t *primaryRecord;
-  Bool8 scenarioFound;
+  bool scenarioFound;
 
   scenarioFound = false;
   /* Campaign asset (CampaignAsset): the cursor starts at the asset base and advances by one 0x180-byte level
@@ -222,7 +222,7 @@ void OldUnitRuntime_ResetPendingTables()
 
 /* True when there is nothing to store in the oldunit entry: no old-unit records and every secondary-table
    dword zero. */
-Bool8 InGameSaveGame_OldUnitTablesAreEmpty()
+bool InGameSaveGame_OldUnitTablesAreEmpty()
 
 {
   int index;
@@ -240,7 +240,7 @@ Bool8 InGameSaveGame_OldUnitTablesAreEmpty()
 
 /* Writes the oldunit entry: the record count followed by the primary and the secondary table, packed into a
    temporary allocation. Returns false only when that allocation fails. */
-Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
+bool InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
 
 {
   ArenaScoped oldUnitBlock; /* freed on return, after the entry is written */

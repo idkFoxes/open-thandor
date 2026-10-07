@@ -12,7 +12,7 @@
 /* Loading stages 1 to 5 of a saved game: as NewLevel_InitTerrainAndGraphics, but the terrain loader also clears
    the cell overlay flags, and the army references of the saved faction image are rebased before the terrain
    lighting is set. */
-static Bool8 SavedLevel_InitTerrainAndGraphics
+static bool SavedLevel_InitTerrainAndGraphics
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
@@ -115,7 +115,7 @@ static void SavedLevel_PlaceStartCameraAndLightFieldRegion
 
 /* Spatial sound slots of a saved game (loading stage 6): as NewLevel_LoadSpatialSounds, with one more
    loading-movie step after the sound directory's extension is set. */
-static Bool8 SavedLevel_LoadSpatialSounds
+static bool SavedLevel_LoadSpatialSounds
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
@@ -124,14 +124,14 @@ static Bool8 SavedLevel_LoadSpatialSounds
   uint16_t *soundDirectoryPath;
   void *directoryListing;
   PckOutputCapacityBytes listingCapacityBytes;
-  Bool8 soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
+  bool soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
   uint32_t listedSoundCount;
   uint32_t soundDirectoryRecordSizeBytes;
   uint32_t allocError;
   uint32_t shrinkError;
   uint16_t *listedSoundPath;
   uint32_t soundIndex;
-  Bool8 sampleLoaded;
+  bool sampleLoaded;
   void *loadedSample;
   uint32_t loadErrorCode;
   SpatialSoundSlot *soundSlot;
@@ -214,7 +214,7 @@ static Bool8 SavedLevel_LoadSpatialSounds
    and initial relations are skipped; the saved faction image already holds them.
 */
 
-Bool8 InGameLevelRuntime_LoadResourcesAfterExternalTables
+bool InGameLevelRuntime_LoadResourcesAfterExternalTables
           (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {

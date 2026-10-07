@@ -34,26 +34,26 @@ enum class PackageLoadFlags : uint32_t {
 THANDOR_FLAG_ENUM(PackageLoadFlags);
 using enum PackageLoadFlags;
 
-Bool8 Package_LoadEntryIntoBuffer
+bool Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
            uint32_t *outByteCountOrError);
 
-Bool8 Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError);
+bool Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError);
 
 void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *outErrorCode);
 
 void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode);
 
-Bool8 Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError);
+bool Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError);
 
-Bool8 Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
+bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
                        uint16_t *pattern,EngineFileHandle fileHandle,uint32_t *outMatchCount);
 
 void Package_Unmount(EngineFileHandle fileHandle);
 
-Bool8 Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate);
+bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate);
 
-Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
+bool Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
                              uint32_t *outByteCount,uint32_t *outErrorCode);
 
 void Package_SetLastErrorPath(uint16_t *path);
@@ -62,7 +62,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
 
 PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *outFileHandle);
 
-Bool8 Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode);
+bool Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
 void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path);
 

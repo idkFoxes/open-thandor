@@ -44,7 +44,7 @@ UiTransferMailboxState g_UiTransferMailbox = {};
 /* Descrambles the received datagram in place and checks its XOR checksum: the XOR of all dwords of the packet
    (unit count * 8 dwords, checksum field zeroed) must equal the transmitted checksum. See the checksum quirk
    at UiTransferMailbox_ServiceAndRetransmitTimer. */
-static Bool8 UiTransferMailbox_DecryptAndVerifyRecord(UiRuntimeRecord *ringRecord)
+static bool UiTransferMailbox_DecryptAndVerifyRecord(UiRuntimeRecord *ringRecord)
 {
   UiTransferXorChecksum *checksumField;
   UiTransferXorChecksum checksum;
@@ -123,7 +123,7 @@ static void UiTransferMailbox_ReceiveChunk
        transfer in the package scratch buffer (the scenario catalog is smaller), so a larger total is malformed.
        Logged once: it repeats for every such chunk while the transfer is still requested. */
     if (totalByteCount > PACKAGE_SCRATCH_BUFFER_BYTES) {
-      static Bool8 s_loggedOversizedTransfer = false;
+      static bool s_loggedOversizedTransfer = false;
       if (!s_loggedOversizedTransfer) {
         s_loggedOversizedTransfer = true;
         Thandor_Log("UiTransferMailbox_ReceiveChunk: rejected transfer of %u bytes (maximum %u)",totalByteCount,
@@ -193,7 +193,7 @@ static void UiTransferMailbox_ServeChunkRequest
      only ask for offsets below the size (the chunk is then clipped to the rest). Logged once: a peer may repeat
      the request every frame. */
   if (*Packet_At<UiTransferMailboxByteOffset>(ringRecord->payload,0) > g_UiTransferMailbox.outgoingByteCount) {
-    static Bool8 s_loggedOutOfRangeRequest = false;
+    static bool s_loggedOutOfRangeRequest = false;
     if (!s_loggedOutOfRangeRequest) {
       s_loggedOutOfRangeRequest = true;
       Thandor_Log("UiTransferMailbox_ServeChunkRequest: rejected chunk request at offset %u (transfer %u bytes)",
@@ -291,7 +291,7 @@ void UiTransferMailbox_ServiceAndRetransmitTimer()
   uint32_t nextSlotIndex;
   UiRuntimeRecord *ringRecord;
   UiTransferSenderEndpointSlot *senderEndpointSlot;
-  Bool8 lockBusy;
+  bool lockBusy;
 
   g_UiTransferMailboxTickCounter++;
   lockBusy = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
@@ -419,11 +419,11 @@ void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,vo
    with a parallel ring of 16-byte endpoint copies) and hands that copy to the backend send slot. The unit
    count is the high word of packedTypeAndUnitCount. Returns true when the backend send failed.
 */
-Bool8 UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet)
+bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet)
 
 {
   uint32_t nextUnitCursor;
-  Bool8 moreBytes;
+  bool moreBytes;
   uint8_t *endpointBufferBase;
   uint32_t currentSequenceToken;
   uint32_t currentSenderContext;

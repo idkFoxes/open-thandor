@@ -133,7 +133,7 @@ bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Graph
    passes.
    The original used the header unchecked; checked here because a malformed package entry made the palette
    conversion, the blits, the rasterizer and the hit test read or write outside the asset. */
-Bool8 GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sourceAsset)
+bool GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sourceAsset)
 
 {
   const GraphicsTextureSourceEntry *entry;

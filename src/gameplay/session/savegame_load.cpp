@@ -140,7 +140,7 @@ static bool SavedOffset_IsElementInPool(uint32_t savedOffset,uint32_t poolBytes,
    (FATAL_ERROR_LEVEL_ASSET_INVALID) because the save is untrusted input. Every save written by the game passes:
    the writer saves only offsets of live pool elements, at most 13 nested children (the model tree loaders bound
    childCount) and the owner army's faction index. */
-static Bool8 ResourceRegistrationRuntime_ValidateLoadedRecords
+static bool ResourceRegistrationRuntime_ValidateLoadedRecords
           (const ResourceRegistrationRuntimeImageSavedView *runtimeImage,uint32_t *outError)
 
 {
@@ -225,7 +225,7 @@ static Bool8 ResourceRegistrationRuntime_ValidateLoadedRecords
 
 /* Loads one saved runtime pool (a .hex entry of the save package) into its buffer; false with the load error in
    *outError, which stays unchanged on success. */
-static Bool8 SavedLevel_LoadRuntimePool
+static bool SavedLevel_LoadRuntimePool
           (PckLoadCapacityFlags bufferCapacity,uint8_t *destination,uint16_t *path,uint32_t *outError)
 
 {
@@ -239,7 +239,7 @@ static Bool8 SavedLevel_LoadRuntimePool
 
 /* Loads the saved runtime pools (widget.hex, army.hex, modul.hex, effect.hex, shot.hex, light.hex) over the
    freshly initialised ones and rebases their pointers. */
-Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *outError)
+bool SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
   if (!SavedLevel_LoadRuntimePool(worldRuntime->objectCount * sizeof(WorldObjectRecord),

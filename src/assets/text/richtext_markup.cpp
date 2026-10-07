@@ -30,14 +30,14 @@ struct RichTextMarkupParser {
   uint32_t remainingCapacityBytes;
   uint32_t codeUnitBias;
   int32_t key;
-  Bool8 insideTag;
+  bool insideTag;
   uint32_t tagCount;
   uint16_t **tagStarts;
   int32_t *tagKeys;
 };
 
 /* Appends one code unit to the output; false when no more than 2 bytes are left. */
-static Bool8 RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t codeUnit)
+static bool RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t codeUnit)
 {
   if (parser->remainingCapacityBytes <= 2) {
     return false;
@@ -48,7 +48,7 @@ static Bool8 RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t c
 }
 
 /* A text byte: emitted with the current code page bias inside a tag, ignored outside. */
-static Bool8 RichTextMarkup_EmitTextByte(RichTextMarkupParser *parser,uint32_t markupByte)
+static bool RichTextMarkup_EmitTextByte(RichTextMarkupParser *parser,uint32_t markupByte)
 {
   if (!parser->insideTag) {
     return true;
@@ -57,7 +57,7 @@ static Bool8 RichTextMarkup_EmitTextByte(RichTextMarkupParser *parser,uint32_t m
 }
 
 /* '#>': ends the string with a NUL terminator, padded to a dword boundary. */
-static Bool8 RichTextMarkup_TerminateString(RichTextMarkupParser *parser)
+static bool RichTextMarkup_TerminateString(RichTextMarkupParser *parser)
 {
   if (((uint32_t)(uintptr_t)parser->outputCursor & 2) == 0) {
     if (parser->remainingCapacityBytes <= 4) {
@@ -213,7 +213,7 @@ static uint32_t RichTextMarkup_FirstUngroupedTag(const int32_t *tagKeys,uint32_t
    {size, string count, key, 0}, the string offsets (relative to the group header) and the strings. String k
    ends at tagStarts[k + 1]. Returns false when remainingCapacityBytes runs out; otherwise advances
    *assetCursorInOut behind the last group and stores the group count. */
-static Bool8 RichTextMarkup_WriteStringGroups
+static bool RichTextMarkup_WriteStringGroups
           (uint16_t **tagStarts,int32_t *tagKeys,uint32_t tagCount,uint32_t remainingCapacityBytes,
            uint32_t **assetCursorInOut,uint32_t *outGroupCount)
 {
@@ -274,7 +274,7 @@ static Bool8 RichTextMarkup_WriteStringGroups
 }
 
 /* Frees the string buffer and fails with FATAL_ERROR_GENERAL_FAILURE (arena space exhausted). */
-static Bool8 RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outError)
+static bool RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outError)
 {
   g_MemoryApi.free(memory);
   *outError = FATAL_ERROR_GENERAL_FAILURE;
@@ -284,7 +284,7 @@ static Bool8 RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outErro
 /* Frees the string buffer and fails with the "TXT2STR: unknown character" message, which gets the byte offset
    after the offending character(s) (markupCursor - markupBytes) written in at code unit
    RICHTEXT_MARKUP_ERROR_OFFSET_UNIT. */
-static Bool8 RichTextMarkup_ReportInvalidCharacter
+static bool RichTextMarkup_ReportInvalidCharacter
           (uint16_t *memory,uint8_t *markupBytes,uint8_t *markupCursor,uint32_t *outError)
 {
   g_MemoryApi.free(memory);
@@ -309,7 +309,7 @@ static Bool8 RichTextMarkup_ReportInvalidCharacter
    allocator's error, when the arena space runs out FATAL_ERROR_GENERAL_FAILURE. On success the original also
    returns the asset size and asset + 0x100; they are dropped (there is no caller).
 */
-Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError)
+bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError)
 
 {
   /* The original pushes a (string start, key) pair per '#<' on the machine stack (and an (end of output, -1)

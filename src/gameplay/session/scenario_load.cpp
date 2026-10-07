@@ -65,7 +65,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   void *loadedEntry;
   uint32_t loadErrorCode;
   uintptr_t checkedValue;
-  Bool8 encodeOk;
+  bool encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t allocationError;
@@ -214,7 +214,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   void *loadedEntry;
   uint32_t loadErrorCode;
   uintptr_t checkedValue;
-  Bool8 encodeOk;
+  bool encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t allocationError;
@@ -364,12 +364,12 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   void *loadedEntry;
   uint32_t loadErrorCode;
   uintptr_t checkedValue;
-  Bool8 encodeOk;
+  bool encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t allocationError;
   void *allocationPayload;
-  Bool8 levelLoadedLocally;
+  bool levelLoadedLocally;
 
   frontendRoot = g_FrontendRootNode;
   pageStack = UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack);

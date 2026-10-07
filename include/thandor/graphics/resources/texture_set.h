@@ -43,6 +43,6 @@ GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAs
 
 GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set);
 
-Bool8 GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture);
+bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture);
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_TEXTURE_SET_H */

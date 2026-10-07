@@ -29,11 +29,11 @@ inline constexpr int TERRAIN_DIRECTION_SCALE_RANDOM_MASK = 0x1f;
 inline constexpr int TERRAIN_DIRECTION_RATE_MIN_ANGLE16 = 0x200;
 inline constexpr int TERRAIN_DIRECTION_RATE_RANDOM_MASK = 0x7f;
 
-Bool8 TerrainVisualResources_LoadPrimary
+bool TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError);
 
-Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
+bool TerrainVisualResources_LoadAndClearCellOverlayFlags
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError);
 

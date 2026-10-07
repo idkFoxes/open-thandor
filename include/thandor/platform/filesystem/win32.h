@@ -53,7 +53,7 @@ uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *h
 bool Win32File_GetSize(void *handle,uint32_t *outSize);
 
 /* false (destination emptied) when the directory cannot be read */
-Bool8 Win32File_GetCurrentDirectory(uint16_t *destination);
+bool Win32File_GetCurrentDirectory(uint16_t *destination);
 
 /* 0 or FATAL_ERROR_SET_DIRECTORY_FAILED */
 uint32_t Win32File_SetCurrentDirectory(uint16_t *path);
@@ -64,7 +64,7 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
 void Win32File_Close(void *handle);
 
 
-Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
+bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
           uint32_t *outError);
 
 extern FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries;

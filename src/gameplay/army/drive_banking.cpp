@@ -368,7 +368,7 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
   int previousWorldX;
   int previousWorldY;
   ModelRuntimeNode *rootNode;
-  Bool8 waypointArrived;
+  bool waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
   /* set only while the unit moves; read by the bank update only then */

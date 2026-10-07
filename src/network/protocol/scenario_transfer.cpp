@@ -29,7 +29,7 @@ static uintptr_t FrontendScenarioTransfer_AllocateOrExit(uint32_t byteCount)
 /* Decodes a received field grid (PckCodec_DecodeFieldGrid) into its decodedBytes buffer and validates it
    (FieldGrid_ValidateLoadedImage). The original ignores the decoder's result and trusts the grid; bounded here
    because it comes from the network host: the callers abort the transfer when this returns false. */
-static Bool8 FrontendScenarioTransfer_DecodeFieldGrid
+static bool FrontendScenarioTransfer_DecodeFieldGrid
           (uint32_t decodedBytes,FieldGridAsset *destinationGrid,uint32_t encodedBytes,uint8_t *encodedGrid)
 {
   return PckCodec_DecodeFieldGrid(decodedBytes,destinationGrid,encodedBytes,encodedGrid,nullptr,nullptr) &&
@@ -480,13 +480,13 @@ void FrontendScenarioTransfer_ProcessReceivedAsset()
    candidateRecord. Inverted like all failure flags: false = found, true = not found.
    recordCount must be at least 1.
 */
-Bool8 DwordBlock64Array_ContainsExactRecord
+bool DwordBlock64Array_ContainsExactRecord
           (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord)
 
 {
   int dwordsRemainingInRecord;
   uint32_t *candidateRecordCursor;
-  Bool8 dwordsEqual;
+  bool dwordsEqual;
 
   do {
     /* compare the 0x40 dwords until the first difference (the count is nonzero, so dwordsEqual holds the

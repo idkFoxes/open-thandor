@@ -25,7 +25,7 @@ inline constexpr int MOVIE_REFILL_CHUNK_BYTES = 0x1E000; /* bytes per refill; al
 inline constexpr int MOVIE_COMPACT_SHIFT_BYTES = 0x1E0000; /* played bytes dropped from the buffer front at once */
 inline constexpr int MOVIE_MAX_AUDIO_TRACKS = 14; /* MovieFileHeader.audioTrackBytes; Movie_Open plays no audio for larger counts */
 
-Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
+bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
 
 MovieFrameDimensions Movie_GetFrameDimensions();
 
@@ -37,7 +37,7 @@ void Movie_Close();
 
 void IntroMovie_TimerTick();
 
-Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode);
+bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode);
 
 extern MovieRuntime *g_ActiveMovie;
 

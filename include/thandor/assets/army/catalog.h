@@ -46,9 +46,9 @@ inline constexpr int ARMY_WEAPON_SLOT_TERTIARY = 2;
 
 uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset,uint32_t assetByteCount);
 
-Bool8 ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId);
+bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId);
 
-Bool8 ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
+bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord);
 

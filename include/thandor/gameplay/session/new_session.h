@@ -27,7 +27,7 @@ inline constexpr int INGAME_WORLD_DWORD_ARRAY_COUNT = 256; /* g_InGameWorldRunti
 inline constexpr uint32_t INGAME_CAMERA_MINIMUM_PITCH_ANGLE16 = 0xFFFFC400;
 inline constexpr uint32_t INGAME_CAMERA_MAXIMUM_PITCH_ANGLE16 = 0xFFFFE800;
 
-Bool8 InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
                                         uint32_t *outError);
 
 extern uint32_t g_EndMovieVariantIndex;

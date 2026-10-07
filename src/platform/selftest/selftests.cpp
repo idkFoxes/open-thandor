@@ -46,8 +46,8 @@ static void Thandor_SelfTestCodec()
         uint8_t *unpacked = unpackedBuffer.data();
         unsigned i;
         unsigned seed = 12345;
-        Bool8 encodeOk;
-        Bool8 decodeOk;
+        bool encodeOk;
+        bool decodeOk;
         uint32_t encodeValue = 0; /* packed size, or the error code on failure */
         uint32_t decodeValue = 0; /* reported byte count, or the error code on failure */
         uint32_t packedHash;
@@ -182,7 +182,7 @@ static void Thandor_SelfTestCodecNegative()
     unsigned failures = 0;
     unsigned seed = 777;
     unsigned i;
-    Bool8 ok;
+    bool ok;
 
     g_MemoryApi.alloc = SelfTest_Alloc;
     g_MemoryApi.free = SelfTest_Free;
@@ -923,7 +923,7 @@ static void Thandor_SelfTestScanAddresses()
         }
         for (;;) {
             PckEntryHeader header;
-            Bool8 decoded;
+            bool decoded;
             char name[PCK_ENTRY_PATH_UNITS + 1];
             int k;
             uint32_t i;

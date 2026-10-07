@@ -227,7 +227,7 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
    outside the aim tolerance), false once the yaw is within it or on the target.
 */
 
-Bool8 ModelNodeRuntime_SmoothYawTowardTarget
+bool ModelNodeRuntime_SmoothYawTowardTarget
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState,
           AngleTurn32 targetYawAngle16)
 
@@ -239,7 +239,7 @@ Bool8 ModelNodeRuntime_SmoothYawTowardTarget
   uint32_t yawStep;
   int acceleratedVelocity;
   uint32_t yawDelta;
-  Bool8 snapToTarget;
+  bool snapToTarget;
   uint32_t remainingYawDelta;
 
   yawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
@@ -322,7 +322,7 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
   int pitchStep;
   int rateLimit;
   int acceleratedVelocity;
-  Bool8 snapToTarget;
+  bool snapToTarget;
   uint32_t clampedTarget;
 
   pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;

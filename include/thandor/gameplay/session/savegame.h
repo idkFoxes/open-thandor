@@ -31,9 +31,9 @@ struct InGameSavePackageHeader {
     uint8_t reserved1F8_1FF[8];
 };
 
-Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
+bool InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
 
-Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
+bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
 
 ResourceRegistrationImagePair InGameSaveGame_PrepareRegistrationRecords (ResourceRegistrationRuntimeImageSavedView *runtimeImage);
 

@@ -20,7 +20,7 @@ inline constexpr int FACTION_ARMY_ASSET_LIST_CAPACITY = 64;
 
 void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember);
 
-Bool8 FactionRuntime_IsArmyAssetNotPending
+bool FactionRuntime_IsArmyAssetNotPending
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord);
 
 void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount repetitionCount,

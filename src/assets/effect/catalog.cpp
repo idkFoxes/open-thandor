@@ -24,7 +24,7 @@ static uint16_t s_EffectAssetErrorName[] = {'*', '.', 'e', 'f', 'f', 0}; /* L"*.
    Returns true on success; on failure returns false with the error code in *outError (left untouched on
    success). (The original's success return value, the last loaded sprite asset, was read by no caller.)
 */
-Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
+bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
 
 {
   uint32_t registrationStatusCode;
@@ -103,7 +103,7 @@ uint32_t EffectDefinitions_ResolveCrossReferences()
    success) on a duplicate id, a full registry or a path/package/sprite failure. (The original's success return
    value, the sprite asset, was read by no caller.)
 */
-Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError)
+bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError)
 
 {
   SpriteAssetHeader *loadedSpriteAsset;

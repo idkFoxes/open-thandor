@@ -67,7 +67,7 @@ static void InGameFactionEconomy_ResetAndDecayFactionState()
    model offset} gives its faction (descriptor bits 13..23) a rate of cells-per-entry * 2 * share (bits 24..31) *
    terrainContributionScaleQ8 >> 15, added to the rate, the stock and the extracted total (Xenite or Tritium
    fields); the extracting model shows its current yield. */
-static void InGameFactionEconomy_PayCollectedRegion(Bool8 payTritium)
+static void InGameFactionEconomy_PayCollectedRegion(bool payTritium)
 {
   int cellsPerEntry;
   const uint32_t *entry;
@@ -111,7 +111,7 @@ static void InGameFactionEconomy_PayCollectedRegion(Bool8 payTritium)
 /* One mining pass: clears the connected-region marks of all cells, then collects every not yet visited region
    of cells with requiredCellFlags (Xenite or Tritium support) and pays it out. */
 static void InGameFactionEconomy_PayResourceRegions
-          (FieldGridAsset *fieldGrid,FieldGridRegionMask requiredCellFlags,Bool8 payTritium)
+          (FieldGridAsset *fieldGrid,FieldGridRegionMask requiredCellFlags,bool payTritium)
 {
   FieldGridDimension fieldGridWidth;
   int cellCount;

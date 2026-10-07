@@ -168,7 +168,7 @@ static uint32_t AiPlanningRebuild_ScratchFootprintMask(const GridScratchCell *to
 }
 
 /* True when one of the active grid mask classes 0..3 is absent from the neighbourhood mask. */
-static Bool8 AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
+static bool AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
 
 {
   return (g_AiActiveGridMaskClasses[0] & neighborhoodMask) == 0 ||
@@ -179,7 +179,7 @@ static Bool8 AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
 
 /* True when one of the six field-grid neighbours of the cell below cellAbove (the two above, left, right, the two
    below) has none of the faction's presence bits. */
-static Bool8 AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,uint32_t gridWidth,
+static bool AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,uint32_t gridWidth,
           FactionRuntimeIndex factionIndex)
 
 {
@@ -196,7 +196,7 @@ static Bool8 AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,u
 }
 
 /* True when the cell below cellAbove or one of its six neighbours carries xenite/tritium support flags. */
-static Bool8 AiPlanningRebuild_FootprintHasResourceSupport(const FieldGridCell *cellAbove,uint32_t gridWidth)
+static bool AiPlanningRebuild_FootprintHasResourceSupport(const FieldGridCell *cellAbove,uint32_t gridWidth)
 
 {
   return Any(cellAbove[gridWidth].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
@@ -352,7 +352,7 @@ static void AiPlanningRebuild_CollectProducibleAssets(FactionRuntimeIndex factio
   ArmyAssetRecordPrefix **workspace11Cursor;
   ArmyAssetRecordPrefix *definitionNode;
   int slotsRemaining;
-  Bool8 technologyLocked;
+  bool technologyLocked;
 
   armyAssetRegistryCursor = g_ArmyAssetRecordRegistry;
   workspace11Cursor = g_AiWorkspace11ProducibleAssets;
@@ -417,7 +417,7 @@ static void AiPlanningRebuild_CollectResearchCandidates(FactionRuntimeIndex fact
   ModelRuntimeSlot *modelRuntime;
   ModelDefinition *slotDefinition;
   uint32_t technologySlot;
-  Bool8 notAvailable;
+  bool notAvailable;
 
   factionRecordOffset = factionIndex * (int)sizeof(GameFactionRuntimeRecord);
   structureEntry = g_AiWorkspace00Structures;

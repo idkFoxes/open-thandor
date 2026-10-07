@@ -14,7 +14,7 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex);
+bool GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex);
 
 FactionRelationState GameFactionRuntime_GetPackedStateNibble
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex);

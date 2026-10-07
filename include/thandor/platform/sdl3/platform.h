@@ -27,7 +27,7 @@
    windowed mode) and publishes its HWND in g_MainWindow. The renderer and the display mode kind (window,
    borderless, fullscreen) are applied by the first display mode switch (SdlVideo_ApplyDisplayMode), which also
    shows the window. Returns false (logged) when SDL or the window cannot be started. */
-Bool8 SdlPlatform_CreateMainWindow(const char *title);
+bool SdlPlatform_CreateMainWindow(const char *title);
 /* Where the original's TimerSystem_Init ran: installs the SDL timers in g_TimerRegisterPeriodic/g_TimerUnregisterPeriodic and
    SdlPlatform_PumpEvents in g_PlatformPumpEvents. */
 void SdlPlatform_InstallTimersAndPump();
@@ -133,7 +133,7 @@ GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t capture
 /* In place of the original's DirectInputMouse_Init: hides the system cursor, hooks the display-mode switch (cursor buffers),
    starts the cursor-animation timer, installs g_PointerFlushEvents/g_PointerSetPosition, loads the cursor assets
    and seeds the lock-key bits. Returns false with the error in *outError. */
-Bool8 SdlInput_Init(uint32_t *outError);
+bool SdlInput_Init(uint32_t *outError);
 /* Runtime_Shutdown: stops the cursor timer and gives the system cursor back. */
 void SdlInput_Shutdown();
 /* g_GraphicsSetDisplayMode hook: frees and recreates the cursor buffers around the chained mode switch. */

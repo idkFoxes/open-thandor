@@ -91,7 +91,7 @@ uint32_t Movie_DecodeFrame4x4Delta
   uint32_t blocksLeftInRow;
   uint32_t blockRowsLeft;
   uint32_t skipRemaining;
-  static Bool8 s_truncationLogged;
+  static bool s_truncationLogged;
 
   blockRowsLeft = heightPixels >> 2;
   skipRemaining = 0;

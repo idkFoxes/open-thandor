@@ -89,10 +89,10 @@ void FrontendTransfer_ExecuteLobbyCommandRecords
    pointers, others switch fonts) become '?', and a text without terminator gets one in its last unit. Returns
    whether anything was changed. Texts the original sends (typed names, "<n>ms") hold no command codes and are
    terminated within unitCount, so they stay byte-identical. */
-Bool8 FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount)
+bool FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount)
 {
   int unitIndex;
-  Bool8 changed;
+  bool changed;
 
   changed = false;
   for (unitIndex = 0; unitIndex < unitCount; unitIndex++) {
@@ -116,11 +116,11 @@ Bool8 FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount)
    changed. The host builds these texts with RichTextCommandStream_CopyExpanded, which inlines 0x18/0x19,
    terminates within the field and copies payload records whole; the session templates hold no inline image, so
    valid advertisements stay byte-identical. */
-static Bool8 FrontendTransfer_SanitizePeerRichTextUtf16(uint16_t *text,int unitCount)
+static bool FrontendTransfer_SanitizePeerRichTextUtf16(uint16_t *text,int unitCount)
 {
   int unitIndex;
   int recordUnits;
-  Bool8 changed;
+  bool changed;
 
   changed = false;
   unitIndex = 0;
@@ -189,7 +189,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
        g_FrontendPendingSessionPlayerCount = g_FrontendPlayerRuntimeBlockCount, at most 8 players: a larger
        count drops the whole packet. */
     if (packet->packet40008LobbyRosterSnapshot.pendingSessionPlayerCount > 8) {
-      static Bool8 s_pendingCountLogged = false;
+      static bool s_pendingCountLogged = false;
       if (!s_pendingCountLogged) {
         s_pendingCountLogged = true;
         Thandor_Log("network: session packet with %u pending players (more than 8), ignored",
@@ -208,7 +208,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
                 (reinterpret_cast<uint16_t *>(packet->packet40008LobbyRosterSnapshot.playerDescriptorPayload),20) | /* UTF-16 name */
           FrontendTransfer_SanitizePeerTextUtf16
                 (packet->packet40008LobbyRosterSnapshot.selectedPlayerStatusTextUtf16,16)) {
-        static Bool8 s_playerTextLogged = false;
+        static bool s_playerTextLogged = false;
         if (!s_playerTextLogged) {
           s_playerTextLogged = true;
           Thandor_Log("network: session packet player name or ping text with command codes or without "
@@ -336,10 +336,10 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
    g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address. Hosts answer
    with a 0x50001 session advertisement. Returns the result of UiTransfer_StagePacketAndSend.
 */
-Bool8 UiTransfer_SendDiscoveryProbe()
+bool UiTransfer_SendDiscoveryProbe()
 
 {
-  Bool8 sendCarry;
+  bool sendCarry;
   
   g_FrontendPacket10000Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10000_HANDSHAKE;
   g_FrontendPacket10000Buffer.protocolMagic = FRONTEND_PROTOCOL_MAGIC;
@@ -353,13 +353,13 @@ Bool8 UiTransfer_SendDiscoveryProbe()
    g_FrontendLocalPlayerPcxPreview), bit 8 = shown as "CD" in the lobby list (always set). Returns the
    result of UiTransfer_StagePacketAndSend.
 */
-Bool8 UiTransfer_SendPlayerDescriptor()
+bool UiTransfer_SendPlayerDescriptor()
 
 {
   int dwordCount;
   uint32_t *nameSourceCursor;
   uint32_t *payloadCursor;
-  Bool8 callCarry;
+  bool callCarry;
   
   g_FrontendPacket20002Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_20002_PLAYER_DESCRIPTOR;
   g_FrontendPacket20002Buffer.payloadByteCount = 64;
@@ -806,7 +806,7 @@ static void FrontendTransfer_StoreSessionAdvertisement
   if (FrontendTransfer_SanitizePeerRichTextUtf16(discoveryRecord->advertisement.sessionTitleUtf16,20) |
       FrontendTransfer_SanitizePeerRichTextUtf16(discoveryRecord->advertisement.hostDescriptionUtf16,44) |
       FrontendTransfer_SanitizePeerRichTextUtf16(discoveryRecord->advertisement.playerCountTextUtf16,4)) {
-    static Bool8 s_advertisementTextLogged = false;
+    static bool s_advertisementTextLogged = false;
     if (!s_advertisementTextLogged) {
       s_advertisementTextLogged = true;
       Thandor_Log("network: session advertisement text with pointer commands or without terminator, cleaned");
@@ -840,7 +840,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
        packed command). Bounded here because the original host assigns
        FrontendTransfer_FindLowestFreePlayerRuntimeId, at most 0xFF: a larger id drops the join ack. */
     if ((uint32_t)packet->packet10003JoinAck.assignedPlayerRuntimeId > 0xff) {
-      static Bool8 s_playerIdLogged = false;
+      static bool s_playerIdLogged = false;
       if (!s_playerIdLogged) {
         s_playerIdLogged = true;
         Thandor_Log("network: join ack with player id %u (more than 255), ignored",
@@ -858,7 +858,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
       g_SessionNetworkTickInterval = packet->packet10003JoinAck.networkTickInterval;
     }
     else {
-      static Bool8 s_tickIntervalLogged = false;
+      static bool s_tickIntervalLogged = false;
       if (!s_tickIntervalLogged) {
         s_tickIntervalLogged = true;
         Thandor_Log("network: join ack with tick interval %u (valid: even 2..14), kept %u",
@@ -900,7 +900,7 @@ void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
    g_FrontendTransferResponsePending (set by FrontendTransfer_HandleGameplayCommandAndRosterPackets after a new
    command batch). Returns true when no batch arrived, so Frontend_StateTick ends its tick early.
 */
-Bool8 FrontendTransfer_ConsumeProcessedFlagForMenuTick()
+bool FrontendTransfer_ConsumeProcessedFlagForMenuTick()
 
 {
   int previousFlag;

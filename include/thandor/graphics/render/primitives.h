@@ -44,7 +44,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *qu
 
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue);
 
-Bool8 GraphicsPrimitiveQueue_AppendTriangle(GraphicsPrimitiveDispatchFlags renderFlags,GraphicsTriangleInput *triangle,
+bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsPrimitiveDispatchFlags renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue);
 
@@ -60,7 +60,7 @@ void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoo
 
 DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12);
 
-Bool8 DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
+bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
           DepthBinMask32 secondMaskAxis1);
 
 extern GraphicsPrimitiveQueueRadixSortProc *g_GraphicsPrimitiveQueueRadixSortProc;

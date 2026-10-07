@@ -13,7 +13,7 @@
    GameFactionRuntime_ApplyPairwiseRelationTransition sets or clears the others, so a clear bit marks a faction
    this one is not friendly with (the AI treats its entities as foreign/hostile).
 */
-Bool8 GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex)
+bool GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
   return (g_GameFactionRuntimeImage.records[factionIndex].capabilityFlags &
@@ -47,7 +47,7 @@ static void GameFactionRuntime_MoveImpactAlertAnchor(FactionAnchorCooldownTicks 
   GraphicsWorldCoordinateQ12 hitY;
   int distanceY;
   int distanceX;
-  Bool8 notify;
+  bool notify;
 
   hitModelNode = ownershipRecord->rootModelNodeOrSavedOffset.modelNode;
   previousCooldown = *cooldown;
@@ -215,7 +215,7 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
   uint32_t groupNumber;
   Ptr32<ArmyRuntimeSlot> *slotCursor;
   Ptr32<ArmyRuntimeSlot> *nextSlotCursor;
-  Bool8 found;
+  bool found;
 
   groupNumber = 0;
   nextSlotCursor = g_GameFactionRuntimeImage.records[runtimeEntry->factionIndex].runtimeGroupMembers8x32;
