@@ -37,7 +37,7 @@ SoftwareBuildPixelPackTablesProc *g_SoftwareBuildPixelPackTables = &SoftwarePixe
    g_SoftwarePixelFormatConfig (gone with 16-bit colour). The mode arguments are not used. Returns true on
    success; false with the arena error in *errorCode when the allocation fails.
 */
-Bool8 SoftwarePixelFormat_BaseDisplayModeHook
+bool SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,uint32_t *errorCode)
 
@@ -147,7 +147,7 @@ void SoftwarePixelFormat_BuildChannelPackTables
    with one of the new size (the original also rebuilt the MMX colour constants of its 16-bit paths). Returns true on
    success; false with the error in *errorCode when the chained hook or the depth-buffer allocation fails.
 */
-Bool8 SoftwareRenderer_SetDisplayMode
+bool SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width,uint32_t *errorCode)
 

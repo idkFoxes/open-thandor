@@ -230,7 +230,7 @@ void SelectionPointerArray_ApplyMoveCommand
   Q12 entryTargetX;
   GameEntityRuntime *selectedEntry;
   GameEntityRuntime *singleClass13Entry;
-  Bool8 spreadTooLarge;
+  bool spreadTooLarge;
   ModelDefinition *entityDefinition;
 
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
@@ -354,7 +354,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
 {
   ArmyMovementRuntime *movementRuntime;
   int entriesRemaining;
-  Bool8 spreadTooLarge;
+  bool spreadTooLarge;
 
   /* selection is advanced as a cursor over its entries; the targets are shifted per entry and restored */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -386,7 +386,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
 {
   ArmyRuntimeSlot *runtimeState;
   int entriesRemaining;
-  Bool8 stateIsZero;
+  bool stateIsZero;
 
   /* selection is advanced as a cursor over its entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -417,7 +417,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
 {
   ArmyRuntimeSlot *runtimeState;
   int entriesRemaining;
-  Bool8 stateIsZero;
+  bool stateIsZero;
 
   /* selection is advanced as a cursor over its entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;

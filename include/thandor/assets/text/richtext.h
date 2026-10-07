@@ -70,10 +70,10 @@ void RichTextCommandStream_PatchPayloadBySelector
 
 void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream);
 
-Bool8 RichTextCommandStream_CopyToNarrow
+bool RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
-Bool8 RichTextCommandStream_CopyExpanded
+bool RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source,
            uint32_t *outBytesWritten);
 

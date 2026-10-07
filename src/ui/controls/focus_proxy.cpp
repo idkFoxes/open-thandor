@@ -24,7 +24,7 @@ bool UiSingleLineTextControl_ForwardKeyboardEventToChild
 
 {
   UiNodeBase *childControl;
-  Bool8 eventResult;
+  bool eventResult;
 
   childControl = control->focusChild;
   /* key codes without a high word are typed characters (Keyboard_OnChar) and KEYBOARD_KEY_CODE_SPACE */

@@ -14,25 +14,25 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition);
+bool SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition);
 
-Bool8 SelectionInfo_HasAnyEntry();
+bool SelectionInfo_HasAnyEntry();
 
-Bool8 SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex);
+bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex);
 
-Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex);
+bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex);
 
-Bool8 SelectionInfo_TestAnyActiveOrSingleClass13();
+bool SelectionInfo_TestAnyActiveOrSingleClass13();
 
-Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime);
+bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime);
 
-Bool8 SelectionInfo_TestNoEntryHasWeaponDamage();
+bool SelectionInfo_TestNoEntryHasWeaponDamage();
 
-Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative();
+bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative();
 
 GameEntityRuntime * SelectionInfo_GetFirstEntry();
 
-Bool8 SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry);
+bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry);
 
 uint32_t SelectionInfo_CollectAttachmentEffectVariantMask();
 

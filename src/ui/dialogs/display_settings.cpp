@@ -708,7 +708,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   UiDisplaySettingsApplyButton *applyButton = DISPLAY_SETTINGS_UI(root,applyButton);
   uint32_t bitsPerPixel = selectedBitsPerPixel;
   void *selected = nullptr;
-  Bool8 modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
+  bool modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
   int i;
 
   /* the original first refreshed the four colour depth buttons (gone, 32-bit colour only) */

@@ -58,10 +58,10 @@ extern SoftwareFramebufferAccess *g_CursorCompositeBuffer;
 
 void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer();
 
-Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
+bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
 GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex();
 
-Bool8 GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent);
+bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent);
 
 #endif /* THANDOR_GRAPHICS_CORE_CURSOR_H */

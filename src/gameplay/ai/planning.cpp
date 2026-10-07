@@ -190,7 +190,7 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InG
 {
   uint32_t planningPhaseDispatchIndex;
   WorldRuntimeContext *worldRuntime;
-  Bool8 phaseResult;
+  bool phaseResult;
   AiKnowledgeDataImage *knowledgeData;
 
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -628,7 +628,7 @@ AiStrategicClassSelection AiStrategicClass_SelectPressureWeightedBuilding
    (whole units): the usable supply is the smaller of the generation capacity and baseline supply + tritium
    extraction rate, the demand is supplied + unpowered demand (Q4 values shifted down by 4).
 */
-Bool8 AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex)
+bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex)
 
 {
   int supplyCapacity;

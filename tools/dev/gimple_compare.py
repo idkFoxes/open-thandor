@@ -22,15 +22,28 @@ The dumps are normalised and diffed:
 Equal normalised dumps mean the same operations in the same order on the same values; a real change
 (another offset, operator, width, order) shows as a difference.
 
+--bool (for Bool8 -> bool packages) canonicalises the representation-only differences of bool vs uint8_t
+before the normalisation above: the type names Bool8/bool, the 'h'/'b' parameter codes of mangled names in the
+`;; Function` headers, `x = (Bool8|bool|unsigned char) c;` when c is a comparison result (x replaced by c),
+`if (x == 0) goto A; else goto B;` written as `if (x != 0) goto B; else goto A;`, the operands of `if (a == b)` /
+`if (a != b)` sorted, basic blocks renumbered in order of definition (also in PHI edges), profile counts and
+probabilities and the `Removing basic block` lines dropped. What remains is a real difference or a bool
+value-range result (a PHI argument known to be 0/1 on an edge, jump threading) that the report must explain.
+
+--calls-stores (GIMPLE mode) additionally compares, per function, the multiset of called functions and of
+memory stores (targets with `->`, MEM, `*p` or a g_ global; SSA numbers masked, indirect calls counted under
+one name): a cheap check that a remaining GIMPLE difference only reorders or threads code.
+
 --objdump compares the machine code instead (objects built with -g0, `objdump -d -r`, addresses removed,
 branch targets as function offsets, relocations kept). Function labels carry the mangled name, so a changed
 signature shows as a changed label; an equal listing means identical instructions.
 
 usage:
-  python tools/dev/gimple_compare.py -p build-mingw-release [--rev HEAD] [--alias T=U ...] [--objdump] src/a.cpp [src/b.cpp ...]
+  python tools/dev/gimple_compare.py -p build-mingw-release [--rev HEAD] [--alias T=U ...] [--objdump | [--bool] [--calls-stores]] src/a.cpp [src/b.cpp ...]
 Exit 0 when every file is equal.
 """
 import argparse
+import collections
 import difflib
 import glob
 import io
@@ -198,6 +211,92 @@ def objdump_listing(cmd, directory, rel, tree, root, out_dir):
     return out
 
 
+# --bool: canonicalisation of Bool8 (uint8_t) vs bool, applied to the raw dump before normalise().
+BOOL_CMP_DEF = re.compile(r"^\s*(\S+) = .* (==|!=|<|>|<=|>=) .*;$")
+BOOL_CAST = re.compile(r"^\s*(\S+) = \((?:Bool8|bool|unsigned char)\) (\S+);$")
+BOOL_IF_EQ0 = re.compile(r"^(\s*)if \((.*) == 0\)$")
+BOOL_IF_CMP = re.compile(r"^(\s*)if \((\S+) (==|!=) (\S+)\)$")
+BOOL_PROFILE = re.compile(r" \[(?:local count: \d+|\d+\.\d+%|count: \d+)[^\]]*\]")
+
+
+def bool_canon_function(lines):
+    compares, subst, out = set(), {}, []
+    for line in lines:
+        for k, v in subst.items():
+            line = re.sub(r"(?<![\w.])%s(?![\w.])" % re.escape(k), v, line)
+        m = BOOL_CMP_DEF.match(line)
+        if m:
+            compares.add(m.group(1))
+        m = BOOL_CAST.match(line)
+        if m and m.group(2) in compares:
+            subst[m.group(1)] = m.group(2)
+            continue
+        m = BOOL_IF_CMP.match(line)
+        if m and m.group(4) != "0":
+            a, b = sorted((m.group(2), m.group(4)))
+            line = "%sif (%s %s %s)" % (m.group(1), a, m.group(3), b)
+        out.append(line)
+    res, i = [], 0
+    while i < len(out):
+        m = BOOL_IF_EQ0.match(out[i])
+        if (m and i + 3 < len(out) and out[i + 1].strip().startswith("goto") and out[i + 2].strip() == "else"
+                and out[i + 3].strip().startswith("goto")):
+            res += ["%sif (%s != 0)" % (m.group(1), m.group(2)), out[i + 3], out[i + 2], out[i + 1]]
+            i += 4
+            continue
+        res.append(out[i])
+        i += 1
+    nums = {}
+    for line in res:
+        m = re.match(r"^\s*<bb (\d+)>:", line)
+        if m and m.group(1) not in nums:
+            nums[m.group(1)] = str(len(nums) + 2)
+    res = [re.sub(r"<bb (\d+)>", lambda m: "<bb %s>" % nums.get(m.group(1), "?" + m.group(1)), l) for l in res]
+    return [re.sub(r"\((\d+)\)(?=[,>])", lambda m: "(%s)" % nums.get(m.group(1), "?" + m.group(1)), l)
+            if "PHI" in l else l for l in res]
+
+
+def bool_canon(text):
+    text = re.sub(r"\bBool8\b", "bool", text)
+    funcs, cur = [], []
+    for line in text.splitlines():
+        if line.startswith(";; Function"):
+            line = re.sub(r"\(_Z\S+", "(", line)
+            if cur:
+                funcs.append(cur)
+                cur = []
+        if line.startswith("Removing basic block"):
+            continue
+        cur.append(BOOL_PROFILE.sub("", line))
+    funcs.append(cur)
+    return "\n".join(l for f in funcs for l in bool_canon_function(f))
+
+
+CALL = re.compile(r"\b([A-Za-z_]\w*) \(")
+NOT_CALLS = {"if", "PHI", "MEM", "BIT_FIELD_REF", "VIEW_CONVERT_EXPR", "LOAD", "sizeof", "REALPART_EXPR",
+             "IMAGPART_EXPR"}
+
+
+def calls_stores(text):
+    """Per function: Counter of 'call F' and 'store TARGET' (SSA numbers masked, indirect calls as one name)."""
+    funcs, cur = {}, None
+    for line in text.splitlines():
+        m = re.match(r";; Function (\S+)", line)
+        if m:
+            cur = funcs.setdefault(m.group(1), collections.Counter())
+            continue
+        if cur is None:
+            continue
+        for c in CALL.findall(line):
+            if c not in NOT_CALLS:
+                cur["call " + ("<indirect>" if re.fullmatch(r"_\d+", c) else c)] += 1
+        m = re.match(r"^\s*(\S.*?) = ", line)
+        if m and "CLOBBER" not in line and ("->" in m.group(1) or "MEM" in m.group(1) or
+                                            m.group(1).startswith("*") or m.group(1).startswith("g_")):
+            cur["store " + re.sub(r"_\d+", "", m.group(1))] += 1
+    return funcs
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("-p", required=True, help="build directory with compile_commands.json")
@@ -205,6 +304,10 @@ def main():
     ap.add_argument("--alias", action="append", default=[], help='TYPE="gimple type", e.g. MmxPackedValue64="long long unsigned int"')
     ap.add_argument("--objdump", action="store_true",
                     help="compare the machine code of the objects (objdump -d -r, address-normalised) instead of GIMPLE")
+    ap.add_argument("--bool", action="store_true", dest="bool_canon",
+                    help="canonicalise Bool8/bool representation differences before comparing (GIMPLE mode)")
+    ap.add_argument("--calls-stores", action="store_true",
+                    help="also compare the per-function multisets of calls and memory stores (GIMPLE mode)")
     ap.add_argument("files", nargs="+")
     a = ap.parse_args()
     aliases = dict(x.split("=", 1) for x in a.alias)
@@ -238,9 +341,24 @@ def main():
                 new = objdump_listing(cmd, entry["directory"], rel, root, root, os.path.join(work, "new"))
                 what = "instructions"
             else:
-                ref = normalise(gimple_dump(cmd, entry["directory"], rel, ref_tree, root, os.path.join(work, "ref")), aliases)
-                new = normalise(gimple_dump(cmd, entry["directory"], rel, root, root, os.path.join(work, "new")), aliases)
-                what = "normalised GIMPLE lines"
+                ref_text = gimple_dump(cmd, entry["directory"], rel, ref_tree, root, os.path.join(work, "ref"))
+                new_text = gimple_dump(cmd, entry["directory"], rel, root, root, os.path.join(work, "new"))
+                if a.calls_stores:
+                    rcs, ncs = calls_stores(ref_text), calls_stores(new_text)
+                    bad = sorted(k for k in set(rcs) | set(ncs) if rcs.get(k) != ncs.get(k))
+                    if bad:
+                        rc = 1
+                        print("%s: calls/stores DIFFERENT in %d function(s)" % (rel, len(bad)))
+                        for k in bad:
+                            r, w = rcs.get(k, collections.Counter()), ncs.get(k, collections.Counter())
+                            print("  %s: only ref %s, only new %s" % (k, dict(r - w), dict(w - r)))
+                    else:
+                        print("%s: calls/stores equal (%d functions)" % (rel, len(ncs)))
+                if a.bool_canon:
+                    ref_text, new_text = bool_canon(ref_text), bool_canon(new_text)
+                ref = normalise(ref_text, aliases)
+                new = normalise(new_text, aliases)
+                what = "normalised GIMPLE lines" + (" (--bool)" if a.bool_canon else "")
             diff = list(difflib.unified_diff(ref, new, "ref", "new", lineterm="", n=1))
             if diff:
                 rc = 1

@@ -16,7 +16,7 @@
    indices. Returns true when the file is missing, cannot be decoded (see Pcx_DecodeIndexed8: only 8-bit paletted
    files) or has another size.
 */
-Bool8 PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath)
+bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath)
 
 {
   uint16_t pathChar;

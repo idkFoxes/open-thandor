@@ -426,7 +426,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   uint32_t persistedValue;
   uint32_t rowIndex;
   UiNumericPairTextButton *row;
-  Bool8 modeCheckCarry;
+  bool modeCheckCarry;
   /* the original's stack: modeStack[modeStackTop] is the top; the 5 NULL entries after the controls stand
      for the values the original saved below them */
   UiNodeBase *modeStack[DISPLAY_MODE_STACK_END + 5];

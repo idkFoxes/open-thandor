@@ -173,7 +173,7 @@ void SoftwareMaskBuffer_ApplyCircularRegionBit(UiBooleanState32 invertSelection,
   uint8_t *maskCursor;
   GraphicsTextureLogicalSize logicalSize;
   int rowY;
-  Bool8 selected;
+  bool selected;
 
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   rowsRemaining = logicalSize.logicalHeightPixels;

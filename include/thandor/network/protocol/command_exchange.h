@@ -22,11 +22,11 @@ inline constexpr auto FRONTEND_PACKET_COMMAND_BATCH_TYPE = 0x20; /* host -> clie
 /* Reload value of a peer's heartbeatExpiryTicks and of g_SessionTransferTimeoutTicks on every packet. */
 inline constexpr auto FRONTEND_PEER_TIMEOUT_TICKS = 0x100;
 
-Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
+bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           FrontendUiImage *unusedFrontendRoot);
 
-Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
+bool FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
 
 void FrontendTransfer_SendCommandSubmit();
 
@@ -35,7 +35,7 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
 
 void FrontendTransfer_DispatchStagedCommandRecords();
 
-Bool8 FrontendTransfer_ConsumeProcessedFlag();
+bool FrontendTransfer_ConsumeProcessedFlag();
 
 void FrontendTransfer_CopyCommandRecord
           (FrontendCommandPacketRecord *destination,const FrontendCommandPacketRecord *source);

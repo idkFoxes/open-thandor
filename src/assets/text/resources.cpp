@@ -74,12 +74,12 @@ void TextResource_SetUiScaleNote(const char *text)
    title index (+1..14).
    Returns true when the page cannot be loaded or one of the strings is missing, false on success.
 */
-Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
+bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
 
 {
   uint16_t *resolvedText;
   int lineIndex;
-  Bool8 failed;
+  bool failed;
 
   failed = !TextResourcePage_Load(TEXT_RESOURCE_PAGE_LEVEL,path,nullptr);
   if (!failed) {
@@ -181,7 +181,7 @@ static bool TextResourceLocaleBlock_HasValidStrings(const TextResourceLocaleBloc
 /* Not in the original: logs and releases a malformed 'str' asset for TextResourcePage_Load and returns false
    with TEXT_RESOURCE_MISSING_SENTINEL_0x33 in *outLocaleBlockOrError (as for a non-'str' asset). The page
    binding is left unchanged. */
-static Bool8 TextResourcePage_RejectAsset(TextResourcePageIndex pageIndex,uint16_t *path,
+static bool TextResourcePage_RejectAsset(TextResourcePageIndex pageIndex,uint16_t *path,
                                           TextResourceAssetHeader *allocation,const char *reason,
                                           uintptr_t *outLocaleBlockOrError)
 {
@@ -213,7 +213,7 @@ static uint32_t RichTextRecord_ParseDecimalDigits(const uint16_t *recordStart)
    TEXT_RESOURCE_MISSING_SENTINEL_0x33 for a non-'str' or malformed asset (which is released; the page binding
    stays unchanged). outLocaleBlockOrError may be NULL.
 */
-Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintptr_t *outLocaleBlockOrError)
+bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintptr_t *outLocaleBlockOrError)
 
 {
   uint16_t codeUnit;
@@ -365,7 +365,7 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
    resources.h). Stores the text in *outText and returns true when found; a missing text stores
    TEXT_RESOURCE_MISSING_SENTINEL_0x33 (the pointer value 0x33, not a real string) there and returns false.
 */
-Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
+bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
 
 {
   static bool loggedMissingText; /* open-thandor diagnostics: the first missing id only */

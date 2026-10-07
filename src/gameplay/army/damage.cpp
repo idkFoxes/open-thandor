@@ -83,7 +83,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
   int remainingHealth;
   int healthToMaximum;
   int ownerFactionIndex;
-  Bool8 rotateToImpact;
+  bool rotateToImpact;
   ModelRuntimeNode *parentModelNode;
 
   (modelRuntime->classState).healthRegenerationDelayTicks = ARMY_DAMAGE_REGENERATION_DELAY_TICKS;
@@ -228,7 +228,7 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
   uint32_t cooldownRandomTicks;
   uint32_t angleRandom;
   uint32_t pointZQ12;
-  Bool8 emitterPointFound;
+  bool emitterPointFound;
   ModelWorldPoint transformedPoint;
   EffectDefinition *effectDefinition;
 

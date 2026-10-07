@@ -23,14 +23,14 @@ void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableCont
 
 void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
 
-Bool8 UiSelectableGroup_FindVisibleSelected
+bool UiSelectableGroup_FindVisibleSelected
           (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...);
 
 uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...);
 
 void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...);
 
-uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control);
+bool UiSelectableControl_IsSelected(UiSelectableControl *control);
 
 void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control);
 

@@ -58,7 +58,7 @@ static inline uint32_t *SaveImage_PairImage(ResourceRegistrationImagePair pair)
 
 /* Creates the save package at savePath; when that fails, creates the package's directory and tries once more.
    Returns true when the package is open in *packageHandle. */
-static Bool8 InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packageHandle)
+static bool InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packageHandle)
 
 {
   if (InGameSaveGame_CreatePackage(savePath,packageHandle)) {
@@ -76,13 +76,13 @@ static Bool8 InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *pack
 /* Writes the runtime segments army, modul, shot, effect, widget, light, field, level and daten and the campagne
    entry (deleted without a campaign). Pointer-holding images are converted to offsets for writing and rebased
    afterwards, also when the write failed. Returns true on success; stops at the first failed write. */
-static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle packageHandle)
+static bool InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle packageHandle)
 
 {
   InGameLevelConditionStorage *levelStorage;
   ResourceRegistrationImagePair domainImagePair;
   RuntimeHexSegmentImage segmentImage;
-  Bool8 upsertOk;
+  bool upsertOk;
 
   ArmyRuntimePool_ConvertPointersToOffsetsForSave();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
@@ -166,7 +166,7 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
 /* Reads the 0x200-byte package header into g_PackageScratchBuffer, fills in the save name (file name of savePath;
    the directory lands behind the header), the packed date and time, the "date, time" text, the level title text
    id and the campaign index, and writes it back. Returns true on success. */
-static Bool8 InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle)
+static bool InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle)
 
 {
   void *handle = reinterpret_cast<void *>(packageHandle); /* the Win32 HANDLE */
@@ -202,7 +202,7 @@ static Bool8 InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle p
 
 /* Creates the package and writes every entry and the header; on success the package is unmounted.
    Returns true on success; on failure the package stays as it is. */
-static Bool8 InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
+static bool InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
 
 {
   EngineFileHandle packageHandle;
@@ -237,12 +237,12 @@ static Bool8 InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
    and the level title and campaign index. Returns true on failure (an opened package is then not unmounted); the busy
    count is raised meanwhile.
 */
-Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath)
+bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
 
 {
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  Bool8 written;
+  bool written;
 
   g_InGameResourceRegistrationBusyCount++;
   /* first hand every player's pending army asset back to its faction */
@@ -265,7 +265,7 @@ Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath)
    Called directly by the save-game writer InGameSaveGame_WritePackage, which creates the
    save directory and retries when it fails.
 */
-Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
+bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
 
 {
   uint8_t *header;

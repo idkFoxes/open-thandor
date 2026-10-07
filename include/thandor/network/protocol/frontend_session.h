@@ -35,11 +35,11 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           struct FrontendUiImage *unusedFrontendRoot);
 
-Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(struct FrontendUiImage *unusedFrontendRoot);
+bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(struct FrontendUiImage *unusedFrontendRoot);
 
 void FrontendNetwork_TickDisconnectTimeoutAndResetSession();
 
-Bool8 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
+bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet);
 
 extern uint32_t g_FrontendSelectedPlayerToken; /* uint32_t sender context of the last executed network batch (0xFFFFFFFF = none); network/backend and protocol/transfer */

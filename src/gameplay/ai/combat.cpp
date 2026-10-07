@@ -211,7 +211,7 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
   AiCandidateScore32 candidateScore;
   int classIndex;
   FactionRuntimeIndex candidateFactionIndex;
-  Bool8 relationFitsSearch;
+  bool relationFitsSearch;
   Q12 searchRadiusQ12;
   AiCandidateScore32 currentBestScore;
   AiSourceClassCount sourceClassCount;
@@ -334,9 +334,9 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
   ModelRuntimeSlot *sourceWeaponModelRuntime;
   ModelRuntimeNode *candidateAimModelNode;
   int classBaseScore;
-  Bool8 masksOverlap;
-  Bool8 capabilityBitClear;
-  Bool8 lineOfFireTestPassed;
+  bool masksOverlap;
+  bool capabilityBitClear;
+  bool lineOfFireTestPassed;
   Q12 conditionRatioQ12;
   uint32_t candidateScore;
   uint32_t sourceRadiusQ12;

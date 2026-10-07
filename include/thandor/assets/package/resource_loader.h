@@ -11,7 +11,7 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32_t *outErrorCode);
+bool Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32_t *outErrorCode);
 
 void Resource_Release(void *resourceBuffer);
 

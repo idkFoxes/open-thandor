@@ -53,7 +53,7 @@ void AiCandidateWorkspace_SortDescending();
 
 int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry);
 
-Bool8 AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
+bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
 int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
@@ -65,22 +65,22 @@ int AiHostileWorkspace_GetNearestUnseenHostileDistance(Q12 worldY,Q12 worldX);
 
 int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
-Bool8 AiRuntime_InitWorkspace(uint32_t *outErrorCode);
+bool AiRuntime_InitWorkspace(uint32_t *outErrorCode);
 
 void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell);
 
 void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell);
 
-Bool8 AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
+bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
 
-Bool8 AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
+bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
 int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId);
 
 void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
           (RuntimeToken entityId,uint32_t weightRange,AiCandidateEntryKind entryKind);
 
-Bool8 AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX);
+bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX);
 
 extern AiCandidateWorkspaceEntry *g_AiWorkspace13Candidates;
 extern uint32_t g_AiCandidateWorkspaceEntryCount;

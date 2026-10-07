@@ -81,7 +81,7 @@ void Technology_UnlockForFaction
 /* Tests the technology's bit in the faction's 256-bit unlock mask (records[factionIndex].technologyMasks256Bits).
    Note the inverted result: false when the technology is unlocked, true when it is still locked.
 */
-Bool8 Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
+bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
   /* the mask dword at an address computed as an integer (factionIndex records on from the image) */
@@ -99,7 +99,7 @@ Bool8 Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,Fac
    its eight prerequisite mask words must be unlocked for the faction, and no army
    of that faction may already be researching it. True means available.
 */
-Bool8 Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
+bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
   WorldOwnerListNode *ownerNode;
@@ -295,7 +295,7 @@ void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 /* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true as soon as
    this node's definition id (linkedDefinitionIds[0]) or one in its subtree (childCount, children[]) names a
    technology the faction has not unlocked yet. */
-static Bool8 ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,ArmyModelTreeNode *node)
+static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,ArmyModelTreeNode *node)
 {
   uint32_t childIndex;
   /* true from this check means the technology is still locked */
@@ -315,7 +315,7 @@ static Bool8 ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMask
    requirement against the faction's technology masks. Returns false when every definition in the tree is
    unlocked, true as soon as one is still locked (ModelDefinition_IsFactionTechnologyLocked returns true).
 */
-Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
@@ -336,7 +336,7 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
   PckModelDefinitionIdCatalog linkedDefinitionId;
   int linkedSlotsRemaining;
   PckModelDefinitionIdCatalog selectedDefinitionId;
-  Bool8 technologyLocked;
+  bool technologyLocked;
 
   selectedDefinitionId = reinterpret_cast<ArmyModelTreeNode *>(linkedDefinitionList)->linkedDefinitionIds[0];
   for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
@@ -376,7 +376,7 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
    must be set in the faction's 256-bit technology masks. True means locked (bit clear or unknown id); false
    means unlocked.
 */
-Bool8 ModelDefinition_IsFactionTechnologyLocked
+bool ModelDefinition_IsFactionTechnologyLocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {

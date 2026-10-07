@@ -34,7 +34,7 @@ void FrontendRomActionTable_ExecuteRecord
           (uint32_t reservedZero0,uint32_t reservedZero1,FrontendBooleanState32 suppressActivationSound,
           RomRecordTableIndex recordIndex);
 
-Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime);
+bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime);
 
 void FrontendRomTransition_ProcessPendingRecord();
 
@@ -42,7 +42,7 @@ void FrontendRomTransition_RequestStop();
 
 uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
 
-Bool8 RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId);
+bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId);
 
 ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
           (PackedArgb32 stateTintArgb,RomSerializedNodeHeader *romNodeRecord,

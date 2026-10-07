@@ -13,7 +13,7 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 GraphicsTextureSource_DecomposeSubresourceRegions
+bool GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
           GraphicsTextureSourceAsset **outAsset,uint32_t *outError);
 

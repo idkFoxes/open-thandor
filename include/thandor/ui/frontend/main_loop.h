@@ -16,7 +16,7 @@
 /* The FRONTEND_PLAYER_STATE_* bits of FrontendPlayerRuntimeRecord.factionAssignment.roleStateFlags are the flag
    enum FrontendRoleStateFlags (ui/frontend/types.h). */
 
-Bool8 Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError);
+bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError);
 
 extern FrontendPageAction g_FrontendPendingPageAction;
 

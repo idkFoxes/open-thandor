@@ -71,7 +71,7 @@ static AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibl
    covered by its unlocked technologies.
    Note the inverted sense despite the name: true means NOT available (callers rely on it).
 */
-Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
+bool AiTechnologyCandidate_IsCurrentlyAvailable
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeRecordByteOffset factionRecordOffset
           )
 
