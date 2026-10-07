@@ -859,12 +859,12 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
     /* Skip records without a transition, network-only pages (3/4/9/negative) in a networked session and the
        network page (2) when no backend exists. */
     if ((transitionRecord != nullptr) &&
-       ((((transitionRecord[8] != FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE &&
-          (transitionRecord[8] != FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE)) &&
-         (transitionRecord[8] != FRONTEND_PAGE_ACTION_CREDITS)) &&
+       ((((static_cast<FrontendPageAction>(transitionRecord[8]) != FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE &&
+          (static_cast<FrontendPageAction>(transitionRecord[8]) != FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE)) &&
+         (static_cast<FrontendPageAction>(transitionRecord[8]) != FRONTEND_PAGE_ACTION_CREDITS)) &&
          (transitionRecord[8] >= 0)) ||
         ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL)) &&
-       ((transitionRecord[8] != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) || (g_NetworkBackendInstanceCount != 0))) {
+       ((static_cast<FrontendPageAction>(transitionRecord[8]) != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) || (g_NetworkBackendInstanceCount != 0))) {
       keyframeChannel3 = transitionRecord[3];
       keyframeChannel4 = transitionRecord[4];
       keyframeChannel5 = transitionRecord[5];

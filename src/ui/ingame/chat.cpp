@@ -110,7 +110,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
   InGameUiImage *image = THANDOR_CONTAINER_OF(commandTextEdit, InGameUiImage, chatInputTextEdit);
 
   UiTextControl_UpdateNonEmptyValidity(reinterpret_cast<UiTextEditControl *>(commandTextEdit));
-  if ((commandTextEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
+  if (Any(commandTextEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       if (InGameChatInput_MatchesCheatPhrase(commandTextEdit->textBuffer)) {

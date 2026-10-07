@@ -365,7 +365,7 @@ static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,Boo
 static void UiRequiredTextEdit_PlayInteractionSound(UiRequiredTextEditControl *control)
 
 {
-  if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
+  if (Any(control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) &&
      (control->activationSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
@@ -388,7 +388,7 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
   Bool8 recomputeLayout;
 
   edit = UiNode_As<UiTextEditControl>(control);
-  if (((control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) != 0) ||
+  if (Any(control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) ||
      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
     return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
@@ -404,7 +404,7 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
     /* Insert the character, replacing a selection. */
     UiTextEdit_InsertCodeUnit(edit,control->textBuffer,control->bufferCapacityCodeUnits,
                               control->bufferCapacityCodeUnits - 1,
-                              (control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE) != 0,(uint16_t)keyCode);
+                              Any(control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE),(uint16_t)keyCode);
   }
   else if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
     /* Ctrl+Left/Right: jump between space-separated words, Shift extends the selection. */
@@ -439,14 +439,14 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
       UiTextEdit_MoveCursorAndCollapseSelection(edit,control->textBuffer,keyCode);
       break;
     case KEYBOARD_KEY_CODE_ENTER:
-      if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
+      if (!Any(control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY)) {
         return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       }
       UiActionQueue_Enqueue(control->actionId,control);
       UiRequiredTextEdit_PlayInteractionSound(control);
       return false;
     case KEYBOARD_KEY_CODE_ESCAPE:
-      if ((control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION) == 0) {
+      if (!Any(control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION)) {
         return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       }
       for (clearIndex = 0; clearIndex != control->bufferCapacityCodeUnits; clearIndex++) {
@@ -470,7 +470,7 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
     UiTextEditControl_RecomputeLayoutAndClampScroll(edit);
   }
   UiTextControl_UpdateNonEmptyValidity(edit);
-  if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
+  if (!Any(control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY)) {
     UiActionQueue_Enqueue(control->actionId,control);
   }
   UiNode_InvalidateRoot(&control->base);
@@ -516,7 +516,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   if (g_GraphicsFramebufferBeginAccess()) {
     return;
   }
-  if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME)) {
     borderWidth = 0;
     textAreaLeft = (control->base).left;
     textAreaTop = (control->base).top;
@@ -532,7 +532,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
     borderWidth = cornerTileSize.logicalWidthPixels;
     rightEdgeOffset = rightEdgeOffset - borderWidth;
     bottomEdgeOffset = bottomEdgeOffset - tileBottom;
-    if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_TILED_INTERIOR) != 0) {
+    if (Any(control->editStateFlags & UI_TEXT_EDIT_DRAW_TILED_INTERIOR)) {
       UiWindow_BlitTiledInterior
                 (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_INTERIOR,bottomEdgeOffset,
                  rightEdgeOffset,
@@ -588,7 +588,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   }
   textOffsetY = (int)((control->base).layoutHeight - fontLineHeight) >> 1;
   selectionEnd = control->selectionEnd;
-  if (((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) == 0) &&
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) &&
      (control->selectionStart != selectionEnd)) {
     selectionStartWidth = UiTextEditControl_MeasurePrefixWidth(control->selectionStart,control);
     selectionEndWidth = UiTextEditControl_MeasurePrefixWidth(selectionEnd,control);
@@ -607,16 +607,16 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE;
   }
-  if ((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) != 0) {
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_READ_ONLY)) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE;
   }
-  if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     packedStyle = g_UiTextEditInactiveTextStyle;
   }
   if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0) {
     packedStyle = g_UiTextEditDisabledTextStyle;
   }
-  if ((control->editStateFlags & UI_TEXT_EDIT_CARET_VISIBLE_PHASE) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_CARET_VISIBLE_PHASE)) {
     RichTextCommandStream_DrawSingleLine
               (clipBottom,clipRight,clipTop,clipLeft,packedStyle,control->textBuffer,
                textOffsetY + (control->base).top,textOffsetX + (control->base).left);
@@ -625,12 +625,12 @@ void UiTextEditControl_DrawTextSelectionAndCaret
     caretWidth = UiTextEditControl_MeasurePrefixWidth(control->cursorIndex,control);
     caretX = caretWidth - 2 + textOffsetX + (control->base).left;
     caretFrame = UI_WINDOW_SUBRESOURCE_CARET_INSERT;
-    if ((control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) != 0) {
+    if (Any(control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE)) {
       caretFrame = UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE;
     }
     styleVerticalOffset = (int)(packedStyle << 16) >> 24; /* signed byte 1 of the packed style */
     caretY = textOffsetY - 1 + (control->base).top + styleVerticalOffset;
-    if ((control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) != 0) {
+    if (Any(control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE)) {
       caretY++;
     }
     caretTextureSource = g_UiWindowTextureSource;
@@ -662,14 +662,14 @@ void UiTextEditControl_BeginSelectionAtPointer
 {
   UiTextCodeUnitIndex cursorIndexAtPointer;
   
-  if ((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_READ_ONLY)) {
     control->editStateFlags = control->editStateFlags | UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE;
     cursorIndexAtPointer = UiTextEditControl_FindCursorIndexAtX(pointerX,control);
     control->cursorIndex = cursorIndexAtPointer;
     control->selectionStart = cursorIndexAtPointer;
     control->selectionEnd = cursorIndexAtPointer;
   }
-  if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) &&
      (control->activationSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
@@ -687,7 +687,7 @@ void UiTextEditControl_UpdateSelectionFromPointer
   UiTextCodeUnitIndex previousCursorIndex;
   uint32_t pointerCursorIndex;
 
-  if ((control->editStateFlags & UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE) != 0) {
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE)) {
     previousCursorIndex = control->cursorIndex;
     pointerCursorIndex = UiTextEditControl_FindCursorIndexAtX(pointerX,control);
     control->cursorIndex = pointerCursorIndex;
@@ -720,7 +720,8 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
     *nodeFlagsField = *nodeFlagsField | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
   /* clears the caret phase and the blink frame counter (top byte) */
-  control->editStateFlags = control->editStateFlags & (UI_STATE_FLAGS_MASK & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE);
+  control->editStateFlags = control->editStateFlags &
+       (FromBits<UiRequiredTextEditStateFlags>(UI_STATE_FLAGS_MASK) & ~UI_REQUIRED_TEXT_CARET_VISIBLE_PHASE);
   UiTextControl_UpdateNonEmptyValidity(UiNode_As<UiTextEditControl>(control));
   textCursor = control->textBuffer;
   control->cursorIndex = 0;
@@ -744,7 +745,7 @@ void UiTextEditControl_EndSelection
 
 {
   control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE;
-  if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) &&
      (control->activationSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
@@ -796,12 +797,12 @@ void UiTextEditControl_TickCaretBlink(UiTextEditControl *control)
   if (control == UiNode_As<UiTextEditControl>(g_UiKeyboardFocusNode)) {
     stateFlagsField = &control->editStateFlags;
     previousStateFlags = *stateFlagsField;
-    *stateFlagsField = *stateFlagsField - UI_STATE_FRAME_COUNTER_UNIT;
+    *stateFlagsField = FromBits<UiTextEditStateFlags>(ToBits(*stateFlagsField) - UI_STATE_FRAME_COUNTER_UNIT);
     /* the subtraction borrowed: an unsigned compare, so the counter byte runs 0xFF..0 */
-    if ((uint32_t)previousStateFlags < (uint32_t)UI_STATE_FRAME_COUNTER_UNIT) {
+    if (ToBits(previousStateFlags) < (uint32_t)UI_STATE_FRAME_COUNTER_UNIT) {
       blinkPhaseIncrement = g_UiTextEditCaretBlinkPhaseStep * UI_STATE_FRAME_COUNTER_UNIT;
       control->editStateFlags = control->editStateFlags ^ UI_TEXT_EDIT_CARET_VISIBLE_PHASE;
-      control->editStateFlags = control->editStateFlags + blinkPhaseIncrement;
+      control->editStateFlags = FromBits<UiTextEditStateFlags>(ToBits(control->editStateFlags) + blinkPhaseIncrement);
       UiNode_InvalidateRoot(&control->base);
     }
   }
@@ -849,7 +850,7 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
   uint32_t glyphWidth;
 
   targetOffsetX = (pointerX - (control->base).left) + control->horizontalScrollPixels;
-  if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME)) {
     decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,
                                                            g_UiWindowTextureSource);
     targetOffsetX = targetOffsetX - decorationSize.logicalWidthPixels;
@@ -919,7 +920,7 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
   decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE,g_UiWindowTextureSource);
   minScrollOffset = cursorOverflow + decorationSize.logicalWidthPixels;
   contentWidth = fullTextWidth + decorationSize.logicalWidthPixels;
-  if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME)) {
     decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,
                                                            g_UiWindowTextureSource);
     contentWidth = contentWidth + decorationSize.logicalWidthPixels * 2;

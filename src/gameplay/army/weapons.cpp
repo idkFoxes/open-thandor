@@ -351,7 +351,7 @@ Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
    modelPointOrdinal << 4 | 2.
 */
 void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-          (EffectCreationFlagBits effectFlags,Q12 worldZQ12,Q12 worldYQ12,Q12 worldXQ12,
+          (ShotTargetModelReference effectFlags,Q12 worldZQ12,Q12 worldYQ12,Q12 worldXQ12,
           ModelAttachmentOrdinal modelPointOrdinal,PckEffectDefinitionIdCatalog effectDefinitionId,
           void *sourceRuntime,void *modelPointTable,WorldRuntimeContext *worldContext)
 

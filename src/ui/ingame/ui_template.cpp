@@ -37,7 +37,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .topOffset = -24,
                 .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .editStateFlags = 0x00000E00, .actionId = 0x00001024, .bufferCapacityCodeUnits = 0x00000030},
+            .editStateFlags = FromBits<UiRequiredTextEditStateFlags>(0x00000E00), .actionId = 0x00001024, .bufferCapacityCodeUnits = 0x00000030},
         {},
         { /* +017C primaryPageStack g_UiLayoutContainerControlVtable */
             .base = {
@@ -416,7 +416,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +1190 missionBriefingText g_UiListOffsetControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1100),
@@ -432,7 +432,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +127C keyboardHelpKeyColumn g_UiListOffsetControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x12D8), .parent = UI_TEMPLATE_LINK(0x11EC),
@@ -457,7 +457,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +13C4 mouseHelpText g_UiListOffsetControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1334),
@@ -653,7 +653,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .leftOffset = 36, .topOffset = 36, .rightOffset = -12, .bottomOffset = -52,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +1B84 technologyDescriptionText g_UiListOffsetControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1AF4),
@@ -688,7 +688,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .leftOffset = 12, .topOffset = 28, .rightOffset = -12, .bottomOffset = 45,
                 .rightAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .editStateFlags = 0x00000408, .actionId = -1, .bufferCapacityCodeUnits = 0x00000030},
+            .editStateFlags = FromBits<UiRequiredTextEditStateFlags>(0x00000408), .actionId = -1, .bufferCapacityCodeUnits = 0x00000030},
         {},
         { /* +1D64 messageCancelButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -769,7 +769,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .leftOffset = -80, .topOffset = 56, .rightOffset = 80, .bottomOffset = -12,
                 .leftAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +208C messageRecipientList g_UiPanelControlVtable */
             .root = {
                 .base = {
@@ -1125,14 +1125,14 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .leftOffset = -208, .topOffset = -116, .rightOffset = 208, .bottomOffset = 48,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .scrollStateFlags = 0x000004A0, .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
         { /* +2DA0 saveGameList g_UiListControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x2D10),
                 .vtable = THANDOR_PTR(&g_UiListControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .listStateFlags = 0x0000000A, .actionId = 0x0000120F, .columnCount = 0x00000002,
+            .listStateFlags = FromBits<UiListStateFlags>(0x0000000A), .actionId = 0x0000120F, .columnCount = 0x00000002,
             .columns = {{.width = 0x00000100}}},
         {0x00000089, 0x000000C0},
         { /* +2E1C saveGameListHeaderLabel g_UiFocusProxyControlVtable */
@@ -1169,7 +1169,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .leftOffset = -208, .topOffset = 95, .rightOffset = 208, .bottomOffset = 112,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-            .editStateFlags = 0x0000040C, .actionId = 0x00001211, .bufferCapacityCodeUnits = 0x00000020},
+            .editStateFlags = FromBits<UiRequiredTextEditStateFlags>(0x0000040C), .actionId = 0x00001211, .bufferCapacityCodeUnits = 0x00000020},
         {},
         { /* +2FD8 saveNameLabel g_UiFocusProxyControlVtable */
             .base = {

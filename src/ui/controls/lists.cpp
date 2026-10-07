@@ -104,7 +104,7 @@ Bool8 UiListControl_HandleKeyboardNavigation
     }
     newSelectedSlot = control->selectedRowSlot;
     if (newSelectedSlot != previousSelectedSlot) {
-      if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
+      if (Any(control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) &&
          (control->activationSound != nullptr)) {
         g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
       }
@@ -114,8 +114,9 @@ Bool8 UiListControl_HandleKeyboardNavigation
                  UiNode_As<UiScrollableControl>((control->base).parent));
       rowValue = g_UiListActivationPulseFrames;
       control->listStateFlags = control->listStateFlags | UI_LIST_DEFERRED_ACTION_PENDING;
-      control->listStateFlags = control->listStateFlags & UI_LIST_FLAGS_MASK;
-      control->listStateFlags = control->listStateFlags | rowValue << UI_LIST_COUNTDOWN_SHIFT;
+      control->listStateFlags = FromBits<UiListStateFlags>(ToBits(control->listStateFlags) & UI_LIST_FLAGS_MASK);
+      control->listStateFlags =
+           control->listStateFlags | FromBits<UiListStateFlags>(static_cast<uint32_t>(rowValue << UI_LIST_COUNTDOWN_SHIFT));
     }
     return false;
   }
@@ -176,7 +177,7 @@ void UiListControl_SelectRowFromPointer
                 (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
                  UiNode_As<UiScrollableControl>((control->base).parent));
       UiActionQueue_Enqueue(control->actionId,control);
-      if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
+      if (Any(control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) &&
          (control->activationSound != nullptr)) {
         g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
       }
@@ -403,14 +404,14 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
 void UiListControl_TickActivationPulse(UiListControl *control)
 
 {
-  if ((control->listStateFlags & UI_LIST_DEFERRED_ACTION_PENDING) == 0) {
+  if (!Any(control->listStateFlags & UI_LIST_DEFERRED_ACTION_PENDING)) {
     return;
   }
-  control->listStateFlags = control->listStateFlags - UI_LIST_COUNTDOWN_ONE;
-  if ((control->listStateFlags & UI_LIST_COUNTDOWN_MASK) == 0) {
+  control->listStateFlags = FromBits<UiListStateFlags>(ToBits(control->listStateFlags) - UI_LIST_COUNTDOWN_ONE);
+  if ((ToBits(control->listStateFlags) & UI_LIST_COUNTDOWN_MASK) == 0) {
     control->listStateFlags =
          control->listStateFlags &
-         (UI_LIST_FLAGS_MASK & ~(UI_LIST_DEFERRED_ACTION_PENDING|UI_LIST_SELECTION_CONFIRMED));
+         (FromBits<UiListStateFlags>(UI_LIST_FLAGS_MASK) & ~(UI_LIST_DEFERRED_ACTION_PENDING|UI_LIST_SELECTION_CONFIRMED));
     UiActionQueue_Enqueue(control->actionId,control);
   }
 }
@@ -520,7 +521,7 @@ UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *
 
 {
   if (outConfirmed != nullptr) {
-    *outConfirmed = (control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) != 0;
+    *outConfirmed = Any(control->listStateFlags & UI_LIST_SELECTION_CONFIRMED);
   }
   return control->selectedRowSlot - control->rowSlots;
 }
@@ -734,7 +735,7 @@ void UiTextListControl_SelectRowFromPointer
             (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
              UiNode_As<UiScrollableControl>((control->base).parent));
   UiActionQueue_Enqueue(control->actionId,control);
-  if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
+  if (Any(control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) &&
      (control->activationSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
@@ -768,7 +769,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
   previousSelectedSlot = control->selectedRowSlot;
   if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) {
     if (((keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) ||
-       ((control->listStateFlags & UI_TEXT_LIST_TYPE_SEARCH_ENABLED) == 0)) {
+       (!Any(control->listStateFlags & UI_TEXT_LIST_TYPE_SEARCH_ENABLED))) {
       return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     }
     remainingRows = control->rowCount;
@@ -835,7 +836,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
   }
   selectedSlot = control->selectedRowSlot;
   if (selectedSlot != previousSelectedSlot) {
-    if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
+    if (Any(control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) &&
        (control->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
     }
@@ -846,8 +847,9 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
     /* arm the deferred action: the frame counter lives in the top byte */
     pulseFrames = g_UiListActivationPulseFrames;
     control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_DEFERRED_ACTION_PENDING;
-    control->listStateFlags = control->listStateFlags & UI_LIST_FLAGS_MASK;
-    control->listStateFlags = control->listStateFlags | pulseFrames << UI_LIST_COUNTDOWN_SHIFT;
+    control->listStateFlags = FromBits<UiTextListStateFlags>(ToBits(control->listStateFlags) & UI_LIST_FLAGS_MASK);
+    control->listStateFlags =
+         control->listStateFlags | FromBits<UiTextListStateFlags>(static_cast<uint32_t>(pulseFrames << UI_LIST_COUNTDOWN_SHIFT));
   }
   return false;
 }
@@ -859,14 +861,15 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
 void UiTextListControl_TickActivationPulse(UiTextListControl *control)
 
 {
-  if ((control->listStateFlags & UI_TEXT_LIST_DEFERRED_ACTION_PENDING) == 0) {
+  if (!Any(control->listStateFlags & UI_TEXT_LIST_DEFERRED_ACTION_PENDING)) {
     return;
   }
-  control->listStateFlags = control->listStateFlags - UI_STATE_FRAME_COUNTER_UNIT;
-  if ((control->listStateFlags & UI_LIST_COUNTDOWN_MASK) == 0) {
+  control->listStateFlags = FromBits<UiTextListStateFlags>(ToBits(control->listStateFlags) - UI_STATE_FRAME_COUNTER_UNIT);
+  if ((ToBits(control->listStateFlags) & UI_LIST_COUNTDOWN_MASK) == 0) {
     control->listStateFlags =
          control->listStateFlags &
-         (UI_LIST_FLAGS_MASK & ~(UI_TEXT_LIST_DEFERRED_ACTION_PENDING|UI_TEXT_LIST_SELECTION_CONFIRMED));
+         (FromBits<UiTextListStateFlags>(UI_LIST_FLAGS_MASK) &
+          ~(UI_TEXT_LIST_DEFERRED_ACTION_PENDING|UI_TEXT_LIST_SELECTION_CONFIRMED));
     UiActionQueue_Enqueue(control->actionId,control);
   }
 }

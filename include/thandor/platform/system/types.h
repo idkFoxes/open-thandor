@@ -109,10 +109,13 @@ using LPSTR = CHAR *;
 
 using LCID = DWORD;
 
-enum {
+/* Telephone country code that selects a text resource locale block (TextResourceLocaleBlockPrefix.countryCode,
+   a file dword) and the thandor.ini language_country_code override. Other values are valid (no block matches). */
+enum class LocaleTelephoneCountryCode : int {
     LOCALE_COUNTRY_GENERIC=0,
     LOCALE_COUNTRY_USA=1,
     LOCALE_COUNTRY_CANADA=2,
+    LOCALE_COUNTRY_RUSSIA=7,
     LOCALE_COUNTRY_NETHERLANDS=31,
     LOCALE_COUNTRY_BELGIUM=32,
     LOCALE_COUNTRY_FRANCE=33,
@@ -122,7 +125,6 @@ enum {
     LOCALE_COUNTRY_DENMARK=45,
     LOCALE_COUNTRY_GERMANY=49
 };
-using LocaleTelephoneCountryCode = int;
 
 using Win32CalendarYear16 = uint16_t;
 
@@ -197,7 +199,7 @@ using LocaleFormatCurrentTimeUtf16Proc = uint32_t (uint16_t * destination);
 using LocaleFormatTimeFieldsUtf16Proc = uint32_t (uint32_t hour, uint32_t minute, uint16_t * destination);
 using LocaleGetPackedCurrentDateProc = uint32_t ();
 using LocaleGetPackedCurrentTimeProc = uint32_t ();
-using LocaleGetTelephoneCountryCodeProc = uint32_t ();
+using LocaleGetTelephoneCountryCodeProc = LocaleTelephoneCountryCode ();
 using TimerCallbackProc = void ();
 using TimerRegisterPeriodicProc = void (uint32_t frequencyHz, TimerCallbackProc * callback);
 using TimerUnregisterPeriodicProc = void (TimerCallbackProc * callback);

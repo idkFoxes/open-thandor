@@ -335,7 +335,7 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
     frontendRoot->menuRoomModelView.contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-    g_FrontendRomTransitionPageAction = 0;
+    g_FrontendRomTransitionPageAction = FRONTEND_PAGE_ACTION_NONE;
     FrontendRomTransition_ActivateRecordById
               (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(&frontendRoot->menuRoomModelView));
   }

@@ -407,11 +407,11 @@ uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags
 static Bool8 Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mode)
 
 {
-  if (mode == FILESYSTEM_ENUMERATE_FILES) {
+  if (mode == FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_FILES) {
     return (g_Win32FindDataScratch.dwFileAttributes &
             (FILE_ATTRIBUTE_DIRECTORY | FILESYSTEM_ATTRIBUTE_VOLUME_LABEL)) == 0;
   }
-  if (mode != FILESYSTEM_ENUMERATE_DIRECTORIES) {
+  if (mode != FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_DIRECTORIES) {
     return false;
   }
   if ((g_Win32FindDataScratch.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
@@ -452,7 +452,7 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
   uint32_t *leftRecordDwords;
   uint32_t *rightRecordDwords;
 
-  if (mode == FILESYSTEM_ENUMERATE_VOLUME_LABEL) {
+  if (mode == FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_VOLUME_LABEL) {
     g_Win32DriveRootPathScratchA[0] = *pathOrVolumeText; /* the drive letter of the "X:\" root path scratch */
     if (GetVolumeInformationA
           (g_Win32DriveRootPathScratchA,Win32Path_ScratchText(),128,nullptr,nullptr,nullptr,nullptr,0) == 0) {
