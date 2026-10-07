@@ -22,7 +22,7 @@ intptr_t g_ModelRuntimeRebaseDelta = 0;
    rotation and the attachment translation. Returns true and stores the child's model runtime in
    *outChildModelRuntime, or false (leaving it unchanged) when the model could not be created.
 */
-Bool8 ModelRuntimePool_RepairDeferredChild
+bool ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
           ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime,
@@ -71,7 +71,7 @@ Bool8 ModelRuntimePool_RepairDeferredChild
   /* Original quirk: index past the attachment count still succeeds and leaves a stale value as the child model
      runtime; in its only caller (ModelNodeRuntime_InstantiateLinkedChildrenRecursive) that value is
      childDefinitionId. Not in the original: logged once, since the child model is silently missing. */
-  static Bool8 s_loggedAttachmentOutOfRange = false;
+  static bool s_loggedAttachmentOutOfRange = false;
   if (!s_loggedAttachmentOutOfRange) {
     s_loggedAttachmentOutOfRange = true;
     Thandor_Log("model: definition %u has %u attachment points, child model %u for slot %u not created",
@@ -169,7 +169,7 @@ static void ModelRuntimePool_ZeroUnusedSlotBeforeSave(ModelRuntimeSlotUnrebaseVi
 
 /* True when the definition's runtimeClassId selects a column of the 24-class handler matrix
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes). */
-static Bool8 ModelDefinition_HasHandledRuntimeClass(const ModelDefinition *definition)
+static bool ModelDefinition_HasHandledRuntimeClass(const ModelDefinition *definition)
 {
   return (uint32_t)definition->runtimeClassId <
          sizeof(g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize) /

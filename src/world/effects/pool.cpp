@@ -45,7 +45,7 @@ EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog 
    between the steps. Returns true with *outError = 0 on success, or false with the load/allocation error in
    *outError (always written).
 */
-Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
+bool EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
 
 {
   uint32_t error;
@@ -214,7 +214,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   int slotIndex;
   GraphicsPaletteAsset *chosenPalette;
   EffectRuntimeSlot *effectSlot;
-  Bool8 projectedCellMasked;
+  bool projectedCellMasked;
   ModelPackedPointRecord *lightPoint;
   ModelWorldPoint localPoint;
   TerrainOccupancyResolvedMasks occupancyMasks;

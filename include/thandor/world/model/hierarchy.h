@@ -45,7 +45,7 @@ ModelNodeRuntime_TransformLocalPoint
 
 ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
-Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
+bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
           GraphicsTextureSet *textureSet,ModelRuntimeSlot *modelRuntimeSlot,
           ModelDefinitionHierarchyNodeAddress32 definitionNode,WorldRuntimeContext *worldRuntime);
@@ -56,10 +56,10 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
 
 void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntimeId,ModelRuntimeSlot *modelRuntime);
 
-Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode);
 
-Bool8 ModelNodeRuntime_CreateHierarchyRecursive
+bool ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode,
           WorldRuntimeContext *worldRuntime,ModelRuntimeNode **outNode);

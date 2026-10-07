@@ -17,7 +17,7 @@
    the entry unchecked; bounded here because editor commands arrive from any network peer. */
 static SelectionPlayerRuntimeBlock *FieldGridEdit_PlayerBlock(PlayerRuntimeId playerRuntimeId)
 {
-  static Bool8 s_missingBlockLogged = false;
+  static bool s_missingBlockLogged = false;
   SelectionPlayerRuntimeBlock *playerBlock;
 
   playerBlock = nullptr;
@@ -38,7 +38,7 @@ static SelectionPlayerRuntimeBlock *FieldGridEdit_PlayerBlock(PlayerRuntimeId pl
    assigned in this code base, so the editor commands that use it do nothing instead of writing through NULL. */
 int *FieldGridEdit_PlayerHeightPlane(PlayerRuntimeId playerRuntimeId)
 {
-  static Bool8 s_missingPlaneLogged = false;
+  static bool s_missingPlaneLogged = false;
   SelectionPlayerRuntimeBlock *playerBlock;
   int *heightPlane;
 
@@ -58,7 +58,7 @@ int *FieldGridEdit_PlayerHeightPlane(PlayerRuntimeId playerRuntimeId)
 /* The same for the player's material edit plane (SelectionPlayerRuntimeBlock.terrainMaterialEditPlane). */
 uint32_t *FieldGridEdit_PlayerMaterialPlane(PlayerRuntimeId playerRuntimeId)
 {
-  static Bool8 s_missingPlaneLogged = false;
+  static bool s_missingPlaneLogged = false;
   SelectionPlayerRuntimeBlock *playerBlock;
   uint32_t *materialPlane;
 
@@ -77,7 +77,7 @@ uint32_t *FieldGridEdit_PlayerMaterialPlane(PlayerRuntimeId playerRuntimeId)
 
 /* Whether the Q12 grid row/column lies on a cell of the grid, so cells[row * width + column] is inside the
    array. Checked on the flat index (as the original computes it), so every in-array position stays as it was. */
-static Bool8 FieldGrid_IsCellIndexInGrid(Q12 gridRowQ12,Q12 gridColumnQ12,const FieldGridAsset *fieldGrid)
+static bool FieldGrid_IsCellIndexInGrid(Q12 gridRowQ12,Q12 gridColumnQ12,const FieldGridAsset *fieldGrid)
 {
   int64_t cellIndex;
 
@@ -153,7 +153,7 @@ void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   FieldGridCell *cell;
   SelectionPlayerPairRecord *pairRecord;
   int *scratchHeightCursor;
-  Bool8 containsAnchorPair;
+  bool containsAnchorPair;
   int *accumulatorPlane;
 
   accumulatorPlane = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
@@ -239,7 +239,7 @@ void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   FieldGridCell *cell;
   SelectionPlayerPairRecord *pairRecord;
   int *scratchHeightCursor;
-  Bool8 containsAnchorPair;
+  bool containsAnchorPair;
   int *accumulatorPlane;
 
   accumulatorPlane = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
@@ -320,7 +320,7 @@ void FieldGrid_RebuildLocalInfluenceState
   FieldGridCell *scanCell;
   SelectionPlayerPairRecord *pairRecord;
   int *scratchHeightCursor;
-  Bool8 containsAnchorPair;
+  bool containsAnchorPair;
   
   if (FieldGridEdit_PlayerHeightPlane(playerRuntimeId) == nullptr) {
     return;
@@ -399,7 +399,7 @@ void FieldGrid_ApplyLocalCellUpdate
   FieldGridAsset *fieldGrid;
   uint32_t remainingPairCount;
   SelectionPlayerPairRecord *pairRecord;
-  Bool8 containsAnchorPair;
+  bool containsAnchorPair;
   
   playerBlock = FieldGridEdit_PlayerBlock(playerRuntimeId);
   if (playerBlock == nullptr) {
@@ -502,7 +502,7 @@ void FieldGrid_SetCellResourceSupportFlag
   /* The original takes any bit index 0..31 (others than 0 and 1 replace an unrelated flag, e.g. the edge
      ring); bounded here to the two support flags because the index comes with the command. */
   if ((setMask & ~ToBits(FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)) != 0) {
-    static Bool8 s_bitIndexLogged = false;
+    static bool s_bitIndexLogged = false;
     if (!s_bitIndexLogged) {
       s_bitIndexLogged = true;
       Thandor_Log("terrain editor: resource flag bit index %d outside 0..1, ignored",(int)materialBitIndex);

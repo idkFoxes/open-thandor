@@ -362,7 +362,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
    pointer queue (g_GridPathCostQueueBegin..End; 0x180000 bytes in the original, 0x300000 with 8-byte pointers), each replacing and freeing the previous buffer. Returns true on success;
    on failure returns false and writes the allocator error to *outError (untouched on success).
 */
-Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError)
+bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError)
 
 {
   GridScratchCell *previousSecondaryScratchBuffer;
@@ -544,7 +544,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
    when it lies outside the scratch grid, the cell is GRID_SCRATCH_BLOCKED, or the cell has distance band bit
    8 + lowBandIndex or bit 24 + highBandIndex set.
 */
-Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
+bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
 
 {
   GridScratchStateMask cellStateMask;
@@ -656,7 +656,7 @@ void GridScratch_ResetTraversalFlagsAndCosts()
 {
   uint32_t cellsRemaining;
   uint32_t *scratchRecordCursor; /* dword view of the 8-byte cells: [2n] = stateMask, [2n + 1] = pathCost */
-  Bool8 fullRecordBlockRemaining;
+  bool fullRecordBlockRemaining;
 
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
   scratchRecordCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);

@@ -30,7 +30,7 @@ struct FieldGridTriangleLookup {
    terrain height and true is returned. Outside the grid false is returned and *outPoint is the input position
    with height 0 (always written).
 */
-Bool8 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
+bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
 
 {
   int gridColumnIndex;
@@ -38,7 +38,7 @@ Bool8 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *fie
   uint32_t gridHalfRowCoordinateQ12;
   int gridRowIndex;
   Q12 terrainHeightQ12;
-  Bool8 outOfBounds;
+  bool outOfBounds;
 
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
   gridHalfRowCoordinateQ12 =
@@ -69,7 +69,7 @@ Bool8 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *fie
    Outside the grid false is returned and *outPoint is the input position with height 0 (always written).
    Used by SelectionOverlay_DrawWorldPointMarker.
 */
-Bool8 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
+bool FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
 
 {
   int gridColumnIndex;
@@ -77,7 +77,7 @@ Bool8 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *
   int surfaceHeightQ12;
   uint32_t gridHalfRowCoordinateQ12;
   int gridRowIndex;
-  Bool8 outOfBounds;
+  bool outOfBounds;
 
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
   gridHalfRowCoordinateQ12 =
@@ -383,7 +383,7 @@ bool FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGrid
 
 /* Finds the grid square under (worldYQ12, worldXQ12) and the fractions inside it. Returns false outside the
    grid or when the square's top-left or lower-right corner is a border cell. */
-static Bool8 FieldGrid_LocateInterpolationTriangle
+static bool FieldGrid_LocateInterpolationTriangle
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,FieldGridTriangleLookup *lookup)
 {
   uint32_t rowQ12;
@@ -489,7 +489,7 @@ static uint32_t FieldGrid_BlendTriangleNormals
    Returns false (outputs untouched) outside the grid or on a border cell. Used by the articulated army contact
    code (ArmyArticulatedRuntime_UpdateLeftTerrainContact, ..RightTerrainContact and their siblings).
 */
-Bool8 FieldGrid_InterpolateTerrainHeightAndNormal
+bool FieldGrid_InterpolateTerrainHeightAndNormal
           (Q12 worldY,Q12 worldX,FieldGridAsset *field,Q12 *outHeightQ12,uint32_t *outPackedNormalAngles)
 
 {
@@ -520,7 +520,7 @@ Bool8 FieldGrid_InterpolateTerrainHeightAndNormal
    ArmyPlacement_TestGridRuntimeAndFieldBlocking, ..CanPlaceMobileUnit, ..CanPlaceBuilding and
    ArmyPlacementCollision_TestCurrentRuntime with the owner army's faction index.
 */
-Bool8 FieldGrid_TestWorldPointBlocked
+bool FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           )
 

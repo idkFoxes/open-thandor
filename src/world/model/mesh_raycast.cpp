@@ -22,7 +22,7 @@ GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {};
    Returns true on a hit and stores the Q12 distance along the ray in *outDistanceQ12; returns false on a miss
    and leaves *outDistanceQ12 unchanged. Called for each triangle by ModelNodeRuntime_RaycastHierarchyNearest.
 */
-Bool8 ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12)
+bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12)
 
 {
   GraphicsFixedVec3 *vertex0;
@@ -37,7 +37,7 @@ Bool8 ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *tri
   int64_t directionProduct;
   int directionDot;
   int maximumDistanceHigh;
-  Bool8 planeOutOfRange;
+  bool planeOutOfRange;
   Q12 hitDistanceQ12;
   int negVertex0X;
   int negVertex0Y;
@@ -61,7 +61,7 @@ Bool8 ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *tri
   int64_t normalCrossHitZ;
   int64_t edge2DotNormalCrossHit;
   int64_t insideRemainder;
-  Bool8 hitFound;
+  bool hitFound;
 
   normalX = triangle->planeNormalX << (Q28_SHIFT - Q12_SHIFT);
   normalY = triangle->planeNormalY << (Q28_SHIFT - Q12_SHIFT);

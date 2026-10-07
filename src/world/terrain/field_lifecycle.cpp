@@ -138,7 +138,7 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
    status is ignored), or false with the allocation or write error in *outError. Called by
    InGameUiCommand_SaveFieldAndLevelAssetImages.
 */
-Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError)
+bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError)
 
 {
   ArenaScoped imageCopyBlock; /* freed on return; only the result stores follow the write */
@@ -225,7 +225,7 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
    Every stock grid passes: all are exactly header + cells long, with 8k + 3 (59..139) cells per side. Logs
    one line and returns false otherwise.
 */
-Bool8 FieldGrid_ValidateLoadedImage(const FieldGridAsset *fieldGrid,uint32_t loadedByteCount)
+bool FieldGrid_ValidateLoadedImage(const FieldGridAsset *fieldGrid,uint32_t loadedByteCount)
 
 {
   uint64_t requiredBytes;

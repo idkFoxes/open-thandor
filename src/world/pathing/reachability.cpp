@@ -19,7 +19,7 @@ static uint32_t g_GridPathUnreachableRegionReferenceRow = 0;
 
 /* True when the cell below rowAboveCell (rowAboveCell[scratchWidth]) is open, counted (inside the outer
    footprint) and marked visited, and at least one of its six hex neighbours has count 0 (outside the footprint). */
-static Bool8 GridReachability_IsMarkedRingEdgeCell(GridScratchCell *rowAboveCell,uint32_t scratchWidth)
+static bool GridReachability_IsMarkedRingEdgeCell(GridScratchCell *rowAboveCell,uint32_t scratchWidth)
 {
   GridScratchCell *cell;
 
@@ -40,7 +40,7 @@ static Bool8 GridReachability_IsMarkedRingEdgeCell(GridScratchCell *rowAboveCell
    other marked edge cell left over means the ring fell apart and returns true. A point outside the grid
    also returns true.
 */
-Bool8 GridReachability_RebuildConnectedRegionAroundWorldPoint
+bool GridReachability_RebuildConnectedRegionAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
@@ -52,7 +52,7 @@ Bool8 GridReachability_RebuildConnectedRegionAroundWorldPoint
   int cellsToScan;
   GridScratchCell *scratchCursor;
   uint32_t rowStrideBytes;
-  Bool8 moreBlocksRemain;
+  bool moreBlocksRemain;
 
   cellsToClear = g_GridScratchWidth * g_GridScratchHeight;
   scratchCursor = g_GridScratchPrimary;
@@ -188,7 +188,7 @@ static GridScratchCell *GridPathRegion_ScanUnreachedSpanEnd(GridScratchCell *cur
 
 /* True for a cell the region walk recurses into: unreached, neither blocked (bit 31) nor visited, and not
    a cell with the mover's faction presence bit and a blocking band. */
-static Bool8 GridPathRegion_IsUnvisitedUnreachedOpenCell(GridScratchCell *cell)
+static bool GridPathRegion_IsUnvisitedUnreachedOpenCell(GridScratchCell *cell)
 
 {
   GridScratchStateMask cellState;
@@ -380,7 +380,7 @@ void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScr
 
 /* True when a cell blocks a line segment: blocked (bit 31), lacking the mover's faction presence bit, or having
    a g_GridPathBlockingMask or callerBlockingMask bit. */
-static Bool8 GridPathLine_CellBlocksSegment(FieldGridRegionMask callerBlockingMask,GridScratchCell *cell)
+static bool GridPathLine_CellBlocksSegment(FieldGridRegionMask callerBlockingMask,GridScratchCell *cell)
 
 {
   GridScratchStateMask cellState;
@@ -392,7 +392,7 @@ static Bool8 GridPathLine_CellBlocksSegment(FieldGridRegionMask callerBlockingMa
 
 /* Downward segment: scans one column from columnStartCell up to columnEndCell (inclusive); true as soon as a
    cell other than startCell blocks the segment. */
-static Bool8 GridPathLine_ColumnBlocksSegment(FieldGridRegionMask callerBlockingMask,GridScratchCell *startCell,
+static bool GridPathLine_ColumnBlocksSegment(FieldGridRegionMask callerBlockingMask,GridScratchCell *startCell,
           GridScratchCell *columnStartCell,GridScratchCell *columnEndCell)
 
 {
@@ -428,7 +428,7 @@ static GridScratchCell *GridPathLine_AdvanceDownRows(GridScratchCell *lineCursor
    when the whole line is clear. The line is always walked left to right;
    upward lines step row by row, downward lines column by column.
 */
-Bool8 GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
+bool GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell)
 
 {

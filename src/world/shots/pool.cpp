@@ -26,7 +26,7 @@ uint8_t *g_ShotRuntimeRebaseBaseMinusOne = nullptr;
    with *outError = 0 on success, or false with the error code of the first failing load or allocation in
    *outError (always written).
 */
-Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
+bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
 
 {
   ShotRuntimeSlot *pool;

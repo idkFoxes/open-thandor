@@ -28,6 +28,6 @@ void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,Fiel
 
 void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,FieldGridAsset *fieldGrid);
 
-Bool8 TerrainByteClampLookup_Initialize(uint32_t *outError);
+bool TerrainByteClampLookup_Initialize(uint32_t *outError);
 
 #endif /* THANDOR_WORLD_TERRAIN_FOG_VISIBILITY_H */

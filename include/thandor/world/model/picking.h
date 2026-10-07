@@ -23,14 +23,14 @@ extern GraphicsFixedVec3 g_ModelRaycastOrigin; /* Q12 world-space ray origin */
 
 extern GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28; /* Q28 world-space ray direction */
 
-Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerHitContext *context,uint32_t *outDistanceQ12);
 
 Q12 ModelNodeRuntime_RaycastHierarchyNearest
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeNode **outNearestModelNode);
 
-Bool8 ModelRuntime_RaycastCandidateListNearest
+bool ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,

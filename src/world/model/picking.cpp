@@ -79,7 +79,7 @@ static const uint8_t g_ModelBoundsHitTriangleCorners[12][3] = {
 
 /* True when the pointer lies inside one of the projected box triangles that has no corner behind the near
    plane; stops at the first hit. */
-static Bool8 ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8_t clippedCornerMask)
+static bool ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8_t clippedCornerMask)
 
 {
   int triangleIndex;
@@ -105,7 +105,7 @@ static Bool8 ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8
    in order. Returns true on a hit and stores the distance in *outDistanceQ12; returns false (and leaves
    *outDistanceQ12 unchanged) when neither the node nor a child was hit.
 */
-Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerHitContext *context,uint32_t *outDistanceQ12)
 
@@ -347,7 +347,7 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
    hierarchy test); callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.cpp) and the shot
    updates (src/world/shots/flight.cpp).
 */
-Bool8 ModelRuntime_RaycastCandidateListNearest
+bool ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,

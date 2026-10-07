@@ -345,7 +345,7 @@ ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
    yields the variant the faction's technology selects, which is created in the matching child slot and then
    built the same way. Returns true when a child cannot be created.
 */
-Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
+bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
           GraphicsTextureSet *textureSet,ModelRuntimeSlot *modelRuntimeSlot,
           ModelDefinitionHierarchyNodeAddress32 definitionNode,WorldRuntimeContext *worldRuntime)
@@ -355,7 +355,7 @@ Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
   PckModelDefinitionIdCatalog childDefinitionId;
   int linksRemaining;
   ModelRuntimeAttachmentIndex childSlotIndex;
-  Bool8 childFailed;
+  bool childFailed;
   ModelRuntimeSlot *childModelRuntime;
 
   /* definition node: +8 link count, +0xC the linked definition lists */
@@ -449,7 +449,7 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntim
    walked (false from the recursion), the record goes into the next of the six attachments[] entries.
    Returns true when the node was walked.
 */
-Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode)
 
 {
@@ -459,7 +459,7 @@ Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
   MdlChildCount childCountRemaining;
   uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransformCursor;
-  Bool8 childWalked;
+  bool childWalked;
   ModelResource *definitionResource;
 
   if ((definitionNode->nodeFlags & 0xf) != 0) {
@@ -537,7 +537,7 @@ static ModelAttachmentTransformRecord *ModelResource_FindChildAttachmentTransfor
    non-instantiated definition node) in *outNode, or false when a world node could not be allocated (the
    original returned FATAL_ERROR_GENERAL_FAILURE as its failure value; *outNode is then left unchanged).
 */
-Bool8 ModelNodeRuntime_CreateHierarchyRecursive
+bool ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode,
           WorldRuntimeContext *worldRuntime,ModelRuntimeNode **outNode)
@@ -617,7 +617,7 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
        (and reads the child offsets past the serialized header's six); bounded here because a node with a sprite
        and more than six children cannot be valid: registration (ModelDefinition_ResolveNodeSprites) would have
        relocated its sprite reference as a seventh child offset. Extra children are dropped. */
-    static Bool8 s_loggedChildCountOutOfRange = false;
+    static bool s_loggedChildCountOutOfRange = false;
     if (!s_loggedChildCountOutOfRange) {
       s_loggedChildCountOutOfRange = true;
       Thandor_Log("model: MDL node with %u children, only the first 6 are created",childrenRemaining);

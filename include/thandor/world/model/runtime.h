@@ -23,7 +23,7 @@ inline constexpr int MODEL_DEFINITION_REGISTRY_SLOT_COUNT = 0x300;
 /* The ModelRuntimeNode.runtimeFlags bits MODEL_NODE_FLAG_* are ModelRuntimeFlags (gameplay/army/types.h). */
 /* The ModelDefinition.modelFlags bits MODEL_DEFINITION_FLAG_* are ModelDefinitionFlags (gameplay/army/types.h). */
 
-Bool8 ModelRuntimePool_RepairDeferredChild
+bool ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
           ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime,

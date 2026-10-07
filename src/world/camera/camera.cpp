@@ -197,7 +197,7 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   int rayLengthQ12;
   int groundOffsetY;
   FixedSinCos groundOffsetXY;
-  Bool8 surfaceHit;
+  bool surfaceHit;
   Q12 rayDistanceQ12;
   Q12 secondaryDistanceQ12;
   FixedDirection endpointOffset;
