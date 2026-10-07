@@ -359,7 +359,7 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
   localPlayerRecord->playerName.textUtf16[0] = 0;
   localPlayerRecord->playerName.textUtf16[1] = 0;
   localPlayerRecord->playerRuntimeId = 0;
-  localPlayerRecord->factionAssignment.roleStateFlags = 0;
+  localPlayerRecord->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
   localPlayerRecord->colourCycleFlags = 0;
   localPlayerRecord->snapshotTransferFlags = 0;
 }

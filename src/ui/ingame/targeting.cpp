@@ -79,7 +79,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
                root->activeNotificationPayload.worldYQ12,root->activeNotificationPayload.worldXQ12,
                &root->worldRuntime);
     root->worldRuntime.runtimeFlags = root->worldRuntime.runtimeFlags & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
-    root->notificationButtonCursorFrame = 27; /* next click cancels */
+    root->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_JUMPED; /* next click cancels */
     break;
   default:
     break;

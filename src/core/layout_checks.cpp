@@ -3266,3 +3266,22 @@ static_assert(sizeof(AiStructureWorkspaceEntry) == sizeof(AiRuntimeWorkspaceEntr
                   offsetof(AiScoredSiteWorkspaceEntry, cellWorldYQ12) == 0x4 &&
                   offsetof(AiScoredSiteWorkspaceEntry, score) == 0x8,
               "AI workspace entries the AI walks as each other");
+
+/* Step 13 E2 (ui/frontend and ui/ingame state families as enum class): the fields keep their offsets, sizes and
+   underlying types (player records are copied dword by dword and sent; the cursor frame is a UiImageActionControl
+   dword of the in-game template image). */
+static_assert(offsetof(FrontendPlayerRuntimeRecord, commandSyncPending) == 0x50 &&
+                  offsetof(FrontendPlayerRuntimeRecord, factionAssignment) == 0x54 &&
+                  offsetof(FrontendPlayerFactionAssignmentState, roleStateFlags) == 0xC &&
+                  sizeof(FrontendPlayerRuntimeRecord::commandSyncPending) == 4 &&
+                  sizeof(FrontendPlayerFactionAssignmentState::roleStateFlags) == 4,
+              "commandSyncPending and roleStateFlags stay dwords at +0x50 and +0x60 of the player record");
+static_assert(offsetof(InGameNotificationPayload, payloadKind) == 0x14 && sizeof(InGameNotificationPayload::payloadKind) == 4,
+              "InGameNotificationPayload.payloadKind stays the dword at +0x14");
+static_assert(offsetof(InGameRuntimeRoot, notificationButtonCursorFrame) == 0x9B4C &&
+                  offsetof(InGameRuntimeRootUiGridView, notificationButtonCursorFrame) == 0x9B4C &&
+                  offsetof(InGameTargetingRootTraversalView, notificationButtonCursorFrame) == 0x9B4C &&
+                  offsetof(InGameTargetingRootTraversalView, actionState) == 0x50 &&
+                  sizeof(InGameRuntimeRoot::notificationButtonCursorFrame) == 4 &&
+                  sizeof(InGameTargetingRootTraversalView::actionState) == 4,
+              "the notification button cursor frame stays the dword at +0x9B4C of the root (+0x50 of the button)");

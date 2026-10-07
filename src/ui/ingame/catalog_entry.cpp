@@ -447,7 +447,7 @@ void UiCatalogEntryControl_NonRightRelease
      (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     stateFlagsField = &(control->command).sprite.selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    (control->command).activationInputState = activationInputState;
+    (control->command).activationInputState = FromBits<UiCommandActivationStateFlags>(activationInputState);
     if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
        ((control->command).sprite.activationSound != nullptr)) {
       g_SoundPlayOneShot

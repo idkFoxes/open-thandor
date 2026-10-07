@@ -162,7 +162,7 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
   WorldRuntimeContext *worldRuntime;
   FactionRuntimeIndex factionIndex;
   CommandPayload groupIndex;
-  CommandPayload transferModeFlags;
+  FrontendSelectionTransferModeFlags transferModeFlags;
 
   if ((g_UiCommandRuntimeFlags &
       (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) != 0) {
@@ -182,24 +182,24 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
       return;
     }
   }
-  transferModeFlags = 0;
-  if ((control->activationInputState & UI_COMMAND_ACTIVATION_LOW_INPUT_NIBBLE_MASK) != 0) {
+  transferModeFlags = FrontendSelectionTransferModeFlags{};
+  if (Any(control->activationInputState & UI_COMMAND_ACTIVATION_LOW_INPUT_NIBBLE_MASK)) {
     transferModeFlags = SELECTION_TRANSFER_MERGE;
   }
-  if ((control->activationInputState & UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON) != 0) {
+  if (Any(control->activationInputState & UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON)) {
     transferModeFlags = transferModeFlags | SELECTION_TRANSFER_TO_GROUP;
   }
-  if ((control->activationInputState & UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK) != 0) {
+  if (Any(control->activationInputState & UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK)) {
     transferModeFlags = transferModeFlags | SELECTION_TRANSFER_CENTER_VIEW;
   }
-  if ((transferModeFlags != 0) &&
+  if (Any(transferModeFlags) &&
       SelectionInfo_AllEntriesEmptyOrMatchOwner
            ((FactionRuntimeIndex)worldRuntime->activeFactionRuntimeIndex)) {
     return;
   }
   factionIndex = worldRuntime->activeFactionRuntimeIndex;
   InGameCommand_Issue<FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh>
-            ((CommandPayload)factionIndex,transferModeFlags,groupIndex);
+            ((CommandPayload)factionIndex,ToBits(transferModeFlags),groupIndex);
 }
 
 /* Empty callback: InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState installs it as
@@ -278,7 +278,7 @@ void InGameCommand_HandlePlayerDeparture
         (playerRecord->playerName).textUtf16[0] = 0;
         (playerRecord->playerName).textUtf16[1] = 0;
         playerRecord->playerRuntimeId = 0;
-        (playerRecord->factionAssignment).roleStateFlags = 0;
+        (playerRecord->factionAssignment).roleStateFlags = FrontendRoleStateFlags{};
         return;
       }
       /* departure message with the player name patched in */

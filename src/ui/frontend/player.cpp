@@ -578,7 +578,7 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
   localPlayerRecord->playerName.textUtf16[0] = 0;
   localPlayerRecord->playerName.textUtf16[1] = 0;
   firstPlayerBlock->playerRuntimeId = 0;
-  firstPlayerBlock->factionAssignment.roleStateFlags = 0;
+  firstPlayerBlock->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
   firstPlayerBlock->colourCycleFlags = 0;
   firstPlayerBlock->snapshotTransferFlags = 0;
 }
@@ -870,13 +870,16 @@ void FrontendPlayerSelection_ClearAndRefreshLocalPanels
    faction's 8 groups of 32 armies, direction and merge chosen by the SELECTION_TRANSFER_* flags. Storing a
    selection first removes its armies from all groups of the faction. For the local player it rebuilds the
    selection panels and, with SELECTION_TRANSFER_CENTER_VIEW, moves the camera to the selection's centre.
+   transferModeBits is the command payload dword of the FrontendSelectionTransferModeFlags.
 */
 void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
           (PlayerRuntimeId playerRuntimeId,FactionRuntimeIndex factionIndex,
-          FrontendSelectionTransferModeFlags transferModeFlags,
+          CommandPayload transferModeBits,
           FrontendFactionAssignmentIndex selectionGroupIndex)
 
 {
+  const FrontendSelectionTransferModeFlags transferModeFlags =
+      FromBits<FrontendSelectionTransferModeFlags>(transferModeBits);
   GameEntityRuntime *selectionEntry;
   InGameRuntimeRoot *inGameRoot;
   int entryIndex;
@@ -895,7 +898,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
                  (&g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32
                   [selectionGroupIndex * SELECTION_GROUP_ENTRY_COUNT]);
   selectionEntries = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection.entries;
-  if ((transferModeFlags & SELECTION_TRANSFER_TO_GROUP) != 0) {
+  if (Any(transferModeFlags & SELECTION_TRANSFER_TO_GROUP)) {
     /* first take every selected army out of all groups of the faction */
     for (entryIndex = 0; entryIndex < SELECTION_GROUP_ENTRY_COUNT; entryIndex++) {
       selectionEntry = selectionEntries[entryIndex];
@@ -915,7 +918,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
     sourceEntries = groupEntries;
     destEntries = selectionEntries;
   }
-  if ((transferModeFlags & SELECTION_TRANSFER_MERGE) == 0) {
+  if (!Any(transferModeFlags & SELECTION_TRANSFER_MERGE)) {
     for (entryIndex = 0; entryIndex < SELECTION_GROUP_ENTRY_COUNT; entryIndex++) {
       destEntries[entryIndex] = sourceEntries[entryIndex];
     }
@@ -943,7 +946,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
     InGameBuildCatalog_RebuildGrid(&inGameRoot->rootUi.base);
-    if ((transferModeFlags & SELECTION_TRANSFER_CENTER_VIEW) != 0) {
+    if (Any(transferModeFlags & SELECTION_TRANSFER_CENTER_VIEW)) {
       if (SelectionInfoEntitySlots_ComputeAverageWorldPosition(&averagePosition)) {
         WorldRuntime_PointCameraAtTarget
                   (inGameRoot->worldRuntime.motion.pitchAngle,
