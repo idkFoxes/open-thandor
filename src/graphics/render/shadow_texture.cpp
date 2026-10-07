@@ -664,6 +664,7 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   sourceEntry = Asset_RecordAt<GraphicsTextureSourceEntry>(asset,GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
   pixelDataOffset = subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE + GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
   /* Original quirk: the count is tested at the end, so subresourceCount 0 would wrap around */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     sourceEntry->logicalWidth = textureDimension;
     sourceEntry->logicalHeight = textureDimension;
@@ -898,14 +899,13 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
   triangleCount = reinterpret_cast<ModelMeshHeader *>(meshRecord)->triangleCount;
   if (((reinterpret_cast<ModelMeshHeader *>(meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) != 0) &&
      (recordCursor = reinterpret_cast<GraphicsFixedVec3 *>(meshRecord + sizeof(ModelMeshHeader)), vertexCount != 0)) {
-    do {
+    for (; vertexCount != 0; vertexCount--) {
       result = (uintptr_t)&recordCursor[2].z;
       GraphicsShadingGeneratedTexture_TransformPointXYQuantized
                 (ModelVertex_ShadowXY(recordCursor),recordCursor,
                  &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
       recordCursor = Asset_RecordAt<GraphicsFixedVec3>(recordCursor,MODEL_MESH_RECORD_SIZE);
-      vertexCount--;
-    } while (vertexCount != 0);
+    }
     if (triangleCount != 0) {
       for (; triangleCount != 0; triangleCount--) {
         /* 5f-format: GraphicsTriangleInput.vertex0/vertex1/vertex2 (MDL mesh triangle record, 32-bit vertex
@@ -1226,6 +1226,7 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
   scratchCursor = static_cast<uint8_t *>(g_GraphicsShadingGridScratchInterior);
   /* Original quirk: both passes test the row count at the end, so gridHalfSize 0 would wrap around */
   rowsRemaining = g_GraphicsShadingGridHalfSize;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
       for (halfIndex = 0; halfIndex < 2; halfIndex++) {
@@ -1246,6 +1247,7 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
   textureCursor = tileTopLeft;
   scratchCursor = static_cast<uint8_t *>(g_GraphicsShadingGridScratchInterior);
   rowsRemaining = g_GraphicsShadingGridHalfSize;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
       for (halfIndex = 0; halfIndex < 2; halfIndex++) {
