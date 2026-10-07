@@ -183,14 +183,15 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .layoutWidth = -1, .layoutHeight = -1},
             .labelFlags = 0x00000040, .wrapWidth = 0x00000105, .text = THANDOR_PTR32_BITS(0x0000219B)},
         { /* +08B0 briefingImage g_UiImageActionControlVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x914), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x58C),
-            .vtable = THANDOR_PTR(&g_UiImageActionControlVtable),
-            .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -288, .topOffset = -128, .rightOffset = -4, .bottomOffset = 112,
-            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
-            .layoutWidth = -1, .layoutHeight = -1},
-        {
-            0x00000001, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF},
+            .base = {
+                .nextSibling = UI_TEMPLATE_LINK(0x914), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x58C),
+                .vtable = THANDOR_PTR(&g_UiImageActionControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -288, .topOffset = -128, .rightOffset = -4, .bottomOffset = 112,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .displayFlags = 0x00000001, .cursorFrame = 0x00000000, .textureSource = THANDOR_PTR32_BITS(0x00000000),
+            .subresource = 0x00000000, .primaryActionId = -1, .secondaryActionId = -1},
         { /* +0914 opponentSettingsGroup g_UiFocusProxyControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x970), .parent = UI_TEMPLATE_LINK(0x58C),

@@ -354,8 +354,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
-    /* briefingImage: an image action control, its template node is shorter than the class */
-    if ((reinterpret_cast<UiImageActionControl *>(&FrontendUi_Image(frontendRoot)->briefingImage)->textureSource != nullptr) &&
+    if ((FrontendUi_Image(frontendRoot)->briefingImage.textureSource != nullptr) &&
        !Movie_AdvanceFrame(nullptr,nullptr)) {
       Movie_Rewind();
     }

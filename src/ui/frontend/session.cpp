@@ -512,8 +512,7 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
   /* percent * 256 / 100 */
   g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
        (uint32_t)(FrontendUi_Image(frontendRootAddress)->gameSpeedSlider.value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
-  /* briefingImage: an image action control, its template node is shorter than the class */
-  displayFlags = &reinterpret_cast<UiImageActionControl *>(&FrontendUi_Image(frontendRootAddress)->briefingImage)->displayFlags;
+  displayFlags = &FrontendUi_Image(frontendRootAddress)->briefingImage.displayFlags;
   *displayFlags = *displayFlags | 8;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,romActionIndex);
 }
