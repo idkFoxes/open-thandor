@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Mission briefing text of faction f (1..7) of a level: this + f + level title id * 0x10 (level text page). */
-#define TEXT_ID_LEVEL_BRIEFING_BASE 0x230017
+inline constexpr int32_t TEXT_ID_LEVEL_BRIEFING_BASE = 0x230017;
 /* Extension code ".flm" (movie) for WidePath_SetExtensionCode, as the WIDE_PATH_EXTENSION_* in core/text/path.h */
 #ifndef WIDE_PATH_EXTENSION_FLM
 #define WIDE_PATH_EXTENSION_FLM 0x6D6C66

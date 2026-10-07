@@ -188,6 +188,10 @@ class TypeDb:
         for m in re.finditer(r"^\s*#\s*define\s+(\w+)\s+\(?(-?(?:0x[0-9A-Fa-f]+|\d+))[uUlL]*\)?\s*(?:/[*/].*)?$",
                              raw, re.M):
             self.consts[m.group(1)] = int(m.group(2), 0)
+        # the same constants after step 13 W2: `inline constexpr int32_t NAME = 0x10;` / `static constexpr ...`
+        for m in re.finditer(r"^\s*(?:inline\s+|static\s+)?constexpr\s+[\w:]+\s+(\w+)\s*=\s*\(?(-?(?:0x[0-9A-Fa-f]+|\d+))"
+                             r"[uUlL]*\)?\s*;", raw, re.M):
+            self.consts.setdefault(m.group(1), int(m.group(2), 0))
         text = strip_comments(raw)
         # pack regions: offsets of "#pragma pack(push, 1)" / "pop"
         packs = [(m.start(), "push" in m.group(0)) for m in re.finditer(r"#\s*pragma\s+pack\s*\(\s*(push\s*,\s*1|pop)",

@@ -113,7 +113,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   /* Back only when started from the menu by a non-client; Exit (and the Save button) in a campaign or a
      re-initialised scenario; neither for a client of a fresh scenario */
   if ((((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
-      (g_FrontendLoadedCampaignAsset == 0)) && (g_FrontendScenarioInitializationCount == 0)) {
+      (g_FrontendLoadedCampaignAsset == nullptr)) && (g_FrontendScenarioInitializationCount == 0)) {
     ui->briefingBackButton.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     ui->briefingBackButton.selectable.stateFlags &= ~FRONTEND_CONTROL_INACTIVE;
   }
@@ -122,7 +122,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     ui->briefingBackButton.selectable.stateFlags |= FRONTEND_CONTROL_INACTIVE;
   }
   /* (when Back was shown, both of these are zero) */
-  if ((g_FrontendScenarioInitializationCount != 0) || (g_FrontendLoadedCampaignAsset != 0)) {
+  if ((g_FrontendScenarioInitializationCount != 0) || (g_FrontendLoadedCampaignAsset != nullptr)) {
     ui->briefingExitButton.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     ui->briefingExitButton.selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
@@ -177,9 +177,9 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   }
   /* opponent settings: only with computer factions, and in a campaign only on its first level
      (CampaignAsset.firstLevelId) */
-  if ((g_FrontendLoadedCampaignAsset == 0 ||
-       reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset)->currentLevelId ==
-       reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset)->firstLevelId) && unclaimedActiveFactions != 0) {
+  if ((g_FrontendLoadedCampaignAsset == nullptr ||
+       g_FrontendLoadedCampaignAsset->currentLevelId ==
+       g_FrontendLoadedCampaignAsset->firstLevelId) && unclaimedActiveFactions != 0) {
     ui->opponentSettingsGroup.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   }
   else {

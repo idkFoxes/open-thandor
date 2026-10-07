@@ -1,5 +1,5 @@
 {
- "revision": "6de86282",
+ "revision": "048ad9e7",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -128,7 +128,7 @@
    "movie": 30,
    "network": 136,
    "platform": 229,
-   "ui": 392,
+   "ui": 230,
    "world": 117
   },
   "define_all": {
@@ -142,7 +142,7 @@
    "network": 165,
    "platform": 330,
    "root": 7,
-   "ui": 517,
+   "ui": 355,
    "world": 177
   },
   "include_guard": {
@@ -164,7 +164,7 @@
    "gameplay": 187,
    "network": 2,
    "platform": 52,
-   "ui": 288,
+   "ui": 450,
    "world": 13
   },
   "typedef_struct": {

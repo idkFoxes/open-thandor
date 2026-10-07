@@ -176,7 +176,7 @@ void Frontend_PlaySelectedEndMovie()
     rootCallbacks = runtimeRoot->rootUi.callbacks;
     rootCallbacks->keyboardFallback = UI_SLOT(EndMovieSlot_KeyboardFallback);
     rootCallbacks->frameUpdate = UI_SLOT(EndMovieUiRuntime_HandleModeTransition);
-    if (g_FrontendLoadedCampaignAsset != 0) {
+    if (g_FrontendLoadedCampaignAsset != nullptr) {
       FrontendEndMovie_SelectCampaignMoviePath(g_FrontendLoadedCampaignAsset);
     }
     Movie_Close();
