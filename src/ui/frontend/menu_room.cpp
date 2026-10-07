@@ -995,7 +995,7 @@ void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext)
 /* FrontendModelPointerContext_FindBestEligibleModelHitTarget: the hit priority of model runtime class
    modelClassId. The original indexed the 24-entry table unchecked; bounded here because the class id comes from
    the model's runtime definition: an id outside the table counts as RUNTIME_MODEL_CLASS_PRIORITY_LOW (logged once). */
-static int FrontendModelPointerContext_ModelClassPriority(ModelRuntimeClassId modelClassId)
+static RuntimeModelClassPriority FrontendModelPointerContext_ModelClassPriority(ModelRuntimeClassId modelClassId)
 {
   static Bool8 s_loggedClassIdOutOfRange;
 
@@ -1024,8 +1024,8 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   uint32_t bestHitMetric;
   ModelRuntimeNode *bestModelNode;
   uint32_t hitDistanceQ12;
-  int candidatePriority;
-  int bestPriority;
+  RuntimeModelClassPriority candidatePriority;
+  RuntimeModelClassPriority bestPriority;
 
   bestModelNode = nullptr;
   bestHitMetric = WORLD_POINTER_NO_HIT;

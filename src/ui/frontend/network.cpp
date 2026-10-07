@@ -237,7 +237,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     /* the cursor continues into firstPlayerRecord->endpoint and then commandSyncPending */
     endpointSourceDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
     localPlayerRecordDwordCursor = std::copy_n(endpointSourceDwordCursor,sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t),localPlayerRecordDwordCursor);
-    *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING;
+    *localPlayerRecordDwordCursor = static_cast<uint32_t>(FRONTEND_COMMAND_SYNC_PENDING);
     g_FrontendPendingSessionPlayerCount = 0;
     g_FrontendPlayerRuntimeCount = 1;
     g_FrontendPlayerRuntimeBlockCount = 1;
@@ -263,7 +263,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     firstPlayerRecord->playerName.textUtf16[0] = 0;
     firstPlayerRecord->playerName.textUtf16[1] = 0;
     firstPlayerRecord->playerRuntimeId = 0;
-    firstPlayerRecord->factionAssignment.roleStateFlags = 0;
+    firstPlayerRecord->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
     firstPlayerRecord->colourCycleFlags = 0;
     firstPlayerRecord->snapshotTransferFlags = 0;
     UiTransfer_SendPlayerDescriptor();
@@ -540,7 +540,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   localEndpointDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
   localPlayerRecordDwordCursor = std::copy_n(localEndpointDwordCursor,sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t),localPlayerRecordDwordCursor);
   /* the cursor now points at commandSyncPending of the player record; the indices below are dwords from there */
-  *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING; /* commandSyncPending */
+  *localPlayerRecordDwordCursor = static_cast<uint32_t>(FRONTEND_COMMAND_SYNC_PENDING); /* commandSyncPending */
   g_FrontendPendingSessionPlayerCount = 0;
   g_FrontendPlayerRuntimeCount = 1;
   g_LocalPlayerRuntimeId = 0;

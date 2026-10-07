@@ -18,13 +18,10 @@
 
 /* Selection groups (keys 1..8): each faction record holds 8 groups of 32 army pointers (runtimeGroupMembers8x32),
    a player's selection holds 32 entries. transferModeFlags of
-   FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh: */
+   FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh: FrontendSelectionTransferModeFlags
+   (SELECTION_TRANSFER_*, ui/frontend/types.h). */
 inline constexpr int32_t SELECTION_GROUP_COUNT = 8;
 inline constexpr int32_t SELECTION_GROUP_ENTRY_COUNT = 32;
-inline constexpr int32_t SELECTION_TRANSFER_TO_GROUP = 0x1; /* selection -> group (else group -> selection); its entries are first
-                                           removed from every group of the faction */
-inline constexpr int32_t SELECTION_TRANSFER_MERGE = 0x2; /* add missing entries instead of replacing the destination */
-inline constexpr int32_t SELECTION_TRANSFER_CENTER_VIEW = 0x4; /* local player: move the camera to the selection's average position */
 /* Chat. A line is sent as a begin command, four append commands of 12 narrow bytes (3 dwords) each and a
    publish command. Lobby: one 100-byte record per player block in g_FrontendPlayerMessageBuffers, dword 0 the
    byte offset of the next write (starting after itself), then the 0x30-byte text. In game the text is staged
@@ -113,7 +110,7 @@ void FrontendPlayerSelection_ClearAndRefreshLocalPanels
 
 void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
           (PlayerRuntimeId playerRuntimeId,FactionRuntimeIndex factionIndex,
-          FrontendSelectionTransferModeFlags transferModeFlags,
+          CommandPayload transferModeBits,
           FrontendFactionAssignmentIndex selectionGroupIndex);
 
 void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology(FrontendPlayerIndex playerIndex,uint32_t unusedArg1,

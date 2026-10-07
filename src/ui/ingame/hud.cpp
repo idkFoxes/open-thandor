@@ -592,7 +592,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
     rowFactionIndex = g_UiAction1012TargetPlayerIndices[slotIndex];
     /* the local faction: the activeFactionRuntimeIndex of the in-game root's world runtime (the original
        reads it as rootControl[21].sprite.primaryTextureSource, see the static_assert above) */
-    if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0) {
+    if (!Any(control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)) {
       rootFactionValue =
            InGameUi_WorldRuntime(rootControl)->activeFactionRuntimeIndex;
       InGameCommand_Issue<GameFactionRuntime_AdvancePairwiseRelationState>(0,rowFactionIndex,rootFactionValue);

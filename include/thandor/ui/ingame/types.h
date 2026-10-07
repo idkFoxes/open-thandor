@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <type_traits>
 #include <utility>
+#include <thandor/core/flags.h> /* THANDOR_FLAG_ENUM: UiCommandActivationStateFlags */
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/assets/army/types.h>
 #include <thandor/core/types.h>
@@ -146,7 +147,9 @@ struct WorldFieldRegionState {
     WorldFieldDimension auxiliaryElevationAngle; // Clamped to -0x4000..-0x1000 like the light elevation.
 };
 
-enum {
+/* Key codes of the camera key table (InGameCameraCommandDispatchRecord.keyCode, compared with the dispatched
+   UiActionId; 0 ends the table). */
+enum class InGameCameraCommandKeyCode : int32_t {
     EncodedDigit1=196657,
     EncodedDigit2=196658,
     EncodedDigit3=196659,
@@ -157,36 +160,44 @@ enum {
     EncodedLowercaseC=196707,
     EncodedLowercaseS=196723
 };
-using InGameCameraCommandKeyCode = int;
+using enum InGameCameraCommandKeyCode;
 
-enum {
+/* The notification target button's cursorFrame as the targeting handler reads it (InGameTargetingRootTraversalView). */
+enum class InGameTargetingObservedActionState : int32_t {
     INGAME_TARGETING_OBSERVED_IDLE=0,
     INGAME_TARGETING_OBSERVED_ADVANCE_OR_RESOLVE=7,
     INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE=27
 };
-using InGameTargetingObservedActionState = int;
+using enum InGameTargetingObservedActionState;
 
-enum {
+/* The same cursorFrame as InGameRuntimeRoot.notificationButtonCursorFrame: 0 idle, 7 while a notification target
+   can be jumped to, 0x1B after the jump (the next click cancels). */
+enum class InGameNotificationInteractionState : int32_t {
     NOTIFICATION_INTERACTION_NONE=0,
-    PAYLOAD_ACTIVE=7
+    PAYLOAD_ACTIVE=7,
+    NOTIFICATION_INTERACTION_JUMPED=27 /* INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE */
 };
-using InGameNotificationInteractionState = int;
+using enum InGameNotificationInteractionState;
 
-enum {
+/* UiCommandSpriteButtonControl.activationInputState: the keyboard state mask (g_KeyboardStateMask, low nibble the
+   modifier keys) at the button release plus the two marker bits. Only bit operations use it. */
+enum class UiCommandActivationStateFlags : uint32_t {
     UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK=12,
     UI_COMMAND_ACTIVATION_LOW_INPUT_NIBBLE_MASK=15,
     UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK=262144,
     UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON=2147483648
 };
-using UiCommandActivationStateFlags = int;
+THANDOR_FLAG_ENUM(UiCommandActivationStateFlags);
+using enum UiCommandActivationStateFlags;
 
-enum {
+/* InGameNotificationPayload.payloadKind: what the notification target button jumps to. */
+enum class InGameNotificationPayloadKind : int32_t {
     NOTIFICATION_PAYLOAD_NONE=0,
     ARMY_CREATED=1,
     TECHNOLOGY_UNLOCK_POSITION=2,
     FACTION_IMPACT_ANCHOR=3
 };
-using InGameNotificationPayloadKind = int;
+using enum InGameNotificationPayloadKind;
 
 using ArmyBuildXeniteCostQ4 = uint32_t;
 
