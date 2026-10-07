@@ -929,13 +929,6 @@ struct FrontendResultsColumnSequenceControl {
     uint32_t columnTypes0; // first element of variable-length trailing column type list
 };
 
-/* The one-slot view of a FrontendResultsTable<N> (ui/controls/types.h, same prefix and first column slot). */
-template <uint32_t ColumnSlots>
-inline FrontendResultsColumnSequenceControl *FrontendResultsTable_AsControl(FrontendResultsTable<ColumnSlots> *table)
-{
-  return reinterpret_cast<FrontendResultsColumnSequenceControl *>(table);
-}
-
 #pragma pack(push, 1) /* packed layout: no alignment padding */
 struct ScenarioCatalogDisplayRecord {
     uint16_t identifier[32]; // UTF-16 scenario identifier

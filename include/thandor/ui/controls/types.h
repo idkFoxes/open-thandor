@@ -542,8 +542,8 @@ inline UiConditionalActionControl *UiConditionalActionTextBox_AsControl(UiCondit
 
 /* A results chart of the end-of-game results screen (g_FrontendResultsTableVtable; the in-game template's
    resultsChart1..3) with its column type list spelled out (step 13 X9e): 0x64 + 4 * ColumnSlots bytes. The class
-   methods (ui/frontend/results.cpp) take the one-slot view FrontendResultsColumnSequenceControl
-   (ui/frontend/types.h); reach it with FrontendResultsTable_AsControl. */
+   methods (ui/frontend/results.cpp) get it through the vtable as the one-slot view
+   FrontendResultsColumnSequenceControl (ui/frontend/types.h, same prefix). */
 struct FrontendResultsFactionWeightPair;
 template <uint32_t ColumnSlots>
 struct FrontendResultsTable {

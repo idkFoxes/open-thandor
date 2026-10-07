@@ -1,5 +1,5 @@
 {
- "revision": "1b612bad",
+ "revision": "468f6b57",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -114,7 +114,7 @@
  },
  "counts": {
   "cstyle_cast": {
-   "ui": 397,
+   "ui": 348,
    "world": 61
   },
   "ingame_ui": {},
@@ -177,7 +177,7 @@
    "movie": 4,
    "network": 34,
    "platform": 35,
-   "ui": 185,
+   "ui": 184,
    "world": 46
   },
   "enum_class": {

@@ -18,31 +18,31 @@
 static void UiActionSlot_FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(void *source)
 
 {
-  FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage((uint32_t)(uintptr_t)source);
+  FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(void *source)
 
 {
-  FrontendSessionAction_ReleaseCampaignAndReturnToMainPage((uint32_t)(uintptr_t)source);
+  FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendFactionSetupAction_ReturnToMainPage(void *source)
 
 {
-  FrontendFactionSetupAction_ReturnToMainPage((uint32_t)(uintptr_t)source);
+  FrontendFactionSetupAction_ReturnToMainPage(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendQuitDialogAction_ReturnToMainPage(void *source)
 
 {
-  FrontendQuitDialogAction_ReturnToMainPage((uint32_t)(uintptr_t)source);
+  FrontendQuitDialogAction_ReturnToMainPage(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendCallback_ReturnToMainPageOrDispatchState4(void *source)
 
 {
-  FrontendCallback_ReturnToMainPageOrDispatchState4((uint32_t)(uintptr_t)source);
+  FrontendCallback_ReturnToMainPageOrDispatchState4(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendScenarioSelection_ActivateSelectedRecord(void *source)

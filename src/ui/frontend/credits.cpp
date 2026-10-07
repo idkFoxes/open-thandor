@@ -45,7 +45,7 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
       (frontendCreditsView->creditsMaskRuntime).maskPixels = static_cast<uint8_t *>(maskBufferPayload);
       if (g_MemoryApi.alloc(bufferBytes,&blendedBufferPayload) == 0) {
         /* blendedSourcePixels is the second work buffer */
-        (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = (uintptr_t)blendedBufferPayload;
+        (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = reinterpret_cast<uintptr_t>(blendedBufferPayload);
         UiFrame_FlushInputAndResetPendingTicks();
         SoftwareMaskBuffer_Clear(&frontendCreditsView->creditsMaskRuntime);
         /* page 1 of the frontend view-mode stack: the full-screen view instead of the menu room */
