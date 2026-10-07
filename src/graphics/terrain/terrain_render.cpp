@@ -32,8 +32,8 @@ static inline TerrainProjectedVertexWorkRecord *TerrainVertex_RowBelow(TerrainPr
 #define TERRAIN_PROJECTED_ROW_SPAN_COUNT 260
 #define TERRAIN_PROJECTED_GRID_MAX_ROWS 257
 
-/* per-row visible column spans of the terrain projection; entries 0..258 start zeroed, entry 259 keeps the
-   0x90 fill bytes the original image held there */
+/* per-row visible column spans of the terrain projection, all zero at start (the original held 0x90 fill bytes
+   in entry 259; the read loops stop at row gridHeight - 1 <= 256, only the clip pass's emptying writes reach it) */
 static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[TERRAIN_PROJECTED_ROW_SPAN_COUNT] = {
     /*   0 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /*  10 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
@@ -60,8 +60,7 @@ static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[TERRAIN_PROJECTED_ROW_
     /* 220 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /* 230 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /* 240 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
-    /* 250 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
-    /* 259 */ {.firstColumn = (int)0x90909090, .endColumnExclusive = (int)0x90909090}};
+    /* 250 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
 
 Bool8 g_Triangle2DBarycentricOutside;
 

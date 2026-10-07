@@ -27,6 +27,4 @@ extern UiCommandRuntimeRecordPrefix *g_UiHoverSelectionRecord;
 extern uint32_t g_UiCommandModeGArmyAssetId;
 extern PckArmyAssetIdCatalog g_UiCommandMode4ArmyAssetId;
 
-extern UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37]; /* 36 records + the terminator record [36] (key code 0, which ends the dispatch scan; its other two dwords are 0x90 fill); followed by 4 bytes 0x90 fill (dropped) */
-
 #endif /* THANDOR_UI_INGAME_EDITOR_KEYBOARD_H */

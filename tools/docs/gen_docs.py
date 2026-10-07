@@ -485,7 +485,7 @@ def update_addresses(files):
     missing = []
     for line in path.read_text(encoding="utf-8").splitlines():
         m = ADDRESS_LINE.match(line)
-        if not m:
+        if not m or line.split()[1] == "continuation":  # key dispatch entry points: enum::action, kept as written
             out.append(line)
             continue
         prefix, name, old = m.groups()

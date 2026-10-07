@@ -26,6 +26,17 @@ enum class UiKeyModifierRule {
     AnyOfMask
 };
 
+/* One record of a key command table: key code, modifier class and the action the table's dispatcher runs.
+   Action is the table's own enum class over uint32_t (actions 1..N; 0 in the terminator), so a record keeps the
+   original's 12 bytes {key code, modifier class, continuation}; the original continuation addresses are listed in
+   docs/original_addresses.txt (kind continuation). */
+template <typename Action>
+struct UiKeyCommandRecord {
+    uint32_t commandCode;
+    uint32_t modifierClassFlags;
+    Action action;
+};
+
 /* True when the held modifiers fit the record's modifier class under the rule. */
 inline Bool8 UiKeyModifiers_Match(uint32_t classFlags, uint32_t heldFlags, UiKeyModifierRule rule)
 {
@@ -61,7 +72,7 @@ inline Bool8 UiKeyModifiers_Match(uint32_t classFlags, uint32_t heldFlags, UiKey
 }
 
 /* The first record with this key code whose modifier class matches, or nullptr when the scan reaches the
-   terminator (commandCode 0; its other fields are never read). Record is UiCommandDispatchRecord or any record
+   terminator (commandCode 0; its other fields are never read). Record is UiKeyCommandRecord<Action> or any record
    with the members commandCode and modifierClassFlags. */
 template <typename Record>
 inline Record *UiCommandDispatch_Find(Record *records, uint32_t keyCode, uint32_t heldFlags, UiKeyModifierRule rule)
