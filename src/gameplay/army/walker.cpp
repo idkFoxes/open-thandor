@@ -315,7 +315,7 @@ static Bool8 ArticulatedWalker_ChooseNextStep(WorldRuntimeContext *worldRuntime,
     ArticulatedWalker_StartClosingStep(worldRuntime,modelRuntime);
     return true;
   }
-  return (worldRuntime->fieldGrid->runtimeStateFlags & 1) != 0;
+  return Any(worldRuntime->fieldGrid->runtimeStateFlags & FIELD_GRID_RUNTIME_SURFACE_DIRTY);
 }
 
 /* Runtime update of the two-legged articulated walker (runtimeUpdate slot 3 of

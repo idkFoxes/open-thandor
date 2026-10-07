@@ -3266,3 +3266,15 @@ static_assert(sizeof(AiStructureWorkspaceEntry) == sizeof(AiRuntimeWorkspaceEntr
                   offsetof(AiScoredSiteWorkspaceEntry, cellWorldYQ12) == 0x4 &&
                   offsetof(AiScoredSiteWorkspaceEntry, score) == 0x8,
               "AI workspace entries the AI walks as each other");
+
+/* Step 13 E5/E6 (world enum classes): the fields that become enum classes keep their 4 bytes and offsets
+   (FieldGridAsset is the FLD header, the effect and shot slots are written into the savegame as raw bytes). */
+static_assert(sizeof(FieldGridAsset) == 0x280 && offsetof(FieldGridAsset, runtimeStateFlags) == 0xB4 &&
+                  sizeof(FieldGridAsset::runtimeStateFlags) == 4 && alignof(FieldGridAsset) == 8,
+              "FieldGridAsset.runtimeStateFlags is the dword at +0xB4");
+static_assert(sizeof(EffectRuntimeSlot) == 0x40 && offsetof(EffectRuntimeSlot, completionAction) == 0x24 &&
+                  sizeof(EffectRuntimeSlot::completionAction) == 4 && alignof(EffectRuntimeSlot) == 4,
+              "EffectRuntimeSlot.completionAction is the dword at +0x24");
+static_assert(sizeof(ShotRuntimeSlot) == 0x40 && offsetof(ShotRuntimeSlot, impactEffectEmissionFlags) == 0x1C &&
+                  sizeof(ShotRuntimeSlot::impactEffectEmissionFlags) == 4 && alignof(ShotRuntimeSlot) == 4,
+              "ShotRuntimeSlot.impactEffectEmissionFlags is the dword at +0x1C");
