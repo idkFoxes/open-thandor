@@ -919,7 +919,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
   }
   newPacket->modulationColor = paletteModulationColor;
   materialTextureSet = g_TerrainMaterialTextureSets[terrainPacketRecord[6]];
-  newPacket->renderFlags = g_UiCommandModeGColorVariantFlags;
+  newPacket->renderFlags = FromBits<GraphicsPrimitiveDispatchFlags>(g_UiCommandModeGColorVariantFlags);
   newPacket->textureEntry = materialTextureSet->entries;
   return newPacket;
 }

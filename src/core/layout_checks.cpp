@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <thandor/thandor.h>
 #include <thandor/core/flags.h>
+#include <thandor/graphics/render/model.h> /* ModelMeshGroupHeader, ModelMeshHeader (MDL records) */
 
 static_assert(sizeof(GraphicsTextureLogicalSize) == 0x8,
               "GraphicsTextureLogicalSize keeps its 32-bit layout");
@@ -770,6 +771,9 @@ static_assert(sizeof(GraphicsPrimitiveVertexRaw) == 0x20,
 static_assert(sizeof(GraphicsPrimitivePacket) == 0x80 &&
               offsetof(GraphicsPrimitivePacket, textureEntry) == 0x64,
               "GraphicsPrimitivePacket keeps its 32-bit layout");
+static_assert(offsetof(GraphicsPrimitivePacket, renderFlags) == 0x68 && sizeof(GraphicsPrimitivePacket::renderFlags) == 4 &&
+                  alignof(GraphicsPrimitivePacket) == 4,
+              "GraphicsPrimitivePacket.renderFlags stays a 4-byte field at +0x68 (raster handler, GPU packet)");
 static_assert(sizeof(GraphicsPrimitiveRadixBucket) == 0x4 &&
               offsetof(GraphicsPrimitiveRadixBucket, writeCursor) == 0x0,
               "GraphicsPrimitiveRadixBucket keeps its 32-bit layout");
@@ -783,6 +787,17 @@ static_assert(sizeof(GraphicsTriangleInput) == 0x38 &&
               offsetof(GraphicsTriangleInput, vertex1) == 0xC &&
               offsetof(GraphicsTriangleInput, vertex2) == 0x18,
               "GraphicsTriangleInput keeps its 32-bit layout");
+static_assert(offsetof(GraphicsTriangleInput, renderFlags) == 0x34 && sizeof(GraphicsTriangleInput::renderFlags) == 4 &&
+                  alignof(GraphicsTriangleInput) == 4,
+              "GraphicsTriangleInput.renderFlags stays the 4-byte MDL triangle flag word at +0x34");
+static_assert(sizeof(ModelMeshGroupHeader) == 0x20 && alignof(ModelMeshGroupHeader) == 4 &&
+                  offsetof(ModelMeshGroupHeader, meshCount) == 0x4 && offsetof(ModelMeshGroupHeader, groupFlags) == 0xC &&
+                  sizeof(ModelMeshGroupHeader::groupFlags) == 4,
+              "ModelMeshGroupHeader keeps the MDL mesh group header layout");
+static_assert(sizeof(ModelMeshHeader) == 0x20 && alignof(ModelMeshHeader) == 4 && offsetof(ModelMeshHeader, groupMask) == 0x4 &&
+                  offsetof(ModelMeshHeader, vertexCount) == 0x8 && offsetof(ModelMeshHeader, triangleCount) == 0xC &&
+                  offsetof(ModelMeshHeader, flags) == 0x10 && sizeof(ModelMeshHeader::flags) == 4,
+              "ModelMeshHeader keeps the MDL mesh header layout");
 static_assert(sizeof(SoftwareRgbWordLanes) == 0x8,
               "SoftwareRgbWordLanes keeps its 32-bit layout");
 static_assert(sizeof(SoftwareFramebufferAccess) == 0x10 &&

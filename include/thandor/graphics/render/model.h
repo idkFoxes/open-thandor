@@ -9,6 +9,7 @@
 #define THANDOR_GRAPHICS_RENDER_MODEL_H
 
 #include <thandor/core/types.h>
+#include <thandor/core/flags.h> /* THANDOR_FLAG_ENUM: ModelMeshGroupFlags, ModelMeshFlags */
 #include <thandor/graphics/render/types.h>
 #include <thandor/assets/record_bytes.h>
 #include <thandor/core/contracts.h>
@@ -30,16 +31,8 @@ inline constexpr int MODEL_RUNTIME_FLAG_APPLY_SCALE = 0x800; /* ModelRender_Prep
    of triangles using the node's primary / secondary animated subresource by its texture offsets */
 inline constexpr int MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL = 0x80;
 inline constexpr int MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL = 0x400;
-/* Model triangle renderFlags (GraphicsTriangleInput.renderFlags), read by ModelRender_SubmitTriangle*,
-   ModelRender_PrepareProjectedVertex* */
-inline constexpr int MODEL_TRIANGLE_PALETTE_BANK_MASK = 0x1FF; /* material colour: index into the node's palette asset */
-/* The palette bank mask ModelRender_SubmitTriangleAlternatePath uses: keeps bits 16..31 too */
-inline constexpr uint32_t MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK = 0xffff01ff;
-inline constexpr int MODEL_TRIANGLE_UNLIT = 0x200; /* vertices take the node tint instead of lighting */
-inline constexpr int MODEL_TRIANGLE_DOUBLE_SIDED = 0x400; /* drawn without the back-face test */
-inline constexpr int MODEL_TRIANGLE_LIGHTING_SCALED = 0x800; /* lit by ModelRender_ComputeVertexIntensityScaledPath */
-inline constexpr int MODEL_TRIANGLE_FLAT_SHADED = 0x8000; /* lit with the triangle normal; never reuses a cached vertex colour */
-inline constexpr int MODEL_TRIANGLE_VERTEX_CACHE_FLAGS = 0x8E00; /* the bits a projected vertex's cached colour was computed for */
+/* Model triangle renderFlags (GraphicsTriangleInput.renderFlags): the MODEL_TRIANGLE_* enumerators of
+   GraphicsPrimitiveDispatchFlags (graphics/render/types.h) */
 /* Marker in a mesh vertex's projected X (GraphicsProjectedVertexSource.screenX): not transformed and projected yet for this draw */
 inline constexpr int MODEL_VERTEX_NOT_PROJECTED = static_cast<int>(0x80000000);
 /* Marker the alternate renderer stores in the projected X of a vertex in front of the near plane */
@@ -48,11 +41,19 @@ inline constexpr int MODEL_VERTEX_NEAR_CLIPPED = 0x7fffffff;
 inline constexpr int MODEL_MESH_RECORD_SIZE = 0x40;
 /* Offset of the shadow pass's projected XY (a GraphicsFixedVec2) in a mesh vertex record (graphics/render/shadow_texture.cpp) */
 inline constexpr int MODEL_MESH_VERTEX_SHADOW_XY_OFFSET = 0x20;
-/* ModelMeshGroupHeader.groupFlags bits */
-inline constexpr int MODEL_MESH_GROUP_FACE_VIEWER = 1; /* ModelNodeRuntime_BuildViewFacingRotation before the draw */
-inline constexpr int MODEL_MESH_GROUP_BILLBOARD = 2; /* ModelNodeRuntime_BuildBillboardRotation before the draw */
-/* ModelMeshHeader.flags bit */
-inline constexpr int MODEL_MESH_SOFT_SHADOW = 1; /* shadow silhouette drawn before the blur (graphics/render/shadow_texture.cpp); clear: after */
+/* ModelMeshGroupHeader.groupFlags bits (MDL data; bits without an enumerator stay valid) */
+enum class ModelMeshGroupFlags : uint32_t {
+    MODEL_MESH_GROUP_FACE_VIEWER = 1, /* ModelNodeRuntime_BuildViewFacingRotation before the draw */
+    MODEL_MESH_GROUP_BILLBOARD = 2 /* ModelNodeRuntime_BuildBillboardRotation before the draw */
+};
+THANDOR_FLAG_ENUM(ModelMeshGroupFlags);
+using enum ModelMeshGroupFlags;
+/* ModelMeshHeader.flags bits (MDL data) */
+enum class ModelMeshFlags : uint32_t {
+    MODEL_MESH_SOFT_SHADOW = 1 /* shadow silhouette drawn before the blur (graphics/render/shadow_texture.cpp); clear: after */
+};
+THANDOR_FLAG_ENUM(ModelMeshFlags);
+using enum ModelMeshFlags;
 
 /* Header of a model mesh group (ModelMeshGroupAddress32 of ModelRender_DrawMeshGroups*); the meshes follow
    at +0x20, each starting with its byte size and group mask. */
@@ -60,7 +61,7 @@ struct ModelMeshGroupHeader {
     uint32_t unknown00;
     int meshCount;           /* +0x04 */
     uint32_t unknown08;
-    uint32_t groupFlags;     /* +0x0C MODEL_MESH_GROUP_* */
+    ModelMeshGroupFlags groupFlags; /* +0x0C MODEL_MESH_GROUP_* */
     uint8_t unknown10_1F[16];
 };
 /* Header of one mesh of a group (ModelRender_SubmitMeshTriangles*); the vertices follow at +0x20, then the
@@ -70,7 +71,7 @@ struct ModelMeshHeader {
     uint32_t groupMask;      /* +0x04 */
     int vertexCount;         /* +0x08 */
     int triangleCount;       /* +0x0C */
-    uint32_t flags;          /* +0x10 MODEL_MESH_SOFT_SHADOW */
+    ModelMeshFlags flags;    /* +0x10 MODEL_MESH_SOFT_SHADOW */
     uint8_t unknown14_1F[12];
 };
 
