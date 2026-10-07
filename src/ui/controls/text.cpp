@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/text.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -184,7 +185,7 @@ void UiSingleLineTextControl_DrawClipped
       if (s_loggedMissingFocusChild == 0) {
         s_loggedMissingFocusChild = 1;
         Thandor_Log("focused label %p: focus not lent (focus child %p, framebuffer %s)",
-                    (void *)control,(void *)control->focusChild,
+                    static_cast<void *>(control),static_cast<void *>(control->focusChild.get()),
                     framebufferUnavailable ? "unavailable" : "accessed");
       }
     }
@@ -258,7 +259,7 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
 {
   UiContainer_RelocateChildren(relocationDelta,&control->base);
   if ((control->labelFlags & UI_LABEL_TEXT_NEEDS_RELOCATION) != 0) {
-    control->text = (uint16_t *)((uint8_t *)control->text + relocationDelta);
+    control->text = Thandor_At<uint16_t>(control->text.get(), relocationDelta);
     control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
 }

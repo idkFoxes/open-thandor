@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/core/runtime.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -82,7 +83,7 @@ Bool8 UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
     nextReadIndex = g_UiRuntimeRecordReadIndex + 1;
     *outPacket = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
-    *outEndpoint = (void *)(uintptr_t)
+    *outEndpoint = reinterpret_cast<void *>
          (g_UiRuntimeRecordReadIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots);
     g_UiRuntimeRecordReadIndex = nextReadIndex;
     if (UI_RUNTIME_RECORD_RING_LAST_INDEX < nextReadIndex) {
@@ -169,10 +170,11 @@ void UiRuntime_Initialize()
   UiWindowResources_Init();
   allocError = g_MemoryApi.alloc(UI_DIRTY_RECT_CAPACITY * sizeof(UiDirtyRectEntry),&allocPayload);
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
-  g_UiDirtyRectEntries = (UiDirtyRectEntry *)checkedValue;
+  /* FatalError_ExitIfFailed passes each block through as an address */
+  g_UiDirtyRectEntries = reinterpret_cast<UiDirtyRectEntry *>(checkedValue);
   allocError = g_MemoryApi.alloc(UI_ACTION_QUEUE_BYTES,&allocPayload); /* 16 queued actions */
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
-  g_UiActionQueueEntries = (UiActionQueueEntry *)checkedValue;
+  g_UiActionQueueEntries = reinterpret_cast<UiActionQueueEntry *>(checkedValue);
   /* from here on FatalError_ReportIfFailed shows errors in an in-game dialog */
   ErrorRuntime_InstallUiHandlerAndAllocateState();
   g_TimerRegisterPeriodic(125,UiTransferMailbox_ServiceAndRetransmitTimer);
@@ -182,13 +184,13 @@ void UiRuntime_Initialize()
   g_UiRuntimeRecordEndpointSlots = checkedValue;
   allocError = g_MemoryApi.alloc(UI_RUNTIME_RECORD_RING_CAPACITY * sizeof(UiRuntimeRecord),&allocPayload);
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
-  g_UiRuntimeRecordRing = (UiRuntimeRecord *)checkedValue;
+  g_UiRuntimeRecordRing = reinterpret_cast<UiRuntimeRecord *>(checkedValue);
   allocError = g_MemoryApi.alloc(UI_TRANSFER_ENDPOINT_BUFFER_BYTES,&allocPayload);
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
-  g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)checkedValue;
+  g_UiTransferEndpointBuffer = reinterpret_cast<UiTransferEndpointDescriptor *>(checkedValue);
   allocError = g_MemoryApi.alloc(UI_TRANSFER_DATA_BUFFER_BYTES,&allocPayload);
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
-  g_UiTransferDataBuffer = (uint8_t *)checkedValue;
+  g_UiTransferDataBuffer = reinterpret_cast<uint8_t *>(checkedValue);
   g_UiRuntimeRecordWriteIndex = 0;
   g_UiRuntimeRecordReadIndex = 0;
   g_UiTransferUnitCursor = 0;
@@ -204,7 +206,7 @@ void UiRuntime_Shutdown()
   if (g_UiRuntimeInitializationCount != 0) {
     g_TimerUnregisterPeriodic(UiTransferMailbox_ServiceAndRetransmitTimer);
     g_MemoryApi.free(g_UiRuntimeRecordRing);
-    g_MemoryApi.free((void *)g_UiRuntimeRecordEndpointSlots);
+    g_MemoryApi.free(reinterpret_cast<void *>(g_UiRuntimeRecordEndpointSlots));
     g_MemoryApi.free(g_UiTransferDataBuffer);
     g_MemoryApi.free(g_UiTransferEndpointBuffer);
     g_UiRuntimeRecordRing = nullptr;
@@ -256,8 +258,9 @@ void UiActionQueue_DispatchPending()
     /* move entries 1..15 (30 dwords) down by one */
     for (remainingCount = 30; queueHead = g_UiActionQueueEntries, remainingCount != 0; remainingCount--) {
       destinationEntry->actionId = sourceEntry->actionId;
-      sourceEntry = (UiActionQueueEntry *)&sourceEntry->source;
-      destinationEntry = (UiActionQueueEntry *)&destinationEntry->source;
+      /* one dword further: the entries are moved dword by dword */
+      sourceEntry = reinterpret_cast<UiActionQueueEntry *>(&sourceEntry->source);
+      destinationEntry = reinterpret_cast<UiActionQueueEntry *>(&destinationEntry->source);
     }
     actionHandler(actionSource);
   }
@@ -406,19 +409,19 @@ void UiNode_InvalidateRoot(UiNodeBase *node)
   if (g_UiInvalidationSuppressed == 0) {
     parentNode = node->parent;
     while (parentNode != UI_NODE_NONE) {
-      node = (((UiRootNode *)node)->base).parent;
-      parentNode = (((UiRootNode *)node)->base).parent;
+      node = (UiNode_As<UiRootNode>(node)->base).parent;
+      parentNode = (UiNode_As<UiRootNode>(node)->base).parent;
     }
     if (g_UiDirtyRectCount < UI_DIRTY_RECT_CAPACITY) {
       dirtyRectEntry = g_UiDirtyRectEntries + g_UiDirtyRectCount;
-      edgeCoordinate = (((UiRootNode *)node)->base).right;
-      dirtyRectEntry->left = (((UiRootNode *)node)->base).left;
+      edgeCoordinate = (UiNode_As<UiRootNode>(node)->base).right;
+      dirtyRectEntry->left = (UiNode_As<UiRootNode>(node)->base).left;
       dirtyRectEntry->right = edgeCoordinate;
-      bottomEdgeCoordinate = (((UiRootNode *)node)->base).bottom;
-      dirtyRectEntry->top = (((UiRootNode *)node)->base).top;
+      bottomEdgeCoordinate = (UiNode_As<UiRootNode>(node)->base).bottom;
+      dirtyRectEntry->top = (UiNode_As<UiRootNode>(node)->base).top;
       dirtyRectEntry->bottom = bottomEdgeCoordinate;
-      dirtyRectEntry->rootNode = (UiRootNode *)node;
-      dirtyRectEntry->rootNodeCopy = (UiRootNode *)node;
+      dirtyRectEntry->rootNode = UiNode_As<UiRootNode>(node);
+      dirtyRectEntry->rootNodeCopy = UiNode_As<UiRootNode>(node);
       g_UiDirtyRectCount++;
     }
   }
@@ -433,7 +436,7 @@ void UiActionQueue_Enqueue(UiActionId actionId,void *source)
   UiActionQueueEntry *destinationEntry;
 
   if (g_UiActionQueueUsedBytes < UI_ACTION_QUEUE_BYTES) {
-    destinationEntry = (UiActionQueueEntry *)((uint8_t *)g_UiActionQueueEntries + g_UiActionQueueUsedBytes);
+    destinationEntry = Thandor_At<UiActionQueueEntry>(g_UiActionQueueEntries, g_UiActionQueueUsedBytes);
     if (actionId != UI_ACTION_NONE) {
       destinationEntry->actionId = actionId;
       destinationEntry->source = source;

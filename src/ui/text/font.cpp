@@ -47,7 +47,7 @@ void FontRuntime_Init()
   int scanUnitsLeft;
   int sourceIndex;
   int dwordsLeft;
-  const wchar_t *pathUtf16;
+  uint16_t *pathUtf16;
   uint32_t *overrideDword;
   GraphicsTextureSourceAsset *loadedTexture;
   uint32_t textureLoadError;
@@ -55,14 +55,15 @@ void FontRuntime_Init()
   uint32_t allocError;
   void *allocPayload;
 
-  pathUtf16 = (const wchar_t *)g_FontTexturePathsUtf16;
+  pathUtf16 = g_FontTexturePathsUtf16;
   /* one scan budget for both paths: the original keeps a single terminator-scan count across the loop */
   scanUnitsLeft = FONT_TEXTURE_PATHS_SCAN_UNITS;
   for (sourceIndex = 0; sourceIndex < 2; sourceIndex++) {
-    loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)pathUtf16,&textureLoadError);
+    loadedTexture = g_GraphicsTextureSourceLoadPackageAsset(pathUtf16,&textureLoadError);
     checkedValue = FatalError_ExitIfFailed(loadedTexture != nullptr ? (uintptr_t)loadedTexture : textureLoadError,
                                             loadedTexture == nullptr);
-    g_FontTextureSources[sourceIndex] = (GraphicsTextureSourceAsset *)checkedValue;
+    /* FatalError_ExitIfFailed passes the loaded pointer through as an address */
+    g_FontTextureSources[sourceIndex] = reinterpret_cast<GraphicsTextureSourceAsset *>(checkedValue);
     /* step pathUtf16 past the terminator to the next path */
     while (scanUnitsLeft != 0) {
       scanUnitsLeft--;
@@ -73,10 +74,10 @@ void FontRuntime_Init()
   }
   allocError = g_MemoryApi.alloc(RICHTEXT_RUNTIME_BUFFER_UNITS * sizeof(uint16_t),&allocPayload); /* 16 KiB */
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
-  g_FontRuntimeBuffer = (uint8_t *)checkedValue;
+  g_FontRuntimeBuffer = reinterpret_cast<uint8_t *>(checkedValue);
   allocError = g_MemoryApi.alloc(sizeof(TextResourceOverrideTable),&allocPayload);
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
-  g_TextResourceOverrides = (TextResourceOverrideTable *)checkedValue;
+  g_TextResourceOverrides = reinterpret_cast<TextResourceOverrideTable *>(checkedValue);
   overrideDword = g_TextResourceOverrides->resourceIds;
   /* all dwords: resourceIds and textPointers. TextResourceOverride_Register looks for a zero id, so
      after this fill it finds no free slot (the original fills the table with -1 the same way). */

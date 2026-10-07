@@ -152,8 +152,9 @@ void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex second
   secondSerial = g_RecentTextEntrySerials[secondIndex];
   g_RecentTextEntrySerials[secondIndex] = g_RecentTextEntrySerials[firstIndex];
   g_RecentTextEntrySerials[firstIndex] = secondSerial;
-  secondSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + secondIndex);
-  firstSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + firstIndex);
+  /* the slots are swapped as dwords */
+  secondSlotDwords = reinterpret_cast<uint32_t *>(g_RecentTextSlotStorage + secondIndex);
+  firstSlotDwords = reinterpret_cast<uint32_t *>(g_RecentTextSlotStorage + firstIndex);
   for (dwordPairsRemaining = 32; dwordPairsRemaining != 0; dwordPairsRemaining--) {
     secondHighDword = secondSlotDwords[1];
     firstLowDword = THANDOR_ATOMIC_EXCHANGE(firstSlotDwords,*secondSlotDwords);
