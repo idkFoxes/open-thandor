@@ -52,11 +52,10 @@ static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdate
          g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
     /* Remove the entry: shift the rest of the queue down by one. Original quirk: it shifts remainingAssetCount
        entries, i.e. it also copies the slot just behind the last queued entry. */
-    do {
+    for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
       *queueEntry = queueEntry[1];
       queueEntry = queueEntry + 1;
-      remainingAssetCount = remainingAssetCount - 1;
-    } while (remainingAssetCount != 0);
+    }
     (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_BUILDING;
     (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags | ARMY_MODEL_STATE_PRODUCING;
     return;
@@ -341,11 +340,10 @@ void ArmyRuntimeClass_UpdateStructureFactory
                  g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
             /* Remove the entry from the queue. Original quirk: it shifts remainingAssetCount entries, i.e. it
                also copies the slot just behind the last queued entry. */
-            do {
+            for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
               *queueSlot = queueSlot[1];
               queueSlot = queueSlot + 1;
-              remainingAssetCount = remainingAssetCount - 1;
-            } while (remainingAssetCount != 0);
+            }
             (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_BUILDING;
             (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags | ARMY_MODEL_STATE_PRODUCING;
             break;
@@ -538,6 +536,7 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
   linkedAssetIds = &armyRuntime->movementTarget0Q12;
   /* Original quirk: a do/while, so slot 0 is always visited; a classParameterC4 of 0 would run on until the
      counter wraps (the pad definitions all have linked slots). */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit) == 0) {
       if (ArmyAssetRegistry_FindById(linkedAssetIds[slotIndex],&assetRecord) == 0) {

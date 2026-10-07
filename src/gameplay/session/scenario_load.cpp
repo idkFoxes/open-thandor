@@ -161,6 +161,7 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
   /* load the grid once if any player still lacks it */
   playersToCheck = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_LEVEL_RECEIVED) == 0) {
       FrontendScenarioSession_LoadFieldGridOfLevel(levelAsset);
@@ -241,6 +242,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     campaignRecordsRemaining = campaignAsset->levelRecordCount;
     g_FrontendLoadedCampaignAsset = campaignAsset;
     campaignAsset->currentLevelId = campaignAsset->firstLevelId;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (campaignAsset->firstLevelId == levelRecord->levelId) break;
       levelRecord++;
@@ -428,6 +430,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
       /* find the local player among the other players (block 1..) */
       otherPlayersRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
       playerRecord = g_FrontendPlayerRuntimeBlocks + 1;
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
           if (((&playerRecord->scenarioAvailabilityMask0)[maskWordIndex] &

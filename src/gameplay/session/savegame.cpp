@@ -354,6 +354,7 @@ InGameSaveGame_PrepareRegistrationRecords
   recordsRemaining = runtimeImage->recordCount;
   /* Original quirk: a do-while, so a record count of 0 still processes the first record and then wraps
      the counter. */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if ((recordCursor->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) == 0) {
       /* free record: zero its 0x40 dwords */

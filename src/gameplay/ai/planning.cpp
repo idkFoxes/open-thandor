@@ -58,6 +58,7 @@ void AiFactionRuntime_RebuildPlanningCapacityState()
     currentGameSpeedQ8 = g_GameFactionRuntimeImage.tail.gameSpeedQ8;
     if (*lifecycleState == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       /* Only factions without a player block are AI-controlled. */
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         if (factionIndex == (playerBlock->factionAssignment).factionAssignmentIndex) break;
         playerBlock++;
@@ -443,6 +444,7 @@ AiStrategicClassSelection AiStrategicClass_SelectTerrainSuitedBuilding
   freeBits28To30Cells = 0;
   remainingCells = cellCount;
   scratchCell = g_GridScratchPrimary;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     cellStateMask = scratchCell->stateMask;
     if ((cellStateMask & GRID_SCRATCH_TERRAIN_CLASS_BIT24) == 0) {

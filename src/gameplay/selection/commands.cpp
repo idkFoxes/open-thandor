@@ -359,7 +359,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
   /* selection is advanced as a cursor over its entries; the targets are shifted per entry and restored */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     movementRuntime = THANDOR_PTR32_AT(ArmyMovementRuntime, selection);
     if (movementRuntime != nullptr) {
       if (!spreadTooLarge) {
@@ -373,8 +373,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
       }
     }
     selection = reinterpret_cast<SelectionPointerArray32 *>(&selection->entries[1]); /* next entry */
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
 }
 
 /* Orders a selection onto a target entity: every entity with a non-zero state (stateOrTechnologyId) gets
@@ -391,7 +390,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
 
   /* selection is advanced as a cursor over its entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     runtimeState = THANDOR_PTR32_AT(ArmyRuntimeSlot, selection);
     if (runtimeState != nullptr) {
       stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
@@ -404,8 +403,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
       }
     }
     selection = reinterpret_cast<SelectionPointerArray32 *>(&selection->entries[1]); /* next entry */
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
 }
 
 /* Orders a selection onto a target position: every entity with a non-zero state (stateOrTechnologyId) gets the
@@ -423,7 +421,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
 
   /* selection is advanced as a cursor over its entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     runtimeState = THANDOR_PTR32_AT(ArmyRuntimeSlot, selection);
     if (runtimeState != nullptr) {
       stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
@@ -436,8 +434,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
       }
     }
     selection = reinterpret_cast<SelectionPointerArray32 *>(&selection->entries[1]); /* next entry */
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
 }
 
 /* For every selected entity without command flag 0x2: resets its movement flags and anchor coordinates to the
@@ -452,7 +449,7 @@ void SelectionRuntime_StopMovement(Ptr32<GameEntityRuntime> *selectionEntries)
   int entriesRemaining;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     entityRuntime = *selectionEntries;
     if ((entityRuntime != nullptr) &&
        (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
@@ -461,8 +458,7 @@ void SelectionRuntime_StopMovement(Ptr32<GameEntityRuntime> *selectionEntries)
       *commandFlagsPtr = *commandFlagsPtr & ~(uint32_t)ARMY_MOVEMENT_ROUTED;
     }
     selectionEntries = selectionEntries + 1;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
 }
 
 /* For every selected entity without command flag 0x2: drops an active attack/follow target
@@ -475,7 +471,7 @@ void SelectionRuntime_CancelTargets(Ptr32<GameEntityRuntime> *selectionEntries)
   int entriesRemaining;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     armyRuntime = static_cast<ArmyRuntimeSlot *>(*selectionEntries);
     if ((armyRuntime != nullptr) &&
        ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
@@ -484,8 +480,7 @@ void SelectionRuntime_CancelTargets(Ptr32<GameEntityRuntime> *selectionEntries)
            armyRuntime->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
     }
     selectionEntries = selectionEntries + 1;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
 }
 
 /* For every selected entity without command flag 0x2: sets runtime flags 0x418 on all nodes of its model
@@ -500,15 +495,14 @@ void SelectionRuntime_SelfDestruct(Ptr32<GameEntityRuntime> *selectionEntries)
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   contextArg = &g_InGameRuntimeRoot->worldRuntime;
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     modelRuntime = *selectionEntries;
     if ((modelRuntime != nullptr) &&
        (((modelRuntime->common).commandFlags & 2) == 0)) {
       ModelRuntimeHierarchy_MarkDestroyedRecursive(contextArg,static_cast<ArmyRuntimeSlot *>(*selectionEntries));
     }
     selectionEntries = selectionEntries + 1;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
 }
 
 /* For every selected entity whose definition class is 0x16, counts how often each of the three lane asset ids

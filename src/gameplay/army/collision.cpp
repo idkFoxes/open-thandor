@@ -31,7 +31,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
   if ((placementRadiusQ12 != 0) && (ownerNode != nullptr)) {
     firstMaskHigh = DepthInterval_BuildBinMask(placementRadiusQ12,worldYQ12);
     firstMaskLow = DepthInterval_BuildBinMask(placementRadiusQ12,worldXQ12);
-    do {
+    for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         hit = DepthBinMasks_Overlap
                           (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
@@ -44,8 +44,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
           }
         }
       }
-      ownerNode = ownerNode->nextNode;
-    } while (ownerNode != nullptr);
+    }
   }
   return false;
 }
