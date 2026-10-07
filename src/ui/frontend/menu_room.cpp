@@ -325,7 +325,7 @@ static void FrontendModelPointerContext_DrawActiveQueue
   uint32_t queuedPrimitiveCount;
 
   g_GraphicsPrimitiveQueueRadixSortProc
-            (control->base.nodeFlags & 8,control->activePrimitiveQueue);
+            (ToBits(control->base.nodeFlags & UI_NODE_SUPPRESSED),control->activePrimitiveQueue);
   g_GraphicsDrawPrimitiveQueue
             (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
   queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
@@ -491,7 +491,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   /* the 2D draw list: the 3D scene goes here (GPU_RECORD only) */
   Draw2D_MarkExternal3D(clipBottom,clipRight,clipTop,clipLeft);
   g_RenderedFrameCountSinceDebugRefresh++;
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any(control->base.nodeFlags & UI_NODE_SUPPRESSED)) {
     g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitSourceAlpha;
     g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledSourceAlpha;
   }

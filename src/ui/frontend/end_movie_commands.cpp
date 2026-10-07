@@ -77,8 +77,8 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     break;
   case EndMovieCommandAction::SkipEndMovie: /* skip the end movie */
     /* UI_NODE_SUPPRESSED in the nodeFlags of the results continue button */
-    if (((InGameUi_Image(endMovieRuntime)->resultsContinueButton.selectable.base.nodeFlags &
-          UI_NODE_SUPPRESSED) != 0) ||
+    if (Any(InGameUi_Image(endMovieRuntime)->resultsContinueButton.selectable.base.nodeFlags &
+            UI_NODE_SUPPRESSED) ||
         ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0)) {
       break;
     }
