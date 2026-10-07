@@ -132,7 +132,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
       return 37;
     }
     if (!Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIDE_PANEL)) {
-      if !Any(g_CursorButtonState & LEFT) {
+      if (!Any(g_CursorButtonState & LEFT)) {
         return 1;
       }
       if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)) {
@@ -143,7 +143,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
       }
     }
     else {
-      if Any(g_CursorButtonState & LEFT) {
+      if (Any(g_CursorButtonState & LEFT)) {
         if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)) {
           return 15;
         }
@@ -605,7 +605,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
     return;
   }
   if (Any(callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT)) {
-    if !Any(g_CursorButtonState & LEFT) {
+    if (!Any(g_CursorButtonState & LEFT)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_DISTANCE);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | (FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_PITCH);
       WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
@@ -618,7 +618,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
     }
   }
   else if (Any(callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN)) {
-    if !Any(g_CursorButtonState & LEFT) {
+    if (!Any(g_CursorButtonState & LEFT)) {
       if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_MOVE;
