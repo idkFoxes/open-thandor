@@ -20,71 +20,71 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
 
-typedef union UiCommandPayloadTextBatch48 UiCommandPayloadTextBatch48, *PUiCommandPayloadTextBatch48;
-typedef struct UiCommandPayloadTriple UiCommandPayloadTriple, *PUiCommandPayloadTriple;
-typedef union FrontendUiScratch FrontendUiScratch, *PFrontendUiScratch;
-typedef struct FrontendDisplayModeCandidateValues FrontendDisplayModeCandidateValues, *PFrontendDisplayModeCandidateValues;
-typedef struct FrontendTaskAssignmentFactionTexts FrontendTaskAssignmentFactionTexts, *PFrontendTaskAssignmentFactionTexts;
-typedef struct FrontendDisplayModeEnumerationState FrontendDisplayModeEnumerationState, *PFrontendDisplayModeEnumerationState;
-typedef struct FrontendTaskAssignmentFactionTextRow FrontendTaskAssignmentFactionTextRow, *PFrontendTaskAssignmentFactionTextRow;
-typedef union FrontendDisplayModeCandidates FrontendDisplayModeCandidates, *PFrontendDisplayModeCandidates;
-typedef struct FrontendDisplayModeSelection FrontendDisplayModeSelection, *PFrontendDisplayModeSelection;
-typedef struct FrontendPersistentSettingsPage FrontendPersistentSettingsPage, *PFrontendPersistentSettingsPage;
-typedef struct FrontendNetworkSetupPageState FrontendNetworkSetupPageState, *PFrontendNetworkSetupPageState;
-typedef struct FrontendRootPageState FrontendRootPageState, *PFrontendRootPageState;
-typedef struct FrontendSessionDiscoveryRecord FrontendSessionDiscoveryRecord, *PFrontendSessionDiscoveryRecord;
-typedef struct RuntimeModelClassPriorityTable24 RuntimeModelClassPriorityTable24, *PRuntimeModelClassPriorityTable24;
-typedef struct FrontendModelPointerHitContext FrontendModelPointerHitContext, *PFrontendModelPointerHitContext;
-typedef struct UiSettingsValueControl UiSettingsValueControl, *PUiSettingsValueControl;
-typedef struct SoftwareMaskRuntimeView SoftwareMaskRuntimeView, *PSoftwareMaskRuntimeView;
-typedef struct FrontendDisplaySettingsPageOptionState FrontendDisplaySettingsPageOptionState, *PFrontendDisplaySettingsPageOptionState;
-typedef struct FrontendDisplayAdapterRows FrontendDisplayAdapterRows, *PFrontendDisplayAdapterRows;
-typedef struct FrontendDisplayResolutionRows FrontendDisplayResolutionRows, *PFrontendDisplayResolutionRows;
-typedef struct FrontendDisplayColorDepthRows FrontendDisplayColorDepthRows, *PFrontendDisplayColorDepthRows;
-typedef struct FrontendDisplayAdapterOptionRow FrontendDisplayAdapterOptionRow, *PFrontendDisplayAdapterOptionRow;
-typedef struct FrontendDisplayResolutionOptionRow FrontendDisplayResolutionOptionRow, *PFrontendDisplayResolutionOptionRow;
-typedef struct FrontendDisplayColorDepthOptionRow FrontendDisplayColorDepthOptionRow, *PFrontendDisplayColorDepthOptionRow;
-typedef struct UiSelectableOptionRow60 UiSelectableOptionRow60, *PUiSelectableOptionRow60;
-typedef struct FrontendTextureResolutionRows FrontendTextureResolutionRows, *PFrontendTextureResolutionRows;
-typedef struct UiSelectableOptionRow68 UiSelectableOptionRow68, *PUiSelectableOptionRow68;
-typedef struct FrontendShadingResolutionRows FrontendShadingResolutionRows, *PFrontendShadingResolutionRows;
-typedef struct FrontendGraphicsRuntimeSettingsPageState FrontendGraphicsRuntimeSettingsPageState, *PFrontendGraphicsRuntimeSettingsPageState;
-typedef struct FrontendUiActionHandlerPage20Prefix FrontendUiActionHandlerPage20Prefix, *PFrontendUiActionHandlerPage20Prefix;
-typedef struct FrontendTaskAssignmentControlOffsetRow FrontendTaskAssignmentControlOffsetRow, *PFrontendTaskAssignmentControlOffsetRow;
-typedef struct FrontendTaskAssignmentControlOffsetTables FrontendTaskAssignmentControlOffsetTables, *PFrontendTaskAssignmentControlOffsetTables;
-typedef struct FrontendPlayerFactionAssignmentState FrontendPlayerFactionAssignmentState, *PFrontendPlayerFactionAssignmentState;
-typedef struct FrontendPlayerNameUtf16 FrontendPlayerNameUtf16, *PFrontendPlayerNameUtf16;
-typedef struct FrontendNetworkBackendCommonPrefix FrontendNetworkBackendCommonPrefix, *PFrontendNetworkBackendCommonPrefix;
-typedef struct FrontendNetworkSettingsPageCommonPrefix FrontendNetworkSettingsPageCommonPrefix, *PFrontendNetworkSettingsPageCommonPrefix;
-typedef union FrontendNetworkSettingsControlView FrontendNetworkSettingsControlView, *PFrontendNetworkSettingsControlView;
-typedef struct FrontendNetworkSettingsPageCommonState FrontendNetworkSettingsPageCommonState, *PFrontendNetworkSettingsPageCommonState;
-typedef struct FrontendNetworkSettingsUiNodeView FrontendNetworkSettingsUiNodeView, *PFrontendNetworkSettingsUiNodeView;
-typedef struct FrontendNetworkSettingsTextEditView FrontendNetworkSettingsTextEditView, *PFrontendNetworkSettingsTextEditView;
-typedef struct FrontendNetworkSettingsPointerListView FrontendNetworkSettingsPointerListView, *PFrontendNetworkSettingsPointerListView;
-typedef struct FrontendNetworkSettingsPrimaryPageStackView FrontendNetworkSettingsPrimaryPageStackView, *PFrontendNetworkSettingsPrimaryPageStackView;
-typedef struct FrontendNetworkSettingsSecondaryPageStackView FrontendNetworkSettingsSecondaryPageStackView, *PFrontendNetworkSettingsSecondaryPageStackView;
-typedef struct FrontendNetworkSettingsGeneratedNameBufferView FrontendNetworkSettingsGeneratedNameBufferView, *PFrontendNetworkSettingsGeneratedNameBufferView;
-typedef struct FrontendNetworkBackendModePageState FrontendNetworkBackendModePageState, *PFrontendNetworkBackendModePageState;
-typedef union FrontendNetworkBackendModeOverlap FrontendNetworkBackendModeOverlap, *PFrontendNetworkBackendModeOverlap;
-typedef struct FrontendNetworkGeneratedNamePrefix FrontendNetworkGeneratedNamePrefix, *PFrontendNetworkGeneratedNamePrefix;
-typedef struct FrontendPlayerRuntimeRecord FrontendPlayerRuntimeRecord, *PFrontendPlayerRuntimeRecord;
-typedef struct FrontendCreditsUiStateView FrontendCreditsUiStateView, *PFrontendCreditsUiStateView;
-typedef struct FrontendPointerHintControl FrontendPointerHintControl, *PFrontendPointerHintControl;
-typedef struct FrontendPointerSceneRuntimeView FrontendPointerSceneRuntimeView, *PFrontendPointerSceneRuntimeView;
-typedef struct FrontendScenarioSelectionPageView FrontendScenarioSelectionPageView, *PFrontendScenarioSelectionPageView;
-typedef struct FrontendRootResourceSlots FrontendRootResourceSlots, *PFrontendRootResourceSlots;
-typedef struct FrontendTaskAssignmentPageInitView FrontendTaskAssignmentPageInitView, *PFrontendTaskAssignmentPageInitView;
-typedef struct FrontendLoadedLevelPathOffsets FrontendLoadedLevelPathOffsets, *PFrontendLoadedLevelPathOffsets;
-typedef struct FrontendLoadedLevelHeader FrontendLoadedLevelHeader, *PFrontendLoadedLevelHeader;
-typedef struct FrontendLoadedLevelAsset FrontendLoadedLevelAsset, *PFrontendLoadedLevelAsset;
-typedef struct FrontendNetworkListsRuntimeView FrontendNetworkListsRuntimeView, *PFrontendNetworkListsRuntimeView;
-typedef struct FrontendResultsFactionWeightPair FrontendResultsFactionWeightPair, *PFrontendResultsFactionWeightPair;
-typedef struct FrontendResultsColumnSequenceControl FrontendResultsColumnSequenceControl, *PFrontendResultsColumnSequenceControl;
-typedef struct ScenarioCatalogDisplayRecord ScenarioCatalogDisplayRecord, *PScenarioCatalogDisplayRecord;
-typedef struct FieldGridAsset FieldGridAsset;
-typedef struct GameEntityRuntime GameEntityRuntime;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
-typedef struct WorldRuntimeContext WorldRuntimeContext;
+union UiCommandPayloadTextBatch48;
+struct UiCommandPayloadTriple;
+union FrontendUiScratch;
+struct FrontendDisplayModeCandidateValues;
+struct FrontendTaskAssignmentFactionTexts;
+struct FrontendDisplayModeEnumerationState;
+struct FrontendTaskAssignmentFactionTextRow;
+union FrontendDisplayModeCandidates;
+struct FrontendDisplayModeSelection;
+struct FrontendPersistentSettingsPage;
+struct FrontendNetworkSetupPageState;
+struct FrontendRootPageState;
+struct FrontendSessionDiscoveryRecord;
+struct RuntimeModelClassPriorityTable24;
+struct FrontendModelPointerHitContext;
+struct UiSettingsValueControl;
+struct SoftwareMaskRuntimeView;
+struct FrontendDisplaySettingsPageOptionState;
+struct FrontendDisplayAdapterRows;
+struct FrontendDisplayResolutionRows;
+struct FrontendDisplayColorDepthRows;
+struct FrontendDisplayAdapterOptionRow;
+struct FrontendDisplayResolutionOptionRow;
+struct FrontendDisplayColorDepthOptionRow;
+struct UiSelectableOptionRow60;
+struct FrontendTextureResolutionRows;
+struct UiSelectableOptionRow68;
+struct FrontendShadingResolutionRows;
+struct FrontendGraphicsRuntimeSettingsPageState;
+struct FrontendUiActionHandlerPage20Prefix;
+struct FrontendTaskAssignmentControlOffsetRow;
+struct FrontendTaskAssignmentControlOffsetTables;
+struct FrontendPlayerFactionAssignmentState;
+struct FrontendPlayerNameUtf16;
+struct FrontendNetworkBackendCommonPrefix;
+struct FrontendNetworkSettingsPageCommonPrefix;
+union FrontendNetworkSettingsControlView;
+struct FrontendNetworkSettingsPageCommonState;
+struct FrontendNetworkSettingsUiNodeView;
+struct FrontendNetworkSettingsTextEditView;
+struct FrontendNetworkSettingsPointerListView;
+struct FrontendNetworkSettingsPrimaryPageStackView;
+struct FrontendNetworkSettingsSecondaryPageStackView;
+struct FrontendNetworkSettingsGeneratedNameBufferView;
+struct FrontendNetworkBackendModePageState;
+union FrontendNetworkBackendModeOverlap;
+struct FrontendNetworkGeneratedNamePrefix;
+struct FrontendPlayerRuntimeRecord;
+struct FrontendCreditsUiStateView;
+struct FrontendPointerHintControl;
+struct FrontendPointerSceneRuntimeView;
+struct FrontendScenarioSelectionPageView;
+struct FrontendRootResourceSlots;
+struct FrontendTaskAssignmentPageInitView;
+struct FrontendLoadedLevelPathOffsets;
+struct FrontendLoadedLevelHeader;
+struct FrontendLoadedLevelAsset;
+struct FrontendNetworkListsRuntimeView;
+struct FrontendResultsFactionWeightPair;
+struct FrontendResultsColumnSequenceControl;
+struct ScenarioCatalogDisplayRecord;
+struct FieldGridAsset;
+struct GameEntityRuntime;
+struct ModelRuntimeNode;
+struct WorldRuntimeContext;
 
 using TerrainGridMaskIndex = int;
 
@@ -184,7 +184,7 @@ using FrontendScenarioAvailabilityMask2 = uint32_t;
 
 using FrontendPackedTextCommandState = uint32_t;
 
-typedef struct UiNodeBase *FrontendPersistentSettingsPageSourceNodePtr; /* interior pointer: points at FrontendPersistentSettingsPage.sourceNode; the containing FrontendPersistentSettingsPage is found by subtracting the field offset */
+using FrontendPersistentSettingsPageSourceNodePtr = struct UiNodeBase *; /* interior pointer: points at FrontendPersistentSettingsPage.sourceNode; the containing FrontendPersistentSettingsPage is found by subtracting the field offset */
 
 struct FrontendPersistentSettingsPage {
     struct UiNodeBase pageRoot; 
@@ -222,7 +222,7 @@ using FrontendScenarioAvailabilityMask1 = uint32_t;
 
 using FrontendCallbackArgument5 = uint32_t;
 
-typedef struct UiPointerListControl *FrontendNetworkSetupPageBackendListPtr; /* interior pointer: points at FrontendNetworkSetupPageState.backendList; the containing FrontendNetworkSetupPageState is found by subtracting the field offset */
+using FrontendNetworkSetupPageBackendListPtr = struct UiPointerListControl *; /* interior pointer: points at FrontendNetworkSetupPageState.backendList; the containing FrontendNetworkSetupPageState is found by subtracting the field offset */
 
 struct FrontendNetworkSetupPageState {
     struct UiNodeBase rootNode; 
@@ -960,7 +960,7 @@ inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_ROW_INSET = 3; /* the rows'
 /* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
    nodes of the advanced settings page). FrontendUi_Image(root)->node is the node in a copy of it (or a node's <node>_prefix),
    typed as its control. */
-typedef struct FrontendUiImage {
+struct FrontendUiImage {
     UiPanelControl frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
     UiLayoutContainerControl<2> frontendViewModeStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack: page 0 = menu room (3D room view, dialog page stack, top/bottom bars), page 1 = full-screen movie view. */
     UiLayoutContainerControl<2> chatInputSlot; /* +00B0 g_UiLayoutContainerControlVtable: Page stack inside the bottom bar (0x4694): empty page or the chat input line. */
@@ -1249,7 +1249,7 @@ typedef struct FrontendUiImage {
     {
         return reinterpret_cast<T *>(Thandor_AddressBytes(this) + static_cast<int32_t>(offset));
     }
-} FrontendUiImage;
+};
 /* The frontend UI image behind a root pointer (any pointer to the image start): the typed access to its nodes,
    e.g. &FrontendUi_Image(root)->chatInputEdit. One reinterpretation for all users. */
 template <class T> inline FrontendUiImage *FrontendUi_Image(T *root)
