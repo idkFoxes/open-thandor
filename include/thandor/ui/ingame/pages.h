@@ -76,9 +76,7 @@ inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD = 0x100000; /*
 inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED = 0x80000; /* set with every cheat toggle by the chat phrase;
 
                                                                 no reader found */
-/* SelectionPlayerRuntimeBlock.sessionFlags bit: the player asks for a pause (shown as "P" in the player roster;
-   toggled by InGameCommand_TogglePauseRequest) */
-inline constexpr int32_t PLAYER_SESSION_FLAG_PAUSE_REQUESTED = 0x01;
+/* PLAYER_SESSION_FLAG_PAUSE_REQUESTED is PlayerSessionFlags (gameplay/selection/types.h). */
 
 /* g_UiCommandRuntimeFlags bits of windows that pause a local game while open (mission help:
    InGameMissionHelpPage_Toggle, settings: InGameSettingsPage_ToggleAndSynchronizeControls) */

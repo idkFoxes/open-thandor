@@ -677,6 +677,10 @@ static_assert(sizeof(ModelDefinitionFlags) == 4 && alignof(ModelDefinitionFlags)
                   offsetof(ModelDefinitionTimedTargetProjectileView, modelFlags) == 0x68 &&
                   offsetof(ModelDefinitionArticulatedMovementView, modelFlags) == 0x68,
               "the model definition flags keep their 4-byte field");
+/* Step 13 E34c: SelectionPlayerRuntimeBlock.sessionFlags (PlayerSessionFlags) keeps its dword. */
+static_assert(sizeof(PlayerSessionFlags) == 4 && alignof(PlayerSessionFlags) == 4 &&
+                  offsetof(SelectionPlayerRuntimeBlock, sessionFlags) == 0x80A8,
+              "the player session flags keep their 4-byte field");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");

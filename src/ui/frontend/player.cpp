@@ -646,7 +646,7 @@ void FrontendPlayerRuntime_SetSlowRenderingFlagById
   
   playerRuntimeBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags & ~PLAYER_SESSION_FLAG_SLOW_RENDERING;
-  playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags | slowRenderingFlag;
+  playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags | FromBits<PlayerSessionFlags>(slowRenderingFlag);
 }
 
 

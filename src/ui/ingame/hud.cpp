@@ -157,7 +157,7 @@ static int InGameHud_FormatFactionRoster(uint32_t factionIndex)
       rosterCursor = reinterpret_cast<uint16_t *>(reinterpret_cast<uint8_t *>(rosterCursor) + copiedByteCount);
       selectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId];
       stepTicks = selectionBlock->simulationStepTicks;
-      if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_PAUSE_REQUESTED) != 0) {
+      if (Any(selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_PAUSE_REQUESTED)) {
         /* "  P" */
         if (rosterEnd - rosterCursor < 4) {
           truncated = true;
@@ -181,7 +181,7 @@ static int InGameHud_FormatFactionRoster(uint32_t factionIndex)
         rosterCursor[3] = (uint16_t)(L'0' + stepTicks);
         rosterCursor += 4;
       }
-      if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_SLOW_RENDERING) != 0) {
+      if (Any(selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_SLOW_RENDERING)) {
         /* "  W" in rich-text save colour / palette colour 3 ... restore colour */
         if (rosterEnd - rosterCursor < 6 + 1) {
           truncated = true;
@@ -261,7 +261,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts()
     /* bit 0 of g_InGameReadyStateToggleFlags: the slow state is currently reported */
     if ((g_InGameReadyStateToggleFlags & 1) == 0) {
       if (g_RenderedFrameCountSinceDebugRefresh < 13) {
-        InGameCommand_Issue<FrontendPlayerRuntime_SetSlowRenderingFlagById>(0,0,PLAYER_SESSION_FLAG_SLOW_RENDERING);
+        InGameCommand_Issue<FrontendPlayerRuntime_SetSlowRenderingFlagById>(0,0,ToBits(PLAYER_SESSION_FLAG_SLOW_RENDERING));
         g_InGameReadyStateToggleFlags = g_InGameReadyStateToggleFlags ^ 1;
       }
     }

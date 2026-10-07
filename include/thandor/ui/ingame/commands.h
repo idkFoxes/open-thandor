@@ -21,9 +21,7 @@ inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED = 0x10000; /* co
                                                           (InGameCommand_HandlePlayerDeparture) */
 inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT = 0x20000; /* command 150 reported the local player's departure */
 
-/* sessionFlags bit: the player's machine renders too few frames (set/cleared through command 0x340 by
-   InGameHud_UpdateStatusCountersAndSessionPrompts; shown as a highlighted "W" in the player roster) */
-inline constexpr int32_t PLAYER_SESSION_FLAG_SLOW_RENDERING = 0x02;
+/* PLAYER_SESSION_FLAG_SLOW_RENDERING is PlayerSessionFlags (gameplay/selection/types.h). */
 
 /* UI action toggling the technology window (InGameTechnologyPanel_ToggleForSelection); suppressed by
    InGameSelectionDetailPanel_Rebuild when the single selected army has no available technology */
