@@ -1,5 +1,5 @@
 {
- "revision": "74bb85c4",
+ "revision": "9961a65c",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -166,7 +166,7 @@
   "typedef_struct": {},
   "enum_class": {
    "assets": 5,
-   "core": 13,
+   "core": 14,
    "gameplay": 6,
    "graphics": 7,
    "movie": 2,
