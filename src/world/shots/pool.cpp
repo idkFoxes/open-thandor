@@ -285,7 +285,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   frameThresholdQ4 = shotDefinition->animationFrameAdvanceThresholdQ4;
   elevationOffsetAngle = shotDefinition->elevationOffsetAngle16;
   shotRuntimeCursor->ownerAndTrajectory.animationFrameIndex = 0;
-  shotRuntimeCursor->impactEffectEmissionFlags = 0;
+  shotRuntimeCursor->impactEffectEmissionFlags = {};
   shotRuntimeCursor->animationFrameAccumulatorQ4 = frameThresholdQ4;
   shotRuntimeCursor->runtimeStateOrSavedOffset.runtimeState = targetModelReference;
   shotRuntimeCursor->elevationOffsetAngle16 = elevationOffsetAngle;

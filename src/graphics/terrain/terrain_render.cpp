@@ -176,7 +176,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   rowSpan = g_TerrainProjectedRowSpans;
   gridWidth = fieldGrid->gridWidth;
   rowCount = fieldGrid->gridHeight;
-  if (((fieldGrid->runtimeStateFlags & FIELD_GRID_RUNTIME_SURFACE_DIRTY) == 0) &&
+  if (!Any(fieldGrid->runtimeStateFlags & FIELD_GRID_RUNTIME_SURFACE_DIRTY) &&
      ((renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION) != 0)) {
     rowCells = fieldGrid->cells;
     /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */

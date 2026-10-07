@@ -30,13 +30,14 @@ using EffectAnimationFrameCount = uint32_t;
 
 using DefinitionReferencePresentFlag = uint32_t;
 
-enum {
-    EFFECT_RUNTIME_COMPLETION_NONE=0,
-    EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY=1,
-    EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER=2,
-    EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL=3
+/* EffectRuntimeSlot.completionAction (saved with the slot): what happens when the completion countdown ends. */
+enum class EffectRuntimeCompletionAction : int {
+    EFFECT_RUNTIME_COMPLETION_NONE = 0,
+    EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY = 1,
+    EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER = 2,
+    EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL = 3
 };
-using EffectRuntimeCompletionAction = int;
+using enum EffectRuntimeCompletionAction;
 
 using EffectShadingCountdownTicks = uint32_t;
 

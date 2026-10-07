@@ -25,7 +25,8 @@ void TerrainGrid_RunDirectionalRelaxationPasses(FrontendPlayerRuntimeId playerRu
   FieldGridAsset *fieldGrid;
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  if ((mode & TERRAIN_RELAXATION_UNGATED_LAND_TOOL) == TERRAIN_RELAXATION_SIGN_GATED) {
+  /* only bit 0 of the mode selects (a received payload may carry other bits) */
+  if ((static_cast<int>(mode) & static_cast<int>(TERRAIN_RELAXATION_UNGATED_LAND_TOOL)) == 0) {
     do {
       TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(fieldGrid);
       TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(fieldGrid);
