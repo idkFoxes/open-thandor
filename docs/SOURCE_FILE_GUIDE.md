@@ -12,6 +12,11 @@ Areas: [assets](source_guide/assets.md) · [audio](source_guide/audio.md) · [co
 
 Asset loading, catalogs and resource formats.
 
+<a id="module-assets"></a>
+### `assets` (area-level files)
+
+- [`record_bytes.h`](source_guide/assets.md#file-assets-record-bytes) - Byte positions inside a loaded asset.
+
 <a id="module-assets-army"></a>
 ### `assets/army`
 
@@ -99,7 +104,7 @@ Sound backend slots, sample codec and positioned sound.
 Module header: [`backend.h`](../include/thandor/audio/backend.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-audio-backend-runtime)
 
 - [`null_backend.cpp / null_backend.h`](source_guide/audio.md#file-audio-backend-null-backend) - no file comment; main functions `SoundBackendDisabled_CreateSampleVoiceSet`, `SoundBackendDisabled_ReleaseSampleVoiceSet`, `SoundBackendDisabled_PlayOneShot`
-- [`runtime.cpp / runtime.h`](source_guide/audio.md#file-audio-backend-runtime) - The sound slots (g_Sound*) the game plays through, with the silent backend that fills them until SdlAudio_Init installs the SDL3 audio backend.
+- [`runtime.cpp / runtime.h`](source_guide/audio.md#file-audio-backend-runtime) - The sound slots (the g_Sound... pointers) the game plays through, with the silent backend that fills them until SdlAudio_Init installs the SDL3 audio backend.
 - [`types.h`](source_guide/audio.md#file-audio-backend-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-audio-codec"></a>
@@ -126,8 +131,10 @@ Error handling, fixed-point maths, memory, settings and strings.
 <a id="module-core"></a>
 ### `core` (area-level files)
 
+- [`bytes.h`](source_guide/core.md#file-core-bytes) - Byte positions inside a block of memory (an arena block, a loaded file, a record walked by byte offsets).
 - [`color_lanes.h`](source_guide/core.md#file-core-color-lanes) - Not functions of the original: C stand-ins for the MMX colour sequences the original inlines wherever it shades a packed ARGB colour (shot and effect tints, world and model lighting, terrain ...
 - [`contracts.h`](source_guide/core.md#file-core-contracts) - Core contracts shared by the split submodules.
+- [`flags.h`](source_guide/core.md#file-core-flags) - Not part of the original: bit operations for flag sets declared as `enum class E : uint32_t` (or another unsigned underlying type).
 - [`layout_checks.cpp`](source_guide/core.md#file-core-layout-checks) - The structs of the type headers (&lt;area&gt;/&lt;module&gt;/types.h) are the original's 32-bit layouts on x86 and x64 (core/ptr32.h): their sizes and the offsets of their pointer fields, checked at compile time.
 - [`ptr32.h`](source_guide/core.md#file-core-ptr32) - 32-bit pointer fields of the original data layouts (step 5f).
 - [`slot.h`](source_guide/core.md#file-core-slot) - Typed table entries (step 8): THANDOR_SLOT(function) for a function-pointer slot of a vtable or callback table (a Ptr32&lt;R(A...)&gt; field or a plain R (*)(A...)), replacing the untyped ...
@@ -208,7 +215,7 @@ Module header: [`ai.h`](../include/thandor/gameplay/ai.h) · Changelog: `combat`
 Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `audio` [dev](../CHANGELOG.md#module-gameplay-army-audio) · [full](../CHANGELOG_FULL.md#module-gameplay-army-audio); `combat` [dev](../CHANGELOG.md#module-gameplay-army-combat) · [full](../CHANGELOG_FULL.md#module-gameplay-army-combat); `movement` [dev](../CHANGELOG.md#module-gameplay-army-movement) · [full](../CHANGELOG_FULL.md#module-gameplay-army-movement); `placement` [dev](../CHANGELOG.md#module-gameplay-army-placement) · [full](../CHANGELOG_FULL.md#module-gameplay-army-placement); `runtime` [dev](../CHANGELOG.md#module-gameplay-army-runtime) · [full](../CHANGELOG_FULL.md#module-gameplay-army-runtime)
 
 - [`aircraft.cpp / aircraft.h`](source_guide/gameplay.md#file-gameplay-army-aircraft) - no file comment; main functions `ArmyRuntimeClass_UpdateAircraft`, `ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode`
-- [`audio.cpp / audio.h`](source_guide/gameplay.md#file-gameplay-army-audio) - no file comment; main functions `ArmyRuntimeAudio_UpdateTurnAndMoveSounds`, `ArmyRuntimeAudio_UpdateTurretTurnSound`, `ArmyRuntimeAudio_UpdateStructureFactorySound`
+- [`audio.cpp / audio.h`](source_guide/gameplay.md#file-gameplay-army-audio) - no file comment; main functions `ArmySound_VoiceSetRef`, `ArmyRuntimeAudio_UpdateTurnAndMoveSounds`, `ArmyRuntimeAudio_UpdateTurretTurnSound`
 - [`class_dispatch.cpp / class_dispatch.h`](source_guide/gameplay.md#file-gameplay-army-class-dispatch) - no file comment; main functions `ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback`, `ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback`, `ArmyRuntimeNode_DispatchTypedCallback`
 - [`class_updates.cpp / class_updates.h`](source_guide/gameplay.md#file-gameplay-army-class-updates) - no file comment; main functions `ArmyRuntime_ClassCommandHandlerGroupA`, `ArmyRuntime_UpdateAnimatedModelSubnodes`, `ArmyRuntime_RebuildDerivedSelectionMetrics`
 - [`collision.cpp / collision.h`](source_guide/gameplay.md#file-gameplay-army-collision) - no file comment; main functions `ArmyCollision_FindBlockingRuntimeForCurrentUnit`, `ArmyCollision_TestPointWithinExpandedRuntimeRadius`, `ArmyPlacementCollision_TestCurrentRuntime`
@@ -319,14 +326,14 @@ Module header: [`render.h`](../include/thandor/graphics/render.h) · Changelog: 
 
 - [`light_records.cpp / light_records.h`](source_guide/graphics.md#file-graphics-render-light-records) - Dynamic light records: the record table and its compact copy, record allocation, nearby-record collection, the compact lighting at a point, and the intensity clamp, intensity scale and packed ...
 - [`light_transitions.cpp / light_transitions.h`](source_guide/graphics.md#file-graphics-render-light-transitions) - no file comment; main functions `InterpolationState_SetNegatedTargetAndRescaleProgress`, `InterpolationStateTable_Advance256ByTicks`
-- [`model.h`](source_guide/graphics.md#file-graphics-render-model)
+- [`model.h`](source_guide/graphics.md#file-graphics-render-model) - no file comment; main functions `ModelVertex_Words`, `ModelVertex_Normal`, `ModelVertex_ViewPosition`
 - [`model_draw.cpp / model_draw.h`](source_guide/graphics.md#file-graphics-render-model-draw) - Model hierarchy drawing: view culling, level of detail and projection of the nodes of a model runtime hierarchy before their meshes are submitted.
 - [`model_lighting.cpp`](source_guide/graphics.md#file-graphics-render-model-lighting) - no file comment; main functions `ModelRender_ComputeVertexIntensityDefaultPath`, `ModelRender_ComputeVertexIntensityScaledPath`, `ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath`
 - [`model_submit.cpp / model_submit.h`](source_guide/graphics.md#file-graphics-render-model-submit) - Model mesh submission: projects the vertices of a node's mesh groups, clips and queues the triangles (default and alternate path), and accumulates the projected bounds of a hierarchy.
 - [`offscreen.cpp / offscreen.h`](source_guide/graphics.md#file-graphics-render-offscreen) - no file comment; main functions `GraphicsOffscreen_RenderModelListToTextureSource`
 - [`primitives.cpp / primitives.h`](source_guide/graphics.md#file-graphics-render-primitives) - no file comment; main functions `DepthInterval_BuildBinMask`, `DepthBinMasks_Overlap`, `GraphicsPrimitiveQueue_ResetGlobal`
 - [`projection.cpp / projection.h`](source_guide/graphics.md#file-graphics-render-projection) - View projection: the view and projection parameters, the projection viewport and clip rectangle, the frustum planes, the auxiliary orientation and the point projection used by the renderers.
-- [`shadow_texture.cpp / shadow_texture.h`](source_guide/graphics.md#file-graphics-render-shadow-texture) - no file comment; main functions `GraphicsShadingRuntime_InitializeGeneratedTexture`, `GraphicsShadingRuntime_Shutdown`, `GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy`
+- [`shadow_texture.cpp / shadow_texture.h`](source_guide/graphics.md#file-graphics-render-shadow-texture) - Mesh groups, mesh records, vertices and triangles are bytes of the loaded model asset, passed as addresses (ModelMeshGroupAddress32) or byte cursors: the reinterpret_casts in this file view those ...
 - [`types.h`](source_guide/graphics.md#file-graphics-render-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-graphics-resources"></a>
@@ -395,6 +402,7 @@ Module header: [`protocol.h`](../include/thandor/network/protocol.h) · Changelo
 - [`lobby.cpp / lobby.h`](source_guide/network.md#file-network-protocol-lobby) - no file comment; main functions `UiTransfer_SendDiscoveryProbe`, `FrontendTransfer_ExecuteLobbyCommandRecords`, `FrontendTransfer_HandleHostSessionAndCommandBatchPackets`
 - [`lockstep.cpp / lockstep.h`](source_guide/network.md#file-network-protocol-lockstep) - Host side of the lockstep command exchange, shared by the in-game exchange (command_exchange) and the frontend/lobby exchange (frontend_session, lobby).
 - [`mailbox.cpp / mailbox.h`](source_guide/network.md#file-network-protocol-mailbox) - no file comment; main functions `UiTransfer_StagePacketAndSend`, `UiTransferMailbox_SetOutgoingBuffer`, `UiTransferMailbox_ClearReceivedState`
+- [`packet_bytes.h`](source_guide/network.md#file-network-protocol-packet-bytes) - Byte and dword views of network packets and the records they are copied from or into.
 - [`scenario_transfer.cpp / scenario_transfer.h`](source_guide/network.md#file-network-protocol-scenario-transfer) - no file comment; main functions `FrontendScenarioTransfer_ReleaseLoadedLevelAsset`, `FrontendScenarioTransfer_ProcessReceivedAsset`, `DwordBlock64Array_ContainsExactRecord`
 - [`types.h`](source_guide/network.md#file-network-protocol-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -492,6 +500,7 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 - [`selftest.h`](source_guide/platform.md#file-platform-selftest-selftest) - Self-tests and data tools, started from WinMain (after the precomputed tables are built) when the environment variable OPEN_THANDOR_SELFTEST names one; the process then exits without entering ...
 - [`selftests.cpp`](source_guide/platform.md#file-platform-selftest-selftests) - no file comment; main functions `SelfTest_Run`
 - [`uiatlas_selftest.cpp`](source_guide/platform.md#file-platform-selftest-uiatlas-selftest) - OPEN_THANDOR_SELFTEST=uiatlas: the GPU UI texture cache (platform/sdl3/gpu_ui_textures.cpp) without a GPU device.
+- [`uitemplate_selftest.cpp`](source_guide/platform.md#file-platform-selftest-uitemplate-selftest) - OPEN_THANDOR_SELFTEST=uitemplate: the safety net for retyping the UI template images (step 13, W3).
 
 <a id="module-platform-system"></a>
 ### `platform/system`
@@ -551,7 +560,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 Module header: [`dialogs.h`](../include/thandor/ui/dialogs.h)
 
-- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateResolutionSelection`, `UiDisplayModeAction_UpdateAdapterSelection`
+- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - UiDisplaySettingsApplyButton and UiDisplaySettingsValueReadout (the typed applyButton and colorBiasValueText nodes of DisplaySettingsUiImage) are declared with the template in ui/dialogs/types.h.
 - [`fatal_error.cpp / fatal_error.h`](source_guide/ui.md#file-ui-dialogs-fatal-error) - no file comment; main functions `FatalErrorDialog_DismissAndPopRoot`, `ErrorRuntime_InstallUiHandlerAndAllocateState`, `FatalErrorDialog_BlockMissedPointerPress`
 - [`types.h`](source_guide/ui.md#file-ui-dialogs-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -570,15 +579,15 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`end_movie_commands.cpp / end_movie_commands.h`](source_guide/ui.md#file-ui-frontend-end-movie-commands) - no file comment; main functions `EndMovieUiRuntime_HandleModeTransition`, `EndMovieUiRuntime_DispatchCommandByFlags`
 - [`faction_setup.cpp / faction_setup.h`](source_guide/ui.md#file-ui-frontend-faction-setup) - no file comment; main functions `FrontendFactionSetupAction_CycleFactionColour`, `FrontendFactionSetupAction_ToggleFactionActive`, `FrontendFactionSetupAction_ChooseFaction`
 - [`lifecycle.cpp / lifecycle.h`](source_guide/ui.md#file-ui-frontend-lifecycle) - no file comment; main functions `FrontendMusic_StartMenuMusic`, `Frontend_Init`, `FrontendRuntime_ShutdownAndReleaseResources`
-- [`main_loop.cpp / main_loop.h`](source_guide/ui.md#file-ui-frontend-main-loop) - no file comment; main functions `Frontend_MainLoop`
+- [`main_loop.cpp / main_loop.h`](source_guide/ui.md#file-ui-frontend-main-loop) - Views this file needs (genuine reinterpretations, in one place).
 - [`menu_room.cpp / menu_room.h`](source_guide/ui.md#file-ui-frontend-menu-room) - no file comment; main functions `FrontendRuntime_UpdatePointerContextAndSceneView`, `FrontendMenuRoom_PressNoOp`, `FrontendMenuRoom_DragNoOp`
 - [`menu_room_scene.cpp / menu_room_scene.h`](source_guide/ui.md#file-ui-frontend-menu-room-scene) - no file comment; main functions `FrontendRomActionTable_ExecuteRecord`, `FrontendRomTransition_ActivateRecordById`, `FrontendRomTransition_RequestStop`
 - [`mission_briefing.cpp / mission_briefing.h`](source_guide/ui.md#file-ui-frontend-mission-briefing) - no file comment; main functions `FrontendMissionBriefingPage_Initialize`
-- [`network.cpp / network.h`](source_guide/ui.md#file-ui-frontend-network) - no file comment; main functions `FrontendNetworkGamePage_Show`, `FrontendNetworkGamePage_ClearSessionList`, `FrontendNetworkSetupPage_InitializeBackendMode`
+- [`network.cpp / network.h`](source_guide/ui.md#file-ui-frontend-network) - Views the network backend callbacks and the copy loops need (genuine reinterpretations, in one place).
 - [`node_views.h`](source_guide/ui.md#file-ui-frontend-node-views) - The frontend UI node types as prefixed views of their base node (core/slot.h THANDOR_SLOT_PREFIX), for the vtable and callback slots (see ui/controls/node_views.h).
 - [`page_actions.cpp / page_actions.h`](source_guide/ui.md#file-ui-frontend-page-actions) - no file comment; main functions `FrontendCallback_NoOpArg1`, `FrontendCallback_ReturnToMainPageOrDispatchState4`, `FrontendQuitDialogAction_ReturnToMainPage`
 - [`player.cpp / player.h`](source_guide/ui.md#file-ui-frontend-player) - no file comment; main functions `FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton`, `FrontendPlayerSelection_ClearAndRefreshLocalPanels`, `FrontendPlayerRuntime_InitializeFactionAssignments`
-- [`results.cpp / results.h`](source_guide/ui.md#file-ui-frontend-results) - no file comment; main functions `FrontendResultsTable_HitTestAlwaysNone`, `FrontendResultsGraph_DrawFactionWeightSumColumn`, `FrontendResultsGraph_DrawFactionWeightLane0Column`
+- [`results.cpp / results.h`](source_guide/ui.md#file-ui-frontend-results) - no file comment; main functions `FrontendResultsGraph_DrawFactionWeightSumColumn`, `FrontendResultsGraph_DrawFactionWeightLane0Column`, `FrontendResultsGraph_DrawFactionWeightLane1Column`
 - [`scenario_selection.cpp / scenario_selection.h`](source_guide/ui.md#file-ui-frontend-scenario-selection) - no file comment; main functions `ScenarioCatalog_RebuildLevelRecordListPage`, `ScenarioCatalog_RebuildCampaignRecordListPage`, `ScenarioCatalog_RebuildSaveRecordListPage`
 - [`session.cpp / session.h`](source_guide/ui.md#file-ui-frontend-session) - no file comment; main functions `FrontendSession_ReturnToMainPage`, `FrontendSession_SetGameSpeedPercent`, `FrontendTransferPage_ResetSessionOpenAndRequestMailbox`
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-frontend-settings) - no file comment; main functions `FrontendGameplaySettings_SetGameSpeedPercent`, `FrontendGameplaySettings_SetRightButtonDoesNotScroll`, `FrontendGameplaySettings_SetCameraScrollStep`
@@ -622,7 +631,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 - [`selection_panel_resources.cpp / selection_panel_resources.h`](source_guide/ui.md#file-ui-ingame-selection-panel-resources) - no file comment; main functions `SelectionInfoPanel_InitResources`, `SelectionInfoPanel_ShutdownResources`
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-ingame-settings) - no file comment; main functions `InGameSettingsPage_ToggleAndSynchronizeControls`, `InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks`, `InGameSettingsAction_CloseAlternatePanel`
 - [`targeting.cpp / targeting.h`](source_guide/ui.md#file-ui-ingame-targeting) - no file comment; main functions `InGameTargetingContext_AdvanceOrResolveTarget`, `InGameTargetingContext_CancelAndRestoreState`
-- [`technology.cpp / technology.h`](source_guide/ui.md#file-ui-ingame-technology) - UiTechnologyAreaTabPrefix (the two dwords in front of each technology area tab, INGAME_UI(root, technologyAreaTabN_prefix)) is declared with the template in ui/ingame/types.h.
+- [`technology.cpp / technology.h`](source_guide/ui.md#file-ui-ingame-technology) - UiTechnologyAreaTabPrefix (the two dwords in front of each technology area tab, InGameUi_Image(root)-&gt;technologyAreaTabN_prefix) is declared with the template in ui/ingame/types.h.
 - [`types.h`](source_guide/ui.md#file-ui-ingame-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`ui_template.cpp / ui_template.h`](source_guide/ui.md#file-ui-ingame-ui-template)
 - [`world_input.cpp / world_input.h`](source_guide/ui.md#file-ui-ingame-world-input) - no file comment; main functions `InGameWorldInput_ResolveContextActionAndCursor`, `InGameWorldInput_BeginPointerCapture`, `InGameWorldInput_UpdateDragSelectionAndCamera`
@@ -718,7 +727,7 @@ Module header: [`terrain.h`](../include/thandor/world/terrain.h) · Changelog: `
 - [`field_raycast.cpp / field_raycast.h`](source_guide/world.md#file-world-terrain-field-raycast) - Field-grid ray casts: distance along a ray to the terrain surface, the secondary (water) surface and the terrain triangles.
 - [`field_sampling.cpp / field_sampling.h`](source_guide/world.md#file-world-terrain-field-sampling) - Field-grid sampling: world to grid coordinates, nearest-point queries and the height, water and normal interpolation over the triangle lattice.
 - [`fog_visibility.cpp / fog_visibility.h`](source_guide/world.md#file-world-terrain-fog-visibility) - Fog of war per cell: the visibility lighting index classified from a faction's occupancy byte, and its fade towards the target level through the 256x256 byte clamp table.
-- [`grid.h`](source_guide/world.md#file-world-terrain-grid)
+- [`grid.h`](source_guide/world.md#file-world-terrain-grid) - no file comment; main functions `FieldGridCell_OccupancyByte`, `FieldGridCell_AtByteOffset`
 - [`hex_scan.cpp / hex_scan.h`](source_guide/world.md#file-world-terrain-hex-scan) - Shared state and set-up of the hexagonal radius scans around a world point (sight, overlay marking): the step limit from the radius, the nearest grid vertex and the scan globals.
 - [`occupancy.cpp / occupancy.h`](source_guide/world.md#file-world-terrain-occupancy) - no file comment; main functions `TerrainGrid_TestProjectedCellMaskBits01`, `TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint`, `TerrainOccupancyMask_ResolveRuntimeClassFlags`
 - [`overlay_marking.cpp / overlay_marking.h`](source_guide/world.md#file-world-terrain-overlay-marking) - Terrain overlay marking around a world point (variants A and B): marks the cells of the hexagon wedges and directions within a radius.

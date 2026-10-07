@@ -353,10 +353,30 @@ struct InGameNotificationQueueRecord {
     struct InGameNotificationPayload payload;
 };
 
+/* Actions of the camera key table (g_InGameCameraCommandDispatchRecords16). */
+enum class InGameCameraKeyAction : uint32_t {
+    RecallBookmark1 = 1,        /* 1 */
+    RecallBookmark2 = 2,        /* 2 */
+    RecallBookmark3 = 3,        /* 3 */
+    RecallBookmark4 = 4,        /* 4 */
+    RecallBookmark5 = 5,        /* 5 */
+    RecallBookmark6 = 6,        /* 6 */
+    RecallBookmark7 = 7,        /* 7 */
+    ToggleShading = 8,          /* Alt+S */
+    StoreBookmark1 = 9,         /* Alt+1 */
+    StoreBookmark2 = 10,        /* Alt+2 */
+    StoreBookmark3 = 11,        /* Alt+3 */
+    StoreBookmark4 = 12,        /* Alt+4 */
+    StoreBookmark5 = 13,        /* Alt+5 */
+    StoreBookmark6 = 14,        /* Alt+6 */
+    StoreBookmark7 = 15,        /* Alt+7 */
+    ToggleUnlimitedCamera = 16, /* Ctrl+C */
+};
+
 struct InGameCameraCommandDispatchRecord {
     InGameCameraCommandKeyCode keyCode;
     uint32_t requiredModifierMask;
-    ContinuationEntryAddress32 continuationEntryAddress; 
+    InGameCameraKeyAction action;
 };
 
 struct InGameCameraCommandDispatchTable {

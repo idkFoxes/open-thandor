@@ -13,14 +13,14 @@
 
 /* Level script (InGameLevelConditionStorage.schedule): 64 condition records of 16 bytes and 16 end
    triggers of 8 bytes, evaluated by InGameConditionRuntime_UpdateScheduledRecords. */
-#define INGAME_SCHEDULED_CONDITION_COUNT 64
-#define INGAME_END_CONDITION_TRIGGER_COUNT 16
+inline constexpr int INGAME_SCHEDULED_CONDITION_COUNT = 64;
+inline constexpr int INGAME_END_CONDITION_TRIGGER_COUNT = 16;
 /* Tokens of a BOOLEAN_POSTFIX_EXPRESSION condition (the bytes after its kind byte); any other byte pushes the
    satisfied bit of the condition with that index onto the bit stack. */
-#define INGAME_CONDITION_TOKEN_END 0xFC
-#define INGAME_CONDITION_TOKEN_NOT 0xFD
-#define INGAME_CONDITION_TOKEN_AND 0xFE
-#define INGAME_CONDITION_TOKEN_OR 0xFF
+inline constexpr int INGAME_CONDITION_TOKEN_END = 0xFC;
+inline constexpr int INGAME_CONDITION_TOKEN_NOT = 0xFD;
+inline constexpr int INGAME_CONDITION_TOKEN_AND = 0xFE;
+inline constexpr int INGAME_CONDITION_TOKEN_OR = 0xFF;
 
 /* Evaluates a BOOLEAN_POSTFIX_EXPRESSION condition: the tokens after its kind byte run on a bit stack.
    0xFC end, 0xFD NOT, 0xFE AND, 0xFF OR, anything else pushes the satisfied bit of the condition with that index.

@@ -63,6 +63,8 @@ int32_t g_GraphicsShadingPositiveGridOriginQ12 = 0;
 
 int32_t g_GraphicsShadingNegativeGridOriginQ12 = 0;
 
+/* reserved14 and reserved1A4 keep the original's 0x90 fill: the lighting over-read window
+   (s_ModelLightingOriginalWindow, model_lighting.cpp) reads this variable's bytes as original image data. */
 GeneratedTextureScratchRuntime g_GeneratedTextureScratchRuntime = {.reserved14 = 0x90909090, .reserved1A4 = 0x90909090};
 
 static const uint64_t g_GraphicsShadingRasterizeMmxPackedDwordOneZero = 0x1ull;

@@ -14,7 +14,7 @@
 #include <thandor/core/contracts.h>
 
 /* g_OldUnitPrimaryTable: 0x20-byte carry-over unit records (OLD_UNIT_PRIMARY_TABLE_BYTES / 0x20). */
-#define OLD_UNIT_PRIMARY_RECORD_CAPACITY 0x200
+inline constexpr int OLD_UNIT_PRIMARY_RECORD_CAPACITY = 0x200;
 
 void OldUnitRuntime_RebuildScenarioReplayTables();
 

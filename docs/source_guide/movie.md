@@ -36,21 +36,21 @@ The decoder treats every token &gt;= MOVIE_TOKEN_SKIP_LONG as a long skip, so th
 
 Encoder-only constants (the decoder does not need them).
 
-**Functions** (5 public, 10 file-local):
+**Functions** (5 public, 11 file-local):
 
-- [`Movie_EncodeFlmBufferFromFrameProvider`](../../src/movie/runtime/flm_encoder.cpp#L78) - Encodes a whole FLM movie into outputBuffer: writes the 0x200-byte MovieFileHeader, encodes the first frame the provider returns as a keyframe and every further frame as a delta against it (the delta ...
-- [`Movie_EncodeFrame4x4Keyframe`](../../src/movie/runtime/flm_encoder.cpp#L168) - Encodes a whole frame as FLM 4x4 colour blocks of 8 bytes each (no skip tokens), for the first frame in Movie_EncodeFlmBufferFromFrameProvider, its only caller.
-- [`Movie_EncodeFrame4x4Delta`](../../src/movie/runtime/flm_encoder.cpp#L377) - Encodes currentFramePixels as an FLM delta frame against previousFramePixels (called by Movie_EncodeFlmBufferFromFrameProvider for every frame after the first).
-- [`MovieColor_ComputeChromaCodeFromRgb888`](../../src/movie/runtime/flm_encoder.cpp#L430) - FLM chroma code of a colour for the block encoders, already shifted left by 5 so the 5-bit luma fits below it: saturation in bits 10-14 and hue in bits 5-9, from the length and angle of the ...
-- [`MovieColor_ComputeLuma5FromRgb888`](../../src/movie/runtime/flm_encoder.cpp#L449) - FLM luma of a colour for the block encoders: the channel sum divided by 24 (the average divided by 8), rounded: ((red + green + blue) * 0x5555 + 2^18) &gt;&gt; 19.
+- [`Movie_EncodeFlmBufferFromFrameProvider`](../../src/movie/runtime/flm_encoder.cpp#L82) - Encodes a whole FLM movie into outputBuffer: writes the 0x200-byte MovieFileHeader, encodes the first frame the provider returns as a keyframe and every further frame as a delta against it (the delta ...
+- [`Movie_EncodeFrame4x4Keyframe`](../../src/movie/runtime/flm_encoder.cpp#L172) - Encodes a whole frame as FLM 4x4 colour blocks of 8 bytes each (no skip tokens), for the first frame in Movie_EncodeFlmBufferFromFrameProvider, its only caller.
+- [`Movie_EncodeFrame4x4Delta`](../../src/movie/runtime/flm_encoder.cpp#L384) - Encodes currentFramePixels as an FLM delta frame against previousFramePixels (called by Movie_EncodeFlmBufferFromFrameProvider for every frame after the first).
+- [`MovieColor_ComputeChromaCodeFromRgb888`](../../src/movie/runtime/flm_encoder.cpp#L438) - FLM chroma code of a colour for the block encoders, already shifted left by 5 so the 5-bit luma fits below it: saturation in bits 10-14 and hue in bits 5-9, from the length and angle of the ...
+- [`MovieColor_ComputeLuma5FromRgb888`](../../src/movie/runtime/flm_encoder.cpp#L457) - FLM luma of a colour for the block encoders: the channel sum divided by 24 (the average divided by 8), rounded: ((red + green + blue) * 0x5555 + 2^18) &gt;&gt; 19.
 
 **Data** (0 shared, 1 file-local): `g_MovieDeltaRgbHighNibbleMask2Pixels`.
 
 **Called from** (1 files): [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestMovieEncode`).
 
-**Depends on** (3 files, names used): [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (6 files, names used): [`core/bytes`](core.md#file-core-bytes) (3), [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`core/x86_emulation`](core.md#file-core-x86-emulation) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`core/ptr32`](core.md#file-core-ptr32) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
+**Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/core/bytes.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
 
 <a id="file-movie-runtime-playback"></a>
 #### `playback.cpp / playback.h`
@@ -61,21 +61,21 @@ No file comment; function families: `Movie_*` (15), `IntroMovie_*` (1).
 
 **Functions** (7 public, 9 file-local):
 
-- [`Movie_Open`](../../src/movie/runtime/playback.cpp#L156) - Opens an FLM movie as g_ActiveMovie: from the loose movie directory (unless MOVIE_OPEN_PACKAGE_ONLY), a mounted package, the executable directory or the plain path, in that order.
-- [`Movie_GetFrameDimensions`](../../src/movie/runtime/playback.cpp#L353) - Returns the frame size of the active movie, so callers can place and scale the movie texture.
-- [`Movie_SetAudioGainQ15`](../../src/movie/runtime/playback.cpp#L370) - Sets the Q15 volume the active movie's soundtrack starts with (Movie_AdvanceFrame plays it on the first frame with this gain on both channels).
-- [`Movie_Rewind`](../../src/movie/runtime/playback.cpp#L440) - Resets currentFrameIndex and videoStreamOffset of g_ActiveMovie to the first frame and stops its audio voice, so the movie plays again from the start.
-- [`Movie_Close`](../../src/movie/runtime/playback.cpp#L461) - Closes g_ActiveMovie.
-- [`IntroMovie_TimerTick`](../../src/movie/runtime/playback.cpp#L502) - Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in g_IntroMoviePendingTicks.
-- [`Movie_AdvanceFrame`](../../src/movie/runtime/playback.cpp#L554) - Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
+- [`Movie_Open`](../../src/movie/runtime/playback.cpp#L157) - Opens an FLM movie as g_ActiveMovie: from the loose movie directory (unless MOVIE_OPEN_PACKAGE_ONLY), a mounted package, the executable directory or the plain path, in that order.
+- [`Movie_GetFrameDimensions`](../../src/movie/runtime/playback.cpp#L354) - Returns the frame size of the active movie, so callers can place and scale the movie texture.
+- [`Movie_SetAudioGainQ15`](../../src/movie/runtime/playback.cpp#L371) - Sets the Q15 volume the active movie's soundtrack starts with (Movie_AdvanceFrame plays it on the first frame with this gain on both channels).
+- [`Movie_Rewind`](../../src/movie/runtime/playback.cpp#L441) - Resets currentFrameIndex and videoStreamOffset of g_ActiveMovie to the first frame and stops its audio voice, so the movie plays again from the start.
+- [`Movie_Close`](../../src/movie/runtime/playback.cpp#L462) - Closes g_ActiveMovie.
+- [`IntroMovie_TimerTick`](../../src/movie/runtime/playback.cpp#L503) - Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in g_IntroMoviePendingTicks.
+- [`Movie_AdvanceFrame`](../../src/movie/runtime/playback.cpp#L556) - Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
 
 **Data** (3 shared, 0 file-local): `g_MovieDefaultAudioGainQ15`, `g_MovieAlternateAudioGainQ15`, `g_ActiveMovie`.
 
 **Called from** (14 files): [`gameplay/session/startup`](gameplay.md#file-gameplay-session-startup) (`InGameRuntime_ShutdownAndReleaseResources`, `InGameSession_OpenLoadingMovieAndAttachObjects` +1); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`CoreAssets_ApplySoundSettings`, `Game_PlayIntroMovies` +1); [`ui/frontend/settings`](ui.md#file-ui-frontend-settings) (`FrontendAudioSettings_SetEffectsEnabled`, `FrontendAudioSettings_SetMovieAlternateGain` +1); [`ui/ingame/settings`](ui.md#file-ui-ingame-settings) (`InGameAudioSettings_SetEffectsEnabled`, `InGameAudioSettings_SetMovieAlternateGain` +1); [`platform/debug/movie_player`](platform.md#file-platform-debug-movie-player) (`DebugMovie_ExportOne`, `DebugMovie_PlayOne`); [`ui/frontend/session`](ui.md#file-ui-frontend-session) (`FrontendSessionAction_CloseMovieAndReturnToMainPage`, `FrontendSession_ApplyGameSpeedAndReturnToMainPage`); [`ui/ingame/notifications`](ui.md#file-ui-ingame-notifications) (`InGameNotification_StartQueueHeadMovie`, `InGameRuntime_ProcessQueuedSessionNotificationTimer`); [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session) (`InGameLoadedSession_Fail`); [`gameplay/session/loading_movie`](gameplay.md#file-gameplay-session-loading-movie) (`MoviePlayback_AdvanceToFrameAndPresent`); [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session) (`InGameNewSession_Fail`); 4 more: [`ui/frontend/end_movie`](ui.md#file-ui-frontend-end-movie), [`ui/frontend/mission_briefing`](ui.md#file-ui-frontend-mission-briefing), [`ui/frontend/state`](ui.md#file-ui-frontend-state), [`ui/ingame/editor_tools`](ui.md#file-ui-ingame-editor-tools).
 
-**Depends on** (12 files, names used): [`platform/filesystem/win32`](platform.md#file-platform-filesystem-win32) (8), [`audio/backend/runtime`](audio.md#file-audio-backend-runtime) (4), [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`assets/package/runtime`](assets.md#file-assets-package-runtime) (2), [`core/memory/allocator`](core.md#file-core-memory-allocator) (2), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (2), [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (2), [`platform/debug/hooks`](platform.md#file-platform-debug-hooks) (2), [`core/math/random`](core.md#file-core-math-random) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`movie/runtime/flm_decoder`](#file-movie-runtime-flm-decoder) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (13 files, names used): [`platform/filesystem/win32`](platform.md#file-platform-filesystem-win32) (8), [`audio/backend/runtime`](audio.md#file-audio-backend-runtime) (4), [`core/bytes`](core.md#file-core-bytes) (3), [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`assets/package/runtime`](assets.md#file-assets-package-runtime) (2), [`core/memory/allocator`](core.md#file-core-memory-allocator) (2), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (2), [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (2), [`platform/debug/hooks`](platform.md#file-platform-debug-hooks) (2), [`core/math/random`](core.md#file-core-math-random) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`movie/runtime/flm_decoder`](#file-movie-runtime-flm-decoder) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `atomic`, `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
+**Includes:** `atomic`, `stdio.h`, `stdlib.h`, `string.h`, `thandor/core/bytes.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
 
 <a id="file-movie-runtime-types"></a>
 #### `types.h`
