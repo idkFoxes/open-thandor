@@ -15,20 +15,20 @@
 /* Diplomacy panel texts (InGameOtherPlayerCommand_RebuildTargetEntries, see the diplomacyRow* labels in
    InGameUiImage): the player number is 0x2190 + faction index, the relation label 0x21A3 + the 4-bit
    relation state of the faction record's packedRelationStates. */
-#define TEXT_ID_PLAYER_NUMBER_BASE 0x2190
-#define TEXT_ID_DIPLOMATIC_RELATION_BASE 0x21A3
+inline constexpr int32_t TEXT_ID_PLAYER_NUMBER_BASE = 0x2190;
+inline constexpr int32_t TEXT_ID_DIPLOMATIC_RELATION_BASE = 0x21A3;
 
 /* Faction status lines of the HUD (InGameHud_UpdateStatusCountersAndSessionPrompts): template with the faction
    name (selector 0), the roster (1) and the score (2); the roster text with the player list (selector 0), or
    the text used without players */
-#define TEXT_ID_FACTION_STATUS_TEMPLATE 0x21D2
-#define TEXT_ID_FACTION_ROSTER_TEMPLATE 0x21D3
-#define TEXT_ID_FACTION_NO_ROSTER 0x21D4
+inline constexpr int32_t TEXT_ID_FACTION_STATUS_TEMPLATE = 0x21D2;
+inline constexpr int32_t TEXT_ID_FACTION_ROSTER_TEMPLATE = 0x21D3;
+inline constexpr int32_t TEXT_ID_FACTION_NO_ROSTER = 0x21D4;
 
 /* Player status lines of a network game (InGamePanel_RebuildPlayerStatusRows), by readyOrWaitState zero or not;
    selector 0 = player name */
-#define TEXT_ID_PLAYER_STATUS_STATE_ZERO 0xFF05
-#define TEXT_ID_PLAYER_STATUS_STATE_SET 0xFF06
+inline constexpr int32_t TEXT_ID_PLAYER_STATUS_STATE_ZERO = 0xFF05;
+inline constexpr int32_t TEXT_ID_PLAYER_STATUS_STATE_SET = 0xFF06;
 
 void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl);
 

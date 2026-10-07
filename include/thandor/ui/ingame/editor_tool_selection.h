@@ -13,31 +13,31 @@
 #include <thandor/core/contracts.h>
 
 /* Action id of resultsSecondaryExitButton (suppressed in local games) */
-#define INGAME_ACTION_RESULTS_SECONDARY_EXIT 0x1025
-#define UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED 0x80 /* a command-mode click captured the pointer
+inline constexpr int32_t INGAME_ACTION_RESULTS_SECONDARY_EXIT = 0x1025;
+inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED = 0x80; /* a command-mode click captured the pointer
                                                                  (InGameWorldInput_BeginPointerCapture); the
                                                                  release then issues the mode command */
 /* g_UiCommandModeG: active tab of the map editor (InGameCommandModeG_Select0..5, InGameUiImage.editorModeTab*);
    the tools of each tab are g_UiCommandModeC (height), D (material), E (smoothing), A (unit placement) and
    B (object placement). */
-#define EDITOR_MODE_TERRAIN_HEIGHT 0
-#define EDITOR_MODE_TERRAIN_MATERIAL 1
-#define EDITOR_MODE_TERRAIN_SMOOTHING 2
-#define EDITOR_MODE_UNIT_PLACEMENT 3
-#define EDITOR_MODE_OBJECT_PLACEMENT 4
-#define EDITOR_MODE_REGION 5
+inline constexpr int32_t EDITOR_MODE_TERRAIN_HEIGHT = 0;
+inline constexpr int32_t EDITOR_MODE_TERRAIN_MATERIAL = 1;
+inline constexpr int32_t EDITOR_MODE_TERRAIN_SMOOTHING = 2;
+inline constexpr int32_t EDITOR_MODE_UNIT_PLACEMENT = 3;
+inline constexpr int32_t EDITOR_MODE_OBJECT_PLACEMENT = 4;
+inline constexpr int32_t EDITOR_MODE_REGION = 5;
 
 /* Terrain material swatches of the material tool (UiCommandMatrix_SelectIndex): twelve per page, the page
    scrolls in rows of three */
-#define MATERIAL_SWATCH_COUNT 12
-#define MATERIAL_SWATCH_ROW_LENGTH 3
+inline constexpr int32_t MATERIAL_SWATCH_COUNT = 12;
+inline constexpr int32_t MATERIAL_SWATCH_ROW_LENGTH = 3;
 /* Relaxation passes of the smoothing page buttons (InGameCommandRange_DispatchState0/1) */
-#define TERRAIN_RELAXATION_BUTTON_PASSES 128
+inline constexpr int32_t TERRAIN_RELAXATION_BUTTON_PASSES = 128;
 /* g_UiCommandModeGColorVariantFlags bit and g_UiCommandModeGColorVariantLimit values of the two terrain colour
    variants (UiCommandModeG_ApplyMaskedColorVariant / _ApplyRawColorVariant) */
-#define UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED 0x1000
-#define UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED 0x7FFFFFFF
-#define UI_COMMAND_MODE_G_COLOR_LIMIT_RAW 0x00FFFFFF
+inline constexpr int32_t UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED = 0x1000;
+inline constexpr int32_t UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED = 0x7FFFFFFF;
+inline constexpr int32_t UI_COMMAND_MODE_G_COLOR_LIMIT_RAW = 0x00FFFFFF;
 
 void InGameCommandModeG_Select0(UiSelectableControl *source);
 
