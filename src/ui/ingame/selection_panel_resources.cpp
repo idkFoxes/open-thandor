@@ -135,7 +135,7 @@ static void SelectionInfoPanel_PatchInfoTexture(GraphicsTextureSourceAsset *info
    info.gfx) - the exact meaning of these patches is not known. Returns true on success; on failure returns false
    with the failing loader's error in *outError.
 */
-Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError)
+bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError)
 
 {
   GraphicsTextureSourceAsset *selectionTextureSource;

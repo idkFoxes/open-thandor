@@ -45,7 +45,7 @@ static inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,ui
    planes 1 and 2 and then derives plane 0 from them. Returns true on success; on failure returns false and
    stores the allocator error in *outError (untouched on success).
 */
-Bool8 TerrainCompositeTexture_Create(uint32_t *outError)
+bool TerrainCompositeTexture_Create(uint32_t *outError)
 
 {
   FieldGridAsset *terrainFieldGrid;
@@ -346,14 +346,14 @@ void TerrainCompositeTexture_RebuildPlane0()
   int gridColumn;
   int gridRow;
   int64_t roundedRowQ12;
-  Bool8 rowRoundingOverflows;
+  bool rowRoundingOverflows;
   uint32_t colorVariant;
   AssetRelativeOffset assetOffset;
   uint32_t *pixelCursor;
   FieldGridCell *fieldCell;
   uint32_t *plane0Pixels;
   uint32_t *plane0WriteCursor;
-  Bool8 notSelected;
+  bool notSelected;
   FieldGridCoordinates gridCoordinates;
 
   inGameRoot = g_InGameRuntimeRoot;

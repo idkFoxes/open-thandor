@@ -67,9 +67,9 @@ ArmyAssetRecordPrefix *ArmyAssetRegistry_FindRecordById(PckArmyAssetIdCatalog re
 
 uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRecordPrefix **outRecord);
 
-uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId);
+bool ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId);
 
-uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId);
+bool ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId);
 
 uint8_t ArmyAssetRegistry_HasNoPlaceableUnitWithId(ArmyAssetId recordId);
 

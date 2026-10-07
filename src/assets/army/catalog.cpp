@@ -304,7 +304,7 @@ uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRe
    with the wrong flags. Predicate of the editor's unit-placement id searches
    (FindNext/FindPrevious/Step*Flag0100Without0200).
 */
-uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
+bool ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
 
 {
   int slotIndex;
@@ -314,17 +314,17 @@ uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
     candidateAsset = ArmyAssetRecord_FromPrefix(g_ArmyAssetRecordRegistry[slotIndex]);
     if (candidateAsset != nullptr && recordId == candidateAsset->registryId &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
-      return 0; /* found a unit */
+      return false; /* found a unit */
     }
   }
-  return 1;
+  return true;
 }
 
 /* Returns 0 when some registered army record with this id is an object, i.e. has flag 0x0200 of its flags set;
    1 otherwise. Predicate of the editor's object-placement id searches
    (FindNext/FindPrevious/Step*Flags0100And0200).
 */
-uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
+bool ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
 
 {
   int slotIndex;
@@ -334,10 +334,10 @@ uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
     candidateAsset = ArmyAssetRecord_FromPrefix(g_ArmyAssetRecordRegistry[slotIndex]);
     if (candidateAsset != nullptr && recordId == candidateAsset->registryId &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
-      return 0; /* found an object */
+      return false; /* found an object */
     }
   }
-  return 1;
+  return true;
 }
 
 /* Returns 0 when some registered army record with this id is a placeable unit (flags with 0x0100 set and 0x0200

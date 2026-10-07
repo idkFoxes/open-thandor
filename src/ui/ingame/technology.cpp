@@ -66,7 +66,7 @@ void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableCon
 {
   UiNodeBase *rootNode;
   InGameUiImage *ui;
-  Bool8 isSelected;
+  bool isSelected;
 
   /* climb to the in-game root */
   rootNode = &selectableControl->base;
@@ -74,7 +74,7 @@ void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableCon
     rootNode = rootNode->parent;
   }
   ui = InGameUi_Image(rootNode);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(selectableControl);
+  isSelected = UiSelectableControl_IsSelected(selectableControl);
   if (isSelected) {
     UiSelectableGroup_SelectExclusive(TECHNOLOGY_AREA_TAB_COUNT,&selectableControl->base,
       &ui->technologyAreaTab7.selectable.base,
@@ -212,7 +212,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   uint32_t packedEnergyColor;
   uint32_t costColor;
   int areaIndex;
-  Bool8 isAvailable;
+  bool isAvailable;
   RichTextExtent textExtent;
   uint16_t *titleText;
   uint16_t *technologyName;

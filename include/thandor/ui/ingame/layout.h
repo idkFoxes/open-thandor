@@ -17,7 +17,7 @@
 inline constexpr int32_t INGAME_PANEL_GFX_PATH_VARIANT_DIGIT = 15;
 inline constexpr int32_t INGAME_DIAGRAM_GFX_PATH_VARIANT_DIGIT = 17;
 
-Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError);
+bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError);
 
 extern int32_t g_InGamePanelTextureSubresource02Width;
 extern int32_t g_InGamePanelTextureSubresource27Width;

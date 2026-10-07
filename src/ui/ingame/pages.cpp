@@ -19,7 +19,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
 
 {
   WorldInteractionFlags *interactionFlagsField;
-  Bool8 isSelected;
+  bool isSelected;
   RichTextExtent wrappedExtent;
   uint16_t *resolvedText;
   InGameMissionHelpRootView *uiRoot;
@@ -30,7 +30,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
     rootNode = rootNode->parent;
   }
   uiRoot = reinterpret_cast<InGameMissionHelpRootView *>(rootNode); /* the mission help view of the in-game root */
-  isSelected = (Bool8)UiSelectableControl_IsSelected(THANDOR_CONTAINER_OF(source, UiSelectableControl, base));
+  isSelected = UiSelectableControl_IsSelected(THANDOR_CONTAINER_OF(source, UiSelectableControl, base));
   if (!isSelected) {
     UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,&uiRoot->gameWindowPageStack);
     /* UI_NODE_SUPPRESSED on the world view: a window blocks the world input */

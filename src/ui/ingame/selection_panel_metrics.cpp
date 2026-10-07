@@ -47,7 +47,7 @@ static void SelectionPanelMetrics_DrawPlainCorners(SelectionPanelMetricFrame *fr
    no energy demand and alwaysDrawMeter is false), the group number top right (the plain corner when the entity is
    in no group) and the plain bottom corners. */
 static void SelectionPanelMetrics_DrawOwnCorners
-          (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,Bool8 alwaysDrawMeter)
+          (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,bool alwaysDrawMeter)
 {
   ModelHierarchyEnergyDemand energyDemand;
   uint32_t groupNumber;
@@ -150,7 +150,7 @@ static void SelectionPanelMetrics_DrawSegmentedSides(SelectionPanelMetricFrame *
 static void SelectionPanelMetrics_DrawResearchOrIdleBars
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *researchSource)
 {
-  Bool8 researching;
+  bool researching;
 
   researching = Any((researchSource->classState).stateFlags &
                  (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID));
@@ -167,7 +167,7 @@ static void SelectionPanelMetrics_DrawResearchOrIdleBars
 
 /* Kind 1: a factory (class 13) or production building (class 11) that is building shows its build progress.
    Returns false (nothing drawn) for every other kind-1 entity. */
-static Bool8 SelectionPanelMetrics_DrawBuildProgressFrame
+static bool SelectionPanelMetrics_DrawBuildProgressFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime)
 {
   if ((armyRuntime->classState).behaviorState != ARMY_FACTORY_STATE_BUILDING) {
@@ -188,7 +188,7 @@ static Bool8 SelectionPanelMetrics_DrawBuildProgressFrame
 
 /* Kind 2: a weapon (first child of class 5-8) shows its reload countdown against the weapon definition's reload
    ticks. Returns false (nothing drawn) when there is no such child. */
-static Bool8 SelectionPanelMetrics_DrawWeaponReloadFrame
+static bool SelectionPanelMetrics_DrawWeaponReloadFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime)
 {
   ModelRuntimeSlot *childModelRuntime;
@@ -222,7 +222,7 @@ static Bool8 SelectionPanelMetrics_DrawWeaponReloadFrame
    part of its smallest slot countdown (unsigned minimum of the eight, then at least classState80, signed).
    Returns false (nothing drawn) otherwise; *researchSource then names what the generic frame reads its research
    state from. */
-static Bool8 SelectionPanelMetrics_DrawSlotReloadFrame
+static bool SelectionPanelMetrics_DrawSlotReloadFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime,
           ModelRuntimeSlot **researchSource)
 {
@@ -292,7 +292,7 @@ static void SelectionPanelMetrics_DrawClass22Frame
 
 /* Kind-specific frame of an own entity (kinds 1-3, and class-22 entities of a higher kind). Returns false when
    nothing was drawn and the entity gets the generic frame, read from *researchSource. */
-static Bool8 SelectionPanelMetrics_DrawKindFrame
+static bool SelectionPanelMetrics_DrawKindFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,uint32_t runtimeKind,
           ModelRuntimeSlot *armyRuntime,ModelRuntimeSlot **researchSource)
 {
@@ -332,7 +332,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
   uint32_t runtimeKind;
   ModelRuntimeSlot *armyRuntime;
   ModelRuntimeSlot *researchSource;
-  Bool8 framebufferBusy;
+  bool framebufferBusy;
   SelectionPanelMetricFrame frame;
 
   inGameRoot = g_InGameRuntimeRoot;

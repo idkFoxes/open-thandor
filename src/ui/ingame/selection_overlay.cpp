@@ -113,7 +113,7 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipBottom,UiPixelCoordi
   UiPixelCoordinate originalCornerBY;
   UiPixelCoordinate originalCornerBX;
   uint32_t cornerWidth;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize cornerSize;
   
   /* order the corners: A becomes bottom-right (maximum), B top-left (minimum) */
@@ -185,7 +185,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
   int64_t worldYProduct;
   int screenX;
   int screenY;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   GraphicsTextureLogicalSize markerSize;
   FixedVectorQ12 terrainPoint;
@@ -247,7 +247,7 @@ void SelectionOverlay_DrawWorldPointMarker
           FieldGridAsset *fieldGrid)
 
 {
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   GraphicsTextureLogicalSize markerSize;
   FixedVectorQ12 markerPoint;
@@ -301,7 +301,7 @@ void SelectionOverlay_DrawGridVertexMarkers
   int screenY;
   uint8_t *vertexCursor;
   int coordinateOffset;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
@@ -364,7 +364,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
   int screenY;
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t receiverTextureId;
   GraphicsTextureSourceAsset *receiverTextureSource;
@@ -447,7 +447,7 @@ void SelectionOverlay_DrawResourceCellMarkers
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
   FieldCellPackedFlagsAndMaterial selectedResourceFlag;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t flaggedTextureId;
   GraphicsTextureSourceAsset *flaggedTextureSource;
@@ -530,7 +530,7 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
   int screenY;
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;

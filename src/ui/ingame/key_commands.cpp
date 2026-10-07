@@ -143,9 +143,9 @@ bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
   /* Each dispatch record names its action, one case of the switch below. world is the world view (worldRuntime). */
   UiKeyCommandRecord<InGameKeyCommandAction> *record; /* g_InGameCommandDispatchRecords ends at the terminator record [63] */
   InGameKeyCommandAction target;
-  Bool8 localSession =
+  bool localSession =
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL;
-  Bool8 commandsBlocked =
+  bool commandsBlocked =
        Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED));
 
   record = UiCommandDispatch_Find(g_InGameCommandDispatchRecords,commandCode,modifierFlags,
@@ -356,7 +356,7 @@ void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView)
 void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *world)
 
 {
-  Bool8 hasActiveOwnerType16;
+  bool hasActiveOwnerType16;
 
   /* the original tests WORLD_INPUT_DISABLED twice */
   if (((!Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) &&
