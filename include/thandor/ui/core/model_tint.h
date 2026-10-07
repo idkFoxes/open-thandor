@@ -15,11 +15,11 @@
 void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode);
 
 /* ModelRuntimeNode_GetStateTintArgb results */
-#define UI_MODEL_TINT_OPAQUE_WHITE 0xffffffffu /* colours unchanged */
+inline constexpr uint32_t UI_MODEL_TINT_OPAQUE_WHITE = 0xffffffffu; /* colours unchanged */
 
-#define UI_MODEL_TINT_TRANSPARENT_WHITE 0x00ffffff
+inline constexpr int32_t UI_MODEL_TINT_TRANSPARENT_WHITE = 0x00ffffff;
 
-#define UI_MODEL_TINT_OPAQUE_GREY 0xff878787u
+inline constexpr uint32_t UI_MODEL_TINT_OPAQUE_GREY = 0xff878787u;
 
 PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node);
 
