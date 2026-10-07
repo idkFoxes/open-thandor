@@ -1365,9 +1365,23 @@ static_assert(sizeof(FrontendResultsFactionWeightPair) == 0x8,
 static_assert(sizeof(FrontendResultsColumnSequenceControl) == 0x68 &&
               offsetof(FrontendResultsColumnSequenceControl, factionWeightRaster) == 0x50,
               "FrontendResultsColumnSequenceControl keeps its 32-bit layout");
-static_assert(sizeof(FrontendResultsEightColumnTemplate) == 0x84 &&
-              offsetof(FrontendResultsEightColumnTemplate, factionWeightRaster) == 0x50,
-              "FrontendResultsEightColumnTemplate keeps its 32-bit layout");
+static_assert(sizeof(FrontendResultsTable<8>) == 0x84 &&
+              offsetof(FrontendResultsTable<8>, factionWeightRaster) == 0x50,
+              "FrontendResultsTable<8> keeps its 32-bit layout");
+static_assert(sizeof(FrontendResultsTable<6>) == 0x7C && offsetof(FrontendResultsTable<6>, modeFlags) == 0x4C &&
+              offsetof(FrontendResultsTable<6>, factionWeightRaster) == 0x50 &&
+              offsetof(FrontendResultsTable<6>, columnTypeCount) == 0x54 &&
+              offsetof(FrontendResultsTable<6>, rowCount) == 0x58 &&
+              offsetof(FrontendResultsTable<6>, headerBaselineOffsetPixels) == 0x5C &&
+              offsetof(FrontendResultsTable<6>, rowAdvancePixels) == 0x60 &&
+              offsetof(FrontendResultsTable<6>, columnTypes) == 0x64,
+              "FrontendResultsTable<6> keeps its 32-bit layout");
+static_assert(offsetof(FrontendResultsColumnSequenceControl, columnTypeCount) == 0x54 &&
+              offsetof(FrontendResultsColumnSequenceControl, rowCount) == 0x58 &&
+              offsetof(FrontendResultsColumnSequenceControl, headerBaselineOffsetPixels) == 0x5C &&
+              offsetof(FrontendResultsColumnSequenceControl, rowAdvancePixels) == 0x60 &&
+              offsetof(FrontendResultsColumnSequenceControl, columnTypes0) == 0x64,
+              "FrontendResultsColumnSequenceControl is the one-slot view of FrontendResultsTable<N>");
 static_assert(sizeof(ScenarioCatalogDisplayRecord) == 0x100 &&
               offsetof(ScenarioCatalogDisplayRecord, titleResolvedText) == 0x56 &&
               offsetof(ScenarioCatalogDisplayRecord, subtitleResolvedText) == 0x66 &&
@@ -2236,6 +2250,13 @@ static_assert(offsetof(InGameUiImage, resultsScreenPanel) == 0x350 && sizeof(UiI
               "InGameUiImage.resultsScreenPanel is a UiImagePanelControl");
 static_assert(offsetof(InGameUiImage, resultsChartPageStack) == 0x3AC && sizeof(UiLayoutContainerControl<3>) == 0x5C,
               "InGameUiImage.resultsChartPageStack is a UiLayoutContainerControl<3>");
+static_assert(offsetof(InGameUiImage, resultsChart1) == 0x408 && offsetof(InGameUiImage, resultsChart2) == 0x484 &&
+              offsetof(InGameUiImage, resultsChart3) == 0x500,
+              "InGameUiImage.resultsChart1..3 keep their offsets");
+static_assert(offsetof(InGameUiImage, resultsChart2) - offsetof(InGameUiImage, resultsChart1) == sizeof(FrontendResultsTable<6>) &&
+              offsetof(InGameUiImage, resultsChart3) - offsetof(InGameUiImage, resultsChart2) == sizeof(FrontendResultsTable<6>) &&
+              offsetof(InGameUiImage, resultsTabMilitary) - offsetof(InGameUiImage, resultsChart3) == sizeof(FrontendResultsTable<8>),
+              "InGameUiImage.resultsChart1..3 are FrontendResultsTable<6>, <6> and <8>");
 static_assert(offsetof(InGameUiImage, resultsTabMilitary) == 0x584 && sizeof(UiFramedTextButtonControl) == 0x60,
               "InGameUiImage.resultsTabMilitary is a UiFramedTextButtonControl");
 static_assert(offsetof(InGameUiImage, resultsTabEconomy) == 0x5E4 && sizeof(UiFramedTextButtonControl) == 0x60,

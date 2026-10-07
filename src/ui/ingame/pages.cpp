@@ -315,12 +315,9 @@ void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source
       &image->resultsChartModeButtonA.selectable.base,
       &image->resultsChartModeButtonB.selectable.base);
   /* Mode 0/1 picks each chart's drawing path (modeFlags bit 0) and the results background image. */
-  reinterpret_cast<FrontendResultsColumnSequenceControl *>(&image->resultsChart1)->modeFlags =
-       (uint32_t)selectedIndexValue;
-  reinterpret_cast<FrontendResultsColumnSequenceControl *>(&image->resultsChart2)->modeFlags =
-       (uint32_t)selectedIndexValue;
-  reinterpret_cast<FrontendResultsColumnSequenceControl *>(&image->resultsChart3)->modeFlags =
-       (uint32_t)selectedIndexValue;
+  image->resultsChart1.modeFlags = (uint32_t)selectedIndexValue;
+  image->resultsChart2.modeFlags = (uint32_t)selectedIndexValue;
+  image->resultsChart3.modeFlags = (uint32_t)selectedIndexValue;
   image->resultsScreenPanel.subresource =
        (GraphicsSubresourceIndex)selectedIndexValue;
 }

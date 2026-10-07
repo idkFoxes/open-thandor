@@ -773,12 +773,9 @@ typedef struct InGameUiImage {
     UiLayoutContainerControl<2> endMoviePageStack; /* +02F8 g_UiLayoutContainerControlVtable: Two-page stack (movie only or results screen); set to page 1 after the end movie to show the results screen. */
     UiImagePanelControl resultsScreenPanel; /* +0350 g_UiImagePanelControlVtable: End-of-game results screen background panel holding the chart tabs, charts and summary text; its image subresource is set to the chart mode index (action 0x1026). */
     UiLayoutContainerControl<3> resultsChartPageStack; /* +03AC g_UiLayoutContainerControlVtable: Page stack switching between the three results charts; page chosen by the chart tab buttons (action 0x101C). */
-    UiNodeBase resultsChart1; /* +0408 g_FrontendResultsTableVtable: First results statistics chart (graph control); which category (points/economy/military) is not verified. Its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
-    uint32_t resultsChart1_fields[12];
-    UiNodeBase resultsChart2; /* +0484 g_FrontendResultsTableVtable: Second results statistics chart; its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
-    uint32_t resultsChart2_fields[12];
-    UiNodeBase resultsChart3; /* +0500 g_FrontendResultsTableVtable: Third results statistics chart (8 series); its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
-    uint32_t resultsChart3_fields[14];
+    FrontendResultsTable<6> resultsChart1; /* +0408 g_FrontendResultsTableVtable: First results statistics chart (graph control); which category (points/economy/military) is not verified. Its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
+    FrontendResultsTable<6> resultsChart2; /* +0484 g_FrontendResultsTableVtable: Second results statistics chart; its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
+    FrontendResultsTable<8> resultsChart3; /* +0500 g_FrontendResultsTableVtable: Third results statistics chart (8 series); its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     UiFramedTextButtonControl resultsTabMilitary; /* +0584 g_UiFramedTextButtonControlVtable: Results chart tab button labelled Military (text 0x21B1); action 0x101C selects the chart page. */
     UiFramedTextButtonControl resultsTabEconomy; /* +05E4 g_UiFramedTextButtonControlVtable: Results chart tab button labelled Economy (text 0x21B0); action 0x101C selects the chart page. */
     UiFramedTextButtonControl resultsTabThird; /* +0644 g_UiFramedTextButtonControlVtable: Third results chart tab button (text 0x21AF, probably total/points); action 0x101C selects the chart page. */
@@ -1275,7 +1272,7 @@ template <class T> inline InGameUiImage *InGameUi_Image(T *root)
    context (its interaction state starts with the node's UiNodeBase). */
 template <class T> inline WorldRuntimeContext *InGameUi_WorldRuntime(T *root)
 {
-  return reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(root)->worldView);
+  return FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
 }
 /* The twelve metric cells of the multi-selection page in grid order (the members behind the byte offsets of
    g_InGameSelectionDetailGridCellOffsets). */
