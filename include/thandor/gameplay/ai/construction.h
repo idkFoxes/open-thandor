@@ -17,7 +17,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);
 
-Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
+bool AiConstructionPlanner_ProcessPendingAssetRequests
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,

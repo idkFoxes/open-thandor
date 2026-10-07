@@ -62,7 +62,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
   AiCandidateScore32 candidateScore;
   int registryEntriesRemaining;
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
-  Bool8 technologyLocked;
+  bool technologyLocked;
   int compatibleAssetCount;
   uint32_t compatibleAssetScoreSum;
   AiLinkedDefinitionListView *nestedLinkedDefinitions;
@@ -155,15 +155,15 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
    affordable. The cost is deducted even when no producer is found. Returns true when candidates
    existed but none was applied, false otherwise.
 */
-Bool8 AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
+bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
 
 {
-  Bool8 noCandidateApplied;
+  bool noCandidateApplied;
   uint32_t candidateCost;
   int remainingCandidates;
   XeniteAmountQ4 remainingXenite;
   AiCandidateWorkspaceEntry *entry;
-  Bool8 insufficientXenite;
+  bool insufficientXenite;
 
   remainingCandidates = g_AiCandidateWorkspaceEntryCount;
   entry = g_AiWorkspace13Candidates;
@@ -347,7 +347,7 @@ void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRu
 
 /* True when technologyIndex is one of the research slots researchTechnologyIds[1..28] of the structure
    definition (slot 0 is not a research slot). */
-static Bool8 AiPurchaseCandidate_DefinitionListsResearch(ModelDefinition *definition,RuntimeToken technologyIndex)
+static bool AiPurchaseCandidate_DefinitionListsResearch(ModelDefinition *definition,RuntimeToken technologyIndex)
 {
   int technologySlotIndex;
 
@@ -367,7 +367,7 @@ static Bool8 AiPurchaseCandidate_DefinitionListsResearch(ModelDefinition *defini
    classState.classStateAC clear, the bits 0xEE a class-13 structure whose definition mask classParameterC4
    shares them and with classState.behaviorState clear (runtimeFlags without 0xC9 each).
 */
-Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
+bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
 
 {
   uint32_t producerClassMask;
@@ -497,7 +497,7 @@ void AiStructureCandidate_AddResourceStorage
   int remainingEntries;
   int assignedSiteStructureCount;
   uint32_t derivedWeight;
-  Bool8 hasPrerequisite;
+  bool hasPrerequisite;
   AiKnowledgeDataImage *knowledgeData;
 
   if (AiPrimaryWorkspace_HasUnassignedEntryById(candidateArmyAssetId)) {
@@ -555,7 +555,7 @@ void AiResourceCandidate_AddPowerPlant(FactionRuntimeIndex factionIndex)
   int energySurplus;
   int energyDemand;
   int generationCapacity;
-  Bool8 conditionMet;
+  bool conditionMet;
   
   conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303);
   if (conditionMet) {

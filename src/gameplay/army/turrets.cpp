@@ -39,11 +39,11 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   uint32_t pitchAimValue;
-  Bool8 waypointArrived;
+  bool waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
   GraphicsFixedVec3 aimPoint;
-  Bool8 aimPointFound;
+  bool aimPointFound;
   GameEntityRuntime *ownerEntity;
   ModelRuntimeNode *partNode;
 
@@ -192,11 +192,11 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   uint32_t pitchAimValue;
-  Bool8 waypointArrived;
+  bool waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
   GraphicsFixedVec3 aimPoint;
-  Bool8 aimPointFound;
+  bool aimPointFound;
   GameEntityRuntime *ownerEntity;
   ModelRuntimeNode *partNode;
 

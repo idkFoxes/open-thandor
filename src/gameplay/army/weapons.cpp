@@ -31,7 +31,7 @@ void ArmyRuntime_SetNonzeroActionVector
    the command. Returns true with the point in *outAimPoint, or false (and *outAimPoint zeroed) when there is
    nothing to aim at.
 */
-Bool8
+bool
 ArmyRuntime_ResolveShotAimPoint
           (Q12 sourceWorldZQ12,Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,
           ShotDefinition *shotDefinition,GameEntityRuntime *targetState,GraphicsFixedVec3 *outAimPoint)
@@ -148,7 +148,7 @@ ArmyRuntime_ResolveShotAimPoint
    for zero, i.e. an unarmed army (returns true when it is zero); used by
    ArmyRuntime_ResetMovementStateFromModel to decide whether a targeted command is dropped.
 */
-Bool8 ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
+bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
 
 {
   return armyRuntime->stateOrTechnologyId == 0;
@@ -157,7 +157,7 @@ Bool8 ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
 /* Tests the army's summed weapon damage against target class 0 (targetClassShotDamage[0], stateOrTechnologyId)
    for being non-negative (returns true when it is >= 0). Used by the selection queries (selection/queries.cpp).
 */
-Bool8 ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
+bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
 
 {
   return -1 < armyRuntime->stateOrTechnologyId;
@@ -306,7 +306,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
    freshly rebuilt modelNode and creates the projectile from there towards the target point. Returns true
    when the model has no such launch point.
 */
-Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
+bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
           (ShotTargetModelReference targetModelReference,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
           Q12 targetWorldZQ12,SprAttachmentSelectorOrdinal attachmentSelectorOrdinal,
           ShotDefinition *shotDefinition,ModelRuntimeNode *modelNode,
@@ -544,7 +544,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
    with packed keys n << 4 | 6; one of them is chosen in turn (definition modelFlags bit 0) or at random and
    transformed to world space. Returns false when the model has no such point (the caller then uses the root
    position). */
-static Bool8 ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,ModelDefinition *emitterDefinition,
+static bool ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,ModelDefinition *emitterDefinition,
           ModelWorldPoint *outWorldPoint)
 {
   MdlSerializedNodeHeader *serializedNode;

@@ -19,20 +19,20 @@
 void ArmyRuntime_SetNonzeroActionVector
           (Q12 actionVector0,Q12 actionVector2,Q12 actionVector1,ArmyRuntimeSlot *armyRuntime);
 
-Bool8
+bool
 ArmyRuntime_ResolveShotAimPoint
           (Q12 sourceWorldZQ12,Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,
           ShotDefinition *shotDefinition,GameEntityRuntime *targetState,GraphicsFixedVec3 *outAimPoint);
 
-Bool8 ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime);
+bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime);
 
-Bool8 ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime);
+bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime);
 
 void ArmyRuntimeClass_SelectProjectileTargetNode (ModelRuntimeTimedTargetProjectileView *modelRuntime, WorldOwnerListNode *candidateNode);
 
 void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedTargetProjectileView *modelRuntime);
 
-Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
+bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
           (ShotTargetModelReference targetModelReference,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
           Q12 targetWorldZQ12,SprAttachmentSelectorOrdinal attachmentSelectorOrdinal,
           ShotDefinition *shotDefinition,ModelRuntimeNode *modelNode,

@@ -145,19 +145,19 @@ void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
 
 /* Runs the placement-validation handler of the army's runtime class
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, indexed by the definition's
-   runtimeClassId) for the army in *armyRuntimeHolder and returns its acceptance.
+   runtimeClassId) for the army in *armyRuntimeHolder and returns its result: true when the placement is rejected.
 */
-Bool8 ArmyRuntimeNode_DispatchTypedCallback(Ptr32<ArmyRuntimeSlot> *armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
+bool ArmyRuntimeNode_DispatchTypedCallback(Ptr32<ArmyRuntimeSlot> *armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
 
 {
-  Bool8 accepted;
+  bool rejected;
 
   /* the view's first field (modelDefinition) is the army's model runtime pointer */
-  accepted = (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation
+  rejected = (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation
             [reinterpret_cast<ModelRuntimePlacementValidationView *>(armyRuntimeHolder->get())->modelDefinition->
              runtimeClassId])
                     (worldRuntime,reinterpret_cast<ModelRuntimePlacementValidationView *>(armyRuntimeHolder->get())); /* army slot read as the view */
-  return accepted;
+  return rejected;
 }
 
 /* Runs the class-command handler of the runtime class of the army's model runtime (the definition's
@@ -719,7 +719,7 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
 }
 
 /* Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
-   0, 5-9, 12 and 21): accepts every placement.
+   0, 5-9, 12 and 21): accepts every placement (returns false: these slots return true to reject).
 */
 bool UnifiedRuntimeDefault_TwoArgSuccess
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
