@@ -14,12 +14,12 @@
 
 /* g_FrontendScenarioTransferState: which asset a network client expects next in the transfer mailbox
    (handled by FrontendScenarioTransfer_ProcessReceivedAsset). */
-#define SCENARIO_TRANSFER_NONE 0
-#define SCENARIO_TRANSFER_CATALOG 1            /* scenario catalog */
-#define SCENARIO_TRANSFER_LEVEL 2              /* level asset */
-#define SCENARIO_TRANSFER_FIELD_GRID 3         /* field grid of the loaded level */
-#define SCENARIO_TRANSFER_CAMPAIGN_BUNDLE 4    /* level + campaign + field grid */
-#define SCENARIO_TRANSFER_LEVEL_BUNDLE 5       /* level + field grid (every value >= 5) */
+inline constexpr auto SCENARIO_TRANSFER_NONE = 0;
+inline constexpr auto SCENARIO_TRANSFER_CATALOG = 1; /* scenario catalog */
+inline constexpr auto SCENARIO_TRANSFER_LEVEL = 2; /* level asset */
+inline constexpr auto SCENARIO_TRANSFER_FIELD_GRID = 3; /* field grid of the loaded level */
+inline constexpr auto SCENARIO_TRANSFER_CAMPAIGN_BUNDLE = 4; /* level + campaign + field grid */
+inline constexpr auto SCENARIO_TRANSFER_LEVEL_BUNDLE = 5; /* level + field grid (every value >= 5) */
 
 /* Header of a SCENARIO_TRANSFER_CAMPAIGN_BUNDLE packet; the three encoded images follow it. */
 typedef struct ScenarioCampaignBundleHeader {
@@ -47,7 +47,7 @@ void FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
 extern uint32_t g_FrontendScenarioTransferState;
 
 /* DwordBlock64Array_ContainsExactRecord: dwords per compared record */
-#define DWORD_BLOCK64_RECORD_DWORDS 0x40
+inline constexpr auto DWORD_BLOCK64_RECORD_DWORDS = 0x40;
 
 Bool8 DwordBlock64Array_ContainsExactRecord
           (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord);

@@ -18,11 +18,11 @@
 #include <vector>
 
 /* Self-test data */
-#define SELFTEST_GUARD_BYTES 0x10000      /* codec: bytes behind each output buffer that must stay untouched */
-#define SELFTEST_GUARD_FILL 0xCD          /* codec: fill byte of the output buffers and their guards */
-#define SELFTEST_UNWRITTEN_FILL 0xAB      /* path split: fill byte that marks untouched output */
-#define SCANADDR_MAX_UNPACKED_BYTES 0x4000000 /* scanaddr: entries claiming more are taken as the end of the package */
-#define SCANADDR_REBUILT_IMAGE_SPAN 0x300000  /* scanaddr: dwords in [REBUILT_IMAGE_BASE, + this) are reported */
+constexpr auto SELFTEST_GUARD_BYTES = 0x10000; /* codec: bytes behind each output buffer that must stay untouched */
+constexpr auto SELFTEST_GUARD_FILL = 0xCD; /* codec: fill byte of the output buffers and their guards */
+constexpr auto SELFTEST_UNWRITTEN_FILL = 0xAB; /* path split: fill byte that marks untouched output */
+constexpr auto SCANADDR_MAX_UNPACKED_BYTES = 0x4000000; /* scanaddr: entries claiming more are taken as the end of the package */
+constexpr auto SCANADDR_REBUILT_IMAGE_SPAN = 0x300000; /* scanaddr: dwords in [REBUILT_IMAGE_BASE, + this) are reported */
 
 /* Diagnostics: OPEN_THANDOR_SELFTEST=codec round-trips synthetic save-sized data through the PCK
    encoder/decoder tables, checks guard bytes behind the output and logs the result. */
@@ -320,9 +320,9 @@ static void Thandor_SelfTestPcx()
    parts, decodes each with Movie_DecodeFrame4x4Delta, and logs the byte counts and an FNV-1a hash over every
    encoded byte, the reference frame the delta encoder keeps and the decoded picture. Run it with two builds to
    check that a rewrite of the encoders or the decoder kept their output. */
-#define MOVIEENC_WIDTH 64
-#define MOVIEENC_HEIGHT 48
-#define MOVIEENC_FRAMES 6
+constexpr auto MOVIEENC_WIDTH = 64;
+constexpr auto MOVIEENC_HEIGHT = 48;
+constexpr auto MOVIEENC_FRAMES = 6;
 static uint32_t SelfTest_MovieEncodePixel(uint32_t frame, uint32_t x, uint32_t y, uint32_t *seed)
 {
     uint32_t region = (x / 16 + (y / 16) * 4 + frame) % 6;

@@ -272,7 +272,7 @@ static void code_address_name(char *out, size_t capacity, HANDLE process, DWORD6
 
 /* Crash log: raw stack qwords below REBUILT_IMAGE_BASE + this are symbolized as code addresses (upper bound
    of the rebuilt executable's image) */
-#define CRASH_LOG_REBUILT_IMAGE_SPAN 0x400000u
+constexpr auto CRASH_LOG_REBUILT_IMAGE_SPAN = 0x400000u;
 static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
 {
     HANDLE process = GetCurrentProcess();
@@ -568,7 +568,7 @@ volatile long g_ThandorFrameHeartbeat;
 
 /* Once frames are being presented, a stall of HANG_SECONDS logs three stack samples of the main
    thread (one second apart) to hang.log, so an endless loop shows which code it spins in. */
-#define HANG_SECONDS 4
+constexpr auto HANG_SECONDS = 4;
 
 static DWORD WINAPI hang_detector_thread(void *parameter)
 {

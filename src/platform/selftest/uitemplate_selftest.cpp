@@ -59,9 +59,9 @@
 /* The linker-defined start of the executable image (MinGW ld and MSVC link both define it); <windows.h> clashes
    with the project's own Win32 declarations, so the PE header fields are read by their fixed offsets. */
 extern "C" uint8_t __ImageBase[];
-#define UITEMPLATE_PE_HEADER_OFFSET_FIELD 0x3C /* IMAGE_DOS_HEADER.e_lfanew */
-#define UITEMPLATE_PE_SIZE_OF_IMAGE_FIELD 0x50 /* IMAGE_NT_HEADERS(32|64).OptionalHeader.SizeOfImage */
-#define UITEMPLATE_PE_SIZE_OF_HEADERS_FIELD 0x54 /* IMAGE_NT_HEADERS(32|64).OptionalHeader.SizeOfHeaders */
+constexpr auto UITEMPLATE_PE_HEADER_OFFSET_FIELD = 0x3C; /* IMAGE_DOS_HEADER.e_lfanew */
+constexpr auto UITEMPLATE_PE_SIZE_OF_IMAGE_FIELD = 0x50; /* IMAGE_NT_HEADERS(32|64).OptionalHeader.SizeOfImage */
+constexpr auto UITEMPLATE_PE_SIZE_OF_HEADERS_FIELD = 0x54; /* IMAGE_NT_HEADERS(32|64).OptionalHeader.SizeOfHeaders */
 
 struct UiTemplateKnownObject {
     const char *name;

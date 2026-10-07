@@ -14,9 +14,9 @@
 /* Packet cipher (UiTransfer_EncryptPacketBlocks / UiTransfer_DecryptPacketBlocks): 16 rounds with one 32-bit
    key each (g_UiTransferRoundKeys). Each round looks up every nibble in its own
    16x16 dword table (row = key nibble, column = data nibble); table n handles nibble n. */
-#define UI_TRANSFER_CIPHER_ROUND_COUNT 16
-#define UI_TRANSFER_CIPHER_ROW_BYTES 0x40    /* 16 dword entries */
-#define UI_TRANSFER_CIPHER_TABLE_BYTES 0x400 /* 16 rows */
+inline constexpr auto UI_TRANSFER_CIPHER_ROUND_COUNT = 16;
+inline constexpr auto UI_TRANSFER_CIPHER_ROW_BYTES = 0x40; /* 16 dword entries */
+inline constexpr auto UI_TRANSFER_CIPHER_TABLE_BYTES = 0x400; /* 16 rows */
 
 void UiTransfer_EncryptPacketBlocks(const uint32_t *roundKeys16,uint32_t *outputBlocks,UiTransferPayloadByteCount byteCount,
           uint32_t *inputBlocks);
