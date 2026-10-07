@@ -1,5 +1,5 @@
 {
- "revision": "ebc739da",
+ "revision": "4034139d",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -229,7 +229,7 @@
    "assets": 28,
    "audio": 12,
    "core": 19,
-   "gameplay": 63,
+   "gameplay": 33,
    "graphics": 60,
    "movie": 6,
    "network": 15,
@@ -241,7 +241,7 @@
    "assets": 28,
    "audio": 12,
    "core": 19,
-   "gameplay": 63,
+   "gameplay": 33,
    "graphics": 60,
    "movie": 6,
    "network": 15,
