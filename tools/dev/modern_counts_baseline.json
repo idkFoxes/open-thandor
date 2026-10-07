@@ -1,5 +1,5 @@
 {
- "revision": "cf395f03",
+ "revision": "1d2a3167",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -184,7 +184,7 @@
    "core": 4,
    "network": 1,
    "platform": 1,
-   "ui": 1
+   "ui": 8
   },
   "libc_alloc": {
    "core": 3,
@@ -223,14 +223,12 @@
    "ui": 297,
    "world": 127
   },
-  "addr_5xxxxx": {
-   "ui": 225
-  },
+  "addr_5xxxxx": {},
   "fill_90": {
    "gameplay": 1,
-   "graphics": 16,
+   "graphics": 14,
    "platform": 1,
-   "ui": 10
+   "ui": 2
   },
   "do_while": {
    "assets": 28,
