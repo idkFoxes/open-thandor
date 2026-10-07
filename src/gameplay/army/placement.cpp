@@ -87,7 +87,7 @@ Bool8 ArmyPlacement_CanPlaceAnchoredModel
    called by ArmyRuntimeNode_DispatchTypedCallback.
 */
 
-Bool8 ArmyPlacement_TestModelTerrainAndRuntimeClearance
+bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
@@ -239,7 +239,7 @@ Bool8 ArmyPlacement_CanPlaceResourceExtractor
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[14],
    called by ArmyRuntimeNode_DispatchTypedCallback.
 */
-Bool8 ArmyPlacement_TestGridOccupancyMask
+bool ArmyPlacement_TestGridOccupancyMask
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementClass14View *modelRuntime)
 
 {
@@ -282,7 +282,7 @@ Bool8 ArmyPlacement_TestGridOccupancyMask
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[1..3, 17..19],
    called by ArmyRuntimeNode_DispatchTypedCallback.
 */
-Bool8 ArmyPlacement_TestGridRuntimeAndFieldBlocking
+bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
@@ -321,7 +321,7 @@ Bool8 ArmyPlacement_TestGridRuntimeAndFieldBlocking
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[1..3, 17..19],
    called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
-Bool8 ArmyPlacement_CanPlaceMobileUnit
+bool ArmyPlacement_CanPlaceMobileUnit
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
                uint32_t terrainHeightQ12,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,
@@ -358,7 +358,7 @@ Bool8 ArmyPlacement_CanPlaceMobileUnit
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[0, 5..9,
    12, 21], called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
-Bool8 ArmyPlacement_CanPlaceAnywhere
+bool ArmyPlacement_CanPlaceAnywhere
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
                uint32_t terrainHeightQ12,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition,

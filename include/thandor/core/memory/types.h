@@ -59,6 +59,6 @@ using SpinLockAcquireProc = void (RuntimeSpinLockValue * lockValue);
 using SpinLockReleaseCallbackProc = void ();
 using SpinLockReleaseAndInvokeProc = void (SpinLockReleaseCallbackProc * callback, RuntimeSpinLockValue * lockValue);
 using SpinLockReleaseProc = void (RuntimeSpinLockValue * lockValue);
-using SpinLockTryAcquireFlagsProc = Bool8 (RuntimeSpinLockValue * lockValue);
+using SpinLockTryAcquireFlagsProc = bool (RuntimeSpinLockValue * lockValue);
 
 #endif /* THANDOR_CORE_MEMORY_TYPES_H */

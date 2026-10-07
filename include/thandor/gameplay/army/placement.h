@@ -43,7 +43,7 @@ inline constexpr int ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION = 3;
 
 Bool8 ArmyPlacement_CanPlaceAnchoredModel (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 
-Bool8 ArmyPlacement_TestModelTerrainAndRuntimeClearance
+bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
@@ -53,19 +53,19 @@ Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
 
 Bool8 ArmyPlacement_CanPlaceResourceExtractor (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldYQ12,Q12 worldXQ12,ModelDefinitionRecordPrefix *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 
-Bool8 ArmyPlacement_TestGridOccupancyMask
+bool ArmyPlacement_TestGridOccupancyMask
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementClass14View *modelRuntime);
 
-Bool8 ArmyPlacement_TestGridRuntimeAndFieldBlocking
+bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
-Bool8 ArmyPlacement_CanPlaceMobileUnit
+bool ArmyPlacement_CanPlaceMobileUnit
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,uint32_t terrainHeightQ12,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,
                ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime,
                uint32_t *outPlacementValue);
 
-Bool8 ArmyPlacement_CanPlaceAnywhere (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,uint32_t terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition, uint32_t ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
+bool ArmyPlacement_CanPlaceAnywhere (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,uint32_t terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition, uint32_t ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 
 Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,

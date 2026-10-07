@@ -44,7 +44,7 @@ static void FieldGridTerrainOverlayVariantB_ApplyToCell(FieldGridCell *fieldCell
    surface dirty (Original quirk: before the bounds check, so also when nothing is applied). Returns true
    (nothing applied) without a grid, outside it or on a map-edge cell.
 */
-Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
+bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -90,7 +90,7 @@ Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, but only for cells with water above them; the centre
    cell also needs a bit of cellFlagMask, the sector walks ignore the mask.
 */
-Bool8 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
+bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)

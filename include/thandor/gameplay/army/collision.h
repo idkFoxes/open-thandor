@@ -28,7 +28,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
           (WorldOwnerListNode *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
           ModelRuntimeSlot *candidateRuntime,Q12 radiusQ12,WorldRuntimeContext *worldRuntime);
 
-Bool8 ArmyPlacementCollision_TestCurrentRuntime
+bool ArmyPlacementCollision_TestCurrentRuntime
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 Bool8 ArmyCollision_TestPointWithinExpandedRuntimeRadius

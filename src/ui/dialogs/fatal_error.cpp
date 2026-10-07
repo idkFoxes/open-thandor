@@ -85,7 +85,7 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
    builds the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames
    until the dialog is dismissed, so the caller can carry on (the caller knows the failure from its own flag).
 */
-uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 failed)
+uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,bool failed)
 
 {
   UiRootNode *dialogRoot;

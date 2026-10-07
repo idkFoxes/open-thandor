@@ -200,14 +200,14 @@ static void NewLevel_ApplyPlayerSlots(LevelAssetRuntimePrefix *levelImage)
   g_GameFactionRuntimeImage.records[7].colorIndex = levelImage->playerSlots[6].aiClassOrMode + 7;
 }
 
-Bool8 NewLevel_PrepareEffectAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
+bool NewLevel_PrepareEffectAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
   (void)assetByteCount;
   return EffectAsset_PrepareEntries(static_cast<EffectAssetHeader *>(asset),outError);
 }
 
-Bool8 NewLevel_PrepareShotAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
+bool NewLevel_PrepareShotAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
   (void)assetByteCount;
@@ -215,14 +215,14 @@ Bool8 NewLevel_PrepareShotAsset(void *asset,uint32_t assetByteCount,uint32_t *ou
   return *outError == 0;
 }
 
-Bool8 NewLevel_PrepareModelAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
+bool NewLevel_PrepareModelAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
   (void)assetByteCount;
   return ModelAsset_PrepareRecords(static_cast<ModelAssetHeader *>(asset),outError);
 }
 
-Bool8 NewLevel_PrepareArmyAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
+bool NewLevel_PrepareArmyAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
   *outError = ArmyAsset_PrepareRecords(static_cast<ArmyAssetHeader *>(asset),assetByteCount);

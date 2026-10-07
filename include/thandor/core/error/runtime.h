@@ -131,7 +131,7 @@ inline constexpr auto FATAL_ERROR_GFX_ASSET_INVALID = 0x2C;
 
 void ErrorSystem_Init();
 
-uintptr_t FatalError_Exit(uintptr_t valueOrError,Bool8 failed);
+uintptr_t FatalError_Exit(uintptr_t valueOrError,bool failed);
 [[noreturn]] void FatalError_ShowAndExit(uintptr_t error);
 
 extern FatalErrorPassThroughProc *g_FatalErrorExitHandler;
