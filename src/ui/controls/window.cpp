@@ -304,12 +304,12 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
 
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();
   if (!beginAccessFailed) {
-    if ((control->root.rootFlags & UI_ROOT_TILED_BACKGROUND) != 0) {
+    if (Any(control->root.rootFlags & UI_ROOT_TILED_BACKGROUND)) {
       UiWindow_BlitTiledInterior
                 (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_INTERIOR,
                  control->root.base.layoutHeight,control->root.base.layoutWidth,0,0,control);
     }
-    if ((control->root.rootFlags & UI_ROOT_FRAME) != 0) {
+    if (Any(control->root.rootFlags & UI_ROOT_FRAME)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize
                               (UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
                                g_UiWindowTextureSource);
@@ -346,7 +346,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
                 (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM,
                  rightEdgeX,bottomEdgeY,cornerWidth,control);
     }
-    if ((control->root.rootFlags & UI_ROOT_TITLE_BAR) != 0) {
+    if (Any(control->root.rootFlags & UI_ROOT_TITLE_BAR)) {
       titleBarSubresource = UI_WINDOW_SUBRESOURCE_TITLE_BAR;
       if ((control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT) == 0) {
         titleBarSubresource = UI_WINDOW_SUBRESOURCE_TITLE_BAR_INACTIVE;
@@ -371,9 +371,9 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
                  g_UiResizableWindowTitleTextTopOffset + control->root.base.top,
                  (control->root.base.layoutWidth >> 1) + control->root.base.left);
     }
-    if ((control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) != 0) {
+    if (Any(control->root.rootFlags & UI_ROOT_CLOSE_BUTTON)) {
       buttonSubresource = UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON;
-      if ((control->root.rootFlags & UI_ROOT_CLOSE_ARMED) != 0) {
+      if (Any(control->root.rootFlags & UI_ROOT_CLOSE_ARMED)) {
         buttonSubresource = UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON_ARMED;
       }
       if ((control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT) == 0) {
@@ -384,15 +384,15 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
                  buttonSubresource,
                  g_UiWindowTextureSource,g_FramebufferAccess);
     }
-    if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_BUTTON) != 0) {
+    if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZE_BUTTON)) {
       buttonSubresource = UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON;
-      if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED) != 0) {
+      if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED)) {
         buttonSubresource = UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON_ARMED;
       }
       if ((control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT) == 0) {
         buttonSubresource = UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON_INACTIVE;
       }
-      if ((control->root.rootFlags & UI_ROOT_MAXIMIZED) != 0) {
+      if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZED)) {
         buttonSubresource = buttonSubresource + UI_WINDOW_RESTORE_BUTTON_OFFSET;
       }
       textureSize = g_GraphicsTextureSourceGetLogicalSize(buttonSubresource,g_UiWindowTextureSource);
@@ -541,16 +541,16 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
           UiResizableWindowControl *control)
 
 {
-  if ((control->root.rootFlags & UI_ROOT_MOVING) != 0) {
+  if (Any(control->root.rootFlags & UI_ROOT_MOVING)) {
     g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   }
-  if (((control->root.rootFlags & UI_ROOT_CLOSE_ARMED) != 0) &&
+  if (Any(control->root.rootFlags & UI_ROOT_CLOSE_ARMED) &&
      ((control->root.base.nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0)) {
     UiActionQueue_Enqueue(UI_ACTION_CLOSE_ROOT,control);
   }
-  if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED) != 0) {
+  if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED)) {
     control->root.rootFlags = control->root.rootFlags ^ UI_ROOT_MAXIMIZED;
-    if ((control->root.rootFlags & UI_ROOT_MAXIMIZED) == 0) {
+    if (!Any(control->root.rootFlags & UI_ROOT_MAXIMIZED)) {
       UiResizableWindowControl_RestoreSavedRectangle(control);
       UiRootStack_InvalidateAll();
       control->root.rootFlags = control->root.rootFlags & ~UI_ROOT_POINTER_STATE;
@@ -574,13 +574,13 @@ Bool8 UiResizableWindowControl_HandleWindowHotkeys
   Bool8 delegateResult;
 
   if ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) {
-    if (((control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) != 0) && (keyCode == 'c')) {
+    if (Any(control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) && (keyCode == 'c')) {
       UiActionQueue_Enqueue(UI_ACTION_CLOSE_ROOT,control);
       return false;
     }
-    if (((control->root.rootFlags & UI_ROOT_MAXIMIZE_BUTTON) != 0) && (keyCode == 'z')) {
+    if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZE_BUTTON) && (keyCode == 'z')) {
       control->root.rootFlags = control->root.rootFlags ^ UI_ROOT_MAXIMIZED;
-      if ((control->root.rootFlags & UI_ROOT_MAXIMIZED) == 0) {
+      if (!Any(control->root.rootFlags & UI_ROOT_MAXIMIZED)) {
         UiResizableWindowControl_RestoreSavedRectangle(control);
         UiRootStack_InvalidateAll();
       }
@@ -669,7 +669,7 @@ void UiResizableWindowControl_RelocateAndRefreshInteractionState
 
 {
   UiContainer_RelocateChildren(relocationDelta,UiNode_As<UiNodeBase>(control));
-  if ((control->root.rootFlags & (UI_ROOT_CLOSE_BUTTON | UI_ROOT_MAXIMIZE_BUTTON)) == 0) {
+  if (!Any(control->root.rootFlags & (UI_ROOT_CLOSE_BUTTON | UI_ROOT_MAXIMIZE_BUTTON))) {
     control->root.base.nodeFlags =
          control->root.base.nodeFlags & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
   }
@@ -685,13 +685,13 @@ static Bool8 UiResizableWindowControl_UpdateArmedFlag
 
 {
   if (overButton) {
-    if ((control->root.rootFlags & armedFlag) != 0) {
+    if (Any(control->root.rootFlags & armedFlag)) {
       return false;
     }
     control->root.rootFlags = control->root.rootFlags | armedFlag;
   }
   else {
-    if ((control->root.rootFlags & armedFlag) == 0) {
+    if (!Any(control->root.rootFlags & armedFlag)) {
       return false;
     }
     control->root.rootFlags = control->root.rootFlags & ~armedFlag;
@@ -707,7 +707,7 @@ static void UiResizableWindowControl_ResizeToPointer
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiResizableWindowControl *control)
 
 {
-  uint32_t interactionFlags;
+  UiRootFlags interactionFlags;
   int newLeft;
   int newTop;
   int pendingRight;
@@ -723,19 +723,19 @@ static void UiResizableWindowControl_ResizeToPointer
 
   interactionFlags = control->root.rootFlags;
   newTop = pointerY;
-  if ((interactionFlags & UI_ROOT_RESIZE_MOVES_TOP) == 0) {
+  if (!Any(interactionFlags & UI_ROOT_RESIZE_MOVES_TOP)) {
     newTop = control->root.base.top;
   }
   pendingBottom = pointerY;
-  if ((interactionFlags & UI_ROOT_RESIZE_MOVES_BOTTOM) == 0) {
+  if (!Any(interactionFlags & UI_ROOT_RESIZE_MOVES_BOTTOM)) {
     pendingBottom = control->root.base.bottom;
   }
   newLeft = pointerX;
-  if ((interactionFlags & UI_ROOT_RESIZE_MOVES_LEFT) == 0) {
+  if (!Any(interactionFlags & UI_ROOT_RESIZE_MOVES_LEFT)) {
     newLeft = control->root.base.left;
   }
   pendingRight = pointerX;
-  if ((interactionFlags & UI_ROOT_RESIZE_MOVES_RIGHT) == 0) {
+  if (!Any(interactionFlags & UI_ROOT_RESIZE_MOVES_RIGHT)) {
     pendingRight = control->root.base.right;
   }
   control->dragAnchorXOrPendingRight = pendingRight;
@@ -743,19 +743,19 @@ static void UiResizableWindowControl_ResizeToPointer
   /* too narrow or too low: push the grabbed edge(s) back by the shortfall */
   widthShortfall = (pendingRight - newLeft) - UI_WINDOW_MINIMUM_SIZE;
   if (widthShortfall < 0) {
-    if ((interactionFlags & UI_ROOT_RESIZE_MOVES_RIGHT) != 0) {
+    if (Any(interactionFlags & UI_ROOT_RESIZE_MOVES_RIGHT)) {
       control->dragAnchorXOrPendingRight = control->dragAnchorXOrPendingRight - widthShortfall;
     }
-    if ((interactionFlags & UI_ROOT_RESIZE_MOVES_LEFT) != 0) {
+    if (Any(interactionFlags & UI_ROOT_RESIZE_MOVES_LEFT)) {
       newLeft = newLeft + widthShortfall;
     }
   }
   heightShortfall = (pendingBottom - newTop) - UI_WINDOW_MINIMUM_SIZE;
   if (heightShortfall < 0) {
-    if ((interactionFlags & UI_ROOT_RESIZE_MOVES_BOTTOM) != 0) {
+    if (Any(interactionFlags & UI_ROOT_RESIZE_MOVES_BOTTOM)) {
       control->dragAnchorYOrPendingBottom = control->dragAnchorYOrPendingBottom - heightShortfall;
     }
-    if ((interactionFlags & UI_ROOT_RESIZE_MOVES_TOP) != 0) {
+    if (Any(interactionFlags & UI_ROOT_RESIZE_MOVES_TOP)) {
       newTop = newTop + heightShortfall;
     }
   }
@@ -797,7 +797,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
 
   localX = pointerX - control->root.base.left;
   localY = pointerY - control->root.base.top;
-  if ((control->root.rootFlags & UI_ROOT_MOVING) != 0) {
+  if (Any(control->root.rootFlags & UI_ROOT_MOVING)) {
     /* moving: dragAnchor* hold the grab point relative to the window */
     moveX = localX - control->dragAnchorXOrPendingRight;
     moveY = localY - control->dragAnchorYOrPendingBottom;
@@ -811,7 +811,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
       UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
     }
   }
-  else if ((control->root.rootFlags & UI_ROOT_CLOSE_PRESSED) != 0) {
+  else if (Any(control->root.rootFlags & UI_ROOT_CLOSE_PRESSED)) {
     /* close button pressed: armed while the pointer is on its opaque pixels (top left) */
     overButton = g_GraphicsTextureSourceTestOpaquePixel
                       (localY,localX,0,0,UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON,g_UiWindowTextureSource);
@@ -821,7 +821,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
       UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
     }
   }
-  else if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_PRESSED) != 0) {
+  else if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZE_PRESSED)) {
     /* maximize button pressed: armed while the pointer is on its opaque pixels (top right) */
     buttonSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON,
                                                        g_UiWindowTextureSource);
@@ -832,7 +832,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
       UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
     }
   }
-  else if ((control->root.rootFlags & UI_ROOT_RESIZING) != 0) {
+  else if (Any(control->root.rootFlags & UI_ROOT_RESIZING)) {
     UiResizableWindowControl_ResizeToPointer(pointerY,pointerX,control);
   }
 }
@@ -879,14 +879,14 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
 {
   int localX;
   uint32_t localY;
-  uint32_t resizeFlags;
+  UiRootFlags resizeFlags;
   int bottomBorderY;
   Bool8 hitOpaque;
   GraphicsTextureLogicalSize textureSize;
 
   localX = pointerX - control->root.base.left;
   localY = pointerY - control->root.base.top;
-  if ((control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) != 0) {
+  if (Any(control->root.rootFlags & UI_ROOT_CLOSE_BUTTON)) {
     hitOpaque = g_GraphicsTextureSourceTestOpaquePixel
                       (localY,localX,0,0,UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON,g_UiWindowTextureSource);
     if (hitOpaque) {
@@ -894,7 +894,7 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
       return;
     }
   }
-  if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_BUTTON) != 0) {
+  if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZE_BUTTON)) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON,g_UiWindowTextureSource);
     hitOpaque = g_GraphicsTextureSourceTestOpaquePixel
                       (localY,localX,0,control->root.base.layoutWidth - textureSize.logicalWidthPixels,
@@ -904,8 +904,8 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
       return;
     }
   }
-  if ((control->root.rootFlags & UI_ROOT_MAXIMIZED) == 0) {
-    if ((control->root.rootFlags & UI_ROOT_RESIZABLE) != 0) {
+  if (!Any(control->root.rootFlags & UI_ROOT_MAXIMIZED)) {
+    if (Any(control->root.rootFlags & UI_ROOT_RESIZABLE)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize
                               (UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP_LEFT,g_UiWindowTextureSource);
       if (localX < (int)textureSize.logicalWidthPixels || (int)localY < (int)textureSize.logicalHeightPixels ||
@@ -941,14 +941,13 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
             resizeFlags = UI_ROOT_RESIZE_BOTTOM_RIGHT | UI_ROOT_RESIZING;
           }
         }
-        /* clears the UI_ROOT_RESIZE_EDGES byte; signed, because the unsigned ~UI_ROOT_RESIZE_EDGES changes the
-           generated code of this build */
-        control->root.rootFlags = control->root.rootFlags & (int)~UI_ROOT_RESIZE_EDGES;
+        /* clears the UI_ROOT_RESIZE_EDGES byte */
+        control->root.rootFlags = control->root.rootFlags & ~UI_ROOT_RESIZE_EDGES;
         control->root.rootFlags = control->root.rootFlags | resizeFlags;
         return;
       }
     }
-    if (((control->root.rootFlags & UI_ROOT_MOVABLE) != 0) && (localY < g_UiWindowMoveHandleWidth)) {
+    if (Any(control->root.rootFlags & UI_ROOT_MOVABLE) && (localY < g_UiWindowMoveHandleWidth)) {
       control->root.rootFlags = control->root.rootFlags | UI_ROOT_MOVING;
       control->dragAnchorXOrPendingRight = localX;
       control->dragAnchorYOrPendingBottom = localY;
@@ -970,7 +969,7 @@ GraphicsCursorFrameIndex UiResizableWindowControl_QueryResizeCursorCode
   int localX;
   GraphicsTextureLogicalSize cornerSize;
 
-  if ((control->root.rootFlags & UI_ROOT_RESIZABLE) == 0 || (control->root.rootFlags & UI_ROOT_MAXIMIZED) != 0) {
+  if (!Any(control->root.rootFlags & UI_ROOT_RESIZABLE) || Any(control->root.rootFlags & UI_ROOT_MAXIMIZED)) {
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
   localX = pointerX - control->root.base.left;

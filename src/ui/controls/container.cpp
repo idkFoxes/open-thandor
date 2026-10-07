@@ -316,7 +316,7 @@ void UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *
   uint32_t headerHeight;
   GraphicsTextureLogicalSize headerSize;
 
-  if ((control->root.rootFlags & UI_ROOT_TITLE_BAR) == 0) {
+  if (!Any(control->root.rootFlags & UI_ROOT_TITLE_BAR)) {
     UiContainer_LayoutChildren(UiNode_As<UiNodeBase>(control));
   }
   else {
