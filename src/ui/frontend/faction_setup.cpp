@@ -208,7 +208,7 @@ void FrontendFactionSetup_ChooseFaction
   }
   selectedControl =
        g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]);
-  if ((selectedControl->selectable.stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+  if (!Any(selectedControl->selectable.stateFlags & FRONTEND_CONTROL_INACTIVE)) {
     if (playerRuntimeId == g_LocalPlayerRuntimeId) {
       UiSelectableGroup_SelectExclusive(7,&selectedControl->selectable.base,
           &g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[0])->selectable.base,

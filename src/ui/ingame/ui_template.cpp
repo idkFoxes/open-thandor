@@ -142,7 +142,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -304, .topOffset = 136, .rightOffset = -192, .bottomOffset = 160,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000081, .actionId = 0x0000101C},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000081), .actionId = 0x0000101C},
             .textResourceId = 0x000021B1},
         { /* +05E4 resultsTabEconomy g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -153,7 +153,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -160, .topOffset = 136, .rightOffset = -48, .bottomOffset = 160,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000081, .actionId = 0x0000101C},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000081), .actionId = 0x0000101C},
             .textResourceId = 0x000021B0},
         { /* +0644 resultsTabThird g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -164,7 +164,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -16, .topOffset = 136, .rightOffset = 96, .bottomOffset = 160,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000083, .actionId = 0x0000101C},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000083), .actionId = 0x0000101C},
             .textResourceId = 0x000021AF},
         { /* +06A4 resultsContinueButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -175,7 +175,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 192, .topOffset = 136, .rightOffset = 304, .bottomOffset = 160,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x0000008C, .actionId = 0x0000101B},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x0000008C), .actionId = 0x0000101B},
             .textResourceId = 0x000021AE},
         { /* +0704 resultsSecondaryExitButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -186,7 +186,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 192, .topOffset = 104, .rightOffset = 304, .bottomOffset = 128,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000080, .actionId = 0x00001025},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x00001025},
             .textResourceId = 0x000021C5},
         { /* +0764 resultsChartModeButtonA g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -197,7 +197,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -304, .topOffset = 104, .rightOffset = -192, .bottomOffset = 128,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000083, .actionId = 0x00001026},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000083), .actionId = 0x00001026},
             .textResourceId = 0x000021C6},
         { /* +07C4 resultsChartModeButtonB g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -208,7 +208,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -160, .topOffset = 104, .rightOffset = -48, .bottomOffset = 128,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000081, .actionId = 0x00001026},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000081), .actionId = 0x00001026},
             .textResourceId = 0x000021C7},
         { /* +0824 resultsSummaryText g_UiListOffsetControlVtable */
             .base = {
@@ -364,7 +364,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 96, .topOffset = 128, .rightOffset = 208, .bottomOffset = 152,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000088, .actionId = 0x00001020},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000088), .actionId = 0x00001020},
             .textResourceId = 0x000021CD},
         { /* +0F84 missionHelpBriefingTab g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -375,7 +375,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 96, .rightOffset = 208, .bottomOffset = 24,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000083, .actionId = 0x00001021},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000083), .actionId = 0x00001021},
             .textResourceId = 0x000021CE},
         { /* +0FE4 missionHelpKeyboardTab g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -386,7 +386,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 96, .topOffset = 32, .rightOffset = 208, .bottomOffset = 56,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000081, .actionId = 0x00001022},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000081), .actionId = 0x00001022},
             .textResourceId = 0x000021CF},
         { /* +1044 missionHelpMouseTab g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -397,7 +397,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 96, .topOffset = 64, .rightOffset = 208, .bottomOffset = 88,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000081, .actionId = 0x00001023},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000081), .actionId = 0x00001023},
             .textResourceId = 0x000021D0},
         { /* +10A4 missionHelpTabPageStack g_UiLayoutContainerControlVtable */
             .base = {
@@ -485,7 +485,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 20, .topOffset = -36, .rightOffset = 132, .bottomOffset = -12,
                     .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000088, .actionId = 0x00001011},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000088), .actionId = 0x00001011},
             .textResourceId = 0x0000217D},
         { /* +14DC technologyResearchButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -496,7 +496,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -132, .topOffset = -36, .rightOffset = -20, .bottomOffset = -12,
                     .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000084, .actionId = 0x00001013},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000084), .actionId = 0x00001013},
             .textResourceId = 0x0000217E},
         {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +1544 technologyAreaTab1 g_UiFramedTextButtonControlVtable */
@@ -508,7 +508,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 11, .topOffset = -44, .rightOffset = 2, .bottomOffset = -44,
                     .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x12492492, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x320)},
-                .stateFlags = 0x00001491, .actionId = 0x00001014},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00001491), .actionId = 0x00001014},
             .textResourceId = 0x0000217F},
         {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +15AC technologyAreaTab2 g_UiFramedTextButtonControlVtable */
@@ -520,7 +520,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 9, .topOffset = -44, .bottomOffset = -44,
                     .leftAnchorQ31 = 0x12492492, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x24924925, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x320)},
-                .stateFlags = 0x00001491, .actionId = 0x00001015},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00001491), .actionId = 0x00001015},
             .textResourceId = 0x0000217F},
         {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +1614 technologyAreaTab3 g_UiFramedTextButtonControlVtable */
@@ -532,7 +532,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 7, .topOffset = -44, .rightOffset = -2, .bottomOffset = -44,
                     .leftAnchorQ31 = 0x24924925, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x36D36D37, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x320)},
-                .stateFlags = 0x00001491, .actionId = 0x00001016},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00001491), .actionId = 0x00001016},
             .textResourceId = 0x0000217F},
         {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +167C technologyAreaTab4 g_UiFramedTextButtonControlVtable */
@@ -544,7 +544,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 5, .topOffset = -44, .rightOffset = -5, .bottomOffset = -44,
                     .leftAnchorQ31 = 0x36D36D37, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x49249249, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x320)},
-                .stateFlags = 0x00001491, .actionId = 0x00001017},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00001491), .actionId = 0x00001017},
             .textResourceId = 0x0000217F},
         {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +16E4 technologyAreaTab5 g_UiFramedTextButtonControlVtable */
@@ -556,7 +556,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 2, .topOffset = -44, .rightOffset = -7, .bottomOffset = -44,
                     .leftAnchorQ31 = 0x49249249, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x5B6DB6DB, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x320)},
-                .stateFlags = 0x00001491, .actionId = 0x00001018},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00001491), .actionId = 0x00001018},
             .textResourceId = 0x0000217F},
         {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +174C technologyAreaTab6 g_UiFramedTextButtonControlVtable */
@@ -568,7 +568,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .topOffset = -44, .rightOffset = -9, .bottomOffset = -44,
                     .leftAnchorQ31 = 0x5B6DB6DB, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x6DB6DB6E, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x320)},
-                .stateFlags = 0x00001491, .actionId = 0x00001019},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00001491), .actionId = 0x00001019},
             .textResourceId = 0x0000217F},
         {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +17B4 technologyAreaTab7 g_UiFramedTextButtonControlVtable */
@@ -580,7 +580,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -2, .topOffset = -44, .rightOffset = -11, .bottomOffset = -44,
                     .leftAnchorQ31 = 0x6DB6DB6E, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x320)},
-                .stateFlags = 0x00001491, .actionId = 0x0000101A},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00001491), .actionId = 0x0000101A},
             .textResourceId = 0x0000217F},
         { /* +1814 technologyAreaTab1Icon g_UiImagePanelControlVtable */
             .base = {
@@ -700,7 +700,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -132, .topOffset = -36, .rightOffset = -20, .bottomOffset = -12,
                     .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000088, .actionId = 0x00001002},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000088), .actionId = 0x00001002},
             .textResourceId = 0x00002168},
         { /* +1DC4 messageSendAndCloseButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -711,7 +711,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -132, .topOffset = -68, .rightOffset = -20, .bottomOffset = -44,
                     .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000084, .actionId = 0x00001005},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000084), .actionId = 0x00001005},
             .textResourceId = 0x00002169},
         { /* +1E24 messageSendButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -722,7 +722,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -132, .topOffset = -100, .rightOffset = -20, .bottomOffset = -76,
                     .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000080, .actionId = 0x00001004},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x00001004},
             .textResourceId = 0x00002167},
         { /* +1E84 messageRecipientPlayersTab g_UiTextButtonControlVtable */
             .selectable = {
@@ -732,7 +732,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = 20, .topOffset = 60, .rightOffset = 132, .bottomOffset = 84,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000080, .actionId = 0x00001006},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x00001006},
             .textResourceId = 0x0000216B},
         { /* +1EE4 messageRecipientGroupsTab g_UiTextButtonControlVtable */
             .selectable = {
@@ -742,7 +742,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = 20, .topOffset = 84, .rightOffset = 132, .bottomOffset = 108,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000080, .actionId = 0x00001007},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x00001007},
             .textResourceId = 0x0000216C},
         { /* +1F44 messageRecipientAllTab g_UiTextButtonControlVtable */
             .selectable = {
@@ -752,7 +752,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = 20, .topOffset = 108, .rightOffset = 132, .bottomOffset = 132,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000082, .actionId = 0x00001008},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000082), .actionId = 0x00001008},
             .textResourceId = 0x0000216A},
         { /* +1FA4 messageRecipientPageStack g_UiLayoutContainerControlVtable */
             .base = {
@@ -788,7 +788,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 4, .topOffset = 4, .rightOffset = -4, .bottomOffset = 28,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000491, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000491), .actionId = -1},
             .textResourceId = 0x0000216D},
         { /* +2144 messageRecipientCheckbox2 g_UiTextButtonControlVtable */
             .selectable = {
@@ -799,7 +799,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 4, .topOffset = 28, .rightOffset = -4, .bottomOffset = 52,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000490, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000490), .actionId = -1},
             .textResourceId = 0x0000216E},
         { /* +21A4 messageRecipientCheckbox3 g_UiTextButtonControlVtable */
             .selectable = {
@@ -810,7 +810,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 4, .topOffset = 52, .rightOffset = -4, .bottomOffset = 76,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000490, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000490), .actionId = -1},
             .textResourceId = 0x0000216F},
         { /* +2204 messageRecipientCheckbox4 g_UiTextButtonControlVtable */
             .selectable = {
@@ -821,7 +821,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 4, .topOffset = 76, .rightOffset = -4, .bottomOffset = 100,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000490, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000490), .actionId = -1},
             .textResourceId = 0x00002170},
         { /* +2264 messageRecipientCheckbox5 g_UiTextButtonControlVtable */
             .selectable = {
@@ -832,7 +832,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 4, .topOffset = 100, .rightOffset = -4, .bottomOffset = 124,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000490, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000490), .actionId = -1},
             .textResourceId = 0x00002171},
         { /* +22C4 messageRecipientCheckbox6 g_UiTextButtonControlVtable */
             .selectable = {
@@ -843,7 +843,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 4, .topOffset = 124, .rightOffset = -4, .bottomOffset = 148,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000490, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000490), .actionId = -1},
             .textResourceId = 0x00002172},
         { /* +2324 messageRecipientCheckbox7 g_UiTextButtonControlVtable */
             .selectable = {
@@ -854,7 +854,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 4, .topOffset = 148, .rightOffset = -4, .bottomOffset = 172,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000490, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000490), .actionId = -1},
             .textResourceId = 0x00002173},
         { /* +2384 worldViewCyclingInfoText g_UiCommandVisibilitySingleLineTextVtable */
             .base = {
@@ -909,7 +909,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -208, .topOffset = -80, .rightOffset = -96, .bottomOffset = -56,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1},
-                .stateFlags = 0x00000080, .actionId = 0x0000120E},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x0000120E},
             .textResourceId = 0x0000214D},
         { /* +25B0 gameMenuQuitButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -920,7 +920,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -208, .topOffset = -48, .rightOffset = -96, .bottomOffset = -24,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1},
-                .stateFlags = 0x00000080, .actionId = 0x00001200},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x00001200},
             .textResourceId = 0x00002148},
         { /* +2610 gameMenuGraphicsButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -931,7 +931,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -208, .topOffset = -16, .rightOffset = -96, .bottomOffset = 8,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000080, .actionId = 0x00001202},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x00001202},
             .textResourceId = 0x00002121},
         { /* +2670 gameMenuAudioButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -942,7 +942,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -208, .topOffset = 16, .rightOffset = -96, .bottomOffset = 40,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000080, .actionId = 0x00001203},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x00001203},
             .textResourceId = 0x00002122},
         { /* +26D0 rightButtonNoScrollCheckbox g_UiTextButtonControlVtable */
             .selectable = {
@@ -953,7 +953,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -19, .topOffset = 60, .rightOffset = 208, .bottomOffset = 84,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x00001216},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x00001216},
             .textResourceId = 0x000021C8},
         { /* +2730 scrollSpeedGroup g_UiFocusProxyControlVtable */
             .base = {
@@ -1010,7 +1010,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x00001212},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x00001212},
             .textResourceId = 0x00002160},
         { /* +2960 autoRotationOffCheckbox g_UiTextButtonControlVtable */
             .selectable = {
@@ -1021,7 +1021,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x00001213},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x00001213},
             .textResourceId = 0x00002161},
         { /* +29C0 cameraLinkGroup g_UiTitledWindowControlVtable */
             .base = {
@@ -1041,7 +1041,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x00001214},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x00001214},
             .textResourceId = 0x00002163},
         { /* +2A74 linkRotationTiltCheckbox g_UiTextButtonControlVtable */
             .selectable = {
@@ -1052,7 +1052,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x00001215},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x00001215},
             .textResourceId = 0x00002164},
         { /* +2AD4 hidePanelCheckbox g_UiTextButtonControlVtable */
             .selectable = {
@@ -1063,7 +1063,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x0000121B},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x0000121B},
             .textResourceId = 0x00002165},
         { /* +2B34 gameMenuCloseButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -1074,7 +1074,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x0000008C, .actionId = 0x00001201},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x0000008C), .actionId = 0x00001201},
             .textResourceId = 0x0000211F},
         { /* +2B94 saveGameBackButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -1085,7 +1085,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000088, .actionId = 0x00001218},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000088), .actionId = 0x00001218},
             .textResourceId = 0x0000214F},
         { /* +2BF4 saveGameTitle g_UiFocusProxyControlVtable */
             .base = {
@@ -1105,7 +1105,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 96, .topOffset = 128, .rightOffset = 208, .bottomOffset = 152,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000084, .actionId = 0x00001210},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000084), .actionId = 0x00001210},
             .textResourceId = 0x0000214D},
         { /* +2CB0 saveGameDeleteButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -1116,7 +1116,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -32, .topOffset = 128, .rightOffset = 80, .bottomOffset = 152,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000080, .actionId = 0x00001219},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x00001219},
             .textResourceId = 0x00002153},
         { /* +2D10 saveGameListScroll g_UiScrollableControlVtable */
             .base = {
@@ -1190,7 +1190,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000088, .actionId = 0x00001218},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000088), .actionId = 0x00001218},
             .textResourceId = 0x00002149},
         { /* +3094 quitMenuTitleLabel g_UiFocusProxyControlVtable */
             .base = {
@@ -1210,7 +1210,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 96, .topOffset = 128, .rightOffset = 208, .bottomOffset = 152,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000084, .actionId = 0x0000101D},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000084), .actionId = 0x0000101D},
             .textResourceId = 0x0000214A},
         { /* +3150 quitMenuSurrenderButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -1221,7 +1221,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 96, .topOffset = 96, .rightOffset = 208, .bottomOffset = 120,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000080, .actionId = 0x0000101E},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x0000101E},
             .textResourceId = 0x0000214B},
         { /* +31B0 quitMenuRestartMissionButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -1232,7 +1232,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 96, .topOffset = 64, .rightOffset = 208, .bottomOffset = 88,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000080, .actionId = 0x00001027},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = 0x00001027},
             .textResourceId = 0x0000214C},
         { /* +3210 graphicsOptionsBackButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -1243,7 +1243,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x0000008C, .actionId = 0x00001218},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x0000008C), .actionId = 0x00001218},
             .textResourceId = 0x0000211F},
         { /* +3270 graphicsOptionsTitleLabel g_UiFocusProxyControlVtable */
             .base = {
@@ -1263,7 +1263,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -204, .topOffset = -112, .rightOffset = -12, .bottomOffset = -88,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x00001204},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x00001204},
             .textResourceId = 0x0000212F},
         { /* +332C shadingLevelGroup g_UiTitledWindowControlVtable */
             .base = {
@@ -1284,7 +1284,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
                         .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                    .stateFlags = 0x00000481, .actionId = 0x00001205},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = 0x00001205},
                 .textResourceId = 0x00002133},
             .firstValue = 0x00000020, .secondValue = 0x00000020},
         { /* +33E8 shadingLevel32x64Button g_UiNumericPairTextButtonVtable */
@@ -1297,7 +1297,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
                         .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                    .stateFlags = 0x00000481, .actionId = 0x00001205},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = 0x00001205},
                 .textResourceId = 0x00002133},
             .firstValue = 0x00000020, .secondValue = 0x00000040},
         { /* +3450 shadingLevel32x128Button g_UiNumericPairTextButtonVtable */
@@ -1310,7 +1310,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
                         .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                    .stateFlags = 0x00000481, .actionId = 0x00001205},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = 0x00001205},
                 .textResourceId = 0x00002133},
             .firstValue = 0x00000020, .secondValue = 0x00000080},
         { /* +34B8 shadingLevel64x64Button g_UiNumericPairTextButtonVtable */
@@ -1323,7 +1323,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .leftOffset = 3, .topOffset = 75, .rightOffset = -3, .bottomOffset = 99,
                         .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                    .stateFlags = 0x00000481, .actionId = 0x00001205},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = 0x00001205},
                 .textResourceId = 0x00002133},
             .firstValue = 0x00000040, .secondValue = 0x00000040},
         { /* +3520 shadingLevel64x128Button g_UiNumericPairTextButtonVtable */
@@ -1336,7 +1336,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .leftOffset = 3, .topOffset = 99, .rightOffset = -3, .bottomOffset = 123,
                         .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                    .stateFlags = 0x00000481, .actionId = 0x00001205},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = 0x00001205},
                 .textResourceId = 0x00002133},
             .firstValue = 0x00000040, .secondValue = 0x00000080},
         { /* +3588 shadingLevel128x128Button g_UiNumericPairTextButtonVtable */
@@ -1349,7 +1349,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .leftOffset = 3, .topOffset = 123, .rightOffset = -3, .bottomOffset = 147,
                         .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                    .stateFlags = 0x00000481, .actionId = 0x00001205},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = 0x00001205},
                 .textResourceId = 0x00002133},
             .firstValue = 0x00000080, .secondValue = 0x00000080},
         { /* +35F0 modelDetailGroup g_UiFocusProxyControlVtable */
@@ -1407,7 +1407,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000081, .actionId = 0x00001207},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000081), .actionId = 0x00001207},
             .textResourceId = 0x00002136},
         { /* +3820 textureQualityMediumButton g_UiTextButtonControlVtable */
             .selectable = {
@@ -1418,7 +1418,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000081, .actionId = 0x00001207},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000081), .actionId = 0x00001207},
             .textResourceId = 0x00002137},
         { /* +3880 textureQualityHighButton g_UiTextButtonControlVtable */
             .selectable = {
@@ -1429,7 +1429,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
                     .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000081, .actionId = 0x00001207},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000081), .actionId = 0x00001207},
             .textResourceId = 0x00002138},
         { /* +38E0 soundOptionsBackButton g_UiFramedTextButtonControlVtable */
             .selectable = {
@@ -1440,7 +1440,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x0000008C, .actionId = 0x00001218},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x0000008C), .actionId = 0x00001218},
             .textResourceId = 0x0000211F},
         { /* +3940 soundOptionsTitleLabel g_UiFocusProxyControlVtable */
             .base = {
@@ -1460,7 +1460,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -204, .topOffset = -112, .rightOffset = -12, .bottomOffset = -88,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x00001209},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x00001209},
             .textResourceId = 0x0000213B},
         { /* +39FC effectsEnabledCheckbox g_UiTextButtonControlVtable */
             .selectable = {
@@ -1471,7 +1471,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -204, .topOffset = -80, .rightOffset = -12, .bottomOffset = -56,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x00001208},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x00001208},
             .textResourceId = 0x0000213C},
         { /* +3A5C reverseStereoCheckbox g_UiTextButtonControlVtable */
             .selectable = {
@@ -1482,7 +1482,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .leftOffset = -204, .topOffset = -16, .rightOffset = -12, .bottomOffset = 8,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-                .stateFlags = 0x00000091, .actionId = 0x0000120A},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = 0x0000120A},
             .textResourceId = 0x0000213D},
         { /* +3ABC effectsVolumeGroup g_UiFocusProxyControlVtable */
             .base = {
@@ -1706,7 +1706,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000611, .actionId = 0x00001003},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000611), .actionId = 0x00001003},
             .selectedSubresourceStart = 0x0000000B, .alternateTextureSource = THANDOR_PTR32_BITS(0x00180007)},
         { /* +4400 missionObjectivesButton g_UiSpriteButtonControlVtable */
             .selectable = {
@@ -1716,7 +1716,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000611, .actionId = 0x0000101F},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000611), .actionId = 0x0000101F},
             .selectedSubresourceStart = 0x00000008, .alternateTextureSource = THANDOR_PTR32_BITS(0x00180008)},
         { /* +4478 countdownDisplayPanel g_UiImagePanelControlVtable */
             .base = {
@@ -1794,7 +1794,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x28)},
-                .stateFlags = 0x00000060, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000060), .actionId = -1},
             .alternateSubresource = 0x00000008},
         { /* +47C4 resourcePanelImageToggle8Popup g_UiNineSlicePanelControlVtable */
             .base = {
@@ -1812,7 +1812,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x28)},
-                .stateFlags = 0x00000060, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000060), .actionId = -1},
             .alternateSubresource = 0x00000009},
         { /* +488C resourcePanelImageToggle9Popup g_UiNineSlicePanelControlVtable */
             .base = {
@@ -1831,7 +1831,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000611, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000611), .actionId = -1},
             .selectedSubresourceStart = 0x0000000A, .alternateTextureSource = THANDOR_PTR32_BITS(0x00180011)},
         { /* +4964 xeniteGauge g_UiFormattedContainerVtable */
             .base = {
@@ -1874,7 +1874,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000603, .actionId = 0x00001100},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000603), .actionId = 0x00001100},
             .selectedSubresourceStart = 0x00000028, .alternateTextureSource = THANDOR_PTR32_BITS(0x00180015)},
         { /* +4C1C editorModeTabTerrainMaterial g_UiSpriteButtonControlVtable */
             .selectable = {
@@ -1884,7 +1884,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000601, .actionId = 0x00001101},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000601), .actionId = 0x00001101},
             .selectedSubresourceStart = 0x00000029, .alternateTextureSource = THANDOR_PTR32_BITS(0x00180016)},
         { /* +4C94 editorModeTabTerrainSmoothing g_UiSpriteButtonControlVtable */
             .selectable = {
@@ -1894,7 +1894,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000601, .actionId = 0x00001102},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000601), .actionId = 0x00001102},
             .selectedSubresourceStart = 0x0000002A, .alternateTextureSource = THANDOR_PTR32_BITS(0x00180001)},
         { /* +4D0C diplomacyPanel g_UiImageControlVtable */
             .selectable = {
@@ -1904,7 +1904,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x140)},
-                .stateFlags = 0x00000060, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000060), .actionId = -1},
             .alternateSubresource = 0x0000000C},
         { /* +4D78 diplomacyFrame g_UiNineSlicePanelControlVtable */
             .base = {
@@ -2231,7 +2231,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001012},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001012},
                 .normalSubresourceStartOrDescriptor = 0x000000A9, .selectedSubresourceStart = 0x00000021}},
         { /* +5AC8 diplomacyRow2RelationButton g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -2242,7 +2242,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001012},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001012},
                 .normalSubresourceStartOrDescriptor = 0x000000A9, .selectedSubresourceStart = 0x00000021}},
         { /* +5B44 diplomacyRow3RelationButton g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -2253,7 +2253,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001012},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001012},
                 .normalSubresourceStartOrDescriptor = 0x000000A9, .selectedSubresourceStart = 0x00000021}},
         { /* +5BC0 diplomacyRow4RelationButton g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -2264,7 +2264,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001012},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001012},
                 .normalSubresourceStartOrDescriptor = 0x000000A9, .selectedSubresourceStart = 0x00000021}},
         { /* +5C3C diplomacyRow5RelationButton g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -2275,7 +2275,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001012},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001012},
                 .normalSubresourceStartOrDescriptor = 0x000000A9, .selectedSubresourceStart = 0x00000021}},
         { /* +5CB8 diplomacyRow6RelationButton g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -2286,7 +2286,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001012},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001012},
                 .normalSubresourceStartOrDescriptor = 0x000000A9, .selectedSubresourceStart = 0x00000021}},
         { /* +5D34 diplomacyRow7RelationButton g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -2297,7 +2297,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001012},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001012},
                 .normalSubresourceStartOrDescriptor = 0x000000A9, .selectedSubresourceStart = 0x00000021}},
         {0x00180002},
         { /* +5DB4 buildCatalogPanel g_UiImageControlVtable */
@@ -2308,7 +2308,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x140)},
-                .stateFlags = 0x00000060, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000060), .actionId = -1},
             .alternateSubresource = 0x0000000D},
         { /* +5E20 buildCatalogFrame g_UiNineSlicePanelControlVtable */
             .base = {
@@ -2328,7 +2328,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +5EFC buildCatalogEntry01 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2340,7 +2340,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +5F7C buildCatalogEntry02 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2352,7 +2352,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +5FFC buildCatalogEntry03 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2364,7 +2364,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +607C buildCatalogEntry04 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2376,7 +2376,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +60FC buildCatalogEntry05 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2388,7 +2388,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +617C buildCatalogEntry06 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2400,7 +2400,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +61FC buildCatalogEntry07 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2412,7 +2412,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +627C buildCatalogEntry08 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2424,7 +2424,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +62FC buildCatalogEntry09 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2436,7 +2436,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +637C buildCatalogEntry10 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2448,7 +2448,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +63FC buildCatalogEntry11 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2460,7 +2460,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +647C buildCatalogEntry12 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2472,7 +2472,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +64FC buildCatalogEntry13 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2484,7 +2484,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +657C buildCatalogEntry14 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2496,7 +2496,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +65FC buildCatalogEntry15 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2508,7 +2508,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +667C buildCatalogEntry16 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2520,7 +2520,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +66FC buildCatalogEntry17 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2532,7 +2532,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +677C buildCatalogEntry18 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2544,7 +2544,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +67FC buildCatalogEntry19 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2556,7 +2556,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +687C buildCatalogEntry20 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2568,7 +2568,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +68FC buildCatalogEntry21 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2580,7 +2580,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +697C buildCatalogEntry22 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2592,7 +2592,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +69FC buildCatalogEntry23 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2604,7 +2604,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6A7C buildCatalogEntry24 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2616,7 +2616,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6AFC buildCatalogEntry25 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2628,7 +2628,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6B7C buildCatalogEntry26 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2640,7 +2640,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6BFC buildCatalogEntry27 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2652,7 +2652,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6C7C buildCatalogEntry28 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2664,7 +2664,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6CFC buildCatalogEntry29 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2676,7 +2676,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6D7C buildCatalogEntry30 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2688,7 +2688,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6DFC buildCatalogEntry31 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2700,7 +2700,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6E7C buildCatalogEntry32 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2712,7 +2712,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6EFC buildCatalogEntry33 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2724,7 +2724,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6F7C buildCatalogEntry34 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2736,7 +2736,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +6FFC buildCatalogEntry35 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2748,7 +2748,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +707C buildCatalogEntry36 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2760,7 +2760,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +70FC buildCatalogEntry37 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2772,7 +2772,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +717C buildCatalogEntry38 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2784,7 +2784,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +71FC buildCatalogEntry39 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2796,7 +2796,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +727C buildCatalogEntry40 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2808,7 +2808,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +72FC buildCatalogEntry41 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2820,7 +2820,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +737C buildCatalogEntry42 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2832,7 +2832,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +73FC buildCatalogEntry43 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2844,7 +2844,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +747C buildCatalogEntry44 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2856,7 +2856,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +74FC buildCatalogEntry45 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2868,7 +2868,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +757C buildCatalogEntry46 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2880,7 +2880,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +75FC buildCatalogEntry47 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2892,7 +2892,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100B},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100B},
                     .selectedSubresourceStart = 0x00000023}}},
         {0x00180003},
         { /* +7680 specialBuildCatalogPanel g_UiImageControlVtable */
@@ -2903,7 +2903,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x140)},
-                .stateFlags = 0x00000060, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000060), .actionId = -1},
             .alternateSubresource = 0x0000000E},
         { /* +76EC specialBuildCatalogFrame g_UiNineSlicePanelControlVtable */
             .base = {
@@ -2923,7 +2923,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +77C8 specialBuildCatalogEntry01 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2935,7 +2935,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7848 specialBuildCatalogEntry02 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2947,7 +2947,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +78C8 specialBuildCatalogEntry03 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2959,7 +2959,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7948 specialBuildCatalogEntry04 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2971,7 +2971,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +79C8 specialBuildCatalogEntry05 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2983,7 +2983,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7A48 specialBuildCatalogEntry06 g_UiCatalogEntryControlVtable */
             .command = {
@@ -2995,7 +2995,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7AC8 specialBuildCatalogEntry07 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3007,7 +3007,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7B48 specialBuildCatalogEntry08 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3019,7 +3019,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7BC8 specialBuildCatalogEntry09 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3031,7 +3031,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7C48 specialBuildCatalogEntry10 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3043,7 +3043,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7CC8 specialBuildCatalogEntry11 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3055,7 +3055,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7D48 specialBuildCatalogEntry12 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3067,7 +3067,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7DC8 specialBuildCatalogEntry13 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3079,7 +3079,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7E48 specialBuildCatalogEntry14 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3091,7 +3091,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7EC8 specialBuildCatalogEntry15 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3103,7 +3103,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7F48 specialBuildCatalogEntry16 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3115,7 +3115,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +7FC8 specialBuildCatalogEntry17 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3127,7 +3127,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8048 specialBuildCatalogEntry18 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3139,7 +3139,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +80C8 specialBuildCatalogEntry19 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3151,7 +3151,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8148 specialBuildCatalogEntry20 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3163,7 +3163,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +81C8 specialBuildCatalogEntry21 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3175,7 +3175,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8248 specialBuildCatalogEntry22 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3187,7 +3187,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +82C8 specialBuildCatalogEntry23 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3199,7 +3199,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8348 specialBuildCatalogEntry24 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3211,7 +3211,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +83C8 specialBuildCatalogEntry25 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3223,7 +3223,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8448 specialBuildCatalogEntry26 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3235,7 +3235,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +84C8 specialBuildCatalogEntry27 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3247,7 +3247,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8548 specialBuildCatalogEntry28 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3259,7 +3259,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +85C8 specialBuildCatalogEntry29 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3271,7 +3271,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8648 specialBuildCatalogEntry30 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3283,7 +3283,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +86C8 specialBuildCatalogEntry31 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3295,7 +3295,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8748 specialBuildCatalogEntry32 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3307,7 +3307,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +87C8 specialBuildCatalogEntry33 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3319,7 +3319,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8848 specialBuildCatalogEntry34 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3331,7 +3331,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +88C8 specialBuildCatalogEntry35 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3343,7 +3343,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8948 specialBuildCatalogEntry36 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3355,7 +3355,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +89C8 specialBuildCatalogEntry37 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3367,7 +3367,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8A48 specialBuildCatalogEntry38 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3379,7 +3379,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8AC8 specialBuildCatalogEntry39 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3391,7 +3391,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8B48 specialBuildCatalogEntry40 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3403,7 +3403,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         { /* +8BC8 specialBuildCatalogEntry41 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3415,7 +3415,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x0000100C},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x0000100C},
                     .selectedSubresourceStart = 0x00000023}}},
         {0x00180004},
         { /* +8C4C armyStockPanel g_UiImageControlVtable */
@@ -3426,7 +3426,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x140)},
-                .stateFlags = 0x00000060, .actionId = -1},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000060), .actionId = -1},
             .alternateSubresource = 0x0000000F},
         { /* +8CB8 armyStockFrame g_UiNineSlicePanelControlVtable */
             .base = {
@@ -3445,7 +3445,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +8D90 armyStockSlot01 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3456,7 +3456,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +8E0C armyStockSlot02 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3467,7 +3467,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +8E88 armyStockSlot03 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3478,7 +3478,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +8F04 armyStockSlot04 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3489,7 +3489,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +8F80 armyStockSlot05 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3500,7 +3500,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +8FFC armyStockSlot06 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3511,7 +3511,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +9078 armyStockSlot07 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3522,7 +3522,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +90F4 armyStockSlot08 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3533,7 +3533,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +9170 armyStockSlot09 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3544,7 +3544,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +91EC armyStockSlot10 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3555,7 +3555,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +9268 armyStockSlot11 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3566,7 +3566,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +92E4 armyStockSlot12 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3577,7 +3577,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +9360 armyStockSlot13 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3588,7 +3588,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +93DC armyStockSlot14 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3599,7 +3599,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +9458 armyStockSlot15 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3610,7 +3610,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +94D4 armyStockSlot16 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3621,7 +3621,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +9550 armyStockSlot17 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3632,7 +3632,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +95CC armyStockSlot18 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3643,7 +3643,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +9648 armyStockSlot19 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3654,7 +3654,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +96C4 armyStockSlot20 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3665,7 +3665,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +9740 armyStockSlot21 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3676,7 +3676,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +97BC armyStockSlot22 g_UiCommandSpriteButtonWithDetailsVtable */
             .sprite = {
@@ -3687,7 +3687,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1},
-                    .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                 .selectedSubresourceStart = 0x00000023}},
         { /* +9838 armyStockSlot23 g_UiCatalogEntryControlVtable */
             .command = {
@@ -3699,7 +3699,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                             .left = -1, .top = -1, .right = -1, .bottom = -1,
                             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                             .layoutWidth = -1, .layoutHeight = -1},
-                        .stateFlags = 0x00000A60, .actionId = 0x00001001},
+                        .stateFlags = FromBits<UiSelectableStateFlags>(0x00000A60), .actionId = 0x00001001},
                     .selectedSubresourceStart = 0x00000023}},
             .runtimeDisplayValueQ4 = 0x00180019},
         { /* +98B8 editorModeTabRegion g_UiSpriteButtonControlVtable */
@@ -3710,7 +3710,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000601, .actionId = 0x00001104},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000601), .actionId = 0x00001104},
             .selectedSubresourceStart = 0x0000002B, .alternateTextureSource = THANDOR_PTR32_BITS(0x00180017)},
         { /* +9930 editorModeTabUnitPlacement g_UiSpriteButtonControlVtable */
             .selectable = {
@@ -3720,7 +3720,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000601, .actionId = 0x00001105},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000601), .actionId = 0x00001105},
             .selectedSubresourceStart = 0x0000002C, .alternateTextureSource = THANDOR_PTR32_BITS(0x00180018)},
         { /* +99A8 editorModeTabObjectPlacement g_UiSpriteButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x46FC),
@@ -4007,7 +4007,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000003, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000003), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +A7E8 materialSwatch01 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xA8A0), .firstChild = UI_TEMPLATE_LINK(0xA844), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4022,7 +4022,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +A8A0 materialSwatch02 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xA958), .firstChild = UI_TEMPLATE_LINK(0xA8FC), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4037,7 +4037,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +A958 materialSwatch03 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xAA10), .firstChild = UI_TEMPLATE_LINK(0xA9B4), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4052,7 +4052,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +AA10 materialSwatch04 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xAAC8), .firstChild = UI_TEMPLATE_LINK(0xAA6C), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4067,7 +4067,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +AAC8 materialSwatch05 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xAB80), .firstChild = UI_TEMPLATE_LINK(0xAB24), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4082,7 +4082,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +AB80 materialSwatch06 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xAC38), .firstChild = UI_TEMPLATE_LINK(0xABDC), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4097,7 +4097,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +AC38 materialSwatch07 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xACF0), .firstChild = UI_TEMPLATE_LINK(0xAC94), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4112,7 +4112,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +ACF0 materialSwatch08 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xADA8), .firstChild = UI_TEMPLATE_LINK(0xAD4C), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4127,7 +4127,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +ADA8 materialSwatch09 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xAE60), .firstChild = UI_TEMPLATE_LINK(0xAE04), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4142,7 +4142,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +AE60 materialSwatch10 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0xAF18), .firstChild = UI_TEMPLATE_LINK(0xAEBC), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4157,7 +4157,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +AF18 materialSwatch11 g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0xAF74), .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4172,7 +4172,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
-        {.stateFlags = 0x00000001, .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000001), .actionId = 0x00001110, .textResourceId = 0xFFFFFFFF},
         { /* +AFD0 smoothingToolPanel g_UiImagePanelControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x9EE0),
@@ -4234,7 +4234,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                    .stateFlags = 0x00000200, .actionId = 0x0000100A},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000100A},
                 .normalSubresourceStartOrDescriptor = 0x0000002E, .selectedSubresourceStart = 0x0000002F}},
         {0x0018000A},
         { /* +B290 selectionGroupButton1 g_UiCommandSpriteButtonControlVtable */
@@ -4246,7 +4246,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                    .stateFlags = 0x00000200, .actionId = 0x0000100A},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000100A},
                 .normalSubresourceStartOrDescriptor = 0x00000032, .selectedSubresourceStart = 0x00000033}},
         {0x0018000B},
         { /* +B310 selectionGroupButton2 g_UiCommandSpriteButtonControlVtable */
@@ -4258,7 +4258,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                    .stateFlags = 0x00000200, .actionId = 0x0000100A},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000100A},
                 .normalSubresourceStartOrDescriptor = 0x00000036, .selectedSubresourceStart = 0x00000037}},
         {0x0018000C},
         { /* +B390 selectionGroupButton3 g_UiCommandSpriteButtonControlVtable */
@@ -4270,7 +4270,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                    .stateFlags = 0x00000200, .actionId = 0x0000100A},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000100A},
                 .normalSubresourceStartOrDescriptor = 0x0000003A, .selectedSubresourceStart = 0x0000003B}},
         {0x0018000D},
         { /* +B410 selectionGroupButton4 g_UiCommandSpriteButtonControlVtable */
@@ -4282,7 +4282,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                    .stateFlags = 0x00000200, .actionId = 0x0000100A},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000100A},
                 .normalSubresourceStartOrDescriptor = 0x0000003E, .selectedSubresourceStart = 0x0000003F}},
         {0x0018000E},
         { /* +B490 selectionGroupButton5 g_UiCommandSpriteButtonControlVtable */
@@ -4294,7 +4294,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                    .stateFlags = 0x00000200, .actionId = 0x0000100A},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000100A},
                 .normalSubresourceStartOrDescriptor = 0x00000042, .selectedSubresourceStart = 0x00000043}},
         {0x0018000F},
         { /* +B510 selectionGroupButton6 g_UiCommandSpriteButtonControlVtable */
@@ -4306,7 +4306,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                    .stateFlags = 0x00000200, .actionId = 0x0000100A},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000100A},
                 .normalSubresourceStartOrDescriptor = 0x00000046, .selectedSubresourceStart = 0x00000047}},
         {0x00180010},
         { /* +B590 selectionGroupButton7 g_UiCommandSpriteButtonControlVtable */
@@ -4318,7 +4318,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                         .left = -1, .top = -1, .right = -1, .bottom = -1,
                         .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                    .stateFlags = 0x00000200, .actionId = 0x0000100A},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000100A},
                 .normalSubresourceStartOrDescriptor = 0x0000004A, .selectedSubresourceStart = 0x0000004B}},
         {0x0018001A},
         { /* +B610 heightToolOption0 g_UiSpriteButtonControlVtable */
@@ -4329,7 +4329,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000203, .actionId = 0x00001108},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000203), .actionId = 0x00001108},
             .normalSubresourceStartOrDescriptor = 0x0000007E, .selectedSubresourceStart = 0x0000007F,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x0018001B)},
         { /* +B688 heightToolOption1 g_UiSpriteButtonControlVtable */
@@ -4340,7 +4340,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x00001109},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x00001109},
             .normalSubresourceStartOrDescriptor = 0x00000082, .selectedSubresourceStart = 0x00000083,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x0018001C)},
         { /* +B700 heightToolOption2 g_UiSpriteButtonControlVtable */
@@ -4351,7 +4351,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x0000110A},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x0000110A},
             .normalSubresourceStartOrDescriptor = 0x00000086, .selectedSubresourceStart = 0x00000087,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x0018001D)},
         { /* +B778 heightToolOption3 g_UiSpriteButtonControlVtable */
@@ -4362,7 +4362,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x0000110B},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x0000110B},
             .normalSubresourceStartOrDescriptor = 0x0000008A, .selectedSubresourceStart = 0x0000008B,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x0018001E)},
         { /* +B7F0 materialToolOption0 g_UiSpriteButtonControlVtable */
@@ -4373,7 +4373,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000203, .actionId = 0x0000110C},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000203), .actionId = 0x0000110C},
             .normalSubresourceStartOrDescriptor = 0x0000008E, .selectedSubresourceStart = 0x0000008F,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x0018001F)},
         { /* +B868 materialToolOption1 g_UiSpriteButtonControlVtable */
@@ -4384,7 +4384,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x0000110D},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x0000110D},
             .normalSubresourceStartOrDescriptor = 0x00000092, .selectedSubresourceStart = 0x00000093,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180020)},
         { /* +B8E0 materialToolOption2 g_UiSpriteButtonControlVtable */
@@ -4395,7 +4395,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x0000110E},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x0000110E},
             .normalSubresourceStartOrDescriptor = 0x00000096, .selectedSubresourceStart = 0x00000097,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x0018001D)},
         { /* +B958 materialToolOption3 g_UiSpriteButtonControlVtable */
@@ -4406,7 +4406,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x0000110F},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x0000110F},
             .normalSubresourceStartOrDescriptor = 0x0000008A, .selectedSubresourceStart = 0x0000008B,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180021)},
         { /* +B9D0 smoothingToolOption0 g_UiSpriteButtonControlVtable */
@@ -4417,7 +4417,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000203, .actionId = 0x00001117},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000203), .actionId = 0x00001117},
             .normalSubresourceStartOrDescriptor = 0x0000009A, .selectedSubresourceStart = 0x0000009B,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180022)},
         { /* +BA48 smoothingToolOption1 g_UiSpriteButtonControlVtable */
@@ -4428,7 +4428,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x00001118},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x00001118},
             .normalSubresourceStartOrDescriptor = 0x0000009E, .selectedSubresourceStart = 0x0000009F,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180023)},
         { /* +BAC0 smoothingToolOption2 g_UiSpriteButtonControlVtable */
@@ -4439,7 +4439,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x00001119},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x00001119},
             .normalSubresourceStartOrDescriptor = 0x000000A0, .selectedSubresourceStart = 0x000000A1,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180024)},
         { /* +BB38 smoothingRelaxGatedButton g_UiSpriteButtonControlVtable */
@@ -4450,7 +4450,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000200, .actionId = 0x0000111A},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000111A},
             .normalSubresourceStartOrDescriptor = 0x00000080, .selectedSubresourceStart = 0x00000081,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180025)},
         { /* +BBB0 smoothingRelaxLandButton g_UiSpriteButtonControlVtable */
@@ -4461,7 +4461,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000200, .actionId = 0x0000111B},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000200), .actionId = 0x0000111B},
             .normalSubresourceStartOrDescriptor = 0x00000084, .selectedSubresourceStart = 0x00000085,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180028)},
         { /* +BC28 unitPlacementOption0 g_UiSpriteButtonControlVtable */
@@ -4472,7 +4472,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000203, .actionId = 0x00001111},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000203), .actionId = 0x00001111},
             .normalSubresourceStartOrDescriptor = 0x00000090, .selectedSubresourceStart = 0x00000091,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180029)},
         { /* +BCA0 unitPlacementOption2 g_UiSpriteButtonControlVtable */
@@ -4483,7 +4483,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x00001113},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x00001113},
             .normalSubresourceStartOrDescriptor = 0x00000094, .selectedSubresourceStart = 0x00000095,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x0018002A)},
         { /* +BD18 unitPlacementOption1 g_UiSpriteButtonControlVtable */
@@ -4494,7 +4494,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x00001112},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x00001112},
             .normalSubresourceStartOrDescriptor = 0x00000098, .selectedSubresourceStart = 0x00000099,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x0018002B)},
         { /* +BD90 objectPlacementOption0 g_UiSpriteButtonControlVtable */
@@ -4505,7 +4505,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000203, .actionId = 0x00001114},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000203), .actionId = 0x00001114},
             .normalSubresourceStartOrDescriptor = 0x0000009C, .selectedSubresourceStart = 0x0000009D,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180029)},
         { /* +BE08 objectPlacementOption2 g_UiSpriteButtonControlVtable */
@@ -4516,7 +4516,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x00001116},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x00001116},
             .normalSubresourceStartOrDescriptor = 0x00000094, .selectedSubresourceStart = 0x00000095,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x0018002A)},
         { /* +BE80 objectPlacementOption1 g_UiSpriteButtonControlVtable */
@@ -4527,7 +4527,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x00001115},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x00001115},
             .normalSubresourceStartOrDescriptor = 0x00000098, .selectedSubresourceStart = 0x00000099,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180026)},
         { /* +BEF8 regionToolOption0 g_UiSpriteButtonControlVtable */
@@ -4538,7 +4538,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000203, .actionId = 0x0000111C},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000203), .actionId = 0x0000111C},
             .normalSubresourceStartOrDescriptor = 0x00000088, .selectedSubresourceStart = 0x00000089,
             .alternateTextureSource = THANDOR_PTR32_BITS(0x00180027)},
         { /* +BF70 regionToolOption1 g_UiSpriteButtonControlVtable */
@@ -4549,7 +4549,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x120)},
-                .stateFlags = 0x00000201, .actionId = 0x0000111D},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000201), .actionId = 0x0000111D},
             .normalSubresourceStartOrDescriptor = 0x0000008C, .selectedSubresourceStart = 0x0000008D},
         {},
 };

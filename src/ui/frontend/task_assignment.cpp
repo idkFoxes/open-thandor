@@ -411,8 +411,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
      caption text id. Rows 7..1 (entry row - 1). Some nodeFlags accesses add offsetof(UiNodeBase,nodeFlags) to
      the offset first (NodeAt<UiNodeFlags>): that order is the one of the original code there. */
   for (row = 7; row != 0; row--) {
-    if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1])->stateFlags &
-         UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if (Any(FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1])->stateFlags &
+         UI_SELECTABLE_SELECTED_OR_CHECKED)) {
       FrontendTaskAssignmentPage_ShowRowControl(taskAssignmentRoot,
                                                 g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[row - 1],
                                                 controlSetMask, controlClearMask);
@@ -596,11 +596,11 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     playerName = playerName + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16);
   } while (remainingPlayers != 0);
   /* once the local player has pressed Finish, the faction rows are hidden */
-  if ((FrontendUi_Image(taskAssignmentRoot)->factionSetupFinishButton.selectable.stateFlags &
-       UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any(FrontendUi_Image(taskAssignmentRoot)->factionSetupFinishButton.selectable.stateFlags &
+       UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     for (row = 7; row != 0; row--) {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1];
-      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+      if (!Any(FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE)) {
         controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
         *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
       }
@@ -609,7 +609,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   else {
     for (row = 7; row != 0; row--) {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1];
-      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+      if (!Any(FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE)) {
         controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(controlOffset)->nodeFlags;
         *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       }

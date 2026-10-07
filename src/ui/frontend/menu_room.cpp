@@ -102,7 +102,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   }
   if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT))
   {
-    if ((g_CursorButtonState & LEFT) != 0) {
+    if (Any(g_CursorButtonState & LEFT)) {
       return 17;
     }
     return 16;
@@ -110,12 +110,12 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN))
   {
     if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
-      if ((g_CursorButtonState & LEFT) != 0) {
+      if (Any(g_CursorButtonState & LEFT)) {
         return 17;
       }
       return 18;
     }
-    if ((g_CursorButtonState & LEFT) != 0) {
+    if (Any(g_CursorButtonState & LEFT)) {
       return 20;
     }
     return 19;
@@ -132,7 +132,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
       return 37;
     }
     if (!Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIDE_PANEL)) {
-      if ((g_CursorButtonState & LEFT) == 0) {
+      if !Any(g_CursorButtonState & LEFT) {
         return 1;
       }
       if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)) {
@@ -143,7 +143,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
       }
     }
     else {
-      if ((g_CursorButtonState & LEFT) != 0) {
+      if Any(g_CursorButtonState & LEFT) {
         if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)) {
           return 15;
         }
@@ -605,7 +605,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
     return;
   }
   if (Any(callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT)) {
-    if ((g_CursorButtonState & LEFT) == 0) {
+    if !Any(g_CursorButtonState & LEFT) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_DISTANCE);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | (FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_PITCH);
       WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
@@ -618,7 +618,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
     }
   }
   else if (Any(callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN)) {
-    if ((g_CursorButtonState & LEFT) == 0) {
+    if !Any(g_CursorButtonState & LEFT) {
       if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_MOVE;
@@ -665,7 +665,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_HEADING;
       WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
     }
-    else if ((Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL)) && ((g_CursorButtonState & LEFT) != 0)) {
+    else if (Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL) && Any(g_CursorButtonState & LEFT)) {
       /* Flag 0x4000000 with the button held: 0x40000000 selects pitch, 0x80000000 distance. */
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~FRONTEND_CAMERA_MOTION_MASK;
       if (Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM)) {
@@ -677,7 +677,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
         WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
     }
-    else if ((!Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL)) && ((g_CursorButtonState & LEFT) == 0)) {
+    else if (!Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL) && !Any(g_CursorButtonState & LEFT)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_MOVE;
       WorldRuntime_TranslateCameraByScreenDelta(pointerDeltaY,pointerDeltaX,callbackContext);

@@ -9,6 +9,7 @@
 #define THANDOR_UI_FRONTEND_COMMON_H
 
 #include <thandor/core/contracts.h>
+#include <thandor/ui/controls/types.h> /* UiSelectableStateFlags */
 
 /* Frontend pages, page actions, UI actions, player and network states and text ids shared by the frontend files. */
 
@@ -41,7 +42,7 @@ inline constexpr int32_t FRONTEND_PAGE_MISSION_BRIEFING = 12;
 inline constexpr int32_t FRONTEND_COMPACT_LAYOUT_MAX_WIDTH = 640;
 /* UiSelectableControl.stateFlags bit set together with UI_NODE_SUPPRESSED to switch a frontend button off:
    sprite buttons skip it in the hit test and draw it only while selected (ui/controls/buttons). */
-inline constexpr int32_t FRONTEND_CONTROL_INACTIVE = 0x400;
+inline constexpr UiSelectableStateFlags FRONTEND_CONTROL_INACTIVE = FromBits<UiSelectableStateFlags>(0x400);
 /* Action ids of frontend controls (UiSelectableControl.actionId; handler g_UiActionPage20InitializedHandlers
    [id - 0x2000]). UiNodeList_SuppressActionId/UnsuppressActionId hide and show the controls carrying one. */
 inline constexpr int32_t FRONTEND_ACTION_HOST_GAME = 0x2001; /* networkGameHostButton */

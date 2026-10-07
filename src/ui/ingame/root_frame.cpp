@@ -384,7 +384,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
        node's frame */
     if ((!Any(worldRuntime->runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO))) &&
         (activePageIndex == 0) && !Any(worldRuntime->interaction.nodeFlags & UI_NODE_SUPPRESSED) &&
-        ((g_CursorButtonState & 4) == 0)) {
+        !Any(g_CursorButtonState & RIGHT)) {
       edgeScrollCursorFrame = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime);
       if (edgeScrollCursorFrame != 0) {
         cursorFrame = edgeScrollCursorFrame;

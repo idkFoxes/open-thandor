@@ -42,10 +42,12 @@ template <class E> constexpr std::underlying_type_t<E> ThandorFlagBits(E e)
   THANDOR_FLAG_ENUM_OPERATORS(E)                                                                               \
   static_assert(std::is_unsigned_v<std::underlying_type_t<E>>, #E " is a flag enum with an unsigned underlying type")
 
-/* Marks E as a flag enum over a signed 32-bit word: only for a word that the decompiled code held as an int and
-   that also carries a value besides the flags (FieldGridCell.flagsAndMaterial: material byte, bit 31 a flag).
-   Keeping the int keeps every expression on the word in the signedness it had, so the generated code stays the
-   same; the bit operators are the same for int (no shift or arithmetic is defined on E). */
+/* Marks E as a flag enum over a signed 32-bit word: only for a word that the decompiled code held as an int where
+   an unsigned type would change the generated code: a word that also carries a value besides the flags
+   (FieldGridCell.flagsAndMaterial: material byte, bit 31 a flag) or an int option parameter whose function GCC
+   compiles differently when it is unsigned (WideNumberFormatFlags of WideNumber_FormatUtf16). Keeping the int keeps
+   every expression on the word in the signedness it had, so the generated code stays the same; the bit operators
+   are the same for int (no shift or arithmetic is defined on E). */
 #define THANDOR_SIGNED_WORD_FLAG_ENUM(E) /* NOLINT(cppcoreguidelines-macro-usage) */ \
   THANDOR_FLAG_ENUM_OPERATORS(E)                                                                               \
   static_assert(std::is_same_v<std::underlying_type_t<E>, int32_t>, #E " is a signed-word flag enum over int32_t")

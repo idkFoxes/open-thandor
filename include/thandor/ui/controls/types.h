@@ -117,13 +117,25 @@ enum class UiNodeFlags : uint32_t {
 THANDOR_FLAG_ENUM(UiNodeFlags);
 using enum UiNodeFlags;
 
-enum {
+/* UiSelectableControl.stateFlags: the selectable bits common to every selectable control. A 32-bit field,
+   the original int became the same-size uint32_t (offset and size asserted in layout_checks.cpp). The
+   subclasses use further bits of the same field (UI_BUTTON_*, UI_SPRITE_BUTTON_*, UI_IMAGE_CONTROL_*,
+   UI_ADAPTER_TEXT_BUTTON_*, FRONTEND_CONTROL_INACTIVE); those are typed constants of this enum in the
+   subclass headers, not enumerators, because their values overlap between the subclasses. */
+enum class UiSelectableStateFlags : uint32_t {
     UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE=1,
     UI_SELECTABLE_SELECTED_OR_CHECKED=2,
+    /* read by UiSelectableControl_KeyboardEvent: Enter / Escape also activate the control; 0x80 plays
+       UiSoundSelectableControl.activationSound on a keyboard activation (the same bit is
+       UI_SPRITE_BUTTON_ANIMATED for sprite buttons) */
+    UI_SELECTABLE_ACTIVATE_ON_ENTER=4,
+    UI_SELECTABLE_ACTIVATE_ON_ESCAPE=8,
     UI_SELECTABLE_TOGGLE_ON_ACTIVATION=16,
+    UI_SELECTABLE_PLAY_KEYBOARD_SOUND=0x80,
     UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION=8192
 };
-using UiSelectableStateFlags = int;
+THANDOR_FLAG_ENUM(UiSelectableStateFlags);
+using enum UiSelectableStateFlags;
 
 enum class UiTextListStateFlags : uint32_t {
     UI_TEXT_LIST_TYPE_SEARCH_ENABLED=1,
@@ -326,8 +338,6 @@ struct UiPointerListControl {
 using UiPackedTextStyle = uint32_t;
 
 using UiPageIndex = uint32_t;
-
-using UiPointerButtonMask = uint32_t;
 
 using UiFrameCount = uint32_t;
 

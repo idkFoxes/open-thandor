@@ -166,7 +166,7 @@ static void FrontendDisplaySettingsPage_LayoutResolutionList(UiNodeBase *fronten
     scrollBox->scrollOffsetY = 0;
     for (rowIndex = 0; rowIndex < s_resolutionRowCount; rowIndex++) {
       row = FrontendDisplaySettingsPage_ResolutionRow(frontendRoot,rowIndex);
-      if ((row->base.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+      if (Any(row->base.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
         scrollBox->scrollOffsetY =
              ((int32_t)scrollBox->viewportHeight - FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT) / 2 -
              row->base.selectable.base.topOffset;

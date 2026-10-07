@@ -13,12 +13,8 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* UiSelectableControl stateFlags bits read by UiSelectableControl_KeyboardEvent: Enter / Escape also activate
-   the control; 0x80 plays UiSoundSelectableControl.activationSound on a keyboard activation (the same bit
-   is UI_SPRITE_BUTTON_ANIMATED for sprite buttons). */
-inline constexpr int32_t UI_SELECTABLE_ACTIVATE_ON_ENTER = 0x04;
-inline constexpr int32_t UI_SELECTABLE_ACTIVATE_ON_ESCAPE = 0x08;
-inline constexpr int32_t UI_SELECTABLE_PLAY_KEYBOARD_SOUND = 0x80;
+/* The UiSelectableControl stateFlags bits UI_SELECTABLE_* are the enum class UiSelectableStateFlags in
+   ui/controls/types.h. */
 
 Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control);
