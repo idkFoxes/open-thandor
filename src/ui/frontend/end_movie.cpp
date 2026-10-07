@@ -37,6 +37,7 @@ static void FrontendEndMovie_SelectCampaignMoviePath(CampaignAsset *campaign)
 
   remainingRecords = campaign->levelRecordCount;
   levelRecord = campaign->levels;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (campaign->currentLevelId == levelRecord->levelId) {
       if (g_EndMovieVariantIndex == 0) {
@@ -124,6 +125,7 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
   }
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     playerBlock->factionAssignment.readyOrWaitState = 0;
     remainingPlayerBlocks--;

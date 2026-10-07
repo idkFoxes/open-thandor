@@ -92,6 +92,7 @@ static void FrontendMainLoop_TakeReceivedSnapshots(PckDecodedByteCount *received
   /* the decoded table: per player its transfer flags dword, then the payload dwords when complete */
   receivedFlagsCursor = reinterpret_cast<FrontendSnapshotTransferFlags *>(g_PackageScratchBuffer);
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if ((remainingDecodedBytes < sizeof(FrontendSnapshotTransferFlags)) ||
         (((*receivedFlagsCursor & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) &&
@@ -183,6 +184,7 @@ static void FrontendMainLoop_PollScenarioSelectionPage()
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if ((playerBlock->snapshotTransferFlags & FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY) == 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -199,6 +201,7 @@ static void FrontendMainLoop_PollScenarioSelectionPage()
   }
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     /* the AND really clears every other progress bit of the player */
     roleStateFlags = &playerBlock->factionAssignment.roleStateFlags;
@@ -226,6 +229,7 @@ static Bool8 FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags sta
 
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if ((playerBlock->factionAssignment.roleStateFlags & stateMask) == 0) {
       return false;
@@ -264,6 +268,7 @@ static void FrontendMainLoop_RunSession(FrontendBooleanState32 loadExistingSessi
   g_FrontendScenarioInitializationCount = 0;
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     playerBlock->factionAssignment.roleStateFlags = 0;
     playerBlock++;

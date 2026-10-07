@@ -121,14 +121,12 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
   seed = Random_NextPrimary();
   Random_SetBothSeeds(seed);
   Random_SelectSecondaryStream();
-  recordsRemaining = 8;
   playerRecordCursor = g_FrontendPlayerRuntimeBlocks;
-  do {
+  for (recordsRemaining = 8; recordsRemaining != 0; recordsRemaining--) {
     playerRecordCursor->factionAssignment.roleStateFlags = 0;
     playerRecordCursor->colourCycleFlags = 0;
     playerRecordCursor++;
-    recordsRemaining--;
-  } while (recordsRemaining != 0);
+  }
   g_FrontendHostSnapshotTransferCountdown = FRONTEND_SNAPSHOT_REQUEST_RETRY_TICKS;
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,1);
 }

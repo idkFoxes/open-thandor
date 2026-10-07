@@ -273,6 +273,7 @@ void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(uintptr_t assignmentToken
 
   playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (assignmentToken ==
         g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId]->
@@ -357,6 +358,7 @@ void FrontendPlayerRuntime_MarkLevelReceivedById
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.roleStateFlags |= FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
@@ -380,6 +382,7 @@ void FrontendPlayerRuntime_XorStateMaskByPlayerId
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->colourCycleFlags = playerBlock->colourCycleFlags ^ stateMask;
@@ -404,6 +407,7 @@ void FrontendPlayerRuntime_MarkLevelLoadedById
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.roleStateFlags |= FRONTEND_PLAYER_STATE_LEVEL_LOADED;
@@ -428,6 +432,7 @@ void FrontendPlayerRuntime_MarkTaskAssignmentReadyById
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.roleStateFlags |= FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT;
@@ -457,6 +462,7 @@ void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (playerId == playerBlock->playerRuntimeId) {
       roleFlags = &playerBlock->factionAssignment.roleStateFlags;
@@ -503,6 +509,7 @@ void FrontendPlayerRuntime_InitializeFactionAssignments()
   activeRemaining = g_FrontendLoadedLevelAsset->worldSettings.activeFactionCount;
   assignableRemaining = g_FrontendLoadedLevelAsset->worldSettings.assignableFactionCount;
   /* the assignable factions come first, the remaining active (computer-only) ones follow */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     activeRemaining--;
@@ -515,15 +522,15 @@ void FrontendPlayerRuntime_InitializeFactionAssignments()
   }
   /* slot 7 is only cleared when fewer than six factions are active (factionSlot < 7), as in the original */
   if (factionSlot < 7) {
-    do {
+    for (; factionSlot < 8; factionSlot++) {
       g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = 0;
-      factionSlot++;
-    } while (factionSlot < 8);
+    }
   }
   /* round-robin over the assignable factions 1..assignableFactionCount */
   assignedFaction = 1;
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     playerBlock->factionAssignment.factionAssignmentIndex = assignedFaction;
     playerBlock->factionAssignment.readyOrWaitState = 0;
@@ -609,6 +616,7 @@ void FrontendPlayerRuntime_UpdateStartButtonByCdShare()
   cdPlayerCount = 0;
   remainingBlocks = g_FrontendPlayerRuntimeCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if ((playerBlock->capabilityFlags & FRONTEND_CAPABILITY_CD) != 0) {
       cdPlayerCount++;
@@ -665,6 +673,7 @@ void FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(PlayerRuntime
   /* an unknown id (the per-frame re-check) marks nobody */
   searchRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (playerRuntimeId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.readyOrWaitState = 1;
@@ -689,6 +698,7 @@ static Bool8 FrontendPlayerRuntime_HaveAllPlayersReported()
 
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (playerBlock->factionAssignment.readyOrWaitState == 0) {
       return false;
@@ -729,6 +739,7 @@ void FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
       SESSION_NETWORK_ROLE_LOCAL) {
     searchRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerBlock = g_FrontendPlayerRuntimeBlocks;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (playerRuntimeId == playerBlock->playerRuntimeId) break;
       searchRemaining--;
@@ -1086,7 +1097,6 @@ void FrontendPlayerSelection_ApplyEntryOrAll
   selectionCursor = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   targetEntity = Thandor_At<GameEntityRuntime>(g_ArmyRuntimeRebaseBaseMinusOne,armyRuntimeOffset);
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
-  remainingEntries = 32;
   /* SelectionPointerArray_Contains returns true when the army is NOT in the selection */
   notInSelection = SelectionPointerArray_Contains(targetEntity,&selectionCursor->selection);
   if (notInSelection) {
@@ -1094,15 +1104,14 @@ void FrontendPlayerSelection_ApplyEntryOrAll
     return;
   }
   /* selectionCursor walks the 32 entries, one dword per step */
-  do {
+  for (remainingEntries = 32; remainingEntries != 0; remainingEntries--) {
     targetEntity = selectionCursor->selection.entries[0];
     if (targetEntity != nullptr) {
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,targetEntity);
     }
     /* the block pointer itself steps one entry per round, so entries[0] reads the next entry */
     selectionCursor = reinterpret_cast<SelectionPlayerRuntimeBlock *>(selectionCursor->selection.entries + 1);
-    remainingEntries--;
-  } while (remainingEntries != 0);
+  }
 }
 
 
@@ -1134,6 +1143,7 @@ void FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
       SESSION_NETWORK_ROLE_LOCAL) {
     searchRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerBlock = g_FrontendPlayerRuntimeBlocks;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (playerId == playerBlock->playerRuntimeId) break;
       searchRemaining--;
@@ -1183,6 +1193,7 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.consensusValue = consensusValue;
@@ -1190,6 +1201,7 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
       combinedConsensus = 0xffffffff;
       remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
       playerBlock = g_FrontendPlayerRuntimeBlocks;
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         combinedConsensus = combinedConsensus & playerBlock->factionAssignment.consensusValue;
         playerBlock++;
@@ -1358,7 +1370,7 @@ void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendUiImage *fron
     rowSlotCursor = frontendRoot->hostLobbyPlayerList.rowSlots + 1;
     sourceBlock = g_FrontendPlayerRuntimeBlocks + 1;
     destBlock = g_FrontendPlayerRuntimeBlocks + 1;
-    do {
+    for (; blocksRemaining != 0; blocksRemaining--) {
       heartbeatTicks = &sourceBlock->heartbeatExpiryTicks;
       *heartbeatTicks = *heartbeatTicks - 1;
       nextDestBlock = destBlock;
@@ -1394,10 +1406,9 @@ void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendUiImage *fron
           }
         }
       }
-      blocksRemaining--;
       sourceBlock = nextSourceBlock;
       destBlock = nextDestBlock;
-    } while (blocksRemaining != 0);
+    }
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,frontendRoot->hostLobbyPlayerList.rowCount,
                g_FrontendNetworkRuntimeCountTextUtf16);
