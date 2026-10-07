@@ -121,7 +121,7 @@ static void HexscanTest_FillGrid(FieldGridAsset *grid, uint64_t seed, int profil
             cell->overlayColor = 0xffffffffu;
             cell->worldX = (Q12)(column * 0x900);
             cell->worldY = (Q12)(row * -0x7d0);
-            cell->flagsAndMaterial = HexscanTest_Random(&seed) & ~FIELD_CELL_GRID_EDGE_MASK;
+            cell->flagsAndMaterial = FieldCell_FromRawWord(HexscanTest_Random(&seed)) & ~FIELD_CELL_GRID_EDGE_MASK;
             cell->triangle0NormalAngles = HexscanTest_NormalAngles(&seed, 0);
             cell->triangle1NormalAngles = HexscanTest_NormalAngles(&seed, 0);
             cell->occupancyMask = HexscanTest_Random64(&seed) & 0x8484848484848484ull;

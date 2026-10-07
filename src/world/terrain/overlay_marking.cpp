@@ -20,7 +20,7 @@
 static void FieldGridTerrainOverlayVariantA_ApplyToCell(FieldGridCell *fieldCell)
 
 {
-  if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
+  if (((FieldCell_RawBits(fieldCell->flagsAndMaterial) & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
       (fieldCell->waterSurfaceDelta < 0)) {
     fieldCell->overlayColor = g_TerrainScanReferenceHeight;
   }
@@ -68,8 +68,8 @@ Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
     if ((-1 < (int)gridColumn) && (-1 < (int)gridRow) && (gridRow < fieldGrid->gridHeight) &&
         (gridColumn < gridWidth)) {
       centerCellIndex = gridRow * gridWidth + gridColumn;
-      if ((fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-        if (((fieldGrid->cells[centerCellIndex].flagsAndMaterial & cellFlagMask) != 0) &&
+      if (!Any(fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
+        if (((FieldCell_RawBits(fieldGrid->cells[centerCellIndex].flagsAndMaterial) & cellFlagMask) != 0) &&
            (fieldGrid->cells[centerCellIndex].waterSurfaceDelta < 0)) {
           fieldGrid->cells[centerCellIndex].overlayColor = cellValue;
         }
@@ -114,8 +114,8 @@ Bool8 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
     if ((-1 < (int)gridColumn) && (-1 < (int)gridRow) && (gridRow < fieldGrid->gridHeight) &&
         (gridColumn < gridWidth)) {
       centerCellIndex = gridRow * gridWidth + gridColumn;
-      if ((fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-        if (((fieldGrid->cells[centerCellIndex].flagsAndMaterial & cellFlagMask) != 0) &&
+      if (!Any(fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
+        if (((FieldCell_RawBits(fieldGrid->cells[centerCellIndex].flagsAndMaterial) & cellFlagMask) != 0) &&
            (0 < fieldGrid->cells[centerCellIndex].waterSurfaceDelta)) {
           fieldGrid->cells[centerCellIndex].overlayColor = cellValue;
         }

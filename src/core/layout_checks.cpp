@@ -3375,3 +3375,19 @@ static_assert(offsetof(InGameRuntimeRoot, notificationButtonCursorFrame) == 0x9B
                   sizeof(InGameRuntimeRoot::notificationButtonCursorFrame) == 4 &&
                   sizeof(InGameTargetingRootTraversalView::actionState) == 4,
               "the notification button cursor frame stays the dword at +0x9B4C of the root (+0x50 of the button)");
+
+/* Step 13 field-cell flags (FieldCellPackedFlagsAndMaterial as a flag enum class): the FLD/savegame cell word keeps
+   its 4 bytes at +0x50 in the cell and in the save view. */
+static_assert(sizeof(FieldGridCell) == 0x80 && offsetof(FieldGridCell, flagsAndMaterial) == 0x50 &&
+                  sizeof(FieldGridCell::flagsAndMaterial) == 4,
+              "FieldGridCell.flagsAndMaterial is the dword at +0x50");
+static_assert(sizeof(FieldGridCellSaveImageView) == 0x80 && offsetof(FieldGridCellSaveImageView, flagsAndMaterial) == 0x50 &&
+                  sizeof(FieldGridCellSaveImageView::flagsAndMaterial) == 4,
+              "FieldGridCellSaveImageView.flagsAndMaterial is the dword at +0x50");
+static_assert(std::is_same_v<std::underlying_type_t<FieldCellPackedFlagsAndMaterial>, int32_t> &&
+                  ThandorFlagEnum<FieldCellPackedFlagsAndMaterial> &&
+                  FieldCell_RawBits(FIELD_CELL_GRID_EDGE_MASK) == 0x88006000u &&
+                  FieldCell_RawWord(~FIELD_CELL_MATERIAL_ID_MASK) == -256 &&
+                  FieldCell_MaterialId(FieldCell_FromRawWord(0x800012ABu)) == 0xAB &&
+                  FieldCell_ResourceSupportBit(1) == FIELD_CELL_TRITIUM_SUPPORT,
+              "THANDOR_SIGNED_WORD_FLAG_ENUM: the cell word stays the int it was, the helpers keep its bits");

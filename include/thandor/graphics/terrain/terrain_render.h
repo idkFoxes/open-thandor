@@ -20,6 +20,9 @@
    (projectedPointB, the offset secondary point) is not beyond the near plane and got no screen position. */
 inline constexpr int TERRAIN_VERTEX_POINT_A_NOT_PROJECTED = 0x200000;
 inline constexpr int TERRAIN_VERTEX_POINT_B_NOT_PROJECTED = 0x4000000;
+static_assert(ToBits(FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED) == TERRAIN_VERTEX_POINT_A_NOT_PROJECTED &&
+                  ToBits(FIELD_CELL_VERTEX_POINT_B_NOT_PROJECTED) == TERRAIN_VERTEX_POINT_B_NOT_PROJECTED,
+              "the cell word's NOT_PROJECTED bits are the projection pass's");
 /* The other projectionFlags bits of the terrain vertex pass: the low byte is the soil material (0xFF = no
    terrain at this vertex, nothing is drawn); per projected point one bit per side of g_ProjectionClipRect the
    point lies on the inner side of (x >= minX, y >= minY, x < maxX, y < maxY), so the OR over a triangle's

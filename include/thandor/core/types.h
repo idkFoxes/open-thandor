@@ -9,6 +9,7 @@
 #define THANDOR_CORE_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
 struct GraphicsFixedMatrix3x4;
@@ -568,22 +569,64 @@ using FieldGridDimension = uint32_t;
 
 using AssetFormatVersion = uint32_t;
 
-enum { 
-    FIELD_CELL_MATERIAL_ID_MASK=255,
-    FIELD_CELL_RANDOM_VARIANT_MASK=1792,
-    FIELD_CELL_XENITE_SUPPORT=2048,
-    FIELD_CELL_TRITIUM_SUPPORT=4096,
-    FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK=6144,
-    FIELD_CELL_FIRST_COLUMN_BOUNDARY=8192,
-    FIELD_CELL_FIRST_ROW_BOUNDARY=16384,
-    FIELD_CELL_DEBUG_MARKED=32768, // no code in the game sets it; cleared at grid init, drawn by a debug overlay
-    FIELD_CELL_CONNECTED_REGION_VISITED=65536,
-    FIELD_CELL_LAST_COLUMN_BOUNDARY=134217728,
-    FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28=268435456,
-    FIELD_CELL_FLUID_RECEIVER_EXCLUDED=536870912,
-    FIELD_CELL_FLUID_SOURCE_EXCLUDED=1073741824
+/* FieldGridCell.flagsAndMaterial (+0x50, a dword of the FLD cell and of the savegame): the soil material in the low
+   byte, a random variant (FIELD_CELL_RANDOM_VARIANT_MASK) and flag bits. A flag enum class over the int the
+   decompiled code held (THANDOR_SIGNED_WORD_FLAG_ENUM, step 13): the stored word and every expression on it keep
+   their bits and signedness; values from a file keep bits without an enumerator. The material byte is read with
+   FieldCell_MaterialId, the whole word with FieldCell_RawWord (as the int) or FieldCell_RawBits (as the uint32_t
+   the code cast it to), and FieldCell_FromRawWord turns a raw dword back into a cell word.
+   The projection pass (graphics/terrain/terrain_render.cpp) also uses this word as
+   TerrainProjectedVertexWorkRecord.projectionFlags; its TERRAIN_VERTEX_* bits live in the same allocation. */
+enum class FieldCellPackedFlagsAndMaterial : int32_t {
+    FIELD_CELL_MATERIAL_ID_MASK = 0xff,
+    FIELD_CELL_RANDOM_VARIANT_MASK = 0x700,
+    FIELD_CELL_XENITE_SUPPORT = 0x800,
+    FIELD_CELL_TRITIUM_SUPPORT = 0x1000,
+    FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK = 0x1800,
+    FIELD_CELL_FIRST_COLUMN_BOUNDARY = 0x2000,
+    FIELD_CELL_FIRST_ROW_BOUNDARY = 0x4000,
+    FIELD_CELL_DEBUG_MARKED = 0x8000, // no code in the game sets it; cleared at grid init, drawn by a debug overlay
+    FIELD_CELL_CONNECTED_REGION_VISITED = 0x10000,
+    FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED = 0x200000, /* TERRAIN_VERTEX_POINT_A_NOT_PROJECTED of the projection pass */
+    FIELD_CELL_VERTEX_POINT_B_NOT_PROJECTED = 0x4000000, /* TERRAIN_VERTEX_POINT_B_NOT_PROJECTED of the projection pass */
+    FIELD_CELL_LAST_COLUMN_BOUNDARY = 0x8000000,
+    FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28 = 0x10000000,
+    FIELD_CELL_FLUID_RECEIVER_EXCLUDED = 0x20000000,
+    FIELD_CELL_FLUID_SOURCE_EXCLUDED = 0x40000000,
+    FIELD_CELL_LAST_ROW_BOUNDARY = static_cast<int32_t>(0x80000000u),
+    /* the four map-edge bits FieldGrid_InitializeRuntimeCellsAndBoundaryFlags sets on the outermost ring of cells;
+       neighbour loops test them before touching a neighbour */
+    FIELD_CELL_GRID_EDGE_MASK = static_cast<int32_t>(0x88006000u)
 };
-using FieldCellPackedFlagsAndMaterial = int;
+THANDOR_SIGNED_WORD_FLAG_ENUM(FieldCellPackedFlagsAndMaterial);
+using enum FieldCellPackedFlagsAndMaterial;
+
+/* The soil material id (low byte) of a cell word. */
+constexpr int FieldCell_MaterialId(FieldCellPackedFlagsAndMaterial cellWord)
+{
+    return ToBits(cellWord & FIELD_CELL_MATERIAL_ID_MASK);
+}
+/* The whole cell word as the signed dword the decompiled code read (bit 31 is FIELD_CELL_LAST_ROW_BOUNDARY). */
+constexpr int32_t FieldCell_RawWord(FieldCellPackedFlagsAndMaterial cellWord)
+{
+    return ToBits(cellWord);
+}
+/* The whole cell word as an unsigned dword (where the code cast the word to uint32_t or masked it with one). */
+constexpr uint32_t FieldCell_RawBits(FieldCellPackedFlagsAndMaterial cellWord)
+{
+    return static_cast<uint32_t>(ToBits(cellWord));
+}
+/* A raw dword (file, packet, random bits, a uint32_t mask) as a cell word; no bits are dropped. */
+constexpr FieldCellPackedFlagsAndMaterial FieldCell_FromRawWord(uint32_t rawWord)
+{
+    return FromBits<FieldCellPackedFlagsAndMaterial>(static_cast<int32_t>(rawWord));
+}
+/* The resource-support bit of a resource selector: FIELD_CELL_XENITE_SUPPORT shifted left by resourceShift
+   (0 Xenite, 1 Tritium; the callers mask the shift with 31, as the original did). */
+constexpr FieldCellPackedFlagsAndMaterial FieldCell_ResourceSupportBit(uint32_t resourceShift)
+{
+    return FromBits<FieldCellPackedFlagsAndMaterial>(ToBits(FIELD_CELL_XENITE_SUPPORT) << resourceShift);
+}
 
 using AssetRelativeOffset = uint32_t;
 

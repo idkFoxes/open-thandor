@@ -200,7 +200,7 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
   vertexCell = &fieldGrid->cells[cellIndex];
   /* Original quirk: only the vertex cell is tested (edge, water above it); the walked cells are levelled
      whatever their water */
-  if ((vertexCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 || 0 < vertexCell->waterSurfaceDelta) {
+  if (Any(vertexCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) || 0 < vertexCell->waterSurfaceDelta) {
     return;
   }
   heightDeltaQ12 = g_TerrainScanReferenceHeight - vertexCell->terrainHeight;
@@ -262,7 +262,7 @@ void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial(TerrainMaterialIndex
   }
   if (-1 < terrainMaterialIndexOrNegativeSentinel) {
     cell->flagsAndMaterial =
-         cell->flagsAndMaterial & ~FIELD_CELL_MATERIAL_ID_MASK |
-         terrainMaterialIndexOrNegativeSentinel;
+         (cell->flagsAndMaterial & ~FIELD_CELL_MATERIAL_ID_MASK) |
+         FieldCell_FromRawWord(static_cast<uint32_t>(terrainMaterialIndexOrNegativeSentinel));
   }
 }
