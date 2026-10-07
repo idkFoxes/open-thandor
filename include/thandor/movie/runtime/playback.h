@@ -12,11 +12,7 @@
 #include <thandor/movie/runtime/types.h>
 #include <thandor/core/contracts.h>
 
-/* Movie_Open flags. Intro and end movies are streamed; in-game and briefing movies are loaded from the packages
-   only. Movie_Open clears MOVIE_OPEN_PACKAGE_ONLY when the loose path was not used, so a nonzero
-   MovieRuntime.openFlags means streaming. */
-inline constexpr int MOVIE_OPEN_STREAM = 0x00000001; /* load at most MOVIE_INITIAL_VIDEO_MAX_BYTES, the worker thread streams the rest */
-inline constexpr uint32_t MOVIE_OPEN_PACKAGE_ONLY = 0x80000000; /* skip the g_LooseMoviePathPrefix directory */
+/* Movie_Open flags: MovieOpenFlags (movie/runtime/types.h). */
 /* FLM layout and the streaming buffer (Movie_Open, Movie_AdvanceFrame, Movie_StreamWorkerThread) */
 inline constexpr int MOVIE_FILE_HEADER_BYTES = 0x200; /* MovieFileHeader; the video stream follows it */
 inline constexpr int MOVIE_FLM_CONVERTER_VERSION = 0x20001;

@@ -46,7 +46,7 @@ static uint32_t Movie_StreamBufferBytes(const MovieFileHeader *header,MovieOpenF
 {
   uint32_t bufferBytes = header->videoStreamBytes + MOVIE_FILE_HEADER_BYTES;
 
-  if ((MOVIE_STREAM_BUFFER_MAX_BYTES < bufferBytes) && (openFlags != 0)) {
+  if ((MOVIE_STREAM_BUFFER_MAX_BYTES < bufferBytes) && Any(openFlags)) {
     bufferBytes = MOVIE_STREAM_BUFFER_MAX_BYTES;
   }
   return bufferBytes;
@@ -188,13 +188,13 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   isSharedPackageHandle = 0;
   looseFileOpened = false;
   entryBytes = 0;
-  if (((movieOpenFlags & MOVIE_OPEN_PACKAGE_ONLY) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
+  if (!Any(movieOpenFlags & MovieOpenFlags::MOVIE_OPEN_PACKAGE_ONLY) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
               (g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
-    looseFileOpened = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&handle) == 0;
+    looseFileOpened = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_FileSystemCombinedPathScratchUtf16,&handle) == 0;
   }
   if (!looseFileOpened) {
-    movieOpenFlags = movieOpenFlags & ~MOVIE_OPEN_PACKAGE_ONLY;
+    movieOpenFlags = movieOpenFlags & ~MovieOpenFlags::MOVIE_OPEN_PACKAGE_ONLY;
     packageEntry = Package_FindEntryAcrossMounts(path,&packageFileHandle);
     if ((packageEntry != nullptr) &&
        (g_FileSystemSeek
@@ -210,9 +210,9 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
       WidePath_CombineDirectoryAndLeaf
                 (g_FileSystemCombinedPathScratchUtf16,path,
                  g_ExecutableDirectoryUtf16);
-      openError = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&handle);
+      openError = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_FileSystemCombinedPathScratchUtf16,&handle);
       if (openError != 0) {
-        openError = g_FileSystemOpen(0,path,&handle);
+        openError = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,path,&handle);
         if (openError != 0) {
           /* Nothing is open yet: no close. */
           if (outError != nullptr) {
@@ -249,7 +249,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   std::copy_n(copySource,MOVIE_FILE_HEADER_BYTES / 4,copyDestination);
   header = static_cast<MovieFileHeader *>(allocPayload);
   initialVideoBytes = header->videoStreamBytes;
-  if ((MOVIE_INITIAL_VIDEO_MAX_BYTES < initialVideoBytes) && (movieOpenFlags != 0)) {
+  if ((MOVIE_INITIAL_VIDEO_MAX_BYTES < initialVideoBytes) && Any(movieOpenFlags)) {
     initialVideoBytes = MOVIE_INITIAL_VIDEO_MAX_BYTES;
   }
   remainingByteCount = header->videoStreamBytes - initialVideoBytes;
@@ -322,7 +322,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   movie->streamFileOffset = streamPosition;
   movie->audioGainQ15 = defaultAudioGain;
   movie->workerActive = 0;
-  movie->streamState = MOVIE_STREAM_IDLE;
+  movie->streamState = MovieStreamState::MOVIE_STREAM_IDLE;
   movie->refillSemaphore = nullptr;
   if ((remainingByteCount != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
     movie->workerActive++;
@@ -374,7 +374,7 @@ void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
 /* Background thread of a streamed movie: whenever Movie_AdvanceFrame signals the refill semaphore (or every
    256 ms), appends the next MOVIE_REFILL_CHUNK_BYTES of video to the buffer while it stays below
    MOVIE_REFILL_LIMIT_BYTES, so playback does not stall on disk reads. Ends when the movie is closed, fully
-   loaded or a read fails (MOVIE_STREAM_READ_FAILED), and clears workerActive on the way out.
+   loaded or a read fails (MovieStreamState::MOVIE_STREAM_READ_FAILED), and clears workerActive on the way out.
 */
 static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
@@ -391,9 +391,9 @@ static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
     refillSemaphore = movie->refillSemaphore;
     MsgWaitForMultipleObjects(1,&refillSemaphore,FALSE,256,0);
     movie = g_ActiveMovie;
-    if ((movie == nullptr) || (Movie_StreamState(movie).load() == MOVIE_STREAM_SHUTDOWN) ||
+    if ((movie == nullptr) || (Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_SHUTDOWN) ||
         (Movie_WorkerActive(movie).load() == 0) || (movie->remainingVideoBytes == 0)) break;
-    if (Movie_StreamState(movie).load() == MOVIE_STREAM_IDLE) continue;
+    if (Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_IDLE) continue;
     byteCount = movie->remainingVideoBytes;
     if ((uint32_t)Thandor_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get()) < MOVIE_REFILL_LIMIT_BYTES) {
       handle = movie->streamHandle;
@@ -403,8 +403,8 @@ static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
       g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,movie->streamFileOffset,handle);
       if (g_FileSystemReadExact(byteCount,movie->loadedVideoEnd,handle) != 0) {
         /* only FILL_REQUESTED becomes READ_FAILED; a SHUTDOWN stored by Movie_Close stays */
-        expectedState = MOVIE_STREAM_FILL_REQUESTED;
-        Movie_StreamState(movie).compare_exchange_strong(expectedState,MOVIE_STREAM_READ_FAILED);
+        expectedState = MovieStreamState::MOVIE_STREAM_FILL_REQUESTED;
+        Movie_StreamState(movie).compare_exchange_strong(expectedState,MovieStreamState::MOVIE_STREAM_READ_FAILED);
         break;
       }
       movie->remainingVideoBytes = movie->remainingVideoBytes - byteCount;
@@ -419,8 +419,8 @@ static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
     /* The original checked for SHUTDOWN and then stored IDLE, so a Movie_Close between the two lost its
        SHUTDOWN and waited forever for this worker. Changed to one compare-exchange: it fails (and the worker
        leaves) exactly when Movie_Close has stored SHUTDOWN. */
-    expectedState = MOVIE_STREAM_FILL_REQUESTED;
-    if (!Movie_StreamState(movie).compare_exchange_strong(expectedState,MOVIE_STREAM_IDLE)) break;
+    expectedState = MovieStreamState::MOVIE_STREAM_FILL_REQUESTED;
+    if (!Movie_StreamState(movie).compare_exchange_strong(expectedState,MovieStreamState::MOVIE_STREAM_IDLE)) break;
   }
   if (g_ActiveMovie != nullptr) {
     Movie_WorkerActive(g_ActiveMovie).store(0);
@@ -464,7 +464,7 @@ void Movie_Close()
   movie = g_ActiveMovie;
   if (g_ActiveMovie != nullptr) {
     if (g_MemoryApi.alloc == ArenaHeap_Alloc) {
-      Movie_StreamState(g_ActiveMovie).store(MOVIE_STREAM_SHUTDOWN);
+      Movie_StreamState(g_ActiveMovie).store(MovieStreamState::MOVIE_STREAM_SHUTDOWN);
       currentProcessHandle = GetCurrentProcess();
       SetPriorityClass(currentProcessHandle,NORMAL_PRIORITY_CLASS);
       /* wait for the worker to leave (an atomic read: the worker thread clears the flag; the original spun on
@@ -560,7 +560,7 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
   if (movie == nullptr) {
     return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }
-  if (Movie_StreamState(movie).load() == MOVIE_STREAM_READ_FAILED) {
+  if (Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_READ_FAILED) {
     /* The original passes g_FileSystemClose a value it never sets on this path, so it closes whatever
        its caller left there -- never the movie stream handle: a UI/runtime object pointer in the
        frontend/in-game/briefing callers, g_FramebufferHeight in the Game_PlayIntroMovies frame loop, the
@@ -571,11 +571,11 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
     movie->remainingVideoBytes = 0;
     return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }
-  if ((Movie_StreamState(movie).load() == MOVIE_STREAM_IDLE) && (Movie_WorkerActive(movie).load() != 0) &&
+  if ((Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_IDLE) && (Movie_WorkerActive(movie).load() != 0) &&
       (movie->remainingVideoBytes != 0) &&
       ((uint32_t)Thandor_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get()) < MOVIE_REFILL_LIMIT_BYTES)) {
     /* only the worker leaves FILL_REQUESTED, so IDLE cannot change between the check and this store */
-    Movie_StreamState(movie).store(MOVIE_STREAM_FILL_REQUESTED);
+    Movie_StreamState(movie).store(MovieStreamState::MOVIE_STREAM_FILL_REQUESTED);
     ReleaseSemaphore(movie->refillSemaphore,1,nullptr);
   }
   flmHeader = movie->fileHeader;
@@ -610,7 +610,7 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
   movie->currentFrameIndex = nextFrameIndex;
   movie->videoStreamOffset = movie->videoStreamOffset + consumedBytes;
   DebugHook_MovieFrameDone(movie,consumedBytes);
-  if ((movie->openFlags != 0) && (Movie_StreamState(movie).load() == MOVIE_STREAM_IDLE)) {
+  if (Any(movie->openFlags) && (Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_IDLE)) {
     Movie_CompactStreamBuffer(movie);
   }
   if (outMovie != nullptr) {

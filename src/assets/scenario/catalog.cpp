@@ -222,7 +222,7 @@ void ScenarioCatalog_Rebuild()
                 (g_ScenarioCatalogPathScratchUtf16,reinterpret_cast<uint16_t *>(saveFileEntry), /* the entry starts with the UTF-16 name */
                  g_ScenarioCatalogPathScratchUtf16);
       openError = g_FileSystemOpen
-                         (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,g_ScenarioCatalogPathScratchUtf16,
+                         (FileSystemOpenFlags::FILESYSTEM_OPEN_EXCLUSIVE_SHARE,g_ScenarioCatalogPathScratchUtf16,
                           &handle);
       FatalError_ExitIfFailed(openError,openError != 0); /* does not return on failure */
       handleToClose = handle;

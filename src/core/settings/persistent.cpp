@@ -724,11 +724,11 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
   uint32_t index;
   uint64_t presentMask;
 
-  if (g_FileSystemOpen(0,s_PersistentSettingsIniPath,&fileHandle) != 0) {
+  if (g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,s_PersistentSettingsIniPath,&fileHandle) != 0) {
     WidePath_CombineDirectoryAndLeaf
               (g_FileSystemCombinedPathScratchUtf16,const_cast<uint16_t *>(s_PersistentSettingsIniLeaf) /* only read */,
                g_ExecutableDirectoryUtf16);
-    if (g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&fileHandle) != 0) {
+    if (g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_FileSystemCombinedPathScratchUtf16,&fileHandle) != 0) {
       return false;
     }
     for (index = 0; index < THANDOR_PATH_CAPACITY - 1 && g_FileSystemCombinedPathScratchUtf16[index] != 0; index++) {
@@ -794,11 +794,11 @@ static void PersistentSettings_LoadImage()
   g_PersistentSettings.image = image;
   g_PersistentSettings.loadedByteCount = 0;
   g_PersistentSettings.dirtyWriteCount = 0;
-  if (g_FileSystemOpen(0,g_PersistentSettings.path,&fileHandle) != 0) {
+  if (g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_PersistentSettings.path,&fileHandle) != 0) {
     WidePath_CombineDirectoryAndLeaf
               (g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                g_ExecutableDirectoryUtf16);
-    if (g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&fileHandle) != 0) {
+    if (g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_FileSystemCombinedPathScratchUtf16,&fileHandle) != 0) {
       Thandor_Log("settings: no thandor.ini or thandor.dat, defaults");
       return;
     }

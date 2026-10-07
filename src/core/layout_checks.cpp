@@ -3288,3 +3288,10 @@ static_assert(sizeof(NetworkEndpointFamilyPortFields4) == 0x4 && alignof(Network
                   sizeof(NetworkEndpointFamilyPortFields4::addressFamily) == 2 &&
                   offsetof(NetworkEndpointFamilyPortFields4, portNetworkOrder) == 0x2,
               "NetworkEndpointFamilyPortFields4 addressFamily stays the word at +0");
+
+/* Step 13 E9 (movie and file system flag and value sets as enum class): MovieRuntime keeps openFlags and
+   streamState as dwords at their offsets. */
+static_assert(sizeof(MovieRuntime) == 0x224 && alignof(MovieRuntime) == 4 &&
+                  offsetof(MovieRuntime, openFlags) == 0xE8 && sizeof(MovieRuntime::openFlags) == 4 &&
+                  offsetof(MovieRuntime, streamState) == 0xF4 && sizeof(MovieRuntime::streamState) == 4,
+              "MovieRuntime openFlags +0xE8 and streamState +0xF4 stay dwords");

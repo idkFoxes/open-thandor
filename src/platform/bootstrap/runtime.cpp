@@ -735,7 +735,7 @@ static void CoreAssets_AdvanceScreenshotName()
 
   do {
     do {
-      if (g_FileSystemOpen(0,g_ScreenshotFileNameUtf16,&screenshotFile) != 0) {
+      if (g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_ScreenshotFileNameUtf16,&screenshotFile) != 0) {
         return;
       }
       g_ScreenshotFileNameUtf16[7] = g_ScreenshotFileNameUtf16[7] + 1;
@@ -1219,7 +1219,7 @@ Bool8 Game_PlayIntroMovies()
   }
   if (g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro) == nullptr) {
     /* playbackRateHz: the rate from Movie_Open, passed on to TimerRegisterPeriodic */
-    while (Movie_Open(MOVIE_OPEN_STREAM,g_FlmIntro0FlmPathUtf16,&playbackRateHz,nullptr)) {
+    while (Movie_Open(MovieOpenFlags::MOVIE_OPEN_STREAM,g_FlmIntro0FlmPathUtf16,&playbackRateHz,nullptr)) {
       if (!Movie_AdvanceFrame(&introMovie,nullptr)) {
         Movie_Close();
         return true;

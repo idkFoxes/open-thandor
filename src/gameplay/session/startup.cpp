@@ -324,7 +324,7 @@ Bool8 InGameSession_OpenLoadingMovieAndAttachObjects(uint16_t *levelMoviePath,Le
     *outError = stepError;
     return false;
   }
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,nullptr,&stepError)) {
+  if (!Movie_Open(MovieOpenFlags::MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,nullptr,&stepError)) {
     *outError = stepError;
     return false;
   }

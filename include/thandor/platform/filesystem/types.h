@@ -9,6 +9,7 @@
 #define THANDOR_PLATFORM_FILESYSTEM_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 #include <thandor/platform/system/types.h>
@@ -36,18 +37,22 @@ struct _WIN32_FIND_DATAA {
     CHAR cAlternateFileName[14];
 };
 
-enum {
+/* g_FileSystemOpen flags (Win32File_Open maps them to the CreateFileA disposition, share mode and access). */
+enum class FileSystemOpenFlags : uint32_t {
+    FILESYSTEM_OPEN_NONE=0, /* open an existing file for reading, shared */
     FILESYSTEM_OPEN_CREATE_OR_TRUNCATE=1,
     FILESYSTEM_OPEN_EXCLUSIVE_SHARE=2,
     FILESYSTEM_OPEN_EXISTING_OR_CREATE=4,
     FILESYSTEM_OPEN_WRITE_ACCESS=8
 };
-using FileSystemOpenFlags = int;
+THANDOR_FLAG_ENUM(FileSystemOpenFlags);
 
-enum {
+/* g_FileSystemCreateDirectoryRecursive flags (Win32File_CreateDirectoryRecursive). */
+enum class FileSystemCreateDirectoryFlags : uint32_t {
+    FILESYSTEM_CREATE_DIRECTORY_NONE=0,
     FILESYSTEM_CREATE_DIRECTORY_RECURSIVE=1
 };
-using FileSystemCreateDirectoryFlags = int;
+THANDOR_FLAG_ENUM(FileSystemCreateDirectoryFlags);
 
 using FileSystemOutputCapacityBytes = uint32_t;
 
