@@ -16,39 +16,39 @@
 /* Text resource ids of the results table (FrontendResultsTable_Draw*Column): column headers, and the template
    the numeric columns patch their value into (selector 0). The faction-field columns take their header
    (0x21B6..0x21BF) and value template (0x21C1..0x21C3) from FrontendResultsTable_DrawColumnSequenceByType. */
-#define TEXT_ID_RESULTS_ECONOMY 0x21B0
-#define TEXT_ID_RESULTS_MILITARY 0x21B1
-#define TEXT_ID_RESULTS_COLOUR 0x21B2
-#define TEXT_ID_RESULTS_POINTS 0x21B3
-#define TEXT_ID_RESULTS_PLAYER 0x21B4
-#define TEXT_ID_RESULTS_FACTION 0x21B5
-#define TEXT_ID_RESULTS_VALUE_TEMPLATE 0x21C4
-#define TEXT_ID_RESULTS_FIELD_HEADER_BASE 0x21B6 /* + n for faction-field column n (0..9) */
-#define TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE1 0x21C1 /* exploredTerrainPercent */
-#define TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2 0x21C2 /* technology count and the relation counters */
-#define TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE3 0x21C3 /* the two resource components */
+inline constexpr int32_t TEXT_ID_RESULTS_ECONOMY = 0x21B0;
+inline constexpr int32_t TEXT_ID_RESULTS_MILITARY = 0x21B1;
+inline constexpr int32_t TEXT_ID_RESULTS_COLOUR = 0x21B2;
+inline constexpr int32_t TEXT_ID_RESULTS_POINTS = 0x21B3;
+inline constexpr int32_t TEXT_ID_RESULTS_PLAYER = 0x21B4;
+inline constexpr int32_t TEXT_ID_RESULTS_FACTION = 0x21B5;
+inline constexpr int32_t TEXT_ID_RESULTS_VALUE_TEMPLATE = 0x21C4;
+inline constexpr int32_t TEXT_ID_RESULTS_FIELD_HEADER_BASE = 0x21B6; /* + n for faction-field column n (0..9) */
+inline constexpr int32_t TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE1 = 0x21C1; /* exploredTerrainPercent */
+inline constexpr int32_t TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2 = 0x21C2; /* technology count and the relation counters */
+inline constexpr int32_t TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE3 = 0x21C3; /* the two resource components */
 /* End-of-game results title: selector 0 = level title, selector 1 = elapsed time (Frontend_MainLoop). */
-#define TEXT_ID_RESULTS_TITLE_TEMPLATE 0x21C0
+inline constexpr int32_t TEXT_ID_RESULTS_TITLE_TEMPLATE = 0x21C0;
 /* FrontendResultsColumnSequenceControl.modeFlags bit 0: graph (factionWeightRaster) instead of the table. */
-#define FRONTEND_RESULTS_MODE_GRAPH 0x1
+inline constexpr int32_t FRONTEND_RESULTS_MODE_GRAPH = 0x1;
 /* Column types of the results table (columnTypes0..); each advances by its g_FrontendResultsColumnAdvance*. */
-#define FRONTEND_RESULTS_COLUMN_SPACER0 0
-#define FRONTEND_RESULTS_COLUMN_SPACER1 1
-#define FRONTEND_RESULTS_COLUMN_COLOUR 2
-#define FRONTEND_RESULTS_COLUMN_ECONOMY 3
-#define FRONTEND_RESULTS_COLUMN_MILITARY 4
-#define FRONTEND_RESULTS_COLUMN_POINTS 5
-#define FRONTEND_RESULTS_COLUMN_PLAYER 6
-#define FRONTEND_RESULTS_COLUMN_FACTION 7
-#define FRONTEND_RESULTS_COLUMN_FACTION_FIELD 8 /* 8..0x11: faction record fields exploredTerrainPercent..relationCounterF */
+inline constexpr int32_t FRONTEND_RESULTS_COLUMN_SPACER0 = 0;
+inline constexpr int32_t FRONTEND_RESULTS_COLUMN_SPACER1 = 1;
+inline constexpr int32_t FRONTEND_RESULTS_COLUMN_COLOUR = 2;
+inline constexpr int32_t FRONTEND_RESULTS_COLUMN_ECONOMY = 3;
+inline constexpr int32_t FRONTEND_RESULTS_COLUMN_MILITARY = 4;
+inline constexpr int32_t FRONTEND_RESULTS_COLUMN_POINTS = 5;
+inline constexpr int32_t FRONTEND_RESULTS_COLUMN_PLAYER = 6;
+inline constexpr int32_t FRONTEND_RESULTS_COLUMN_FACTION = 7;
+inline constexpr int32_t FRONTEND_RESULTS_COLUMN_FACTION_FIELD = 8; /* 8..0x11: faction record fields exploredTerrainPercent..relationCounterF */
 /* Results graph: g_GameStatTableImage holds one 0x38-byte sample (7 factions x 2 dwords) every 128 simulation
    ticks. */
-#define RESULTS_STAT_SAMPLE_BYTES 0x38
-#define RESULTS_STAT_SAMPLE_TICK_SHIFT 7
+inline constexpr int32_t RESULTS_STAT_SAMPLE_BYTES = 0x38;
+inline constexpr int32_t RESULTS_STAT_SAMPLE_TICK_SHIFT = 7;
 /* Faction colour text (TEXT_ID_FACTION_NAME_BASE + colorIndex) read by FrontendResultsTable_DrawColumnSequenceByType:
    code units 1..8 are four digit pairs (blue, green, red, alpha), high digit first; the low nibble of each code
    unit is the digit value. */
-#define FACTION_COLOUR_TEXT_DIGIT_MASK 0xf
+inline constexpr int32_t FACTION_COLOUR_TEXT_DIGIT_MASK = 0xf;
 /* one digit pair as the top byte (bits 24..31) of a dword; >> 24 gives the byte, >> 22 its offset in a table of
    dwords */
 #define FACTION_COLOUR_TEXT_PAIR_TOP_BYTE(highUnit, lowUnit) \

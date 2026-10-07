@@ -13,7 +13,7 @@
 #include <thandor/core/contracts.h>
 
 /* SoftwareMaskBuffer: a revealed mask byte brightens by this much per tick, saturating at 0xFF */
-#define SOFTWARE_MASK_BRIGHTEN_STEP 0x1f
+inline constexpr int32_t SOFTWARE_MASK_BRIGHTEN_STEP = 0x1f;
 
 void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime);
 

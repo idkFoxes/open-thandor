@@ -413,7 +413,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
    colour only) is gone, and the resolution group is the scrollable list: any number of rows, the one matching
    the pending resolution selected and every other one deselected, so no stack shift comes from it.
 */
-#define DISPLAY_MODE_STACK_CONTROLS 5 /* adapter 1..5 */
+static constexpr int32_t DISPLAY_MODE_STACK_CONTROLS = 5; /* adapter 1..5 */
 #define DISPLAY_MODE_STACK_BASE DISPLAY_MODE_STACK_CONTROLS /* room for the pushed matches above the controls */
 #define DISPLAY_MODE_STACK_END (DISPLAY_MODE_STACK_BASE + DISPLAY_MODE_STACK_CONTROLS)
 void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
@@ -588,7 +588,7 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
 
 /* advancedFrameLimitOff, 60, 120, 144 (no 30: below 60 frames per second the simulation slows down) */
 static const uint32_t kAdvancedFrameLimits[] = {0,60,120,144};
-#define ADVANCED_FRAME_LIMIT_CHOICES 4
+static constexpr int32_t ADVANCED_FRAME_LIMIT_CHOICES = 4;
 
 /* The frontend root of any of its nodes. */
 static UiNodeBase *FrontendAdvancedSettingsPage_Root(UiNodeBase *node)
