@@ -768,7 +768,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
 
   previousSelectedSlot = control->selectedRowSlot;
   if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) {
-    if (((keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) ||
+    if ((Any(keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT))) ||
        (!Any(control->listStateFlags & UI_TEXT_LIST_TYPE_SEARCH_ENABLED))) {
       return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     }

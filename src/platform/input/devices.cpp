@@ -22,7 +22,7 @@ THANDOR_ALIGN(16) uint8_t g_KeyboardSpecialKeyDown[32] = {};
 
 THANDOR_ALIGN(16) KeyboardFlushEventsProc *g_KeyboardFlushEvents = &Keyboard_FlushEvents;
 
-THANDOR_ALIGN(8) uint32_t g_KeyboardStateMask = 0;
+THANDOR_ALIGN(8) UiKeyboardStateMask g_KeyboardStateMask = KEYBOARD_STATE_NONE;
 
 static uint32_t g_CursorMaxWidth = 0;
 
@@ -40,7 +40,7 @@ static KeyboardEventRingIndex g_KeyboardWriteIndex = 0;
 
 static KeyboardEventRingIndex g_KeyboardReadIndex = 0;
 
-static uint32_t g_KeyboardToggleLatchMask = 0;
+static UiKeyboardStateMask g_KeyboardToggleLatchMask = KEYBOARD_STATE_NONE;
 
 uint32_t g_CursorInputWriteIndex = 0;
 
@@ -100,7 +100,7 @@ void Keyboard_FlushEvents()
    Returns true with the key code in *outKeyCode and the modifier state in *outStateMask, or
    false (outputs untouched) when the ring is empty.
 */
-Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask)
+Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask)
 
 {
   uint32_t nextReadIndex;
@@ -256,7 +256,7 @@ Bool8 GraphicsCursor_CreateBuffersAndCenter
 
 /* Keyboard_OnKeyDown/OnKeyUp: the KEYBOARD_STATE_* bit of a Shift, Ctrl or Alt key (VK_SHIFT, VK_CONTROL
    and VK_MENU give both sides' bits), 0 for every other key. */
-static uint32_t Keyboard_ModifierStateBits(KeyboardVirtualKeyCode virtualKey)
+static UiKeyboardStateMask Keyboard_ModifierStateBits(KeyboardVirtualKeyCode virtualKey)
 {
   switch (virtualKey) {
   case VK_LSHIFT:   return KEYBOARD_STATE_LEFT_SHIFT;
@@ -268,19 +268,19 @@ static uint32_t Keyboard_ModifierStateBits(KeyboardVirtualKeyCode virtualKey)
   case VK_LCONTROL: return KEYBOARD_STATE_LEFT_CTRL;
   case VK_CONTROL:  return KEYBOARD_STATE_CTRL;
   case VK_RCONTROL: return KEYBOARD_STATE_RIGHT_CTRL;
-  default:          return 0;
+  default:          return KEYBOARD_STATE_NONE;
   }
 }
 
 
 /* Keyboard_OnKeyDown/OnKeyUp: the KEYBOARD_STATE_* bit of a lock key, 0 for every other key. */
-static uint32_t Keyboard_LockStateBit(KeyboardVirtualKeyCode virtualKey)
+static UiKeyboardStateMask Keyboard_LockStateBit(KeyboardVirtualKeyCode virtualKey)
 {
   switch (virtualKey) {
   case VK_CAPITAL: return KEYBOARD_STATE_CAPS_LOCK;
   case VK_NUMLOCK: return KEYBOARD_STATE_NUM_LOCK;
   case VK_SCROLL:  return KEYBOARD_STATE_SCROLL_LOCK;
-  default:         return 0;
+  default:         return KEYBOARD_STATE_NONE;
   }
 }
 
@@ -380,22 +380,22 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 {
   KeyboardInputEvent *eventRecord;
   KeyboardEventRingIndex writeIndex;
-  uint32_t queuedStateMask;
-  uint32_t modifierBits;
-  uint32_t lockBit;
+  UiKeyboardStateMask queuedStateMask;
+  UiKeyboardStateMask modifierBits;
+  UiKeyboardStateMask lockBit;
   uint32_t keyCode;
   uint32_t nextWriteIndex;
 
   queuedStateMask = g_KeyboardStateMask;
   modifierBits = Keyboard_ModifierStateBits(virtualKey);
-  if (modifierBits != 0) {
+  if (Any(modifierBits)) {
     g_KeyboardStateMask = g_KeyboardStateMask | modifierBits;
     return;
   }
   lockBit = Keyboard_LockStateBit(virtualKey);
-  if (lockBit != 0) {
+  if (Any(lockBit)) {
     /* toggle once per press; auto-repeat finds the latch set */
-    if ((g_KeyboardToggleLatchMask & lockBit) == 0) {
+    if (!Any(g_KeyboardToggleLatchMask & lockBit)) {
       g_KeyboardToggleLatchMask = g_KeyboardToggleLatchMask | lockBit;
       g_KeyboardStateMask = g_KeyboardStateMask ^ lockBit;
     }
@@ -429,11 +429,11 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 
 {
-  uint32_t modifierBits;
+  UiKeyboardStateMask modifierBits;
   uint32_t navigationCode;
 
   modifierBits = Keyboard_ModifierStateBits(virtualKey);
-  if (modifierBits != 0) {
+  if (Any(modifierBits)) {
     /* releasing Shift also clears Caps Lock */
     if ((virtualKey == VK_LSHIFT) || (virtualKey == VK_SHIFT) || (virtualKey == VK_RSHIFT)) {
       modifierBits = modifierBits | KEYBOARD_STATE_CAPS_LOCK;
@@ -471,7 +471,7 @@ void Keyboard_OnChar(KeyboardCharacterCode character)
   keyCode = character & 0xffff;
   nextWriteIndex = g_KeyboardWriteIndex + 1;
   g_KeyboardWriteIndex = g_KeyboardWriteIndex + 1;
-  if (((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) && (keyCode < 26 + 1)) {
+  if ((Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) && (keyCode < 26 + 1)) {
     keyCode = keyCode + ('a' - 1);
   }
   g_KeyboardEvents[writeIndex].stateMask = g_KeyboardStateMask;

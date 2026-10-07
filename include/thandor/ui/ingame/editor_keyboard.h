@@ -20,7 +20,7 @@ inline constexpr int32_t TEXT_ID_WORLD_VIEW_INFO_LAST = 0x117;
 inline constexpr int32_t EDITOR_ADJUST_STEP = 0x400;
 
 void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
-          (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot);
+          (UiKeyboardStateMask keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot);
 
 extern UiCommandRuntimeRecordPrefix *g_UiHoverSelectionRecord;
 
