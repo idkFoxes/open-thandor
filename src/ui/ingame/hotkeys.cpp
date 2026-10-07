@@ -193,7 +193,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     break;
   }
   case InGameHotkeyAction::ToggleSidePanel: { /* Tab: hide or show the side panel; bit 2 of the map/mouse settings remembers it */
-    uint32_t settings = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
+    PersistentMapMouseOptionFlags settings = PersistentSettings_ReadMapMouseOptions();
     UiPageStackControl *stack = UiLayoutContainerControl_AsPageStack(&image->sidePanelStack);
     if (UiPageStack_ActivePageIndex(stack) != 0) {
       UiPageStack_SetActiveIndex(0,stack);
@@ -210,7 +210,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
       settings = settings | PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN;
     }
     UiContainer_LayoutChildren(&image->inGameRootPanel.root.base);
-    PersistentSettings_Write(settings,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
+    PersistentSettings_WriteMapMouseOptions(settings);
     break;
   }
   case InGameHotkeyAction::Screenshot: /* Alt+P: screenshot to the next numbered PCX file */

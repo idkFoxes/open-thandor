@@ -328,8 +328,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   std::copy_n(templateDwords,sizeof(FrontendUiImage) / 4,rootDwords);
   FrontendMenu_BindSharedResources(frontendUiState);
   UiRootStack_Push(&g_FrontendUiRootCallbacks,&FrontendUi_Image(frontendUiState)->frontendRoot.root);
-  if ((PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS) &
-       PERSISTENT_SOUND_OPTION_MUSIC) != 0) {
+  if (Any(PersistentSettings_ReadSoundOptions() & PERSISTENT_SOUND_OPTION_MUSIC)) {
     FrontendMusic_StartMenuMusic();
   }
   FrontendInit_FillNetworkBackendList(frontendUiState);

@@ -218,13 +218,13 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
 
 {
   WorldRuntimeContext *world;
-  uint32_t mapMouseOptionFlags;
+  PersistentMapMouseOptionFlags mapMouseOptionFlags;
 
   world = &inGameRoot->worldRuntime;
   g_SpinLockAcquire(&g_InGameStateTickSpinLock);
   InGameSession_InitShadingAndMirrorViewOptions(world);
-  mapMouseOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  if ((mapMouseOptionFlags & 4) != 0) {
+  mapMouseOptionFlags = PersistentSettings_ReadMapMouseOptions();
+  if (Any(mapMouseOptionFlags & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN)) {
     UiPageStack_SetActiveIndex(1,&inGameRoot->sidePanelPageStack);
     UiPageStack_SetActiveIndex(0,&inGameRoot->resourceBarModePageStack);
     UiPageStack_SetActiveIndex(0,&inGameRoot->gamePanelsModePageStack);

@@ -322,17 +322,17 @@ void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
 void InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr settingsSourceNode)
 
 {
-  uint32_t audioFlags;
+  PersistentSoundOptionFlags audioFlags;
   uint32_t gainQ15;
 
   InGamePersistentSettingsPage3508 *audioPage =
        THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode);
 
   UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_SOUND_SETTINGS,&audioPage->settingsPageStack);
-  audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS,&audioPage->soundEffectsEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC,&audioPage->musicEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO,&audioPage->reverseStereoControl);
+  audioFlags = PersistentSettings_ReadSoundOptions();
+  UiSelectableControl_SetSelected(ToBits(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS),&audioPage->soundEffectsEnabledControl);
+  UiSelectableControl_SetSelected(ToBits(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC),&audioPage->musicEnabledControl);
+  UiSelectableControl_SetSelected(ToBits(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO),&audioPage->reverseStereoControl);
   gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
   (audioPage->soundEffectsGainControl).currentValue = gainQ15;
   gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
@@ -344,7 +344,7 @@ void InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNo
   while (settingsSourceNode->parent != UI_NODE_NONE) {
     settingsSourceNode = settingsSourceNode->parent;
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,settingsSourceNode);
     UiNodeList_SuppressActionId(INGAME_ACTION_MOVIE_VOLUME,settingsSourceNode);
     UiNodeList_SuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,settingsSourceNode);
@@ -354,13 +354,13 @@ void InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNo
     UiNodeList_UnsuppressActionId(INGAME_ACTION_MOVIE_VOLUME,settingsSourceNode);
     UiNodeList_UnsuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,settingsSourceNode);
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_MUSIC_VOLUME,settingsSourceNode);
   }
   else {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_MUSIC_VOLUME,settingsSourceNode);
   }
-  if ((audioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC)) == 0) {
+  if (!Any(audioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC))) {
     UiNodeList_SuppressActionId(INGAME_ACTION_REVERSE_STEREO,settingsSourceNode);
   }
   else {
@@ -527,7 +527,7 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
 void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
-  uint32_t audioFlags;
+  PersistentSoundOptionFlags audioFlags;
   AudioMixerGainQ15 effectsGainQ15;
   MovieAudioGainQ15 movieDefaultGainQ15;
   MovieAudioGainQ15 movieAlternateGainQ15;
@@ -538,9 +538,9 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
     g_SoundStopVoice(g_InGameActiveEffectVoice);
     g_InGameActiveEffectVoice = nullptr;
   }
-  audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  PersistentSettings_Write((uint32_t)isEnabled | audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS,
-                           PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  audioFlags = PersistentSettings_ReadSoundOptions();
+  PersistentSettings_WriteSoundOptions(FromBits<PersistentSoundOptionFlags>((uint32_t)isEnabled) |
+                                      (audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS));
   UiNodeBase *uiRoot = &control->base;
   while (uiRoot->parent != UI_NODE_NONE) {
     uiRoot = uiRoot->parent;
@@ -555,13 +555,13 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
     UiNodeList_SuppressActionId(INGAME_ACTION_MOVIE_VOLUME,uiRoot);
     UiNodeList_SuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,uiRoot);
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_MUSIC_VOLUME,uiRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_MUSIC_VOLUME,uiRoot);
   }
-  if (isEnabled == 0 && (audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (isEnabled == 0 && !Any(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_REVERSE_STEREO,uiRoot);
   }
   else {
@@ -592,11 +592,11 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
-  uint32_t audioFlags;
-  uint32_t musicEnabledBit;
+  PersistentSoundOptionFlags audioFlags;
+  PersistentSoundOptionFlags musicEnabledBit;
   Bool8 isEnabled;
 
-  musicEnabledBit = 0;
+  musicEnabledBit = {};
   isEnabled = (Bool8)UiSelectableControl_IsSelected(control);
   if (isEnabled) {
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
@@ -606,14 +606,13 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     g_InGameActiveMusicVoice = nullptr;
     g_InGameMusicNextTrackCountdown = 1;
   }
-  audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  PersistentSettings_Write(musicEnabledBit | audioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC,
-                           PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  audioFlags = PersistentSettings_ReadSoundOptions();
+  PersistentSettings_WriteSoundOptions(musicEnabledBit | (audioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC));
   UiNodeBase *uiRoot = &control->base;
   while (uiRoot->parent != UI_NODE_NONE) {
     uiRoot = uiRoot->parent;
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,uiRoot);
     UiNodeList_SuppressActionId(INGAME_ACTION_MOVIE_VOLUME,uiRoot);
     UiNodeList_SuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,uiRoot);
@@ -623,13 +622,13 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     UiNodeList_UnsuppressActionId(INGAME_ACTION_MOVIE_VOLUME,uiRoot);
     UiNodeList_UnsuppressActionId(INGAME_ACTION_MESSAGE_MOVIE_VOLUME,uiRoot);
   }
-  if (musicEnabledBit == 0) {
+  if (!Any(musicEnabledBit)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_MUSIC_VOLUME,uiRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_MUSIC_VOLUME,uiRoot);
   }
-  if (musicEnabledBit == 0 && (audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
+  if (!Any(musicEnabledBit) && !Any(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_REVERSE_STEREO,uiRoot);
   }
   else {
@@ -702,6 +701,8 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
 {
   UiNodeBase *uiRoot;
   uint32_t settingValue;
+  PersistentMapMouseOptionFlags mapMouseOptions;
+  PersistentMouseLinkPanelOptionFlags linkOptions;
   Bool8 isSelected;
 
   uiRoot = &settingsToggle->base;
@@ -733,26 +734,26 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
   UiKeyboardFocus_ReleaseNode(&image->worldView.base);
   UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_GAME_MENU,
                              UiLayoutContainerControl_AsPageStack(&image->gameWindowPageStack));
-  settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  UiSelectableControl_SetSelected(settingValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF,
+  mapMouseOptions = PersistentSettings_ReadMapMouseOptions();
+  UiSelectableControl_SetSelected(ToBits(mapMouseOptions & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF),
                                   &image->autoZoomOffCheckbox.selectable);
-  UiSelectableControl_SetSelected(settingValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
+  UiSelectableControl_SetSelected(ToBits(mapMouseOptions & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF),
                                   &image->autoRotationOffCheckbox.selectable);
   /* "right button does not scroll" per the frontend settings page (the Tab key also toggles this bit) */
   UiSelectableControl_SetSelected
-            (settingValue & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,&image->rightButtonNoScrollCheckbox.selectable);
+            (ToBits(mapMouseOptions & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN),&image->rightButtonNoScrollCheckbox.selectable);
   /* rotation is linked with zoom or with tilt; each excludes the other */
-  settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  if ((settingValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0) {
+  linkOptions = PersistentSettings_ReadMouseLinkPanelOptions();
+  if (Any(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_ZOOM)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_TILT,uiRoot);
   }
   UiSelectableControl_SetSelected
-            (settingValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM,&image->linkRotationZoomCheckbox.selectable);
-  if ((settingValue & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0) {
+            (ToBits(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_ZOOM),&image->linkRotationZoomCheckbox.selectable);
+  if (Any(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_TILT)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_ZOOM,uiRoot);
   }
   UiSelectableControl_SetSelected
-            (settingValue & PERSISTENT_LINK_OPTION_ROTATION_TILT,&image->linkRotationTiltCheckbox.selectable);
+            (ToBits(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_TILT),&image->linkRotationTiltCheckbox.selectable);
   settingValue = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
   image->scrollSpeedSlider.value = settingValue;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
