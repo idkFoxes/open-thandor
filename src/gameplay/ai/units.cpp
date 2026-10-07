@@ -44,8 +44,8 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
     if (unitModelRuntime == nullptr) continue;
     slotEntityRuntime = unitModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if ((slotEntityRuntime->common.commandFlags &
-         (ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_LOCKED | ARMY_MOVEMENT_ROUTE_POINT_REACHED)) != 0) {
-      if ((slotEntityRuntime->common.commandFlags & ARMY_MOVEMENT_LOCKED) != 0) continue;
+         ToBits(ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_LOCKED | ARMY_MOVEMENT_ROUTE_POINT_REACHED)) != 0) {
+      if ((slotEntityRuntime->common.commandFlags & ToBits(ARMY_MOVEMENT_LOCKED)) != 0) continue;
       /* Busy entities only get a behavior update when their cooldown runs out (or was already negative,
          which the increment below undoes). */
       behaviorCooldownTicks = &slotEntityRuntime->common.aiCommandCooldownTicks;
@@ -363,7 +363,7 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
 
 {
   if ((g_AiCollectedEntityCount < AI_WORKSPACE14_CAPACITY) &&
-      ((armyRuntimeSlot->aiUnitFlags & AI_UNIT_STATE94_GROUP_ASSIGNED) == 0)) {
+      !Any(armyRuntimeSlot->aiUnitFlags & AI_UNIT_STATE94_GROUP_ASSIGNED)) {
     g_AiWorkspace14CollectedArmies[g_AiCollectedEntityCount] = armyRuntimeSlot;
     g_AiCollectedEntityCount++;
   }
@@ -471,7 +471,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
 
   workspace04Count = g_AiWorkspace04Count;
   workspace00Count = g_AiWorkspace00Count;
-  if (((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) == 0) &&
+  if (!Any(armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) &&
      (ArmyRuntime_UpdateMovementAndWaypoints
         (worldRuntime,AiUnit_MovementView(armyRuntime),&steerWorldXQ12,&steerWorldYQ12))) {
     if (workspace00Count == workspace04Count) {
@@ -484,7 +484,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
                 (headingOffset.sinValue + unitWorldY,headingOffset.cosValue + unitWorldX,
                  AiUnit_MovementView(armyRuntime));
     }
-    else if (((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) == 0) && (g_AiWorkspace08Count != 0)) {
+    else if (!Any(armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) && (g_AiWorkspace08Count != 0)) {
       bestScore = 0;
       terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites;
       for (sitesRemaining = g_AiWorkspace08Count; sitesRemaining != 0; sitesRemaining--, terrainFeatureEntry++) {

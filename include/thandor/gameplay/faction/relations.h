@@ -23,11 +23,7 @@ inline constexpr int PLAYER_PAIR_LIST_CAPACITY = 4096;
    the pending states 2, 5 and 9 and the top states 3, 6 and 10; 11 is FACTION_RELATION_MERGE. */
 inline constexpr int FACTION_RELATION_STATE_FRIENDLY = 4; /* states 4 and up: same bloc (GameFactionRelations_BuildEligibleFactionMask) */
 inline constexpr int FACTION_RELATION_STATE_ALLIED = 8; /* states 8 and up: allied; the game ends when no two active factions are below */
-/* GameFactionRuntimeImageTail.relationUiFlags (from the level's LevelWorldSettings.relationUiFlags): relation
-   drift freezes */
-inline constexpr int FACTION_RELATION_FREEZE_ALLIED = 0x1; /* states 8 and up stay */
-inline constexpr int FACTION_RELATION_FREEZE_FRIENDLY = 0x2; /* states 4 and up stay */
-inline constexpr int FACTION_RELATION_FREEZE_ALL = 0x4;
+/* The relation drift freezes FACTION_RELATION_FREEZE_* are GameRelationUiFlags (gameplay/faction/types.h). */
 /* GameFactionRuntimeRecord.packedRelationStates: one relation-state nibble per faction; the nibble bits of
    state (e.g. FACTION_RELATION_STATE_ALLIED) at the given faction */
 constexpr uint32_t FACTION_RELATION_PACKED(uint32_t state,int factionIndex) { return state << (factionIndex * 4); }

@@ -230,7 +230,7 @@ static void InGameWorldOverlay_BuildCommandTargetMarkers(WorldRuntimeContext *wo
     }
     if (((entityRuntime->common).ownership.modelRuntime()->definitionOrSavedId.
          runtimeDefinition->accelerationPerTick != 0)
-       && (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_ACTIVE) != 0)) {
+       && (((entityRuntime->common).commandFlags & ToBits(ARMY_MOVEMENT_ACTIVE)) != 0)) {
       InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                 (Q12_ONE,(entityRuntime->common).ownership.modelNode,
                  (entityRuntime->common).pathCoordinate1Q12,(entityRuntime->common).pathCoordinate0Q12,
@@ -238,7 +238,7 @@ static void InGameWorldOverlay_BuildCommandTargetMarkers(WorldRuntimeContext *wo
       if (InGameWorldOverlay_CommandTargetMarkersFull()) {
         return;
       }
-      if (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) != 0) {
+      if (((entityRuntime->common).commandFlags & ToBits(ARMY_MOVEMENT_WAYPOINTS_QUEUED)) != 0) {
         /* further waypoints: the army's queued waypoints (at least one is visited) */
         waypointIndex = 0;
         /* Original quirk: a do/while, so it runs once even with a count of 0 (kept as in the original; step 11). */
