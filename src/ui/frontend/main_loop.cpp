@@ -95,20 +95,20 @@ static void FrontendMainLoop_TakeReceivedSnapshots(PckDecodedByteCount *received
   /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if ((remainingDecodedBytes < sizeof(FrontendSnapshotTransferFlags)) ||
-        (((*receivedFlagsCursor & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) &&
+        (Any(*receivedFlagsCursor & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) &&
          (remainingDecodedBytes - sizeof(FrontendSnapshotTransferFlags) < FRONTEND_SNAPSHOT_PAYLOAD_BYTES))) {
       Thandor_Log("FrontendMainLoop_TakeReceivedSnapshots: snapshot table ends early (%u bytes decoded)",
                   *receivedBuffer);
       break;
     }
     remainingDecodedBytes = remainingDecodedBytes - sizeof(FrontendSnapshotTransferFlags);
-    if ((*receivedFlagsCursor & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) {
+    if (Any(*receivedFlagsCursor & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE)) {
       remainingDecodedBytes = remainingDecodedBytes - FRONTEND_SNAPSHOT_PAYLOAD_BYTES;
     }
     receivedTransferFlags = *receivedFlagsCursor;
     playerBlock->snapshotTransferFlags = playerBlock->snapshotTransferFlags | receivedTransferFlags;
     receivedFlagsCursor++;
-    if ((receivedTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) {
+    if (Any(receivedTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE)) {
       /* the payload bytes are copied dword by dword */
       payloadCursor = reinterpret_cast<FrontendSnapshotTransferFlags *>(playerBlock->snapshotPayload);
       for (remainingPayloadDwords = FRONTEND_SNAPSHOT_PAYLOAD_BYTES / sizeof(uint32_t); remainingPayloadDwords != 0;
@@ -144,7 +144,7 @@ static void FrontendMainLoop_ExchangeScenarioCatalog()
 
   localPlayerBlock = g_FrontendPlayerRuntimeBlocks;
   FrontendScenarioTransfer_ProcessReceivedAsset();
-  if ((localPlayerBlock->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG) != 0) {
+  if (Any(localPlayerBlock->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG)) {
     return;
   }
   localRoleStateFlags = &localPlayerBlock->factionAssignment.roleStateFlags;
@@ -154,7 +154,7 @@ static void FrontendMainLoop_ExchangeScenarioCatalog()
   scenarioCatalog = g_ScenarioCatalog;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     UiTransferMailbox_MarkUnavailable();
-    g_FrontendScenarioTransferState = 1;
+    g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_CATALOG;
   }
   else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     encodedCatalog = Thandor_Bytes(g_ScenarioCatalog) + g_ScenarioCatalogUsedBytes + sizeof(uint32_t);
@@ -186,7 +186,7 @@ static void FrontendMainLoop_PollScenarioSelectionPage()
     remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
     /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
-      if ((playerBlock->snapshotTransferFlags & FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY) == 0) {
+      if (!Any(playerBlock->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY)) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
           receivedBuffer = static_cast<PckDecodedByteCount *>(UiTransferMailbox_GetReceivedBuffer(&receivedByteCount));
           if (receivedBuffer != nullptr) {
@@ -206,7 +206,7 @@ static void FrontendMainLoop_PollScenarioSelectionPage()
     /* the AND really clears every other progress bit of the player */
     roleStateFlags = &playerBlock->factionAssignment.roleStateFlags;
     *roleStateFlags = *roleStateFlags & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG;
-    if (*roleStateFlags == 0) {
+    if (!Any(*roleStateFlags)) {
       FrontendMainLoop_ExchangeScenarioCatalog();
       return;
     }
@@ -231,7 +231,7 @@ static Bool8 FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags sta
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
-    if ((playerBlock->factionAssignment.roleStateFlags & stateMask) == 0) {
+    if (!Any(playerBlock->factionAssignment.roleStateFlags & stateMask)) {
       return false;
     }
     playerBlock++;
@@ -270,7 +270,7 @@ static void FrontendMainLoop_RunSession(FrontendBooleanState32 loadExistingSessi
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
-    playerBlock->factionAssignment.roleStateFlags = 0;
+    playerBlock->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
     playerBlock++;
     remainingPlayerBlocks--;
   } while (remainingPlayerBlocks != 0);
@@ -454,7 +454,7 @@ static Bool8 FrontendMainLoop_EnterMissionBriefing(uint32_t *outError)
   }
   else {
     UiTransferMailbox_MarkUnavailable();
-    g_FrontendScenarioTransferState = 5;
+    g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_LEVEL_BUNDLE;
   }
   return true;
 }

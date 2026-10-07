@@ -199,7 +199,7 @@ uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
   g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
        g_WinSock_htons((uint16_t)localPort);
   g_NetworkFallbackBindEndpoint.ipv4AddressNetworkOrder = bindAddress;
-  g_NetworkFallbackBindEndpoint.addressHeader.fields.addressFamily = NETWORK_ADDRESS_FAMILY_IPV4;
+  g_NetworkFallbackBindEndpoint.addressHeader.fields.addressFamily = NetworkAddressFamily::NETWORK_ADDRESS_FAMILY_IPV4;
   g_NetworkFallbackBindEndpoint.zeroPadding[0] = 0;
   g_NetworkFallbackBindEndpoint.zeroPadding[1] = 0;
   g_NetworkFallbackBindEndpoint.zeroPadding[2] = 0;
@@ -207,7 +207,7 @@ uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
   /* the local descriptor gets the same family and port (family in the low word, port in the high word) */
   g_NetworkLocalEndpoint.addressHeader.packedFamilyAndPort =
        (uint32_t)g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder << 16 |
-       NETWORK_ADDRESS_FAMILY_IPV4;
+       static_cast<uint16_t>(NetworkAddressFamily::NETWORK_ADDRESS_FAMILY_IPV4);
   g_NetworkFallbackBindEndpoint.zeroPadding[4] = 0;
   g_NetworkFallbackBindEndpoint.zeroPadding[5] = 0;
   g_NetworkFallbackBindEndpoint.zeroPadding[6] = 0;

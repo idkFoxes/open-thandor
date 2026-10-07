@@ -9,6 +9,7 @@
 #define THANDOR_WORLD_SHOTS_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/assets/rom/types.h>
 #include <thandor/core/types.h>
@@ -26,7 +27,12 @@ struct ModelRuntimeNode;
 
 using ShotAnimationFrameAccumulatorQ4 = uint32_t;
 
-using ShotImpactEffectEmissionFlags = uint32_t;
+/* ShotRuntimeSlot.impactEffectEmissionFlags (saved with the slot). */
+enum class ShotImpactEffectEmissionFlags : uint32_t {
+    SHOT_IMPACT_EFFECT_EMITTED = 0x1 /* a beam (direct-line shot) has emitted its impact effect */
+};
+THANDOR_FLAG_ENUM(ShotImpactEffectEmissionFlags);
+using enum ShotImpactEffectEmissionFlags;
 
 using ShotProjectileAgeTicks = uint32_t;
 

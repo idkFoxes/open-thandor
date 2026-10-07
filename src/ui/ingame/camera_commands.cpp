@@ -145,8 +145,8 @@ Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
     currentRecord = &g_InGameCameraCommandDispatchRecords16.records[recordIndex];
     recordKeyCode = currentRecord->keyCode;
     requiredModifiers = currentRecord->requiredModifierMask;
-    if (recordKeyCode == 0) break;
-    if ((recordKeyCode != commandCode) ||
+    if (recordKeyCode == InGameCameraCommandKeyCode{}) break;
+    if ((static_cast<UiActionId>(recordKeyCode) != commandCode) ||
         !UiKeyModifiers_Match(requiredModifiers,(uint32_t)modifierFlags,UiKeyModifierRule::AnyOfMask)) continue;
     /* Matching record: run its action and stop (the original jumped to a continuation address per record). */
     switch(currentRecord->action) {

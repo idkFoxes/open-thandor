@@ -151,9 +151,9 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
         /* first two code units, cleared as one dword */
         *reinterpret_cast<uint32_t *>(player->playerName.textUtf16) = 0;
         player->playerRuntimeId = 0;
-        player->factionAssignment.roleStateFlags = 0;
+        player->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
         player->colourCycleFlags = 0;
-        player->snapshotTransferFlags = 0;
+        player->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
       }
     }
     break;
@@ -390,7 +390,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
     g_GraphicsCursorSetFrame(cursorFrame);
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    g_FrontendPlayerRuntimeBlocks->capabilityFlags = FRONTEND_CAPABILITY_CD;
+    g_FrontendPlayerRuntimeBlocks->capabilityFlags = FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD;
   }
   activePageIndex = UiPageStack_ActivePageIndex
                      (UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendPageStack));

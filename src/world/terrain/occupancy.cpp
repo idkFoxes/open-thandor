@@ -202,11 +202,11 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 */
 TerrainOccupancyResolvedMasks
 TerrainOccupancyMask_ResolveRuntimeClassFlags
-          (FieldGridRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
+          (uint32_t baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
           FieldGridRegionMask primaryOccupancyMask,char activeFactionIndex)
 
 {
-  FieldGridRuntimeFlags resolvedClassFlags;
+  uint32_t resolvedClassFlags;
   uint32_t combinedOccupancyMask;
   uint32_t factionSeenBit;
   TerrainOccupancyResolvedMasks resolvedMasks;

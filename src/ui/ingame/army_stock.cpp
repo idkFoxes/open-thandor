@@ -220,7 +220,7 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
       runtimeRecord = g_UiCommandSpriteVariantARecords[slotIndex];
       factionIndex = worldRuntime->activeFactionRuntimeIndex;
       InGameCommand_Issue<GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid>(0,0,factionIndex);
-      if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0)
+      if (!Any(control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK))
       {
         factionIndex = worldRuntime->activeFactionRuntimeIndex;
         assetId = runtimeRecord->armyAssetId;

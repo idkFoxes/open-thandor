@@ -93,7 +93,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
       if (otherPlayersRemaining == 0) break;
     }
     if ((otherPlayersRemaining != 0) &&
-        (((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY) != 0)) {
+        Any((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY)) {
       loadedEntry = FieldGrid_LoadValidated(fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
       checkedValue = FatalError_ExitIfFailed
                           (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
@@ -104,7 +104,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
          field grid is not available locally: request it through the transfer mailbox. */
       Thandor_StoreU32(playerRecord->snapshotPayload,0);
       UiTransferMailbox_MarkUnavailable();
-      g_FrontendScenarioTransferState = SCENARIO_TRANSFER_FIELD_GRID;
+      g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_FIELD_GRID;
     }
     return;
   }
@@ -163,7 +163,7 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
-    if (((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_LEVEL_RECEIVED) == 0) {
+    if (!Any((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_LEVEL_RECEIVED)) {
       FrontendScenarioSession_LoadFieldGridOfLevel(levelAsset);
       break;
     }
@@ -175,7 +175,7 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
   for (playersRemaining = g_FrontendPlayerRuntimeBlockCount - 1; playersRemaining != 0;
       playersRemaining--) {
     playerScanBase++;
-    if ((playerScanBase->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY) != 0) {
+    if (Any(playerScanBase->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY)) {
       roleFlags = &playerScanBase->factionAssignment.roleStateFlags;
       *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
       playerScanBase->transferProgressBytes = INT32_MAX;
@@ -325,7 +325,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   }
   else {
     UiTransferMailbox_MarkUnavailable();
-    g_FrontendScenarioTransferState = SCENARIO_TRANSFER_CAMPAIGN_BUNDLE;
+    g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_CAMPAIGN_BUNDLE;
   }
   frontendRoot->menuRoomModelView.contextFlags =
        frontendRoot->menuRoomModelView.contextFlags &
@@ -447,7 +447,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
     }
     if (!levelLoadedLocally) {
       UiTransferMailbox_MarkUnavailable();
-      g_FrontendScenarioTransferState = SCENARIO_TRANSFER_LEVEL;
+      g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_LEVEL;
       levelAsset = g_FrontendLoadedLevelAsset;
     }
   }

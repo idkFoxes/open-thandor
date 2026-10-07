@@ -209,7 +209,7 @@ static void RasterTest_MakeTriangle(uint64_t *seed, int index, int targetWidth, 
         packet->vertices[2].diffuseColor ^= 1;
     }
     packet->modulationColor = RasterTest_Random(seed);
-    packet->renderFlags = (GraphicsPrimitiveDispatchFlags)(index << 12);
+    packet->renderFlags = FromBits<GraphicsPrimitiveDispatchFlags>(index << 12);
     if ((index & 16) != 0) {
         packet->textureEntry = &textures[RasterTest_Random(seed) % (uint32_t)textureCount];
     }
@@ -251,7 +251,7 @@ static int RasterTest_Handlers(RasterTestState *state, GraphicsTextureSetEntry *
             }
             /* as SoftwareRenderer_DrawQueue32Bit / SoftwareRenderer_DrawQueueAuxiliary do */
             SoftwareRenderer_PrepareTrianglePacket(&packet);
-            table[(packet.renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12](clipMaxY, clipMaxX, clipMinY,
+            table[ToBits(packet.renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12](clipMaxY, clipMaxX, clipMinY,
                                                                                      clipMinX, &packet);
         }
         if (auxiliary) {

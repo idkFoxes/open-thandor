@@ -28,7 +28,7 @@ static uint32_t GraphicsPrimitiveQueue_RenderSortKey(const GraphicsPrimitivePack
   if ((packet->renderFlags & GRAPHICS_PRIMITIVE_BLEND_MASK) == GRAPHICS_PRIMITIVE_BLEND_OPAQUE) {
     /* the texture entry address (its low 32 bits on x64) groups the opaque packets by texture */
     return ((uint32_t)(uintptr_t)packet->textureEntry | GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE) -
-           (packet->renderFlags & GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS);
+           ToBits(packet->renderFlags & GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS);
   }
   return (packet->vertices[0].depth + packet->vertices[1].depth + packet->vertices[2].depth) &
          GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK;
@@ -242,7 +242,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *que
    true when the queue is full; one slot is always left unused. Called by ModelRender_SubmitTriangle and
    ModelRender_PrepareProjectedVertexAlternatePath (graphics/render/model_submit.cpp).
 */
-Bool8 GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
+Bool8 GraphicsPrimitiveQueue_AppendTriangle(GraphicsPrimitiveDispatchFlags renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue)
 
@@ -314,7 +314,7 @@ void GraphicsPrimitiveQueue_SetVertexColors
           GraphicsPrimitiveQueue *queue)
 
 {
-  uint32_t existingBlendModeFlags;
+  GraphicsPrimitiveDispatchFlags existingBlendModeFlags;
   GraphicsPrimitivePacket *packetPool;
   uint32_t queuedPacketCount;
   

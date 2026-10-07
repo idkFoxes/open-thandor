@@ -155,12 +155,12 @@ uintptr_t FileSystem_Init()
   if (ArenaHeap_Alloc(PACKAGE_SCRATCH_BUFFER_BYTES,reinterpret_cast<void **>(&g_PackageScratchBuffer)) != 0) {
     FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),true);
   }
-  openError = Win32File_Open(0,g_ThandorCfgPathUtf16,&configFile);
+  openError = Win32File_Open(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_ThandorCfgPathUtf16,&configFile);
   if (openError != 0) {
     WidePath_CombineDirectoryAndLeaf
               (g_FileSystemCombinedPathScratchUtf16,g_ThandorCfgPathUtf16,
                g_ExecutableDirectoryUtf16);
-    openError = Win32File_Open(0,g_FileSystemCombinedPathScratchUtf16,&configFile);
+    openError = Win32File_Open(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_FileSystemCombinedPathScratchUtf16,&configFile);
   }
   if (openError == 0) {
     if (Win32File_GetSize(configFile,&configBytesLeft) && (configBytesLeft != 0)) {
@@ -235,9 +235,9 @@ Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffe
   WidePath_CombineDirectoryAndLeaf
             (g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              g_ExecutableDirectoryUtf16);
-  openError = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&handle);
+  openError = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_FileSystemCombinedPathScratchUtf16,&handle);
   if (openError != 0) {
-    openError = g_FileSystemOpen(0,pathUtf16,&handle);
+    openError = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,pathUtf16,&handle);
     if (openError != 0) {
       *outError = openError;
       return false;
@@ -280,7 +280,7 @@ uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uin
   uint32_t writeError;
   uint32_t openError;
   openError = g_FileSystemOpen
-                    (FILESYSTEM_OPEN_EXCLUSIVE_SHARE|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path,&handle);
+                    (FileSystemOpenFlags::FILESYSTEM_OPEN_EXCLUSIVE_SHARE | FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path,&handle);
   if (openError != 0) {
     return openError;
   }
@@ -386,7 +386,7 @@ uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags
   if (CreateDirectoryA(Win32Path_ScratchText(),nullptr) != 0) {
     return 0;
   }
-  if ((flags & FILESYSTEM_CREATE_DIRECTORY_RECURSIVE) != 0) {
+  if (Any(flags & FileSystemCreateDirectoryFlags::FILESYSTEM_CREATE_DIRECTORY_RECURSIVE)) {
     WidePath_SplitParentAndLeaf(leafName,parentPath,path);
     if (Win32File_CreateDirectoryRecursive(flags,parentPath) == 0) {
       Win32Path_ToNarrow(g_Win32PathScratch[0],path); /* fitted above */
@@ -597,8 +597,8 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
   if (!Win32Path_ToNarrow(g_Win32PathScratch[0],path)) {
     return FATAL_ERROR_FILE_ACCESS_FAILED;
   }
-  if ((openFlags & FILESYSTEM_OPEN_CREATE_OR_TRUNCATE) == 0) {
-    if ((openFlags & FILESYSTEM_OPEN_EXISTING_OR_CREATE) == 0) {
+  if (!Any(openFlags & FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE)) {
+    if (!Any(openFlags & FileSystemOpenFlags::FILESYSTEM_OPEN_EXISTING_OR_CREATE)) {
       creationDisposition = OPEN_EXISTING;
     }
     else {
@@ -608,8 +608,8 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
   else {
     creationDisposition = CREATE_ALWAYS;
   }
-  if ((openFlags & FILESYSTEM_OPEN_EXCLUSIVE_SHARE) == 0) {
-    if ((openFlags & FILESYSTEM_OPEN_CREATE_OR_TRUNCATE) == 0) {
+  if (!Any(openFlags & FileSystemOpenFlags::FILESYSTEM_OPEN_EXCLUSIVE_SHARE)) {
+    if (!Any(openFlags & FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE)) {
       shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
     }
     else {
@@ -619,7 +619,7 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
   else {
     shareMode = 0;
   }
-  if ((openFlags & (FILESYSTEM_OPEN_WRITE_ACCESS|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE)) == 0) {
+  if (!Any(openFlags & (FileSystemOpenFlags::FILESYSTEM_OPEN_WRITE_ACCESS | FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE))) {
     desiredAccess = GENERIC_READ;
   }
   else {

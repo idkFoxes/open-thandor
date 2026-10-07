@@ -89,7 +89,7 @@ Bool8 GameFactionRelations_TestPairTransitionAllowed
   FactionActiveMask targetEligibleMask;
   FactionActiveMask sourceEligibleMask;
   FactionActiveMask combinedMask;
-  uint32_t relationUiFlags;
+  GameRelationUiFlags relationUiFlags;
 
   relationState = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
   if (relationState == 2 || relationState == 5 || relationState == 9) {
@@ -97,15 +97,15 @@ Bool8 GameFactionRelations_TestPairTransitionAllowed
   }
   /* relationUiFlags: bit 4 freezes every relation, bit 2 states 4 and up, bit 1 states 8 and up */
   relationUiFlags = g_GameFactionRuntimeImage.tail.relationUiFlags;
-  if ((relationUiFlags & FACTION_RELATION_FREEZE_ALL) != 0) {
+  if (Any(relationUiFlags & FACTION_RELATION_FREEZE_ALL)) {
     return true;
   }
   if (relationState >= FACTION_RELATION_STATE_FRIENDLY &&
-      (relationUiFlags & FACTION_RELATION_FREEZE_FRIENDLY) != 0) {
+      Any(relationUiFlags & FACTION_RELATION_FREEZE_FRIENDLY)) {
     return true;
   }
   if (relationState >= FACTION_RELATION_STATE_ALLIED &&
-      (relationUiFlags & FACTION_RELATION_FREEZE_ALLIED) != 0) {
+      Any(relationUiFlags & FACTION_RELATION_FREEZE_ALLIED)) {
     return true;
   }
   if (relationState >= FACTION_RELATION_STATE_FRIENDLY) {
@@ -918,7 +918,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
       conditionRatio = ModelRuntime_QueryHierarchyConditionRatioQ12
                         (reinterpret_cast<RuntimeModelFactionPrefix *>(targetEntity)); /* the army's prefix view */
       if (conditionRatio == Q12_ONE &&
-          (shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
+          Any(shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) &&
           targetEntity == static_cast<GameEntityRuntime *>(shooterArmy->commandTargetArmyRuntime)) {
         ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(shooterArmy);
         shooterArmy->commandGeneration = 1;
@@ -942,7 +942,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
                     (targetModelRuntime,&inGameRoot->worldRuntime);
         }
-        else if (((shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0 ||
+        else if ((!Any(shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) ||
                   (shooterArmy->commandTargetArmyRuntime != nullptr &&
                    targetFactionIndex == shooterArmy->commandTargetArmyRuntime->factionIndex)) &&
                  99 < (int)((g_GameFactionRuntimeImage.tail.simulationTick * 2 -

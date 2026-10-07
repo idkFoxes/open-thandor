@@ -54,11 +54,11 @@ static SoftwareRasterHandler *SoftwareRenderer_SelectHandler(SoftwareRasterHandl
   static Bool8 loggedEmptyHandler;
   SoftwareRasterHandler *handler;
 
-  handler = handlers[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12];
+  handler = handlers[ToBits(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12];
   if (handler == nullptr && !loggedEmptyHandler) {
     loggedEmptyHandler = true;
     Thandor_Log("SoftwareRenderer: skipped packets with render flags 0x%08X (no raster handler)",
-                (uint32_t)packet->renderFlags);
+                ToBits(packet->renderFlags));
   }
   return handler;
 }
@@ -103,7 +103,7 @@ void SoftwareRenderer_DrawQueueAuxiliary
   packet = GraphicsPrimitiveQueue_Begin(queue);
   while (packet != nullptr) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
-    if (((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) == 0) ||
+    if (!Any(packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) ||
        ((packet->textureEntry->subresourceIndex != 99 &&
         (packet->textureEntry->subresourceIndex != 113)))) {
       handler = SoftwareRenderer_SelectHandler(g_SoftwareRasterHandlersAuxiliary,packet);
@@ -1068,7 +1068,7 @@ void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
   if ((firstColor == secondColor) && (firstColor == thirdColor)) {
     packet->renderFlags = packet->renderFlags | GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED;
   }
-  if ((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) != 0) {
+  if (Any(packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED)) {
     textureEntryRef = packet->textureEntry;
     texelShift = 8 - (char)textureEntryRef->widthLog2;
     for (i = 0; i < 3; i++) {

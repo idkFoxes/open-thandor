@@ -237,7 +237,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     /* the cursor continues into firstPlayerRecord->endpoint and then commandSyncPending */
     endpointSourceDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
     localPlayerRecordDwordCursor = std::copy_n(endpointSourceDwordCursor,sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t),localPlayerRecordDwordCursor);
-    *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING;
+    *localPlayerRecordDwordCursor = static_cast<uint32_t>(FRONTEND_COMMAND_SYNC_PENDING);
     g_FrontendPendingSessionPlayerCount = 0;
     g_FrontendPlayerRuntimeCount = 1;
     g_FrontendPlayerRuntimeBlockCount = 1;
@@ -263,9 +263,9 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     firstPlayerRecord->playerName.textUtf16[0] = 0;
     firstPlayerRecord->playerName.textUtf16[1] = 0;
     firstPlayerRecord->playerRuntimeId = 0;
-    firstPlayerRecord->factionAssignment.roleStateFlags = 0;
+    firstPlayerRecord->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
     firstPlayerRecord->colourCycleFlags = 0;
-    firstPlayerRecord->snapshotTransferFlags = 0;
+    firstPlayerRecord->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
     UiTransfer_SendPlayerDescriptor();
     return;
   }
@@ -540,7 +540,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   localEndpointDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
   localPlayerRecordDwordCursor = std::copy_n(localEndpointDwordCursor,sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t),localPlayerRecordDwordCursor);
   /* the cursor now points at commandSyncPending of the player record; the indices below are dwords from there */
-  *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING; /* commandSyncPending */
+  *localPlayerRecordDwordCursor = static_cast<uint32_t>(FRONTEND_COMMAND_SYNC_PENDING); /* commandSyncPending */
   g_FrontendPendingSessionPlayerCount = 0;
   g_FrontendPlayerRuntimeCount = 1;
   g_LocalPlayerRuntimeId = 0;
@@ -552,13 +552,14 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
                     (reinterpret_cast<PcxPreview64 *>(localPlayerRecordDwordCursor + 24),
                      reinterpret_cast<uint16_t *>(localPlayerRecordDwordCursor + -14));
   if (!previewLoadFailed) {
-    localPlayerRecordDwordCursor[6] = FRONTEND_SNAPSHOT_SOURCE_AVAILABLE | FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE;
+    localPlayerRecordDwordCursor[6] =
+         ToBits(FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_SOURCE_AVAILABLE | FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE);
   }
   /* pingRoundTripTicks 0, pingTextUtf16 L"0ms" */
   localPlayerRecordDwordCursor[16] = 0;
   localPlayerRecordDwordCursor[17] = L'm' << 16 | L'0';
   localPlayerRecordDwordCursor[18] = L's';
-  localPlayerRecordDwordCursor[9] = FRONTEND_CAPABILITY_CD; /* capabilityFlags */
+  localPlayerRecordDwordCursor[9] = ToBits(FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD); /* capabilityFlags */
   localPlayerRecordDwordCursor[10] = 0;
   localPlayerRecordDwordCursor[11] = 0;
   localPlayerRecordDwordCursor[10] = L'D' << 16 | L'C'; /* L"CD" in capabilityLabelUtf16 */
@@ -717,7 +718,7 @@ void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick(UiListControl 
   /* sessionList is a UiListControl of FrontendSessionDiscoveryRecord rows */
   if (((sessionList->rowCount == 0) ||
       (static_cast<FrontendSessionDiscoveryRecord *>(sessionList->selectedRowSlot->get())->advertisement.
-       joinAvailableFlag == 0)) ||
+       joinAvailableFlag == UiTransferJoinAvailability::UI_TRANSFER_JOIN_UNAVAILABLE)) ||
      (g_FrontendLocalPlayerNameUtf16[0] == 0)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,rootNode);
   }
