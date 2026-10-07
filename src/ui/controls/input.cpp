@@ -308,7 +308,7 @@ GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,Ui
 /* Whether the pointer lies inside root and root takes part in the pointer hit test. */
 static Bool8 UiPointer_RootContainsPointer(UiRootNode *root,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
-  return ((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
+  return !Any(root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) &&
          ((root->base).left <= pointerX) && ((root->base).top <= pointerY) &&
          (pointerX < (root->base).right) && (pointerY < (root->base).bottom);
 }

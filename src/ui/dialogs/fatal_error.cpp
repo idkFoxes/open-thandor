@@ -30,7 +30,7 @@ FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
                     .leftOffset = -160, .rightOffset = 160, .bottomOffset = 44,
                     .leftAnchorQ31 = 0x50000000, .topAnchorQ31 = 0x50000000, .rightAnchorQ31 = 0x50000000, .bottomAnchorQ31 = 0x50000000,
                     .layoutWidth = -1, .layoutHeight = -1},
-                .rootFlags = 0x00000003, .callbacks = THANDOR_PTR32_BITS(0xFFFFFFFF),
+                .rootFlags = UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME, .callbacks = THANDOR_PTR32_BITS(0xFFFFFFFF),
                 .previousRoot = THANDOR_PTR32_BITS(0xFFFFFFFF)}},
         { /* +0058 errorMessageText g_UiListOffsetControlVtable */
             .base = {

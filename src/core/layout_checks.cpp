@@ -513,6 +513,8 @@ static_assert(sizeof(SelectionPlayerPairRecord) == 0x8,
 static_assert(sizeof(MovieFileHeader) == 0x200,
               "MovieFileHeader keeps its 32-bit layout");
 static_assert(sizeof(UiRootNode) == 0x58 &&
+              offsetof(UiRootNode, rootFlags) == 0x4C &&
+              sizeof(UiRootNode::rootFlags) == 4 && alignof(decltype(UiRootNode::rootFlags)) == 4 &&
               offsetof(UiRootNode, callbacks) == 0x50 &&
               offsetof(UiRootNode, previousRoot) == 0x54,
               "UiRootNode keeps its 32-bit layout");
@@ -1635,6 +1637,8 @@ static_assert(sizeof(UiLabelTemplateFields) == 0x10 &&
 static_assert(sizeof(UiRangeSliderTemplateFields) == 0x18,
               "UiRangeSliderTemplateFields keeps its 32-bit layout");
 static_assert(sizeof(UiResizableWindowTemplateFields) == 0x2C &&
+              offsetof(UiResizableWindowTemplateFields, rootFlags) == 0x0 &&
+              sizeof(UiResizableWindowTemplateFields::rootFlags) == 4 &&
               offsetof(UiResizableWindowTemplateFields, callbacks) == 0x4 &&
               offsetof(UiResizableWindowTemplateFields, previousRoot) == 0x8,
               "UiResizableWindowTemplateFields keeps its 32-bit layout");
