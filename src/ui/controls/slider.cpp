@@ -233,7 +233,7 @@ UiNodeVtable g_UiRangeSliderControlVtable = {
    actionId and redraws. Other keys, and all keys while suppressed, go to the default handler, which passes
    them on. Returns false when the key was consumed.
 */
-Bool8 UiRangeSliderControl_HandleKeyboard
+bool UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control)
 
 {

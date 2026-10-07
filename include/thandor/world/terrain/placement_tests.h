@@ -12,11 +12,11 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 TerrainHeightBand_TestAroundWorldPoint
+bool TerrainHeightBand_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid);
 
-Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
+bool TerrainAuxHeightThreshold_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid);
 

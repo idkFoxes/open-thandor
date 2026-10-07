@@ -365,7 +365,7 @@ void ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(WorldRuntimeContext *wor
 /* Adapters of placementAssetClassDispatch: the slot passes the clearance padding as uint32_t and the definition
    as its ModelDefinitionRecordPrefix; these placement tests take the padding as a signed
    ArmyPlacementClearancePaddingQ12 (same bits) and the full ModelDefinition (the record behind the prefix). */
-static Bool8 ArmyPlacementSlot_CanPlaceBuilding
+static bool ArmyPlacementSlot_CanPlaceBuilding
           (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
           uint32_t terrainHeightQ12,Q12 worldYQ12,Q12 worldXQ12,ModelDefinitionRecordPrefix *modelDefinition,
           uint32_t ownerFactionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outPlacementValue)
@@ -376,7 +376,7 @@ static Bool8 ArmyPlacementSlot_CanPlaceBuilding
             outPlacementValue);
 }
 
-static Bool8 ArmyPlacementSlot_CanPlaceAnchoredModel
+static bool ArmyPlacementSlot_CanPlaceAnchoredModel
           (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
           uint32_t terrainHeightQ12,Q12 worldYQ12,Q12 worldXQ12,ModelDefinitionRecordPrefix *modelDefinition,
           uint32_t ownerFactionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outPlacementValue)
@@ -387,7 +387,7 @@ static Bool8 ArmyPlacementSlot_CanPlaceAnchoredModel
             outPlacementValue);
 }
 
-static Bool8 ArmyPlacementSlot_CanPlaceResourceExtractor
+static bool ArmyPlacementSlot_CanPlaceResourceExtractor
           (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
           uint32_t terrainHeightQ12,Q12 worldYQ12,Q12 worldXQ12,ModelDefinitionRecordPrefix *modelDefinition,
           uint32_t ownerFactionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outPlacementValue)
@@ -721,7 +721,7 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
 /* Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
    0, 5-9, 12 and 21): accepts every placement.
 */
-Bool8 UnifiedRuntimeDefault_TwoArgSuccess
+bool UnifiedRuntimeDefault_TwoArgSuccess
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {

@@ -259,7 +259,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
    ArmyPlacement_TestModelTerrainAndRuntimeClearance and ArmyPlacement_TestGridOccupancyMask.
 */
 
-Bool8 ArmyPlacementCollision_TestCurrentRuntime
+bool ArmyPlacementCollision_TestCurrentRuntime
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
@@ -276,7 +276,7 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
   ModelRuntimeNode *ownerNode;
   ModelRuntimeSlot *neighbor;
   Bool8 blocked;
-  Bool8 (*terrainTest)(FieldGridRadiusUnits,Q12,Q12,Q12,FieldGridAsset *);
+  bool (*terrainTest)(FieldGridRadiusUnits,Q12,Q12,Q12,FieldGridAsset *);
   ModelRuntimeNode *rootNode;
 
   rootNode = modelRuntime->rootModelNode;

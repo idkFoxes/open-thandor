@@ -41,7 +41,7 @@ void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
           ,WorldRuntimeContext *runtime)
 
 {
-  if ((runtime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
+  if (!Any(runtime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA)) {
     if ((int)(runtime->motion).maximumPitchAngle < (int)pitchAngle) {
       pitchAngle = runtime->motion.maximumPitchAngle;
     }
@@ -202,7 +202,7 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   Q12 secondaryDistanceQ12;
   FixedDirection endpointOffset;
 
-  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) == 0) {
+  if (!Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY)) {
     rayLengthQ12 = worldRuntime->maximumCameraDistanceQ12 << 2;
     surfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                       (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthQ12,

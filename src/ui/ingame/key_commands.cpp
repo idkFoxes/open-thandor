@@ -136,7 +136,7 @@ UiCommandRuntimeFlagMask g_UiCommandRuntimeFlags = UiCommandRuntimeFlagMask{};
    pointer context (FrontendModelPointerContext_KeyboardEvent), which then passes the key on, so keys such as Esc
    reach the in-game root's hotkeys. A matched record returns false, also when the command is blocked.
 */
-Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world)
 
 {
@@ -362,7 +362,7 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
   if (((!Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) &&
       (!Any((world->interaction).nodeFlags & UI_NODE_SUPPRESSED))) &&
      (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
-    if ((world->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
+    if (!Any(world->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) {
       if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
         hasActiveOwnerType16 = SelectionInfo_TestNotOwnAircraftPadsWithAircraft(world->activeFactionRuntimeIndex);
         if (hasActiveOwnerType16) {

@@ -3341,7 +3341,7 @@ static_assert(ThandorSlot<&UiNode_ApplyFlagsRecursive>::pick<void(UiNodeFlags, U
 static_assert(ThandorSlot<&UiImageControl_PointerMove>::pick<GraphicsCursorFrameIndex(UiPixelCoordinate, UiPixelCoordinate,
                                                                                       UiNodeBase *)>() != nullptr,
               "THANDOR_SLOT of UiImageControl * (prefix chain over UiSelectableControl) for a UiNodeBase * slot");
-static_assert(ThandorSlot<&UiSelectableControl_KeyboardEvent>::pick<Bool8(UiKeyboardStateMask, UiKeyboardEventCode,
+static_assert(ThandorSlot<&UiSelectableControl_KeyboardEvent>::pick<bool(UiKeyboardStateMask, UiKeyboardEventCode,
                                                                           UiNodeBase *)>() != nullptr,
               "THANDOR_SLOT of UiSoundSelectableControl * for a UiNodeBase * slot");
 static_assert(ThandorSlot<&InGameUiRuntime_ResetNotificationButtonCursor>::pick<void(WorldRuntimeContext *)>() != nullptr,
@@ -3511,3 +3511,13 @@ static_assert(sizeof(PersistentSettingsImage) == 0xC8 && offsetof(PersistentSett
                   sizeof(PersistentSettingsImage::mapMouseOptionFlags) == 4 &&
                   sizeof(PersistentSettingsImage::mouseLinkPanelOptionFlags) == 4,
               "the option-flag dwords of the settings image stay at +0x20, +0x40 and +0x5C");
+
+/* Step 13 E2e (WorldRuntimeFlags): the world view's flag word is the dword at +0x4C behind the UiNodeBase in every
+   view that names it (WorldRuntimeContext.runtimeFlags, FrontendModelPointerContext.contextFlags and its frontend
+   views); the enum keeps its 4 bytes. */
+static_assert(offsetof(WorldRuntimeContext, runtimeFlags) == 0x4C && sizeof(WorldRuntimeContext::runtimeFlags) == 4 &&
+                  offsetof(FrontendModelPointerContext, contextFlags) == 0x4C &&
+                  sizeof(FrontendModelPointerContext::contextFlags) == 4 &&
+                  offsetof(FrontendModelPointerHitContext, contextFlags) == 0x4C &&
+                  offsetof(FrontendPointerSceneRuntimeView, contextFlags) == 0x4C,
+              "the world view flag word stays the dword at +0x4C");

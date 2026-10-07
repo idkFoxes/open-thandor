@@ -104,6 +104,6 @@ struct PckMountSlot {
     struct PckEntryHeader *entryHeaders; 
     PckEntryCount entryCount; 
 };
-using PckCodecProc = Bool8 (uint32_t destinationCapacityOrOutputSize, uint8_t * destination, uint32_t sourceSize, uint8_t * source, uint32_t * outByteCount, uint32_t * outErrorCode);
+using PckCodecProc = bool (uint32_t destinationCapacityOrOutputSize, uint8_t * destination, uint32_t sourceSize, uint8_t * source, uint32_t * outByteCount, uint32_t * outErrorCode);
 
 #endif /* THANDOR_ASSETS_PACKAGE_TYPES_H */

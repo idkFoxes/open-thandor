@@ -36,9 +36,7 @@ inline constexpr uint32_t INGAME_REGION_MASK_REMOVE = 0x80000000u;
 /* Editor drag deltas: screen dx in the low word (masked unless Shift/Ctrl), dy times this in the high word */
 inline constexpr int32_t INGAME_DRAG_DELTA_X_MASK = 0xffff;
 inline constexpr int32_t INGAME_DRAG_DELTA_Y_SCALE = 0x10000;
-/* WorldRuntimeContext.runtimeFlags bit set while the map editor is active
-   (InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState) */
-inline constexpr uint32_t INGAME_WORLD_FLAG_EDITOR = 0x400000u;
+/* INGAME_WORLD_FLAG_EDITOR (map editor active): WorldRuntimeFlags (world/runtime/flags.h) */
 
 inline constexpr int32_t INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE = 0x25;
 

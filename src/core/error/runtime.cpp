@@ -48,7 +48,7 @@ void ErrorSystem_Init()
 /* The fatal-error handler: without failed it returns valueOrError unchanged; with failed it is
    FatalError_ShowAndExit(valueOrError) and does not return.
 */
-uintptr_t FatalError_Exit(uintptr_t valueOrError,Bool8 failed)
+uintptr_t FatalError_Exit(uintptr_t valueOrError,bool failed)
 
 {
   if (!failed) {

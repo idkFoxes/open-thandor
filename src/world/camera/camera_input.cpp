@@ -153,7 +153,7 @@ void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,
   requestedDistanceQ12 = distanceDeltaInput * g_WorldMotionDistanceInputScaleQ12 +
           worldRuntime->motion.committedDistanceQ12;
   clampedDistanceQ12 = requestedDistanceQ12;
-  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
+  if (!Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA)) {
     if ((int)worldRuntime->maximumCameraDistanceQ12 < (int)requestedDistanceQ12) {
       clampedDistanceQ12 = worldRuntime->maximumCameraDistanceQ12;
     }
@@ -161,7 +161,7 @@ void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,
       clampedDistanceQ12 = worldRuntime->minimumCameraDistanceQ12;
     }
   }
-  else if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) {
+  else if (Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE)) {
     if ((int)g_WorldMotionAlternateMaximumDistanceQ12 < (int)requestedDistanceQ12) {
       clampedDistanceQ12 = g_WorldMotionAlternateMaximumDistanceQ12;
     }
@@ -195,7 +195,7 @@ void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRunti
   requestedMagnitudeQ12 = worldRuntime->motion.positionMagnitudeQ12 -
           magnitudeDeltaInput * g_WorldMotionPositionMagnitudeInputScaleQ12;
   clampedMagnitudeQ12 = requestedMagnitudeQ12;
-  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
+  if (!Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA)) {
     if ((int)worldRuntime->maximumCameraDistanceQ12 < (int)requestedMagnitudeQ12) {
       clampedMagnitudeQ12 = worldRuntime->maximumCameraDistanceQ12;
     }
@@ -203,7 +203,7 @@ void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRunti
       clampedMagnitudeQ12 = worldRuntime->minimumCameraDistanceQ12;
     }
   }
-  else if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) {
+  else if (Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE)) {
     if ((int)g_WorldMotionAlternateMaximumDistanceQ12 < (int)requestedMagnitudeQ12) {
       clampedMagnitudeQ12 = g_WorldMotionAlternateMaximumDistanceQ12;
     }
@@ -232,7 +232,7 @@ void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldR
 
   requestedPitchAngle = worldRuntime->motion.pitchAngle + pitchDeltaInput * g_WorldMotionPitchInputScale;
   clampedPitchAngle = requestedPitchAngle;
-  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
+  if (!Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA)) {
     if ((int)worldRuntime->motion.maximumPitchAngle < (int)requestedPitchAngle) {
       clampedPitchAngle = worldRuntime->motion.maximumPitchAngle;
     }
@@ -240,7 +240,7 @@ void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldR
       clampedPitchAngle = worldRuntime->motion.minimumPitchAngle;
     }
   }
-  else if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) {
+  else if (Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE)) {
     if ((int)g_WorldMotionAlternateMaximumPitchAngle < (int)requestedPitchAngle) {
       clampedPitchAngle = g_WorldMotionAlternateMaximumPitchAngle;
     }
@@ -276,7 +276,7 @@ void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,Worl
 
   requestedPitchAngle = worldRuntime->motion.pitchAngle - pitchDeltaInput * g_WorldMotionPitchInputScale;
   clampedPitchAngle = requestedPitchAngle;
-  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
+  if (!Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA)) {
     if ((int)worldRuntime->motion.maximumPitchAngle < (int)requestedPitchAngle) {
       clampedPitchAngle = worldRuntime->motion.maximumPitchAngle;
     }
@@ -284,7 +284,7 @@ void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,Worl
       clampedPitchAngle = worldRuntime->motion.minimumPitchAngle;
     }
   }
-  else if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) {
+  else if (Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE)) {
     if ((int)g_WorldMotionAlternateMaximumPitchAngle < (int)requestedPitchAngle) {
       clampedPitchAngle = g_WorldMotionAlternateMaximumPitchAngle;
     }

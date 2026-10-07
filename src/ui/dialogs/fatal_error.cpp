@@ -53,7 +53,7 @@ FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).
 */
-Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
+bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
 
 {
   return true;
@@ -85,7 +85,7 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
    builds the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames
    until the dialog is dismissed, so the caller can carry on (the caller knows the failure from its own flag).
 */
-uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 failed)
+uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,bool failed)
 
 {
   UiRootNode *dialogRoot;

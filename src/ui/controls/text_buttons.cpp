@@ -562,7 +562,7 @@ void UiTextButtonControl_NonRightPress
    an already selected radio-style button, goes to UiNode_DefaultKeyboardEventMoveFocusNext. Returns
    false: consumed.
 */
-Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextButtonControl *control)
 
 {

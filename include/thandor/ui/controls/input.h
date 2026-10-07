@@ -52,7 +52,7 @@ void UiNode_ForwardPointerWheelToParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
-Bool8 UiNode_DefaultKeyboardEventMoveFocusNext
+bool UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control);
 
 void UiKeyboardFocus_Set(UiNodeBase *node);

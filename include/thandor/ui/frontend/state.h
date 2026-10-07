@@ -19,7 +19,7 @@ void FrontendRuntime_TimerCountdownTick();
 
 void FrontendRomTransition_AdvanceElapsedTicks();
 
-Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
+bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);
 
 void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);

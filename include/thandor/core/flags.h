@@ -27,7 +27,7 @@ template <class E> constexpr std::underlying_type_t<E> ThandorFlagBits(E e)
 /* The operators and the flag-enum mark of THANDOR_FLAG_ENUM and THANDOR_SIGNED_WORD_FLAG_ENUM (ThandorIsFlagEnum is
    found by argument-dependent lookup, so the macros work in any namespace). ~ keeps every bit of the underlying
    type: ~E::A also sets the bits that have no enumerator. */
-#define THANDOR_FLAG_ENUM_OPERATORS(E)                                                                          \
+#define THANDOR_FLAG_ENUM_OPERATORS(E) /* NOLINT(cppcoreguidelines-macro-usage) */ \
   constexpr bool ThandorIsFlagEnum(E) { return true; }                                                         \
   constexpr E operator|(E a, E b) { return static_cast<E>(::ThandorFlagBits(a) | ::ThandorFlagBits(b)); }     \
   constexpr E operator&(E a, E b) { return static_cast<E>(::ThandorFlagBits(a) & ::ThandorFlagBits(b)); }     \
@@ -38,7 +38,7 @@ template <class E> constexpr std::underlying_type_t<E> ThandorFlagBits(E e)
   constexpr E &operator^=(E &a, E b) { return a = a ^ b; }
 
 /* Marks E (unsigned underlying type) as a flag enum. */
-#define THANDOR_FLAG_ENUM(E)                                                                                    \
+#define THANDOR_FLAG_ENUM(E) /* NOLINT(cppcoreguidelines-macro-usage) */ \
   THANDOR_FLAG_ENUM_OPERATORS(E)                                                                               \
   static_assert(std::is_unsigned_v<std::underlying_type_t<E>>, #E " is a flag enum with an unsigned underlying type")
 
@@ -48,7 +48,7 @@ template <class E> constexpr std::underlying_type_t<E> ThandorFlagBits(E e)
    compiles differently when it is unsigned (WideNumberFormatFlags of WideNumber_FormatUtf16). Keeping the int keeps
    every expression on the word in the signedness it had, so the generated code stays the same; the bit operators
    are the same for int (no shift or arithmetic is defined on E). */
-#define THANDOR_SIGNED_WORD_FLAG_ENUM(E)                                                                        \
+#define THANDOR_SIGNED_WORD_FLAG_ENUM(E) /* NOLINT(cppcoreguidelines-macro-usage) */ \
   THANDOR_FLAG_ENUM_OPERATORS(E)                                                                               \
   static_assert(std::is_same_v<std::underlying_type_t<E>, int32_t>, #E " is a signed-word flag enum over int32_t")
 

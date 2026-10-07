@@ -1,7 +1,7 @@
 {
- "revision": "f7522b9b",
+ "revision": "ccf8de2d",
  "worktree": true,
- "files": 693,
+ "files": 694,
  "metrics": {
   "cstyle_cast": {
    "item": 1,
@@ -135,7 +135,7 @@
    "platform": 220,
    "root": 7,
    "ui": 127,
-   "world": 58
+   "world": 59
   },
   "include_guard": {
    "assets": 34,
@@ -149,19 +149,19 @@
    "platform": 33,
    "root": 1,
    "ui": 101,
-   "world": 50
+   "world": 51
   },
   "constexpr": {
    "assets": 99,
    "audio": 15,
    "core": 206,
    "gameplay": 173,
-   "graphics": 138,
+   "graphics": 137,
    "movie": 28,
    "network": 129,
    "platform": 149,
-   "ui": 587,
-   "world": 110
+   "ui": 577,
+   "world": 95
   },
   "typedef_struct": {},
   "enum_class": {
@@ -173,7 +173,7 @@
    "network": 7,
    "platform": 4,
    "ui": 35,
-   "world": 5
+   "world": 6
   },
   "libc_alloc": {},
   "arena": {
@@ -198,16 +198,16 @@
    "ui": 6
   },
   "bool8": {
-   "assets": 92,
+   "assets": 75,
    "audio": 3,
-   "core": 22,
-   "gameplay": 354,
-   "graphics": 64,
+   "core": 15,
+   "gameplay": 324,
+   "graphics": 63,
    "movie": 12,
-   "network": 72,
+   "network": 57,
    "platform": 34,
-   "ui": 298,
-   "world": 127
+   "ui": 239,
+   "world": 110
   },
   "addr_5xxxxx": {},
   "fill_90": {

@@ -143,7 +143,7 @@ void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
 /* The node after node in pre-order (first child, else the next sibling of node or of its nearest ancestor
    that has one), following only links UiKeyboard_CheckedLink accepts. At the end of the tree it returns the
    topmost ancestor (the walk wraps around) and sets *wrapped. */
-static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,Bool8 *wrapped)
+static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,bool *wrapped)
 {
   UiNodeBase *nextNode;
   UiNodeBase *parent;
@@ -172,8 +172,8 @@ static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,Bool8 *wrapped)
 static Bool8 UiKeyboard_PassToFollowingFocusTargets
           (UiNodeBase *control,UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
 {
-  Bool8 wrappedOnce;
-  Bool8 wrapped;
+  bool wrappedOnce;
+  bool wrapped;
   Bool8 passToNext;
 
   wrappedOnce = false;
@@ -609,7 +609,7 @@ void UiNode_ForwardPointerWheelToParent
    It always returns true (key not consumed): the original compares the key with KEYBOARD_KEY_CODE_TAB but
    then reports "not consumed" regardless of the result, so the focus move its name suggests never happens.
 */
-Bool8 UiNode_DefaultKeyboardEventMoveFocusNext
+bool UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {

@@ -676,7 +676,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
   CommandPayload pointerXMoveDelta;
   int rotateDragDistanceX;
 
-  if ((mapControl->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
+  if (Any(mapControl->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING)) {
     InGameEditorPointer_UpdateArmyDragSelection(mapControl);
     return;
   }
@@ -916,7 +916,7 @@ static void EditorSlot_ClearTransientStateNoOp(WorldRuntimeContext *worldRuntime
 }
 
 /* The editor keyboard fallback returns nothing; UiKeyboard_DispatchPendingEvents ignores the slot's result. */
-static Bool8 EditorSlot_KeyboardFallback(UiKeyboardStateMask keyboardStateMask,UiActionId keyCode,UiRootNode *uiRoot)
+static bool EditorSlot_KeyboardFallback(UiKeyboardStateMask keyboardStateMask,UiActionId keyCode,UiRootNode *uiRoot)
 
 {
   InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
@@ -936,7 +936,7 @@ static void EditorSlot_ResetNotificationButtonCursor(WorldRuntimeContext *worldR
   InGameUiRuntime_ResetNotificationButtonCursor(worldRuntime);
 }
 
-static Bool8 EditorSlot_HotkeysKeyboardFallback
+static bool EditorSlot_HotkeysKeyboardFallback
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,UiRootNode *uiRoot)
 
 {
