@@ -32,7 +32,7 @@ static inline CampaignAsset *FrontendMainLoop_NextLevelRecordView(CampaignAsset 
 
 /* Module data. */
 
-uint32_t g_FrontendPendingPageAction = 0;
+FrontendPageAction g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
 
 uint32_t g_FrontendScenarioInitializationCount = 0;
 
@@ -461,7 +461,7 @@ static Bool8 FrontendMainLoop_EnterMissionBriefing(uint32_t *outError)
 
 /* Frontend_MainLoop: rebuilds the menu at nextRomRecordId with nextPageAction pending (set even when the build
    fails). Returns false with Frontend_Init's error in *outError when building the menu fails. */
-static Bool8 FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,uint32_t nextPageAction,uint32_t *outError)
+static Bool8 FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,FrontendPageAction nextPageAction,uint32_t *outError)
 {
   Bool8 menuBuilt;
 
@@ -560,7 +560,7 @@ Bool8 Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
 {
   uint32_t initError;
 
-  g_FrontendNetworkState = 0;
+  g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
   if (Frontend_Init(frontendEntryRecordId,&initError)) {
     /* -HOST and -CLIENT= activate entry 3 of the entry menu's action table, -KARTE= (map) entry 0, without the
        click sound, and let the started camera transition end at once. */

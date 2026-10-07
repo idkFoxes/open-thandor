@@ -12,23 +12,8 @@
 
 /* Frontend pages, page actions, UI actions, player and network states and text ids shared by the frontend files. */
 
-/* Frontend menu state machine (Frontend_MainLoop).
-   g_FrontendPendingPageAction holds the next step of the menu. A ROM action-table record writes it when the
-   player activates a menu entry (FrontendRomActionTable_ExecuteRecord; 3, 4 and 9 are refused in a network
-   session, 2 needs a network backend), Frontend_MainLoop writes it after re-initialising the frontend. Every
-   frame Frontend_MainLoop performs the pending action and resets it to FRONTEND_PAGE_ACTION_NONE; the
-   "wait" actions stay pending until every player block has reached the matching FRONTEND_PLAYER_STATE_* bit. */
-inline constexpr int32_t FRONTEND_PAGE_ACTION_NONE = 0;
-inline constexpr int32_t FRONTEND_PAGE_ACTION_START_SESSION = 1; /* leave the frontend, run a new session of the loaded level */
-inline constexpr int32_t FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE = 2;
-inline constexpr int32_t FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE = 3;
-inline constexpr int32_t FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE = 4; /* quit confirmation, page-stack page 9 (FrontendSession_ShowQuitConfirmPage) */
-inline constexpr int32_t FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE = 5; /* waits for the scenario catalogue exchange */
-inline constexpr int32_t FRONTEND_PAGE_ACTION_RESUME_SAVED_SESSION = 6; /* leave the frontend, run the loaded save (load flag 1) */
-inline constexpr int32_t FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE = 7; /* waits until every player is ready for it */
-inline constexpr int32_t FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE = 8; /* waits until every player has the level */
-inline constexpr int32_t FRONTEND_PAGE_ACTION_CREDITS = 9;
-/* Any other value tears the frontend down and rebuilds it at the entry record. */
+/* Frontend menu state machine (Frontend_MainLoop): the FRONTEND_PAGE_ACTION_* values are the enum class
+   FrontendPageAction (ui/frontend/types.h). */
 
 /* Record ids in engine\zentrale.rom that Frontend_Init activates (the camera/room the menu starts in).
    1 is the entry record ProcessEntry passes to Frontend_MainLoop. */
@@ -99,16 +84,7 @@ inline constexpr int32_t FRONTEND_ACTION_ADAPTER_OPTION1 = 0x202C; /* displayAda
 #define FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(option) \
           ((int)(offsetof(FrontendUiImage,option) - offsetof(FrontendUiImage,displayAdapterGroup)))
 inline constexpr int32_t FRONTEND_ACTION_APPLY_DISPLAY_MODE = 0x2031; /* FrontendDisplaySettings_ApplyMode */
-/* g_FrontendNetworkState, dispatched by Frontend_StateTick (values 3..5 are set by network/protocol/transfer). */
-inline constexpr int32_t FRONTEND_NETWORK_STATE_IDLE = 0;
-inline constexpr int32_t FRONTEND_NETWORK_STATE_BROWSING = 1; /* network game page: polls for sessions, handles join acks */
-inline constexpr int32_t FRONTEND_NETWORK_STATE_HOSTING = 2; /* host lobby: publishes the session, handles joining players */
-inline constexpr int32_t FRONTEND_NETWORK_STATE_JOINED = 3; /* client in the host lobby after the join ack
-                                           (FrontendTransfer_HandleSessionListAndJoinAckPackets) */
-inline constexpr int32_t FRONTEND_NETWORK_STATE_HOST_STARTING = 4; /* host sends commands and player snapshots to the clients
-                                                  (FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands) */
-inline constexpr int32_t FRONTEND_NETWORK_STATE_CLIENT_STARTING = 5; /* client receives the session start
-                                                    (FrontendTransfer_HandleHostSessionAndCommandBatchPackets) */
+/* g_FrontendNetworkState: the enum class FrontendNetworkState (FRONTEND_NETWORK_STATE_*, ui/frontend/types.h). */
 /* Reload value of g_FrontendTimerCountdownTicks: the 80 Hz FrontendRuntime_TimerCountdownTick counts it down,
    so Frontend_StateTick runs its network work at most 20 times per second. */
 inline constexpr int32_t FRONTEND_TIMER_TICKS_PER_NETWORK_TICK = 4;

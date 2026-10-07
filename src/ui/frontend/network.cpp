@@ -43,7 +43,7 @@ Ptr32<FrontendSessionDiscoveryRecord> *g_FrontendSessionListRows = nullptr;
 
 Ptr32<FrontendPlayerRuntimeRecord> g_FrontendPlayerRuntimeRecordPointers32[32] = {};
 
-uint32_t g_FrontendNetworkState = 0;
+FrontendNetworkState g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
 
 char g_SpielerSpielNetzwerkHostKeywordsAscii[31] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST";
 

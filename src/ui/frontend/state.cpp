@@ -118,7 +118,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
       UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(root)->frontendPageStack));
       FrontendUi_Image(root)->menuRoomModelView.contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-      g_FrontendRomTransitionPageAction = 0;
+      g_FrontendRomTransitionPageAction = FRONTEND_PAGE_ACTION_NONE;
       FrontendRomTransition_ActivateRecordById
                 (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(&FrontendUi_Image(root)->menuRoomModelView));
       break;
@@ -135,7 +135,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
       UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(root)->frontendPageStack));
       FrontendUi_Image(root)->menuRoomModelView.contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-      g_FrontendRomTransitionPageAction = 0;
+      g_FrontendRomTransitionPageAction = FRONTEND_PAGE_ACTION_NONE;
       player = g_FrontendPlayerRuntimeBlocks;
       FrontendRomTransition_ActivateRecordById
                 (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(&FrontendUi_Image(root)->menuRoomModelView));
@@ -325,7 +325,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
 
 {
   FrontendUiImage *frontendRoot;
-  uint32_t networkState;
+  FrontendNetworkState networkState;
   UiNodeBase *hoveredNode;
   ScenarioCatalogDisplayRecord *levelRecord;
   GraphicsCursorFrameIndex cursorFrame;
@@ -358,6 +358,10 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
     break;
   case FRONTEND_NETWORK_STATE_CLIENT_STARTING:
     FrontendNetwork_TickDisconnectTimeoutAndResetSession();
+    break;
+  case FRONTEND_NETWORK_STATE_IDLE: /* nothing to tick */
+  default:
+    break;
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
