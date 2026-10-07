@@ -538,7 +538,7 @@ void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgume
   }
 }
 
-#define FACTION_TECHNOLOGY_MASK_BITS 256u
+static constexpr uint32_t FACTION_TECHNOLOGY_MASK_BITS = 256u;
 
 /* Lowest technology whose bit is set in haveMasks and clear in lackMasks (both 256-bit technology masks), or
    FACTION_TECHNOLOGY_MASK_BITS when there is none. */

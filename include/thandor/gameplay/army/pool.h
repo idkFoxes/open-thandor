@@ -17,27 +17,27 @@
 
 /* ArmyRuntimeSlot.runtimeFlags bit set when the army's health (actionVector2Q12) drops to zero
    (ArmyRuntime_ApplyImpactDamageAndFinalizeState and the other damage helpers). */
-#define ARMY_RUNTIME_FLAG_DESTROYED 0x8
+inline constexpr int ARMY_RUNTIME_FLAG_DESTROYED = 0x8;
 /* g_ArmyRuntimeSlots: a 0x48000-byte pool of 0x120-byte ArmyRuntimeSlot entries (ArmyRuntime_InitializePoolAndGraphics) */
-#define ARMY_RUNTIME_SLOT_COUNT 0x400
+inline constexpr int ARMY_RUNTIME_SLOT_COUNT = 0x400;
 /* g_ArmyGraphicsBindings: texture set and palette per faction slot 0-7 */
-#define ARMY_GRAPHICS_BINDING_COUNT 8
+inline constexpr int ARMY_GRAPHICS_BINDING_COUNT = 8;
 /* ArmyRuntime_CreateInstanceFromAsset creationFlags */
-#define ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION 0x2 /* owned by the active faction: +1 on builtCount of the
+inline constexpr int ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION = 0x2; /* owned by the active faction: +1 on builtCount of the
                                                      faction's selected model definition */
-#define ARMY_CREATE_UNLOCK_TECHNOLOGY 0x4 /* ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology */
+inline constexpr int ARMY_CREATE_UNLOCK_TECHNOLOGY = 0x4; /* ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology */
 
 /* Army model runtime classState.stateFlags bits set and tested by the class update callbacks
    (ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, the production slots 11/13/22) */
-#define ARMY_MODEL_STATE_SWITCHED_OFF 0x1         /* powered down: no Energy demand, health decays to 3/4 */
-#define ARMY_MODEL_STATE_DISMANTLING 0x10         /* being recycled: health drains, Xenite (xeniteValueQ4 >> 5) is refunded */
-#define ARMY_MODEL_STATE_DESTRUCTION_STARTED 0x20 /* destruction effect spawned; skips the attachment channel ticks */
-#define ARMY_MODEL_STATE_RESEARCHING 0x40         /* technology research in progress (researchTechnologyId) */
-#define ARMY_MODEL_STATE_RESEARCH_UNPAID 0x80     /* research queued, Xenite not yet paid */
-#define ARMY_MODEL_STATE_PRODUCING 0x100          /* a queued secondary army asset is being built */
-#define ARMY_MODEL_STATE_DISMANTLED 0x200         /* dismantling finished (toggled together with DISMANTLING) */
-#define ARMY_MODEL_STATE_NO_REGENERATION 0x400    /* health does not regenerate */
-#define ARMY_MODEL_STATE_RALLY_POINT_SET 0x800    /* class 13: the exit point (classLinkState.classState78/7C) was set
+inline constexpr int ARMY_MODEL_STATE_SWITCHED_OFF = 0x1; /* powered down: no Energy demand, health decays to 3/4 */
+inline constexpr int ARMY_MODEL_STATE_DISMANTLING = 0x10; /* being recycled: health drains, Xenite (xeniteValueQ4 >> 5) is refunded */
+inline constexpr int ARMY_MODEL_STATE_DESTRUCTION_STARTED = 0x20; /* destruction effect spawned; skips the attachment channel ticks */
+inline constexpr int ARMY_MODEL_STATE_RESEARCHING = 0x40; /* technology research in progress (researchTechnologyId) */
+inline constexpr int ARMY_MODEL_STATE_RESEARCH_UNPAID = 0x80; /* research queued, Xenite not yet paid */
+inline constexpr int ARMY_MODEL_STATE_PRODUCING = 0x100; /* a queued secondary army asset is being built */
+inline constexpr int ARMY_MODEL_STATE_DISMANTLED = 0x200; /* dismantling finished (toggled together with DISMANTLING) */
+inline constexpr int ARMY_MODEL_STATE_NO_REGENERATION = 0x400; /* health does not regenerate */
+inline constexpr int ARMY_MODEL_STATE_RALLY_POINT_SET = 0x800; /* class 13: the exit point (classLinkState.classState78/7C) was set
                                                      by the player */
 /* SWITCHED_OFF | DESTROYED: the model does nothing this tick */
 #define ARMY_MODEL_STATE_INACTIVE_MASK (ARMY_MODEL_STATE_SWITCHED_OFF | ARMY_RUNTIME_FLAG_DESTROYED)
@@ -47,14 +47,14 @@
 
 /* g_ArmyRuntimeDepthBinClassByModelClass entries (ArmyRuntimeSlot.depthBinClass): the occupancy bits an army
    marks in its faction's byte of the field cells. Structure classes (4, 11, 13-16, 20, 22, 23) use 0x90. */
-#define ARMY_DEPTH_BIN_STRUCTURE_BIT 0x10
-#define ARMY_DEPTH_BIN_CLASS_STRUCTURE 0x90   /* persistent bit 7 | ARMY_DEPTH_BIN_STRUCTURE_BIT */
+inline constexpr int ARMY_DEPTH_BIN_STRUCTURE_BIT = 0x10;
+inline constexpr int ARMY_DEPTH_BIN_CLASS_STRUCTURE = 0x90; /* persistent bit 7 | ARMY_DEPTH_BIN_STRUCTURE_BIT */
 
 /* Faction graphics ('gfx') texture source asset layout used by ArmyGraphics_CopyFrontendPlayerPaletteAndTexture */
-#define ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE 0x71 /* image replaced by the frontend player's picture */
-#define ARMY_GRAPHICS_PALETTE_TABLE_OFFSET 0x200    /* first palette, from the asset start */
-#define ARMY_GRAPHICS_PALETTE_BYTES 0x800           /* 256 entries of 8 bytes */
-#define ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS 0x400     /* 0x1000 bytes of pixel data */
+inline constexpr int ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE = 0x71; /* image replaced by the frontend player's picture */
+inline constexpr int ARMY_GRAPHICS_PALETTE_TABLE_OFFSET = 0x200; /* first palette, from the asset start */
+inline constexpr int ARMY_GRAPHICS_PALETTE_BYTES = 0x800; /* 256 entries of 8 bytes */
+inline constexpr int ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS = 0x400; /* 0x1000 bytes of pixel data */
 
 Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError);
 

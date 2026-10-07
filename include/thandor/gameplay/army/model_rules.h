@@ -15,9 +15,9 @@
 #include <thandor/core/contracts.h>
 
 /* Aim tolerance of ModelNodeRuntime_SmoothYaw/PitchTowardTarget: outsideTolerance beyond +-0x3FF */
-#define MODEL_AIM_TOLERANCE_ANGLE16 0x3ff
+inline constexpr int MODEL_AIM_TOLERANCE_ANGLE16 = 0x3ff;
 /* ModelDefinition.variantModelDefinitionIds[] entries (ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive) */
-#define MODEL_TECHNOLOGY_VARIANT_COUNT 6
+inline constexpr int MODEL_TECHNOLOGY_VARIANT_COUNT = 6;
 
 void ModelRuntimeHierarchy_ApplyFactionTechnologyVariants
           (FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime);
