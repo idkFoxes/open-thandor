@@ -55,9 +55,9 @@ void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
           (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedEffectsUpdateView *modelRuntime)
 
 {
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) &&
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) &&
      ((modelRuntime->modelDefinition->timedEffectsRequireStateBit40 == 0 ||
-      (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0)))) {
+      (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING))))) {
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
               (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
     ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
@@ -232,7 +232,7 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
   ModelWorldPoint transformedPoint;
   EffectDefinition *effectDefinition;
 
-  if (((modelRuntime->classState).stateFlags & (ARMY_MODEL_STATE_DISMANTLING | ARMY_MODEL_STATE_DISMANTLED)) != 0)
+  if (Any((modelRuntime->classState).stateFlags & (ARMY_MODEL_STATE_DISMANTLING | ARMY_MODEL_STATE_DISMANTLED)))
   {
     return;
   }
@@ -335,7 +335,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
     if (previousIntegrity <= impactValue) {
       overkillIntegrity = (targetEntityRuntime->common).damageState.remainingIntegrity;
       runtimeFlagsField = &(targetEntityRuntime->common).runtimeFlags;
-      *runtimeFlagsField = *runtimeFlagsField | 8;
+      *runtimeFlagsField = *runtimeFlagsField | ARMY_RUNTIME_FLAG_DESTROYED;
       parentNode = ((targetEntityRuntime->common).ownership.modelNode)->parentNode;
       (targetEntityRuntime->common).damageState.counterOrTerminalReference.terminalEntity =
            targetEntityRuntime;

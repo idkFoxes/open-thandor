@@ -152,8 +152,8 @@ static void SelectionPanelMetrics_DrawResearchOrIdleBars
 {
   Bool8 researching;
 
-  researching = ((researchSource->classState).stateFlags &
-                 (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) != 0;
+  researching = Any((researchSource->classState).stateFlags &
+                 (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID));
   SelectionPanelMetrics_DrawOwnCorners(frame,runtimeEntry,false);
   if (researching) {
     SelectionPanelMetrics_DrawTopBar

@@ -77,22 +77,22 @@ void UiWindowControl_DrawFramedTextAndChrome
     return;
   }
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
-    if (((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET)) {
       framePiece = UI_WINDOW_SUBRESOURCE_BUTTON_FRAME;
     }
     else {
       framePiece = UI_WINDOW_SUBRESOURCE_INSET_BUTTON_FRAME;
     }
-    if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
       framePiece = framePiece + UI_WINDOW_FRAME_PIECE_COUNT;
     }
   }
   else {
-    if (((control->selectable).stateFlags & UI_BUTTON_HIDDEN_WHILE_SUPPRESSED) != 0) {
+    if (Any((control->selectable).stateFlags & UI_BUTTON_HIDDEN_WHILE_SUPPRESSED)) {
       g_GraphicsFramebufferEndAccess();
       return;
     }
-    if (((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET)) {
       framePiece = UI_WINDOW_SUBRESOURCE_BUTTON_FRAME_DISABLED;
     }
     else {
@@ -143,18 +143,18 @@ void UiWindowControl_DrawFramedTextAndChrome
   textStyle = g_UiTextStyleDisabled;
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     textStyle = g_UiTextStyleNormal;
-    if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
       textStyle = g_UiTextStyleSelected;
     }
   }
   /* packedTextStyle may override the font byte (bits 24-31) and the palette byte (bits 16-23) */
-  if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT)) {
     control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_PALETTE_BYTE;
   }
   else {
     textStyle = textStyle & ~UI_TEXT_STYLE_FONT_BYTE;
   }
-  if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_PALETTE) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_PALETTE)) {
     control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_FONT_BYTE;
   }
   else {
@@ -239,7 +239,7 @@ void UiWindowControl_DrawFramedTextAndChrome
   iconShadowX = iconX;
   iconShadowY = iconY;
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
-    if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
       iconOffsetX = control->iconDrawOffsets.normalX;
       iconOffsetY = control->iconDrawOffsets.normalY;
     }
@@ -573,7 +573,7 @@ Bool8 UiResizableWindowControl_HandleWindowHotkeys
 {
   Bool8 delegateResult;
 
-  if ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) {
+  if (Any(keyboardStateMask & KEYBOARD_STATE_ALT)) {
     if (Any(control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) && (keyCode == 'c')) {
       UiActionQueue_Enqueue(UI_ACTION_CLOSE_ROOT,control);
       return false;
@@ -605,7 +605,7 @@ void UiWindowControl_RelocateWithFrameInset(UiSerializedRelocationDelta relocati
   int frameInset;
 
   frameInset = g_UiWindowFrameInset;
-  if ((control->selectable.stateFlags & UI_BUTTON_FRAME_INSET) != 0) {
+  if (Any(control->selectable.stateFlags & UI_BUTTON_FRAME_INSET)) {
     control->selectable.base.leftOffset = control->selectable.base.leftOffset - g_UiWindowFrameInset;
     control->selectable.base.topOffset = control->selectable.base.topOffset - frameInset;
     control->selectable.base.rightOffset = control->selectable.base.rightOffset + frameInset;

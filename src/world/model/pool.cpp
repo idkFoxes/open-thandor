@@ -416,7 +416,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
       entityRuntime->common.ownership.definitionOrClassRecord = nullptr;
       ownerDefinition = ownerRecord->definitionOrSavedId.runtimeDefinition;
       /* ownerRecord is the owner's root ModelRuntimeSlot */
-      if ((ownerRecord->classState.stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0 &&
+      if (!Any(ownerRecord->classState.stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) &&
          (ownerDefinition->destroyedReplacementArmyAssetId != -1)) {
         /* the third parameter of ArmyRuntime_CreateInstanceFromAsset takes y, as at its other callers */
         ArmyRuntime_CreateInstanceFromAsset
@@ -457,7 +457,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   int prefixIndex;
   ModelRuntimeSlot *modelRuntime;
   ModelDefinition *definitionView;
-  uint32_t modelFlags;
+  ModelDefinitionFlags modelFlags;
   ModelRuntimeNode *modelNodeRuntime;
 
   /* first free slot (no root node) */
@@ -518,7 +518,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   modelRuntime->classState.effectEmitterTimerTicks = 1;
   modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
   modelRuntime->classState.energyLoadQ4 = definitionView->energyLoadQ4;
-  modelRuntime->classState.stateFlags = 0;
+  modelRuntime->classState.stateFlags = ARMY_RUNTIME_FLAGS_NONE;
   modelRuntime->classState.healthRegenerationDelayTicks = 0;
   modelRuntime->classState.dismantleTickCountdown = 0;
   modelRuntime->damageEffectPointIndex = 0;
@@ -535,7 +535,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
     modelRuntime->rootModelNodeOrSavedOffset.modelNode = modelNodeRuntime;
     ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
-    if ((modelFlags & MODEL_DEFINITION_FLAG_RAY_TRANSPARENT) != 0) {
+    if (Any(modelFlags & MODEL_DEFINITION_FLAG_RAY_TRANSPARENT)) {
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_RAY_TRANSPARENT;
     }
   }

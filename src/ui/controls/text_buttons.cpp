@@ -49,7 +49,7 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     resolvedText = TextResource_Resolve(control->textResourceId);
     stream = resolvedText;
-    if (((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER) != 0) {
+    if (Any((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER)) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
                  g_GraphicsAdapterFormatScratch0Utf16);
@@ -57,7 +57,7 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
       UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,control);
       return;
     }
-    if (((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME)) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
                  g_GraphicsAdapterFormatScratch0Utf16);
@@ -136,7 +136,7 @@ void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDe
   int frameInset;
   
   frameInset = g_UiWindowFrameInset;
-  if (((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) != 0) {
+  if (Any((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET)) {
     edgeOffsetField = &(control->selectable).base.leftOffset;
     *edgeOffsetField = *edgeOffsetField - g_UiWindowFrameInset;
     frameEdgeOffsetField = &(control->selectable).base.topOffset;
@@ -185,20 +185,20 @@ void UiFramedTextButtonControl_DrawClipped
   }
   else if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     drawFrame = true;
-    if (((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET)) {
       framePiece = UI_WINDOW_SUBRESOURCE_BUTTON_FRAME;
     }
     else {
       framePiece = UI_WINDOW_SUBRESOURCE_INSET_BUTTON_FRAME;
     }
-    if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
       framePiece = framePiece + UI_WINDOW_FRAME_PIECE_COUNT;
     }
   }
   else {
     /* Suppressed: the disabled frame, unless UI_BUTTON_HIDDEN_WHILE_SUPPRESSED hides it. */
-    drawFrame = ((control->selectable).stateFlags & UI_BUTTON_HIDDEN_WHILE_SUPPRESSED) == 0;
-    if (((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) == 0) {
+    drawFrame = !Any((control->selectable).stateFlags & UI_BUTTON_HIDDEN_WHILE_SUPPRESSED);
+    if (!Any((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET)) {
       framePiece = UI_WINDOW_SUBRESOURCE_BUTTON_FRAME_DISABLED;
     }
     else {
@@ -212,7 +212,7 @@ void UiFramedTextButtonControl_DrawClipped
     rightCornerX = (control->selectable).base.layoutWidth - cornerWidth;
     bottomCornerY = (control->selectable).base.layoutHeight - cornerHeight;
     if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) ||
-       (((control->selectable).stateFlags & UI_BUTTON_NO_FRAME_WHILE_SUPPRESSED) == 0)) {
+       (!Any((control->selectable).stateFlags & UI_BUTTON_NO_FRAME_WHILE_SUPPRESSED))) {
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipBottom,clipRight,clipTop,clipLeft,(control->selectable).base.top,
                  (control->selectable).base.left,framePiece,g_UiWindowTextureSource,g_FramebufferAccess);
@@ -253,18 +253,18 @@ void UiFramedTextButtonControl_DrawClipped
     textStyle = g_UiTextStyleDisabled;
     if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
       textStyle = g_UiTextStyleNormal;
-      if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+      if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
         textStyle = g_UiTextStyleSelected;
       }
     }
     /* packedTextStyle may override the font byte (bits 24-31) and the palette byte (bits 16-23) */
-    if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT)) {
       control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_PALETTE_BYTE;
     }
     else {
       textStyle = textStyle & ~UI_TEXT_STYLE_FONT_BYTE;
     }
-    if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_PALETTE) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_PALETTE)) {
       control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_FONT_BYTE;
     }
     else {
@@ -272,7 +272,7 @@ void UiFramedTextButtonControl_DrawClipped
     }
     textStyle = textStyle | control->packedTextStyle;
     if (!Any((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) ||
-       (((control->selectable).stateFlags & UI_BUTTON_NO_FOCUS_MARK) != 0)) {
+       (Any((control->selectable).stateFlags & UI_BUTTON_NO_FOCUS_MARK))) {
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,textStyle,commandStream,
                  textY + (control->selectable).base.top,
@@ -363,14 +363,14 @@ void UiFramedTextButtonControl_NonRightPress
   UiSelectableStateFlags *toggleStateFlagsField;
   
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
-    if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
       UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       return;
     }
-    if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION)) {
+      if (Any((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) &&
           (control->activationSound != nullptr)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -382,8 +382,8 @@ void UiFramedTextButtonControl_NonRightPress
       UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       return;
     }
-    if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+    if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
+      if (Any((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) &&
           (control->activationSound != nullptr)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -409,9 +409,9 @@ void UiFramedTextButtonControl_NonRightRelease
   UiSelectableStateFlags *stateFlagsField;
   
   if ((!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) &&
-      (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) &&
-     (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
-    if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+      (!Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE))) &&
+     (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
+    if (Any((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) &&
         (control->activationSound != nullptr)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
@@ -439,7 +439,7 @@ static Bool8 UiFramedTextButtonControl_ContainsPoint
       ((control->selectable).base.layoutHeight <= relativeY)) {
     return false;
   }
-  if (((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET)) {
     return true;
   }
   return (g_UiWindowFrameInset <= relativeX) && (g_UiWindowFrameInset <= relativeY) &&
@@ -457,14 +457,14 @@ void UiFramedTextButtonControl_NonRightDrag
 
 {
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) &&
-     (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) {
+     (!Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE))) {
     if (!UiFramedTextButtonControl_ContainsPoint(pointerY,pointerX,control)) {
-      if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+      if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
         (control->selectable).stateFlags = (control->selectable).stateFlags & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
         UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       }
     }
-    else if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+    else if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
       (control->selectable).stateFlags = (control->selectable).stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
       UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
     }
@@ -513,18 +513,18 @@ void UiTextButtonControl_NonRightPress
   UiSelectableStateFlags *stateFlagsField;
   
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
-    if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION)) {
       pixelHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,UI_WINDOW_SUBRESOURCE_PUSH_BUTTON,g_UiWindowTextureSource);
       if (pixelHit) {
-        if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+        if (Any((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) &&
             (control->activationSound != nullptr)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
                      control->activationSound,nullptr);
         }
-        if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+        if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
           stateFlagsField = &(control->selectable).stateFlags;
           *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
           UiActionQueue_Enqueue((control->selectable).actionId,control);
@@ -538,7 +538,7 @@ void UiTextButtonControl_NonRightPress
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,UI_WINDOW_SUBRESOURCE_CHECKBOX,g_UiWindowTextureSource);
       if (pixelHit) {
-        if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+        if (Any((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) &&
             (control->activationSound != nullptr)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -573,9 +573,9 @@ Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
   
   if (((!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) && (keyCode == KEYBOARD_KEY_CODE_SPACE)) &&
       (control == UiNode_As<UiTextButtonControl>(g_UiKeyboardFocusNode))) &&
-     (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0)) {
-    if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+     (!Any((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION))) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION)) {
+      if (Any((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) &&
           (control->activationSound != nullptr)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -589,8 +589,8 @@ Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
       UiNode_InvalidateRoot(UiNode_As<UiNodeBase>(control));
       return false;
     }
-    if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+    if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
+      if (Any((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) &&
           (control->activationSound != nullptr)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -635,17 +635,17 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
     return;
   }
   buttonFrame = UI_WINDOW_SUBRESOURCE_PUSH_BUTTON;
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+  if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     buttonFrame = UI_WINDOW_SUBRESOURCE_PUSH_BUTTON + 2;
   }
-  if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
+  if (Any((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION)) {
     buttonFrame = buttonFrame - (UI_WINDOW_SUBRESOURCE_PUSH_BUTTON - UI_WINDOW_SUBRESOURCE_CHECKBOX);
-    if (((control->selectable).stateFlags & UI_BUTTON_ALTERNATE_STATE) != 0) {
+    if (Any((control->selectable).stateFlags & UI_BUTTON_ALTERNATE_STATE)) {
       buttonFrame = UI_WINDOW_SUBRESOURCE_CHECKBOX + 4;
     }
   }
   if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
-    if (((control->selectable).stateFlags & UI_BUTTON_HIDDEN_WHILE_SUPPRESSED) != 0) {
+    if (Any((control->selectable).stateFlags & UI_BUTTON_HIDDEN_WHILE_SUPPRESSED)) {
       g_GraphicsFramebufferEndAccess();
       return;
     }
@@ -663,18 +663,18 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
   textStyle = g_UiTextStyleDisabled;
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     textStyle = g_UiTextStyleNormal;
-    if (((control->selectable).stateFlags & UI_BUTTON_ALTERNATE_STATE) != 0) {
+    if (Any((control->selectable).stateFlags & UI_BUTTON_ALTERNATE_STATE)) {
       textStyle = g_UiTextStyleAlternate;
     }
   }
   /* packedTextStyle may override the font byte (bits 24-31) and the palette byte (bits 16-23) */
-  if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT)) {
     control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_PALETTE_BYTE;
   }
   else {
     textStyle = textStyle & ~UI_TEXT_STYLE_FONT_BYTE;
   }
-  if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_PALETTE) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_PALETTE)) {
     control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_FONT_BYTE;
   }
   else {
@@ -682,7 +682,7 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
   }
   textStyle = textStyle | control->packedTextStyle;
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) ||
-     (((control->selectable).stateFlags & UI_BUTTON_NO_FOCUS_MARK) != 0)) {
+     (Any((control->selectable).stateFlags & UI_BUTTON_NO_FOCUS_MARK))) {
     RichTextCommandStream_DrawSingleLine
               (clipBottom,clipRight,clipTop,clipLeft,textStyle,commandStream,
                textY + (control->selectable).base.top,textX + (control->selectable).base.left);

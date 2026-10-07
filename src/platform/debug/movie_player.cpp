@@ -76,7 +76,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   start = Thandor_TickCount();
   for (;;) {
     uint32_t keyCode;
-    uint32_t keyStateMask;
+    UiKeyboardStateMask keyStateMask;
     CursorPointerEvent cursor;
     g_PlatformPumpEvents();
     if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) break;

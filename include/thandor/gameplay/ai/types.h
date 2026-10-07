@@ -486,7 +486,7 @@ struct MdlDefinitionSemanticPrefix {
     uint32_t targetClassIndex; // ModelDefinition.targetClassIndex (indexes per-class shot impact effects and damage)
     uint32_t maximumHealth; // ModelDefinition.maximumHealth
     uint32_t rootNodeOffset; 
-    uint32_t modelFlags; // ModelDefinition.modelFlags
+    ModelDefinitionFlags modelFlags; // ModelDefinition.modelFlags
     uint32_t unknown6C; 
     uint32_t visibilityHeightOffset; // ModelDefinition.visibilityHeightOffset
     uint32_t destroyedReplacementArmyAssetId; // ModelDefinition.destroyedReplacementArmyAssetId

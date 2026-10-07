@@ -342,7 +342,9 @@ static_assert(sizeof(UiNodeBase) == 0x4C &&
 static_assert(sizeof(UiNumericTextControl) == 0x94 &&
               offsetof(UiNumericTextControl, activationSound) == 0x68,
               "UiNumericTextControl keeps its 32-bit layout");
-static_assert(sizeof(UiSelectableControl) == 0x54,
+static_assert(sizeof(UiSelectableControl) == 0x54
+              && offsetof(UiSelectableControl, stateFlags) == 0x4C && sizeof(UiSelectableControl::stateFlags) == 4 &&
+              alignof(decltype(UiSelectableControl::stateFlags)) == 4,
               "UiSelectableControl keeps its 32-bit layout");
 static_assert(sizeof(UiSoundSelectableControl) == 0x60 &&
               offsetof(UiSoundSelectableControl, activationSound) == 0x5C,
@@ -411,6 +413,9 @@ static_assert(sizeof(UiTextEditControl) == 0x80 &&
               "UiTextEditControl keeps its 32-bit layout");
 static_assert(sizeof(KeyboardInputEvent) == 0x8,
               "KeyboardInputEvent keeps its 32-bit layout");
+static_assert(offsetof(KeyboardInputEvent, keyCode) == 0x0 && offsetof(KeyboardInputEvent, stateMask) == 0x4 &&
+                  sizeof(KeyboardInputEvent::stateMask) == 4 && alignof(KeyboardInputEvent) == 4,
+              "KeyboardInputEvent.stateMask stays the 4-byte keyboard state word at +0x4");
 static_assert(sizeof(LevelAssetResourceTables) == 0x24,
               "LevelAssetResourceTables keeps its 32-bit layout");
 static_assert(sizeof(LevelAssetPathOffsets) == 0x28,
@@ -535,6 +540,9 @@ static_assert(sizeof(NetworkSessionContext) == 0x100,
               "NetworkSessionContext keeps its 32-bit layout");
 static_assert(sizeof(InGameCameraCommandDispatchRecord) == 0xC,
               "InGameCameraCommandDispatchRecord keeps its 32-bit layout");
+static_assert(offsetof(InGameCameraCommandDispatchRecord, requiredModifierMask) == 0x4 &&
+                  sizeof(InGameCameraCommandDispatchRecord::requiredModifierMask) == 4,
+              "InGameCameraCommandDispatchRecord.requiredModifierMask stays a 4-byte modifier class at +0x4");
 static_assert(offsetof(InGameCameraCommandDispatchRecord, action) == 0x8 && sizeof(InGameCameraKeyAction) == 4,
               "the camera key action keeps the 32-bit continuation slot");
 static_assert(sizeof(InGameCameraCommandDispatchTable) == 0xD0,
@@ -556,6 +564,11 @@ static_assert(sizeof(UiResizableWindowControl) == 0x78,
 static_assert(sizeof(UiTitledWindowControl) == 0x54,
               "UiTitledWindowControl keeps its 32-bit layout");
 static_assert(sizeof(InGameRuntimeRoot) == 0xC3E4 &&
+              offsetof(InGameRuntimeRoot, diplomacyPanelNodeFlags) == 0x4D54 &&
+              offsetof(InGameRuntimeRoot, minimapResourceButtonStateFlags) == 0x4938 &&
+              sizeof(InGameRuntimeRoot::minimapResourceButtonStateFlags) == 4 &&
+              offsetof(InGameRuntimeRootUiGridView, minimapResourceButtonStateFlags) == 0x4938 &&
+              sizeof(InGameRuntimeRoot::diplomacyPanelNodeFlags) == 4 &&
               offsetof(InGameRuntimeRoot, activeEndMovieRuntime) == 0x22C &&
               offsetof(InGameRuntimeRoot, levelMovieRuntime) == 0x8D4 &&
               offsetof(InGameRuntimeRoot, worldOverlayCallback) == 0xB8C &&
@@ -672,6 +685,41 @@ static_assert(sizeof(ModelRuntimeFlags) == 4 && alignof(ModelRuntimeFlags) == 4 
                   offsetof(WorldOwnerListNode, runtimeFlags) == 0x4C &&
                   offsetof(TerrainOccupancyResolvedMasks, runtimeFlags) == 0x8,
               "the model node runtime flags keep their 4-byte fields");
+/* Step 13 E34c: ModelDefinition.modelFlags (ModelDefinitionFlags, MDL file data) is the dword at +0x68 of every
+   model definition view. */
+static_assert(sizeof(ModelDefinitionFlags) == 4 && alignof(ModelDefinitionFlags) == 4 &&
+                  offsetof(ModelDefinition, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionResolveView, modelFlags) == 0x68 &&
+                  offsetof(MdlDefinitionSemanticPrefix, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionClass14PlacementView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionVerticalDeploymentView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionTimedEffectsUpdateView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionLinkedChildStateView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionDestroyEffectsView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionGroundMovementTrackView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionGroundMovementSteeringView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionTimedTargetProjectileView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionArticulatedMovementView, modelFlags) == 0x68,
+              "the model definition flags keep their 4-byte field");
+/* Step 13 E34c: SelectionPlayerRuntimeBlock.sessionFlags (PlayerSessionFlags) keeps its dword. */
+static_assert(sizeof(PlayerSessionFlags) == 4 && alignof(PlayerSessionFlags) == 4 &&
+                  offsetof(SelectionPlayerRuntimeBlock, sessionFlags) == 0x80A8,
+              "the player session flags keep their 4-byte field");
+/* Step 13 E34c: the army model state word (ArmyRuntimeFlags: ARMY_MODEL_STATE_*, ARMY_RUNTIME_FLAG_DESTROYED,
+   ENTITY_RUNTIME_FLAG_RESEARCH_*) is ModelRuntimeSlot word 59 (+0xEC) in every view that names it. */
+static_assert(sizeof(ArmyRuntimeFlags) == 4 && alignof(ArmyRuntimeFlags) == 4 &&
+                  offsetof(GameEntityRuntime, common) + offsetof(GameEntityRuntimeCommon, runtimeFlags) == 0xEC &&
+                  offsetof(ArmyRuntimeSlot, runtimeFlags) == 0xEC &&
+                  offsetof(ArmyArticulatedRuntimeSlotView, runtimeFlags) == 0xEC &&
+                  offsetof(ArmyRuntimeLinkedChildMaskSlotView, runtimeFlags) == 0xEC &&
+                  offsetof(ModelRuntimeLinkedChildSpawnAndBuildView, linkedChildRuntimeFlags) == 0xEC &&
+                  offsetof(ModelRuntimeArticulatedMovementDefinitionView, runtimeFlags) == 0xEC &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, stateFlags) == 0xEC &&
+                  offsetof(ModelRuntimeClass21State, stateFlags) == 0x68 &&
+                  offsetof(ModelRuntimeClass21UpdateView, class21State) + offsetof(ModelRuntimeClass21State, stateFlags) == 0xEC &&
+                  offsetof(ModelRuntimeSlotClassStateSerializedScalar, stateFlags) == 0x68 &&
+                  offsetof(ModelRuntimeSlotUnrebaseView, classState) + offsetof(ModelRuntimeSlotClassStateSerializedScalar, stateFlags) == 0xEC,
+              "the army model state word keeps its 4-byte fields at +0xEC");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");
@@ -1708,7 +1756,9 @@ static_assert(sizeof(UiFormattedContainerWithMarker) == 0xB0,
 static_assert(sizeof(UiRootStackActionHandlerPage2) == 0x8 &&
               offsetof(UiRootStackActionHandlerPage2, handlers) == 0x0,
               "UiRootStackActionHandlerPage2 keeps its 32-bit layout");
-static_assert(sizeof(UiTextButtonTemplateFields) == 0x10,
+static_assert(sizeof(UiTextButtonTemplateFields) == 0x10
+              && offsetof(UiTextButtonTemplateFields, stateFlags) == 0x0 &&
+              sizeof(UiTextButtonTemplateFields::stateFlags) == 4,
               "UiTextButtonTemplateFields keeps its 32-bit layout");
 static_assert(sizeof(UiLabelTemplateFields) == 0x10 &&
               offsetof(UiLabelTemplateFields, focusChild) == 0x4,

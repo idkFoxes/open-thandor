@@ -117,13 +117,25 @@ enum class UiNodeFlags : uint32_t {
 THANDOR_FLAG_ENUM(UiNodeFlags);
 using enum UiNodeFlags;
 
-enum {
+/* UiSelectableControl.stateFlags: the selectable bits common to every selectable control. A 32-bit field,
+   the original int became the same-size uint32_t (offset and size asserted in layout_checks.cpp). The
+   subclasses use further bits of the same field (UI_BUTTON_*, UI_SPRITE_BUTTON_*, UI_IMAGE_CONTROL_*,
+   UI_ADAPTER_TEXT_BUTTON_*, FRONTEND_CONTROL_INACTIVE); those are typed constants of this enum in the
+   subclass headers, not enumerators, because their values overlap between the subclasses. */
+enum class UiSelectableStateFlags : uint32_t {
     UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE=1,
     UI_SELECTABLE_SELECTED_OR_CHECKED=2,
+    /* read by UiSelectableControl_KeyboardEvent: Enter / Escape also activate the control; 0x80 plays
+       UiSoundSelectableControl.activationSound on a keyboard activation (the same bit is
+       UI_SPRITE_BUTTON_ANIMATED for sprite buttons) */
+    UI_SELECTABLE_ACTIVATE_ON_ENTER=4,
+    UI_SELECTABLE_ACTIVATE_ON_ESCAPE=8,
     UI_SELECTABLE_TOGGLE_ON_ACTIVATION=16,
+    UI_SELECTABLE_PLAY_KEYBOARD_SOUND=0x80,
     UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION=8192
 };
-using UiSelectableStateFlags = int;
+THANDOR_FLAG_ENUM(UiSelectableStateFlags);
+using enum UiSelectableStateFlags;
 
 enum class UiTextListStateFlags : uint32_t {
     UI_TEXT_LIST_TYPE_SEARCH_ENABLED=1,
@@ -194,7 +206,31 @@ using UiSerializedRelocationDelta = int;
 
 using UiPixelCoordinate = int;
 
-using UiKeyboardStateMask = uint32_t;
+/* Keyboard state word: g_KeyboardStateMask, KeyboardInputEvent.stateMask, the keyboard event handlers' first
+   argument and the key command records' modifier classes. Bits without an enumerator stay valid; the
+   enumerators are also visible unscoped (using enum below). */
+enum class UiKeyboardStateMask : uint32_t {
+    KEYBOARD_STATE_NONE = 0,
+    /* Modifier bits (Keyboard_OnKeyDown): left/right Shift 0x01/0x02, left/right Ctrl 0x04/0x08, left/right Alt
+       0x10/0x20 */
+    KEYBOARD_STATE_LEFT_SHIFT = 0x01,
+    KEYBOARD_STATE_RIGHT_SHIFT = 0x02,
+    KEYBOARD_STATE_LEFT_CTRL = 0x04,
+    KEYBOARD_STATE_RIGHT_CTRL = 0x08,
+    KEYBOARD_STATE_LEFT_ALT = 0x10,
+    KEYBOARD_STATE_RIGHT_ALT = 0x20,
+    KEYBOARD_STATE_SHIFT = 0x03,
+    KEYBOARD_STATE_CTRL = 0x0C,
+    KEYBOARD_STATE_ALT = 0x30,
+    KEYBOARD_STATE_ANY_MODIFIER = 0x3F,
+    /* Lock-key bits, seeded from the system's lock-key state (SdlInput_Init at startup and again when the window
+       regains the focus) */
+    KEYBOARD_STATE_NUM_LOCK = 0x10000,
+    KEYBOARD_STATE_SCROLL_LOCK = 0x20000,
+    KEYBOARD_STATE_CAPS_LOCK = 0x40000
+};
+THANDOR_FLAG_ENUM(UiKeyboardStateMask);
+using enum UiKeyboardStateMask;
 
 using UiKeyboardEventCode = uint32_t;
 

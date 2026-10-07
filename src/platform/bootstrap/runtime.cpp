@@ -1132,7 +1132,7 @@ static Bool8 IntroMovie_PollSkipRequest()
 
 {
   uint32_t keyCode;
-  uint32_t keyStateMask;
+  UiKeyboardStateMask keyStateMask;
   CursorPointerEvent cursorEvent;
 
   g_PlatformPumpEvents();

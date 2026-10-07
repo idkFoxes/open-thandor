@@ -450,13 +450,13 @@ static void Thandor_SelfTestTriangleSetup()
 static uint32_t SelfTest_KeymapDrain(uint32_t hash)
 {
     uint32_t keyCode;
-    uint32_t stateMask;
+    UiKeyboardStateMask stateMask;
     uint32_t i;
     while (Keyboard_ReadNextEvent(&keyCode, &stateMask)) {
         hash = (hash ^ keyCode) * 16777619u;
-        hash = (hash ^ stateMask) * 16777619u;
+        hash = (hash ^ ToBits(stateMask)) * 16777619u;
     }
-    hash = (hash ^ g_KeyboardStateMask) * 16777619u;
+    hash = (hash ^ ToBits(g_KeyboardStateMask)) * 16777619u;
     for (i = 0; i < sizeof g_KeyboardSpecialKeyDown; i++) {
         hash = (hash ^ g_KeyboardSpecialKeyDown[i]) * 16777619u;
     }

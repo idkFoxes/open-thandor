@@ -127,7 +127,7 @@ Bool8 Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fa
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       researchingModel = WorldOwnerNode_ModelRuntime(ownerNode);
-      if ((researchingModel->classState.stateFlags & ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING) != 0 &&
+      if (Any(researchingModel->classState.stateFlags & ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING) &&
           factionIndex == researchingModel->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex &&
           technologyIndex == researchingModel->researchTechnologyId) {
         return false;
@@ -151,8 +151,8 @@ void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameE
   uint32_t energyCostQ4;
   GameEntityRuntimeFlags *entityRuntimeFlags;
 
-  if (((entity->common).runtimeFlags &
-      (ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED)) == 0) {
+  if (!Any((entity->common).runtimeFlags &
+      (ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED))) {
     xeniteCostQ4 = g_TechnologyAsset->records[technologyIndex].xeniteCostQ4;
     energyCostQ4 = g_TechnologyAsset->records[technologyIndex].energyCostQ4;
     researchDurationQ5 = g_TechnologyAsset->records[technologyIndex].researchDurationQ5;

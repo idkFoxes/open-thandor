@@ -443,7 +443,7 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
   armyRuntime->terrainOccupancyMask1 = resolvedMasks.secondaryOccupancyMask;
   modelRuntime = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   modelNode->runtimeFlags = modelNode->runtimeFlags | FromBits<ModelRuntimeFlags>(occupancyRuntimeFlags);
-  if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLED) != 0) {
+  if (Any(modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLED)) {
     modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_FORCE_TRANSPARENT;
   }
 }

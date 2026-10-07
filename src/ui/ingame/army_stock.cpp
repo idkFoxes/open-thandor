@@ -76,7 +76,7 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
     }
   }
   cursorFrame = INGAME_CURSOR_FRAME_ARMY_STOCK;
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+  if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
     cursorFrame = INGAME_CURSOR_FRAME_ARMY_STOCK_SELL;
   }
   return cursorFrame;

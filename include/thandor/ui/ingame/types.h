@@ -87,7 +87,7 @@ struct WorldRuntimeSelectionState {
     int32_t pointerSurfaceHitDepth; /* view depth of the terrain hit; 0x7FFFFFFF (WORLD_POINTER_NO_HIT): none */
     uint8_t reserved18_1F[8];
     Ptr32<struct GameEntityRuntime> selectedEntity; // Current selected entity cleared during destruction and replaced by context-action resolution.
-    Ptr32<Bool8 (uint32_t, int, struct WorldRuntimeContext *)> dispatchCommandCallback; /* (UiKeyboardStateMask, UiActionId, ...) */ // key commands of the world view: the keyboardFallback slot of FrontendModelPointerHitContext, so it returns true when the key is not taken and the pointer context passes it on
+    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct WorldRuntimeContext *)> dispatchCommandCallback; // key commands of the world view: the keyboardFallback slot of FrontendModelPointerHitContext, so it returns true when the key is not taken and the pointer context passes it on
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> resolveContextActionPrimaryCallback;
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> resolveContextActionSecondaryCallback;
     Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> beginPointerCaptureCallback;
@@ -442,7 +442,7 @@ enum class InGameCameraKeyAction : uint32_t {
 
 struct InGameCameraCommandDispatchRecord {
     InGameCameraCommandKeyCode keyCode;
-    uint32_t requiredModifierMask;
+    UiKeyboardStateMask requiredModifierMask;
     InGameCameraKeyAction action;
 };
 
@@ -496,7 +496,7 @@ struct InGameRuntimeRoot {
     uint8_t reserved4584_4643[192];
     struct UiPageStackControl gamePanelsModePageStack; // Switched by the game/editor layout toggle.
     uint8_t reserved4698_4937[672];
-    uint32_t minimapResourceButtonStateFlags; // UiSelectableControl.stateFlags of the resource panel sprite button (+0x48EC); UI_SELECTABLE_SELECTED_OR_CHECKED shows the resource plane on the minimap.
+    UiSelectableStateFlags minimapResourceButtonStateFlags; // UiSelectableControl.stateFlags of the resource panel sprite button (+0x48EC); UI_SELECTABLE_SELECTED_OR_CHECKED shows the resource plane on the minimap.
     uint8_t reserved493C_49B3[120];
     int primaryResourceDisplayCurrent;
     int primaryResourceDisplayLimit;
@@ -509,7 +509,7 @@ struct InGameRuntimeRoot {
     uint8_t reserved4AEC_4B27[60];
     int baselineEnergySupplyDisplay; // Baseline energy supply plus the (unshifted) tritium extraction rate.
     uint8_t reserved4B2C_4D53[552];
-    uint32_t diplomacyPanelNodeFlags; // UiNodeBase.nodeFlags of the diplomacy panel (+0x4D0C).
+    UiNodeFlags diplomacyPanelNodeFlags; // UiNodeBase.nodeFlags of the diplomacy panel (+0x4D54 in InGameRuntimeRoot).
     uint8_t reserved4D58_9A6B[19732];
     FieldGridCoordinates minimapOriginGridPosition; // Minimap (UiSelectionGeometryControl at +0x9A1C) source origin: the camera target in grid coordinates.
     Q12 minimapSampleScaleQ12; // Minimap sampleScaleQ12, follows the camera distance unless automatic zoom is off.
@@ -641,7 +641,7 @@ struct InGameRuntimeRootUiGridView {
     uint8_t reserved4584_4643[192];
     struct UiPageStackControl gamePanelsModePageStack;
     uint8_t reserved4698_4937[672];
-    uint32_t minimapResourceButtonStateFlags;
+    UiSelectableStateFlags minimapResourceButtonStateFlags;
     uint8_t reserved493C_49B3[120];
     int primaryResourceDisplayCurrent;
     int primaryResourceDisplayLimit;
