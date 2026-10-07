@@ -488,7 +488,7 @@ struct InGameRuntimeRoot {
     uint8_t reserved0BB0_0BCF[32];
     struct UiPageStackControl gameWindowPageStack;
     uint8_t reserved0C24_24DF[6332];
-    uint32_t worldViewWrappedTextNodeFlags; // UiNodeBase.nodeFlags of the wrapped world view text (+0x2498); UI_NODE_SUPPRESSED in a local game.
+    UiNodeFlags worldViewWrappedTextNodeFlags; // UiNodeBase.nodeFlags of the wrapped world view text (+0x2498); UI_NODE_SUPPRESSED in a local game.
     uint8_t reserved24E4_40AB[7112];
     struct UiPageStackControl sidePanelPageStack; // Page 1 (no side panel) when persistent-settings bit 0x4 selects the editor layout.
     uint8_t reserved4100_452F[1072];
@@ -633,7 +633,7 @@ struct InGameRuntimeRootUiGridView {
     uint8_t reserved0BB0_0BCF[32];
     struct UiPageStackControl gameWindowPageStack;
     uint8_t reserved0C24_24DF[6332];
-    uint32_t worldViewWrappedTextNodeFlags;
+    UiNodeFlags worldViewWrappedTextNodeFlags;
     uint8_t reserved24E4_40AB[7112];
     struct UiPageStackControl sidePanelPageStack;
     uint8_t reserved4100_452F[1072];
