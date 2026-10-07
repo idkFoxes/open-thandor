@@ -53,9 +53,9 @@ void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitio
 void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record);
 
 extern uint32_t g_FrontendRomTransitionPageAction;
-extern uintptr_t g_FrontendActiveRomRecord;
+extern RomRecord *g_FrontendActiveRomRecord; /* the active ROM action table (a menu-room location) */
 extern std::atomic<uint32_t> g_FrontendRomTransitionElapsedTicks; /* advanced by the 256 Hz timer thread */
-extern uintptr_t g_FrontendRomTransitionSplineKeyframes;
+extern WorldMotionSplineKeyframe *g_FrontendRomTransitionSplineKeyframes; /* keyframes of the running camera flight */
 extern uint32_t g_FrontendRomTransitionSplineKeyframeCount;
 extern std::atomic<uint32_t> g_FrontendRomTransitionTargetRecordId; /* read by the 256 Hz timer thread */
 
