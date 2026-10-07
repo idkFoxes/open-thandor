@@ -1225,7 +1225,7 @@ static GraphicsTextureSourceAsset *InGameUiRuntime_ReplaceTexturePackage
    package cannot be loaded.
    The diagram, window and technology texture slots are typed uint32_t in the image data, hence the slot casts.
 */
-Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError)
+bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError)
 
 {
   InGameUiImage *const ui = InGameUi_Image(inGameRoot);

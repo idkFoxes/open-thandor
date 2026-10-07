@@ -36,7 +36,7 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
 
 /* True when the first 32 UTF-16 units of text equal the cheat phrase g_DeveloperChatPhraseUtf16 (compared as
    16 dwords, like the original REPE CMPSD). */
-static Bool8 InGameChatInput_MatchesCheatPhrase(const uint16_t *text)
+static bool InGameChatInput_MatchesCheatPhrase(const uint16_t *text)
 
 {
   const int *phraseDwords;
@@ -62,13 +62,13 @@ static CommandPayload InGameChatInput_CollectTickedSlotBits(UiNodeBase *uiRoot,u
   uint32_t slotIndex;
   uint32_t slotBit;
   CommandPayload recipientMask;
-  Bool8 isSelected;
+  bool isSelected;
 
   recipientMask = 0;
   slotBit = baseBit;
   for (slotIndex = 0; slotIndex < 7; slotIndex++) {
     slotBit = slotBit * 2;
-    isSelected = (Bool8)UiSelectableControl_IsSelected
+    isSelected = UiSelectableControl_IsSelected
                             (&(InGameUi_Image(uiRoot)->*g_UiSevenSlotSelectionControls[slotIndex]).selectable);
     if (isSelected) {
       recipientMask = recipientMask | slotBit;

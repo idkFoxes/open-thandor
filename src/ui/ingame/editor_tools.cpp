@@ -76,7 +76,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
   SelectionPlayerRuntimeBlock *localSelectionBlock;
   uint32_t placementSubMode;
   uint32_t cursorCode;
-  Bool8 callbackAccepted;
+  bool callbackAccepted;
   ArmyRuntimeSlot *previewArmyRuntime;
 
   /* the world owner-list node under the pointer; only model nodes count */
@@ -205,7 +205,7 @@ static void InGameEditorPointer_GetGridPoint(Q12 pointerX,Q12 pointerY,FieldGrid
 }
 
 /* Flags of the field cell at the (rounded) grid point; false when the point lies outside the field. */
-static Bool8 InGameEditorPointer_GetCellFlags(FieldGridAsset *fieldGrid,uint32_t gridXQ12,uint32_t gridYQ12,
+static bool InGameEditorPointer_GetCellFlags(FieldGridAsset *fieldGrid,uint32_t gridXQ12,uint32_t gridYQ12,
           FieldCellPackedFlagsAndMaterial *cellFlags)
 
 {
@@ -477,7 +477,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   int ownerFactionIndex;
   GameEntityRuntime *entry;
   InGameCommandPayloadTripletValue32 payloadValue;
-  Bool8 isEntryAbsent;
+  bool isEntryAbsent;
   uint32_t tripletDwordCount;
   CommandPayload *tripletEntry;
 

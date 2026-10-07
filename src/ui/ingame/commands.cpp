@@ -63,7 +63,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   InGameRuntimeRoot *runtimeRoot;
   ArmyRuntimeSlot *createdArmy;
   WorldRuntimeContext *worldRuntime;
-  Bool8 placementRejected;
+  bool placementRejected;
 
   runtimeRoot = g_InGameRuntimeRoot;
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerId];

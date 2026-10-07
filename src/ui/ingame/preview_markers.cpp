@@ -83,8 +83,8 @@ static void InGameWorldOverlay_BuildPlacementPreviewArmy
   Q12 validatedWorldXQ12;
   Q12 validatedWorldYQ12;
   PackedArgb32 previewTint;
-  Bool8 validated;
-  Bool8 placeable;
+  bool validated;
+  bool placeable;
   PckArmyAssetIdCatalog armyAssetId;
 
   g_InGamePlacementPreviewArmyRuntime = nullptr;
@@ -142,7 +142,7 @@ static void InGameWorldOverlay_BuildPlacementPreviewArmy
 
 /* Places an EGATH0 marker at the exit point of every own class-13 army with a rally point set (at most
    OVERLAY_OWNED_MARKER_CAPACITY). Returns false when the world owner list is empty. */
-static Bool8 InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *worldRuntime)
+static bool InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *worldRuntime)
 
 {
   ModelRuntimeNode *ownerNode;
@@ -194,10 +194,10 @@ static Bool8 InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *wor
   return true;
 }
 
-static Bool8 InGameWorldOverlay_CommandTargetMarkersFull()
+static bool InGameWorldOverlay_CommandTargetMarkersFull()
 
 {
-  return static_cast<Bool8>(OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount);
+  return OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount;
 }
 
 /* Places the waypoint (EWAYP0) and target (ETARG0) markers of the selected own armies. The markers use scale

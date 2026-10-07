@@ -319,7 +319,7 @@ static void InGameUiRoot_UpdateCountdownText(InGameRuntimeRootFrameView *inGameR
         /* The original formats any operand; from 600000 seconds on the minutes need five digits and the text
            runs past the 8 units. Clamped here to 9999:59 because the operand comes from level data. */
         if (INGAME_COUNTDOWN_MAX_SECONDS < secondsLeft) {
-          static Bool8 s_countdownClampLogged = false;
+          static bool s_countdownClampLogged = false;
           if (!s_countdownClampLogged) {
             Thandor_Log("countdown: %u seconds clamped to %u for display",secondsLeft,
                         INGAME_COUNTDOWN_MAX_SECONDS);
