@@ -67,7 +67,7 @@ static Bool8 InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *pack
   WidePath_SplitParentAndLeaf(reinterpret_cast<uint16_t *>(g_PackageScratchBuffer), /* scratch for the leaf */
                               g_ResourceRegistrationDirectoryUtf16,static_cast<uint16_t *>(savePath));
   if (g_FileSystemCreateDirectoryRecursive
-          (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,g_ResourceRegistrationDirectoryUtf16) != 0) {
+          (FileSystemCreateDirectoryFlags::FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,g_ResourceRegistrationDirectoryUtf16) != 0) {
     return false;
   }
   return InGameSaveGame_CreatePackage(savePath,packageHandle);

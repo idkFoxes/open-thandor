@@ -31,7 +31,7 @@ static void InGameNotification_StartQueueHeadMovie(InGameRuntimeRoot *inGameRoot
   notificationMovieNumber = inGameRoot->notificationQueue[0].movieId;
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,&g_FlmMovie000FlmPathUtf16[9]);
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FlmMovie000FlmPathUtf16,nullptr,nullptr)) {
+  if (!Movie_Open(MovieOpenFlags::MOVIE_OPEN_PACKAGE_ONLY,g_FlmMovie000FlmPathUtf16,nullptr,nullptr)) {
     return;
   }
   /* movies 100-299 and 700-899 play at the alternate movie gain */

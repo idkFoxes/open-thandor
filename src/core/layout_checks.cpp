@@ -3298,6 +3298,35 @@ static_assert(sizeof(ShotRuntimeSlot) == 0x40 && offsetof(ShotRuntimeSlot, impac
                   sizeof(ShotRuntimeSlot::impactEffectEmissionFlags) == 4 && alignof(ShotRuntimeSlot) == 4,
               "ShotRuntimeSlot.impactEffectEmissionFlags is the dword at +0x1C");
 
+/* Step 13 E8 (network flag and value sets as enum class): the fields that change from an integer alias to an
+   enum class of the same width keep their size, alignment and offset (packet bytes and player records). */
+static_assert(sizeof(FrontendPlayerRuntimeRecord) == 0x13B0 && alignof(FrontendPlayerRuntimeRecord) == 4 &&
+                  offsetof(FrontendPlayerRuntimeRecord, snapshotTransferFlags) == 0x68 &&
+                  sizeof(FrontendPlayerRuntimeRecord::snapshotTransferFlags) == 4 &&
+                  offsetof(FrontendPlayerRuntimeRecord, capabilityFlags) == 0x74 &&
+                  sizeof(FrontendPlayerRuntimeRecord::capabilityFlags) == 4,
+              "FrontendPlayerRuntimeRecord snapshotTransferFlags +0x68 and capabilityFlags +0x74 stay dwords");
+static_assert(sizeof(FrontendPacket10006CapabilityHeartbeat) == 0x20 &&
+                  offsetof(FrontendPacket10006CapabilityHeartbeat, capabilityFlags) == 0x10 &&
+                  sizeof(FrontendPacket10006CapabilityHeartbeat::capabilityFlags) == 4,
+              "packet 0x10006 capabilityFlags stays the dword at +0x10");
+static_assert(sizeof(FrontendPacket50001SessionAdvertisement) == 0xA0 &&
+                  offsetof(FrontendPacket50001SessionAdvertisement, joinAvailableFlag) == 0x14 &&
+                  sizeof(FrontendPacket50001SessionAdvertisement::joinAvailableFlag) == 4,
+              "packet 0x50001 joinAvailableFlag stays the dword at +0x14");
+static_assert(sizeof(NetworkEndpointFamilyPortFields4) == 0x4 && alignof(NetworkEndpointFamilyPortFields4) == 2 &&
+                  offsetof(NetworkEndpointFamilyPortFields4, addressFamily) == 0x0 &&
+                  sizeof(NetworkEndpointFamilyPortFields4::addressFamily) == 2 &&
+                  offsetof(NetworkEndpointFamilyPortFields4, portNetworkOrder) == 0x2,
+              "NetworkEndpointFamilyPortFields4 addressFamily stays the word at +0");
+
+/* Step 13 E9 (movie and file system flag and value sets as enum class): MovieRuntime keeps openFlags and
+   streamState as dwords at their offsets. */
+static_assert(sizeof(MovieRuntime) == 0x224 && alignof(MovieRuntime) == 4 &&
+                  offsetof(MovieRuntime, openFlags) == 0xE8 && sizeof(MovieRuntime::openFlags) == 4 &&
+                  offsetof(MovieRuntime, streamState) == 0xF4 && sizeof(MovieRuntime::streamState) == 4,
+              "MovieRuntime openFlags +0xE8 and streamState +0xF4 stay dwords");
+
 /* Step 13 E2 (ui/frontend and ui/ingame state families as enum class): the fields keep their offsets, sizes and
    underlying types (player records are copied dword by dword and sent; the cursor frame is a UiImageActionControl
    dword of the in-game template image). */

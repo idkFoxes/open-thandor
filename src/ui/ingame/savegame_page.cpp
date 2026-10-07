@@ -235,7 +235,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
               (g_ScenarioCatalogPathScratchUtf16,reinterpret_cast<uint16_t *>(enumRecord),
                g_ScenarioCatalogPathScratchUtf16);
     openError = g_FileSystemOpen
-                      (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,g_ScenarioCatalogPathScratchUtf16,&handle);
+                      (FileSystemOpenFlags::FILESYSTEM_OPEN_EXCLUSIVE_SHARE,g_ScenarioCatalogPathScratchUtf16,&handle);
     /* the catalog record is the second 0x100 bytes of the .sve; for a save that cannot be opened only the first
        dword is cleared */
     if (openError == 0) {

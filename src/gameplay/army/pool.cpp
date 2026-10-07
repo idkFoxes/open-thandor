@@ -469,7 +469,7 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   while ((frontendPlayerRuntimeId != (playerRecord->factionAssignment).factionAssignmentIndex ||
-         ((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0))) {
+         !Any(playerRecord->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE))) {
     playerRecord++;
     remainingBlocks = remainingBlocks - 1;
     if (remainingBlocks == 0) {

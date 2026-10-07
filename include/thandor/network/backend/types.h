@@ -21,12 +21,12 @@ struct NetworkSessionContext;
 struct NetworkBackendInstanceDescriptorPrefix;
 struct UiTransferEndpointDescriptor;
 
-enum /* NetworkAddressFamily, stored in 2 byte(s) */ {
+/* WinSock address family, stored in 2 bytes (sin_family, h_addrtype). */
+enum class NetworkAddressFamily : uint16_t {
     NETWORK_ADDRESS_FAMILY_UNSPECIFIED=0,
     NETWORK_ADDRESS_FAMILY_IPV4=2,
     NETWORK_ADDRESS_FAMILY_IPX=6
 };
-using NetworkAddressFamily = uint16_t;
 
 using NetworkPortNetworkOrder = uint16_t;
 
