@@ -52,7 +52,7 @@ void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue);
 
 void Graphics_RebuildFrustumPlanes();
 
-Bool8 GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
+bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2);
 
 extern GraphicsPrimitiveQueue *g_ActivePrimitiveQueue;

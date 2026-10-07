@@ -251,7 +251,7 @@ void ModelRender_PrepareProjectedVertex
 
 /* True unless all three projected vertices lie beyond the same edge of g_ProjectionClipRect (shared by
    ModelRender_SubmitTriangle and ModelRender_SubmitTriangleAlternatePath). */
-static Bool8 ModelRender_TriangleOverlapsClipRect
+static bool ModelRender_TriangleOverlapsClipRect
           (const GraphicsProjectedVertexSource *firstVertex,const GraphicsProjectedVertexSource *secondVertex,
            const GraphicsProjectedVertexSource *thirdVertex)
 {
@@ -307,7 +307,7 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
   int32_t facingDotQ12;
   uint32_t paletteBankIndex;
   PackedArgb32 materialColor;
-  Bool8 appendFailed;
+  bool appendFailed;
   GraphicsTextureSetEntry *textureEntry;
 
   facingDotQ12 = ModelRender_ComputeFacingDotQ12(triangle);
@@ -407,7 +407,7 @@ void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGr
    (ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath), or white with the tint's alpha when unlit,
    and cached like in ModelRender_PrepareProjectedVertex.
 */
-Bool8 ModelRender_PrepareProjectedVertexAlternatePath
+bool ModelRender_PrepareProjectedVertexAlternatePath
           (ModelRuntimeNode *modelNode,GraphicsTriangleInput *triangle,GraphicsFixedVec3 *vertex)
 
 {
@@ -473,7 +473,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
   GraphicsSubresourceIndex subresourceIndex;
   uint32_t paletteBankIndex;
   PackedArgb32 modulationColor;
-  Bool8 appendFailed;
+  bool appendFailed;
   GraphicsTextureSetEntry *textureEntry;
 
   firstVertex = triangle->vertex0;

@@ -113,6 +113,6 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
           GraphicsProjectedCoordinate pointY,GraphicsProjectedCoordinate pointX);
 
 /* Second result of Triangle2D_ComputeBarycentricWeightsQ12Packed: the point is outside the triangle. */
-extern Bool8 g_Triangle2DBarycentricOutside;
+extern bool g_Triangle2DBarycentricOutside;
 
 #endif /* THANDOR_GRAPHICS_TERRAIN_TERRAIN_RENDER_H */

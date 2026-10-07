@@ -22,10 +22,10 @@ GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha 
    g_GraphicsTextureSourceGetLogicalSize returns for an invalid asset or index; the original looped forever there.
    Such a call can draw nothing (every call that ends draws no tile), so the blits return early instead. Logs
    once. */
-static Bool8 TiledBlit_TileSizeUsable(uint32_t tileWidth,uint32_t tileHeight)
+static bool TiledBlit_TileSizeUsable(uint32_t tileWidth,uint32_t tileHeight)
 
 {
-  static Bool8 loggedEmptyTile;
+  static bool loggedEmptyTile;
 
   if ((int)tileWidth > 0 && (int)tileHeight > 0) {
     return true;

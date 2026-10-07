@@ -55,7 +55,7 @@ static uint32_t Pcx_ReadDword(const uint8_t *bytes)
    Xmax | Ymax << 16), so an Xmax below Xmin borrows one from the height.
    Each decoded scanline contributes its first width bytes; padding beyond width (bytes-per-line > width) is
    dropped. */
-Bool8 Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxIndexedImage *outImage)
+bool Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxIndexedImage *outImage)
 
 {
   const uint8_t *paletteTrailer;

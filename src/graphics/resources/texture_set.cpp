@@ -40,7 +40,7 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
 {
   GraphicsTextureResource *newTexture;
   void *textureBlock;
-  Bool8 registerFailed;
+  bool registerFailed;
   GraphicsTextureSet *allocatedSet;
   uint32_t textureAllocationError;
   GraphicsTextureSetEntry *entryCursor;
@@ -166,7 +166,7 @@ void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,Gr
    Each entry gets no texture yet, its image index, the source asset and entry, and log2 of the width and
    height (31 for a zero size). Returns false at the first image whose width or height is not a power of two
    (that entry is left partly written). */
-static Bool8 GraphicsTextureSet_FillEntries
+static bool GraphicsTextureSet_FillEntries
           (GraphicsTextureSet *set,GraphicsTextureSourceAsset *sourceAsset,GraphicsTextureSourceEntry *firstSourceEntry,
            GraphicsAssetAllocationByteSize entryCount)
 {
@@ -282,7 +282,7 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet 
 /* Enters a texture into the first free slot of g_GraphicsTextureSlots (the registry the original used to evict
    and rebuild device textures). Returns true when all GRAPHICS_TEXTURE_SLOT_CAPACITY slots are taken.
 */
-Bool8 GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
+bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
 
 {
   int slotsRemaining;

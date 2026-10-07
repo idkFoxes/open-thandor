@@ -36,7 +36,7 @@ void ModelRender_SubmitMeshTriangles
 
 void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode);
 
-Bool8 ModelRender_PrepareProjectedVertexAlternatePath
+bool ModelRender_PrepareProjectedVertexAlternatePath
           (ModelRuntimeNode *modelNode,GraphicsTriangleInput *triangle,GraphicsFixedVec3 *vertex);
 
 void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode);
