@@ -115,7 +115,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
-  if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0) {
+  if (Any(inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) {
     return GRAPHICS_CURSOR_FRAME_BUSY;
   }
   if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
@@ -175,7 +175,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     g_InGameCommandPreviewArmyAssetId = g_InGamePointerModePreviewArmyIds[modifierModeMask & variantMask];
     return g_InGamePointerModeCommandIds[modifierModeMask & variantMask];
   }
-  if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
+  if (Any(inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING)) {
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
   /* selection mode: only an owned army at most 1.0 (Q12) above the picked height counts as candidate;
@@ -261,7 +261,7 @@ void InGameWorldInput_BeginPointerCapture
     inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags | WORLD_RUNTIME_FLAG_REPLACE_SELECTION;
   }
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
-  if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0) {
+  if (Any(inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) {
     inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
     WorldRuntime_RestoreMotionStateFromSnapshot(inGameRuntime);
     return;
@@ -459,7 +459,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
 {
   if ((Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) ||
       Any((inGameRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED) ||
-      ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0)) {
+      (Any(inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO))) {
     return;
   }
   if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
@@ -481,7 +481,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
     }
     return;
   }
-  if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) == 0) {
+  if (!Any(inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING)) {
     InGameWorldInput_BeginDragSelectionIfMoved(inGameRuntime);
     return;
   }
@@ -554,7 +554,7 @@ static void InGameWorldInput_SelectOwnCandidateArmy
     return;
   }
   armyRuntimeIndex = ArmyRuntime_Token(entry);
-  if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_REPLACE_SELECTION) == 0) {
+  if (!Any(inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_REPLACE_SELECTION)) {
     InGameCommand_Issue<FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection>(0,0,armyRuntimeIndex);
   }
   else {
@@ -703,7 +703,7 @@ static void InGameWorldInput_DispatchPointerRelease
   if ((Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) ||
       Any((inGameRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED) ||
       (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) ||
-      ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0)) {
+      (Any(inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO))) {
     return;
   }
   if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
@@ -717,7 +717,7 @@ static void InGameWorldInput_DispatchPointerRelease
     InGameWorldInput_CommitCommandModeRelease(pickedHeightQ12,pointerWorldXQ12,pointerWorldYQ12);
     return;
   }
-  if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
+  if (Any(inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING)) {
     inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAG_SELECTING;
     return;
   }

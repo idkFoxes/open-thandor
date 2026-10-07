@@ -40,7 +40,6 @@ inline constexpr int32_t FRONTEND_PAGE_MISSION_BRIEFING = 12;
    rendering: FrontendModelPointerContext_RenderWorldViewQueuesClipped returns at once while
    FRONTEND_MENU_ROOM_RENDER_SUPPRESSED is set in menuRoomModelView's contextFlags. */
 inline constexpr int32_t FRONTEND_COMPACT_LAYOUT_MAX_WIDTH = 640;
-inline constexpr int32_t FRONTEND_MENU_ROOM_RENDER_SUPPRESSED = 0x2000;
 /* UiSelectableControl.stateFlags bit set together with UI_NODE_SUPPRESSED to switch a frontend button off:
    sprite buttons skip it in the hit test and draw it only while selected (ui/controls/buttons). */
 inline constexpr UiSelectableStateFlags FRONTEND_CONTROL_INACTIVE = FromBits<UiSelectableStateFlags>(0x400);
@@ -126,12 +125,7 @@ inline constexpr int32_t FRONTEND_MENU_SOUND_PATH_ONES_DIGIT = 12;
    "no record to activate when the flight ends" */
 inline constexpr uint32_t FRONTEND_ROM_RECORD_ID_NONE = 0xf0000000u;
 inline constexpr uint32_t FRONTEND_ROM_TRANSITION_NO_TARGET = 0xffffffffu;
-/* Low four bits of WorldRuntimeContext.runtimeFlags: the camera motion a right drag or the wheel is doing
-   (FrontendModelPointerContext_DispatchWorldCameraPointerInput / _PointerWheel) */
-inline constexpr int32_t FRONTEND_CAMERA_MOTION_MOVE = 1;
-inline constexpr int32_t FRONTEND_CAMERA_MOTION_HEADING = 2;
-inline constexpr int32_t FRONTEND_CAMERA_MOTION_DISTANCE = 4;
-inline constexpr int32_t FRONTEND_CAMERA_MOTION_PITCH = 8;
-inline constexpr int32_t FRONTEND_CAMERA_MOTION_MASK = 15;
+/* FRONTEND_CAMERA_MOTION_* (low four bits) and FRONTEND_MENU_ROOM_RENDER_SUPPRESSED: WorldRuntimeFlags
+   (world/runtime/flags.h). */
 
 #endif /* THANDOR_UI_FRONTEND_COMMON_H */

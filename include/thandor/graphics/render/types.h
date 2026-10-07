@@ -9,6 +9,7 @@
 #define THANDOR_GRAPHICS_RENDER_TYPES_H
 
 #include <stdint.h>
+#include <thandor/world/runtime/flags.h> /* WorldRuntimeFlags: FrontendModelPointerContext.contextFlags */
 #include <stddef.h> /* offsetof */
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/memory/types.h>
@@ -64,21 +65,8 @@ struct GraphicsShadingRuntimeRecord {
     uint32_t serializationToggleDword; 
 };
 
-enum {
-    FRONTEND_MODEL_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION=16,
-    FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK=32,
-    FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION=64,
-    FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT=256, /* right drag: heading and pitch, with the left button distance */
-    FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE=512, /* right drag: the modifier keys choose move, heading, pitch or distance */
-    FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY=4096,
-    FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN=32768, /* right drag: move, with Ctrl heading and pitch */
-    FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER=524288, /* hit metric measured to the bounding box centre, not the node origin */
-    FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_NON_FACTION_MODELS=4194304,
-    FRONTEND_MODEL_POINTER_CONTEXT_HIDE_PANEL=67108864, /* = WORLD_RUNTIME_FLAG_HIDE_PANEL */
-    FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM=1073741824, /* = WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM */
-    FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT=2147483648 /* = WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT */
-};
-using FrontendModelPointerContextFlags = int;
+/* FrontendModelPointerContextFlags and the FRONTEND_MODEL_POINTER_CONTEXT_* bits: WorldRuntimeFlags
+   (world/runtime/flags.h). */
 
 enum {
     GRAPHICS_STATE_DISABLED=0,

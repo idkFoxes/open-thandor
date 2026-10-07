@@ -268,7 +268,8 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-            .contextFlags = 0x00034600},
+            .contextFlags = WORLD_RUNTIME_FLAG_SHADING_ENABLED | WORLD_RUNTIME_FLAG_SOUND_LISTENER | WORLD_RUNTIME_FLAG_DRAW_TERRAIN |
+                            WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS | FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE}, /* 0x00034600 */
         {},
         { /* +0BD0 gameWindowPageStack g_UiLayoutContainerControlVtable */
             .base = {

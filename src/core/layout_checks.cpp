@@ -3501,3 +3501,23 @@ static_assert(sizeof(TerrainScanSelectorUnion) == 4 && offsetof(TerrainScanSelec
 static_assert(std::is_same_v<std::underlying_type_t<WideNumberFormatFlags>, int32_t> && ThandorFlagEnum<WideNumberFormatFlags> &&
                   ToBits(WIDE_FORMAT_WRITE_TERMINATOR | WIDE_FORMAT_SIGNED_VALUE) == 0x41,
               "WideNumberFormatFlags keeps the int option bits of WideNumber_FormatUtf16");
+
+/* Step 13 settings option flags (flag enum classes): the three option dwords of the settings image keep their
+   4 bytes at the PERSISTENT_SETTING_* offsets. */
+static_assert(sizeof(PersistentSettingsImage) == 0xC8 && offsetof(PersistentSettingsImage, soundOptionFlags) == 0x20 &&
+                  offsetof(PersistentSettingsImage, mapMouseOptionFlags) == 0x40 &&
+                  offsetof(PersistentSettingsImage, mouseLinkPanelOptionFlags) == 0x5C &&
+                  sizeof(PersistentSettingsImage::soundOptionFlags) == 4 &&
+                  sizeof(PersistentSettingsImage::mapMouseOptionFlags) == 4 &&
+                  sizeof(PersistentSettingsImage::mouseLinkPanelOptionFlags) == 4,
+              "the option-flag dwords of the settings image stay at +0x20, +0x40 and +0x5C");
+
+/* Step 13 E2e (WorldRuntimeFlags): the world view's flag word is the dword at +0x4C behind the UiNodeBase in every
+   view that names it (WorldRuntimeContext.runtimeFlags, FrontendModelPointerContext.contextFlags and its frontend
+   views); the enum keeps its 4 bytes. */
+static_assert(offsetof(WorldRuntimeContext, runtimeFlags) == 0x4C && sizeof(WorldRuntimeContext::runtimeFlags) == 4 &&
+                  offsetof(FrontendModelPointerContext, contextFlags) == 0x4C &&
+                  sizeof(FrontendModelPointerContext::contextFlags) == 4 &&
+                  offsetof(FrontendModelPointerHitContext, contextFlags) == 0x4C &&
+                  offsetof(FrontendPointerSceneRuntimeView, contextFlags) == 0x4C,
+              "the world view flag word stays the dword at +0x4C");

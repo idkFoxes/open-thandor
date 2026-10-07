@@ -49,11 +49,8 @@ inline constexpr auto TERRAIN_VERTEX_POINT_B_SIDE_BITS =
   TERRAIN_VERTEX_POINT_B_INSIDE_MIN_X | TERRAIN_VERTEX_POINT_B_INSIDE_MIN_Y | TERRAIN_VERTEX_POINT_B_INSIDE_MAX_X |
   TERRAIN_VERTEX_POINT_B_INSIDE_MAX_Y; /* 0x3c00000 */
 inline constexpr auto TERRAIN_VERTEX_POINT_B_BITS = TERRAIN_VERTEX_POINT_B_SIDE_BITS | TERRAIN_VERTEX_POINT_B_NOT_PROJECTED;
-/* Render context flag of TerrainProjectedGrid_TransformShadeAndQueue. The context is the world runtime and this is
-   the bit named WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY there: FrontendModelPointerContext_RenderWorldViewQueuesClipped
-   sets it after a frame that covered the whole view, every camera change clears it. While it is set (and the field
-   grid is unchanged) the row spans and point-A projections of the previous frame are reused. */
-inline constexpr int TERRAIN_RENDER_REUSE_PROJECTION = 0x800;
+/* TERRAIN_RENDER_REUSE_PROJECTION, the render context flag of TerrainProjectedGrid_TransformShadeAndQueue: see
+   WorldRuntimeFlags (world/runtime/flags.h). */
 /* Soil packet table (g_TerrainSoilPacketTablePayload) of TerrainProjectedTriangle_ClipInterpolateAndQueueTextured: one block per
    material (projectionFlags bits 0..7), inside it one row per variant (projectionFlags bits 8..10, already the byte
    offset), inside that 0x20-byte packets: +0 the plain triangle, +0x20..+0xA0 the blend packets towards the

@@ -158,7 +158,7 @@ static void InGameUiRoot_UpdateEffectSounds
 static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
 
 {
-  uint32_t soundOptionFlags;
+  PersistentSoundOptionFlags soundOptionFlags;
   InGameLevelConditionStorage *levelConditionStorage;
   uint32_t randomValue;
   uint32_t trackIndex;
@@ -169,9 +169,9 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
   LevelMusicSampleNumber selectedMusicTrackId;
   SoundVoice *playedVoice;
 
-  soundOptionFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  soundOptionFlags = PersistentSettings_ReadSoundOptions();
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  if ((soundOptionFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(soundOptionFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     return;
   }
   if (g_InGameMusicNextTrackCountdown == 0) {
@@ -353,7 +353,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
   UiNodeBase *hoveredNode;
   uint32_t cursorFrame;
   uint32_t edgeScrollCursorFrame;
-  uint32_t soundOptionFlags;
+  PersistentSoundOptionFlags soundOptionFlags;
   uint32_t activePageIndex;
   InGamePresentationTick currentPresentationTick;
 
@@ -382,7 +382,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     /* edge scrolling only on the plain world view (no drag selection or notification jump, first page, no
        interaction node flag 8) and while cursor button bit 2 is up; its scroll-arrow frame wins over the hovered
        node's frame */
-    if (((worldRuntime->runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) == 0) &&
+    if ((!Any(worldRuntime->runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO))) &&
         (activePageIndex == 0) && !Any(worldRuntime->interaction.nodeFlags & UI_NODE_SUPPRESSED) &&
         !Any(g_CursorButtonState & RIGHT)) {
       edgeScrollCursorFrame = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime);
@@ -395,8 +395,8 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
       TerrainDirectionTable_AdvanceAndRebuildVectors();
       soundOptionFlags =
-           PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-      if ((soundOptionFlags & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+           PersistentSettings_ReadSoundOptions();
+      if (Any(soundOptionFlags & PERSISTENT_SOUND_OPTION_EFFECTS)) {
         InGameUiRoot_UpdateEffectSounds(inGameRoot,currentPresentationTick);
       }
       InGameUiRoot_UpdateMusic(worldRuntime);
@@ -433,7 +433,7 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache()
 
 {
   UQ12 committedDistance;
-  uint32_t viewSettings;
+  PersistentMapMouseOptionFlags viewSettings;
   FieldGridCoordinates cursorGridPosition;
   InGameRuntimeRoot *inGameRoot;
   
@@ -442,13 +442,13 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache()
                     ((g_InGameRuntimeRoot->worldRuntime).motion.targetPositionYQ12,
                      (g_InGameRuntimeRoot->worldRuntime).motion.targetPositionXQ12);
   inGameRoot->minimapOriginGridPosition = cursorGridPosition;
-  viewSettings = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
+  viewSettings = PersistentSettings_ReadMapMouseOptions();
   committedDistance = (inGameRoot->worldRuntime).motion.committedDistanceQ12;
-  if ((viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF) == 0) {
+  if (!Any(viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF)) {
     inGameRoot->minimapRotationAngle =
          (inGameRoot->worldRuntime).motion.headingAngle;
   }
-  if ((viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF) == 0) {
+  if (!Any(viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF)) {
     /* high dword of distance * 0x6000000 (FIXED_MUL_HIGH) */
     inGameRoot->minimapSampleScaleQ12 =
          FIXED_MUL_HIGH((int)committedDistance,INGAME_MINIMAP_DISTANCE_SCALE_Q32);
