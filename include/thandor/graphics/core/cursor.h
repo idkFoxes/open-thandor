@@ -16,23 +16,23 @@
 #include <thandor/core/contracts.h>
 
 /* Frames for g_GraphicsCursorSetFrame (GraphicsCursor_SetFrameIndex). */
-#define GRAPHICS_CURSOR_FRAME_ARROW 0
-#define GRAPHICS_CURSOR_FRAME_BUSY 6 /* shown while something loads (credits, session start, savegame list) */
+inline constexpr int GRAPHICS_CURSOR_FRAME_ARROW = 0;
+inline constexpr int GRAPHICS_CURSOR_FRAME_BUSY = 6; /* shown while something loads (credits, session start, savegame list) */
 /* Move and resize cursors of the resizable windows (UiResizableWindowControl_QueryResizeCursorCode, named
    after the Win32 IDC_SIZE* cursors they stand for) */
-#define GRAPHICS_CURSOR_FRAME_MOVE 1
-#define GRAPHICS_CURSOR_FRAME_SIZE_NWSE 2 /* top-left and bottom-right corner */
-#define GRAPHICS_CURSOR_FRAME_SIZE_NESW 3 /* top-right and bottom-left corner */
-#define GRAPHICS_CURSOR_FRAME_SIZE_NS 4 /* top and bottom edge */
-#define GRAPHICS_CURSOR_FRAME_SIZE_WE 5 /* left and right edge */
+inline constexpr int GRAPHICS_CURSOR_FRAME_MOVE = 1;
+inline constexpr int GRAPHICS_CURSOR_FRAME_SIZE_NWSE = 2; /* top-left and bottom-right corner */
+inline constexpr int GRAPHICS_CURSOR_FRAME_SIZE_NESW = 3; /* top-right and bottom-left corner */
+inline constexpr int GRAPHICS_CURSOR_FRAME_SIZE_NS = 4; /* top and bottom edge */
+inline constexpr int GRAPHICS_CURSOR_FRAME_SIZE_WE = 5; /* left and right edge */
 /* GraphicsCursor_ConsumeNextInputEvent: bit 31 of a press's returned button state marks a double click (the
    same bit as UI_POINTER_BUTTON_REPEAT_CLICK): the press comes less than 16 clock ticks after the release of
    the same button and within +-4 pixels of the previous press. */
-#define GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK 0x80000000u
-#define GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS 16u
-#define GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE 4
+inline constexpr uint32_t GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK = 0x80000000u;
+inline constexpr uint32_t GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS = 16u;
+inline constexpr int GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE = 4;
 /* Entries of the g_CursorInputEvents ring (read by GraphicsCursor_ConsumeNextInputEvent). */
-#define GRAPHICS_CURSOR_INPUT_EVENT_CAPACITY 256
+inline constexpr int GRAPHICS_CURSOR_INPUT_EVENT_CAPACITY = 256;
 
 extern GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame;
 

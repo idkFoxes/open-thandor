@@ -1,5 +1,5 @@
 {
- "revision": "3eaee5b6",
+ "revision": "c7ddb82e",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -124,7 +124,6 @@
    "assets": 102,
    "audio": 15,
    "core": 161,
-   "graphics": 147,
    "movie": 30,
    "network": 136,
    "platform": 229,
@@ -135,9 +134,9 @@
    "assets": 159,
    "audio": 28,
    "core": 234,
-   "gameplay": 89,
+   "gameplay": 67,
    "generated": 1,
-   "graphics": 206,
+   "graphics": 59,
    "movie": 36,
    "network": 165,
    "platform": 330,
@@ -161,7 +160,8 @@
   },
   "constexpr": {
    "core": 50,
-   "gameplay": 187,
+   "gameplay": 208,
+   "graphics": 147,
    "network": 2,
    "platform": 52,
    "ui": 9,

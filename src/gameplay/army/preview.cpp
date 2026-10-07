@@ -114,11 +114,15 @@ static const uint64_t g_ArmyPreviewAverageAlphaReciprocalMmxLut256[256] = {
 static const uint64_t g_ArmyPreviewDownsampleAlphaRoundingBiasMmx = 0x100000000000000ull;
 
 /* One 16-bit MMX lane per pixel byte: PUNPCKLBW mm,mm duplicates each byte into a word, PSRLW 4 scales it. */
-#define ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, byteIndex) \
-  ((uint64_t)((((pixel) >> ((byteIndex) * 8)) & 0xffu) * ARMY_PREVIEW_BYTE_TO_WORD_REPEAT >> 4) << ((byteIndex) * 16))
-#define ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixel) \
-  (ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 3) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 2) | \
-   ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 1) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 0))
+static constexpr uint64_t ARMY_PREVIEW_UNPACK_BYTE_LANE(uint32_t pixel, int byteIndex)
+{
+  return (uint64_t)(((pixel >> (byteIndex * 8)) & 0xffu) * ARMY_PREVIEW_BYTE_TO_WORD_REPEAT >> 4) << (byteIndex * 16);
+}
+static constexpr uint64_t ARMY_PREVIEW_UNPACK_PIXEL_LANES(uint32_t pixel)
+{
+  return ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 3) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 2) |
+         ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 1) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 0);
+}
 
 /* One output pixel of the preview downsampling (MMX in the original): the four ARGB pixels of a 2x2 block are
    premultiplied by their alpha, summed per channel with the rounding bias and scaled by the reciprocal of their

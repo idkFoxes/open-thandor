@@ -14,13 +14,13 @@
 #include <thandor/core/contracts.h>
 
 /* Number of runtime light records in g_GraphicsShadingRuntimeRecords (0x40 bytes each) */
-#define GRAPHICS_SHADING_RUNTIME_RECORD_COUNT 256
+inline constexpr int GRAPHICS_SHADING_RUNTIME_RECORD_COUNT = 256;
 /* Intensity clamp table (GraphicsIntensityClampTable_Initialize): entry (previous << 8) | target is target
    limited to previous +/- this step, so model tints fade by at most 21 per update */
-#define GRAPHICS_INTENSITY_CLAMP_MAX_STEP 21
+inline constexpr int GRAPHICS_INTENSITY_CLAMP_MAX_STEP = 21;
 /* 64 KiB table plus 64 KiB slack so it can be aligned to a 64 KiB boundary */
-#define GRAPHICS_INTENSITY_CLAMP_ALLOCATION_BYTES 0x20000
-#define GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT 0x10000
+inline constexpr int GRAPHICS_INTENSITY_CLAMP_ALLOCATION_BYTES = 0x20000;
+inline constexpr int GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT = 0x10000;
 
 extern uint64_t g_PackedLightingLookupTable[512];
 

@@ -13,6 +13,7 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
+#include <thandor/core/math/fixed_point.h> /* FIXED_ANGLE16_* */
 
 /* ArmyRuntime_UpdateMovementAndWaypoints: the route end (fallbackPosition) counts as reached within
    +-0x40 exclusive, the final target (the movementTarget... fields) within +-1.0 (Q12) inclusive on both axes */
@@ -32,9 +33,9 @@ inline constexpr int ARMY_ARTICULATED_STEP_CLOSE = 0x40; /* closing step: the fe
 inline constexpr int ARMY_ARTICULATED_STEP_OBSTRUCTED = 0x80; /* the foot target was blocked; a second block cancels the step */
 /* a new walking step keeps only WALK, OBSTRUCTED and bits 8-15; the foot, turn and close bits and the stored
    turn angle are cleared (0xffa0) */
-#define ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK \
-          (0xffff & ~(ARMY_ARTICULATED_STEP_LEFT | ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT_LAST | \
-                      ARMY_ARTICULATED_STEP_RIGHT_LAST | ARMY_ARTICULATED_STEP_TURN | ARMY_ARTICULATED_STEP_CLOSE))
+inline constexpr auto ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK =
+          0xffff & ~(ARMY_ARTICULATED_STEP_LEFT | ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT_LAST |
+                     ARMY_ARTICULATED_STEP_RIGHT_LAST | ARMY_ARTICULATED_STEP_TURN | ARMY_ARTICULATED_STEP_CLOSE);
 /* turn angle16 * this = half the turn angle in the upper 16 bits of the step state */
 inline constexpr int ARMY_ARTICULATED_STEP_HALF_TURN_SCALE = 0x8000;
 /* step progress runs from 0 to 1.0 (Q12); the step ends once it exceeds 0xFFF */
@@ -48,7 +49,7 @@ inline constexpr int ARMY_ARTICULATED_WALK_ON_ANGLE16 = 0x200;
 inline constexpr int ARMY_ARTICULATED_TURN_ANGLE16 = 0x800;
 inline constexpr int ARMY_ARTICULATED_FEET_SQUARE_ANGLE16 = 0x1000;
 /* Ground normals of the articulated walker as packed elevation << 16 | azimuth: straight up */
-#define ARMY_ARTICULATED_NORMAL_UP (FIXED_ANGLE16_QUARTER_TURN << 16)
+inline constexpr auto ARMY_ARTICULATED_NORMAL_UP = FIXED_ANGLE16_QUARTER_TURN << 16;
 
 /* angle16 difference * this >> 16 sign-extends it to the shortest signed turn (-0x8000..0x7fff); the
    multiplication form is kept because a shift compiles differently */
