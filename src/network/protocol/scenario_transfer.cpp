@@ -347,18 +347,19 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle()
                   Asset_RecordAfter<uint8_t>(bundle),nullptr,nullptr) &&
              FrontendScenarioTransfer_LevelPathFits(g_FrontendLoadedLevelAsset,bundle->levelDecodedBytes);
   campaignStream = Asset_RecordAfter<uint8_t>(bundle) + bundle->levelEncodedBytes;
-  g_FrontendLoadedCampaignAsset = FrontendScenarioTransfer_AllocateOrExit(bundle->campaignDecodedBytes);
+  g_FrontendLoadedCampaignAsset =
+       reinterpret_cast<CampaignAsset *>(FrontendScenarioTransfer_AllocateOrExit(bundle->campaignDecodedBytes));
   decodeOk = decodeOk &&
              PckCodec_DecodeHuffmanRle(bundle->campaignDecodedBytes,reinterpret_cast<uint8_t *>(g_FrontendLoadedCampaignAsset),
                                        bundle->campaignEncodedBytes,campaignStream,nullptr,nullptr) &&
-             FrontendScenarioTransfer_CampaignFits(reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset),
+             FrontendScenarioTransfer_CampaignFits(g_FrontendLoadedCampaignAsset,
                                                    bundle->campaignDecodedBytes);
   if (!decodeOk) {
     /* the level's path offset field may hold anything: free the level alone */
     g_MemoryApi.free(g_FrontendLoadedLevelAsset);
     g_FrontendLoadedLevelAsset = nullptr;
-    g_MemoryApi.free(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
-    g_FrontendLoadedCampaignAsset = 0;
+    g_MemoryApi.free(g_FrontendLoadedCampaignAsset);
+    g_FrontendLoadedCampaignAsset = nullptr;
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"campaign bundle");
     return;
   }
@@ -371,8 +372,8 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle()
   if (!FrontendScenarioTransfer_DecodeFieldGrid(bundle->fieldGridDecodedBytes,reinterpret_cast<FieldGridAsset *>(checkedValue),
                                 bundle->fieldGridEncodedBytes,fieldGridStream)) {
     FrontendScenarioTransfer_ReleaseLoadedLevelAsset(); /* the level and its grid */
-    g_MemoryApi.free(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
-    g_FrontendLoadedCampaignAsset = 0;
+    g_MemoryApi.free(g_FrontendLoadedCampaignAsset);
+    g_FrontendLoadedCampaignAsset = nullptr;
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"campaign bundle");
     return;
   }
@@ -382,7 +383,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle()
      and build level\<name>.lev. levelRecordCursor is the asset base advanced by whole
      CampaignLevelRecords, so its levels[0] is the record under the cursor. The original lets the cursor end
      behind the last record without a match; FrontendScenarioTransfer_CampaignFits rejected such a campaign. */
-  campaignAsset = reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset); /* address kept as an integer */
+  campaignAsset = g_FrontendLoadedCampaignAsset;
   levelRecordCursor = reinterpret_cast<uint8_t *>(campaignAsset);
   levelRecordsRemaining = campaignAsset->levelRecordCount;
   campaignAsset->currentLevelId = campaignAsset->firstLevelId;

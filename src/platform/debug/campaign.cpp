@@ -27,7 +27,7 @@ void DebugCampaign_AutoWinTick()
   static unsigned sessionStart;
   static int done;
   const char *value = getenv("OPEN_THANDOR_AUTOWIN");
-  CampaignAsset *campaign = reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset); /* address as uintptr_t */
+  CampaignAsset *campaign = g_FrontendLoadedCampaignAsset;
   CampaignLevelRecord *level = nullptr;
   InGameEndConditionTriggerRecord8ReferenceView *chosen = nullptr;
   int chosenScore = 0;

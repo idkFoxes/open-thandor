@@ -98,12 +98,12 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
     uint16_t *text;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0) {
       /* local game with no campaign or scenario loaded: only queue UI action 0 */
-      if ((g_FrontendLoadedCampaignAsset == 0) && (g_FrontendScenarioInitializationCount == 0)) {
+      if ((g_FrontendLoadedCampaignAsset == nullptr) && (g_FrontendScenarioInitializationCount == 0)) {
         UiActionQueue_Enqueue(0,root);
         break;
       }
-      Resource_Release(reinterpret_cast<void *>(g_FrontendLoadedCampaignAsset));
-      g_FrontendLoadedCampaignAsset = 0;
+      Resource_Release(g_FrontendLoadedCampaignAsset);
+      g_FrontendLoadedCampaignAsset = nullptr;
       g_FrontendScenarioInitializationCount = 0;
       g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
       g_NetworkBackendSlot3();

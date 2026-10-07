@@ -12,7 +12,7 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) uintptr_t g_FrontendLoadedCampaignAsset = 0;
+THANDOR_ALIGN(4) CampaignAsset *g_FrontendLoadedCampaignAsset = nullptr;
 
 static uint16_t g_CampaignLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0}; /* L"level" */
 
@@ -239,7 +239,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     /* CampaignAsset: the first level becomes the current one; find its record. */
     levelRecord = campaignAsset->levels;
     campaignRecordsRemaining = campaignAsset->levelRecordCount;
-    g_FrontendLoadedCampaignAsset = reinterpret_cast<uintptr_t>(campaignAsset);
+    g_FrontendLoadedCampaignAsset = campaignAsset;
     campaignAsset->currentLevelId = campaignAsset->firstLevelId;
     do {
       if (campaignAsset->firstLevelId == levelRecord->levelId) break;
@@ -273,7 +273,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
       /* Original quirk: the error code is used as the grid */
       sourceGrid = reinterpret_cast<FieldGridAsset *>(static_cast<uintptr_t>(loadErrorCode));
     }
-    campaignAsset = reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset); /* kept as an address */
+    campaignAsset = g_FrontendLoadedCampaignAsset;
     source = g_FrontendLoadedLevelAsset;
     transferBundleBytes = g_PackageScratchBuffer;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {

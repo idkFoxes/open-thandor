@@ -284,7 +284,7 @@ static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel()
   int remainingLevelRecords;
   int successorLevelId;
 
-  campaign = reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset);
+  campaign = g_FrontendLoadedCampaignAsset;
   if (campaign == nullptr) {
     return false;
   }
@@ -317,8 +317,8 @@ static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel()
     remainingLevelRecords--;
     if (remainingLevelRecords == 0) {
       /* Successor level missing: the campaign is finished. */
-      Resource_Release(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
-      g_FrontendLoadedCampaignAsset = 0;
+      Resource_Release(g_FrontendLoadedCampaignAsset);
+      g_FrontendLoadedCampaignAsset = nullptr;
       g_FrontendScenarioInitializationCount = 0;
       return false;
     }

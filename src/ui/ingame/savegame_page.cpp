@@ -59,7 +59,7 @@ static void InGameSaveGame_ShowRecordDescription(UiWrappedTextControl *descripti
   if (levelTitleText == nullptr) {
     return;
   }
-  if (g_FrontendLoadedCampaignAsset == 0) {
+  if (g_FrontendLoadedCampaignAsset == nullptr) {
     levelTitleId = record->levelTitleTextId;
     /* Original quirk: the colour command is written into the shared resolved title text. */
     *levelTitleText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;

@@ -222,7 +222,7 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
   InGameLoadedSession_ReadSessionName(saveHandle);
   campaignAsset = Package_LoadEntry(g_CampagneHexPathUtf16,nullptr);
   if (campaignAsset != nullptr) {
-    g_FrontendLoadedCampaignAsset = reinterpret_cast<uintptr_t>(campaignAsset);
+    g_FrontendLoadedCampaignAsset = static_cast<CampaignAsset *>(campaignAsset);
   }
   levelImage = static_cast<FrontendLoadedLevelAsset *>(Package_LoadEntry(g_LevelHexPathUtf16,&packageLoadErrorCode));
   if (levelImage == nullptr) {

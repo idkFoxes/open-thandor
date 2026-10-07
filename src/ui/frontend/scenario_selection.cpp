@@ -182,8 +182,8 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
         controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
         *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       }
-      Resource_Release(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
-      g_FrontendLoadedCampaignAsset = 0;
+      Resource_Release(g_FrontendLoadedCampaignAsset);
+      g_FrontendLoadedCampaignAsset = nullptr;
       /* Select the mission and load it: directly, or in a network session through the command queue. */
       FrontendCommand_Issue<ScenarioCatalog_SelectLevelAndShowDescription>(0,0,selectionIndex);
       FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestLevelAsset>(0,0,selectionIndex);
@@ -645,16 +645,16 @@ void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl 
   }
   if (selectedTabIndex != 0) {
     if (selectedTabIndex < 2) {
-      Resource_Release(reinterpret_cast<void *>(g_FrontendLoadedCampaignAsset));
-      g_FrontendLoadedCampaignAsset = 0;
+      Resource_Release(g_FrontendLoadedCampaignAsset);
+      g_FrontendLoadedCampaignAsset = nullptr;
       selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                         (UiListControl_AsPointerList(&ui->missionsList),
                          nullptr);
       FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestLevelAsset>(0,0,selectedRowIndex);
       return;
     }
-    Resource_Release(reinterpret_cast<void *>(g_FrontendLoadedCampaignAsset));
-    g_FrontendLoadedCampaignAsset = 0;
+    Resource_Release(g_FrontendLoadedCampaignAsset);
+    g_FrontendLoadedCampaignAsset = nullptr;
     selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                       (UiListControl_AsPointerList(&ui->campaignsList),
                        nullptr);
@@ -663,8 +663,8 @@ void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl 
   }
   scenarioPathPointerTable =
        ui->savedGamesList.rowSlots;
-  Resource_Release(reinterpret_cast<void *>(g_FrontendLoadedCampaignAsset));
-  g_FrontendLoadedCampaignAsset = 0;
+  Resource_Release(g_FrontendLoadedCampaignAsset);
+  g_FrontendLoadedCampaignAsset = nullptr;
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                     (UiListControl_AsPointerList(&ui->savedGamesList),
                      nullptr);

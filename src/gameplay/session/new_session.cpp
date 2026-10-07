@@ -233,7 +233,7 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
     UiContainer_LayoutChildren(&inGameRoot->rootUi.base);
   }
   /* a campaign carries units over from the previous level */
-  if (g_FrontendLoadedCampaignAsset == 0) {
+  if (g_FrontendLoadedCampaignAsset == nullptr) {
     OldUnitRuntime_ResetPendingTables();
   }
   else {
