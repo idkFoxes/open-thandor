@@ -17,13 +17,13 @@
 
 uint32_t g_FrontendRuntimeFlags = 0;
 
-uintptr_t g_FrontendCentralTextureSet = 0;
+GraphicsTextureSet *g_FrontendCentralTextureSet = nullptr;
 
-uintptr_t g_FrontendCentralPaletteAsset = 0;
+GraphicsPaletteAsset *g_FrontendCentralPaletteAsset = nullptr;
 
 GraphicsTextureSourceAsset *g_FrontendMenuTextureSource = nullptr;
 
-uint32_t g_FrontendStateTickSpinLock = 0;
+RuntimeSpinLockValue g_FrontendStateTickSpinLock = 0;
 
 SoundVoiceSet *g_FrontendMusicVoiceSet = nullptr;
 
@@ -38,7 +38,7 @@ static UiRootCallbacks g_FrontendUiRootCallbacks = {
    original addresses it on its own, right after the control offset tables, and reserves 256 entries. */
 static Ptr32<uint16_t> g_FrontendNetworkBackendNameRows[256] = {};
 
-static uintptr_t g_FrontendCentralRomAsset = 0;
+static void *g_FrontendCentralRomAsset = nullptr;
 
 static WorldObjectRecord *g_FrontendWorldObjectRecords = nullptr;
 
@@ -65,7 +65,7 @@ static uint32_t FrontendInit_LoadMenuSounds()
   voiceSetSlot = &g_FrontendMenuSoundVoiceSets[1];
   while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1) {
     while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] < L'9' + 1) {
-      if (!Resource_Load((uint16_t *)g_SoundMenue01SamPathUtf16,(void **)&loadedSample,nullptr,nullptr)) {
+      if (!Resource_Load(g_SoundMenue01SamPathUtf16,reinterpret_cast<void **>(&loadedSample),nullptr,nullptr)) {
         return 0;
       }
       voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,&menuVoiceSet);
@@ -97,7 +97,7 @@ void FrontendMusic_StartMenuMusic()
   SoundVoice *musicBuffer;
 
   musicBuffer = g_FrontendMusicActiveBuffer;
-  if (Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&loadedSample,nullptr,nullptr)) {
+  if (Resource_Load(g_FrontendMusic00SamPathUtf16,reinterpret_cast<void **>(&loadedSample),nullptr,nullptr)) {
     if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
       Resource_Release(loadedSample);
     }
@@ -133,7 +133,7 @@ static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *front
     backendDisplayName = backendDisplayName + 128; /* 0x100 bytes */
   }
   UiPointerList_InitializeMeasuredTextRows /* networkProtocolList is a text list: the same prefix as a pointer list */
-            (backendCount,(Ptr32<void> *)g_FrontendNetworkBackendNameRows,
+            (backendCount,reinterpret_cast<Ptr32<void> *>(g_FrontendNetworkBackendNameRows),
              reinterpret_cast<UiPointerListControl *>(&FrontendUi_Image(frontendUiState)->networkProtocolList));
 }
 
@@ -151,7 +151,7 @@ static uint32_t FrontendMenuRoomSlot_UpdatePointerContextAndSceneView
 {
   return FrontendRuntime_UpdatePointerContextAndSceneView
                    (callbackArgument1,callbackArgument2,callbackArgument3,(uint32_t)hitMetric,pointedModelNode,
-                    (FrontendPointerSceneRuntimeView *)pointerContext);
+                    UiNode_As<FrontendPointerSceneRuntimeView>(&pointerContext->base));
 }
 
 static uint32_t FrontendMenuRoomSlot_PressNoOp
@@ -160,7 +160,7 @@ static uint32_t FrontendMenuRoomSlot_PressNoOp
 
 {
   FrontendMenuRoom_PressNoOp(callbackArgument1,callbackArgument2,callbackArgument3,(uint32_t)hitMetric,
-                             (uint32_t)(uintptr_t)pointedModelNode,(uint32_t)(uintptr_t)pointerContext);
+                             static_cast<uint32_t>(reinterpret_cast<uintptr_t>(pointedModelNode)),static_cast<uint32_t>(reinterpret_cast<uintptr_t>(pointerContext)));
   return 0;
 }
 
@@ -170,7 +170,7 @@ static uint32_t FrontendMenuRoomSlot_DragNoOp
 
 {
   FrontendMenuRoom_DragNoOp(callbackArgument1,callbackArgument2,callbackArgument3,(uint32_t)hitMetric,
-                            (uint32_t)(uintptr_t)pointedModelNode,(uint32_t)(uintptr_t)pointerContext);
+                            static_cast<uint32_t>(reinterpret_cast<uintptr_t>(pointedModelNode)),static_cast<uint32_t>(reinterpret_cast<uintptr_t>(pointerContext)));
   return 0;
 }
 
@@ -181,14 +181,14 @@ static uint32_t FrontendMenuRoomSlot_ExecuteClickedRomAction
 {
   FrontendMenuRoom_ExecuteClickedRomAction
             (callbackArgument1,callbackArgument2,callbackArgument3,(uint32_t)hitMetric,
-             (FrontendCallbackArgument5)(uintptr_t)pointedModelNode,(uint32_t)(uintptr_t)pointerContext);
+             static_cast<FrontendCallbackArgument5>(reinterpret_cast<uintptr_t>(pointedModelNode)),static_cast<uint32_t>(reinterpret_cast<uintptr_t>(pointerContext)));
   return 0;
 }
 
 static void FrontendMenuRoomSlot_StopCameraFlight(FrontendModelPointerContext *pointerContext)
 
 {
-  FrontendMenuRoom_StopCameraFlight((uint32_t)(uintptr_t)pointerContext);
+  FrontendMenuRoom_StopCameraFlight(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(pointerContext)));
 }
 
 /* Installs the menu room's handlers on its 3D pointer-context control (menuRoomModelView), through the
@@ -203,7 +203,7 @@ static void FrontendInit_InstallMenuRoomPointerCallbacks(FrontendModelPointerCon
   pointerContext->buttonReleaseCallback = FrontendMenuRoomSlot_ExecuteClickedRomAction;
   pointerContext->clearTransientStateCallback = 0;
   pointerContext->rightClickCallback = FrontendMenuRoomSlot_StopCameraFlight;
-  pointerContext->renderSpinLock = (RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock;
+  pointerContext->renderSpinLock = &g_FrontendStateTickSpinLock;
   pointerContext->renderSpinLockReleaseCallback = Frontend_StateTick;
 }
 
@@ -277,21 +277,21 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
   g_FrontendStateTickSpinLock = 0;
   g_TimerRegisterPeriodic(FRONTEND_PERIODIC_TIMER_HZ,FrontendRuntime_TimerCountdownTick);
-  UiRuntime_SetSynchronizationHooks(Frontend_StateTick,(RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
-  centralTextureSet = g_GraphicsTextureSetLoadPackage((uint16_t *)g_GfxTexturenZentraleGfxPathUtf16,
+  UiRuntime_SetSynchronizationHooks(Frontend_StateTick,&g_FrontendStateTickSpinLock);
+  centralTextureSet = g_GraphicsTextureSetLoadPackage(g_GfxTexturenZentraleGfxPathUtf16,
                                                       &centralResourceErrorCode);
   if (centralTextureSet == nullptr) {
     *outError = centralResourceErrorCode;
     return false;
   }
-  g_FrontendCentralTextureSet = (uintptr_t)centralTextureSet;
-  centralPaletteAsset = g_GraphicsPaletteAssetLoadPackage((uint16_t *)g_GfxTexturenZentralePalPathUtf16,
+  g_FrontendCentralTextureSet = centralTextureSet;
+  centralPaletteAsset = g_GraphicsPaletteAssetLoadPackage(g_GfxTexturenZentralePalPathUtf16,
                                                           &centralResourceErrorCode);
   if (centralPaletteAsset == nullptr) {
     *outError = centralResourceErrorCode;
     return false;
   }
-  g_FrontendCentralPaletteAsset = (uintptr_t)centralPaletteAsset;
+  g_FrontendCentralPaletteAsset = centralPaletteAsset;
   RichTextCommandStream_PatchPayloadBySelector
             (0,g_FrontendNetworkEndpointTextUtf16,TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE));
   error = FrontendInit_LoadMenuSounds();
@@ -299,13 +299,13 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     *outError = error;
     return false;
   }
-  centralRomAsset = Package_LoadEntry((uint16_t *)g_EngineZentraleRomPathUtf16,&romLoadErrorCode);
+  centralRomAsset = Package_LoadEntry(g_EngineZentraleRomPathUtf16,&romLoadErrorCode);
   if (centralRomAsset == nullptr) {
     *outError = romLoadErrorCode;
     return false;
   }
-  g_FrontendCentralRomAsset = (uintptr_t)centralRomAsset;
-  error = RomAsset_PrepareRecords((RomAssetHeader *)centralRomAsset);
+  g_FrontendCentralRomAsset = centralRomAsset;
+  error = RomAsset_PrepareRecords(static_cast<RomAssetHeader *>(centralRomAsset));
   if (error != 0) {
     *outError = error;
     return false;
@@ -316,8 +316,8 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     return false;
   }
   /* the world object records of the 3D menu room, zeroed */
-  g_FrontendWorldObjectRecords = (WorldObjectRecord *)allocPayload;
-  zeroCursor = (uint32_t *)allocPayload;
+  g_FrontendWorldObjectRecords = static_cast<WorldObjectRecord *>(allocPayload);
+  zeroCursor = static_cast<uint32_t *>(allocPayload);
   for (remainingDwords = FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingDwords != 0;
        remainingDwords--) {
     *zeroCursor = 0;
@@ -328,28 +328,29 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     *outError = error;
     return false;
   }
-  frontendUiState = (FrontendRootResourceSlots *)allocPayload;
+  frontendUiState = static_cast<FrontendRootResourceSlots *>(allocPayload);
   worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&FrontendUi_Image(frontendUiState)->menuRoomModelView);
-  templateDwords = (uint32_t *)&g_FrontendRootInitializationTemplate;
-  g_FrontendRootNode = (uintptr_t)frontendUiState;
-  rootDwords = (uint32_t *)frontendUiState;
+  /* the template image and the new root are copied dword by dword */
+  templateDwords = reinterpret_cast<uint32_t *>(&g_FrontendRootInitializationTemplate);
+  g_FrontendRootNode = reinterpret_cast<uintptr_t>(frontendUiState);
+  rootDwords = reinterpret_cast<uint32_t *>(frontendUiState);
   for (remainingDwords = sizeof(FrontendUiImage) / 4; remainingDwords != 0; remainingDwords--) {
     *rootDwords = *templateDwords;
     templateDwords++;
     rootDwords++;
   }
   FrontendMenu_BindSharedResources(frontendUiState);
-  UiRootStack_Push(&g_FrontendUiRootCallbacks,(UiRootNode *)frontendUiState);
+  UiRootStack_Push(&g_FrontendUiRootCallbacks,&FrontendUi_Image(frontendUiState)->frontendRoot.root);
   if ((PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS) &
        PERSISTENT_SOUND_OPTION_MUSIC) != 0) {
     FrontendMusic_StartMenuMusic();
   }
   FrontendInit_FillNetworkBackendList(frontendUiState);
   /* the 3D pointer-context control of the menu room is the world runtime menuRoomModelView */
-  FrontendInit_InstallMenuRoomPointerCallbacks((FrontendModelPointerContext *)worldRuntime);
+  FrontendInit_InstallMenuRoomPointerCallbacks(&FrontendUi_Image(frontendUiState)->menuRoomModelView);
   RecentTextHistory_SortAndBuildPointerList
-            (5,(RecentTextHistoryPointerList *)
-               &FrontendUi_Image(frontendUiState)->chatMessageHistory.lineCount);
+            (5,reinterpret_cast<RecentTextHistoryPointerList *> /* lineCount and textLines are the list's count and entries */
+               (&FrontendUi_Image(frontendUiState)->chatMessageHistory.lineCount));
   WorldRuntime_SetTerrainLightingConfiguration(0,0,0xffffffff,0,0,0,0,0,worldRuntime);
   WorldRuntime_AttachObjectArray(FRONTEND_WORLD_OBJECT_RECORD_COUNT,g_FrontendWorldObjectRecords,worldRuntime);
   if (RomRuntime_BuildAllRegistryNodeTrees(worldRuntime)) {
@@ -366,27 +367,27 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   }
   /* Saved player name into the name field and g_FrontendLocalPlayerNameUtf16 (which is also the fallback),
      saved game name into the game-name field (10 dwords = 0x28 bytes each). */
-  savedPlayerName = (uint32_t *)PersistentSettings_GetRegionOrFallback
-                      (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_PLAYER_NAME);
+  savedPlayerName = static_cast<uint32_t *>(PersistentSettings_GetRegionOrFallback
+                      (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_PLAYER_NAME));
   /* the name fields' UTF-16 text buffers, copied as dwords */
   FrontendInit_CopyNameDwords
             (reinterpret_cast<uint32_t *>(FrontendUi_Image(frontendUiState)->playerNameEdit.textBuffer),
              savedPlayerName);
-  FrontendInit_CopyNameDwords((uint32_t *)THANDOR_PTR(g_FrontendLocalPlayerNameUtf16),savedPlayerName);
+  FrontendInit_CopyNameDwords(reinterpret_cast<uint32_t *>(g_FrontendLocalPlayerNameUtf16),savedPlayerName);
   FrontendInit_CopyNameDwords
             (reinterpret_cast<uint32_t *>(FrontendUi_Image(frontendUiState)->gameNameEdit.textBuffer),
-             (const uint32_t *)PersistentSettings_GetRegionOrFallback
-                       (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_GAME_NAME));
+             static_cast<const uint32_t *>(PersistentSettings_GetRegionOrFallback
+                       (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_GAME_NAME)));
   settingValue = PersistentSettings_Read(4,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);
   FrontendUi_Image(frontendUiState)->maxPlayersSlider.value = settingValue;
   UiFrame_FlushInputAndResetPendingTicks();
-  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+  g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
   WorldMotionSpline_ClearCachedDerivatives();
   g_TimerRegisterPeriodic(FRONTEND_ROM_TRANSITION_TIMER_HZ,FrontendRomTransition_AdvanceElapsedTicks);
   FrontendCommand_Issue<FrontendPlayerRuntime_RecordReadyAndUpdateWaitState>(0,0,0);
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+  g_SpinLockRelease(&g_FrontendStateTickSpinLock);
   do {
-    UiNode_InvalidateRoot((UiNodeBase *)frontendUiState);
+    UiNode_InvalidateRoot(&FrontendUi_Image(frontendUiState)->frontendRoot.root.base);
     UiFrame_Update(0);
     UiFrame_Draw();
     g_GraphicsFramebufferPresent(g_FramebufferAccess);
@@ -410,7 +411,7 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
   GraphicsTextureSourceAsset *menuTexture;
   int controlIndex;
 
-  menuTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelMenueGfxPathUtf16,nullptr);
+  menuTexture = g_GraphicsTextureSourceLoadPackageAsset(g_GfxPanelMenueGfxPathUtf16,nullptr);
   if (menuTexture != nullptr) {
     g_FrontendMenuTextureSource = menuTexture;
     frontendUiState->menuTextureSource_485C = menuTexture;
@@ -533,18 +534,18 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
          g_UiButtonSoundVoiceSets7[3];
     ui->advancedSettingsBackButton.activationSound =
          g_UiButtonSoundVoiceSets7[3];
-    for (UiNodeBase *choice : {&ui->advancedEdgesSmooth.selectable.base,
-                               &ui->advancedEdgesExact.selectable.base,
-                               &ui->advancedUiScaleAuto.selectable.base,
-                               &ui->advancedUiScale1.selectable.base,
-                               &ui->advancedUiScale2.selectable.base,
-                               &ui->advancedUiScale3.selectable.base,
-                               &ui->advancedFrameLimitOff.selectable.base,
-                               &ui->advancedFrameLimit60.selectable.base,
-                               &ui->advancedFrameLimit120.selectable.base,
-                               &ui->advancedFrameLimit144.selectable.base,
-                               &ui->advancedVsyncCheckbox.selectable.base}) {
-      ((UiTextButtonControl *)choice)->activationSound = g_UiButtonSoundVoiceSets7[4];
+    for (UiTextButtonControl *choice : {&ui->advancedEdgesSmooth,
+                                        &ui->advancedEdgesExact,
+                                        &ui->advancedUiScaleAuto,
+                                        &ui->advancedUiScale1,
+                                        &ui->advancedUiScale2,
+                                        &ui->advancedUiScale3,
+                                        &ui->advancedFrameLimitOff,
+                                        &ui->advancedFrameLimit60,
+                                        &ui->advancedFrameLimit120,
+                                        &ui->advancedFrameLimit144,
+                                        &ui->advancedVsyncCheckbox}) {
+      choice->activationSound = g_UiButtonSoundVoiceSets7[4];
     }
   }
 }
@@ -564,10 +565,10 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
   g_TimerUnregisterPeriodic(FrontendRuntime_TimerCountdownTick);
   g_TimerUnregisterPeriodic(FrontendRomTransition_AdvanceElapsedTicks);
-  root = (UiRootNode *)g_FrontendRootNode;
+  root = &FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root;
   g_CursorVisibilityToken--;
   if (g_FrontendRootNode != 0) {
-    FrontendTeardown_SaveStatusTextAndHostAddress((UiRootNode *)g_FrontendRootNode);
+    FrontendTeardown_SaveStatusTextAndHostAddress(&FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root);
     UiRootStack_Pop(root);
     g_MemoryApi.free(root);
     g_FrontendRootNode = 0;
@@ -575,14 +576,14 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   FrontendRomRegistry_ClearAndReleaseNestedResources();
   g_MemoryApi.free(g_FrontendWorldObjectRecords);
   g_FrontendWorldObjectRecords = nullptr;
-  Resource_Release((void *)g_FrontendCentralRomAsset);
-  g_FrontendCentralRomAsset = 0;
+  Resource_Release(g_FrontendCentralRomAsset);
+  g_FrontendCentralRomAsset = nullptr;
   GraphicsShadingRuntime_ClearRecordTable();
-  g_GraphicsTextureSetReleasePackage((GraphicsTextureSet *)g_FrontendCentralTextureSet);
-  g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage((GraphicsPaletteAsset *)g_FrontendCentralPaletteAsset);
+  g_GraphicsTextureSetReleasePackage(g_FrontendCentralTextureSet);
+  g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_FrontendCentralPaletteAsset);
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_FrontendMenuTextureSource);
-  g_FrontendCentralTextureSet = 0;
-  g_FrontendCentralPaletteAsset = 0;
+  g_FrontendCentralTextureSet = nullptr;
+  g_FrontendCentralPaletteAsset = nullptr;
   g_FrontendMenuTextureSource = nullptr;
   /* all 100 menu sound slots (Frontend_Init fills 1..99) */
   voiceSetCursor = g_FrontendMenuSoundVoiceSets;
@@ -624,8 +625,8 @@ void FrontendVersionLabel_Draw()
   int barTop;
   int lineTop;
 
-  if ((frontendRoot == 0) || (g_UiRootNode != (UiRootNode *)frontendRoot) || (g_FrontendActiveRomRecord == 0) ||
-      (((const RomRecord *)g_FrontendActiveRomRecord)->recordId != FRONTEND_ROM_RECORD_MAIN_MENU) ||
+  if ((frontendRoot == 0) || (g_UiRootNode != &FrontendUi_Image(frontendRoot)->frontendRoot.root) || (g_FrontendActiveRomRecord == nullptr) ||
+      (g_FrontendActiveRomRecord->recordId != FRONTEND_ROM_RECORD_MAIN_MENU) ||
       (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendViewModeStack)) != 0) ||
       (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendPageStack)) !=
        FRONTEND_PAGE_MAIN)) {

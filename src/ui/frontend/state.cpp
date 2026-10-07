@@ -11,12 +11,6 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/ui/core/key_dispatch.h>
 
-/* g_FrontendStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int (one reinterpretation). */
-static inline RuntimeSpinLockValue *FrontendState_TickLock()
-{
-  return reinterpret_cast<RuntimeSpinLockValue *>(&g_FrontendStateTickSpinLock);
-}
-
 /* Module data. */
 
 uint32_t g_FrontendNetworkTickCounter = 0;
@@ -187,7 +181,7 @@ void Frontend_StateTick()
   void *packet;
   void *packetEndpoint;
 
-  callResult = g_SpinLockTryAcquire(FrontendState_TickLock());
+  callResult = g_SpinLockTryAcquire(&g_FrontendStateTickSpinLock);
   previousTickCounter = g_FrontendNetworkTickCounter;
   frontendRoot = g_FrontendRootNode;
   if (callResult) {
@@ -196,7 +190,7 @@ void Frontend_StateTick()
   switch(g_FrontendNetworkState) {
   case FRONTEND_NETWORK_STATE_IDLE:
     if (g_FrontendTimerCountdownTicks != 0) {
-      g_SpinLockRelease(FrontendState_TickLock());
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
       return;
     }
     g_FrontendNetworkTickCounter++;
@@ -217,7 +211,7 @@ void Frontend_StateTick()
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    g_SpinLockRelease(FrontendState_TickLock());
+    g_SpinLockRelease(&g_FrontendStateTickSpinLock);
     return;
   case FRONTEND_NETWORK_STATE_HOSTING:
     if (g_FrontendTimerCountdownTicks == 0) {
@@ -231,7 +225,7 @@ void Frontend_StateTick()
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    g_SpinLockRelease(FrontendState_TickLock());
+    g_SpinLockRelease(&g_FrontendStateTickSpinLock);
     return;
   case FRONTEND_NETWORK_STATE_JOINED:
     if (g_FrontendTimerCountdownTicks == 0) {
@@ -247,11 +241,11 @@ void Frontend_StateTick()
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    g_SpinLockRelease(FrontendState_TickLock());
+    g_SpinLockRelease(&g_FrontendStateTickSpinLock);
     return;
   case FRONTEND_NETWORK_STATE_HOST_STARTING:
     if (g_FrontendTimerCountdownTicks != 0) {
-      g_SpinLockRelease(FrontendState_TickLock());
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
       return;
     }
     g_FrontendNetworkTickCounter++;
@@ -265,7 +259,7 @@ void Frontend_StateTick()
     if (callResult) {
       /* transfer still running: next tick at once */
       g_FrontendTimerCountdownTicks = 1;
-      g_SpinLockRelease(FrontendState_TickLock());
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
       return;
     }
     break;
@@ -273,7 +267,7 @@ void Frontend_StateTick()
     /* no pacing: works whenever a packet of this session has arrived */
     callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
     if (!callResult) {
-      g_SpinLockRelease(FrontendState_TickLock());
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
       return;
     }
     g_FrontendNetworkTickCounter++;
@@ -285,14 +279,14 @@ void Frontend_StateTick()
     } while (!callResult);
     callResult = FrontendTransfer_ConsumeProcessedFlagForMenuTick();
     if (callResult) {
-      g_SpinLockRelease(FrontendState_TickLock());
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
       return;
     }
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
   }
-  g_SpinLockRelease(FrontendState_TickLock());
+  g_SpinLockRelease(&g_FrontendStateTickSpinLock);
 }
 
 /* Title marker of one level on the game selection page: highlighted when one of the other players (records

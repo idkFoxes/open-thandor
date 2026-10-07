@@ -78,9 +78,10 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     if (playersRemaining == 0) break;
   }
   titleTextId = g_FrontendLoadedLevelAsset->header.titleTextResourceIndex;
-  /* briefingText's text resource id: the faction's briefing entry of the level's text page */
+  /* briefingText's text resource id (kept in its text pointer field): the faction's briefing entry of the
+     level's text page */
   ui->briefingText.text =
-       (uint16_t *)(uintptr_t)(playerRecord->factionAssignment.factionAssignmentIndex + TEXT_ID_LEVEL_BRIEFING_BASE +
+       THANDOR_PTR32_BITS(playerRecord->factionAssignment.factionAssignmentIndex + TEXT_ID_LEVEL_BRIEFING_BASE +
        g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
   briefingText = TextResource_Resolve(titleTextId + TEXT_ID_LEVEL_TITLE_BASE);
   *briefingText = FRONTEND_TEXT_STYLE_NORMAL;
@@ -96,8 +97,9 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   }
   else {
     if (Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode)) {
+      /* the movie runtime is the image's texture source (it starts with the texture asset prefix) */
       reinterpret_cast<UiImageActionControl *>(&ui->briefingImage)->textureSource =
-           (GraphicsTextureSourceAsset *)firstFrameMovie;
+           reinterpret_cast<GraphicsTextureSourceAsset *>(firstFrameMovie);
     }
     else {
       /* The original did not check the result and used the end code as the texture source; bounded here
@@ -177,8 +179,8 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   /* opponent settings: only with computer factions, and in a campaign only on its first level
      (CampaignAsset.firstLevelId) */
   if ((g_FrontendLoadedCampaignAsset == 0 ||
-       ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->currentLevelId ==
-       ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->firstLevelId) && unclaimedActiveFactions != 0) {
+       reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset)->currentLevelId ==
+       reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset)->firstLevelId) && unclaimedActiveFactions != 0) {
     ui->opponentSettingsGroup.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   }
   else {

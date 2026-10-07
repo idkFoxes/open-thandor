@@ -591,7 +591,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .labelFlags = 0x00000015,
-            .text = THANDOR_PTR((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x50)}, /* 5f-format: FrontendUiImage.factionRow1ParticipantsLabel_fields (UI template text pointer) */
+            .text = THANDOR_PTR(g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows[1].textUtf16)}, /* 5f-format: FrontendUiImage.factionRow1ParticipantsLabel_fields (UI template text pointer) */
         { /* +1780 factionRow2ParticipantsLabel g_UiFocusProxyControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0x17DC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
@@ -601,7 +601,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .labelFlags = 0x00000015,
-            .text = THANDOR_PTR((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0xA0)}, /* 5f-format: FrontendUiImage.factionRow2ParticipantsLabel_fields (UI template text pointer) */
+            .text = THANDOR_PTR(g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows[2].textUtf16)}, /* 5f-format: FrontendUiImage.factionRow2ParticipantsLabel_fields (UI template text pointer) */
         { /* +17DC factionRow3ParticipantsLabel g_UiFocusProxyControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0x1838), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
@@ -611,7 +611,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .labelFlags = 0x00000015,
-            .text = THANDOR_PTR((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0xF0)}, /* 5f-format: FrontendUiImage.factionRow3ParticipantsLabel_fields (UI template text pointer) */
+            .text = THANDOR_PTR(g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows[3].textUtf16)}, /* 5f-format: FrontendUiImage.factionRow3ParticipantsLabel_fields (UI template text pointer) */
         { /* +1838 factionRow4ParticipantsLabel g_UiFocusProxyControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0x1894), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
@@ -621,7 +621,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .labelFlags = 0x00000015,
-            .text = THANDOR_PTR((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x140)}, /* 5f-format: FrontendUiImage.factionRow4ParticipantsLabel_fields (UI template text pointer) */
+            .text = THANDOR_PTR(g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows[4].textUtf16)}, /* 5f-format: FrontendUiImage.factionRow4ParticipantsLabel_fields (UI template text pointer) */
         { /* +1894 factionRow5ParticipantsLabel g_UiFocusProxyControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0x18F0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
@@ -631,7 +631,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .labelFlags = 0x00000015,
-            .text = THANDOR_PTR((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x190)}, /* 5f-format: FrontendUiImage.factionRow5ParticipantsLabel_fields (UI template text pointer) */
+            .text = THANDOR_PTR(g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows[5].textUtf16)}, /* 5f-format: FrontendUiImage.factionRow5ParticipantsLabel_fields (UI template text pointer) */
         { /* +18F0 factionRow6ParticipantsLabel g_UiFocusProxyControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0x194C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
@@ -641,7 +641,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .labelFlags = 0x00000015,
-            .text = THANDOR_PTR((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x1E0)}, /* 5f-format: FrontendUiImage.factionRow6ParticipantsLabel_fields (UI template text pointer) */
+            .text = THANDOR_PTR(g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows[6].textUtf16)}, /* 5f-format: FrontendUiImage.factionRow6ParticipantsLabel_fields (UI template text pointer) */
         { /* +194C factionRow7ParticipantsLabel g_UiFocusProxyControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0x19A8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
@@ -651,7 +651,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .labelFlags = 0x00000015,
-            .text = THANDOR_PTR((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x230)}, /* 5f-format: FrontendUiImage.factionRow7ParticipantsLabel_fields (UI template text pointer) */
+            .text = THANDOR_PTR(g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows[7].textUtf16)}, /* 5f-format: FrontendUiImage.factionRow7ParticipantsLabel_fields (UI template text pointer) */
         { /* +19A8 rosterFactionHeader g_UiFocusProxyControlVtable */
             .base = {
                 .nextSibling = UI_TEMPLATE_LINK(0x1A08), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
