@@ -12,8 +12,8 @@
 #include <thandor/world/shots/types.h>
 #include <thandor/core/contracts.h>
 
-/* ShotRuntimeSlot.impactEffectEmissionFlags bit: a beam (direct-line shot) has emitted its impact effect. */
-inline constexpr int SHOT_IMPACT_EFFECT_EMITTED = 0x1;
+/* SHOT_IMPACT_EFFECT_EMITTED (ShotRuntimeSlot.impactEffectEmissionFlags) is an enumerator of
+   ShotImpactEffectEmissionFlags (world/shots/types.h). */
 
 void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode);

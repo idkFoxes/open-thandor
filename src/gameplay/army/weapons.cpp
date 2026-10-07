@@ -89,7 +89,7 @@ ArmyRuntime_ResolveShotAimPoint
         aimWorldY = (targetNode->worldTransform).translation.y;
         aimWorldZ = (targetNode->worldTransform).translation.z + targetDefinition->aimHeightOffsetQ12;
         targetArmy = targetModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-        if ((targetDefinition->accelerationPerTick != 0) && ((targetArmy->movementStateFlags & 4) == 0)) {
+        if ((targetDefinition->accelerationPerTick != 0) && !Any(targetArmy->movementStateFlags & ARMY_MOVEMENT_STATIONARY)) {
           targetDistance = FixedMath_Length3(aimWorldZ - sourceWorldZQ12,aimWorldY - sourceWorldYQ12,
                                              aimWorldX - sourceWorldXQ12);
           shotLeadSpeedQ12 = ShotDefinition_GetLeadSpeed(shotDefinition);

@@ -9,6 +9,7 @@
 #define THANDOR_NETWORK_PROTOCOL_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/network/backend/types.h>
 
@@ -37,18 +38,21 @@ struct FrontendPacket10032HostValue;
 struct FrontendPacket10022StatePending;
 struct FrontendPacket10023StateAck;
 
-enum {
+/* A player's snapshot transfer state (FrontendPlayerRuntimeRecord.snapshotTransferFlags and the flags dword in
+   front of each player's payload in the host's snapshot table); a dword in the record and on the wire. */
+enum class FrontendSnapshotTransferFlags : uint32_t {
+    FRONTEND_SNAPSHOT_NONE=0,
     FRONTEND_SNAPSHOT_SOURCE_AVAILABLE=1,
     FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE=2,
     FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY=4
 };
-using FrontendSnapshotTransferFlags = int;
+THANDOR_FLAG_ENUM(FrontendSnapshotTransferFlags);
 
-enum {
+/* joinAvailableFlag of the 0x50001 session advertisement: 0 or all bits set. */
+enum class UiTransferJoinAvailability : int {
     UI_TRANSFER_JOIN_UNAVAILABLE=0,
-    UI_TRANSFER_JOIN_AVAILABLE=0xFFFFFFFFu /* stored as -1 in the int joinAvailableFlag */
+    UI_TRANSFER_JOIN_AVAILABLE=-1 /* 0xFFFFFFFF on the wire */
 };
-using UiTransferJoinAvailability = int;
 
 enum {
     FRONTEND_PACKET_10000_HANDSHAKE=65536,
@@ -132,7 +136,12 @@ using FrontendPlayerCount = uint32_t;
 
 using FrontendStatusCode = uint32_t;
 
-using FrontendCapabilityFlags = uint32_t;
+/* A player's capability bits (player record, packet 0x10006 and the 0x20002 descriptor's status word). */
+enum class FrontendCapabilityFlags : uint32_t {
+    FRONTEND_CAPABILITY_NONE=0,
+    FRONTEND_CAPABILITY_CD=0x100 /* runs the game from the CD */
+};
+THANDOR_FLAG_ENUM(FrontendCapabilityFlags);
 
 using FrontendProtocolMagic = uint32_t;
 

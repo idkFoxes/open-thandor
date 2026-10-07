@@ -302,11 +302,11 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(Ptr32<GameEntityRunti
 
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     entryArmy = static_cast<ArmyRuntimeSlot *>(selectionEntries[entryIndex]);
-    if ((entryArmy == nullptr) || ((entryArmy->movementStateFlags & ARMY_MOVEMENT_LOCKED) != 0)) {
+    if ((entryArmy == nullptr) || Any(entryArmy->movementStateFlags & ARMY_MOVEMENT_LOCKED)) {
       continue;
     }
     ArmyRuntime_ResetMovementStateFromModel(entryArmy);
-    entryArmy->commandModeFlags = entryArmy->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
+    entryArmy->commandModeFlags = entryArmy->commandModeFlags & ~ARMY_COMMAND_MODE_SELECTION_ORDER;
     entryArmy->movementStateFlags = entryArmy->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
     entryModelRuntime = entryArmy->modelRuntimeOrSavedOffset.modelRuntime;
     if ((entryModelRuntime->definitionOrSavedId).runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
@@ -452,10 +452,10 @@ void SelectionRuntime_StopMovement(Ptr32<GameEntityRuntime> *selectionEntries)
   for (; entriesRemaining != 0; entriesRemaining--) {
     entityRuntime = *selectionEntries;
     if ((entityRuntime != nullptr) &&
-       (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
+       (((entityRuntime->common).commandFlags & ToBits(ARMY_MOVEMENT_LOCKED)) == 0)) {
       GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(entityRuntime);
       commandFlagsPtr = &(entityRuntime->common).commandFlags;
-      *commandFlagsPtr = *commandFlagsPtr & ~(uint32_t)ARMY_MOVEMENT_ROUTED;
+      *commandFlagsPtr = *commandFlagsPtr & ~ToBits(ARMY_MOVEMENT_ROUTED);
     }
     selectionEntries = selectionEntries + 1;
   }
@@ -474,10 +474,10 @@ void SelectionRuntime_CancelTargets(Ptr32<GameEntityRuntime> *selectionEntries)
   for (; entriesRemaining != 0; entriesRemaining--) {
     armyRuntime = static_cast<ArmyRuntimeSlot *>(*selectionEntries);
     if ((armyRuntime != nullptr) &&
-       ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
+       (!Any(armyRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED))) {
       ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(armyRuntime);
       armyRuntime->commandModeFlags =
-           armyRuntime->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
+           armyRuntime->commandModeFlags & ~ARMY_COMMAND_MODE_SELECTION_ORDER;
     }
     selectionEntries = selectionEntries + 1;
   }

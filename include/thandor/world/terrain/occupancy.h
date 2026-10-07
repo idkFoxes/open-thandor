@@ -33,7 +33,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 
 TerrainOccupancyResolvedMasks
 TerrainOccupancyMask_ResolveRuntimeClassFlags
-          (FieldGridRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
+          (uint32_t baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
           FieldGridRegionMask primaryOccupancyMask,char activeFactionIndex);
 
 void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid);

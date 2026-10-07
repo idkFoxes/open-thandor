@@ -222,7 +222,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       /* high-cost cells block the backtrack's straight-line test, unless bit 1 of the runtime record's
          movementStateFlags is set */
       callerBlockingMask = g_GridPathHighCostMask;
-      if (((routeEntityRuntime->common).ownership.linkedArmyRuntime()->movementStateFlags & 2) != 0) {
+      if (Any((routeEntityRuntime->common).ownership.linkedArmyRuntime()->movementStateFlags & ARMY_MOVEMENT_LOCKED)) {
         callerBlockingMask = 0;
       }
       /* the start cell again: one row below routeScratchCell */
@@ -358,11 +358,11 @@ EntityPathing_RebuildOverlappingGroupRoutes
     do {
       candidateArmy = (pairCursor->entity->common).ownership.linkedArmyRuntime();
       candidateDefinition = (pairCursor->entity->common).ownership.modelDefinition();
-      if ((candidateArmy->movementStateFlags & 2) == 0) {
+      if (!Any(candidateArmy->movementStateFlags & ARMY_MOVEMENT_LOCKED)) {
         pairCursor->priority = pairCursor->priority + 1;
         if (routeFactionIndex == candidateArmy->factionIndex) {
           pairCursor->priority = pairCursor->priority + 1;
-          if ((candidateArmy->movementStateFlags & 1) == 0) {
+          if (!Any(candidateArmy->movementStateFlags & ARMY_MOVEMENT_ACTIVE)) {
             pairCursor->priority = pairCursor->priority + candidateDefinition->movementSpeed;
           }
         }

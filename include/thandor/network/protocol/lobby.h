@@ -19,10 +19,10 @@ inline constexpr auto FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE = 0x10;
    UiTransferMailbox_RandomizeSequenceToken); a host answers only discovery probes that carry it. */
 inline constexpr auto FRONTEND_SEQUENCE_TOKEN_HIGH_MASK = 0xffff0000;
 inline constexpr auto FRONTEND_SEQUENCE_TOKEN_HIGH_WORD = 0x12340000;
-/* Player capability bit of the 0x10006 heartbeat and the 0x20002 descriptor (FrontendTransfer_SendCapabilityHeartbeat
-   always sets it); the host then shows L"CD" in that player's list row. */
-inline constexpr auto FRONTEND_CAPABILITY_CD = 0x100;
-/* Bit 0 of the same word: a 64x64 picture <player name>.pcx was found (UiTransfer_SendPlayerDescriptor). */
+/* FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD (network/protocol/types.h) is the player capability bit of the
+   0x10006 heartbeat and the 0x20002 descriptor (FrontendTransfer_SendCapabilityHeartbeat always sets it); the host
+   then shows L"CD" in that player's list row. Bit 0 of the same word: a 64x64 picture <player name>.pcx was
+   found (UiTransfer_SendPlayerDescriptor). */
 inline constexpr auto FRONTEND_DESCRIPTOR_HAS_PICTURE = 0x1;
 
 /* Lobby timeout: reload value of g_SessionTransferTimeoutTicks on a client (join ack, host session packet) and

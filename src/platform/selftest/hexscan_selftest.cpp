@@ -111,7 +111,7 @@ static void HexscanTest_FillGrid(FieldGridAsset *grid, uint64_t seed, int profil
     uint32_t row;
     uint32_t column;
 
-    grid->runtimeStateFlags = 0;
+    grid->runtimeStateFlags = {};
     for (row = 0; row < grid->gridHeight; row++) {
         for (column = 0; column < grid->gridWidth; column++) {
             FieldGridCell *cell = &grid->cells[row * grid->gridWidth + column];

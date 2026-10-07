@@ -25,7 +25,7 @@ void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
 
   armyRuntime = modelRuntime->ownerArmyRuntime;
   placementContactKind = modelRuntime->modelDefinition->placementContactKindIndex;
-  if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) != 0) {
+  if (Any(armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR)) {
     AiUnitBehavior_UpdatePioneerVehicle
               (reinterpret_cast<MdlDefinitionSemanticPrefix *>(modelRuntime->modelDefinition.get()), /* definition view */
                armyRuntime,
@@ -75,7 +75,7 @@ static ModelRuntimeNode *ArmyGroundMovement_PlaceStationary
   rootNode = modelRuntime->rootModelNode;
   remainingRecoilTicks = ownerArmy->actionVector1Q12 - 1;
   if (remainingRecoilTicks < 0) {
-    if ((worldRuntime->fieldGrid->runtimeStateFlags & 1) != 0) {
+    if (Any(worldRuntime->fieldGrid->runtimeStateFlags & FIELD_GRID_RUNTIME_SURFACE_DIRTY)) {
       (*g_ArmyPlacementContactKindDispatchTable.callbacks
         [modelRuntime->modelDefinition->placementContactKindIndex])
                 (modelRuntime->modelDefinition->placementHeightOffsetQ12,

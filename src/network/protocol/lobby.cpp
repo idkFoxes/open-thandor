@@ -255,7 +255,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       for (playerIndex = 0; playerIndex < 8; playerIndex++) {
         playerRecord->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
         playerRecord->colourCycleFlags = 0;
-        playerRecord->snapshotTransferFlags = 0;
+        playerRecord->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
         playerRecord++;
       }
     }
@@ -309,7 +309,7 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
   do {
     if (playerRuntimeId == playerRecord->playerRuntimeId) {
       playerRecord->snapshotTransferFlags =
-           playerRecord->snapshotTransferFlags | FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY;
+           playerRecord->snapshotTransferFlags | FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY;
       playersRemaining = g_FrontendPlayerRuntimeBlockCount;
       playerRecord = g_FrontendPlayerRuntimeBlocks;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -317,7 +317,7 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
       }
       /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
-        if ((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY) == 0) {
+        if (!Any(playerRecord->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY)) {
           return;
         }
         playersRemaining--;
@@ -377,7 +377,7 @@ Bool8 UiTransfer_SendPlayerDescriptor()
   if (!callCarry) {
     reinterpret_cast<uint16_t *>(payloadCursor)[-1] |= FRONTEND_DESCRIPTOR_HAS_PICTURE;
   }
-  reinterpret_cast<uint16_t *>(payloadCursor)[-1] |= FRONTEND_CAPABILITY_CD;
+  reinterpret_cast<uint16_t *>(payloadCursor)[-1] |= ToBits(FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD);
   callCarry = UiTransfer_StagePacketAndSend
                     (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket20002Buffer.header);
   return callCarry;
@@ -394,12 +394,12 @@ static void FrontendTransfer_SendSessionAdvertisement
 
   /* the game name comes from the frontend root node, not from the handler's frontendRuntime */
   frontendRootNode = g_FrontendRootNode;
-  g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_UNAVAILABLE;
+  g_FrontendPacket50001Buffer.joinAvailableFlag = UiTransferJoinAvailability::UI_TRANSFER_JOIN_UNAVAILABLE;
   if ((packet->packet10000Handshake.protocolMagic == FRONTEND_PROTOCOL_MAGIC) &&
       ((packet->packet10000Handshake.header.sequenceToken & FRONTEND_SEQUENCE_TOKEN_HIGH_MASK) ==
        FRONTEND_SEQUENCE_TOKEN_HIGH_WORD) &&
       (hostLobbyPlayerList->rowCount < (uint32_t)maxPlayersSlider->value)) {
-    g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_AVAILABLE;
+    g_FrontendPacket50001Buffer.joinAvailableFlag = UiTransferJoinAvailability::UI_TRANSFER_JOIN_AVAILABLE;
   }
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_TITLE_TEMPLATE);
   RichTextCommandStream_PatchPayloadBySelector(0,g_GameVersionUtf16.data(),resolvedText);
@@ -494,7 +494,7 @@ static void FrontendTransfer_AdmitJoiningPlayer
   joiningPlayerRecordDwordCursor[13] = 0;
   joiningPlayerRecordDwordCursor[14] = 0;
   joiningPlayerRecordDwordCursor[15] = 0;
-  if ((descriptorStatusBits & FRONTEND_CAPABILITY_CD) != 0) {
+  if ((descriptorStatusBits & ToBits(FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD)) != 0) {
     joiningPlayerRecordDwordCursor[10] = 0x440043; /* L"CD" */
   }
   *Packet_At<uint16_t>(joiningPlayerRecordDwordCursor,-18) = 0;
@@ -543,7 +543,7 @@ static void FrontendTransfer_StoreCapabilityHeartbeat
   playerRecord->capabilityLabelUtf16[1] = 0;
   playerRecord->capabilityLabelUtf16[2] = 0;
   playerRecord->capabilityLabelUtf16[3] = 0;
-  if ((capabilityFlags & FRONTEND_CAPABILITY_CD) != 0) {
+  if (Any(capabilityFlags & FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD)) {
     /* L"CD" */
     playerRecord->capabilityLabelUtf16[0] = 'C';
     playerRecord->capabilityLabelUtf16[1] = 0;
@@ -746,7 +746,7 @@ void FrontendTransfer_SendCapabilityHeartbeat()
 {
   g_FrontendPacket10006Buffer.header.packedTypeAndUnitCount =
        FRONTEND_PACKET_10006_CAPABILITY_HEARTBEAT;
-  g_FrontendPacket10006Buffer.capabilityFlags = FRONTEND_CAPABILITY_CD;
+  g_FrontendPacket10006Buffer.capabilityFlags = FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD;
   g_FrontendPacket10006Buffer.heartbeatExpiryTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
   UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10006Buffer.header);

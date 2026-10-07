@@ -164,7 +164,7 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
   gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
   /* Original quirk: the dirty bit is set with a literal 1 before the bounds check, so also when nothing is
      applied */
-  fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
+  fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
   baseColumn = gridCoordinates.columnQ12 >> Q12_SHIFT;
   targetRow = gridCoordinates.rowQ12 >> Q12_SHIFT;
   columnFractionQ12 = (uint32_t)(gridCoordinates.columnQ12 & Q12_FRACTION_MASK);

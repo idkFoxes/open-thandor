@@ -367,7 +367,7 @@ static void ShotBeam_ApplyArmyHit
   damagePerTick = shotDefinition->targetClassImpactDamageQ12[hits->targetClassIndex] /
                   (int)shotDefinition->projectileLifetimeTicks;
   effectDefinition = shotDefinition->targetClassImpactEffectDefinitions8[hits->targetClassIndex];
-  if (((shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED) == 0) &&
+  if (!Any(shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED) &&
      (effectDefinition != nullptr)) {
     shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
     ShotModel_EmitArmyImpactEffect(worldRuntime,modelNode,hits->armyHitDistance,effectDefinition);
@@ -393,7 +393,7 @@ static void ShotBeam_UpdateTick
   case SHOT_NEAREST_HIT_SECONDARY_SURFACE:
     if (hits->secondaryHitDistance <= beamLength) {
       modelNode->renderDepthBiasOrState = hits->secondaryHitDistance;
-      if ((shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED) == 0) {
+      if (!Any(shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED)) {
         shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
         ShotModel_EmitEffectAlongHeading
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
@@ -410,7 +410,7 @@ static void ShotBeam_UpdateTick
   default:
     if (hits->terrainHitDistance <= beamLength) {
       modelNode->renderDepthBiasOrState = hits->terrainHitDistance;
-      if ((shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED) == 0) {
+      if (!Any(shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED)) {
         shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
         ShotModel_EmitTerrainImpactEffect
                   (worldRuntime,modelNode,shotDefinition,hits->terrainMaterialIndex,hits->terrainHitDistance);
