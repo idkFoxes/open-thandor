@@ -616,7 +616,7 @@ void FrontendVersionLabel_Draw()
   }
   const FrontendModelPointerContext *room =
        &frontendRoot->menuRoomModelView;
-  if ((room->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED) != 0) {
+  if (Any(room->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED)) {
     return;
   }
   FontGlyph_GetLogicalSizeForStyle(kStyle,0,&lineHeight);

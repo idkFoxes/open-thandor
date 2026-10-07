@@ -123,7 +123,7 @@ Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
               (&g_GraphicsTransformScratchMatrix3x4,&modelNode->worldTransform,&g_ViewProjectionMatrixFixed);
     clippedCornerMask = ModelResource_ProjectBoundsCorners(resourceView);
     if (ModelBounds_PointerHitsProjectedBox(pointerY,pointerX,clippedCornerMask)) {
-      if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER) != 0) {
+      if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER)) {
         *outDistanceQ12 =
              FixedMath_Length3((((resourceView->localBoundsZ0Q12 + resourceView->localBoundsZ1Q12) >> 1) +
                                modelNode->worldTransform.translation.z) -

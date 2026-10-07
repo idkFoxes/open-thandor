@@ -676,7 +676,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
   CommandPayload pointerXMoveDelta;
   int rotateDragDistanceX;
 
-  if ((mapControl->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
+  if (Any(mapControl->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING)) {
     InGameEditorPointer_UpdateArmyDragSelection(mapControl);
     return;
   }

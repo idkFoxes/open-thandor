@@ -325,7 +325,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
   if (Any((worldRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
-  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0) {
+  if (Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) {
     return;
   }
   if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) {
