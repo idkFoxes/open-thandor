@@ -18,7 +18,7 @@ void GameFactionRelations_UpdateAllPairsForFaction
 
 {
   int opposingFactionIndex;
-  Bool8 pairTestResult;
+  bool pairTestResult;
 
   opposingFactionIndex = 7;
   for (; opposingFactionIndex != 0; opposingFactionIndex--) {
@@ -81,7 +81,7 @@ void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
    below 4 for which GameFactionRelations_EvaluateTransitionRules holds for either faction. False lets the pair
    advance.
 */
-Bool8 GameFactionRelations_TestPairTransitionAllowed
+bool GameFactionRelations_TestPairTransitionAllowed
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -151,7 +151,7 @@ FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIn
 
 
 /* True when the faction named by a condition's operand 0 is in factionMask. */
-static Bool8 GameFactionRelations_IsOperandFactionInMask(FactionActiveMask factionMask,uint32_t factionOperand)
+static bool GameFactionRelations_IsOperandFactionInMask(FactionActiveMask factionMask,uint32_t factionOperand)
 {
   return (factionMask & 1 << ((uint8_t)factionOperand & 31)) != 0;
 }
@@ -160,7 +160,7 @@ static Bool8 GameFactionRelations_IsOperandFactionInMask(FactionActiveMask facti
 
 /* Whether a scheduled condition of the given kind would hold if only the factions in activeFactionMask were
    left (GameFactionRelations_EvaluateTransitionRules). Unknown kinds never hold. */
-static Bool8 GameFactionRelations_PredictConditionHolds
+static bool GameFactionRelations_PredictConditionHolds
           (InGameLevelConditionStorage *levelConditionStorage,InGameScheduledConditionRecord10 *condition,
            uint32_t kind,FactionActiveMask activeFactionMask)
 {
@@ -195,7 +195,7 @@ static Bool8 GameFactionRelations_PredictConditionHolds
    neither focalFactionIndex nor in the mask. Returns true when that variant is 0 or nothing fires.
    Leaves the recomputed satisfied bits in the real condition records.
 */
-Bool8 GameFactionRelations_EvaluateTransitionRules
+bool GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
 
 {
@@ -259,7 +259,7 @@ Bool8 GameFactionRelations_EvaluateTransitionRules
    below the merge; only from those states does the random drift reset the relation
    (GameFactionRuntime_ResetPairwiseRelationState).
 */
-Bool8 GameFactionRelations_IsNotResetEligibleState
+bool GameFactionRelations_IsNotResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -451,7 +451,7 @@ void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgu
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  Bool8 isRecentTimedState;
+  bool isRecentTimedState;
   
   switch(g_GameFactionRuntimeImage.records[targetFactionIndex].packedRelationStates >>
          ((uint8_t)(sourceFactionIndex << 2) & 31) & 0xf) {
@@ -603,7 +603,7 @@ void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10()
    2, 5 or 9 and the pair's last relation change is at most 600 ticks old, so the relation does not advance
    again too soon.
 */
-Bool8 GameFactionRuntime_IsRecentTimedRelationState
+bool GameFactionRuntime_IsRecentTimedRelationState
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
@@ -801,7 +801,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
   uint32_t secondFactionPlayerCount;
   uint32_t firstFactionPlayerCount;
   uint32_t randomValue;
-  Bool8 swapMergeDirection;
+  bool swapMergeDirection;
   uint8_t secondShift;
   uint8_t firstShift;
   FrontendPlayerRuntimeRecord *playerBlockCursor;
@@ -900,7 +900,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
   InGameSimulationTick currentTick;
   InGameRuntimeRoot *inGameRoot;
   FactionRelationState relationState;
-  Bool8 alreadyHostile;
+  bool alreadyHostile;
   Q12 conditionRatio;
   FactionNotificationCodeBase activeFactionCodeForFirst;
   FactionNotificationCodeBase activeFactionCodeForSecond;

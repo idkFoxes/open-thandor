@@ -29,14 +29,14 @@ inline constexpr int LEVEL_LOAD_MOVIE_SPAN_HOLD = 0x10000;
    error code in *outError. */
 using NewLevelPrepareAssetFn = bool (*)(void *asset,uint32_t assetByteCount,uint32_t *outError);
 
-Bool8 InGameLevelRuntime_LoadResourcesAfterDefaultReset
+bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
-Bool8 NewLevel_Fail(uint32_t *outError,uint32_t error);
+bool NewLevel_Fail(uint32_t *outError,uint32_t error);
 
-Bool8 NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *outError);
+bool NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *outError);
 
-Bool8 NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t *outError);
+bool NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t *outError);
 
 bool NewLevel_PrepareEffectAsset(void *asset,uint32_t assetByteCount,uint32_t *outError);
 
@@ -46,7 +46,7 @@ bool NewLevel_PrepareModelAsset(void *asset,uint32_t assetByteCount,uint32_t *ou
 
 bool NewLevel_PrepareArmyAsset(void *asset,uint32_t assetByteCount,uint32_t *outError);
 
-Bool8 NewLevel_LoadAssetList
+bool NewLevel_LoadAssetList
           (LevelAssetRuntimePrefix *levelImage,LevelAssetRelativeByteOffset pathTableOffset,
            LevelAssetRecordCount remainingRecordCount,PackedFileExtensionCode32 extensionCode,
            NewLevelPrepareAssetFn prepareAsset,Ptr32<void> **loadedResourceCursor,uint32_t *outError);

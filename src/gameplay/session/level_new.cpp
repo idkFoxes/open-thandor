@@ -78,7 +78,7 @@ uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256] = {};
 */
 
 /* Stores error in *outError and returns false: the common failure exit of the new-level loader below. */
-Bool8 NewLevel_Fail(uint32_t *outError,uint32_t error)
+bool NewLevel_Fail(uint32_t *outError,uint32_t error)
 
 {
   *outError = error;
@@ -87,7 +87,7 @@ Bool8 NewLevel_Fail(uint32_t *outError,uint32_t error)
 
 /* Allocates g_InGameLevelRuntimeGlobalBlock.conditionStorage and copies the level prefix (header
    resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset bytes) into it dword by dword. */
-Bool8 NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *outError)
+bool NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *outError)
 
 {
   uint32_t prefixByteSize;
@@ -115,7 +115,7 @@ Bool8 NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *o
 
 /* Loads the level's technology file (pathOffsets.technologyPathOffset) into g_TechnologyAsset and checks that it
    is a TEC asset of converter version 0x20000. */
-Bool8 NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t *outError)
+bool NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t *outError)
 
 {
   uint16_t *technologyPath;
@@ -232,7 +232,7 @@ bool NewLevel_PrepareArmyAsset(void *asset,uint32_t assetByteCount,uint32_t *out
 /* Loads one LEV file list (EFF, SHT, MDL or ARM; 0x40-byte path records at pathTableOffset): sets each path's
    extension, loads the file, appends it at *loadedResourceCursor to g_InGameLoadedResourcePointers and prepares
    it. One loading-movie step per file. */
-Bool8 NewLevel_LoadAssetList
+bool NewLevel_LoadAssetList
           (LevelAssetRuntimePrefix *levelImage,LevelAssetRelativeByteOffset pathTableOffset,
            LevelAssetRecordCount remainingRecordCount,PackedFileExtensionCode32 extensionCode,
            NewLevelPrepareAssetFn prepareAsset,Ptr32<void> **loadedResourceCursor,uint32_t *outError)
@@ -274,7 +274,7 @@ Bool8 NewLevel_LoadAssetList
 /* Loading stages 1 to 5: terrain textures (surface, ground) and the field grid, the model pool, the army,
    shot and effect texture sets (pathOffsets.armyTextureBasePathOffset, shotTextureBasePathOffset,
    effectTextureBasePathOffset), then the terrain lighting of the tail. */
-static Bool8 NewLevel_InitTerrainAndGraphics
+static bool NewLevel_InitTerrainAndGraphics
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
@@ -374,7 +374,7 @@ static void NewLevel_PlaceStartCameraAndLightFieldRegion
 }
 
 /* Spawns the initial armies (LevelInitialArmyPlacementRecord20 records at LEV +[0xDC]) of the active factions. */
-static Bool8 NewLevel_SpawnInitialArmies
+static bool NewLevel_SpawnInitialArmies
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
@@ -407,7 +407,7 @@ static Bool8 NewLevel_SpawnInitialArmies
 /* Spatial sound slots (loading stage 6): cleared, then filled from the level's sound directory
    (pathOffsets.soundBasePathOffset), listed from the sound package or, failing that, from disk. A 'sam' file
    whose name ends in the number n becomes slot n; one loading-movie step per loaded sound. */
-static Bool8 NewLevel_LoadSpatialSounds
+static bool NewLevel_LoadSpatialSounds
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
@@ -416,14 +416,14 @@ static Bool8 NewLevel_LoadSpatialSounds
   uint16_t *soundDirectoryPath;
   void *directoryListing;
   PckOutputCapacityBytes listingCapacityBytes;
-  Bool8 soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
+  bool soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
   uint32_t listedSoundCount;
   uint32_t soundDirectoryRecordSizeBytes;
   uint32_t allocError;
   uint32_t shrinkError;
   uint16_t *listedSoundPath;
   uint32_t soundIndex;
-  Bool8 sampleLoaded;
+  bool sampleLoaded;
   void *loadedSample;
   uint32_t loadErrorCode;
   SpatialSoundSlot *soundSlot;
@@ -704,7 +704,7 @@ static void NewLevel_ApplyInitialRelations()
    default build list and applies the initial faction relations.
 */
 
-Bool8 InGameLevelRuntime_LoadResourcesAfterDefaultReset
+bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
