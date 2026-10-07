@@ -182,8 +182,7 @@ void FrontendRomTransition_ProcessPendingRecord()
   Bool8 splineStillRunning;
   uint32_t activateError;
 
-  /* the lock word is declared uint32_t (lifecycle.cpp); the spin lock functions take it as int */
-  const SpinLockGuard tickLock(reinterpret_cast<RuntimeSpinLockValue *>(&g_FrontendStateTickSpinLock));
+  const SpinLockGuard tickLock(&g_FrontendStateTickSpinLock);
   /* g_FrontendRomTransitionTargetRecordId holds the target record id of the running flight (-1 = none to
      activate, 0 = no flight). */
   pendingRecordId = g_FrontendRomTransitionTargetRecordId;
@@ -414,9 +413,9 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   *(Thandor_Bytes(&newNode->textureSubresourceBaseIndex) + 2) = 0;
   *(Thandor_Bytes(&newNode->textureSubresourceBaseIndex) + 3) = 0;
   newNode->tintArgb = stateTintArgb;
-  centralTextureSet = reinterpret_cast<GraphicsTextureSet *>(g_FrontendCentralTextureSet);
+  centralTextureSet = g_FrontendCentralTextureSet;
   spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;
-  newNode->modelPayload.paletteAsset = reinterpret_cast<GraphicsPaletteAsset *>(g_FrontendCentralPaletteAsset);
+  newNode->modelPayload.paletteAsset = g_FrontendCentralPaletteAsset;
   boundingRadius = spriteModelResource->boundingRadiusQ12;
   newNode->modelPayload.textureSet = centralTextureSet;
   newNode->subtreeBoundingRadiusQ12 = boundingRadius;

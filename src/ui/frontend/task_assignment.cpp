@@ -239,8 +239,8 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   do {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor - 1];
     FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->textResourceId =
-         ((LevelPlayerSlotRecord *)((uint8_t *)loadedLevel->playerSlots +
-                                    g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]))->aiClassOrMode +
+         Thandor_At<LevelPlayerSlotRecord>
+              (loadedLevel->playerSlots,g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1])->aiClassOrMode +
          TEXT_ID_FACTION_NAME_BASE + rowCursor;
     FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -275,7 +275,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
        ->selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
   FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[localPlayerRow])
        ->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
-  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)frontendRootPage);
+  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(&FrontendUi_Image(frontendRootPage)->frontendRoot.root);
   rootVtable = frontendRootPage->rootNode.vtable;
   /* frontendRootPage is the frontend root (FrontendUiImage). */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -401,8 +401,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   }
   /* 0x230010 + 0x10 * level title + faction selects the task description of the local player's faction */
   FrontendUi_Image(taskAssignmentRoot)->taskDescriptionText.text =
-       (uint16_t *)(uintptr_t)
-       (localFactionIndex + TEXT_ID_LEVEL_DESCRIPTION_BASE + g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
+       reinterpret_cast<uint16_t *>(static_cast<uintptr_t> /* a text id in the text pointer */
+       (localFactionIndex + TEXT_ID_LEVEL_DESCRIPTION_BASE + g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE));
   /* The control tables hold node offsets in the page (FrontendUiImage::NodeAt): nodeFlags (UI_NODE_SUPPRESSED), the
      selectable stateFlags (UI_SELECTABLE_SELECTED_OR_CHECKED, FRONTEND_CONTROL_INACTIVE) and the mode buttons'
      caption text id. Rows 7..1 (entry row - 1). Some nodeFlags accesses add offsetof(UiNodeBase,nodeFlags) to
@@ -513,7 +513,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   for (remainingDwords = 140; remainingDwords != 0; remainingDwords--) {
     textRowCursor->textUtf16[0] = 0;
     textRowCursor->textUtf16[1] = 0;
-    textRowCursor = (FrontendTaskAssignmentFactionTextRow *)(textRowCursor->textUtf16 + 2); /* one dword */
+    textRowCursor = reinterpret_cast<FrontendTaskAssignmentFactionTextRow *>(textRowCursor->textUtf16 + 2); /* one dword */
   }
   /* the participant column exists only in a network game */
   FrontendUi_Image(taskAssignmentRoot)->rosterParticipantHeader.base.nodeFlags |= UI_NODE_SUPPRESSED;

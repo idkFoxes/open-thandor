@@ -1270,14 +1270,6 @@ template <class T> inline FrontendUiImage *FrontendUi_ImageOfNode(T *node, size_
 
 
 
-/* The menu room node (menuRoomModelView) as the world runtime context the ROM transitions, the menu room scene
-   and the debug overlay work on: a FrontendModelPointerContext shares its storage with a WorldRuntimeContext
-   view (see the field comments of FrontendModelPointerContext). */
-inline WorldRuntimeContext *FrontendModelPointerContext_AsWorldRuntime(FrontendModelPointerContext *context)
-
-{
-  return reinterpret_cast<WorldRuntimeContext *>(context);
-}
 #pragma pack(pop)
 
 #endif /* THANDOR_UI_FRONTEND_TYPES_H */

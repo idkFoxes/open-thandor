@@ -45,7 +45,7 @@ void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
   
   rowIndex = 0;
   do {
-    if ((int)((uintptr_t)factionControl - g_FrontendRootNode) ==
+    if ((int)(reinterpret_cast<uintptr_t>(factionControl) - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_CycleFactionColour>(0,0,rowIndex);
       return;
@@ -66,7 +66,7 @@ void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
   
   rowIndex = 0;
   do {
-    if ((int)((uintptr_t)playerControl - g_FrontendRootNode) ==
+    if ((int)(reinterpret_cast<uintptr_t>(playerControl) - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_ToggleFactionActive>(0,0,rowIndex);
       return;
@@ -87,7 +87,7 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
   
   rowIndex = 0;
   do {
-    if ((int)((uintptr_t)selectionRowControl - g_FrontendRootNode) ==
+    if ((int)(reinterpret_cast<uintptr_t>(selectionRowControl) - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_ChooseFaction>(0,0,rowIndex);
       return;
@@ -144,11 +144,11 @@ void FrontendFactionSetup_CycleFactionColour
            (FrontendUi_Image(g_FrontendRootNode),g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]);
       nextSelectionTextId = selectionControl->textResourceId + 1;
       selectionCycleCounterField =
-           (int *)&((LevelPlayerSlotRecord *)((uint8_t *)g_FrontendLoadedLevelAsset->playerSlots + playerSlotOffset))->aiClassOrMode;
+           reinterpret_cast<int *>(&Thandor_At<LevelPlayerSlotRecord>(g_FrontendLoadedLevelAsset->playerSlots,playerSlotOffset)->aiClassOrMode);
       *selectionCycleCounterField = *selectionCycleCounterField + 1;
       if (selectionTextCycleLength + (TEXT_ID_FACTION_NAME_BASE + 1U) <= nextSelectionTextId) {
         nextSelectionTextId = TEXT_ID_FACTION_NAME_BASE + 1;
-        levelCycleCounterField = (int *)&((LevelPlayerSlotRecord *)((uint8_t *)loadedLevelAsset->playerSlots + playerSlotOffset))->aiClassOrMode;
+        levelCycleCounterField = reinterpret_cast<int *>(&Thandor_At<LevelPlayerSlotRecord>(loadedLevelAsset->playerSlots,playerSlotOffset)->aiClassOrMode);
         *levelCycleCounterField = *levelCycleCounterField - selectionTextCycleLength;
       }
       selectionControl->textResourceId = nextSelectionTextId;
@@ -187,7 +187,7 @@ void FrontendFactionSetup_ToggleFactionActive
   } while (remainingPlayerBlocks != 0);
   lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates + rowIndex + 1;
   *lifecycleState = *lifecycleState ^ FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)g_FrontendRootNode);
+  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(&FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root);
 }
 
 /* Handler of frontend command FRONTEND_COMMAND_CHOOSE_FACTION (0x750), called directly by
@@ -242,6 +242,6 @@ void FrontendFactionSetup_ChooseFaction
     matchedPlayerBlock->factionAssignment.factionAssignmentIndex = rowIndex + 1;
     matchedPlayerBlock->factionAssignment.readyOrWaitState = readyStateGeneration;
     g_FrontendFactionAssignmentReadyStateGeneration++;
-    FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)g_FrontendRootNode);
+    FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(&FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root);
   }
 }

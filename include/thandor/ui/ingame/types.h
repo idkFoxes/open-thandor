@@ -1272,7 +1272,7 @@ template <class T> inline InGameUiImage *InGameUi_Image(T *root)
    context (its interaction state starts with the node's UiNodeBase). */
 template <class T> inline WorldRuntimeContext *InGameUi_WorldRuntime(T *root)
 {
-  return reinterpret_cast<WorldRuntimeContext *>(&InGameUi_Image(root)->worldView);
+  return FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
 }
 /* The twelve metric cells of the multi-selection page in grid order (the members behind the byte offsets of
    g_InGameSelectionDetailGridCellOffsets). */
