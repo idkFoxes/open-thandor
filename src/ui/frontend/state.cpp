@@ -103,7 +103,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
   case FrontendHotkeyAction::Leave: {
     FrontendPlayerRuntimeRecord *player;
     uint16_t *text;
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0) {
+    if (!Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK)) {
       /* local game with no campaign or scenario loaded: only queue UI action 0 */
       if ((g_FrontendLoadedCampaignAsset == nullptr) && (g_FrontendScenarioInitializationCount == 0)) {
         UiActionQueue_Enqueue(0,root);
@@ -126,7 +126,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
     /* Leaving a network session. An earlier transcription named bit 0 the host and bit 1 the client, but
        SESSION_NETWORK_ROLE_CLIENT is bit 0; the variable follows the enum. */
     {
-      int wasClient = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != 0;
+      int wasClient = Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT);
       g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
       g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
       g_FrontendScenarioInitializationCount = 0;
