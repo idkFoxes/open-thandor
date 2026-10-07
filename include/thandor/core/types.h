@@ -659,13 +659,17 @@ enum {
 };
 using FileSystemSeekOrigin = int;
 
-enum {
+/* g_SessionNetworkRoleFlags: the session's network role. Every test masks with SESSION_NETWORK_ROLE_NETWORKED_MASK
+   or one role bit; LOCAL is the value with neither bit. The original int becomes uint32_t (only bit operations and
+   equality tests use it). */
+enum class SessionNetworkRoleFlags : uint32_t {
     SESSION_NETWORK_ROLE_LOCAL=0,
     SESSION_NETWORK_ROLE_CLIENT=1,
     SESSION_NETWORK_ROLE_HOST=2,
     SESSION_NETWORK_ROLE_NETWORKED_MASK=3
 };
-using SessionNetworkRoleFlags = int;
+THANDOR_FLAG_ENUM(SessionNetworkRoleFlags);
+using enum SessionNetworkRoleFlags;
 
 /* struct SoundVoice stays incomplete: a voice handle of the audio slots (g_Sound*), the SDL3 backend's
    voice object behind it (the original's DirectSound buffer). */

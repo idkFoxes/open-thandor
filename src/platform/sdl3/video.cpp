@@ -285,7 +285,7 @@ void ComposeCursor() noexcept
   CopyCursorRectangle(*g_CursorCompositeBuffer, drawY, drawX, true);
   CopyCursorRectangle(*g_CursorSavedBackground, drawY, drawX, true);
   uint32_t cursorSubresourceIndex = cursorFrame.activeSubresourceIndex;
-  if ((g_CursorButtonState & LEFT_MIDDLE_RIGHT) == 0) { /* none of the three mouse buttons is down */
+  if (!Any(g_CursorButtonState & LEFT_MIDDLE_RIGHT)) { /* none of the three mouse buttons is down */
     cursorSubresourceIndex = cursorFrame.idleSubresourceIndex;
   }
   /* the composite buffer holds the saved rectangle at its origin, so the cursor is drawn at (0,0) */
@@ -310,7 +310,7 @@ bool CursorSprite(thandor::sdl3::GpuCursorSprite &outCursor) noexcept
   }
   const GraphicsCursorFrameRecord &cursorFrame = g_CursorFrameRecords[GraphicsCursor_GetFrameIndex()];
   outCursor.asset = g_CursorSourceAsset;
-  outCursor.subresource = ((g_CursorButtonState & LEFT_MIDDLE_RIGHT) == 0) ? cursorFrame.idleSubresourceIndex
+  outCursor.subresource = !Any(g_CursorButtonState & LEFT_MIDDLE_RIGHT) ? cursorFrame.idleSubresourceIndex
                                                                          : cursorFrame.activeSubresourceIndex;
   outCursor.drawX = cursorX - cursorFrame.hotspotX;
   outCursor.drawY = cursorY - cursorFrame.hotspotY;

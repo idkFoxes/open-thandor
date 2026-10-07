@@ -98,7 +98,9 @@ static_assert(sizeof(WorldMotionSnapshot) == 0x1C,
               "WorldMotionSnapshot keeps its 32-bit layout");
 static_assert(sizeof(WorldLightingState) == 0x20,
               "WorldLightingState keeps its 32-bit layout");
-static_assert(sizeof(WorldRuntimeInteractionState) == 0x4C,
+static_assert(sizeof(WorldRuntimeInteractionState) == 0x4C &&
+              offsetof(WorldRuntimeInteractionState, nodeFlags) == 0x48 &&
+              sizeof(WorldRuntimeInteractionState::nodeFlags) == 4,
               "WorldRuntimeInteractionState keeps its 32-bit layout");
 static_assert(sizeof(WorldFieldRegionState) == 0x10 &&
               offsetof(WorldFieldRegionState, clearTransientStateCallback) == 0x0,
@@ -330,6 +332,8 @@ static_assert(sizeof(WorldRuntimeContext) == 0x15C &&
               offsetof(WorldRuntimeContext, ownerListHead) == 0xD8,
               "WorldRuntimeContext keeps its 32-bit layout");
 static_assert(sizeof(UiNodeBase) == 0x4C &&
+              offsetof(UiNodeBase, nodeFlags) == 0x48 && sizeof(UiNodeBase::nodeFlags) == 4 &&
+              alignof(decltype(UiNodeBase::nodeFlags)) == 4 &&
               offsetof(UiNodeBase, nextSibling) == 0x0 &&
               offsetof(UiNodeBase, firstChild) == 0x4 &&
               offsetof(UiNodeBase, parent) == 0x8 &&
@@ -398,6 +402,10 @@ static_assert(sizeof(SelectionInfoEntitySlots) == 0x80 &&
               "SelectionInfoEntitySlots keeps its 32-bit layout");
 static_assert(sizeof(GraphicsCursorInputEvent18) == 0x18,
               "GraphicsCursorInputEvent18 keeps its 32-bit layout");
+static_assert(offsetof(GraphicsCursorInputEvent18, eventType) == 0x0 && sizeof(GraphicsCursorInputEvent18::eventType) == 4 &&
+                  offsetof(GraphicsCursorInputEvent18, buttonState) == 0x4 &&
+                  sizeof(GraphicsCursorInputEvent18::buttonState) == 4 && alignof(GraphicsCursorInputEvent18) == 4,
+              "GraphicsCursorInputEvent18 event type and button state stay 4-byte fields at +0x0/+0x4");
 static_assert(sizeof(UiTextEditControl) == 0x80 &&
               offsetof(UiTextEditControl, activationSound) == 0x68,
               "UiTextEditControl keeps its 32-bit layout");
@@ -491,6 +499,9 @@ static_assert(sizeof(EntityPathingPriorityPair) == 0x8 &&
               "EntityPathingPriorityPair keeps its 32-bit layout");
 static_assert(sizeof(UiTransferPacket) == 0x40,
               "UiTransferPacket keeps its 32-bit layout");
+static_assert(offsetof(InGameRuntimeRootFrameView, countdownPanelNodeFlags) == 0x44C0 &&
+              sizeof(InGameRuntimeRootFrameView::countdownPanelNodeFlags) == 4,
+              "InGameRuntimeRootFrameView.countdownPanelNodeFlags is the nodeFlags dword of the countdown panel");
 static_assert(sizeof(UiScrollableControl) == 0x90,
               "UiScrollableControl keeps its 32-bit layout");
 /* The 32-bit state flag fields of the text edits, lists and scrollables (flag enums since E1d): offset and size. */
@@ -1216,6 +1227,10 @@ static_assert(sizeof(FrontendCreditsUiStateView) == 0x240,
               "FrontendCreditsUiStateView keeps its 32-bit layout");
 static_assert(sizeof(CursorPointerEvent) == 0x14,
               "CursorPointerEvent keeps its 32-bit layout");
+static_assert(offsetof(CursorPointerEvent, eventType) == 0x0 && sizeof(CursorPointerEvent::eventType) == 4 &&
+                  offsetof(CursorPointerEvent, buttonState) == 0x4 && sizeof(CursorPointerEvent::buttonState) == 4 &&
+                  alignof(CursorPointerEvent) == 4,
+              "CursorPointerEvent event type and button state stay 4-byte fields at +0x0/+0x4");
 static_assert(sizeof(GraphicsTextureSourceHeaderView) == 0xBC,
               "GraphicsTextureSourceHeaderView keeps its 32-bit layout");
 static_assert(sizeof(InGameLevelSaveWorldView) == 0x180,
@@ -3267,7 +3282,7 @@ static_assert(offsetof(InGameUiImage, regionToolOption1_trailing) == 0xBFE8,
 /* Typed table entries (core/slot.h): a function of exactly the slot's signature is the entry itself; one taking a
    registered prefixed type (ui/controls/node_views.h), a view of the prefix chain or void * gets a thunk. Other
    arities, return types and scalar parameter types do not compile. */
-static_assert(ThandorSlot<&UiNode_ApplyFlagsRecursive>::pick<void(UiNodeFlagMask, UiNodeFlagMask, UiNodeBase *)>() ==
+static_assert(ThandorSlot<&UiNode_ApplyFlagsRecursive>::pick<void(UiNodeFlags, UiNodeFlags, UiNodeBase *)>() ==
                   &UiNode_ApplyFlagsRecursive,
               "THANDOR_SLOT of an exact signature is the function itself");
 static_assert(ThandorSlot<&UiImageControl_PointerMove>::pick<GraphicsCursorFrameIndex(UiPixelCoordinate, UiPixelCoordinate,

@@ -81,7 +81,7 @@ void UiSpriteButtonControl_DrawClipped
   GraphicsTextureSourceAsset *textureSource;
   SoftwareFramebufferAccess *framebufferAccess;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   /* SELECTED_ONLY buttons are invisible while not selected */
@@ -170,7 +170,7 @@ void UiSpriteButtonControl_NonRightPress
   UiSelectableStateFlags *stateFlagsField;
   Bool8 queueAction;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -247,7 +247,7 @@ void UiSpriteButtonControl_NonRightRelease
           UiSpriteButtonControl *control)
 
 {
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
@@ -284,7 +284,7 @@ void UiSpriteButtonControl_NonRightDrag
 {
   Bool8 pointerInside;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
@@ -344,7 +344,7 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
 {
   Bool8 spritePixelHit;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return UI_NODE_NONE;
   }
   if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_RECT_HIT_TEST) != 0) {
@@ -391,7 +391,7 @@ void UiImageActionControl_DrawImageAndChildren
   int imageTop;
   Bool8 accessFailed;
 
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0 && control->textureSource != nullptr) {
+  if (!Any(control->base.nodeFlags & UI_NODE_SUPPRESSED) && control->textureSource != nullptr) {
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       if ((control->displayFlags & UI_IMAGE_ACTION_STRETCH) == 0) {

@@ -80,7 +80,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
     CursorPointerEvent cursor;
     g_PlatformPumpEvents();
     if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) break;
-    if (g_GraphicsCursorConsumeEvent(&cursor) && RIGHT_PRESS < cursor.eventType) break;
+    if (g_GraphicsCursorConsumeEvent(&cursor) && GraphicsCursorEventType_IsRelease(cursor.eventType)) break;
     if (Thandor_TickCount() - start > 10000) break;
     if (g_IntroMoviePendingTicks != 0) {
       int burst = 3;

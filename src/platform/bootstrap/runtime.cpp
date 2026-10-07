@@ -1144,7 +1144,7 @@ static Bool8 IntroMovie_PollSkipRequest()
     return true;
   }
   /* event types above RIGHT_PRESS are the button releases */
-  return g_GraphicsCursorConsumeEvent(&cursorEvent) && (RIGHT_PRESS < cursorEvent.eventType);
+  return g_GraphicsCursorConsumeEvent(&cursorEvent) && GraphicsCursorEventType_IsRelease(cursorEvent.eventType);
 }
 
 

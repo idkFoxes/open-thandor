@@ -94,7 +94,7 @@ void UiSingleLineTextControl_DrawClipped
   textStyle = g_UiTextStyleNormal;
   alignOffsetX = 0;
   alignOffsetY = 0;
-  if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) ||
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED) ||
      ((control->labelFlags & UI_LABEL_HIDE_WHILE_SUPPRESSED) == 0)) {
     if ((control->labelFlags & UI_LABEL_OWN_STYLE_FONT) == 0) {
       control->styleOverride = control->styleOverride & ~UI_TEXT_STYLE_FONT_BYTE;
@@ -140,7 +140,7 @@ void UiSingleLineTextControl_DrawClipped
     lineWidth--;
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
-      if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) != 0) {
+      if (Any((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS)) {
         /* The focus mark: first its shadow one pixel down and right, then the mark itself. */
         UiSingleLineTextControl_DrawFocusMark
                   (clipBottom,clipRight,clipTop,clipLeft,alignOffsetY + 1 + (control->base).top,
@@ -156,7 +156,7 @@ void UiSingleLineTextControl_DrawClipped
       commandStream = UiSingleLineTextControl_GetCommandStream(control);
       focusLendTarget = control->focusChild;
       textStyle = g_UiTextStyleNormal;
-      if ((focusLendTarget != nullptr) && ((focusLendTarget->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+      if ((focusLendTarget != nullptr) && (Any(focusLendTarget->nodeFlags & UI_NODE_SUPPRESSED))) {
         textStyle = g_UiTextStyleDisabled;
       }
       if ((control->labelFlags & UI_LABEL_OWN_STYLE_FONT) == 0) {

@@ -108,7 +108,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
 
   g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = WORLD_POINTER_NO_HIT;
   (inGameRuntime->selection).selectedEntity = nullptr;
-  if (((inGameRuntime->interaction).nodeFlags & 8) != 0) {
+  if (Any((inGameRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED)) {
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
   if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) {
@@ -253,10 +253,10 @@ void InGameWorldInput_BeginPointerCapture
     return;
   }
   inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags & ~WORLD_RUNTIME_FLAG_REPLACE_SELECTION;
-  if (((inGameRuntime->interaction).nodeFlags & 8) != 0) {
+  if (Any((inGameRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
-  if (((inGameRuntime->interaction).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) {
+  if (Any((inGameRuntime->interaction).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK)) {
     /* makes the release replace the selection instead of selecting a single army */
     inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags | WORLD_RUNTIME_FLAG_REPLACE_SELECTION;
   }
@@ -432,7 +432,7 @@ static void InGameWorldInput_RotateHeadingByPointerTravel
 {
   int deltaX;
 
-  if ((g_CursorButtonState & 4) == 0) {
+  if (!Any(g_CursorButtonState & RIGHT)) {
     /* The original adds the horizontal mouse delta since capture (computed before snapping the
        pointer back) - not the pointer function's return value. */
     deltaX = THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX - *captureX;
@@ -458,7 +458,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
 
 {
   if ((Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) ||
-      (((inGameRuntime->interaction).nodeFlags & 8) != 0) ||
+      Any((inGameRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED) ||
       ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0)) {
     return;
   }
@@ -701,7 +701,7 @@ static void InGameWorldInput_DispatchPointerRelease
 
 {
   if ((Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) ||
-      (((inGameRuntime->interaction).nodeFlags & 8) != 0) ||
+      Any((inGameRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED) ||
       (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) ||
       ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0)) {
     return;

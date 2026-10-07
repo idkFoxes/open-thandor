@@ -255,7 +255,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     /* a sprite button; the template member is still an untyped node */
     UiSpriteButtonControl *upgradeButton =
          reinterpret_cast<UiSpriteButtonControl *>(&THANDOR_CONTAINER_OF(world, InGameUiImage, worldView)->singleSelectionUpgradeButton);
-    if (commandsBlocked || (((upgradeButton->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+    if (commandsBlocked || (Any((upgradeButton->selectable).base.nodeFlags & UI_NODE_SUPPRESSED))) {
       break;
     }
     /* only while the single-selection page is shown */
@@ -360,7 +360,7 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
 
   /* the original tests WORLD_INPUT_DISABLED twice */
   if (((!Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) &&
-      (((world->interaction).nodeFlags & 8) == 0)) &&
+      (!Any((world->interaction).nodeFlags & UI_NODE_SUPPRESSED))) &&
      (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     if ((world->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
       if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {

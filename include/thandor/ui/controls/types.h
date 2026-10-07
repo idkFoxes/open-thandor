@@ -99,7 +99,12 @@ enum class UiScrollableStateFlags : uint32_t {
 THANDOR_FLAG_ENUM(UiScrollableStateFlags);
 using enum UiScrollableStateFlags;
 
-enum {
+/* UiNodeBase.nodeFlags (and the applyFlags masks): a 32-bit field, the original int became the same-size
+   uint32_t (offset and size asserted in layout_checks.cpp). Bits without an enumerator (e.g. 0x10) stay valid. */
+enum class UiNodeFlags : uint32_t {
+    /* set on every node of the top root of the stack by UiRootStack_Push/Pop/BringToFront through applyFlags;
+       window frames draw their inactive variant without it */
+    UI_NODE_IN_FRONT_ROOT=1,
     UI_NODE_PREFERRED_FOCUS_TARGET=2,
     UI_NODE_HAS_KEYBOARD_FOCUS=4,
     UI_NODE_SUPPRESSED=8,
@@ -109,7 +114,8 @@ enum {
     UI_NODE_TOOLTIP_ELIGIBLE=256,
     UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16=512
 };
-using UiNodeFlags = int;
+THANDOR_FLAG_ENUM(UiNodeFlags);
+using enum UiNodeFlags;
 
 enum {
     UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE=1,
@@ -192,8 +198,6 @@ using UiKeyboardStateMask = uint32_t;
 
 using UiKeyboardEventCode = uint32_t;
 
-using UiNodeFlagMask = uint32_t;
-
 using UiActionId = int;
 
 using UiAnchorFractionQ31 = uint32_t;
@@ -268,7 +272,7 @@ struct UiNodeVtable {
     Ptr32<GraphicsCursorFrameIndex (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> pointerMove; 
     Ptr32<UiNodeBase * (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> hitTest; 
     Ptr32<Bool8 (UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *)> keyboardEvent;
-    Ptr32<void (UiNodeFlagMask, UiNodeFlagMask, struct UiNodeBase *)> applyFlags; 
+    Ptr32<void (UiNodeFlags, UiNodeFlags, struct UiNodeBase *)> applyFlags; 
     Ptr32<void (UiActionId, struct UiNodeBase *)> suppressActionId; 
     Ptr32<void (UiActionId, struct UiNodeBase *)> unsuppressActionId; 
     Ptr32<void (struct UiNodeBase *)> tick; 
@@ -322,8 +326,6 @@ struct UiPointerListControl {
 using UiPackedTextStyle = uint32_t;
 
 using UiPageIndex = uint32_t;
-
-using UiPointerButtonMask = uint32_t;
 
 using UiFrameCount = uint32_t;
 
