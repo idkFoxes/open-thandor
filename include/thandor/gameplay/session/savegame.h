@@ -18,7 +18,7 @@ inline constexpr uint32_t INGAME_SAVE_NO_CAMPAIGN = 0xffffffffu;
 
 /* The 0x200-byte header at the start of a save-game package, patched by InGameSaveGame_WritePackage
    after the entries are written (the save path's directory is split off behind the header, at +0x200). */
-typedef struct InGameSavePackageHeader {
+struct InGameSavePackageHeader {
     uint8_t reserved000_0FF[0x100];
     uint16_t saveNameUtf16[0x38]; /* +0x100 file name of the save path */
     uint32_t levelTitleTextId; /* +0x170 */
@@ -29,7 +29,7 @@ typedef struct InGameSavePackageHeader {
     uint32_t packedDate; /* +0x1F0 */
     uint32_t packedTime; /* +0x1F4 */
     uint8_t reserved1F8_1FF[8];
-} InGameSavePackageHeader;
+};
 
 Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
 
