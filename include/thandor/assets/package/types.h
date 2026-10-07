@@ -33,7 +33,9 @@ enum {
 };
 using PckCompressionMethod = int;
 
-enum {
+/* PckEntryHeader.typeTag: the first dword of the stored asset, its three-letter magic (file data; tags without
+   an enumerator stay valid) */
+enum class PckAssetTypeTag : int {
     PCK_ASSET_TYPE_TEC=6514036,
     PCK_ASSET_TYPE_FNC=6516326,
     PCK_ASSET_TYPE_FLD=6581350,
@@ -51,7 +53,7 @@ enum {
     PCK_ASSET_TYPE_LEV=7759212,
     PCK_ASSET_TYPE_GFX=7890535
 };
-using PckAssetTypeTag = int;
+using enum PckAssetTypeTag;
 
 using PckDecodedByteCount = uint32_t;
 

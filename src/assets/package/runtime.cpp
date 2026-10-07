@@ -67,9 +67,10 @@ Bool8 Package_LoadEntryIntoBuffer
   uint32_t statusCode;
   uint32_t errorCode;
 
-  bufferCapacity = bufferCapacityAndLoadFlags & PACKAGE_LOAD_CAPACITY_MASK;
+  const PackageLoadFlags loadFlags = FromBits<PackageLoadFlags>(bufferCapacityAndLoadFlags);
+  bufferCapacity = ToBits(loadFlags & PACKAGE_LOAD_CAPACITY_MASK);
   entry = nullptr;
-  if ((bufferCapacityAndLoadFlags & PACKAGE_LOAD_SKIP_PACKAGES) == 0) {
+  if (!Any(loadFlags & PACKAGE_LOAD_SKIP_PACKAGES)) {
     entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
   }
   if (entry != nullptr) {
@@ -86,7 +87,7 @@ Bool8 Package_LoadEntryIntoBuffer
   }
   else {
     /* not in a mounted package (or packages skipped): load the loose file */
-    if ((bufferCapacityAndLoadFlags & PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST) == 0) {
+    if (!Any(loadFlags & PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST)) {
       statusCode = g_FileSystemOpen(0,path,&handle);
     }
     else {

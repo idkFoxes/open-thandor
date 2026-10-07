@@ -14,13 +14,13 @@
 static uint16_t g_Txt2strUnknownCharacterErrorUtf16[62] = {'e', 'r', 'r', 'o', 'r', ':', ' ', 'T', 'X', 'T', '2', 'S', 'T', 'R', ':', ' ', 'u', 'n', 'k', 'n', 'o', 'w', 'n', ' ', 'c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r', ' ', 'a', 't', ':', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 0}; /* L"error: TXT2STR: unknown character at:                        " */
 
 /* Outcome of one parsing step of the TXT2STR markup (see RichTextMarkup_ParseAndBuildStringAsset). */
-enum {
+enum class RichTextMarkupParseResult : int {
   RICHTEXT_MARKUP_PARSE_CONTINUE,         /* keep reading */
   RICHTEXT_MARKUP_PARSE_END,              /* '#.' reached */
   RICHTEXT_MARKUP_PARSE_OUT_OF_SPACE,     /* the output buffer or the tag table is full */
   RICHTEXT_MARKUP_PARSE_INVALID_CHARACTER
 };
-using RichTextMarkupParseResult = int;
+using enum RichTextMarkupParseResult;
 
 /* Parser state of RichTextMarkup_ParseAndBuildStringAsset. tagStarts/tagKeys receive the (string start, key)
    pair of every '#<' in order (the original pushes these pairs on the machine stack). */
