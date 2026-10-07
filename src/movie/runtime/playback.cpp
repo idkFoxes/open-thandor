@@ -86,7 +86,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   uint32_t trackIndex;
   uint32_t trackOffset;
   uint32_t trackBytes;
-  void *audioSample;
+  ArenaScoped audioSample; /* the track's sample, freed on return as before */
   uint32_t seekError;
   uint32_t allocError;
   uint32_t loadError;
@@ -114,18 +114,17 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   if (seekError != 0) {
     return seekError;
   }
-  allocError = g_MemoryApi.alloc(trackBytes,&audioSample);
+  allocError = audioSample.allocate(trackBytes);
   if (allocError != 0) {
     return allocError;
   }
-  loadError = g_FileSystemReadExact(trackBytes,audioSample,handle);
+  loadError = g_FileSystemReadExact(trackBytes,audioSample.get(),handle);
   if (loadError == 0) {
-    loadError = g_SoundCreateSampleVoiceSet(static_cast<SoundSampleAsset *>(audioSample),&voiceSet);
+    loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),&voiceSet);
     if (loadError == 0) {
       *outVoiceSet = voiceSet;
     }
   }
-  g_MemoryApi.free(audioSample);
   return loadError;
 }
 

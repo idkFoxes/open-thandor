@@ -52,7 +52,7 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
 
 {
   AssetMagic pendingCellDword;
-  void *compactBlock;
+  ArenaScoped compactBlock; /* freed when the function returns, after the result is stored */
   AssetMagic *compactFieldImageBase;
   uint32_t cellCount;
   uint32_t bytes;
@@ -66,12 +66,12 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
   
   cellCount = sourceGrid->gridWidth * sourceGrid->gridHeight;
   bytes = cellCount * FIELD_GRID_COMPACT_CELL_BYTES + FIELD_GRID_HEADER_BYTES;
-  allocError = g_MemoryApi.alloc(bytes,&compactBlock);
+  allocError = compactBlock.allocate(bytes);
   if (allocError != 0) {
     return PckCodec_Fail(outErrorCode,allocError);
   }
   else {
-    compactFieldImageBase = static_cast<AssetMagic *>(compactBlock);
+    compactFieldImageBase = compactBlock.as<AssetMagic>();
     compactWriteCursor = compactFieldImageBase;
     /* the header dword by dword; the read cursor then points at cells[0] */
     headerReadCursor = reinterpret_cast<AssetMagic *>(sourceGrid);
@@ -94,11 +94,9 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
     Thandor_StoreU32(destination,bytes);
     if (PckCodec_EncodeHuffmanRle
             (destinationCapacityBytes - PCK_FIELD_GRID_PREFIX_BYTES,destination + PCK_FIELD_GRID_PREFIX_BYTES,bytes,
-             static_cast<uint8_t *>(compactBlock),&encodedByteCount,&encodeErrorCode)) {
-      g_MemoryApi.free(compactFieldImageBase);
+             compactBlock.as<uint8_t>(),&encodedByteCount,&encodeErrorCode)) {
       return PckCodec_Succeed(outByteCount,encodedByteCount + PCK_FIELD_GRID_PREFIX_BYTES);
     }
-    g_MemoryApi.free(compactFieldImageBase);
     return PckCodec_Fail(outErrorCode,encodeErrorCode);
   }
 }
