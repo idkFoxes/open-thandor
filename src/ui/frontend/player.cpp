@@ -580,7 +580,7 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
   firstPlayerBlock->playerRuntimeId = 0;
   firstPlayerBlock->factionAssignment.roleStateFlags = 0;
   firstPlayerBlock->colourCycleFlags = 0;
-  firstPlayerBlock->snapshotTransferFlags = 0;
+  firstPlayerBlock->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
 }
 
 
@@ -618,7 +618,7 @@ void FrontendPlayerRuntime_UpdateStartButtonByCdShare()
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
-    if ((playerBlock->capabilityFlags & FRONTEND_CAPABILITY_CD) != 0) {
+    if (Any(playerBlock->capabilityFlags & FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD)) {
       cdPlayerCount++;
     }
     playerBlock++;

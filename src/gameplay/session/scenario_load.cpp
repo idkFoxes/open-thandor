@@ -104,7 +104,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
          field grid is not available locally: request it through the transfer mailbox. */
       Thandor_StoreU32(playerRecord->snapshotPayload,0);
       UiTransferMailbox_MarkUnavailable();
-      g_FrontendScenarioTransferState = SCENARIO_TRANSFER_FIELD_GRID;
+      g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_FIELD_GRID;
     }
     return;
   }
@@ -325,7 +325,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   }
   else {
     UiTransferMailbox_MarkUnavailable();
-    g_FrontendScenarioTransferState = SCENARIO_TRANSFER_CAMPAIGN_BUNDLE;
+    g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_CAMPAIGN_BUNDLE;
   }
   frontendRoot->menuRoomModelView.contextFlags =
        frontendRoot->menuRoomModelView.contextFlags &
@@ -447,7 +447,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
     }
     if (!levelLoadedLocally) {
       UiTransferMailbox_MarkUnavailable();
-      g_FrontendScenarioTransferState = SCENARIO_TRANSFER_LEVEL;
+      g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_LEVEL;
       levelAsset = g_FrontendLoadedLevelAsset;
     }
   }

@@ -13,8 +13,10 @@
 #include <thandor/core/contracts.h>
 
 /* g_NetworkBackendMode: which WinSock DLL Network_Init started (Network_Shutdown calls its WSACleanup) */
-inline constexpr auto NETWORK_BACKEND_MODE_NONE = 0;
-inline constexpr auto NETWORK_BACKEND_MODE_WSOCK32 = 1; /* wsock32.dll, WinSock 1.1 */
+enum class NetworkBackendMode : uint32_t {
+    NETWORK_BACKEND_MODE_NONE=0,
+    NETWORK_BACKEND_MODE_WSOCK32=1 /* wsock32.dll, WinSock 1.1 */
+};
 
 /* UDP port (host byte order) the frontend passes to g_NetworkBackendSlot2 (open and bind) for every session. */
 inline constexpr auto NETWORK_GAME_UDP_PORT = 929;

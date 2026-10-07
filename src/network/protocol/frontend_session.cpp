@@ -140,8 +140,8 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
   }
   /* only the chunk at the expected offset of an incomplete snapshot is stored */
   packetChunkOffset = packet->packet8000ASnapshotChunk.snapshotChunkOffset;
-  if ((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_SOURCE_AVAILABLE) == 0 ||
-      (playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0 ||
+  if (!Any(playerRecord->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_SOURCE_AVAILABLE) ||
+      Any(playerRecord->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) ||
       packetChunkOffset != playerRecord->snapshotChunkOffset) {
     return;
   }
@@ -150,7 +150,8 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
   dwordCount = UI_TRANSFER_CHUNK_PAYLOAD_BYTES / sizeof(uint32_t);
   if (packetChunkOffset == FRONTEND_SNAPSHOT_LAST_CHUNK_OFFSET) {
     dwordCount = FRONTEND_SNAPSHOT_LAST_CHUNK_BYTES / sizeof(uint32_t);
-    playerRecord->snapshotTransferFlags = playerRecord->snapshotTransferFlags | FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE;
+    playerRecord->snapshotTransferFlags =
+         playerRecord->snapshotTransferFlags | FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE;
     playerRecord->snapshotChunkOffset = playerRecord->snapshotChunkOffset + FRONTEND_SNAPSHOT_LAST_CHUNK_BYTES;
   }
   for (; dwordCount != 0; dwordCount--) {
@@ -203,10 +204,10 @@ static void FrontendNetwork_PublishSnapshots()
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   for (remainingPlayers = g_FrontendPlayerRuntimeBlockCount; remainingPlayers != 0; remainingPlayers--) {
     playerFlags = playerRecord->snapshotTransferFlags;
-    *scratchCursor = playerFlags;
+    *scratchCursor = ToBits(playerFlags);
     scratchCursor++;
     packedSizeBytes = packedSizeBytes + FRONTEND_SNAPSHOT_FLAGS_BYTES;
-    if ((playerFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) {
+    if (Any(playerFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE)) {
       payloadSource = Packet_Dwords(playerRecord->snapshotPayload);
       for (payloadDwordIndex = 0; payloadDwordIndex < FRONTEND_SNAPSHOT_PAYLOAD_BYTES / sizeof(uint32_t);
            payloadDwordIndex++) {
@@ -256,8 +257,8 @@ static void FrontendNetwork_TickSnapshotExchange()
   }
   transferPlayer = g_FrontendPlayerRuntimeBlocks;
   for (remainingPlayers = g_FrontendPlayerRuntimeBlockCount; remainingPlayers != 0; remainingPlayers--) {
-    if ((transferPlayer->snapshotTransferFlags & FRONTEND_SNAPSHOT_SOURCE_AVAILABLE) != 0 &&
-        (transferPlayer->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0) {
+    if (Any(transferPlayer->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_SOURCE_AVAILABLE) &&
+        !Any(transferPlayer->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE)) {
       g_FrontendPacket10009Buffer.snapshotChunkOffset = transferPlayer->snapshotChunkOffset;
       g_FrontendPacket10009Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10009_SNAPSHOT_CHUNK_REQUEST;
       UiTransfer_StagePacketAndSend(&transferPlayer->endpoint,&g_FrontendPacket10009Buffer.header);
@@ -267,7 +268,7 @@ static void FrontendNetwork_TickSnapshotExchange()
     transferPlayer++;
   }
   g_FrontendPlayerRuntimeBlocks->snapshotTransferFlags =
-       g_FrontendPlayerRuntimeBlocks->snapshotTransferFlags | FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY;
+       g_FrontendPlayerRuntimeBlocks->snapshotTransferFlags | FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY;
   if (1 < g_FrontendPlayerRuntimeBlockCount) {
     FrontendNetwork_PublishSnapshots();
   }
@@ -361,7 +362,7 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
   localPlayerRecord->playerRuntimeId = 0;
   localPlayerRecord->factionAssignment.roleStateFlags = 0;
   localPlayerRecord->colourCycleFlags = 0;
-  localPlayerRecord->snapshotTransferFlags = 0;
+  localPlayerRecord->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
 }
 
 /* Client side of the in-game command exchange, for one received packet from the host of this session. A

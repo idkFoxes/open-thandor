@@ -190,7 +190,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   firstPlayerRecord->playerRuntimeId = 0;
   firstPlayerRecord->factionAssignment.roleStateFlags = 0;
   firstPlayerRecord->colourCycleFlags = 0;
-  firstPlayerRecord->snapshotTransferFlags = 0;
+  firstPlayerRecord->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
 }
 
 
