@@ -65,7 +65,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
      this function). image is the in-game UI image
      of the runtime root. */
   InGameUiImage *image = InGameUi_Image(inGameRoot);
-  Bool8 localSession = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0;
+  Bool8 localSession = !Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK);
 
   /* A record without modifier class matches only without Ctrl and Alt; otherwise exactly the named
      combination (Ctrl, Alt, or both) must be held. Shift is ignored. */
@@ -217,7 +217,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     Screenshot_SaveFramebufferAsPcx();
     break;
   case InGameHotkeyAction::LeaveGame: /* Alt+Q: leave the game (not as host) */
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != 0) {
+    if (Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST)) {
       break;
     }
     InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);

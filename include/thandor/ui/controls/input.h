@@ -15,7 +15,7 @@
 
 /* Bit 31 of a press event's button mask: a repeated (double) click. UiPointer_DispatchLeftPress/RightPress
    copy it into the pressed node's UI_NODE_REPEAT_OR_DOUBLE_CLICK flag. */
-inline constexpr uint32_t UI_POINTER_BUTTON_REPEAT_CLICK = 0x80000000;
+inline constexpr GraphicsCursorButtonState UI_POINTER_BUTTON_REPEAT_CLICK = GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK;
 /* UiImageControl stateFlags bits 0, 1, 9 and 10, cleared when a hovered image control loses the pointer
    (UiPointer_Dispatch*Press, UiImageControl pointer handlers). */
 inline constexpr UiSelectableStateFlags UI_IMAGE_CONTROL_HOVER_STATE_BITS = FromBits<UiSelectableStateFlags>(0x603);
@@ -36,11 +36,11 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);
 
 void UiPointer_DispatchMiddlePress
-          (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
+          (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX);
 
 void UiPointer_DispatchRightPress
-          (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
+          (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX);
 
 void UiKeyboardFocus_MoveNext();
