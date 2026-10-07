@@ -12,14 +12,14 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef union NetworkEndpointAddressHeader4 NetworkEndpointAddressHeader4, *PNetworkEndpointAddressHeader4;
-typedef struct NetworkEndpointFamilyPortFields4 NetworkEndpointFamilyPortFields4, *PNetworkEndpointFamilyPortFields4;
-typedef struct WinSockHostEnt32 WinSockHostEnt32, *PWinSockHostEnt32;
-typedef struct WinSockAddress WinSockAddress, *PWinSockAddress;
-typedef struct WinSockData11 WinSockData11, *PWinSockData11;
-typedef struct NetworkSessionContext NetworkSessionContext, *PNetworkSessionContext;
-typedef struct NetworkBackendInstanceDescriptorPrefix NetworkBackendInstanceDescriptorPrefix, *PNetworkBackendInstanceDescriptorPrefix;
-typedef struct UiTransferEndpointDescriptor UiTransferEndpointDescriptor;
+union NetworkEndpointAddressHeader4;
+struct NetworkEndpointFamilyPortFields4;
+struct WinSockHostEnt32;
+struct WinSockAddress;
+struct WinSockData11;
+struct NetworkSessionContext;
+struct NetworkBackendInstanceDescriptorPrefix;
+struct UiTransferEndpointDescriptor;
 
 enum /* NetworkAddressFamily, stored in 2 byte(s) */ {
     NETWORK_ADDRESS_FAMILY_UNSPECIFIED=0,

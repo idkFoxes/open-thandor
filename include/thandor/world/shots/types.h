@@ -15,14 +15,14 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/ui/ingame/types.h>
 
-typedef struct ShotRuntimeSlot ShotRuntimeSlot, *PShotRuntimeSlot;
-typedef union ShotModelNodeReferenceOrSavedOffset ShotModelNodeReferenceOrSavedOffset, *PShotModelNodeReferenceOrSavedOffset;
-typedef union ShotModelRuntimeStateOrSavedOffset ShotModelRuntimeStateOrSavedOffset, *PShotModelRuntimeStateOrSavedOffset;
-typedef struct ShotRuntimeOwnerAndTrajectoryState ShotRuntimeOwnerAndTrajectoryState, *PShotRuntimeOwnerAndTrajectoryState;
-typedef struct ShotLaunchAngles ShotLaunchAngles, *PShotLaunchAngles;
-typedef struct ShotModelRuntimeNode ShotModelRuntimeNode, *PShotModelRuntimeNode;
-typedef struct GraphicsShadingRuntimeRecord GraphicsShadingRuntimeRecord;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
+struct ShotRuntimeSlot;
+union ShotModelNodeReferenceOrSavedOffset;
+union ShotModelRuntimeStateOrSavedOffset;
+struct ShotRuntimeOwnerAndTrajectoryState;
+struct ShotLaunchAngles;
+struct ShotModelRuntimeNode;
+struct GraphicsShadingRuntimeRecord;
+struct ModelRuntimeNode;
 
 using ShotAnimationFrameAccumulatorQ4 = uint32_t;
 

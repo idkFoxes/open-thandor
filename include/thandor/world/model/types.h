@@ -18,17 +18,17 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/ui/ingame/types.h>
 
-typedef struct ModelRuntimeNode ModelRuntimeNode, *PModelRuntimeNode;
-typedef union ModelRuntimePayloadReference4 ModelRuntimePayloadReference4, *PModelRuntimePayloadReference4;
-typedef struct ModelAttachmentTransformRecord ModelAttachmentTransformRecord, *PModelAttachmentTransformRecord;
-typedef struct ModelRaycastTriangleDescriptor ModelRaycastTriangleDescriptor, *PModelRaycastTriangleDescriptor;
-typedef struct ModelRuntimeSlotClassStateSerializedScalar ModelRuntimeSlotClassStateSerializedScalar, *PModelRuntimeSlotClassStateSerializedScalar;
-typedef struct ModelRuntimeAttachmentSavedDescriptor ModelRuntimeAttachmentSavedDescriptor, *PModelRuntimeAttachmentSavedDescriptor;
-typedef struct ModelRuntimeSlotUnrebaseView ModelRuntimeSlotUnrebaseView, *PModelRuntimeSlotUnrebaseView;
-typedef union ModelRaycastNearestNodeOrScratch4 ModelRaycastNearestNodeOrScratch4, *PModelRaycastNearestNodeOrScratch4;
-typedef struct ModelRelativeDirectionAngles ModelRelativeDirectionAngles, *PModelRelativeDirectionAngles;
-typedef struct EffectRuntimeSlot EffectRuntimeSlot;
-typedef struct ShotRuntimeSlot ShotRuntimeSlot;
+struct ModelRuntimeNode;
+union ModelRuntimePayloadReference4;
+struct ModelAttachmentTransformRecord;
+struct ModelRaycastTriangleDescriptor;
+struct ModelRuntimeSlotClassStateSerializedScalar;
+struct ModelRuntimeAttachmentSavedDescriptor;
+struct ModelRuntimeSlotUnrebaseView;
+union ModelRaycastNearestNodeOrScratch4;
+struct ModelRelativeDirectionAngles;
+struct EffectRuntimeSlot;
+struct ShotRuntimeSlot;
 
 using SprAttachmentPackedKey = uint32_t;
 

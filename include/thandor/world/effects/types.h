@@ -16,15 +16,15 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/world/terrain/types.h>
 
-typedef struct EffectRuntimeSlot EffectRuntimeSlot, *PEffectRuntimeSlot;
-typedef union EffectModelNodeReferenceOrSavedOffset EffectModelNodeReferenceOrSavedOffset, *PEffectModelNodeReferenceOrSavedOffset;
-typedef struct EffectRuntimeLifecycleState EffectRuntimeLifecycleState, *PEffectRuntimeLifecycleState;
-typedef struct EffectRuntimeOwnerAndDefinitionState EffectRuntimeOwnerAndDefinitionState, *PEffectRuntimeOwnerAndDefinitionState;
-typedef union EffectRuntimeOwnerReference EffectRuntimeOwnerReference, *PEffectRuntimeOwnerReference;
-typedef struct ShotTerrainImpactDeformationColumns ShotTerrainImpactDeformationColumns, *PShotTerrainImpactDeformationColumns;
-typedef struct EffectModelRuntimeNode EffectModelRuntimeNode, *PEffectModelRuntimeNode;
-typedef struct GraphicsShadingRuntimeRecord GraphicsShadingRuntimeRecord;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
+struct EffectRuntimeSlot;
+union EffectModelNodeReferenceOrSavedOffset;
+struct EffectRuntimeLifecycleState;
+struct EffectRuntimeOwnerAndDefinitionState;
+union EffectRuntimeOwnerReference;
+struct ShotTerrainImpactDeformationColumns;
+struct EffectModelRuntimeNode;
+struct GraphicsShadingRuntimeRecord;
+struct ModelRuntimeNode;
 
 using EffectAnimationFrameCount = uint32_t;
 
