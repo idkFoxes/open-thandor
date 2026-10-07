@@ -39,7 +39,7 @@ static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdate
          g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - xeniteCostQ4;
     buildTicks = candidateAsset->buildTicks;
     energyLoadQ4 = candidateAsset->energyLoadQ4;
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD)) {
       buildTicks = (buildTicks >> 4) + 1;
     }
     selectedAssetId = candidateAsset->registryId;
@@ -327,7 +327,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
                  g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - candidateAsset->xeniteCostQ4;
             buildTicks = candidateAsset->buildTicks;
             assetEnergyValue = candidateAsset->energyLoadQ4;
-            if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+            if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD)) {
               buildTicks = (buildTicks >> 4) + 1;
             }
             selectedAssetLink = *reinterpret_cast<ModelRuntimeSlotLinkOrState *>(&candidateAsset->registryId);

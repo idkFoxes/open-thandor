@@ -194,7 +194,7 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InG
   AiKnowledgeDataImage *knowledgeData;
 
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-       SESSION_NETWORK_ROLE_LOCAL) || ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF) == 0)) {
+       SESSION_NETWORK_ROLE_LOCAL) || (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF))) {
     planningPhaseDispatchIndex = g_GameFactionRuntimeImage.tail.simulationTick >> 6 & 1;
     /* the world runtime of the in-game root (the caller passes g_InGameRuntimeRoot) */
     worldRuntime = &inGameRoot->worldRuntime;

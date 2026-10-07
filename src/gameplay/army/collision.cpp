@@ -306,7 +306,7 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
   }
   rootNode = modelRuntime->rootModelNode;
   ownerArmy = modelRuntime->ownerArmyRuntime;
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     return false;
   }
   blocked = FieldGrid_TestWorldPointBlocked

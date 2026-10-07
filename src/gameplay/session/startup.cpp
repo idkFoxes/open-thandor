@@ -65,7 +65,7 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresent();
     DebugHook_SessionFrameEnd();
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED)) {
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
@@ -76,7 +76,7 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       InGameRuntime_ShutdownAndReleaseResources();
       return true;
     }
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) {
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
@@ -91,7 +91,7 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       g_FrontendScenarioPathScratchUtf16[0] = 0;
       return true;
     }
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT)) {
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
@@ -438,7 +438,7 @@ void InGameSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inGameRoot)
     UiFrame_Draw();
     g_GraphicsFramebufferPresent(g_FramebufferAccess);
     InGameRuntime_UpdateSimulationAndNetworkTick();
-  } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
+  } while (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS));
   inGameRoot->levelMovieRuntime = nullptr;
   inGameRoot->playerStatusLineCount = 0;
   UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack);

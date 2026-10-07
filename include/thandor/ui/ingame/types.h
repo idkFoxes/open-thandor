@@ -282,7 +282,66 @@ using UiSelectionDetailTextBuffer64Utf16 = uint16_t[64];
 
 using ArmyBuildDurationQ5 = uint32_t;
 
-using UiCommandRuntimeFlagMask = uint32_t;
+/* g_UiCommandRuntimeFlags: in-game session and UI state bits. Command 0x310 (INGAME_COMMAND_APPLY_UI_FLAG_MASKS,
+   UiCommandRuntimeFlags_ApplyClearSetToggleMasks) takes three raw masks, so any bit can be set; values without an
+   enumerator stay valid (fixed underlying type). */
+enum class UiCommandRuntimeFlagMask : uint32_t {
+    /* bits that gate the simulation step (InGameRuntime_UpdateSimulationAndNetworkTick) */
+    UI_COMMAND_RUNTIME_FLAG_PAUSED = 0x01, /* toggled once every player agrees (InGameCommand_TogglePauseRequest);
+                                              set at session start */
+    UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF = 0x02, /* skips the AI planning phase in local games
+                                                       (gameplay/ai/planning.cpp); no writer with a constant mask in
+                                                       the original, so it can only come from command 0x310 */
+    UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE = 0x04, /* set with PAUSED by
+                                                                    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState;
+                                                                    world sounds, camera keys and the full simulation
+                                                                    step are skipped meanwhile */
+    UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED = 0x08, /* an end trigger ended the local faction
+                                                           (InGameConditionRuntime_UpdateScheduledRecords); the step
+                                                           then sets occupancy bit 0 on every cell */
+    UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS = 0x10, /* set with PAUSED at session start, cleared with it when every
+                                                           player is ready
+                                                           (FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus) */
+    UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING = 0x20, /* an army asset waits for placement on the map
+                                                         (InGameCommand_ExecuteLocalPlacementFromSelection) */
+    UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS = 0x40, /* world view debug overlay
+                                                               SelectionOverlay_DrawDebugMarkedCellMarkers; no writer
+                                                               with a constant mask, so only from command 0x310 */
+    UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED = 0x80, /* a command-mode click captured the pointer
+                                                                (InGameWorldInput_BeginPointerCapture); the release
+                                                                then issues the mode command */
+    UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED = 0x100, /* set with LOCAL_FACTION_ENDED; the world input handlers
+                                                             (ui/ingame/world_input.cpp) then ignore the map */
+    UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS = 0x200, /* hides the world view status texts
+                                                         (UiCommandVisibility*Text_DrawWhenAllowed); no writer with a
+                                                         constant mask, so only from command 0x310 */
+    UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW = 0x400, /* the game was already paused when a pausing window opened */
+    UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING = 0x800, /* ends the session loop (InGameRuntime_RunSessionUntilExit): an
+                                                          end trigger fired and chose the end movie
+                                                          (gameplay/session/level_script.cpp) */
+    UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED = 0x1000, /* ends the results screen after the end movie
+                                                        (Frontend_PlaySelectedEndMovie); set by the results buttons
+                                                        (actions 0x101B and 0x1025, ui/ingame/pages.cpp) */
+    UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN = 0x2000, /* the placement overlay was drawn onto the field grid
+                                                                 (InGameUiRoot_UpdateFrame) */
+    UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE = 0x4000, /* a window paused the local game while open (mission help:
+                                                      InGameMissionHelpPage_Toggle, settings:
+                                                      InGameSettingsPage_ToggleAndSynchronizeControls) */
+    UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS = 0x8000, /* skips every selection overlay of the world view
+                                                             (FrontendModelPointerContext_RenderWorldViewQueuesClipped);
+                                                             only from command 0x310 */
+    UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED = 0x10000, /* ends the session loop: command 150 with flag bit 1 closed the
+                                                         session (InGameCommand_HandlePlayerDeparture) */
+    UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT = 0x20000, /* ends the session loop: command 150 reported the local
+                                                            player's departure */
+    UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED = 0x40000, /* toggled by typing the cheat code into the chat line
+                                                         (InGameChatInput_SendLineOrCheckCheatPhrase) */
+    UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED = 0x80000, /* set with every cheat toggle by the chat phrase; no
+                                                               reader found */
+    UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD = 0x100000, /* cheat hotkey: build and research times / 16 */
+};
+THANDOR_FLAG_ENUM(UiCommandRuntimeFlagMask);
+using enum UiCommandRuntimeFlagMask;
 
 using ModelLinkedDefinitionListAddress32 = int;
 

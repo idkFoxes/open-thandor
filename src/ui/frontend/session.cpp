@@ -339,7 +339,7 @@ void FrontendSession_PeriodicTick()
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
   }
   g_SessionNetworkTickCounter++;
-  if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0) &&
+  if ((Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) &&
      (inGameRoot->activeEndMovieRuntime != nullptr)) {
     g_EndMoviePendingTicks++;
   }

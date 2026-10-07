@@ -152,7 +152,7 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(0xffffffff);
     }
-  } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED) == 0);
+  } while (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED));
 }
 
 /* End of a mission: plays the end movie chosen by the current scenario's record in the loaded campaign
@@ -208,7 +208,7 @@ void Frontend_PlaySelectedEndMovie()
           }
           UiNode_InvalidateRoot(&runtimeRoot->rootUi.base);
           UiFrame_ProcessAndPresent();
-        } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0);
+        } while (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING));
       }
       g_CursorVisibilityToken++;
       UiPageStack_SetActiveIndex(1,&runtimeRoot->endMoviePageStack);

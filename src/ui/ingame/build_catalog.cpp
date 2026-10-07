@@ -29,8 +29,8 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
   PckArmyAssetIdCatalog assetId;
   int entryIndex;
 
-  if ((g_UiCommandRuntimeFlags &
-      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     root = source;
     while ((root->command).sprite.selectable.base.parent != UI_NODE_NONE) {
       root = reinterpret_cast<UiCatalogEntryControl *>((root->command).sprite.selectable.base.parent.get());
@@ -70,8 +70,8 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
   PckArmyAssetIdCatalog assetId;
   int entryIndex;
 
-  if ((g_UiCommandRuntimeFlags &
-      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     root = source;
     while ((root->command).sprite.selectable.base.parent != UI_NODE_NONE) {
       root = reinterpret_cast<UiCatalogEntryControl *>((root->command).sprite.selectable.base.parent.get());

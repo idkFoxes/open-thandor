@@ -123,7 +123,7 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
   remainingAssets = g_GameFactionRuntimeImage.records[worldRuntime->activeFactionRuntimeIndex].primaryArmyAssetCount;
   itemCount = 0;
   assetCursor = g_GameFactionRuntimeImage.records[worldRuntime->activeFactionRuntimeIndex].primaryArmyAssetPointersOrIds;
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) {
     for (; remainingAssets != 0; remainingAssets--) {
       if ((Thandor_U32ToPointer<UiCommandRuntimeRecordPrefix>(*assetCursor)->textureSource != nullptr) && (itemCount < ARMY_STOCK_ENTRY_COUNT)) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
         *recordCursor = Thandor_U32ToPointer<UiCommandRuntimeRecordPrefix>(*assetCursor); /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
@@ -196,8 +196,8 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
   PckArmyAssetIdCatalog assetId;
   int slotIndex;
 
-  if ((g_UiCommandRuntimeFlags &
-      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     root = control;
     while ((root->sprite).selectable.base.parent != UI_NODE_NONE) {
       root = reinterpret_cast<UiCommandSpriteButtonControl *>((root->sprite).selectable.base.parent.get());

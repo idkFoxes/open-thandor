@@ -499,7 +499,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitHalfSourceRgb;
     g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledHalfSourceRgb;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS)) {
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS) != 0) {
       SelectionOverlay_RenderSelectedArmyMetrics(clipBottom,clipRight,clipTop,clipLeft);
       if ((control->selectedOverlayEntity != nullptr) &&
@@ -537,7 +537,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
                  control->fieldGrid);
     }
     if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != nullptr))
-       && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS) != 0)) {
+       && (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS))) {
       SelectionOverlay_DrawDebugMarkedCellMarkers(clipBottom,clipRight,clipTop,clipLeft,control->fieldGrid);
     }
   }
