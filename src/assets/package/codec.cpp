@@ -80,6 +80,7 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
     cellCount = cellCount & 0xfffffff; /* (count * 0x10) >> 4 in the original */
     /* per cell: persistedAux54, terrainHeight, waterSurfaceDelta and flagsAndMaterial (cell offsets 0x54, 0x48,
        0x4C and 0x50) */
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       persistedCellDword = sourceCell->terrainHeight;
       *compactWriteCursor = sourceCell->persistedAux54;
@@ -124,15 +125,15 @@ static void PckCodec_ExpandFieldGridImage(FieldGridAsset *destinationGrid,AssetM
   expandedCell = destinationGrid->cells;
   expandedZeroCursor = reinterpret_cast<uint32_t *>(expandedCell); /* the cells cleared as dwords */
   std::fill_n(expandedZeroCursor,cellCount * FIELD_GRID_CELL_DWORDS,0);
-  do {
+  /* cellCount != 0: PckCodec_DecodeFieldGrid rejects a grid without cells before it calls this */
+  for (; cellCount != 0; cellCount--) {
     expandedCell->persistedAux54 = compactReadCursor[0];
     expandedCell->terrainHeight = compactReadCursor[1];
     expandedCell->waterSurfaceDelta = compactReadCursor[2];
     expandedCell->flagsAndMaterial = (FieldCellPackedFlagsAndMaterial)compactReadCursor[3];
     compactReadCursor = compactReadCursor + 4;
     expandedCell++;
-    cellCount--;
-  } while (cellCount != 0);
+  }
 }
 
 /* Regenerates the world coordinates of every cell row by row: worldX = column * 0x901 + row * 0x480,
@@ -152,20 +153,19 @@ static void PckCodec_GenerateFieldGridWorldCoordinates(FieldGridAsset *grid)
   cell = grid->cells;
   rowStartX = 0;
   worldYQ12 = 0;
-  do {
+  /* width and height are non-zero: PckCodec_DecodeFieldGrid (the only caller) rejects a grid without cells */
+  for (; rowsRemaining != 0; rowsRemaining--) {
     worldX = rowStartX;
     columnsRemaining = gridWidth;
-    do {
+    for (; columnsRemaining != 0; columnsRemaining--) {
       cell->worldX = worldX;
       cell->worldY = worldYQ12;
       worldX = worldX + FIELD_GRID_WORLD_COLUMN_STEP_X;
       cell++;
-      columnsRemaining = columnsRemaining - 1;
-    } while (columnsRemaining != 0);
+    }
     rowStartX = rowStartX + FIELD_GRID_WORLD_ROW_STEP_X;
     worldYQ12 = worldYQ12 + FIELD_GRID_WORLD_ROW_STEP_Y;
-    rowsRemaining = rowsRemaining - 1;
-  } while (rowsRemaining != 0);
+  }
 }
 
 /* PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image,
@@ -298,12 +298,12 @@ static void PckCodec_EncoderCountFrequencies(uint8_t *source,PckDecodedByteCount
   std::fill_n(workspaceClearCursor,sizeof(g_PckHuffmanSymbolWorkspace256) / sizeof(uint32_t),0);
   workspaceClearCursor = reinterpret_cast<uint32_t *>(g_PckHuffmanNodeWorkspace); /* cleared as dwords */
   std::fill_n(workspaceClearCursor,sizeof(g_PckHuffmanNodeWorkspace) / (sizeof(uint32_t)),0);
-  do {
+  /* sourceSizeBytes != 0: PckCodec_EncodeHuffmanRle (the only caller) rejects an empty source first */
+  for (; sourceSizeBytes != 0; sourceSizeBytes--) {
     g_PckHuffmanSymbolWorkspace256[*source].frequencyCount =
          g_PckHuffmanSymbolWorkspace256[*source].frequencyCount + 1;
-    sourceSizeBytes--;
     source++;
-  } while (sourceSizeBytes != 0);
+  }
 }
 
 /* Scales the counts down until the largest fits the 8-bit table; rounding up keeps rare symbols nonzero. */
@@ -742,13 +742,12 @@ Bool8 PckCodec_DecodeHuffmanRle
       inputByte = PckCodec_DecoderSkipWholeBytes(inputByte,&inputBitOffset);
       runLength = (bitWindow >> 1 & 0xf) + PCK_HUFFMAN_MIN_RUN_LENGTH;
       /* a run is cut short when the output is full; the counter then keeps its value */
-      do {
+      for (; runLength != 0; runLength--) { /* runLength >= PCK_HUFFMAN_MIN_RUN_LENGTH */
         *destination = (uint8_t)(symbolNode - g_PckHuffmanNodeWorkspace) /* symbol = leaf index */;
         destination++;
         outputSizeBytes--;
         if (outputSizeBytes == 0) break;
-        runLength--;
-      } while (runLength != 0);
+      }
       lastTokenLeftover = runLength;
     }
   } while (outputSizeBytes != 0);

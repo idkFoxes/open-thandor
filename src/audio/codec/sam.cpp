@@ -301,7 +301,7 @@ void SoundCoefficientTransform_ApplyCosineBanksMmx(short *outputMonoPcm,SoundCoe
   
   outputPassesRemaining = SAM_BLOCK_SAMPLE_COUNT / SAM_MMX_OUTPUTS_PER_PASS;
   cosineRowCursor = g_CosineDerivedLookupSecondTable;
-  do {
+  for (; outputPassesRemaining != 0; outputPassesRemaining--) {
     /* One pass = output samples m..m+3: all 256 coefficients, 8 at a time, are multiplied pairwise (PMADDWD)
        with the cosine rows at cosineRowCursor + 0, + 0x100, + 0x200 and + 0x300. */
     coefficientQuadLow = Thandor_LoadU64(coefficientBlock->coefficients);
@@ -959,9 +959,8 @@ void SoundCoefficientTransform_ApplyCosineBanksMmx(short *outputMonoPcm,SoundCoe
     saturatedOutputWords = paddsw(packedOutputWords,packedOutputWords);
     cosineRowCursor = cosineRowCursor + SAM_MMX_OUTPUTS_PER_PASS * SAM_BLOCK_SAMPLE_COUNT;
     Thandor_StoreU64(outputMonoPcm, saturatedOutputWords);
-    outputPassesRemaining--;
     outputMonoPcm = outputMonoPcm + SAM_MMX_OUTPUTS_PER_PASS;
-  } while (outputPassesRemaining != 0);
+  }
 }
 
 /* Synthesizes one SAM block: transforms 256 decoded coefficients into 256 PCM samples with the MMX cosine
@@ -1244,7 +1243,7 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
   
   outputGroupsRemaining = 64; /* 64 groups of 4 samples, one cosine bank of 4 x 256 taps per group */
   cosineBankCursor = g_CosineDerivedLookupSecondTable;
-  do {
+  for (; outputGroupsRemaining != 0; outputGroupsRemaining--) {
     coefficientQuadLow = Thandor_LoadU64(coefficients);
     coefficientQuadHigh = Thandor_LoadU64(coefficients + 4);
     mm2PackedValue0 = pmaddwd(coefficientQuadLow,Thandor_LoadU64(cosineBankCursor));
@@ -1885,9 +1884,8 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
          ((uint64_t)((uint32_t)outputWord1 * 0x10001) << 32) | (uint32_t)(uint16_t)mm0PackedValue32 * 0x10001;
     *reinterpret_cast<uint64_t *>(outputStereoPcm + 4) =
          ((uint64_t)((uint32_t)outputWord3 * 0x10001) << 32) | (uint32_t)outputWord2 * 0x10001;
-    outputGroupsRemaining--;
     outputStereoPcm = outputStereoPcm + 8;
-  } while (outputGroupsRemaining != 0);
+  }
 }
 
 /* Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of
@@ -1912,7 +1910,7 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
   bitAccumulator = *reinterpret_cast<uint32_t *>(encodedBlock);
   availableBitCount = 32;
   inputCursor = reinterpret_cast<uint16_t *>(encodedBlock + 4);
-  do {
+  for (; coefficientsRemaining != 0; coefficientsRemaining--) {
     /* the value fields are sign-extended by shifting them to the top of a 32-bit int and back */
     if ((bitAccumulator & 1) == 0) {
       *outputCoefficients = 0;
@@ -1958,8 +1956,7 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
       bitAccumulator = bitAccumulator | (uint32_t)(uint8_t)refillWord << (refillShift & 0x1f);
     }
     outputCoefficients++;
-    coefficientsRemaining--;
-  } while (coefficientsRemaining != 0);
+  }
   if (availableBitCount == 32) {
     inputCursor = reinterpret_cast<uint16_t *>(reinterpret_cast<uintptr_t>(inputCursor) - 1);
   }
@@ -2006,12 +2003,11 @@ uint32_t CosineDerivedLookupTables_Init()
     angleStep16 = COSINE_DERIVED_TABLE_ANGLE_STEP;
     entriesRemaining = COSINE_DERIVED_TABLE_ORDER;
     do {
-      do {
+      for (; entriesRemaining != 0; entriesRemaining--) {
         *outputCursor = (short)((uint32_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS + angleIndex16] >> 16); /* Q28 -> Q12 */
         outputCursor++;
         angleIndex16 = (angleIndex16 + angleStep16 * 2) & FIXED_ANGLE16_MASK;
-        entriesRemaining--;
-      } while (entriesRemaining != 0);
+      }
       angleStep16 = angleStep16 + COSINE_DERIVED_TABLE_ANGLE_STEP;
       entriesRemaining = COSINE_DERIVED_TABLE_ORDER;
       angleIndex16 = angleStep16 & FIXED_ANGLE16_MASK;
@@ -2022,7 +2018,7 @@ uint32_t CosineDerivedLookupTables_Init()
     secondAngleStep16 = COSINE_DERIVED_TABLE_ANGLE_STEP;
     g_CosineDerivedLookupSecondTable = outputCursor;
     do {
-      do {
+      for (; entriesRemaining != 0; entriesRemaining--) {
         if (entriesRemaining == COSINE_DERIVED_TABLE_ORDER) {
           *outputCursor = COSINE_DERIVED_INV_SQRT2_Q14; /* entry 0 */
         }
@@ -2031,8 +2027,7 @@ uint32_t CosineDerivedLookupTables_Init()
         }
         outputCursor++;
         secondAngleIndex16 = (secondAngleIndex16 + secondAngleStep16) & FIXED_ANGLE16_MASK;
-        entriesRemaining--;
-      } while (entriesRemaining != 0);
+      }
       secondAngleStep16 = secondAngleStep16 + 2 * COSINE_DERIVED_TABLE_ANGLE_STEP;
       entriesRemaining = COSINE_DERIVED_TABLE_ORDER;
       secondAngleIndex16 = 0;

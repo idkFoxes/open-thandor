@@ -66,11 +66,10 @@ static Bool8 UiTransferMailbox_DecryptAndVerifyRecord(UiRuntimeRecord *ringRecor
   }
   dwordsRemaining = (int)(unitCount << 3);
   packetDwordCursor = Packet_Dwords(ringRecord);
-  do {
+  for (; dwordsRemaining != 0; dwordsRemaining--) {
     checksum = checksum ^ *packetDwordCursor;
     packetDwordCursor++;
-    dwordsRemaining--;
-  } while (dwordsRemaining != 0);
+  }
   return checksum == 0;
 }
 

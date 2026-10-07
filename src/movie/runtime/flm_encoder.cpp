@@ -177,7 +177,9 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
   blockRowsLeft = frameHeightPixels >> 2;
   outputCursor = encodedOutput;
   blocksLeftInRow = frameWidthPixels >> 2;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       MovieDeltaEncode_Block(outputCursor,sourcePixels,frameWidthPixels);
       sourcePixels = sourcePixels + 4;
@@ -396,8 +398,10 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
   currentBlock = Thandor_Bytes(currentFramePixels);
   referenceBlock = Thandor_Bytes(previousFramePixels);
   outputCursor = Thandor_Bytes(encodedOutput);
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     blocksLeftInRow = frameWidthPixels >> 2;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (!MovieDeltaEncode_BlockChanged(currentBlock,referenceBlock,rowStrideBytes)) {
         pendingSkipCount++;

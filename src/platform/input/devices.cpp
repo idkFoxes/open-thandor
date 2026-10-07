@@ -185,6 +185,7 @@ Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
   g_CursorFrameRecords = frameRecord;
   g_CursorFrameCount = remainingFrames;
   /* every cursor starts on the first frame of its animations */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     activeFirstSubresource = frameRecord->activeAnimationFirstSubresourceIndex;
     frameRecord->idleSubresourceIndex = frameRecord->idleAnimationFirstSubresourceIndex;

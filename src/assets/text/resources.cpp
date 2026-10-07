@@ -92,15 +92,14 @@ Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_
         TextResourceOverride_Register(levelTitleIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE + TEXT_ID_LEVEL_DESCRIPTION_BASE,
                                       resolvedText);
         /* the extra lines are registered from the last one down */
-        do {
+        for (; -1 < lineIndex; lineIndex--) {
           if (!TextResource_TryResolve(lineIndex + TEXT_ID_LEVEL_PAGE_EXTRA_LINES,&resolvedText)) {
             return true;
           }
           TextResourceOverride_Register
                     (levelTitleIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE + (TEXT_ID_LEVEL_DESCRIPTION_BASE + 1) + lineIndex,
                      resolvedText);
-          lineIndex--;
-        } while (-1 < lineIndex);
+        }
         failed = false;
       }
     }
@@ -120,6 +119,7 @@ static TextResourceLocaleBlockPrefix *TextResourceAsset_FindLocaleBlock
 
   remainingBlocks = (asset->localeCountHeader).localeBlockCount;
   block = Asset_RecordAfter<TextResourceLocaleBlockPrefix>(asset);
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (block->countryCode == countryCode) {
       return block;
@@ -146,13 +146,12 @@ static bool TextResourceAsset_HasValidBlocks(const TextResourceAssetHeader *asse
     return false;
   }
   blockOffset = sizeof(TextResourceAssetHeader);
-  do {
+  for (; remainingBlocks != 0; remainingBlocks--) {
     if (blockOffset + sizeof(TextResourceLocaleBlockPrefix) > byteCount) {
       return false;
     }
     blockOffset += Asset_RecordAt<TextResourceLocaleBlockPrefix>(asset,blockOffset)->blockSizeBytes;
-    remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
   return true;
 }
 

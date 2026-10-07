@@ -106,7 +106,7 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
   remainingCount = keyframeCount - 1;
   keyframeCursor = keyframes;
   floatCursor = matrix32x32;
-  do {
+  for (; remainingCount != 0; remainingCount--) {
     knotTime = (float)keyframeCursor->timeQ12 / g_Q12FloatScale4096;
     *floatCursor = 1.0;
     floatCursor[1] = knotTime;
@@ -114,22 +114,20 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
     floatCursor[3] = knotTime * knotTime * knotTime;
     keyframeCursor = keyframeCursor + 1;
     floatCursor = floatCursor + 4 * CUBIC_SPLINE_MATRIX_ORDER + 4;
-    remainingCount--;
-  } while (remainingCount != 0);
+  }
   /* row 4s+3: the segment's value at its end keyframe */
   remainingCount = keyframeCount - 1;
   floatCursor = matrix32x32;
   keyframeCursor = keyframes;
-  do {
+  for (; remainingCount != 0; remainingCount--) {
     knotTime = (float)keyframeCursor[1].timeQ12 / g_Q12FloatScale4096;
     floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 0] = 1.0;
     floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 1] = knotTime;
     floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 2] = knotTime * knotTime;
     floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 3] = knotTime * knotTime * knotTime;
     floatCursor = floatCursor + 4 * CUBIC_SPLINE_MATRIX_ORDER + 4;
-    remainingCount--;
     keyframeCursor = keyframeCursor + 1;
-  } while (remainingCount != 0);
+  }
   /* row 4s+2 (all but the last segment): slope of segment s minus slope of segment s+1 at their shared knot */
   floatCursor = matrix32x32;
   keyframeCursor = keyframes;
@@ -177,23 +175,21 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
   remainingCount = keyframeCount - 1;
   startValueCursor = firstChannelValue;
   floatCursor = outCoefficients;
-  do {
+  for (; remainingCount != 0; remainingCount--) {
     *floatCursor = (float)*startValueCursor / g_Q12FloatScale4096;
     floatCursor[1] = 0.0;
     floatCursor[2] = 0.0;
     startValueCursor = startValueCursor + sizeof(WorldMotionSplineKeyframe) / sizeof(int);
     floatCursor = floatCursor + 4;
-    remainingCount--;
-  } while (remainingCount != 0);
+  }
   remainingCount = keyframeCount - 1;
   endValueCursor = firstChannelValue;
   floatCursor = outCoefficients;
-  do {
+  for (; remainingCount != 0; remainingCount--) {
     endValueCursor = endValueCursor + sizeof(WorldMotionSplineKeyframe) / sizeof(int);
     floatCursor[3] = (float)*endValueCursor / g_Q12FloatScale4096;
     floatCursor = floatCursor + 4;
-    remainingCount--;
-  } while (remainingCount != 0);
+  }
   outCoefficients[1] = startDerivative;
 }
 

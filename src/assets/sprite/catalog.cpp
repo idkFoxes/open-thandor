@@ -126,12 +126,15 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
   groupCursor = Asset_RecordAfter<SprGroupRelocationHeader>(destinationHeader);
   groupsRemaining = destinationHeader->registryHeader.groupCount;
   /* unlike the relocation, every count is assumed to be non-zero (a zero count would wrap around) */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     blocksRemaining = groupCursor->relocationBlockCount;
     blockCursor = Asset_RecordAfter<SprRelocationBlockHeader>(groupCursor);
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       recordsRemaining = blockCursor->fixedRecordCount;
       recordCursor = Asset_RecordAfter<int>(blockCursor);
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         recordCursor[12] = 0;
         recordCursor[13] = 0;
@@ -142,6 +145,7 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
         recordsRemaining--;
       } while (recordsRemaining != 0);
       recordsRemaining = blockCursor->pointerRelocationCount;
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         /* pointerOrSerializedOffset00/0C/18 */
         *recordCursor = *recordCursor - Thandor_PointerToI32(relocatedSourceImage); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset00 */

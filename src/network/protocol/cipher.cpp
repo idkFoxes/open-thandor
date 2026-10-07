@@ -349,7 +349,7 @@ void UiTransfer_EncryptPacketBlocks(const uint32_t *roundKeys16,uint32_t *output
   if (blocksRemaining != 0) {
     rightState = 0;
     leftState = 0;
-    do {
+    for (; blocksRemaining != 0; blocksRemaining--) {
       roundIndex = 0;
       roundInputHalf = *inputBlocks ^ leftState;
       rightState = inputBlocks[1] ^ rightState;
@@ -393,8 +393,7 @@ void UiTransfer_EncryptPacketBlocks(const uint32_t *roundKeys16,uint32_t *output
       outputBlocks[1] = rightState;
       inputBlocks = inputBlocks + 2;
       outputBlocks = outputBlocks + 2;
-      blocksRemaining--;
-    } while (blocksRemaining != 0);
+    }
   }
 }
 
@@ -418,7 +417,7 @@ void UiTransfer_DecryptPacketBlocks
   if (blocksRemaining != 0) {
     previousCipherHigh = 0;
     previousCipherLow = 0;
-    do {
+    for (; blocksRemaining != 0; blocksRemaining--) {
       roundIndex = 15;
       leftHalf = *static_cast<uint32_t *>(source);
       rightHalf = static_cast<uint32_t *>(source)[1];
@@ -451,7 +450,6 @@ void UiTransfer_DecryptPacketBlocks
       static_cast<uint32_t *>(destination)[1] = savedHalf;
       source = static_cast<uint8_t *>(source) + 8;
       destination = static_cast<uint8_t *>(destination) + 8;
-      blocksRemaining--;
-    } while (blocksRemaining != 0);
+    }
   }
 }

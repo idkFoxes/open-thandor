@@ -227,7 +227,7 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
   }
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
-  do {
+  for (; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->voiceSet == nullptr) {
       slotCursor->voiceSet = voiceSet;
       slotCursor->desiredLeftGainQ15 = 0;
@@ -236,8 +236,7 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
       return slotCursor;
     }
     slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
   g_SoundReleaseSampleVoiceSet(voiceSet);
   return nullptr;
 }
@@ -267,14 +266,13 @@ void SpatialSoundPool_ClearDesiredGains()
   
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
-  do {
+  for (; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->voiceSet != nullptr) {
       slotCursor->desiredLeftGainQ15 = 0;
       slotCursor->desiredRightGainQ15 = 0;
     }
     slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
 }
 
 
@@ -291,7 +289,7 @@ void SpatialSoundPool_ApplyDesiredGains()
 
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
-  do {
+  for (; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->voiceSet != nullptr) {
       existingVoice = slotCursor->activeVoice;
       if (existingVoice == nullptr) {
@@ -312,7 +310,6 @@ void SpatialSoundPool_ApplyDesiredGains()
       }
     }
     slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
 }
 
