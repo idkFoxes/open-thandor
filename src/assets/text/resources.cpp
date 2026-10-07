@@ -251,14 +251,14 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintp
   if (!TextResourceAsset_HasValidBlocks(allocation,byteCount)) {
     return TextResourcePage_RejectAsset(pageIndex,path,allocation,"locale blocks",outLocaleBlockOrError);
   }
-  countryCode = g_LocaleCountryCodeOverride;
+  countryCode = static_cast<LocaleTelephoneCountryCode>(g_LocaleCountryCodeOverride);
   if (g_LocaleCountryCodeOverride == 0) {
     countryCode = g_LocaleGetDefaultTelephoneCountryCode();
   }
   /* the block for the country code, else the Great Britain block, else the first block */
   localeBlock = TextResourceAsset_FindLocaleBlock(allocation,countryCode);
   if (localeBlock == nullptr) {
-    localeBlock = TextResourceAsset_FindLocaleBlock(allocation,LOCALE_COUNTRY_GREAT_BRITAIN);
+    localeBlock = TextResourceAsset_FindLocaleBlock(allocation,LocaleTelephoneCountryCode::LOCALE_COUNTRY_GREAT_BRITAIN);
     if (localeBlock == nullptr) {
       localeBlock = Asset_RecordAfter<TextResourceLocaleBlockPrefix>(allocation);
     }

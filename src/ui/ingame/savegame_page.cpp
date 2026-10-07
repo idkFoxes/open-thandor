@@ -130,7 +130,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   /* the "new savegame" row: no Delete, Save only for a valid typed name */
   rootNode = UiNode_GetRoot(&catalogList->base);
   UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,rootNode);
-  if ((image->saveNameEdit.editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
+  if (!Any(image->saveNameEdit.editStateFlags & UI_REQUIRED_TEXT_VALUE_VALID)) {
     UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,rootNode);
   }
   else {
@@ -213,7 +213,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
             (g_ScenarioCatalogPathScratchUtf16,g_SaveSvePatternUtf16,
              g_ExecutableDirectoryUtf16);
   rowCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
-               (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
+               (FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
                 reinterpret_cast<uint8_t *>(g_ScenarioCatalogPathScratchUtf16));
   g_MemoryApi.free(g_ScenarioCatalog);
   g_ScenarioCatalog = nullptr;
@@ -375,7 +375,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
     firstNode = firstNode->parent;
   }
   nameValid = false;
-  if ((nameEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
+  if (Any(nameEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     name = nameEdit->textBuffer;
     capacity = nameEdit->bufferCapacityCodeUnits;
     nameLength = 0;

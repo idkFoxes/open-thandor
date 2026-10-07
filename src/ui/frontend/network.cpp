@@ -43,7 +43,7 @@ Ptr32<FrontendSessionDiscoveryRecord> *g_FrontendSessionListRows = nullptr;
 
 Ptr32<FrontendPlayerRuntimeRecord> g_FrontendPlayerRuntimeRecordPointers32[32] = {};
 
-uint32_t g_FrontendNetworkState = 0;
+FrontendNetworkState g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
 
 char g_SpielerSpielNetzwerkHostKeywordsAscii[31] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST";
 
@@ -637,7 +637,7 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
     parentCursor = rootNode->base.parent;
   }
   UiTextControl_UpdateNonEmptyValidity(control);
-  if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_HOST_GAME,&rootNode->base);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&rootNode->base);
   }
@@ -684,7 +684,7 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
     rootNode = UiNode_As<UiTextEditControl>((rootNode->base).parent.get());
     parentCursor = rootNode->base.parent;
   }
-  if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_CREATE_HOSTED_GAME,&rootNode->base);
   }
   else {
@@ -698,7 +698,7 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
    g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_SetPlayerName). Join
    (FRONTEND_ACTION_JOIN_GAME) is offered only while the list has rows (rowCount), its selected row (selectedRowSlot)
    holds a session (advertisement.joinAvailableFlag) and the local player has a name; if then bit 2 of the
-   list's listStateFlags is set
+   list's listStateFlags (UI_LIST_SELECTION_CONFIRMED) is set
    (presumably a double click), it is cleared and the join request is sent at once, as if Join had been pressed.
 */
 void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick(UiListControl *sessionList)
@@ -724,9 +724,9 @@ void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick(UiListControl 
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_JOIN_GAME,rootNode);
-    if ((sessionList->listStateFlags & 4) != 0) {
+    if (Any(sessionList->listStateFlags & UI_LIST_SELECTION_CONFIRMED)) {
       dirtyFlagsSlot = &sessionList->listStateFlags;
-      *dirtyFlagsSlot = *dirtyFlagsSlot & ~4;
+      *dirtyFlagsSlot = *dirtyFlagsSlot & ~UI_LIST_SELECTION_CONFIRMED;
       FrontendNetworkSettings_PublishSelectedPlayerDescriptor(&FrontendUi_Image(rootNode)->networkGameJoinButton);
     }
   }

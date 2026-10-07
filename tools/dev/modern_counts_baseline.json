@@ -1,5 +1,5 @@
 {
- "revision": "61506dc0",
+ "revision": "24a86162",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -160,19 +160,19 @@
    "movie": 28,
    "network": 129,
    "platform": 162,
-   "ui": 640,
+   "ui": 614,
    "world": 128
   },
   "typedef_struct": {},
   "enum_class": {
    "assets": 5,
-   "core": 8,
+   "core": 10,
    "gameplay": 5,
    "graphics": 4,
    "movie": 2,
    "network": 7,
-   "platform": 3,
-   "ui": 19,
+   "platform": 4,
+   "ui": 30,
    "world": 4
   },
   "libc_alloc": {},

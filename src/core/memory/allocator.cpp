@@ -51,7 +51,7 @@ void * ArenaHeap_Init()
       g_Arena.rawAllocation = rawArenaAllocation;
       g_Arena.firstBlock = alignedFirstBlock;
       alignedFirstBlock->payloadSize = ARENA_HEAP_PAYLOAD_BYTES;
-      alignedFirstBlock->stateMagic = ARENA_BLOCK_FREE;
+      alignedFirstBlock->stateMagic = ArenaBlockStateMagic::ARENA_BLOCK_FREE;
       alignedFirstBlock->next = ARENA_BLOCK_LIST_END;
       alignedFirstBlock->previous = ARENA_BLOCK_LIST_END;
       return rawArenaAllocation;
@@ -95,15 +95,15 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
   }
   blockCursor = g_Arena.firstBlock;
   do {
-    if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
-      if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
+    if (blockCursor->stateMagic != ArenaBlockStateMagic::ARENA_BLOCK_ALLOCATED) {
+      if (blockCursor->stateMagic != ArenaBlockStateMagic::ARENA_BLOCK_FREE) {
         return ARENA_HEAP_CORRUPT;
       }
       if (largestFreePayloadBytes < blockCursor->payloadSize) {
         largestFreePayloadBytes = blockCursor->payloadSize;
       }
       if (alignedBytes <= blockCursor->payloadSize) {
-        blockCursor->stateMagic = ARENA_BLOCK_ALLOCATED;
+        blockCursor->stateMagic = ArenaBlockStateMagic::ARENA_BLOCK_ALLOCATED;
         if (blockCursor->payloadSize <= alignedBytes + ARENA_BLOCK_SPLIT_SLACK_BYTES) {
           *outPayload = blockCursor + 1;
           return 0;
@@ -114,7 +114,7 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
         /* the new free block starts right behind the shortened payload */
         splitBlock = Thandor_At<ArenaBlockHeader>(blockCursor + 1, blockCursor->payloadSize);
         splitBlock->payloadSize = originalPayloadSize - (blockCursor->payloadSize + ARENA_BLOCK_HEADER_BYTES);
-        splitBlock->stateMagic = ARENA_BLOCK_FREE;
+        splitBlock->stateMagic = ArenaBlockStateMagic::ARENA_BLOCK_FREE;
         splitBlock->previous = blockCursor;
         blockCursor->next = splitBlock;
         splitBlock->next = followingBlock;
@@ -143,8 +143,8 @@ uint32_t ArenaHeap_QueryFreeBytes()
   freePayloadBytes = 0;
   blockCursor = g_Arena.firstBlock;
   do {
-    if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
-      if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
+    if (blockCursor->stateMagic != ArenaBlockStateMagic::ARENA_BLOCK_ALLOCATED) {
+      if (blockCursor->stateMagic != ArenaBlockStateMagic::ARENA_BLOCK_FREE) {
         return ARENA_HEAP_CORRUPT;
       }
       freePayloadBytes = freePayloadBytes + blockCursor->payloadSize;
@@ -170,13 +170,13 @@ uint32_t ArenaHeap_Free(void *memory)
   if (memory != nullptr) {
     /* the header is addressed both as freedBlock (sizes) and as memory[-1] (links), as in the original */
     freedBlock = reinterpret_cast<ArenaBlockHeader *>(reinterpret_cast<uintptr_t>(memory) - ARENA_BLOCK_HEADER_BYTES);
-    if (static_cast<ArenaBlockHeader *>(memory)[-1].stateMagic != ARENA_BLOCK_ALLOCATED) {
+    if (static_cast<ArenaBlockHeader *>(memory)[-1].stateMagic != ArenaBlockStateMagic::ARENA_BLOCK_ALLOCATED) {
       return ARENA_HEAP_CORRUPT;
     }
-    static_cast<ArenaBlockHeader *>(memory)[-1].stateMagic = ARENA_BLOCK_FREE;
+    static_cast<ArenaBlockHeader *>(memory)[-1].stateMagic = ArenaBlockStateMagic::ARENA_BLOCK_FREE;
     /* merge the following block */
     followingBlock = static_cast<ArenaBlockHeader *>(memory)[-1].next;
-    if (followingBlock != ARENA_BLOCK_LIST_END && followingBlock->stateMagic == ARENA_BLOCK_FREE) {
+    if (followingBlock != ARENA_BLOCK_LIST_END && followingBlock->stateMagic == ArenaBlockStateMagic::ARENA_BLOCK_FREE) {
       freedBlock->payloadSize = freedBlock->payloadSize + followingBlock->payloadSize + ARENA_BLOCK_HEADER_BYTES;
       mergedNextBlock = followingBlock->next;
       static_cast<ArenaBlockHeader *>(memory)[-1].next = mergedNextBlock;
@@ -186,7 +186,7 @@ uint32_t ArenaHeap_Free(void *memory)
     }
     /* merge into the preceding block */
     previousBlock = static_cast<ArenaBlockHeader *>(memory)[-1].previous;
-    if (previousBlock != ARENA_BLOCK_LIST_END && previousBlock->stateMagic == ARENA_BLOCK_FREE) {
+    if (previousBlock != ARENA_BLOCK_LIST_END && previousBlock->stateMagic == ArenaBlockStateMagic::ARENA_BLOCK_FREE) {
       previousBlock->payloadSize = previousBlock->payloadSize + freedBlock->payloadSize + ARENA_BLOCK_HEADER_BYTES;
       mergedNextBlock = static_cast<ArenaBlockHeader *>(memory)[-1].next;
       previousBlock->next = mergedNextBlock;
@@ -215,8 +215,8 @@ uint32_t ArenaHeap_AllocLargestFreeBlock(void **outAllocation,uint32_t *outBlock
   largestFreePayloadBytes = 0;
   blockCursor = g_Arena.firstBlock;
   do {
-    if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
-      if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
+    if (blockCursor->stateMagic != ArenaBlockStateMagic::ARENA_BLOCK_ALLOCATED) {
+      if (blockCursor->stateMagic != ArenaBlockStateMagic::ARENA_BLOCK_FREE) {
         return ARENA_HEAP_CORRUPT;
       }
       if (largestFreePayloadBytes < blockCursor->payloadSize) {
@@ -230,7 +230,7 @@ uint32_t ArenaHeap_AllocLargestFreeBlock(void **outAllocation,uint32_t *outBlock
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0,g_PackageLastErrorPath);
     return FATAL_ERROR_ARENA_EXHAUSTED;
   }
-  largestFreeBlock->stateMagic = ARENA_BLOCK_ALLOCATED;
+  largestFreeBlock->stateMagic = ArenaBlockStateMagic::ARENA_BLOCK_ALLOCATED;
   *outBlockSize = largestFreePayloadBytes;
   *outAllocation = largestFreeBlock + 1;
   return 0;
@@ -260,7 +260,7 @@ uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
   if (newSize > ARENA_HEAP_PAYLOAD_BYTES) {
     alignedBytes = UINT32_MAX;
   }
-  if (block->stateMagic != ARENA_BLOCK_ALLOCATED || alignedBytes > block->payloadSize) {
+  if (block->stateMagic != ArenaBlockStateMagic::ARENA_BLOCK_ALLOCATED || alignedBytes > block->payloadSize) {
     return ARENA_HEAP_CORRUPT;
   }
   /* The original returns a leftover split-block value on success; no caller reads it, so 0 here. */
@@ -274,13 +274,13 @@ uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
   /* the new free block starts right behind the shortened payload */
   splitBlock = reinterpret_cast<ArenaBlockHeader *>(Thandor_Bytes(block) + ARENA_BLOCK_HEADER_BYTES + alignedBytes);
   block->next = splitBlock;
-  splitBlock->stateMagic = ARENA_BLOCK_FREE;
+  splitBlock->stateMagic = ArenaBlockStateMagic::ARENA_BLOCK_FREE;
   splitBlock->payloadSize = splitPayloadSize;
   splitBlock->previous = block;
   splitBlock->next = followingBlock;
   if (followingBlock != ARENA_BLOCK_LIST_END) {
     followingBlock->previous = splitBlock;
-    if (followingBlock->stateMagic == ARENA_BLOCK_FREE) {
+    if (followingBlock->stateMagic == ArenaBlockStateMagic::ARENA_BLOCK_FREE) {
       /* merge the free following block into the split block */
       followingNextBlock = followingBlock->next;
       splitBlock->next = followingNextBlock;
