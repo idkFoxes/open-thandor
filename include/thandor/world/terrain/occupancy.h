@@ -16,11 +16,7 @@
 /* TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint packs two bits per faction slot i: bit 2i+1 = present now,
    bit 2i = only the persistent occupancy bit (seen before). */
 inline constexpr uint32_t TERRAIN_OCCUPANCY_CLASS_PRESENT_BITS = 0xaaaaaaaa;
-/* Model-node runtimeFlags bits read and produced by TerrainOccupancyMask_ResolveRuntimeClassFlags (callers clear
-   0xC first; the selection overlay accepts PRESENT, or SEEN_BEFORE without NOT_REMEMBERED). */
-inline constexpr int TERRAIN_OCCUPANCY_FLAG_PRESENT = 0x04;
-inline constexpr int TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE = 0x08;
-inline constexpr int TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED = 0x10; /* set on shots and effects */
+/* The model-node runtimeFlags bits TERRAIN_OCCUPANCY_FLAG_* are ModelRuntimeFlags (gameplay/army/types.h). */
 /* Rounding bias added to a Q12 radius before dividing by FIELD_GRID_WORLD_COLUMN_STEP_X (just under half a Q12
    unit, not half the cell step) */
 inline constexpr uint32_t TERRAIN_OCCUPANCY_RADIUS_ROUND_Q12 = 0x7ffU;
@@ -33,7 +29,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 
 TerrainOccupancyResolvedMasks
 TerrainOccupancyMask_ResolveRuntimeClassFlags
-          (uint32_t baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
+          (ModelRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
           FieldGridRegionMask primaryOccupancyMask,char activeFactionIndex);
 
 void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid);

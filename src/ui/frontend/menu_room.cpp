@@ -416,8 +416,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   renderHierarchyProc = FrontendModelPointerContext_SelectRenderHierarchyProc(control);
   for (modelNode = control->candidateModelListHead; modelNode != nullptr;
       modelNode = WorldNode_View<ModelRuntimeNode>(modelNode->common.nextNode.get())) {
-    if (((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) &&
-        ((modelNode->runtimeFlags & MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN) != 0)) {
+    if (!Any(modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) &&
+        (Any(modelNode->runtimeFlags & MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN))) {
       modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
       if ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0) {
         renderHierarchyProc(modelNode);
@@ -447,8 +447,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     if (modelNode != nullptr) {
       GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes();
       for (; modelNode != nullptr; modelNode = WorldNode_View<ModelRuntimeNode>(modelNode->common.nextNode.get())) {
-        if (((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) &&
-            ((modelNode->runtimeFlags & MODEL_NODE_FLAG_SHADING_PASS) != 0) &&
+        if (!Any(modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) &&
+            (Any(modelNode->runtimeFlags & MODEL_NODE_FLAG_SHADING_PASS)) &&
             ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
           GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                     (modelNode,reinterpret_cast<GeneratedTextureRenderContextView *>(control)); /* the shading view of this context's bytes */
@@ -469,7 +469,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   renderHierarchyProc = FrontendModelPointerContext_SelectRenderHierarchyProc(control);
   for (modelNode = control->candidateModelListHead; modelNode != nullptr;
       modelNode = WorldNode_View<ModelRuntimeNode>(modelNode->common.nextNode.get())) {
-    if ((modelNode->runtimeFlags & (MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN | MODEL_NODE_FLAG_HIDDEN)) == 0) {
+    if (!Any(modelNode->runtimeFlags & (MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN | MODEL_NODE_FLAG_HIDDEN))) {
       modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
       if ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0) {
         renderHierarchyProc(modelNode);
@@ -1031,9 +1031,9 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   bestHitMetric = WORLD_POINTER_NO_HIT;
   for (modelNode = context->candidateModelListHead; modelNode != nullptr;
       modelNode = WorldNode_View<ModelRuntimeNode>(modelNode->common.nextNode.get())) {
-    if ((modelNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) != 0 && modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
+    if (Any(modelNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) && modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
         ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_NON_FACTION_MODELS) != 0 ||
-         (modelNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) != 0)) {
+         Any(modelNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED))) {
       if (!ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                         (pointerY,pointerX,modelNode,context,&hitDistanceQ12)) continue;
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {

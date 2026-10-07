@@ -53,7 +53,7 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   uint8_t *clampTable;
   uint8_t clampedColorByte;
   uint8_t clampedAlphaByte;
-  uint32_t runtimeFlags;
+  ModelRuntimeFlags runtimeFlags;
   uint32_t previousTint;
   int colorIntensity;
   PackedArgb32 tintArgb;
@@ -62,19 +62,19 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   colorIntensity = 255;
   alphaIntensity = 255;
   runtimeFlags = modelNodeRuntime->runtimeFlags;
-  if ((runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) == 0) {
+  if (!Any(runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT)) {
     colorIntensity = 0;
     alphaIntensity = 0;
-    if ((runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0) {
+    if (Any(runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE)) {
       colorIntensity = 255;
       alphaIntensity = 0;
-      if ((runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
+      if (!Any(runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED)) {
         colorIntensity = 135;
         alphaIntensity = 255;
       }
     }
   }
-  if ((runtimeFlags & MODEL_NODE_FLAG_FORCE_TRANSPARENT) != 0) {
+  if (Any(runtimeFlags & MODEL_NODE_FLAG_FORCE_TRANSPARENT)) {
     alphaIntensity = 0;
   }
   previousTint = modelNodeRuntime->tintArgb;
@@ -579,7 +579,7 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
   newNode->modelPayload.meshGroupMask = UINT32_MAX;
   ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   newNode->runtimePayload.modelRuntime = modelRuntime;
-  newNode->runtimeFlags = newNode->runtimeFlags | 1;
+  newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   /* 0x20: the army belongs to a faction other than 0 */
   if (ownerArmy->factionIndex != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_FACTION_OWNED;
@@ -774,7 +774,7 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
         g_ModelTransformScratchMatrix.translation.y = 0;
         g_ModelTransformScratchMatrix.translation.z = 0;
         inheritedTintArgb = modelNodeRuntime->tintArgb;
-        currentChild->runtimeFlags = currentChild->runtimeFlags | 1;
+        currentChild->runtimeFlags = currentChild->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
         currentChild->tintArgb = inheritedTintArgb;
         ModelNodeRuntime_ComposeChildTransformsRecursive(currentChild);
       }

@@ -327,7 +327,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   occupancyMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
                      (TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED,0,neighborhoodClassBits,runtimeClassIndex);
   effectSlot->terrainRuntimeClassState = occupancyMasks.primaryOccupancyMask;
-  effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | occupancyMasks.runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
+  effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | FromBits<ModelRuntimeFlags>(occupancyMasks.runtimeFlags) | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   effectModelNode->tintArgb = 0xffffff;
   if (soundTableIndex != 0 && soundTableIndex < worldRuntime->dwordArrayCount &&
       worldRuntime->dwordArray != nullptr) {
