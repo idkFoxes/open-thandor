@@ -559,6 +559,9 @@ static_assert(sizeof(UiTitledWindowControl) == 0x54,
               "UiTitledWindowControl keeps its 32-bit layout");
 static_assert(sizeof(InGameRuntimeRoot) == 0xC3E4 &&
               offsetof(InGameRuntimeRoot, diplomacyPanelNodeFlags) == 0x4D54 &&
+              offsetof(InGameRuntimeRoot, worldViewWrappedTextNodeFlags) == 0x24E0 &&
+              sizeof(InGameRuntimeRoot::worldViewWrappedTextNodeFlags) == 4 &&
+              offsetof(InGameRuntimeRootUiGridView, worldViewWrappedTextNodeFlags) == 0x24E0 &&
               offsetof(InGameRuntimeRoot, minimapResourceButtonStateFlags) == 0x4938 &&
               sizeof(InGameRuntimeRoot::minimapResourceButtonStateFlags) == 4 &&
               offsetof(InGameRuntimeRootUiGridView, minimapResourceButtonStateFlags) == 0x4938 &&

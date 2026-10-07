@@ -244,10 +244,10 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
     return false;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags | 8;
+    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags | UI_NODE_SUPPRESSED;
   }
   else {
-    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags & ~8u;
+    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags & ~UI_NODE_SUPPRESSED;
   }
   InGameSession_RebuildUiGrids(inGameRoot);
   WorldLightingRuntime_UpdateInterpolatedTerrainLighting();

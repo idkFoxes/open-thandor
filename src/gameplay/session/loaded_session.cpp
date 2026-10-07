@@ -235,10 +235,10 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
     return InGameLoadedSession_Fail(levelImage,saveHandle,stepError,outError);
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags | 8;
+    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags | UI_NODE_SUPPRESSED;
   }
   else {
-    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags & ~8u;
+    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags & ~UI_NODE_SUPPRESSED;
   }
   /* the spin lock taken by InGameLoadedSession_FinishWorldUnderTickLock is released here */
   InGameSession_ReportReadyAndWaitForPlayers(inGameRoot);
