@@ -867,19 +867,19 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
   Bool8 beginAccessFailed;
   GraphicsTextureLogicalSize cornerSize;
 
-  if ((control->root.rootFlags & (UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME)) != 0) {
+  if (Any(control->root.rootFlags & (UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME))) {
     beginAccessFailed = g_GraphicsFramebufferBeginAccess();
     if (!beginAccessFailed) {
-      if ((control->root.rootFlags & UI_ROOT_TILED_BACKGROUND) != 0) {
+      if (Any(control->root.rootFlags & UI_ROOT_TILED_BACKGROUND)) {
         subresource = UI_WINDOW_SUBRESOURCE_WINDOW_INTERIOR;
-        if ((control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND) != 0) {
+        if (Any(control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND)) {
           subresource = UI_WINDOW_SUBRESOURCE_ALTERNATE_INTERIOR;
         }
         UiWindow_BlitTiledInterior
                   (clipBottom,clipRight,clipTop,clipLeft,subresource,control->root.base.layoutHeight,
                    control->root.base.layoutWidth,0,0,control);
       }
-      if ((control->root.rootFlags & UI_ROOT_FRAME) != 0) {
+      if (Any(control->root.rootFlags & UI_ROOT_FRAME)) {
         /* the bottom-right corner gives the corner size */
         cornerSize = g_GraphicsTextureSourceGetLogicalSize
                                (UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
@@ -918,7 +918,7 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
                   (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM,
                    rightEdgeX,bottomEdgeY,cornerWidth,control);
       }
-      if ((control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND) != 0) {
+      if (Any(control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND)) {
         cornerSize = g_GraphicsTextureSourceGetLogicalSize
                                (UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
                                 g_UiWindowTextureSource);
