@@ -249,8 +249,8 @@ static void ShotModel_CastHitRays
 {
   ArmyRuntimeSlot *shotOwnerArmy;
   ModelRuntimeNode *ownerModelNode;
-  Bool8 armyHit;
-  Bool8 surfaceHit;
+  bool armyHit;
+  bool surfaceHit;
   Q12 armyHitDistanceQ12;
   Q12 surfaceDistanceQ12;
   ModelRuntimeNode *nearestArmyModelNode;
@@ -290,7 +290,7 @@ static void ShotModel_CastHitRays
     /* The original indexes the 31-entry material arrays with the cell's 8-bit material id and reads the
        following ShotDefinition fields for ids 31..255; bounded here because valid maps use ids 0..25 only:
        such a material counts as one without impact effect. */
-    static Bool8 s_loggedMaterialOutOfRange = false;
+    static bool s_loggedMaterialOutOfRange = false;
     if (!s_loggedMaterialOutOfRange) {
       s_loggedMaterialOutOfRange = true;
       Thandor_Log("shot: terrain material %u out of range, no impact effect",hits->terrainMaterialIndex);
@@ -461,7 +461,7 @@ static void ShotProjectile_ImpactArmy
 
 /* Moving shot: ends at the nearest hit within this tick's step (launchSpeedQ12), emitting the impact effect.
    Returns true when the shot was removed. */
-static Bool8 ShotProjectile_ApplyNearestHit
+static bool ShotProjectile_ApplyNearestHit
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode,ShotRuntimeSlot *shotRuntime,
            const ShotRayHits *hits)
 
@@ -648,7 +648,7 @@ static void ShotProjectile_ShiftOverTarget
 /* Fixed-range shot: climbs with a cubic speed ramp until fixedRangeTransitionAgeThresholdTicks, then jumps over
    its target and turns downwards; while descending it stays over the target. Returns true when the shot was
    removed because it reached the threshold without a target. */
-static Bool8 ShotProjectile_UpdateFixedRangeTrajectory
+static bool ShotProjectile_UpdateFixedRangeTrajectory
           (ShotDefinition *shotDefinition,ShotRuntimeSlot *shotRuntime,ModelRuntimeNode *shotNode)
 
 {

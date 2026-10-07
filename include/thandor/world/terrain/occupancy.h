@@ -40,6 +40,6 @@ void FieldGrid_SetOccupancyMaskByteBit0AllCells
 void FieldGrid_ClearOccupancyMaskByteBit0AllCells
           (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid);
 
-Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
+bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
 #endif /* THANDOR_WORLD_TERRAIN_OCCUPANCY_H */

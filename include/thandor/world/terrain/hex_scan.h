@@ -109,7 +109,7 @@ inline bool TerrainHexScan_EndsAt(FieldGridCell *cell,TerrainDirectionalScanStep
 /* Straight leg along Direction from cell: TERRAIN_SCAN_STEP_STRAIGHT steps per cell until the step limit.
    Returns true only for a test policy that failed. */
 template <int Direction,class Policy>
-inline Bool8 TerrainHexScan_Leg(TerrainDirectionalScanStep scanStep,FieldGridCell *cell,Policy policy)
+inline bool TerrainHexScan_Leg(TerrainDirectionalScanStep scanStep,FieldGridCell *cell,Policy policy)
 {
   while (scanStep < g_TerrainScanStepLimit) {
     if (TerrainHexScan_EndsAt(cell,scanStep,policy)) {
@@ -127,7 +127,7 @@ inline Bool8 TerrainHexScan_Leg(TerrainDirectionalScanStep scanStep,FieldGridCel
    4 * sqrt(3)), a leg runs along b from S+2Db and the spine continues at S+Db+Da. The radius is therefore only
    approximate (4 per straight cell, 7 per spine cell). Returns true only for a test policy that failed. */
 template <int Sector,class Policy>
-inline Bool8 TerrainHexScan_Sector(TerrainDirectionalScanStep scanStep,FieldGridCell *cell,Policy policy)
+inline bool TerrainHexScan_Sector(TerrainDirectionalScanStep scanStep,FieldGridCell *cell,Policy policy)
 {
   constexpr int DirectionA = Sector;
   constexpr int DirectionB = (Sector + 1) % 6;
@@ -160,7 +160,7 @@ inline Bool8 TerrainHexScan_Sector(TerrainDirectionalScanStep scanStep,FieldGrid
 /* The six sectors around centerCell (not visited itself), in the order 0..5, each from scan step 0; for a test
    policy the first failing sector ends the scan (left-to-right ||). */
 template <class Policy>
-inline Bool8 TerrainHexScan_AllSectors(FieldGridCell *centerCell,Policy policy)
+inline bool TerrainHexScan_AllSectors(FieldGridCell *centerCell,Policy policy)
 {
   return TerrainHexScan_Sector<0>(0,TerrainHexScan_Neighbor<0>(centerCell),policy) ||
          TerrainHexScan_Sector<1>(0,TerrainHexScan_Neighbor<1>(centerCell),policy) ||

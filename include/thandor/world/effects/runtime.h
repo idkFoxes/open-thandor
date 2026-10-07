@@ -21,7 +21,7 @@ inline constexpr int EFFECT_RUNTIME_POOL_BYTES = 0x40000; /* EFFECT_RUNTIME_SLOT
 
 EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId);
 
-Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
+bool EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
 
 void EffectRuntime_ShutdownGraphicsResources();
 

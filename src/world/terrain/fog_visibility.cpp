@@ -111,7 +111,7 @@ static uint8_t *TerrainByteClampLookup_FillRow(uint8_t *rowCursor,int targetLeve
    aligned so the original can index it with the two bytes as the low 16 address bits. Returns true on success; false when the allocation fails,
    with the allocator error in *outError.
 */
-Bool8 TerrainByteClampLookup_Initialize(uint32_t *outError)
+bool TerrainByteClampLookup_Initialize(uint32_t *outError)
 
 {
   void *lookupAllocationBase;

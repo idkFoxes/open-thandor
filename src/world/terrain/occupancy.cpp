@@ -315,7 +315,7 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
    Returns false when one of them is set, true when the point is outside the grid or neither bit is
    set. Unit, shot and effect code play positioned sounds only when this returns false.
 */
-Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
+bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
   FieldGridAsset *activeFieldGrid;

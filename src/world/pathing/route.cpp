@@ -80,15 +80,15 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   uint32_t rowLimit;
   GridPathUnreachableReferenceRow32 targetRow;
   GridScratchCell *routeScratchCell;
-  Bool8 segmentBlocked;
+  bool segmentBlocked;
   WorldPositionXY primaryWorldPosition;
-  Bool8 startRelocated;
+  bool startRelocated;
   FieldGridCellCoordinate nearestRow;
   FieldGridCellCoordinate nearestColumn;
   FieldGridCellCoordinate reachableRow;
   FieldGridCellCoordinate reachableColumn;
   PathingDestination resolvedDestination;
-  Bool8 backtrackReachedTarget;
+  bool backtrackReachedTarget;
   FieldGridCellCoordinate backtrackRow;
   FieldGridCellCoordinate backtrackColumn;
   FieldGridRegionMask backtrackRouteStateMask;
@@ -298,7 +298,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
   int deltaY;
   EntityPathingPriorityPair *influencePair;
   EntityPathingPriorityPair *pairCursor;
-  Bool8 masksOverlap;
+  bool masksOverlap;
   WorldPositionXY routeTarget;
   WorldPositionXY resolvedTarget;
   ModelRuntimeNode *entityModelNode;
@@ -568,9 +568,9 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   uint32_t rowLimit;
   uint32_t scaledRowTerm;
   uint32_t footprintRadius;
-  Bool8 segmentBlocked;
+  bool segmentBlocked;
   WorldPositionXY resolvedTarget;
-  Bool8 startRelocated;
+  bool startRelocated;
   ModelRuntimeNode *entityModelNode;
 
   entityModelNode = routeEntityRuntime->modelNode;

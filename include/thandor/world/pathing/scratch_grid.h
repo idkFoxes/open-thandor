@@ -25,13 +25,13 @@ extern const int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT];
 
 void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime);
 
-Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError);
+bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError);
 
 void GridScratch_ReleaseBuffers();
 
 void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid);
 
-Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
+bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
 
 void GridScratch_CopyPrimaryToSecondary();
 

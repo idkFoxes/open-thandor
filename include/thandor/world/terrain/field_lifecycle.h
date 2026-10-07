@@ -18,13 +18,13 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid);
 
 void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);
 
-Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError);
+bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError);
 
 /* Smallest accepted field grid side in cells (FieldGrid_ValidateLoadedImage): the map-edge ring plus an
    interior; tools/data/fld.py uses the same bound. */
 inline constexpr int FIELD_GRID_MIN_SIDE_CELLS = 4;
 
-Bool8 FieldGrid_ValidateLoadedImage(const FieldGridAsset *fieldGrid,uint32_t loadedByteCount);
+bool FieldGrid_ValidateLoadedImage(const FieldGridAsset *fieldGrid,uint32_t loadedByteCount);
 
 FieldGridAsset *FieldGrid_LoadValidated(uint16_t *path,uint32_t *outErrorCode);
 

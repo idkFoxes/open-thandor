@@ -81,7 +81,7 @@ static GridScratchCell *GridPathCost_FindCheaperHexNeighbor(GridScratchCell *cel
    *outRouteStateMask always receives the final blocking mask (callerBlockingMask, or 0 once a high-cost cell
    was entered).
 */
-Bool8 GridPathCost_BacktrackBestHexRoute
+bool GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn,FieldGridRegionMask *outRouteStateMask)
@@ -119,7 +119,7 @@ Bool8 GridPathCost_BacktrackBestHexRoute
 }
 
 /* True when originCell or one of its six hex neighbours already has a cost. */
-static Bool8 GridPathCost_OriginOrNeighborReached(GridScratchCell *originCell,uint32_t scratchWidth)
+static bool GridPathCost_OriginOrNeighborReached(GridScratchCell *originCell,uint32_t scratchWidth)
 {
   GridScratchCell *rowAboveCell;
 
@@ -257,7 +257,7 @@ static int GridPathCost_HexDistance(int columnDelta,int rowDelta)
    *outColumn untouched. Otherwise returns true and writes the nearest (hex distance) free cell within +-16
    rows/columns, or the cell itself when there is none.
 */
-Bool8 GridPathCost_RelocateFromBlockedCell
+bool GridPathCost_RelocateFromBlockedCell
           (FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn)
 
