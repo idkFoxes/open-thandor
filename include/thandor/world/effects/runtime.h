@@ -16,8 +16,8 @@
 #include <thandor/core/contracts.h>
 
 /* g_EffectRuntimeSlots: a 0x40000-byte pool of 0x40-byte EffectRuntimeSlot entries (EffectRuntime_InitGraphicsResources) */
-#define EFFECT_RUNTIME_SLOT_COUNT 0x1000
-#define EFFECT_RUNTIME_POOL_BYTES 0x40000 /* EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot) */
+inline constexpr int EFFECT_RUNTIME_SLOT_COUNT = 0x1000;
+inline constexpr int EFFECT_RUNTIME_POOL_BYTES = 0x40000; /* EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot) */
 
 EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId);
 

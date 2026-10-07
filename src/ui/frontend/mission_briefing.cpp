@@ -23,6 +23,7 @@ static Bool8 FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
 
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (factionSlot == playerRecord->factionAssignment.factionAssignmentIndex) {
       return true;
@@ -148,6 +149,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   }
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     playerRecord->factionAssignment.readyOrWaitState = 0;
     playersRemaining--;

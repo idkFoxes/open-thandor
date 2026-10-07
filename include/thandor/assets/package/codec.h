@@ -16,24 +16,24 @@
 /* PCK compression method 0 (PckCodec_EncodeHuffmanRle / PckCodec_DecodeHuffmanRle): a 256-byte table of
    8-bit symbol frequencies, then an LSB-first bitstream of tokens. Token = flag bit 0 + Huffman code of a
    literal byte, or flag bit 1 + 4-bit (runLength - 3) + Huffman code of the repeated byte. */
-#define PCK_HUFFMAN_SYMBOL_COUNT 256            /* byte symbols = leaf nodes = internal node slots */
-#define PCK_HUFFMAN_FREQUENCY_TABLE_BYTES 0x100 /* stored frequency table in front of the bitstream */
-#define PCK_HUFFMAN_NODE_COUNT 0x200            /* leaves + internal nodes scanned per tree-building step */
-#define PCK_HUFFMAN_MIN_RUN_LENGTH 3            /* shortest run encoded as a run token (runs are 3..18) */
-#define PCK_HUFFMAN_CODE_LENGTH_SHIFT 24        /* after code assignment: frequencyCount = code bits | length << 24 */
+inline constexpr int PCK_HUFFMAN_SYMBOL_COUNT = 256; /* byte symbols = leaf nodes = internal node slots */
+inline constexpr int PCK_HUFFMAN_FREQUENCY_TABLE_BYTES = 0x100; /* stored frequency table in front of the bitstream */
+inline constexpr int PCK_HUFFMAN_NODE_COUNT = 0x200; /* leaves + internal nodes scanned per tree-building step */
+inline constexpr int PCK_HUFFMAN_MIN_RUN_LENGTH = 3; /* shortest run encoded as a run token (runs are 3..18) */
+inline constexpr int PCK_HUFFMAN_CODE_LENGTH_SHIFT = 24; /* after code assignment: frequencyCount = code bits | length << 24 */
 /* PCK compression method 2 (PckCodec_EncodeFieldGrid / PckCodec_DecodeFieldGrid): a 0x10-byte prefix whose
    first dword is the size of the compact image, then the compact image packed with method 0. The compact image
    is the FieldGridAsset header followed by one 0x10-byte record per cell: persistedAux54, terrainHeight,
    waterSurfaceDelta, flagsAndMaterial. */
-#define PCK_FIELD_GRID_PREFIX_BYTES 0x10
-#define FIELD_GRID_HEADER_BYTES 0x200 /* FieldGridAsset up to cells[] */
-#define FIELD_GRID_HEADER_DWORDS 0x80
-#define FIELD_GRID_CELL_DWORDS 0x20 /* sizeof(FieldGridCell) / 4 */
-#define FIELD_GRID_COMPACT_CELL_BYTES 0x10
+inline constexpr int PCK_FIELD_GRID_PREFIX_BYTES = 0x10;
+inline constexpr int FIELD_GRID_HEADER_BYTES = 0x200; /* FieldGridAsset up to cells[] */
+inline constexpr int FIELD_GRID_HEADER_DWORDS = 0x80;
+inline constexpr int FIELD_GRID_CELL_DWORDS = 0x20; /* sizeof(FieldGridCell) / 4 */
+inline constexpr int FIELD_GRID_COMPACT_CELL_BYTES = 0x10;
 /* Generated cell world coordinates (Q12): a triangle lattice, each row shifted by half a column */
-#define FIELD_GRID_WORLD_COLUMN_STEP_X 0x901 /* 2305 */
-#define FIELD_GRID_WORLD_ROW_STEP_X 0x480 /* 1152, about half a column */
-#define FIELD_GRID_WORLD_ROW_STEP_Y (-1999)
+inline constexpr int FIELD_GRID_WORLD_COLUMN_STEP_X = 0x901; /* 2305 */
+inline constexpr int FIELD_GRID_WORLD_ROW_STEP_X = 0x480; /* 1152, about half a column */
+inline constexpr int FIELD_GRID_WORLD_ROW_STEP_Y = -1999;
 
 /* All six codecs share the g_PckEncoderTable / g_PckDecoderTable slot interface (PckCodecProc): they return
    true on success and store the result byte count in *outByteCount (encoders: the packed size; decoders: an

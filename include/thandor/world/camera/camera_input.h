@@ -15,7 +15,7 @@
 
 /* Hard lower limit (0.25 in Q12) of the camera distance and position magnitude set by the WorldMotion_Adjust*
    functions, applied after the configurable limits. */
-#define WORLD_MOTION_MINIMUM_DISTANCE_Q12 0x400
+inline constexpr int WORLD_MOTION_MINIMUM_DISTANCE_Q12 = 0x400;
 
 void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
           (AngleTurn32 elevationAngle,int screenDelta,WorldRuntimeContext *worldRuntime);

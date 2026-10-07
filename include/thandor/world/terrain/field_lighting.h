@@ -15,24 +15,24 @@
 #include <thandor/core/contracts.h>
 
 /* Range of the auxiliary elevation angle (fieldRegion.auxiliaryElevationAngle) set by WorldRuntime_TurnAuxiliaryAnglesClamped */
-#define WORLD_AUXILIARY_ELEVATION_MINIMUM (-0x4000) /* a quarter turn down */
-#define WORLD_AUXILIARY_ELEVATION_MAXIMUM (-0x1000)
+inline constexpr int WORLD_AUXILIARY_ELEVATION_MINIMUM = -0x4000; /* a quarter turn down */
+inline constexpr int WORLD_AUXILIARY_ELEVATION_MAXIMUM = -0x1000;
 /* WorldLightingRuntime_UpdateInterpolatedTerrainLighting: one wrap of a 16-bit half of a packed field-region
    pair, added to the lower endpoint so the blend runs forward through the wrap */
-#define WORLD_LIGHTING_PACKED_HALF_WRAP 0x10000
+inline constexpr int WORLD_LIGHTING_PACKED_HALF_WRAP = 0x10000;
 
 /* g_TerrainDirectionalLightColorLut (TerrainLighting_BuildColorRampAndSetBaseColor,
    FieldGridCell_ComputeDirectionalLightColor) is indexed by the signed Q8 dot product of the cell normal and
    the light direction (-256..256) from its middle entry: the first RAMP_ENTRY_COUNT entries (dot -256..-1) hold
    the shaded colour ramp, the following LIT_ENTRY_COUNT entries (dot 0..256) the base colour. */
-#define TERRAIN_LIGHTING_RAMP_ENTRY_COUNT 256
-#define TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT 257
+inline constexpr int TERRAIN_LIGHTING_RAMP_ENTRY_COUNT = 256;
+inline constexpr int TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT = 257;
 #define TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX TERRAIN_LIGHTING_RAMP_ENTRY_COUNT /* entry of dot 0 */
 #define TERRAIN_DIRECTIONAL_LIGHT_LUT_ENTRY_COUNT \
           (TERRAIN_LIGHTING_RAMP_ENTRY_COUNT + TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT) /* 513 */
 /* TerrainLighting_AdjustDirectionAndRecomputeField: the light elevation stays at least this far (1/16 turn)
    below the horizon; the other limit is -FIXED_ANGLE16_QUARTER_TURN (straight down). */
-#define TERRAIN_LIGHT_ELEVATION_MIN_TILT_ANGLE16 0x1000
+inline constexpr int TERRAIN_LIGHT_ELEVATION_MIN_TILT_ANGLE16 = 0x1000;
 
 extern TerrainDirectionRecord g_TerrainDirectionRecordTable256[256];
 

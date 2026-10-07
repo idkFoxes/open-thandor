@@ -48,7 +48,7 @@ uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
 }
 
 /* Depth of the explicit walk stacks below; RomSerializedNodeTree_LoadSpritesAndRelocate rejects deeper trees. */
-#define ROM_NODE_TREE_MAX_DEPTH 64
+static constexpr int ROM_NODE_TREE_MAX_DEPTH = 64;
 #define ROM_NODE_MAX_CHILDREN (sizeof(((RomSerializedNodeHeader *)0)->childReferences) / \
                                sizeof(((RomSerializedNodeHeader *)0)->childReferences[0]))
 

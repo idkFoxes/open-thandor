@@ -305,14 +305,12 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
           factionWeights[3].lane1 + factionWeights[4].lane1 + factionWeights[5].lane1 +
           factionWeights[6].lane1;
   if (weightTotal == 0) {
-    factionIndex = 1;
-    do {
+    for (factionIndex = 1; factionIndex < 8; factionIndex++) {
       if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
         factionWeights[factionIndex - 1].lane0 = factionWeights[factionIndex - 1].lane0 + 1;
         weightTotal++;
       }
-      factionIndex++;
-    } while (factionIndex < 8);
+    }
   }
   if (FrontendResultsGraph_RejectZeroWeightTotal(weightTotal)) {
     return;
@@ -335,14 +333,12 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
           factionWeights[3].lane0 + factionWeights[4].lane0 + factionWeights[5].lane0 +
           factionWeights[6].lane0;
   if (weightTotal == 0) {
-    factionIndex = 1;
-    do {
+    for (factionIndex = 1; factionIndex < 8; factionIndex++) {
       if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
         factionWeights[factionIndex - 1].lane0 = factionWeights[factionIndex - 1].lane0 + 1;
         weightTotal++;
       }
-      factionIndex++;
-    } while (factionIndex < 8);
+    }
   }
   if (FrontendResultsGraph_RejectZeroWeightTotal(weightTotal)) {
     return;
@@ -365,14 +361,12 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
           factionWeights[3].lane1 + factionWeights[4].lane1 + factionWeights[5].lane1 +
           factionWeights[6].lane1;
   if (weightTotal == 0) {
-    factionIndex = 1;
-    do {
+    for (factionIndex = 1; factionIndex < 8; factionIndex++) {
       if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
         factionWeights[factionIndex - 1].lane1 = factionWeights[factionIndex - 1].lane1 + 1;
         weightTotal++;
       }
-      factionIndex++;
-    } while (factionIndex < 8);
+    }
   }
   if (FrontendResultsGraph_RejectZeroWeightTotal(weightTotal)) {
     return;

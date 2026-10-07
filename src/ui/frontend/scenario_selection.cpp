@@ -163,8 +163,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
   if (rowsRemaining == 0) {
     return false;
   }
-  selectionIndex = 0;
-  do {
+  for (selectionIndex = 0; rowsRemaining != 0; rowsRemaining--) {
     if (FrontendScenarioSelectionPage_CodeUnitsEqual
             (levelName,
              static_cast<const uint16_t *>(g_FrontendRootNode->missionsList.rowSlots[selectionIndex]),
@@ -190,8 +189,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
       return true;
     }
     selectionIndex++;
-    rowsRemaining--;
-  } while (rowsRemaining != 0);
+  }
   return false;
 }
 

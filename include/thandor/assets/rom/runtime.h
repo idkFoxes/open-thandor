@@ -16,8 +16,8 @@
 
 /* Frontend ROM action table (a RomRecord, g_FrontendActiveRomRecord): the 0x200-byte RomRecord header with the
    entry count in entryCount, followed by 0x200-byte FrontendRomActionEntry entries. */
-#define FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE 0x200
-#define FRONTEND_ROM_ACTION_ENTRY_SIZE 0x200
+inline constexpr int FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE = 0x200;
+inline constexpr int FRONTEND_ROM_ACTION_ENTRY_SIZE = 0x200;
 /* One 0x200-byte entry of the frontend ROM action table (FrontendRomActionTable_ExecuteRecord; some code
    also reads it as RomAssetRecordPrefix[]: record[2].recordId = +0x20, record[3] = +0x24..+0x2F). */
 typedef struct FrontendRomActionEntry {
@@ -66,7 +66,7 @@ typedef struct RomRecord {
 } RomRecord;
 
 /* g_RomRegistrySlots: fixed array of 256 {record, runtime root node} slots (RomAssetRecord_RegisterAndRelocate). */
-#define ROM_REGISTRY_SLOT_COUNT 256
+inline constexpr int ROM_REGISTRY_SLOT_COUNT = 256;
 
 uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset);
 
