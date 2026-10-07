@@ -28,7 +28,7 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
                 .vtable = THANDOR_PTR(&g_UiResizableWindowControlVtable),
                 .leftOffset = -216, .topOffset = -144, .rightOffset = 216, .bottomOffset = 144,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
-                .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET | 0x1},
+                .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET | UI_NODE_IN_FRONT_ROOT},
             .rootFlags = UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME | UI_ROOT_TITLE_BAR},
         .titleTextResourceId = TEXT_ID_DISPLAY_SETTINGS_TITLE},
     .cancelButton = { /* g_UiFramedTextButtonControlVtable */
@@ -278,21 +278,21 @@ FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
                     .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
                     .leftOffset = -128, .topOffset = -48, .rightOffset = 128, .bottomOffset = 48,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
-                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x21},
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET | UI_NODE_IN_FRONT_ROOT},
                 .rootFlags = UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME}},
         { /* +0058 revertButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = 16, .topOffset = -32, .rightOffset = 112, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
-            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_PREFERRED_FOCUS_TARGET},
         {.stateFlags = 0x00000008, .actionId = 0x0000020D, .textResourceId = 0x00000101},
         { /* +00B4 keepModeButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x110), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = 128, .topOffset = -32, .rightOffset = 240, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
-            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
         {.stateFlags = 0x00000004, .textResourceId = 0x00000100},
         { /* +0110 countdownMessageText g_UiListOffsetControlVtable */
             .base = {
@@ -575,7 +575,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   int32_t colorScaleQ16;
   int32_t colorBiasQ16;
   UiRootNode *root;
-  UiNodeFlags colorDepthBits;
+  int32_t colorDepthBits; /* the original int (it was declared with the node-flag alias) */
   GraphicsDisplayModeCount remainingModes;
   uint32_t *copyCursor;
   const uint32_t *templateCursor;

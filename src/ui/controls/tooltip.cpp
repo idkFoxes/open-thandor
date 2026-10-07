@@ -25,7 +25,7 @@ void UiTooltip_TickCountdown()
 {
   if ((g_UiPointerCaptureTarget == UI_NODE_NONE) &&
      ((g_UiTooltipState.targetNode == nullptr ||
-      (((g_UiTooltipState.targetNode)->nodeFlags & UI_NODE_SUPPRESSED) == 0)))) {
+      (!Any((g_UiTooltipState.targetNode)->nodeFlags & UI_NODE_SUPPRESSED))))) {
     if (g_UiTooltipState.countdownFrames != 0) {
       g_UiTooltipState.countdownFrames--;
       if (g_UiTooltipState.countdownFrames == 0) {
@@ -68,8 +68,8 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
     rootNode = UiNode_GetRoot(g_UiTooltipState.targetNode);
     /* the dword just before the node: a text resource id, or with UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16 the
        text itself */
-    commandStream = Thandor_U32ToPointer<uint16_t>(tooltipTarget[-1].nodeFlags); /* 5f-format: UI template tooltip prefix dword (node - 4) */
-    if ((tooltipTarget->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
+    commandStream = Thandor_U32ToPointer<uint16_t>(ToBits(tooltipTarget[-1].nodeFlags)); /* 5f-format: UI template tooltip prefix dword (node - 4) */
+    if (!Any(tooltipTarget->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16)) {
       resolvedText = TextResource_Resolve((TextResourceId)(uintptr_t)commandStream);
       commandStream = resolvedText;
     }
@@ -151,7 +151,7 @@ static UiNodeBase *UiTooltip_FindEligibleNodeAt(UiPixelCoordinate pointerY,UiPix
     return nullptr;
   }
   hitTestNode = (*((g_UiRootNode->base).vtable)->hitTest)(pointerY,pointerX,&g_UiRootNode->base);
-  if ((hitTestNode == UI_NODE_NONE) || ((hitTestNode->nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) == 0)) {
+  if ((hitTestNode == UI_NODE_NONE) || (!Any(hitTestNode->nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE))) {
     return nullptr;
   }
   return hitTestNode;
@@ -194,8 +194,8 @@ void UiTooltip_PrepareTargetText(UiNodeBase *node)
 
   if (node != nullptr) {
     /* the last field of the (virtual) node before this one = the dword at node - 4 */
-    commandStream = Thandor_U32ToPointer<uint16_t>(node[-1].nodeFlags); /* 5f-format: UI template tooltip prefix dword (node - 4) */
-    if ((node->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
+    commandStream = Thandor_U32ToPointer<uint16_t>(ToBits(node[-1].nodeFlags)); /* 5f-format: UI template tooltip prefix dword (node - 4) */
+    if (!Any(node->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16)) {
       resolvedText = TextResource_Resolve((TextResourceId)(uintptr_t)commandStream);
       commandStream = resolvedText;
     }

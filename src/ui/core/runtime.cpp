@@ -346,7 +346,7 @@ void UiNode_DefaultRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate po
    reaches the whole subtree. Installed statically in 39 UiNodeVtable tables; also called
    directly by UiLayoutContainerControl_ApplyFlagsRecursive once per page.
 */
-void UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
+void UiNode_ApplyFlagsRecursive(UiNodeFlags setMask,UiNodeFlags retainMask,UiNodeBase *control)
 
 {
   UiNodeBase *childControl;

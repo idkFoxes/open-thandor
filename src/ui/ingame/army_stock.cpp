@@ -62,7 +62,7 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
   GraphicsCursorFrameIndex cursorFrame;
   int recordIndex;
 
-  if (((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     recordIndex = ARMY_STOCK_ENTRY_COUNT - 1;
     while (-1 < recordIndex) {
       if ((int)((uintptr_t)control - (uintptr_t)g_InGameRuntimeRoot) ==

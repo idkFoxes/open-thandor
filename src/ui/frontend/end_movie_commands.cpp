@@ -77,9 +77,9 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     break;
   case EndMovieCommandAction::SkipEndMovie: /* skip the end movie */
     /* UI_NODE_SUPPRESSED in the nodeFlags of the results continue button */
-    if (((InGameUi_Image(endMovieRuntime)->resultsContinueButton.selectable.base.nodeFlags &
-          UI_NODE_SUPPRESSED) != 0) ||
-        (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING))) {
+    if (Any(InGameUi_Image(endMovieRuntime)->resultsContinueButton.selectable.base.nodeFlags &
+            UI_NODE_SUPPRESSED) ||
+        Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) {
       break;
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != 0) {
