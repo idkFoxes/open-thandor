@@ -73,7 +73,7 @@ GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
    alpha, for direct ARGB and paletted subresources alike. Returns false for transparent pixels, points
    outside the stored pixels and invalid input.
 */
-Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
+bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 

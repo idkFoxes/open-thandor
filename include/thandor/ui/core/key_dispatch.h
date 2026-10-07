@@ -38,7 +38,7 @@ struct UiKeyCommandRecord {
 };
 
 /* True when the held modifiers fit the record's modifier class under the rule. */
-inline Bool8 UiKeyModifiers_Match(UiKeyboardStateMask classFlags, UiKeyboardStateMask heldFlags, UiKeyModifierRule rule)
+inline bool UiKeyModifiers_Match(UiKeyboardStateMask classFlags, UiKeyboardStateMask heldFlags, UiKeyModifierRule rule)
 {
     if (rule == UiKeyModifierRule::AnyOfMask) {
         if (!Any(classFlags)) {

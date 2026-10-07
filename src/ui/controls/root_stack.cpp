@@ -19,10 +19,10 @@ UiRootNode *g_UiRootNode = UI_ROOT_STACK_END;
    g_UiRootNode (g_UiWindowTextureSource), which is never a root, so in practice this pops every
    root.
 */
-Bool8 UiRootStack_PopUntilWindowTextureBoundary()
+bool UiRootStack_PopUntilWindowTextureBoundary()
 
 {
-  Bool8 popStopped;
+  bool popStopped;
 
   while ((static_cast<void *>(g_UiRootNode) != static_cast<void *>(g_UiWindowTextureSource) &&
          (g_UiRootNode != UI_ROOT_STACK_END))) {
@@ -88,10 +88,10 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
    initial focus, pointer capture and hover are reset and the whole screen is redrawn. The closed root is
    assumed to be the top one: only g_UiRootNode is replaced.
 */
-Bool8 UiRootStack_Pop(UiRootNode *root)
+bool UiRootStack_Pop(UiRootNode *root)
 
 {
-  Bool8 closeCallbackVetoed;
+  bool closeCallbackVetoed;
   UiRootNode *belowRoot;
   UiNodeBase *parentCursor;
   
@@ -127,7 +127,7 @@ Bool8 UiRootStack_Pop(UiRootNode *root)
    the current front root, gives it the initial keyboard focus, moves the in-front flag from the old front
    root to it and invalidates both. Always returns false.
 */
-Bool8 UiRootStack_BringToFront(UiRootNode *root)
+bool UiRootStack_BringToFront(UiRootNode *root)
 
 {
   UiRootNode *belowRoot;

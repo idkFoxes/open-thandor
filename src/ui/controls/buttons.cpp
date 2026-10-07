@@ -168,7 +168,7 @@ void UiSpriteButtonControl_NonRightPress
   UiSelectableStateFlags *pressStateFlagsField;
   UiSelectableStateFlags *selectionStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
-  Bool8 queueAction;
+  bool queueAction;
 
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (!Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
@@ -282,7 +282,7 @@ void UiSpriteButtonControl_NonRightDrag
           UiSpriteButtonControl *control)
 
 {
-  Bool8 pointerInside;
+  bool pointerInside;
 
   if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
@@ -342,7 +342,7 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSpriteButtonControl *control)
 
 {
-  Bool8 spritePixelHit;
+  bool spritePixelHit;
 
   if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return UI_NODE_NONE;
@@ -389,7 +389,7 @@ void UiImageActionControl_DrawImageAndChildren
   uint32_t horizontalMargin;
   int imageLeft;
   int imageTop;
-  Bool8 accessFailed;
+  bool accessFailed;
 
   if (!Any(control->base.nodeFlags & UI_NODE_SUPPRESSED) && control->textureSource != nullptr) {
     accessFailed = g_GraphicsFramebufferBeginAccess();

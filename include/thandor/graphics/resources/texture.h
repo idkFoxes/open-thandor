@@ -66,7 +66,7 @@ static inline GraphicsTextureSourceEntry *GraphicsTextureSource_Entries(Graphics
 GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
-Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
+bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 

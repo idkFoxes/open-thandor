@@ -32,7 +32,7 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
   int localY;
   int localX;
   int verticalTrackBottom;
-  Bool8 horizontalBarHit;
+  bool horizontalBarHit;
   GraphicsTextureLogicalSize textureSize;
 
   localX = pointerX - (control->base).left;
@@ -218,8 +218,8 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
   int trackLength;
   uint32_t arrowStart;
   int arrowEnd;
-  Bool8 inArrowBar;
-  Bool8 arrowHovered;
+  bool inArrowBar;
+  bool arrowHovered;
   GraphicsTextureLogicalSize textureSize;
 
   if (Any(control->scrollStateFlags &
@@ -493,7 +493,7 @@ struct UiScrollFrameContentRect {
 };
 
 /* An arrow piece shows pressed while its active flag and the primary interaction flag are both set. */
-static Bool8 UiScrollableControl_IsArrowPressed(const UiScrollableControl *control,UiScrollableStateFlags arrowActiveFlag)
+static bool UiScrollableControl_IsArrowPressed(const UiScrollableControl *control,UiScrollableStateFlags arrowActiveFlag)
 {
   return Any(control->scrollStateFlags & arrowActiveFlag) &&
          Any(control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
