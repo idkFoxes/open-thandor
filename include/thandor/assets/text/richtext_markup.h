@@ -13,13 +13,13 @@
 
 /* TXT2STR markup (RichTextMarkup_ParseAndBuildStringAsset): '#@'..'#~' select code page (c - '@'), which adds
    (c - '@') * RICHTEXT_MARKUP_CODE_PAGE_UNITS to the following bytes; '#!' makes '@'..'_' command code units. */
-#define RICHTEXT_MARKUP_CODE_PAGE_UNITS 0x80
+inline constexpr int RICHTEXT_MARKUP_CODE_PAGE_UNITS = 0x80;
 #define RICHTEXT_MARKUP_COMMAND_BIAS (RICHTEXT_COMMAND_FLAG - '@') /* '@' + bias = RICHTEXT_COMMAND_FLAG | 0 */
 /* Code unit of the "TXT2STR: unknown character" message where the byte offset is written (+0x4C). */
-#define RICHTEXT_MARKUP_ERROR_OFFSET_UNIT 38
+inline constexpr int RICHTEXT_MARKUP_ERROR_OFFSET_UNIT = 38;
 
 /* Tags RichTextMarkup_ParseAndBuildStringAsset can collect (the original keeps them on the machine stack). */
-#define RICHTEXT_MARKUP_TAG_LIMIT 4096
+inline constexpr int RICHTEXT_MARKUP_TAG_LIMIT = 4096;
 
 Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError);
 

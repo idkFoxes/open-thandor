@@ -24,7 +24,7 @@ THANDOR_ALIGN(16) MovieAudioGainQ15 g_MovieAlternateAudioGainQ15 = 32768;
 MovieRuntime *g_ActiveMovie = nullptr;
 
 /* Largest frame width and height Movie_Open accepts (the stock movies are at most 800x600) */
-#define MOVIE_MAX_FRAME_DIMENSION 4096
+static constexpr int MOVIE_MAX_FRAME_DIMENSION = 4096;
 
 /* Not in the original: streamState and workerActive are shared between the main thread and the refill worker.
    They are accessed as atomics through std::atomic_ref, because MovieRuntime has a fixed layout (it doubles as
