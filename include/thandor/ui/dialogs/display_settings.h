@@ -16,31 +16,31 @@
 /* Action ids of the display settings dialog (g_UiDisplaySettingsRootTemplate); action 0x200 + n runs
    g_UiDisplayModeSelectionActionHandlers20[n]. UiDisplayModeSelection_RefreshEnumeratedOptions suppresses
    the option buttons whose mode was not enumerated. */
-#define UI_DISPLAY_MODE_ACTION_APPLY 0x200
-#define UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH 0x201 /* 4 colour-depth buttons (not linked any more, 32-bit colour only) */
-#define UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION 0x205 /* 8 resolution buttons */
-#define UI_DISPLAY_MODE_ACTION_REVERT 0x20D /* "keep the new mode?" dialog: back to the previous mode */
-#define UI_DISPLAY_MODE_ACTION_CANCEL 0x20E
-#define UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER 0x20F /* 5 adapter buttons */
+inline constexpr int32_t UI_DISPLAY_MODE_ACTION_APPLY = 0x200;
+inline constexpr int32_t UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH = 0x201; /* 4 colour-depth buttons (not linked any more, 32-bit colour only) */
+inline constexpr int32_t UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION = 0x205; /* 8 resolution buttons */
+inline constexpr int32_t UI_DISPLAY_MODE_ACTION_REVERT = 0x20D; /* "keep the new mode?" dialog: back to the previous mode */
+inline constexpr int32_t UI_DISPLAY_MODE_ACTION_CANCEL = 0x20E;
+inline constexpr int32_t UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER = 0x20F; /* 5 adapter buttons */
 /* g_UiActionHandlerPages page of these action ids (0x200 >> 8), installed by the dialog when it opens. */
-#define UI_DISPLAY_MODE_ACTION_HANDLER_PAGE 2
+inline constexpr int32_t UI_DISPLAY_MODE_ACTION_HANDLER_PAGE = 2;
 /* Texts of the display settings dialog (text resource ids). */
-#define TEXT_ID_OK 0x100
-#define TEXT_ID_CANCEL 0x101
-#define TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION 0x106 /* colour depth button, formats the bit depth */
-#define TEXT_ID_DISPLAY_RESOLUTION_OPTION 0x107 /* resolution button, formats width and height */
-#define TEXT_ID_DISPLAY_SETTINGS_TITLE 0x108
-#define TEXT_ID_DISPLAY_COLOR_SCALE 0x10A /* colour scale slider column (likely contrast) */
-#define TEXT_ID_DISPLAY_COLOR_BIAS 0x10B /* colour bias slider column (likely brightness) */
-#define TEXT_ID_DISPLAY_RESOLUTION_HEADING 0x10C
-#define TEXT_ID_DISPLAY_COLOR_DEPTH_HEADING 0x10D
-#define TEXT_ID_DISPLAY_ADAPTER_HEADING 0x10F
-#define TEXT_ID_DISPLAY_ADAPTER_OPTION 0x110 /* adapter button, formats the adapter number */
+inline constexpr int32_t TEXT_ID_OK = 0x100;
+inline constexpr int32_t TEXT_ID_CANCEL = 0x101;
+inline constexpr int32_t TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION = 0x106; /* colour depth button, formats the bit depth */
+inline constexpr int32_t TEXT_ID_DISPLAY_RESOLUTION_OPTION = 0x107; /* resolution button, formats width and height */
+inline constexpr int32_t TEXT_ID_DISPLAY_SETTINGS_TITLE = 0x108;
+inline constexpr int32_t TEXT_ID_DISPLAY_COLOR_SCALE = 0x10A; /* colour scale slider column (likely contrast) */
+inline constexpr int32_t TEXT_ID_DISPLAY_COLOR_BIAS = 0x10B; /* colour bias slider column (likely brightness) */
+inline constexpr int32_t TEXT_ID_DISPLAY_RESOLUTION_HEADING = 0x10C;
+inline constexpr int32_t TEXT_ID_DISPLAY_COLOR_DEPTH_HEADING = 0x10D;
+inline constexpr int32_t TEXT_ID_DISPLAY_ADAPTER_HEADING = 0x10F;
+inline constexpr int32_t TEXT_ID_DISPLAY_ADAPTER_OPTION = 0x110; /* adapter button, formats the adapter number */
 /* Display settings pages: distinct display modes are sorted as width * UI_DISPLAY_MODE_WIDTH_SCALE + height
    (the height is the low word); unused candidate slots hold UI_DISPLAY_MODE_NONE */
-#define UI_DISPLAY_MODE_WIDTH_SCALE 0x10000
-#define UI_DISPLAY_MODE_HEIGHT_MASK 0xffff
-#define UI_DISPLAY_MODE_NONE 0xffffffffu
+inline constexpr int32_t UI_DISPLAY_MODE_WIDTH_SCALE = 0x10000;
+inline constexpr int32_t UI_DISPLAY_MODE_HEIGHT_MASK = 0xffff;
+inline constexpr uint32_t UI_DISPLAY_MODE_NONE = 0xffffffffu;
 /* UiDisplaySettingsApplyButton and UiDisplaySettingsValueReadout (the typed applyButton and colorBiasValueText
    nodes of DisplaySettingsUiImage) are declared with the template in ui/dialogs/types.h. */
 /* UiDisplayModeOptionPrefix (the mode values in front of each display settings option button,
@@ -61,13 +61,13 @@ typedef struct UiFourValueDialogCountdownText {
 } UiFourValueDialogCountdownText;
 /* Frame updates per step of the countdown in the "keep the new display mode?" dialog
    (UiFourValueDialog_TickCountdownAndRequestClose). */
-#define UI_DISPLAY_MODE_COUNTDOWN_STEP_TICKS 20
+inline constexpr int32_t UI_DISPLAY_MODE_COUNTDOWN_STEP_TICKS = 20;
 /* Rich text of that dialog's countdownMessageText; selector 0 is the countdown number. */
-#define TEXT_ID_DISPLAY_MODE_KEEP_COUNTDOWN 0x109
+inline constexpr int32_t TEXT_ID_DISPLAY_MODE_KEEP_COUNTDOWN = 0x109;
 /* Pointer coordinate far outside every control, used by UiImageControl_NonRightDrag for the synthetic events
    it sends when the pointer moves from one child to another (the new child's press, the old child's drag and
    release), so that no pixel test of theirs hits. */
-#define UI_POINTER_FAR_OUTSIDE 0x70000000
+inline constexpr int32_t UI_POINTER_FAR_OUTSIDE = 0x70000000;
 
 void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root);
 

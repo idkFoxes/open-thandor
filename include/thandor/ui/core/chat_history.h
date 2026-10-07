@@ -16,8 +16,8 @@
 /* Recent-text (chat message) history: 8 slots, each stamped with g_RecentTextSerialCounter when inserted.
    The counter advances with every RecentTextHistory_SortAndBuildPointerList call (once per frame in game),
    and a message older than RECENT_TEXT_HISTORY_LIFETIME calls is dropped. */
-#define RECENT_TEXT_HISTORY_SLOT_COUNT 8
-#define RECENT_TEXT_HISTORY_LIFETIME 0x100
+inline constexpr int32_t RECENT_TEXT_HISTORY_SLOT_COUNT = 8;
+inline constexpr int32_t RECENT_TEXT_HISTORY_LIFETIME = 0x100;
 
 void RecentTextHistory_SortAndBuildPointerList
           (RecentTextHistoryEntryLimit maxEntries,RecentTextHistoryPointerList *output);
