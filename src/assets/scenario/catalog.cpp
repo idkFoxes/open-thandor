@@ -203,7 +203,7 @@ void ScenarioCatalog_Rebuild()
   WidePath_CombineDirectoryAndLeaf
             (g_ScenarioCatalogPathScratchUtf16,g_SaveSvePatternUtf16,g_ExecutableDirectoryUtf16);
   saveFilesRemaining = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                     (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
+                     (FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
                       reinterpret_cast<uint8_t *>(g_ScenarioCatalogPathScratchUtf16)); /* the UTF-16 pattern, passed as bytes */
   catalog = g_ScenarioCatalog;
   if (saveFilesRemaining != 0) {

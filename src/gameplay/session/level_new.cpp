@@ -449,7 +449,7 @@ static Bool8 NewLevel_LoadSpatialSounds
   soundDirectoryRecordSizeBytes = PCK_ENTRY_HEADER_BYTES;
   if (!soundsInPackage) {
     listedSoundCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,
+                         (FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,
                           static_cast<uint8_t *>(directoryListing),
                           reinterpret_cast<uint8_t *>(soundDirectoryPath)); /* the UTF-16 path as bytes */
     soundDirectoryRecordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
