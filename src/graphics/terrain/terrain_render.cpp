@@ -128,7 +128,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     do {
       do {
         rowCells->flagsAndMaterial =
-             rowCells->flagsAndMaterial | (TERRAIN_VERTEX_POINT_A_NOT_PROJECTED | TERRAIN_VERTEX_POINT_B_NOT_PROJECTED);
+             rowCells->flagsAndMaterial | (FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED | FIELD_CELL_VERTEX_POINT_B_NOT_PROJECTED);
         rowCells = rowCells + 1;
         columnsRemaining--;
       } while (columnsRemaining != 0);

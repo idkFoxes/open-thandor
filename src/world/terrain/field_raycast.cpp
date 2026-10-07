@@ -74,7 +74,7 @@ Bool8 FieldGrid_RaycastTerrainSurfaceDistance
                           currentRowQ12 + rayStartHalfRowQ12 * -2,currentColumnQ12 - rayStartColumnQ12,
                           outDistanceQ12)) {
         if (outMaterialIndex != nullptr) {
-          *outMaterialIndex = currentCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+          *outMaterialIndex = FieldCell_MaterialId(currentCell->flagsAndMaterial);
         }
         return true;
       }

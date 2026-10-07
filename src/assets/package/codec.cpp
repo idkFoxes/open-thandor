@@ -85,7 +85,7 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
       persistedCellDword = sourceCell->terrainHeight;
       *compactWriteCursor = sourceCell->persistedAux54;
       compactWriteCursor[1] = persistedCellDword;
-      pendingCellDword = sourceCell->flagsAndMaterial;
+      pendingCellDword = FieldCell_RawWord(sourceCell->flagsAndMaterial);
       compactWriteCursor[2] = sourceCell->waterSurfaceDelta;
       compactWriteCursor[3] = pendingCellDword;
       sourceCell++;
@@ -130,7 +130,7 @@ static void PckCodec_ExpandFieldGridImage(FieldGridAsset *destinationGrid,AssetM
     expandedCell->persistedAux54 = compactReadCursor[0];
     expandedCell->terrainHeight = compactReadCursor[1];
     expandedCell->waterSurfaceDelta = compactReadCursor[2];
-    expandedCell->flagsAndMaterial = (FieldCellPackedFlagsAndMaterial)compactReadCursor[3];
+    expandedCell->flagsAndMaterial = FieldCell_FromRawWord(static_cast<uint32_t>(compactReadCursor[3]));
     compactReadCursor = compactReadCursor + 4;
     expandedCell++;
   }

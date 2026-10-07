@@ -386,16 +386,15 @@ void SelectionOverlay_DrawFluidExclusionMarkers
     /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
-        if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_B_NOT_PROJECTED) == 0) &&
-           ((cellCursor->flagsAndMaterial &
-            (FIELD_CELL_FLUID_SOURCE_EXCLUDED|FIELD_CELL_FLUID_RECEIVER_EXCLUDED)) != 0)) {
+        if ((!Any(cellCursor->flagsAndMaterial & FIELD_CELL_VERTEX_POINT_B_NOT_PROJECTED)) &&
+           (Any(cellCursor->flagsAndMaterial & (FIELD_CELL_FLUID_SOURCE_EXCLUDED|FIELD_CELL_FLUID_RECEIVER_EXCLUDED)))) {
           screenX = cellCursor->secondarySurfaceScreenPoint.projectedX >> 12;
           screenY = cellCursor->secondarySurfaceScreenPoint.projectedY >> 12;
           sourceTextureId = SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED;
           receiverTextureId = SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED;
           sourceTextureSource = g_SelectionPanelTextureSource;
           sourceFramebuffer = g_FramebufferAccess;
-          if ((cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) != 0) {
+          if (Any(cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)) {
             receiverTextureSource = g_SelectionPanelTextureSource;
             receiverFramebuffer = g_FramebufferAccess;
             savedScreenY = screenY;
@@ -409,7 +408,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
             screenY = savedScreenY;
             screenX = savedScreenX;
           }
-          if ((cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) != 0) {
+          if (Any(cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED)) {
             markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED,
                                                                g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
@@ -460,7 +459,7 @@ void SelectionOverlay_DrawResourceCellMarkers
   SoftwareFramebufferAccess *otherFramebuffer;
   FieldGridCell *rowStartCell;
   
-  selectedResourceFlag = FIELD_CELL_XENITE_SUPPORT << (selectedResourceIndex & 31);
+  selectedResourceFlag = FieldCell_ResourceSupportBit(selectedResourceIndex & 31);
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     gridColumns = fieldGrid->gridWidth;
@@ -471,15 +470,15 @@ void SelectionOverlay_DrawResourceCellMarkers
     /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
-        if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) &&
-           ((cellCursor->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0)) {
+        if ((!Any(cellCursor->flagsAndMaterial & FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED)) &&
+           (Any(cellCursor->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK))) {
           screenX = cellCursor->groundScreenPoint.projectedX >> 12;
           screenY = cellCursor->groundScreenPoint.projectedY >> 12;
           otherTextureId = SELECTION_OVERLAY_MARKER_OTHER_RESOURCE;
           flaggedTextureId = SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE;
           otherTextureSource = g_SelectionPanelTextureSource;
           otherFramebuffer = g_FramebufferAccess;
-          if ((cellCursor->flagsAndMaterial & selectedResourceFlag) != 0) {
+          if (Any(cellCursor->flagsAndMaterial & selectedResourceFlag)) {
             flaggedTextureSource = g_SelectionPanelTextureSource;
             flaggedFramebuffer = g_FramebufferAccess;
             savedScreenY = screenY;
@@ -493,7 +492,7 @@ void SelectionOverlay_DrawResourceCellMarkers
             screenY = savedScreenY;
             screenX = savedScreenX;
           }
-          if ((cellCursor->flagsAndMaterial & (selectedResourceFlag ^ FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)) != 0)
+          if (Any(cellCursor->flagsAndMaterial & (selectedResourceFlag ^ FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)))
           {
             markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_OTHER_RESOURCE,
                                                                g_SelectionPanelTextureSource);
@@ -548,8 +547,8 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
     /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
-        if (((cellCursor->flagsAndMaterial & FIELD_CELL_DEBUG_MARKED) != 0) &&
-           ((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0)) {
+        if ((Any(cellCursor->flagsAndMaterial & FIELD_CELL_DEBUG_MARKED)) &&
+           (!Any(cellCursor->flagsAndMaterial & FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED))) {
           screenX = cellCursor->groundScreenPoint.projectedX >> 12;
           screenY = cellCursor->groundScreenPoint.projectedY >> 12;
           blitTextureId = SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED;

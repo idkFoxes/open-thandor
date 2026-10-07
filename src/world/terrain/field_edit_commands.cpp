@@ -95,34 +95,34 @@ static void FieldGridCell_RefreshChangedCellAndNeighbours(int rowStrideBytes,Fie
   FieldGridCell *rowAboveCell;
   FieldGridCell *rowBelowLeftCell;
 
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return;
   }
   FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
   FieldGridCell_ComputeDirectionalLightColor(cell);
-  if (((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) && (scratchEntry[-1] == 0)) {
+  if ((!Any(cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) && (scratchEntry[-1] == 0)) {
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell - 1);
     FieldGridCell_ComputeDirectionalLightColor(cell - 1);
   }
-  if (((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) && (scratchEntry[1] == 0)) {
+  if ((!Any(cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) && (scratchEntry[1] == 0)) {
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell + 1);
     FieldGridCell_ComputeDirectionalLightColor(cell + 1);
   }
   rowAboveCell = FieldGridCell_AtByteOffset(cell,-rowStrideBytes);
-  if ((rowAboveCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+  if (!Any(rowAboveCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,rowAboveCell);
     FieldGridCell_ComputeDirectionalLightColor(rowAboveCell);
   }
-  if ((rowAboveCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+  if (!Any(rowAboveCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,rowAboveCell + 1);
     FieldGridCell_ComputeDirectionalLightColor(rowAboveCell + 1);
   }
   rowBelowLeftCell = FieldGridCell_AtByteOffset(cell - 1,rowStrideBytes);
-  if ((rowBelowLeftCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+  if (!Any(rowBelowLeftCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,rowBelowLeftCell);
     FieldGridCell_ComputeDirectionalLightColor(rowBelowLeftCell);
   }
-  if ((rowBelowLeftCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+  if (!Any(rowBelowLeftCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,rowBelowLeftCell + 1);
     FieldGridCell_ComputeDirectionalLightColor(rowBelowLeftCell + 1);
   }
@@ -347,33 +347,33 @@ void FieldGrid_RebuildLocalInfluenceState
   /* neighbour refresh as in FieldGrid_ApplyPositiveCellDeltas */
   /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
-    if ((*scratchHeightCursor != scanCell->terrainHeight) && ((scanCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)) {
+    if ((*scratchHeightCursor != scanCell->terrainHeight) && (!Any(scanCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK))) {
       FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
       FieldGridCell_ComputeDirectionalLightColor(scanCell);
-      if (((scanCell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) && (scratchHeightCursor[-1] == 0)) {
+      if ((!Any(scanCell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) && (scratchHeightCursor[-1] == 0)) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell - 1);
         FieldGridCell_ComputeDirectionalLightColor(scanCell - 1);
       }
-      if (((scanCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) && (scratchHeightCursor[1] == 0)) {
+      if ((!Any(scanCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) && (scratchHeightCursor[1] == 0)) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + 1);
         FieldGridCell_ComputeDirectionalLightColor(scanCell + 1);
       }
       scanCell = scanCell - rowLength; /* row above */
-      if ((scanCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      if (!Any(scanCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
         FieldGridCell_ComputeDirectionalLightColor(scanCell);
       }
-      if ((scanCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      if (!Any(scanCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + 1);
         FieldGridCell_ComputeDirectionalLightColor(scanCell + 1);
       }
       scanCell = scanCell + rowLength * 2 - 1; /* row below, one to the left */
-      if ((scanCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      if (!Any(scanCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
         FieldGridCell_ComputeDirectionalLightColor(scanCell);
       }
       cell = scanCell + 1;
-      if ((scanCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      if (!Any(scanCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
         FieldGridCell_ComputeDirectionalLightColor(cell);
       }
@@ -455,7 +455,7 @@ void FieldGrid_SetCellFluidReceiverExcluded
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   /* The original ORs setMask in unmasked; bounded here to the one flag because setMask comes with the command */
-  FieldGrid_ApplyMaskedRegionCore(~FIELD_CELL_FLUID_RECEIVER_EXCLUDED,setMask & FIELD_CELL_FLUID_RECEIVER_EXCLUDED,
+  FieldGrid_ApplyMaskedRegionCore(ToBits(~FIELD_CELL_FLUID_RECEIVER_EXCLUDED),setMask & ToBits(FIELD_CELL_FLUID_RECEIVER_EXCLUDED),
                                   gridRowQ12,gridColumnQ12,fieldGrid);
   runtimeFlagsField = &fieldGrid->runtimeStateFlags;
   *runtimeFlagsField = *runtimeFlagsField | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
@@ -475,7 +475,7 @@ void FieldGrid_SetCellFluidSourceExcluded
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   /* The original ORs setMask in unmasked; bounded here to the one flag because setMask comes with the command */
-  FieldGrid_ApplyMaskedRegionCore(~FIELD_CELL_FLUID_SOURCE_EXCLUDED,setMask & FIELD_CELL_FLUID_SOURCE_EXCLUDED,
+  FieldGrid_ApplyMaskedRegionCore(ToBits(~FIELD_CELL_FLUID_SOURCE_EXCLUDED),setMask & ToBits(FIELD_CELL_FLUID_SOURCE_EXCLUDED),
                                   gridRowQ12,gridColumnQ12,fieldGrid);
   runtimeFlagsField = &fieldGrid->runtimeStateFlags;
   *runtimeFlagsField = *runtimeFlagsField | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
@@ -498,10 +498,10 @@ void FieldGrid_SetCellResourceSupportFlag
   FieldGridRuntimeFlags *runtimeFlagsField;
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  setMask = FIELD_CELL_XENITE_SUPPORT << ((uint8_t)materialBitIndex & 31);
+  setMask = ToBits(FieldCell_ResourceSupportBit((uint8_t)materialBitIndex & 31));
   /* The original takes any bit index 0..31 (others than 0 and 1 replace an unrelated flag, e.g. the edge
      ring); bounded here to the two support flags because the index comes with the command. */
-  if ((setMask & ~(FieldGridRegionMask)FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0) {
+  if ((setMask & ~ToBits(FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)) != 0) {
     static Bool8 s_bitIndexLogged = false;
     if (!s_bitIndexLogged) {
       s_bitIndexLogged = true;
@@ -601,34 +601,34 @@ void FieldGrid_ApplyEncodedUpdateCore(FieldGridHeightDeltaUnits heightDeltaUnits
     /* The original also refreshes an edge-ring cell and its neighbours, which lie outside the grid there;
        bounded here because the cell comes with the editor command (any network peer): the water change stays,
        the refresh is skipped as in FieldGridCell_RefreshChangedCellAndNeighbours. */
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+    if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
       return;
     }
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
     FieldGridCell_ComputeDirectionalLightColor(cell);
-    if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+    if (!Any(cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
       FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell - 1);
       FieldGridCell_ComputeDirectionalLightColor(cell - 1);
     }
-    if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+    if (!Any(cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
       FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell + 1);
       FieldGridCell_ComputeDirectionalLightColor(cell + 1);
     }
     cell = cell - rowLength; /* row above */
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+    if (!Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
       FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
       FieldGridCell_ComputeDirectionalLightColor(cell);
     }
-    if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+    if (!Any(cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
       FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell + 1);
       FieldGridCell_ComputeDirectionalLightColor(cell + 1);
     }
     cell = cell + rowLength * 2 - 1; /* row below, one to the left */
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+    if (!Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
       FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
       FieldGridCell_ComputeDirectionalLightColor(cell);
     }
-    if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+    if (!Any(cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
       FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell + 1);
       FieldGridCell_ComputeDirectionalLightColor(cell + 1);
     }
@@ -879,7 +879,7 @@ void FieldGrid_ApplySingleCellTransition(FieldGridTransitionValue transitionValu
        with the editor command (any network peer) and must not set flags such as the edge ring. */
     fieldGrid->cells[cellIndex].flagsAndMaterial =
          (fieldGrid->cells[cellIndex].flagsAndMaterial & ~FIELD_CELL_MATERIAL_ID_MASK) |
-         (transitionValue & FIELD_CELL_MATERIAL_ID_MASK);
+         (FieldCell_FromRawWord(transitionValue) & FIELD_CELL_MATERIAL_ID_MASK);
   }
 }
 
@@ -931,7 +931,7 @@ void FieldGrid_ApplyMaskedRegionCore
   int gridRowIndex;
   int gridColumnIndex;
   int cellIndex;
-  uint32_t oldFlags;
+  FieldCellPackedFlagsAndMaterial oldFlags;
 
   gridRowIndex = gridRowQ12 >> Q12_SHIFT;
   gridColumnIndex = gridColumnQ12 >> Q12_SHIFT;
@@ -940,8 +940,9 @@ void FieldGrid_ApplyMaskedRegionCore
     cellIndex = gridRowIndex * fieldGrid->gridWidth + gridColumnIndex;
     /* The original lets the masks change any bit; the edge-ring bits are kept here because the neighbour loops
        rely on them to stay inside the grid (the callers only touch fluid and resource flags). */
-    oldFlags = (uint32_t)fieldGrid->cells[cellIndex].flagsAndMaterial;
+    oldFlags = fieldGrid->cells[cellIndex].flagsAndMaterial;
     fieldGrid->cells[cellIndex].flagsAndMaterial =
-         (((preserveMask & oldFlags) | setMask) & ~FIELD_CELL_GRID_EDGE_MASK) | (oldFlags & FIELD_CELL_GRID_EDGE_MASK);
+         (((FieldCell_FromRawWord(preserveMask) & oldFlags) | FieldCell_FromRawWord(setMask)) & ~FIELD_CELL_GRID_EDGE_MASK) |
+         (oldFlags & FIELD_CELL_GRID_EDGE_MASK);
   }
 }
