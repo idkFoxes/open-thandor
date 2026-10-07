@@ -10,6 +10,7 @@
 
 #include <thandor/assets/package/types.h>
 #include <thandor/core/types.h>
+#include <thandor/core/flags.h> /* THANDOR_FLAG_ENUM: PackageLoadFlags */
 #include <thandor/core/contracts.h>
 
 /* Size of g_PackageScratchBuffer (8 MiB), allocated once by FileSystem_Init and used as the default
@@ -22,10 +23,16 @@ inline constexpr int PCK_ENTRY_HEADER_BYTES = 0x200; /* sizeof(PckEntryHeader); 
 inline constexpr uint32_t PACKAGE_DWORD_ALIGN_MASK = 0xFFFFFFFCU; /* ~3: (byteCount + 3) & mask rounds up to whole dwords */
 inline constexpr int PCK_ENTRY_PATH_UNITS = 0xF6; /* UTF-16 code units of PckEntryHeader.path, terminator included */
 
-/* High bits of the Package_LoadEntryIntoBuffer capacity argument */
-inline constexpr int PACKAGE_LOAD_CAPACITY_MASK = 0x3FFFFFFF;
-inline constexpr uint32_t PACKAGE_LOAD_SKIP_PACKAGES = 0x80000000; /* load only the loose file */
-inline constexpr int PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST = 0x40000000; /* try the loose file next to the executable first */
+/* The Package_LoadEntryIntoBuffer capacity argument (PckLoadCapacityFlags) as flags: the low 30 bits are the
+   buffer capacity in bytes (every caller passes a plain byte count), the high bits select the load path.
+   Package_LoadEntryIntoBuffer reads the word through FromBits. */
+enum class PackageLoadFlags : uint32_t {
+    PACKAGE_LOAD_CAPACITY_MASK = 0x3FFFFFFF,
+    PACKAGE_LOAD_SKIP_PACKAGES = 0x80000000, /* load only the loose file */
+    PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST = 0x40000000 /* try the loose file next to the executable first */
+};
+THANDOR_FLAG_ENUM(PackageLoadFlags);
+using enum PackageLoadFlags;
 
 Bool8 Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
