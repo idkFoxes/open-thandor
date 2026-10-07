@@ -693,17 +693,20 @@ struct SoundSampleAsset {
     uint8_t reservedB4_1FF[332];
 };
 
-enum {
-    WIDE_FORMAT_SIGNED_VALUE=1,
-    WIDE_FORMAT_HEXADECIMAL=2,
-    WIDE_FORMAT_FIXED_FRACTION_WIDTH=4,
-    WIDE_FORMAT_PAD_WITH_ZERO=8,
-    WIDE_FORMAT_PAD_WITH_SPACE=16,
-    WIDE_FORMAT_SHOW_PLUS_SIGN=32,
-    WIDE_FORMAT_WRITE_TERMINATOR=64,
-    WIDE_FORMAT_GROUP_THOUSANDS=128
+/* Options of WideNumber_FormatUtf16 (g_WideNumberFormatUtf16): a flag enum class over the int parameter the code
+   had (THANDOR_SIGNED_WORD_FLAG_ENUM: unsigned, GCC compiles the formatter differently), names kept. */
+enum class WideNumberFormatFlags : int32_t {
+    WIDE_FORMAT_SIGNED_VALUE = 0x1,
+    WIDE_FORMAT_HEXADECIMAL = 0x2,
+    WIDE_FORMAT_FIXED_FRACTION_WIDTH = 0x4,
+    WIDE_FORMAT_PAD_WITH_ZERO = 0x8,
+    WIDE_FORMAT_PAD_WITH_SPACE = 0x10,
+    WIDE_FORMAT_SHOW_PLUS_SIGN = 0x20,
+    WIDE_FORMAT_WRITE_TERMINATOR = 0x40,
+    WIDE_FORMAT_GROUP_THOUSANDS = 0x80
 };
-using WideNumberFormatFlags = int;
+THANDOR_SIGNED_WORD_FLAG_ENUM(WideNumberFormatFlags);
+using enum WideNumberFormatFlags;
 
 struct SoftwareBgraWordLanes {
     SoftwareColorLaneUnsigned16 blue; 
