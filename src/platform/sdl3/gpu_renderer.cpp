@@ -382,18 +382,14 @@ uint32_t HashBytes(const uint8_t *bytes, size_t byteCount, uint32_t seed) noexce
   uint32_t lane3 = seed - kPrime1;
   size_t offset = 0;
   for (; offset + 16 <= byteCount; offset += 16) {
-    uint32_t words[4];
-    std::memcpy(words, bytes + offset, sizeof words);
-    lane0 = RotateLeft(lane0 + words[0] * kPrime2, 13) * kPrime1;
-    lane1 = RotateLeft(lane1 + words[1] * kPrime2, 13) * kPrime1;
-    lane2 = RotateLeft(lane2 + words[2] * kPrime2, 13) * kPrime1;
-    lane3 = RotateLeft(lane3 + words[3] * kPrime2, 13) * kPrime1;
+    lane0 = RotateLeft(lane0 + Thandor_LoadU32(bytes + offset) * kPrime2, 13) * kPrime1;
+    lane1 = RotateLeft(lane1 + Thandor_LoadU32(bytes + offset + 4) * kPrime2, 13) * kPrime1;
+    lane2 = RotateLeft(lane2 + Thandor_LoadU32(bytes + offset + 8) * kPrime2, 13) * kPrime1;
+    lane3 = RotateLeft(lane3 + Thandor_LoadU32(bytes + offset + 12) * kPrime2, 13) * kPrime1;
   }
   uint32_t hash = RotateLeft(lane0, 1) + RotateLeft(lane1, 7) + RotateLeft(lane2, 12) + RotateLeft(lane3, 18);
   for (; offset + 4 <= byteCount; offset += 4) {
-    uint32_t word;
-    std::memcpy(&word, bytes + offset, sizeof word);
-    hash = RotateLeft(hash + word * kPrime3, 17) * 0x27D4EB2Fu;
+    hash = RotateLeft(hash + Thandor_LoadU32(bytes + offset) * kPrime3, 17) * 0x27D4EB2Fu;
   }
   hash ^= static_cast<uint32_t>(byteCount);
   hash ^= hash >> 15;
@@ -453,7 +449,7 @@ void QueueTextureConversion(const AtlasKey &key, uint32_t x, uint32_t y) noexcep
   if (key.palette != nullptr) {
     /* a palette entry is 8 bytes, the ARGB colour at +0 */
     for (int index = 0; index < 256; index++) {
-      std::memcpy(&s_gpu.paletteLut[index], key.palette + index * 8, sizeof(uint32_t));
+      s_gpu.paletteLut[index] = Thandor_LoadU32(key.palette + index * 8);
     }
     const uint8_t *source = key.texels;
     for (uint32_t row = 0; row < height; row++, source += width, destination += rowPixels) {
@@ -1184,7 +1180,7 @@ void WriteBmp(const char *path, const uint32_t *pixels, int width, int height) n
   const int rowBytes = (width * 3 + 3) & ~3;
   const uint32_t imageBytes = static_cast<uint32_t>(rowBytes * height);
   uint8_t header[54] = {'B', 'M'};
-  auto put32 = [&](int offset, uint32_t value) { std::memcpy(header + offset, &value, 4); };
+  auto put32 = [&](int offset, uint32_t value) { Thandor_StoreU32(header + offset, value); };
   put32(2, 54 + imageBytes);
   put32(10, 54);
   put32(14, 40);
@@ -1244,8 +1240,7 @@ void ComparePictures(int width, int height) noexcept
     const uint8_t *sourceRow = g_DisplayFramebufferAccess.pixels + static_cast<size_t>(y) * g_FramebufferRowStrideBytes;
     for (int x = 0; x < width; x++) {
       const size_t index = static_cast<size_t>(y) * width + x;
-      uint32_t pixel = 0;
-      std::memcpy(&pixel, sourceRow + static_cast<size_t>(x) * 4, sizeof pixel);
+      const uint32_t pixel = Thandor_LoadU32(sourceRow + static_cast<size_t>(x) * 4);
       software[index] = pixel;
       const uint32_t gpu = s_gpu.compareGpu[index];
       int largest = 0;
@@ -2407,8 +2402,7 @@ bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexce
     static unsigned nativeShotNumber = 0;
     std::vector<uint32_t> native(static_cast<size_t>(targetW) * targetH);
     for (int row = 0; row < targetH; row++) {
-      std::memcpy(native.data() + static_cast<size_t>(row) * targetW, pixels + static_cast<size_t>(row) * rowPixels,
-                  static_cast<size_t>(targetW) * 4);
+      std::copy_n(pixels + static_cast<size_t>(row) * rowPixels, targetW, native.data() + static_cast<size_t>(row) * targetW);
     }
     CreateDirectoryA("shots", nullptr);
     char path[64];
@@ -2487,7 +2481,7 @@ bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int heig
   }
   for (Uint32 row = 0; row < frameHeight; row++) {
     const std::byte *source = pixels + static_cast<size_t>(row) * static_cast<size_t>(pitchBytes);
-    std::memcpy(mapped + static_cast<size_t>(row) * rowBytes, source, rowBytes);
+    std::copy_n(source, rowBytes, mapped + static_cast<size_t>(row) * rowBytes);
   }
   SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.frameUpload);
 
