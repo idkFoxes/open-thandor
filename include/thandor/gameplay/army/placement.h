@@ -14,6 +14,7 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
+#include <stdint.h> /* INT64_MAX */
 
 /* placementMode bits of the placement asset-class dispatch (ArmyPlacement_CanPlaceAssetAtFieldPoint passes
    the mode as the first argument of every g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.
@@ -33,7 +34,7 @@ inline constexpr int ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 = 0xc00;
 inline constexpr int ARMY_PLACEMENT_CORNER_OFFSET_Q12 = 0x240;
 /* nearest-support search: a squared distance above this still has the INT64_MAX start value's high dword
    (no supporting model found) */
-#define ARMY_PLACEMENT_NO_SUPPORT_DISTANCE_SQUARED (INT64_MAX - ((int64_t)1 << 32))
+inline constexpr auto ARMY_PLACEMENT_NO_SUPPORT_DISTANCE_SQUARED = INT64_MAX - ((int64_t)1 << 32);
 /* Placement contact kinds (ModelDefinition.placementContactKindIndex): index into
    g_ArmyPlacementContactKindDispatchTable and g_TerrainClassPlacementAndOverlayCallbacks10.placementTests.
    0 terrain height, 1 water surface, 2 terrain height and normal, 3 articulated suspension, 4 top surface. */

@@ -30,16 +30,16 @@ RLE: each scan line is encoded on its own. A byte equal to its successor starts 
 (n <= 63) followed by the value. A single byte below 0xC0 is stored as is, a single byte >= 0xC0 as 0xC1, value.
 */
 
-#define PCX_HEADER_SIZE 0x80
-#define PCX_PALETTE_MARKER 0x0C
+static constexpr int PCX_HEADER_SIZE = 0x80;
+static constexpr int PCX_PALETTE_MARKER = 0x0C;
 /* Bytes the original reserved in the output block beyond the scan lines: the header, plus for a palette
    source the marker, 768 palette bytes and one more for the last palette entry, which it stored as a dword. */
 #define PCX_RESERVE_DIRECT_COLOR PCX_HEADER_SIZE
 #define PCX_RESERVE_PALETTE (PCX_HEADER_SIZE + 1 + 0x300 + 1)
 /* Palette banks of a texture source asset start at +0x200, 256 entries of 8 bytes each. */
-#define PCX_PALETTE_BANKS_OFFSET 0x200
-#define PCX_PALETTE_BANK_SIZE 0x800
-#define PCX_PALETTE_ENTRY_SIZE 8
+static constexpr int PCX_PALETTE_BANKS_OFFSET = 0x200;
+static constexpr int PCX_PALETTE_BANK_SIZE = 0x800;
+static constexpr int PCX_PALETTE_ENTRY_SIZE = 8;
 
 static void Pcx_StoreU16(uint8_t *at,uint32_t value)
 {

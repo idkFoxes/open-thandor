@@ -14,10 +14,10 @@
 #include <thandor/core/contracts.h>
 
 /* Info texts the world view cycles through with Ctrl+I (worldViewCyclingInfoText holds the text resource id) */
-#define TEXT_ID_WORLD_VIEW_INFO_FIRST 0x112
-#define TEXT_ID_WORLD_VIEW_INFO_LAST 0x117
+inline constexpr int32_t TEXT_ID_WORLD_VIEW_INFO_FIRST = 0x112;
+inline constexpr int32_t TEXT_ID_WORLD_VIEW_INFO_LAST = 0x117;
 /* Step of the editor's light direction and field origin hotkeys (Ctrl/Shift + arrow keys) */
-#define EDITOR_ADJUST_STEP 0x400
+inline constexpr int32_t EDITOR_ADJUST_STEP = 0x400;
 
 void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
           (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot);

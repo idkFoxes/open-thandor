@@ -15,12 +15,12 @@
 
 /* In-game save page action (InGameUiImage: saveGameSaveButton); InGameSaveName_UpdateSaveActionValidity
    enables it only for a valid typed save name. */
-#define INGAME_ACTION_SAVE_GAME_SAVE 0x1210
+inline constexpr int32_t INGAME_ACTION_SAVE_GAME_SAVE = 0x1210;
 /* Row selection in the save list (saveGameList) and the Delete button (saveGameDeleteButton). */
-#define INGAME_ACTION_SAVE_GAME_SELECT 0x120F
-#define INGAME_ACTION_SAVE_GAME_DELETE 0x1219
+inline constexpr int32_t INGAME_ACTION_SAVE_GAME_SELECT = 0x120F;
+inline constexpr int32_t INGAME_ACTION_SAVE_GAME_DELETE = 0x1219;
 /* Caption of the last row of the save list, the "new savegame" entry (InGameSaveGamePage_RebuildCatalog). */
-#define TEXT_ID_SAVE_GAME_NEW_ROW 0x2151
+inline constexpr int32_t TEXT_ID_SAVE_GAME_NEW_ROW = 0x2151;
 
 void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList);
 

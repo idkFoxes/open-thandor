@@ -218,8 +218,8 @@ static inline void Raster_LanesToBytes(RasterColor color, int shift, int channel
 /* ---- blending ---------------------------------------------------------------------------- */
 
 /* Original addresses of the two blend factor tables (256 rows of 8 bytes each). */
-#define RASTER_BLEND_ALPHA_FACTORS_ORIGINAL 0x00421720u
-#define RASTER_BLEND_INVERSE_FACTORS_ORIGINAL 0x00421F20u
+inline constexpr uint32_t RASTER_BLEND_ALPHA_FACTORS_ORIGINAL = 0x00421720u;
+inline constexpr uint32_t RASTER_BLEND_INVERSE_FACTORS_ORIGINAL = 0x00421F20u;
 
 /* The original dwords at 0x00422720-0x00422F1F, as the inverse table rows 256..511 read them, with
    pointers as their original values (fixed image base). Static in the original: the parts below are

@@ -15,30 +15,30 @@
 /* Selection/info panel layout (g_SelectionPanelData, loaded from select.dat or info.dat by
    SelectionInfoPanel_InitResources): a dword header followed by 16-byte cell records. The offsets below are
    relative to g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE. */
-#define SELECTION_PANEL_CELL_SIZE 0x10
-#define SELECTION_PANEL_CELL_FLAGS 0x4             /* SELECTION_PANEL_CELL_FLAG_* */
-#define SELECTION_PANEL_CELL_BASE_SUBRESOURCE 0x8  /* first sprite of the cell in the panel texture */
-#define SELECTION_PANEL_CELL_OFFSET_X 0xc          /* added to the horizontal draw coordinate */
-#define SELECTION_PANEL_CELL_OFFSET_Y 0x10         /* added to the vertical draw coordinate */
-#define SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X 0x4 /* the next horizontal coordinate ignores the sprite width */
-#define SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_Y 0x8 /* the next vertical coordinate ignores the sprite height */
-#define SELECTION_PANEL_CELL_FLAG_ALIGN_START 0x100 /* bar content starts at the start cap (else centred) */
-#define SELECTION_PANEL_CELL_FLAG_ALIGN_END 0x200   /* bar content ends at the end cap (else centred) */
-#define SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS 0x400 /* segmented bars also draw the unfilled segments */
+inline constexpr int32_t SELECTION_PANEL_CELL_SIZE = 0x10;
+inline constexpr int32_t SELECTION_PANEL_CELL_FLAGS = 0x4; /* SELECTION_PANEL_CELL_FLAG_* */
+inline constexpr int32_t SELECTION_PANEL_CELL_BASE_SUBRESOURCE = 0x8; /* first sprite of the cell in the panel texture */
+inline constexpr int32_t SELECTION_PANEL_CELL_OFFSET_X = 0xc; /* added to the horizontal draw coordinate */
+inline constexpr int32_t SELECTION_PANEL_CELL_OFFSET_Y = 0x10; /* added to the vertical draw coordinate */
+inline constexpr int32_t SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X = 0x4; /* the next horizontal coordinate ignores the sprite width */
+inline constexpr int32_t SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_Y = 0x8; /* the next vertical coordinate ignores the sprite height */
+inline constexpr int32_t SELECTION_PANEL_CELL_FLAG_ALIGN_START = 0x100; /* bar content starts at the start cap (else centred) */
+inline constexpr int32_t SELECTION_PANEL_CELL_FLAG_ALIGN_END = 0x200; /* bar content ends at the end cap (else centred) */
+inline constexpr int32_t SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS = 0x400; /* segmented bars also draw the unfilled segments */
 /* Cells used by SelectionPanel_RenderArmyRuntimeMetrics around the projected bounds of a selected model. */
-#define SELECTION_PANEL_CELL_CORNER_TOP_LEFT 0
-#define SELECTION_PANEL_CELL_CORNER_TOP_RIGHT 1
-#define SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT 2
-#define SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT 3
-#define SELECTION_PANEL_CELL_TOP_BAR_EMPTY 4        /* top edge without a value */
-#define SELECTION_PANEL_CELL_LEFT_BAR 5
-#define SELECTION_PANEL_CELL_RIGHT_BAR 6
-#define SELECTION_PANEL_CELL_GROUP_NUMBER 0xb       /* top right: runtime group index */
-#define SELECTION_PANEL_CELL_LEFT_SEGMENTS 0xf
-#define SELECTION_PANEL_CELL_RIGHT_SEGMENTS 0x10
-#define SELECTION_PANEL_CELL_HIERARCHY_METER 0x12   /* top left: active/total hierarchy metric */
-#define SELECTION_PANEL_CELL_TOP_BAR 0x16
-#define SELECTION_PANEL_CELL_BOTTOM_BAR 0x19        /* hierarchy scale ratio */
+inline constexpr int32_t SELECTION_PANEL_CELL_CORNER_TOP_LEFT = 0;
+inline constexpr int32_t SELECTION_PANEL_CELL_CORNER_TOP_RIGHT = 1;
+inline constexpr int32_t SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT = 2;
+inline constexpr int32_t SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT = 3;
+inline constexpr int32_t SELECTION_PANEL_CELL_TOP_BAR_EMPTY = 4; /* top edge without a value */
+inline constexpr int32_t SELECTION_PANEL_CELL_LEFT_BAR = 5;
+inline constexpr int32_t SELECTION_PANEL_CELL_RIGHT_BAR = 6;
+inline constexpr int32_t SELECTION_PANEL_CELL_GROUP_NUMBER = 0xb; /* top right: runtime group index */
+inline constexpr int32_t SELECTION_PANEL_CELL_LEFT_SEGMENTS = 0xf;
+inline constexpr int32_t SELECTION_PANEL_CELL_RIGHT_SEGMENTS = 0x10;
+inline constexpr int32_t SELECTION_PANEL_CELL_HIERARCHY_METER = 0x12; /* top left: active/total hierarchy metric */
+inline constexpr int32_t SELECTION_PANEL_CELL_TOP_BAR = 0x16;
+inline constexpr int32_t SELECTION_PANEL_CELL_BOTTOM_BAR = 0x19; /* hierarchy scale ratio */
 
 SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

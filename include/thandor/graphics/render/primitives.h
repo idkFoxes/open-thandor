@@ -15,7 +15,7 @@
 
 /* DepthInterval_BuildBinMask: world coordinates (Q12) are hashed into 32 wrapping bins of 1 << 14 units
    (4.0 world units) per axis */
-#define SPATIAL_BIN_SHIFT 14
+inline constexpr int SPATIAL_BIN_SHIFT = 14;
 
 /* Primitive queue pool layout (GraphicsPrimitiveQueue_AllocateGlobalPool/ResetGlobal): a 0x20-byte header, then
    per packet one primary node and one radix scratch node (0x10 bytes each) and the 0x80-byte packet itself
@@ -27,23 +27,23 @@
 #define GRAPHICS_PRIMITIVE_QUEUE_END_NODE (Thandor_U32ToPointer<GraphicsPrimitiveQueueNode>(-1)) /* 0xffffffff in the original */
 /* GraphicsPrimitivePacket.renderFlags: bits 12..17 select the raster handler ((flags & 0x3f000) >> 12). Bit 16
    marks a textured packet, bits 12..14 the blend mode. */
-#define GRAPHICS_PRIMITIVE_FLAG_TEXTURED 0x10000
-#define GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT 0x20000
+inline constexpr int GRAPHICS_PRIMITIVE_FLAG_TEXTURED = 0x10000;
+inline constexpr int GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT = 0x20000;
 /* bits 12..17: raster handler index; the software queue renderers shift by 12 and index their handler table */
-#define GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK 0x3f000
+inline constexpr int GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK = 0x3f000;
 /* set by SoftwareRenderer_PrepareTrianglePacket when all three vertex colours are equal */
-#define GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED 0x8000
-#define GRAPHICS_PRIMITIVE_BLEND_MASK 0x7000
-#define GRAPHICS_PRIMITIVE_BLEND_OPAQUE 0
-#define GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT 0x1000
-#define GRAPHICS_PRIMITIVE_BLEND_ADDITIVE 0x2000
-#define GRAPHICS_PRIMITIVE_BLEND_MODE_4 0x4000 /* kept by GraphicsPrimitiveQueue_SetVertexColors like opaque */
-#define GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE 0x6000 /* blend mode 6: alpha-blended with depth writes */
+inline constexpr int GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED = 0x8000;
+inline constexpr int GRAPHICS_PRIMITIVE_BLEND_MASK = 0x7000;
+inline constexpr int GRAPHICS_PRIMITIVE_BLEND_OPAQUE = 0;
+inline constexpr int GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT = 0x1000;
+inline constexpr int GRAPHICS_PRIMITIVE_BLEND_ADDITIVE = 0x2000;
+inline constexpr int GRAPHICS_PRIMITIVE_BLEND_MODE_4 = 0x4000; /* kept by GraphicsPrimitiveQueue_SetVertexColors like opaque */
+inline constexpr int GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE = 0x6000; /* blend mode 6: alpha-blended with depth writes */
 /* GraphicsPrimitiveQueue_Sort keys: an opaque packet's key is its texture entry | 0xB0000000 minus render flag
    bits 28..29 (0x80000000 and above), a blended packet's the sum of its vertex depths below 0x80000000 */
-#define GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE 0xb0000000
-#define GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS 0x30000000
-#define GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK 0x7fffffff
+inline constexpr uint32_t GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE = 0xb0000000;
+inline constexpr int GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS = 0x30000000;
+inline constexpr int GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK = 0x7fffffff;
 
 void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
 

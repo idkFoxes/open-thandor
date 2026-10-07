@@ -15,46 +15,44 @@
 
 /* Rows of g_ModelLightingMmxMultiplierRows (one table in the original). Both vertex
    lighting paths index it with a signed row relative to a base row, so negative indices read the rows before it. */
-#define MODEL_LIGHTING_MMX_ROW_COUNT 819
+inline constexpr int MODEL_LIGHTING_MMX_ROW_COUNT = 819;
 /* row 0 = distance attenuation row -136 (former g_ModelDistanceAttenuationMmxNegativeRows) */
-#define MODEL_DISTANCE_ATTENUATION_NEGATIVE_ROW0 0
+inline constexpr int MODEL_DISTANCE_ATTENUATION_NEGATIVE_ROW0 = 0;
 /* ModelRender_ComputeVertexIntensityDefaultPath's base, indexed by the light-facing dot >> 21 */
-#define MODEL_DISTANCE_ATTENUATION_ROW0 136
+inline constexpr int MODEL_DISTANCE_ATTENUATION_ROW0 = 136;
 /* ModelRender_ComputeVertexIntensityScaledPath's base, indexed by (dot / lightingScaleQ12) >> 9 */
-#define MODEL_LIGHTING_SCALE_ROW0 682
+inline constexpr int MODEL_LIGHTING_SCALE_ROW0 = 682;
 
 /* ModelRuntimeNode.runtimeFlags bits */
-#ifndef MODEL_RUNTIME_FLAG_APPLY_SCALE
-#define MODEL_RUNTIME_FLAG_APPLY_SCALE 0x800 /* ModelRender_PrepareProjectedVertex scales every vertex by
+inline constexpr int MODEL_RUNTIME_FLAG_APPLY_SCALE = 0x800; /* ModelRender_PrepareProjectedVertex scales every vertex by
                                                 modelScaleQ12 */
-#endif
 /* Set by the model class initializers (world/model/slots); the model renderer shifts the texture coordinates
    of triangles using the node's primary / secondary animated subresource by its texture offsets */
-#define MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL 0x80
-#define MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL 0x400
+inline constexpr int MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL = 0x80;
+inline constexpr int MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL = 0x400;
 /* Model triangle renderFlags (GraphicsTriangleInput.renderFlags), read by ModelRender_SubmitTriangle*,
    ModelRender_PrepareProjectedVertex* */
-#define MODEL_TRIANGLE_PALETTE_BANK_MASK 0x1FF /* material colour: index into the node's palette asset */
+inline constexpr int MODEL_TRIANGLE_PALETTE_BANK_MASK = 0x1FF; /* material colour: index into the node's palette asset */
 /* The palette bank mask ModelRender_SubmitTriangleAlternatePath uses: keeps bits 16..31 too */
-#define MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK 0xffff01ff
-#define MODEL_TRIANGLE_UNLIT 0x200 /* vertices take the node tint instead of lighting */
-#define MODEL_TRIANGLE_DOUBLE_SIDED 0x400 /* drawn without the back-face test */
-#define MODEL_TRIANGLE_LIGHTING_SCALED 0x800 /* lit by ModelRender_ComputeVertexIntensityScaledPath */
-#define MODEL_TRIANGLE_FLAT_SHADED 0x8000 /* lit with the triangle normal; never reuses a cached vertex colour */
-#define MODEL_TRIANGLE_VERTEX_CACHE_FLAGS 0x8E00 /* the bits a projected vertex's cached colour was computed for */
+inline constexpr uint32_t MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK = 0xffff01ff;
+inline constexpr int MODEL_TRIANGLE_UNLIT = 0x200; /* vertices take the node tint instead of lighting */
+inline constexpr int MODEL_TRIANGLE_DOUBLE_SIDED = 0x400; /* drawn without the back-face test */
+inline constexpr int MODEL_TRIANGLE_LIGHTING_SCALED = 0x800; /* lit by ModelRender_ComputeVertexIntensityScaledPath */
+inline constexpr int MODEL_TRIANGLE_FLAT_SHADED = 0x8000; /* lit with the triangle normal; never reuses a cached vertex colour */
+inline constexpr int MODEL_TRIANGLE_VERTEX_CACHE_FLAGS = 0x8E00; /* the bits a projected vertex's cached colour was computed for */
 /* Marker in a mesh vertex's projected X (GraphicsProjectedVertexSource.screenX): not transformed and projected yet for this draw */
 #define MODEL_VERTEX_NOT_PROJECTED ((int)0x80000000)
 /* Marker the alternate renderer stores in the projected X of a vertex in front of the near plane */
-#define MODEL_VERTEX_NEAR_CLIPPED 0x7fffffff
+inline constexpr int MODEL_VERTEX_NEAR_CLIPPED = 0x7fffffff;
 /* Stride of the vertex and triangle records of a mesh (both 0x40 bytes; GraphicsTriangleInput uses 0x38) */
-#define MODEL_MESH_RECORD_SIZE 0x40
+inline constexpr int MODEL_MESH_RECORD_SIZE = 0x40;
 /* Offset of the shadow pass's projected XY (a GraphicsFixedVec2) in a mesh vertex record (graphics/render/shadow_texture.cpp) */
-#define MODEL_MESH_VERTEX_SHADOW_XY_OFFSET 0x20
+inline constexpr int MODEL_MESH_VERTEX_SHADOW_XY_OFFSET = 0x20;
 /* ModelMeshGroupHeader.groupFlags bits */
-#define MODEL_MESH_GROUP_FACE_VIEWER 1 /* ModelNodeRuntime_BuildViewFacingRotation before the draw */
-#define MODEL_MESH_GROUP_BILLBOARD 2   /* ModelNodeRuntime_BuildBillboardRotation before the draw */
+inline constexpr int MODEL_MESH_GROUP_FACE_VIEWER = 1; /* ModelNodeRuntime_BuildViewFacingRotation before the draw */
+inline constexpr int MODEL_MESH_GROUP_BILLBOARD = 2; /* ModelNodeRuntime_BuildBillboardRotation before the draw */
 /* ModelMeshHeader.flags bit */
-#define MODEL_MESH_SOFT_SHADOW 1 /* shadow silhouette drawn before the blur (graphics/render/shadow_texture.cpp); clear: after */
+inline constexpr int MODEL_MESH_SOFT_SHADOW = 1; /* shadow silhouette drawn before the blur (graphics/render/shadow_texture.cpp); clear: after */
 
 /* Header of a model mesh group (ModelMeshGroupAddress32 of ModelRender_DrawMeshGroups*); the meshes follow
    at +0x20, each starting with its byte size and group mask. */

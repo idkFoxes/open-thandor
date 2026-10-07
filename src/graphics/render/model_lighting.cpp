@@ -922,7 +922,7 @@ static inline uint64_t ModelLighting_AddWordsMmx(uint64_t a, uint64_t b)
    original executable's .text; nothing writes there), so the result does not depend on the linker's layout.
    Each original byte comes from its own range, so a qword spanning two variables (0x004CAD50, 0x004CC700) is
    assembled like the original read. */
-#define MODEL_LIGHTING_MMX_ROWS_ORIGINAL_ADDRESS 0x004CAD60u
+static constexpr uint32_t MODEL_LIGHTING_MMX_ROWS_ORIGINAL_ADDRESS = 0x004CAD60u;
 
 /* original 0x004CAD58..0x004CAD60: 0x90 filler between g_GraphicsShadingNearbyRecordCount and the table */
 static const uint8_t s_ModelLightingOriginalFiller004CAD58[0x8] = {
@@ -1084,8 +1084,8 @@ typedef struct ModelLightingOriginalRange {
 
 /* The original address window 0x004C6D54..0x004CD1A0 (whole variables listed, covers the default path's reach
    0x004C91A0..0x004CD1A0), in address order and without holes. */
-#define MODEL_LIGHTING_ORIGINAL_WINDOW_START 0x004C6D54u
-#define MODEL_LIGHTING_ORIGINAL_WINDOW_END 0x004CD1A0u
+static constexpr uint32_t MODEL_LIGHTING_ORIGINAL_WINDOW_START = 0x004C6D54u;
+static constexpr uint32_t MODEL_LIGHTING_ORIGINAL_WINDOW_END = 0x004CD1A0u;
 static const ModelLightingOriginalRange s_ModelLightingOriginalWindow[] = {
   {0x004C6D54, 0x004CAD54, g_GraphicsShadingNearbyRecords},
   {0x004CAD54, 0x004CAD58, &g_GraphicsShadingNearbyRecordCount},

@@ -29,8 +29,8 @@ static inline TerrainProjectedVertexWorkRecord *TerrainVertex_RowBelow(TerrainPr
 
 /* Entries of g_TerrainProjectedRowSpans, and the most grid rows TerrainProjectedGrid_TransformShadeAndQueue draws
    (the clip pass empties rows up to gridHeight + 1; 257 is the limit the table was sized for). */
-#define TERRAIN_PROJECTED_ROW_SPAN_COUNT 260
-#define TERRAIN_PROJECTED_GRID_MAX_ROWS 257
+static constexpr int TERRAIN_PROJECTED_ROW_SPAN_COUNT = 260;
+static constexpr int TERRAIN_PROJECTED_GRID_MAX_ROWS = 257;
 
 /* per-row visible column spans of the terrain projection, all zero at start (the original held 0x90 fill bytes
    in entry 259; the read loops stop at row gridHeight - 1 <= 256, only the clip pass's emptying writes reach it) */

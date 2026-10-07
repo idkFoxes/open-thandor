@@ -12,13 +12,14 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
+#include <thandor/core/math/fixed_point.h> /* Q12_ONE */
 
 /* launch attachments (reload timers, projectile mesh bits) of the turret-weapon class */
 inline constexpr int ARMY_WEAPON_ATTACHMENT_COUNT = 8;
 /* meshGroupMask bit of the barrel node that shows the projectile of attachment slot 0-7 */
-#define ARMY_WEAPON_ATTACHMENT_MESH_BIT(slot) (1 << (slot))
+constexpr int ARMY_WEAPON_ATTACHMENT_MESH_BIT(int slot) { return 1 << slot; }
 /* shot range check: the projectile flies (lifetime - 2/3 of the ramp ticks - 1) ticks at full speed; -2/3 in Q12 */
-#define ARMY_SHOT_RAMP_RANGE_FACTOR_Q12 (-(2 * Q12_ONE / 3))
+inline constexpr auto ARMY_SHOT_RAMP_RANGE_FACTOR_Q12 = -(2 * Q12_ONE / 3);
 /* a ground shot without an entity target may hit the terrain this close to the aim distance */
 inline constexpr int ARMY_GROUND_SHOT_LANDING_TOLERANCE_Q12 = 0x400;
 

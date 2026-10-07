@@ -16,7 +16,7 @@
 
 /* repeatEndY/repeatEndX value of the tiled blits (GraphicsTextureSource_BlitTiled*): repeat along that axis
    for exactly one tile extent from the tile origin. */
-#define GRAPHICS_TILED_BLIT_ONE_TILE (-0x80000000)
+inline constexpr uint32_t GRAPHICS_TILED_BLIT_ONE_TILE = -0x80000000;
 
 extern GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb;
 
