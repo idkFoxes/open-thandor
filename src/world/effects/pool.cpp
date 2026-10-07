@@ -255,7 +255,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   effectModelNode->worldTransform.translation.x = worldYQ12;
   effectModelNode->worldTransform.translation.y = worldXQ12;
   effectModelNode->worldTransform.translation.z = worldZQ12;
-  if ((effectDefinition->creationFlags & EFFECT_CREATION_RANDOMIZE_ORIENTATION) != 0) {
+  if (Any(effectDefinition->creationFlags & EFFECT_CREATION_RANDOMIZE_ORIENTATION)) {
     randomValue = g_RandomGeneratorState.next();
     orientationAngle0 = randomValue & FIXED_ANGLE16_MASK;
   }
@@ -264,7 +264,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   effectModelNode->modelPayload.worldRotationAngle2 = orientationAngle0;
   chosenTextureSet = g_EffectTextureSet;
   chosenPalette = g_EffectPalette;
-  if ((effectDefinition->creationFlags & EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET) != 0) {
+  if (Any(effectDefinition->creationFlags & EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET)) {
     chosenTextureSet = g_ArmyGraphicsBindings[0].textureSet;
     chosenPalette = g_ArmyGraphicsBindings[0].paletteAsset;
   }

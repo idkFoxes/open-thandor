@@ -68,11 +68,11 @@ struct RasterGradients {
 };
 
 /* How Raster_SetupTriangle derives the colour. */
-enum {
+enum class RasterShading : int {
     RASTER_SHADE_GOURAUD, /* interpolated vertex colours (modes 0..6, 16..22) */
     RASTER_SHADE_FLAT     /* colour of v0 for the whole triangle (modes 8..14, 24..30) */
 };
-using RasterShading = int;
+using enum RasterShading;
 
 /* A texture as the textured modes (16..30) sample it: nearest texel, wrapped. */
 struct RasterTexture {
