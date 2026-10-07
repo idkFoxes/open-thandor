@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
+#include <new>
 #include <thandor/thandor.h>
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -35,9 +37,13 @@ static void Thandor_SelfTestCodec()
         int noisy = t >= 3;
         unsigned capacity = PACKAGE_SCRATCH_BUFFER_BYTES - 2 * PCK_ENTRY_HEADER_BYTES; /* as Package_UpsertEntry */
         unsigned guard = SELFTEST_GUARD_BYTES;
-        auto *source = static_cast<uint8_t *>(malloc(size));
-        auto *packed = static_cast<uint8_t *>(malloc(capacity + guard));
-        auto *unpacked = static_cast<uint8_t *>(malloc(size + guard));
+        /* source is written in full below; packed and unpacked start as guard bytes */
+        auto sourceBuffer = std::make_unique_for_overwrite<uint8_t[]>(size);
+        std::vector<uint8_t> packedBuffer(capacity + guard, SELFTEST_GUARD_FILL);
+        std::vector<uint8_t> unpackedBuffer(size + guard, SELFTEST_GUARD_FILL);
+        uint8_t *source = sourceBuffer.get();
+        uint8_t *packed = packedBuffer.data();
+        uint8_t *unpacked = unpackedBuffer.data();
         unsigned i;
         unsigned seed = 12345;
         Bool8 encodeOk;
@@ -48,16 +54,10 @@ static void Thandor_SelfTestCodec()
         int packedGuardOk = 1;
         int unpackedGuardOk = 1;
         int same;
-        if (!source || !packed || !unpacked) {
-            Thandor_Log("codec selftest: allocation failed");
-            return;
-        }
         for (i = 0; i < size; i++) {
             seed = seed * 1103515245u + 12345u;
             source[i] = (noisy || (i % 4096) < 300) ? (uint8_t)(seed >> 16) : 0;
         }
-        memset(packed, SELFTEST_GUARD_FILL, capacity + guard);
-        memset(unpacked, SELFTEST_GUARD_FILL, size + guard);
         encodeOk = g_PckEncoderTable[0](capacity, packed, size, source, &encodeValue, &encodeValue);
         for (i = capacity; i < capacity + guard; i++) {
             if (packed[i] != SELFTEST_GUARD_FILL) { packedGuardOk = 0; break; }
@@ -78,9 +78,6 @@ static void Thandor_SelfTestCodec()
             Thandor_Log("codec selftest %u: decode ok=%d value=%x roundtrip=%s guard=%s", t, decodeOk,
                         decodeValue, same ? "ok" : "MISMATCH", unpackedGuardOk ? "ok" : "OVERWRITTEN");
         }
-        free(source);
-        free(packed);
-        free(unpacked);
     }
 }
 
@@ -151,7 +148,7 @@ static void Thandor_SelfTestStretch()
 /* The arena is set up by ProcessEntry; decoders called before that allocate through these. */
 static uint32_t SelfTest_Alloc(uint32_t bytes, void **outPayload)
 {
-    void *payload = malloc(bytes);
+    void *payload = ::operator new(bytes, std::nothrow);
     if (payload == nullptr) {
         return FATAL_ERROR_ARENA_EXHAUSTED; /* a failed alloc must report a nonzero code */
     }
@@ -161,7 +158,7 @@ static uint32_t SelfTest_Alloc(uint32_t bytes, void **outPayload)
 
 static uint32_t SelfTest_Free(void *memory)
 {
-    free(memory);
+    ::operator delete(memory);
     return 0;
 }
 
@@ -588,7 +585,7 @@ static void SelfTest_BuildSamCosineTables(uint32_t (**savedAlloc)(uint32_t, void
 
 static void SelfTest_FreeSamCosineTables(uint32_t (*savedAlloc)(uint32_t, void **), uint32_t (*savedFree)(void *))
 {
-    free(g_CosineDerivedLookupAllocation);
+    SelfTest_Free(g_CosineDerivedLookupAllocation);
     g_CosineDerivedLookupAllocation = nullptr;
     g_CosineDerivedLookupSecondTable = nullptr;
     g_MemoryApi.alloc = savedAlloc;
@@ -889,10 +886,11 @@ static void Thandor_SelfTestScanAddresses()
                                      "MODELLE.PCK", "PATCH00.PCK", "PATCH01.PCK", "SOUND.PCK"};
     unsigned p;
     FILE *out = fopen("scanaddr.txt", "w");
-    auto *packed = static_cast<uint8_t *>(malloc(PACKAGE_SCRATCH_BUFFER_BYTES));
+    auto packedBuffer = std::make_unique_for_overwrite<uint8_t[]>(PACKAGE_SCRATCH_BUFFER_BYTES);
+    uint8_t *packed = packedBuffer.get();
     unsigned totalEntries = 0;
     unsigned totalHits = 0;
-    if (out == nullptr || packed == nullptr) {
+    if (out == nullptr) {
         Thandor_Log("scanaddr: setup failed");
         return;
     }
@@ -925,7 +923,6 @@ static void Thandor_SelfTestScanAddresses()
         }
         for (;;) {
             PckEntryHeader header;
-            uint8_t *unpacked;
             Bool8 decoded;
             char name[PCK_ENTRY_PATH_UNITS + 1];
             int k;
@@ -944,13 +941,10 @@ static void Thandor_SelfTestScanAddresses()
             if (fread(packed, 1, header.packedSize, pck) != header.packedSize) {
                 break;
             }
-            unpacked = static_cast<uint8_t *>(malloc(header.unpackedSize + 4));
-            if (unpacked == nullptr) {
-                break;
-            }
+            auto unpackedBuffer = std::make_unique_for_overwrite<uint8_t[]>(header.unpackedSize + 4);
+            uint8_t *unpacked = unpackedBuffer.get();
             if (g_PckDecoderTable[header.compressionMethod] == nullptr) {
                 fprintf(out, "%s %s NO-DECODER method %u\n", list[p], name, (uint32_t)header.compressionMethod);
-                free(unpacked);
                 position += PCK_ENTRY_HEADER_BYTES + (long)header.packedSize;
                 continue;
             }
@@ -990,13 +984,11 @@ static void Thandor_SelfTestScanAddresses()
                     }
                 }
             }
-            free(unpacked);
             position += PCK_ENTRY_HEADER_BYTES + (long)header.packedSize;
         }
         fclose(pck);
     }
     fclose(out);
-    free(packed);
     g_MemoryApi.alloc = savedAlloc;
     g_MemoryApi.free = savedFree;
     Thandor_Log("scanaddr: %u entries decoded, %u dwords in the original image range", totalEntries, totalHits);

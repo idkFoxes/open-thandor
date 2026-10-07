@@ -137,18 +137,14 @@ uint32_t HashBytes(const uint8_t *bytes, size_t byteCount, uint32_t seed) noexce
   uint32_t lane3 = seed - kPrime1;
   size_t offset = 0;
   for (; offset + 16 <= byteCount; offset += 16) {
-    uint32_t words[4];
-    std::memcpy(words, bytes + offset, sizeof words);
-    lane0 = RotateLeft(lane0 + words[0] * kPrime2, 13) * kPrime1;
-    lane1 = RotateLeft(lane1 + words[1] * kPrime2, 13) * kPrime1;
-    lane2 = RotateLeft(lane2 + words[2] * kPrime2, 13) * kPrime1;
-    lane3 = RotateLeft(lane3 + words[3] * kPrime2, 13) * kPrime1;
+    lane0 = RotateLeft(lane0 + Thandor_LoadU32(bytes + offset) * kPrime2, 13) * kPrime1;
+    lane1 = RotateLeft(lane1 + Thandor_LoadU32(bytes + offset + 4) * kPrime2, 13) * kPrime1;
+    lane2 = RotateLeft(lane2 + Thandor_LoadU32(bytes + offset + 8) * kPrime2, 13) * kPrime1;
+    lane3 = RotateLeft(lane3 + Thandor_LoadU32(bytes + offset + 12) * kPrime2, 13) * kPrime1;
   }
   uint32_t hash = RotateLeft(lane0, 1) + RotateLeft(lane1, 7) + RotateLeft(lane2, 12) + RotateLeft(lane3, 18);
   for (; offset + 4 <= byteCount; offset += 4) {
-    uint32_t word;
-    std::memcpy(&word, bytes + offset, sizeof word);
-    hash = RotateLeft(hash + word * kPrime3, 17) * 0x27D4EB2Fu;
+    hash = RotateLeft(hash + Thandor_LoadU32(bytes + offset) * kPrime3, 17) * 0x27D4EB2Fu;
   }
   for (; offset < byteCount; offset++) {
     hash = RotateLeft(hash + bytes[offset] * kPrime5, 11) * kPrime1;
@@ -315,9 +311,8 @@ void FillPadding(uint32_t *staged, uint32_t width, uint32_t height, uint32_t row
     line[0] = line[1];
     line[width + 1] = line[width];
   }
-  std::memcpy(staged, staged + rowPixels, (width + 2) * sizeof(uint32_t));
-  std::memcpy(staged + static_cast<size_t>(height + 1) * rowPixels, staged + static_cast<size_t>(height) * rowPixels,
-              (width + 2) * sizeof(uint32_t));
+  std::copy_n(staged + rowPixels, width + 2, staged);
+  std::copy_n(staged + static_cast<size_t>(height) * rowPixels, width + 2, staged + static_cast<size_t>(height + 1) * rowPixels);
 }
 
 /* Converts one image into the staging buffer (palette +0 ARGB or the ARGB texels, both 0xAARRGGBB = B8G8R8A8
@@ -330,7 +325,7 @@ void QueueConversion(uint32_t page, const Rect &rect, const uint8_t *texels, con
   if (palette != nullptr) {
     uint32_t lut[256];
     for (int index = 0; index < 256; index++) {
-      std::memcpy(&lut[index], palette + index * 8, sizeof(uint32_t)); /* +0: ARGB, straight alpha */
+      lut[index] = Thandor_LoadU32(palette + index * 8); /* +0: ARGB, straight alpha */
     }
     for (uint32_t row = 0; row < height; row++) {
       const uint8_t *source = texels + static_cast<size_t>(row) * width;
@@ -745,7 +740,7 @@ bool GpuUiTextures_DedicatedImage(const void *key, uint32_t generation, const ui
     upload.dedicated = dedicated.texture;
     const uint32_t rowPixels = upload.rowPixels;
     const auto *source = reinterpret_cast<const uint8_t *>(pixels);
-    std::memset(staged, 0, static_cast<size_t>(rowPixels) * (height + 2 * kPadding) * sizeof(uint32_t));
+    std::fill_n(staged, static_cast<size_t>(rowPixels) * (height + 2 * kPadding), 0u);
     for (uint32_t row = 0; row < height; row++) {
       std::memcpy(staged + static_cast<size_t>(row + kPadding) * rowPixels + kPadding,
                   source + static_cast<size_t>(row) * static_cast<size_t>(pitch), static_cast<size_t>(width) * 4);
