@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
@@ -357,17 +358,14 @@ void Thandor_SelfTestHexScan(void)
     uint32_t savedReferenceHeight = g_TerrainScanReferenceHeight;
     size_t gridBytes =
         offsetof(FieldGridAsset, cells) + (size_t)HEXSCAN_TEST_WIDTH * HEXSCAN_TEST_HEIGHT * sizeof(FieldGridCell);
-    auto *grid = static_cast<FieldGridAsset *>(calloc(1, gridBytes));
-    auto *reset = static_cast<FieldGridAsset *>(calloc(1, gridBytes));
+    /* two zeroed grid images: the asset header followed by the cells (a variable-length record) */
+    std::vector<uint32_t> gridStorage((gridBytes + 3) / 4);
+    std::vector<uint32_t> resetStorage((gridBytes + 3) / 4);
+    auto *grid = reinterpret_cast<FieldGridAsset *>(gridStorage.data());
+    auto *reset = reinterpret_cast<FieldGridAsset *>(resetStorage.data());
     uint32_t summary = 2166136261u;
     int driver;
 
-    if (grid == nullptr || reset == nullptr) {
-        Thandor_Log("hexscan: out of memory");
-        free(grid);
-        free(reset);
-        return;
-    }
     grid->gridWidth = reset->gridWidth = HEXSCAN_TEST_WIDTH;
     grid->gridHeight = reset->gridHeight = HEXSCAN_TEST_HEIGHT;
     for (driver = 0; driver < HEXSCAN_DRIVER_COUNT; driver++) {
@@ -376,8 +374,6 @@ void Thandor_SelfTestHexScan(void)
     }
     Thandor_Log("hexscan: %d drivers, %d points each, %dx%d grid, summary %08X", HEXSCAN_DRIVER_COUNT,
                 HEXSCAN_TEST_POINTS, HEXSCAN_TEST_WIDTH, HEXSCAN_TEST_HEIGHT, summary);
-    free(grid);
-    free(reset);
     g_TerrainScanRowStrideBytes = savedRowStride;
     g_TerrainScanStepLimit = savedStepLimit;
     g_TerrainScanSharedSelectorValue = savedSelector;
