@@ -80,7 +80,7 @@ static inline uint32_t *Movie_FramePixels(void *frame)
    (*outByteCount untouched, the buffer already written) when the provider yields no frame at all or ends
    with any other error. A leftover of the movie tools: no caller found in src/.
 */
-Bool8 Movie_EncodeFlmBufferFromFrameProvider
+bool Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider,uint32_t *outByteCount)
 

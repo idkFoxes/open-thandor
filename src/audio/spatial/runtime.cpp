@@ -30,7 +30,7 @@ AudioMixerGainQ15 g_SoundEffectsGainQ15 = 32768;
    so every slot starts without a voice set. Returns true on success; false with the allocator's error in
    *outError when the arena is exhausted.
 */
-Bool8 SpatialSoundPool_Init(uint32_t *outError)
+bool SpatialSoundPool_Init(uint32_t *outError)
 
 {
   SpatialSoundSlot *clearCursor;
@@ -90,7 +90,7 @@ void SpatialSound_RebuildListenerTransformFromPose
    SPATIAL_SOUND_GAIN_Q15_FULL: *firstGainQ15 is the reduced one for an azimuth in the first half turn and
    *secondGainQ15 the reduced one in the second half turn; reverse stereo swaps the two. Both callers play
    the first gain on the left channel and the second on the right. */
-static Bool8 SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,uint32_t volumeQ15,
+static bool SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,uint32_t volumeQ15,
           GraphicsFixedVec3 *worldPosition,uint32_t *firstGainQ15,uint32_t *secondGainQ15)
 
 {

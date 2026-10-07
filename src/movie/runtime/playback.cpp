@@ -56,7 +56,7 @@ static uint32_t Movie_StreamBufferBytes(const MovieFileHeader *header,MovieOpenF
    the file or package entry (0 when unknown). The original trusted them. Bounded here because they come from the
    file: the 32-bit size sums could wrap (a too small buffer that the read then overruns), a width or height
    below 4 wraps the decoder's block counters, and a video stream longer than the file cannot be read. */
-static Bool8 Movie_IsHeaderValid(const MovieFileHeader *header,uint32_t entryBytes)
+static bool Movie_IsHeaderValid(const MovieFileHeader *header,uint32_t entryBytes)
 {
   uint64_t videoEnd = (uint64_t)header->videoStreamBytes + MOVIE_FILE_HEADER_BYTES;
 
@@ -132,7 +132,7 @@ static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext);
 
 /* Failure exit of Movie_Open once a file or package handle is open: closes the handle unless it is a shared
    package handle, stores error in *outError (when not NULL) and returns false. */
-static Bool8 Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPackageHandle,uint32_t error,
+static bool Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPackageHandle,uint32_t error,
                            uint32_t *outError)
 
 {
@@ -154,7 +154,7 @@ static Bool8 Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPac
    *outPlaybackRateHz; returns false and stores the error code of the failing step in *outError. Either
    pointer may be NULL. (The original also returned frameCount on success; no caller uses it.)
 */
-Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError)
+bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError)
 
 {
   MovieFileHeader *header;
@@ -173,7 +173,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   uint32_t initialVideoBytes;
   uint32_t entryBytes;
   uint32_t status;
-  Bool8 looseFileOpened;
+  bool looseFileOpened;
   uint32_t openError;
   uint32_t allocError;
   void *allocPayload;
@@ -503,7 +503,7 @@ void IntroMovie_TimerTick()
 
 /* Not in the original (split out of Movie_AdvanceFrame): stores endCode in *outEndCode when given and
    returns false, the "no frame" result of Movie_AdvanceFrame. */
-static Bool8 Movie_ReportAdvanceEnd(uint32_t *outEndCode,uint32_t endCode)
+static bool Movie_ReportAdvanceEnd(uint32_t *outEndCode,uint32_t endCode)
 {
   if (outEndCode != nullptr) {
     *outEndCode = endCode;
@@ -544,7 +544,7 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
    Original quirk: after a worker read failure it closes an unrelated value left over by its caller instead
    of the stream handle; the C closes NULL, which has the same effect on the movie (see the body).
 */
-Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
+bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
 
 {
   MovieFileHeader *flmHeader;
