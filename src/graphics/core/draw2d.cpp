@@ -162,7 +162,7 @@ void RecordSprite(Draw2DBlend blend, uint32_t tintArgb, int32_t clipMaxY, int32_
 
 /* ---- GPU_RECORD slot functions ---- */
 
-Bool8 RecordBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+bool RecordBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
                             int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                             SoftwareFramebufferAccess *framebuffer)
 {
@@ -175,7 +175,7 @@ Bool8 RecordBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY
     return false;
 }
 
-Bool8 RecordBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+bool RecordBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
                               int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                               SoftwareFramebufferAccess *framebuffer)
 {
@@ -188,7 +188,7 @@ Bool8 RecordBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMi
     return false;
 }
 
-Bool8 RecordBlitModulatedSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX,
+bool RecordBlitModulatedSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX,
                                      int32_t drawY, int32_t drawX, uint32_t modulationArgb8888,
                                      uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                                      SoftwareFramebufferAccess *framebuffer)
@@ -460,11 +460,11 @@ void RecordGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixe
    the display framebuffer. The software functions only read their sources (the grey-scale image's cross-fade
    rewrites blendedSourcePixels from the same inputs), so drawing twice changes nothing. ---- */
 
-Bool8 CompareBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+bool CompareBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
                              int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                              SoftwareFramebufferAccess *framebuffer)
 {
-    const Bool8 result = SoftwareTextureSource_BlitSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX,
+    const bool result = SoftwareTextureSource_BlitSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX,
                                                                  subresourceIndex, sourceAsset, framebuffer);
     if (IsDisplay(framebuffer)) {
         RecordBlitSourceAlpha(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, subresourceIndex, sourceAsset,
@@ -473,11 +473,11 @@ Bool8 CompareBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMin
     return result;
 }
 
-Bool8 CompareBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+bool CompareBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
                                int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                                SoftwareFramebufferAccess *framebuffer)
 {
-    const Bool8 result = SoftwareTextureSource_BlitHalfSourceRgb32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY,
+    const bool result = SoftwareTextureSource_BlitHalfSourceRgb32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY,
                                                                    drawX, subresourceIndex, sourceAsset, framebuffer);
     if (IsDisplay(framebuffer)) {
         RecordBlitHalfSourceRgb(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, subresourceIndex, sourceAsset,
@@ -486,12 +486,12 @@ Bool8 CompareBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipM
     return result;
 }
 
-Bool8 CompareBlitModulatedSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX,
+bool CompareBlitModulatedSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX,
                                       int32_t drawY, int32_t drawX, uint32_t modulationArgb8888,
                                       uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                                       SoftwareFramebufferAccess *framebuffer)
 {
-    const Bool8 result = SoftwareTextureSource_BlitModulatedSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX,
+    const bool result = SoftwareTextureSource_BlitModulatedSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX,
                                                                           drawY, drawX, modulationArgb8888,
                                                                           subresourceIndex, sourceAsset, framebuffer);
     if (IsDisplay(framebuffer)) {

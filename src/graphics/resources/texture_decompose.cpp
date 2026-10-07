@@ -518,7 +518,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
    FATAL_ERROR_GFX_ASSET_INVALID, 0x2D (nothing but background), FATAL_ERROR_GENERAL_FAILURE (work area too
    small) or the allocator's error in *outError. No caller in the game code (only the hook slot).
 */
-Bool8 GraphicsTextureSource_DecomposeSubresourceRegions
+bool GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
           GraphicsTextureSourceAsset **outAsset,uint32_t *outError)
 

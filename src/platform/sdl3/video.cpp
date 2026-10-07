@@ -934,7 +934,7 @@ void SdlVideo_SetFrameLimit(uint32_t fps)
   }
 }
 
-Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
+bool SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                                 uint32_t *errorCode)
 {
   g_CursorCurrentVisibilityToken = -1;

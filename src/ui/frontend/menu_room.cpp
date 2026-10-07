@@ -988,7 +988,7 @@ void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext)
    the model's runtime definition: an id outside the table counts as RUNTIME_MODEL_CLASS_PRIORITY_LOW (logged once). */
 static RuntimeModelClassPriority FrontendModelPointerContext_ModelClassPriority(ModelRuntimeClassId modelClassId)
 {
-  static Bool8 s_loggedClassIdOutOfRange;
+  static bool s_loggedClassIdOutOfRange;
 
   if ((uint32_t)modelClassId < sizeof(g_RuntimeModelClassPriorityByModelClassId) /
                                  sizeof(g_RuntimeModelClassPriorityByModelClassId[0])) {

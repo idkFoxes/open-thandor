@@ -17,7 +17,7 @@ static const int32_t g_UiRangeSliderDragScale = 1;
    minimumValue..maximumValue) scaled from the range onto freeTrackLength, rounded to the nearest pixel;
    measured from the other end when invert is set. */
 static uint32_t UiRangeSliderControl_ThumbOffset(const UiRangeSliderControl *control,uint32_t freeTrackLength,
-                                                 Bool8 invert)
+                                                 bool invert)
 {
   int32_t rangeMax;
   int32_t clampedValue;

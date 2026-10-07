@@ -91,7 +91,7 @@ void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listC
 }
 
 /* Compares unitCount UTF-16 code units, stopping at the first difference. */
-static Bool8 FrontendScenarioSelectionPage_CodeUnitsEqual
+static bool FrontendScenarioSelectionPage_CodeUnitsEqual
           (const uint16_t *firstText,const uint16_t *secondText,uint32_t unitCount)
 {
   while (unitCount != 0) {
@@ -110,7 +110,7 @@ static Bool8 FrontendScenarioSelectionPage_CodeUnitsEqual
    a host), drops a loaded campaign, selects that mission and loads it, then returns true. Returns false when
    there is no option, it is malformed or no row matches.
    Original quirk: when the closing quote does not end the command line, it stays overwritten with 0. */
-static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelectionPageView *scenarioSelectionPage)
+static bool FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelectionPageView *scenarioSelectionPage)
 {
   UiNodeFlags *controlFlags;
   uint8_t *mapOption;

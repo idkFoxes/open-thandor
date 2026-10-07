@@ -129,7 +129,7 @@ static void FrontendNetworkSetupPage_ApplyClientOption()
 {
   uint8_t *option;
   uint8_t *closingQuote;
-  Bool8 endpointParseFailed;
+  bool endpointParseFailed;
 
   option = g_CommandLineFindOption(8,g_NameClientKarteKeywordsAscii + 6);
   if (option == nullptr) {
@@ -363,7 +363,7 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
 void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit)
 
 {
-  Bool8 endpointParseFailed;
+  bool endpointParseFailed;
 
   endpointParseFailed = g_NetworkBackendSlot6
                     (&g_FrontendNetworkEndpointScratch,FrontendNetwork_TextBytes(hostAddressEdit->textBuffer));
@@ -514,7 +514,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   uint32_t *localPlayerNameCursor;
   uint32_t *localEndpointDwordCursor;
   uint32_t *localPlayerRecordDwordCursor;
-  Bool8 previewLoadFailed;
+  bool previewLoadFailed;
   
   frontendUi = reinterpret_cast<FrontendUiImage *>(Thandor_Bytes(createButton) - offsetof(FrontendUiImage,hostGameCreateButton));
   UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&frontendUi->frontendRoot.root.base);
@@ -738,12 +738,12 @@ void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick(UiListControl 
    of the selected row (selectedRowSlot) of the sibling sessionList and sends the join request (player
    descriptor packet 0x20002) to it. Returns the result of UiTransfer_SendPlayerDescriptor.
 */
-Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(UiFramedTextButtonControl *joinButton)
+bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(UiFramedTextButtonControl *joinButton)
 
 {
   uint32_t *selectedPlayerRecordDwordCursor;
   uint32_t *selectedEndpointDwordCursor;
-  Bool8 sendCarry;
+  bool sendCarry;
   
   /* joinButton is the frontend template's networkGameJoinButton; the session list is a sibling. */
   g_FrontendSessionToken =

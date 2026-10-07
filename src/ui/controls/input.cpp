@@ -37,7 +37,7 @@ static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,U
    the node gets the release (rightRelease for the right button, nonRightRelease otherwise), loses the capture
    and the pointer position is dispatched again as motion. Returns false, doing nothing, when control does not
    hold a capture with that button. */
-static Bool8 UiPointer_ReleaseCapture
+static bool UiPointer_ReleaseCapture
           (UiNodeBase *control,UiPointerCaptureButton captureButton,UiPointerWheelDelta wheelDelta,
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
@@ -169,12 +169,12 @@ static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,bool *wrapped)
    pre-order, skipping suppressed ones and wrapping around at most once through the topmost ancestor. The
    first one whose keyboardEvent returns false (takes the key) gets the keyboard focus. Returns true when
    nobody took the key (the walk came back to the focus node or would wrap a second time). */
-static Bool8 UiKeyboard_PassToFollowingFocusTargets
+static bool UiKeyboard_PassToFollowingFocusTargets
           (UiNodeBase *control,UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
 {
   bool wrappedOnce;
   bool wrapped;
-  Bool8 passToNext;
+  bool passToNext;
 
   wrappedOnce = false;
   passToNext = true;
@@ -207,7 +207,7 @@ static Bool8 UiKeyboard_PassToFollowingFocusTargets
 void UiKeyboard_DispatchPendingEvents()
 
 {
-  Bool8 dispatchToRoot;
+  bool dispatchToRoot;
   UiKeyboardEventCode keyCode;
   UiKeyboardStateMask keyboardStateMask;
   UiNodeBase *control;
@@ -306,7 +306,7 @@ GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,Ui
 }
 
 /* Whether the pointer lies inside root and root takes part in the pointer hit test. */
-static Bool8 UiPointer_RootContainsPointer(UiRootNode *root,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+static bool UiPointer_RootContainsPointer(UiRootNode *root,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
   return !Any(root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) &&
          ((root->base).left <= pointerX) && ((root->base).top <= pointerY) &&
@@ -369,7 +369,7 @@ static UiNodeBase *UiPointer_FindNonRightPressTarget
    target and gets the press and then, unless the press handler released the capture already, the capture
    target gets the drag (rightPress/rightDrag for the right button, nonRightPress/nonRightDrag otherwise). */
 static void UiPointer_CaptureAndPress
-          (UiNodeBase *node,UiPointerCaptureButton captureButton,Bool8 repeatClick,UiPointerWheelDelta wheelDelta,
+          (UiNodeBase *node,UiPointerCaptureButton captureButton,bool repeatClick,UiPointerWheelDelta wheelDelta,
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
   UiNodeVtable *nodeVtable;

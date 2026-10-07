@@ -17,7 +17,7 @@ static uint16_t g_FrontendEndMoviePathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n'
 
 static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {};
 
-/* The end movie's keyboard fallback returns nothing; the root keyboard fallback slot returns Bool8, but its only
+/* The end movie's keyboard fallback returns nothing; the root keyboard fallback slot returns bool, but its only
    caller (UiKeyboard_DispatchPendingEvents) ignores the result, so false is returned. */
 static bool EndMovieSlot_KeyboardFallback(UiKeyboardStateMask keyboardStateMask,UiActionId keyCode,UiRootNode *uiRoot)
 
@@ -167,9 +167,9 @@ void Frontend_PlaySelectedEndMovie()
   UiRootCallbacks *rootCallbacks;
   InGameRuntimeRoot *runtimeRoot;
   uint32_t playbackRateHz;
-  Bool8 movieOpened;
+  bool movieOpened;
   MovieRuntime *endMovieRuntime;
-  Bool8 endMovieAdvanced;
+  bool endMovieAdvanced;
 
   runtimeRoot = g_InGameRuntimeRoot;
   g_GraphicsCursorSetFrame(0);

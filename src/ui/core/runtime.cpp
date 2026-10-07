@@ -74,7 +74,7 @@ int UiModalDialogRoot_BlockMissedPointerMotion(UiRootNode *root)
    *outEndpoint (its sender-endpoint slot) set; returns false and leaves both untouched when nothing was
    pending.
 */
-Bool8 UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
+bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
 
 {
   uint32_t nextReadIndex;
@@ -109,12 +109,12 @@ void UiRuntimeRecordRing_Clear()
    host of this session has sent something. The in-game client tick uses it to skip processing until the
    host's packets are there. Returns false when nothing matches or the ring lock is busy (it only try-locks).
 */
-Bool8 UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken)
+bool UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken)
 
 {
   uint32_t ringIndex;
   UiRuntimeRecord *recordCursor;
-  Bool8 lockUnavailable;
+  bool lockUnavailable;
 
   lockUnavailable = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
   if (lockUnavailable) {

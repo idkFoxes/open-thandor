@@ -48,11 +48,11 @@ bool UiRootCallbacks_Free(UiRootNode *root);
 
 bool UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root);
 
-Bool8 UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint);
+bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint);
 
 void UiRuntimeRecordRing_Clear();
 
-Bool8 UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken);
+bool UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken);
 
 void UiRuntime_SetSynchronizationHooks
           (UiRuntimePostUnlockCallbackProc *postUnlockCallback,RuntimeSpinLockValue *frameLock);
