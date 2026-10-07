@@ -17,7 +17,7 @@ Bool8 UiRootStack_PopUntilWindowTextureBoundary();
 
 /* End marker of the UI root stack: g_UiRootNode holds it when no root is open, and the bottom root's
    previousRoot link holds it. */
-#define UI_ROOT_STACK_END (reinterpret_cast<UiRootNode *>(static_cast<intptr_t>(-1)))
+#define UI_ROOT_STACK_END (reinterpret_cast<UiRootNode *>(-1))
 
 void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root);
 
