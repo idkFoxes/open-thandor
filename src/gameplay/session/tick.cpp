@@ -289,8 +289,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
   Bool8 stepDue;
   InGameRuntimeRoot *inGameRoot;
 
-  /* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int */
-  lockAlreadyHeld = g_SpinLockTryAcquire(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+  lockAlreadyHeld = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   if (lockAlreadyHeld) {
     return;
@@ -298,7 +297,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* do not run ahead of the renderer by more than a few steps */
     if (2 < (int)g_InGamePendingSimulationTicks) {
-      g_SpinLockRelease(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+      g_SpinLockRelease(&g_InGameStateTickSpinLock);
       return;
     }
     g_InGamePendingSimulationTicks++;
@@ -310,7 +309,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     stepDue = InGameTick_RunClientLockstep();
   }
   if (!stepDue) {
-    g_SpinLockRelease(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+    g_SpinLockRelease(&g_InGameStateTickSpinLock);
     return;
   }
   g_SessionNetworkTickCounter++;
@@ -321,5 +320,5 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
            (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
     InGameTick_RunSimulationStep(inGameRoot);
   }
-  g_SpinLockRelease(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+  g_SpinLockRelease(&g_InGameStateTickSpinLock);
 }

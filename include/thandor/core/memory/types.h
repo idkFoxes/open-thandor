@@ -16,7 +16,7 @@ typedef struct ArenaBlockHeader ArenaBlockHeader, *PArenaBlockHeader;
 typedef struct ArenaState ArenaState, *PArenaState;
 typedef struct MemoryApiTable MemoryApiTable, *PMemoryApiTable;
 
-#define ARENA_HEAP_CORRUPT 0x13 /* error code: the arena block chain is corrupt (bad stateMagic) */
+inline constexpr auto ARENA_HEAP_CORRUPT = 0x13; /* error code: the arena block chain is corrupt (bad stateMagic) */
 
 enum {
     ARENA_BLOCK_ALLOCATED=1515870810,

@@ -47,7 +47,6 @@ typedef struct InGamePlayerStatusTextSlot InGamePlayerStatusTextSlot, *PInGamePl
 typedef struct InGameUiActionHandlerPage12Prefix28 InGameUiActionHandlerPage12Prefix28, *PInGameUiActionHandlerPage12Prefix28;
 typedef struct InGameUiActionHandlerPage10Prefix40 InGameUiActionHandlerPage10Prefix40, *PInGameUiActionHandlerPage10Prefix40;
 typedef struct InGameUiCommandModeActionHandlerPage11 InGameUiCommandModeActionHandlerPage11, *PInGameUiCommandModeActionHandlerPage11;
-typedef struct UiCommandDispatchRecord UiCommandDispatchRecord, *PUiCommandDispatchRecord;
 typedef struct RuntimeModelFactionPrefix RuntimeModelFactionPrefix, *PRuntimeModelFactionPrefix;
 typedef struct InGameRuntimeRootUiGridView InGameRuntimeRootUiGridView, *PInGameRuntimeRootUiGridView;
 typedef struct InGameRuntimeRootFrameView InGameRuntimeRootFrameView, *PInGameRuntimeRootFrameView;
@@ -222,7 +221,7 @@ struct WorldRuntimeContext {
     WorldWorkspaceElementCount dwordArrayCount; // Attached workspace element count.
     uint32_t reservedC8; // Never accessed.
     WorldRuntimeControlFlags runtimeControlFlags; // Secondary world control/state flags.
-    Ptr32<uint32_t> tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
+    Ptr32<RuntimeSpinLockValue> tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
     Ptr32<void ()> simulationAndNetworkTickCallback; // In-game simulation/network tick callback installed by both session initializers.
     Ptr32<struct WorldOwnerListNode> ownerListHead; // World-runtime owner-list head.
     struct WorldRuntimeSelectionState selection; // In-game selection and overlay state.
@@ -277,8 +276,6 @@ using UiCommandRuntimeFlagMask = uint32_t;
 using ModelLinkedDefinitionListAddress32 = int;
 
 using SelectionPanelNumericValue32 = int;
-
-using ContinuationEntryAddress32 = uint32_t;
 
 using MusicTrackClassId = uint32_t;
 
@@ -527,12 +524,6 @@ struct InGameUiCommandModeActionHandlerPage11 {
     Ptr32<void (void *)> handlers[30]; 
 };
 
-struct UiCommandDispatchRecord {
-    uint32_t commandCode; 
-    uint32_t modifierClassFlags; 
-    ContinuationEntryAddress32 continuationEntryAddress; 
-};
-
 struct RuntimeModelFactionPrefix {
     Ptr32<struct ModelRuntimeSlot> modelRuntime; // Root ModelRuntimeSlot consumed by hierarchy metric wrappers.
     Ptr32<struct ModelRuntimeNode> modelNode; // Model node pointer shared by the observed ArmyRuntimeSlot/GameEntityRuntime headers.
@@ -675,7 +666,7 @@ struct WorldRuntimeExtendedMapControlView {
     WorldWorkspaceElementCount dwordArrayCount;
     uint32_t reservedC8;
     WorldRuntimeControlFlags runtimeControlFlags;
-    Ptr32<uint32_t> tickSpinLock;
+    Ptr32<RuntimeSpinLockValue> tickSpinLock;
     Ptr32<void ()> simulationAndNetworkTickCallback;
     Ptr32<struct WorldOwnerListNode> ownerListHead;
     struct WorldRuntimeSelectionState selection;

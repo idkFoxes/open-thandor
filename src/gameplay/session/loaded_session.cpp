@@ -186,8 +186,7 @@ static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inG
   WorldRuntimeContext *world;
 
   world = &inGameRoot->worldRuntime;
-  /* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int */
-  g_SpinLockAcquire(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+  g_SpinLockAcquire(&g_InGameStateTickSpinLock);
   InGameSession_RebuildUiGrids(inGameRoot);
   InGameSession_InitShadingAndMirrorViewOptions(world);
   if (!InGameSession_AllocateGridScratchAndRebuildDerived(world,outError)) {
@@ -223,7 +222,7 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
   InGameLoadedSession_ReadSessionName(saveHandle);
   campaignAsset = Package_LoadEntry(g_CampagneHexPathUtf16,nullptr);
   if (campaignAsset != nullptr) {
-    g_FrontendLoadedCampaignAsset = reinterpret_cast<uintptr_t>(campaignAsset);
+    g_FrontendLoadedCampaignAsset = static_cast<CampaignAsset *>(campaignAsset);
   }
   levelImage = static_cast<FrontendLoadedLevelAsset *>(Package_LoadEntry(g_LevelHexPathUtf16,&packageLoadErrorCode));
   if (levelImage == nullptr) {

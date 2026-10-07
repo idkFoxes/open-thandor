@@ -1256,11 +1256,6 @@ template <class T> inline FrontendUiImage *FrontendUi_Image(T *root)
 {
   return reinterpret_cast<FrontendUiImage *>(root);
 }
-/* The same for a root held as an address (g_FrontendRootNode and the handlers that copy it). */
-inline FrontendUiImage *FrontendUi_Image(uintptr_t root)
-{
-  return reinterpret_cast<FrontendUiImage *>(root);
-}
 /* The frontend image copy that contains `node` as its member at byte offset nodeOffset
    (offsetof(FrontendUiImage, x)): the typed access from a handler's own node to its sibling nodes. */
 template <class T> inline FrontendUiImage *FrontendUi_ImageOfNode(T *node, size_t nodeOffset)

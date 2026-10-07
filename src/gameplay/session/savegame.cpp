@@ -152,7 +152,7 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
   if (!upsertOk) {
     return false;
   }
-  if (g_FrontendLoadedCampaignAsset == 0) {
+  if (g_FrontendLoadedCampaignAsset == nullptr) {
     Package_DeleteEntry(g_CampagneHexPathUtf16,packageHandle,nullptr);
     return true;
   }
@@ -187,7 +187,7 @@ static Bool8 InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle p
   timeText[-2] = L','; /* ", " between date and time */
   timeText[-1] = L' ';
   g_LocaleFormatCurrentTimeUtf16(timeText);
-  if (g_FrontendLoadedCampaignAsset == 0) {
+  if (g_FrontendLoadedCampaignAsset == nullptr) {
     campaignIndex = INGAME_SAVE_NO_CAMPAIGN;
   }
   else {

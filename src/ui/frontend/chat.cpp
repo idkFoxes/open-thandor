@@ -24,7 +24,7 @@ void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text)
 {
   RecentTextHistoryPointerList *output;
   
-  output = FrontendChat_HistoryBoxPointerList(&FrontendUi_Image(g_FrontendRootNode)->chatMessageHistory);
+  output = FrontendChat_HistoryBoxPointerList(&g_FrontendRootNode->chatMessageHistory);
   RecentTextHistory_Insert(text);
   RecentTextHistory_SortAndBuildPointerList(5,output); /* the box shows five lines */
 }

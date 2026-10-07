@@ -111,7 +111,7 @@ static void FrontendNetworkSetupPage_ApplyNameOption()
   if (closingQuote == nullptr) {
     return;
   }
-  playerNameText = FrontendUi_Image(g_FrontendRootNode)->playerNameEdit.textBuffer;
+  playerNameText = g_FrontendRootNode->playerNameEdit.textBuffer;
   *closingQuote = 0;
   if (closingQuote[1] == 0) {
     *option = 'n';
@@ -158,7 +158,7 @@ static void FrontendNetworkSetupPage_ApplyClientOption()
             (FrontendNetwork_TextBytes(g_FrontendNetworkEndpointTextUtf16),
              FrontendNetwork_SocketAddress(&g_FrontendNetworkEndpointScratch));
   RichTextCommandStream_CopyExpanded
-            (128,FrontendUi_Image(g_FrontendRootNode)->hostAddressEdit.textBuffer,
+            (128,g_FrontendRootNode->hostAddressEdit.textBuffer,
              g_FrontendNetworkEndpointTextUtf16,nullptr);
 }
 
@@ -457,7 +457,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
     if (maxPlayers < 9 && 1 < maxPlayers) {
       *option = 's';
       appliedOptionMask = 1;
-      FrontendUi_Image(g_FrontendRootNode)->maxPlayersSlider.value = maxPlayers;
+      g_FrontendRootNode->maxPlayersSlider.value = maxPlayers;
     }
   }
   /* -SPIEL="game name".
@@ -466,7 +466,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   if (option != nullptr) {
     closingQuote = CommandLineOption_FindClosingQuote(option + 7,19);
     if (closingQuote != nullptr) {
-      gameNameText = FrontendUi_Image(g_FrontendRootNode)->gameNameEdit.textBuffer;
+      gameNameText = g_FrontendRootNode->gameNameEdit.textBuffer;
       *closingQuote = 0;
       if (closingQuote[1] == 0) {
         *option = 's';
@@ -482,7 +482,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
     optionNetworkSpeed = CommandLineOption_ParseQuotedDigit(option,10);
     if (optionNetworkSpeed < 8 && optionNetworkSpeed != 0) {
       *option = 'n';
-      FrontendUi_Image(g_FrontendRootNode)->networkSpeedSlider.value =
+      g_FrontendRootNode->networkSpeedSlider.value =
            optionNetworkSpeed;
       appliedOptionMask = appliedOptionMask + 4;
       g_SessionNetworkTickInterval = optionNetworkSpeed * 2;
