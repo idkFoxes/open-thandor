@@ -265,7 +265,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
         != 1) {
       break;
     }
-        if ((((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (upgradeButton->activationSound != nullptr)) {
+        if (Any((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) && (upgradeButton->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,upgradeButton->activationSound,nullptr);
     }
     InGameTechnologyPanel_ToggleForSelection(reinterpret_cast<UiNodeBase *>(world)); /* the world view node */

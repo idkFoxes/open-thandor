@@ -19,8 +19,8 @@ inline constexpr int32_t UI_WINDOW_SUBRESOURCE_TOOLTIP_RIGHT = 0xBE;
 inline constexpr uint32_t UI_TOOLTIP_NO_ROOT_DIM_ARGB = 0x80000000;
 /* UiGraphicsAdapterTextButton_DrawFormattedAdapterText: stateFlags bits choosing the payloads, and the text
    shown as device name of the primary display adapter (GUID 0). */
-inline constexpr int32_t UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER = 0x80;
-inline constexpr int32_t UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME = 0x800;
+inline constexpr UiSelectableStateFlags UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER = FromBits<UiSelectableStateFlags>(0x80);
+inline constexpr UiSelectableStateFlags UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME = FromBits<UiSelectableStateFlags>(0x800);
 inline constexpr int32_t TEXT_ID_PRIMARY_DISPLAY_ADAPTER = 0x111;
 /* Windows-1252 key codes typed with AltGr on a German keyboard (the text edits' keyboard handlers accept them
    without the Ctrl/Alt shortcut check). */

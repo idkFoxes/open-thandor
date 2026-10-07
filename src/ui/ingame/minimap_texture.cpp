@@ -357,7 +357,7 @@ void TerrainCompositeTexture_RebuildPlane0()
   FieldGridCoordinates gridCoordinates;
 
   inGameRoot = g_InGameRuntimeRoot;
-  if ((g_InGameRuntimeRoot->minimapResourceButtonStateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any(g_InGameRuntimeRoot->minimapResourceButtonStateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     assetOffset = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
   }
   else {
