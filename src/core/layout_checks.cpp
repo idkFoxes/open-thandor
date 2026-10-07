@@ -503,6 +503,8 @@ static_assert(sizeof(NetworkSessionContext) == 0x100,
               "NetworkSessionContext keeps its 32-bit layout");
 static_assert(sizeof(InGameCameraCommandDispatchRecord) == 0xC,
               "InGameCameraCommandDispatchRecord keeps its 32-bit layout");
+static_assert(offsetof(InGameCameraCommandDispatchRecord, action) == 0x8 && sizeof(InGameCameraKeyAction) == 4,
+              "the camera key action keeps the 32-bit continuation slot");
 static_assert(sizeof(InGameCameraCommandDispatchTable) == 0xD0,
               "InGameCameraCommandDispatchTable keeps its 32-bit layout");
 static_assert(sizeof(SelectionPlayerPairRecord) == 0x8,

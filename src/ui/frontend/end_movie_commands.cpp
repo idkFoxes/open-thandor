@@ -16,13 +16,20 @@
 
 /* Module data. */
 
+/* Actions of the end-movie command table. */
+enum class EndMovieCommandAction : uint32_t {
+    SkipEndMovie = 1,  /* Alt+Q */
+    Screenshot = 2,    /* Ctrl+P */
+};
+static_assert(sizeof(UiKeyCommandRecord<EndMovieCommandAction>) == 0xC, "a key command record keeps the original 12 bytes");
+
 /* 2 command records and the terminator record (commandCode 0) that ends the dispatcher's scan. The scan
    also reads the terminator's modifierClassFlags (0x90909090, NOP fill). Original quirk: the original's
-   terminator was only 8 bytes long and code followed it, so the terminator's continuationEntryAddress is not
-   original data (never read). */
-static const UiCommandDispatchRecord g_EndMovieCommandDispatchRecords[3] = {
-    /* 0 */ {.commandCode = 0x71, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x565990},
-    /* 1 */ {.commandCode = 0x70, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x5658F0},
+   terminator was only 8 bytes long and code followed it, so the terminator's action is not original data
+   (never read). */
+static const UiKeyCommandRecord<EndMovieCommandAction> g_EndMovieCommandDispatchRecords[3] = {
+    /* 0 */ {.commandCode = 0x71, .modifierClassFlags = 0x30, .action = EndMovieCommandAction::SkipEndMovie},
+    /* 1 */ {.commandCode = 0x70, .modifierClassFlags = 0xC, .action = EndMovieCommandAction::Screenshot},
     /* 2 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090}};
 
 /* Update callback of the end-movie UI in a network game: keeps the frontend session alive while the end
@@ -58,17 +65,17 @@ void EndMovieUiRuntime_DispatchCommandByFlags
   /* The matching record's continuationEntryAddress selects the action below. endMovieRuntime is the in-game
      root. */
   /* the record's modifier class demands exactly none, Ctrl, Alt or Ctrl+Alt (Shift is ignored) */
-  const UiCommandDispatchRecord *record = UiCommandDispatch_Find(g_EndMovieCommandDispatchRecords,
+  const UiKeyCommandRecord<EndMovieCommandAction> *record = UiCommandDispatch_Find(g_EndMovieCommandDispatchRecords,
       (uint32_t)commandCode, (uint32_t)modifierFlags, UiKeyModifierRule::ExactShiftIgnored);
   if (record == nullptr) {
     return;
   }
-  uint32_t target = (uint32_t)record->continuationEntryAddress;
+  EndMovieCommandAction target = record->action;
   switch (target) {
-  case 0x5658f0: /* screenshot */
+  case EndMovieCommandAction::Screenshot: /* screenshot */
     Screenshot_SaveFramebufferAsPcx();
     break;
-  case 0x565990: /* skip the end movie */
+  case EndMovieCommandAction::SkipEndMovie: /* skip the end movie */
     /* UI_NODE_SUPPRESSED in the nodeFlags of the results continue button */
     if (((InGameUi_Image(endMovieRuntime)->resultsContinueButton.selectable.base.nodeFlags &
           UI_NODE_SUPPRESSED) != 0) ||
@@ -94,7 +101,7 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     }
     break;
   default:
-    Thandor_Log("EndMovie dispatch: unhandled continuation %08x",target);
+    Thandor_Log("EndMovie dispatch: unhandled action %u",static_cast<uint32_t>(target));
     break;
   }
 }
