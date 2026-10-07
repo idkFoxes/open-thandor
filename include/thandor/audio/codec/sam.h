@@ -13,18 +13,18 @@
 #include <thandor/core/contracts.h>
 
 /* A .sam block: 256 transform coefficients <-> 256 PCM samples per channel. */
-#define SAM_BLOCK_SAMPLE_COUNT 256
+inline constexpr int SAM_BLOCK_SAMPLE_COUNT = 256;
 /* The MMX cosine transforms compute 4 outputs (one qword, four 256-entry cosine rows) per loop pass. */
-#define SAM_MMX_OUTPUTS_PER_PASS 4
+inline constexpr int SAM_MMX_OUTPUTS_PER_PASS = 4;
 
 /* CosineDerivedLookupTables_Init: two 256x256 tables of shorts (the .sam codec's cosine transform) */
-#define COSINE_DERIVED_TABLE_ORDER 256
+inline constexpr int COSINE_DERIVED_TABLE_ORDER = 256;
 
-#define COSINE_DERIVED_TABLE_ANGLE_STEP 0x40 /* pi/512 in angle16 units */
+inline constexpr int COSINE_DERIVED_TABLE_ANGLE_STEP = 0x40; /* pi/512 in angle16 units */
 
-#define COSINE_DERIVED_INV_SQRT2_Q12 2896 /* 1/sqrt(2) in Q12: row 0 of the first table */
+inline constexpr int COSINE_DERIVED_INV_SQRT2_Q12 = 2896; /* 1/sqrt(2) in Q12: row 0 of the first table */
 
-#define COSINE_DERIVED_INV_SQRT2_Q14 11585 /* 1/sqrt(2) in Q14: entry 0 of each row of the second table */
+inline constexpr int COSINE_DERIVED_INV_SQRT2_Q14 = 11585; /* 1/sqrt(2) in Q14: entry 0 of each row of the second table */
 
 /* Two 32-bit lanes as one 64-bit value: highLane in bits 32-63, lowLane in bits 0-31. */
 #define SAM_PACK_LANE_PAIR(highLane, lowLane) ((uint64_t)(uint32_t)(highLane) << 32 | (uint32_t)(lowLane))

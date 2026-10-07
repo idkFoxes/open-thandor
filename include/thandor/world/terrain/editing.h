@@ -19,7 +19,7 @@
 #define TERRAIN_REGION_STOP_FLAGS (FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_CONNECTED_REGION_VISITED)
 /* Capacity of g_TerrainRegionCollectionEntries (8-byte records: extraction descriptor, model offset); further
    extractors of a region are cleared but not recorded (TerrainRegionCollection_RecordConnectedCell). */
-#define TERRAIN_REGION_COLLECTION_CAPACITY 2048
+inline constexpr int TERRAIN_REGION_COLLECTION_CAPACITY = 2048;
 
 void TerrainRegionCollection_CollectConnectedCellsRecursive
           (FieldGridRegionMask requiredCellFlags,FieldGridRowStrideBytes rowStrideBytes,

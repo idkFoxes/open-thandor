@@ -13,16 +13,16 @@
 
 /* Voice sets (SoundVoiceSet, the original's layout, kept as the arena block the game holds): every loaded
    sound has up to eight voices, and all sets are listed in a 256-entry registry (SdlAudio_Init allocates it). */
-#define SOUND_VOICES_PER_SET 8
-#define SOUND_VOICE_SET_REGISTRY_CAPACITY 256
+inline constexpr int SOUND_VOICES_PER_SET = 8;
+inline constexpr int SOUND_VOICE_SET_REGISTRY_CAPACITY = 256;
 /* SoundSampleAsset.formatVersion the audio backend accepts (1.0 in 16.16) */
-#define SOUND_SAMPLE_FORMAT_VERSION 0x10000
+inline constexpr int SOUND_SAMPLE_FORMAT_VERSION = 0x10000;
 /* The .sam decoder produces blocks of 256 stereo 16-bit frames = 0x400 bytes (0x200 shorts). */
-#define SOUND_SAMPLE_DECODED_BLOCK_BYTES 0x400
+inline constexpr int SOUND_SAMPLE_DECODED_BLOCK_BYTES = 0x400;
 /* Stage numbers SdlAudio_CreateSampleVoiceSet leaves in g_PackageLastErrorPath on failure (the original's
    DirectSound stages) */
-#define SOUND_VOICE_STAGE_CREATE_BUFFER 100
-#define SOUND_VOICE_STAGE_FILL 102
+inline constexpr int SOUND_VOICE_STAGE_CREATE_BUFFER = 100;
+inline constexpr int SOUND_VOICE_STAGE_FILL = 102;
 
 extern SoundPlayVoiceProc *g_SoundPlayOneShot;
 

@@ -14,18 +14,18 @@
 
 /* Size of g_PackageScratchBuffer (8 MiB), allocated once by FileSystem_Init and used as the default
    load/enumeration buffer (the original repeats the literal 0x800000 at every use). */
-#define PACKAGE_SCRATCH_BUFFER_BYTES 0x800000
+inline constexpr int PACKAGE_SCRATCH_BUFFER_BYTES = 0x800000;
 /* Mount table and archive layout (Package_Mount, Package_FindEntry*, Package_Unmount, Package_DecodeEntryInto) */
-#define PACKAGE_MOUNT_SLOT_COUNT 0x400 /* g_PackageMountSlots */
-#define PACKAGE_DIRECTORY_BYTES 0x80000 /* entry-header array allocated per mount (0x400 headers) */
-#define PCK_ENTRY_HEADER_BYTES 0x200 /* sizeof(PckEntryHeader); the archive header has the same size */
-#define PACKAGE_DWORD_ALIGN_MASK 0xFFFFFFFCU /* ~3: (byteCount + 3) & mask rounds up to whole dwords */
-#define PCK_ENTRY_PATH_UNITS 0xF6 /* UTF-16 code units of PckEntryHeader.path, terminator included */
+inline constexpr int PACKAGE_MOUNT_SLOT_COUNT = 0x400; /* g_PackageMountSlots */
+inline constexpr int PACKAGE_DIRECTORY_BYTES = 0x80000; /* entry-header array allocated per mount (0x400 headers) */
+inline constexpr int PCK_ENTRY_HEADER_BYTES = 0x200; /* sizeof(PckEntryHeader); the archive header has the same size */
+inline constexpr uint32_t PACKAGE_DWORD_ALIGN_MASK = 0xFFFFFFFCU; /* ~3: (byteCount + 3) & mask rounds up to whole dwords */
+inline constexpr int PCK_ENTRY_PATH_UNITS = 0xF6; /* UTF-16 code units of PckEntryHeader.path, terminator included */
 
 /* High bits of the Package_LoadEntryIntoBuffer capacity argument */
-#define PACKAGE_LOAD_CAPACITY_MASK 0x3FFFFFFF
-#define PACKAGE_LOAD_SKIP_PACKAGES 0x80000000 /* load only the loose file */
-#define PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST 0x40000000 /* try the loose file next to the executable first */
+inline constexpr int PACKAGE_LOAD_CAPACITY_MASK = 0x3FFFFFFF;
+inline constexpr uint32_t PACKAGE_LOAD_SKIP_PACKAGES = 0x80000000; /* load only the loose file */
+inline constexpr int PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST = 0x40000000; /* try the loose file next to the executable first */
 
 Bool8 Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,

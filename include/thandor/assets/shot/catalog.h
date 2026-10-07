@@ -13,13 +13,13 @@
 #include <thandor/core/contracts.h>
 
 /* Slots of g_ShotDefinitionRegistry (256 pointers; a null slot is free). */
-#define SHOT_DEFINITION_REGISTRY_SLOT_COUNT 256
+inline constexpr int SHOT_DEFINITION_REGISTRY_SLOT_COUNT = 256;
 /* Entries of ShotDefinition.terrainMaterialIndices31 (one per terrain-material reference of a shot). */
-#define SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT 31
+inline constexpr int SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT = 31;
 /* Entries of ShotDefinition.targetClassImpactEffectDefinitions8 / targetClassImpactDamageQ12. */
-#define SHOT_TARGET_CLASS_IMPACT_COUNT 8
+inline constexpr int SHOT_TARGET_CLASS_IMPACT_COUNT = 8;
 /* Entries of g_TerrainMaterialTextureSets: valid terrain-material indices are 0..25. */
-#define TERRAIN_MATERIAL_COUNT 26
+inline constexpr int TERRAIN_MATERIAL_COUNT = 26;
 
 uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset);
 

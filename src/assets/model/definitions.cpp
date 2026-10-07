@@ -169,7 +169,7 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
    data: a node with more children than childSerializedOffsets holds or a tree deeper than
    MDL_NODE_TREE_MAX_DEPTH (a cyclic offset) fails with FATAL_ERROR_MODEL_ASSET_INVALID before its sprite is
    loaded. The stock models use at most 5 children and depth 5. */
-#define MDL_NODE_TREE_MAX_DEPTH 64
+static constexpr int MDL_NODE_TREE_MAX_DEPTH = 64;
 static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ModelAssetHeader *asset,uint32_t *error,
                                                 uint32_t depth)
 {

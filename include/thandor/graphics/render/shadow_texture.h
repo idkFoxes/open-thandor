@@ -28,7 +28,7 @@ inline constexpr int GRAPHICS_PROJECTED_BLOCK_BYTES = 0x80;
 inline constexpr int GRAPHICS_PROJECTED_BLOCK_PAIRS = 16;
 inline constexpr int GRAPHICS_SHADOW_PATCH_BLOCK_COUNT = 14;
 /* Index of point pair `pair` of block `block` in a GraphicsProjectedPointPair array of consecutive blocks */
-#define GRAPHICS_PROJECTED_PAIR(block, pair) ((block) * GRAPHICS_PROJECTED_BLOCK_PAIRS + (pair))
+constexpr int GRAPHICS_PROJECTED_PAIR(int block, int pair) { return block * GRAPHICS_PROJECTED_BLOCK_PAIRS + pair; }
 /* Highest light level of g_ShadingIntensityScaleMmx (256 entries) */
 inline constexpr int GRAPHICS_SHADING_INTENSITY_MAX = 255;
 

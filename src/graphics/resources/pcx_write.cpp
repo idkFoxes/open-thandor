@@ -34,8 +34,8 @@ static constexpr int PCX_HEADER_SIZE = 0x80;
 static constexpr int PCX_PALETTE_MARKER = 0x0C;
 /* Bytes the original reserved in the output block beyond the scan lines: the header, plus for a palette
    source the marker, 768 palette bytes and one more for the last palette entry, which it stored as a dword. */
-#define PCX_RESERVE_DIRECT_COLOR PCX_HEADER_SIZE
-#define PCX_RESERVE_PALETTE (PCX_HEADER_SIZE + 1 + 0x300 + 1)
+static constexpr auto PCX_RESERVE_DIRECT_COLOR = PCX_HEADER_SIZE;
+static constexpr auto PCX_RESERVE_PALETTE = PCX_HEADER_SIZE + 1 + 0x300 + 1;
 /* Palette banks of a texture source asset start at +0x200, 256 entries of 8 bytes each. */
 static constexpr int PCX_PALETTE_BANKS_OFFSET = 0x200;
 static constexpr int PCX_PALETTE_BANK_SIZE = 0x800;
