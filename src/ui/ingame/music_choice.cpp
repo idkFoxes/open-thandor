@@ -49,7 +49,7 @@ uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId
       if (ArmyAssetRegistry_FindById(armyRuntime->armyAssetId,&foundArmyAsset) == 0) {
         armyDefinition = ModelView_Cast<ArmyAssetRecord>(foundArmyAsset);
         registryWeight = 1;
-        if ((armyRuntime->commandModeFlags & 1) != 0) {
+        if (Any(armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY)) {
           registryWeight = 3;
         }
         class70Sum = class70Sum + armyDefinition->definitionClassValue70;

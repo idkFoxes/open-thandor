@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
+#include <thandor/core/flags.h>
 #include <thandor/assets/package/types.h>
 #include <thandor/core/types.h>
 #include <thandor/gameplay/faction/types.h>
@@ -352,11 +353,14 @@ enum {
 };
 using InGameScheduledConditionKind = int;
 
-enum /* InGameEndConditionTriggerStateFlags, stored in 1 byte(s) */ {
-    INGAME_END_CONDITION_TRIGGER_ACTIVE=1,
-    INGAME_END_CONDITION_TRIGGER_PROCESSED=2
+/* InGameEndConditionTriggerRecord8.stateFlags, one byte of the level script (level file data). */
+enum class InGameEndConditionTriggerStateFlags : uint8_t {
+    INGAME_END_CONDITION_TRIGGER_NONE = 0,
+    INGAME_END_CONDITION_TRIGGER_ACTIVE = 1,
+    INGAME_END_CONDITION_TRIGGER_PROCESSED = 2
 };
-using InGameEndConditionTriggerStateFlags = uint8_t;
+THANDOR_FLAG_ENUM(InGameEndConditionTriggerStateFlags);
+using enum InGameEndConditionTriggerStateFlags;
 
 enum {
     INGAME_SCHEDULED_CONDITION_SATISFIED=1,
@@ -365,7 +369,7 @@ enum {
 using InGameScheduledConditionStatusFlags = int;
 
 struct InGameEndConditionTriggerRecord8 {
-    uint8_t stateFlags;
+    InGameEndConditionTriggerStateFlags stateFlags;
     uint8_t movieVariantSelector;
     uint8_t skipArmyDisableWhenOne;
     uint8_t reserved03;

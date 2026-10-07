@@ -518,7 +518,7 @@ static void ArticulatedContact_MarkStepObstructed(ArmyArticulatedRuntimeSlotView
 
   /* the owner's common.commandFlags is its movementStateFlags */
   entityCommandFlags = &(armyRuntime->linkedEntityRuntime->common).commandFlags;
-  *entityCommandFlags = *entityCommandFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
+  *entityCommandFlags = *entityCommandFlags | ToBits(ARMY_MOVEMENT_ROUTE_POINT_REACHED);
   contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
   if ((*contactStateFlags & ARMY_ARTICULATED_STEP_OBSTRUCTED) != 0) {
     *contactStateFlags = *contactStateFlags & ~(ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT);

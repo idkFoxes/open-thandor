@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
+#include <thandor/core/flags.h>
 #include <thandor/assets/army/types.h>
 #include <thandor/assets/sprite/types.h>
 #include <thandor/audio/spatial/types.h>
@@ -133,11 +134,58 @@ struct ModelWorldPoint {
 using ArmyPlacementContactKindIndex32 = uint32_t;
 using WeaponAimCountdownTicks = int;
 
-using ArmyMovementStateFlags = uint32_t;
+/* ArmyRuntimeSlot/ArmyMovementRuntime.movementStateFlags bits, as set and tested by the move-command starters
+   and ArmyRuntime_UpdateMovementAndWaypoints. The field is also GameEntityRuntimeCommon.commandFlags (raw
+   uint32_t there: ToBits). Saved as raw bytes; bit values are fixed. */
+enum class ArmyMovementStateFlags : uint32_t {
+    ARMY_MOVEMENT_NONE = 0,
+    ARMY_MOVEMENT_ACTIVE = 0x1, /* a move target is set (movementWorld*Q12 / fallbackPosition) */
+    ARMY_MOVEMENT_LOCKED = 0x2, /* new move orders are appended to the waypoint queue, not started */
+    ARMY_MOVEMENT_STATIONARY = 0x4, /* set by the ground/articulated class updates at the start of a tick,
+                                       cleared again when the model moved or turned */
+    ARMY_MOVEMENT_WAYPOINTS_QUEUED = 0x8, /* queuedWaypoints[0..queuedWaypointCount-1] are in use */
+    ARMY_MOVEMENT_ROUTE_POINT_REACHED = 0x10, /* set by the class updates on reaching the current route point:
+                                                 the next ArmyRuntime_UpdateMovementAndWaypoints advances */
+    ARMY_MOVEMENT_TARGET_FOLLOWING = 0x20, /* started by ArmyRuntimeCommand_UpdateTargetFollowingState; a new
+                                              command resets the move first */
+    ARMY_MOVEMENT_ORDERED = 0x40, /* set by the routed, queued and waypoint move starters, cleared by the
+                                     direct/clamped starters and the resets; never tested by the game */
+    ARMY_MOVEMENT_DIRECT = 0x80, /* ArmyRuntime_StartDirectMoveCommand: orders are never queued */
+    ARMY_MOVEMENT_SPECIAL_BEHAVIOR = 0x100, /* class 18: AiUnitBehavior_UpdatePioneerVehicle runs each tick */
+    ARMY_MOVEMENT_ROUTED = 0x200, /* routed move command: kept by the reset/target-following paths */
+    ARMY_MOVEMENT_MIRROR_TARGET = 0x400 /* ArmyRuntime_SetPendingMoveTarget also sets movementTargetWorld*Q12 */
+};
+THANDOR_FLAG_ENUM(ArmyMovementStateFlags);
+using enum ArmyMovementStateFlags;
 
-using ArmyCommandModeFlags = uint32_t;
+/* ArmyRuntimeSlot.commandModeFlags: what the current command targets (ArmyRuntime_ResolveCommandTarget,
+   ArmyRuntime_ApplyTargetPositionCommand, ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration). The field
+   is also GameEntityCommandTargetState.targetFlags (raw uint32_t there: ToBits). Saved as raw bytes. */
+enum class ArmyCommandModeFlags : uint32_t {
+    ARMY_COMMAND_MODE_NONE = 0,
+    ARMY_COMMAND_MODE_TARGET_ARMY = 0x1, /* commandTargetArmyRuntime */
+    ARMY_COMMAND_MODE_TARGET_POSITION = 0x2, /* commandCoordinate0-2Q12 */
+    ARMY_COMMAND_MODE_INTERRUPTED = 0x4, /* a target command was cancelled; commandGeneration re-stamped */
+    ARMY_COMMAND_MODE_AI_COMBAT_TARGET = 0x8, /* target picked by the AI combat target selection: target-following
+                                                 moves are clamped (ArmyRuntime_StartClampedMoveCommand) */
+    ARMY_COMMAND_MODE_SELECTION_ORDER = 0x10, /* target/position order given to the selection (set with INTERRUPTED);
+                                                 cleared by move commands and SelectionRuntime_CancelTargets */
+    ARMY_COMMAND_MODE_UNUSED_400 = 0x400 /* cleared by ArmyRuntime_AppendWaypointOrStartMove; never set or tested */
+};
+THANDOR_FLAG_ENUM(ArmyCommandModeFlags);
+using enum ArmyCommandModeFlags;
 
 using ArmyCommandGeneration = uint32_t;
+
+/* ArmyRuntimeSlot.aiUnitFlags (+0x94). */
+enum class ArmyAiUnitFlags : uint32_t {
+    AI_UNIT_FLAGS_NONE = 0,
+    /* set when AiUnitGroup_AssignCollectedEntitiesToBestTarget sends the unit to a group target, cleared by the
+       direct AI move commands; AiUnitBehavior_CollectUnassignedEntity skips it */
+    AI_UNIT_STATE94_GROUP_ASSIGNED = 0x1
+};
+THANDOR_FLAG_ENUM(ArmyAiUnitFlags);
+using enum ArmyAiUnitFlags;
 
 using ArmyRuntimeFlags = uint32_t;
 
@@ -1083,7 +1131,7 @@ struct ArmyRuntimeSlot {
     uint32_t aiSecondaryWorkspaceScoreWeight; // AI weight of secondary workspace sites, copied from the army asset record
     uint32_t aiUnitState; // AI command state (AI_UNIT_COMMANDED_STATE when the AI gave an order), 0 on creation
     uint32_t occupancyMarkRadius; // largest ModelDefinition.occupancyMarkRadius; radius of occupancy bit 1 around the army
-    uint32_t aiUnitFlags; // AI unit flags (AI_UNIT_STATE94_GROUP_ASSIGNED)
+    ArmyAiUnitFlags aiUnitFlags; // AI unit flags (AI_UNIT_STATE94_GROUP_ASSIGNED)
     uint32_t assignedTargetArmyRuntime; // ArmyRuntimeSlot * given as target by the AI or the player's selection; pool offset in saves
     ModelRuntimeClassId depthBinClass;
     PckArmyAssetIdCatalog armyAssetId;
@@ -1353,7 +1401,7 @@ struct ArmyRuntimeLinkedChildMaskSlotView {
     uint32_t aiSecondaryWorkspaceScoreWeight; 
     uint32_t aiUnitState; 
     uint32_t occupancyMarkRadius; 
-    uint32_t aiUnitFlags; 
+    ArmyAiUnitFlags aiUnitFlags; 
     uint32_t assignedTargetArmyRuntime; 
     ModelRuntimeClassId depthBinClass; 
     PckArmyAssetIdCatalog armyAssetId; 
