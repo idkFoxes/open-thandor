@@ -63,7 +63,7 @@ void SdlVideo_Shutdown();
    kind (window, borderless fullscreen, exclusive fullscreen), a w x h memory framebuffer in XRGB8888 (32-bit
    colour only, the requested depth is not looked at), the pixel format, the published framebuffer and the
    blitters; then the chained finalize step. */
-Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
+bool SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                                 uint32_t *errorCode);
 /* g_GraphicsFramebufferPresent: composes the software cursor into the framebuffer, presents it letterboxed
    (through the SDL_GPU device, or an SDL_Renderer streaming texture for the software renderer) and removes the
@@ -137,7 +137,7 @@ Bool8 SdlInput_Init(uint32_t *outError);
 /* Runtime_Shutdown: stops the cursor timer and gives the system cursor back. */
 void SdlInput_Shutdown();
 /* g_GraphicsSetDisplayMode hook: frees and recreates the cursor buffers around the chained mode switch. */
-Bool8 SdlInput_SetDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
+bool SdlInput_SetDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                               uint32_t *errorCode);
 /* g_PointerSetPosition */
 void SdlInput_SetPosition(int32_t positionY,int32_t positionX);
@@ -154,13 +154,13 @@ uint32_t SdlAudio_Init();
 void SdlAudio_Shutdown();
 uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet);
 void SdlAudio_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet);
-Bool8 SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
+bool SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
                            SoundVoice **outVoice);
-Bool8 SdlAudio_PlayLooping(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
+bool SdlAudio_PlayLooping(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
                            SoundVoice **outVoice);
 void SdlAudio_StopVoice(SoundVoice *voice);
 /* Inverted like the original's DirectSound_IsVoicePlaying: false while the voice plays, true when it is NULL or stopped. */
-Bool8 SdlAudio_IsVoiceFinished(SoundVoice *voice);
+bool SdlAudio_IsVoiceFinished(SoundVoice *voice);
 void SdlAudio_SetVoiceGains(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoice *voice);
 void SdlAudio_StopAllVoices();
 

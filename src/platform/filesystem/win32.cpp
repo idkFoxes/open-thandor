@@ -323,7 +323,7 @@ uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void
 /* Stores the current position of a file in *outPosition and returns true; returns false with
    *outPosition 0 when SetFilePointer fails.
 */
-Bool8 Win32File_GetPosition(void *handle,uint32_t *outPosition)
+bool Win32File_GetPosition(void *handle,uint32_t *outPosition)
 
 {
   DWORD filePosition;
@@ -527,7 +527,7 @@ uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *h
 /* Stores the size of a file (low 32 bits) in *outSize and returns true; returns false with *outSize 0
    when GetFileSize fails (some callers pass that 0 on as their error code).
 */
-Bool8 Win32File_GetSize(void *handle,uint32_t *outSize)
+bool Win32File_GetSize(void *handle,uint32_t *outSize)
 
 {
   DWORD fileSize;

@@ -66,11 +66,11 @@ inline constexpr auto CURSOR_INPUT_EVENT_RING_SIZE = 256;
 /* SdlInput_Init: rate of the cursor-animation timer (the original also polled its DirectInput mouse at 64 Hz) */
 inline constexpr auto CURSOR_ANIMATION_TIMER_HZ = 20;
 
-Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
+bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
 
 void Keyboard_FlushEvents();
 
-Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask);
+bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask);
 
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
