@@ -7,6 +7,7 @@
 
 #include <thandor/ui/dialogs/display_settings.h>
 #include <thandor/core/bytes.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -574,7 +575,6 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   int32_t colorScaleQ16;
   int32_t colorBiasQ16;
   UiRootNode *root;
-  int copyCount;
   UiNodeFlags colorDepthBits;
   GraphicsDisplayModeCount remainingModes;
   uint32_t *copyCursor;
@@ -591,11 +591,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   /* copy the template, one dword per step */
   templateCursor = reinterpret_cast<const uint32_t *>(&g_UiDisplaySettingsRootTemplate);
   copyCursor = reinterpret_cast<uint32_t *>(root);
-  for (copyCount = sizeof(DisplaySettingsUiImage) / 4; copyCount != 0; copyCount--) {
-    *copyCursor = *templateCursor;
-    templateCursor = templateCursor + 1;
-    copyCursor = copyCursor + 1;
-  }
+  std::copy_n(templateCursor,sizeof(DisplaySettingsUiImage) / 4,copyCursor);
   activeAdapterIndex = g_ActiveGraphicsAdapterIndex;
   /* not in the original: the mode's size, not the framebuffer's (a GPU UI scale divides it) */
   framebufferHeight = SdlVideo_DisplayModeHeight();
@@ -811,7 +807,6 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
 {
   uint16_t *countdownNumberBuffer;
   UiRootNode *root;
-  int remainingDwords;
   uint32_t *templateCursor;
   uint32_t *copyCursor;
   uint32_t allocError;
@@ -827,11 +822,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
     templateCursor = reinterpret_cast<uint32_t *>(&g_UiFourValueDialogTemplateImage);
     copyCursor = reinterpret_cast<uint32_t *>(root);
     countdownText = reinterpret_cast<UiFourValueDialogCountdownText *>(FOUR_VALUE_DIALOG_UI(root,countdownMessageText));
-    for (remainingDwords = sizeof(g_UiFourValueDialogTemplateImage) / 4; remainingDwords != 0; remainingDwords--) {
-      *copyCursor = *templateCursor;
-      templateCursor++;
-      copyCursor++;
-    }
+    std::copy_n(templateCursor,sizeof(g_UiFourValueDialogTemplateImage) / 4,copyCursor);
     countdownNumberBuffer = countdownText->countdownTextUtf16;
     resolvedText = TextResource_Resolve(TEXT_ID_DISPLAY_MODE_KEEP_COUNTDOWN);
     RichTextCommandStream_PatchPayloadBySelector(0,countdownNumberBuffer,resolvedText);
