@@ -39,7 +39,7 @@ uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory);
 
 extern MemoryApiTable g_MemoryApi;
 
-/* ArenaScoped: one arena block owned by a function scope and freed through g_MemoryApi.free when the scope ends
+/* ArenaScoped: one arena block owned by a function scope and freed through the memory API when the scope ends
    (step 13 R5, owner decision D6). Only for blocks whose free is the last arena operation of the scope on every
    path: block addresses are sort keys and the simulation depends on the alloc/free order, so the guard must free
    exactly where the explicit free stood (nothing but plain stores and returns may follow it). Global or
@@ -56,7 +56,7 @@ public:
     }
   }
 
-  /* g_MemoryApi.alloc(bytes) into this guard (which holds no block yet); returns its status, 0 on success.
+  /* Allocates bytes from the arena into this guard (which holds no block yet); returns the status, 0 on success.
      On failure the guard stays empty. */
   uint32_t allocate(uint32_t bytes)
   {
