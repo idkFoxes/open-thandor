@@ -23,7 +23,7 @@ static PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256] = {};
 static PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {};
 
 /* Success exit of a codec (PckCodecProc): stores byteCount in *outByteCount when it is not NULL. */
-static Bool8 PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
+static bool PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
 {
   if (outByteCount != nullptr) {
     *outByteCount = byteCount;
@@ -32,7 +32,7 @@ static Bool8 PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
 }
 
 /* Failure exit of a codec (PckCodecProc): stores errorCode in *outErrorCode when it is not NULL. */
-static Bool8 PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
+static bool PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
 {
   if (outErrorCode != nullptr) {
     *outErrorCode = errorCode;
@@ -46,7 +46,7 @@ static Bool8 PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
    prefix in *outByteCount (true), or false with the error code of the allocation or the method-0 encoder in
    *outErrorCode.
 */
-Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -180,7 +180,7 @@ static void PckCodec_GenerateFieldGridWorldCoordinates(FieldGridAsset *grid)
    the compact image or destinationCapacityBytes fail with FATAL_ERROR_GENERAL_FAILURE. Valid grids decode as
    before.
 */
-Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
+bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -231,7 +231,7 @@ Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,F
    Copies the source dword by dword when it fits into the destination and returns true with its size rounded up
    to four bytes in *outByteCount; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when it does not fit.
 */
-Bool8 PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -259,7 +259,7 @@ Bool8 PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint
    sourceSizeBytes: the original sets no result of its own, and in Package_DecodeEntryInto the leftover value
    is the read size (packedSize).
 */
-Bool8 PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+bool PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -542,7 +542,7 @@ static Bool8 PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *so
    would count 2^32 bytes); a source of one distinct byte value gets a dummy second symbol (see
    PckCodec_EncoderEnsureTwoSymbols).
 */
-Bool8 PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -682,7 +682,7 @@ static uint8_t *PckCodec_DecoderSkipWholeBytes(uint8_t *inputByte,PckHuffmanBitO
    may then be partly written). The encoder always leaves at least 16 bytes of slack behind the last token, so
    valid streams decode as before.
 */
-Bool8 PckCodec_DecodeHuffmanRle
+bool PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
           uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
@@ -759,14 +759,14 @@ Bool8 PckCodec_DecodeHuffmanRle
 
 /* Slot adapters of the field-grid codecs: the PckCodecProc slot passes the grid side as a byte buffer, which the
    field-grid codec reads/writes as the FieldGridAsset it holds. */
-static Bool8 PckCodec_EncodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
+static bool PckCodec_EncodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
           uint32_t sourceImageSizeBytes,uint8_t *source,uint32_t *outByteCount,uint32_t *outErrorCode)
 {
   return PckCodec_EncodeFieldGrid(destinationCapacityBytes,destination,sourceImageSizeBytes,
                                   reinterpret_cast<FieldGridAsset *>(source),outByteCount,outErrorCode);
 }
 
-static Bool8 PckCodec_DecodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
+static bool PckCodec_DecodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
           uint32_t sourceSizeBytes,uint8_t *source,uint32_t *outByteCount,uint32_t *outErrorCode)
 {
   return PckCodec_DecodeFieldGrid(destinationCapacityBytes,reinterpret_cast<FieldGridAsset *>(destination),

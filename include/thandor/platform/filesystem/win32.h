@@ -29,7 +29,7 @@ uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uin
 uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle);
 
 /* false (*outPosition 0) when the position cannot be read */
-Bool8 Win32File_GetPosition(void *handle,uint32_t *outPosition);
+bool Win32File_GetPosition(void *handle,uint32_t *outPosition);
 
 /* 0 or FATAL_ERROR_FILE_SEEK_FAILED */
 uint32_t Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle);
@@ -50,7 +50,7 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
 uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *handle);
 
 /* false (*outSize 0) when the size cannot be read */
-Bool8 Win32File_GetSize(void *handle,uint32_t *outSize);
+bool Win32File_GetSize(void *handle,uint32_t *outSize);
 
 /* false (destination emptied) when the directory cannot be read */
 Bool8 Win32File_GetCurrentDirectory(uint16_t *destination);

@@ -173,7 +173,7 @@ uint32_t FailVoiceSet(int32_t failedStage, uint32_t errorCode) noexcept
   return errorCode;
 }
 
-Bool8 PlayVoiceSet(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, SoundVoiceSet *handle,
+bool PlayVoiceSet(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, SoundVoiceSet *handle,
                    bool looping, SoundVoice **outVoice)
 {
   if (outVoice != nullptr) {
@@ -358,13 +358,13 @@ void SdlAudio_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet)
   }
 }
 
-Bool8 SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
+bool SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
                            SoundVoice **outVoice)
 {
   return PlayVoiceSet(leftChannelGainQ15, rightChannelGainQ15, voiceSet, false, outVoice);
 }
 
-Bool8 SdlAudio_PlayLooping(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
+bool SdlAudio_PlayLooping(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
                            SoundVoice **outVoice)
 {
   return PlayVoiceSet(leftChannelGainQ15, rightChannelGainQ15, voiceSet, true, outVoice);
@@ -381,7 +381,7 @@ void SdlAudio_StopVoice(SoundVoice *voice)
   }
 }
 
-Bool8 SdlAudio_IsVoiceFinished(SoundVoice *voice)
+bool SdlAudio_IsVoiceFinished(SoundVoice *voice)
 {
   if (!s_mixer) {
     return true;

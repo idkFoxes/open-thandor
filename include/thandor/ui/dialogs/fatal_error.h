@@ -19,7 +19,7 @@ int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);
 
 void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
 
-uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 failed);
+uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,bool failed);
 
 void ErrorRuntime_InstallUiHandlerAndAllocateState();
 

@@ -12,12 +12,12 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
+bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid);
 
-Bool8 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
+bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid);

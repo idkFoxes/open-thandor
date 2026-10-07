@@ -32,7 +32,7 @@ void SoundBackendDisabled_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet)
    leftover value of their own as the voice (e.g. a random effect index or a music gain). Those handles only ever go back to the silent stubs (the backend is chosen once at startup)
    or through a NULL test before one (Movie_Rewind), so NULL here behaves the same.
 */
-Bool8 SoundBackendDisabled_PlayOneShot
+bool SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           SoundVoiceSet *voiceSet,SoundVoice **outVoice)
 
@@ -49,7 +49,7 @@ Bool8 SoundBackendDisabled_PlayOneShot
    SoundBackendDisabled_PlayOneShot those values only reach the silent stubs again, so NULL behaves the same
    (the spatial pool merely calls this stub again instead of the gain stub on the next frame).
 */
-Bool8 SoundBackendDisabled_PlayLooping
+bool SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           SoundVoiceSet *voiceSet,SoundVoice **outVoice)
 
@@ -70,7 +70,7 @@ void SoundBackendDisabled_StopVoice(SoundVoice *voice)
 /* Silent-backend stub in slot g_SoundIsVoiceFinished: always returns true, meaning the voice is not
    playing.
 */
-Bool8 SoundBackendDisabled_IsVoiceFinished(SoundVoice *voice)
+bool SoundBackendDisabled_IsVoiceFinished(SoundVoice *voice)
 
 {
   return true;

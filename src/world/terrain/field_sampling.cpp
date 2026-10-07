@@ -134,7 +134,7 @@ int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
    diagonal neighbour is a border cell. Entries 0, 2 and 3 of g_FieldGridInterpolationCallbacks5; also called directly by
    ArmyPlacementContact_ApplyTerrainHeight and the army movement code.
 */
-Bool8 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
+bool FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   uint32_t gridHalfRowCoordinateQ12;
@@ -248,7 +248,7 @@ int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fi
    g_FieldGridInterpolationCallbacks5; also called directly by
    ArmyPlacementContact_ApplyWaterSurfaceHeight.
 */
-Bool8 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
+bool FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   int gridColumnIndex;
@@ -309,7 +309,7 @@ Bool8 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldG
    interpolation table (entry 4 of g_FieldGridInterpolationCallbacks5). Stores the Q12 height in
    *outHeightQ12; returns false (and stores height 0) outside the grid or on a border cell.
 */
-Bool8 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
+bool FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   uint32_t gridHalfRowCoordinateQ12;

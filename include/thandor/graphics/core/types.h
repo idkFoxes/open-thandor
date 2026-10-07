@@ -24,7 +24,7 @@ struct GraphicsTextureSourceAsset;
 struct SoftwareFramebufferAccess;
 
 /* Callback/function-definition ABIs. */
-using GraphicsCursorSetFrameProc = Bool8 (uint32_t frameIndex);
+using GraphicsCursorSetFrameProc = bool (uint32_t frameIndex);
 
 using TH_LEGACY_DWORD = uint32_t;
 
@@ -126,7 +126,7 @@ struct CursorPointerEvent {
     UiPixelCoordinate pointerY;
     UiPointerWheelDelta wheelDelta;
 };
-using GraphicsCursorConsumeEventProc = Bool8 (CursorPointerEvent *outEvent);
+using GraphicsCursorConsumeEventProc = bool (CursorPointerEvent *outEvent);
 
 /* True when the raw event type of a consumed event (CursorPointerEvent.eventType) is a button release (the
    types above RIGHT_PRESS). */
