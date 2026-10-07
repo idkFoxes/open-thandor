@@ -45,7 +45,7 @@ FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = -108, .topOffset = -32, .rightOffset = -12, .bottomOffset = -6,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
-            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_PREFERRED_FOCUS_TARGET},
         {.stateFlags = 0x0000000C, .actionId = 0x00000001, .textResourceId = 0x00000100},
 };
 

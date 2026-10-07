@@ -76,7 +76,7 @@ void UiWindowControl_DrawFramedTextAndChrome
   if (g_GraphicsFramebufferBeginAccess()) {
     return;
   }
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) == 0) {
       framePiece = UI_WINDOW_SUBRESOURCE_BUTTON_FRAME;
     }
@@ -141,7 +141,7 @@ void UiWindowControl_DrawFramedTextAndChrome
   textX = ((int)(((uint32_t)(buttonWidth * 3) >> 2) - textWidth) >> 1) +
           ((uint32_t)(control->selectable).base.layoutWidth >> 2);
   textStyle = g_UiTextStyleDisabled;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     textStyle = g_UiTextStyleNormal;
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
       textStyle = g_UiTextStyleSelected;
@@ -161,7 +161,7 @@ void UiWindowControl_DrawFramedTextAndChrome
     textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
   }
   textStyle = textStyle | control->packedTextStyle;
-  if (((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS)) {
     RichTextCommandStream_DrawSingleLine
               (clipBottom,clipRight,clipTop,clipLeft,textStyle,commandStream,
                textY + (control->selectable).base.top,
@@ -238,7 +238,7 @@ void UiWindowControl_DrawFramedTextAndChrome
           (control->selectable).base.top;
   iconShadowX = iconX;
   iconShadowY = iconY;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       iconOffsetX = control->iconDrawOffsets.normalX;
       iconOffsetY = control->iconDrawOffsets.normalY;
@@ -348,7 +348,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
     }
     if (Any(control->root.rootFlags & UI_ROOT_TITLE_BAR)) {
       titleBarSubresource = UI_WINDOW_SUBRESOURCE_TITLE_BAR;
-      if ((control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT) == 0) {
+      if (!Any(control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT)) {
         titleBarSubresource = UI_WINDOW_SUBRESOURCE_TITLE_BAR_INACTIVE;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
@@ -376,7 +376,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
       if (Any(control->root.rootFlags & UI_ROOT_CLOSE_ARMED)) {
         buttonSubresource = UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON_ARMED;
       }
-      if ((control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT) == 0) {
+      if (!Any(control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT)) {
         buttonSubresource = UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON_INACTIVE;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
@@ -389,7 +389,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
       if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED)) {
         buttonSubresource = UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON_ARMED;
       }
-      if ((control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT) == 0) {
+      if (!Any(control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT)) {
         buttonSubresource = UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON_INACTIVE;
       }
       if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZED)) {
@@ -545,7 +545,7 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
     g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   }
   if (Any(control->root.rootFlags & UI_ROOT_CLOSE_ARMED) &&
-     ((control->root.base.nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0)) {
+     (Any(control->root.base.nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK))) {
     UiActionQueue_Enqueue(UI_ACTION_CLOSE_ROOT,control);
   }
   if (Any(control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED)) {

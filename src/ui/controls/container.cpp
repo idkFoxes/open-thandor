@@ -159,7 +159,7 @@ void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,Ui
    to every page of the page stack, hidden ones included, by making each the stack's firstChild in turn.
 */
 void UiLayoutContainerControl_ApplyFlagsRecursive
-          (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiPageStackControl *control)
+          (UiNodeFlags setMask,UiNodeFlags retainMask,UiPageStackControl *control)
 
 {
   UiPageCount remainingCount;
@@ -338,10 +338,10 @@ static UiNodeBase *UiContainer_HitTestEligibleSiblings
   UiNodeBase *hit;
 
   for (; child != UI_NODE_NONE; child = child->nextSibling) {
-    if ((((child->nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0) ||
+    if ((Any(child->nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) ||
          ((child->left <= pointerX && child->top <= pointerY) &&
           (pointerX < child->right && pointerY < child->bottom))) &&
-        ((child->nodeFlags & UI_NODE_SUPPRESSED) == 0)) {
+        (!Any(child->nodeFlags & UI_NODE_SUPPRESSED))) {
       hit = UiContainer_HitTestEligibleSiblings(pointerY,pointerX,child->nextSibling);
       if (hit != UI_NODE_NONE) {
         return hit;

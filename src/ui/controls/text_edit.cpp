@@ -389,7 +389,7 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
 
   edit = UiNode_As<UiTextEditControl>(control);
   if (Any(control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) ||
-     (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+     (Any((control->base).nodeFlags & UI_NODE_SUPPRESSED))) {
     return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
   /* Characters typed with AltGr are inserted without the modifier checks. */
@@ -604,7 +604,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
                textOffsetY - 1,selectionStartWidth + textOffsetX,control);
   }
   packedStyle = g_UiTextEditActiveTextStyle;
-  if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
+  if (!Any((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS)) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE;
   }
   if (Any(control->editStateFlags & UI_TEXT_EDIT_READ_ONLY)) {
@@ -613,7 +613,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   if (!Any(control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     packedStyle = g_UiTextEditInactiveTextStyle;
   }
-  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->base).nodeFlags & UI_NODE_SUPPRESSED)) {
     packedStyle = g_UiTextEditDisabledTextStyle;
   }
   if (!Any(control->editStateFlags & UI_TEXT_EDIT_CARET_VISIBLE_PHASE)) {
@@ -715,7 +715,7 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
   UiNodeFlags *nodeFlagsField;
   uint16_t currentCodeUnit;
   
-  if (((control->base).nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET) == 0) {
+  if (!Any((control->base).nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET)) {
     nodeFlagsField = &(control->base).nodeFlags;
     *nodeFlagsField = *nodeFlagsField | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
