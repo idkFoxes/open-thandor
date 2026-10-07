@@ -497,7 +497,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
                 .stateFlags = 0x00000084, .actionId = 0x00001013},
             .textResourceId = 0x0000217E},
-        {.tooltipText = (uint16_t *)0x00300000},
+        {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +1544 technologyAreaTab1 g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {
@@ -509,7 +509,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
                 .stateFlags = 0x00001491, .actionId = 0x00001014},
             .textResourceId = 0x0000217F},
-        {.tooltipText = (uint16_t *)0x00300000},
+        {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +15AC technologyAreaTab2 g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {
@@ -521,7 +521,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
                 .stateFlags = 0x00001491, .actionId = 0x00001015},
             .textResourceId = 0x0000217F},
-        {.tooltipText = (uint16_t *)0x00300000},
+        {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +1614 technologyAreaTab3 g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {
@@ -533,7 +533,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
                 .stateFlags = 0x00001491, .actionId = 0x00001016},
             .textResourceId = 0x0000217F},
-        {.tooltipText = (uint16_t *)0x00300000},
+        {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +167C technologyAreaTab4 g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {
@@ -545,7 +545,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
                 .stateFlags = 0x00001491, .actionId = 0x00001017},
             .textResourceId = 0x0000217F},
-        {.tooltipText = (uint16_t *)0x00300000},
+        {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +16E4 technologyAreaTab5 g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {
@@ -557,7 +557,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
                 .stateFlags = 0x00001491, .actionId = 0x00001018},
             .textResourceId = 0x0000217F},
-        {.tooltipText = (uint16_t *)0x00300000},
+        {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +174C technologyAreaTab6 g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {
@@ -569,7 +569,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
                 .stateFlags = 0x00001491, .actionId = 0x00001019},
             .textResourceId = 0x0000217F},
-        {.tooltipText = (uint16_t *)0x00300000},
+        {.tooltipText = THANDOR_PTR32_BITS(0x00300000)},
         { /* +17B4 technologyAreaTab7 g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {
