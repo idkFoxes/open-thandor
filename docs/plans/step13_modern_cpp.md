@@ -1,6 +1,8 @@
 # Step 13 (later): modern C++ - typed UI, named casts, constants, enums, RAII, bool, loops
 
-Status: planned, not started; it starts after step 10. Step 13 takes the idiomatic-C++ backlog that step 8 left for "a later step of its own"
+Status: done (2026-10-07; final check W7: all eight run_checks pass (maps only the known stromschnelle
+WARN), gpu_compare Vulkan and D3D12 23/23, GCC and MSVC without new warnings, all self-tests identical, a
+pre-step-13 savegame loads). Step 13 takes the idiomatic-C++ backlog that step 8 left for "a later step of its own"
 ([step 8 owner decisions](step8_idiomatic_cpp.md#owner-decisions-2026-10-04)): the decompiler's C-style casts, the
 UI reached through byte offsets into template images, `#define` constants, `typedef struct`, raw allocation,
 `Bool8`, the original key-dispatch addresses, the 0x90 fill leftovers and the decompiled `do { } while` counting
@@ -526,6 +528,25 @@ table of section 8 filled in, `tools/docs/gen_docs.py` regenerated, README/CHANG
 coordinator's merges and gates per wave about 8 waves x 1.5 h, that is roughly 4-5 working sessions of the
 coordinator, plus about 2 hours for the final checks. W3 (typed UI) and W5 (Bool8 truncation sites) carry the most
 risk; W1 and W2 are the safest and fastest.
+
+
+**Result after step 13 (W7, 2026-10-07):**
+
+| Item | Start | End |
+|---|---|---|
+| C-style pointer casts (modern_counts) | 5,174 | 4 |
+| `INGAME_UI` / `FRONTEND_UI` / `THANDOR_UI_AT`+`SIBLING` | 1,080 / 320 / 254 | 0 / 0 / 0 (macros removed) |
+| object-like numeric `#define` | 1,790 | 121 (Win32/platform copies and two override points) |
+| `constexpr` | 90 | 1,608 |
+| `typedef struct` | 620 | 0 |
+| `enum class` | 3 | 96 |
+| libc malloc/free | 30 | 0 |
+| arena alloc/free | 297 | 290 (order unchanged; `ArenaScoped` in four functions) |
+| `Bool8` | 1,145 | 5 (type, two D3 fields, two comments) |
+| original 0x5xxxxx addresses | 225 | 0 (in `docs/original_addresses.txt`) |
+| 0x90909090 fill | 28 | 18 (read by the original's over-read emulation, quirk terminators, self-test inputs) |
+| `do { } while` | 421 | 297 (about 150 marked "D8: kept for step 11", the rest are not counting loops) |
+| clang-tidy diagnostics (step 13 checks) | 15,926 | 889 |
 
 ## 9. How the counts were taken
 

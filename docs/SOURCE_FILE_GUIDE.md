@@ -22,7 +22,7 @@ Asset loading, catalogs and resource formats.
 
 Module header: [`army.h`](../include/thandor/assets/army.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-army-catalog)
 
-- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-army-catalog) - Bits of an army record's flags (ArmyAssetRecord.flags) that pick the map-editor placement lists: unit placement (g_UiCommandModeG 3, g_UiCommandModeGArmyAssetId) cycles records with 0x0100 set and ...
+- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-army-catalog) - no file comment; main functions `ArmyAssetRegistry_FindById`, `ArmyAssetRegistry_FindEnabledById`, `ArmyAsset_PrepareRecords`
 - [`types.h`](source_guide/assets.md#file-assets-army-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-effect"></a>
@@ -134,7 +134,7 @@ Error handling, fixed-point maths, memory, settings and strings.
 - [`bytes.h`](source_guide/core.md#file-core-bytes) - Byte positions inside a block of memory (an arena block, a loaded file, a record walked by byte offsets).
 - [`color_lanes.h`](source_guide/core.md#file-core-color-lanes) - Not functions of the original: C stand-ins for the MMX colour sequences the original inlines wherever it shades a packed ARGB colour (shot and effect tints, world and model lighting, terrain ...
 - [`contracts.h`](source_guide/core.md#file-core-contracts) - Core contracts shared by the split submodules.
-- [`flags.h`](source_guide/core.md#file-core-flags) - Not part of the original: bit operations for flag sets declared as `enum class E : uint32_t` (or another unsigned underlying type).
+- [`flags.h`](source_guide/core.md#file-core-flags) - Not part of the original: bit operations for flag sets declared as `enum class E : uint32_t` (or another unsigned underlying type; THANDOR_SIGNED_WORD_FLAG_ENUM for an int32_t word, see there).
 - [`layout_checks.cpp`](source_guide/core.md#file-core-layout-checks) - The structs of the type headers (&lt;area&gt;/&lt;module&gt;/types.h) are the original's 32-bit layouts on x86 and x64 (core/ptr32.h): their sizes and the offsets of their pointer fields, checked at compile time.
 - [`ptr32.h`](source_guide/core.md#file-core-ptr32) - 32-bit pointer fields of the original data layouts (step 5f).
 - [`slot.h`](source_guide/core.md#file-core-slot) - Typed table entries (step 8): THANDOR_SLOT(function) for a function-pointer slot of a vtable or callback table (a Ptr32&lt;R(A...)&gt; field or a plain R (*)(A...)), replacing the untyped ...
@@ -146,7 +146,7 @@ Error handling, fixed-point maths, memory, settings and strings.
 
 Module header: [`error.h`](../include/thandor/core/error.h) · Changelog: `runtime` [dev](../CHANGELOG.md#module-core-error-runtime) · [full](../CHANGELOG_FULL.md#module-core-error-runtime)
 
-- [`runtime.cpp / runtime.h`](source_guide/core.md#file-core-error-runtime) - 0x1D..0x21: unused since the software renderer is the only renderer (they were hardware renderer setup errors)
+- [`runtime.cpp / runtime.h`](source_guide/core.md#file-core-error-runtime) - no file comment; main functions `ErrorSystem_Init`, `FatalError_Exit`, `FatalError_ShowAndExit`
 - [`types.h`](source_guide/core.md#file-core-error-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-core-math"></a>
@@ -219,7 +219,7 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`class_dispatch.cpp / class_dispatch.h`](source_guide/gameplay.md#file-gameplay-army-class-dispatch) - no file comment; main functions `ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback`, `ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback`, `ArmyRuntimeNode_DispatchTypedCallback`
 - [`class_updates.cpp / class_updates.h`](source_guide/gameplay.md#file-gameplay-army-class-updates) - no file comment; main functions `ArmyRuntime_ClassCommandHandlerGroupA`, `ArmyRuntime_UpdateAnimatedModelSubnodes`, `ArmyRuntime_RebuildDerivedSelectionMetrics`
 - [`collision.cpp / collision.h`](source_guide/gameplay.md#file-gameplay-army-collision) - no file comment; main functions `ArmyCollision_FindBlockingRuntimeForCurrentUnit`, `ArmyCollision_TestPointWithinExpandedRuntimeRadius`, `ArmyPlacementCollision_TestCurrentRuntime`
-- [`combat.cpp / combat.h`](source_guide/gameplay.md#file-gameplay-army-combat) - no file comment; main functions `ArmyWeaponRuntime_TestTargetLineOfFire`, `ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments`
+- [`combat.cpp / combat.h`](source_guide/gameplay.md#file-gameplay-army-combat) - no file comment; main functions `ArmyWeaponRuntime_TestTargetLineOfFire`, `ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments`, `ARMY_WEAPON_ATTACHMENT_MESH_BIT`
 - [`damage.cpp / damage.h`](source_guide/gameplay.md#file-gameplay-army-damage) - no file comment; main functions `ArmyRuntime_EmitDamageThresholdEffect`, `ArmyRuntime_ApplyDamageAndPropagateToParent`, `ArmyRuntime_ApplyImpactDamageAndFinalizeState`
 - [`drive_banking.cpp / drive_banking.h`](source_guide/gameplay.md#file-gameplay-army-drive-banking) - no file comment; main functions `ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation`
 - [`drive_common.cpp / drive_common.h`](source_guide/gameplay.md#file-gameplay-army-drive-common) - no file comment; main functions `ArmyRuntime_HandleCollisionPartner`, `ArmyRuntime_UpdateActivationMetricAndPlayStartSound`
@@ -228,11 +228,11 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`model_rules.cpp / model_rules.h`](source_guide/gameplay.md#file-gameplay-army-model-rules) - Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking, condition, energy and selection metrics, faction technology variants and the turret yaw/pitch aim.
 - [`model_slots.cpp / model_slots.h`](source_guide/gameplay.md#file-gameplay-army-model-slots) - Per-class model runtime callbacks from g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, indexed by the model definition's class id (runtimeClassId): modelClassInitialize (run by ...
 - [`model_views.h`](source_guide/gameplay.md#file-gameplay-army-model-views) - The class-specific views of the model runtime, model definition and model node as overlays of the memory they view (core/slot.h THANDOR_SLOT_OVERLAY), so the class dispatch tables ...
-- [`move_orders.cpp / move_orders.h`](source_guide/gameplay.md#file-gameplay-army-move-orders) - no file comment; main functions `ArmyRuntime_UpdateMovementAndWaypoints`, `ArmyRuntime_StartRoutedMoveCommand`, `ArmyRuntime_ResetMovementStateFromModel`
+- [`move_orders.cpp / move_orders.h`](source_guide/gameplay.md#file-gameplay-army-move-orders) - The movementStateFlags bits ARMY_MOVEMENT_* are ArmyMovementStateFlags (gameplay/army/types.h).
 - [`placement.cpp / placement.h`](source_guide/gameplay.md#file-gameplay-army-placement) - no file comment; main functions `ArmyPlacement_ValidateAssetAtPointAndCellCorners`, `ArmyPlacement_CanPlaceAssetAtFieldPoint`, `PlayerRuntime_CreatePlacementArmy`
 - [`placement_contact.cpp / placement_contact.h`](source_guide/gameplay.md#file-gameplay-army-placement-contact) - no file comment; main functions `ArmyPlacementContact_ApplyTerrainHeight`, `ArmyPlacementContact_ApplyWaterSurfaceHeight`, `ArmyPlacementContact_ApplyTerrainHeightAndNormal`
 - [`placement_release.cpp / placement_release.h`](source_guide/gameplay.md#file-gameplay-army-placement-release) - no file comment; main functions `ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation`, `ArmyPlacement_ReleaseFactionCapacity`, `ArmyPlacement_ReleaseClassStateReservation`
-- [`pool.cpp / pool.h`](source_guide/gameplay.md#file-gameplay-army-pool) - no file comment; main functions `ArmyRuntime_CreateInstanceFromAsset`, `ArmyRuntime_DestroyInstanceAndRefreshUi`, `ArmyRuntime_Token`
+- [`pool.cpp / pool.h`](source_guide/gameplay.md#file-gameplay-army-pool) - The army model state bits ARMY_RUNTIME_FLAG_DESTROYED and ARMY_MODEL_STATE_* are ArmyRuntimeFlags (gameplay/army/types.h).
 - [`preview.cpp / preview.h`](source_guide/gameplay.md#file-gameplay-army-preview) - no file comment; main functions `ArmyAssetRegistry_ResolveOrCreatePreviewTexture`, `ArmyRuntime_RenderPreviewTexture`, `ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected`
 - [`turrets.cpp / turrets.h`](source_guide/gameplay.md#file-gameplay-army-turrets) - no file comment; main functions `ArmyRuntimeClass_UpdateSingleBarrelTurret`, `ArmyRuntimeClass_UpdateTwinBarrelTurret`, `FixedVector_StepBackwardAlongOwnDirection`
 - [`types.h`](source_guide/gameplay.md#file-gameplay-army-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
@@ -286,7 +286,7 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 
 Module header: [`technology.h`](../include/thandor/gameplay/technology.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-gameplay-technology-runtime)
 
-- [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-technology-runtime) - no file comment; main functions `ModelDefinition_SelectFactionUnlockedLinkedDefinition`, `Technology_IsAvailableForFaction`, `Technology_ApplyRecordToEntity`
+- [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-technology-runtime) - The research bits ENTITY_RUNTIME_FLAG_RESEARCH_* are ArmyRuntimeFlags (gameplay/army/types.h).
 - [`types.h`](source_guide/gameplay.md#file-gameplay-technology-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [Graphics](source_guide/graphics.md)
@@ -372,9 +372,9 @@ FLM movie playback and encoding.
 
 Module header: [`runtime.h`](../include/thandor/movie/runtime.h) · Changelog: `playback` [dev](../CHANGELOG.md#module-movie-runtime-playback) · [full](../CHANGELOG_FULL.md#module-movie-runtime-playback)
 
-- [`flm_decoder.cpp / flm_decoder.h`](source_guide/movie.md#file-movie-runtime-flm-decoder) - The decoder treats every token &gt;= MOVIE_TOKEN_SKIP_LONG as a long skip, so the unused tokens 0x1C..0x1F (never written by the encoder) decode like 0x1B.
+- [`flm_decoder.cpp / flm_decoder.h`](source_guide/movie.md#file-movie-runtime-flm-decoder) - no file comment; main functions `Movie_DecodeFrame4x4Delta`, `Movie_BuildChromaLumaTable`
 - [`flm_encoder.cpp / flm_encoder.h`](source_guide/movie.md#file-movie-runtime-flm-encoder) - Encoder-only constants (the decoder does not need them).
-- [`playback.cpp / playback.h`](source_guide/movie.md#file-movie-runtime-playback) - no file comment; main functions `Movie_Close`, `Movie_AdvanceFrame`, `Movie_Open`
+- [`playback.cpp / playback.h`](source_guide/movie.md#file-movie-runtime-playback) - Movie_Open flags: MovieOpenFlags (movie/runtime/types.h).
 - [`types.h`](source_guide/movie.md#file-movie-runtime-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [Network](source_guide/network.md)
@@ -453,7 +453,7 @@ Module header: [`filesystem.h`](../include/thandor/platform/filesystem.h) · Cha
 
 Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `devices` [full](../CHANGELOG_FULL.md#module-platform-input-devices)
 
-- [`devices.cpp / devices.h`](source_guide/platform.md#file-platform-input-devices) - no file comment; main functions `Keyboard_OnKeyDown`, `Keyboard_OnKeyUp`, `Keyboard_OnChar`
+- [`devices.cpp / devices.h`](source_guide/platform.md#file-platform-input-devices) - The KEYBOARD_STATE_* bits of g_KeyboardStateMask: UiKeyboardStateMask (ui/controls/types.h).
 - [`types.h`](source_guide/platform.md#file-platform-input-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-platform-sdl3"></a>
@@ -560,7 +560,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 Module header: [`dialogs.h`](../include/thandor/ui/dialogs.h)
 
-- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - UiDisplaySettingsApplyButton and UiDisplaySettingsValueReadout (the typed applyButton and colorBiasValueText nodes of DisplaySettingsUiImage) are declared with the template in ui/dialogs/types.h.
+- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateResolutionSelection`, `UiDisplayModeAction_UpdateAdapterSelection`
 - [`fatal_error.cpp / fatal_error.h`](source_guide/ui.md#file-ui-dialogs-fatal-error) - no file comment; main functions `FatalErrorDialog_DismissAndPopRoot`, `ErrorRuntime_InstallUiHandlerAndAllocateState`, `FatalErrorDialog_BlockMissedPointerPress`
 - [`types.h`](source_guide/ui.md#file-ui-dialogs-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -607,7 +607,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 - [`catalog_entry.cpp / catalog_entry.h`](source_guide/ui.md#file-ui-ingame-catalog-entry) - no file comment; main functions `UiCatalogEntryControl_DrawClipped`, `UiCatalogEntryControl_PointerMove`, `UiCatalogEntryControl_NonRightRelease`
 - [`chat.cpp / chat.h`](source_guide/ui.md#file-ui-ingame-chat) - no file comment; main functions `InGameRecentTextHistory_InsertAndRebuild8`, `InGameSevenSlotCommand_SubmitAndClosePage`, `InGameChatInput_SendLineOrCheckCheatPhrase`
 - [`command_buttons.cpp / command_buttons.h`](source_guide/ui.md#file-ui-ingame-command-buttons) - no file comment; main functions `UiCommandSpriteButtonControl_BeginPress`, `UiCommandSpriteButtonControl_RightRelease`, `UiCommandSpriteButtonControl_NonRightRelease`
-- [`commands.cpp / commands.h`](source_guide/ui.md#file-ui-ingame-commands) - no file comment; main functions `InGameCommand_HandlePlayerDeparture`, `UiCommandRuntimeFlags_ApplyClearSetToggleMasks`, `InGameCommand_TogglePauseRequest`
+- [`commands.cpp / commands.h`](source_guide/ui.md#file-ui-ingame-commands) - PLAYER_SESSION_FLAG_SLOW_RENDERING is PlayerSessionFlags (gameplay/selection/types.h).
 - [`editor_army_cycling.cpp / editor_army_cycling.h`](source_guide/ui.md#file-ui-ingame-editor-army-cycling) - no file comment; main functions `ArmyAssetRegistry_NormalizeIdToPlaceableUnit`, `ArmyAssetRegistry_StepForwardPlaceableUnit`, `ArmyAssetRegistry_StepBackwardPlaceableUnit`
 - [`editor_keyboard.cpp / editor_keyboard.h`](source_guide/ui.md#file-ui-ingame-editor-keyboard) - no file comment; main functions `InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags`
 - [`editor_tool_selection.cpp / editor_tool_selection.h`](source_guide/ui.md#file-ui-ingame-editor-tool-selection) - no file comment; main functions `InGameCommandModeG_Select0`, `InGameCommandModeG_Select1`, `InGameCommandModeG_Select2`
@@ -631,7 +631,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 - [`selection_panel_resources.cpp / selection_panel_resources.h`](source_guide/ui.md#file-ui-ingame-selection-panel-resources) - no file comment; main functions `SelectionInfoPanel_InitResources`, `SelectionInfoPanel_ShutdownResources`
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-ingame-settings) - no file comment; main functions `InGameSettingsPage_ToggleAndSynchronizeControls`, `InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks`, `InGameSettingsAction_CloseAlternatePanel`
 - [`targeting.cpp / targeting.h`](source_guide/ui.md#file-ui-ingame-targeting) - no file comment; main functions `InGameTargetingContext_AdvanceOrResolveTarget`, `InGameTargetingContext_CancelAndRestoreState`
-- [`technology.cpp / technology.h`](source_guide/ui.md#file-ui-ingame-technology) - UiTechnologyAreaTabPrefix (the two dwords in front of each technology area tab, InGameUi_Image(root)-&gt;technologyAreaTabN_prefix) is declared with the template in ui/ingame/types.h.
+- [`technology.cpp / technology.h`](source_guide/ui.md#file-ui-ingame-technology) - no file comment; main functions `InGameTechnologyPanel_ResetAndSelectCurrentArea`, `InGameTechnologyAreaTab_SelectAndRebuild`, `InGameTechnologyResearch_StartSelected`
 - [`types.h`](source_guide/ui.md#file-ui-ingame-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`ui_template.cpp / ui_template.h`](source_guide/ui.md#file-ui-ingame-ui-template)
 - [`world_input.cpp / world_input.h`](source_guide/ui.md#file-ui-ingame-world-input) - no file comment; main functions `InGameWorldInput_ResolveContextActionAndCursor`, `InGameWorldInput_BeginPointerCapture`, `InGameWorldInput_UpdateDragSelectionAndCamera`
@@ -699,8 +699,9 @@ Module header: [`pathing.h`](../include/thandor/world/pathing.h) · Changelog: `
 
 Module header: [`runtime.h`](../include/thandor/world/runtime.h) · Changelog: `core` [dev](../CHANGELOG.md#module-world-runtime-core) · [full](../CHANGELOG_FULL.md#module-world-runtime-core)
 
-- [`core.cpp / core.h`](source_guide/world.md#file-world-runtime-core) - no file comment; main functions `WorldRuntime_AttachFieldGridAsset`, `WorldRuntime_AttachAndClearDwordArray`, `WorldRuntime_InterpolateTopSurfaceHeightOrSentinel`
+- [`core.cpp / core.h`](source_guide/world.md#file-world-runtime-core) - WorldRuntimeContext.runtimeFlags: the flag enum WorldRuntimeFlags (world/runtime/flags.h).
 - [`entity_registry.cpp / entity_registry.h`](source_guide/world.md#file-world-runtime-entity-registry) - World object registry: the object array and its free-record allocation, the owner list of model, shot and effect nodes and the owner-list callbacks that clear references when an object goes away.
+- [`flags.h`](source_guide/world.md#file-world-runtime-flags)
 - [`types.h`](source_guide/world.md#file-world-runtime-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-world-shots"></a>
