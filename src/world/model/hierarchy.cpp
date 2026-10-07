@@ -592,13 +592,13 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
   modelDefinition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   newNode->tintArgb = 0xffffffff;
   /* ModelDefinition.modelFlags 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
-  if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NOT_REMEMBERED) != 0) {
+  if (Any(modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NOT_REMEMBERED)) {
     newNode->runtimeFlags = newNode->runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   }
-  if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN) != 0) {
+  if (Any(modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN)) {
     newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN;
   }
-  if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NO_SHADING_PASS) == 0) {
+  if (!Any(modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NO_SHADING_PASS)) {
     newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_SHADING_PASS;
   }
   resourceView = definitionNode->spriteAssetReference.modelResource;

@@ -195,6 +195,24 @@ using ArmySelectionMetric = int;
 
 using AngleTurn16Stored32 = int;
 
+/* ModelDefinition.modelFlags (+0x68 of every model definition view; MDL file data, bits not named here stay valid). */
+enum class ModelDefinitionFlags : uint32_t {
+    MODEL_DEFINITION_FLAGS_NONE = 0,
+    MODEL_DEFINITION_FLAG_EMITTER_POINTS_IN_TURN = 0x1, /* the timed effect emitter takes its model points in turn
+                                                           (ArmyEmitter_FindEffectPoint), else at random */
+    /* copied into the node flags at creation */
+    MODEL_DEFINITION_FLAG_NOT_REMEMBERED = 0x10, /* -> TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED */
+    MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN = 0x20, /* -> MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN; the army runtime
+                                                         also skips the field grid height stamp for it */
+    MODEL_DEFINITION_FLAG_NO_SHADING_PASS = 0x40, /* clear -> MODEL_NODE_FLAG_SHADING_PASS */
+    /* the energy demand of directly attached models counts (ModelRuntimeHierarchy_ComputeEnergyDemand,
+       ArmyAssetHierarchy_SumEnergyFrom) */
+    MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY = 0x80,
+    MODEL_DEFINITION_FLAG_RAY_TRANSPARENT = 0x100 /* makes the model's root node ray transparent */
+};
+THANDOR_FLAG_ENUM(ModelDefinitionFlags);
+using enum ModelDefinitionFlags;
+
 /* ModelRuntimeNode / EffectModelRuntimeNode / ShotModelRuntimeNode.runtimeFlags (+0x4C). Bit values fixed (the
    node pools are saved as raw bytes). */
 enum class ModelRuntimeFlags : uint32_t {
@@ -1732,7 +1750,7 @@ struct ModelDefinitionClass14PlacementView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field20_0x6c;
     uint8_t field21_0x6d;
     uint8_t field22_0x6e;
@@ -1916,7 +1934,7 @@ struct ModelDefinitionVerticalDeploymentView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field40_0x6c;
     uint8_t field41_0x6d;
     uint8_t field42_0x6e;
@@ -2028,7 +2046,7 @@ struct ModelDefinitionTimedEffectsUpdateView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field20_0x6c;
     uint8_t field21_0x6d;
     uint8_t field22_0x6e;
@@ -2273,7 +2291,7 @@ struct ModelDefinitionLinkedChildStateView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field40_0x6c;
     uint8_t field41_0x6d;
     uint8_t field42_0x6e;
@@ -2405,7 +2423,7 @@ struct ModelDefinitionDestroyEffectsView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field40_0x6c;
     uint8_t field41_0x6d;
     uint8_t field42_0x6e;
@@ -2544,7 +2562,7 @@ struct ModelDefinitionGroundMovementTrackView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field31_0x6c;
     uint8_t field32_0x6d;
     uint8_t field33_0x6e;
@@ -2733,7 +2751,7 @@ struct ModelDefinitionGroundMovementSteeringView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field34_0x6c;
     uint8_t field35_0x6d;
     uint8_t field36_0x6e;
@@ -2849,7 +2867,7 @@ struct ModelDefinitionTimedTargetProjectileView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field20_0x6c;
     uint8_t field21_0x6d;
     uint8_t field22_0x6e;
@@ -3097,7 +3115,7 @@ struct ModelDefinitionArticulatedMovementView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field40_0x6c;
     uint8_t field41_0x6d;
     uint8_t field42_0x6e;

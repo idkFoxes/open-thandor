@@ -661,6 +661,22 @@ static_assert(sizeof(ModelRuntimeFlags) == 4 && alignof(ModelRuntimeFlags) == 4 
                   offsetof(WorldOwnerListNode, runtimeFlags) == 0x4C &&
                   offsetof(TerrainOccupancyResolvedMasks, runtimeFlags) == 0x8,
               "the model node runtime flags keep their 4-byte fields");
+/* Step 13 E34c: ModelDefinition.modelFlags (ModelDefinitionFlags, MDL file data) is the dword at +0x68 of every
+   model definition view. */
+static_assert(sizeof(ModelDefinitionFlags) == 4 && alignof(ModelDefinitionFlags) == 4 &&
+                  offsetof(ModelDefinition, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionResolveView, modelFlags) == 0x68 &&
+                  offsetof(MdlDefinitionSemanticPrefix, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionClass14PlacementView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionVerticalDeploymentView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionTimedEffectsUpdateView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionLinkedChildStateView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionDestroyEffectsView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionGroundMovementTrackView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionGroundMovementSteeringView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionTimedTargetProjectileView, modelFlags) == 0x68 &&
+                  offsetof(ModelDefinitionArticulatedMovementView, modelFlags) == 0x68,
+              "the model definition flags keep their 4-byte field");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");

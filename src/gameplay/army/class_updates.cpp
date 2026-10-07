@@ -112,7 +112,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
   }
   /* stamp the structure's ground height (root node read again after the damage calls, as in the original) */
   ownNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
-  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN) == 0) {
+  if (!Any(modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN)) {
     FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
               (modelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius,
                (ownNode->worldTransform).translation.z,(ownNode->worldTransform).translation.y

@@ -56,7 +56,7 @@ struct ModelDefinition {
     int targetClassIndex; /* +0x5C target class: indexes per-class impact effects and AI class tables */
     uint32_t maximumHealth; /* +0x60 maximum health */
     uint32_t rootNodeOffsetOrPointer; /* +0x64 MDL root node: asset-relative offset on disk, MdlSerializedNodeHeader * after registration */
-    uint32_t modelFlags; /* +0x68 flag bits (0x10/0x20/0x40 become model node flags, 0x20 also used by army runtime, 0x80 by the session) */
+    ModelDefinitionFlags modelFlags; /* +0x68 flag bits (0x10/0x20/0x40 become model node flags, 0x20 also used by army runtime, 0x80 by the session) */
     uint8_t field20_0x6c;
     uint8_t field21_0x6d;
     uint8_t field22_0x6e;
@@ -157,7 +157,7 @@ struct ModelDefinitionResolveView {
     uint32_t targetClassIndex; // ModelDefinition.targetClassIndex; also indexes the AI per-class maximum array during scoring.
     uint32_t maximumHealth; /* +0x60 maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field24_0x6c;
     uint8_t field25_0x6d;
     uint8_t field26_0x6e;

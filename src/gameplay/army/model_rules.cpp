@@ -197,8 +197,8 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
   if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
     activeMetricTotal = totalMetric;
   }
-  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags &
-       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0) {
+  if (Any(modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags &
+       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY)) {
     for (; attachmentsRemaining != 0; attachmentsRemaining--) {
       currentChildModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
       if (currentChildModelRuntime != nullptr) {

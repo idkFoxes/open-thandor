@@ -578,7 +578,7 @@ static Bool8 ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,Mo
     return false;
   }
   pointSelector = (modelRuntime->classState).effectEmitterPointIndex;
-  if ((emitterDefinition->modelFlags & 1) == 0) {
+  if (!Any(emitterDefinition->modelFlags & MODEL_DEFINITION_FLAG_EMITTER_POINTS_IN_TURN)) {
     pointSelector = g_RandomGeneratorState.next();
   }
   if (!ModelLookupTable_FindPackedPoint

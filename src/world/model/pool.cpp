@@ -457,7 +457,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   int prefixIndex;
   ModelRuntimeSlot *modelRuntime;
   ModelDefinition *definitionView;
-  uint32_t modelFlags;
+  ModelDefinitionFlags modelFlags;
   ModelRuntimeNode *modelNodeRuntime;
 
   /* first free slot (no root node) */
@@ -535,7 +535,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
     modelRuntime->rootModelNodeOrSavedOffset.modelNode = modelNodeRuntime;
     ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
-    if ((modelFlags & MODEL_DEFINITION_FLAG_RAY_TRANSPARENT) != 0) {
+    if (Any(modelFlags & MODEL_DEFINITION_FLAG_RAY_TRANSPARENT)) {
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_RAY_TRANSPARENT;
     }
   }

@@ -154,8 +154,8 @@ static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex facti
                        (factionIndex,(uintptr_t)node);
   energySum = ModelDefinition_FromPrefix(selected)->energyLoadQ4;
   childCount = node->childCount;
-  if ((ModelDefinition_FromPrefix(selected)->modelFlags &
-       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) == 0) {
+  if (!Any(ModelDefinition_FromPrefix(selected)->modelFlags &
+       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY)) {
     childCount = 0; /* only definitions with this flag contribute their children */
   }
   for (childIndex = 0; childIndex < childCount; childIndex++) {

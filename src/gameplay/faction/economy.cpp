@@ -195,8 +195,8 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
       consumerCount++;
     }
     if ((consumerCount < 256) &&
-       ((reinterpret_cast<ModelRuntimeSlot *>(modelRuntime)->definitionOrSavedId.runtimeDefinition->modelFlags &
-         MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0)) {
+       Any(reinterpret_cast<ModelRuntimeSlot *>(modelRuntime)->definitionOrSavedId.runtimeDefinition->modelFlags &
+           MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY)) {
       attachmentSlot = modelRuntime;
       for (remainingAttachments = modelRuntime[3]; remainingAttachments != 0; remainingAttachments--) {
         attachedRuntime = Thandor_U32ToPointer<int>(attachmentSlot[80]); /* 32-bit format field: ModelRuntimeSlot.attachments[].childModelRuntimeOrSavedOffset (dword view) */
