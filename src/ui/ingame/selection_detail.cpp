@@ -171,7 +171,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   g_InGameSelectionDetailTextSlot09Utf16[0] = L'-';
   g_InGameSelectionDetailTextSlot09Utf16[1] = 0;
   modelRuntime = entity->common.ownership.modelRuntime();
-  if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
+  if (Any(modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_RESEARCHING)) {
     /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
        foundArmyAsset) */
     ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);

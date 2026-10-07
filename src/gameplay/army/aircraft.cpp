@@ -527,7 +527,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   ModelDefinitionLinkedChildStateView *linkedChildDefinition;
   ArmyRuntimeSlot *ownerArmyRuntime;
 
-  if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_DISMANTLING) != 0) {
+  if (Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_DISMANTLING)) {
     /* every aircraft (class 21) based on this pad (its classLinkState.modelLinkOrState) that is not dismantling
        already */
     ownerNode = worldRuntime->ownerListHead;
@@ -538,7 +538,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
              MODEL_RUNTIME_CLASS_21_AIRCRAFT) &&
            (modelRuntime == (ModelRuntimeLinkedChildSpawnAndBuildView *)
                             ownerPayload->classLinkState.modelLinkOrState.modelRuntime) &&
-           ((ownerPayload->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLING) == 0)) {
+           (!Any(ownerPayload->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLING))) {
           ModelRuntimeHierarchy_MarkDestroyedRecursive
                     (worldRuntime,ownerPayload->ownerArmyRuntimeOrSavedOffset.armyRuntime);
         }
@@ -548,8 +548,8 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   }
   switch(modelRuntime->secondaryArmyAssetBuildState) {
   case 0:
-    if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
-      if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) {
+    if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_RESEARCHING)) {
+      if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK)) {
         factionIndex = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex;
         if ((modelRuntime->linkedChildBuildState).completedSecondaryArmyAssetCount <
             modelRuntime->modelDefinition->linkedChildSlotCapacity) {
@@ -557,7 +557,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
         }
       }
     }
-    else if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    else if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       ArmyRuntime_UpdateTimedShotAndEffectEmitters
                 (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
       ArmyRuntime_UpdateAnimatedModelSubnodes
@@ -565,7 +565,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
     }
     break;
   case 1:
-    if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks =
            (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks + g_InGameSimulationStepTicks;
       ownerArmyRuntime = (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime;
@@ -685,7 +685,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
     /* fall through: the idle hangar launches the next pending aircraft */
   case ARMY_PAD_HANGAR_IDLE:
     /* the original also required a world point stub (always false) to reject the pad position */
-    if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       /* the first pending slot whose aircraft can be created opens the hangar */
       if (((modelRuntime->linkedChildPendingSpawnCounts).slot0 != 0) &&
          ArmyPadHangar_TryLaunchPendingAircraft

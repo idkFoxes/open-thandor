@@ -15,9 +15,8 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* ArmyRuntimeSlot.runtimeFlags bit set when the army's health (actionVector2Q12) drops to zero
-   (ArmyRuntime_ApplyImpactDamageAndFinalizeState and the other damage helpers). */
-inline constexpr int ARMY_RUNTIME_FLAG_DESTROYED = 0x8;
+/* The army model state bits ARMY_RUNTIME_FLAG_DESTROYED and ARMY_MODEL_STATE_* are ArmyRuntimeFlags
+   (gameplay/army/types.h). */
 /* g_ArmyRuntimeSlots: a 0x48000-byte pool of 0x120-byte ArmyRuntimeSlot entries (ArmyRuntime_InitializePoolAndGraphics) */
 inline constexpr int ARMY_RUNTIME_SLOT_COUNT = 0x400;
 /* g_ArmyGraphicsBindings: texture set and palette per faction slot 0-7 */
@@ -26,24 +25,6 @@ inline constexpr int ARMY_GRAPHICS_BINDING_COUNT = 8;
 inline constexpr int ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION = 0x2; /* owned by the active faction: +1 on builtCount of the
                                                      faction's selected model definition */
 inline constexpr int ARMY_CREATE_UNLOCK_TECHNOLOGY = 0x4; /* ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology */
-
-/* Army model runtime classState.stateFlags bits set and tested by the class update callbacks
-   (ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, the production slots 11/13/22) */
-inline constexpr int ARMY_MODEL_STATE_SWITCHED_OFF = 0x1; /* powered down: no Energy demand, health decays to 3/4 */
-inline constexpr int ARMY_MODEL_STATE_DISMANTLING = 0x10; /* being recycled: health drains, Xenite (xeniteValueQ4 >> 5) is refunded */
-inline constexpr int ARMY_MODEL_STATE_DESTRUCTION_STARTED = 0x20; /* destruction effect spawned; skips the attachment channel ticks */
-inline constexpr int ARMY_MODEL_STATE_RESEARCHING = 0x40; /* technology research in progress (researchTechnologyId) */
-inline constexpr int ARMY_MODEL_STATE_RESEARCH_UNPAID = 0x80; /* research queued, Xenite not yet paid */
-inline constexpr int ARMY_MODEL_STATE_PRODUCING = 0x100; /* a queued secondary army asset is being built */
-inline constexpr int ARMY_MODEL_STATE_DISMANTLED = 0x200; /* dismantling finished (toggled together with DISMANTLING) */
-inline constexpr int ARMY_MODEL_STATE_NO_REGENERATION = 0x400; /* health does not regenerate */
-inline constexpr int ARMY_MODEL_STATE_RALLY_POINT_SET = 0x800; /* class 13: the exit point (classLinkState.classState78/7C) was set
-                                                     by the player */
-/* SWITCHED_OFF | DESTROYED: the model does nothing this tick */
-inline constexpr auto ARMY_MODEL_STATE_INACTIVE_MASK = ARMY_MODEL_STATE_SWITCHED_OFF | ARMY_RUNTIME_FLAG_DESTROYED;
-/* INACTIVE_MASK | RESEARCHING | RESEARCH_UNPAID: a production class may start a new build */
-inline constexpr auto ARMY_MODEL_STATE_BUILD_BLOCKING_MASK =
-          ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID;
 
 /* g_ArmyRuntimeDepthBinClassByModelClass entries (ArmyRuntimeSlot.depthBinClass): the occupancy bits an army
    marks in its faction's byte of the field cells. Structure classes (4, 11, 13-16, 20, 22, 23) use 0x90. */

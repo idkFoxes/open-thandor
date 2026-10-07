@@ -261,10 +261,10 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
       candidateArmyRuntime = candidateEntityRuntime->common.ownership.linkedArmyRuntime();
       /* a negative sum skips entities flagged 0x400 */
       if ((sourceClassCount < 0) &&
-          (((candidateEntityRuntime->common).runtimeFlags & ARMY_MODEL_STATE_NO_REGENERATION) != 0)) {
+          (Any((candidateEntityRuntime->common).runtimeFlags & ARMY_MODEL_STATE_NO_REGENERATION))) {
         continue;
       }
-      if (((candidateEntityRuntime->common).runtimeFlags & ARMY_RUNTIME_FLAG_DESTROYED) != 0) {
+      if (Any((candidateEntityRuntime->common).runtimeFlags & ARMY_RUNTIME_FLAG_DESTROYED)) {
         continue;
       }
       candidateFactionIndex = candidateArmyRuntime->factionIndex;

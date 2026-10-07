@@ -120,7 +120,7 @@ struct ModelRuntimeSlotClassStateSerializedScalar {
     uint32_t effectEmitterPointIndex; 
     uint32_t shotEmitterTimerTicks; 
     uint32_t effectEmitterTimerTicks; 
-    uint32_t stateFlags; 
+    ArmyRuntimeFlags stateFlags; 
     uint32_t linkedArmyRuntimeSavedOffset; 
     EnergyDemandQ4 energyDemandQ4; 
     uint32_t healthRegenerationDelayTicks; 

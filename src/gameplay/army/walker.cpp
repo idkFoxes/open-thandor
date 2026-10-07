@@ -300,7 +300,7 @@ static Bool8 ArticulatedWalker_ChooseNextStep(WorldRuntimeContext *worldRuntime,
 {
   ArticulatedRouteStep routeStep = ARTICULATED_ROUTE_STEP_NONE;
 
-  if ((modelRuntime->runtimeFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
+  if (!Any(modelRuntime->runtimeFlags & ARMY_RUNTIME_FLAG_DESTROYED)) {
     routeStep = ArticulatedWalker_TryStartRouteStep(worldRuntime,modelRuntime,rootNode);
   }
   if (routeStep == ARTICULATED_ROUTE_STEP_STARTED) {

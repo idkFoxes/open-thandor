@@ -34,9 +34,7 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source);
 
 extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10;
 
-/* SelectionPlayerRuntimeBlock.sessionFlags bit: the player asks for a pause (shown as "P" in the player roster;
-   toggled by InGameCommand_TogglePauseRequest) */
-inline constexpr int32_t PLAYER_SESSION_FLAG_PAUSE_REQUESTED = 0x01;
+/* PLAYER_SESSION_FLAG_PAUSE_REQUESTED is PlayerSessionFlags (gameplay/selection/types.h). */
 
 
 /* Buttons of the quit game window (InGameUiImage.quitMenuSurrenderButton / quitMenuRestartMissionButton) */

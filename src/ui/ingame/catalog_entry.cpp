@@ -177,7 +177,7 @@ static void UiCatalogEntryControl_TakeBuildProgress
   if (*bestPercent <= percent) {
     *textStyle = UI_CATALOG_TEXT_STYLE_NORMAL;
     *bestPercent = percent;
-    if (((model->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0) {
+    if (Any((model->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
       *textStyle = UI_CATALOG_TEXT_STYLE_ALERT;
     }
   }

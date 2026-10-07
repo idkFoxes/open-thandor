@@ -211,19 +211,19 @@ void ArmyRuntimeClass_UpdateUnitFactory
   }
   switch(behaviorState) {
   case ARMY_FACTORY_STATE_IDLE: /* start the first affordable queued asset this factory can build */
-    if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
-      if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) {
+    if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING)) {
+      if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK)) {
         ArmyUnitFactory_StartBuildingFirstAffordableAsset(modelRuntime,modelRuntime->ownerArmyRuntime->factionIndex);
       }
     }
-    else if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    else if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       ArmyRuntime_UpdateTimedShotAndEffectEmitters(worldRuntime,modelRuntime);
       ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,modelRuntime);
     }
     break;
   case ARMY_FACTORY_STATE_BUILDING: /* when done create the army at the spawn point (lookup keys 1/5 and 0/5 give
                                        its heading) */
-    if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       (modelRuntime->classLinkState).classState64 =
            (modelRuntime->classLinkState).classState64 + g_InGameSimulationStepTicks;
       ArmyRuntime_UpdateTimedShotAndEffectEmitters(worldRuntime,modelRuntime);
@@ -313,8 +313,8 @@ void ArmyRuntimeClass_UpdateStructureFactory
 
   switch((modelRuntime->classState).behaviorState) {
   case ARMY_FACTORY_STATE_IDLE: /* start the first affordable queued asset with flag 0x10 */
-    if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
-      if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) {
+    if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING)) {
+      if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK)) {
         factionIndex = modelRuntime->ownerArmyRuntime->factionIndex;
         queueSlot = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
         for (remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; remainingAssetCount != 0;
@@ -352,13 +352,13 @@ void ArmyRuntimeClass_UpdateStructureFactory
         }
       }
     }
-    else if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    else if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       ArmyRuntime_UpdateTimedShotAndEffectEmitters(worldRuntime,modelRuntime);
       ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,modelRuntime);
     }
     break;
   case ARMY_FACTORY_STATE_BUILDING:
-    if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       ownerArmyRuntime = modelRuntime->ownerArmyRuntime;
       (modelRuntime->classLinkState).classState64 =
            (modelRuntime->classLinkState).classState64 + g_InGameSimulationStepTicks;

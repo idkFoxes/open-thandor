@@ -98,8 +98,8 @@ void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRunt
   ModelDefinition *definition;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) &&
-      ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) ||
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) &&
+      (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) ||
        ((modelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING))) {
     ArmyRuntimeAudio_UpdateSoundAtModel
               (worldRuntime,definition,modelRuntime->rootModelNodeOrSavedOffset.modelNode,
@@ -124,8 +124,8 @@ void ArmyRuntimeAudio_UpdateUnitFactorySounds
 
   modelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) &&
-      ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) ||
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) &&
+      (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) ||
        ((modelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING))) {
     ArmyRuntimeAudio_UpdateSoundAtModel(worldRuntime,definition,modelNode,definition->loopingSoundSlotIndex);
   }
@@ -169,8 +169,8 @@ void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
   ModelDefinition *definition;
 
   modelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) &&
-      ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) ||
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) &&
+      (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) ||
        ((modelRuntime->classState).classStateAC == 1))) {
     definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
     ArmyRuntimeAudio_UpdateSoundAtModel(worldRuntime,definition,modelNode,definition->loopingSoundSlotIndex);
@@ -188,7 +188,7 @@ void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
 void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
+  if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING)) {
     ArmyRuntime_UpdateLoopingPositionedSound(worldRuntime,modelRuntime);
   }
 }
@@ -209,7 +209,7 @@ void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   soundSlotIndex = definition->loopingSoundSlotIndex;
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0) || (soundSlotIndex == 0) ||
+  if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) || (soundSlotIndex == 0) ||
       (soundSlotIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == nullptr)) {
     return;
   }

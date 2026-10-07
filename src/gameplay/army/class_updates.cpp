@@ -27,7 +27,7 @@ void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
   FieldGridAsset *fieldGrid;
 
   if ((1 < (int)modelRuntime->health) &&
-     (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0)) {
+     (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK))) {
     gridCoordinates = FieldGrid_WorldToGridQ12
                       ((modelRuntime->rootModelNode->worldTransform).translation.y,
                        (modelRuntime->rootModelNode->worldTransform).translation.x);
@@ -111,7 +111,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
   }
   /* stamp the structure's ground height (root node read again after the damage calls, as in the original) */
   ownNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
-  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN) == 0) {
+  if (!Any(modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN)) {
     FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
               (modelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius,
                (ownNode->worldTransform).translation.z,(ownNode->worldTransform).translation.y
@@ -150,8 +150,8 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
       continue;
     }
     if ((candidateModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) &&
-       (((candidateModelRuntime->classState).stateFlags &
-         (ARMY_RUNTIME_FLAG_DESTROYED | ARMY_MODEL_STATE_DISMANTLING)) == 0)) {
+       (!Any((candidateModelRuntime->classState).stateFlags &
+         (ARMY_RUNTIME_FLAG_DESTROYED | ARMY_MODEL_STATE_DISMANTLING)))) {
       completionModelRuntime = candidateModelRuntime;
     }
     else {
@@ -489,7 +489,7 @@ void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
 void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
 
 {
-  uint32_t *classStateField;
+  ArmyRuntimeFlags *classStateField;
   ModelRuntimeNode *modelNodeRuntime;
   ModelDefinition *animationDefinition;
   Q12 updatedChildTranslationZQ12;
@@ -498,10 +498,10 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
   int childTranslationZQ12;
   ModelRuntimeNode *animatedNode;
   
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
-    if (((modelRuntime->classState).stateFlags & 4) != 0) {
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
+    if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF_SEEN)) {
       classStateField = &(modelRuntime->classState).stateFlags;
-      *classStateField = *classStateField ^ 4;
+      *classStateField = *classStateField ^ ARMY_MODEL_STATE_SWITCHED_OFF_SEEN;
       ArmyRuntime_RebuildDerivedSelectionMetrics(modelRuntime->ownerArmyRuntime);
     }
     modelNodeRuntime = modelRuntime->rootModelNode;
@@ -526,12 +526,12 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
         if ((2 < modelNodeRuntime->childCount) && (animatedNode != nullptr)) {
           childTranslationZQ12 = (animatedNode->modelPayload).localTranslationZQ12;
           bobStep = animationDefinition->animatedChild2BobStep * g_InGameSimulationStepTicks;
-          if (((modelRuntime->classState).stateFlags & 2) == 0) {
+          if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BOB_RISING)) {
             updatedChildTranslationZQ12 = childTranslationZQ12 - bobStep;
             if (updatedChildTranslationZQ12 < (int)animationDefinition->runtimeValue24) {
               updatedChildTranslationZQ12 = animationDefinition->runtimeValue24;
               classStateField = &(modelRuntime->classState).stateFlags;
-              *classStateField = *classStateField ^ 2;
+              *classStateField = *classStateField ^ ARMY_MODEL_STATE_BOB_RISING;
             }
           }
           else {
@@ -539,7 +539,7 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
             if ((int)animationDefinition->runtimeValue28 < updatedChildTranslationZQ12) {
               updatedChildTranslationZQ12 = animationDefinition->runtimeValue28;
               classStateField = &(modelRuntime->classState).stateFlags;
-              *classStateField = *classStateField ^ 2;
+              *classStateField = *classStateField ^ ARMY_MODEL_STATE_BOB_RISING;
             }
           }
           (animatedNode->modelPayload).localTranslationZQ12 = updatedChildTranslationZQ12;
@@ -549,9 +549,9 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
     }
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
   }
-  else if (((modelRuntime->classState).stateFlags & 4) == 0) {
+  else if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF_SEEN)) {
     classStateField = &(modelRuntime->classState).stateFlags;
-    *classStateField = *classStateField ^ 4;
+    *classStateField = *classStateField ^ ARMY_MODEL_STATE_SWITCHED_OFF_SEEN;
     ArmyRuntime_RebuildDerivedSelectionMetrics(modelRuntime->ownerArmyRuntime);
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
