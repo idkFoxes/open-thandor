@@ -732,8 +732,10 @@ static_assert(sizeof(TextResourceLocaleCountHeader) == 0xB4,
               "TextResourceLocaleCountHeader keeps its 32-bit layout");
 static_assert(sizeof(TextResourceAssetHeader) == 0x200,
               "TextResourceAssetHeader keeps its 32-bit layout");
-static_assert(sizeof(TextResourceLocaleBlockPrefix) == 0x10,
-              "TextResourceLocaleBlockPrefix keeps its 32-bit layout");
+static_assert(sizeof(TextResourceLocaleBlockPrefix) == 0x10 &&
+              offsetof(TextResourceLocaleBlockPrefix, countryCode) == 0x8 &&
+              sizeof(TextResourceLocaleBlockPrefix::countryCode) == 4,
+              "TextResourceLocaleBlockPrefix keeps its 32-bit layout (countryCode is the file dword at +8)");
 static_assert(sizeof(TextResourcePageBinding) == 0x8 &&
               offsetof(TextResourcePageBinding, selectedLocaleBlock) == 0x0 &&
               offsetof(TextResourcePageBinding, asset) == 0x4,
