@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/text/richtext_render.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -185,7 +186,7 @@ Bool8 RichTextCommandStream_DrawSingleLine
     glyphSubresource = (GraphicsSubresourceIndex)(short)*commandCursor;
     commandStream = commandCursor + 1;
     if (glyphSubresource == 0) {
-      commandStream = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
+      commandStream = Thandor_At<uint16_t>(nestedReturnStack[--nestedDepth], RICHTEXT_NESTED_PAYLOAD_BYTES);
       continue;
     }
     if ((int)glyphSubresource >= 0) {
@@ -269,11 +270,11 @@ Bool8 RichTextCommandStream_DrawSingleLine
       /* payload: texture source at commandCursor + 1, subresource at commandCursor + 3; the image sits on the
          baseline */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
-                        (*(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, commandStream));
+                        (*reinterpret_cast<uint32_t *>(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, commandStream));
       imageWidth = imageSize.logicalWidthPixels;
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipBottom,clipRight,clipTop,clipLeft,lineBaselineY - imageSize.logicalHeightPixels,
-                 penX,*(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, commandStream),
+                 penX,*reinterpret_cast<uint32_t *>(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, commandStream),
                  g_FramebufferAccess);
       penX = penX + imageWidth;
       commandStream = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
@@ -309,7 +310,7 @@ RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,u
     value = (int)(short)*command;
     commandStream = command + 1;
     if (value == 0) {
-      commandStream = (uint16_t *)((uint8_t *)returnStack[--nesting] + RICHTEXT_NESTED_PAYLOAD_BYTES);
+      commandStream = Thandor_At<uint16_t>(returnStack[--nesting], RICHTEXT_NESTED_PAYLOAD_BYTES);
       continue;
     }
     if (value > 0) {
@@ -360,7 +361,7 @@ RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,u
       break;
     case RICHTEXT_OP_INLINE_IMAGE:
       textureSize = g_GraphicsTextureSourceGetLogicalSize
-                              (*(uint32_t *)(command + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, commandStream));
+                              (*reinterpret_cast<uint32_t *>(command + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, commandStream));
       extent.widthPixels = extent.widthPixels + textureSize.logicalWidthPixels;
       commandStream = command + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
       if (extent.heightPixels < textureSize.logicalHeightPixels) {
@@ -450,7 +451,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
     case RICHTEXT_OP_INLINE_IMAGE:
       /* payload: texture source pointer (code units 1-2), subresource (code units 3-4) */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
-                        (*(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, readCursor));
+                        (*reinterpret_cast<uint32_t *>(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, readCursor));
       lineWidth = lineWidth + imageSize.logicalWidthPixels;
       readCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
       if (*lineHeight < imageSize.logicalHeightPixels) {
@@ -483,9 +484,9 @@ Bool8 RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,Ui
   maxLineHeight = glyphLineHeight;
   wrapPoint = RichTextCommandStream_FindWrapPoint
                         (maximumWidth,
-                         (uint16_t *)(g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * sizeof(uint16_t)),
+                         Thandor_At<uint16_t>(g_FontRuntimeBuffer, g_RichTextRuntimeBufferUsedWords * sizeof(uint16_t)),
                          &maxLineHeight);
-  g_RichTextRuntimeBufferUsedWords = (uint32_t)((uint8_t *)wrapPoint - g_FontRuntimeBuffer) >> 1;
+  g_RichTextRuntimeBufferUsedWords = (uint32_t)Thandor_ByteDistance(wrapPoint, g_FontRuntimeBuffer) >> 1;
   *lineHeight = maxLineHeight;
   return (short)wrapPoint[-1] != 0; /* false: the line ended at the stream terminator */
 }
@@ -495,7 +496,7 @@ Bool8 RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,Ui
 static Bool8 RichTextCommandStream_EndWrappedLine
           (uint16_t *nextLine,uint32_t lineHeight,UiPixelExtent *lineAdvance,Bool8 moreLinesFollow)
 {
-  g_RichTextRuntimeBufferUsedWords = (uint32_t)((uint8_t *)nextLine - g_FontRuntimeBuffer) >> 1;
+  g_RichTextRuntimeBufferUsedWords = (uint32_t)Thandor_ByteDistance(nextLine, g_FontRuntimeBuffer) >> 1;
   *lineAdvance = lineHeight;
   return moreLinesFollow;
 }
@@ -527,7 +528,7 @@ Bool8 RichTextCommandStream_DrawNextWrappedLine
   uint16_t *wrapPoint;
 
   FontGlyph_GetLogicalSizeActiveFont(0,&glyphLineHeight);
-  lineStart = (uint16_t *)(g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * sizeof(uint16_t));
+  lineStart = Thandor_At<uint16_t>(g_FontRuntimeBuffer, g_RichTextRuntimeBufferUsedWords * sizeof(uint16_t));
   lineHeight = glyphLineHeight;
   savedFontIndex = g_ActiveFontIndex; /* font commands of the measure pass are undone below */
   /* Measure pass (same rules as RichTextCommandStream_MeasureNextWrappedLine): find the wrap point and
@@ -623,11 +624,11 @@ Bool8 RichTextCommandStream_DrawNextWrappedLine
       /* payload: texture source at commandCursor + 1, subresource at commandCursor + 3; the image sits on the
          line's bottom edge */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
-                         (*(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, drawCursor));
+                         (*reinterpret_cast<uint32_t *>(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, drawCursor));
       imageWidth = imageSize.logicalWidthPixels;
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipBottom,clipRight,clipTop,clipLeft,lineBottom - imageSize.logicalHeightPixels,drawX,
-                 *(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, drawCursor),g_FramebufferAccess);
+                 *reinterpret_cast<uint32_t *>(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, drawCursor),g_FramebufferAccess);
       drawX = drawX + imageWidth;
       drawCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
     }

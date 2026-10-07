@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/dialogs/display_settings.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -389,7 +390,7 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
   uint32_t modeWidth;
   UiFourValueDialogCountdownText *countdownText;
 
-  root = (UiRootNode *)UiNode_GetRoot(sourceNode);
+  root = UiNode_As<UiRootNode>(UiNode_GetRoot(sourceNode));
   countdownText = reinterpret_cast<UiFourValueDialogCountdownText *>(FOUR_VALUE_DIALOG_UI(root,countdownMessageText));
   modeWidth = countdownText->previousWidth;
   modeHeight = countdownText->previousHeight;
@@ -418,7 +419,7 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
          (FIXED_PRODUCT_SHR(scaledAnchor, 31)) + (root->base).topOffset;
     (*((root->base).vtable)->layout)(&root->base);
     root = root->previousRoot;
-  } while (root != (UiRootNode *)UI_NODE_NONE);
+  } while (root != UiNode_As<UiRootNode>(UI_NODE_NONE));
   g_CursorVisibilityToken++;
   UiDisplaySettings_OpenAndPopulateModeSelection();
 }
@@ -445,7 +446,7 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   uint32_t currentHeight;
   UiDisplaySettingsApplyButton *applyButton;
 
-  root = (UiRootNode *)UiNode_GetRoot(sourceNode);
+  root = UiNode_As<UiRootNode>(UiNode_GetRoot(sourceNode));
   applyButton = DISPLAY_SETTINGS_UI(root,applyButton);
   pendingWidth = applyButton->selectedWidth;
   pendingHeight = applyButton->selectedHeight;
@@ -496,7 +497,7 @@ void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   applyButton = DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   colorBiasQ16 = applyButton->originalColorBiasQ16;
   colorScaleQ16 = applyButton->originalColorScaleQ16;
-  UiRootStack_Pop((UiRootNode *)sourceNode); /* the button, not the root, as in the original */
+  UiRootStack_Pop(UiNode_As<UiRootNode>(sourceNode)); /* the button, not the root, as in the original */
   g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
 }
 
@@ -584,12 +585,12 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   if (g_GraphicsDisplayModeCount <= 1) {
     return;
   }
-  if (g_MemoryApi.alloc(sizeof(DisplaySettingsUiImage),(void **)&root) != 0) {
+  if (g_MemoryApi.alloc(sizeof(DisplaySettingsUiImage),reinterpret_cast<void **>(&root)) != 0) {
     return;
   }
   /* copy the template, one dword per step */
-  templateCursor = (const uint32_t *)&g_UiDisplaySettingsRootTemplate;
-  copyCursor = (uint32_t *)root;
+  templateCursor = reinterpret_cast<const uint32_t *>(&g_UiDisplaySettingsRootTemplate);
+  copyCursor = reinterpret_cast<uint32_t *>(root);
   for (copyCount = sizeof(DisplaySettingsUiImage) / 4; copyCount != 0; copyCount--) {
     *copyCursor = *templateCursor;
     templateCursor = templateCursor + 1;
@@ -626,7 +627,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
        DISPLAY_SETTINGS_UI(root,colorBiasValueText)->colorScaleTextUtf16;
   UiDisplaySettingsRoot_FormatColorReadouts(root);
   UiActionHandlers_SetPage(UI_DISPLAY_MODE_ACTION_HANDLER_PAGE,
-                           (UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
+                           reinterpret_cast<UiActionHandlerPage *>(&g_UiDisplayModeSelectionActionHandlers20)); /* a short table as a page: only its action ids are queued */
   UiRootStack_Push(&g_UiDisplaySettingsRootCallbacks,root);
 
   /* distinct resolutions, keyed width << 16 | height so that they sort by width, then height */
@@ -681,7 +682,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   DISPLAY_SETTINGS_UI(root,adapterOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[3];
   DISPLAY_SETTINGS_UI(root,adapterOption5_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[4];
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            (g_ActiveGraphicsAdapterIndex,colorDepthBits,framebufferHeight,framebufferWidth,(UiNodeBase *)root);
+            (g_ActiveGraphicsAdapterIndex,colorDepthBits,framebufferHeight,framebufferWidth,&root->base);
   UiRootStack_InvalidateAll();
 }
 
@@ -707,7 +708,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   static const unsigned adapterButtons[5] = {offsetof(DisplaySettingsUiImage,adapterOption1),
       offsetof(DisplaySettingsUiImage,adapterOption2),offsetof(DisplaySettingsUiImage,adapterOption3),
       offsetof(DisplaySettingsUiImage,adapterOption4),offsetof(DisplaySettingsUiImage,adapterOption5)};
-  uint8_t *root = (uint8_t *)displaySettingsRoot;
+  uint8_t *root = Thandor_Bytes(displaySettingsRoot);
   UiDisplaySettingsApplyButton *applyButton = DISPLAY_SETTINGS_UI(root,applyButton);
   uint32_t bitsPerPixel = selectedBitsPerPixel;
   void *selected = nullptr;
@@ -729,7 +730,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       selected = root + sizeButtons[i];
     }
   }
-  UiSelectableGroup_SelectExclusive(8,(UiNodeBase *)selected,
+  UiSelectableGroup_SelectExclusive(8,static_cast<UiNodeBase *>(selected),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption8),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption7),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption6),
@@ -751,7 +752,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       selected = root + adapterButtons[i];
     }
   }
-  UiSelectableGroup_SelectExclusive(5,(UiNodeBase *)selected,
+  UiSelectableGroup_SelectExclusive(5,static_cast<UiNodeBase *>(selected),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption5),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption4),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption3),
@@ -817,14 +818,14 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
   uint16_t *resolvedText;
   UiFourValueDialogCountdownText *countdownText;
 
-  allocError = g_MemoryApi.alloc(sizeof(g_UiFourValueDialogTemplateImage),(void **)&root);
+  allocError = g_MemoryApi.alloc(sizeof(g_UiFourValueDialogTemplateImage),reinterpret_cast<void **>(&root));
   if (allocError != 0) {
-    root = (UiRootNode *)(uintptr_t)allocError;
+    root = reinterpret_cast<UiRootNode *>(static_cast<uintptr_t>(allocError));
   }
   else {
     /* copy the 0x1A4-byte template, one dword per step */
-    templateCursor = (uint32_t *)&g_UiFourValueDialogTemplateImage;
-    copyCursor = (uint32_t *)root;
+    templateCursor = reinterpret_cast<uint32_t *>(&g_UiFourValueDialogTemplateImage);
+    copyCursor = reinterpret_cast<uint32_t *>(root);
     countdownText = reinterpret_cast<UiFourValueDialogCountdownText *>(FOUR_VALUE_DIALOG_UI(root,countdownMessageText));
     for (remainingDwords = sizeof(g_UiFourValueDialogTemplateImage) / 4; remainingDwords != 0; remainingDwords--) {
       *copyCursor = *templateCursor;

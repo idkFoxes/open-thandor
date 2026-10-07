@@ -1,5 +1,5 @@
 {
- "revision": "9f16a400",
+ "revision": "b3013078",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -114,7 +114,7 @@
  },
  "counts": {
   "cstyle_cast": {
-   "ui": 233,
+   "ui": 133,
    "world": 61
   },
   "ingame_ui": {},
