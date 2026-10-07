@@ -50,7 +50,7 @@ void FrontendTransfer_CopyCommandRecord
    player's PCX preview on 0x10009. Only packets of the selected host and session count; returns true only when
    a new command batch was executed.
 */
-Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
+bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           FrontendUiImage *unusedFrontendRoot)
 
@@ -205,7 +205,7 @@ static const LockstepHostChannel g_InGameLockstepChannel = {
    notifyWaitingPeers, resends the previous batch to clients that have not submitted yet and COMMAND_WAIT
    to those that have.
 */
-Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
+bool FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
 
 {
   if (!Lockstep_AllClientsSubmitted()) {
@@ -322,7 +322,7 @@ void FrontendTransfer_DispatchStagedCommandRecords()
    FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch. Returns true
    when no batch arrived, so the in-game tick waits for the host instead of advancing the simulation.
 */
-Bool8 FrontendTransfer_ConsumeProcessedFlag()
+bool FrontendTransfer_ConsumeProcessedFlag()
 
 {
   int previousFlag;

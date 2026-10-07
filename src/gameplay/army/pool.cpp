@@ -29,7 +29,7 @@ const uint32_t g_ArmyRuntimeDepthBinClassByModelClass[24] = {
    runs behind the level-loading movie. Returns true on success (*outError = 0); on an allocation or graphics
    load error returns false with that error in *outError. A failed preview render is skipped silently.
 */
-Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError)
+bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError)
 
 {
   uint16_t pathChar;
@@ -43,7 +43,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
   GraphicsPixelDimension previewHeight;
   int remainingCount;
   int factionSuffixChar;
-  Bool8 loadFactionGraphics;
+  bool loadFactionGraphics;
   int frontendPlayerRuntimeId;
   ArmyAssetRecordPrefix **registryCursor;
   uint16_t *pathCursor;
@@ -296,7 +296,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   uint32_t modelCreateError;
   ModelRuntimeSlot *createdModelRuntime;
   ModelRuntimeNode *modelNodeRuntime;
-  Bool8 childCreateFailed;
+  bool childCreateFailed;
   ModelDefinition *definition;
 
   armyRuntime = ArmyRuntimePool_FindFreeSlot();

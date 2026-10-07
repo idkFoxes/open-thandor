@@ -37,7 +37,7 @@ enum class LockstepEmpty : uint8_t {
 };
 
 /* True when every client (records 1..n-1) has submitted its command. */
-Bool8 Lockstep_AllClientsSubmitted();
+bool Lockstep_AllClientsSubmitted();
 
 /* Clears the submission flag of every client (records 1..n-1). */
 void Lockstep_ClearClientSubmissions();
@@ -51,7 +51,7 @@ void Lockstep_ResendBatchOrWait(const LockstepHostChannel &channel);
    LockstepEmpty::SendNothing). clearPackedSlots keeps only the player id of every packed slot. */
 uint32_t Lockstep_PackBatch
           (const LockstepHostChannel &channel,uint32_t slotCount,LockstepEmpty empty,
-          Bool8 clearPackedSlots = false);
+          bool clearPackedSlots = false);
 
 /* Sends the batch to the clients, records 1..playerCount-1 in ascending order. */
 void Lockstep_SendBatchToClients(const LockstepHostChannel &channel,uint32_t playerCount);

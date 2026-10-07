@@ -23,9 +23,9 @@ void Technology_UnlockForFaction
           (GraphicsWorldCoordinateQ12 notificationXQ12,GraphicsWorldCoordinateQ12 notificationYQ12,
           TechnologyId technologyIndex,FactionRuntimeIndex factionIndex);
 
-Bool8 Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
+bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
 
-Bool8 Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
+bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
 
 void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity);
 
@@ -43,7 +43,7 @@ ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefiniti
 void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
-Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
 PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
@@ -52,7 +52,7 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
 void ModelDefinition_UnlockLinkedTechnologyForFaction
           (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId);
 
-Bool8 ModelDefinition_IsFactionTechnologyLocked
+bool ModelDefinition_IsFactionTechnologyLocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
 
 #endif /* THANDOR_GAMEPLAY_TECHNOLOGY_RUNTIME_H */

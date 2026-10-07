@@ -15,7 +15,7 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
+bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
 
 void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState);
 

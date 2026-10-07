@@ -46,7 +46,7 @@ void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void 
    production in one of its class 0x0B/0x0D structures (state word 0x2E == 1). The result is
    false when found, true when not.
 */
-Bool8 FactionRuntime_IsArmyAssetNotPending
+bool FactionRuntime_IsArmyAssetNotPending
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
@@ -113,7 +113,7 @@ void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId
 /* Whether a producing structure of class producerClassId is building armyDefinition right now: payload [0x18]
    holds the army in production; a class 0x0D structure must also be able to build the army (its definition's
    classParameterC4 against the army's flags) and have production state [0x2E] == 1. */
-static Bool8 GameFactionRuntime_StructureProducesArmy(const int *modelPayload,int producerClassId,
+static bool GameFactionRuntime_StructureProducesArmy(const int *modelPayload,int producerClassId,
           const ArmyAssetRecordPrefix *armyDefinition)
 {
   if (producerClassId == MODEL_RUNTIME_CLASS_13) {
@@ -223,7 +223,7 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
    moving the later entries down one slot, and returns true; returns false when there is none.
    Original quirk: the last move reads the entry one past the count (with a full list of 64 that is the first
    runtime group member pointer that follows the list). */
-static Bool8 GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRecord *factionRecord,
+static bool GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRecord *factionRecord,
           const ArmyAssetRecordPrefix *armyDefinition)
 {
   uint32_t *primaryAssets;

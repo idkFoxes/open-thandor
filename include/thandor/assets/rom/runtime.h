@@ -80,7 +80,7 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
 
 uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase);
 
-Bool8 RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
+bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
 
 RomAssetRecordPrefix * RomRegistry_FindRecordById(RomRecordId recordId);
 

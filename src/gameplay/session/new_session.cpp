@@ -26,7 +26,7 @@ uintptr_t g_InGameWorldRuntimeDwordArray256[256] = {}; /* SpatialSoundSlot point
 
 /* Failure exit of InGameRuntime_InitializeNewSession: closes the level movie (also when it was not opened yet),
    stores the error in *outError and returns false. */
-static Bool8 InGameNewSession_Fail(uint32_t error,uint32_t *outError)
+static bool InGameNewSession_Fail(uint32_t error,uint32_t *outError)
 
 {
   Movie_Close();
@@ -116,7 +116,7 @@ static void InGameNewSession_ResetSessionState()
 }
 
 /* Whether the session name keeps titleChar: the characters Windows forbids in file names and '.' are dropped. */
-static Bool8 InGameNewSession_IsSessionNameCharacter(uint16_t titleChar)
+static bool InGameNewSession_IsSessionNameCharacter(uint16_t titleChar)
 
 {
   switch (titleChar) {
@@ -174,7 +174,7 @@ static void InGameNewSession_BuildSessionName(UiTextResourceId titleTextIndex)
    queue and creates the terrain texture. Returns true on success; on failure returns false with the error in
    *outError.
 */
-static Bool8 InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+static bool InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
                                        InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
@@ -214,7 +214,7 @@ static Bool8 InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint
    held; on failure returns false with the error in *outError.
    Original quirk: the spin lock is not released on failure.
 */
-static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
+static bool InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
   WorldRuntimeContext *world;
@@ -281,7 +281,7 @@ static void InGameNewSession_QueueIntroNotifications()
    screen while stepping until every player is ready, and finally queues the level's five intro notifications.
    Returns true on success; on failure returns false and stores the error of the failing step in *outError.
 */
-Bool8 InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
                                         uint32_t *outError)
 
 {

@@ -271,7 +271,7 @@ static void ArmyRuntimeClass_PlayVerticalDeploymentSound(WorldRuntimeContext *wo
 {
   uint32_t soundAssetIndex;
   SoundVoiceSet **soundVoiceSet;
-  Bool8 cellMasked;
+  bool cellMasked;
 
   soundAssetIndex = deploymentDefinition->deploymentSoundAssetIndex;
   if ((soundAssetIndex == 0) || (soundAssetIndex >= worldRuntime->dwordArrayCount) ||
@@ -308,7 +308,7 @@ void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
   ModelRuntimeSlot *linkedModelRuntime;
   int travelLimit;
   int travelStep;
-  Bool8 linkedStillInRange;
+  bool linkedStillInRange;
   ModelRuntimeNode *rootNode;
   ModelRuntimeNode *platformNode;
 
@@ -375,14 +375,14 @@ void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
    source model and of every attached child model of the source (attachments, attachmentCount); false as soon as
    one of them is out of reach.
 */
-Bool8 ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
+bool ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
 
 {
   ModelDefinition *candidateDefinition;
   ModelRuntimeSlot *childModelRuntime;
   int remainingAttachments;
-  Bool8 baseWithinRadius;
-  Bool8 childWithinRadius;
+  bool baseWithinRadius;
+  bool childWithinRadius;
 
   candidateDefinition = candidateModelRuntime->definitionOrSavedId.runtimeDefinition;
   remainingAttachments = sourceModelRuntime->attachmentCount;
@@ -423,7 +423,7 @@ Bool8 ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelR
    of two armies or attachments): returns false when dx^2 + dy^2 <= (candidateRadius + sourceRadius)^2, true
    otherwise, in 64-bit Q24 arithmetic.
 */
-Bool8 ArmyRuntime_TestPositionDistanceWithinCombinedRadius
+bool ArmyRuntime_TestPositionDistanceWithinCombinedRadius
           (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidateModelNode,
           void *sourceModelNode)
 

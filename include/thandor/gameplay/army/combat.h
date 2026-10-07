@@ -25,7 +25,7 @@ inline constexpr int ARMY_GROUND_SHOT_LANDING_TOLERANCE_Q12 = 0x400;
 
 void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView *modelRuntime);
 
-Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
+bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_COMBAT_H */

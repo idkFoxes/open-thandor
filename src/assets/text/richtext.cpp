@@ -96,7 +96,7 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
    than RICHTEXT_NESTING_LIMIT) the output is cut and terminated and false is returned. (The original also
    returned the byte count including the terminator, which no caller reads.)
 */
-Bool8 RichTextCommandStream_CopyToNarrow
+bool RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
 
 {
@@ -189,7 +189,7 @@ Bool8 RichTextCommandStream_CopyToNarrow
    the terminator in *outBytesWritten (may be NULL); on overflow (or nesting deeper than RICHTEXT_NESTING_LIMIT)
    the output is cut and terminated, *outBytesWritten is left untouched and false is returned.
 */
-Bool8 RichTextCommandStream_CopyExpanded
+bool RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source,
            uint32_t *outBytesWritten)
 
@@ -288,7 +288,7 @@ Bool8 RichTextCommandStream_CopyExpanded
    Logged once. */
 static void RichTextCommandStream_SkipNullNestedStream(uint16_t **commandStream)
 {
-  static Bool8 s_logged = false;
+  static bool s_logged = false;
 
   if (!s_logged) {
     s_logged = true;
@@ -426,7 +426,7 @@ int FatalError_CopyRichTextToNarrow
   uint16_t *operand;
   uint16_t codeUnit;
   uint32_t remainingCapacityBytes;
-  Bool8 newlineCapacityUnderflow;
+  bool newlineCapacityUnderflow;
   uint16_t *nestedReturnStack[FATAL_ERROR_RICHTEXT_NESTING_MAX]; /* return points of nested texts (the original keeps them on its call stack) */
   int nestedDepth;
 

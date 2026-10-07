@@ -16,7 +16,7 @@ static_assert(offsetof(FrontendPlayerRuntimeRecord,commandSyncPending) ==
               offsetof(FrontendPlayerRuntimeRecord,endpoint) + sizeof(UiTransferEndpointDescriptor),
               "commandSyncPending must follow the player endpoint");
 
-Bool8 Lockstep_AllClientsSubmitted()
+bool Lockstep_AllClientsSubmitted()
 {
   FrontendPlayerRuntimeRecord *clientRecord;
   int clientsRemaining;
@@ -67,7 +67,7 @@ void Lockstep_ResendBatchOrWait(const LockstepHostChannel &channel)
 }
 
 uint32_t Lockstep_PackBatch
-          (const LockstepHostChannel &channel,uint32_t slotCount,LockstepEmpty empty,Bool8 clearPackedSlots)
+          (const LockstepHostChannel &channel,uint32_t slotCount,LockstepEmpty empty,bool clearPackedSlots)
 {
   FrontendCommandPacketRecord *commandRecord;
   FrontendCommandPacketRecord *batchCursor;

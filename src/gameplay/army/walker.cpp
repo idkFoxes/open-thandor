@@ -103,7 +103,7 @@ static void ArticulatedWalker_AdvanceRunningStep(WorldRuntimeContext *worldRunti
 /* After a step has ended: the route point counts as reached when there is no route and the walker faces the
    command target (within ARMY_ARTICULATED_TURN_ANGLE16) or has none, or when it stands within
    ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 of the route point. */
-static Bool8 ArticulatedWalker_StepEndReachedRoutePoint(WorldRuntimeContext *worldRuntime,
+static bool ArticulatedWalker_StepEndReachedRoutePoint(WorldRuntimeContext *worldRuntime,
           ModelRuntimeArticulatedMovementDefinitionView *modelRuntime)
 {
   ModelRuntimeNode *rootNode = modelRuntime->rootModelNode;
@@ -274,7 +274,7 @@ static ArticulatedRouteStep ArticulatedWalker_TryStartRouteStep(WorldRuntimeCont
 
 /* True when the line between the feet is not roughly square to the body heading (and no closing step has
    been made yet). */
-static Bool8 ArticulatedWalker_FeetNeedClosing(ModelRuntimeArticulatedMovementDefinitionView *modelRuntime,
+static bool ArticulatedWalker_FeetNeedClosing(ModelRuntimeArticulatedMovementDefinitionView *modelRuntime,
           ModelRuntimeNode *rootNode)
 {
   uint32_t feetLineAngle;
@@ -295,7 +295,7 @@ static Bool8 ArticulatedWalker_FeetNeedClosing(ModelRuntimeArticulatedMovementDe
 
 /* No step running and no turn to finish: chooses the next step. Returns false when the walker stays as it
    is and the pose is not refreshed (field grid state flag 1 clear). */
-static Bool8 ArticulatedWalker_ChooseNextStep(WorldRuntimeContext *worldRuntime,
+static bool ArticulatedWalker_ChooseNextStep(WorldRuntimeContext *worldRuntime,
           ModelRuntimeArticulatedMovementDefinitionView *modelRuntime,ModelRuntimeNode *rootNode)
 {
   ArticulatedRouteStep routeStep = ARTICULATED_ROUTE_STEP_NONE;
@@ -834,7 +834,7 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
   SoundVoiceSet **voiceSetRef;
   int32_t waterDelta;
   EffectDefinition *effectDefinition;
-  Bool8 cellMasked;
+  bool cellMasked;
   ModelRuntimeNode *footNode;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
@@ -1227,7 +1227,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
    (definition classParameterC0) << 13 divided by footTravel plus 4 * lift height (definition
    classParameterC4), or 2.0 when that
    sum is 0. Returns false in that case. */
-static Bool8 ArmyArticulatedRuntime_SetStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,uint32_t footTravel)
+static bool ArmyArticulatedRuntime_SetStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,uint32_t footTravel)
 
 {
   ModelDefinition *movementDefinition;

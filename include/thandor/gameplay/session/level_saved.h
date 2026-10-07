@@ -13,7 +13,7 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 InGameLevelRuntime_LoadResourcesAfterExternalTables
+bool InGameLevelRuntime_LoadResourcesAfterExternalTables
           (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
 #endif /* THANDOR_GAMEPLAY_SESSION_LEVEL_SAVED_H */

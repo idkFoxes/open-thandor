@@ -179,7 +179,7 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
 /* Loads the ".spr" sprite named after a serialized node header (UTF-16 file name) into the node, or reuses an
    already registered sprite with the same registry id. Returns true with the error in *outError when loading
    or registering fails. */
-static Bool8 RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t *outError)
+static bool RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t *outError)
 {
   SpriteAssetHeader *asset;
   SpriteAssetHeader *existingSprite;
@@ -297,7 +297,7 @@ uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAsse
    (NULL while the record's tree is not built) in *outRootNode, or returns false when no registry slot holds
    such a record (the original's error code FATAL_ERROR_ROM_RECORD_NOT_REGISTERED was read by no caller).
 */
-Bool8 RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode)
+bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode)
 
 {
   int slotsRemaining;

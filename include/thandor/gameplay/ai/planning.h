@@ -39,7 +39,7 @@ AiStrategicClassSelection AiStrategicClass_SelectTerrainSuitedBuilding
 AiStrategicClassSelection AiStrategicClass_SelectPressureWeightedBuilding
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-Bool8 AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex);
+bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex);
 
 extern uint32_t g_AiActiveGridMaskClasses[4];
 

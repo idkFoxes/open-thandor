@@ -159,14 +159,14 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
    PlayerPairList_InsertUnique): false when listed, true when not. Used by the FieldGrid cell
    updates in world/terrain/field_edit_commands.cpp.
 */
-Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
+bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId)
 
 {
   uint32_t pairRecordsRemaining;
   SelectionPlayerPairRecord *pairRecordCursor;
   SelectionPlayerRuntimeBlock *playerBlock;
-  static Bool8 s_loggedUnlinkedPlayer;
+  static bool s_loggedUnlinkedPlayer;
 
   /* The original reads the player's block unchecked; an unlinked player (no block) counts as "not listed"
      and the count is bounded by the list capacity here because the player id comes from a command record. */
@@ -292,7 +292,7 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
    FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.cpp); the primary-selection move/rotate handlers call
    it and ignore the result.
 */
-Bool8 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
+bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
   int entryIndex;
@@ -311,7 +311,7 @@ Bool8 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerA
    than 5.0 (Q12 0x5000) on either axis or the two extents add up to more than 7.0 (0x7000). An empty
    selection returns false.
 */
-Bool8 SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
+bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
 
 {
   GameEntityRuntime *entry;

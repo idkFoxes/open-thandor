@@ -152,7 +152,7 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
    with payloadValue in any of its three payload dwords, so input handlers do not queue a selection change
    twice. Single player has no queue and always answers no.
 */
-Bool8 InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
+bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress)
 
 {
@@ -387,7 +387,7 @@ static uint8_t g_InGameCommandValidationLogged[COMMAND_TABLE_COUNT(g_InGameComma
 
 /* False for the table entries that are no four-argument command handlers: the queue functions and the queue
    lookup helper, listed only because they start in the handler regions. */
-static Bool8 CommandDispatch_IsCommandHandler(const void *handler)
+static bool CommandDispatch_IsCommandHandler(const void *handler)
 
 {
   return handler != CommandDispatch_HandlerKey(&FrontendCommandQueue_EnqueueLocalPlayerCommand) &&
@@ -457,7 +457,7 @@ CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint
 /* True when token is 0 (allowZero) or a slot start of a pool of slotCount slotBytes-sized slots, given as
    the slot's offset from pool base - 1 (the protocol's token form, see g_ArmyRuntimeRebaseBaseMinusOne and
    g_ModelRuntimeRebaseDelta). */
-static Bool8 CommandDispatch_IsPoolToken(uint32_t token,uint32_t slotBytes,uint32_t slotCount,Bool8 allowZero)
+static bool CommandDispatch_IsPoolToken(uint32_t token,uint32_t slotBytes,uint32_t slotCount,bool allowZero)
 
 {
   if (token == 0) {
@@ -468,7 +468,7 @@ static Bool8 CommandDispatch_IsPoolToken(uint32_t token,uint32_t slotBytes,uint3
 
 /* True when the Q12 grid coordinate names a cell index in -1..cellCount (one cell of margin: the snapped
    editor rectangle can end one cell outside the grid; the original reads such cells, too). */
-static Bool8 CommandDispatch_IsGridCoordinate(uint32_t coordinateQ12,FieldGridDimension cellCount)
+static bool CommandDispatch_IsGridCoordinate(uint32_t coordinateQ12,FieldGridDimension cellCount)
 
 {
   int cellIndex;
@@ -479,7 +479,7 @@ static Bool8 CommandDispatch_IsGridCoordinate(uint32_t coordinateQ12,FieldGridDi
 
 /* True when rowIndex names a row of the frontend list control, or the list has no rows at all (rowSlots NULL:
    the select handlers then only reset the description, as in the original). */
-static Bool8 CommandDispatch_IsListRow(const UiNodeBase *listNode,uint32_t rowIndex)
+static bool CommandDispatch_IsListRow(const UiNodeBase *listNode,uint32_t rowIndex)
 
 {
   const UiListControl *list;
@@ -489,7 +489,7 @@ static Bool8 CommandDispatch_IsListRow(const UiNodeBase *listNode,uint32_t rowIn
 }
 
 /* Applies one CommandPayloadCheck to a payload dword. */
-static Bool8 CommandDispatch_IsPayloadValid(CommandPayloadCheck check,uint32_t value)
+static bool CommandDispatch_IsPayloadValid(CommandPayloadCheck check,uint32_t value)
 
 {
   const FieldGridAsset *fieldGrid;
@@ -533,7 +533,7 @@ static Bool8 CommandDispatch_IsPayloadValid(CommandPayloadCheck check,uint32_t v
    g_SelectionPlayerRuntimeBlockPointers with it; the frontend handlers search the player list instead), and
    the payload dwords must pass the checks of the code's validation entry. A rejected record is logged once per
    code (the player id once overall). */
-static Bool8 CommandDispatch_ValidateRecord(uint32_t codeBase,const UiCommandQueueRecord *record)
+static bool CommandDispatch_ValidateRecord(uint32_t codeBase,const UiCommandQueueRecord *record)
 
 {
   static int s_loggedUnknownPlayer;
@@ -631,7 +631,7 @@ void InGameCommand_IssueHandler(CommandQueueHandlerProc *handler,CommandPayload 
           CommandPayload payload3)
 
 {
-  static Bool8 s_loggedMissing;
+  static bool s_loggedMissing;
   uint32_t code;
 
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -653,7 +653,7 @@ void InGameCommand_IssueHandler(CommandQueueHandlerProc *handler,CommandPayload 
    derives from the tables, so every handler must map back to its own entry's code (a handler listed twice
    would queue the first code), and the pilot sites of InGameCommand_Issue must derive the constants they
    queued before. Logs each mismatch; runs once during static initialisation (the tables are in this file). */
-static Bool8 CommandDispatch_CheckDerivedCodes(void)
+static bool CommandDispatch_CheckDerivedCodes(void)
 
 {
   static const struct {
@@ -670,7 +670,7 @@ static Bool8 CommandDispatch_CheckDerivedCodes(void)
   uint32_t index;
   uint32_t baseIndex;
   uint32_t derived;
-  Bool8 allMatch;
+  bool allMatch;
 
   allMatch = true;
   for (baseIndex = 0; baseIndex < 2; baseIndex++) {
@@ -695,4 +695,4 @@ static Bool8 CommandDispatch_CheckDerivedCodes(void)
   return allMatch;
 }
 
-static const Bool8 g_CommandDerivedCodesMatch = CommandDispatch_CheckDerivedCodes();
+static const bool g_CommandDerivedCodesMatch = CommandDispatch_CheckDerivedCodes();

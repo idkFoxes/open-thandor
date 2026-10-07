@@ -30,7 +30,7 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
   uint32_t acceleratedAdvance;
   uint32_t newAdvance;
   uint32_t startSoundSlotIndex;
-  Bool8 cellMasked;
+  bool cellMasked;
   ModelRuntimeNode *rootNode;
 
   rootNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;

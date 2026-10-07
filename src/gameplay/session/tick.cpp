@@ -28,7 +28,7 @@ void InGameRuntime_PeriodicCountdownAndClockTick()
    g_SessionNetworkTickInterval directly; an interval of 0 is treated as 1 here (every step a boundary) so a
    bad value cannot divide by zero. The join ack only accepts the original's even 2..14, so valid sessions
    compute exactly the original remainder. */
-static Bool8 InGameTick_IsNetworkIntervalBoundary()
+static bool InGameTick_IsNetworkIntervalBoundary()
 {
   uint32_t tickInterval;
 
@@ -42,7 +42,7 @@ static Bool8 InGameTick_IsNetworkIntervalBoundary()
 /* Network lockstep of a simulation step on the host or in single player. Returns false when the step has to wait:
    the periodic timer has not counted down yet, or (host, interval boundary) the collected command batch could not
    be broadcast because a peer has not submitted yet. */
-static Bool8 InGameTick_RunHostOrLocalLockstep()
+static bool InGameTick_RunHostOrLocalLockstep()
 
 {
   void *packet;
@@ -87,7 +87,7 @@ static Bool8 InGameTick_RunHostOrLocalLockstep()
 /* Network lockstep of a simulation step on a client. Returns false when the step has to wait: at an interval
    boundary until the host's command batch has arrived and was executed, otherwise until the periodic timer has
    counted down. */
-static Bool8 InGameTick_RunClientLockstep()
+static bool InGameTick_RunClientLockstep()
 
 {
   void *packet;
@@ -285,8 +285,8 @@ static void InGameTick_RunReducedUpdate(InGameRuntimeRoot *inGameRoot)
 void InGameRuntime_UpdateSimulationAndNetworkTick()
 
 {
-  Bool8 lockAlreadyHeld;
-  Bool8 stepDue;
+  bool lockAlreadyHeld;
+  bool stepDue;
   InGameRuntimeRoot *inGameRoot;
 
   lockAlreadyHeld = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);

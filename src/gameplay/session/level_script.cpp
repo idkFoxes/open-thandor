@@ -21,7 +21,7 @@ uint16_t g_FlmEnde0001FlmPathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', 'e
 /* Evaluates one scheduled condition of the level script (its satisfied bit is already cleared in the record).
    COUNTDOWN_ELAPSED also counts its operand 1 down by the step ticks and clamps it at 0 once elapsed.
    Unknown kinds (and unused records) never hold. */
-static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelConditionStorage,
+static bool InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelConditionStorage,
                                            InGameScheduledConditionRecord10 *condition,
                                            InGameScheduledConditionKind kind)
 {
@@ -156,7 +156,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
 }
 
 /* True while two active factions (1..7) are still not allied (relation state below 8): the game goes on. */
-static Bool8 InGameConditionRuntime_HasUnalliedActiveFactionPair()
+static bool InGameConditionRuntime_HasUnalliedActiveFactionPair()
 {
   uint32_t factionIndex;
   uint32_t otherFactionIndex;

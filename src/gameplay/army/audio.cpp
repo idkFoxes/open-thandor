@@ -205,7 +205,7 @@ void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,
   ModelDefinition *definition;
   uint32_t soundSlotIndex;
   SpatialSoundSlot *slot;
-  Bool8 cellMasked;
+  bool cellMasked;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   soundSlotIndex = definition->loopingSoundSlotIndex;
@@ -242,7 +242,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
   int cellColumn;
   uint32_t projectedRow;
   int cellRow;
-  Bool8 capabilityClear;
+  bool capabilityClear;
   FieldGridAsset *fieldGrid;
 
   if ((soundAssetIndex == 0) || (worldContext->dwordArray == nullptr) ||
@@ -297,7 +297,7 @@ void ModelRuntime_PlayDefinitionOneShotSound(ModelRuntimeSlot *modelRuntime,uint
   ModelDefinition *definition;
   ModelRuntimeNode *rootNode;
   SoundVoiceSet **voiceSetRef;
-  Bool8 cellMasked;
+  bool cellMasked;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   rootNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;

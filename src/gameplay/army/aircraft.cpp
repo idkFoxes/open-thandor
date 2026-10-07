@@ -474,12 +474,12 @@ static void ArmyPadHangar_PlaySound(WorldRuntimeContext *worldRuntime,ModelDefin
 
 /* Consumes one pending launch of a linked aircraft slot and tries to create the aircraft. On success the hangar
    starts opening (with its transition sound) and true is returned. */
-static Bool8 ArmyPadHangar_TryLaunchPendingAircraft(WorldRuntimeContext *worldRuntime,
+static bool ArmyPadHangar_TryLaunchPendingAircraft(WorldRuntimeContext *worldRuntime,
           ModelRuntimeLinkedChildSpawnAndBuildView *padRuntime,uint8_t *pendingSpawnCount,
           ModelRuntimeLinkedChildSpawnInheritedState *inheritedState,PckArmyAssetIdCatalog linkedArmyAssetId,
           ModelDefinitionLinkedChildStateView *padDefinition,ModelRuntimeNode *padNode)
 {
-  Bool8 spawnFailed;
+  bool spawnFailed;
 
   *pendingSpawnCount = *pendingSpawnCount - 1;
   spawnFailed = ArmyRuntimeSpawner_CreateLinkedChildInstance
