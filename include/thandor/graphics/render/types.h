@@ -15,34 +15,34 @@
 #include <thandor/core/types.h>
 #include <thandor/ui/controls/types.h>
 
-typedef struct GraphicsShadingRuntimeRecord GraphicsShadingRuntimeRecord, *PGraphicsShadingRuntimeRecord;
-typedef struct GraphicsProjectedPoint2i GraphicsProjectedPoint2i, *PGraphicsProjectedPoint2i;
-typedef struct GraphicsOffscreenSceneExtents GraphicsOffscreenSceneExtents, *PGraphicsOffscreenSceneExtents;
-typedef struct GraphicsOffscreenViewParameters GraphicsOffscreenViewParameters, *PGraphicsOffscreenViewParameters;
-typedef struct GraphicsProjectedVertexSource GraphicsProjectedVertexSource, *PGraphicsProjectedVertexSource;
-typedef struct GraphicsPrimitivePacket GraphicsPrimitivePacket, *PGraphicsPrimitivePacket;
-typedef struct GraphicsPrimitiveVertexRaw GraphicsPrimitiveVertexRaw, *PGraphicsPrimitiveVertexRaw;
-typedef union GraphicsPrimitiveRadixBucket GraphicsPrimitiveRadixBucket, *PGraphicsPrimitiveRadixBucket;
-typedef struct GraphicsPrimitiveQueueNode GraphicsPrimitiveQueueNode, *PGraphicsPrimitiveQueueNode;
-typedef struct GraphicsTriangleInput GraphicsTriangleInput, *PGraphicsTriangleInput;
-typedef struct GraphicsWideFixed GraphicsWideFixed, *PGraphicsWideFixed;
-typedef struct GraphicsFixedRect GraphicsFixedRect, *PGraphicsFixedRect;
-typedef struct GraphicsPrimitiveQueue GraphicsPrimitiveQueue, *PGraphicsPrimitiveQueue;
-typedef struct GraphicsFixedVec2 GraphicsFixedVec2, *PGraphicsFixedVec2;
-typedef struct GraphicsSceneBounds8 GraphicsSceneBounds8, *PGraphicsSceneBounds8;
-typedef struct GeneratedTextureRenderContextView GeneratedTextureRenderContextView, *PGeneratedTextureRenderContextView;
-typedef struct GraphicsProjectedPointPair GraphicsProjectedPointPair, *PGraphicsProjectedPointPair;
-typedef struct ModelProjectedBoundsPixels ModelProjectedBoundsPixels, *PModelProjectedBoundsPixels;
-typedef struct FrontendModelPointerContext FrontendModelPointerContext, *PFrontendModelPointerContext;
-typedef struct GeneratedTextureSampleWorkRecord GeneratedTextureSampleWorkRecord, *PGeneratedTextureSampleWorkRecord;
-typedef struct GeneratedTextureScratchRuntime GeneratedTextureScratchRuntime, *PGeneratedTextureScratchRuntime;
-typedef struct FieldGridAsset FieldGridAsset;
-typedef struct FrontendModelPointerHitContext FrontendModelPointerHitContext;
-typedef struct GameEntityRuntime GameEntityRuntime;
-typedef struct GraphicsTextureSetEntry GraphicsTextureSetEntry;
-typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
-typedef struct WorldRuntimeContext WorldRuntimeContext;
+struct GraphicsShadingRuntimeRecord;
+struct GraphicsProjectedPoint2i;
+struct GraphicsOffscreenSceneExtents;
+struct GraphicsOffscreenViewParameters;
+struct GraphicsProjectedVertexSource;
+struct GraphicsPrimitivePacket;
+struct GraphicsPrimitiveVertexRaw;
+union GraphicsPrimitiveRadixBucket;
+struct GraphicsPrimitiveQueueNode;
+struct GraphicsTriangleInput;
+struct GraphicsWideFixed;
+struct GraphicsFixedRect;
+struct GraphicsPrimitiveQueue;
+struct GraphicsFixedVec2;
+struct GraphicsSceneBounds8;
+struct GeneratedTextureRenderContextView;
+struct GraphicsProjectedPointPair;
+struct ModelProjectedBoundsPixels;
+struct FrontendModelPointerContext;
+struct GeneratedTextureSampleWorkRecord;
+struct GeneratedTextureScratchRuntime;
+struct FieldGridAsset;
+struct FrontendModelPointerHitContext;
+struct GameEntityRuntime;
+struct GraphicsTextureSetEntry;
+struct GraphicsTextureSourceAsset;
+struct ModelRuntimeNode;
+struct WorldRuntimeContext;
 
 using PackedRgb24 = uint32_t;
 

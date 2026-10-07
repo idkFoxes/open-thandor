@@ -13,10 +13,10 @@
 #include <thandor/core/types.h>
 #include <thandor/graphics/render/types.h>
 
-typedef struct TerrainMaterialSuffixEntry TerrainMaterialSuffixEntry, *PTerrainMaterialSuffixEntry;
-typedef struct TerrainProjectedVertexWorkRecord TerrainProjectedVertexWorkRecord, *PTerrainProjectedVertexWorkRecord;
-typedef struct TriangleBarycentricWeightsQ12 TriangleBarycentricWeightsQ12, *PTriangleBarycentricWeightsQ12;
-typedef struct TerrainProjectedRowSpan TerrainProjectedRowSpan, *PTerrainProjectedRowSpan;
+struct TerrainMaterialSuffixEntry;
+struct TerrainProjectedVertexWorkRecord;
+struct TriangleBarycentricWeightsQ12;
+struct TerrainProjectedRowSpan;
 
 struct TerrainMaterialSuffixEntry {
     uint16_t lowercaseLetterUtf16;
