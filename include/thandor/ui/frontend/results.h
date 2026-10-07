@@ -63,38 +63,38 @@ UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
 void FrontendResultsTable_DrawColourColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
-          FrontendResultsRowMetrics *rowMetrics);
+          const FrontendResultsColumnSequenceControl *table);
 
 void FrontendResultsTable_DrawFactionColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
-          FrontendResultsRowMetrics *rowMetrics);
+          const FrontendResultsColumnSequenceControl *table);
 
 void FrontendResultsTable_DrawFormattedFactionFieldColumn
           (TextResourceId valueFormatResourceId,TextResourceId headerResourceId,
           FrontendResultsFactionFieldByteOffset factionFieldOffset,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,
-          UiPixelCoordinate drawY,UiPixelCoordinate drawX,FrontendResultsRowMetrics *rowMetrics);
+          UiPixelCoordinate drawY,UiPixelCoordinate drawX,const FrontendResultsColumnSequenceControl *table);
 
 void FrontendResultsTable_DrawPointsColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
-          FrontendResultsRowMetrics *rowMetrics);
+          const FrontendResultsColumnSequenceControl *table);
 
 void FrontendResultsTable_DrawEconomyColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
-          FrontendResultsRowMetrics *rowMetrics);
+          const FrontendResultsColumnSequenceControl *table);
 
 void FrontendResultsTable_DrawMilitaryColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
-          FrontendResultsRowMetrics *rowMetrics);
+          const FrontendResultsColumnSequenceControl *table);
 
 void FrontendResultsTable_DrawPlayerColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
-          FrontendResultsRowMetrics *rowMetrics);
+          const FrontendResultsColumnSequenceControl *table);
 
 
 void FrontendResultsGraph_DrawFactionWeightSumColumn

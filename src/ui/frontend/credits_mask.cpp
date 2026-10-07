@@ -100,7 +100,8 @@ void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
   uint32_t blocksRemaining;
   GraphicsTextureLogicalSize logicalSize;
 
-  maskQwordWriteCursor = (uint64_t *)maskControl->maskPixels;
+  /* the byte mask, cleared a qword at a time */
+  maskQwordWriteCursor = reinterpret_cast<uint64_t *>(maskControl->maskPixels.get());
   if (maskQwordWriteCursor != nullptr) {
     logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskControl->textureSource);
     /* 64-byte blocks; a mask of fewer than 64 pixels would wrap the count, as in the original */
@@ -287,7 +288,8 @@ void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
   GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskControl->textureSource);
-  maskWordCursor = (uint32_t *)maskControl->maskPixels;
+  /* the byte mask, four mask bytes per dword */
+  maskWordCursor = reinterpret_cast<uint32_t *>(maskControl->maskPixels.get());
   maskBlocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 4;
   do {
     *maskWordCursor = *maskWordCursor | ARGB8888_CHANNEL_ONES;
@@ -328,7 +330,8 @@ void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,Terr
   else {
     bandRow = 24 - bandIndex;
   }
-  maskWordCursor = (uint32_t *)(maskRuntime->maskPixels + (int32_t)(bandRow * bandBytes));
+  /* the band's mask bytes, four per dword */
+  maskWordCursor = reinterpret_cast<uint32_t *>(maskRuntime->maskPixels + (int32_t)(bandRow * bandBytes));
   /* Original quirk: a do-while, so a band of fewer than 16 bytes wraps the counter to 2^32 steps */
   blocksLeft = bandBytes >> 4;
   do {

@@ -81,7 +81,6 @@ typedef struct FrontendLoadedLevelAsset FrontendLoadedLevelAsset, *PFrontendLoad
 typedef struct FrontendNetworkListsRuntimeView FrontendNetworkListsRuntimeView, *PFrontendNetworkListsRuntimeView;
 typedef struct FrontendResultsFactionWeightPair FrontendResultsFactionWeightPair, *PFrontendResultsFactionWeightPair;
 typedef struct FrontendResultsColumnSequenceControl FrontendResultsColumnSequenceControl, *PFrontendResultsColumnSequenceControl;
-typedef struct FrontendResultsEightColumnTemplate FrontendResultsEightColumnTemplate, *PFrontendResultsEightColumnTemplate;
 typedef struct ScenarioCatalogDisplayRecord ScenarioCatalogDisplayRecord, *PScenarioCatalogDisplayRecord;
 typedef struct FieldGridAsset FieldGridAsset;
 typedef struct GameEntityRuntime GameEntityRuntime;
@@ -925,21 +924,11 @@ struct FrontendResultsColumnSequenceControl {
     Ptr32<void (UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *)> factionWeightRaster; // four-argument raster column callback
     uint32_t columnTypeCount; // number of trailing column type dwords
     uint32_t rowCount; /* +0x58 rows (active factions) of the table, set by the end-of-game results screen */
-    UiPixelMetric headerBaselineOffsetPixels; // read through the FrontendResultsRowMetrics view by the column painters
-    UiPixelMetric rowAdvancePixels; // read through the FrontendResultsRowMetrics view by the column painters
+    UiPixelMetric headerBaselineOffsetPixels; // +0x5C read by the column painters
+    UiPixelMetric rowAdvancePixels; // +0x60 read by the column painters
     uint32_t columnTypes0; // first element of variable-length trailing column type list
 };
 
-struct FrontendResultsEightColumnTemplate {
-    struct UiNodeBase base; // serialized/runtime UiNode prefix
-    uint32_t modeFlags;
-    Ptr32<void (UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *)> factionWeightRaster;
-    uint32_t columnTypeCount;
-    uint32_t rowCount; /* +0x58 */
-    UiPixelMetric headerBaselineOffsetPixels; // FrontendResultsRowMetrics view of +0x5C
-    UiPixelMetric rowAdvancePixels; // FrontendResultsRowMetrics view of +0x60
-    uint32_t columnTypes[8];
-};
 #pragma pack(push, 1) /* packed layout: no alignment padding */
 struct ScenarioCatalogDisplayRecord {
     uint16_t identifier[32]; // UTF-16 scenario identifier

@@ -18,31 +18,31 @@
 static void UiActionSlot_FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(void *source)
 
 {
-  FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage((uint32_t)(uintptr_t)source);
+  FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(void *source)
 
 {
-  FrontendSessionAction_ReleaseCampaignAndReturnToMainPage((uint32_t)(uintptr_t)source);
+  FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendFactionSetupAction_ReturnToMainPage(void *source)
 
 {
-  FrontendFactionSetupAction_ReturnToMainPage((uint32_t)(uintptr_t)source);
+  FrontendFactionSetupAction_ReturnToMainPage(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendQuitDialogAction_ReturnToMainPage(void *source)
 
 {
-  FrontendQuitDialogAction_ReturnToMainPage((uint32_t)(uintptr_t)source);
+  FrontendQuitDialogAction_ReturnToMainPage(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendCallback_ReturnToMainPageOrDispatchState4(void *source)
 
 {
-  FrontendCallback_ReturnToMainPageOrDispatchState4((uint32_t)(uintptr_t)source);
+  FrontendCallback_ReturnToMainPageOrDispatchState4(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source)));
 }
 
 static void UiActionSlot_FrontendScenarioSelection_ActivateSelectedRecord(void *source)
@@ -211,23 +211,25 @@ void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode)
 
 {
   FrontendModelPointerContextFlags *compactLayoutFlags;
-  uintptr_t parentNodeAddress;
-  FrontendRootPageState *frontendRootPage;
+  UiNodeBase *parentNode;
+  UiNodeBase *rootNode;
+  FrontendUiImage *frontendUi;
 
-  parentNodeAddress = (uintptr_t)sourceNode->parent;
-  frontendRootPage = (FrontendRootPageState *)sourceNode;
-  while ((UiNodeBase *)parentNodeAddress != UI_NODE_NONE) {
-    frontendRootPage = (FrontendRootPageState *)(frontendRootPage->rootNode).parent;
-    parentNodeAddress = (uintptr_t)(frontendRootPage->rootNode).parent;
+  /* the root of the source's tree: the frontend root panel */
+  parentNode = sourceNode->parent;
+  rootNode = sourceNode;
+  while (parentNode != UI_NODE_NONE) {
+    rootNode = rootNode->parent;
+    parentNode = rootNode->parent;
   }
-  if (sourceNode == &frontendRootPage->returnToMainActionControl) {
+  frontendUi = FrontendUi_Image(rootNode);
+  if (sourceNode == &frontendUi->optionsOkButton.selectable.base) {
     FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
     return;
   }
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    compactLayoutFlags =
-         &FrontendUi_Image(frontendRootPage)->menuRoomModelView.contextFlags;
+    compactLayoutFlags = &frontendUi->menuRoomModelView.contextFlags;
     *compactLayoutFlags = *compactLayoutFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,&frontendRootPage->primaryPageStack);
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
 }
