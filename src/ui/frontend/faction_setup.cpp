@@ -45,7 +45,7 @@ void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
   
   rowIndex = 0;
   do {
-    if ((int)((uintptr_t)factionControl - g_FrontendRootNode) ==
+    if ((int)(reinterpret_cast<uintptr_t>(factionControl) - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_CycleFactionColour>(0,0,rowIndex);
       return;
@@ -66,7 +66,7 @@ void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
   
   rowIndex = 0;
   do {
-    if ((int)((uintptr_t)playerControl - g_FrontendRootNode) ==
+    if ((int)(reinterpret_cast<uintptr_t>(playerControl) - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_ToggleFactionActive>(0,0,rowIndex);
       return;
@@ -87,7 +87,7 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
   
   rowIndex = 0;
   do {
-    if ((int)((uintptr_t)selectionRowControl - g_FrontendRootNode) ==
+    if ((int)(reinterpret_cast<uintptr_t>(selectionRowControl) - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_ChooseFaction>(0,0,rowIndex);
       return;

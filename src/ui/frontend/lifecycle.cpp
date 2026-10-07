@@ -332,7 +332,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&FrontendUi_Image(frontendUiState)->menuRoomModelView);
   /* the template image and the new root are copied dword by dword */
   templateDwords = reinterpret_cast<uint32_t *>(&g_FrontendRootInitializationTemplate);
-  g_FrontendRootNode = (uintptr_t)frontendUiState;
+  g_FrontendRootNode = reinterpret_cast<uintptr_t>(frontendUiState);
   rootDwords = reinterpret_cast<uint32_t *>(frontendUiState);
   for (remainingDwords = sizeof(FrontendUiImage) / 4; remainingDwords != 0; remainingDwords--) {
     *rootDwords = *templateDwords;
