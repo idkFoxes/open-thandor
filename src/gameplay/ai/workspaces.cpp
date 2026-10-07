@@ -73,9 +73,11 @@ static uint16_t g_EngineKiDatPathUtf16[14] = {'e', 'n', 'g', 'i', 'n', 'e', '\\'
 
 /* Candidate cache of the faction runtime record at factionImageByteOffset (faction * 0x740; a byte offset into
    the record array, applied as the original does) */
-#define AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset) \
-  (reinterpret_cast<AiFactionCandidateCacheState *>( \
-       reinterpret_cast<uint8_t *>(&g_GameFactionRuntimeImage.records[0].candidateCache) + (factionImageByteOffset)))
+static inline AiFactionCandidateCacheState *AI_FACTION_CANDIDATE_CACHE(FactionImageByteOffset factionImageByteOffset)
+{
+  return reinterpret_cast<AiFactionCandidateCacheState *>(
+       reinterpret_cast<uint8_t *>(&g_GameFactionRuntimeImage.records[0].candidateCache) + factionImageByteOffset);
+}
 
 /* Proposes armyAssetId at the first workspace 08 site of that asset where it can be placed (placement mode 4),
    unless one of it is still unassigned. Weight: 3 * baseWeight / (existing count + 3); for assets other than

@@ -40,10 +40,10 @@ inline constexpr int ARMY_MODEL_STATE_NO_REGENERATION = 0x400; /* health does no
 inline constexpr int ARMY_MODEL_STATE_RALLY_POINT_SET = 0x800; /* class 13: the exit point (classLinkState.classState78/7C) was set
                                                      by the player */
 /* SWITCHED_OFF | DESTROYED: the model does nothing this tick */
-#define ARMY_MODEL_STATE_INACTIVE_MASK (ARMY_MODEL_STATE_SWITCHED_OFF | ARMY_RUNTIME_FLAG_DESTROYED)
+inline constexpr auto ARMY_MODEL_STATE_INACTIVE_MASK = ARMY_MODEL_STATE_SWITCHED_OFF | ARMY_RUNTIME_FLAG_DESTROYED;
 /* INACTIVE_MASK | RESEARCHING | RESEARCH_UNPAID: a production class may start a new build */
-#define ARMY_MODEL_STATE_BUILD_BLOCKING_MASK \
-          (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)
+inline constexpr auto ARMY_MODEL_STATE_BUILD_BLOCKING_MASK =
+          ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID;
 
 /* g_ArmyRuntimeDepthBinClassByModelClass entries (ArmyRuntimeSlot.depthBinClass): the occupancy bits an army
    marks in its faction's byte of the field cells. Structure classes (4, 11, 13-16, 20, 22, 23) use 0x90. */

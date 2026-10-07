@@ -28,7 +28,7 @@ Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBy
                        uint32_t *outError);
 
 /* An 8-bit paletted PCX picture decoded by Pcx_DecodeIndexed8 (pcx.fnc export 2). */
-#define PCX_PALETTE_COLOR_COUNT 256
+inline constexpr int PCX_PALETTE_COLOR_COUNT = 256;
 typedef struct PcxIndexedImage {
     uint32_t width;  /* 1..65536 */
     uint32_t height; /* 1..65536 */

@@ -13,14 +13,14 @@
 
 /* Palette texture sources (GraphicsPaletteTextureSource_*): the palette banks start after the 0x200-byte
    header, each 256 entries of 8 bytes (colour, second dword). */
-#define GRAPHICS_PALETTE_BANKS_OFFSET 0x200
-#define GRAPHICS_PALETTE_BANK_BYTES 0x800
-#define GRAPHICS_PALETTE_BANK_ENTRIES 0x100
+inline constexpr int GRAPHICS_PALETTE_BANKS_OFFSET = 0x200;
+inline constexpr int GRAPHICS_PALETTE_BANK_BYTES = 0x800;
+inline constexpr int GRAPHICS_PALETTE_BANK_ENTRIES = 0x100;
 /* GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices marks an entry unused by setting the low three
    bits of its blue, green and red bytes (the colours only use the upper five bits of each channel). */
-#define GRAPHICS_PALETTE_ENTRY_UNUSED_MARK 0x70707
+inline constexpr int GRAPHICS_PALETTE_ENTRY_UNUSED_MARK = 0x70707;
 /* Entries of g_GraphicsPaletteBankSlots (used-colour count per bank); the optimiser handles at most this many banks */
-#define GRAPHICS_PALETTE_BANK_SLOT_CAPACITY 0x200
+inline constexpr int GRAPHICS_PALETTE_BANK_SLOT_CAPACITY = 0x200;
 
 GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode);
 
