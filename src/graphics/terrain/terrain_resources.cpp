@@ -264,6 +264,7 @@ Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
   /* runs at least once (as in the original), so a field without cells would run away */
   cellsRemaining = field->gridWidth * field->gridHeight;
   fieldCell = field->cells;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     fieldCell->flagsAndMaterial = fieldCell->flagsAndMaterial & ~FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28;
     fieldCell++;
@@ -287,14 +288,13 @@ void TerrainVisualResources_Shutdown()
 
   materialTextureSetCursor = g_TerrainMaterialTextureSets;
   materialTextureSetsRemaining = TERRAIN_MATERIAL_TEXTURE_SET_COUNT;
-  do {
+  for (; materialTextureSetsRemaining != 0; materialTextureSetsRemaining--) {
     if (*materialTextureSetCursor != nullptr) {
       g_GraphicsTextureSetReleasePackage(*materialTextureSetCursor);
       *materialTextureSetCursor = nullptr;
     }
     materialTextureSetCursor++;
-    materialTextureSetsRemaining--;
-  } while (materialTextureSetsRemaining != 0);
+  }
   g_GraphicsTextureSetReleasePackage(g_TerrainPrimaryTextureSet);
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainSecondaryPalette);
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainPrimaryPalette);

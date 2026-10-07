@@ -108,6 +108,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     rowSpan = g_TerrainProjectedRowSpans;
     gridWidth = fieldGrid->gridWidth;
     rowCount = fieldGrid->gridHeight;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       rowSpan->firstColumn = 0;
       rowSpan->endColumnExclusive = gridWidth;
@@ -123,6 +124,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     rowCells = fieldGrid->cells;
     rowsRemaining = rowCount;
     columnsRemaining = gridWidth;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       do {
         rowCells->flagsAndMaterial =
@@ -138,6 +140,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     spanPairsLeft = rowCount - 1;
     previousFirstColumn = g_TerrainProjectedRowSpans[0].firstColumn;
     previousEndColumn = g_TerrainProjectedRowSpans[0].endColumnExclusive;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       rowSpan = rowSpan + 1;
       spanFirstColumn = rowSpan->firstColumn;
@@ -176,16 +179,16 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   if (((fieldGrid->runtimeStateFlags & FIELD_GRID_RUNTIME_SURFACE_DIRTY) == 0) &&
      ((renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION) != 0)) {
     rowCells = fieldGrid->cells;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       spanFirstColumn = rowSpan->firstColumn;
       vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
       if (vertexCount != 0 && spanFirstColumn <= rowSpan->endColumnExclusive) {
         vertexCursor = TerrainVertex_OfCell(rowCells + spanFirstColumn);
-        do {
+        for (; vertexCount != 0; vertexCount = vertexCount - 1) {
           TerrainProjectedVertex_ReshadeKeepingProjection(vertexCursor);
           vertexCursor = vertexCursor + 1;
-          vertexCount = vertexCount - 1;
-        } while (vertexCount != 0);
+        }
       }
       rowSpan = rowSpan + 1;
       rowCells = rowCells + gridWidth;
@@ -196,16 +199,16 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags & ~FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     renderContext->contextFlags = renderContext->contextFlags & ~TERRAIN_RENDER_REUSE_PROJECTION;
     rowCells = fieldGrid->cells;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       spanFirstColumn = rowSpan->firstColumn;
       vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
       if (vertexCount != 0 && spanFirstColumn <= rowSpan->endColumnExclusive) {
         vertexCursor = TerrainVertex_OfCell(rowCells + spanFirstColumn);
-        do {
+        for (; vertexCount != 0; vertexCount = vertexCount - 1) {
           TerrainProjectedVertex_TransformProjectAndShade(vertexCursor);
           vertexCursor = vertexCursor + 1;
-          vertexCount = vertexCount - 1;
-        } while (vertexCount != 0);
+        }
       }
       rowSpan = rowSpan + 1;
       rowCells = rowCells + gridWidth;
@@ -217,6 +220,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   rowSpan = g_TerrainProjectedRowSpans;
   /* quads: rows 0..height-2, columns firstColumn..endColumnExclusive-2 */
   quadRowsLeft = fieldGrid->gridHeight - 1;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     spanFirstColumn = rowSpan->firstColumn;
     vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
@@ -224,11 +228,10 @@ void TerrainProjectedGrid_TransformShadeAndQueue
       quadCount = vertexCount - 1;
       if (quadCount != 0) {
         vertexCursor = TerrainVertex_OfCell(rowCells + spanFirstColumn);
-        do {
+        for (; quadCount != 0; quadCount = quadCount - 1) {
           TerrainProjectedQuad_QueueAsTwoTriangles(gridWidth * sizeof(FieldGridCell),vertexCursor,renderContext);
           vertexCursor = vertexCursor + 1;
-          quadCount = quadCount - 1;
-        } while (quadCount != 0);
+        }
       }
     }
     rowSpan = rowSpan + 1;
@@ -722,6 +725,7 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
     /* raises every row's first column to the plane's crossing column */
     rowSpan = g_TerrainProjectedRowSpans;
     rowsRemaining = fieldGrid->gridHeight;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       columnBound = (int)(columnEdgeQ12 - FIELD_GRID_CELL_Q12) >> Q12_SHIFT;
       columnEdgeQ12 = columnEdgeQ12 + ((FIXED_PRODUCT_SHR(columnStepProduct, Q20_SHIFT)) - FIELD_GRID_CELL_Q12 / 2);
@@ -745,6 +749,7 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
     /* lowers every row's end column to the plane's crossing column */
     rowSpan = g_TerrainProjectedRowSpans;
     rowsRemaining = fieldGrid->gridHeight;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       columnBound = (int)(columnEdgeQ12 + (FIELD_GRID_TWO_CELLS_Q12 - 1)) >> Q12_SHIFT;
       columnEdgeQ12 = columnEdgeQ12 + ((FIXED_PRODUCT_SHR(columnStepProduct, Q20_SHIFT)) - FIELD_GRID_CELL_Q12 / 2);
