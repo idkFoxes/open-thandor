@@ -78,18 +78,18 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
   InGameHotkeyAction target = record->action;
   switch (target) {
   case InGameHotkeyAction::CheatToggleFastBuild: /* Ctrl+Alt+Z, cheat: toggle fast build and research */
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED)) {
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD;
     }
     break;
   case InGameHotkeyAction::CheatAddXenite: /* Ctrl+Alt+X, cheat: +1000 Xenite (xeniteCurrentQ4 += 1000 << Q4_SHIFT) */
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED)) {
       g_GameFactionRuntimeImage.records[reinterpret_cast<WorldRuntimeContext *>(
            &image->worldView)->activeFactionRuntimeIndex].xeniteCurrentQ4 += 1000 << Q4_SHIFT;
     }
     break;
   case InGameHotkeyAction::CheatAddEnergy: /* Ctrl+Alt+E, cheat: +100 energy supply and capacity (Q4) */
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED)) {
       g_GameFactionRuntimeImage.records[reinterpret_cast<WorldRuntimeContext *>(
            &image->worldView)->activeFactionRuntimeIndex].baselineEnergySupplyQ4 += 100 << Q4_SHIFT;
       g_GameFactionRuntimeImage.records[reinterpret_cast<WorldRuntimeContext *>(

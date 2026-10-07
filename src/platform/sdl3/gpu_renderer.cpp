@@ -1447,7 +1447,7 @@ void RecordSpriteRegion(uint32_t itemIndex, const Draw2DItem *item)
     s_gpu.spriteRegions.resize(static_cast<size_t>(itemIndex) + 1);
   }
   GpuUiTexRegion region{nullptr, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0};
-  if (item->op == DRAW2D_OP_ROTATED_BILINEAR) {
+  if (item->Op() == DRAW2D_OP_ROTATED_BILINEAR) {
     /* the minimap: subresource 0 (direct colour, checked by the recorder) in a texture of its own with a black
        border, uploaded again only when the texture was rebuilt (its content generation) */
     const auto *entry = reinterpret_cast<const GraphicsTextureSourceEntry *>(
@@ -1460,7 +1460,7 @@ void RecordSpriteRegion(uint32_t itemIndex, const Draw2DItem *item)
       region.page = nullptr;
     }
   }
-  else if (item->op == DRAW2D_OP_IMAGE_BILINEAR) {
+  else if (item->Op() == DRAW2D_OP_IMAGE_BILINEAR) {
     /* work package 5: the movie frame's texels or the credits' grey levels, streamed for this frame (copied into
        the staging buffer now: a movie frame is rewritten by the next decode) */
     region = GpuUiTextures_UploadRegion(item->pixels, item->src[2], item->src[3], item->pitchBytes);
@@ -1629,10 +1629,10 @@ void BuildUiBatches(const Draw2DItem *items, uint32_t count) noexcept
   s_gpu.uiBatches.clear();
   for (uint32_t index = 0; index < count; index++) {
     const Draw2DItem &item = items[index];
-    switch (item.op) {
+    switch (item.Op()) {
     case DRAW2D_OP_SPRITE: {
       if ((index >= s_gpu.spriteRegions.size()) || (s_gpu.spriteRegions[index].page == nullptr) ||
-          (item.dst[2] <= item.dst[0]) || (item.dst[3] <= item.dst[1]) || (item.blend > DRAW2D_BLEND_OPAQUE)) {
+          (item.dst[2] <= item.dst[0]) || (item.dst[3] <= item.dst[1]) || (item.Blend() > DRAW2D_BLEND_OPAQUE)) {
         break;
       }
       const uint32_t flags = (item.paletteBank != DRAW2D_PALETTE_BANK_DIRECT) ? GPU_UI_VERTEX_FLAG_PALETTED : 0u;
@@ -2425,7 +2425,7 @@ void CompareGpuFrame() noexcept
   const Draw2DItem *items = Draw2D_FrameItems(&itemCount);
   std::vector<SDL_Rect> scenes;
   for (uint32_t index = 0; index < itemCount; index++) {
-    if (items[index].op == DRAW2D_OP_EXTERNAL_3D) {
+    if (items[index].Op() == DRAW2D_OP_EXTERNAL_3D) {
       const int32_t *clip = items[index].clip;
       scenes.push_back(SDL_Rect{clip[0], clip[1], clip[2] - clip[0], clip[3] - clip[1]});
     }

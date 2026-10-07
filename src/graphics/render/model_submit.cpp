@@ -197,7 +197,7 @@ void ModelRender_PrepareProjectedVertex
       }
       vertex->z = vertex->z + depthBiasHalf;
     }
-    if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE) != 0) {
+    if (Any(modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE)) {
       /* 64-bit product >> 12 */
       scaledCoordinateProduct = (int64_t)vertex->x * (int64_t)modelNode->modelScaleQ12;
       vertex->x = FIXED_PRODUCT_SHR(scaledCoordinateProduct, Q12_SHIFT);
@@ -275,14 +275,14 @@ static Bool8 ModelRender_TriangleOverlapsClipRect
    animated subresource; with flag 0x400 as well, also when it uses the secondary one. */
 static void ModelRender_ApplyTextureScroll(const ModelRuntimeNode *modelNode,GraphicsSubresourceIndex triangleSubresource)
 {
-  if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL) == 0) {
+  if (!Any(modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL)) {
     return;
   }
   if (triangleSubresource == modelNode->primaryAnimatedSubresourceIndex) {
     GraphicsPrimitiveQueue_OffsetTextureCoordinates
               (modelNode->primaryTextureOffsetV,modelNode->primaryTextureOffsetU,g_ActivePrimitiveQueue);
   }
-  if (((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL) != 0) &&
+  if (Any(modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL) &&
       (triangleSubresource == modelNode->secondaryAnimatedSubresourceIndex)) {
     GraphicsPrimitiveQueue_OffsetTextureCoordinates
               (modelNode->secondaryTextureOffsetV,modelNode->secondaryTextureOffsetU,g_ActivePrimitiveQueue);

@@ -11,13 +11,12 @@
 #include <thandor/core/contracts.h>
 #include <thandor/world/terrain/types.h> /* FieldGridCell for the cell helpers */
 
-/* Field-grid cell flag bits (FieldGridCell.flagsAndMaterial, +0x50) beyond the FIELD_CELL_* enum
-   (FieldCellPackedFlagsAndMaterial) in core/types.h. FieldGrid_InitializeRuntimeCellsAndBoundaryFlags sets the
-   four map-edge bits on the outermost ring of cells; neighbour loops test them before touching a neighbour. */
-inline constexpr uint32_t FIELD_CELL_LAST_ROW_BOUNDARY = 0x80000000u;
-#define FIELD_CELL_GRID_EDGE_MASK                                                                  \
-  (FIELD_CELL_LAST_ROW_BOUNDARY | FIELD_CELL_LAST_COLUMN_BOUNDARY | FIELD_CELL_FIRST_ROW_BOUNDARY | \
-   FIELD_CELL_FIRST_COLUMN_BOUNDARY) /* 0x88006000 */
+/* Field-grid cell flag bits (FieldGridCell.flagsAndMaterial, +0x50): the flag enum class
+   FieldCellPackedFlagsAndMaterial in core/types.h (FIELD_CELL_LAST_ROW_BOUNDARY and FIELD_CELL_GRID_EDGE_MASK
+   included). */
+static_assert(FIELD_CELL_GRID_EDGE_MASK == (FIELD_CELL_LAST_ROW_BOUNDARY | FIELD_CELL_LAST_COLUMN_BOUNDARY |
+                                            FIELD_CELL_FIRST_ROW_BOUNDARY | FIELD_CELL_FIRST_COLUMN_BOUNDARY),
+              "FIELD_CELL_GRID_EDGE_MASK is the four map-edge bits");
 
 /* World plane to field-grid coordinates (FieldGrid_WorldToGridQ12 and the samplers that inline it): the grid
    is a triangular lattice, grid columns per world unit in Q20 (about 1 / 0.5625) and grid rows per world unit in

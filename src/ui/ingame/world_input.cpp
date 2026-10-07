@@ -111,14 +111,14 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   if (Any((inGameRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED)) {
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) {
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
   if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0) {
     return GRAPHICS_CURSOR_FRAME_BUSY;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
     g_InGamePlacementSurfaceHeightQ12OrSentinel = pickedHeightQ12;
     g_InGamePlacementWorldYQ12 = pointerWorldYQ12;
     g_InGamePlacementWorldXQ12 = pointerWorldXQ12;
@@ -249,8 +249,7 @@ void InGameWorldInput_BeginPointerCapture
   ArmyRuntimeSlot *candidateArmy;
   CommandPayload modelToken;
 
-  if ((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) !=
-      0) {
+  if (Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     return;
   }
   inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags & ~WORLD_RUNTIME_FLAG_REPLACE_SELECTION;
@@ -267,7 +266,7 @@ void InGameWorldInput_BeginPointerCapture
     WorldRuntime_RestoreMotionStateFromSnapshot(inGameRuntime);
     return;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
     g_InGamePlacementPointerCaptureX =
          THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerPressX;
     g_InGamePlacementPointerCaptureY =
@@ -367,12 +366,12 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
   g_InGameSelectionRemoveTripletDwordCount = 0;
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
   for (runtimeNode = inGameRuntime->ownerListHead; runtimeNode != nullptr; runtimeNode = runtimeNode->nextNode) {
-    if ((runtimeNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || ((runtimeNode->runtimeFlags & 2) == 0)) {
+    if ((runtimeNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || !Any(runtimeNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED)) {
       continue;
     }
     entry = ModelView_Cast<GameEntityRuntime>
             (WorldOwnerNode_ModelRuntime(runtimeNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
-    if (((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) == 0) ||
+    if (!Any(runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) ||
         (ownerIndex != (entry->common).ownership.ownerIndex)) {
       continue;
     }
@@ -458,13 +457,12 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
           WorldRuntimeContext *inGameRuntime)
 
 {
-  if (((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) !=
-       0) ||
+  if ((Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) ||
       Any((inGameRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED) ||
       ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0)) {
     return;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
     if (pickedHeightQ12 != WORLD_POINTER_NO_HIT) {
       InGameWorldInput_RotateHeadingByPointerTravel
                 (inGameRuntime,&g_InGamePlacementHeading16,&g_InGamePlacementPointerCaptureX,
@@ -504,7 +502,7 @@ static void InGameWorldInput_CommitCommandModeRelease
   uint32_t variantMask;
 
   if ((pickedHeightQ12 == WORLD_POINTER_NO_HIT) ||
-      ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED) == 0) ||
+      (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED)) ||
       ((g_InGamePointerInteractionStateFlags &
         (WORLD_POINTER_STATE_OVER_OWN_ARMY | WORLD_POINTER_STATE_SELECTION_CAPTURE)) != 0)) {
     return;
@@ -702,14 +700,13 @@ static void InGameWorldInput_DispatchPointerRelease
           WorldOwnerListNode *candidateNode,WorldRuntimeContext *inGameRuntime)
 
 {
-  if (((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) !=
-       0) ||
+  if ((Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) ||
       Any((inGameRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED) ||
-      ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) != 0) ||
+      (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) ||
       ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0)) {
     return;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
     if (pickedHeightQ12 != WORLD_POINTER_NO_HIT) {
       InGameCommand_Issue<InGameCommand_ExecuteLocalPlacementFromSelection>
                 (g_InGamePlacementHeading16,pointerWorldXQ12,pointerWorldYQ12);

@@ -659,6 +659,15 @@ static_assert(sizeof(ArmyAiUnitFlags) == 4 && alignof(ArmyAiUnitFlags) == 4 &&
                   offsetof(InGameEndConditionTriggerRecord8ReferenceView, stateFlags) == 0x0 &&
                   sizeof(InGameEndConditionTriggerRecord8) == 8 && offsetof(InGameEndConditionTriggerRecord8, stateFlags) == 0x0,
               "the AI unit, relation/UI and end-condition trigger flags keep their fields");
+/* Step 13 E34b: the model node runtime flags word (ModelRuntimeFlags: MODEL_NODE_FLAG_*, MODEL_RUNTIME_FLAG_*,
+   TERRAIN_OCCUPANCY_FLAG_*) at +0x4C of every model node view (saved with the node pools). */
+static_assert(sizeof(ModelRuntimeFlags) == 4 && alignof(ModelRuntimeFlags) == 4 &&
+                  offsetof(ModelRuntimeNode, runtimeFlags) == 0x4C &&
+                  offsetof(EffectModelRuntimeNode, runtimeFlags) == 0x4C &&
+                  offsetof(ShotModelRuntimeNode, runtimeFlags) == 0x4C &&
+                  offsetof(WorldOwnerListNode, runtimeFlags) == 0x4C &&
+                  offsetof(TerrainOccupancyResolvedMasks, runtimeFlags) == 0x8,
+              "the model node runtime flags keep their 4-byte fields");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");
@@ -3407,3 +3416,19 @@ static_assert(offsetof(InGameRuntimeRoot, notificationButtonCursorFrame) == 0x9B
                   sizeof(InGameRuntimeRoot::notificationButtonCursorFrame) == 4 &&
                   sizeof(InGameTargetingRootTraversalView::actionState) == 4,
               "the notification button cursor frame stays the dword at +0x9B4C of the root (+0x50 of the button)");
+
+/* Step 13 field-cell flags (FieldCellPackedFlagsAndMaterial as a flag enum class): the FLD/savegame cell word keeps
+   its 4 bytes at +0x50 in the cell and in the save view. */
+static_assert(sizeof(FieldGridCell) == 0x80 && offsetof(FieldGridCell, flagsAndMaterial) == 0x50 &&
+                  sizeof(FieldGridCell::flagsAndMaterial) == 4,
+              "FieldGridCell.flagsAndMaterial is the dword at +0x50");
+static_assert(sizeof(FieldGridCellSaveImageView) == 0x80 && offsetof(FieldGridCellSaveImageView, flagsAndMaterial) == 0x50 &&
+                  sizeof(FieldGridCellSaveImageView::flagsAndMaterial) == 4,
+              "FieldGridCellSaveImageView.flagsAndMaterial is the dword at +0x50");
+static_assert(std::is_same_v<std::underlying_type_t<FieldCellPackedFlagsAndMaterial>, int32_t> &&
+                  ThandorFlagEnum<FieldCellPackedFlagsAndMaterial> &&
+                  FieldCell_RawBits(FIELD_CELL_GRID_EDGE_MASK) == 0x88006000u &&
+                  FieldCell_RawWord(~FIELD_CELL_MATERIAL_ID_MASK) == -256 &&
+                  FieldCell_MaterialId(FieldCell_FromRawWord(0x800012ABu)) == 0xAB &&
+                  FieldCell_ResourceSupportBit(1) == FIELD_CELL_TRITIUM_SUPPORT,
+              "THANDOR_SIGNED_WORD_FLAG_ENUM: the cell word stays the int it was, the helpers keep its bits");

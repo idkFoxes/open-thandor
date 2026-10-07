@@ -226,7 +226,7 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   /* angles are 16-bit turns: 45 and 67.5 degrees */
   (rootNode->modelPayload).worldRotationAngle2 = FIXED_ANGLE16_EIGHTH_TURN;
   (rootNode->modelPayload).worldRotationAngle1 = 3 * FIXED_ANGLE16_FULL_TURN / 16;
-  rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+  rootNode->runtimeFlags = rootNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   rootNode->tintArgb = 0xffffffff;
   ModelNodeRuntime_RebuildTransformsFromRoot(rootNode);
   /* start the bounds at the root position; the recursion widens them over all nodes */

@@ -65,7 +65,7 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldU
     return;
   }
   cellIndex = cellRow * gridColumnCount + cellColumn;
-  if ((fieldGrid->cells[cellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(fieldGrid->cells[cellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return;
   }
   centerMaskByte = &FieldGridCell_OccupancyByte(&fieldGrid->cells[cellIndex],occupancyByteOffset);
@@ -110,7 +110,7 @@ static uint64_t TerrainOccupancyMask_OrRay(uint64_t mask,const FieldGridCell *ce
   for (step = 0; step < stepCount; step++) {
     cell = cell + cellStep;
     mask = mask | cell->occupancyMask;
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+    if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
       break;
     }
   }
@@ -165,7 +165,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
   }
   centerCell = fieldGrid->cells + cellRow * gridWidth + cellColumn;
   combinedMask = centerCell->occupancyMask;
-  if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return 0;
   }
   /* 1..255 cells per ray; every ray starts at the centre */
@@ -202,7 +202,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 */
 TerrainOccupancyResolvedMasks
 TerrainOccupancyMask_ResolveRuntimeClassFlags
-          (uint32_t baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
+          (ModelRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
           FieldGridRegionMask primaryOccupancyMask,char activeFactionIndex)
 
 {
@@ -217,16 +217,16 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
   factionSeenBit = 1 << (activeFactionIndex * 2 & 31U);
   combinedOccupancyMask = primaryOccupancyMask & resolvedMasks.secondaryOccupancyMask;
   resolvedClassFlags = 0;
-  if ((baseRuntimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
+  if (!Any(baseRuntimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED)) {
     /* remembered objects: a seen-before bit also counts as present in the stored mask */
     combinedOccupancyMask =
          combinedOccupancyMask | combinedOccupancyMask * 2 & TERRAIN_OCCUPANCY_CLASS_PRESENT_BITS;
   }
   if ((factionSeenBit & combinedOccupancyMask) != 0) {
-    resolvedClassFlags = TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE;
+    resolvedClassFlags = ToBits(TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE);
   }
   if ((primaryOccupancyMask & factionSeenBit * 2) != 0) {
-    resolvedClassFlags = TERRAIN_OCCUPANCY_FLAG_PRESENT;
+    resolvedClassFlags = ToBits(TERRAIN_OCCUPANCY_FLAG_PRESENT);
   }
   resolvedMasks.primaryOccupancyMask = combinedOccupancyMask;
   resolvedMasks.runtimeFlags = resolvedClassFlags;

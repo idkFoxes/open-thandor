@@ -714,7 +714,7 @@ static Bool8 FrontendPlayerRuntime_HaveAllPlayersReported()
 static void FrontendPlayerRuntime_EndInGameStartPause()
 
 {
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS)) {
     g_UiCommandRuntimeFlags &=
          ~(UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS);
   }

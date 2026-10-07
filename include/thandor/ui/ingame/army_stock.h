@@ -12,11 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* g_UiCommandRuntimeFlags bits of the world view overlays (FrontendModelPointerContext_RenderWorldViewQueuesClipped);
-   no writer with a constant mask, so they can only come from command 0x310 */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS = 0x8000; /* skips every selection overlay of the world view */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS = 0x40; /* debug overlay
-                                                                     SelectionOverlay_DrawDebugMarkedCellMarkers */
 /* labelFlags bits of those world view status texts */
 inline constexpr int32_t UI_WORLD_TEXT_PAUSED_ONLY = 0x800; /* drawn only while the game is paused */
 inline constexpr int32_t UI_WORLD_TEXT_SHIFT_BY_STEP_TICKS = 0x1000; /* needs g_InGameSimulationStepTicks > 1; text shifted by ticks - 2

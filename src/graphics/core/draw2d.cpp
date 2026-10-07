@@ -95,7 +95,9 @@ bool ClipToDisplay(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t
     return *right > *left && *bottom > *top;
 }
 
-Draw2DItem *AppendItem(uint8_t op, uint8_t blend)
+/* Takes op and blend as the stored bytes: GCC passes a byte parameter widened to int, a byte-sized enum
+   not, and this keeps the recorder's code as it was. Callers use the typed AppendItem below. */
+Draw2DItem *AppendItemBytes(uint8_t op, uint8_t blend)
 {
     Draw2DItem item = {};
     item.op = op;
@@ -103,6 +105,11 @@ Draw2DItem *AppendItem(uint8_t op, uint8_t blend)
     item.tintArgb = ARGB8888_OPAQUE_WHITE;
     s_items.push_back(item);
     return &s_items.back();
+}
+
+Draw2DItem *AppendItem(Draw2DOp op, Draw2DBlend blend)
+{
+    return AppendItemBytes(static_cast<uint8_t>(op), static_cast<uint8_t>(blend));
 }
 
 /* The subresource entry of a drawable texture source (as Blit_SetupSubresource checks it), or nullptr. */
@@ -121,7 +128,7 @@ const GraphicsTextureSourceEntry *SubresourceEntry(const GraphicsTextureSourceAs
     return entry;
 }
 
-void RecordSprite(uint8_t blend, uint32_t tintArgb, int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY,
+void RecordSprite(Draw2DBlend blend, uint32_t tintArgb, int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY,
                   int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t subresource,
                   const GraphicsTextureSourceAsset *asset)
 {

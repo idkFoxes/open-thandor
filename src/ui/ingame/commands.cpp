@@ -28,7 +28,7 @@ void InGameCommand_TogglePauseRequest
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) == 0) {
+    if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
       if ((g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
            PLAYER_SESSION_FLAG_PAUSE_REQUESTED) == 0) {
         return;
@@ -164,8 +164,8 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
   CommandPayload groupIndex;
   FrontendSelectionTransferModeFlags transferModeFlags;
 
-  if ((g_UiCommandRuntimeFlags &
-      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) != 0) {
+  if (Any(g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     return;
   }
   root = control;
@@ -294,15 +294,16 @@ void InGameCommand_HandlePlayerDeparture
 
 /* Changes the global g_UiCommandRuntimeFlags: first clears clearMask, then sets setMask, then toggles toggleMask
    (the masks come in the reverse order as arguments). Local games call it directly, network games send the
-   same masks as player command 0x310. playerRuntimeId is not used: the flags are not per player.
+   same masks as player command 0x310. playerRuntimeId is not used: the flags are not per player. The masks are
+   the command payload dwords of UiCommandRuntimeFlagMask.
 */
-void UiCommandRuntimeFlags_ApplyClearSetToggleMasks(PlayerRuntimeId playerRuntimeId,UiCommandRuntimeFlagMask toggleMask,
-          UiCommandRuntimeFlagMask setMask,UiCommandRuntimeFlagMask clearMask)
+void UiCommandRuntimeFlags_ApplyClearSetToggleMasks(PlayerRuntimeId playerRuntimeId,CommandPayload toggleBits,
+          CommandPayload setBits,CommandPayload clearBits)
 
 {
-  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~clearMask;
-  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | setMask;
-  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ toggleMask;
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~FromBits<UiCommandRuntimeFlagMask>(clearBits);
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | FromBits<UiCommandRuntimeFlagMask>(setBits);
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ FromBits<UiCommandRuntimeFlagMask>(toggleBits);
 }
 
 InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11 = {

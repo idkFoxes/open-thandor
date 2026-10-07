@@ -121,7 +121,7 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
     if ((-1 < (int)gridColumn) && (-1 < (int)gridRow) && (gridRow < fieldGrid->gridHeight) &&
         (gridColumn < gridWidth)) {
       centerCellIndex = gridRow * gridWidth + gridColumn;
-      if ((fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      if (!Any(fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         fieldGrid->cells[centerCellIndex].occupancyMask =
              fieldGrid->cells[centerCellIndex].occupancyMask | occupancyMaskBits;
         rowStrideBytes = g_TerrainScanRowStrideBytes;

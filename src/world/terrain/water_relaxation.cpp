@@ -47,7 +47,7 @@ void TerrainGrid_RunDirectionalRelaxationPasses(FrontendPlayerRuntimeId playerRu
 static inline void FieldGridCell_PullWaterSurface(FieldGridCell *receiver,int sourceSurfaceHeightQ12)
 
 {
-  if ((receiver->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+  if (!Any(receiver->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)) {
     receiver->waterSurfaceDelta =
          receiver->waterSurfaceDelta -
          ((receiver->waterSurfaceDelta + receiver->terrainHeight) - sourceSurfaceHeightQ12 >> 3);
@@ -65,7 +65,7 @@ static inline void FieldGridCell_RelaxNeighbors(FieldGridCell *source,ptrdiff_t 
   if (SignGated && source->waterSurfaceDelta < 0) {
     return;
   }
-  if ((source->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) != 0) {
+  if (Any(source->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED)) {
     return;
   }
   const int sourceSurfaceHeightQ12 = source->waterSurfaceDelta + source->terrainHeight;

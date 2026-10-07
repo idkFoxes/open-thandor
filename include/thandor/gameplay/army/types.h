@@ -195,7 +195,40 @@ using ArmySelectionMetric = int;
 
 using AngleTurn16Stored32 = int;
 
-using ModelRuntimeFlags = uint32_t;
+/* ModelRuntimeNode / EffectModelRuntimeNode / ShotModelRuntimeNode.runtimeFlags (+0x4C). Bit values fixed (the
+   node pools are saved as raw bytes). */
+enum class ModelRuntimeFlags : uint32_t {
+    MODEL_RUNTIME_FLAGS_NONE = 0,
+    MODEL_NODE_FLAG_TRANSFORM_DIRTY = 0x1, /* local translation/rotation changed: world transform is rebuilt */
+    MODEL_NODE_FLAG_RENDERED = 0x2, /* drawn in the current frame (set by the model renderers) */
+    /* read and produced by TerrainOccupancyMask_ResolveRuntimeClassFlags (callers clear 0xC first; the selection
+       overlay accepts PRESENT, or SEEN_BEFORE without NOT_REMEMBERED) */
+    TERRAIN_OCCUPANCY_FLAG_PRESENT = 0x04,
+    TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE = 0x08,
+    TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED = 0x10, /* set on shots and effects */
+    /* set at creation (ModelNodeRuntime_CreateHierarchyRecursive) and read by
+       FrontendModelPointerContext_RenderWorldViewQueuesClipped and the pointer and box selection */
+    MODEL_NODE_FLAG_FACTION_OWNED = 0x20, /* the owning army's factionIndex is not 0; required for picking */
+    /* skipped by every model pass of the world view (FrontendModelPointerContext_RenderWorldViewQueuesClipped);
+       no writer with a constant mask found */
+    MODEL_NODE_FLAG_HIDDEN = 0x40,
+    /* set by the model class initializers (world/model/slots); the model renderer shifts the texture coordinates
+       of triangles using the node's primary / secondary animated subresource by its texture offsets */
+    MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL = 0x80,
+    MODEL_NODE_FLAG_SHADING_PASS = 0x100, /* drawn into the generated-texture shading pass */
+    MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN = 0x200, /* drawn in the model pass before the terrain pass */
+    MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL = 0x400,
+    MODEL_RUNTIME_FLAG_APPLY_SCALE = 0x800, /* ModelRender_PrepareProjectedVertex scales every vertex by modelScaleQ12 */
+    MODEL_NODE_FLAG_FORCE_TRANSPARENT = 0x1000, /* ModelNodeRuntime_UpdateStateTintRecursive fades the alpha to 0 */
+    MODEL_NODE_FLAG_RAY_TRANSPARENT = 0x2000, /* skipped by ModelRuntime_RaycastCandidateListNearest; set at creation
+                                                 when ModelDefinition.modelFlags has bit 0x100 */
+    /* the same word is WorldObjectRecordCommon.allocationFlags (raw uint32_t there: ToBits): the record is in use
+       (WorldObjectArray_AllocateFreeRecord) */
+    WORLD_OBJECT_RECORD_ALLOCATED = 0x40000000,
+    WORLD_OWNER_NODE_LINKED = 0x80000000 /* the node is linked into its world's owner list */
+};
+THANDOR_FLAG_ENUM(ModelRuntimeFlags);
+using enum ModelRuntimeFlags;
 
 using ModelTextureSubresourceIndex = int;
 

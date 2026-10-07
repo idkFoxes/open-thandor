@@ -284,7 +284,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
         (modelRuntime->timedTargetState).targetProjectileReloadCountdownTicks +=
              (timedTargetDefinition->timedTargetParameters).reloadTicks;
         /* hide the missile and fire */
-        rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+        rootNode->runtimeFlags = rootNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
         (rootNode->modelPayload).meshGroupMask &= ~1u;
         ModelRuntime_EmitProjectilesFromAttachmentPoints
                   ((ShotTargetModelReference) /* 32-bit format field: ShotTargetModelReference (ShotRuntimeSlot +0x14) */
@@ -351,7 +351,7 @@ Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
    modelPointOrdinal << 4 | 2.
 */
 void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-          (ShotTargetModelReference effectFlags,Q12 worldZQ12,Q12 worldYQ12,Q12 worldXQ12,
+          (ShotTargetModelReference targetModelReference,Q12 worldZQ12,Q12 worldYQ12,Q12 worldXQ12,
           ModelAttachmentOrdinal modelPointOrdinal,PckEffectDefinitionIdCatalog effectDefinitionId,
           void *sourceRuntime,void *modelPointTable,WorldRuntimeContext *worldContext)
 
@@ -427,7 +427,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
     if (localPointRecord->packedLookupKey == (modelPointOrdinal << 4 | 2)) {
       localPoint = ModelNodeRuntime_TransformLocalPoint(localPointRecord,sourceNode);
       ShotRuntimePool_CreateProjectileFromDefinition
-                (effectFlags,
+                (targetModelReference,
                  sourceNode->runtimePayload.modelRuntime->ownerArmyRuntimeOrSavedOffset.
                  armyRuntime,worldZQ12,
                  (localPoint.yQ12 - sourceNode->worldTransform.translation.y &

@@ -240,7 +240,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   rootNode = modelRuntime->rootModelNode;
   if ((newHeading & FIXED_ANGLE16_MASK) != (rootNode->modelPayload).worldRotationAngle2) {
     (rootNode->modelPayload).worldRotationAngle2 = newHeading & FIXED_ANGLE16_MASK;
-    rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+    rootNode->runtimeFlags = rootNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   }
   ArmyRuntime_UpdateActivationMetricAndPlayStartSound
             (worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));

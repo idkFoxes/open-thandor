@@ -376,7 +376,7 @@ Bool8 ModelRuntime_RaycastCandidateListNearest
       modelNodeRuntime != nullptr;
       modelNodeRuntime = WorldNode_View<ModelRuntimeNode>(modelNodeRuntime->common.nextNode.get())) {
     if (modelNodeRuntime != excludedNode && modelNodeRuntime->ownerClassId == requiredOwnerId &&
-        (modelNodeRuntime->runtimeFlags & MODEL_NODE_FLAG_RAY_TRANSPARENT) == 0 &&
+        !Any(modelNodeRuntime->runtimeFlags & MODEL_NODE_FLAG_RAY_TRANSPARENT) &&
         DepthBinMasks_Overlap(modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,
                               rayYBinMask,rayXBinMask)) {
       hierarchyDistanceQ12 = ModelNodeRuntime_RaycastHierarchyNearest(modelNodeRuntime,&hierarchyNearestNode);

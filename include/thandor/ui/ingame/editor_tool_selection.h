@@ -14,9 +14,6 @@
 
 /* Action id of resultsSecondaryExitButton (suppressed in local games) */
 inline constexpr int32_t INGAME_ACTION_RESULTS_SECONDARY_EXIT = 0x1025;
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED = 0x80; /* a command-mode click captured the pointer
-                                                                 (InGameWorldInput_BeginPointerCapture); the
-                                                                 release then issues the mode command */
 /* g_UiCommandModeG: active tab of the map editor (InGameCommandModeG_Select0..5, InGameUiImage.editorModeTab*);
    the tools of each tab are g_UiCommandModeC (height), D (material), E (smoothing), A (unit placement) and
    B (object placement). */
