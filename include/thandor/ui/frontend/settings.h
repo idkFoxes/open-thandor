@@ -10,7 +10,6 @@
 
 #include <thandor/core/types.h>
 #include <thandor/ui/controls/types.h>
-#include <thandor/ui/controls/node_views.h> /* THANDOR_SLOT_PREFIX, UiNode_As */
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
@@ -29,11 +28,6 @@ typedef struct FrontendTextureQualityGroup {
     UiTextButtonControl medium; /* +0xB4 */
     UiTextButtonControl high;   /* +0x114 */
 } FrontendTextureQualityGroup;
-#ifdef __cplusplus
-/* Both boxes start with their frame window, so UiNode_As reaches them from the frame's node. */
-THANDOR_SLOT_PREFIX(FrontendShadingLevelGroup, frame);
-THANDOR_SLOT_PREFIX(FrontendTextureQualityGroup, frame);
-#endif
 
 void FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control);
 

@@ -745,8 +745,8 @@ struct InGameTargetingRootTraversalView {
 
 /* UI template node links: offsets from the template start, made into pointers when the
    template is copied and linked. */
-#define UI_TEMPLATE_LINK(offset) ((UiNodeBase *)(offset))
-#define UI_TEMPLATE_NO_LINK ((UiNodeBase *)-1)
+#define UI_TEMPLATE_LINK(offset) (reinterpret_cast<UiNodeBase *>(offset))
+#define UI_TEMPLATE_NO_LINK (reinterpret_cast<UiNodeBase *>(-1))
 /* The same as initialisers of a Ptr32 field of a template image, constant at compile time
    (tools/dev/ui_image_retype.py writes these). */
 #define UI_TEMPLATE_LINK_BITS(offset) THANDOR_PTR32_BITS(offset)

@@ -26,8 +26,8 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime);
 
 void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-          (Q12 scaleQ12,void *sourceWorldNode,Q12 worldYQ12,Q12 worldXQ12,void *effectDefinition,
-          void *inGameRuntime);
+          (Q12 scaleQ12,struct ModelRuntimeNode *sourceWorldNode,Q12 worldYQ12,Q12 worldXQ12,
+          struct EffectDefinition *effectDefinition,WorldRuntimeContext *inGameRuntime);
 
 extern intptr_t g_InGamePendingPlacementArmyAsset; /* ArmyAssetRecordPrefix * staged for placement, 0 when none */
 extern uint32_t g_InGameCommandPreviewArmyAssetId;

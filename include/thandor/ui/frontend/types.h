@@ -19,7 +19,6 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
-#include <thandor/ui/controls/node_views.h> /* UiNode_As */
 
 typedef union UiCommandPayloadTextBatch48 UiCommandPayloadTextBatch48, *PUiCommandPayloadTextBatch48;
 typedef struct UiCommandPayloadTriple UiCommandPayloadTriple, *PUiCommandPayloadTriple;
@@ -1288,7 +1287,6 @@ template <class T> inline FrontendUiImage *FrontendUi_ImageOfNode(T *node, size_
   return Thandor_At<FrontendUiImage>(node, -static_cast<int32_t>(nodeOffset));
 }
 
-/* UiNode_As<Control>(node), the control behind a node pointer, is in ui/controls/node_views.h. */
 
 
 /* The menu room node (menuRoomModelView) as the world runtime context the ROM transitions, the menu room scene
