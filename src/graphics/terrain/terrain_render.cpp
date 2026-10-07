@@ -104,7 +104,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     }
     return;
   }
-  if ((renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION) == 0) {
+  if (!Any(renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION)) {
     rowSpan = g_TerrainProjectedRowSpans;
     gridWidth = fieldGrid->gridWidth;
     rowCount = fieldGrid->gridHeight;
@@ -177,7 +177,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   gridWidth = fieldGrid->gridWidth;
   rowCount = fieldGrid->gridHeight;
   if (!Any(fieldGrid->runtimeStateFlags & FIELD_GRID_RUNTIME_SURFACE_DIRTY) &&
-     ((renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION) != 0)) {
+     (Any(renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION))) {
     rowCells = fieldGrid->cells;
     /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
@@ -612,7 +612,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       }
       TerrainProjectedTriangle_QueueSoilTriangles(vertex2,vertex1,vertex0,renderContext);
     }
-    if ((((((renderContext->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) != 0) ||
+    if (((((Any(renderContext->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY)) ||
           (0 < vertex0->secondaryProjectionDepthQ12)) || (0 < vertex1->secondaryProjectionDepthQ12))
         || (0 < vertex2->secondaryProjectionDepthQ12)) &&
        (((vertex0->projectionFlags | vertex1->projectionFlags | vertex2->projectionFlags) &

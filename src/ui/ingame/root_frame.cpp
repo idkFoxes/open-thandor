@@ -382,7 +382,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     /* edge scrolling only on the plain world view (no drag selection or notification jump, first page, no
        interaction node flag 8) and while cursor button bit 2 is up; its scroll-arrow frame wins over the hovered
        node's frame */
-    if (((worldRuntime->runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) == 0) &&
+    if ((!Any(worldRuntime->runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO))) &&
         (activePageIndex == 0) && !Any(worldRuntime->interaction.nodeFlags & UI_NODE_SUPPRESSED) &&
         ((g_CursorButtonState & 4) == 0)) {
       edgeScrollCursorFrame = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime);

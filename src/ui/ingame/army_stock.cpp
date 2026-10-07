@@ -208,7 +208,7 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
     /* end any hover of the stock panel (image control) */
     g_UiImageControlHoverTarget = nullptr;
     ui->armyStockPanel.selectable.stateFlags &= ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
-    if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
+    if (!Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) {
       slotIndex = ARMY_STOCK_ENTRY_COUNT - 1;
       while ((int)((uintptr_t)control - (uintptr_t)root) !=
              g_UiCommandSpriteVariantAOffsetTables[g_UiCommandSpriteVariantAColumnCount][slotIndex]) {

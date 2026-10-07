@@ -1,7 +1,7 @@
 {
- "revision": "9961a65c",
+ "revision": "04e05bc4",
  "worktree": true,
- "files": 693,
+ "files": 694,
  "metrics": {
   "cstyle_cast": {
    "item": 1,
@@ -135,7 +135,7 @@
    "platform": 220,
    "root": 7,
    "ui": 127,
-   "world": 58
+   "world": 59
   },
   "include_guard": {
    "assets": 34,
@@ -149,19 +149,19 @@
    "platform": 33,
    "root": 1,
    "ui": 101,
-   "world": 50
+   "world": 51
   },
   "constexpr": {
    "assets": 99,
    "audio": 15,
    "core": 216,
    "gameplay": 187,
-   "graphics": 139,
+   "graphics": 138,
    "movie": 28,
    "network": 129,
    "platform": 162,
-   "ui": 592,
-   "world": 115
+   "ui": 582,
+   "world": 100
   },
   "typedef_struct": {},
   "enum_class": {
@@ -173,7 +173,7 @@
    "network": 7,
    "platform": 4,
    "ui": 32,
-   "world": 5
+   "world": 6
   },
   "libc_alloc": {},
   "arena": {

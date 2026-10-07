@@ -3432,3 +3432,13 @@ static_assert(std::is_same_v<std::underlying_type_t<FieldCellPackedFlagsAndMater
                   FieldCell_MaterialId(FieldCell_FromRawWord(0x800012ABu)) == 0xAB &&
                   FieldCell_ResourceSupportBit(1) == FIELD_CELL_TRITIUM_SUPPORT,
               "THANDOR_SIGNED_WORD_FLAG_ENUM: the cell word stays the int it was, the helpers keep its bits");
+
+/* Step 13 E2e (WorldRuntimeFlags): the world view's flag word is the dword at +0x4C behind the UiNodeBase in every
+   view that names it (WorldRuntimeContext.runtimeFlags, FrontendModelPointerContext.contextFlags and its frontend
+   views); the enum keeps its 4 bytes. */
+static_assert(offsetof(WorldRuntimeContext, runtimeFlags) == 0x4C && sizeof(WorldRuntimeContext::runtimeFlags) == 4 &&
+                  offsetof(FrontendModelPointerContext, contextFlags) == 0x4C &&
+                  sizeof(FrontendModelPointerContext::contextFlags) == 4 &&
+                  offsetof(FrontendModelPointerHitContext, contextFlags) == 0x4C &&
+                  offsetof(FrontendPointerSceneRuntimeView, contextFlags) == 0x4C,
+              "the world view flag word stays the dword at +0x4C");

@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <utility>
 #include <thandor/core/flags.h> /* THANDOR_FLAG_ENUM: UiCommandActivationStateFlags */
+#include <thandor/world/runtime/flags.h> /* WorldRuntimeFlags: WorldRuntimeContext.runtimeFlags */
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/assets/army/types.h>
 #include <thandor/core/types.h>
@@ -66,8 +67,6 @@ struct WorldObjectRecord;
 struct WorldRuntimeNode;
 
 using ModelDepthBinMask = uint32_t;
-
-using WorldRuntimeFlags = uint32_t;
 
 using WorldObjectRecordCount = uint32_t;
 

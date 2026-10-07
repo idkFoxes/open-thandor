@@ -75,7 +75,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget(pointerY,pointerX,context);
   context->selectedHitMetric = (int)bestHit;
   context->selectedModelNode = reinterpret_cast<ModelRuntimeNode *>(bestHit >> 32);
-  if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK) != 0) {
+  if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK)) {
     if (context->heldButtonCursorCallback != nullptr)
     {
       callbackResult = context->heldButtonCursorCallback
@@ -86,8 +86,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
     }
     return 0;
   }
-  if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION) ==
-      0) {
+  if (!Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION)) {
     if (context->hoverCursorCallback != nullptr)
     {
       callbackResult = context->hoverCursorCallback
@@ -98,18 +97,17 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
     }
     return 0;
   }
-  if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION) !=
-      0) {
+  if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION)) {
     return 0;
   }
-  if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT) != 0)
+  if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT))
   {
     if ((g_CursorButtonState & LEFT) != 0) {
       return 17;
     }
     return 16;
   }
-  if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN) != 0)
+  if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN))
   {
     if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
       if ((g_CursorButtonState & LEFT) != 0) {
@@ -122,7 +120,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
     }
     return 19;
   }
-  if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE) == 0)
+  if (!Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE))
   {
     return 0;
   }
@@ -133,38 +131,31 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
     if ((g_KeyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
       return 37;
     }
-    if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIDE_PANEL) ==
-        0) {
+    if (!Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIDE_PANEL)) {
       if ((g_CursorButtonState & LEFT) == 0) {
         return 1;
       }
-      if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)
-          != 0) {
+      if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)) {
         return 14;
       }
-      if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT)
-          == 0) {
+      if (!Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT)) {
         return 37;
       }
     }
     else {
       if ((g_CursorButtonState & LEFT) != 0) {
-        if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)
-            != 0) {
+        if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)) {
           return 15;
         }
-        if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT)
-            == 0) {
+        if (!Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT)) {
           return 0;
         }
         return 17;
       }
-      if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)
-          != 0) {
+      if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)) {
         return 14;
       }
-      if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT)
-          == 0) {
+      if (!Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT)) {
         return 37;
       }
     }
@@ -310,7 +301,7 @@ void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
 static void (*FrontendModelPointerContext_SelectRenderHierarchyProc(const FrontendModelPointerContext *control))
           (ModelRuntimeNode *)
 {
-  if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
+  if (Any(control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY)) {
     return ModelRuntime_RenderHierarchyRecursiveAlternatePath;
   }
   return ModelRuntime_CullAndRenderHierarchyRecursive;
@@ -356,7 +347,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
      overlays a stale rectangle; GraphicsPrimitiveQueue_ResetGlobal never fails, so the overlays always get the
      clipped rectangle. */
 
-  if ((control->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED) != 0) {
+  if (Any(control->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED)) {
     return;
   }
   if (clipLeft < control->base.left) {
@@ -388,7 +379,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
             (control->projectionShift,control->viewAngle1,control->viewAngle0,
              control->projectionScale,control->hitReferenceWorldZQ12,control->hitReferenceWorldYQ12,
              control->hitReferenceWorldXQ12);
-  if ((control->contextFlags & WORLD_RUNTIME_FLAG_SOUND_LISTENER) != 0) {
+  if (Any(control->contextFlags & WORLD_RUNTIME_FLAG_SOUND_LISTENER)) {
     listenerY = control->targetPositionYQ12;
     listenerZ = ((int)control->committedDistanceOrSoundZOffset >> 2) + control->targetPositionZQ12;
     SpatialSound_RebuildListenerTransformFromPose
@@ -430,7 +421,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   FrontendModelPointerContext_DrawActiveQueue(control,clipBottom,clipRight,clipTop,clipLeft);
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
-  if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != nullptr)) {
+  if ((Any(control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN)) && (control->fieldGrid != nullptr)) {
     frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
     Graphics_SetActivePrimitiveQueue(frameQueue);
     control->activePrimitiveQueue = frameQueue;
@@ -439,7 +430,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   }
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
-  if ((control->contextFlags & WORLD_RUNTIME_FLAG_SHADING_ENABLED) != 0) {
+  if (Any(control->contextFlags & WORLD_RUNTIME_FLAG_SHADING_ENABLED)) {
     modelNode = control->candidateModelListHead;
     frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
     Graphics_SetActivePrimitiveQueue(frameQueue);
@@ -500,7 +491,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledHalfSourceRgb;
   }
   if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS)) {
-    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS) != 0) {
+    if (Any(control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS)) {
       SelectionOverlay_RenderSelectedArmyMetrics(clipBottom,clipRight,clipTop,clipLeft);
       if ((control->selectedOverlayEntity != nullptr) &&
           SelectionInfo_IsEntryAbsent(control->selectedOverlayEntity)) {
@@ -508,35 +499,35 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
                   (clipBottom,clipRight,clipTop,clipLeft,control->selectedOverlayEntity);
       }
     }
-    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
+    if (Any(control->contextFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING)) {
       SelectionOverlay_DrawBoundsFrame
                 (clipBottom,clipRight,clipTop,clipLeft,control->dragFrameEndY,
                  control->dragFrameEndX,control->dragFrameStartY,
                  control->dragFrameStartX);
     }
-    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS) != 0) {
+    if (Any(control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS)) {
       SelectionOverlay_DrawTerrainPointMarkers
                 (clipBottom,clipRight,clipTop,clipLeft,control->terrainMarkerPointCount,
                  control->terrainMarkerCoordinatePairs,control->fieldGrid);
     }
-    if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER) != 0) && (control->surfaceHitDepth != WORLD_POINTER_NO_HIT)) {
+    if ((Any(control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER)) && (control->surfaceHitDepth != WORLD_POINTER_NO_HIT)) {
       SelectionOverlay_DrawWorldPointMarker
                 (clipBottom,clipRight,clipTop,clipLeft,
                  (uint32_t)((g_UiCommandModeGColorVariantLimit & ARGB8888_ALPHA_MASK) != 0),
                  control->surfaceHitWorldY,control->surfaceHitWorldX,control->fieldGrid);
     }
-    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS) != 0) {
+    if (Any(control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS)) {
       SelectionOverlay_DrawGridVertexMarkers(clipBottom,clipRight,clipTop,clipLeft,control->fieldGrid);
     }
-    if ((control->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) != 0) {
+    if (Any(control->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY)) {
       SelectionOverlay_DrawFluidExclusionMarkers(clipBottom,clipRight,clipTop,clipLeft,control->fieldGrid);
     }
-    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS) != 0) {
+    if (Any(control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS)) {
       SelectionOverlay_DrawResourceCellMarkers
                 (clipBottom,clipRight,clipTop,clipLeft,(uint8_t)control->selectedResourceMarkerIndex,
                  control->fieldGrid);
     }
-    if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != nullptr))
+    if (((Any(control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN)) && (control->fieldGrid != nullptr))
        && (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS))) {
       SelectionOverlay_DrawDebugMarkedCellMarkers(clipBottom,clipRight,clipTop,clipLeft,control->fieldGrid);
     }
@@ -610,10 +601,10 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
      The pointer's X offset drives the heading, its Y offset pitch, distance and moves. */
   pointerDeltaX = pointerX - callbackContext->pointerCaptureX;
   pointerDeltaY = pointerY - callbackContext->pointerCaptureY;
-  if ((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0) {
+  if (Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) {
     return;
   }
-  if ((callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT) != 0) {
+  if (Any(callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT)) {
     if ((g_CursorButtonState & LEFT) == 0) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_DISTANCE);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | (FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_PITCH);
@@ -626,7 +617,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
       WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
     }
   }
-  else if ((callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN) != 0) {
+  else if (Any(callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN)) {
     if ((g_CursorButtonState & LEFT) == 0) {
       if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
@@ -656,7 +647,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
     }
   }
   else {
-    if ((callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE) == 0) {
+    if (!Any(callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE)) {
       return;
     }
     if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
@@ -674,19 +665,19 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_HEADING;
       WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
     }
-    else if (((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL) != 0) && ((g_CursorButtonState & LEFT) != 0)) {
+    else if ((Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL)) && ((g_CursorButtonState & LEFT) != 0)) {
       /* Flag 0x4000000 with the button held: 0x40000000 selects pitch, 0x80000000 distance. */
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~FRONTEND_CAMERA_MOTION_MASK;
-      if ((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM) != 0) {
+      if (Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM)) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_PITCH;
         WorldMotion_AdjustPitchClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
-      else if ((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT) != 0) {
+      else if (Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT)) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_DISTANCE;
         WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
     }
-    else if (((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL) == 0) && ((g_CursorButtonState & LEFT) == 0)) {
+    else if ((!Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL)) && ((g_CursorButtonState & LEFT) == 0)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_MOVE;
       WorldRuntime_TranslateCameraByScreenDelta(pointerDeltaY,pointerDeltaX,callbackContext);
@@ -698,11 +689,11 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_HEADING;
       WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
-      if ((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM) != 0) {
+      if (Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM)) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_DISTANCE;
         WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
-      else if ((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT) != 0) {
+      else if (Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT)) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_PITCH;
         WorldMotion_AdjustPitchClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
@@ -727,10 +718,10 @@ void FrontendModelPointerContext_PointerWheel
 {
   int scaledWheelDelta;
   
-  if (((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) &&
-     ((callbackContext->runtimeFlags &
+  if ((!Any(callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) &&
+     (Any(callbackContext->runtimeFlags &
       (FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN | FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE |
-       FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT)) != 0)) {
+       FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT)))) {
     if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
       scaledWheelDelta = wheelDelta * g_WorldMotionPointerWheelInputScale;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_PITCH);
@@ -780,13 +771,13 @@ void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
   
   /* 0x40: right button held (ROUTE_TO_BUILTIN_ACTION_RESOLUTION); the counter is rightButtonHoldTicks of the
      pointer-context view of this record */
-  if ((callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION) != 0) {
+  if (Any(callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION)) {
     callbackStateCounter = &callbackContext->selection.rightButtonHoldTicks;
     *callbackStateCounter = *callbackStateCounter + 1;
   }
-  if ((callbackContext->runtimeFlags &
+  if (!Any(callbackContext->runtimeFlags &
        (WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA | FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN |
-        FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) == 0) {
+        FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO))) {
     clampedCommittedDistance = callbackContext->motion.committedDistanceQ12;
     if ((int)clampedCommittedDistance < (int)callbackContext->minimumCameraDistanceQ12) {
       clampedCommittedDistance = callbackContext->minimumCameraDistanceQ12;
@@ -1032,11 +1023,11 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   for (modelNode = context->candidateModelListHead; modelNode != nullptr;
       modelNode = WorldNode_View<ModelRuntimeNode>(modelNode->common.nextNode.get())) {
     if (Any(modelNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) && modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
-        ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_NON_FACTION_MODELS) != 0 ||
+        (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_NON_FACTION_MODELS) ||
          Any(modelNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED))) {
       if (!ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                         (pointerY,pointerX,modelNode,context,&hitDistanceQ12)) continue;
-      if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
+      if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY)) {
         if ((int)bestHitMetric <= (int)hitDistanceQ12) continue;
       }
       else if (bestModelNode != nullptr) {

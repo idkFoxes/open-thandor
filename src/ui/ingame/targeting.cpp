@@ -41,7 +41,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
     root = UiNode_As<InGameTargetingRootTraversalView>(root->base.parent.get());
   }
   payloadKind = root->activeNotificationPayload.payloadKind;
-  if ((root->worldRuntime.runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
+  if (!Any(root->worldRuntime.runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) {
     WorldRuntime_CaptureMotionStateToSnapshot(&root->worldRuntime);
   }
   switch(payloadKind) {

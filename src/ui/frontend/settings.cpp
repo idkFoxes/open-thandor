@@ -261,7 +261,7 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_AUDIO_SETTINGS,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->settingsPageStack);
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     compactLayoutFlags = &THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->pageRoot.nodeFlags;
-    *compactLayoutFlags = *compactLayoutFlags | FromBits<UiNodeFlags>(FRONTEND_MENU_ROOM_RENDER_SUPPRESSED);
+    *compactLayoutFlags = *compactLayoutFlags | FromBits<UiNodeFlags>(ToBits(FRONTEND_MENU_ROOM_RENDER_SUPPRESSED));
   }
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->soundEffectsEnabledControl);

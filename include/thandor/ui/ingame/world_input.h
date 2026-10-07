@@ -25,14 +25,7 @@ inline constexpr int32_t WORLD_CURSOR_TARGET = 0x19;
 inline constexpr int32_t WORLD_CURSOR_TARGET_REJECTED = 0x1A;
 inline constexpr int32_t WORLD_CURSOR_PLACEMENT_BLOCKED = 0x2D; /* the pending army asset cannot be placed here */
 inline constexpr int32_t WORLD_CURSOR_PLACEMENT_VALID = 0x2E; /* the pending army asset can be placed here */
-/* WorldRuntimeContext.runtimeFlags bit set once a captured pointer moved far enough to start a drag selection. */
-inline constexpr int32_t WORLD_RUNTIME_FLAG_DRAG_SELECTING = 0x80;
-/* Set while the camera shows the target of a notification "go to" (InGameTargetingContext_AdvanceOrResolveTarget,
-   cleared by InGameTargetingContext_CancelAndRestoreState); the world input then only shows the busy cursor. */
-inline constexpr int32_t WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO = 0x10;
-/* Set on a pointer press while interaction flag 0x80 is held: the release replaces the selection instead of
-   selecting a single army (InGameWorldInput_BeginPointerCapture / _CommitPointerAction). */
-inline constexpr int32_t WORLD_RUNTIME_FLAG_REPLACE_SELECTION = 0x8000000;
+/* WorldRuntimeContext.runtimeFlags: the flag enum WorldRuntimeFlags (world/runtime/flags.h). */
 /* Pointer travel (pixels on either axis) after which a capture turns into a drag selection. */
 inline constexpr int32_t WORLD_DRAG_SELECTION_THRESHOLD = 23;
 /* g_InGamePointerInteractionStateFlags bits. */

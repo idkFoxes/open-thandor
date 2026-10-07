@@ -87,7 +87,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .topAnchorQ31 = 0x10000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x70000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
-            .contextFlags = 0x00091000},
+            .contextFlags = FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER | WORLD_RUNTIME_FLAG_SOUND_LISTENER |
+                            FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY}, /* 0x00091000 */
         {},
         /* not in the original: page 6 is displayPageStack (+71A0) instead of displaySettingsPage (+2CB8) */
         { /* +0508 frontendPageStack g_UiLayoutContainerControlVtable */

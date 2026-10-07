@@ -212,7 +212,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     /* compactLayoutControl.nodeFlags is menuRoomModelView's contextFlags: the page covers the menu room */
     controlFlags = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
-    *controlFlags = *controlFlags | FromBits<UiNodeFlags>(FRONTEND_MENU_ROOM_RENDER_SUPPRESSED);
+    *controlFlags = *controlFlags | FromBits<UiNodeFlags>(ToBits(FRONTEND_MENU_ROOM_RENDER_SUPPRESSED));
   }
   if (!UiSelectableGroup_FindVisibleSelected(nullptr,&activeTabIndex,3,
       &ui->loadGameTabButton.selectable.base,
