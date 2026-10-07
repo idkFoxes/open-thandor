@@ -128,6 +128,7 @@ Error handling, fixed-point maths, memory, settings and strings.
 
 - [`color_lanes.h`](source_guide/core.md#file-core-color-lanes) - Not functions of the original: C stand-ins for the MMX colour sequences the original inlines wherever it shades a packed ARGB colour (shot and effect tints, world and model lighting, terrain ...
 - [`contracts.h`](source_guide/core.md#file-core-contracts) - Core contracts shared by the split submodules.
+- [`flags.h`](source_guide/core.md#file-core-flags)
 - [`layout_checks.cpp`](source_guide/core.md#file-core-layout-checks) - The structs of the type headers (&lt;area&gt;/&lt;module&gt;/types.h) are the original's 32-bit layouts on x86 and x64 (core/ptr32.h): their sizes and the offsets of their pointer fields, checked at compile time.
 - [`ptr32.h`](source_guide/core.md#file-core-ptr32) - 32-bit pointer fields of the original data layouts (step 5f).
 - [`slot.h`](source_guide/core.md#file-core-slot) - Typed table entries (step 8): THANDOR_SLOT(function) for a function-pointer slot of a vtable or callback table (a Ptr32&lt;R(A...)&gt; field or a plain R (*)(A...)), replacing the untyped ...
