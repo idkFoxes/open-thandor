@@ -287,12 +287,12 @@ Bool8 ModelNodeRuntime_SmoothYawTowardTarget
     currentYawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
     smoothingState->yawTurnVelocityAngle16 = 0;
     if (targetYawAngle16 != currentYawAngle) {
-      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
       modelNodeRuntime->modelPayload.localRotationAngle2 = targetYawAngle16;
     }
   }
   else {
-    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     modelNodeRuntime->modelPayload.localRotationAngle2 = yawAngle & FIXED_ANGLE16_MASK;
     remainingYawDelta = (yawAngle & 0xffff) - targetYawAngle16 & FIXED_ANGLE16_MASK;
     if (MODEL_AIM_TOLERANCE_ANGLE16 < remainingYawDelta &&
@@ -372,14 +372,14 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
     }
   }
   if (!snapToTarget) {
-    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     modelNodeRuntime->modelPayload.localRotationAngle1 = pitchAngle;
     return (pitchAngle - clampedTarget) & FIXED_ANGLE16_MASK; /* remaining difference */
   }
   pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
   smoothingState->pitchTurnVelocityAngle16 = 0;
   if (clampedTarget != pitchAngle) {
-    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     modelNodeRuntime->modelPayload.localRotationAngle1 = clampedTarget;
   }
   return clampedTarget;

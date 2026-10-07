@@ -632,6 +632,15 @@ static_assert(sizeof(ArmyAiUnitFlags) == 4 && alignof(ArmyAiUnitFlags) == 4 &&
                   offsetof(InGameEndConditionTriggerRecord8ReferenceView, stateFlags) == 0x0 &&
                   sizeof(InGameEndConditionTriggerRecord8) == 8 && offsetof(InGameEndConditionTriggerRecord8, stateFlags) == 0x0,
               "the AI unit, relation/UI and end-condition trigger flags keep their fields");
+/* Step 13 E34b: the model node runtime flags word (ModelRuntimeFlags: MODEL_NODE_FLAG_*, MODEL_RUNTIME_FLAG_*,
+   TERRAIN_OCCUPANCY_FLAG_*) at +0x4C of every model node view (saved with the node pools). */
+static_assert(sizeof(ModelRuntimeFlags) == 4 && alignof(ModelRuntimeFlags) == 4 &&
+                  offsetof(ModelRuntimeNode, runtimeFlags) == 0x4C &&
+                  offsetof(EffectModelRuntimeNode, runtimeFlags) == 0x4C &&
+                  offsetof(ShotModelRuntimeNode, runtimeFlags) == 0x4C &&
+                  offsetof(WorldOwnerListNode, runtimeFlags) == 0x4C &&
+                  offsetof(TerrainOccupancyResolvedMasks, runtimeFlags) == 0x8,
+              "the model node runtime flags keep their 4-byte fields");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");

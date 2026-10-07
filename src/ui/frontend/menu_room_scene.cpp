@@ -406,7 +406,7 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   newNode->modelPayload.worldRotationAngle1 = rotationAngle1;
   newNode->modelPayload.worldRotationAngle2 = rotationAngle2;
   newNode->modelPayload.meshGroupMask = UINT32_MAX;
-  newNode->runtimeFlags = newNode->runtimeFlags | 1;
+  newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   /* four byte stores in this form: indexing the bytes changes the store order in the build */
   *Thandor_Bytes(&newNode->textureSubresourceBaseIndex) = 0;
   *(Thandor_Bytes(&newNode->textureSubresourceBaseIndex) + 1) = 0;

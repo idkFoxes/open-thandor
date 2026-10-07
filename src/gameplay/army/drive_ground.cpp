@@ -193,7 +193,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
   facingAngle = facingAngle & FIXED_ANGLE16_MASK;
   if (facingAngle != (rootNode->modelPayload).worldRotationAngle2) {
     (rootNode->modelPayload).worldRotationAngle2 = facingAngle;
-    rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+    rootNode->runtimeFlags = rootNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   }
   /* allowed heading error: the far limit, blended towards the near limit inside the interpolation distance */
   targetDistance = angleAndLength.length;

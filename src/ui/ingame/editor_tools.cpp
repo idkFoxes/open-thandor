@@ -494,11 +494,11 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   ownerFactionIndex = mapControl->activeFactionRuntimeIndex;
   for (runtimeNode = mapControl->ownerListHead; runtimeNode != nullptr;
       runtimeNode = runtimeNode->nextNode) {
-    if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) == 0) continue;
+    if (!Any(runtimeNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED)) continue;
     static_assert(offsetof(ModelRuntimeSlot,ownerArmyRuntimeOrSavedOffset) == 8,
                   "the owner army is the dword at payload + 8");
     entry = WorldOwnerNode_ModelRuntime(runtimeNode)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
-    if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) == 0 ||
+    if (!Any(runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) ||
         ownerFactionIndex != (entry->common).ownership.ownerIndex) continue;
     payloadValue = ArmyRuntime_Token(entry);
     if (WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,mapControl)) {

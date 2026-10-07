@@ -40,7 +40,7 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
               (int64_t)(int)Thandor_LoadU32(reinterpret_cast<const uint8_t *>(g_GameFactionRuntimeImage.records) +
                                             factionRecordByteOffset + 4)
               ) + classDefinition->runtimeValue24;
-    childNode->runtimeFlags = childNode->runtimeFlags | 1;
+    childNode->runtimeFlags = childNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     ModelNodeRuntime_RebuildTransformsFromRoot(rootModelNodeRuntime);
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));

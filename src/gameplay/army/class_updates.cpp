@@ -209,7 +209,7 @@ void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
   (modelRuntime->classLinkState).modelLinkOrState.signedScalarState -= verticalStepQ12;
   modelHeightQ12 = rootModelResource->localBoundsZ1Q12 - rootModelResource->localBoundsZ0Q12;
   remainingClassDistanceQ12 = (modelRuntime->classLinkState).modelLinkOrState.signedScalarState;
-  modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+  modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   if (modelHeightQ12 < remainingClassDistanceQ12) {
     ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   }
@@ -513,7 +513,7 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
         (animatedChildNode->modelPayload).localRotationAngle2 =
              animationDefinition->animatedChild0RotationStep * g_InGameSimulationStepTicks +
              (animatedChildNode->modelPayload).localRotationAngle2 & FIXED_ANGLE16_MASK;
-        animatedChildNode->runtimeFlags = animatedChildNode->runtimeFlags | 1;
+        animatedChildNode->runtimeFlags = animatedChildNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
       }
       animatedNode = modelNodeRuntime->childNodes[1];
       if (1 < modelNodeRuntime->childCount) {
@@ -521,7 +521,7 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
           (animatedNode->modelPayload).localRotationAngle2 =
                animationDefinition->animatedChild1RotationStep * g_InGameSimulationStepTicks +
                (animatedNode->modelPayload).localRotationAngle2 & FIXED_ANGLE16_MASK;
-          animatedNode->runtimeFlags = animatedNode->runtimeFlags | 1;
+          animatedNode->runtimeFlags = animatedNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
         }
         animatedNode = modelNodeRuntime->childNodes[2];
         if ((2 < modelNodeRuntime->childCount) && (animatedNode != nullptr)) {
@@ -544,7 +544,7 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
             }
           }
           (animatedNode->modelPayload).localTranslationZQ12 = updatedChildTranslationZQ12;
-          animatedNode->runtimeFlags = animatedNode->runtimeFlags | 1;
+          animatedNode->runtimeFlags = animatedNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
         }
       }
     }

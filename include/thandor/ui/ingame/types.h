@@ -732,7 +732,7 @@ struct WorldOwnerListNode {
     AngleTurn32 modelLocalRotationAngle2; // ModelRuntimeNode local/world rotation angle 2; valid only when ownerClassId == WORLD_OWNER_RUNTIME_MODEL.
     uint8_t opaque18_47[48]; // Opaque owner-list bytes; semantics remain class-dependent.
     Ptr32<void> runtimePayload; // Class-dependent payload: MODEL=>ModelRuntimeSlot*, SHOT=>ShotRuntimeSlot*, EFFECT=>EffectRuntimeSlot*. Kept void here deliberately so the neutral owner-list view cannot select a false union arm.
-    uint32_t runtimeFlags;
+    ModelRuntimeFlags runtimeFlags; // the node flags word of every owner-list node kind (+0x4C)
     uint8_t opaque50_57[8]; // Opaque owner-list bytes; semantics remain class-dependent.
     PackedArgb32 modelTintArgb; // ModelRuntimeNode tint ARGB; valid only for MODEL owner nodes.
     uint8_t opaque5C_93[56]; // Opaque owner-list bytes; semantics remain class-dependent.

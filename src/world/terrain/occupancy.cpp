@@ -202,7 +202,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 */
 TerrainOccupancyResolvedMasks
 TerrainOccupancyMask_ResolveRuntimeClassFlags
-          (uint32_t baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
+          (ModelRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
           FieldGridRegionMask primaryOccupancyMask,char activeFactionIndex)
 
 {
@@ -217,16 +217,16 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
   factionSeenBit = 1 << (activeFactionIndex * 2 & 31U);
   combinedOccupancyMask = primaryOccupancyMask & resolvedMasks.secondaryOccupancyMask;
   resolvedClassFlags = 0;
-  if ((baseRuntimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
+  if (!Any(baseRuntimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED)) {
     /* remembered objects: a seen-before bit also counts as present in the stored mask */
     combinedOccupancyMask =
          combinedOccupancyMask | combinedOccupancyMask * 2 & TERRAIN_OCCUPANCY_CLASS_PRESENT_BITS;
   }
   if ((factionSeenBit & combinedOccupancyMask) != 0) {
-    resolvedClassFlags = TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE;
+    resolvedClassFlags = ToBits(TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE);
   }
   if ((primaryOccupancyMask & factionSeenBit * 2) != 0) {
-    resolvedClassFlags = TERRAIN_OCCUPANCY_FLAG_PRESENT;
+    resolvedClassFlags = ToBits(TERRAIN_OCCUPANCY_FLAG_PRESENT);
   }
   resolvedMasks.primaryOccupancyMask = combinedOccupancyMask;
   resolvedMasks.runtimeFlags = resolvedClassFlags;

@@ -291,7 +291,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotRuntimeCursor->elevationOffsetAngle16 = elevationOffsetAngle;
   shotModelNode->modelPayload.meshGroupMask = UINT32_MAX;
   secondaryEffectInterval = shotDefinition->secondaryEffectIntervalTicks;
-  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | 1;
+  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   shotRuntimeCursor->ownerAndTrajectory.secondaryEffectCountdownTicks = secondaryEffectInterval;
   shotModelNode->textureSubresourceBaseIndex = 0;
   shotModelNode->modelRuntimeLinkOrSavedOffset = nullptr;
@@ -317,7 +317,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   resolvedMasks =
        TerrainOccupancyMask_ResolveRuntimeClassFlags(TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED,0,neighborhoodMask,runtimeClassIndex);
   shotRuntimeCursor->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
-  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | resolvedMasks.runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
+  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | FromBits<ModelRuntimeFlags>(resolvedMasks.runtimeFlags) | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   nodeTintArgb = ModelRuntimeNode_GetStateTintArgb(WorldNode_View<ModelRuntimeNode>(shotModelNode));
   definitionTintArgb = shotDefinition->stateTintArgb;
   /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */

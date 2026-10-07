@@ -367,12 +367,12 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
   g_InGameSelectionRemoveTripletDwordCount = 0;
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
   for (runtimeNode = inGameRuntime->ownerListHead; runtimeNode != nullptr; runtimeNode = runtimeNode->nextNode) {
-    if ((runtimeNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || ((runtimeNode->runtimeFlags & 2) == 0)) {
+    if ((runtimeNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || !Any(runtimeNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED)) {
       continue;
     }
     entry = ModelView_Cast<GameEntityRuntime>
             (WorldOwnerNode_ModelRuntime(runtimeNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
-    if (((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) == 0) ||
+    if (!Any(runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) ||
         (ownerIndex != (entry->common).ownership.ownerIndex)) {
       continue;
     }

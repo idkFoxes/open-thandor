@@ -36,9 +36,9 @@ void SelectionOverlay_RenderSelectedArmyMetrics
       continue;
     }
     modelNode = (selectedEntity->common).ownership.modelNode;
-    if (!(((modelNode->runtimeFlags & 4) != 0) ||
-          (((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) &&
-           ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0)))) {
+    if (!(Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) ||
+          (!Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) &&
+           (Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE))))) {
       continue;
     }
     g_ModelProjectedBoundsPixels.minX = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
@@ -71,8 +71,8 @@ void SelectionOverlay_RenderArmyMetricsForEntity
   void *savedPanelData;
   
   modelNode = (entity->common).ownership.modelNode;
-  if (((modelNode->runtimeFlags & 4) != 0) ||
-     (((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0 && ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0)))) {
+  if (Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) ||
+     ((!Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) && Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE)))) {
     g_ModelProjectedBoundsPixels.minX = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
     g_ModelProjectedBoundsPixels.minY = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
     g_ModelProjectedBoundsPixels.maxX = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;

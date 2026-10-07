@@ -36,14 +36,14 @@ WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worl
   recordsRemaining = worldRuntime->objectCount;
   recordCursor = worldRuntime->objectArray;
   while (recordsRemaining != 0 &&
-         (recordCursor->common.allocationFlags & WORLD_OBJECT_RECORD_ALLOCATED) != 0) {
+         (recordCursor->common.allocationFlags & ToBits(WORLD_OBJECT_RECORD_ALLOCATED)) != 0) {
     recordCursor = recordCursor + 1;
     recordsRemaining--;
   }
   if (recordsRemaining == 0) {
     return nullptr;
   }
-  recordCursor->common.allocationFlags = WORLD_OBJECT_RECORD_ALLOCATED;
+  recordCursor->common.allocationFlags = ToBits(WORLD_OBJECT_RECORD_ALLOCATED);
   recordCursor->common.ownerWorld = worldRuntime;
   return recordCursor;
 }
@@ -82,7 +82,7 @@ void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
   WorldOwnerListNode *previousNode;
   WorldOwnerListNode *nextNode;
 
-  if ((node->runtimeFlags & WORLD_OWNER_NODE_LINKED) != 0) {
+  if (Any(node->runtimeFlags & WORLD_OWNER_NODE_LINKED)) {
     previousNode = node->previousNode;
     nextNode = node->nextNode;
     if (previousNode == nullptr) {
@@ -95,7 +95,7 @@ void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
       nextNode->previousNode = previousNode;
     }
   }
-  node->runtimeFlags = 0;
+  node->runtimeFlags = MODEL_RUNTIME_FLAGS_NONE;
 }
 
 /* Calls callback(callbackContext, node) for every node of the world's owner list (ownerListHead), from the most
