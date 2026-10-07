@@ -36,16 +36,16 @@
 #include <thandor/world/terrain/placement_tests.h>
 #include <thandor/world/terrain/sight.h>
 
-#define HEXSCAN_TEST_WIDTH 67
-#define HEXSCAN_TEST_HEIGHT 53
-#define HEXSCAN_TEST_POINTS 2000
-#define HEXSCAN_TEST_CHUNK 8
-#define HEXSCAN_TEST_MARGIN_CELLS 3 /* points reach this many cells past every grid side */
+constexpr auto HEXSCAN_TEST_WIDTH = 67;
+constexpr auto HEXSCAN_TEST_HEIGHT = 53;
+constexpr auto HEXSCAN_TEST_POINTS = 2000;
+constexpr auto HEXSCAN_TEST_CHUNK = 8;
+constexpr auto HEXSCAN_TEST_MARGIN_CELLS = 3; /* points reach this many cells past every grid side */
 #define HEXSCAN_TEST_RADIUS_MAX (TERRAIN_SCAN_RADIUS_PER_STEP * 300)
 /* the placement tests' height band is +-1024 around the reference: clean heights and references stay within
    +-HEXSCAN_TEST_CLEAN_HEIGHT, so every difference is inside it */
-#define HEXSCAN_TEST_CLEAN_HEIGHT 400
-#define HEXSCAN_TEST_AUX_MINIMUM 0x3000 /* g_TerrainAuxHeightMinimum (placement_tests.cpp) */
+constexpr auto HEXSCAN_TEST_CLEAN_HEIGHT = 400;
+constexpr auto HEXSCAN_TEST_AUX_MINIMUM = 0x3000; /* g_TerrainAuxHeightMinimum (placement_tests.cpp) */
 
 enum HexscanTestProfile {
     HEXSCAN_PROFILE_NOISE,      /* the writing drivers: random heights, water above/below/at zero, flags */
