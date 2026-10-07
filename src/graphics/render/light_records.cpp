@@ -58,7 +58,7 @@ uint32_t GraphicsIntensityClampTable_Initialize()
     rowsRemaining = 256;
     previousIntensity = 0;
     g_GraphicsIntensityClampTableBase = (uintptr_t)tableCursor;
-    do {
+    for (; rowsRemaining != 0; rowsRemaining--) {
       do {
         targetByte = (char)targetIntensity;
         if (previousIntensity < (int)targetIntensity) {
@@ -80,8 +80,7 @@ uint32_t GraphicsIntensityClampTable_Initialize()
         targetIntensity = (uint32_t)(uint8_t)(targetByte + 1U);
       } while ((uint8_t)(targetByte + 1U) != 0);
       previousIntensity++;
-      rowsRemaining--;
-    } while (rowsRemaining != 0);
+    }
     return 0;
   }
   return allocError;
@@ -153,7 +152,7 @@ GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
   if (packedColorRgb != 0) {
     recordCursor = g_GraphicsShadingRuntimeRecords;
     recordsRemaining = GRAPHICS_SHADING_RUNTIME_RECORD_COUNT;
-    do {
+    for (; recordsRemaining != 0; recordsRemaining--) {
       if (recordCursor->packedColorRgbActive == 0) {
         recordCursor->targetRadiusQ12 = radiusQ12;
         recordCursor->packedColorRgbActive = packedColorRgb & ARGB8888_RGB_MASK;
@@ -173,8 +172,7 @@ GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
         return recordCursor;
       }
       recordCursor = recordCursor + 1;
-      recordsRemaining--;
-    } while (recordsRemaining != 0);
+    }
   }
   return nullptr;
 }
@@ -214,7 +212,7 @@ void GraphicsShadingRuntime_RebuildCompactLightingRecords()
   compactRecord = g_GraphicsShadingCompactRecords;
   recordsRemaining = GRAPHICS_SHADING_RUNTIME_RECORD_COUNT;
   compactCount = 0;
-  do {
+  for (; recordsRemaining != 0; recordsRemaining--) {
     if (sourceRecord->packedColorRgbActive != 0) {
       FixedTransform_ApplyPoint
                 (reinterpret_cast<GraphicsFixedVec3 *>(compactRecord),reinterpret_cast<GraphicsFixedVec3 *>(sourceRecord),
@@ -227,8 +225,7 @@ void GraphicsShadingRuntime_RebuildCompactLightingRecords()
       compactRecord++;
     }
     sourceRecord++;
-    recordsRemaining--;
-  } while (recordsRemaining != 0);
+  }
   g_GraphicsShadingCompactRecordCount = compactCount;
 }
 
