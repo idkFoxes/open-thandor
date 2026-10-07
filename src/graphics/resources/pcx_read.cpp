@@ -29,7 +29,7 @@ static constexpr int PCX_MANUFACTURER_ZSOFT = 0x0A;
 static constexpr int PCX_ENCODING_RLE = 1;
 /* The 256-colour palette at the end of the file: marker byte 0x0C, then 256 RGB triplets */
 static constexpr int PCX_PALETTE_MARKER = 0x0C;
-#define PCX_PALETTE_TRAILER_BYTES (1 + PCX_PALETTE_COLOR_COUNT * 3)
+static constexpr auto PCX_PALETTE_TRAILER_BYTES = 1 + PCX_PALETTE_COLOR_COUNT * 3;
 /* RLE: a byte 0xC0..0xFF repeats the next byte (its low 6 bits) times; any other byte is a literal pixel */
 static constexpr int PCX_RLE_RUN_FLAGS = 0xC0;
 static constexpr int PCX_RLE_RUN_LENGTH_MASK = 0x3F;

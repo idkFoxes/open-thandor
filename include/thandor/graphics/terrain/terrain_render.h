@@ -10,6 +10,7 @@
 
 #include <thandor/core/types.h>
 #include <thandor/graphics/render/types.h>
+#include <thandor/graphics/render/primitives.h> /* GRAPHICS_PRIMITIVE_FLAG_* of the blend packet flags */
 #include <thandor/graphics/terrain/types.h>
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
@@ -37,14 +38,14 @@ inline constexpr int TERRAIN_VERTEX_POINT_B_INSIDE_MAX_X = 0x1000000;
 inline constexpr int TERRAIN_VERTEX_POINT_B_INSIDE_MAX_Y = 0x2000000;
 inline constexpr int TERRAIN_VERTEX_SECONDARY_VISIBLE = 0x10000000;
 /* The four side bits of a point, and those plus its NOT_PROJECTED bit (all five bits of the point). */
-#define TERRAIN_VERTEX_POINT_A_SIDE_BITS                                                                   \
-  (TERRAIN_VERTEX_POINT_A_INSIDE_MIN_X | TERRAIN_VERTEX_POINT_A_INSIDE_MIN_Y | TERRAIN_VERTEX_POINT_A_INSIDE_MAX_X | \
-   TERRAIN_VERTEX_POINT_A_INSIDE_MAX_Y) /* 0x1e0000 */
-#define TERRAIN_VERTEX_POINT_A_BITS (TERRAIN_VERTEX_POINT_A_SIDE_BITS | TERRAIN_VERTEX_POINT_A_NOT_PROJECTED)
-#define TERRAIN_VERTEX_POINT_B_SIDE_BITS                                                                   \
-  (TERRAIN_VERTEX_POINT_B_INSIDE_MIN_X | TERRAIN_VERTEX_POINT_B_INSIDE_MIN_Y | TERRAIN_VERTEX_POINT_B_INSIDE_MAX_X | \
-   TERRAIN_VERTEX_POINT_B_INSIDE_MAX_Y) /* 0x3c00000 */
-#define TERRAIN_VERTEX_POINT_B_BITS (TERRAIN_VERTEX_POINT_B_SIDE_BITS | TERRAIN_VERTEX_POINT_B_NOT_PROJECTED)
+inline constexpr auto TERRAIN_VERTEX_POINT_A_SIDE_BITS =
+  TERRAIN_VERTEX_POINT_A_INSIDE_MIN_X | TERRAIN_VERTEX_POINT_A_INSIDE_MIN_Y | TERRAIN_VERTEX_POINT_A_INSIDE_MAX_X |
+  TERRAIN_VERTEX_POINT_A_INSIDE_MAX_Y; /* 0x1e0000 */
+inline constexpr auto TERRAIN_VERTEX_POINT_A_BITS = TERRAIN_VERTEX_POINT_A_SIDE_BITS | TERRAIN_VERTEX_POINT_A_NOT_PROJECTED;
+inline constexpr auto TERRAIN_VERTEX_POINT_B_SIDE_BITS =
+  TERRAIN_VERTEX_POINT_B_INSIDE_MIN_X | TERRAIN_VERTEX_POINT_B_INSIDE_MIN_Y | TERRAIN_VERTEX_POINT_B_INSIDE_MAX_X |
+  TERRAIN_VERTEX_POINT_B_INSIDE_MAX_Y; /* 0x3c00000 */
+inline constexpr auto TERRAIN_VERTEX_POINT_B_BITS = TERRAIN_VERTEX_POINT_B_SIDE_BITS | TERRAIN_VERTEX_POINT_B_NOT_PROJECTED;
 /* Render context flag of TerrainProjectedGrid_TransformShadeAndQueue. The context is the world runtime and this is
    the bit named WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY there: FrontendModelPointerContext_RenderWorldViewQueuesClipped
    sets it after a frame that covered the whole view, every camera change clears it. While it is set (and the field
@@ -62,10 +63,10 @@ inline constexpr int TERRAIN_SURFACE_PACKET_BYTES = 0x20;
    the second blend packet of a three-material triangle uses the higher layer */
 inline constexpr int TERRAIN_BLEND_PACKET_SORT_LAYER_1 = 0x10000000;
 inline constexpr int TERRAIN_BLEND_PACKET_SORT_LAYER_2 = 0x20000000;
-#define TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS \
-  (GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_1)
-#define TERRAIN_BLEND_PACKET_SECOND_LAYER_FLAGS \
-  (GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_2)
+inline constexpr auto TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS =
+  GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_1;
+inline constexpr auto TERRAIN_BLEND_PACKET_SECOND_LAYER_FLAGS =
+  GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_2;
 
 void TerrainProjectedGrid_TransformShadeAndQueue
           (FieldGridAsset *fieldGrid,FrontendModelPointerContext *renderContext);

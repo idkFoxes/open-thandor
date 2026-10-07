@@ -1,5 +1,5 @@
 {
- "revision": "07189d1b",
+ "revision": "f4b1049f",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -121,27 +121,23 @@
   "ui_at_sibling": {},
   "frontend_ui": {},
   "define_numeric": {
-   "assets": 102,
-   "audio": 15,
-   "movie": 30,
    "network": 136,
    "platform": 229,
-   "ui": 392,
-   "world": 117
+   "ui": 392
   },
   "define_all": {
-   "assets": 159,
-   "audio": 28,
+   "assets": 57,
+   "audio": 13,
    "core": 73,
    "gameplay": 67,
    "generated": 1,
-   "graphics": 59,
-   "movie": 36,
+   "graphics": 43,
+   "movie": 6,
    "network": 165,
    "platform": 330,
    "root": 7,
    "ui": 517,
-   "world": 177
+   "world": 60
   },
   "include_guard": {
    "assets": 34,
@@ -158,13 +154,16 @@
    "world": 50
   },
   "constexpr": {
+   "assets": 102,
+   "audio": 15,
    "core": 211,
    "gameplay": 208,
-   "graphics": 147,
+   "graphics": 163,
+   "movie": 30,
    "network": 2,
    "platform": 52,
    "ui": 288,
-   "world": 13
+   "world": 130
   },
   "typedef_struct": {
    "assets": 54,

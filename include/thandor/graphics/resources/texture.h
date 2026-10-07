@@ -23,8 +23,8 @@
 inline constexpr int GFX_ASSET_HEADER_SIZE = 0x200;
 inline constexpr int GFX_PALETTE_BANK_SIZE = 0x800;
 inline constexpr int GFX_SUBRESOURCE_RECORD_SIZE = 0x20;
-#define GRAPHICS_TEXTURE_SET_ENTRY_BYTES sizeof(GraphicsTextureSetEntry) /* 0x20 on x86, after the texture set header */
-#define GRAPHICS_TEXTURE_SET_HEADER_BYTES offsetof(GraphicsTextureSet, entries) /* 8 on x86 */
+inline constexpr size_t GRAPHICS_TEXTURE_SET_ENTRY_BYTES = sizeof(GraphicsTextureSetEntry); /* 0x20 on x86, after the texture set header */
+inline constexpr size_t GRAPHICS_TEXTURE_SET_HEADER_BYTES = offsetof(GraphicsTextureSet, entries); /* 8 on x86 */
 inline constexpr int GFX_SUBRESOURCE_LOGICAL_WIDTH = 0x00; /* tile extent used by the tiled blits */
 inline constexpr int GFX_SUBRESOURCE_LOGICAL_HEIGHT = 0x04;
 inline constexpr int GFX_SUBRESOURCE_PALETTE_INDEX = 0x08; /* -1: direct ARGB8888 pixels; else palette bank, 8-bit indices */
@@ -34,7 +34,7 @@ inline constexpr int GFX_SUBRESOURCE_ORIGIN_Y = 0x14;
 inline constexpr int GFX_SUBRESOURCE_PIXEL_WIDTH = 0x18; /* stored pixels per row */
 inline constexpr int GFX_SUBRESOURCE_PIXEL_HEIGHT = 0x1C; /* stored rows */
 /* Pixels of an asset with a single subresource record directly after the header (offscreen renders) */
-#define GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET (GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_RECORD_SIZE)
+inline constexpr auto GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET = GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_RECORD_SIZE;
 
 /* The asset as bytes: every offset in the header and the subresource records is relative to the asset start
    (the asset is one block of header, palette banks, record table and pixels). */

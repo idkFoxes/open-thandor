@@ -41,7 +41,7 @@ inline constexpr int MODEL_TRIANGLE_LIGHTING_SCALED = 0x800; /* lit by ModelRend
 inline constexpr int MODEL_TRIANGLE_FLAT_SHADED = 0x8000; /* lit with the triangle normal; never reuses a cached vertex colour */
 inline constexpr int MODEL_TRIANGLE_VERTEX_CACHE_FLAGS = 0x8E00; /* the bits a projected vertex's cached colour was computed for */
 /* Marker in a mesh vertex's projected X (GraphicsProjectedVertexSource.screenX): not transformed and projected yet for this draw */
-#define MODEL_VERTEX_NOT_PROJECTED ((int)0x80000000)
+inline constexpr int MODEL_VERTEX_NOT_PROJECTED = static_cast<int>(0x80000000);
 /* Marker the alternate renderer stores in the projected X of a vertex in front of the near plane */
 inline constexpr int MODEL_VERTEX_NEAR_CLIPPED = 0x7fffffff;
 /* Stride of the vertex and triangle records of a mesh (both 0x40 bytes; GraphicsTriangleInput uses 0x38) */
