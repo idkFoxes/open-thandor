@@ -62,10 +62,10 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
   ArmyCommandGeneration candidateCommandGenerationBase;
   AiCommandGenerationRightShiftBits selectedCommandGenerationRightShiftBits;
 
-  if (((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_INTERRUPTED) == 0) &&
+  if (!Any(armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_INTERRUPTED) &&
      (((int)armyRuntime->commandGeneration < 1 ||
-      ((armyRuntime->commandModeFlags &
-       (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) == 0)))) {
+      (!Any(armyRuntime->commandModeFlags &
+       (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)))))) {
     selectedTargetArmyRuntime =
          AiCombatTarget_SelectBestCandidate(worldRuntime,armyRuntime,&sourceClassCount);
     /* Original quirk: without a selected target this is still the shift of an earlier call (see the static). */
@@ -78,7 +78,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
     /* signed test of the returned sum: count > 0 */
     else if ((selectedTargetArmyRuntime == nullptr) && (0 < sourceClassCount)) {
       ArmyRuntime_ResolveCommandTarget(Thandor_U32ToPointer<ArmyRuntimeSlot>(armyRuntime->assignedTargetArmyRuntime),armyRuntime); /* 32-bit format field: ArmyRuntimeSlot.assignedTargetArmyRuntime */
-      if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0) {
+      if (!Any(armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY)) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
       }
     }

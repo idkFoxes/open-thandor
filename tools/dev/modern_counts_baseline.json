@@ -1,5 +1,5 @@
 {
- "revision": "88b8024f",
+ "revision": "6631d2da",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -155,7 +155,7 @@
    "assets": 102,
    "audio": 15,
    "core": 211,
-   "gameplay": 208,
+   "gameplay": 191,
    "graphics": 163,
    "movie": 30,
    "network": 138,
@@ -166,6 +166,7 @@
   "typedef_struct": {},
   "enum_class": {
    "core": 4,
+   "gameplay": 2,
    "network": 1,
    "platform": 1,
    "ui": 8

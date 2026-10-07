@@ -918,7 +918,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
       conditionRatio = ModelRuntime_QueryHierarchyConditionRatioQ12
                         (reinterpret_cast<RuntimeModelFactionPrefix *>(targetEntity)); /* the army's prefix view */
       if (conditionRatio == Q12_ONE &&
-          (shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
+          Any(shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) &&
           targetEntity == static_cast<GameEntityRuntime *>(shooterArmy->commandTargetArmyRuntime)) {
         ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(shooterArmy);
         shooterArmy->commandGeneration = 1;
@@ -942,7 +942,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
                     (targetModelRuntime,&inGameRoot->worldRuntime);
         }
-        else if (((shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0 ||
+        else if ((!Any(shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) ||
                   (shooterArmy->commandTargetArmyRuntime != nullptr &&
                    targetFactionIndex == shooterArmy->commandTargetArmyRuntime->factionIndex)) &&
                  99 < (int)((g_GameFactionRuntimeImage.tail.simulationTick * 2 -

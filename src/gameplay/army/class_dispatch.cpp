@@ -62,7 +62,7 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
     armyRuntime->commandModeFlags =
          armyRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_INTERRUPTED | ARMY_COMMAND_MODE_AI_COMBAT_TARGET);
   }
-  if (((armyRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) != 0) &&
+  if (Any(armyRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) &&
      ((modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime == nullptr)) {
     armyRuntime->movementStateFlags = armyRuntime->movementStateFlags & ~ARMY_MOVEMENT_LOCKED;
   }

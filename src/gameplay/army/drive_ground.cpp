@@ -25,7 +25,7 @@ void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
 
   armyRuntime = modelRuntime->ownerArmyRuntime;
   placementContactKind = modelRuntime->modelDefinition->placementContactKindIndex;
-  if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) != 0) {
+  if (Any(armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR)) {
     AiUnitBehavior_UpdatePioneerVehicle
               (reinterpret_cast<MdlDefinitionSemanticPrefix *>(modelRuntime->modelDefinition.get()), /* definition view */
                armyRuntime,

@@ -139,7 +139,7 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
     }
     /* the command target is only a live reference while ARMY_COMMAND_MODE_TARGET_ARMY is set; it is cleared
        together with the INTERRUPTED and AI_COMBAT_TARGET bits */
-    if ((ownerArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
+    if (Any(ownerArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) &&
         releasedObject == ownerArmy->commandTargetArmyRuntime) {
       ownerArmy->commandTargetArmyRuntime = nullptr;
       ownerArmy->commandModeFlags =

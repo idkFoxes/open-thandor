@@ -371,7 +371,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   armyRuntime->commandCoordinate0Q12 = 0;
   armyRuntime->commandCoordinate1Q12 = 0;
   armyRuntime->commandCoordinate2Q12 = 0;
-  armyRuntime->commandModeFlags = 0;
+  armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_NONE;
   armyRuntime->commandGeneration = 0;
   (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
@@ -379,7 +379,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   (armyRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.coordinateOrTargetQ12 = worldXQ12;
   armyRuntime->movementPosition0Q12 = worldYQ12;
   armyRuntime->movementPosition1Q12 = worldXQ12;
-  armyRuntime->movementStateFlags = 0;
+  armyRuntime->movementStateFlags = ARMY_MOVEMENT_NONE;
   armyRuntime->actionVector1Q12 = 0;
   armyRuntime->terrainOccupancyMask0 = 0;
   armyRuntime->terrainOccupancyMask1 = 0;
