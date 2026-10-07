@@ -91,14 +91,13 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,loadedLevel->header.titleTextResourceIndex,
              &g_FrontendMissionBriefingMoviePathUtf16[7]);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLM,g_FrontendMissionBriefingMoviePathUtf16);
-  /* briefingImage is an image action control whose template node is shorter than the class (UiNodeBase + 6 dwords) */
   if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16,nullptr,nullptr)) {
-    reinterpret_cast<UiImageActionControl *>(&ui->briefingImage)->textureSource = nullptr;
+    ui->briefingImage.textureSource = nullptr;
   }
   else {
     if (Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode)) {
       /* the movie runtime is the image's texture source (it starts with the texture asset prefix) */
-      reinterpret_cast<UiImageActionControl *>(&ui->briefingImage)->textureSource =
+      ui->briefingImage.textureSource =
            reinterpret_cast<GraphicsTextureSourceAsset *>(firstFrameMovie);
     }
     else {
@@ -107,9 +106,9 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
          movie that does not open. */
       Thandor_Log("FrontendMissionBriefingPage_Initialize: briefing movie gave no frame (end code %u)",
                   (uint32_t)movieEndCode);
-      reinterpret_cast<UiImageActionControl *>(&ui->briefingImage)->textureSource = nullptr;
+      ui->briefingImage.textureSource = nullptr;
     }
-    reinterpret_cast<UiImageActionControl *>(&ui->briefingImage)->subresource = 0;
+    ui->briefingImage.subresource = 0;
   }
   /* Back only when started from the menu by a non-client; Exit (and the Save button) in a campaign or a
      re-initialised scenario; neither for a client of a fresh scenario */

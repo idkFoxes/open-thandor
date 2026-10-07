@@ -508,6 +508,19 @@ struct UiImageActionControl {
     int32_t letterboxWidth;
 };
 
+/* A UiImageActionControl node of a template image that ends before letterboxWidth (0x64 bytes; the frontend's
+   briefingImage): the class methods read letterboxWidth only with displayFlags bit 4, which such a node never
+   sets. Same prefix as UiImageActionControl. */
+struct UiImageActionTemplateNode {
+    struct UiNodeBase base;
+    uint32_t displayFlags;
+    GraphicsCursorFrameIndex cursorFrame;
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource;
+    GraphicsSubresourceIndex subresource;
+    UiActionId primaryActionId;
+    UiActionId secondaryActionId;
+};
+
 /* Framed text box drawing lineCount rich-text lines; left clicks queue actionId while it has lines
    (g_UiConditionalActionControlVtable). textLines is variable length: 1, 5 or 8 slots in the templates. */
 typedef struct UiConditionalActionControl UiConditionalActionControl;
