@@ -477,7 +477,7 @@ void UiImageActionControl_EnqueueSecondaryAction
    UI_IMAGE_ACTION_KEY_ACTIVATES any other key queues primaryActionId, like a left click.
    Returns false when the key was consumed, true to pass it on.
 */
-Bool8 UiImageActionControl_HandleKeyboardActivation
+bool UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control)
 
 {

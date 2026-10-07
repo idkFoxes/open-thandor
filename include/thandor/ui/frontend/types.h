@@ -366,7 +366,7 @@ struct FrontendModelPointerHitContext {
     uint32_t surfaceHitWorldY; // Terrain point under the cursor: world Y interpolated by the terrain triangle pick; passed to the pointer callbacks.
     uint32_t surfaceHitDepth; // View depth of the terrain hit (WORLD_POINTER_NO_HIT when none); passed to the pointer callbacks.
     uint8_t reservedF4_FF[12]; // reserved bytes before keyboard fallback callback
-    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback; // root keyboard fallback callback; the bool result is the status
+    Ptr32<bool (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback; // root keyboard fallback callback; the bool result is the status
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> hoverCursorCallback; // Pointer move with no button held: returns the cursor frame (surface hit depth/Y/X, hit metric, hit model, context).
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> heldButtonCursorCallback; // Pointer move while a non-right button is held (ROUTE_TO_SECONDARY_CALLBACK): returns the cursor frame.
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonPressCallback; // Non-right button press (FrontendModelPointerContext_NonRightPress).
@@ -674,7 +674,7 @@ struct FrontendPointerSceneRuntimeView {
     Q12 cursorWorldXQ12;
     Q12 cursorWorldYQ12;
     Ptr32<struct GameEntityRuntime> selectedOverlayEntity;
-    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback;
+    Ptr32<bool (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback;
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> hoverCursorCallback;
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> heldButtonCursorCallback;
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonPressCallback;

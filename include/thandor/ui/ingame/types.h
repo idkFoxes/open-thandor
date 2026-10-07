@@ -87,7 +87,7 @@ struct WorldRuntimeSelectionState {
     int32_t pointerSurfaceHitDepth; /* view depth of the terrain hit; 0x7FFFFFFF (WORLD_POINTER_NO_HIT): none */
     uint8_t reserved18_1F[8];
     Ptr32<struct GameEntityRuntime> selectedEntity; // Current selected entity cleared during destruction and replaced by context-action resolution.
-    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct WorldRuntimeContext *)> dispatchCommandCallback; // key commands of the world view: the keyboardFallback slot of FrontendModelPointerHitContext, so it returns true when the key is not taken and the pointer context passes it on
+    Ptr32<bool (UiKeyboardStateMask, UiActionId, struct WorldRuntimeContext *)> dispatchCommandCallback; // key commands of the world view: the keyboardFallback slot of FrontendModelPointerHitContext, so it returns true when the key is not taken and the pointer context passes it on
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> resolveContextActionPrimaryCallback;
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> resolveContextActionSecondaryCallback;
     Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> beginPointerCaptureCallback;

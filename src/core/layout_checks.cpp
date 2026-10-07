@@ -3341,7 +3341,7 @@ static_assert(ThandorSlot<&UiNode_ApplyFlagsRecursive>::pick<void(UiNodeFlags, U
 static_assert(ThandorSlot<&UiImageControl_PointerMove>::pick<GraphicsCursorFrameIndex(UiPixelCoordinate, UiPixelCoordinate,
                                                                                       UiNodeBase *)>() != nullptr,
               "THANDOR_SLOT of UiImageControl * (prefix chain over UiSelectableControl) for a UiNodeBase * slot");
-static_assert(ThandorSlot<&UiSelectableControl_KeyboardEvent>::pick<Bool8(UiKeyboardStateMask, UiKeyboardEventCode,
+static_assert(ThandorSlot<&UiSelectableControl_KeyboardEvent>::pick<bool(UiKeyboardStateMask, UiKeyboardEventCode,
                                                                           UiNodeBase *)>() != nullptr,
               "THANDOR_SLOT of UiSoundSelectableControl * for a UiNodeBase * slot");
 static_assert(ThandorSlot<&InGameUiRuntime_ResetNotificationButtonCursor>::pick<void(WorldRuntimeContext *)>() != nullptr,

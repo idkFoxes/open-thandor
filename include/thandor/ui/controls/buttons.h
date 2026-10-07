@@ -94,7 +94,7 @@ void UiImageActionControl_EnqueueSecondaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageActionControl *control);
 
-Bool8 UiImageActionControl_HandleKeyboardActivation
+bool UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control);
 
 void UiConditionalActionControl_DrawClipped

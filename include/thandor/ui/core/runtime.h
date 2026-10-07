@@ -44,9 +44,9 @@ inline constexpr int32_t UI_ACTION_PAGE_INGAME_COMMAND_MODE = 0x11; /* g_InGameU
 inline constexpr int32_t UI_ACTION_PAGE_INGAME_MENU = 0x12; /* g_InGameUiActionHandlersPage12: settings and save pages, 0x12xx */
 inline constexpr int32_t UI_ACTION_PAGE_FRONTEND = 0x20; /* g_FrontendUiActionHandlersPage20: frontend menus, 0x20xx */
 
-Bool8 UiRootCallbacks_Free(UiRootNode *root);
+bool UiRootCallbacks_Free(UiRootNode *root);
 
-Bool8 UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root);
+bool UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root);
 
 Bool8 UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint);
 

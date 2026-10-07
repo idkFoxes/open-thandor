@@ -72,7 +72,7 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSoftwareTexturePreviewControl *control);
 
-Bool8 UiSoftwareTexturePreviewControl_HandleKeyboardActivation
+bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control);
 
 extern UiNodeVtable g_UiImagePanelControlVtable;

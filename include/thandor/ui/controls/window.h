@@ -82,7 +82,7 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control);
 
-Bool8 UiResizableWindowControl_HandleWindowHotkeys
+bool UiResizableWindowControl_HandleWindowHotkeys
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control);
 
 void UiWindowControl_RelocateWithFrameInset(UiSerializedRelocationDelta relocationDelta,UiWindowControl *control);

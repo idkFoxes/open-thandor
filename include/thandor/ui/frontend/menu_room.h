@@ -56,7 +56,7 @@ void FrontendModelPointerContext_PointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           WorldRuntimeContext *callbackContext);
 
-Bool8 FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerHitContext *control);
 
 void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext);

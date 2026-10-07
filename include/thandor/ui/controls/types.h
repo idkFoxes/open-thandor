@@ -307,7 +307,7 @@ struct UiNodeVtable {
     Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> rightDrag; 
     Ptr32<GraphicsCursorFrameIndex (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> pointerMove; 
     Ptr32<UiNodeBase * (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> hitTest; 
-    Ptr32<Bool8 (UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *)> keyboardEvent;
+    Ptr32<bool (UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *)> keyboardEvent;
     Ptr32<void (UiNodeFlags, UiNodeFlags, struct UiNodeBase *)> applyFlags; 
     Ptr32<void (UiActionId, struct UiNodeBase *)> suppressActionId; 
     Ptr32<void (UiActionId, struct UiNodeBase *)> unsuppressActionId; 

@@ -20,7 +20,7 @@ inline constexpr int32_t INGAME_NOTIFICATION_QUEUE_SLOTS = 4;
    when no notification movie plays */
 inline constexpr int32_t INGAME_NOTIFICATION_CURSOR_CANCEL = 0x1B;
 
-Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world);
 
 void InGameWorldView_ShowNextInfoText(UiSingleLineTextControl *infoText);

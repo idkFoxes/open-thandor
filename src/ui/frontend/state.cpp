@@ -77,7 +77,7 @@ void FrontendRomTransition_AdvanceElapsedTicks()
    setup page toggles bit 0 of the local player's colourCycleFlags (an eighth entry in the faction cycle,
    FrontendFactionSetup_CycleFactionColour). Returns true when the key is not in the table.
 */
-Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
+bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime)
 
 {
