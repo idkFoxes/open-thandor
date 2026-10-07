@@ -301,11 +301,10 @@ void SoftwareFramebuffer_FillColumnSegments32(GraphicsScreenCoordinate topY,Grap
   for (segment = 0; segment < segmentCount; segment++) {
     remaining = segmentHeights[segment];
     if (remaining != 0) {
-      do {
+      for (; remaining != 0; remaining--) {
         Thandor_StoreU32(pixelCursor, packedColors[segment]);
         pixelCursor = pixelCursor + strideBytes;
-        remaining--;
-      } while (remaining != 0);
+      }
     }
   }
 }

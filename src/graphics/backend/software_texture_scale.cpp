@@ -88,6 +88,7 @@ void SoftwareTexture_CrossFadeSubresources
   uint32_t blocks = (entryB->pixelHeight * entryB->pixelWidth) >> 3;
   int lane;
 
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     for (lane = 0; lane < 8; lane++) {
       blended[lane] = SoftwareTexture_CrossFadeByte(sourceA[lane], sourceB[lane], factor[lane], unity[lane & 3]);
@@ -163,6 +164,7 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   destinationRow = framebuffer->pixels + (destinationTop * (int)framebuffer->width + destinationLeft) * 4;
   yFixed = 0;
   rowsLeft = destinationHeight;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     const uint8_t *row = reinterpret_cast<const uint8_t *>(blendedSourcePixels) + (yFixed >> 8) * sourceWidth;
     short upperWeight = (short)g_SoftwareBilinearInverseFactors[yFixed & 0xff].blue;
@@ -378,6 +380,7 @@ void SoftwareTexture_DrawMinimapBilinear32
   destRowStart = destPixel;
   remainingRows = height;
   remainingColumns = width;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     do {
       Thandor_StoreU32(destPixel,

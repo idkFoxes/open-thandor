@@ -96,12 +96,11 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
         /* find the texture's slot; if it is not registered the scan ends on (and clears) the last slot */
         slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
         slotCursor = g_GraphicsTextureSlots;
-        do {
+        for (; slotsRemaining != 0; slotsRemaining--) {
           matchedSlot = slotCursor;
           if (texture == *matchedSlot) break;
-          slotsRemaining--;
           slotCursor = matchedSlot + 1;
-        } while (slotsRemaining != 0);
+        }
         *matchedSlot = nullptr;
         g_MemoryApi.free(texture);
       }
@@ -178,6 +177,7 @@ static Bool8 GraphicsTextureSet_FillEntries
   uint32_t widthLog2;
   int heightLog2;
 
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     /* index of the highest set bit of pixelWidth; the original leaves the register undefined for 0 */
     widthLog2 = 31;
@@ -290,13 +290,12 @@ Bool8 GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
   
   slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
   slotCursor = g_GraphicsTextureSlots;
-  do {
+  for (; slotsRemaining != 0; slotsRemaining--) {
     if (*slotCursor == nullptr) {
       *slotCursor = texture;
       return false;
     }
     slotCursor = slotCursor + 1;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
   return true;
 }

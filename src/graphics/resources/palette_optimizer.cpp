@@ -134,6 +134,7 @@ static GraphicsPaletteIndex GraphicsPaletteTextureSource_FindEmptyBank(uint32_t 
   slot = g_GraphicsPaletteBankSlots;
   bankIndex = 0;
   remainingBanks = bankCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (*slot == 0) {
       return bankIndex;
@@ -351,6 +352,7 @@ GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAn
   baseAllocationSize = baseAsset->allocationSizeBytes;
   remainingSubresources = baseAsset->subresourceCount;
   sourceRecord = GraphicsPaletteTextureSource_Bytes(baseAsset) + baseAsset->subresourceTableOffset;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     /* the record about to be copied to destinationDword */
     destinationEntry = reinterpret_cast<GraphicsTextureSourceEntry *>(destinationDword);
@@ -364,6 +366,7 @@ GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAn
   /* appended subresource entries: their pixels move behind the base pixels, their banks behind the base banks */
   sourceRecord = GraphicsPaletteTextureSource_Bytes(appendedAsset) + appendedAsset->subresourceTableOffset;
   remainingSubresources = appendedAsset->subresourceCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     /* the record about to be copied to destinationDword */
     destinationEntry = reinterpret_cast<GraphicsTextureSourceEntry *>(destinationDword);
@@ -451,6 +454,7 @@ void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
   /* the subresource table */
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
   subresourceEntry = GraphicsPaletteTextureSource_Entries(textureSource);
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (sourcePaletteBank == subresourceEntry->paletteIndex) {
       subresourceEntry->paletteIndex = destinationPaletteBank;
@@ -485,6 +489,7 @@ void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
   subresourceEntry = GraphicsPaletteTextureSource_Entries(textureSource);
   if (newColorIndex != oldColorIndex) {
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (paletteBank == subresourceEntry->paletteIndex) {
         pixelCursor = GraphicsPaletteTextureSource_Bytes(textureSource) + subresourceEntry->dataOffset;
@@ -524,31 +529,28 @@ uint32_t GraphicsPaletteTextureSource_CountCombinedUsedColors
   usedColorCount = 0;
   /* Used destination colors that the candidate bank does not contain as well... */
   remainingEntries = GRAPHICS_PALETTE_BANK_ENTRIES;
-  do {
+  for (; remainingEntries != 0; remainingEntries--) {
     if ((*destinationEntry & GRAPHICS_PALETTE_ENTRY_UNUSED_MARK) == 0) {
       remainingCandidateEntries = GRAPHICS_PALETTE_BANK_ENTRIES;
       candidateEntry = candidateBankCursor;
-      do {
+      for (; remainingCandidateEntries != 0; remainingCandidateEntries--) {
         if (*destinationEntry == *candidateEntry) break;
         candidateEntry = candidateEntry + 2;
-        remainingCandidateEntries--;
-      } while (remainingCandidateEntries != 0);
+      }
       if (remainingCandidateEntries == 0) {
         usedColorCount++;
       }
     }
     destinationEntry = destinationEntry + 2;
-    remainingEntries--;
-  } while (remainingEntries != 0);
+  }
   /* ...plus every used candidate color. */
   remainingEntries = GRAPHICS_PALETTE_BANK_ENTRIES;
-  do {
+  for (; remainingEntries != 0; remainingEntries--) {
     if ((*candidateBankCursor & GRAPHICS_PALETTE_ENTRY_UNUSED_MARK) == 0) {
       usedColorCount++;
     }
     candidateBankCursor = candidateBankCursor + 2;
-    remainingEntries--;
-  } while (remainingEntries != 0);
+  }
   return usedColorCount;
 }
 
