@@ -14,13 +14,13 @@
 
 /* State of one GridPathCost_PropagateWeightedHexNeighbors run (the queue storage and the pass boundary are the
    g_GridPathCostQueue* globals). */
-typedef struct GridPathCostQueueState {
+struct GridPathCostQueueState {
   GridScratchCell **readCursor;
   GridScratchCell **writeCursor;
   GridPathPassCount remainingPasses;
   GridScratchCell *originCell;
   uint32_t scratchWidth;
-} GridPathCostQueueState;
+};
 
 /* Module data. */
 

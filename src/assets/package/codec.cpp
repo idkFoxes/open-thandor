@@ -292,12 +292,12 @@ Bool8 PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint
 
 
 /* Bitstream writer state of PckCodec_EncodeHuffmanRle. */
-typedef struct PckHuffmanBitWriter {
+struct PckHuffmanBitWriter {
   uint8_t *window;               /* dword the tokens are ORed into; advanced byte by byte */
   PckHuffmanBitOffset bitOffset; /* next free bit in the window's first byte (0..7) */
   uint32_t packedSizeBytes;      /* table + bytes passed + 0x1F (see PckCodec_EncodeHuffmanRle) */
   uint32_t freeBytes;            /* output bytes still free; reaching 0 fails */
-} PckHuffmanBitWriter;
+};
 
 /* Clears the symbol table and both node workspaces, then counts how often each byte value occurs in source.
    The caller rejects an empty source, for which the count loop would run 2^32 times.

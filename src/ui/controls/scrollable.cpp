@@ -487,12 +487,12 @@ void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocation
 }
 
 /* The part of a scroll frame not yet taken by bars and frame pieces, relative to the control. */
-typedef struct UiScrollFrameContentRect {
+struct UiScrollFrameContentRect {
   uint32_t left;
   int top;
   int right;
   int bottom;
-} UiScrollFrameContentRect;
+};
 
 /* An arrow piece shows pressed while its active flag and the primary interaction flag are both set. */
 static Bool8 UiScrollableControl_IsArrowPressed(const UiScrollableControl *control,uint32_t arrowActiveFlag)

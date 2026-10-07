@@ -13,8 +13,8 @@
 #include <thandor/audio/spatial/types.h>
 #include <thandor/movie/runtime/types.h>
 
-typedef struct PersistentSettingsRuntime PersistentSettingsRuntime, *PPersistentSettingsRuntime;
-typedef struct PersistentSettingsImage PersistentSettingsImage, *PPersistentSettingsImage;
+struct PersistentSettingsRuntime;
+struct PersistentSettingsImage;
 
 using PersistentToggleState = int; /* 0 off, 1 on */
 

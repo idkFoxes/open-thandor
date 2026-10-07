@@ -11,14 +11,14 @@
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
-typedef struct GraphicsFixedMatrix3x4 GraphicsFixedMatrix3x4, *PGraphicsFixedMatrix3x4;
-typedef struct GraphicsFixedVec3 GraphicsFixedVec3, *PGraphicsFixedVec3;
-typedef struct SoundVoiceSet SoundVoiceSet, *PSoundVoiceSet;
-typedef struct SoundVoice SoundVoice, *PSoundVoice;
-typedef struct SoundSampleAsset SoundSampleAsset, *PSoundSampleAsset;
-typedef struct SoftwareBgraWordLanes SoftwareBgraWordLanes, *PSoftwareBgraWordLanes;
-typedef struct SoftwareRgbWordLanes SoftwareRgbWordLanes, *PSoftwareRgbWordLanes;
-typedef struct ModelPackedPointRecord ModelPackedPointRecord, *PModelPackedPointRecord;
+struct GraphicsFixedMatrix3x4;
+struct GraphicsFixedVec3;
+struct SoundVoiceSet;
+struct SoundVoice;
+struct SoundSampleAsset;
+struct SoftwareBgraWordLanes;
+struct SoftwareRgbWordLanes;
+struct ModelPackedPointRecord;
 
 /* One-byte boolean of the original: any byte value, only its low byte counts (assigning 0x100 gives
    false). Kept distinct from C/C++ bool, which normalizes to 0/1. */

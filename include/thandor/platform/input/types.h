@@ -13,8 +13,8 @@
 #include <thandor/core/types.h>
 #include <thandor/ui/controls/types.h>
 
-typedef struct KeyboardInputEvent KeyboardInputEvent, *PKeyboardInputEvent;
-typedef struct KeyboardAsciiCaseTransformCallbackTable3 KeyboardAsciiCaseTransformCallbackTable3, *PKeyboardAsciiCaseTransformCallbackTable3;
+struct KeyboardInputEvent;
+struct KeyboardAsciiCaseTransformCallbackTable3;
 
 using KeyboardVirtualKeyCode = uint32_t;
 

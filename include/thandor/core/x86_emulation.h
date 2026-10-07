@@ -116,13 +116,13 @@ static_assert([] {
 /*
 MMX instructions on 64-bit register images (Intel SDM semantics, little-endian lanes).
 */
-typedef union ThandorMmx {
+union ThandorMmx {
     unsigned long long q;
     short sw[4];
     unsigned short uw[4];
     int sd[2];
     unsigned char ub[8];
-} ThandorMmx;
+};
 
 static inline unsigned long long thandor_mmx_pmulhw(unsigned long long a, unsigned long long b)
 {
