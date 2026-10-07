@@ -13,11 +13,11 @@
 #include <thandor/assets/army/types.h>
 #include <thandor/graphics/resources/types.h>
 
-typedef struct SpriteAssetHeader SpriteAssetHeader, *PSpriteAssetHeader;
-typedef struct GeneratedAssetRegistryHeader GeneratedAssetRegistryHeader, *PGeneratedAssetRegistryHeader;
-typedef struct SprRelocationBlockHeader SprRelocationBlockHeader, *PSprRelocationBlockHeader;
-typedef struct SprPointerRelocationRecord SprPointerRelocationRecord, *PSprPointerRelocationRecord;
-typedef struct SprGroupRelocationHeader SprGroupRelocationHeader, *PSprGroupRelocationHeader;
+struct SpriteAssetHeader;
+struct GeneratedAssetRegistryHeader;
+struct SprRelocationBlockHeader;
+struct SprPointerRelocationRecord;
+struct SprGroupRelocationHeader;
 
 using SpriteAssetId = uint32_t;
 

@@ -19,11 +19,11 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/world/effects/types.h>
 
-typedef struct EffectDefinition EffectDefinition, *PEffectDefinition;
-typedef struct EffectDefinitionTransitionPrefix EffectDefinitionTransitionPrefix, *PEffectDefinitionTransitionPrefix;
-typedef struct GeneratedAssetEntryCountHeader GeneratedAssetEntryCountHeader, *PGeneratedAssetEntryCountHeader;
-typedef struct EffectAssetHeader EffectAssetHeader, *PEffectAssetHeader;
-typedef struct ShotDefinition ShotDefinition;
+struct EffectDefinition;
+struct EffectDefinitionTransitionPrefix;
+struct GeneratedAssetEntryCountHeader;
+struct EffectAssetHeader;
+struct ShotDefinition;
 
 using EffectMovementSpeedQ12 = Q12;
 

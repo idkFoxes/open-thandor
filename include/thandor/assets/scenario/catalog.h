@@ -29,7 +29,7 @@ inline constexpr int TEXT_ID_CAMPAIGN_TITLE_BASE = 0x2220;
    levelRecordCount level records of 0x180 bytes. The original walks the records with a cursor that starts at
    the asset base and advances by 0x180, reading the fields at cursor + 0x200 + field offset; the port keeps
    that cursor and reads levels[0] of a CampaignAsset view at the cursor (= record i of the real asset). */
-typedef struct CampaignLevelRecord {
+struct CampaignLevelRecord {
     int32_t successorLevelIds[8];        /* +0x000 next level id per end selection (g_EndMovieSelectionIndex), <0 = end */
     int32_t endMovieNumbersVariant[8];   /* +0x020 end movie number per end selection, nonzero g_EndMovieVariantIndex */
     int32_t endMovieNumbers[8];          /* +0x040 end movie number per end selection, g_EndMovieVariantIndex 0 */
@@ -42,9 +42,9 @@ typedef struct CampaignLevelRecord {
     uint32_t carryOverMask;              /* +0x104 one carry-over bit per end selection */
     uint32_t skipMask;                   /* +0x108 one skip bit per end selection */
     uint16_t levelFileName[58];          /* +0x10C UTF-16 level file name (level\<name>.lev) */
-} CampaignLevelRecord;
+};
 
-typedef struct CampaignAsset {
+struct CampaignAsset {
     AssetMagic magic;               /* +0x00 */
     PckDecodedByteCount decodedSizeBytes; /* +0x04 allocation/decoded size of the whole asset */
     uint8_t reserved08_B3[0xac];
@@ -54,7 +54,7 @@ typedef struct CampaignAsset {
     int32_t currentLevelId;              /* +0xC4 */
     uint8_t reservedC8_1FF[0x138];
     CampaignLevelRecord levels[1];       /* +0x200, levelRecordCount records */
-} CampaignAsset;
+};
 
 void ScenarioCatalog_Rebuild();
 

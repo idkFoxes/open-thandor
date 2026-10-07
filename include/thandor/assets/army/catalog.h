@@ -28,12 +28,12 @@ inline constexpr int ARMY_ASSET_FLAG_EDITOR_OBJECT = 0x200;
 /* A node of an army record's model tree (root at ArmyAssetRecordPrefix.rootNodeOffsetOrPointer, which is
    also the ModelLinkedDefinitionListAddress32 of ModelDefinition_SelectFactionUnlockedLinkedDefinition).
    The tree walkers index children[0..childCount-1]. */
-typedef struct ArmyModelTreeNode {
+struct ArmyModelTreeNode {
     uint8_t unknown00_07[8];
     uint32_t childCount;                      /* +0x08 */
     Ptr32<struct ArmyModelTreeNode> children[5]; /* +0x0C */
     PckModelDefinitionIdCatalog linkedDefinitionIds[8]; /* +0x20 [0] default, others need a technology; 0 = none */
-} ArmyModelTreeNode;
+};
 
 /* Weapon slots of a unit: the root's children[i] of the model tree, created in that order as the chassis model's
    ModelRuntimeSlot.attachments[i] (ModelNodeRuntime_InstantiateLinkedChildrenRecursive). In the stock unit data

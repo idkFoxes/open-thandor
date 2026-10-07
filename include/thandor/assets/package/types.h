@@ -12,10 +12,10 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef union PckHuffmanSymbolState PckHuffmanSymbolState, *PPckHuffmanSymbolState;
-typedef struct PckHuffmanNode PckHuffmanNode, *PPckHuffmanNode;
-typedef struct PckEntryHeader PckEntryHeader, *PPckEntryHeader;
-typedef struct PckMountSlot PckMountSlot, *PPckMountSlot;
+union PckHuffmanSymbolState;
+struct PckHuffmanNode;
+struct PckEntryHeader;
+struct PckMountSlot;
 
 using PckHuffmanFrequencyCount = uint32_t;
 
@@ -71,7 +71,7 @@ using PckDwordCopyCount = uint32_t;
 
 using PckCompactFieldImageByteCount = uint32_t;
 
-typedef struct PckHuffmanNode *PckHuffmanNodePtr;
+using PckHuffmanNodePtr = struct PckHuffmanNode *;
 
 using PckHuffmanWeight = uint32_t;
 
