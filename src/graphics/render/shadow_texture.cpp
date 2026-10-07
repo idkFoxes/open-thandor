@@ -799,7 +799,7 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddre
 
   vertexCount = reinterpret_cast<ModelMeshHeader *>(meshRecord)->vertexCount;
   triangleCount = reinterpret_cast<ModelMeshHeader *>(meshRecord)->triangleCount;
-  if ((reinterpret_cast<ModelMeshHeader *>(meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) != 0 || vertexCount == 0) {
+  if (Any(reinterpret_cast<ModelMeshHeader *>(meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) || vertexCount == 0) {
     return;
   }
   recordCursor = reinterpret_cast<uint8_t *>(meshRecord) + sizeof(ModelMeshHeader);
@@ -897,7 +897,7 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
   result = 0;
   vertexCount = reinterpret_cast<ModelMeshHeader *>(meshRecord)->vertexCount;
   triangleCount = reinterpret_cast<ModelMeshHeader *>(meshRecord)->triangleCount;
-  if (((reinterpret_cast<ModelMeshHeader *>(meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) != 0) &&
+  if (Any(reinterpret_cast<ModelMeshHeader *>(meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) &&
      (recordCursor = reinterpret_cast<GraphicsFixedVec3 *>(meshRecord + sizeof(ModelMeshHeader)), vertexCount != 0)) {
     for (; vertexCount != 0; vertexCount--) {
       result = (uintptr_t)&recordCursor[2].z;

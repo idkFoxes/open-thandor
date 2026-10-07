@@ -431,7 +431,7 @@ static void Thandor_SelfTestTriangleSetup()
         }
         packet.modulationColor = SelfTest_TriangleRandom(&seed);
         packet.textureEntry = reinterpret_cast<GraphicsTextureSetEntry *>(textureEntry);
-        packet.renderFlags = (GraphicsPrimitiveDispatchFlags)((SelfTest_TriangleRandom(&seed) % 32) << 12);
+        packet.renderFlags = FromBits<GraphicsPrimitiveDispatchFlags>((SelfTest_TriangleRandom(&seed) % 32) << 12);
         g_SoftwareDepthEpoch = (int32_t)(SelfTest_TriangleRandom(&seed) % 0x1000000u);
         SoftwareRenderer_PrepareTrianglePacket(&packet);
         packet.textureEntry = nullptr; /* the pointer differs between runs */
