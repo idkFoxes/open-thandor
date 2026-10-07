@@ -65,17 +65,17 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldU
     return;
   }
   cellIndex = cellRow * gridColumnCount + cellColumn;
-  if ((fieldGrid->cells[cellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(fieldGrid->cells[cellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return;
   }
-  centerMaskByte = &FIELD_CELL_OCCUPANCY_BYTE(&fieldGrid->cells[cellIndex],occupancyByteOffset);
+  centerMaskByte = &FieldGridCell_OccupancyByte(&fieldGrid->cells[cellIndex],occupancyByteOffset);
   *centerMaskByte = *centerMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
   /* Original quirk: each of the former walkers copied the byte index once from the shared selector union at its
      entry instead of taking it as an argument; it is read back from there once here. */
   markByteIndex = g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   TerrainHexScan_AllSectors(&fieldGrid->cells[cellIndex],
                             TerrainHexScan_MarkPolicy([markByteIndex](FieldGridCell *fieldCell) {
-                              FIELD_CELL_OCCUPANCY_BYTE(fieldCell,markByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
+                              FieldGridCell_OccupancyByte(fieldCell,markByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
                             }));
 }
 
@@ -110,7 +110,7 @@ static uint64_t TerrainOccupancyMask_OrRay(uint64_t mask,const FieldGridCell *ce
   for (step = 0; step < stepCount; step++) {
     cell = cell + cellStep;
     mask = mask | cell->occupancyMask;
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+    if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
       break;
     }
   }
@@ -165,7 +165,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
   }
   centerCell = fieldGrid->cells + cellRow * gridWidth + cellColumn;
   combinedMask = centerCell->occupancyMask;
-  if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return 0;
   }
   /* 1..255 cells per ray; every ray starts at the centre */
@@ -202,11 +202,11 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 */
 TerrainOccupancyResolvedMasks
 TerrainOccupancyMask_ResolveRuntimeClassFlags
-          (FieldGridRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
+          (ModelRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
           FieldGridRegionMask primaryOccupancyMask,char activeFactionIndex)
 
 {
-  FieldGridRuntimeFlags resolvedClassFlags;
+  uint32_t resolvedClassFlags;
   uint32_t combinedOccupancyMask;
   uint32_t factionSeenBit;
   TerrainOccupancyResolvedMasks resolvedMasks;
@@ -217,16 +217,16 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
   factionSeenBit = 1 << (activeFactionIndex * 2 & 31U);
   combinedOccupancyMask = primaryOccupancyMask & resolvedMasks.secondaryOccupancyMask;
   resolvedClassFlags = 0;
-  if ((baseRuntimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
+  if (!Any(baseRuntimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED)) {
     /* remembered objects: a seen-before bit also counts as present in the stored mask */
     combinedOccupancyMask =
          combinedOccupancyMask | combinedOccupancyMask * 2 & TERRAIN_OCCUPANCY_CLASS_PRESENT_BITS;
   }
   if ((factionSeenBit & combinedOccupancyMask) != 0) {
-    resolvedClassFlags = TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE;
+    resolvedClassFlags = ToBits(TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE);
   }
   if ((primaryOccupancyMask & factionSeenBit * 2) != 0) {
-    resolvedClassFlags = TERRAIN_OCCUPANCY_FLAG_PRESENT;
+    resolvedClassFlags = ToBits(TERRAIN_OCCUPANCY_FLAG_PRESENT);
   }
   resolvedMasks.primaryOccupancyMask = combinedOccupancyMask;
   resolvedMasks.runtimeFlags = resolvedClassFlags;
@@ -278,8 +278,8 @@ void FieldGrid_SetOccupancyMaskByteBit0AllCells
   currentCell = fieldGrid->cells;
   for (rowsRemaining = fieldGrid->gridHeight; rowsRemaining != 0; rowsRemaining--) {
     for (columnsRemaining = gridWidth; columnsRemaining != 0; columnsRemaining--) {
-      ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] =
-           ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] |
+      FieldGridCell_OccupancyByte(currentCell,occupancyMaskByteIndex) =
+           FieldGridCell_OccupancyByte(currentCell,occupancyMaskByteIndex) |
            FIELD_CELL_OCCUPANCY_BIT0;
       currentCell++;
     }
@@ -303,8 +303,8 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
   currentCell = fieldGrid->cells;
   for (rowsRemaining = fieldGrid->gridHeight; rowsRemaining != 0; rowsRemaining--) {
     for (columnsRemaining = gridWidth; columnsRemaining != 0; columnsRemaining--) {
-      ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] =
-           ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] &
+      FieldGridCell_OccupancyByte(currentCell,occupancyMaskByteIndex) =
+           FieldGridCell_OccupancyByte(currentCell,occupancyMaskByteIndex) &
            (uint8_t)~FIELD_CELL_OCCUPANCY_BIT0;
       currentCell++;
     }
@@ -315,7 +315,7 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
    Returns false when one of them is set, true when the point is outside the grid or neither bit is
    set. Unit, shot and effect code play positioned sounds only when this returns false.
 */
-Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
+bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
   FieldGridAsset *activeFieldGrid;
@@ -339,8 +339,8 @@ Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldR
     return true;
   }
   occupancyByte =
-       ((uint8_t *)&activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * gridRowIndex + gridColumnIndex)].occupancyMask)
-       [worldRuntime->activeFactionRuntimeIndex];
+       FieldGridCell_OccupancyByte(&activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * gridRowIndex + gridColumnIndex)],
+                                   worldRuntime->activeFactionRuntimeIndex);
   return (occupancyByte & FIELD_CELL_OCCUPANCY_BITS01) == 0;
 }
 

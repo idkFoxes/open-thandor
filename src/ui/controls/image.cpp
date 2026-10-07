@@ -45,7 +45,7 @@ void UiImageControl_LayoutChildrenToParent(UiImageControl *control)
   edgeField = &(control->selectable).base.bottom;
   savedBottom = *edgeField;
   *edgeField = parentBottom;
-  UiContainer_LayoutChildren((UiNodeBase *)control);
+  UiContainer_LayoutChildren(&control->selectable.base);
   (control->selectable).base.left = savedLeft;
   (control->selectable).base.top = savedTop;
   (control->selectable).base.right = savedRight;
@@ -67,33 +67,33 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
   UiImageControl *hitControl;
   UiNodeBase *previousActiveChild;
 
-  if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
     return;
   }
-  hitControl = (UiImageControl *)UiImageControl_HitTestOpaque(pointerY,pointerX,control);
+  hitControl = UiNode_As<UiImageControl>(UiImageControl_HitTestOpaque(pointerY,pointerX,control));
   /* Off the image's own pixels PRESSED_ON_IMAGE is cleared. Over the image itself or over nothing the
      current child only gets the synthetic drag and release; it stays activeChild (as in the original). */
   if (hitControl != control) {
     (control->selectable).stateFlags &= ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE;
   }
-  if (hitControl == control || hitControl == (UiImageControl *)UI_NODE_NONE) {
+  if (hitControl == control || hitControl == UiNode_As<UiImageControl>(UI_NODE_NONE)) {
     previousActiveChild = control->activeChild;
   }
   else {
-    if (hitControl == (UiImageControl *)control->activeChild) {
+    if (hitControl == UiNode_As<UiImageControl>(control->activeChild)) {
       (*((hitControl->selectable).base.vtable)->nonRightDrag)
-                (wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
+                (wheelDelta,pointerY,pointerX,&hitControl->selectable.base);
       UiRootStack_InvalidateAll();
       return;
     }
     hitVtable = (hitControl->selectable).base.vtable;
     /* All calls go to the hit child through its own vtable, and that child becomes the new
        activeChild. */
-    hitVtable->nonRightPress(0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,(UiNodeBase *)hitControl);
-    hitVtable->nonRightDrag(wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
+    hitVtable->nonRightPress(0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,&hitControl->selectable.base);
+    hitVtable->nonRightDrag(wheelDelta,pointerY,pointerX,&hitControl->selectable.base);
     /* swap in the new active child */
     previousActiveChild = control->activeChild;
-    control->activeChild = (UiNodeBase *)hitControl;
+    control->activeChild = &hitControl->selectable.base;
   }
   if (previousActiveChild != nullptr) {
     previousActiveChild->vtable->nonRightDrag
@@ -118,28 +118,28 @@ void UiImageControl_TickHover(UiImageControl *control)
   UiSelectableStateFlags *stateFlagsField;
   UiSelectableStateFlags *hoverStateFlagsField;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED) == 0) {
-      if ((g_CursorButtonState & RIGHT) != 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
+    if (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED)) {
+      if (Any(g_CursorButtonState & RIGHT)) {
         hitControl = (UiImageControl *)
                      UiImageControl_HitTestOpaque(g_CursorOverrideY,g_CursorOverrideX,control);
         stateFlagsField = &(control->selectable).stateFlags;
         *stateFlagsField = *stateFlagsField | UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED;
-        if ((hitControl != control) && (hitControl != (UiImageControl *)UI_NODE_NONE)) {
+        if ((hitControl != control) && (hitControl != UiNode_As<UiImageControl>(UI_NODE_NONE))) {
           hitChildVtable = (hitControl->selectable).base.vtable;
           hoverStateFlagsField = &(control->selectable).stateFlags;
           *hoverStateFlagsField = *hoverStateFlagsField & ~UI_IMAGE_CONTROL_PRESS_STARTED;
           hitChildVtable->nonRightRelease
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
+                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,&hitControl->selectable.base);
           /* all three calls go to the hovered child through its own vtable */
           hitChildVtable->nonRightPress
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
+                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,&hitControl->selectable.base);
           hitChildVtable->nonRightDrag
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
+                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,&hitControl->selectable.base);
         }
       }
     }
-    else if ((g_CursorButtonState & RIGHT) == 0) {
+    else if (!Any(g_CursorButtonState & RIGHT)) {
       clearStateFlagsField = &(control->selectable).stateFlags;
       *clearStateFlagsField = *clearStateFlagsField & ~UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED;
     }
@@ -154,19 +154,19 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate c
           UiPixelCoordinate clipLeft,UiImageControl *control)
 
 {
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsSubresourceIndex subresource;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
       UiContainer_DrawIntersectingChildren
-                (clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
+                (clipBottom,clipRight,clipTop,clipLeft,&control->selectable.base);
     }
-    if ((((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) ||
-       (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0)) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) ||
+       (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE))) {
       accessFailed = g_GraphicsFramebufferBeginAccess();
       if (!accessFailed) {
-        if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+        if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
           subresource = control->normalSubresource;
         }
         else {
@@ -191,22 +191,22 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
 
 {
   UiSelectableStateFlags *pressStateFlagsField;
-  Bool8 opaqueHit;
+  bool opaqueHit;
   UiSelectableStateFlags *stateFlagsField;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
-  if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 &&
-      ((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
+  if (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) &&
+      Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) &&
       control->pointerActivationSound != nullptr) {
     g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
                control->pointerActivationSound,nullptr);
   }
   opaqueHit = false;
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
+  if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
+    if (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE)) {
       opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
@@ -230,7 +230,7 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
     pressStateFlagsField = &(control->selectable).stateFlags;
     *pressStateFlagsField = *pressStateFlagsField | UI_IMAGE_CONTROL_PRESS_STATE_BITS;
   }
-  UiNode_InvalidateRoot((UiNodeBase *)control);
+  UiNode_InvalidateRoot(&control->selectable.base);
 }
 
 /* nonRightRelease of the image control (g_UiImageControlVtable). A release while
@@ -248,24 +248,24 @@ void UiImageControl_NonRightRelease
   UiNodeBase *previousActiveChild;
   UiSelectableStateFlags *stateFlagsField;
   UiNodeVtable *activeChildVtable;
-  Bool8 preserveHover;
+  bool preserveHover;
 
   previousActiveChild = control->activeChild;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESSED_ON_IMAGE) != 0;
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
+    preserveHover = Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESSED_ON_IMAGE);
     if (!preserveHover) {
       if (previousActiveChild != nullptr) {
         activeChildVtable = previousActiveChild->vtable;
         control->activeChild = nullptr;
         activeChildVtable->nonRightRelease(wheelDelta,pointerY,pointerX,previousActiveChild);
-        preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 ||
-                        ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESS_STARTED) != 0;
+        preserveHover = !Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) ||
+                        Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESS_STARTED);
       }
       if (!preserveHover) {
         g_UiImageControlHoverTarget = nullptr;
         stateFlagsField = &(control->selectable).stateFlags;
         *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
-        if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
+        if (Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) &&
             control->pointerActivationSound != nullptr) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -281,7 +281,7 @@ void UiImageControl_NonRightRelease
       *hoverStateFlagsField = *hoverStateFlagsField & ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE;
     }
   }
-  UiNode_InvalidateRoot((UiNodeBase *)control);
+  UiNode_InvalidateRoot(&control->selectable.base);
 }
 
 /* Hit test of an image control: only opaque pixels of its current image count, so irregular shapes react
@@ -292,12 +292,12 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
 
 {
   UiNodeBase *hitNode;
-  Bool8 opaqueHit;
+  bool opaqueHit;
 
-  if ((control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any(control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return UI_NODE_NONE;
   }
-  if ((control->selectable.stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
+  if (!Any(control->selectable.stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE)) {
     opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                       (pointerY,pointerX,control->selectable.base.top,
                        control->selectable.base.left,control->normalSubresource,
@@ -310,16 +310,16 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
                        control->textureSource);
   }
   if (opaqueHit) {
-    return (UiNodeBase *)control;
+    return &control->selectable.base;
   }
   control->selectable.stateFlags &= ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE;
-  if ((control->selectable.stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
+  if (!Any(control->selectable.stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
     return UI_NODE_NONE;
   }
   /* UiContainer_HitTestChildren returns the control itself when no child is hit; that only counts
      while g_UiImageControlHoverTarget is NULL */
-  hitNode = UiContainer_HitTestChildren(pointerY,pointerX,(UiNodeBase *)control);
-  if (hitNode == (UiNodeBase *)control && g_UiImageControlHoverTarget != nullptr) {
+  hitNode = UiContainer_HitTestChildren(pointerY,pointerX,&control->selectable.base);
+  if (hitNode == &control->selectable.base && g_UiImageControlHoverTarget != nullptr) {
     return UI_NODE_NONE;
   }
   return hitNode;
@@ -355,10 +355,10 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
 {
   UiImageControl *hitControl;
   GraphicsCursorFrameIndex cursorFrame;
-  Bool8 overOpaquePixel;
+  bool overOpaquePixel;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
+    if (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE)) {
       overOpaquePixel = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
@@ -376,12 +376,12 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
         return GRAPHICS_CURSOR_FRAME_ARROW;
       }
     }
-    if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
       hitControl = (UiImageControl *)
-                   UiContainer_HitTestChildren(pointerY,pointerX,(UiNodeBase *)control);
+                   UiContainer_HitTestChildren(pointerY,pointerX,&control->selectable.base);
       if (hitControl != control) {
         cursorFrame = (*((hitControl->selectable).base.vtable)->pointerMove)
-                          (pointerY,pointerX,(UiNodeBase *)hitControl);
+                          (pointerY,pointerX,&hitControl->selectable.base);
         return cursorFrame;
       }
       if (g_UiImageControlHoverTarget == nullptr) {

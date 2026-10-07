@@ -11,7 +11,13 @@
 
 /* Module data. */
 
-static int32_t g_UiSevenSlotSelectionControlOffsets[7] = {8420, 8516, 8612, 8708, 8804, 8900, 8996};
+/* The message window's seven recipient check boxes (the original kept their offsets from the image start,
+   8420 + 96 * n). */
+static constexpr UiTextButtonControl InGameUiImage::*const g_UiSevenSlotSelectionControls[7] = {
+    &InGameUiImage::messageRecipientCheckbox1, &InGameUiImage::messageRecipientCheckbox2,
+    &InGameUiImage::messageRecipientCheckbox3, &InGameUiImage::messageRecipientCheckbox4,
+    &InGameUiImage::messageRecipientCheckbox5, &InGameUiImage::messageRecipientCheckbox6,
+    &InGameUiImage::messageRecipientCheckbox7};
 
 static uint16_t g_DeveloperChatPhraseUtf16[32] = {'O', 'h', ' ', 'g', 'r', 'o', 's', 's', 'e', 'r', ' ', 'T', 'h', 'o', 'm', 'a', 's', ',', ' ', 'e', 'r', 'l', 0xF6, 's', 'e', ' ', 'm', 'i', 'c', 'h', '!', 0}; /* L"Oh grosser Thomas, erl\366se mich!" */
 
@@ -30,15 +36,15 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
 
 /* True when the first 32 UTF-16 units of text equal the cheat phrase g_DeveloperChatPhraseUtf16 (compared as
    16 dwords, like the original REPE CMPSD). */
-static Bool8 InGameChatInput_MatchesCheatPhrase(const uint16_t *text)
+static bool InGameChatInput_MatchesCheatPhrase(const uint16_t *text)
 
 {
   const int *phraseDwords;
   const int *textDwords;
   int dwordIndex;
 
-  phraseDwords = (const int *)THANDOR_ADDR(g_DeveloperChatPhraseUtf16,0);
-  textDwords = (const int *)text;
+  phraseDwords = reinterpret_cast<const int *>(g_DeveloperChatPhraseUtf16);
+  textDwords = reinterpret_cast<const int *>(text);
   for (dwordIndex = 0; dwordIndex < 16; dwordIndex++) {
     if (phraseDwords[dwordIndex] != textDwords[dwordIndex]) {
       return false;
@@ -47,7 +53,7 @@ static Bool8 InGameChatInput_MatchesCheatPhrase(const uint16_t *text)
   return true;
 }
 
-/* Recipient bits of the message window's seven check boxes (at g_UiSevenSlotSelectionControlOffsets from the
+/* Recipient bits of the message window's seven check boxes (g_UiSevenSlotSelectionControls of the
    in-game UI root uiRoot): bit n+1 above baseBit is set when box n is ticked. Shared by the chat line and the
    message window. */
 static CommandPayload InGameChatInput_CollectTickedSlotBits(UiNodeBase *uiRoot,uint32_t baseBit)
@@ -56,14 +62,14 @@ static CommandPayload InGameChatInput_CollectTickedSlotBits(UiNodeBase *uiRoot,u
   uint32_t slotIndex;
   uint32_t slotBit;
   CommandPayload recipientMask;
-  Bool8 isSelected;
+  bool isSelected;
 
   recipientMask = 0;
   slotBit = baseBit;
   for (slotIndex = 0; slotIndex < 7; slotIndex++) {
     slotBit = slotBit * 2;
-    isSelected = (Bool8)UiSelectableControl_IsSelected
-                            ((UiSelectableControl *)THANDOR_UI_AT(uiRoot,g_UiSevenSlotSelectionControlOffsets[slotIndex]));
+    isSelected = UiSelectableControl_IsSelected
+                            (&(InGameUi_Image(uiRoot)->*g_UiSevenSlotSelectionControls[slotIndex]).selectable);
     if (isSelected) {
       recipientMask = recipientMask | slotBit;
     }
@@ -97,19 +103,20 @@ static void InGameChatInput_SendPayloadText(CommandPayload recipientMask)
 void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEditPtr commandTextEdit)
 
 {
-  int tabOffset;
   CommandPayload recipientMask;
   uint32_t unitIndex;
   UiNodeBase *recipientTab;
+  /* commandTextEdit is chatInputTextEdit of the in-game UI template copy */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(commandTextEdit, InGameUiImage, chatInputTextEdit);
 
-  UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)commandTextEdit);
-  if ((commandTextEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
+  UiTextControl_UpdateNonEmptyValidity(reinterpret_cast<UiTextEditControl *>(commandTextEdit));
+  if (Any(commandTextEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       if (InGameChatInput_MatchesCheatPhrase(commandTextEdit->textBuffer)) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED;
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED;
-        InGameRecentTextHistory_InsertAndRebuild8((uint16_t *)g_HmmNaGutChatPhraseUtf16);
+        InGameRecentTextHistory_InsertAndRebuild8(g_HmmNaGutChatPhraseUtf16);
       }
     }
     else {
@@ -118,23 +125,18 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
                  commandTextEdit->textBuffer);
       /* Original quirk: the result is not tested; with no tab selected this is the last tab */
       UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,
-      THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientAllTab),
-      THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientGroupsTab),
-      THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientPlayersTab));
+      &image->messageRecipientAllTab.selectable.base,
+      &image->messageRecipientGroupsTab.selectable.base,
+      &image->messageRecipientPlayersTab.selectable.base);
       /* Recipient mask: bit 9+n when box n of the faction tab is ticked (messageRecipientPlayersTab), bit 16+n
          for box n of the session player tab (messageRecipientGroupsTab), 0xFFFFFF00 for everyone. */
-      tabOffset = (int)((uintptr_t)recipientTab - (uintptr_t)commandTextEdit);
-      if (tabOffset ==
-          (int)offsetof(InGameUiImage,messageRecipientPlayersTab) - (int)offsetof(InGameUiImage,chatInputTextEdit)) {
+      if (recipientTab == &image->messageRecipientPlayersTab.selectable.base) {
         recipientMask = InGameChatInput_CollectTickedSlotBits
-                                  (THANDOR_UI_AT(commandTextEdit,-(int)offsetof(InGameUiImage,chatInputTextEdit)),
-                                   INGAME_CHAT_RECIPIENT_FACTION_BITS_BASE);
+                                  (&image->inGameRootPanel.root.base,INGAME_CHAT_RECIPIENT_FACTION_BITS_BASE);
       }
-      else if (tabOffset ==
-               (int)offsetof(InGameUiImage,messageRecipientGroupsTab) - (int)offsetof(InGameUiImage,chatInputTextEdit)) {
+      else if (recipientTab == &image->messageRecipientGroupsTab.selectable.base) {
         recipientMask = InGameChatInput_CollectTickedSlotBits
-                                  (THANDOR_UI_AT(commandTextEdit,-(int)offsetof(InGameUiImage,chatInputTextEdit)),
-                                   INGAME_CHAT_RECIPIENT_PLAYER_BITS_BASE);
+                                  (&image->inGameRootPanel.root.base,INGAME_CHAT_RECIPIENT_PLAYER_BITS_BASE);
       }
       else {
         recipientMask = INGAME_CHAT_RECIPIENT_EVERYONE;
@@ -160,13 +162,13 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
 void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
 
 {
-  uint32_t *controlFlags;
+  UiNodeFlags *controlFlags;
   UiNodeBase *uiRootNode;
   int factionNameIndex;
   uint16_t *stream;
   TextResourceId resourceId;
   uint32_t factionIndexCursor;
-  uintptr_t factionRecordAddress;
+  const GameFactionRuntimeRecord *factionRecord;
   uint32_t filledSlotCount;
   uint16_t *resolvedText;
   
@@ -174,39 +176,40 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   while (uiRootNode->parent != UI_NODE_NONE) {
     uiRootNode = uiRootNode->parent;
   }
+  InGameUiImage *image = InGameUi_Image(uiRootNode);
   UiSelectableGroup_SelectExclusive(3,source,
-      INGAME_UI(uiRootNode,messageRecipientAllTab),
-      INGAME_UI(uiRootNode,messageRecipientGroupsTab),
-      INGAME_UI(uiRootNode,messageRecipientPlayersTab));
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRootNode,messageRecipientPageStack));
+      &image->messageRecipientAllTab.selectable.base,
+      &image->messageRecipientGroupsTab.selectable.base,
+      &image->messageRecipientPlayersTab.selectable.base);
+  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->messageRecipientPageStack));
   resourceId = TEXT_ID_MESSAGE_RECIPIENT_LABEL_BASE;
   filledSlotCount = 0;
   factionIndexCursor = 1;
   /* a faction is named after its colour: colorIndex of the faction record selects the name text */
-  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,sizeof(GameFactionRuntimeRecord));
-  do {
+  factionRecord = &g_GameFactionRuntimeImage.records[1];
+  while (factionIndexCursor < 8) {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndexCursor] != 0) {
       resolvedText = TextResource_Resolve(resourceId);
       stream = resolvedText;
-      factionNameIndex = ((GameFactionRuntimeRecord *)factionRecordAddress)->colorIndex;
+      factionNameIndex = factionRecord->colorIndex;
       resourceId++;
-      /* nodeFlags of the check box: g_UiSevenSlotSelectionControlOffsets is relative to the root */
-      controlFlags = (uint32_t *)&THANDOR_UI_AT(uiRootNode,g_UiSevenSlotSelectionControlOffsets[filledSlotCount])->nodeFlags;
+      /* nodeFlags of the check box */
+      controlFlags = &(image->*g_UiSevenSlotSelectionControls[filledSlotCount]).selectable.base.nodeFlags;
       *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
       filledSlotCount++;
       resolvedText = TextResource_Resolve(factionNameIndex + TEXT_ID_FACTION_NAME_BASE);
       RichTextCommandStream_PatchPayloadBySelector(0,resolvedText,stream);
     }
     factionIndexCursor++;
-    factionRecordAddress = factionRecordAddress + sizeof(GameFactionRuntimeRecord);
-  } while (factionIndexCursor < 8);
-  INGAME_UI(uiRootNode,messageRecipientList)->bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
+    factionRecord++;
+  }
+  image->messageRecipientList.root.base.bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
   UiScrollableControl_RebuildViewportAndScrollbars
-            ((UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
+            (&image->messageRecipientScroll);
   UiScrollableControl_ClampOffsetsToViewport
-            (0,0,0,0,(UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
+            (0,0,0,0,&image->messageRecipientScroll);
   for (; filledSlotCount < 7; filledSlotCount++) {
-    controlFlags = (uint32_t *)&THANDOR_UI_AT(uiRootNode,g_UiSevenSlotSelectionControlOffsets[filledSlotCount])->nodeFlags;
+    controlFlags = &(image->*g_UiSevenSlotSelectionControls[filledSlotCount]).selectable.base.nodeFlags;
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
   }
 }
@@ -218,7 +221,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
 void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
 
 {
-  uint32_t *controlFlags;
+  UiNodeFlags *controlFlags;
   UiNodeBase *uiRootNode;
   SelectionPlayerRuntimeBlock *selectionBlock;
   TextResourceId resourceId;
@@ -229,31 +232,33 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
   while (uiRootNode->parent != UI_NODE_NONE) {
     uiRootNode = uiRootNode->parent;
   }
+  InGameUiImage *image = InGameUi_Image(uiRootNode);
   UiSelectableGroup_SelectExclusive(3,source,
-      INGAME_UI(uiRootNode,messageRecipientAllTab),
-      INGAME_UI(uiRootNode,messageRecipientGroupsTab),
-      INGAME_UI(uiRootNode,messageRecipientPlayersTab));
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRootNode,messageRecipientPageStack));
+      &image->messageRecipientAllTab.selectable.base,
+      &image->messageRecipientGroupsTab.selectable.base,
+      &image->messageRecipientPlayersTab.selectable.base);
+  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->messageRecipientPageStack));
   resourceId = TEXT_ID_MESSAGE_RECIPIENT_LABEL_BASE;
   filledSlotCount = 0;
+  /* Original quirk: a do/while, so it runs once even with a count of 0 (kept as in the original; step 11). */
   do {
     resolvedText = TextResource_Resolve(resourceId);
     selectionBlock = g_SelectionPlayerRuntimeBlockPointers
              [g_FrontendPlayerRuntimeBlocks[filledSlotCount].playerRuntimeId];
     resourceId++;
-    controlFlags = (uint32_t *)&THANDOR_UI_AT(uiRootNode,g_UiSevenSlotSelectionControlOffsets[filledSlotCount])->nodeFlags;
+    controlFlags = &(image->*g_UiSevenSlotSelectionControls[filledSlotCount]).selectable.base.nodeFlags;
     *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
     filledSlotCount++;
     RichTextCommandStream_PatchPayloadBySelector(0,selectionBlock->playerNameUtf16,resolvedText);
     if (6 < filledSlotCount) break;
   } while (filledSlotCount < g_FrontendPlayerRuntimeBlockCount);
-  INGAME_UI(uiRootNode,messageRecipientList)->bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
+  image->messageRecipientList.root.base.bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
   UiScrollableControl_RebuildViewportAndScrollbars
-            ((UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
+            (&image->messageRecipientScroll);
   UiScrollableControl_ClampOffsetsToViewport
-            (0,0,0,0,(UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
+            (0,0,0,0,&image->messageRecipientScroll);
   for (; filledSlotCount < 7; filledSlotCount++) {
-    controlFlags = (uint32_t *)&THANDOR_UI_AT(uiRootNode,g_UiSevenSlotSelectionControlOffsets[filledSlotCount])->nodeFlags;
+    controlFlags = &(image->*g_UiSevenSlotSelectionControls[filledSlotCount]).selectable.base.nodeFlags;
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
   }
 }
@@ -271,11 +276,12 @@ void InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
   while (rootNodeCursor->parent != UI_NODE_NONE) {
     rootNodeCursor = rootNodeCursor->parent;
   }
+  InGameUiImage *image = InGameUi_Image(rootNodeCursor);
   UiSelectableGroup_SelectExclusive(3,source,
-      INGAME_UI(rootNodeCursor,messageRecipientAllTab),
-      INGAME_UI(rootNodeCursor,messageRecipientGroupsTab),
-      INGAME_UI(rootNodeCursor,messageRecipientPlayersTab));
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(rootNodeCursor,messageRecipientPageStack));
+      &image->messageRecipientAllTab.selectable.base,
+      &image->messageRecipientGroupsTab.selectable.base,
+      &image->messageRecipientPlayersTab.selectable.base);
+  UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&image->messageRecipientPageStack));
 }
 
 /* UI action 0x100F (g_InGameUiActionHandlersPage10[15], InGameUiImage.messageHistoryPanel): a click on the
@@ -319,8 +325,9 @@ void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
-  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,(UiPageStackControl *)INGAME_UI(source,gameWindowPageStack));
+  InGameUiImage *image = InGameUi_Image(source);
+  image->worldView.base.nodeFlags = image->worldView.base.nodeFlags & ~UI_NODE_SUPPRESSED;
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,UiLayoutContainerControl_AsPageStack(&image->gameWindowPageStack));
 }
 
 /* UI action 0x1004 (g_InGameUiActionHandlersPage10[4], InGameUiImage.messageSendButton; also called by
@@ -332,7 +339,7 @@ void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
 void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
 
 {
-  UiTextEditControl *messageTextEdit;
+  InGameCommandTextEditControlCC *messageTextEdit;
   CommandPayload recipientMask;
   uint32_t unitIndex;
   UiNodeBase *recipientTab;
@@ -340,18 +347,20 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  messageTextEdit = (UiTextEditControl *)INGAME_UI(source,messageTextEdit);
+  InGameUiImage *image = InGameUi_Image(source);
+  /* the 48-code-unit view of the message text edit (its text buffer runs on into the trailing template dwords) */
+  messageTextEdit = reinterpret_cast<InGameCommandTextEditControlCC *>(&image->messageTextEdit);
   RichTextCommandStream_CopyToNarrow
             (sizeof(g_UiSevenSlotCommandPayloadText.textBytes),g_UiSevenSlotCommandPayloadText.textBytes,messageTextEdit->textBuffer);
   /* Original quirk: the result is not tested; with no tab selected this is the last tab */
   UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,
-      INGAME_UI(source,messageRecipientAllTab),
-      INGAME_UI(source,messageRecipientGroupsTab),
-      INGAME_UI(source,messageRecipientPlayersTab));
-  if (recipientTab == (UiNodeBase *)INGAME_UI(source,messageRecipientPlayersTab)) {
+      &image->messageRecipientAllTab.selectable.base,
+      &image->messageRecipientGroupsTab.selectable.base,
+      &image->messageRecipientPlayersTab.selectable.base);
+  if (recipientTab == &image->messageRecipientPlayersTab.selectable.base) {
     recipientMask = InGameChatInput_CollectTickedSlotBits(source,INGAME_CHAT_RECIPIENT_FACTION_BITS_BASE);
   }
-  else if (recipientTab == (UiNodeBase *)INGAME_UI(source,messageRecipientGroupsTab)) {
+  else if (recipientTab == &image->messageRecipientGroupsTab.selectable.base) {
     recipientMask = InGameChatInput_CollectTickedSlotBits(source,INGAME_CHAT_RECIPIENT_PLAYER_BITS_BASE);
   }
   else {

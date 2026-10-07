@@ -21,7 +21,7 @@ uint16_t g_FlmEnde0001FlmPathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', 'e
 /* Evaluates one scheduled condition of the level script (its satisfied bit is already cleared in the record).
    COUNTDOWN_ELAPSED also counts its operand 1 down by the step ticks and clamps it at 0 once elapsed.
    Unknown kinds (and unused records) never hold. */
-static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelConditionStorage,
+static bool InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelConditionStorage,
                                            InGameScheduledConditionRecord10 *condition,
                                            InGameScheduledConditionKind kind)
 {
@@ -47,7 +47,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (operands[0] ==
-          ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) {
+          WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) {
         return false;
       }
     }
@@ -57,9 +57,9 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
           (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
-           [((ModelRuntimeSlot *)worldNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId] ==
+           [WorldOwnerNode_ModelRuntime(worldNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId] ==
            ArmyRuntime_ClassCommandHandlerGroupA)) &&
-         (((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
+         (WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
           operands[0])) {
         return false;
       }
@@ -69,7 +69,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        army = ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+        army = WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
         if ((operands[0] == army->factionIndex) && (army->armyAssetId == operands[2])) {
           return false;
         }
@@ -96,9 +96,9 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-         (((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
+         (WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
           operands[0]) &&
-         (((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->armyAssetId ==
+         (WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->armyAssetId ==
           operands[2])) {
         armiesStillNeeded--;
         if (armiesStillNeeded == 0) {
@@ -111,11 +111,14 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     /* operand 0 is a byte offset into the cell records; operand 1 the percentage */
     fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
     cellCount = fieldGrid->gridWidth * fieldGrid->gridHeight;
-    cellBytes = (uint8_t *)fieldGrid->cells + operands[0];
+    cellBytes = reinterpret_cast<uint8_t *>(fieldGrid->cells) + operands[0];
     occupiedCellCount = 0;
     cellsLeft = cellCount;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
-      cellOccupancyMask = (ResourceExtractionDescriptor32 *)(cellBytes + offsetof(FieldGridCell, occupancyMask));
+      /* the low dword of the 64-bit occupancy mask, operand 0 bytes further */
+      cellOccupancyMask =
+           reinterpret_cast<ResourceExtractionDescriptor32 *>(cellBytes + offsetof(FieldGridCell, occupancyMask));
       cellBytes = cellBytes + sizeof(FieldGridCell);
       occupiedCellCount = occupiedCellCount + ((*cellOccupancyMask & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0);
       cellsLeft--;
@@ -136,7 +139,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
         worldNode != nullptr; worldNode = worldNode->nextNode) {
       if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         runtimeClassId =
-             ((ModelRuntimeSlot *)worldNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
+             WorldOwnerNode_ModelRuntime(worldNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
         if ((g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[runtimeClassId] !=
              ArmyRuntime_ClassCommandHandlerGroupA) && (runtimeClassId == operands[0])) {
           return false;
@@ -153,7 +156,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
 }
 
 /* True while two active factions (1..7) are still not allied (relation state below 8): the game goes on. */
-static Bool8 InGameConditionRuntime_HasUnalliedActiveFactionPair()
+static bool InGameConditionRuntime_HasUnalliedActiveFactionPair()
 {
   uint32_t factionIndex;
   uint32_t otherFactionIndex;
@@ -200,9 +203,9 @@ static void InGameConditionRuntime_RequestEndMovie(const InGameEndConditionTrigg
     }
   }
   g_EndMovieSelectionIndex = (uint32_t)endTrigger->endMovieSelectionIndex;
-  g_EndMoviePath = (uint16_t *)g_SessionEndMoviePathUtf16;
+  g_EndMoviePath = g_SessionEndMoviePathUtf16;
   if (g_EndMovieVariantIndex == 0) {
-    g_EndMoviePath = (uint16_t *)g_FlmEnde0001FlmPathUtf16;
+    g_EndMoviePath = g_FlmEnde0001FlmPathUtf16;
   }
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
 }
@@ -229,7 +232,7 @@ static void InGameConditionRuntime_EndTriggerFaction(const InGameEndConditionTri
     if (worldNode != nullptr) {
       for (; worldNode != nullptr; worldNode = worldNode->nextNode) {
         if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-          army = ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+          army = WorldOwnerNode_ModelRuntime(worldNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
           if (endedFactionIndex == army->factionIndex) {
             ModelRuntimeHierarchy_MarkDestroyedRecursive(worldRuntime,army);
           }
@@ -246,11 +249,13 @@ static void InGameConditionRuntime_EndTriggerFaction(const InGameEndConditionTri
     }
     if (InGameConditionRuntime_HasUnalliedActiveFactionPair()) {
       if ((uint32_t)endTrigger->factionRuntimeIndex == (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex) {
-        g_InGameRuntimeRoot->diplomacyPanelNodeFlags = g_InGameRuntimeRoot->diplomacyPanelNodeFlags | 8;
-        INGAME_UI(relationRoot,buildCatalogPanel)->nodeFlags = INGAME_UI(relationRoot,buildCatalogPanel)->nodeFlags | 8;
-        INGAME_UI(relationRoot,specialBuildCatalogPanel)->nodeFlags =
-             INGAME_UI(relationRoot,specialBuildCatalogPanel)->nodeFlags | 8;
-        INGAME_UI(relationRoot,armyStockPanel)->nodeFlags = INGAME_UI(relationRoot,armyStockPanel)->nodeFlags | 8;
+        g_InGameRuntimeRoot->diplomacyPanelNodeFlags = g_InGameRuntimeRoot->diplomacyPanelNodeFlags | UI_NODE_SUPPRESSED;
+        InGameUiImage *relationUi = InGameUi_Image(relationRoot);
+        relationUi->buildCatalogPanel.selectable.base.nodeFlags =
+             relationUi->buildCatalogPanel.selectable.base.nodeFlags | UI_NODE_SUPPRESSED;
+        relationUi->specialBuildCatalogPanel.selectable.base.nodeFlags =
+             relationUi->specialBuildCatalogPanel.selectable.base.nodeFlags | UI_NODE_SUPPRESSED;
+        relationUi->armyStockPanel.selectable.base.nodeFlags = relationUi->armyStockPanel.selectable.base.nodeFlags | UI_NODE_SUPPRESSED;
       }
       return;
     }
@@ -300,7 +305,8 @@ void InGameConditionRuntime_UpdateScheduledRecords()
     condition++;
   }
   DebugHook_LevelScriptAfterEvaluation(levelConditionStorage);
-  endTrigger = (InGameEndConditionTriggerRecord8 *)(levelConditionStorage->schedule).triggers;
+  /* the same 8-byte trigger records, viewed through the type the debug hook takes */
+  endTrigger = reinterpret_cast<InGameEndConditionTriggerRecord8 *>((levelConditionStorage->schedule).triggers);
   for (triggerIndex = 0; triggerIndex < INGAME_END_CONDITION_TRIGGER_COUNT; triggerIndex++, endTrigger++) {
     if ((endTrigger->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
        (((levelConditionStorage->schedule).conditions[endTrigger->conditionIndex].statusAndKind.raw &

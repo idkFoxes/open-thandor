@@ -16,10 +16,10 @@
 /* Module data. */
 
 /* Entries per chroma code (one per 5-bit luma) and the number of chroma codes */
-#define MOVIE_CHROMA_LUMA_ROW 32
-#define MOVIE_CHROMA_CODES 1024
+static constexpr int MOVIE_CHROMA_LUMA_ROW = 32;
+static constexpr int MOVIE_CHROMA_CODES = 1024;
 /* Entries behind the last row: a colour block reads up to base luma 24 + 7 * 2 = 38, past its row */
-#define MOVIE_CHROMA_LUMA_PADDING 16
+static constexpr int MOVIE_CHROMA_LUMA_PADDING = 16;
 
 /* filled at startup by Movie_BuildChromaLumaTable; row = chroma code, column = luma. The original's
    precomputed table was read past the end of a row (into the next one) by malformed colour blocks, which is
@@ -91,13 +91,15 @@ uint32_t Movie_DecodeFrame4x4Delta
   uint32_t blocksLeftInRow;
   uint32_t blockRowsLeft;
   uint32_t skipRemaining;
-  static Bool8 s_truncationLogged;
+  static bool s_truncationLogged;
 
   blockRowsLeft = heightPixels >> 2;
   skipRemaining = 0;
   streamCursor = encodedFrame;
   blocksLeftInRow = widthPixels >> 2;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (skipRemaining != 0) {
         skipRemaining--;

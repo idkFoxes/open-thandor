@@ -10,16 +10,20 @@
 
 #include <thandor/core/types.h>
 #include <thandor/ui/controls/types.h>
+#include <thandor/ui/dialogs/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
+bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
 
 int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);
 
 void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
 
-uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 failed);
+uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,bool failed);
 
 void ErrorRuntime_InstallUiHandlerAndAllocateState();
+
+/* The dialog's template image (copied into the allocated root per error; also read by the uitemplate self-test). */
+extern FatalErrorUiImage g_FatalErrorUiRootTemplateImage;
 
 #endif /* THANDOR_UI_DIALOGS_FATAL_ERROR_H */

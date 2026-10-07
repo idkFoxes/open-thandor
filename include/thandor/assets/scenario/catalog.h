@@ -16,20 +16,20 @@
 /* Scenario catalog (g_ScenarioCatalog): ScenarioCatalogHeader followed by the level, campaign and save
    records (0x100 bytes each). Every counted record advances the following section offsets and
    g_ScenarioCatalogUsedBytes by 0x104, although the records are packed 0x100 apart. */
-#define SCENARIO_CATALOG_CAPACITY 0x30000
-#define SCENARIO_CATALOG_HEADER_SIZE 0x18
-#define SCENARIO_CATALOG_RECORD_SIZE 0x100
-#define SCENARIO_CATALOG_RECORD_STRIDE 0x104
+inline constexpr int SCENARIO_CATALOG_CAPACITY = 0x30000;
+inline constexpr int SCENARIO_CATALOG_HEADER_SIZE = 0x18;
+inline constexpr int SCENARIO_CATALOG_RECORD_SIZE = 0x100;
+inline constexpr int SCENARIO_CATALOG_RECORD_STRIDE = 0x104;
 /* Text resource ids: a level title is 0x2230 + its title index, a campaign title 0x2220 + its index (the
    level text page aliases, see TextResourcePage_LoadCompatibilityAliases). */
-#define TEXT_ID_LEVEL_TITLE_BASE 0x2230
-#define TEXT_ID_CAMPAIGN_TITLE_BASE 0x2220
+inline constexpr int TEXT_ID_LEVEL_TITLE_BASE = 0x2230;
+inline constexpr int TEXT_ID_CAMPAIGN_TITLE_BASE = 0x2220;
 
 /* Campaign asset (level\<name>.cgn, g_FrontendLoadedCampaignAsset): a 0x200-byte header followed by
    levelRecordCount level records of 0x180 bytes. The original walks the records with a cursor that starts at
    the asset base and advances by 0x180, reading the fields at cursor + 0x200 + field offset; the port keeps
-   that cursor and reads ((CampaignAsset *)cursor)->levels[0] (= record i of the real asset). */
-typedef struct CampaignLevelRecord {
+   that cursor and reads levels[0] of a CampaignAsset view at the cursor (= record i of the real asset). */
+struct CampaignLevelRecord {
     int32_t successorLevelIds[8];        /* +0x000 next level id per end selection (g_EndMovieSelectionIndex), <0 = end */
     int32_t endMovieNumbersVariant[8];   /* +0x020 end movie number per end selection, nonzero g_EndMovieVariantIndex */
     int32_t endMovieNumbers[8];          /* +0x040 end movie number per end selection, g_EndMovieVariantIndex 0 */
@@ -42,9 +42,9 @@ typedef struct CampaignLevelRecord {
     uint32_t carryOverMask;              /* +0x104 one carry-over bit per end selection */
     uint32_t skipMask;                   /* +0x108 one skip bit per end selection */
     uint16_t levelFileName[58];          /* +0x10C UTF-16 level file name (level\<name>.lev) */
-} CampaignLevelRecord;
+};
 
-typedef struct CampaignAsset {
+struct CampaignAsset {
     AssetMagic magic;               /* +0x00 */
     PckDecodedByteCount decodedSizeBytes; /* +0x04 allocation/decoded size of the whole asset */
     uint8_t reserved08_B3[0xac];
@@ -54,7 +54,7 @@ typedef struct CampaignAsset {
     int32_t currentLevelId;              /* +0xC4 */
     uint8_t reservedC8_1FF[0x138];
     CampaignLevelRecord levels[1];       /* +0x200, levelRecordCount records */
-} CampaignAsset;
+};
 
 void ScenarioCatalog_Rebuild();
 

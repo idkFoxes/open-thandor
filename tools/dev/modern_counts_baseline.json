@@ -1,0 +1,237 @@
+{
+ "revision": "0100e9a1",
+ "worktree": true,
+ "files": 694,
+ "metrics": {
+  "cstyle_cast": {
+   "item": 1,
+   "checked": true,
+   "description": "C-style pointer cast",
+   "regex": "(^|[^A-Za-z0-9_])\\((const |volatile )?[A-Za-z_][A-Za-z0-9_:<>]*( const)? ?\\*+ ?\\) ?[A-Za-z_(&*]"
+  },
+  "ingame_ui": {
+   "item": 2,
+   "checked": true,
+   "description": "INGAME_UI(",
+   "regex": "INGAME_UI\\("
+  },
+  "ui_at_sibling": {
+   "item": 2,
+   "checked": true,
+   "description": "THANDOR_UI_AT/SIBLING(",
+   "regex": "THANDOR_UI_(AT|SIBLING)\\("
+  },
+  "frontend_ui": {
+   "item": 2,
+   "checked": true,
+   "description": "FRONTEND_UI(_FIELD)(",
+   "regex": "FRONTEND_UI(_FIELD)?\\("
+  },
+  "define_numeric": {
+   "item": 3,
+   "checked": true,
+   "description": "object-like numeric #define",
+   "regex": "#\\s*define\\s+\\w+\\s+\\(?-?(0x[0-9A-Fa-f]+|[0-9]+)[uUlL]*\\)?\\s*(/[*/].*)?$"
+  },
+  "define_all": {
+   "item": 3,
+   "checked": false,
+   "description": "#define lines (info)",
+   "regex": "^\\s*#\\s*define"
+  },
+  "include_guard": {
+   "item": 3,
+   "checked": false,
+   "description": "include guards (info)",
+   "regex": "#\\s*define\\s+THANDOR_[A-Z0-9_]+_H\\s*$"
+  },
+  "constexpr": {
+   "item": 3,
+   "checked": false,
+   "description": "constexpr (info)",
+   "regex": "\\bconstexpr\\b"
+  },
+  "typedef_struct": {
+   "item": 4,
+   "checked": true,
+   "description": "typedef struct",
+   "regex": "typedef struct"
+  },
+  "enum_class": {
+   "item": 4,
+   "checked": false,
+   "description": "enum class (info, rises)",
+   "regex": "\\benum class\\b"
+  },
+  "libc_alloc": {
+   "item": 5,
+   "checked": true,
+   "description": "libc malloc/calloc/realloc/free",
+   "regex": "(^|[^.>A-Za-z0-9_])(std::)?(malloc|calloc|realloc|free)\\("
+  },
+  "arena": {
+   "item": 5,
+   "checked": true,
+   "description": "g_MemoryApi.* (arena)",
+   "regex": "g_MemoryApi\\.\\w+"
+  },
+  "mem_funcs": {
+   "item": 5,
+   "checked": true,
+   "description": "memset/memcpy/memmove",
+   "regex": "\\b(memset|memcpy|memmove)\\("
+  },
+  "bool8": {
+   "item": 6,
+   "checked": true,
+   "description": "Bool8",
+   "regex": "\\bBool8\\b"
+  },
+  "addr_5xxxxx": {
+   "item": 7,
+   "checked": true,
+   "description": "0x5xxxxx addresses",
+   "regex": "0x5[0-9A-Fa-f]{5}\\b"
+  },
+  "fill_90": {
+   "item": 8,
+   "checked": true,
+   "description": "0x90909090",
+   "regex": "0x90909090"
+  },
+  "do_while": {
+   "item": 9,
+   "checked": true,
+   "description": "do {",
+   "regex": "\\bdo ?\\{"
+  },
+  "while_tail": {
+   "item": 9,
+   "checked": false,
+   "description": "} while (...); (info)",
+   "regex": "\\} ?while ?\\(.*\\);"
+  }
+ },
+ "counts": {
+  "cstyle_cast": {
+   "ui": 4
+  },
+  "ingame_ui": {},
+  "ui_at_sibling": {},
+  "frontend_ui": {},
+  "define_numeric": {
+   "platform": 119,
+   "ui": 2
+  },
+  "define_all": {
+   "assets": 57,
+   "audio": 13,
+   "core": 75,
+   "gameplay": 67,
+   "generated": 1,
+   "graphics": 43,
+   "movie": 6,
+   "network": 29,
+   "platform": 220,
+   "root": 7,
+   "ui": 127,
+   "world": 59
+  },
+  "include_guard": {
+   "assets": 34,
+   "audio": 12,
+   "core": 32,
+   "gameplay": 67,
+   "generated": 1,
+   "graphics": 41,
+   "movie": 6,
+   "network": 16,
+   "platform": 33,
+   "root": 1,
+   "ui": 101,
+   "world": 51
+  },
+  "constexpr": {
+   "assets": 99,
+   "audio": 15,
+   "core": 206,
+   "gameplay": 173,
+   "graphics": 137,
+   "movie": 28,
+   "network": 129,
+   "platform": 149,
+   "ui": 577,
+   "world": 95
+  },
+  "typedef_struct": {},
+  "enum_class": {
+   "assets": 5,
+   "core": 19,
+   "gameplay": 9,
+   "graphics": 9,
+   "movie": 2,
+   "network": 7,
+   "platform": 4,
+   "ui": 35,
+   "world": 6
+  },
+  "libc_alloc": {},
+  "arena": {
+   "assets": 21,
+   "audio": 2,
+   "core": 13,
+   "gameplay": 45,
+   "graphics": 61,
+   "movie": 10,
+   "network": 14,
+   "platform": 70,
+   "ui": 37,
+   "world": 17
+  },
+  "mem_funcs": {
+   "audio": 2,
+   "core": 4,
+   "gameplay": 7,
+   "graphics": 8,
+   "movie": 1,
+   "platform": 59,
+   "ui": 6
+  },
+  "bool8": {
+   "core": 3,
+   "gameplay": 1,
+   "movie": 1
+  },
+  "addr_5xxxxx": {},
+  "fill_90": {
+   "gameplay": 1,
+   "graphics": 14,
+   "platform": 1,
+   "ui": 2
+  },
+  "do_while": {
+   "assets": 17,
+   "audio": 2,
+   "core": 15,
+   "gameplay": 33,
+   "graphics": 45,
+   "movie": 6,
+   "network": 10,
+   "platform": 17,
+   "ui": 103,
+   "world": 49
+  },
+  "while_tail": {
+   "assets": 17,
+   "audio": 2,
+   "core": 15,
+   "gameplay": 33,
+   "graphics": 45,
+   "movie": 6,
+   "network": 10,
+   "platform": 13,
+   "ui": 102,
+   "world": 48
+  }
+ }
+}

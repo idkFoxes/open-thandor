@@ -17,22 +17,22 @@
    or returned a direct-colour record, image header +0x08 = -1, that the caller rejected). */
 
 /* PCX file layout (ZSoft) as far as the decoder reads it */
-#define PCX_HEADER_BYTES 0x80
-#define PCX_HEADER_MANUFACTURER 0x00     /* must be 0x0A; the version byte (+0x01) is not checked */
-#define PCX_HEADER_ENCODING 0x02         /* must be 1 (RLE) */
-#define PCX_HEADER_BITS_PER_PIXEL 0x03   /* must be 8 */
-#define PCX_HEADER_MIN_CORNER 0x04       /* Xmin, Ymin (words) */
-#define PCX_HEADER_MAX_CORNER 0x08       /* Xmax, Ymax (words) */
-#define PCX_HEADER_PLANES 0x41           /* 1 accepted here (3 = direct colour, see above) */
-#define PCX_HEADER_BYTES_PER_LINE 0x42   /* word, bytes of one decoded scanline of one plane */
-#define PCX_MANUFACTURER_ZSOFT 0x0A
-#define PCX_ENCODING_RLE 1
+static constexpr int PCX_HEADER_BYTES = 0x80;
+static constexpr int PCX_HEADER_MANUFACTURER = 0x00; /* must be 0x0A; the version byte (+0x01) is not checked */
+static constexpr int PCX_HEADER_ENCODING = 0x02; /* must be 1 (RLE) */
+static constexpr int PCX_HEADER_BITS_PER_PIXEL = 0x03; /* must be 8 */
+static constexpr int PCX_HEADER_MIN_CORNER = 0x04; /* Xmin, Ymin (words) */
+static constexpr int PCX_HEADER_MAX_CORNER = 0x08; /* Xmax, Ymax (words) */
+static constexpr int PCX_HEADER_PLANES = 0x41; /* 1 accepted here (3 = direct colour, see above) */
+static constexpr int PCX_HEADER_BYTES_PER_LINE = 0x42; /* word, bytes of one decoded scanline of one plane */
+static constexpr int PCX_MANUFACTURER_ZSOFT = 0x0A;
+static constexpr int PCX_ENCODING_RLE = 1;
 /* The 256-colour palette at the end of the file: marker byte 0x0C, then 256 RGB triplets */
-#define PCX_PALETTE_MARKER 0x0C
-#define PCX_PALETTE_TRAILER_BYTES (1 + PCX_PALETTE_COLOR_COUNT * 3)
+static constexpr int PCX_PALETTE_MARKER = 0x0C;
+static constexpr auto PCX_PALETTE_TRAILER_BYTES = 1 + PCX_PALETTE_COLOR_COUNT * 3;
 /* RLE: a byte 0xC0..0xFF repeats the next byte (its low 6 bits) times; any other byte is a literal pixel */
-#define PCX_RLE_RUN_FLAGS 0xC0
-#define PCX_RLE_RUN_LENGTH_MASK 0x3F
+static constexpr int PCX_RLE_RUN_FLAGS = 0xC0;
+static constexpr int PCX_RLE_RUN_LENGTH_MASK = 0x3F;
 
 
 static uint32_t Pcx_ReadDword(const uint8_t *bytes)
@@ -55,7 +55,7 @@ static uint32_t Pcx_ReadDword(const uint8_t *bytes)
    Xmax | Ymax << 16), so an Xmax below Xmin borrows one from the height.
    Each decoded scanline contributes its first width bytes; padding beyond width (bytes-per-line > width) is
    dropped. */
-Bool8 Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxIndexedImage *outImage)
+bool Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxIndexedImage *outImage)
 
 {
   const uint8_t *paletteTrailer;
@@ -66,6 +66,7 @@ Bool8 Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxInde
   uint32_t lineBufferBytes;
   uint64_t pixelCount;
   uint8_t *lineBuffer;
+  void *block;
   uint8_t *pixelCursor;
   uint32_t lineFilled;
   uint32_t rowsLeft;
@@ -113,14 +114,16 @@ Bool8 Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxInde
     return false;
   }
   lineBufferBytes = bytesPerLine < outImage->width ? outImage->width : bytesPerLine;
-  if (g_MemoryApi.alloc((uint32_t)pixelCount,(void **)&outImage->pixels) != 0) {
+  if (g_MemoryApi.alloc((uint32_t)pixelCount,&block) != 0) {
     outImage->pixels = nullptr;
     return false;
   }
-  if (g_MemoryApi.alloc(lineBufferBytes,(void **)&lineBuffer) != 0) {
+  outImage->pixels = static_cast<uint8_t *>(block);
+  if (g_MemoryApi.alloc(lineBufferBytes,&block) != 0) {
     Pcx_FreeIndexed8(outImage);
     return false;
   }
+  lineBuffer = static_cast<uint8_t *>(block);
   memset(lineBuffer,0,lineBufferBytes);
 
   encodedCursor = fileBytes + PCX_HEADER_BYTES;

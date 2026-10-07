@@ -16,7 +16,7 @@ static uint32_t g_AiConstructionPendingAssetConsumedCount = 0;
 
 /* Builds a pending resource structure (ARM_0330/ARM_0332) of the AI faction: at the first workspace-08 site of
    this asset where the mode-0 placement test passes it creates the structure with the site's heading, rebuilds
-   its model transforms, dispatches its class command, starts the effect referenced by its model runtime and
+   its model transforms, dispatches its class command, starts the removal effect of its model definition and
    removes the asset from the faction's pending list. Nothing happens when no site passes.
 */
 void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
@@ -25,10 +25,10 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
 
 {
   FieldGridCell *workspaceRecord;
-  ArmyRuntimeSlot *modelNodeRuntime;
-  ArmyRuntimeSlot *primarySlot;
+  ModelRuntimeNode *modelNodeRuntime;
   ModelRuntimeSlot *createdModelRuntime;
-  Ptr32<ArmyRuntimeSlot> *createdSlotPair;
+  ModelDefinition *createdModelDefinition;
+  ArmyRuntimeSlot *createdArmy;
   int recordsRemaining;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
 
@@ -38,33 +38,31 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
       continue;
     }
     workspaceRecord = terrainFeatureEntry->cell;
-    if (AiPlacement_TestWorkspaceRecordAtPoint(armyAssetId,workspaceRecord,factionIndex,(UiRootNode *)worldRuntime)) {
+    if (AiPlacement_TestWorkspaceRecordAtPoint(armyAssetId,workspaceRecord,factionIndex,worldRuntime)) {
       continue; /* placement rejected */
     }
-    createdSlotPair = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
+    createdArmy = ArmyRuntime_CreateInstanceFromAsset
                       (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                        workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
                        worldRuntime,nullptr);
-    if (createdSlotPair == nullptr) {
+    if (createdArmy == nullptr) {
       return;
     }
-    /* the create result points at the pair {army slot, model node}; the node is typed as a slot here, so
-       the effect arguments below are its fields under ArmyRuntimeSlot names */
-    modelNodeRuntime = createdSlotPair[1];
-    primarySlot = *createdSlotPair;
-    modelNodeRuntime->movementPosition0Q12 = 0;
-    createdModelRuntime = (primarySlot->modelRuntimeOrSavedOffset).modelRuntime;
-    ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
-    ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlotPair,worldRuntime); /* the created army */
+    modelNodeRuntime = createdArmy->modelNodeRuntime;
+    createdModelRuntime = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
+    modelNodeRuntime->tintArgb = 0;
+    createdModelDefinition = createdModelRuntime->definitionOrSavedId.runtimeDefinition;
+    ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+    ArmyRuntime_DispatchClassCommand(createdArmy,worldRuntime);
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){nullptr},
-               ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
-               ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
-               ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
-               ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
-               ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
-               ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-               Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 32-bit format field: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
+               modelNodeRuntime->modelPayload.worldRotationAngle2,
+               modelNodeRuntime->modelPayload.worldRotationAngle1,
+               modelNodeRuntime->modelPayload.worldRotationAngle0,
+               modelNodeRuntime->worldTransform.translation.z,
+               modelNodeRuntime->worldTransform.translation.y,
+               modelNodeRuntime->worldTransform.translation.x,
+               createdModelDefinition->removalEffectDefinitionReference.definition,
                worldRuntime);
     AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
     return;
@@ -76,7 +74,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
    330/332 site, other ids below 340 at a reachable candidate, ids from 340 on near the faction anchor.
    Returns true as soon as a handler has placed an asset (g_AiConstructionPendingAssetConsumedCount).
 */
-Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
+bool AiConstructionPlanner_ProcessPendingAssetRequests
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -130,19 +128,19 @@ Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
 
 /* Tries to build armyAssetId next to the workspace-08 resource site siteEntry: when
    AiPlacement_ReserveAdditionalSpecialSite accepts the site and a placeable base cell is found near it, the asset
-   is created there (technology unlocked), its model node's movement position cleared, its transforms rebuilt, its
-   class command dispatched, the effect named by the created model's attachment 2 started at the node and the asset
+   is created there (technology unlocked), its model node's tint cleared, its transforms rebuilt, its
+   class command dispatched, the removal effect of its model definition started at the node and the asset
    removed from the faction's pending list. Returns true when the attempt is over (asset created, or its creation
    failed), false when the site is not usable. */
-static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
+static bool AiConstructionPlanner_TryPlaceStorageAtResourceSite
           (AiTerrainFeatureWorkspaceEntry *siteEntry,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 {
   FieldGridCell *sourceCell;
-  ArmyRuntimeSlot *createdModelNode;
-  ArmyRuntimeSlot *createdArmySlot;
+  ModelRuntimeNode *createdModelNode;
   ModelRuntimeSlot *createdModelRuntime;
-  Ptr32<ArmyRuntimeSlot> *armyRuntime;
+  ModelDefinition *createdModelDefinition;
+  ArmyRuntimeSlot *createdArmy;
   Q12 anchorXQ12;
   Q12 anchorYQ12;
 
@@ -154,27 +152,27 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
          (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime,&anchorYQ12,&anchorXQ12)) {
     return false;
   }
-  armyRuntime = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
+  createdArmy = ArmyRuntime_CreateInstanceFromAsset
                     (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,anchorYQ12,anchorXQ12,factionIndex,armyAssetId,worldRuntime,
                      nullptr);
-  if (armyRuntime == nullptr) {
+  if (createdArmy == nullptr) {
     return true;
   }
-  createdModelNode = armyRuntime[1];
-  createdArmySlot = *armyRuntime;
-  createdModelNode->movementPosition0Q12 = 0;
-  createdModelRuntime = (createdArmySlot->modelRuntimeOrSavedOffset).modelRuntime;
-  ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)createdModelNode);
-  ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)armyRuntime,worldRuntime); /* the created army */
+  createdModelNode = createdArmy->modelNodeRuntime;
+  createdModelRuntime = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
+  createdModelNode->tintArgb = 0;
+  createdModelDefinition = createdModelRuntime->definitionOrSavedId.runtimeDefinition;
+  ModelNodeRuntime_RebuildTransformsFromRoot(createdModelNode);
+  ArmyRuntime_DispatchClassCommand(createdArmy,worldRuntime);
   EffectRuntimePool_CreateInstanceFromDefinition
             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){nullptr},
-             ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle2,
-             ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle1,
-             ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle0,
-             ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.z,
-             ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.y,
-             ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.x,
-             Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 32-bit format field: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
+             createdModelNode->modelPayload.worldRotationAngle2,
+             createdModelNode->modelPayload.worldRotationAngle1,
+             createdModelNode->modelPayload.worldRotationAngle0,
+             createdModelNode->worldTransform.translation.z,
+             createdModelNode->worldTransform.translation.y,
+             createdModelNode->worldTransform.translation.x,
+             createdModelDefinition->removalEffectDefinitionReference.definition,
              worldRuntime);
   AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
   return true;
@@ -182,7 +180,7 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
 
 /* Runs AiConstructionPlanner_TryPlaceStorageAtResourceSite for every workspace-08 site of siteAssetId in order;
    returns true as soon as one attempt is over. */
-static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSitesOf
+static bool AiConstructionPlanner_TryPlaceStorageAtResourceSitesOf
           (PckArmyAssetIdCatalog siteAssetId,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 {
@@ -221,39 +219,39 @@ void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCat
 }
 
 /* Creates armyAssetId for the faction at the chosen field cell (technology unlocked), clears the new model
-   node's movement position, rebuilds its transforms, dispatches the army's class command, spawns the effect named
-   by the created model's attachment 2 at the node and removes the asset from the faction's pending list. Shared tail of the
+   node's tint, rebuilds its transforms, dispatches the army's class command, spawns the removal effect
+   of its model definition at the node and removes the asset from the faction's pending list. Shared tail of the
    placement planners; nothing happens when the creation fails. */
 static void AiConstructionPlanner_CreatePlacedAsset
           (FieldGridCell *cell,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 {
-  Ptr32<ArmyRuntimeSlot> *createdSlots;
-  ArmyRuntimeSlot *modelNodeRuntime;
-  ArmyRuntimeSlot *createdArmySlot;
+  ArmyRuntimeSlot *createdArmy;
+  ModelRuntimeNode *modelNodeRuntime;
   ModelRuntimeSlot *createdModelRuntime;
+  ModelDefinition *createdModelDefinition;
 
-  createdSlots = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
+  createdArmy = ArmyRuntime_CreateInstanceFromAsset
                     (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)cell->triangle0NormalAngles,
                      cell->worldY,cell->worldX,factionIndex,armyAssetId,worldRuntime,nullptr);
-  if (createdSlots == nullptr) {
+  if (createdArmy == nullptr) {
     return;
   }
-  modelNodeRuntime = createdSlots[1];
-  createdArmySlot = *createdSlots;
-  modelNodeRuntime->movementPosition0Q12 = 0;
-  createdModelRuntime = (createdArmySlot->modelRuntimeOrSavedOffset).modelRuntime;
-  ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
-  ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlots,worldRuntime); /* the created army */
+  modelNodeRuntime = createdArmy->modelNodeRuntime;
+  createdModelRuntime = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
+  modelNodeRuntime->tintArgb = 0;
+  createdModelDefinition = createdModelRuntime->definitionOrSavedId.runtimeDefinition;
+  ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+  ArmyRuntime_DispatchClassCommand(createdArmy,worldRuntime);
   EffectRuntimePool_CreateInstanceFromDefinition
             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){nullptr},
-             ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
-             ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
-             ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
-             ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
-             ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
-             ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-             Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 32-bit format field: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
+             modelNodeRuntime->modelPayload.worldRotationAngle2,
+             modelNodeRuntime->modelPayload.worldRotationAngle1,
+             modelNodeRuntime->modelPayload.worldRotationAngle0,
+             modelNodeRuntime->worldTransform.translation.z,
+             modelNodeRuntime->worldTransform.translation.y,
+             modelNodeRuntime->worldTransform.translation.x,
+             createdModelDefinition->removalEffectDefinitionReference.definition,
              worldRuntime);
   AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
 }
@@ -280,7 +278,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
   FieldGridCell *bestCell;
   int bestScore;
   FieldGridCell *candidateCell;
-  Bool8 siteDistanceInRange;
+  bool siteDistanceInRange;
 
   if ((g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0) ||
      (g_AiWorkspace09Count == 0)) {
@@ -324,7 +322,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
        (ArmyPlacement_CanPlaceAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,
                            candidateCell->worldY,candidateCell->worldX,armyAssetId,factionIndex,
-                           (UiRootNode *)worldRuntime,nullptr))) {
+                           worldRuntime,nullptr))) {
       bestCell = candidateCell;
       bestScore = candidateScore;
     }
@@ -354,7 +352,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   int remainingCells;
   int distanceY;
   FieldGridCell **gridCellCursor;
-  Bool8 regionUnreachable;
+  bool regionUnreachable;
   ArmyAssetRecordPrefix *armyAsset;
   ModelDefinitionRecordPrefix *modelDefinition;
   FieldGridCell *bestCell;
@@ -369,7 +367,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   if (modelDefinition == nullptr) {
     return;
   }
-  radiusMetric = ((ModelDefinition *)modelDefinition)->footprintRadius;
+  radiusMetric = reinterpret_cast<ModelDefinition *>(modelDefinition)->footprintRadius; /* prefix view -> full definition */
   if (g_AiWorkspace10Count == 0) {
     return;
   }
@@ -396,7 +394,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
     if ((candidateScore < bestScore) &&
        (ArmyPlacement_CanPlaceAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
-                           candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime,
+                           candidateCell->worldX,armyAssetId,factionIndex,worldRuntime,
                            nullptr))) {
       regionUnreachable = GridReachability_RebuildConnectedRegionAroundWorldPoint
                             (radiusMetric,candidateCell->worldY,candidateCell->worldX);

@@ -12,6 +12,10 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Mesh groups, mesh records, vertices and triangles are bytes of the loaded model asset, passed as addresses
+   (ModelMeshGroupAddress32) or byte cursors: the reinterpret_casts in this file view those bytes as the record
+   structs (ModelMeshGroupHeader, ModelMeshHeader, GraphicsTriangleInput, GraphicsFixedVec3 vertex words). */
+
 /* Module data. */
 
 GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3 = {};
@@ -38,7 +42,7 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
           (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
-  uint32_t groupFlags;
+  ModelMeshGroupFlags groupFlags;
   uint32_t nodeMeshGroupMask;
   AngleTurn32 savedRotationAngle0;
   AngleTurn32 savedRotationAngle1;
@@ -59,8 +63,8 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
   ModelMeshHeader *meshRecord;
 
   /* the ModelMeshHeader records follow the ModelMeshGroupHeader, each byteSize long */
-  groupFlags = ((ModelMeshGroupHeader *)meshGroup)->groupFlags;
-  remainingMeshCount = ((ModelMeshGroupHeader *)meshGroup)->meshCount;
+  groupFlags = reinterpret_cast<ModelMeshGroupHeader *>(meshGroup)->groupFlags;
+  remainingMeshCount = reinterpret_cast<ModelMeshGroupHeader *>(meshGroup)->meshCount;
   savedRotationAngle0 = (modelNode->modelPayload).worldRotationAngle0;
   savedRotationAngle1 = (modelNode->modelPayload).worldRotationAngle1;
   savedRotationAngle2 = (modelNode->modelPayload).worldRotationAngle2;
@@ -76,20 +80,20 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
   savedBasis21 = (modelNode->worldTransform).basisRow2[1];
   savedBasis22 = (modelNode->worldTransform).basisRow2[2];
   savedTranslationZ = (modelNode->worldTransform).translation.z;
-  if ((groupFlags & MODEL_MESH_GROUP_FACE_VIEWER) != 0) {
+  if (Any(groupFlags & MODEL_MESH_GROUP_FACE_VIEWER)) {
     ModelNodeRuntime_BuildViewFacingRotation(modelNode);
   }
-  if ((groupFlags & MODEL_MESH_GROUP_BILLBOARD) != 0) {
+  if (Any(groupFlags & MODEL_MESH_GROUP_BILLBOARD)) {
     ModelNodeRuntime_BuildBillboardRotation(modelNode);
   }
-  meshRecord = (ModelMeshHeader *)((ModelMeshGroupHeader *)meshGroup + 1);
+  meshRecord = reinterpret_cast<ModelMeshHeader *>(reinterpret_cast<ModelMeshGroupHeader *>(meshGroup) + 1);
   nodeMeshGroupMask = (modelNode->modelPayload).meshGroupMask;
   for (; remainingMeshCount != 0; remainingMeshCount--) {
     if ((meshRecord->groupMask & nodeMeshGroupMask) != 0) {
       ModelRender_SubmitMeshTriangles
                 (facingThresholdQ12,(ModelMeshGroupAddress32)meshRecord,modelNode);
     }
-    meshRecord = (ModelMeshHeader *)((uint8_t *)meshRecord + meshRecord->byteSize);
+    meshRecord = reinterpret_cast<ModelMeshHeader *>(reinterpret_cast<uint8_t *>(meshRecord) + meshRecord->byteSize);
   }
   (modelNode->worldTransform).translation.z = savedTranslationZ;
   (modelNode->worldTransform).basisRow2[2] = savedBasis22;
@@ -116,26 +120,26 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
 void ModelRender_DrawMeshGroupsAlternatePath(ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
-  uint32_t groupFlags;
+  ModelMeshGroupFlags groupFlags;
   uint32_t nodeMeshGroupMask;
   int remainingMeshCount;
   ModelMeshHeader *meshRecord;
 
-  groupFlags = ((ModelMeshGroupHeader *)meshGroup)->groupFlags;
-  remainingMeshCount = ((ModelMeshGroupHeader *)meshGroup)->meshCount;
-  if ((groupFlags & MODEL_MESH_GROUP_FACE_VIEWER) != 0) {
+  groupFlags = reinterpret_cast<ModelMeshGroupHeader *>(meshGroup)->groupFlags;
+  remainingMeshCount = reinterpret_cast<ModelMeshGroupHeader *>(meshGroup)->meshCount;
+  if (Any(groupFlags & MODEL_MESH_GROUP_FACE_VIEWER)) {
     ModelNodeRuntime_BuildViewFacingRotation(modelNode);
   }
-  if ((groupFlags & MODEL_MESH_GROUP_BILLBOARD) != 0) {
+  if (Any(groupFlags & MODEL_MESH_GROUP_BILLBOARD)) {
     ModelNodeRuntime_BuildBillboardRotation(modelNode);
   }
-  meshRecord = (ModelMeshHeader *)((ModelMeshGroupHeader *)meshGroup + 1);
+  meshRecord = reinterpret_cast<ModelMeshHeader *>(reinterpret_cast<ModelMeshGroupHeader *>(meshGroup) + 1);
   nodeMeshGroupMask = (modelNode->modelPayload).meshGroupMask;
   for (; remainingMeshCount != 0; remainingMeshCount--) {
     if ((meshRecord->groupMask & nodeMeshGroupMask) != 0) {
       ModelRender_SubmitMeshTrianglesAlternatePath((ModelMeshGroupAddress32)meshRecord,modelNode);
     }
-    meshRecord = (ModelMeshHeader *)((uint8_t *)meshRecord + meshRecord->byteSize);
+    meshRecord = reinterpret_cast<ModelMeshHeader *>(reinterpret_cast<uint8_t *>(meshRecord) + meshRecord->byteSize);
   }
 }
 
@@ -153,7 +157,7 @@ void ModelProjectedBounds_AccumulateHierarchyRecursive(ModelProjectedBoundsPixel
       ModelProjectedBounds_AccumulateHierarchyRecursive(bounds,modelNode->childNodes[0]);
     }
     /* moves the node pointer by one dword, so childNodes[0] reads the next child slot */
-    modelNode = (ModelRuntimeNode *)&(modelNode->common).nextNode;
+    modelNode = reinterpret_cast<ModelRuntimeNode *>(&(modelNode->common).nextNode);
   }
 }
 
@@ -170,7 +174,7 @@ void ModelRender_PrepareProjectedVertex
 {
   /* vertex: [0] local position, +0x10 normal, +0x1C packed colour, +0x20 view position, +0x2C lit colour,
      +0x30/+0x34 projected X/Y, +0x38 the flags the lit colour was computed for */
-  uint32_t triangleRenderFlags;
+  GraphicsPrimitiveDispatchFlags triangleRenderFlags;
   int64_t scaledCoordinateProduct;
   PackedArgb32 vertexColor;
   uint32_t depthBiasHalf;
@@ -180,7 +184,7 @@ void ModelRender_PrepareProjectedVertex
   GraphicsWorldCoordinateQ12 savedVertexZQ12;
   GraphicsWorldCoordinateQ12 savedVertexYQ12;
 
-  triangleRenderFlags = ((GraphicsTriangleInput *)triangle)->renderFlags;
+  triangleRenderFlags = reinterpret_cast<GraphicsTriangleInput *>(triangle)->renderFlags;
   if (vertex[4].x == MODEL_VERTEX_NOT_PROJECTED) {
     savedVertexXQ12 = vertex->x;
     savedVertexYQ12 = vertex->y;
@@ -193,7 +197,7 @@ void ModelRender_PrepareProjectedVertex
       }
       vertex->z = vertex->z + depthBiasHalf;
     }
-    if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE) != 0) {
+    if (Any(modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE)) {
       /* 64-bit product >> 12 */
       scaledCoordinateProduct = (int64_t)vertex->x * (int64_t)modelNode->modelScaleQ12;
       vertex->x = FIXED_PRODUCT_SHR(scaledCoordinateProduct, Q12_SHIFT);
@@ -203,30 +207,30 @@ void ModelRender_PrepareProjectedVertex
       vertex->z = FIXED_PRODUCT_SHR(scaledCoordinateProduct, Q12_SHIFT);
     }
     FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
+              (ModelVertex_ViewPosition(vertex),vertex,
                &g_ModelViewCompositeTransform);
-    projectedScreenPoint = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z);
+    projectedScreenPoint = Graphics_ProjectViewPoint(ModelVertex_ViewPosition(vertex));
     vertex->z = savedVertexZQ12;
     vertex->y = savedVertexYQ12;
     vertex->x = savedVertexXQ12;
     vertex[4].x = projectedScreenPoint.projectedX;
     vertex[4].y = projectedScreenPoint.projectedY;
   }
-  else if (((triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS) == vertex[4].z) &&
-          ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) == 0)) {
+  else if ((ToBits(triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS) == vertex[4].z) &&
+          !Any(triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED)) {
     return;
   }
-  vertex[4].z = triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS;
+  vertex[4].z = ToBits(triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS);
   vertexColor = modelNode->tintArgb;
-  surfaceNormalQ12 = (GraphicsFixedVec3 *)&vertex[1].y;
-  if ((triangleRenderFlags & MODEL_TRIANGLE_UNLIT) != 0) {
+  surfaceNormalQ12 = ModelVertex_Normal(vertex);
+  if (Any(triangleRenderFlags & MODEL_TRIANGLE_UNLIT)) {
     vertex[3].z = vertexColor;
     return;
   }
-  if ((triangleRenderFlags & MODEL_TRIANGLE_LIGHTING_SCALED) == 0) {
-    if ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) != 0) {
+  if (!Any(triangleRenderFlags & MODEL_TRIANGLE_LIGHTING_SCALED)) {
+    if (Any(triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED)) {
       /* the triangle's plane normal */
-      surfaceNormalQ12 = (GraphicsFixedVec3 *)&((GraphicsTriangleInput *)triangle)->planeNormalXQ12;
+      surfaceNormalQ12 = ModelTriangle_PlaneNormal(reinterpret_cast<GraphicsTriangleInput *>(triangle));
     }
     vertexColor = ModelRender_ComputeVertexIntensityDefaultPath
                       (vertex[2].y,&vertex[2].z,THANDOR_ADDR(g_ModelLightingMmxMultiplierRows[MODEL_DISTANCE_ATTENUATION_ROW0],0),g_SceneBoundsFixed.bound5,
@@ -247,7 +251,7 @@ void ModelRender_PrepareProjectedVertex
 
 /* True unless all three projected vertices lie beyond the same edge of g_ProjectionClipRect (shared by
    ModelRender_SubmitTriangle and ModelRender_SubmitTriangleAlternatePath). */
-static Bool8 ModelRender_TriangleOverlapsClipRect
+static bool ModelRender_TriangleOverlapsClipRect
           (const GraphicsProjectedVertexSource *firstVertex,const GraphicsProjectedVertexSource *secondVertex,
            const GraphicsProjectedVertexSource *thirdVertex)
 {
@@ -271,14 +275,14 @@ static Bool8 ModelRender_TriangleOverlapsClipRect
    animated subresource; with flag 0x400 as well, also when it uses the secondary one. */
 static void ModelRender_ApplyTextureScroll(const ModelRuntimeNode *modelNode,GraphicsSubresourceIndex triangleSubresource)
 {
-  if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL) == 0) {
+  if (!Any(modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL)) {
     return;
   }
   if (triangleSubresource == modelNode->primaryAnimatedSubresourceIndex) {
     GraphicsPrimitiveQueue_OffsetTextureCoordinates
               (modelNode->primaryTextureOffsetV,modelNode->primaryTextureOffsetU,g_ActivePrimitiveQueue);
   }
-  if (((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL) != 0) &&
+  if (Any(modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL) &&
       (triangleSubresource == modelNode->secondaryAnimatedSubresourceIndex)) {
     GraphicsPrimitiveQueue_OffsetTextureCoordinates
               (modelNode->secondaryTextureOffsetV,modelNode->secondaryTextureOffsetU,g_ActivePrimitiveQueue);
@@ -303,22 +307,22 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
   int32_t facingDotQ12;
   uint32_t paletteBankIndex;
   PackedArgb32 materialColor;
-  Bool8 appendFailed;
+  bool appendFailed;
   GraphicsTextureSetEntry *textureEntry;
 
   facingDotQ12 = ModelRender_ComputeFacingDotQ12(triangle);
-  if ((triangle->renderFlags & MODEL_TRIANGLE_DOUBLE_SIDED) == 0 && facingDotQ12 >= facingThresholdQ12) {
+  if (!Any(triangle->renderFlags & MODEL_TRIANGLE_DOUBLE_SIDED) && facingDotQ12 >= facingThresholdQ12) {
     return;
   }
   firstVertex = triangle->vertex0;
   secondVertex = triangle->vertex1;
   thirdVertex = triangle->vertex2;
   ModelRender_PrepareProjectedVertex
-            (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)firstVertex);
+            (modelNode,(ModelMeshGroupAddress32)triangle,ModelVertex_Words(firstVertex));
   ModelRender_PrepareProjectedVertex
-            (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)secondVertex);
+            (modelNode,(ModelMeshGroupAddress32)triangle,ModelVertex_Words(secondVertex));
   ModelRender_PrepareProjectedVertex
-            (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)thirdVertex);
+            (modelNode,(ModelMeshGroupAddress32)triangle,ModelVertex_Words(thirdVertex));
   if (!ModelRender_TriangleOverlapsClipRect(firstVertex,secondVertex,thirdVertex)) {
     return;
   }
@@ -342,7 +346,7 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
   materialColor = ARGB8888_OPAQUE_WHITE;
   nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
   if (nodePaletteAsset != nullptr) {
-    paletteBankIndex = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_MASK;
+    paletteBankIndex = ToBits(triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_MASK);
     if (paletteBankIndex < nodePaletteAsset->paletteBankCount) {
       materialColor = nodePaletteAsset->paletteEntries[paletteBankIndex].argb8888;
     }
@@ -362,16 +366,16 @@ void ModelRender_SubmitMeshTriangles
   int remainingCount;
   GraphicsTriangleInput *recordCursor;
 
-  remainingCount = ((ModelMeshHeader *)meshGroup)->vertexCount;
+  remainingCount = reinterpret_cast<ModelMeshHeader *>(meshGroup)->vertexCount;
   ModelRender_PrepareViewDirections(modelNode);
-  recordCursor = (GraphicsTriangleInput *)((ModelMeshHeader *)meshGroup + 1);
+  recordCursor = reinterpret_cast<GraphicsTriangleInput *>(reinterpret_cast<ModelMeshHeader *>(meshGroup) + 1);
   for (; remainingCount != 0; remainingCount--) {
     recordCursor->subresourceIndex = MODEL_VERTEX_NOT_PROJECTED; /* vertex +0x30: projected X */
-    recordCursor = (GraphicsTriangleInput *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
+    recordCursor = reinterpret_cast<GraphicsTriangleInput *>(reinterpret_cast<uint8_t *>(recordCursor) + MODEL_MESH_RECORD_SIZE);
   }
-  for (remainingCount = ((ModelMeshHeader *)meshGroup)->triangleCount; remainingCount != 0; remainingCount--) {
+  for (remainingCount = reinterpret_cast<ModelMeshHeader *>(meshGroup)->triangleCount; remainingCount != 0; remainingCount--) {
     ModelRender_SubmitTriangle(facingThresholdQ12,recordCursor,modelNode);
-    recordCursor = (GraphicsTriangleInput *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
+    recordCursor = reinterpret_cast<GraphicsTriangleInput *>(reinterpret_cast<uint8_t *>(recordCursor) + MODEL_MESH_RECORD_SIZE);
   }
 }
 
@@ -384,16 +388,16 @@ void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGr
   int remainingCount;
   GraphicsTriangleInput *recordCursor;
 
-  remainingCount = ((ModelMeshHeader *)meshGroup)->vertexCount;
+  remainingCount = reinterpret_cast<ModelMeshHeader *>(meshGroup)->vertexCount;
   ModelRender_PrepareViewDirections(modelNode);
-  recordCursor = (GraphicsTriangleInput *)((ModelMeshHeader *)meshGroup + 1);
+  recordCursor = reinterpret_cast<GraphicsTriangleInput *>(reinterpret_cast<ModelMeshHeader *>(meshGroup) + 1);
   for (; remainingCount != 0; remainingCount--) {
     recordCursor->subresourceIndex = MODEL_VERTEX_NOT_PROJECTED; /* vertex +0x30: projected X */
-    recordCursor = (GraphicsTriangleInput *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
+    recordCursor = reinterpret_cast<GraphicsTriangleInput *>(reinterpret_cast<uint8_t *>(recordCursor) + MODEL_MESH_RECORD_SIZE);
   }
-  for (remainingCount = ((ModelMeshHeader *)meshGroup)->triangleCount; remainingCount != 0; remainingCount--) {
+  for (remainingCount = reinterpret_cast<ModelMeshHeader *>(meshGroup)->triangleCount; remainingCount != 0; remainingCount--) {
     ModelRender_SubmitTriangleAlternatePath(recordCursor,modelNode);
-    recordCursor = (GraphicsTriangleInput *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
+    recordCursor = reinterpret_cast<GraphicsTriangleInput *>(reinterpret_cast<uint8_t *>(recordCursor) + MODEL_MESH_RECORD_SIZE);
   }
 }
 
@@ -403,11 +407,11 @@ void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGr
    (ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath), or white with the tint's alpha when unlit,
    and cached like in ModelRender_PrepareProjectedVertex.
 */
-Bool8 ModelRender_PrepareProjectedVertexAlternatePath
+bool ModelRender_PrepareProjectedVertexAlternatePath
           (ModelRuntimeNode *modelNode,GraphicsTriangleInput *triangle,GraphicsFixedVec3 *vertex)
 
 {
-  uint32_t triangleRenderFlags;
+  GraphicsPrimitiveDispatchFlags triangleRenderFlags;
   uint32_t materialPackedColor;
   PackedArgb32 vertexColor;
   GraphicsFixedVec3 *surfaceNormalQ12;
@@ -416,13 +420,13 @@ Bool8 ModelRender_PrepareProjectedVertexAlternatePath
   triangleRenderFlags = triangle->renderFlags;
   if (vertex[4].x == MODEL_VERTEX_NOT_PROJECTED) {
     FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
+              (ModelVertex_ViewPosition(vertex),vertex,
                &g_ModelViewCompositeTransform);
     if (vertex[3].y < (int)g_ProjectionScaleFixed) {
       vertex[4].x = MODEL_VERTEX_NEAR_CLIPPED;
       return true;
     }
-    projectedPoint = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z);
+    projectedPoint = Graphics_ProjectViewPoint(ModelVertex_ViewPosition(vertex));
     vertex[4].x = projectedPoint.projectedX;
     vertex[4].y = projectedPoint.projectedY;
   }
@@ -431,20 +435,20 @@ Bool8 ModelRender_PrepareProjectedVertexAlternatePath
       /* Already marked as behind the near plane (the original re-stores the same marker). */
       return true;
     }
-    if (((triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS) == vertex[4].z) &&
-        ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) == 0)) {
+    if ((ToBits(triangleRenderFlags) & ToBits(MODEL_TRIANGLE_VERTEX_CACHE_FLAGS)) == vertex[4].z &&
+        !Any(triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED)) {
       return false;
     }
   }
   materialPackedColor = modelNode->tintArgb;
-  vertex[4].z = triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS;
-  if ((triangleRenderFlags & MODEL_TRIANGLE_UNLIT) == 0) {
-    surfaceNormalQ12 = (GraphicsFixedVec3 *)&vertex[1].y;
-    if ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) != 0) {
-      surfaceNormalQ12 = (GraphicsFixedVec3 *)&triangle->planeNormalXQ12;
+  vertex[4].z = ToBits(triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS);
+  if (!Any(triangleRenderFlags & MODEL_TRIANGLE_UNLIT)) {
+    surfaceNormalQ12 = ModelVertex_Normal(vertex);
+    if (Any(triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED)) {
+      surfaceNormalQ12 = ModelTriangle_PlaneNormal(triangle);
     }
     vertexColor = ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
-                      (vertex[2].y,(GraphicsFixedVec3 *)&vertex[2].z,g_SceneBoundsFixed.bound5,
+                      (vertex[2].y,ModelVertex_ViewPosition(vertex),g_SceneBoundsFixed.bound5,
                        materialPackedColor,surfaceNormalQ12);
     vertex[3].z = vertexColor;
     return false;
@@ -469,16 +473,16 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
   GraphicsSubresourceIndex subresourceIndex;
   uint32_t paletteBankIndex;
   PackedArgb32 modulationColor;
-  Bool8 appendFailed;
+  bool appendFailed;
   GraphicsTextureSetEntry *textureEntry;
 
   firstVertex = triangle->vertex0;
   secondVertex = triangle->vertex1;
   thirdVertex = triangle->vertex2;
   /* a vertex in front of the near plane drops the triangle; the remaining vertices are not prepared */
-  if (ModelRender_PrepareProjectedVertexAlternatePath(modelNode,triangle,(GraphicsFixedVec3 *)firstVertex) ||
-      ModelRender_PrepareProjectedVertexAlternatePath(modelNode,triangle,(GraphicsFixedVec3 *)secondVertex) ||
-      ModelRender_PrepareProjectedVertexAlternatePath(modelNode,triangle,(GraphicsFixedVec3 *)thirdVertex)) {
+  if (ModelRender_PrepareProjectedVertexAlternatePath(modelNode,triangle,ModelVertex_Words(firstVertex)) ||
+      ModelRender_PrepareProjectedVertexAlternatePath(modelNode,triangle,ModelVertex_Words(secondVertex)) ||
+      ModelRender_PrepareProjectedVertexAlternatePath(modelNode,triangle,ModelVertex_Words(thirdVertex))) {
     return;
   }
   if (!ModelRender_TriangleOverlapsClipRect(firstVertex,secondVertex,thirdVertex)) {
@@ -507,7 +511,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
   nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
   if (nodePaletteAsset != nullptr) {
     /* the original masks with 0xFFFF01FF here (0x1FF in ModelRender_SubmitTriangle) */
-    paletteBankIndex = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK;
+    paletteBankIndex = ToBits(triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK);
     if (paletteBankIndex < nodePaletteAsset->paletteBankCount) {
       modulationColor = nodePaletteAsset->paletteEntries[paletteBankIndex].alternateModulationColorArgb;
     }
@@ -567,7 +571,7 @@ int32_t ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle)
 {
   int32_t facingDotQ12;
 
-  facingDotQ12 = FixedVec3_DotQ12((GraphicsFixedVec3 *)&triangle->planeNormalXQ12,
+  facingDotQ12 = FixedVec3_DotQ12(ModelTriangle_PlaneNormal(triangle),
                                   &g_ModelViewDirectionLocal);
   return facingDotQ12;
 }

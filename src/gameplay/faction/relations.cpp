@@ -18,10 +18,10 @@ void GameFactionRelations_UpdateAllPairsForFaction
 
 {
   int opposingFactionIndex;
-  Bool8 pairTestResult;
+  bool pairTestResult;
 
   opposingFactionIndex = 7;
-  do {
+  for (; opposingFactionIndex != 0; opposingFactionIndex--) {
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[opposingFactionIndex] ==
          FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (sourceFactionIndex != opposingFactionIndex)) {
       pairTestResult = GameFactionRelations_TestPairTransitionAllowed
@@ -44,8 +44,7 @@ void GameFactionRelations_UpdateAllPairsForFaction
         }
       }
     }
-    opposingFactionIndex--;
-  } while (opposingFactionIndex != 0);
+  }
 }
 
 
@@ -82,7 +81,7 @@ void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
    below 4 for which GameFactionRelations_EvaluateTransitionRules holds for either faction. False lets the pair
    advance.
 */
-Bool8 GameFactionRelations_TestPairTransitionAllowed
+bool GameFactionRelations_TestPairTransitionAllowed
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -90,7 +89,7 @@ Bool8 GameFactionRelations_TestPairTransitionAllowed
   FactionActiveMask targetEligibleMask;
   FactionActiveMask sourceEligibleMask;
   FactionActiveMask combinedMask;
-  uint32_t relationUiFlags;
+  GameRelationUiFlags relationUiFlags;
 
   relationState = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
   if (relationState == 2 || relationState == 5 || relationState == 9) {
@@ -98,15 +97,15 @@ Bool8 GameFactionRelations_TestPairTransitionAllowed
   }
   /* relationUiFlags: bit 4 freezes every relation, bit 2 states 4 and up, bit 1 states 8 and up */
   relationUiFlags = g_GameFactionRuntimeImage.tail.relationUiFlags;
-  if ((relationUiFlags & FACTION_RELATION_FREEZE_ALL) != 0) {
+  if (Any(relationUiFlags & FACTION_RELATION_FREEZE_ALL)) {
     return true;
   }
   if (relationState >= FACTION_RELATION_STATE_FRIENDLY &&
-      (relationUiFlags & FACTION_RELATION_FREEZE_FRIENDLY) != 0) {
+      Any(relationUiFlags & FACTION_RELATION_FREEZE_FRIENDLY)) {
     return true;
   }
   if (relationState >= FACTION_RELATION_STATE_ALLIED &&
-      (relationUiFlags & FACTION_RELATION_FREEZE_ALLIED) != 0) {
+      Any(relationUiFlags & FACTION_RELATION_FREEZE_ALLIED)) {
     return true;
   }
   if (relationState >= FACTION_RELATION_STATE_FRIENDLY) {
@@ -152,7 +151,7 @@ FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIn
 
 
 /* True when the faction named by a condition's operand 0 is in factionMask. */
-static Bool8 GameFactionRelations_IsOperandFactionInMask(FactionActiveMask factionMask,uint32_t factionOperand)
+static bool GameFactionRelations_IsOperandFactionInMask(FactionActiveMask factionMask,uint32_t factionOperand)
 {
   return (factionMask & 1 << ((uint8_t)factionOperand & 31)) != 0;
 }
@@ -161,7 +160,7 @@ static Bool8 GameFactionRelations_IsOperandFactionInMask(FactionActiveMask facti
 
 /* Whether a scheduled condition of the given kind would hold if only the factions in activeFactionMask were
    left (GameFactionRelations_EvaluateTransitionRules). Unknown kinds never hold. */
-static Bool8 GameFactionRelations_PredictConditionHolds
+static bool GameFactionRelations_PredictConditionHolds
           (InGameLevelConditionStorage *levelConditionStorage,InGameScheduledConditionRecord10 *condition,
            uint32_t kind,FactionActiveMask activeFactionMask)
 {
@@ -196,7 +195,7 @@ static Bool8 GameFactionRelations_PredictConditionHolds
    neither focalFactionIndex nor in the mask. Returns true when that variant is 0 or nothing fires.
    Leaves the recomputed satisfied bits in the real condition records.
 */
-Bool8 GameFactionRelations_EvaluateTransitionRules
+bool GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
 
 {
@@ -260,7 +259,7 @@ Bool8 GameFactionRelations_EvaluateTransitionRules
    below the merge; only from those states does the random drift reset the relation
    (GameFactionRuntime_ResetPairwiseRelationState).
 */
-Bool8 GameFactionRelations_IsNotResetEligibleState
+bool GameFactionRelations_IsNotResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -422,8 +421,8 @@ void PlayerPairList_RemoveFirstMatch
   if (recordsRemaining < PLAYER_PAIR_LIST_CAPACITY) {
     for (; recordsRemaining != 0; recordsRemaining--) {
       if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
-        copySourceDword = (uint32_t *)(pairRecordCursor + 1);
-        copyTargetDword = (uint32_t *)pairRecordCursor;
+        copySourceDword = reinterpret_cast<uint32_t *>(pairRecordCursor + 1); /* dword copy, see below */
+        copyTargetDword = reinterpret_cast<uint32_t *>(pairRecordCursor);
         /* the records behind the match move down one dword at a time, as in the original */
         trailingDwordsToMove = recordsRemaining * 2 - 2;
         playerRuntimeBlock->markedCellCount--;
@@ -452,7 +451,7 @@ void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgu
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  Bool8 isRecentTimedState;
+  bool isRecentTimedState;
   
   switch(g_GameFactionRuntimeImage.records[targetFactionIndex].packedRelationStates >>
          ((uint8_t)(sourceFactionIndex << 2) & 31) & 0xf) {
@@ -538,7 +537,7 @@ void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgume
   }
 }
 
-#define FACTION_TECHNOLOGY_MASK_BITS 256u
+static constexpr uint32_t FACTION_TECHNOLOGY_MASK_BITS = 256u;
 
 /* Lowest technology whose bit is set in haveMasks and clear in lackMasks (both 256-bit technology masks), or
    FACTION_TECHNOLOGY_MASK_BITS when there is none. */
@@ -597,14 +596,14 @@ void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10()
       Technology_UnlockForFaction(0,0,sourceTechnologyIndex,otherFactionIndex);
     }
   }
-  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameOtherPlayerCommand_RebuildTargetEntries(&g_InGameRuntimeRoot->rootUi.base);
 }
 
 /* Returns true when the relation of factionIndex towards otherFactionIndex is in one of the pending states
    2, 5 or 9 and the pair's last relation change is at most 600 ticks old, so the relation does not advance
    again too soon.
 */
-Bool8 GameFactionRuntime_IsRecentTimedRelationState
+bool GameFactionRuntime_IsRecentTimedRelationState
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
@@ -690,7 +689,7 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   for (ownerNode = (runtimeRoot->worldRuntime).ownerListHead; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     /* re-own the absorbed faction's models (their army's factionIndex) and repaint them in the survivor's colours */
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      armyRuntime = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+      armyRuntime = WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
       if (armyRuntime->factionIndex == absorbedFactionIndex) {
         armyRuntime->factionIndex = survivingFactionIndex;
         ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
@@ -701,6 +700,7 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   /* the player blocks are read after the repaint walk */
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
   playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (absorbedFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
       playerRuntimeId = playerBlockCursor->playerRuntimeId;
@@ -714,10 +714,12 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   terrainGrid = runtimeRoot->worldRuntime.fieldGrid;
   cellsRemaining = terrainGrid->gridWidth * terrainGrid->gridHeight;
   gridCell = terrainGrid->cells;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
-    ((uint8_t *)&gridCell->occupancyMask)[survivingFactionIndex] =
-         ((uint8_t *)&gridCell->occupancyMask)[survivingFactionIndex] |
-         ((uint8_t *)&gridCell->occupancyMask)[absorbedFactionIndex];
+    /* byte view of the 64-bit mask: one byte per faction */
+    FieldGridCell_OccupancyByte(gridCell,survivingFactionIndex) =
+         FieldGridCell_OccupancyByte(gridCell,survivingFactionIndex) |
+         FieldGridCell_OccupancyByte(gridCell,absorbedFactionIndex);
     gridCell++;
     cellsRemaining--;
   } while (cellsRemaining != 0);
@@ -772,9 +774,9 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   GameFactionRuntime_AppendArmyAssetList(&survivor->secondaryArmyAssetCount,
                                          survivor->secondaryArmyAssetPointersOrIds,
                                          absorbed->secondaryArmyAssetCount,absorbed->secondaryArmyAssetPointersOrIds);
-  InGameArmyStock_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameArmyStock_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
+  InGameSpecialBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
+  InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
 }
 
 /* Changes the diplomatic relation between two factions: notifies the shown faction (text code + 500), stores
@@ -799,7 +801,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
   uint32_t secondFactionPlayerCount;
   uint32_t firstFactionPlayerCount;
   uint32_t randomValue;
-  Bool8 swapMergeDirection;
+  bool swapMergeDirection;
   uint8_t secondShift;
   uint8_t firstShift;
   FrontendPlayerRuntimeRecord *playerBlockCursor;
@@ -852,6 +854,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
     firstFactionPlayerCount = 0;
     playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
         secondFactionPlayerCount++;
@@ -879,7 +882,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
     }
     GameFactionRuntime_MergeAbsorbedFaction(firstFactionIndex,secondFactionIndex);
   }
-  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameOtherPlayerCommand_RebuildTargetEntries(&g_InGameRuntimeRoot->rootUi.base);
 }
 
 /* Diplomatic side effects of a shot hitting an army (called by the projectile maintenance in
@@ -897,7 +900,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
   InGameSimulationTick currentTick;
   InGameRuntimeRoot *inGameRoot;
   FactionRelationState relationState;
-  Bool8 alreadyHostile;
+  bool alreadyHostile;
   Q12 conditionRatio;
   FactionNotificationCodeBase activeFactionCodeForFirst;
   FactionNotificationCodeBase activeFactionCodeForSecond;
@@ -913,10 +916,10 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
     if (shotRuntime->definitionOrSavedId.definition->targetClassImpactDamageQ12[0] < 0) {
       /* a condition ratio of 1.0 means the target is fully repaired */
       conditionRatio = ModelRuntime_QueryHierarchyConditionRatioQ12
-                        ((RuntimeModelFactionPrefix *)targetEntity);
+                        (reinterpret_cast<RuntimeModelFactionPrefix *>(targetEntity)); /* the army's prefix view */
       if (conditionRatio == Q12_ONE &&
-          (shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
-          targetEntity == (GameEntityRuntime *)shooterArmy->commandTargetArmyRuntime) {
+          Any(shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) &&
+          targetEntity == static_cast<GameEntityRuntime *>(shooterArmy->commandTargetArmyRuntime)) {
         ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(shooterArmy);
         shooterArmy->commandGeneration = 1;
       }
@@ -939,7 +942,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
                     (targetModelRuntime,&inGameRoot->worldRuntime);
         }
-        else if (((shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0 ||
+        else if ((!Any(shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) ||
                   (shooterArmy->commandTargetArmyRuntime != nullptr &&
                    targetFactionIndex == shooterArmy->commandTargetArmyRuntime->factionIndex)) &&
                  99 < (int)((g_GameFactionRuntimeImage.tail.simulationTick * 2 -

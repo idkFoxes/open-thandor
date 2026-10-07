@@ -12,21 +12,21 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef union NetworkEndpointAddressHeader4 NetworkEndpointAddressHeader4, *PNetworkEndpointAddressHeader4;
-typedef struct NetworkEndpointFamilyPortFields4 NetworkEndpointFamilyPortFields4, *PNetworkEndpointFamilyPortFields4;
-typedef struct WinSockHostEnt32 WinSockHostEnt32, *PWinSockHostEnt32;
-typedef struct WinSockAddress WinSockAddress, *PWinSockAddress;
-typedef struct WinSockData11 WinSockData11, *PWinSockData11;
-typedef struct NetworkSessionContext NetworkSessionContext, *PNetworkSessionContext;
-typedef struct NetworkBackendInstanceDescriptorPrefix NetworkBackendInstanceDescriptorPrefix, *PNetworkBackendInstanceDescriptorPrefix;
-typedef struct UiTransferEndpointDescriptor UiTransferEndpointDescriptor;
+union NetworkEndpointAddressHeader4;
+struct NetworkEndpointFamilyPortFields4;
+struct WinSockHostEnt32;
+struct WinSockAddress;
+struct WinSockData11;
+struct NetworkSessionContext;
+struct NetworkBackendInstanceDescriptorPrefix;
+struct UiTransferEndpointDescriptor;
 
-enum /* NetworkAddressFamily, stored in 2 byte(s) */ {
+/* WinSock address family, stored in 2 bytes (sin_family, h_addrtype). */
+enum class NetworkAddressFamily : uint16_t {
     NETWORK_ADDRESS_FAMILY_UNSPECIFIED=0,
     NETWORK_ADDRESS_FAMILY_IPV4=2,
     NETWORK_ADDRESS_FAMILY_IPX=6
 };
-using NetworkAddressFamily = uint16_t;
 
 using NetworkPortNetworkOrder = uint16_t;
 
@@ -101,9 +101,9 @@ using NetworkBackendCleanupCallback = void ();
 using NetworkBackendCloseCallback = void ();
 using NetworkBackendFormatAddressCallback = void (char * outputText, WinSockAddress * socketAddress);
 using NetworkBackendOpenBindCallback = uint32_t (uint32_t localPort); /* 0 or a FATAL_ERROR_NETWORK_* code */
-using NetworkBackendParseEndpointCallback = Bool8 (UiTransferEndpointDescriptor * endpoint, char * endpointText);
-using NetworkBackendReceiveCallback = Bool8 (WinSockAddress * sourceAddress, uint32_t byteCount, uint8_t * buffer); /* true when a datagram was received */
-using NetworkBackendSendCallback = Bool8 (WinSockAddress * destinationAddress, uint32_t byteCount, uint8_t * buffer); /* true on success */
+using NetworkBackendParseEndpointCallback = bool (UiTransferEndpointDescriptor * endpoint, char * endpointText);
+using NetworkBackendReceiveCallback = bool (WinSockAddress * sourceAddress, uint32_t byteCount, uint8_t * buffer); /* true when a datagram was received */
+using NetworkBackendSendCallback = bool (WinSockAddress * destinationAddress, uint32_t byteCount, uint8_t * buffer); /* true on success */
 using NetworkBackendSetSessionCallback = uint32_t (uint32_t backendIndex); /* 0 or a FATAL_ERROR_NETWORK_* code */
 using WinSock_WSACleanupProc = int __stdcall ();
 using WinSock_WSAGetLastErrorProc = int __stdcall ();

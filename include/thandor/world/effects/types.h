@@ -16,27 +16,28 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/world/terrain/types.h>
 
-typedef struct EffectRuntimeSlot EffectRuntimeSlot, *PEffectRuntimeSlot;
-typedef union EffectModelNodeReferenceOrSavedOffset EffectModelNodeReferenceOrSavedOffset, *PEffectModelNodeReferenceOrSavedOffset;
-typedef struct EffectRuntimeLifecycleState EffectRuntimeLifecycleState, *PEffectRuntimeLifecycleState;
-typedef struct EffectRuntimeOwnerAndDefinitionState EffectRuntimeOwnerAndDefinitionState, *PEffectRuntimeOwnerAndDefinitionState;
-typedef union EffectRuntimeOwnerReference EffectRuntimeOwnerReference, *PEffectRuntimeOwnerReference;
-typedef struct ShotTerrainImpactDeformationColumns ShotTerrainImpactDeformationColumns, *PShotTerrainImpactDeformationColumns;
-typedef struct EffectModelRuntimeNode EffectModelRuntimeNode, *PEffectModelRuntimeNode;
-typedef struct GraphicsShadingRuntimeRecord GraphicsShadingRuntimeRecord;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
+struct EffectRuntimeSlot;
+union EffectModelNodeReferenceOrSavedOffset;
+struct EffectRuntimeLifecycleState;
+struct EffectRuntimeOwnerAndDefinitionState;
+union EffectRuntimeOwnerReference;
+struct ShotTerrainImpactDeformationColumns;
+struct EffectModelRuntimeNode;
+struct GraphicsShadingRuntimeRecord;
+struct ModelRuntimeNode;
 
 using EffectAnimationFrameCount = uint32_t;
 
 using DefinitionReferencePresentFlag = uint32_t;
 
-enum {
-    EFFECT_RUNTIME_COMPLETION_NONE=0,
-    EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY=1,
-    EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER=2,
-    EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL=3
+/* EffectRuntimeSlot.completionAction (saved with the slot): what happens when the completion countdown ends. */
+enum class EffectRuntimeCompletionAction : int {
+    EFFECT_RUNTIME_COMPLETION_NONE = 0,
+    EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY = 1,
+    EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER = 2,
+    EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL = 3
 };
-using EffectRuntimeCompletionAction = int;
+using enum EffectRuntimeCompletionAction;
 
 using EffectShadingCountdownTicks = uint32_t;
 
@@ -53,6 +54,7 @@ union EffectRuntimeOwnerReference {
     Ptr32<struct ModelRuntimeSlot> modelRuntime; /* owner of EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY */
     Ptr32<struct ArmyRuntimeSlot> armyRuntime;
     Ptr32<struct ShotTerrainImpactDeformationColumns> terrainImpactColumns; /* owner of a shot's terrain impact effect (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) */
+    Ptr32<struct GameEntityRuntime> entityRuntime; /* the same owner as the GameEntityRuntime view (EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL; step 13 X7, was a C-style cast of modelNode to GameEntityRuntime *) */
     uint32_t serializedOffset;
 };
 

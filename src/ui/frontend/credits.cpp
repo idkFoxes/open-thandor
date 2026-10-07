@@ -34,7 +34,7 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   (frontendCreditsView->creditsMaskRuntime).outgoingSubresource = 0;
   (frontendCreditsView->creditsMaskRuntime).incomingSubresource = 0;
   (frontendCreditsView->creditsMaskRuntime).tickCounter = 0;
-  creditsTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_CreditsTexturePathUtf16,nullptr);
+  creditsTexture = g_GraphicsTextureSourceLoadPackageAsset(g_CreditsTexturePathUtf16,nullptr);
   if (creditsTexture != nullptr) {
     (frontendCreditsView->creditsMaskRuntime).textureSource = creditsTexture;
     textureSizeResult = g_GraphicsTextureSourceGetLogicalSize(0,creditsTexture);
@@ -42,10 +42,10 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
     /* The original lets the allocator store the pointer straight into maskPixels; that field is a 32-bit
        slot here, so the 64-bit pointer goes through a local. */
     if (g_MemoryApi.alloc(bufferBytes,&maskBufferPayload) == 0) {
-      (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)maskBufferPayload;
+      (frontendCreditsView->creditsMaskRuntime).maskPixels = static_cast<uint8_t *>(maskBufferPayload);
       if (g_MemoryApi.alloc(bufferBytes,&blendedBufferPayload) == 0) {
         /* blendedSourcePixels is the second work buffer */
-        (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = (uintptr_t)blendedBufferPayload;
+        (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = reinterpret_cast<uintptr_t>(blendedBufferPayload);
         UiFrame_FlushInputAndResetPendingTicks();
         SoftwareMaskBuffer_Clear(&frontendCreditsView->creditsMaskRuntime);
         /* page 1 of the frontend view-mode stack: the full-screen view instead of the menu room */
@@ -58,7 +58,7 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage
             ((frontendCreditsView->creditsMaskRuntime).textureSource);
   g_MemoryApi.free((frontendCreditsView->creditsMaskRuntime).maskPixels);
-  g_MemoryApi.free((void *)(frontendCreditsView->creditsMaskRuntime).blendedSourcePixels);
+  g_MemoryApi.free(static_cast<void *>((frontendCreditsView->creditsMaskRuntime).blendedSourcePixels));
   (frontendCreditsView->creditsMaskRuntime).textureSource = nullptr;
   (frontendCreditsView->creditsMaskRuntime).maskPixels = nullptr;
   (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = 0;

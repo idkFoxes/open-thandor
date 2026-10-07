@@ -21,34 +21,32 @@ void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void 
   int factionsRemaining;
   int groupSlotsRemaining;
   int groupSlotIndex;
-  GameFactionRuntimeImage *factionRecordCursor;
+  GameFactionRuntimeRecord *factionRecordCursor;
   
-  factionRecordCursor = &g_GameFactionRuntimeImage;
+  factionRecordCursor = g_GameFactionRuntimeImage.records;
   factionsRemaining = 8;
   groupSlotsRemaining = 256;
   groupSlotIndex = 0;
-  do {
-    do {
+  for (; factionsRemaining != 0; factionsRemaining--) {
+    for (; groupSlotsRemaining != 0; groupSlotsRemaining--) {
       if (runtimeGroupMember ==
-          factionRecordCursor->records[0].runtimeGroupMembers8x32[groupSlotIndex]) {
-        factionRecordCursor->records[0].runtimeGroupMembers8x32[groupSlotIndex] = nullptr;
+          factionRecordCursor->runtimeGroupMembers8x32[groupSlotIndex]) {
+        factionRecordCursor->runtimeGroupMembers8x32[groupSlotIndex] = nullptr;
       }
       groupSlotIndex++;
-      groupSlotsRemaining--;
-    } while (groupSlotsRemaining != 0);
+    }
     /* the cursor steps one faction record (0x740 bytes) at a time */
-    factionRecordCursor = (GameFactionRuntimeImage *)(factionRecordCursor->records + 1);
+    factionRecordCursor++;
     groupSlotsRemaining = 256;
     groupSlotIndex = 0;
-    factionsRemaining--;
-  } while (factionsRemaining != 0);
+  }
 }
 
 /* Checks whether the faction already has armyAssetRecord pending: in its secondary army-asset list, or in
    production in one of its class 0x0B/0x0D structures (state word 0x2E == 1). The result is
    false when found, true when not.
 */
-Bool8 FactionRuntime_IsArmyAssetNotPending
+bool FactionRuntime_IsArmyAssetNotPending
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
@@ -70,10 +68,10 @@ Bool8 FactionRuntime_IsArmyAssetNotPending
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    modelPayload = (int *)ownerNode->runtimePayload;
-    if ((factionIndex == ((ModelRuntimeSlot *)modelPayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
-        ((((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) ||
-         (((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13)) &&
+    modelPayload = static_cast<int *>(ownerNode->runtimePayload.get()); /* the ModelRuntimeSlot as words */
+    if ((factionIndex == WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
+        ((WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) ||
+         (WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13)) &&
         (modelPayload[46] == 1)) {
       activeAssetRecord = Thandor_U32ToPointer<ArmyAssetRecordPrefix>(modelPayload[24]); /* 32-bit format field: ModelRuntimeSlot class state word 24 (asset in production) */
       if (armyAssetRecord == activeAssetRecord) {
@@ -101,6 +99,7 @@ void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId
   factionRecord = &g_GameFactionRuntimeImage.records[factionIndex];
   /* Original quirk: the count is tested after the first append, so repetitionCount 0 wraps around and fills
      the list up to its capacity. */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (factionRecord->secondaryArmyAssetCount >= FACTION_ARMY_ASSET_LIST_CAPACITY) {
       return;
@@ -114,11 +113,11 @@ void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId
 /* Whether a producing structure of class producerClassId is building armyDefinition right now: payload [0x18]
    holds the army in production; a class 0x0D structure must also be able to build the army (its definition's
    classParameterC4 against the army's flags) and have production state [0x2E] == 1. */
-static Bool8 GameFactionRuntime_StructureProducesArmy(const int *modelPayload,int producerClassId,
+static bool GameFactionRuntime_StructureProducesArmy(const int *modelPayload,int producerClassId,
           const ArmyAssetRecordPrefix *armyDefinition)
 {
   if (producerClassId == MODEL_RUNTIME_CLASS_13) {
-    return (((uint32_t)((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->classParameterC4 &
+    return (((uint32_t)reinterpret_cast<const ModelRuntimeSlot *>(modelPayload)->definitionOrSavedId.runtimeDefinition->classParameterC4 &
              armyDefinition[1].selectionDetailTemplateVariantIndex) != 0) &&
            (armyDefinition->registryId == modelPayload[24]) && (modelPayload[46] == 1);
   }
@@ -203,9 +202,9 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    modelPayload = (int *)ownerNode->runtimePayload;
-    if ((factionIndex != ((ModelRuntimeSlot *)modelPayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) ||
-        (producerClassId != ((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId)) {
+    modelPayload = static_cast<int *>(ownerNode->runtimePayload.get()); /* the ModelRuntimeSlot as words */
+    if ((factionIndex != WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) ||
+        (producerClassId != WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId)) {
       continue;
     }
     if (GameFactionRuntime_StructureProducesArmy(modelPayload,producerClassId,armyDefinition)) {
@@ -224,7 +223,7 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
    moving the later entries down one slot, and returns true; returns false when there is none.
    Original quirk: the last move reads the entry one past the count (with a full list of 64 that is the first
    runtime group member pointer that follows the list). */
-static Bool8 GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRecord *factionRecord,
+static bool GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRecord *factionRecord,
           const ArmyAssetRecordPrefix *armyDefinition)
 {
   uint32_t *primaryAssets;
@@ -263,7 +262,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
     return;
   }
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  playerBlock->pendingPlacementArmyAsset = (uintptr_t)armyDefinition;
+  playerBlock->pendingPlacementArmyAsset = reinterpret_cast<uintptr_t>(armyDefinition);
   if (!GameFactionRuntime_RemoveFirstPrimaryArmyAsset(&g_GameFactionRuntimeImage.records[factionIndex],
                                                       armyDefinition)) {
     playerBlock->pendingPlacementArmyAsset = 0;
@@ -272,12 +271,12 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
   if (factionIndex != (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex) {
     return;
   }
-  InGameArmyStock_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameArmyStock_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
   if (playerRuntimeId != g_LocalPlayerRuntimeId) {
     return;
   }
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING;
-  g_InGamePendingPlacementArmyAsset = (intptr_t)armyDefinition;
+  g_InGamePendingPlacementArmyAsset = reinterpret_cast<intptr_t>(armyDefinition);
   g_InGamePlacementSurfaceHeightQ12OrSentinel = INT32_MAX; /* no surface picked yet */
 }
 
@@ -309,7 +308,7 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
     g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount++;
   }
   if (factionIndex == runtimeRoot->worldRuntime.activeFactionRuntimeIndex) {
-    InGameArmyStock_RebuildGrid((UiNodeBase *)runtimeRoot);
+    InGameArmyStock_RebuildGrid(&runtimeRoot->rootUi.base);
     if (playerRuntimeId == g_LocalPlayerRuntimeId) {
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING;
       g_InGamePendingPlacementArmyAsset = 0;
@@ -341,6 +340,6 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
   g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
        g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + ((int)(price * 7) >> 3);
   if ((g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex == factionIndex) {
-    InGameArmyStock_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+    InGameArmyStock_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
   }
 }

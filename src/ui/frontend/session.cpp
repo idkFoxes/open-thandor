@@ -5,7 +5,9 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <thandor/core/bytes.h>
 #include <thandor/ui/frontend/session.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -25,8 +27,8 @@ void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
           uint32_t unusedArgument3)
 
 {
-  Resource_Release((void *)g_FrontendLoadedCampaignAsset);
-  g_FrontendLoadedCampaignAsset = 0;
+  Resource_Release(g_FrontendLoadedCampaignAsset);
+  g_FrontendLoadedCampaignAsset = nullptr;
   g_FrontendScenarioInitializationCount = 0;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,2);
 }
@@ -49,14 +51,14 @@ void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
     parentNode = source->parent;
   }
   Movie_Close();
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(source,frontendViewModeStack));
+  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(source)->frontendViewModeStack));
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage
-            (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->textureSource);
-  g_MemoryApi.free(((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels);
-  g_MemoryApi.free(((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels);
-  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->textureSource = nullptr;
-  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels = nullptr;
-  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels = nullptr;
+            (FrontendUi_Image(source)->moviePlaybackView.textureSource);
+  g_MemoryApi.free(FrontendUi_Image(source)->moviePlaybackView.blendFactorPixels);
+  g_MemoryApi.free(FrontendUi_Image(source)->moviePlaybackView.blendedSourcePixels);
+  FrontendUi_Image(source)->moviePlaybackView.textureSource = nullptr;
+  FrontendUi_Image(source)->moviePlaybackView.blendFactorPixels = nullptr;
+  FrontendUi_Image(source)->moviePlaybackView.blendedSourcePixels = nullptr;
   g_CursorVisibilityToken++;
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
 }
@@ -114,20 +116,18 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
     source = source->parent;
     parentNode = source->parent;
   }
-  g_FrontendPlayerRuntimeBlockCount = ((UiListControl *)FRONTEND_UI(source,hostLobbyPlayerList))->rowCount;
+  g_FrontendPlayerRuntimeBlockCount = FrontendUi_Image(source)->hostLobbyPlayerList.rowCount;
   g_FrontendExpectedPlayerRuntimeBlockCount = 0;
   g_FrontendPendingSessionPlayerCount = g_FrontendPlayerRuntimeBlockCount;
   seed = Random_NextPrimary();
   Random_SetBothSeeds(seed);
   Random_SelectSecondaryStream();
-  recordsRemaining = 8;
   playerRecordCursor = g_FrontendPlayerRuntimeBlocks;
-  do {
-    playerRecordCursor->factionAssignment.roleStateFlags = 0;
+  for (recordsRemaining = 8; recordsRemaining != 0; recordsRemaining--) {
+    playerRecordCursor->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
     playerRecordCursor->colourCycleFlags = 0;
     playerRecordCursor++;
-    recordsRemaining--;
-  } while (recordsRemaining != 0);
+  }
   g_FrontendHostSnapshotTransferCountdown = FRONTEND_SNAPSHOT_REQUEST_RETRY_TICKS;
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,1);
 }
@@ -141,7 +141,7 @@ void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unuse
           GameSpeedPercent gameSpeedPercent)
 
 {
-  ((UiRangeSliderControl *)FRONTEND_UI(g_FrontendRootNode,gameSpeedSlider))->value = gameSpeedPercent;
+  g_FrontendRootNode->gameSpeedSlider.value = gameSpeedPercent;
 }
 
 
@@ -152,9 +152,9 @@ void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
 
 {
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_QUIT_CONFIRM,
-                             (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+                             UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    frontendUi->menuRoomModelView.contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
 }
@@ -175,7 +175,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   FrontendUiImage *frontendUi;
 
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
-  frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,clientLobbyLeaveButton));
+  frontendUi = reinterpret_cast<FrontendUiImage *>(Thandor_Bytes(source) - offsetof(FrontendUiImage,clientLobbyLeaveButton));
   FrontendNetworkGamePage_Show(frontendUi);
   FrontendNetworkGamePage_ClearSessionList(frontendUi);
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
@@ -188,9 +188,9 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   localPlayerRecord->playerName.textUtf16[0] = 0;
   localPlayerRecord->playerName.textUtf16[1] = 0;
   firstPlayerRecord->playerRuntimeId = 0;
-  firstPlayerRecord->factionAssignment.roleStateFlags = 0;
+  firstPlayerRecord->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
   firstPlayerRecord->colourCycleFlags = 0;
-  firstPlayerRecord->snapshotTransferFlags = 0;
+  firstPlayerRecord->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
 }
 
 
@@ -199,7 +199,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
    whose expiry ran out by compacting the 0xB0-byte records in place, rebuilds the row pointers,
    keeps the selection on the same session (row 0 when the selected one went away) and refreshes the list.
 */
-void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView *frontendRuntime)
+void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontendRuntime)
 
 {
   UiTransferPayloadByteCount *expiryTicks;
@@ -209,56 +209,53 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
   FrontendSessionDiscoveryRecord *sourceRecord;
   FrontendSessionDiscoveryRecord *destinationRecord;
   UiListRowCount rowsRemaining;
-  int dwordsRemaining;
   Ptr32<void> *rowSlotCursor;
   Ptr32<FrontendSessionDiscoveryRecord> *rowPointerCursor;
   uint32_t *sourceDwordCursor;
   uint32_t *destinationDwordCursor;
   
-  rowSlotCursor = frontendRuntime->sessionDiscoveryList.rowSlots;
+  rowSlotCursor = frontendRuntime->sessionList.rowSlots;
   sourceRecord = g_FrontendSessionDiscoveryRecords;
   destinationRecord = g_FrontendSessionDiscoveryRecords;
   rowPointerCursor = g_FrontendSessionListRows;
-  /* the record field typed payloadByteCount holds the session's expiry ticks */
-  for (rowsRemaining = frontendRuntime->sessionDiscoveryList.rowCount; rowsRemaining != 0; rowsRemaining--) {
+  /* the record field typed payloadByteCount holds the session's expiry ticks; the records are compacted dword
+     by dword through uint32_t cursors, as in the original */
+  for (rowsRemaining = frontendRuntime->sessionList.rowCount; rowsRemaining != 0; rowsRemaining--) {
     expiryTicks = &sourceRecord->advertisement.payloadByteCount;
     *expiryTicks = *expiryTicks - 1;
-    destinationDwordCursor = (uint32_t *)destinationRecord;
+    destinationDwordCursor = reinterpret_cast<uint32_t *>(destinationRecord);
     if (*expiryTicks == 0) {
-      sourceDwordCursor = (uint32_t *)(sourceRecord + 1);
-      rowCountField = &frontendRuntime->sessionDiscoveryList.rowCount;
+      sourceDwordCursor = reinterpret_cast<uint32_t *>(sourceRecord + 1);
+      rowCountField = &frontendRuntime->sessionList.rowCount;
       *rowCountField = *rowCountField - 1;
-      currentSelectedSlot = frontendRuntime->sessionDiscoveryList.selectedRowSlot;
+      currentSelectedSlot = frontendRuntime->sessionList.selectedRowSlot;
       if (rowSlotCursor == currentSelectedSlot) {
-        frontendRuntime->sessionDiscoveryList.selectedRowSlot =
-             frontendRuntime->sessionDiscoveryList.rowSlots;
+        frontendRuntime->sessionList.selectedRowSlot =
+             frontendRuntime->sessionList.rowSlots;
       }
       else if (rowSlotCursor <= currentSelectedSlot) {
-        selectedSlotField = &frontendRuntime->sessionDiscoveryList.selectedRowSlot;
+        selectedSlotField = &frontendRuntime->sessionList.selectedRowSlot;
         *selectedSlotField = *selectedSlotField - 1;
       }
     }
     else {
-      sourceDwordCursor = (uint32_t *)(sourceRecord + 1);
+      sourceDwordCursor = reinterpret_cast<uint32_t *>(sourceRecord + 1);
       *rowPointerCursor = destinationRecord;
-      destinationDwordCursor = (uint32_t *)(destinationRecord + 1);
+      destinationDwordCursor = reinterpret_cast<uint32_t *>(destinationRecord + 1);
       rowPointerCursor++;
       if (destinationDwordCursor != sourceDwordCursor) {
-        sourceDwordCursor = (uint32_t *)sourceRecord;
-        destinationDwordCursor = (uint32_t *)destinationRecord;
-        for (dwordsRemaining = sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t); dwordsRemaining != 0;
-            dwordsRemaining--) {
-          *destinationDwordCursor = *sourceDwordCursor;
-          sourceDwordCursor++;
-          destinationDwordCursor++;
-        }
+        sourceDwordCursor = reinterpret_cast<uint32_t *>(sourceRecord);
+        destinationDwordCursor = reinterpret_cast<uint32_t *>(destinationRecord);
+        destinationDwordCursor = std::copy_n(sourceDwordCursor,sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t),destinationDwordCursor);
+        sourceDwordCursor += sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t);
       }
     }
     rowSlotCursor++;
-    sourceRecord = (FrontendSessionDiscoveryRecord *)sourceDwordCursor;
-    destinationRecord = (FrontendSessionDiscoveryRecord *)destinationDwordCursor;
+    /* the dword cursors end one record further on: read them back as the next records */
+    sourceRecord = reinterpret_cast<FrontendSessionDiscoveryRecord *>(sourceDwordCursor);
+    destinationRecord = reinterpret_cast<FrontendSessionDiscoveryRecord *>(destinationDwordCursor);
   }
-  UiPointerList_RefreshSelectionAndQueueAction(&frontendRuntime->sessionDiscoveryList);
+  UiPointerList_RefreshSelectionAndQueueAction(UiListControl_AsPointerList(&frontendRuntime->sessionList));
 }
 
 
@@ -272,13 +269,13 @@ void FrontendSession_PeriodicTick()
 
 {
   InGameRuntimeRoot *inGameRoot;
-  Bool8 callResult;
+  bool callResult;
   void *packet;
   void *packetEndpoint;
   uint32_t networkTickInterval;
-  static Bool8 s_loggedZeroTickInterval;
+  static bool s_loggedZeroTickInterval;
 
-  callResult = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   /* The original divides by g_SessionNetworkTickInterval as it is; 0 is taken as 1 here because the
      interval comes from the host's join ack (the result is the same for any other value). */
@@ -292,7 +289,7 @@ void FrontendSession_PeriodicTick()
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+      g_SpinLockRelease(&g_InGameStateTickSpinLock);
       return;
     }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
@@ -304,13 +301,13 @@ void FrontendSession_PeriodicTick()
                g_SessionNetworkTickInterval) {
         while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
           FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+                    (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet));
         }
         callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
         if (callResult) {
           /* not every peer has synced yet: retry on the next timer tick */
           g_InGameNetworkTickCountdown = 1;
-          g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+          g_SpinLockRelease(&g_InGameStateTickSpinLock);
           return;
         }
       }
@@ -321,32 +318,32 @@ void FrontendSession_PeriodicTick()
       /* client at an interval boundary: wait until the host's command batch has arrived */
       callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
       if (!callResult) {
-        g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+        g_SpinLockRelease(&g_InGameStateTickSpinLock);
         return;
       }
       do {
         if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) break;
         callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
-                          ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+                          (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet));
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlag();
       if (callResult) {
-        g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+        g_SpinLockRelease(&g_InGameStateTickSpinLock);
         return;
       }
     }
     else if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+      g_SpinLockRelease(&g_InGameStateTickSpinLock);
       return;
     }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
   }
   g_SessionNetworkTickCounter++;
-  if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0) &&
+  if ((Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) &&
      (inGameRoot->activeEndMovieRuntime != nullptr)) {
     g_EndMoviePendingTicks++;
   }
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  g_SpinLockRelease(&g_InGameStateTickSpinLock);
 }
 
 
@@ -364,7 +361,7 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers()
   FrontendPlayerRuntimeBlockCount recipientsRemaining;
   int playersRemaining;
   int removedCount;
-  Bool8 expired;
+  bool expired;
   FrontendPlayerRuntimeRecord *sourcePlayer;
   FrontendPlayerRuntimeRecord *destinationPlayer;
   FrontendCommandPacketRecord *sourceCommandRecord;
@@ -480,7 +477,7 @@ void FrontendClientSession_TickHostTimeout()
   localPlayerRecord->playerName.textUtf16[0] = 0;
   localPlayerRecord->playerName.textUtf16[1] = 0;
   localPlayerRecord->playerRuntimeId = 0;
-  localPlayerRecord->factionAssignment.roleStateFlags = 0;
+  localPlayerRecord->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
 }
 
 
@@ -496,14 +493,14 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
 
 {
   uint32_t *displayFlags;
-  uintptr_t frontendRootAddress;
+  FrontendUiImage *frontendRoot;
 
-  frontendRootAddress = g_FrontendRootNode;
+  frontendRoot = g_FrontendRootNode;
   Movie_Close();
   /* percent * 256 / 100 */
   g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
-       (uint32_t)(((UiRangeSliderControl *)FRONTEND_UI(frontendRootAddress,gameSpeedSlider))->value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
-  displayFlags = &((UiImageActionControl *)FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
+       (uint32_t)(frontendRoot->gameSpeedSlider.value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
+  displayFlags = &frontendRoot->briefingImage.displayFlags;
   *displayFlags = *displayFlags | 8;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,romActionIndex);
 }
@@ -518,11 +515,11 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
           FrontendStatusCode romActionIndex)
 
 {
-  uintptr_t frontendRootAddress;
+  FrontendUiImage *frontendRoot;
 
-  frontendRootAddress = g_FrontendRootNode;
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
-  ((FrontendModelPointerContext *)FRONTEND_UI(frontendRootAddress,menuRoomModelView))->contextFlags &=
+  frontendRoot = g_FrontendRootNode;
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack));
+  frontendRoot->menuRoomModelView.contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(romActionIndex);
 }
@@ -560,7 +557,7 @@ void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *player
   parentCursor = playerListControl->base.parent;
   frontendRoot = playerListControl;
   while (parentCursor != UI_NODE_NONE) {
-    frontendRoot = (UiPointerListControl *)(frontendRoot->base).parent;
+    frontendRoot = UiNode_As<UiPointerListControl>(frontendRoot->base.parent.get());
     parentCursor = frontendRoot->base.parent;
   }
   if (playerListControl->selectedRowSlot == playerListControl->rowSlots) {

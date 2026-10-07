@@ -7,6 +7,7 @@
 
 #include <thandor/assets/text/richtext.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -42,7 +43,7 @@ void RichTextCommandStream_PatchPayloadBySelector
       case RICHTEXT_OP_JUMP_NESTED:
         /* payload: stream pointer at commandCursor + 1, selector at commandCursor + 3 */
         stream = commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
-        if (selector == *(int *)(commandCursor + 3)) {
+        if (selector == static_cast<int>(Thandor_LoadU32(commandCursor + 3))) { /* 2-byte aligned payload dword */
           THANDOR_PTR32_AT(void, commandCursor + 1) = replacementPayload;
         }
         break;
@@ -95,7 +96,7 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
    than RICHTEXT_NESTING_LIMIT) the output is cut and terminated and false is returned. (The original also
    returned the byte count including the terminator, which no caller reads.)
 */
-Bool8 RichTextCommandStream_CopyToNarrow
+bool RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
 
 {
@@ -116,7 +117,7 @@ Bool8 RichTextCommandStream_CopyToNarrow
     codeUnit = *commandCursor;
     readCursor = commandCursor + 1;
     if (codeUnit == 0) {
-      readCursor = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
+      readCursor = Asset_RecordAt<uint16_t>(nestedReturnStack[--nestedDepth],RICHTEXT_NESTED_PAYLOAD_BYTES);
       continue;
     }
     if ((short)codeUnit < 0) {
@@ -188,7 +189,7 @@ Bool8 RichTextCommandStream_CopyToNarrow
    the terminator in *outBytesWritten (may be NULL); on overflow (or nesting deeper than RICHTEXT_NESTING_LIMIT)
    the output is cut and terminated, *outBytesWritten is left untouched and false is returned.
 */
-Bool8 RichTextCommandStream_CopyExpanded
+bool RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source,
            uint32_t *outBytesWritten)
 
@@ -208,7 +209,7 @@ Bool8 RichTextCommandStream_CopyExpanded
   while ((*source != 0) || (nestedDepth != 0)) {
     commandCodeUnit = *source;
     if (commandCodeUnit == 0) {
-      source = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
+      source = Asset_RecordAt<uint16_t>(nestedReturnStack[--nestedDepth],RICHTEXT_NESTED_PAYLOAD_BYTES);
       continue;
     }
     nextSource = source + 1;
@@ -273,7 +274,7 @@ Bool8 RichTextCommandStream_CopyExpanded
   if (1 < (int)capacityBytes) {
     *destinationCursor = 0;
     if (outBytesWritten != nullptr) {
-      *outBytesWritten = (uint32_t)((uint8_t *)destinationCursor - (uint8_t *)destination);
+      *outBytesWritten = (uint32_t)Asset_ByteDistance(destinationCursor,destination);
     }
     return true;
   }
@@ -287,13 +288,13 @@ Bool8 RichTextCommandStream_CopyExpanded
    Logged once. */
 static void RichTextCommandStream_SkipNullNestedStream(uint16_t **commandStream)
 {
-  static Bool8 s_logged = false;
+  static bool s_logged = false;
 
   if (!s_logged) {
     s_logged = true;
     Thandor_Log("RichTextCommandStream_FlattenNestedToRuntimeBuffer: NULL nested stream skipped");
   }
-  *commandStream = (uint16_t *)((uint8_t *)*commandStream + RICHTEXT_NESTED_PAYLOAD_BYTES);
+  *commandStream = Asset_RecordAt<uint16_t>(*commandStream,RICHTEXT_NESTED_PAYLOAD_BYTES);
 }
 
 /* Copies commandStream into g_FontRuntimeBuffer with every nested stream inlined, so the line measuring and
@@ -314,7 +315,7 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
   
   remainingWords = RICHTEXT_RUNTIME_BUFFER_UNITS;
   nestedDepth = 0;
-  outputCursor = (uint16_t *)g_FontRuntimeBuffer;
+  outputCursor = reinterpret_cast<uint16_t *>(g_FontRuntimeBuffer); /* the byte buffer holds the flattened UTF-16 stream */
   /* Runs until the terminator of the outermost stream (the terminator of a nested stream returns to the
      caller stream). */
   while ((*commandStream != 0) || (nestedDepth != 0)) {
@@ -324,7 +325,7 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
     if (commandCodeUnit == 0) {
       nestedDepth--;
       /* resume behind the nested-stream command's payload */
-      commandStream = (uint16_t *)((uint8_t *)nestedReturnStack[nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
+      commandStream = Asset_RecordAt<uint16_t>(nestedReturnStack[nestedDepth],RICHTEXT_NESTED_PAYLOAD_BYTES);
       continue;
     }
     /* Plain code units take the same path as command 0 (copy one word). */
@@ -341,10 +342,11 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
       if (RICHTEXT_RECORD_UNITS_LITERAL_COLOR < remainingWords) {
         *outputCursor = commandCodeUnit;
         remainingWords = remainingWords - RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
-        *(uint32_t *)(outputCursor + 1) = *(uint32_t *)commandStream;
-        *(uint32_t *)(outputCursor + 3) = *(uint32_t *)(commandCursor + 3);
-        *(uint32_t *)(outputCursor + 5) = *(uint32_t *)(commandCursor + 5);
-        *(uint32_t *)(outputCursor + 7) = *(uint32_t *)(commandCursor + 7);
+        /* payload dwords, 2-byte aligned */
+        Thandor_StoreU32(outputCursor + 1,Thandor_LoadU32(commandStream));
+        Thandor_StoreU32(outputCursor + 3,Thandor_LoadU32(commandCursor + 3));
+        Thandor_StoreU32(outputCursor + 5,Thandor_LoadU32(commandCursor + 5));
+        Thandor_StoreU32(outputCursor + 7,Thandor_LoadU32(commandCursor + 7));
         outputCursor = outputCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
         commandStream = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
       }
@@ -385,8 +387,9 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
       if (RICHTEXT_RECORD_UNITS_INLINE_IMAGE < remainingWords) {
         *outputCursor = commandCodeUnit;
         remainingWords = remainingWords - RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
-        *(uint32_t *)(outputCursor + 1) = *(uint32_t *)commandStream;
-        *(uint32_t *)(outputCursor + 3) = *(uint32_t *)(commandCursor + 3);
+        /* payload dwords, 2-byte aligned */
+        Thandor_StoreU32(outputCursor + 1,Thandor_LoadU32(commandStream));
+        Thandor_StoreU32(outputCursor + 3,Thandor_LoadU32(commandCursor + 3));
         outputCursor = outputCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
         commandStream = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
       }
@@ -423,7 +426,7 @@ int FatalError_CopyRichTextToNarrow
   uint16_t *operand;
   uint16_t codeUnit;
   uint32_t remainingCapacityBytes;
-  Bool8 newlineCapacityUnderflow;
+  bool newlineCapacityUnderflow;
   uint16_t *nestedReturnStack[FATAL_ERROR_RICHTEXT_NESTING_MAX]; /* return points of nested texts (the original keeps them on its call stack) */
   int nestedDepth;
 
@@ -435,7 +438,7 @@ int FatalError_CopyRichTextToNarrow
     codeUnit = *command;
     if (codeUnit == 0) {
       /* end of a nested stream: continue behind the payload of its call record */
-      command = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
+      command = Asset_RecordAt<uint16_t>(nestedReturnStack[--nestedDepth],RICHTEXT_NESTED_PAYLOAD_BYTES);
       continue;
     }
     record = command;

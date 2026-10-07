@@ -34,7 +34,7 @@ GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb = nullptr
 /* g_GraphicsFramebufferBeginAccess hook: the in-memory software framebuffer (the SDL3 backend's) needs no lock,
    so it only reports success (returns false). The original locked its DirectDraw back surface here.
 */
-Bool8 GraphicsFramebuffer_BeginAccessStub()
+bool GraphicsFramebuffer_BeginAccessStub()
 
 {
   return false;
@@ -61,7 +61,7 @@ void GraphicsFramebuffer_InitCaptureAsset
   uint32_t remainingDwords;
   uint32_t packedTimestamp;
 
-  clearDword = (uint32_t *)capturedAsset;
+  clearDword = reinterpret_cast<uint32_t *>(capturedAsset); /* the whole block, cleared dword by dword */
   for (remainingDwords = allocationSize >> 2; remainingDwords != 0; remainingDwords--) {
     *clearDword = 0;
     clearDword++;

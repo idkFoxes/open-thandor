@@ -9,19 +9,20 @@
 #define THANDOR_PLATFORM_FILESYSTEM_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 #include <thandor/platform/system/types.h>
 
-typedef struct _WIN32_FIND_DATAA _WIN32_FIND_DATAA, *P_WIN32_FIND_DATAA;
-typedef struct _FILETIME _FILETIME, *P_FILETIME;
+struct _WIN32_FIND_DATAA;
+struct _FILETIME;
 
 struct _FILETIME {
     DWORD dwLowDateTime;
     DWORD dwHighDateTime;
 };
 
-typedef struct _FILETIME FILETIME;
+using FILETIME = struct _FILETIME;
 
 struct _WIN32_FIND_DATAA {
     DWORD dwFileAttributes;
@@ -36,18 +37,22 @@ struct _WIN32_FIND_DATAA {
     CHAR cAlternateFileName[14];
 };
 
-enum {
+/* g_FileSystemOpen flags (Win32File_Open maps them to the CreateFileA disposition, share mode and access). */
+enum class FileSystemOpenFlags : uint32_t {
+    FILESYSTEM_OPEN_NONE=0, /* open an existing file for reading, shared */
     FILESYSTEM_OPEN_CREATE_OR_TRUNCATE=1,
     FILESYSTEM_OPEN_EXCLUSIVE_SHARE=2,
     FILESYSTEM_OPEN_EXISTING_OR_CREATE=4,
     FILESYSTEM_OPEN_WRITE_ACCESS=8
 };
-using FileSystemOpenFlags = int;
+THANDOR_FLAG_ENUM(FileSystemOpenFlags);
 
-enum {
+/* g_FileSystemCreateDirectoryRecursive flags (Win32File_CreateDirectoryRecursive). */
+enum class FileSystemCreateDirectoryFlags : uint32_t {
+    FILESYSTEM_CREATE_DIRECTORY_NONE=0,
     FILESYSTEM_CREATE_DIRECTORY_RECURSIVE=1
 };
-using FileSystemCreateDirectoryFlags = int;
+THANDOR_FLAG_ENUM(FileSystemCreateDirectoryFlags);
 
 using FileSystemOutputCapacityBytes = uint32_t;
 
@@ -58,8 +63,8 @@ using FileSystemCloseProc = void (void * handle);
 using FileSystemCreateDirectoryRecursiveProc = uint32_t (FileSystemCreateDirectoryFlags flags, uint16_t * path);
 using FileSystemDeleteProc = uint32_t (uint32_t unusedFlags, uint16_t * path);
 using FileSystemEnumerateDirectoryOrVolumeEntriesProc = uint32_t (FileSystemEnumerationMode mode, uint32_t reserved, FileSystemOutputCapacityBytes outputCapacityBytes, uint8_t * outputRecords, uint8_t * pathOrVolumeText);
-using FileSystemGetPositionProc = Bool8 (void * handle, uint32_t * outPosition);
-using FileSystemGetSizeProc = Bool8 (void * handle, uint32_t * outSize);
+using FileSystemGetPositionProc = bool (void * handle, uint32_t * outPosition);
+using FileSystemGetSizeProc = bool (void * handle, uint32_t * outSize);
 using FileSystemOpenProc = uint32_t (FileSystemOpenFlags openFlags, uint16_t * path, void * * outHandle);
 using FileSystemReadExactProc = uint32_t (FileIoByteCount byteCount, void * destination, void * handle);
 using FileSystemSeekProc = uint32_t (FileSystemSeekOrigin moveMethod, FileSystemFilePosition distance, void * handle);

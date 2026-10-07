@@ -15,10 +15,10 @@
 /* Hexagonal radius scans (TerrainHeightDelta_*, TerrainHeightBand_*, TerrainAuxHeightThreshold_*): the scan step
    counter grows by 4 per cell along a straight direction and by 7 (about 4 * sqrt(3)) per step along a wedge's
    diagonal, and a scan stops at g_TerrainScanStepLimit (radius / 0x240, clamped to 1..255). */
-#define TERRAIN_SCAN_STEP_STRAIGHT 4
-#define TERRAIN_SCAN_STEP_DIAGONAL 7
-#define TERRAIN_SCAN_RADIUS_PER_STEP 0x240 /* world units per step: one cell (0x900) is 4 steps */
-#define TERRAIN_SCAN_STEP_LIMIT_MAX 255
+inline constexpr int TERRAIN_SCAN_STEP_STRAIGHT = 4;
+inline constexpr int TERRAIN_SCAN_STEP_DIAGONAL = 7;
+inline constexpr int TERRAIN_SCAN_RADIUS_PER_STEP = 0x240; /* world units per step: one cell (0x900) is 4 steps */
+inline constexpr int TERRAIN_SCAN_STEP_LIMIT_MAX = 255;
 
 extern uint32_t g_TerrainScanRowStrideBytes;
 
@@ -48,15 +48,15 @@ inline FieldGridCell *TerrainHexScan_Neighbor(FieldGridCell *cell)
   if constexpr (Direction == 0) {
     return cell + 1;
   } else if constexpr (Direction == 1) {
-    return FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes);
+    return FieldGridCell_AtByteOffset(cell + 1,-g_TerrainScanRowStrideBytes);
   } else if constexpr (Direction == 2) {
-    return FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes);
+    return FieldGridCell_AtByteOffset(cell,-g_TerrainScanRowStrideBytes);
   } else if constexpr (Direction == 3) {
     return cell - 1;
   } else if constexpr (Direction == 4) {
-    return FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes);
+    return FieldGridCell_AtByteOffset(cell - 1,g_TerrainScanRowStrideBytes);
   } else {
-    return FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes);
+    return FieldGridCell_AtByteOffset(cell,g_TerrainScanRowStrideBytes);
   }
 }
 
@@ -88,7 +88,7 @@ inline TerrainHexScan_CellPolicy<true,VisitFn> TerrainHexScan_TestPolicy(VisitFn
 template <class Policy>
 inline bool TerrainHexScan_EndsAt(FieldGridCell *cell,TerrainDirectionalScanStep scanStep,Policy &policy)
 {
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return true;
   }
   if constexpr (requires { policy.visit(cell,scanStep); }) {
@@ -109,7 +109,7 @@ inline bool TerrainHexScan_EndsAt(FieldGridCell *cell,TerrainDirectionalScanStep
 /* Straight leg along Direction from cell: TERRAIN_SCAN_STEP_STRAIGHT steps per cell until the step limit.
    Returns true only for a test policy that failed. */
 template <int Direction,class Policy>
-inline Bool8 TerrainHexScan_Leg(TerrainDirectionalScanStep scanStep,FieldGridCell *cell,Policy policy)
+inline bool TerrainHexScan_Leg(TerrainDirectionalScanStep scanStep,FieldGridCell *cell,Policy policy)
 {
   while (scanStep < g_TerrainScanStepLimit) {
     if (TerrainHexScan_EndsAt(cell,scanStep,policy)) {
@@ -127,7 +127,7 @@ inline Bool8 TerrainHexScan_Leg(TerrainDirectionalScanStep scanStep,FieldGridCel
    4 * sqrt(3)), a leg runs along b from S+2Db and the spine continues at S+Db+Da. The radius is therefore only
    approximate (4 per straight cell, 7 per spine cell). Returns true only for a test policy that failed. */
 template <int Sector,class Policy>
-inline Bool8 TerrainHexScan_Sector(TerrainDirectionalScanStep scanStep,FieldGridCell *cell,Policy policy)
+inline bool TerrainHexScan_Sector(TerrainDirectionalScanStep scanStep,FieldGridCell *cell,Policy policy)
 {
   constexpr int DirectionA = Sector;
   constexpr int DirectionB = (Sector + 1) % 6;
@@ -160,7 +160,7 @@ inline Bool8 TerrainHexScan_Sector(TerrainDirectionalScanStep scanStep,FieldGrid
 /* The six sectors around centerCell (not visited itself), in the order 0..5, each from scan step 0; for a test
    policy the first failing sector ends the scan (left-to-right ||). */
 template <class Policy>
-inline Bool8 TerrainHexScan_AllSectors(FieldGridCell *centerCell,Policy policy)
+inline bool TerrainHexScan_AllSectors(FieldGridCell *centerCell,Policy policy)
 {
   return TerrainHexScan_Sector<0>(0,TerrainHexScan_Neighbor<0>(centerCell),policy) ||
          TerrainHexScan_Sector<1>(0,TerrainHexScan_Neighbor<1>(centerCell),policy) ||

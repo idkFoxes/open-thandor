@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/text.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -23,7 +24,7 @@ static uint16_t *UiSingleLineTextControl_GetCommandStream(UiSingleLineTextContro
    itself. */
 static void UiSingleLineTextControl_BlitFocusMarkPiece
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,int markTop,int x,uint32_t subresource,Bool8 shadow)
+          UiPixelCoordinate clipLeft,int markTop,int x,uint32_t subresource,bool shadow)
 
 {
   if (shadow) {
@@ -43,7 +44,7 @@ static void UiSingleLineTextControl_BlitFocusMarkPiece
    (or clipRight). */
 static void UiSingleLineTextControl_DrawFocusMark
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,int markTop,int markLeft,int lineWidth,int capWidth,Bool8 shadow)
+          UiPixelCoordinate clipLeft,int markTop,int markLeft,int lineWidth,int capWidth,bool shadow)
 
 {
   int rightCapX;
@@ -86,14 +87,14 @@ void UiSingleLineTextControl_DrawClipped
   int lineWidth;
   int alignOffsetY;
   int alignOffsetX;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   RichTextExtent textExtent;
   GraphicsTextureLogicalSize tileSize;
 
   textStyle = g_UiTextStyleNormal;
   alignOffsetX = 0;
   alignOffsetY = 0;
-  if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) ||
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED) ||
      ((control->labelFlags & UI_LABEL_HIDE_WHILE_SUPPRESSED) == 0)) {
     if ((control->labelFlags & UI_LABEL_OWN_STYLE_FONT) == 0) {
       control->styleOverride = control->styleOverride & ~UI_TEXT_STYLE_FONT_BYTE;
@@ -139,7 +140,7 @@ void UiSingleLineTextControl_DrawClipped
     lineWidth--;
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
-      if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) != 0) {
+      if (Any((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS)) {
         /* The focus mark: first its shadow one pixel down and right, then the mark itself. */
         UiSingleLineTextControl_DrawFocusMark
                   (clipBottom,clipRight,clipTop,clipLeft,alignOffsetY + 1 + (control->base).top,
@@ -155,7 +156,7 @@ void UiSingleLineTextControl_DrawClipped
       commandStream = UiSingleLineTextControl_GetCommandStream(control);
       focusLendTarget = control->focusChild;
       textStyle = g_UiTextStyleNormal;
-      if ((focusLendTarget != nullptr) && ((focusLendTarget->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+      if ((focusLendTarget != nullptr) && (Any(focusLendTarget->nodeFlags & UI_NODE_SUPPRESSED))) {
         textStyle = g_UiTextStyleDisabled;
       }
       if ((control->labelFlags & UI_LABEL_OWN_STYLE_FONT) == 0) {
@@ -184,7 +185,7 @@ void UiSingleLineTextControl_DrawClipped
       if (s_loggedMissingFocusChild == 0) {
         s_loggedMissingFocusChild = 1;
         Thandor_Log("focused label %p: focus not lent (focus child %p, framebuffer %s)",
-                    (void *)control,(void *)control->focusChild,
+                    static_cast<void *>(control),static_cast<void *>(control->focusChild.get()),
                     framebufferUnavailable ? "unavailable" : "accessed");
       }
     }
@@ -213,7 +214,7 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
   UiPackedTextStyle packedStyleOverride;
   uint16_t *commandStream;
   uint32_t textStyle;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   uint16_t *resolvedText;
   
   framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
@@ -258,7 +259,7 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
 {
   UiContainer_RelocateChildren(relocationDelta,&control->base);
   if ((control->labelFlags & UI_LABEL_TEXT_NEEDS_RELOCATION) != 0) {
-    control->text = (uint16_t *)((uint8_t *)control->text + relocationDelta);
+    control->text = Thandor_At<uint16_t>(control->text.get(), relocationDelta);
     control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
 }

@@ -8,6 +8,7 @@
 #include <thandor/assets/model/definitions.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
@@ -19,7 +20,7 @@ ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768] = {};
    (untouched on success) for an invalid header or at the first record that fails. (The original's success
    return value, the last registration's value, was read by no caller.)
 */
-Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
+bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
 
 {
   uint32_t registrationStatusCode;
@@ -29,11 +30,11 @@ Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
   registrationStatusCode = FATAL_ERROR_MODEL_ASSET_INVALID;
   if (asset->recordCountHeader.common.magic == ASSET_MAGIC_MDL &&
       asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_MDL_0008000A) {
-    definition = (ModelDefinitionResolveView *)(asset + 1);
+    definition = Asset_RecordAfter<ModelDefinitionResolveView>(asset);
     for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
       if (!ModelDefinition_RegisterAndResolveReferences(definition,asset,&registrationStatusCode)) break;
       /* advance by the record's leading byte size */
-      definition = (ModelDefinitionResolveView *)((uint8_t *)definition + definition->byteSize);
+      definition = Asset_RecordAt<ModelDefinitionResolveView>(definition,definition->byteSize);
     }
     if (recordsRemaining == 0) {
       return true;
@@ -50,7 +51,7 @@ Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
    ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters (a model class-init callback table slot) and by the
    army hangar-lowering step in gameplay/army/aircraft.cpp.
 */
-Bool8 ModelLookupTable_GetPackedPointPosition
+bool ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,GraphicsFixedVec3 *outLocalPosition)
 
@@ -60,7 +61,7 @@ Bool8 ModelLookupTable_GetPackedPointPosition
 
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
   entryCursor =
-       (ModelPackedPointRecord *)((uint8_t *)modelDefinition + modelDefinition->packedLookupTableRelativeOffset);
+       Asset_RecordAt<ModelPackedPointRecord>(modelDefinition,modelDefinition->packedLookupTableRelativeOffset);
   for (; entriesRemaining != 0; entriesRemaining--) {
     if ((keyClass | keyIndex << 4) == entryCursor->packedLookupKey) {
       if (outLocalPosition != nullptr) {
@@ -83,7 +84,7 @@ Bool8 ModelLookupTable_GetPackedPointPosition
    otherwise returns false and stores the address just past the table's last entry in *outEntry (one caller,
    ArmyPlacement_CanPlaceAnchoredModel, reads it anyway).
 */
-Bool8 ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
+bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,ModelPackedPointRecord **outEntry)
 
 {
@@ -92,7 +93,7 @@ Bool8 ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupK
 
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
   entryCursor =
-       (ModelPackedPointRecord *)((uint8_t *)modelDefinition + modelDefinition->packedLookupTableRelativeOffset);
+       Asset_RecordAt<ModelPackedPointRecord>(modelDefinition,modelDefinition->packedLookupTableRelativeOffset);
   for (; entriesRemaining != 0; entriesRemaining--) {
     if ((keyClass | keyIndex << 4) == entryCursor->packedLookupKey) {
       *outEntry = entryCursor;
@@ -124,9 +125,9 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
   for (; registrySlotsRemaining != 0; registrySlotsRemaining--) {
     registeredDefinition = *registryCursor;
     if (registeredDefinition != nullptr && registeredDefinition->definitionId == definitionId) {
-      *outBuildTicks = ((ModelDefinition *)registeredDefinition)->buildTicks;
-      *outEnergyLoadQ4 = ((ModelDefinition *)registeredDefinition)->buildEnergyLoadQ4;
-      *outXeniteCostQ4 = ((ModelDefinition *)registeredDefinition)->xeniteValueQ4;
+      *outBuildTicks = ModelDefinition_FromPrefix(registeredDefinition)->buildTicks;
+      *outEnergyLoadQ4 = ModelDefinition_FromPrefix(registeredDefinition)->buildEnergyLoadQ4;
+      *outXeniteCostQ4 = ModelDefinition_FromPrefix(registeredDefinition)->xeniteValueQ4;
       return 0;
     }
     registryCursor++;
@@ -151,7 +152,7 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
   registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
   while ((candidateDefinition = *registryCursor,
          candidateDefinition == nullptr ||
-         (runtimeClassId != ((ModelDefinition *)candidateDefinition)->requiredTechnologyBit))) {
+         (runtimeClassId != ModelDefinition_FromPrefix(candidateDefinition)->requiredTechnologyBit))) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -168,8 +169,8 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
    data: a node with more children than childSerializedOffsets holds or a tree deeper than
    MDL_NODE_TREE_MAX_DEPTH (a cyclic offset) fails with FATAL_ERROR_MODEL_ASSET_INVALID before its sprite is
    loaded. The stock models use at most 5 children and depth 5. */
-#define MDL_NODE_TREE_MAX_DEPTH 64
-static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uint8_t *asset,uint32_t *error,
+static constexpr int MDL_NODE_TREE_MAX_DEPTH = 64;
+static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ModelAssetHeader *asset,uint32_t *error,
                                                 uint32_t depth)
 {
   uint32_t childIndex;
@@ -181,7 +182,7 @@ static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ui
     return true;
   }
   if ((node->nodeFlags & 0xf) == 0) {
-    uint16_t *spritePath = (uint16_t *)(node + 1);
+    uint16_t *spritePath = Asset_RecordAfter<uint16_t>(node); /* the node's sprite path text follows it */
     SpriteAssetHeader *loadedSprite;
     SpriteAssetHeader *registered;
     /* ".spr". The original checks this call for failure, but in the original WidePath_SetExtensionCode never
@@ -189,7 +190,7 @@ static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ui
        WIDE_PATH_MAX_CODE_UNITS units and then leaves it unchanged). On an error the original abandons the whole tree walk at once; returning up the
        recursion is equivalent. */
     WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
-    loadedSprite = (SpriteAssetHeader *)Package_LoadEntry(spritePath,error);
+    loadedSprite = static_cast<SpriteAssetHeader *>(Package_LoadEntry(spritePath,error));
     if (loadedSprite == nullptr) {
       return true;
     }
@@ -215,7 +216,7 @@ static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ui
     /* relocate the child offset to a pointer in place */
     node->childSerializedOffsets[childIndex] = node->childSerializedOffsets[childIndex] + (int)(uintptr_t)asset;
     if (ModelDefinition_ResolveNodeSprites
-                  ((MdlSerializedNodeHeader *)(uintptr_t)node->childSerializedOffsets[childIndex],asset,error,
+                  (Thandor_U32ToPointer<MdlSerializedNodeHeader>(node->childSerializedOffsets[childIndex]),asset,error,
                    depth + 1)) {
       return true;
     }
@@ -237,7 +238,7 @@ static uint32_t ModelDefinition_ClaimRegistrySlot(ModelDefinitionResolveView *de
   }
   for (slotIndex = 0; slotIndex < MODEL_DEFINITION_REGISTRY_SLOT_COUNT; slotIndex++) {
     if (g_ModelDefinitionRegistry[slotIndex] == nullptr) {
-      g_ModelDefinitionRegistry[slotIndex] = (ModelDefinitionRecordPrefix *)definition;
+      g_ModelDefinitionRegistry[slotIndex] = ModelDefinitionResolveView_Prefix(definition);
       return 0;
     }
   }
@@ -278,7 +279,7 @@ static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveVi
     *destructionEffects[fieldIndex] = resolvedEffect;
   }
   /* -1: the definition has no emitter shot */
-  if (definition->emitterShotDefinitionReference != (ShotDefinition *)(intptr_t)-1) {
+  if (definition->emitterShotDefinitionReference != Thandor_U32ToPointer<ShotDefinition>(-1)) {
     status = ShotDefinitionRegistry_FindByIdWithError
                        ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference,&resolvedEmitterShot); /* 5f-format: ModelDefinition.emitterShotDefinitionReference (id on disk, pointer after resolve) */
     if (status != 0) return status;
@@ -318,7 +319,7 @@ static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *d
          g_GridTerrainClassThresholds[(int32_t)(GRID_TERRAIN_THRESHOLD_BIT24_MAX_WATER_SURFACE_DELTA + terrainClass)];
     uint32_t maxNormalAngle =
          g_GridTerrainClassThresholds[(int32_t)(GRID_TERRAIN_THRESHOLD_BIT28_MAX_TRIANGLE0_NORMAL_ANGLE + terrainClass)];
-    ((ModelDefinition *)definition)->classParameterCC = maxWaterSurfaceDelta;
+    ModelDefinition_FromResolveView(definition)->classParameterCC = maxWaterSurfaceDelta;
     definition->runtimeValue24 = maxNormalAngle;
   }
   else if (definition->placementContactKindIndex == 4) {
@@ -349,7 +350,7 @@ static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *d
    duplicate id, a full registry or any failed load/lookup returns false with its error code in *outError
    (untouched on success; the original's success return value was read by no caller).
 */
-Bool8 ModelDefinition_RegisterAndResolveReferences
+bool ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError)
 
 {
@@ -374,10 +375,10 @@ Bool8 ModelDefinition_RegisterAndResolveReferences
   rootNodeOffset = definition->rootNodeOffsetOrPointer;
   if (rootNodeOffset != 0) {
     /* asset start + serialized offset */
-    definition->rootNodeOffsetOrPointer = Thandor_PointerToU32((uint8_t *)asset + rootNodeOffset); /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
+    definition->rootNodeOffsetOrPointer = Thandor_PointerToU32(Asset_RecordAt(asset,rootNodeOffset)); /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
     /* The node tree walk is a recursion over every child (ModelDefinition_ResolveNodeSprites). */
     if (ModelDefinition_ResolveNodeSprites
-                  ((MdlSerializedNodeHeader *)((uint8_t *)asset + rootNodeOffset),(uint8_t *)asset,&status,0)) {
+                  (Asset_RecordAt<MdlSerializedNodeHeader>(asset,rootNodeOffset),asset,&status,0)) {
       *outError = status;
       return false;
     }

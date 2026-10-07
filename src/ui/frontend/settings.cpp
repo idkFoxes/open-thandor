@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/frontend/settings.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <thandor/ui/controls/settings_option.h>
 
@@ -70,7 +71,7 @@ void FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
   PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_ROTATION_ZOOM,
-                                 [control](Bool8 isSelected) {
+                                 [control](bool isSelected) {
     if (isSelected) {
       UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,control->base.parent);
     }
@@ -88,7 +89,7 @@ void FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
   PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_ROTATION_TILT,
-                                 [control](Bool8 isSelected) {
+                                 [control](bool isSelected) {
     if (isSelected) {
       UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,control->base.parent);
     }
@@ -116,42 +117,45 @@ void FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *frontendRoot)
 
 {
+  FrontendUiImage *ui = FrontendUi_Image(frontendRoot);
   FrontendModelPointerContextFlags *menuRoomContextFlags;
   uint32_t persistedValue;
+  PersistentMapMouseOptionFlags mapMouseOptions;
+  PersistentMouseLinkPanelOptionFlags linkOptions;
 
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,UiLayoutContainerControl_AsPageStack(&ui->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
+         &ui->menuRoomModelView.contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
+  mapMouseOptions = PersistentSettings_ReadMapMouseOptions();
   UiSelectableControl_SetSelected
-            (persistedValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF,
-             (UiSelectableControl *)FRONTEND_UI(frontendRoot,autoZoomOffCheckbox));
+            (ToBits(mapMouseOptions & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF),
+             &ui->autoZoomOffCheckbox.selectable);
   UiSelectableControl_SetSelected
-            (persistedValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
-             (UiSelectableControl *)FRONTEND_UI(frontendRoot,autoRotationOffCheckbox));
+            (ToBits(mapMouseOptions & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF),
+             &ui->autoRotationOffCheckbox.selectable);
   /* Bit 4 is the "right button does not scroll" checkbox (its action 0x2049 handler is
      FrontendGameplaySettings_SetRightButtonDoesNotScroll), which hides the in-game side panel; the template
      calls this control hidePanelCheckbox. */
-  UiSelectableControl_SetSelected(persistedValue & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,
-                                  (UiSelectableControl *)FRONTEND_UI(frontendRoot,hidePanelCheckbox));
-  persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  if ((persistedValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0) {
+  UiSelectableControl_SetSelected(ToBits(mapMouseOptions & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN),
+                                  &ui->hidePanelCheckbox.selectable);
+  linkOptions = PersistentSettings_ReadMouseLinkPanelOptions();
+  if (Any(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_ZOOM)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected
-            (persistedValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM,
-             (UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationZoomCheckbox));
-  if ((persistedValue & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0) {
+            (ToBits(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_ZOOM),
+             &ui->linkRotationZoomCheckbox.selectable);
+  if (Any(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_TILT)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,&frontendRoot->base);
   }
-  UiSelectableControl_SetSelected(persistedValue & PERSISTENT_LINK_OPTION_ROTATION_TILT,
-                                  (UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationTiltCheckbox));
+  UiSelectableControl_SetSelected(ToBits(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_TILT),
+                                  &ui->linkRotationTiltCheckbox.selectable);
   /* bit 4 of this word (hide panel, action 0x2051) is not loaded into its checkbox here */
   persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-  ((UiRangeSliderControl *)FRONTEND_UI(frontendRoot,scrollSpeedSlider))->value = persistedValue;
+  ui->scrollSpeedSlider.value = persistedValue;
 }
 
 /* Handler of the options page's "3D" button (settings3DButton, action 0x2012, slot 18 of
@@ -172,11 +176,11 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   /* source is the frontend template's settings3DButton. */
   FrontendUiImage *frontendUi;
   
-  frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,settings3DButton));
+  frontendUi = reinterpret_cast<FrontendUiImage *>(Thandor_Bytes(source) - offsetof(FrontendUiImage,settings3DButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_GRAPHICS_SETTINGS,
-                             (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+                             UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    frontendUi->menuRoomModelView.contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
@@ -185,7 +189,7 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   rootNode = source;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    rootNode = (FrontendGraphicsRuntimeSettingsPageState *)(rootNode->base).parent;
+    rootNode = UiNode_As<FrontendGraphicsRuntimeSettingsPageState>((rootNode->base).parent.get());
     parentCursor = rootNode->base.parent;
   }
   if (persistedValue == 0) {
@@ -200,45 +204,45 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   shadingDepthQuarter = PersistentSettings_Read(16,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   shadingDepth = shadingDepthQuarter * 4;
   if (persistedValue == 32) {
-    selectedShadingRow = (UiNodeBase *)&source->shadingResolutionRows;
+    selectedShadingRow = &source->shadingResolutionRows.rows[0].control.base;
     if (shadingDepth == 64) {
-      selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 1);
+      selectedShadingRow = &source->shadingResolutionRows.rows[1].control.base;
     }
     else if (shadingDepth == 128) {
-      selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 2);
+      selectedShadingRow = &source->shadingResolutionRows.rows[2].control.base;
     }
   }
   else if (persistedValue == 64) {
-    selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 3);
+    selectedShadingRow = &source->shadingResolutionRows.rows[3].control.base;
     if (shadingDepth == 128) {
-      selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 4);
+      selectedShadingRow = &source->shadingResolutionRows.rows[4].control.base;
     }
   }
   else {
-    selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 5);
+    selectedShadingRow = &source->shadingResolutionRows.rows[5].control.base;
   }
   UiSelectableGroup_SelectExclusive(6,selectedShadingRow,
-      FRONTEND_UI(frontendUi,shadingLevelGrid128Depth128),
-      FRONTEND_UI(frontendUi,shadingLevelGrid64Depth128),
-      FRONTEND_UI(frontendUi,shadingLevelGrid64Depth64),
-      FRONTEND_UI(frontendUi,shadingLevelGrid32Depth128),
-      FRONTEND_UI(frontendUi,shadingLevelGrid32Depth64),
-      FRONTEND_UI(frontendUi,shadingLevelGrid32Depth32));
+      &frontendUi->shadingLevelGrid128Depth128.base.selectable.base,
+      &frontendUi->shadingLevelGrid64Depth128.base.selectable.base,
+      &frontendUi->shadingLevelGrid64Depth64.base.selectable.base,
+      &frontendUi->shadingLevelGrid32Depth128.base.selectable.base,
+      &frontendUi->shadingLevelGrid32Depth64.base.selectable.base,
+      &frontendUi->shadingLevelGrid32Depth32.base.selectable.base);
   /* texture rows: low, medium, high */
   persistedValue = PersistentSettings_Read(TEXTURE_QUALITY_MEDIUM,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (persistedValue == TEXTURE_QUALITY_HIGH) {
-    selectedTextureRow = (UiNodeBase *)(source->textureResolutionRows.rows + 2);
+    selectedTextureRow = &source->textureResolutionRows.rows[2].control.base;
   }
   else if (persistedValue == TEXTURE_QUALITY_MEDIUM) {
-    selectedTextureRow = (UiNodeBase *)(source->textureResolutionRows.rows + 1);
+    selectedTextureRow = &source->textureResolutionRows.rows[1].control.base;
   }
   else {
-    selectedTextureRow = (UiNodeBase *)&source->textureResolutionRows;
+    selectedTextureRow = &source->textureResolutionRows.rows[0].control.base;
   }
   UiSelectableGroup_SelectExclusive(3,selectedTextureRow,
-      FRONTEND_UI(frontendUi,textureQualityHigh),
-      FRONTEND_UI(frontendUi,textureQualityMedium),
-      FRONTEND_UI(frontendUi,textureQualityLow));
+      &frontendUi->textureQualityHigh.selectable.base,
+      &frontendUi->textureQualityMedium.selectable.base,
+      &frontendUi->textureQualityLow.selectable.base);
   persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_MODEL_LOD_DEPTH_THRESHOLD,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
   source->polygonResolutionLodThresholdQ8 = persistedValue;
 }
@@ -253,18 +257,18 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
 {
   UiNodeFlags *compactLayoutFlags;
   UiNodeBase *parentCursor;
-  uint32_t audioFlags;
+  PersistentSoundOptionFlags audioFlags;
   uint32_t gainValue;
 
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_AUDIO_SETTINGS,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->settingsPageStack);
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     compactLayoutFlags = &THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->pageRoot.nodeFlags;
-    *compactLayoutFlags = *compactLayoutFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    *compactLayoutFlags = *compactLayoutFlags | FromBits<UiNodeFlags>(ToBits(FRONTEND_MENU_ROOM_RENDER_SUPPRESSED));
   }
-  audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->soundEffectsEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->musicEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->reverseStereoControl);
+  audioFlags = PersistentSettings_ReadSoundOptions();
+  UiSelectableControl_SetSelected(ToBits(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS),&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->soundEffectsEnabledControl);
+  UiSelectableControl_SetSelected(ToBits(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC),&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->musicEnabledControl);
+  UiSelectableControl_SetSelected(ToBits(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO),&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->reverseStereoControl);
   gainValue = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN); /* Q15 1.0 */
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->soundEffectsGainControl).currentValue = gainValue;
   gainValue = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
@@ -277,7 +281,7 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
     settingsSourceNode = settingsSourceNode->parent;
     parentCursor = settingsSourceNode->parent;
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,settingsSourceNode);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,settingsSourceNode);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,settingsSourceNode);
@@ -287,13 +291,13 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,settingsSourceNode);
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,settingsSourceNode);
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,settingsSourceNode);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,settingsSourceNode);
   }
-  if ((audioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC)) == 0) {
+  if (!Any(audioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC))) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,settingsSourceNode);
   }
   else {
@@ -315,7 +319,7 @@ void FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
   parentCursor = control->base.parent;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    control = (UiSelectableControl *)(control->base).parent;
+    control = UiNode_As<UiSelectableControl>((control->base).parent.get());
     parentCursor = control->base.parent;
   }
   if ((isSelected & 1) == 0) {
@@ -340,38 +344,38 @@ void FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
   uint32_t shadingDepthQuarter;
   UiNodeBase *selectedControl;
 
-  shadingGridSize = ((UiNumericPairTextButton *)control)->firstValue;
-  shadingDepthQuarter = (uint32_t)((UiNumericPairTextButton *)control)->secondValue >> 2;
+  shadingGridSize = UiNode_As<UiNumericPairTextButton>(&control->base)->firstValue;
+  shadingDepthQuarter = (uint32_t)UiNode_As<UiNumericPairTextButton>(&control->base)->secondValue >> 2;
   PersistentSettings_Write((int)shadingGridSize * 2,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
   PersistentSettings_Write((PersistentSettingsValue)shadingGridSize,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
   PersistentSettings_Write(shadingDepthQuarter,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   /* The parent is the frontend template's shadingLevelGroup. */
-  shadingLevelGroup = (FrontendShadingLevelGroup *)(control->base).parent;
+  shadingLevelGroup = UiNode_As<FrontendShadingLevelGroup>((control->base).parent.get());
   if (shadingGridSize == 32) {
-    selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[0] /* shadingLevelGrid32Depth32 */;
+    selectedControl = &shadingLevelGroup->levels[0].base.selectable.base /* shadingLevelGrid32Depth32 */;
     if (shadingDepthQuarter == 64 / 4) {
-      selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[1] /* shadingLevelGrid32Depth64 */;
+      selectedControl = &shadingLevelGroup->levels[1].base.selectable.base /* shadingLevelGrid32Depth64 */;
     }
     else if (shadingDepthQuarter == 128 / 4) {
-      selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[2] /* shadingLevelGrid32Depth128 */;
+      selectedControl = &shadingLevelGroup->levels[2].base.selectable.base /* shadingLevelGrid32Depth128 */;
     }
   }
   else if (shadingGridSize == 64) {
-    selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[3] /* shadingLevelGrid64Depth64 */;
+    selectedControl = &shadingLevelGroup->levels[3].base.selectable.base /* shadingLevelGrid64Depth64 */;
     if (shadingDepthQuarter == 128 / 4) {
-      selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[4] /* shadingLevelGrid64Depth128 */;
+      selectedControl = &shadingLevelGroup->levels[4].base.selectable.base /* shadingLevelGrid64Depth128 */;
     }
   }
   else {
-    selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[5] /* shadingLevelGrid128Depth128 */;
+    selectedControl = &shadingLevelGroup->levels[5].base.selectable.base /* shadingLevelGrid128Depth128 */;
   }
   UiSelectableGroup_SelectExclusive(6,selectedControl,
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[5],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[4],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[3],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[2],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[1],
-      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[0]);
+      &shadingLevelGroup->levels[5].base.selectable.base,
+      &shadingLevelGroup->levels[4].base.selectable.base,
+      &shadingLevelGroup->levels[3].base.selectable.base,
+      &shadingLevelGroup->levels[2].base.selectable.base,
+      &shadingLevelGroup->levels[1].base.selectable.base,
+      &shadingLevelGroup->levels[0].base.selectable.base);
 }
 
 /* Handler of the graphics settings page's polygon detail slider (polygonDetailSlider, action 0x2016, slot 22 of
@@ -397,23 +401,23 @@ void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
   FrontendTextureQualityGroup *textureQualityGroup;
 
   /* The parent is the frontend template's textureQualityGroup. */
-  textureQualityGroup = (FrontendTextureQualityGroup *)(control->base).parent;
+  textureQualityGroup = UiNode_As<FrontendTextureQualityGroup>((control->base).parent.get());
   if (&textureQualityGroup->low.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_LOW;
-    selectedQualityControl = (UiNodeBase *)&textureQualityGroup->low;
+    selectedQualityControl = &textureQualityGroup->low.selectable.base;
   }
   if (&textureQualityGroup->medium.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_MEDIUM;
-    selectedQualityControl = (UiNodeBase *)&textureQualityGroup->medium;
+    selectedQualityControl = &textureQualityGroup->medium.selectable.base;
   }
   if (&textureQualityGroup->high.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_HIGH;
-    selectedQualityControl = (UiNodeBase *)&textureQualityGroup->high;
+    selectedQualityControl = &textureQualityGroup->high.selectable.base;
   }
   UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
-      (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->high,
-      (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->medium,
-      (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->low);
+      &textureQualityGroup->high.selectable.base,
+      &textureQualityGroup->medium.selectable.base,
+      &textureQualityGroup->low.selectable.base);
   PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel >> 1;
 }
@@ -427,21 +431,21 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
-  uint32_t audioFlags;
+  PersistentSoundOptionFlags audioFlags;
   AudioMixerGainQ15 effectsGain;
   MovieAudioGainQ15 movieDefaultGain;
   MovieAudioGainQ15 movieAlternateGain;
-  Bool8 isSelected;
+  bool isSelected;
 
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  isSelected = UiSelectableControl_IsSelected(control);
+  audioFlags = PersistentSettings_ReadSoundOptions();
   /* isSelected is the PERSISTENT_SOUND_OPTION_EFFECTS bit */
-  PersistentSettings_Write((uint32_t)isSelected | audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS,
-                           PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  PersistentSettings_WriteSoundOptions(FromBits<PersistentSoundOptionFlags>((uint32_t)isSelected) |
+                                      (audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS));
   parentCursor = control->base.parent;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    control = (UiSelectableControl *)(control->base).parent;
+    control = UiNode_As<UiSelectableControl>((control->base).parent.get());
     parentCursor = control->base.parent;
   }
   if (isSelected) {
@@ -454,13 +458,13 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
-  if (isSelected == 0 && (audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (isSelected == 0 && !Any(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,&control->base);
   }
   else {
@@ -493,13 +497,13 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
-  uint32_t savedAudioFlags;
-  uint32_t musicEnabledBit;
-  uint32_t newAudioFlags;
-  Bool8 isSelected;
+  PersistentSoundOptionFlags savedAudioFlags;
+  PersistentSoundOptionFlags musicEnabledBit;
+  PersistentSoundOptionFlags newAudioFlags;
+  bool isSelected;
 
-  musicEnabledBit = 0;
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
+  musicEnabledBit = {};
+  isSelected = UiSelectableControl_IsSelected(control);
   if (isSelected) {
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
     g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
@@ -512,16 +516,16 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     g_FrontendMusicActiveBuffer = nullptr;
     g_FrontendMusicVoiceSet = nullptr;
   }
-  savedAudioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  newAudioFlags = musicEnabledBit | savedAudioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC;
-  PersistentSettings_Write(newAudioFlags,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  savedAudioFlags = PersistentSettings_ReadSoundOptions();
+  newAudioFlags = musicEnabledBit | (savedAudioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC);
+  PersistentSettings_WriteSoundOptions(newAudioFlags);
   parentCursor = control->base.parent;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    control = (UiSelectableControl *)(control->base).parent;
+    control = UiNode_As<UiSelectableControl>((control->base).parent.get());
     parentCursor = control->base.parent;
   }
-  if ((newAudioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
+  if (!Any(newAudioFlags & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,&control->base);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
@@ -531,13 +535,13 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
   }
-  if ((musicEnabledBit & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(musicEnabledBit & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
-  if ((newAudioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC)) == 0) {
+  if (!Any(newAudioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC))) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,&control->base);
   }
   else {
@@ -553,7 +557,7 @@ void FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
   PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_SOUND_OPTION_FLAGS,PERSISTENT_SOUND_OPTION_REVERSE_STEREO,
-                                 [](Bool8 isSelected) { g_ReverseStereoMask = isSelected ? -1 : 0; },
+                                 [](bool isSelected) { g_ReverseStereoMask = isSelected ? -1 : 0; },
                                  PERSISTENT_SOUND_OPTION_DEFAULT);
 }
 

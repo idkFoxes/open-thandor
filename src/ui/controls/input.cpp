@@ -37,7 +37,7 @@ static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,U
    the node gets the release (rightRelease for the right button, nonRightRelease otherwise), loses the capture
    and the pointer position is dispatched again as motion. Returns false, doing nothing, when control does not
    hold a capture with that button. */
-static Bool8 UiPointer_ReleaseCapture
+static bool UiPointer_ReleaseCapture
           (UiNodeBase *control,UiPointerCaptureButton captureButton,UiPointerWheelDelta wheelDelta,
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
@@ -86,7 +86,7 @@ void UiPointer_DispatchPendingEvents()
     pointerY = pointerEvent.pointerY;
     buttonMask = pointerEvent.buttonState;
     eventKind = (char)pointerEvent.eventType; /* GraphicsCursorEventType */
-    switch (eventKind) {
+    switch (static_cast<GraphicsCursorEventType>(eventKind)) {
     case MOTION_OR_WHEEL:
       UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
       break;
@@ -99,7 +99,7 @@ void UiPointer_DispatchPendingEvents()
     case RIGHT_PRESS:
       UiPointer_DispatchRightPress(buttonMask,wheelDelta,pointerY,pointerX);
       break;
-    case 4: /* unused code, handled like a left release */
+    case CURSOR_EVENT_UNUSED_4: /* unused code, handled like a left release */
     case LEFT_RELEASE:
       UiPointer_ReleaseCapture(control,UI_POINTER_CAPTURE_LEFT,wheelDelta,pointerY,pointerX);
       break;
@@ -114,7 +114,7 @@ void UiPointer_DispatchPendingEvents()
     default:
       /* codes the queue never holds: the original compare chain treats those below 0 as motion and those
          above RIGHT_RELEASE as a right release */
-      if (eventKind < MOTION_OR_WHEEL) {
+      if (static_cast<GraphicsCursorEventType>(eventKind) < MOTION_OR_WHEEL) {
         UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
       }
       else {
@@ -143,7 +143,7 @@ void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
 /* The node after node in pre-order (first child, else the next sibling of node or of its nearest ancestor
    that has one), following only links UiKeyboard_CheckedLink accepts. At the end of the tree it returns the
    topmost ancestor (the walk wraps around) and sets *wrapped. */
-static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,Bool8 *wrapped)
+static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,bool *wrapped)
 {
   UiNodeBase *nextNode;
   UiNodeBase *parent;
@@ -169,12 +169,12 @@ static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,Bool8 *wrapped)
    pre-order, skipping suppressed ones and wrapping around at most once through the topmost ancestor. The
    first one whose keyboardEvent returns false (takes the key) gets the keyboard focus. Returns true when
    nobody took the key (the walk came back to the focus node or would wrap a second time). */
-static Bool8 UiKeyboard_PassToFollowingFocusTargets
+static bool UiKeyboard_PassToFollowingFocusTargets
           (UiNodeBase *control,UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
 {
-  Bool8 wrappedOnce;
-  Bool8 wrapped;
-  Bool8 passToNext;
+  bool wrappedOnce;
+  bool wrapped;
+  bool passToNext;
 
   wrappedOnce = false;
   passToNext = true;
@@ -187,11 +187,11 @@ static Bool8 UiKeyboard_PassToFollowingFocusTargets
       }
       wrappedOnce = true;
     }
-    if ((control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) continue;
+    if (!Any(control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET))) continue;
     if (control == g_UiKeyboardFocusNode) {
       return true;
     }
-    if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
+    if (Any(control->nodeFlags & UI_NODE_SUPPRESSED)) continue;
     passToNext = control->vtable->keyboardEvent(keyboardStateMask,keyCode,control);
   }
   UiKeyboardFocus_Set(control);
@@ -207,7 +207,7 @@ static Bool8 UiKeyboard_PassToFollowingFocusTargets
 void UiKeyboard_DispatchPendingEvents()
 
 {
-  Bool8 dispatchToRoot;
+  bool dispatchToRoot;
   UiKeyboardEventCode keyCode;
   UiKeyboardStateMask keyboardStateMask;
   UiNodeBase *control;
@@ -266,9 +266,9 @@ void UiKeyboardFocus_SelectInitial(UiNodeBase *root)
      the first unsuppressed preferred focus target wins, else the last unsuppressed fallback. */
   fallbackFocusNode = UI_NODE_NONE;
   for (node = root; node != UI_NODE_NONE; node = UiKeyboardFocus_NextInPreOrderOrNone(node)) {
-    if ((node->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
-    if ((node->nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET) != 0) break;
-    if ((node->nodeFlags & UI_NODE_FALLBACK_FOCUS_TARGET) != 0) {
+    if (Any(node->nodeFlags & UI_NODE_SUPPRESSED)) continue;
+    if (Any(node->nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET)) break;
+    if (Any(node->nodeFlags & UI_NODE_FALLBACK_FOCUS_TARGET)) {
       fallbackFocusNode = node;
     }
   }
@@ -290,7 +290,7 @@ void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
 
 {
   if ((g_UiKeyboardFocusNode == UI_NODE_NONE) &&
-     ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0)) {
+     (Any(node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)))) {
     UiKeyboardFocus_Set(node);
   }
 }
@@ -306,9 +306,9 @@ GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,Ui
 }
 
 /* Whether the pointer lies inside root and root takes part in the pointer hit test. */
-static Bool8 UiPointer_RootContainsPointer(UiRootNode *root,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+static bool UiPointer_RootContainsPointer(UiRootNode *root,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
-  return ((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
+  return !Any(root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) &&
          ((root->base).left <= pointerX) && ((root->base).top <= pointerY) &&
          (pointerX < (root->base).right) && (pointerY < (root->base).bottom);
 }
@@ -356,7 +356,7 @@ static UiNodeBase *UiPointer_FindNonRightPressTarget
     opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,hoverTarget);
     g_UiImageControlHoverTarget = nullptr;
     if (opaqueHit != UI_NODE_NONE) {
-      return (UiNodeBase *)hoverTarget;
+      return UiNode_As<UiNodeBase>(hoverTarget);
     }
     stateFlagsField = &(hoverTarget->selectable).stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
@@ -369,7 +369,7 @@ static UiNodeBase *UiPointer_FindNonRightPressTarget
    target and gets the press and then, unless the press handler released the capture already, the capture
    target gets the drag (rightPress/rightDrag for the right button, nonRightPress/nonRightDrag otherwise). */
 static void UiPointer_CaptureAndPress
-          (UiNodeBase *node,UiPointerCaptureButton captureButton,Bool8 repeatClick,UiPointerWheelDelta wheelDelta,
+          (UiNodeBase *node,UiPointerCaptureButton captureButton,bool repeatClick,UiPointerWheelDelta wheelDelta,
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
   UiNodeVtable *nodeVtable;
@@ -383,7 +383,7 @@ static void UiPointer_CaptureAndPress
   }
   nodeVtable = node->vtable;
   g_UiPointerCaptureTarget = node;
-  if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
+  if (Any(node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET))) {
     UiKeyboardFocus_Set(node);
   }
   if (captureButton == UI_POINTER_CAPTURE_RIGHT) {
@@ -427,7 +427,7 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
     return;
   }
   UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_LEFT,
-                            (buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) != CURSOR_BUTTON_NONE,
+                            Any(buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK),
                             wheelDelta,pointerY,pointerX);
 }
 
@@ -436,7 +436,7 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
    repeated click (UI_NODE_REPEAT_OR_DOUBLE_CLICK), whatever buttonMask says.
 */
 void UiPointer_DispatchMiddlePress
-          (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
+          (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX)
 
 {
@@ -462,7 +462,7 @@ void UiPointer_DispatchMiddlePress
    rightDrag. Ignored while any button holds a capture.
 */
 void UiPointer_DispatchRightPress
-          (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
+          (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX)
 
 {
@@ -482,7 +482,7 @@ void UiPointer_DispatchRightPress
   if (node == UI_NODE_NONE) {
     return;
   }
-  UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_RIGHT,(buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) != 0,
+  UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_RIGHT,Any(buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK),
                             wheelDelta,pointerY,pointerX);
 }
 
@@ -522,8 +522,8 @@ void UiKeyboardFocus_MoveNext()
      that is the focus node itself or is not suppressed. */
   do {
     node = UiKeyboardFocus_NextInPreOrderWrapping(node);
-  } while (((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) ||
-           ((node != g_UiKeyboardFocusNode) && ((node->nodeFlags & UI_NODE_SUPPRESSED) != 0)));
+  } while (!Any(node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) ||
+           ((node != g_UiKeyboardFocusNode) && (Any(node->nodeFlags & UI_NODE_SUPPRESSED))));
   if (node == g_UiKeyboardFocusNode) {
     return; /* back at the focus node: no other focus target */
   }
@@ -609,7 +609,7 @@ void UiNode_ForwardPointerWheelToParent
    It always returns true (key not consumed): the original compares the key with KEYBOARD_KEY_CODE_TAB but
    then reports "not consumed" regardless of the result, so the focus move its name suggests never happens.
 */
-Bool8 UiNode_DefaultKeyboardEventMoveFocusNext
+bool UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {

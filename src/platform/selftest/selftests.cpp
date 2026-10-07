@@ -8,7 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
+#include <new>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
 #include <thandor/platform/sdl3/window_icon.h>
@@ -17,11 +20,11 @@
 #include <vector>
 
 /* Self-test data */
-#define SELFTEST_GUARD_BYTES 0x10000      /* codec: bytes behind each output buffer that must stay untouched */
-#define SELFTEST_GUARD_FILL 0xCD          /* codec: fill byte of the output buffers and their guards */
-#define SELFTEST_UNWRITTEN_FILL 0xAB      /* path split: fill byte that marks untouched output */
-#define SCANADDR_MAX_UNPACKED_BYTES 0x4000000 /* scanaddr: entries claiming more are taken as the end of the package */
-#define SCANADDR_REBUILT_IMAGE_SPAN 0x300000  /* scanaddr: dwords in [REBUILT_IMAGE_BASE, + this) are reported */
+constexpr auto SELFTEST_GUARD_BYTES = 0x10000; /* codec: bytes behind each output buffer that must stay untouched */
+constexpr auto SELFTEST_GUARD_FILL = 0xCD; /* codec: fill byte of the output buffers and their guards */
+constexpr auto SELFTEST_UNWRITTEN_FILL = 0xAB; /* path split: fill byte that marks untouched output */
+constexpr auto SCANADDR_MAX_UNPACKED_BYTES = 0x4000000; /* scanaddr: entries claiming more are taken as the end of the package */
+constexpr auto SCANADDR_REBUILT_IMAGE_SPAN = 0x300000; /* scanaddr: dwords in [REBUILT_IMAGE_BASE, + this) are reported */
 
 /* Diagnostics: OPEN_THANDOR_SELFTEST=codec round-trips synthetic save-sized data through the PCK
    encoder/decoder tables, checks guard bytes behind the output and logs the result. */
@@ -34,29 +37,27 @@ static void Thandor_SelfTestCodec()
         int noisy = t >= 3;
         unsigned capacity = PACKAGE_SCRATCH_BUFFER_BYTES - 2 * PCK_ENTRY_HEADER_BYTES; /* as Package_UpsertEntry */
         unsigned guard = SELFTEST_GUARD_BYTES;
-        uint8_t *source = (uint8_t *)malloc(size);
-        uint8_t *packed = (uint8_t *)malloc(capacity + guard);
-        uint8_t *unpacked = (uint8_t *)malloc(size + guard);
+        /* source is written in full below; packed and unpacked start as guard bytes */
+        auto sourceBuffer = std::make_unique_for_overwrite<uint8_t[]>(size);
+        std::vector<uint8_t> packedBuffer(capacity + guard, SELFTEST_GUARD_FILL);
+        std::vector<uint8_t> unpackedBuffer(size + guard, SELFTEST_GUARD_FILL);
+        uint8_t *source = sourceBuffer.get();
+        uint8_t *packed = packedBuffer.data();
+        uint8_t *unpacked = unpackedBuffer.data();
         unsigned i;
         unsigned seed = 12345;
-        Bool8 encodeOk;
-        Bool8 decodeOk;
+        bool encodeOk;
+        bool decodeOk;
         uint32_t encodeValue = 0; /* packed size, or the error code on failure */
         uint32_t decodeValue = 0; /* reported byte count, or the error code on failure */
         uint32_t packedHash;
         int packedGuardOk = 1;
         int unpackedGuardOk = 1;
         int same;
-        if (!source || !packed || !unpacked) {
-            Thandor_Log("codec selftest: allocation failed");
-            return;
-        }
         for (i = 0; i < size; i++) {
             seed = seed * 1103515245u + 12345u;
             source[i] = (noisy || (i % 4096) < 300) ? (uint8_t)(seed >> 16) : 0;
         }
-        memset(packed, SELFTEST_GUARD_FILL, capacity + guard);
-        memset(unpacked, SELFTEST_GUARD_FILL, size + guard);
         encodeOk = g_PckEncoderTable[0](capacity, packed, size, source, &encodeValue, &encodeValue);
         for (i = capacity; i < capacity + guard; i++) {
             if (packed[i] != SELFTEST_GUARD_FILL) { packedGuardOk = 0; break; }
@@ -77,9 +78,6 @@ static void Thandor_SelfTestCodec()
             Thandor_Log("codec selftest %u: decode ok=%d value=%x roundtrip=%s guard=%s", t, decodeOk,
                         decodeValue, same ? "ok" : "MISMATCH", unpackedGuardOk ? "ok" : "OVERWRITTEN");
         }
-        free(source);
-        free(packed);
-        free(unpacked);
     }
 }
 
@@ -117,7 +115,7 @@ static void Thandor_SelfTestStretch()
     static uint32_t asset[2 * GFX_ASSET_HEADER_SIZE / sizeof(uint32_t)];
     static uint32_t target[8 * 4];
     uint32_t framebuffer[4] = {8, 0, 4, 0};
-    GraphicsTextureSourceAsset *header = (GraphicsTextureSourceAsset *)asset;
+    auto *header = reinterpret_cast<GraphicsTextureSourceAsset *>(asset);
     GraphicsTextureSourceEntry *entry;
     uint32_t *pixels;
     int x;
@@ -126,7 +124,7 @@ static void Thandor_SelfTestStretch()
     header->common.magic = ASSET_MAGIC_GFX;
     header->tableDescriptor.subresourceCount = 1;
     header->tableDescriptor.subresourceTableOffset = offsetof(GraphicsTextureSourceAsset, unusedText);
-    entry = (GraphicsTextureSourceEntry *)header->unusedText;
+    entry = reinterpret_cast<GraphicsTextureSourceEntry *>(header->unusedText);
     entry->paletteIndex = -1; /* direct ARGB8888 pixels */
     entry->dataOffset = GFX_ASSET_HEADER_SIZE;
     entry->pixelWidth = 4;
@@ -137,9 +135,9 @@ static void Thandor_SelfTestStretch()
             pixels[y * 4 + x] = ARGB8888_ALPHA_MASK | ((uint32_t)(x * 85) << 16) | ((uint32_t)(y * 255) << 8);
         }
     }
-    framebuffer[3] = (uint32_t)(uintptr_t)target;
+    framebuffer[3] = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(target));
     SoftwareTextureSource_StretchDirectColorBilinear32(4, 8, 0, 0, 0, header,
-                                                       (SoftwareFramebufferAccess *)framebuffer);
+                                                       reinterpret_cast<SoftwareFramebufferAccess *>(framebuffer));
     for (y = 0; y < 4; y++) {
         Thandor_Log("stretch selftest row %d: %08x %08x %08x %08x %08x %08x %08x %08x", y,
                     target[y * 8 + 0], target[y * 8 + 1], target[y * 8 + 2], target[y * 8 + 3],
@@ -150,7 +148,7 @@ static void Thandor_SelfTestStretch()
 /* The arena is set up by ProcessEntry; decoders called before that allocate through these. */
 static uint32_t SelfTest_Alloc(uint32_t bytes, void **outPayload)
 {
-    void *payload = malloc(bytes);
+    void *payload = ::operator new(bytes, std::nothrow);
     if (payload == nullptr) {
         return FATAL_ERROR_ARENA_EXHAUSTED; /* a failed alloc must report a nonzero code */
     }
@@ -160,7 +158,7 @@ static uint32_t SelfTest_Alloc(uint32_t bytes, void **outPayload)
 
 static uint32_t SelfTest_Free(void *memory)
 {
-    free(memory);
+    ::operator delete(memory);
     return 0;
 }
 
@@ -184,7 +182,7 @@ static void Thandor_SelfTestCodecNegative()
     unsigned failures = 0;
     unsigned seed = 777;
     unsigned i;
-    Bool8 ok;
+    bool ok;
 
     g_MemoryApi.alloc = SelfTest_Alloc;
     g_MemoryApi.free = SelfTest_Free;
@@ -235,18 +233,18 @@ static void Thandor_SelfTestCodecNegative()
     }
     grid[46] = 2;
     grid[47] = 2;
-    ok = PckCodec_EncodeFieldGrid((uint32_t)packed.size(), packed.data(), gridBytes, (FieldGridAsset *)grid.data(),
+    ok = PckCodec_EncodeFieldGrid((uint32_t)packed.size(), packed.data(), gridBytes, reinterpret_cast<FieldGridAsset *>(grid.data()),
                                   &packedSize, &value);
     CODEC_NEG_EXPECT("grid encode", ok);
     CODEC_NEG_EXPECT("grid decode",
-                     PckCodec_DecodeFieldGrid(gridBytes, (FieldGridAsset *)decodedGrid.data(), packedSize,
+                     PckCodec_DecodeFieldGrid(gridBytes, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()), packedSize,
                                               packed.data(), &value, &value) &&
                      decodedGrid[46] == 2 && decodedGrid[47] == 2);
     CODEC_NEG_EXPECT("grid capacity too small",
-                     !PckCodec_DecodeFieldGrid(gridBytes - 1, (FieldGridAsset *)decodedGrid.data(), packedSize,
+                     !PckCodec_DecodeFieldGrid(gridBytes - 1, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()), packedSize,
                                                packed.data(), &value, &value));
     CODEC_NEG_EXPECT("grid source shorter than the prefix",
-                     !PckCodec_DecodeFieldGrid(gridBytes, (FieldGridAsset *)decodedGrid.data(), 8, packed.data(),
+                     !PckCodec_DecodeFieldGrid(gridBytes, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()), 8, packed.data(),
                                                &value, &value));
     /* a compact image of 4 cells whose header claims 100x100, and one of 0 cells */
     for (i = 0; i < compact.size(); i++) {
@@ -254,20 +252,20 @@ static void Thandor_SelfTestCodecNegative()
     }
     compact[46] = 100;
     compact[47] = 100;
-    *(uint32_t *)packed.data() = compactBytes;
+    *reinterpret_cast<uint32_t *>(packed.data()) = compactBytes;
     ok = PckCodec_EncodeHuffmanRle((uint32_t)packed.size() - PCK_FIELD_GRID_PREFIX_BYTES,
                                    packed.data() + PCK_FIELD_GRID_PREFIX_BYTES, compactBytes,
-                                   (uint8_t *)compact.data(), &packedSize, &value);
+                                   reinterpret_cast<uint8_t *>(compact.data()), &packedSize, &value);
     CODEC_NEG_EXPECT("grid larger than its image",
-                     ok && !PckCodec_DecodeFieldGrid(0x7FFFFFFF, (FieldGridAsset *)decodedGrid.data(),
+                     ok && !PckCodec_DecodeFieldGrid(0x7FFFFFFF, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()),
                                                      packedSize + PCK_FIELD_GRID_PREFIX_BYTES, packed.data(),
                                                      &value, &value));
     compact[46] = 0;
     ok = PckCodec_EncodeHuffmanRle((uint32_t)packed.size() - PCK_FIELD_GRID_PREFIX_BYTES,
                                    packed.data() + PCK_FIELD_GRID_PREFIX_BYTES, compactBytes,
-                                   (uint8_t *)compact.data(), &packedSize, &value);
+                                   reinterpret_cast<uint8_t *>(compact.data()), &packedSize, &value);
     CODEC_NEG_EXPECT("grid of 0 cells",
-                     ok && !PckCodec_DecodeFieldGrid(gridBytes, (FieldGridAsset *)decodedGrid.data(),
+                     ok && !PckCodec_DecodeFieldGrid(gridBytes, reinterpret_cast<FieldGridAsset *>(decodedGrid.data()),
                                                      packedSize + PCK_FIELD_GRID_PREFIX_BYTES, packed.data(),
                                                      &value, &value));
 #undef CODEC_NEG_EXPECT
@@ -302,7 +300,7 @@ static void Thandor_SelfTestPcx()
     }
     else {
         for (i = 0; i < PCX_PALETTE_COLOR_COUNT * 4; i++) {
-            hash = (hash ^ ((const uint8_t *)image.paletteColors)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(image.paletteColors)[i]) * 16777619u;
         }
         for (i = 0; i < image.width * image.height; i++) {
             hash = (hash ^ image.pixels[i]) * 16777619u;
@@ -319,9 +317,9 @@ static void Thandor_SelfTestPcx()
    parts, decodes each with Movie_DecodeFrame4x4Delta, and logs the byte counts and an FNV-1a hash over every
    encoded byte, the reference frame the delta encoder keeps and the decoded picture. Run it with two builds to
    check that a rewrite of the encoders or the decoder kept their output. */
-#define MOVIEENC_WIDTH 64
-#define MOVIEENC_HEIGHT 48
-#define MOVIEENC_FRAMES 6
+constexpr auto MOVIEENC_WIDTH = 64;
+constexpr auto MOVIEENC_HEIGHT = 48;
+constexpr auto MOVIEENC_FRAMES = 6;
 static uint32_t SelfTest_MovieEncodePixel(uint32_t frame, uint32_t x, uint32_t y, uint32_t *seed)
 {
     uint32_t region = (x / 16 + (y / 16) * 4 + frame) % 6;
@@ -370,17 +368,17 @@ static void Thandor_SelfTestMovieEncode()
             byteCount = Movie_EncodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, encoded, reference, current);
         }
         for (i = 0; i < byteCount && i < sizeof encoded; i++) {
-            hash = (hash ^ ((const uint8_t *)encoded)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(encoded)[i]) * 16777619u;
         }
         for (i = 0; i < sizeof reference; i++) {
-            hash = (hash ^ ((const uint8_t *)reference)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(reference)[i]) * 16777619u;
         }
         /* decode the frame on top of the previous decoded picture, as the player does */
-        consumed = Movie_DecodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, decoded, (const uint8_t *)encoded,
-                                             (const uint8_t *)encoded + sizeof encoded);
+        consumed = Movie_DecodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, decoded, reinterpret_cast<const uint8_t *>(encoded),
+                                             reinterpret_cast<const uint8_t *>(encoded) + sizeof encoded);
         hash = (hash ^ consumed) * 16777619u;
         for (i = 0; i < sizeof decoded; i++) {
-            hash = (hash ^ ((const uint8_t *)decoded)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(decoded)[i]) * 16777619u;
         }
         Thandor_Log("movieenc: frame %u %u bytes (decoder %u), hash so far %08X", frame, byteCount, consumed, hash);
     }
@@ -432,13 +430,13 @@ static void Thandor_SelfTestTriangleSetup()
             v->diffuseColor = SelfTest_TriangleRandom(&seed) * 257u;
         }
         packet.modulationColor = SelfTest_TriangleRandom(&seed);
-        packet.textureEntry = (GraphicsTextureSetEntry *)textureEntry;
-        packet.renderFlags = (GraphicsPrimitiveDispatchFlags)((SelfTest_TriangleRandom(&seed) % 32) << 12);
+        packet.textureEntry = reinterpret_cast<GraphicsTextureSetEntry *>(textureEntry);
+        packet.renderFlags = FromBits<GraphicsPrimitiveDispatchFlags>((SelfTest_TriangleRandom(&seed) % 32) << 12);
         g_SoftwareDepthEpoch = (int32_t)(SelfTest_TriangleRandom(&seed) % 0x1000000u);
         SoftwareRenderer_PrepareTrianglePacket(&packet);
         packet.textureEntry = nullptr; /* the pointer differs between runs */
         for (i = 0; i < sizeof packet; i++) {
-            hash = (hash ^ ((const uint8_t *)&packet)[i]) * 16777619u;
+            hash = (hash ^ reinterpret_cast<const uint8_t *>(&packet)[i]) * 16777619u;
         }
     }
     Thandor_Log("trianglesetup: 20000 triangles, hash %08X", hash);
@@ -452,13 +450,13 @@ static void Thandor_SelfTestTriangleSetup()
 static uint32_t SelfTest_KeymapDrain(uint32_t hash)
 {
     uint32_t keyCode;
-    uint32_t stateMask;
+    UiKeyboardStateMask stateMask;
     uint32_t i;
     while (Keyboard_ReadNextEvent(&keyCode, &stateMask)) {
         hash = (hash ^ keyCode) * 16777619u;
-        hash = (hash ^ stateMask) * 16777619u;
+        hash = (hash ^ ToBits(stateMask)) * 16777619u;
     }
-    hash = (hash ^ g_KeyboardStateMask) * 16777619u;
+    hash = (hash ^ ToBits(g_KeyboardStateMask)) * 16777619u;
     for (i = 0; i < sizeof g_KeyboardSpecialKeyDown; i++) {
         hash = (hash ^ g_KeyboardSpecialKeyDown[i]) * 16777619u;
     }
@@ -504,7 +502,7 @@ static uint32_t SelfTest_HashBytes(uint32_t hash, const void *bytes, uint32_t co
 {
     uint32_t i;
     for (i = 0; i < count; i++) {
-        hash = (hash ^ ((const uint8_t *)bytes)[i]) * 16777619u;
+        hash = (hash ^ static_cast<const uint8_t *>(bytes)[i]) * 16777619u;
     }
     return hash;
 }
@@ -550,7 +548,7 @@ static void Thandor_SelfTestFixedMath()
             GraphicsFixedMatrix3x4 input;
             GraphicsFixedMatrix3x4 output;
             for (j = 0; j < sizeof input / 4; j++) {
-                ((int32_t *)&input)[j] = (int32_t)SelfTest_FixedRandom(&seed) >> (j % 3 == 0 ? 2 : 4);
+                reinterpret_cast<int32_t *>(&input)[j] = (int32_t)SelfTest_FixedRandom(&seed) >> (j % 3 == 0 ? 2 : 4);
             }
             memset(&output, 0, sizeof output);
             FixedTransform_InvertRigidQ28(&output, &input);
@@ -587,7 +585,7 @@ static void SelfTest_BuildSamCosineTables(uint32_t (**savedAlloc)(uint32_t, void
 
 static void SelfTest_FreeSamCosineTables(uint32_t (*savedAlloc)(uint32_t, void **), uint32_t (*savedFree)(void *))
 {
-    free(g_CosineDerivedLookupAllocation);
+    SelfTest_Free(g_CosineDerivedLookupAllocation);
     g_CosineDerivedLookupAllocation = nullptr;
     g_CosineDerivedLookupSecondTable = nullptr;
     g_MemoryApi.alloc = savedAlloc;
@@ -741,7 +739,7 @@ static void Thandor_SelfTestNumberFormat()
             value = (int32_t)SelfTest_FixedRandom(&seed) >> shift;
         }
         memset(buffer, 0, sizeof buffer);
-        written = WideNumber_FormatUtf16((WideNumberFormatFlags)flags, fractionalDigits, integerDigitLimit, denominator,
+        written = WideNumber_FormatUtf16(FromBits<WideNumberFormatFlags>(flags), fractionalDigits, integerDigitLimit, denominator,
                                          value, buffer);
         hash = SelfTest_HashBytes(hash, &written, 4);
         hash = SelfTest_HashBytes(hash, buffer, sizeof buffer);
@@ -816,7 +814,7 @@ static void Thandor_SelfTestSettings()
     SELFTEST_SETTING(PERSISTENT_SETTING_SHADING_ENABLED, 0);
     SELFTEST_SETTING(PERSISTENT_SETTING_TEXTURE_QUALITY, TEXTURE_QUALITY_LOW);
     SELFTEST_SETTING(PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, -3);
-    SELFTEST_SETTING(PERSISTENT_SETTING_SOUND_OPTION_FLAGS, PERSISTENT_SOUND_OPTION_EFFECTS); /* default 3 minus music */
+    SELFTEST_SETTING(PERSISTENT_SETTING_SOUND_OPTION_FLAGS, ToBits(PERSISTENT_SOUND_OPTION_EFFECTS)); /* default 3 minus music */
     SELFTEST_SETTING(PERSISTENT_SETTING_EFFECTS_GAIN, 0x4000);
     SELFTEST_SETTING(PERSISTENT_SETTING_MUSIC_GAIN, 0x4000);
     SELFTEST_SETTING(PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN, 0x3000);
@@ -888,10 +886,11 @@ static void Thandor_SelfTestScanAddresses()
                                      "MODELLE.PCK", "PATCH00.PCK", "PATCH01.PCK", "SOUND.PCK"};
     unsigned p;
     FILE *out = fopen("scanaddr.txt", "w");
-    uint8_t *packed = (uint8_t *)malloc(PACKAGE_SCRATCH_BUFFER_BYTES);
+    auto packedBuffer = std::make_unique_for_overwrite<uint8_t[]>(PACKAGE_SCRATCH_BUFFER_BYTES);
+    uint8_t *packed = packedBuffer.get();
     unsigned totalEntries = 0;
     unsigned totalHits = 0;
-    if (out == nullptr || packed == nullptr) {
+    if (out == nullptr) {
         Thandor_Log("scanaddr: setup failed");
         return;
     }
@@ -924,8 +923,7 @@ static void Thandor_SelfTestScanAddresses()
         }
         for (;;) {
             PckEntryHeader header;
-            uint8_t *unpacked;
-            Bool8 decoded;
+            bool decoded;
             char name[PCK_ENTRY_PATH_UNITS + 1];
             int k;
             uint32_t i;
@@ -943,13 +941,10 @@ static void Thandor_SelfTestScanAddresses()
             if (fread(packed, 1, header.packedSize, pck) != header.packedSize) {
                 break;
             }
-            unpacked = (uint8_t *)malloc(header.unpackedSize + 4);
-            if (unpacked == nullptr) {
-                break;
-            }
+            auto unpackedBuffer = std::make_unique_for_overwrite<uint8_t[]>(header.unpackedSize + 4);
+            uint8_t *unpacked = unpackedBuffer.get();
             if (g_PckDecoderTable[header.compressionMethod] == nullptr) {
                 fprintf(out, "%s %s NO-DECODER method %u\n", list[p], name, (uint32_t)header.compressionMethod);
-                free(unpacked);
                 position += PCK_ENTRY_HEADER_BYTES + (long)header.packedSize;
                 continue;
             }
@@ -981,7 +976,7 @@ static void Thandor_SelfTestScanAddresses()
                     }
                 }
                 for (i = 0; i + 4 <= header.unpackedSize; i += 4) {
-                    uint32_t value = *(uint32_t *)(unpacked + i);
+                    uint32_t value = *Asset_RecordAt<uint32_t>(unpacked, i);
                     if ((value >= ORIGINAL_TEXT_START && value < ORIGINAL_TEXT_END) ||
                         (value >= REBUILT_IMAGE_BASE && value < REBUILT_IMAGE_BASE + SCANADDR_REBUILT_IMAGE_SPAN)) {
                         fprintf(out, "%s %s %08x %x %08x\n", list[p], name, (uint32_t)header.typeTag, i, value);
@@ -989,13 +984,11 @@ static void Thandor_SelfTestScanAddresses()
                     }
                 }
             }
-            free(unpacked);
             position += PCK_ENTRY_HEADER_BYTES + (long)header.packedSize;
         }
         fclose(pck);
     }
     fclose(out);
-    free(packed);
     g_MemoryApi.alloc = savedAlloc;
     g_MemoryApi.free = savedFree;
     Thandor_Log("scanaddr: %u entries decoded, %u dwords in the original image range", totalEntries, totalHits);
@@ -1220,6 +1213,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestKeyMatch();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "uitemplate") == 0) {
+        Thandor_SelfTestUiTemplate();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "movieenc") == 0) {
         Thandor_SelfTestMovieEncode();
         return 1;
@@ -1249,7 +1246,7 @@ int SelfTest_Run(const char *name)
         return 1;
     }
     if (name != nullptr && strcmp(name, "crash") == 0) {
-        *(volatile int *)nullptr = 1; /* exercises the crash handler */
+        *static_cast<volatile int *>(nullptr) = 1; /* exercises the crash handler */
     }
     return 0;
 }

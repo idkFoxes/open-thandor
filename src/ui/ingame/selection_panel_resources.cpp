@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/selection_panel_resources.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -52,15 +53,14 @@ static void SelectionInfoPanel_ClearAllPlayerSelections()
 static GraphicsTextureSourceEntry *SelectionInfoPanel_TextureEntries(GraphicsTextureSourceAsset *textureSource)
 
 {
-  return (GraphicsTextureSourceEntry *)
-         ((uint8_t *)textureSource + (textureSource->tableDescriptor).subresourceTableOffset);
+  return GraphicsTextureSource_Entries(textureSource);
 }
 
 /* Stores a dword at byteOffset inside a texture-source record (records are not aligned). */
 static void SelectionInfoPanel_SetRecordDword(uint8_t *record,int byteOffset,uint32_t value)
 
 {
-  *(uint32_t *)(record + byteOffset) = value;
+  *Thandor_At<uint32_t>(record,byteOffset) = value;
 }
 
 /* Rewrites a two-dword info.gfx record to { 0, referencePayloadValue }. */
@@ -109,9 +109,9 @@ static void SelectionInfoPanel_PatchInfoTexture(GraphicsTextureSourceAsset *info
   GraphicsTextureSourceEntry *entries;
   uint32_t referencePayloadValue;
 
-  base = (uint8_t *)infoTextureSource;
+  base = GraphicsTextureSource_Bytes(infoTextureSource);
   entries = SelectionInfoPanel_TextureEntries(infoTextureSource);
-  referencePayloadValue = *(uint32_t *)(base + entries[44].dataOffset);
+  referencePayloadValue = *Thandor_At<uint32_t>(base,entries[44].dataOffset);
   SelectionInfoPanel_PatchShortRecord(base + entries[47].dataOffset,referencePayloadValue);
   SelectionInfoPanel_PatchShortRecord(base + entries[48].dataOffset,referencePayloadValue);
   SelectionInfoPanel_PatchShortRecord(base + entries[49].dataOffset,referencePayloadValue);
@@ -135,7 +135,7 @@ static void SelectionInfoPanel_PatchInfoTexture(GraphicsTextureSourceAsset *info
    info.gfx) - the exact meaning of these patches is not known. Returns true on success; on failure returns false
    with the failing loader's error in *outError.
 */
-Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError)
+bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError)
 
 {
   GraphicsTextureSourceAsset *selectionTextureSource;
@@ -145,26 +145,26 @@ Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uin
   uint32_t loadErrorCode;
 
   selectionTextureSource =
-       g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelSelectGfxPathUtf16,&loadErrorCode);
+       g_GraphicsTextureSourceLoadPackageAsset(g_GfxPanelSelectGfxPathUtf16,&loadErrorCode);
   if (selectionTextureSource == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
   g_SelectionPanelTextureSource = selectionTextureSource;
   infoTextureSource =
-       g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelInfoGfxPathUtf16,&loadErrorCode);
+       g_GraphicsTextureSourceLoadPackageAsset(g_GfxPanelInfoGfxPathUtf16,&loadErrorCode);
   if (infoTextureSource == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
   g_InfoPanelTextureSource = infoTextureSource;
-  selectionPanelData = (GraphicsTextureSourceAsset *)Package_LoadEntry((uint16_t *)g_GfxPanelSelectDatPathUtf16,&loadErrorCode);
+  selectionPanelData = static_cast<GraphicsTextureSourceAsset *>(Package_LoadEntry(g_GfxPanelSelectDatPathUtf16,&loadErrorCode));
   if (selectionPanelData == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
   g_SelectionPanelData = selectionPanelData;
-  infoPanelData = (GraphicsTextureSourceAsset *)Package_LoadEntry((uint16_t *)g_GfxPanelInfoDatPathUtf16,&loadErrorCode);
+  infoPanelData = static_cast<GraphicsTextureSourceAsset *>(Package_LoadEntry(g_GfxPanelInfoDatPathUtf16,&loadErrorCode));
   if (infoPanelData == nullptr) {
     *outError = loadErrorCode;
     return false;

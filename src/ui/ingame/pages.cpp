@@ -19,16 +19,18 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
 
 {
   WorldInteractionFlags *interactionFlagsField;
-  Bool8 isSelected;
+  bool isSelected;
   RichTextExtent wrappedExtent;
   uint16_t *resolvedText;
   InGameMissionHelpRootView *uiRoot;
+  UiNodeBase *rootNode;
 
-  uiRoot = (InGameMissionHelpRootView *)source;
-  while ((uiRoot->rootUi).base.parent != UI_NODE_NONE) {
-    uiRoot = (InGameMissionHelpRootView *)(uiRoot->rootUi).base.parent;
+  rootNode = source;
+  while (rootNode->parent != UI_NODE_NONE) {
+    rootNode = rootNode->parent;
   }
-  isSelected = (Bool8)UiSelectableControl_IsSelected((UiSelectableControl *)source);
+  uiRoot = reinterpret_cast<InGameMissionHelpRootView *>(rootNode); /* the mission help view of the in-game root */
+  isSelected = UiSelectableControl_IsSelected(THANDOR_CONTAINER_OF(source, UiSelectableControl, base));
   if (!isSelected) {
     UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,&uiRoot->gameWindowPageStack);
     /* UI_NODE_SUPPRESSED on the world view: a window blocks the world input */
@@ -36,7 +38,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
     *interactionFlagsField = *interactionFlagsField & ~UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW) == 0) {
+      if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW)) {
         g_UiCommandRuntimeFlags =
              g_UiCommandRuntimeFlags & ~(UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
       }
@@ -51,7 +53,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   UiSelectableControl_SetSelected(0,&uiRoot->inGameMenuButton);
   interactionFlagsField = &(uiRoot->worldRuntime).interaction.nodeFlags;
   *interactionFlagsField = *interactionFlagsField | UI_NODE_SUPPRESSED;
-  UiKeyboardFocus_ReleaseNode((UiNodeBase *)&uiRoot->worldRuntime);
+  UiKeyboardFocus_ReleaseNode(reinterpret_cast<UiNodeBase *>(&uiRoot->worldRuntime)); /* the world view node */
   UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_MISSION_HELP,&uiRoot->gameWindowPageStack);
   (uiRoot->missionBriefingPanel).textResourceId =
        (uiRoot->worldRuntime).activeFactionRuntimeIndex + TEXT_ID_MISSION_HELP_BASE +
@@ -79,8 +81,8 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->mouseHelpPanel).scrollable);
   UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->mouseHelpPanel).scrollable);
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-       SESSION_NETWORK_ROLE_LOCAL) && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE) == 0)) {
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) {
+       SESSION_NETWORK_ROLE_LOCAL) && (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE))) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW;
     }
     g_UiCommandRuntimeFlags =
@@ -96,28 +98,26 @@ void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
 
 {
   uint32_t selectedTabIndex;
-  uintptr_t parentNodeAddress;
-  void *rootNodeCursor;
+  UiNodeBase *rootNodeCursor;
 
   /* climb to the UI root (parent -1) */
-  parentNodeAddress = (uintptr_t)(selectableControl->base).parent;
-  rootNodeCursor = selectableControl;
-  while (parentNodeAddress != (uintptr_t)-1) {
-    rootNodeCursor = (((UiSelectableControl *)rootNodeCursor)->base).parent;
-    parentNodeAddress = (uintptr_t)((UiNodeBase *)rootNodeCursor)->parent;
+  rootNodeCursor = &selectableControl->base;
+  while (rootNodeCursor->parent != UI_NODE_NONE) {
+    rootNodeCursor = rootNodeCursor->parent;
   }
+  InGameUiImage *image = InGameUi_Image(rootNodeCursor);
   UiSelectableGroup_SelectExclusive(3,&selectableControl->base,
-      INGAME_UI(rootNodeCursor,resultsTabThird),
-      INGAME_UI(rootNodeCursor,resultsTabEconomy),
-      INGAME_UI(rootNodeCursor,resultsTabMilitary));
+      &image->resultsTabThird.selectable.base,
+      &image->resultsTabEconomy.selectable.base,
+      &image->resultsTabMilitary.selectable.base);
   /* Original quirk: the result is not tested; with no visible tab selected the index is 3 (no page) */
   UiSelectableGroup_FindVisibleSelected(nullptr,&selectedTabIndex,3,
-      INGAME_UI(rootNodeCursor,resultsTabThird),
-      INGAME_UI(rootNodeCursor,resultsTabEconomy),
-      INGAME_UI(rootNodeCursor,resultsTabMilitary));
+      &image->resultsTabThird.selectable.base,
+      &image->resultsTabEconomy.selectable.base,
+      &image->resultsTabMilitary.selectable.base);
   UiPageStack_SetActiveIndex
             (selectedTabIndex,
-             (UiPageStackControl *)INGAME_UI(rootNodeCursor,resultsChartPageStack));
+             UiLayoutContainerControl_AsPageStack(&image->resultsChartPageStack));
 }
 
 /* UI action 0x1010 (also key F): toggles the in-game technology window (page 2 of the window page stack).
@@ -135,13 +135,14 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
   CommandPayload modelOffset;
   uint32_t activePageIndex;
 
-  while ((((UiRootNode *)source)->base).parent != UI_NODE_NONE) {
-    source = (((UiRootNode *)source)->base).parent;
+  while (source->parent != UI_NODE_NONE) {
+    source = source->parent;
   }
-  if ((g_UiCommandRuntimeFlags &
-       (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
-    INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
-    gameWindowStack = (UiPageStackControl *)INGAME_UI(source,gameWindowPageStack);
+  if (!Any(g_UiCommandRuntimeFlags &
+       (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED))) {
+    InGameUi_Image(source)->worldView.base.nodeFlags =
+         InGameUi_Image(source)->worldView.base.nodeFlags & ~UI_NODE_SUPPRESSED;
+    gameWindowStack = UiLayoutContainerControl_AsPageStack(&InGameUi_Image(source)->gameWindowPageStack);
     activePageIndex = UiPageStack_ActivePageIndex(gameWindowStack);
     if (activePageIndex == 2) {
       pageIndex = 0;
@@ -156,7 +157,7 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
     firstSelectedEntity = SelectionInfo_GetFirstEntry();
     if (firstSelectedEntity != nullptr) {
       definitionRecord = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
-      InGameTechnologyPanel_ResetAndSelectCurrentArea((UiRootNode *)source);
+      InGameTechnologyPanel_ResetAndSelectCurrentArea(&InGameUi_Image(source)->inGameRootPanel.root);
       /* network-safe form of the pointer: offset from g_ModelRuntimeRebaseDelta */
       modelOffset = (int)((intptr_t)definitionRecord - (intptr_t)g_ModelRuntimeRebaseDelta);
       InGameCommand_Issue<FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch>(0,0,modelOffset);
@@ -216,7 +217,7 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
+    InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,ToBits(UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED),0);
   }
   else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
            SESSION_NETWORK_ROLE_LOCAL) {
@@ -234,7 +235,7 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
 void InGameEndMovie_Skip(void *source)
 
 {
-  InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
+  InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,0,ToBits(UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING));
 }
 
 /* Quit game window restart button (action INGAME_ACTION_QUIT_RESTART_MISSION 0x1027,
@@ -249,8 +250,8 @@ void InGameQuitMenu_RestartMission(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  UiSelectableControl_SetSelected(0,&InGameUi_Image(source)->inGameMenuButton.selectable);
+  InGameSettingsPage_ToggleAndSynchronizeControls(&InGameUi_Image(source)->inGameMenuButton.selectable);
   InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION);
 }
 
@@ -262,11 +263,11 @@ void InGameQuitMenu_OpenAndRefreshButtons(InGameCommandPanelSourceAddress32 sour
 
 {
   UiNodeBase *firstNode;
-
   /* source is InGameUiImage.gameMenuQuitButton */
-  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_QUIT_MENU,(UiPageStackControl *)
-                             THANDOR_UI_SIBLING(source,InGameUiImage,gameMenuQuitButton,gameWindowPageStack));
-  firstNode = THANDOR_UI_AT(source,-(int)offsetof(InGameUiImage,gameMenuQuitButton)); /* the in-game UI root */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(reinterpret_cast<UiNodeBase *>(source), InGameUiImage, gameMenuQuitButton);
+
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_QUIT_MENU,UiLayoutContainerControl_AsPageStack(&image->gameWindowPageStack));
+  firstNode = &image->inGameRootPanel.root.base; /* the in-game UI root */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_QUIT_RESTART_MISSION,firstNode);
@@ -274,7 +275,7 @@ void InGameQuitMenu_OpenAndRefreshButtons(InGameCommandPanelSourceAddress32 sour
   else {
     UiNodeList_SuppressActionId(INGAME_ACTION_QUIT_RESTART_MISSION,firstNode);
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_QUIT_SURRENDER,firstNode);
   }
   else {
@@ -298,28 +299,26 @@ void InGameResultsScreen_CloseLocally(UiNodeBase *source)
 void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
 
 {
-  UiSelectableControl *root;
+  UiNodeBase *root;
   uint32_t selectedIndexValue;
 
-  root = source;
-  while ((root->base).parent != UI_NODE_NONE) {
-    root = (UiSelectableControl *)(root->base).parent;
+  root = &source->base;
+  while (root->parent != UI_NODE_NONE) {
+    root = root->parent;
   }
+  InGameUiImage *image = InGameUi_Image(root);
   UiSelectableGroup_SelectExclusive(2,&source->base,
-      INGAME_UI(root,resultsChartModeButtonB),
-      INGAME_UI(root,resultsChartModeButtonA));
+      &image->resultsChartModeButtonB.selectable.base,
+      &image->resultsChartModeButtonA.selectable.base);
   /* Original quirk: the result is not tested; with no visible button selected the index is 2 */
   UiSelectableGroup_FindVisibleSelected(nullptr,&selectedIndexValue,2,
-      INGAME_UI(root,resultsChartModeButtonA),
-      INGAME_UI(root,resultsChartModeButtonB));
+      &image->resultsChartModeButtonA.selectable.base,
+      &image->resultsChartModeButtonB.selectable.base);
   /* Mode 0/1 picks each chart's drawing path (modeFlags bit 0) and the results background image. */
-  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart1))->modeFlags =
-       (uint32_t)selectedIndexValue;
-  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart2))->modeFlags =
-       (uint32_t)selectedIndexValue;
-  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart3))->modeFlags =
-       (uint32_t)selectedIndexValue;
-  ((UiImagePanelControl *)INGAME_UI(root,resultsScreenPanel))->subresource =
+  image->resultsChart1.modeFlags = (uint32_t)selectedIndexValue;
+  image->resultsChart2.modeFlags = (uint32_t)selectedIndexValue;
+  image->resultsChart3.modeFlags = (uint32_t)selectedIndexValue;
+  image->resultsScreenPanel.subresource =
        (GraphicsSubresourceIndex)selectedIndexValue;
 }
 
@@ -334,8 +333,8 @@ void InGameQuitMenu_AbortMission(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  UiSelectableControl_SetSelected(0,&InGameUi_Image(source)->inGameMenuButton.selectable);
+  InGameSettingsPage_ToggleAndSynchronizeControls(&InGameUi_Image(source)->inGameMenuButton.selectable);
   InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);
 }
 
@@ -350,8 +349,8 @@ void InGameQuitMenu_Surrender(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  UiSelectableControl_SetSelected(0,&InGameUi_Image(source)->inGameMenuButton.selectable);
+  InGameSettingsPage_ToggleAndSynchronizeControls(&InGameUi_Image(source)->inGameMenuButton.selectable);
   InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
 }
 
@@ -362,11 +361,12 @@ void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpBriefingTab of the in-game UI template copy */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(sourceNode, InGameUiImage, missionHelpBriefingTab);
   UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpMouseTab),
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpKeyboardTab),
+      &image->missionHelpMouseTab.selectable.base,
+      &image->missionHelpKeyboardTab.selectable.base,
       sourceNode);
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpTabPageStack));
+  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->missionHelpTabPageStack));
 }
 
 /* UI action 0x1022 (missionHelpKeyboardTab; g_InGameUiActionHandlersPage10[34]): selects tab 1 of the mission help
@@ -376,11 +376,12 @@ void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpKeyboardTab of the in-game UI template copy */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(sourceNode, InGameUiImage, missionHelpKeyboardTab);
   UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpMouseTab),
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpBriefingTab),
+      &image->missionHelpMouseTab.selectable.base,
+      &image->missionHelpBriefingTab.selectable.base,
       sourceNode);
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpTabPageStack));
+  UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&image->missionHelpTabPageStack));
 }
 
 /* UI action 0x1023 (missionHelpMouseTab; g_InGameUiActionHandlersPage10[35]): selects tab 2 of the mission help
@@ -390,9 +391,10 @@ void InGameMissionHelpPage_SelectMouseTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpMouseTab of the in-game UI template copy */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(sourceNode, InGameUiImage, missionHelpMouseTab);
   UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpBriefingTab),
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpKeyboardTab),
+      &image->missionHelpBriefingTab.selectable.base,
+      &image->missionHelpKeyboardTab.selectable.base,
       sourceNode);
-  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpTabPageStack));
+  UiPageStack_SetActiveIndex(2,UiLayoutContainerControl_AsPageStack(&image->missionHelpTabPageStack));
 }

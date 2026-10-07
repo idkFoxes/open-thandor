@@ -10,6 +10,7 @@
 
 #include <thandor/graphics/render/model_draw.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -24,7 +25,7 @@ GraphicsFixedVec3 g_ModelCullViewRelative = {};
    radius; g_ModelCullViewRelative holds its view-relative position. Projects it and, when it lies fully in
    front of the near plane, collects the nearby shading records and draws the mesh group picked by depth.
    Returns false when the node's depth is not beyond the near plane (the walk then also skips its children). */
-static Bool8 ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
+static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
 
 {
   ModelResource *renderView;
@@ -67,10 +68,10 @@ static Bool8 ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
     /* level of detail: the next mesh group beyond g_ModelLodDepthThresholdQ8, the third beyond twice that depth
        (each group starts with the offset to the next) */
     if ((uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)g_ModelCullViewRelative.z && 1 < meshGroupCount) {
-      meshGroup = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroup + *meshGroup);
+      meshGroup = Asset_RecordAt<ModelMeshGroupRelativeOffset>(meshGroup,*meshGroup);
       if ((uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)(g_ModelCullViewRelative.z >> 1) &&
           2 < meshGroupCount) {
-        meshGroup = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroup + *meshGroup);
+        meshGroup = Asset_RecordAt<ModelMeshGroupRelativeOffset>(meshGroup,*meshGroup);
       }
     }
     ModelRender_DrawMeshGroupsWithTemporaryTransform
@@ -83,7 +84,7 @@ static Bool8 ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
    g_ModelCullViewRelative) against the four side planes of the view frustum and draws it when it passes.
    A plane distance above the subtree radius means the whole subtree is outside: returns false and the walk
    ends here. Above only the node radius, just the node is culled and the children are still visited. */
-static Bool8 ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
+static bool ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
 
 {
   int subtreeRadius;

@@ -15,50 +15,34 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Lock-key bits of g_KeyboardStateMask, seeded from the system's lock-key state (SdlInput_Init at startup and
-   again when the window regains the focus). */
-#define KEYBOARD_STATE_NUM_LOCK 0x10000
-#define KEYBOARD_STATE_SCROLL_LOCK 0x20000
-#define KEYBOARD_STATE_CAPS_LOCK 0x40000
-/* Modifier bits of g_KeyboardStateMask (Keyboard_OnKeyDown): left/right Shift 0x01/0x02, left/right Ctrl
-   0x04/0x08, left/right Alt 0x10/0x20. */
-#define KEYBOARD_STATE_SHIFT 0x03
-#define KEYBOARD_STATE_CTRL 0x0C
-#define KEYBOARD_STATE_ALT 0x30
-#define KEYBOARD_STATE_ANY_MODIFIER 0x3F
-#define KEYBOARD_STATE_LEFT_SHIFT 0x01
-#define KEYBOARD_STATE_RIGHT_SHIFT 0x02
-#define KEYBOARD_STATE_LEFT_CTRL 0x04
-#define KEYBOARD_STATE_RIGHT_CTRL 0x08
-#define KEYBOARD_STATE_LEFT_ALT 0x10
-#define KEYBOARD_STATE_RIGHT_ALT 0x20
+/* The KEYBOARD_STATE_* bits of g_KeyboardStateMask: UiKeyboardStateMask (ui/controls/types.h). */
 /* Key codes of the events Keyboard_OnKeyDown queues (the commandCode of the keyboard dispatchers): digits and
    letters are 0x30000 + their ASCII code (letters lowercase), special keys use the 0x10000 family. */
 #define KEYBOARD_KEY_CODE_CHAR(asciiCode) (0x30000 + (asciiCode))
-#define KEYBOARD_KEY_CODE_SPACE 0x20
-#define KEYBOARD_KEY_CODE_BACKSPACE 0x10003
-#define KEYBOARD_KEY_CODE_ESCAPE 0x10000 /* VK_ESCAPE (Keyboard_OnKeyDown); Game_PlayIntroMovies skips all intros */
-#define KEYBOARD_KEY_CODE_NUMPAD_5 0x10015 /* also VK_SELECT */
-#define KEYBOARD_KEY_CODE_ENTER 0x10001 /* VK_RETURN and VK_SEPARATOR */
-#define KEYBOARD_KEY_CODE_TAB 0x10002
-#define KEYBOARD_KEY_CODE_PRINT 0x10004 /* VK_PRINT and VK_SNAPSHOT */
-#define KEYBOARD_KEY_CODE_PAUSE 0x10005 /* VK_PAUSE and VK_EXECUTE */
+inline constexpr auto KEYBOARD_KEY_CODE_SPACE = 0x20;
+inline constexpr auto KEYBOARD_KEY_CODE_BACKSPACE = 0x10003;
+inline constexpr auto KEYBOARD_KEY_CODE_ESCAPE = 0x10000; /* VK_ESCAPE (Keyboard_OnKeyDown); Game_PlayIntroMovies skips all intros */
+inline constexpr auto KEYBOARD_KEY_CODE_NUMPAD_5 = 0x10015; /* also VK_SELECT */
+inline constexpr auto KEYBOARD_KEY_CODE_ENTER = 0x10001; /* VK_RETURN and VK_SEPARATOR */
+inline constexpr auto KEYBOARD_KEY_CODE_TAB = 0x10002;
+inline constexpr auto KEYBOARD_KEY_CODE_PRINT = 0x10004; /* VK_PRINT and VK_SNAPSHOT */
+inline constexpr auto KEYBOARD_KEY_CODE_PAUSE = 0x10005; /* VK_PAUSE and VK_EXECUTE */
 #define KEYBOARD_KEY_CODE_SPECIAL(index) (0x10000 + (index)) /* index: KEYBOARD_SPECIAL_KEY_* */
 #define KEYBOARD_KEY_CODE_FUNCTION(number) (0x20000 + (number)) /* F1..F12 */
 /* Keyboard_OnKeyUp: any code outside the 0x10000 family, i.e. no g_KeyboardSpecialKeyDown entry to clear */
-#define KEYBOARD_KEY_CODE_NOT_SPECIAL 0x20000
+inline constexpr auto KEYBOARD_KEY_CODE_NOT_SPECIAL = 0x20000;
 /* Indices into g_KeyboardSpecialKeyDown: the low word of a 0x10000-family key code, 1 while the key is held
    (Keyboard_OnKeyDown); the numpad keys map to the same codes. Used by the in-game camera keys. */
-#define KEYBOARD_SPECIAL_KEY_DELETE 0x06 /* also numpad decimal point */
-#define KEYBOARD_SPECIAL_KEY_INSERT 0x07 /* also numpad 0 */
-#define KEYBOARD_SPECIAL_KEY_HOME 0x10 /* also numpad 7 */
-#define KEYBOARD_SPECIAL_KEY_UP 0x11 /* also numpad 8 */
-#define KEYBOARD_SPECIAL_KEY_PAGE_UP 0x12 /* also numpad 9 */
-#define KEYBOARD_SPECIAL_KEY_LEFT 0x14 /* also numpad 4 */
-#define KEYBOARD_SPECIAL_KEY_RIGHT 0x16 /* also numpad 6 */
-#define KEYBOARD_SPECIAL_KEY_END 0x18 /* also numpad 1 */
-#define KEYBOARD_SPECIAL_KEY_DOWN 0x19 /* also numpad 2 */
-#define KEYBOARD_SPECIAL_KEY_PAGE_DOWN 0x1A /* also numpad 3 */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_DELETE = 0x06; /* also numpad decimal point */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_INSERT = 0x07; /* also numpad 0 */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_HOME = 0x10; /* also numpad 7 */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_UP = 0x11; /* also numpad 8 */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_PAGE_UP = 0x12; /* also numpad 9 */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_LEFT = 0x14; /* also numpad 4 */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_RIGHT = 0x16; /* also numpad 6 */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_END = 0x18; /* also numpad 1 */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_DOWN = 0x19; /* also numpad 2 */
+inline constexpr auto KEYBOARD_SPECIAL_KEY_PAGE_DOWN = 0x1A; /* also numpad 3 */
 /* Full key codes of those special keys, as the UI keyboard handlers (text edits, lists) compare them. */
 #define KEYBOARD_KEY_CODE_DELETE KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DELETE)
 #define KEYBOARD_KEY_CODE_INSERT KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_INSERT)
@@ -71,30 +55,30 @@
 #define KEYBOARD_KEY_CODE_DOWN KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN)
 #define KEYBOARD_KEY_CODE_PAGE_DOWN KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN)
 /* Entries of the g_KeyboardEvents ring; the read and write indices wrap to 0 after SIZE - 1. */
-#define KEYBOARD_EVENT_RING_SIZE 64
+inline constexpr auto KEYBOARD_EVENT_RING_SIZE = 64;
 /* Key code families: the high word selects the family (KEYBOARD_KEY_CODE_SPECIAL(0), _FUNCTION(0), _CHAR(0)),
    the low word of a special key is its g_KeyboardSpecialKeyDown index */
-#define KEYBOARD_KEY_CODE_FAMILY_MASK 0xffff0000
-#define KEYBOARD_KEY_CODE_INDEX_MASK 0xffff
+inline constexpr auto KEYBOARD_KEY_CODE_FAMILY_MASK = 0xffff0000;
+inline constexpr auto KEYBOARD_KEY_CODE_INDEX_MASK = 0xffff;
 /* Entries of the g_CursorInputEvents ring (filled by the SDL3 input backend and the input script); the write
    index wraps after SIZE - 1 */
-#define CURSOR_INPUT_EVENT_RING_SIZE 256
+inline constexpr auto CURSOR_INPUT_EVENT_RING_SIZE = 256;
 /* SdlInput_Init: rate of the cursor-animation timer (the original also polled its DirectInput mouse at 64 Hz) */
-#define CURSOR_ANIMATION_TIMER_HZ 20
+inline constexpr auto CURSOR_ANIMATION_TIMER_HZ = 20;
 
-Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
+bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
 
 void Keyboard_FlushEvents();
 
-Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask);
+bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask);
 
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
-Bool8 GraphicsCursor_LoadAssets(uint32_t *outError);
+bool GraphicsCursor_LoadAssets(uint32_t *outError);
 
 void GraphicsCursor_FreeBuffers();
 
-Bool8 GraphicsCursor_CreateBuffersAndCenter
+bool GraphicsCursor_CreateBuffersAndCenter
           (GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode);
 
 void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey);
@@ -123,7 +107,7 @@ extern GraphicsCursorButtonState g_MouseButtonMask;
 
 extern KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3;
 
-extern uint32_t g_KeyboardStateMask;
+extern UiKeyboardStateMask g_KeyboardStateMask;
 
 extern uint8_t g_KeyboardSpecialKeyDown[32];
 extern KeyboardFlushEventsProc *g_KeyboardFlushEvents;
@@ -131,6 +115,6 @@ extern KeyboardFlushEventsProc *g_KeyboardFlushEvents;
 extern UiPixelCoordinate g_CursorOverrideX;
 extern UiPixelCoordinate g_CursorOverrideY;
 extern int32_t g_CursorVisibilityToken;
-extern uint32_t g_CursorButtonState;
+extern GraphicsCursorButtonState g_CursorButtonState;
 
 #endif /* THANDOR_PLATFORM_INPUT_DEVICES_H */

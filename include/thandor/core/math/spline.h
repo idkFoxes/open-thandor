@@ -14,7 +14,7 @@
 
 /* Order of the cubic-spline equation matrix (32x32 floats, row-major): 4 coefficients per segment, so at most
    8 segments / 9 keyframes (CubicSpline_BuildNaturalCoefficientSystem, CubicSpline_SolveCoefficientSystem). */
-#define CUBIC_SPLINE_MATRIX_ORDER 32
+inline constexpr auto CUBIC_SPLINE_MATRIX_ORDER = 32;
 
 /* Floats of one equation matrix (g_WorldMotionSplineMatrixWorkspaces[channel], 0x400) */
 #define CUBIC_SPLINE_MATRIX_FLOATS (CUBIC_SPLINE_MATRIX_ORDER * CUBIC_SPLINE_MATRIX_ORDER)

@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
+#include <thandor/core/slot.h> /* THANDOR_SLOT_OVERLAY */
 #include <thandor/assets/army/types.h>
 #include <thandor/assets/rom/types.h>
 #include <thandor/core/types.h>
@@ -17,17 +18,17 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/ui/ingame/types.h>
 
-typedef struct ModelRuntimeNode ModelRuntimeNode, *PModelRuntimeNode;
-typedef union ModelRuntimePayloadReference4 ModelRuntimePayloadReference4, *PModelRuntimePayloadReference4;
-typedef struct ModelAttachmentTransformRecord ModelAttachmentTransformRecord, *PModelAttachmentTransformRecord;
-typedef struct ModelRaycastTriangleDescriptor ModelRaycastTriangleDescriptor, *PModelRaycastTriangleDescriptor;
-typedef struct ModelRuntimeSlotClassStateSerializedScalar ModelRuntimeSlotClassStateSerializedScalar, *PModelRuntimeSlotClassStateSerializedScalar;
-typedef struct ModelRuntimeAttachmentSavedDescriptor ModelRuntimeAttachmentSavedDescriptor, *PModelRuntimeAttachmentSavedDescriptor;
-typedef struct ModelRuntimeSlotUnrebaseView ModelRuntimeSlotUnrebaseView, *PModelRuntimeSlotUnrebaseView;
-typedef union ModelRaycastNearestNodeOrScratch4 ModelRaycastNearestNodeOrScratch4, *PModelRaycastNearestNodeOrScratch4;
-typedef struct ModelRelativeDirectionAngles ModelRelativeDirectionAngles, *PModelRelativeDirectionAngles;
-typedef struct EffectRuntimeSlot EffectRuntimeSlot;
-typedef struct ShotRuntimeSlot ShotRuntimeSlot;
+struct ModelRuntimeNode;
+union ModelRuntimePayloadReference4;
+struct ModelAttachmentTransformRecord;
+struct ModelRaycastTriangleDescriptor;
+struct ModelRuntimeSlotClassStateSerializedScalar;
+struct ModelRuntimeAttachmentSavedDescriptor;
+struct ModelRuntimeSlotUnrebaseView;
+union ModelRaycastNearestNodeOrScratch4;
+struct ModelRelativeDirectionAngles;
+struct EffectRuntimeSlot;
+struct ShotRuntimeSlot;
 
 using SprAttachmentPackedKey = uint32_t;
 
@@ -119,7 +120,7 @@ struct ModelRuntimeSlotClassStateSerializedScalar {
     uint32_t effectEmitterPointIndex; 
     uint32_t shotEmitterTimerTicks; 
     uint32_t effectEmitterTimerTicks; 
-    uint32_t stateFlags; 
+    ArmyRuntimeFlags stateFlags; 
     uint32_t linkedArmyRuntimeSavedOffset; 
     EnergyDemandQ4 energyDemandQ4; 
     uint32_t healthRegenerationDelayTicks; 
@@ -154,9 +155,58 @@ union ModelRaycastNearestNodeOrScratch4 {
     int scratchSigned; // arithmetic/scratch value when there is no hit or before the hit is stored
 };
 
+/* The save-image view of a model runtime slot (ModelRuntimePool_UnrebaseBeforeSave): ModelView_Cast between the two
+   (step 13 X7b). */
+THANDOR_SLOT_OVERLAY(ModelRuntimeSlotUnrebaseView, ModelRuntimeSlot);
+
 struct ModelRelativeDirectionAngles {
     AngleTurn32 relativeYawAngle; // Wrapped yaw/azimuth relative to model local rotation.
     AngleTurn32 relativePitchAngle; // Transformed elevation/pitch angle retained from FixedMath_VectorToAngles.
 };
+
+/* Typed views of WorldOwnerListNode.runtimePayload (step 13 X3; they replace the C-style T * casts of node->runtimePayload
+   and compile to the same load). The field stays Ptr32<void> (ui/ingame/types.h) because the record it points to
+   depends on ownerClassId: WORLD_OWNER_RUNTIME_MODEL -> ModelRuntimeSlot, _SHOT -> ShotRuntimeSlot,
+   _EFFECT -> EffectRuntimeSlot. The accessors do not check the class: the caller checks it (or knows its list),
+   as it did with the cast. A ModelRuntimeNode has the same payload already typed (runtimePayload.modelRuntime ...).
+   Not constexpr: a Ptr32 field holds an address as an integer. */
+inline ModelRuntimeSlot *WorldOwnerNode_ModelRuntime(const WorldOwnerListNode *node)
+{
+    return static_cast<ModelRuntimeSlot *>(node->runtimePayload.get());
+}
+inline ShotRuntimeSlot *WorldOwnerNode_ShotRuntime(const WorldOwnerListNode *node)
+{
+    return static_cast<ShotRuntimeSlot *>(node->runtimePayload.get());
+}
+inline EffectRuntimeSlot *WorldOwnerNode_EffectRuntime(const WorldOwnerListNode *node)
+{
+    return static_cast<EffectRuntimeSlot *>(node->runtimePayload.get());
+}
+/* The GameEntityRuntime view of the payload (AI combat scan, pathing route and influence: the entity whose
+   ownership references are then read through GameEntityOwnershipState10's accessors). */
+inline GameEntityRuntime *WorldOwnerNode_EntityRuntime(const WorldOwnerListNode *node)
+{
+    return static_cast<GameEntityRuntime *>(node->runtimePayload.get());
+}
+
+/* Views of one world-object record (step 13 X7). A record of the world-object array
+   (WorldObjectArray_AllocateFreeRecord) is read as WorldObjectRecord (allocation), WorldRuntimeNode and
+   WorldOwnerListNode (owner-list links and scans), ModelRuntimeNode (model hierarchy), ShotModelRuntimeNode or
+   EffectModelRuntimeNode (the node of a shot or effect model). They share the WorldRuntimeNodeCommon prefix
+   but are separate C++ types, so changing the view is a reinterpret_cast; it is done here, restricted to these
+   types, and compiles to nothing (the C-style T * casts of node it replaces). */
+struct WorldObjectRecord;
+struct WorldRuntimeNode;
+struct ShotModelRuntimeNode;
+struct EffectModelRuntimeNode;
+template <class T>
+concept WorldNodeView =
+    std::is_same_v<T, WorldObjectRecord> || std::is_same_v<T, WorldRuntimeNode> ||
+    std::is_same_v<T, WorldOwnerListNode> || std::is_same_v<T, ModelRuntimeNode> ||
+    std::is_same_v<T, ShotModelRuntimeNode> || std::is_same_v<T, EffectModelRuntimeNode>;
+template <WorldNodeView To, WorldNodeView From> inline To *WorldNode_View(From *node)
+{
+    return reinterpret_cast<To *>(node);
+}
 
 #endif /* THANDOR_WORLD_MODEL_TYPES_H */

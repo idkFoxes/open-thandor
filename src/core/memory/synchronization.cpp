@@ -43,7 +43,7 @@ void SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
    can skip its work instead of waiting.
    Reached through the function-pointer slot g_SpinLockTryAcquire.
 */
-Bool8 SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
+bool SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 
 {
   if (lockValue != nullptr) {

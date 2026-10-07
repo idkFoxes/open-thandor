@@ -13,7 +13,7 @@
 #include <thandor/core/contracts.h>
 
 /* g_SoftwareDepthEpoch drops by one step (the top byte) per frame (SoftwareRenderer_AdvanceDepthEpoch) */
-#define SOFTWARE_DEPTH_EPOCH_STEP 0x1000000
+inline constexpr int SOFTWARE_DEPTH_EPOCH_STEP = 0x1000000;
 
 extern SoftwareRasterScanState g_SoftwareRasterScanState;
 

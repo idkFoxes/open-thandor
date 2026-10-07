@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/pool.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -28,7 +29,7 @@ const uint32_t g_ArmyRuntimeDepthBinClassByModelClass[24] = {
    runs behind the level-loading movie. Returns true on success (*outError = 0); on an allocation or graphics
    load error returns false with that error in *outError. A failed preview render is skipped silently.
 */
-Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError)
+bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError)
 
 {
   uint16_t pathChar;
@@ -42,7 +43,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
   GraphicsPixelDimension previewHeight;
   int remainingCount;
   int factionSuffixChar;
-  Bool8 loadFactionGraphics;
+  bool loadFactionGraphics;
   int frontendPlayerRuntimeId;
   ArmyAssetRecordPrefix **registryCursor;
   uint16_t *pathCursor;
@@ -50,15 +51,15 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
   uint32_t allocError;
   GraphicsTextureResource *previewTexture;
 
-  allocError = g_MemoryApi.alloc(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),(void **)&armyPool);
+  allocError = g_MemoryApi.alloc(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),reinterpret_cast<void **>(&armyPool));
   if (allocError != 0) {
     *outError = allocError;
     return false;
   }
   /* base - 1: the rebase value for saved offsets, see ArmyRuntimePool_RebaseAfterLoad */
-  g_ArmyRuntimeRebaseBaseMinusOne = (uint8_t *)armyPool - 1;
+  g_ArmyRuntimeRebaseBaseMinusOne = Thandor_Bytes(armyPool) - 1;
   g_ArmyRuntimeSlots = armyPool;
-  poolDwordCursor = (uint32_t *)armyPool;
+  poolDwordCursor = reinterpret_cast<uint32_t *>(armyPool);
   for (remainingCount = ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot) / 4; remainingCount != 0; remainingCount--) {
     *poolDwordCursor = 0;
     poolDwordCursor++;
@@ -98,14 +99,14 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
       }
     }
     if (loadFactionGraphics) {
-      *(int *)pathEnd = factionSuffixChar; /* the suffix and a terminator in one dword */
+      *reinterpret_cast<int *>(pathEnd) = factionSuffixChar; /* the suffix and a terminator in one dword */
       WidePath_SetExtensionCode(ASSET_MAGIC_GFX,graphicsBasePath);
-      textureSourceAsset = (GraphicsTextureSourceAsset *)Package_LoadEntry(graphicsBasePath,outError);
+      textureSourceAsset = static_cast<GraphicsTextureSourceAsset *>(Package_LoadEntry(graphicsBasePath,outError));
       if (textureSourceAsset == nullptr) {
         return false;
       }
       ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
-                (frontendPlayerRuntimeId,(ArmyGraphicsAssetAddress32)textureSourceAsset);
+                (frontendPlayerRuntimeId,reinterpret_cast<ArmyGraphicsAssetAddress32>(textureSourceAsset));
       loadedTextureSet = g_GraphicsCreateTextureSet(textureSourceAsset,outError);
       if (loadedTextureSet == nullptr) {
         Resource_Release(textureSourceAsset);
@@ -135,8 +136,8 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
       previewTexture = ArmyRuntime_RenderPreviewTexture
                          (g_InGamePanelTextureSubresource34Height,
                           g_InGamePanelTextureSubresource34Width,
-                          ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
-                          (WorldRuntimeContext *)ownerContext);
+                          static_cast<WorldRuntimeContext *>(ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
+                          static_cast<WorldRuntimeContext *>(ownerContext));
       if (previewTexture != nullptr) {
         armyAsset[1].rootNodeOffsetOrPointer = Thandor_PointerToU32(previewTexture); /* 32-bit format field: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
         previewHeight =
@@ -144,8 +145,8 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
              ((uint64_t)(int64_t)g_InGamePanelTextureSubresource02Width / 3);
         previewTexture = ArmyRuntime_RenderPreviewTexture
                            (previewHeight,previewHeight,
-                            ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
-                            (WorldRuntimeContext *)ownerContext);
+                            static_cast<WorldRuntimeContext *>(ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
+                            static_cast<WorldRuntimeContext *>(ownerContext));
         if (previewTexture != nullptr) {
           armyAsset[1].registryId = Thandor_PointerToI32(previewTexture); /* 32-bit format field: ArmyAssetRecord[1].registryId (preview texture) */
         }
@@ -206,7 +207,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   SelectionPlayerRuntimeBlock *playerSelectionBlock;
 
-  modelRuntime = (ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord;
+  modelRuntime = (entityRuntime->common).ownership.modelRuntime();
   if (modelRuntime != nullptr) {
     (entityRuntime->common).ownership.definitionOrClassRecord = nullptr;
     ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,modelRuntime);
@@ -220,10 +221,11 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   /* drop it as each player's primary selection (the loop body runs at least once, as in the original) */
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     playerSelectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId];
     /* Original quirk: compares the entity address with the token, which is an offset (not a pointer) */
-    if ((uintptr_t)entityRuntime == (uintptr_t)playerSelectionBlock->placedArmyToken) {
+    if (reinterpret_cast<uintptr_t>(entityRuntime) == (uintptr_t)playerSelectionBlock->placedArmyToken) {
       playerSelectionBlock->placedArmyToken = 0;
     }
     playerBlockCursor++;
@@ -231,8 +233,8 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   } while (remainingBlocks != 0);
   GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(entityRuntime);
   (entityRuntime->common).ownership.modelNode = nullptr; /* marks the army slot free */
-  InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
+  InGameSpecialBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
   InGameSelectionDetailPanel_Rebuild();
 }
 
@@ -294,7 +296,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   uint32_t modelCreateError;
   ModelRuntimeSlot *createdModelRuntime;
   ModelRuntimeNode *modelNodeRuntime;
-  Bool8 childCreateFailed;
+  bool childCreateFailed;
   ModelDefinition *definition;
 
   armyRuntime = ArmyRuntimePool_FindFreeSlot();
@@ -312,7 +314,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
       (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
     selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                       (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
-    ((ModelDefinition *)selectedDefinition)->builtCount++;
+    ModelView_Cast<ModelDefinition>(selectedDefinition)->builtCount++;
   }
   /* the graphics bindings exist for faction slots 0-7 only */
   if (7 < (uint32_t)factionIndex) {
@@ -321,7 +323,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   armyRuntime->factionIndex = factionIndex;
   if ((creationFlags & ARMY_CREATE_UNLOCK_TECHNOLOGY) != 0) {
     ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
-              (factionIndex,(ModelDefinitionHierarchyNodeAddress32)armyAssetRecord);
+              (factionIndex,reinterpret_cast<ModelDefinitionHierarchyNodeAddress32>(armyAssetRecord));
   }
   textureSet = g_ArmyGraphicsBindings[factionIndex].textureSet;
   paletteAsset = g_ArmyGraphicsBindings[factionIndex].paletteAsset;
@@ -334,7 +336,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   armyRuntime->occupancyMarkRadius = 0;
   armyRuntime->visibilityRadius = 0;
   armyRuntime->visibilityHeightOffset = 0;
-  armyRuntime->aiUnitFlags = 0;
+  armyRuntime->aiUnitFlags = AI_UNIT_FLAGS_NONE;
   rootNodeReference = armyAssetRecord->rootNodeOffsetOrPointer;
   (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
@@ -369,7 +371,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   armyRuntime->commandCoordinate0Q12 = 0;
   armyRuntime->commandCoordinate1Q12 = 0;
   armyRuntime->commandCoordinate2Q12 = 0;
-  armyRuntime->commandModeFlags = 0;
+  armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_NONE;
   armyRuntime->commandGeneration = 0;
   (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
@@ -377,7 +379,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   (armyRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.coordinateOrTargetQ12 = worldXQ12;
   armyRuntime->movementPosition0Q12 = worldYQ12;
   armyRuntime->movementPosition1Q12 = worldXQ12;
-  armyRuntime->movementStateFlags = 0;
+  armyRuntime->movementStateFlags = ARMY_MOVEMENT_NONE;
   armyRuntime->actionVector1Q12 = 0;
   armyRuntime->terrainOccupancyMask0 = 0;
   armyRuntime->terrainOccupancyMask1 = 0;
@@ -389,7 +391,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
     /* Original quirk: the error is worldYQ12 (see above). */
     return ArmyRuntime_FailCreateInstance((uint32_t)worldYQ12,outError);
   }
-  WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
+  WorldRuntime_LinkOwnerListNode(ModelView_Cast<WorldOwnerListNode>(modelNodeRuntime));
   ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
   /* terrain contact by the definition's contact kind; depth class by its model class; depth radius from the
      definition */
@@ -440,8 +442,8 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
   armyRuntime->terrainOccupancyMask0 = resolvedMasks.primaryOccupancyMask;
   armyRuntime->terrainOccupancyMask1 = resolvedMasks.secondaryOccupancyMask;
   modelRuntime = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  modelNode->runtimeFlags = modelNode->runtimeFlags | occupancyRuntimeFlags;
-  if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLED) != 0) {
+  modelNode->runtimeFlags = modelNode->runtimeFlags | FromBits<ModelRuntimeFlags>(occupancyRuntimeFlags);
+  if (Any(modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLED)) {
     modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_FORCE_TRANSPARENT;
   }
 }
@@ -462,11 +464,12 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
   FrontendPlayerRuntimeRecord *playerRecord;
   uint8_t *payloadCursor;
   uint32_t *destinationCursor;
+  GraphicsTextureSourceAsset *sourceAsset;
 
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   while ((frontendPlayerRuntimeId != (playerRecord->factionAssignment).factionAssignmentIndex ||
-         ((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0))) {
+         !Any(playerRecord->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE))) {
     playerRecord++;
     remainingBlocks = remainingBlocks - 1;
     if (remainingBlocks == 0) {
@@ -477,18 +480,19 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
   /* The asset is a texture source asset; the replaced image is subresource 0x71 of its table (entry at table
      offset + 0xE20). Its paletteIndex selects one of the 0x800-byte palettes (256 8-byte entries) from asset
      +0x200, its dataOffset locates the pixel data. */
+  sourceAsset = reinterpret_cast<GraphicsTextureSourceAsset *>(armyGraphicsAsset);
   pixelDataOffset =
-       ((GraphicsTextureSourceEntry *)
-        (((GraphicsTextureSourceAsset *)armyGraphicsAsset)->tableDescriptor.subresourceTableOffset +
-        armyGraphicsAsset))[ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE].dataOffset;
-  destinationCursor = (uint32_t *)(((GraphicsTextureSourceEntry *)
-                                    (((GraphicsTextureSourceAsset *)armyGraphicsAsset)->tableDescriptor.
-                                     subresourceTableOffset + armyGraphicsAsset))
-                                   [ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE].paletteIndex * ARMY_GRAPHICS_PALETTE_BYTES
-                    + ARMY_GRAPHICS_PALETTE_TABLE_OFFSET + armyGraphicsAsset);
+       reinterpret_cast<GraphicsTextureSourceEntry *>
+       (sourceAsset->tableDescriptor.subresourceTableOffset + armyGraphicsAsset)
+       [ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE].dataOffset;
+  destinationCursor = reinterpret_cast<uint32_t *>
+                      (reinterpret_cast<GraphicsTextureSourceEntry *>
+                       (sourceAsset->tableDescriptor.subresourceTableOffset + armyGraphicsAsset)
+                       [ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE].paletteIndex * ARMY_GRAPHICS_PALETTE_BYTES
+                       + ARMY_GRAPHICS_PALETTE_TABLE_OFFSET + armyGraphicsAsset);
   for (remainingCount = 256; remainingCount != 0; remainingCount--) {
     /* reads four bytes of a three-byte entry; the fourth is replaced by the alpha */
-    paletteColor = *(uint32_t *)payloadCursor;
+    paletteColor = *reinterpret_cast<uint32_t *>(payloadCursor);
     if ((paletteColor & 0xffffff) == 0) {
       paletteColor = paletteColor & 0xffffff;
     }
@@ -499,9 +503,9 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
     payloadCursor = payloadCursor + 3;
     destinationCursor = destinationCursor + 2;
   }
-  destinationCursor = (uint32_t *)(pixelDataOffset + armyGraphicsAsset);
+  destinationCursor = reinterpret_cast<uint32_t *>(pixelDataOffset + armyGraphicsAsset);
   for (remainingCount = ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS; remainingCount != 0; remainingCount--) {
-    *destinationCursor = *(uint32_t *)payloadCursor;
+    *destinationCursor = *reinterpret_cast<uint32_t *>(payloadCursor);
     payloadCursor = payloadCursor + 4;
     destinationCursor++;
   }

@@ -24,22 +24,22 @@ Writing: screenshots (Alt+P in game, the movie screenshot command). Reading: the
 /* pcx.fnc export 3: encodes a GFX texture source (a framebuffer capture) as a PCX file (8-bit RLE; 3 planes for
    direct colour, 1 plane plus 256-colour palette for a palette source). true: *outBytes (release with
    g_MemoryApi.free) and *outByteCount; false: error code in *outError. */
-Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBytes,uint32_t *outByteCount,
+bool Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBytes,uint32_t *outByteCount,
                        uint32_t *outError);
 
 /* An 8-bit paletted PCX picture decoded by Pcx_DecodeIndexed8 (pcx.fnc export 2). */
-#define PCX_PALETTE_COLOR_COUNT 256
-typedef struct PcxIndexedImage {
+inline constexpr int PCX_PALETTE_COLOR_COUNT = 256;
+struct PcxIndexedImage {
     uint32_t width;  /* 1..65536 */
     uint32_t height; /* 1..65536 */
     /* 0xFFRRGGBB per colour, i.e. bytes blue, green, red, 0xFF in memory (the original decoder's format) */
     uint32_t paletteColors[PCX_PALETTE_COLOR_COUNT];
     uint8_t *pixels; /* width * height palette indices, top row first (g_MemoryApi allocation) */
-} PcxIndexedImage;
+};
 
 /* pcx.fnc export 2, 8-bit paletted files only: true when fileBytes decoded into *outImage (release it with
    Pcx_FreeIndexed8); false for a file the original decoder rejected or decoded as direct colour. */
-Bool8 Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxIndexedImage *outImage);
+bool Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxIndexedImage *outImage);
 void Pcx_FreeIndexed8(PcxIndexedImage *image);
 
 #endif

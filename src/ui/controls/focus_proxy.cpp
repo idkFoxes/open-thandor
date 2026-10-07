@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/focus_proxy.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -18,12 +19,12 @@ UiNodeBase *g_UiKeyboardFocusNode = UI_NODE_NONE;
    typed characters with bit 0x10 or 0x20 set are consumed without reaching the child. Returns false
    when consumed.
 */
-Bool8 UiSingleLineTextControl_ForwardKeyboardEventToChild
+bool UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
-  Bool8 eventResult;
+  bool eventResult;
 
   childControl = control->focusChild;
   /* key codes without a high word are typed characters (Keyboard_OnChar) and KEYBOARD_KEY_CODE_SPACE */
@@ -90,20 +91,20 @@ void UiSingleLineTextControl_RelocateChild(UiSerializedRelocationDelta relocatio
   UiSingleLineTextControl *controlReg = control;
   UiNodeFlags *childNodeFlagsField;
 
-  if ((((controlReg->base).nodeFlags &
-        (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) &&
+  if ((!Any((controlReg->base).nodeFlags &
+        (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET))) &&
      (controlReg->focusChild != nullptr)) {
     (controlReg->base).nodeFlags = (controlReg->base).nodeFlags | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
   UiContainer_RelocateChildren(relocationDelta,&controlReg->base);
   if (controlReg->focusChild != nullptr) {
-    controlReg->focusChild = (UiNodeBase *)((uint8_t *)controlReg->focusChild + relocationDelta);
+    controlReg->focusChild = Thandor_At<UiNodeBase>(controlReg->focusChild.get(), relocationDelta);
     childNodeFlagsField = &(controlReg->focusChild)->nodeFlags;
     *childNodeFlagsField =
          *childNodeFlagsField & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
   }
   if ((control->labelFlags & UI_LABEL_TEXT_NEEDS_RELOCATION) != 0) {
-    control->text = (uint16_t *)((uint8_t *)control->text + relocationDelta);
+    control->text = Thandor_At<uint16_t>(control->text.get(), relocationDelta);
     control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
 }
@@ -303,14 +304,14 @@ UiNodeBase * UiSingleLineTextControl_HitTestChildProxy
   hitNode = UiContainer_HitTestChildren(pointerY,pointerX,&control->base);
   if (hitNode == control->focusChild) {
     returnedNode = &control->base;
-    if ((hitNode->nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+    if (Any(hitNode->nodeFlags & UI_NODE_SUPPRESSED)) {
       returnedNode = UI_NODE_NONE;
     }
   }
   else {
     returnedNode = hitNode;
     if (((hitNode == &control->base) && (control->focusChild != nullptr)) &&
-       (((control->focusChild)->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+       (Any((control->focusChild)->nodeFlags & UI_NODE_SUPPRESSED))) {
       returnedNode = UI_NODE_NONE;
     }
   }

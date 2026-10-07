@@ -9,40 +9,42 @@
 #define THANDOR_GRAPHICS_RENDER_TYPES_H
 
 #include <stdint.h>
+#include <thandor/world/runtime/flags.h> /* WorldRuntimeFlags: FrontendModelPointerContext.contextFlags */
 #include <stddef.h> /* offsetof */
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/memory/types.h>
 #include <thandor/core/types.h>
+#include <thandor/core/flags.h> /* THANDOR_FLAG_ENUM: GraphicsPrimitiveDispatchFlags */
 #include <thandor/ui/controls/types.h>
 
-typedef struct GraphicsShadingRuntimeRecord GraphicsShadingRuntimeRecord, *PGraphicsShadingRuntimeRecord;
-typedef struct GraphicsProjectedPoint2i GraphicsProjectedPoint2i, *PGraphicsProjectedPoint2i;
-typedef struct GraphicsOffscreenSceneExtents GraphicsOffscreenSceneExtents, *PGraphicsOffscreenSceneExtents;
-typedef struct GraphicsOffscreenViewParameters GraphicsOffscreenViewParameters, *PGraphicsOffscreenViewParameters;
-typedef struct GraphicsProjectedVertexSource GraphicsProjectedVertexSource, *PGraphicsProjectedVertexSource;
-typedef struct GraphicsPrimitivePacket GraphicsPrimitivePacket, *PGraphicsPrimitivePacket;
-typedef struct GraphicsPrimitiveVertexRaw GraphicsPrimitiveVertexRaw, *PGraphicsPrimitiveVertexRaw;
-typedef union GraphicsPrimitiveRadixBucket GraphicsPrimitiveRadixBucket, *PGraphicsPrimitiveRadixBucket;
-typedef struct GraphicsPrimitiveQueueNode GraphicsPrimitiveQueueNode, *PGraphicsPrimitiveQueueNode;
-typedef struct GraphicsTriangleInput GraphicsTriangleInput, *PGraphicsTriangleInput;
-typedef struct GraphicsWideFixed GraphicsWideFixed, *PGraphicsWideFixed;
-typedef struct GraphicsFixedRect GraphicsFixedRect, *PGraphicsFixedRect;
-typedef struct GraphicsPrimitiveQueue GraphicsPrimitiveQueue, *PGraphicsPrimitiveQueue;
-typedef struct GraphicsFixedVec2 GraphicsFixedVec2, *PGraphicsFixedVec2;
-typedef struct GraphicsSceneBounds8 GraphicsSceneBounds8, *PGraphicsSceneBounds8;
-typedef struct GeneratedTextureRenderContextView GeneratedTextureRenderContextView, *PGeneratedTextureRenderContextView;
-typedef struct GraphicsProjectedPointPair GraphicsProjectedPointPair, *PGraphicsProjectedPointPair;
-typedef struct ModelProjectedBoundsPixels ModelProjectedBoundsPixels, *PModelProjectedBoundsPixels;
-typedef struct FrontendModelPointerContext FrontendModelPointerContext, *PFrontendModelPointerContext;
-typedef struct GeneratedTextureSampleWorkRecord GeneratedTextureSampleWorkRecord, *PGeneratedTextureSampleWorkRecord;
-typedef struct GeneratedTextureScratchRuntime GeneratedTextureScratchRuntime, *PGeneratedTextureScratchRuntime;
-typedef struct FieldGridAsset FieldGridAsset;
-typedef struct FrontendModelPointerHitContext FrontendModelPointerHitContext;
-typedef struct GameEntityRuntime GameEntityRuntime;
-typedef struct GraphicsTextureSetEntry GraphicsTextureSetEntry;
-typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
-typedef struct WorldRuntimeContext WorldRuntimeContext;
+struct GraphicsShadingRuntimeRecord;
+struct GraphicsProjectedPoint2i;
+struct GraphicsOffscreenSceneExtents;
+struct GraphicsOffscreenViewParameters;
+struct GraphicsProjectedVertexSource;
+struct GraphicsPrimitivePacket;
+struct GraphicsPrimitiveVertexRaw;
+union GraphicsPrimitiveRadixBucket;
+struct GraphicsPrimitiveQueueNode;
+struct GraphicsTriangleInput;
+struct GraphicsWideFixed;
+struct GraphicsFixedRect;
+struct GraphicsPrimitiveQueue;
+struct GraphicsFixedVec2;
+struct GraphicsSceneBounds8;
+struct GeneratedTextureRenderContextView;
+struct GraphicsProjectedPointPair;
+struct ModelProjectedBoundsPixels;
+struct FrontendModelPointerContext;
+struct GeneratedTextureSampleWorkRecord;
+struct GeneratedTextureScratchRuntime;
+struct FieldGridAsset;
+struct FrontendModelPointerHitContext;
+struct GameEntityRuntime;
+struct GraphicsTextureSetEntry;
+struct GraphicsTextureSourceAsset;
+struct ModelRuntimeNode;
+struct WorldRuntimeContext;
 
 using PackedRgb24 = uint32_t;
 
@@ -63,21 +65,8 @@ struct GraphicsShadingRuntimeRecord {
     uint32_t serializationToggleDword; 
 };
 
-enum {
-    FRONTEND_MODEL_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION=16,
-    FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK=32,
-    FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION=64,
-    FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT=256, /* right drag: heading and pitch, with the left button distance */
-    FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_FREE=512, /* right drag: the modifier keys choose move, heading, pitch or distance */
-    FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY=4096,
-    FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN=32768, /* right drag: move, with Ctrl heading and pitch */
-    FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER=524288, /* hit metric measured to the bounding box centre, not the node origin */
-    FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_NON_FACTION_MODELS=4194304,
-    FRONTEND_MODEL_POINTER_CONTEXT_HIDE_PANEL=67108864, /* = WORLD_RUNTIME_FLAG_HIDE_PANEL */
-    FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM=1073741824, /* = WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM */
-    FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT=2147483648 /* = WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT */
-};
-using FrontendModelPointerContextFlags = int;
+/* FrontendModelPointerContextFlags and the FRONTEND_MODEL_POINTER_CONTEXT_* bits: WorldRuntimeFlags
+   (world/runtime/flags.h). */
 
 enum {
     GRAPHICS_STATE_DISABLED=0,
@@ -99,7 +88,37 @@ using GraphicsScreenCoordinate = int;
 
 using GraphicsPlaneNormalFixed = int;
 
-using GraphicsPrimitiveDispatchFlags = uint32_t;
+/* The render flag word of a primitive packet (GraphicsPrimitivePacket.renderFlags) and of an MDL mesh triangle
+   (GraphicsTriangleInput.renderFlags, copied into the packet by GraphicsPrimitiveQueue_AppendTriangle). The bit
+   values are file data (MDL) and select the raster handler; bits without an enumerator stay valid. The
+   enumerators are also visible unscoped (using enum below), with their former constant names. */
+enum class GraphicsPrimitiveDispatchFlags : uint32_t {
+    /* Packet bits 12..17 select the raster handler ((flags & 0x3f000) >> 12); the software queue renderers
+       shift by 12 and index their handler table. Bit 16 marks a textured packet, bits 12..14 the blend mode. */
+    GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK = 0x3f000,
+    GRAPHICS_PRIMITIVE_FLAG_TEXTURED = 0x10000,
+    GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT = 0x20000,
+    GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED = 0x8000, /* set by SoftwareRenderer_PrepareTrianglePacket when all three vertex colours are equal */
+    GRAPHICS_PRIMITIVE_BLEND_MASK = 0x7000,
+    GRAPHICS_PRIMITIVE_BLEND_OPAQUE = 0,
+    GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT = 0x1000,
+    GRAPHICS_PRIMITIVE_BLEND_ADDITIVE = 0x2000,
+    GRAPHICS_PRIMITIVE_BLEND_MODE_4 = 0x4000, /* kept by GraphicsPrimitiveQueue_SetVertexColors like opaque */
+    GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE = 0x6000, /* blend mode 6: alpha-blended with depth writes */
+    /* bits 28..29: subtracted from an opaque packet's sort key (GraphicsPrimitiveQueue_RenderSortKey) */
+    GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS = 0x30000000,
+    /* Model triangle bits, read by ModelRender_SubmitTriangle*, ModelRender_PrepareProjectedVertex* */
+    MODEL_TRIANGLE_PALETTE_BANK_MASK = 0x1FF, /* material colour: index into the node's palette asset */
+    /* The palette bank mask ModelRender_SubmitTriangleAlternatePath uses: keeps bits 16..31 too */
+    MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK = 0xffff01ff,
+    MODEL_TRIANGLE_UNLIT = 0x200, /* vertices take the node tint instead of lighting */
+    MODEL_TRIANGLE_DOUBLE_SIDED = 0x400, /* drawn without the back-face test */
+    MODEL_TRIANGLE_LIGHTING_SCALED = 0x800, /* lit by ModelRender_ComputeVertexIntensityScaledPath */
+    MODEL_TRIANGLE_FLAT_SHADED = 0x8000, /* lit with the triangle normal; never reuses a cached vertex colour */
+    MODEL_TRIANGLE_VERTEX_CACHE_FLAGS = 0x8E00 /* the bits a projected vertex's cached colour was computed for */
+};
+THANDOR_FLAG_ENUM(GraphicsPrimitiveDispatchFlags);
+using enum GraphicsPrimitiveDispatchFlags;
 
 using DepthBinMask32 = uint32_t;
 
@@ -128,8 +147,6 @@ using GraphicsShadingRecordCount = uint32_t;
 using GraphicsProjectionScale = uint32_t;
 
 using GraphicsPrimitiveDepthFixed = int;
-
-using GraphicsRenderFlagMask = uint32_t;
 
 using GraphicsPixelDimension = uint32_t;
 
@@ -313,7 +330,7 @@ struct FrontendModelPointerContext {
     Q12 cursorWorldXQ12; // Cursor override X converted from pixels to Q12 for overlay hit state.
     Q12 cursorWorldYQ12; // Cursor override Y converted from pixels to Q12 for overlay hit state.
     Ptr32<struct GameEntityRuntime> selectedOverlayEntity; // Optional selected entity used by SelectionInfo/army overlay rendering; relocation clears it.
-    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback; // root keyboard fallback callback; the bool result is the status
+    Ptr32<bool (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback; // root keyboard fallback callback; the bool result is the status
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> hoverCursorCallback; // Pointer move with no button held: returns the cursor frame (surface hit depth/Y/X, hit metric, hit model, context).
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> heldButtonCursorCallback; // Pointer move while a non-right button is held (ROUTE_TO_SECONDARY_CALLBACK): returns the cursor frame.
     Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonPressCallback; // Non-right button press (FrontendModelPointerContext_NonRightPress).
@@ -339,6 +356,14 @@ struct FrontendModelPointerContext {
     int terrainMarkerPointCount; // Point count paired with terrainMarkerCoordinatePairs.
     uint32_t reserved178; // Trailing dword; never accessed.
 };
+
+/* A FrontendModelPointerContext as the world runtime context it shares its storage with (see the field comments
+   above): the menu room node of the frontend (ROM transitions, menu room scene, debug overlay) and the world view
+   node of the in-game UI (InGameUi_WorldRuntime). */
+inline WorldRuntimeContext *FrontendModelPointerContext_AsWorldRuntime(FrontendModelPointerContext *context)
+{
+  return reinterpret_cast<WorldRuntimeContext *>(context);
+}
 
 /* GraphicsShadingGeneratedTexture_* view of the FrontendModelPointerContext it is called with; the spans follow
    that struct's offsets (0x54, 0xB8, 0xC8 on 32-bit), so the view stays right where pointers are wider (5f). */

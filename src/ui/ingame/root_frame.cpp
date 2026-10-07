@@ -34,15 +34,15 @@ uint16_t g_InGameCountdownTextUtf16[8] = {};
 static void InGameUiRoot_UpdatePlacementOverlay(InGameRuntimeRootFrameView *inGameRoot)
 
 {
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN) == 0) {
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) != 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN)) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN;
       FieldGrid_SetAllCellOverlayColors(INGAME_PLACEMENT_OVERLAY_ARGB,(inGameRoot->worldRuntime).fieldGrid);
       WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
                 (THANDOR_PTR(g_InGamePendingPlacementArmyAsset),&inGameRoot->worldRuntime);
     }
   }
-  else if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
+  else if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
     g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN;
     FieldGrid_SetAllCellOverlayColors(ARGB8888_OPAQUE_WHITE,(inGameRoot->worldRuntime).fieldGrid);
   }
@@ -133,7 +133,7 @@ static void InGameUiRoot_UpdateEffectSounds
     InGameSelectionDetailPanel_Rebuild();
   }
   if (g_InGameEffectsEnabled == 0) {
-    if (g_SoundIsVoiceFinished((SoundVoice *)g_InGameActiveEffectVoice)) {
+    if (g_SoundIsVoiceFinished(g_InGameActiveEffectVoice)) {
       g_InGameActiveEffectVoice = nullptr;
       randomValue = Random_NextPrimary();
       g_InGameEffectsEnabled = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
@@ -158,7 +158,7 @@ static void InGameUiRoot_UpdateEffectSounds
 static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
 
 {
-  uint32_t soundOptionFlags;
+  PersistentSoundOptionFlags soundOptionFlags;
   InGameLevelConditionStorage *levelConditionStorage;
   uint32_t randomValue;
   uint32_t trackIndex;
@@ -169,13 +169,13 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
   LevelMusicSampleNumber selectedMusicTrackId;
   SoundVoice *playedVoice;
 
-  soundOptionFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  soundOptionFlags = PersistentSettings_ReadSoundOptions();
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  if ((soundOptionFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(soundOptionFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     return;
   }
   if (g_InGameMusicNextTrackCountdown == 0) {
-    if (g_SoundIsVoiceFinished((SoundVoice *)g_InGameActiveMusicVoice)) {
+    if (g_SoundIsVoiceFinished(g_InGameActiveMusicVoice)) {
       g_InGameActiveMusicVoice = nullptr;
       randomValue = Random_NextPrimary();
       g_InGameMusicNextTrackCountdown = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
@@ -309,7 +309,7 @@ static void InGameUiRoot_UpdateCountdownText(InGameRuntimeRootFrameView *inGameR
   uint32_t minutesByteLength;
 
   schedule = &g_InGameLevelRuntimeGlobalBlock.conditionStorage->schedule;
-  countdownText = (uint8_t *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0);
+  countdownText = reinterpret_cast<uint8_t *>(g_InGameCountdownTextUtf16);
   inGameRoot->countdownPanelNodeFlags = inGameRoot->countdownPanelNodeFlags & ~UI_NODE_SUPPRESSED;
   for (conditionIndex = 0; conditionIndex < INGAME_SCHEDULED_CONDITION_COUNT; conditionIndex++) {
     if ((schedule->conditions[conditionIndex].statusAndKind.kind & INGAME_SCHEDULED_CONDITION_KIND_MASK) ==
@@ -319,7 +319,7 @@ static void InGameUiRoot_UpdateCountdownText(InGameRuntimeRootFrameView *inGameR
         /* The original formats any operand; from 600000 seconds on the minutes need five digits and the text
            runs past the 8 units. Clamped here to 9999:59 because the operand comes from level data. */
         if (INGAME_COUNTDOWN_MAX_SECONDS < secondsLeft) {
-          static Bool8 s_countdownClampLogged = false;
+          static bool s_countdownClampLogged = false;
           if (!s_countdownClampLogged) {
             Thandor_Log("countdown: %u seconds clamped to %u for display",secondsLeft,
                         INGAME_COUNTDOWN_MAX_SECONDS);
@@ -328,11 +328,11 @@ static void InGameUiRoot_UpdateCountdownText(InGameRuntimeRootFrameView *inGameR
           secondsLeft = INGAME_COUNTDOWN_MAX_SECONDS;
         }
         minutesByteLength = g_WideNumberFormatUtf16
-                           (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,secondsLeft / 60,(uint16_t *)countdownText);
-        *(uint16_t *)(countdownText + minutesByteLength) = ':';
+                           (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,secondsLeft / 60,reinterpret_cast<uint16_t *>(countdownText));
+        *reinterpret_cast<uint16_t *>(countdownText + minutesByteLength) = ':';
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,secondsLeft % 60,
-                   (uint16_t *)(countdownText + minutesByteLength + 2));
+                   reinterpret_cast<uint16_t *>(countdownText + minutesByteLength + 2));
         return;
       }
     }
@@ -353,7 +353,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
   UiNodeBase *hoveredNode;
   uint32_t cursorFrame;
   uint32_t edgeScrollCursorFrame;
-  uint32_t soundOptionFlags;
+  PersistentSoundOptionFlags soundOptionFlags;
   uint32_t activePageIndex;
   InGamePresentationTick currentPresentationTick;
 
@@ -365,11 +365,11 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
   else {
     FrontendClientSession_TickHostTimeout();
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS)) {
     InGameUiRoot_UpdatePlacementOverlay(inGameRoot);
     cursorFrame = 0;
     hoveredNode = (*((inGameRoot->rootUi).base.vtable)->hitTest)
-                       (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)inGameRoot);
+                       (g_CursorOverrideY,g_CursorOverrideX,&(inGameRoot->rootUi).base);
     if (hoveredNode != UI_NODE_NONE) { /* hit test found a node */
       cursorFrame = hoveredNode->vtable->pointerMove(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
     }
@@ -382,9 +382,9 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     /* edge scrolling only on the plain world view (no drag selection or notification jump, first page, no
        interaction node flag 8) and while cursor button bit 2 is up; its scroll-arrow frame wins over the hovered
        node's frame */
-    if (((worldRuntime->runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) == 0) &&
-        (activePageIndex == 0) && ((worldRuntime->interaction.nodeFlags & 8) == 0) &&
-        ((g_CursorButtonState & 4) == 0)) {
+    if ((!Any(worldRuntime->runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO))) &&
+        (activePageIndex == 0) && !Any(worldRuntime->interaction.nodeFlags & UI_NODE_SUPPRESSED) &&
+        !Any(g_CursorButtonState & RIGHT)) {
       edgeScrollCursorFrame = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime);
       if (edgeScrollCursorFrame != 0) {
         cursorFrame = edgeScrollCursorFrame;
@@ -392,15 +392,15 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     }
     g_GraphicsCursorSetFrame(cursorFrame);
     InGameUiRoot_KeepCameraTargetNearField(inGameRoot);
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
+    if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
       TerrainDirectionTable_AdvanceAndRebuildVectors();
       soundOptionFlags =
-           PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-      if ((soundOptionFlags & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+           PersistentSettings_ReadSoundOptions();
+      if (Any(soundOptionFlags & PERSISTENT_SOUND_OPTION_EFFECTS)) {
         InGameUiRoot_UpdateEffectSounds(inGameRoot,currentPresentationTick);
       }
       InGameUiRoot_UpdateMusic(worldRuntime);
-      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) {
+      if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
         /* paused: no camera keys, countdown or terrain refresh */
         InGameRuntime_UpdateCursorGridAndViewScaleCache();
         return;
@@ -433,7 +433,7 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache()
 
 {
   UQ12 committedDistance;
-  uint32_t viewSettings;
+  PersistentMapMouseOptionFlags viewSettings;
   FieldGridCoordinates cursorGridPosition;
   InGameRuntimeRoot *inGameRoot;
   
@@ -442,13 +442,13 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache()
                     ((g_InGameRuntimeRoot->worldRuntime).motion.targetPositionYQ12,
                      (g_InGameRuntimeRoot->worldRuntime).motion.targetPositionXQ12);
   inGameRoot->minimapOriginGridPosition = cursorGridPosition;
-  viewSettings = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
+  viewSettings = PersistentSettings_ReadMapMouseOptions();
   committedDistance = (inGameRoot->worldRuntime).motion.committedDistanceQ12;
-  if ((viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF) == 0) {
+  if (!Any(viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF)) {
     inGameRoot->minimapRotationAngle =
          (inGameRoot->worldRuntime).motion.headingAngle;
   }
-  if ((viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF) == 0) {
+  if (!Any(viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF)) {
     /* high dword of distance * 0x6000000 (FIXED_MUL_HIGH) */
     inGameRoot->minimapSampleScaleQ12 =
          FIXED_MUL_HIGH((int)committedDistance,INGAME_MINIMAP_DISTANCE_SCALE_Q32);
@@ -462,8 +462,9 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache()
 void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 
 {
-  INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId) =
-       (TextResourceId)(uintptr_t)((UiSingleLineTextControl *)INGAME_UI(inGameRoot,worldViewCyclingInfoText))->text; /* 5f-format: InGameUiImage.worldViewCyclingInfoText +0x54 (UI template text id dword) */
-  FRONTEND_UI_FIELD(&g_FrontendRootInitializationTemplate,bottomBarStatusText,0x54,TextResourceId) =
-       INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId);
+  /* the text slots hold a TextResourceId (labelFlags & 0x10 clear), stored as the slot's 32 bits */
+  g_InGameRuntimeDefaultImageTemplate.worldViewCyclingInfoText.text = THANDOR_PTR32_BITS(
+       (TextResourceId)(uintptr_t)InGameUi_Image(inGameRoot)->worldViewCyclingInfoText.text);
+  g_FrontendRootInitializationTemplate.bottomBarStatusText.text = THANDOR_PTR32_BITS(
+       g_InGameRuntimeDefaultImageTemplate.worldViewCyclingInfoText.text.value);
 }

@@ -922,7 +922,7 @@ static inline uint64_t ModelLighting_AddWordsMmx(uint64_t a, uint64_t b)
    original executable's .text; nothing writes there), so the result does not depend on the linker's layout.
    Each original byte comes from its own range, so a qword spanning two variables (0x004CAD50, 0x004CC700) is
    assembled like the original read. */
-#define MODEL_LIGHTING_MMX_ROWS_ORIGINAL_ADDRESS 0x004CAD60u
+static constexpr uint32_t MODEL_LIGHTING_MMX_ROWS_ORIGINAL_ADDRESS = 0x004CAD60u;
 
 /* original 0x004CAD58..0x004CAD60: 0x90 filler between g_GraphicsShadingNearbyRecordCount and the table */
 static const uint8_t s_ModelLightingOriginalFiller004CAD58[0x8] = {
@@ -1075,44 +1075,44 @@ static const uint8_t s_ModelLightingOriginalCode004CCFF0[0x1B0] = {
   0x04, 0x20, 0x40, 0x00, 0x58, 0xF9, 0x89, 0xEC, 0x5D, 0x5E, 0x5F, 0x5A, 0x59, 0x5B, 0xC2, 0x0C /* 004CD190 */
 };
 
-/* One piece of the original address window: original bytes start..end live at bytes. */
-typedef struct ModelLightingOriginalRange {
+/* One piece of the original address window: original bytes start..end live at variable (read as bytes). */
+struct ModelLightingOriginalRange {
   uint32_t start;
   uint32_t end;
-  const uint8_t *bytes;
-} ModelLightingOriginalRange;
+  const void *variable;
+};
 
 /* The original address window 0x004C6D54..0x004CD1A0 (whole variables listed, covers the default path's reach
    0x004C91A0..0x004CD1A0), in address order and without holes. */
-#define MODEL_LIGHTING_ORIGINAL_WINDOW_START 0x004C6D54u
-#define MODEL_LIGHTING_ORIGINAL_WINDOW_END 0x004CD1A0u
+static constexpr uint32_t MODEL_LIGHTING_ORIGINAL_WINDOW_START = 0x004C6D54u;
+static constexpr uint32_t MODEL_LIGHTING_ORIGINAL_WINDOW_END = 0x004CD1A0u;
 static const ModelLightingOriginalRange s_ModelLightingOriginalWindow[] = {
-  {0x004C6D54, 0x004CAD54, (const uint8_t *)g_GraphicsShadingNearbyRecords},
-  {0x004CAD54, 0x004CAD58, (const uint8_t *)&g_GraphicsShadingNearbyRecordCount},
+  {0x004C6D54, 0x004CAD54, g_GraphicsShadingNearbyRecords},
+  {0x004CAD54, 0x004CAD58, &g_GraphicsShadingNearbyRecordCount},
   {0x004CAD58, 0x004CAD60, s_ModelLightingOriginalFiller004CAD58},
-  {0x004CAD60, 0x004CC6F8, (const uint8_t *)g_ModelLightingMmxMultiplierRows},
-  {0x004CC6F8, 0x004CC704, (const uint8_t *)&g_ModelLightingVertexToLightVectorScratch},
-  {0x004CC704, 0x004CC710, (const uint8_t *)&g_ModelLightingTransformedSurfaceNormalScratch},
+  {0x004CAD60, 0x004CC6F8, g_ModelLightingMmxMultiplierRows},
+  {0x004CC6F8, 0x004CC704, &g_ModelLightingVertexToLightVectorScratch},
+  {0x004CC704, 0x004CC710, &g_ModelLightingTransformedSurfaceNormalScratch},
   {0x004CC710, 0x004CCE00, s_ModelLightingOriginalCode004CC710},
-  {0x004CCE00, 0x004CCE04, (const uint8_t *)&g_GraphicsShadingTextureDimension},
-  {0x004CCE04, 0x004CCE08, (const uint8_t *)&g_GraphicsShadingGridHalfSize},
-  {0x004CCE08, 0x004CCE0C, (const uint8_t *)&g_GraphicsShadingGeneratedTexturePixelCursor},
-  {0x004CCE0C, 0x004CCE10, (const uint8_t *)&g_GraphicsShadingGeneratedTextureTileX},
-  {0x004CCE10, 0x004CCE14, (const uint8_t *)&g_GraphicsShadingGeneratedTextureTileY},
-  {0x004CCE14, 0x004CCE18, (const uint8_t *)&g_GraphicsShadingGeneratedTextureSubresourceIndex},
-  {0x004CCE18, 0x004CCE1C, (const uint8_t *)&g_GraphicsShadingSubresourceCount},
-  {0x004CCE1C, 0x004CCE20, (const uint8_t *)&g_GraphicsShadingGeneratedTextureTileXQ20},
-  {0x004CCE20, 0x004CCE24, (const uint8_t *)&g_GraphicsShadingGeneratedTextureTileYQ20},
-  {0x004CCE24, 0x004CCE28, (const uint8_t *)&g_GraphicsShadingGridStepQ20},
-  {0x004CCE28, 0x004CCE2C, (const uint8_t *)&g_GraphicsShadingGridStepQ20Current},
-  {0x004CCE2C, 0x004CCE30, (const uint8_t *)&g_GraphicsShadingGeneratedAsset},
-  {0x004CCE30, 0x004CCE34, (const uint8_t *)&g_GraphicsShadingGridScratch},
-  {0x004CCE34, 0x004CCE38, (const uint8_t *)&g_GraphicsShadingGridScratchInterior},
-  {0x004CCE38, 0x004CCE3C, (const uint8_t *)&g_GraphicsShadingTextureSet},
-  {0x004CCE3C, 0x004CCE40, (const uint8_t *)&g_GraphicsShadingGeneratedTextureCompletedTraversalCount},
-  {0x004CCE40, 0x004CCE44, (const uint8_t *)&g_GraphicsShadingPositiveGridOriginQ12},
-  {0x004CCE44, 0x004CCE48, (const uint8_t *)&g_GraphicsShadingNegativeGridOriginQ12},
-  {0x004CCE48, 0x004CCFF0, (const uint8_t *)&g_GeneratedTextureScratchRuntime},
+  {0x004CCE00, 0x004CCE04, &g_GraphicsShadingTextureDimension},
+  {0x004CCE04, 0x004CCE08, &g_GraphicsShadingGridHalfSize},
+  {0x004CCE08, 0x004CCE0C, &g_GraphicsShadingGeneratedTexturePixelCursor},
+  {0x004CCE0C, 0x004CCE10, &g_GraphicsShadingGeneratedTextureTileX},
+  {0x004CCE10, 0x004CCE14, &g_GraphicsShadingGeneratedTextureTileY},
+  {0x004CCE14, 0x004CCE18, &g_GraphicsShadingGeneratedTextureSubresourceIndex},
+  {0x004CCE18, 0x004CCE1C, &g_GraphicsShadingSubresourceCount},
+  {0x004CCE1C, 0x004CCE20, &g_GraphicsShadingGeneratedTextureTileXQ20},
+  {0x004CCE20, 0x004CCE24, &g_GraphicsShadingGeneratedTextureTileYQ20},
+  {0x004CCE24, 0x004CCE28, &g_GraphicsShadingGridStepQ20},
+  {0x004CCE28, 0x004CCE2C, &g_GraphicsShadingGridStepQ20Current},
+  {0x004CCE2C, 0x004CCE30, &g_GraphicsShadingGeneratedAsset},
+  {0x004CCE30, 0x004CCE34, &g_GraphicsShadingGridScratch},
+  {0x004CCE34, 0x004CCE38, &g_GraphicsShadingGridScratchInterior},
+  {0x004CCE38, 0x004CCE3C, &g_GraphicsShadingTextureSet},
+  {0x004CCE3C, 0x004CCE40, &g_GraphicsShadingGeneratedTextureCompletedTraversalCount},
+  {0x004CCE40, 0x004CCE44, &g_GraphicsShadingPositiveGridOriginQ12},
+  {0x004CCE44, 0x004CCE48, &g_GraphicsShadingNegativeGridOriginQ12},
+  {0x004CCE48, 0x004CCFF0, &g_GeneratedTextureScratchRuntime},
   {0x004CCFF0, 0x004CD1A0, s_ModelLightingOriginalCode004CCFF0},
 };
 
@@ -1146,7 +1146,7 @@ static uint64_t ModelLighting_ReadOriginalImageQword(uint32_t originalAddress)
          rangeIndex++) {
       const ModelLightingOriginalRange *range = &s_ModelLightingOriginalWindow[rangeIndex];
       if (range->start <= address && address < range->end) {
-        value |= (uint64_t)range->bytes[address - range->start] << (8 * byteIndex);
+        value |= (uint64_t)static_cast<const uint8_t *>(range->variable)[address - range->start] << (8 * byteIndex);
         break;
       }
     }
@@ -1159,7 +1159,8 @@ static uint64_t ModelLighting_ReadOriginalImageQword(uint32_t originalAddress)
 static uint64_t ModelLighting_ReadMultiplierQword(int32_t byteOffset)
 {
   if (byteOffset >= 0 && byteOffset <= (int32_t)sizeof g_ModelLightingMmxMultiplierRows - 8) {
-    return *(const uint64_t *)((const uint8_t *)g_ModelLightingMmxMultiplierRows + byteOffset);
+    /* the PMULHW operand: a qword read at a byte offset into the table */
+    return *reinterpret_cast<const uint64_t *>(reinterpret_cast<const uint8_t *>(g_ModelLightingMmxMultiplierRows) + byteOffset);
   }
   return ModelLighting_ReadOriginalImageQword(MODEL_LIGHTING_MMX_ROWS_ORIGINAL_ADDRESS + (uint32_t)byteOffset);
 }
@@ -1217,7 +1218,7 @@ ModelRender_ComputeVertexIntensityDefaultPath
       /* r^2 - dx^2 - dy^2 - dz^2 as a 64-bit subtraction on dword halves (remainderHigh:remainderLow, the low
          dword borrowing from the high one); the light reaches the vertex while remainderHigh stays >= 0 */
       remainderLow = (uint32_t)shadingRecord->squaredRadiusQ24;
-      remainderHigh = ((int *)&shadingRecord->squaredRadiusQ24)[1];
+      remainderHigh = reinterpret_cast<const int *>(&shadingRecord->squaredRadiusQ24)[1]; /* the qword's high dword */
       axisDelta = *vertexPositionQ12 - shadingRecord->worldXQ12;
       axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
       axisSquareLow = (uint32_t)axisDistanceSquared;
@@ -1241,7 +1242,7 @@ ModelRender_ComputeVertexIntensityDefaultPath
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (64-bit shift, low dword kept) */
-            lookupDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
+            lookupDivisor = reinterpret_cast<const int *>(&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
                      (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
             if (lookupDivisor != 0) {
               /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
@@ -1311,7 +1312,7 @@ ModelRender_ComputeVertexIntensityScaledPath
       /* r^2 - dx^2 - dy^2 - dz^2 as a 64-bit subtraction on dword halves (remainderHigh:remainderLow, the low
          dword borrowing from the high one); the light reaches the vertex while remainderHigh stays >= 0 */
       remainderLow = (uint32_t)shadingRecord->squaredRadiusQ24;
-      remainderHigh = ((int *)&shadingRecord->squaredRadiusQ24)[1];
+      remainderHigh = reinterpret_cast<const int *>(&shadingRecord->squaredRadiusQ24)[1]; /* the qword's high dword */
       axisDelta = *vertexPositionQ12 - shadingRecord->worldXQ12;
       axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
       axisSquareLow = (uint32_t)axisDistanceSquared;
@@ -1335,7 +1336,7 @@ ModelRender_ComputeVertexIntensityScaledPath
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (64-bit shift, low dword kept) */
-            lookupDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
+            lookupDivisor = reinterpret_cast<const int *>(&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
                      (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
             if (lookupDivisor != 0) {
               /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
@@ -1369,7 +1370,7 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
 
 {
   /* The MMX lanes in plain C: color is the running accumulator every light is added to. */
-  const short *lightingTable = (const short *)&g_PackedLightingLookupTable;
+  const short *lightingTable = reinterpret_cast<const short *>(&g_PackedLightingLookupTable); /* the qwords as word lanes */
   const GraphicsShadingRuntimeRecord *record = g_GraphicsShadingNearbyRecords;
   GraphicsShadingRecordCount remaining;
   short color[4];

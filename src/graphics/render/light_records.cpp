@@ -54,11 +54,11 @@ uint32_t GraphicsIntensityClampTable_Initialize()
   if (allocError == 0) {
     targetIntensity = 0;
     /* round up to the next 64 KiB boundary */
-    tableCursor = (char *)((uintptr_t)allocPayload +(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1) & ~(uintptr_t)(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1u));
+    tableCursor = reinterpret_cast<char *>((uintptr_t)allocPayload +(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1) & ~(uintptr_t)(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1u));
     rowsRemaining = 256;
     previousIntensity = 0;
     g_GraphicsIntensityClampTableBase = (uintptr_t)tableCursor;
-    do {
+    for (; rowsRemaining != 0; rowsRemaining--) {
       do {
         targetByte = (char)targetIntensity;
         if (previousIntensity < (int)targetIntensity) {
@@ -80,8 +80,7 @@ uint32_t GraphicsIntensityClampTable_Initialize()
         targetIntensity = (uint32_t)(uint8_t)(targetByte + 1U);
       } while ((uint8_t)(targetByte + 1U) != 0);
       previousIntensity++;
-      rowsRemaining--;
-    } while (rowsRemaining != 0);
+    }
     return 0;
   }
   return allocError;
@@ -153,7 +152,7 @@ GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
   if (packedColorRgb != 0) {
     recordCursor = g_GraphicsShadingRuntimeRecords;
     recordsRemaining = GRAPHICS_SHADING_RUNTIME_RECORD_COUNT;
-    do {
+    for (; recordsRemaining != 0; recordsRemaining--) {
       if (recordCursor->packedColorRgbActive == 0) {
         recordCursor->targetRadiusQ12 = radiusQ12;
         recordCursor->packedColorRgbActive = packedColorRgb & ARGB8888_RGB_MASK;
@@ -173,8 +172,7 @@ GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
         return recordCursor;
       }
       recordCursor = recordCursor + 1;
-      recordsRemaining--;
-    } while (recordsRemaining != 0);
+    }
   }
   return nullptr;
 }
@@ -192,7 +190,8 @@ void GraphicsShadingRuntime_ClearRecordTable()
   for (recordDwordsRemaining = GRAPHICS_SHADING_RUNTIME_RECORD_COUNT * sizeof(GraphicsShadingRuntimeRecord) / 4;
        recordDwordsRemaining != 0; recordDwordsRemaining--) {
     recordDwordCursor->worldXQ12 = 0;
-    recordDwordCursor = (GraphicsShadingRuntimeRecord *)&recordDwordCursor->worldYQ12;
+    /* the table is cleared dword by dword: the cursor moves on by one dword, not by one record */
+    recordDwordCursor = reinterpret_cast<GraphicsShadingRuntimeRecord *>(&recordDwordCursor->worldYQ12);
   }
 }
 
@@ -213,10 +212,10 @@ void GraphicsShadingRuntime_RebuildCompactLightingRecords()
   compactRecord = g_GraphicsShadingCompactRecords;
   recordsRemaining = GRAPHICS_SHADING_RUNTIME_RECORD_COUNT;
   compactCount = 0;
-  do {
+  for (; recordsRemaining != 0; recordsRemaining--) {
     if (sourceRecord->packedColorRgbActive != 0) {
       FixedTransform_ApplyPoint
-                ((GraphicsFixedVec3 *)compactRecord,(GraphicsFixedVec3 *)sourceRecord,
+                (reinterpret_cast<GraphicsFixedVec3 *>(compactRecord),reinterpret_cast<GraphicsFixedVec3 *>(sourceRecord),
                  &g_ViewProjectionMatrixFixed);
       targetRadius = sourceRecord->targetRadiusQ12;
       compactRecord->packedColorRgbActive = sourceRecord->packedColorRgbActive;
@@ -226,8 +225,7 @@ void GraphicsShadingRuntime_RebuildCompactLightingRecords()
       compactRecord++;
     }
     sourceRecord++;
-    recordsRemaining--;
-  } while (recordsRemaining != 0);
+  }
   g_GraphicsShadingCompactRecordCount = compactCount;
 }
 

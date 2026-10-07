@@ -7,8 +7,10 @@
 
 #include <thandor/network/protocol/command_exchange.h>
 #include <thandor/network/protocol/lockstep.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/network/protocol/packet_bytes.h>
 
 /* Module data. */
 
@@ -36,15 +38,10 @@ void FrontendTransfer_CopyCommandRecord
 {
   uint32_t *destinationDwords;
   const uint32_t *sourceDwords;
-  int dwordCount;
 
-  destinationDwords = (uint32_t *)destination;
-  sourceDwords = (const uint32_t *)source;
-  for (dwordCount = sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t); dwordCount != 0; dwordCount--) {
-    *destinationDwords = *sourceDwords;
-    sourceDwords++;
-    destinationDwords++;
-  }
+  destinationDwords = Packet_Dwords(destination);
+  sourceDwords = Packet_Dwords(source);
+  std::copy_n(sourceDwords,sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t),destinationDwords);
 }
 
 /* Client side of the session start: executes a new command batch from the host (a repeated batch only
@@ -53,9 +50,9 @@ void FrontendTransfer_CopyCommandRecord
    player's PCX preview on 0x10009. Only packets of the selected host and session count; returns true only when
    a new command batch was executed.
 */
-Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
+bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          uint32_t unusedDispatchArg)
+          FrontendUiImage *unusedFrontendRoot)
 
 {
   UiTransferSenderContext batchSenderContext;
@@ -110,14 +107,14 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
       return false;
     }
     playerRecord = g_FrontendPlayerRuntimeBlocks;
-    do {
+    for (; playersRemaining != 0; playersRemaining--) {
       if (packet->playerRemoval10007.removedPlayerToken == playerRecord->playerRuntimeId) {
         /* "player left" message with the name, then close the gap in the record array */
         resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
         RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText);
         FrontendRecentTextHistory_InsertAndRebuild5(resolvedText);
-        nextPlayerCursor = (uint32_t *)(playerRecord + 1);
-        recordDwordCursor = (uint32_t *)playerRecord;
+        nextPlayerCursor = Packet_Dwords(playerRecord + 1);
+        recordDwordCursor = Packet_Dwords(playerRecord);
         for (dwordCount = (playersRemaining - 1) * (sizeof(FrontendPlayerRuntimeRecord) / sizeof(uint32_t));
              dwordCount != 0; dwordCount--) {
           *recordDwordCursor = *nextPlayerCursor;
@@ -128,8 +125,7 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
         return false;
       }
       playerRecord++;
-      playersRemaining--;
-    } while (playersRemaining != 0);
+    }
     return false;
   }
   if (packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_30005_PLAYER_SNAPSHOT) {
@@ -140,14 +136,10 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
       Random_SetBothSeeds(packet->packet30005PlayerSnapshot.secondaryRandomSeed);
       Random_SelectSecondaryStream();
       g_FrontendPlayerRuntimeBlockCount++;
-      packetCursor = (uint32_t *)packet;
-      recordDwordCursor = (uint32_t *)(g_FrontendPlayerRuntimeBlocks + playerIndex);
+      packetCursor = Packet_Dwords(packet);
+      recordDwordCursor = Packet_Dwords(g_FrontendPlayerRuntimeBlocks + playerIndex);
       /* the first 0x60 bytes of the packet become the head of the player's record */
-      for (dwordCount = 24; dwordCount != 0; dwordCount--) {
-        *recordDwordCursor = *packetCursor;
-        packetCursor++;
-        recordDwordCursor++;
-      }
+      std::copy_n(packetCursor,24,recordDwordCursor);
       resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_ARRIVED);
       RichTextCommandStream_PatchPayloadBySelector
                 (0,packet->packet30005PlayerSnapshot.playerDescriptorPayload,resolvedText);
@@ -171,8 +163,8 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
     }
     g_FrontendPacket8000ABuffer.snapshotChunkOffset =
          packet->packet10009SnapshotChunkRequest.snapshotChunkOffset;
-    chunkDestinationCursor = (uint32_t *)g_FrontendPacket8000ABuffer.packet10009Buffer;
-    previewSourceCursor = (uint32_t *)
+    chunkDestinationCursor = Packet_Dwords(g_FrontendPacket8000ABuffer.packet10009Buffer);
+    previewSourceCursor = reinterpret_cast<uint32_t *> /* the preview's address is kept as an integer */
              (g_FrontendLocalPlayerPcxPreview + g_FrontendPacket8000ABuffer.snapshotChunkOffset);
     g_FrontendPacket8000ABuffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_8000A_SNAPSHOT_CHUNK;
     /* 0xE8-byte chunks; the last one at 0x1220 has 0xE0 bytes (the preview is 0x1300 bytes) */
@@ -213,7 +205,7 @@ static const LockstepHostChannel g_InGameLockstepChannel = {
    notifyWaitingPeers, resends the previous batch to clients that have not submitted yet and COMMAND_WAIT
    to those that have.
 */
-Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
+bool FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
 
 {
   if (!Lockstep_AllClientsSubmitted()) {
@@ -256,7 +248,6 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
   UiTransferSequenceToken senderSequenceToken;
   UiTransferSenderContext packetSenderContext;
   FrontendPlayerRuntimeBlockCount playersRemaining;
-  int dwordCount;
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendCommandPacketRecord *commandRecord;
   uint32_t *copySource;
@@ -300,13 +291,9 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
   if (packetSenderContext != commandRecord->header.senderContext) {
     playerRecord->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
     /* copy the whole 0x20-byte packet, header included, into the slot */
-    copySource = (uint32_t *)packet;
-    copyDestination = (uint32_t *)commandRecord;
-    for (dwordCount = sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t); dwordCount != 0; dwordCount--) {
-      *copyDestination = *copySource;
-      copySource++;
-      copyDestination++;
-    }
+    copySource = Packet_Dwords(packet);
+    copyDestination = Packet_Dwords(commandRecord);
+    std::copy_n(copySource,sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t),copyDestination);
     /* The original keeps the player id the client put into the record, so a client could act as another
        player; replaced here by the id of the player the packet came from. A valid client always sends its own
        id, so its records stay unchanged; an empty record (code 0) is left as it is. */
@@ -335,7 +322,7 @@ void FrontendTransfer_DispatchStagedCommandRecords()
    FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch. Returns true
    when no batch arrived, so the in-game tick waits for the host instead of advancing the simulation.
 */
-Bool8 FrontendTransfer_ConsumeProcessedFlag()
+bool FrontendTransfer_ConsumeProcessedFlag()
 
 {
   int previousFlag;

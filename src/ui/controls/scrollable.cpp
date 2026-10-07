@@ -32,17 +32,17 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
   int localY;
   int localX;
   int verticalTrackBottom;
-  Bool8 horizontalBarHit;
+  bool horizontalBarHit;
   GraphicsTextureLogicalSize textureSize;
 
   localX = pointerX - (control->base).left;
   localY = pointerY - (control->base).top;
   /* Horizontal bar first: the pointer must be inside the bar and between the vertical bar(s). */
   horizontalBarHit = false;
-  if ((control->scrollStateFlags &
-      (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+  if (Any(control->scrollStateFlags &
+      (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
-    if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
+    if (!Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM)) {
       horizontalBarHit = (-1 < localY) && (localY < (int)textureSize.logicalHeightPixels);
     }
     else {
@@ -53,11 +53,11 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
     if (horizontalBarHit) {
       horizontalTrackEnd = (control->base).layoutWidth;
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT)) {
         horizontalTrackEnd = horizontalTrackEnd - textureSize.logicalWidthPixels;
       }
       trackStartOffset = 0;
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT)) {
         trackStartOffset = textureSize.logicalWidthPixels;
       }
       horizontalBarHit =
@@ -65,12 +65,12 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
     }
   }
   if (!horizontalBarHit) {
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
+    if (!Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
       return;
     }
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
-    if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
+    if (!Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT)) {
       if (localX < 0) {
         return;
       }
@@ -88,11 +88,11 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
     }
     verticalTrackBottom = (control->base).layoutHeight;
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
-    if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM)) {
       verticalTrackBottom = verticalTrackBottom - textureSize.logicalHeightPixels;
     }
     trackStartOffset = 0;
-    if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) {
       trackStartOffset = textureSize.logicalHeightPixels;
     }
     if (localY < (int)trackStartOffset) {
@@ -179,19 +179,19 @@ void UiScrollableControl_EndPrimaryScrollInteraction
           UiScrollableControl *control)
 
 {
-  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE)) {
     control->scrollOffsetX = control->scrollOffsetX + ((int)control->viewportWidth >> 1);
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
   }
-  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE)) {
     control->scrollOffsetX = control->scrollOffsetX - ((int)control->viewportWidth >> 1);
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
   }
-  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE)) {
     control->scrollOffsetY = control->scrollOffsetY + ((int)control->viewportHeight >> 1);
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
   }
-  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE)) {
     control->scrollOffsetY = control->scrollOffsetY - ((int)control->viewportHeight >> 1);
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
   }
@@ -218,26 +218,25 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
   int trackLength;
   uint32_t arrowStart;
   int arrowEnd;
-  Bool8 inArrowBar;
-  Bool8 arrowHovered;
+  bool inArrowBar;
+  bool arrowHovered;
   GraphicsTextureLogicalSize textureSize;
 
-  if ((control->scrollStateFlags &
+  if (Any(control->scrollStateFlags &
       (UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE|UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE|
-       UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE|UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE)
-      ) != 0) {
+       UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE|UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE))) {
     return;
   }
-  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE)) {
     pointerAnchor = control->pointerAnchorX;
     trackLength = (control->base).layoutWidth;
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     thumbOffset = ((pointerX - (control->base).left) - pointerAnchor) - textureSize.logicalWidthPixels;
     trackLength = trackLength + textureSize.logicalWidthPixels * -2;
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT)) {
         thumbOffset = thumbOffset - textureSize.logicalWidthPixels;
       }
       trackLength = trackLength - textureSize.logicalWidthPixels;
@@ -250,17 +249,17 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     UiNode_InvalidateRoot(&control->base);
     return;
   }
-  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE)) {
     pointerAnchor = control->pointerAnchorY;
     trackLength = (control->base).layoutHeight;
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     thumbOffset = ((pointerY - (control->base).top) - pointerAnchor) - textureSize.logicalHeightPixels;
     trackLength = trackLength + textureSize.logicalHeightPixels * -2;
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                           g_UiWindowTextureSource);
-      if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) {
         thumbOffset = thumbOffset - textureSize.logicalHeightPixels;
       }
       trackLength = trackLength - textureSize.logicalHeightPixels;
@@ -277,10 +276,10 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
   localY = pointerY - (control->base).top;
   localX = pointerX - (control->base).left;
   arrowHovered = false;
-  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE)) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalWidthPixels;
-    if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
+    if (!Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) {
       inArrowBar = (localY < (control->base).layoutHeight) &&
                    ((int)((control->base).layoutHeight - textureSize.logicalHeightPixels) <= localY);
     }
@@ -289,7 +288,7 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     }
     if (inArrowBar) {
       arrowStart = 0;
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT)) {
         textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
                                                             g_UiWindowTextureSource);
         arrowStart = textureSize.logicalWidthPixels;
@@ -298,10 +297,10 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
                      (localX < (int)(arrowStart + arrowSize));
     }
   }
-  else if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE) != 0) {
+  else if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE)) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalWidthPixels;
-    if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
+    if (!Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) {
       inArrowBar = (localY < (control->base).layoutHeight) &&
                    ((int)((control->base).layoutHeight - textureSize.logicalHeightPixels) <= localY);
     }
@@ -310,7 +309,7 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     }
     if (inArrowBar) {
       arrowEnd = (control->base).layoutWidth;
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT)) {
         textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
                                                             g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalWidthPixels;
@@ -318,10 +317,10 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
       arrowHovered = (localX < arrowEnd) && ((int)(arrowEnd - arrowSize) <= localX);
     }
   }
-  else if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE) != 0) {
+  else if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE)) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalHeightPixels;
-    if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
+    if (!Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT)) {
       inArrowBar = (localX < (control->base).layoutWidth) &&
                    ((int)((control->base).layoutWidth - textureSize.logicalWidthPixels) <= localX);
     }
@@ -330,7 +329,7 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     }
     if (inArrowBar) {
       arrowStart = 0;
-      if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) {
         textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                             g_UiWindowTextureSource);
         arrowStart = textureSize.logicalHeightPixels;
@@ -338,10 +337,10 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
       arrowHovered = ((int)arrowStart <= localY) && (localY < (int)(arrowStart + arrowSize));
     }
   }
-  else if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) != 0) {
+  else if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE)) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalHeightPixels;
-    if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
+    if (!Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT)) {
       inArrowBar = (localX < (control->base).layoutWidth) &&
                    ((int)((control->base).layoutWidth - textureSize.logicalWidthPixels) <= localX);
     }
@@ -350,7 +349,7 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     }
     if (inArrowBar) {
       arrowEnd = (control->base).layoutHeight;
-      if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM)) {
         textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                             g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalHeightPixels;
@@ -362,13 +361,13 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     return;
   }
   if (arrowHovered) {
-    if ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE)) {
       return;
     }
     control->scrollStateFlags = control->scrollStateFlags | UI_SCROLL_PRIMARY_INTERACTION_ACTIVE;
   }
   else {
-    if ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0) {
+    if (!Any(control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE)) {
       return;
     }
     control->scrollStateFlags = control->scrollStateFlags & ~UI_SCROLL_PRIMARY_INTERACTION_ACTIVE;
@@ -391,12 +390,11 @@ void UiScrollableControl_UpdateSecondaryScrollDrag
   
   pointerDeltaX = pointerX - control->pointerAnchorX;
   pointerDeltaY = pointerY - control->pointerAnchorY;
-  if ((control->scrollStateFlags &
-      (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+  if (Any(control->scrollStateFlags &
+      (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
     control->scrollOffsetX = control->scrollOffsetX - pointerDeltaX;
   }
-  if ((control->scrollStateFlags & (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))
-      != 0) {
+  if (Any(control->scrollStateFlags & (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
     control->scrollOffsetY = control->scrollOffsetY - pointerDeltaY;
   }
   UiScrollableControl_RefreshChildAndScrollThumbs(control);
@@ -410,17 +408,17 @@ void UiScrollableControl_UpdateSecondaryScrollDrag
 void UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
 
 {
-  if ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) != 0) {
-    if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE)) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE)) {
       control->scrollOffsetX = control->scrollOffsetX + control->autoScrollStepX;
     }
-    if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE)) {
       control->scrollOffsetX = control->scrollOffsetX - control->autoScrollStepX;
     }
-    if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE)) {
       control->scrollOffsetY = control->scrollOffsetY + control->autoScrollStepY;
     }
-    if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE)) {
       control->scrollOffsetY = control->scrollOffsetY - control->autoScrollStepY;
     }
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
@@ -440,14 +438,14 @@ void UiScrollableControl_HandlePointerWheel
   UiNodeBase *firstChildNode;
   int scrollStep;
 
-  if ((control->scrollStateFlags & (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
+  if (!Any(control->scrollStateFlags & (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
     return;
   }
-  if ((control->scrollStateFlags &
-      (UI_SCROLL_PRIMARY_INTERACTION_ACTIVE|UI_SCROLL_SECONDARY_INTERACTION_ACTIVE)) != 0) {
+  if (Any(control->scrollStateFlags &
+      (UI_SCROLL_PRIMARY_INTERACTION_ACTIVE|UI_SCROLL_SECONDARY_INTERACTION_ACTIVE))) {
     return;
   }
-  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->base).nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   if (wheelDelta == 0) {
@@ -487,18 +485,18 @@ void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocation
 }
 
 /* The part of a scroll frame not yet taken by bars and frame pieces, relative to the control. */
-typedef struct UiScrollFrameContentRect {
+struct UiScrollFrameContentRect {
   uint32_t left;
   int top;
   int right;
   int bottom;
-} UiScrollFrameContentRect;
+};
 
 /* An arrow piece shows pressed while its active flag and the primary interaction flag are both set. */
-static Bool8 UiScrollableControl_IsArrowPressed(const UiScrollableControl *control,uint32_t arrowActiveFlag)
+static bool UiScrollableControl_IsArrowPressed(const UiScrollableControl *control,UiScrollableStateFlags arrowActiveFlag)
 {
-  return ((control->scrollStateFlags & arrowActiveFlag) != 0) &&
-         ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) != 0);
+  return Any(control->scrollStateFlags & arrowActiveFlag) &&
+         Any(control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
 }
 
 /* Draws the horizontal scroll bar (at the top or bottom) and takes its height from the content rect. */
@@ -519,7 +517,7 @@ static void UiScrollableControl_DrawHorizontalScrollbar
   int thumbEndLeft;
   GraphicsSubresourceIndex subresource;
 
-  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
+  if (!Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM)) {
     barTop = 0;
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                         g_UiWindowTextureSource);
@@ -536,11 +534,11 @@ static void UiScrollableControl_DrawHorizontalScrollbar
   /* The bar leaves room for a vertical bar on either side. */
   textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
   barLeft = content->left;
-  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT)) {
     barLeft = textureSize.logicalWidthPixels;
   }
   barRight = content->right;
-  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT)) {
     barRight = content->right - textureSize.logicalWidthPixels;
   }
 
@@ -563,7 +561,7 @@ static void UiScrollableControl_DrawHorizontalScrollbar
 
   /* Track before and after the thumb; both are tiled from the track start. */
   subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK;
-  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE)) {
     subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
   }
   UiWindow_BlitTiledHorizontalEdge
@@ -573,7 +571,7 @@ static void UiScrollableControl_DrawHorizontalScrollbar
     trackAfterThumbClipLeft = clipLeft;
   }
   subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK;
-  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE)) {
     subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
   }
   UiWindow_BlitTiledHorizontalEdge
@@ -585,7 +583,7 @@ static void UiScrollableControl_DrawHorizontalScrollbar
   thumbCapWidth = textureSize.logicalWidthPixels;
   thumbLeft = control->horizontalThumbLeft;
   thumbEndLeft = control->horizontalThumbRight - thumbCapWidth;
-  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) == 0) {
+  if (!Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE)) {
     g_GraphicsTextureSourceBlitSourceAlpha
               (clipBottom,clipRight,clipTop,clipLeft,barTop + (control->base).top,
                thumbLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource,
@@ -634,7 +632,7 @@ static void UiScrollableControl_DrawVerticalScrollbar
 
   textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
   arrowLength = textureSize.logicalHeightPixels;
-  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
+  if (!Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT)) {
     barLeft = content->left;
     content->left = content->left + textureSize.logicalWidthPixels;
   }
@@ -662,7 +660,7 @@ static void UiScrollableControl_DrawVerticalScrollbar
 
   /* Track before and after the thumb; both are tiled from the track start. */
   subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK;
-  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE)) {
     subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
   }
   UiWindow_BlitTiledVerticalEdge
@@ -672,7 +670,7 @@ static void UiScrollableControl_DrawVerticalScrollbar
     trackAfterThumbClipTop = clipTop;
   }
   subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK;
-  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE)) {
     subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
   }
   UiWindow_BlitTiledVerticalEdge
@@ -683,7 +681,7 @@ static void UiScrollableControl_DrawVerticalScrollbar
   thumbCapHeight = textureSize.logicalHeightPixels;
   thumbTop = control->verticalThumbTop;
   thumbEndTop = control->verticalThumbBottom - thumbCapHeight;
-  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) == 0) {
+  if (!Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE)) {
     g_GraphicsTextureSourceBlitSourceAlpha
               (clipBottom,clipRight,clipTop,clipLeft,thumbTop + (control->base).top,
                barLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource,
@@ -782,23 +780,23 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
   content.top = 0;
   content.right = (control->base).layoutWidth;
   content.bottom = (control->base).layoutHeight;
-  if ((control->scrollStateFlags & (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+  if (Any(control->scrollStateFlags & (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
     UiScrollableControl_DrawHorizontalScrollbar(clipBottom,clipRight,clipTop,clipLeft,control,&content);
   }
-  if ((control->scrollStateFlags & (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
+  if (Any(control->scrollStateFlags & (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
     UiScrollableControl_DrawVerticalScrollbar(clipBottom,clipRight,clipTop,clipLeft,control,&content);
   }
-  if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_A) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_A)) {
     UiScrollableControl_DrawFrameStyle
               (clipBottom,clipRight,clipTop,clipLeft,control,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,&content);
   }
-  if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B) != 0) {
+  if (Any(control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B)) {
     UiScrollableControl_DrawFrameStyle
               (clipBottom,clipRight,clipTop,clipLeft,control,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,&content);
   }
-  if ((control->scrollStateFlags & (UI_SCROLL_FILL_INTERIOR|UI_SCROLL_FILL_INTERIOR_TEXTURED)) != 0) {
+  if (Any(control->scrollStateFlags & (UI_SCROLL_FILL_INTERIOR|UI_SCROLL_FILL_INTERIOR_TEXTURED))) {
     subresource = 0;
-    if ((control->scrollStateFlags & UI_SCROLL_FILL_INTERIOR_TEXTURED) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_FILL_INTERIOR_TEXTURED)) {
       subresource = UI_WINDOW_SUBRESOURCE_INTERIOR;
     }
     UiWindow_BlitTiledInterior
@@ -874,14 +872,14 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     contentChild->bottom = childHeight + offsetX + horizontalExtent;
     control->contentOriginX = 0;
     control->contentOriginY = 0;
-    if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_A) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_A)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,g_UiWindowTextureSource);
       control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
       control->contentOriginY = control->contentOriginY + textureSize.logicalHeightPixels;
       availableWidth = availableWidth + textureSize.logicalWidthPixels * -2;
       availableHeight = availableHeight + textureSize.logicalHeightPixels * -2;
     }
-    if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource);
       control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
       control->contentOriginY = control->contentOriginY + textureSize.logicalHeightPixels;
@@ -905,15 +903,15 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     /* keep only the bar positions allowed by bits 4..7 */
     control->scrollStateFlags =
          control->scrollStateFlags &
-         (control->scrollStateFlags >> 4 |
+         (FromBits<UiScrollableStateFlags>(ToBits(control->scrollStateFlags) >> 4) |
          ~(UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
            UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP));
     /* a vertical bar narrows the view: maybe a horizontal bar is needed now, and vice versa. The masks
        ~UI_SCROLL_ALLOWED_* (0xffffffcf/0xffffff3f, as in the original) are practically always nonzero; the
        allowed bits themselves were probably meant. The mask above filters disallowed bars again anyway. */
-    if (((control->scrollStateFlags & ~UI_SCROLL_ALLOWED_HORIZONTAL_BARS) != 0) &&
-       ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0)) {
+    if (Any(control->scrollStateFlags & ~UI_SCROLL_ALLOWED_HORIZONTAL_BARS) &&
+       (Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       horizontalExtent = horizontalExtent - textureSize.logicalWidthPixels;
       if (horizontalExtent < 0) {
@@ -922,15 +920,15 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
              (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP);
       }
     }
-    if (((control->scrollStateFlags & ~UI_SCROLL_ALLOWED_VERTICAL_BARS) != 0) &&
-       ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0)) {
+    if (Any(control->scrollStateFlags & ~UI_SCROLL_ALLOWED_VERTICAL_BARS) &&
+       (Any(control->scrollStateFlags &
+        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                           g_UiWindowTextureSource);
       if ((int)(verticalExtent - textureSize.logicalHeightPixels) < 0) {
-        if (((control->scrollStateFlags &
-             (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) &&
-           ((control->scrollStateFlags & ~UI_SCROLL_ALLOWED_HORIZONTAL_BARS) != 0)) {
+        if (!Any(control->scrollStateFlags &
+             (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) &&
+           (Any(control->scrollStateFlags & ~UI_SCROLL_ALLOWED_HORIZONTAL_BARS))) {
           textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
                                                               g_UiWindowTextureSource);
           if ((int)(horizontalExtent - textureSize.logicalWidthPixels) < 0) {
@@ -946,23 +944,23 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     }
     control->scrollStateFlags =
          control->scrollStateFlags &
-         (control->scrollStateFlags >> 4 |
+         (FromBits<UiScrollableStateFlags>(ToBits(control->scrollStateFlags) >> 4) |
          ~(UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
            UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP));
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                           g_UiWindowTextureSource);
       control->viewportHeight = control->viewportHeight - textureSize.logicalHeightPixels;
-      if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) {
         control->contentOriginY = control->contentOriginY + textureSize.logicalHeightPixels;
       }
     }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       control->viewportWidth = control->viewportWidth - textureSize.logicalWidthPixels;
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
+      if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT)) {
         control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
       }
     }
@@ -1006,21 +1004,21 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     control->verticalThumbTop = 0;
     control->horizontalThumbRight = 0;
     control->verticalThumbBottom = 0;
-    if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                           g_UiWindowTextureSource);
       control->verticalThumbTop = control->verticalThumbTop + textureSize.logicalHeightPixels;
       control->verticalThumbBottom = control->verticalThumbBottom + textureSize.logicalHeightPixels;
     }
-    if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       control->horizontalThumbLeft = control->horizontalThumbLeft + textureSize.logicalWidthPixels;
       control->horizontalThumbRight = control->horizontalThumbRight + textureSize.logicalWidthPixels;
     }
     horizontalExtent = (control->base).layoutWidth;
     verticalExtent = (control->base).layoutHeight;
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                           g_UiWindowTextureSource);
       arrowSize = textureSize.logicalWidthPixels;
@@ -1029,8 +1027,8 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
       horizontalExtent = horizontalExtent + arrowSize * -2;
       verticalExtent = verticalExtent - textureSize.logicalHeightPixels;
     }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       arrowSize = textureSize.logicalHeightPixels;
       control->verticalThumbTop = control->verticalThumbTop + arrowSize;
@@ -1038,8 +1036,8 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
       verticalExtent = verticalExtent + arrowSize * -2;
       horizontalExtent = horizontalExtent - textureSize.logicalWidthPixels;
     }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportWidth * (int64_t)horizontalExtent) /
                     (int64_t)(int)control->contentWidth);
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,
@@ -1054,8 +1052,8 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
       control->horizontalThumbLeft = control->horizontalThumbLeft + horizontalExtent;
       control->horizontalThumbRight = control->horizontalThumbRight + horizontalExtent;
     }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportHeight * (int64_t)verticalExtent) /
                     (int64_t)(int)control->contentHeight);
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource);
@@ -1082,17 +1080,17 @@ GraphicsCursorFrameIndex UiScrollableControl_QueryPointerRegion
   GraphicsCursorFrameIndex cursorFrame;
   
   cursorFrame = GRAPHICS_CURSOR_FRAME_ARROW;
-  if (((control->scrollStateFlags & UI_SCROLL_SECONDARY_PANNING_CONTENT) != 0) &&
-     ((control->scrollStateFlags &
+  if (Any(control->scrollStateFlags & UI_SCROLL_SECONDARY_PANNING_CONTENT) &&
+     (Any(control->scrollStateFlags &
       (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
-       UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0)) {
+       UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)))) {
     cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN;
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) {
+    if (!Any(control->scrollStateFlags &
+        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
       cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_VERTICAL;
     }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
+    if (!Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
       cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_HORIZONTAL;
     }
   }
@@ -1135,18 +1133,18 @@ void UiScrollableControl_BeginSecondaryScrollInteraction
     return;
   }
   control->scrollStateFlags = control->scrollStateFlags | UI_SCROLL_SECONDARY_PANNING_CONTENT;
-  if ((control->scrollStateFlags &
+  if (!Any(control->scrollStateFlags &
       (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
-       UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) {
+       UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
     return;
   }
   cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN;
-  if ((control->scrollStateFlags &
-      (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) {
+  if (!Any(control->scrollStateFlags &
+      (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
     cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_VERTICAL;
   }
-  if ((control->scrollStateFlags &
-      (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
+  if (!Any(control->scrollStateFlags &
+      (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
     cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_HORIZONTAL;
   }
   g_GraphicsCursorSetFrame(cursorFrame);
@@ -1179,12 +1177,12 @@ UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
   
   localPointerX = pointerX - (control->base).left;
   localPointerY = pointerY - (control->base).top;
-  if (((((control->scrollStateFlags & UI_SCROLL_SECONDARY_PANNING_CONTENT) == 0) &&
+  if (((!Any(control->scrollStateFlags & UI_SCROLL_SECONDARY_PANNING_CONTENT) &&
        ((int)control->contentOriginX <= localPointerX)) &&
       ((int)control->contentOriginY <= localPointerY)) &&
      (((int)(localPointerX - control->viewportWidth) < (int)control->contentOriginX &&
       ((int)(localPointerY - control->viewportHeight) < (int)control->contentOriginY)))) {
-    control = (UiScrollableControl *)UiContainer_HitTestChildren(pointerY,pointerX,&control->base);
+    control = UiNode_As<UiScrollableControl>(UiContainer_HitTestChildren(pointerY,pointerX,&control->base));
   }
   return &control->base;
 }
@@ -1282,13 +1280,13 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
     control->horizontalThumbRight = 0;
     control->verticalThumbBottom = 0;
     /* the thumb rectangles start at the bar positions: a bar at the top/left shifts the other bar's thumb */
-    if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                           g_UiWindowTextureSource);
       control->verticalThumbTop = control->verticalThumbTop + textureSize.logicalHeightPixels;
       control->verticalThumbBottom = control->verticalThumbBottom + textureSize.logicalHeightPixels;
     }
-    if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
+    if (Any(control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       control->horizontalThumbLeft = control->horizontalThumbLeft + textureSize.logicalWidthPixels;
       control->horizontalThumbRight = control->horizontalThumbRight + textureSize.logicalWidthPixels;
@@ -1296,8 +1294,8 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
     /* track lengths: the control size minus both arrows and the other bar's thickness */
     horizontalExtent = (control->base).layoutWidth;
     verticalExtent = (control->base).layoutHeight;
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                           g_UiWindowTextureSource);
       arrowSize = textureSize.logicalWidthPixels;
@@ -1306,8 +1304,8 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
       horizontalExtent = horizontalExtent + arrowSize * -2;
       verticalExtent = verticalExtent - textureSize.logicalHeightPixels;
     }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       arrowSize = textureSize.logicalHeightPixels;
       control->verticalThumbTop = control->verticalThumbTop + arrowSize;
@@ -1315,8 +1313,8 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
       verticalExtent = verticalExtent + arrowSize * -2;
       horizontalExtent = horizontalExtent - textureSize.logicalWidthPixels;
     }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportWidth * (int64_t)horizontalExtent) /
                     (int64_t)(int)control->contentWidth);
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,
@@ -1332,8 +1330,8 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
       control->horizontalThumbLeft = control->horizontalThumbLeft + horizontalExtent;
       control->horizontalThumbRight = control->horizontalThumbRight + horizontalExtent;
     }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportHeight * (int64_t)verticalExtent) /
                     (int64_t)(int)control->contentHeight);
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource);
@@ -1376,8 +1374,8 @@ void UiScrollableControl_ClampOffsetsToViewport
     changeCount = 0;
     viewRight = control->viewportWidth + viewLeft;
     viewBottom = control->viewportHeight + viewTop;
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) {
       horizontalOverflow = viewRight - targetRight;
       if (viewRight < targetRight) {
         changeCount++;
@@ -1389,8 +1387,8 @@ void UiScrollableControl_ClampOffsetsToViewport
         control->scrollOffsetX = control->scrollOffsetX + (viewLeft - targetLeft);
       }
     }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
+    if (Any(control->scrollStateFlags &
+        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT))) {
       verticalOverflow = viewBottom - targetBottom;
       if (viewBottom < targetBottom) {
         control->scrollOffsetY = control->scrollOffsetY + verticalOverflow;

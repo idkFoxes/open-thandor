@@ -15,10 +15,8 @@
 #include <thandor/core/contracts.h>
 
 /* ArmyRuntimeSlot.aiUnitState value the AI stores whenever it gives a unit a command (units.cpp, combat.cpp) */
-#define AI_UNIT_COMMANDED_STATE 8
-/* ArmyRuntimeSlot.aiUnitFlags bit 0: set when AiUnitGroup_AssignCollectedEntitiesToBestTarget sends the unit
-   to a group target, cleared by the direct AI move commands; AiUnitBehavior_CollectUnassignedEntity skips it */
-#define AI_UNIT_STATE94_GROUP_ASSIGNED 0x1
+inline constexpr int AI_UNIT_COMMANDED_STATE = 8;
+/* ArmyRuntimeSlot.aiUnitFlags bits: ArmyAiUnitFlags (gameplay/army/types.h) */
 
 void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
@@ -38,7 +36,7 @@ AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDi
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot);
 
-void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
+void AiUnitCommand_AssignWorkspacePoint(AiScoredSiteWorkspaceEntry *workspacePoint,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext);
 
 void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime,

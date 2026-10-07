@@ -13,7 +13,7 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           InGameRuntimeRootFrameView *inGameRoot);
 
 #endif /* THANDOR_UI_INGAME_HOTKEYS_H */

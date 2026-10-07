@@ -13,17 +13,17 @@
 #include <thandor/ui/core/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 UiRootStack_PopUntilWindowTextureBoundary();
+bool UiRootStack_PopUntilWindowTextureBoundary();
 
 /* End marker of the UI root stack: g_UiRootNode holds it when no root is open, and the bottom root's
    previousRoot link holds it. */
-#define UI_ROOT_STACK_END ((UiRootNode *)(intptr_t)-1)
+#define UI_ROOT_STACK_END (reinterpret_cast<UiRootNode *>(intptr_t{-1}))
 
 void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root);
 
-Bool8 UiRootStack_Pop(UiRootNode *root);
+bool UiRootStack_Pop(UiRootNode *root);
 
-Bool8 UiRootStack_BringToFront(UiRootNode *root);
+bool UiRootStack_BringToFront(UiRootNode *root);
 
 void UiRootStack_Relayout();
 

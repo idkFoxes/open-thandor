@@ -43,12 +43,13 @@ void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
   FieldGridCell *cellCursor;
 
   if (fieldGrid != nullptr) {
-    fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
+    fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     rowLength = fieldGrid->gridWidth;
     rowsLeft = fieldGrid->gridHeight - 2;
     columnsLeft = rowLength - 2;
     /* cell (row 1, column 1) */
     cellCursor = &fieldGrid->cells[rowLength + 1];
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
         cell = cellCursor;
@@ -79,12 +80,13 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
   FixedMath_WriteDirectionQ28
             (&g_TerrainLightDirection,lightElevationAngle,lightAzimuthAngle);
   if (fieldGrid != nullptr) {
-    fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
+    fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     rowLength = fieldGrid->gridWidth;
     rowsLeft = fieldGrid->gridHeight - 2;
     columnsLeft = rowLength - 2;
     /* cell (row 1, column 1), see FieldGrid_RecomputeInteriorTriangleNormalAngles */
     cellCursor = &fieldGrid->cells[rowLength + 1];
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
         cell = cellCursor;
@@ -114,11 +116,11 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors()
 
   currentDirectionRecord = g_TerrainDirectionRecordTable256;
   recordsRemaining = 256;
-  do {
+  while (recordsRemaining != 0) {
     previousPackedAngles = currentDirectionRecord->packedAngles;
     /* one 32-bit add advances both packed angles by rateA (low word) and rateB (high word); a carry out
        of angle A moves angle B by one more */
-    currentDirectionRecord->packedAngles = currentDirectionRecord->packedAngles + *(int *)&currentDirectionRecord->rateA;
+    currentDirectionRecord->packedAngles = currentDirectionRecord->packedAngles + *reinterpret_cast<int *>(&currentDirectionRecord->rateA);
     scaledSinCosPair = FixedMath_SinCosScaled(previousPackedAngles & FIXED_ANGLE16_MASK,currentDirectionRecord->scaleA);
     currentDirectionRecord->angleAComponent0ScaledQ28 = scaledSinCosPair.cosValue;
     currentDirectionRecord->angleAComponent1ScaledQ28 = scaledSinCosPair.sinValue;
@@ -127,7 +129,7 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors()
     currentDirectionRecord->angleBComponent0ScaledQ28 = (uint32_t)angleBScaledSinCosPair.cosValue;
     currentDirectionRecord++;
     recordsRemaining--;
-  } while (recordsRemaining != 0);
+  }
 }
 
 /* Recomputes a cell's two vertex normals from its six lattice neighbours and stores them as packed
@@ -155,55 +157,55 @@ void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStri
      rightDelta = right, A = below, B = above, C = left, D = below-left, E = above-right. Second pass (surface):
      A = right, B = below, C = above, D = left, E = below-left, F = above-right. */
   rightDelta = cell[1].terrainHeight - cell->terrainHeight;
-  neighborDeltaA = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->terrainHeight - cell->terrainHeight;
-  neighborDeltaB = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->terrainHeight - cell->terrainHeight;
+  neighborDeltaA = FieldGridCell_AtByteOffset(cell,rowStrideBytes)->terrainHeight - cell->terrainHeight;
+  neighborDeltaB = FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->terrainHeight - cell->terrainHeight;
   neighborDeltaC = cell[-1].terrainHeight - cell->terrainHeight;
-  neighborDeltaD = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].terrainHeight - cell->terrainHeight;
-  neighborDeltaE = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].terrainHeight - cell->terrainHeight;
+  neighborDeltaD = FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].terrainHeight - cell->terrainHeight;
+  neighborDeltaE = FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].terrainHeight - cell->terrainHeight;
   normalAngles = FixedMath_VectorToAngles
-                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldY -
+                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->worldY -
                                     cell->worldY) * neighborDeltaA) - (cell[1].worldY - cell->worldY) * rightDelta
-                                 ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->worldY - cell->worldY)
+                                 ) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->worldY - cell->worldY)
                                      * neighborDeltaB) - (cell[-1].worldY - cell->worldY) * neighborDeltaC) -
-                              (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].worldY - cell->worldY)
+                              (FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].worldY - cell->worldY)
                               * neighborDeltaD) -
-                              (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].worldY - cell->worldY) * neighborDeltaE
-                     ,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldX - cell->worldX) *
+                              (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].worldY - cell->worldY) * neighborDeltaE
+                     ,((((-((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->worldX - cell->worldX) *
                            neighborDeltaA) - (cell[1].worldX - cell->worldX) * rightDelta) -
-                        (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->worldX - cell->worldX) * neighborDeltaB) -
+                        (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->worldX - cell->worldX) * neighborDeltaB) -
                        (cell[-1].worldX - cell->worldX) * neighborDeltaC) -
-                      (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].worldX - cell->worldX) * neighborDeltaD
-                      ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].worldX - cell->worldX) * neighborDeltaE);
+                      (FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].worldX - cell->worldX) * neighborDeltaD
+                      ) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].worldX - cell->worldX) * neighborDeltaE);
   cell->triangle0NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 16;
   neighborDeltaA = ((cell[1].terrainHeight + cell[1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  neighborDeltaB = ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->terrainHeight +
-           FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->waterSurfaceDelta) - cell->terrainHeight) -
+  neighborDeltaB = ((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->terrainHeight +
+           FieldGridCell_AtByteOffset(cell,rowStrideBytes)->waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  neighborDeltaC = ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->terrainHeight +
-           FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->waterSurfaceDelta) -
+  neighborDeltaC = ((FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->terrainHeight +
+           FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->waterSurfaceDelta) -
           cell->terrainHeight) - cell->waterSurfaceDelta;
   neighborDeltaD = ((cell[-1].terrainHeight + cell[-1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  neighborDeltaE = ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].terrainHeight +
-           FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].waterSurfaceDelta) - cell->terrainHeight) -
+  neighborDeltaE = ((FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].terrainHeight +
+           FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  neighborDeltaF = ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].terrainHeight +
-           FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].waterSurfaceDelta) -
+  neighborDeltaF = ((FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].terrainHeight +
+           FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].waterSurfaceDelta) -
           cell->terrainHeight) - cell->waterSurfaceDelta;
   normalAngles = FixedMath_VectorToAngles
-                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldY -
+                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->worldY -
                                     cell->worldY) * neighborDeltaB) - (cell[1].worldY - cell->worldY) * neighborDeltaA
-                                 ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->worldY - cell->worldY) * neighborDeltaC) -
+                                 ) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->worldY - cell->worldY) * neighborDeltaC) -
                                (cell[-1].worldY - cell->worldY) * neighborDeltaD) -
-                              (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].worldY - cell->worldY)
-                              * neighborDeltaE) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].worldY - cell->worldY) * neighborDeltaF
-                     ,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldX - cell->worldX) *
+                              (FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].worldY - cell->worldY)
+                              * neighborDeltaE) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].worldY - cell->worldY) * neighborDeltaF
+                     ,((((-((FieldGridCell_AtByteOffset(cell,rowStrideBytes)->worldX - cell->worldX) *
                            neighborDeltaB) - (cell[1].worldX - cell->worldX) * neighborDeltaA) -
-                        (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->worldX - cell->worldX) * neighborDeltaC) -
+                        (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)->worldX - cell->worldX) * neighborDeltaC) -
                        (cell[-1].worldX - cell->worldX) * neighborDeltaD) -
-                      (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].worldX - cell->worldX) * neighborDeltaE
-                      ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].worldX - cell->worldX) * neighborDeltaF);
+                      (FieldGridCell_AtByteOffset(cell,rowStrideBytes)[-1].worldX - cell->worldX) * neighborDeltaE
+                      ) - (FieldGridCell_AtByteOffset(cell,-rowStrideBytes)[1].worldX - cell->worldX) * neighborDeltaF);
   cell->triangle1NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 16;
 }
 
@@ -258,7 +260,7 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
   
   rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
-  do {
+  while (rampStepsRemaining != 0) {
     channelValue = ((rampStepColorArgb & ARGB8888_BLUE_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_BLUE_MASK);
     if (ARGB8888_BLUE_MASK < channelValue) {
       channelValue = ARGB8888_BLUE_MASK;
@@ -266,10 +268,10 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     *rampEntryCursor = channelValue;
     rampEntryCursor++;
     rampStepsRemaining--;
-  } while (rampStepsRemaining != 0);
+  }
   rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
-  do {
+  while (rampStepsRemaining != 0) {
     channelValue = ((rampStepColorArgb & ARGB8888_GREEN_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_GREEN_MASK);
     if (0xffff < channelValue) {
       channelValue = ARGB8888_GREEN_MASK;
@@ -277,10 +279,10 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     *rampEntryCursor = *rampEntryCursor | channelValue & ARGB8888_GREEN_MASK;
     rampEntryCursor++;
     rampStepsRemaining--;
-  } while (rampStepsRemaining != 0);
+  }
   rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
-  do {
+  while (rampStepsRemaining != 0) {
     channelValue = ((rampStepColorArgb & ARGB8888_RED_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_RED_MASK);
     if (0xffffff < channelValue) {
       channelValue = ARGB8888_RED_MASK;
@@ -288,14 +290,14 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     *rampEntryCursor = *rampEntryCursor | channelValue & ARGB8888_RED_MASK;
     rampEntryCursor++;
     rampStepsRemaining--;
-  } while (rampStepsRemaining != 0);
+  }
   rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
-  do {
+  while (rampStepsRemaining != 0) {
     *rampEntryCursor = *rampEntryCursor | baseColorArgb & ARGB8888_ALPHA_MASK;
     rampEntryCursor++;
     rampStepsRemaining--;
-  } while (rampStepsRemaining != 0);
+  }
   g_TerrainDirectionalLightSecondaryColor = secondaryColorArgb;
   lightLutCursor = &g_TerrainDirectionalLightColorLut[TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX];
   for (rampStepsRemaining = TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT; rampStepsRemaining != 0;
@@ -353,6 +355,12 @@ static inline uint32_t WorldLighting_BlendColors
     packed = packed | (uint32_t)(sum < 0 ? 0 : (0xff < sum ? 0xff : sum)) << (lane * 8);
   }
   return packed;
+}
+
+/* The high 16 bits of a packed pair field, read as the original does: the upper uint16_t in memory. */
+template <class PackedPair> static inline uint16_t WorldLighting_PackedHigh16(const PackedPair *pair)
+{
+  return reinterpret_cast<const uint16_t *>(pair)[1];
 }
 
 /* Triangular blend of two 16-bit values over the phase byte (0 = primary, 0x80 = alternate, back towards
@@ -465,16 +473,15 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting()
          WorldLighting_BlendPackedLow16((uint16_t)settings->packedFieldRegionHeightHigh16WidthLow16,
                                         (uint16_t)settings->alternatePackedFieldRegionHeightHigh16WidthLow16,
                                         phaseByte);
-    /* ((uint16_t *)&pair)[1]: the high 16 bits of a packed pair */
     WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-              ((int)((uint32_t)((uint16_t *)&settings->alternatePackedFieldRegionHeightHigh16WidthLow16)[1] *
+              ((int)((uint32_t)WorldLighting_PackedHigh16(&settings->alternatePackedFieldRegionHeightHigh16WidthLow16) *
                      inverseBlendWeight +
-                     (uint32_t)((uint16_t *)&settings->packedFieldRegionHeightHigh16WidthLow16)[1] *
+                     (uint32_t)WorldLighting_PackedHigh16(&settings->packedFieldRegionHeightHigh16WidthLow16) *
                      (256 - inverseBlendWeight)) >> 8,
                blendedAuxiliaryAzimuth,
-               (int)((uint32_t)((uint16_t *)&settings->alternatePackedFieldRegionOriginYHigh16XLow16)[1] *
+               (int)((uint32_t)WorldLighting_PackedHigh16(&settings->alternatePackedFieldRegionOriginYHigh16XLow16) *
                      inverseBlendWeight +
-                     ((uint16_t *)&settings->packedFieldRegionOriginYHigh16XLow16)[1] * blendWeight) >> 8,
+                     WorldLighting_PackedHigh16(&settings->packedFieldRegionOriginYHigh16XLow16) * blendWeight) >> 8,
                blendedLightAzimuth,worldRuntime);
   }
 }

@@ -15,21 +15,21 @@
 
 /* Linked model-definition ids of an army model-tree node (ArmyModelTreeNode.linkedDefinitionIds, +0x20):
    [0] is the default, the others are upgrade stages that need a technology. */
-#define MODEL_LINKED_DEFINITION_COUNT 8
+inline constexpr int MODEL_LINKED_DEFINITION_COUNT = 8;
 /* Key classes of a model resource's packed points (ModelPackedPointRecord.packedLookupKey = keyIndex << 4 |
    keyClass; ModelLookupTable_FindPackedPoint / GetPackedPointPosition). */
-#define MODEL_POINT_CLASS_ATTACHMENT 0 /* child node attachment point, keyIndex = child index */
-#define MODEL_POINT_CLASS_SHOT 2 /* shot launch point, keyIndex = weapon / emitter index */
-#define MODEL_POINT_CLASS_EFFECT 3 /* effect spawn point (0 linked effect, 1 periodic effect) */
-#define MODEL_POINT_CLASS_LIGHT 4 /* shading light position */
+inline constexpr int MODEL_POINT_CLASS_ATTACHMENT = 0; /* child node attachment point, keyIndex = child index */
+inline constexpr int MODEL_POINT_CLASS_SHOT = 2; /* shot launch point, keyIndex = weapon / emitter index */
+inline constexpr int MODEL_POINT_CLASS_EFFECT = 3; /* effect spawn point (0 linked effect, 1 periodic effect) */
+inline constexpr int MODEL_POINT_CLASS_LIGHT = 4; /* shading light position */
 
-Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError);
+bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError);
 
-Bool8 ModelLookupTable_GetPackedPointPosition
+bool ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,GraphicsFixedVec3 *outLocalPosition);
 
-Bool8 ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
+bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,ModelPackedPointRecord **outEntry);
 
 uint32_t ModelDefinitionRegistry_FindBuildCostsById
@@ -38,7 +38,7 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
 
 ModelDefinitionRecordPrefix * ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId);
 
-Bool8 ModelDefinition_RegisterAndResolveReferences
+bool ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError);
 
 ModelDefinitionRecordPrefix *ModelDefinitionRegistry_LookupById(PckModelDefinitionIdCatalog definitionId);

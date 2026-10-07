@@ -16,22 +16,22 @@
 #include <thandor/gameplay/faction/types.h>
 #include <thandor/ui/ingame/types.h>
 
-typedef struct AiKnowledgeParameters AiKnowledgeParameters, *PAiKnowledgeParameters;
-typedef struct AiKnowledgeDataImage AiKnowledgeDataImage, *PAiKnowledgeDataImage;
-typedef struct AiScoredSiteWorkspaceEntry AiScoredSiteWorkspaceEntry, *PAiScoredSiteWorkspaceEntry;
-typedef struct AiTerrainFeatureWorkspaceEntry AiTerrainFeatureWorkspaceEntry, *PAiTerrainFeatureWorkspaceEntry;
-typedef struct AiRuntimeWorkspaceEntry AiRuntimeWorkspaceEntry, *PAiRuntimeWorkspaceEntry;
-typedef struct AiTargetWorkspaceEntry AiTargetWorkspaceEntry, *PAiTargetWorkspaceEntry;
-typedef struct AiLinkedDefinitionListView AiLinkedDefinitionListView, *PAiLinkedDefinitionListView;
-typedef struct AiArmyScoreWeights AiArmyScoreWeights, *PAiArmyScoreWeights;
-typedef struct AiTechnologyPlanningCandidate AiTechnologyPlanningCandidate, *PAiTechnologyPlanningCandidate;
-typedef struct MdlDefinitionSemanticPrefix MdlDefinitionSemanticPrefix, *PMdlDefinitionSemanticPrefix;
-typedef struct AiSecondaryWorkspaceDistanceSelection AiSecondaryWorkspaceDistanceSelection, *PAiSecondaryWorkspaceDistanceSelection;
-typedef struct AiGeneralSiteDistanceSelection AiGeneralSiteDistanceSelection, *PAiGeneralSiteDistanceSelection;
-typedef struct AiStrategicClassSelection AiStrategicClassSelection, *PAiStrategicClassSelection;
-typedef struct AiStructureWorkspaceEntry AiStructureWorkspaceEntry, *PAiStructureWorkspaceEntry;
-typedef struct FieldGridCell FieldGridCell;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
+struct AiKnowledgeParameters;
+struct AiKnowledgeDataImage;
+struct AiScoredSiteWorkspaceEntry;
+struct AiTerrainFeatureWorkspaceEntry;
+struct AiRuntimeWorkspaceEntry;
+struct AiTargetWorkspaceEntry;
+struct AiLinkedDefinitionListView;
+struct AiArmyScoreWeights;
+struct AiTechnologyPlanningCandidate;
+struct MdlDefinitionSemanticPrefix;
+struct AiSecondaryWorkspaceDistanceSelection;
+struct AiGeneralSiteDistanceSelection;
+struct AiStrategicClassSelection;
+struct AiStructureWorkspaceEntry;
+struct FieldGridCell;
+struct ModelRuntimeNode;
 
 using AiPlanningPhaseIndex = uint32_t;
 
@@ -486,7 +486,7 @@ struct MdlDefinitionSemanticPrefix {
     uint32_t targetClassIndex; // ModelDefinition.targetClassIndex (indexes per-class shot impact effects and damage)
     uint32_t maximumHealth; // ModelDefinition.maximumHealth
     uint32_t rootNodeOffset; 
-    uint32_t modelFlags; // ModelDefinition.modelFlags
+    ModelDefinitionFlags modelFlags; // ModelDefinition.modelFlags
     uint32_t unknown6C; 
     uint32_t visibilityHeightOffset; // ModelDefinition.visibilityHeightOffset
     uint32_t destroyedReplacementArmyAssetId; // ModelDefinition.destroyedReplacementArmyAssetId

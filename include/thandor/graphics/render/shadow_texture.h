@@ -17,20 +17,20 @@
 
 /* Generated shadow texture (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy): a shadow vertex fades
    out linearly with its ray distance to the caster and vanishes at 5.0 world units (Q12) */
-#define GRAPHICS_SHADING_SHADOW_FADE_DISTANCE_Q12 0x5000
+inline constexpr int GRAPHICS_SHADING_SHADOW_FADE_DISTANCE_Q12 = 0x5000;
 /* 1/256 grid cell in Q20: the far texture coordinate sample of a g_GraphicsShadingGridStepQ20 step is pulled
    back by this so it stays inside the step (samples at 0, step / 2 and step - this) */
-#define GRAPHICS_SHADING_SAMPLE_INSET_Q20 0x1000
+inline constexpr int GRAPHICS_SHADING_SAMPLE_INSET_Q20 = 0x1000;
 /* Projected point pool of the generated shadow texture: 0x80-byte primitive blocks of 16 point pairs, three
    0x20-byte vertices (4 pairs each) and a 0x20-byte header at +0x60 (pairs 12..15). A shadow patch reserves 14
    consecutive blocks (GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks). */
-#define GRAPHICS_PROJECTED_BLOCK_BYTES 0x80
-#define GRAPHICS_PROJECTED_BLOCK_PAIRS 16
-#define GRAPHICS_SHADOW_PATCH_BLOCK_COUNT 14
+inline constexpr int GRAPHICS_PROJECTED_BLOCK_BYTES = 0x80;
+inline constexpr int GRAPHICS_PROJECTED_BLOCK_PAIRS = 16;
+inline constexpr int GRAPHICS_SHADOW_PATCH_BLOCK_COUNT = 14;
 /* Index of point pair `pair` of block `block` in a GraphicsProjectedPointPair array of consecutive blocks */
-#define GRAPHICS_PROJECTED_PAIR(block, pair) ((block) * GRAPHICS_PROJECTED_BLOCK_PAIRS + (pair))
+constexpr int GRAPHICS_PROJECTED_PAIR(int block, int pair) { return block * GRAPHICS_PROJECTED_BLOCK_PAIRS + pair; }
 /* Highest light level of g_ShadingIntensityScaleMmx (256 entries) */
-#define GRAPHICS_SHADING_INTENSITY_MAX 255
+inline constexpr int GRAPHICS_SHADING_INTENSITY_MAX = 255;
 
 void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);
@@ -66,7 +66,7 @@ void GraphicsShadingGeneratedTexture_AdvanceTileCursor();
 
 void GraphicsShadingGeneratedTexture_FilterGridScratchMmx();
 
-Bool8 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
+bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
 
 GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext);

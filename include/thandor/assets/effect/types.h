@@ -13,27 +13,31 @@
 #include <thandor/assets/army/types.h>
 #include <thandor/audio/spatial/types.h>
 #include <thandor/core/types.h>
+#include <thandor/core/flags.h> /* THANDOR_FLAG_ENUM: EffectCreationFlagBits */
 #include <thandor/gameplay/army/types.h>
 #include <thandor/graphics/render/types.h>
 #include <thandor/graphics/resources/types.h>
 #include <thandor/ui/frontend/types.h>
 #include <thandor/world/effects/types.h>
 
-typedef struct EffectDefinition EffectDefinition, *PEffectDefinition;
-typedef struct EffectDefinitionTransitionPrefix EffectDefinitionTransitionPrefix, *PEffectDefinitionTransitionPrefix;
-typedef struct GeneratedAssetEntryCountHeader GeneratedAssetEntryCountHeader, *PGeneratedAssetEntryCountHeader;
-typedef struct EffectAssetHeader EffectAssetHeader, *PEffectAssetHeader;
-typedef struct ShotDefinition ShotDefinition;
+struct EffectDefinition;
+struct EffectDefinitionTransitionPrefix;
+struct GeneratedAssetEntryCountHeader;
+struct EffectAssetHeader;
+struct ShotDefinition;
 
 using EffectMovementSpeedQ12 = Q12;
 
 using EffectFrameAdvanceThresholdQ4 = uint32_t;
 
-enum {
+/* EffectDefinition.creationFlags (EFF file data; bits without an enumerator stay valid). The original field was a
+   signed dword; only these bits are tested, so the unsigned flag type reads the same values. */
+enum class EffectCreationFlagBits : uint32_t {
     EFFECT_CREATION_RANDOMIZE_ORIENTATION=1,
     EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET=2
 };
-using EffectCreationFlagBits = int;
+THANDOR_FLAG_ENUM(EffectCreationFlagBits);
+using enum EffectCreationFlagBits;
 
 using EffectAlphaFadeTicks = uint32_t;
 

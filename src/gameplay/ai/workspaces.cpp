@@ -34,7 +34,7 @@ AiScoredSiteWorkspaceEntry *g_AiWorkspace05GeneralSites = nullptr;
 
 uint32_t g_AiWorkspace05Count = 0;
 
-uint8_t *g_AiWorkspace06FlaggedSites = nullptr;
+AiScoredSiteWorkspaceEntry *g_AiWorkspace06FlaggedSites = nullptr;
 
 uint32_t g_AiWorkspace06Count = 0;
 
@@ -71,10 +71,13 @@ uint32_t g_AiWorkspace02Count = 0;
 /* L"engine\\ki.dat" */
 static uint16_t g_EngineKiDatPathUtf16[14] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'k', 'i', '.', 'd', 'a', 't', 0};
 
-/* Candidate cache of the faction runtime record at factionImageByteOffset (faction * 0x740) */
-#define AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset) \
-  ((AiFactionCandidateCacheState *)((uint8_t *)&g_GameFactionRuntimeImage.records[0].candidateCache + \
-                                    (factionImageByteOffset)))
+/* Candidate cache of the faction runtime record at factionImageByteOffset (faction * 0x740; a byte offset into
+   the record array, applied as the original does) */
+static inline AiFactionCandidateCacheState *AI_FACTION_CANDIDATE_CACHE(FactionImageByteOffset factionImageByteOffset)
+{
+  return reinterpret_cast<AiFactionCandidateCacheState *>(
+       reinterpret_cast<uint8_t *>(&g_GameFactionRuntimeImage.records[0].candidateCache) + factionImageByteOffset);
+}
 
 /* Proposes armyAssetId at the first workspace 08 site of that asset where it can be placed (placement mode 4),
    unless one of it is still unassigned. Weight: 3 * baseWeight / (existing count + 3); for assets other than
@@ -207,7 +210,7 @@ void AiCandidateWorkspace_SortDescending()
     recordsInCurrentPass = g_AiCandidateWorkspaceEntryCount;
     currentRecordCursor = g_AiWorkspace13Candidates;
     do {
-      do {
+      for (; comparisonsRemaining != 0; comparisonsRemaining--) {
         if (currentRecordScore < (int)scanRecordCursor->weightedScoreAndKind) {
           promotedScore = scanRecordCursor->weightedScoreAndKind;
           scanRecordCursor->weightedScoreAndKind = currentRecordScore;
@@ -219,8 +222,7 @@ void AiCandidateWorkspace_SortDescending()
           currentRecordPayload = promotedPayload;
         }
         scanRecordCursor++;
-        comparisonsRemaining--;
-      } while (comparisonsRemaining != 0);
+      }
       currentRecordScore = currentRecordCursor[1].weightedScoreAndKind;
       currentRecordPayload = currentRecordCursor[1].entityIdAndMultiplicity;
       comparisonsRemaining = recordsInCurrentPass - 2;
@@ -261,7 +263,7 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 /* Returns true when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
    or not.
 */
-Bool8 AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
+bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -326,14 +328,14 @@ int AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 w
   int workspaceEntriesRemaining;
   int deltaYAbsQ12;
   Q12 deltaXAbsQ12;
-  AiRuntimeWorkspaceEntry *workspaceEntryCursor;
+  AiStructureWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeSlot *slotModelRuntime;
   
   minimumActiveManhattanDistanceQ12 = INT32_MAX;
-  workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
+  workspaceEntryCursor = g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    slotModelRuntime = workspaceEntryCursor->modelRuntime;
+    slotModelRuntime = workspaceEntryCursor->runtimeSlotAddressOrZero;
     if ((slotModelRuntime != nullptr) &&
        ((slotModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandState != 0)) {
       deltaXAbsQ12 = worldX - (slotModelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.x;
@@ -435,15 +437,15 @@ int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
   int workspaceEntriesRemaining;
   int deltaYAbsQ12;
   Q12 deltaXAbsQ12;
-  AiRuntimeWorkspaceEntry *workspaceEntryCursor;
+  AiStructureWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeNode *modelNode;
   
   minimumManhattanDistanceQ12 = INT32_MAX;
-  workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
+  workspaceEntryCursor = g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if (workspaceEntryCursor->modelRuntime != nullptr) {
-      modelNode = workspaceEntryCursor->modelRuntime->rootModelNodeOrSavedOffset.modelNode;
+    if (workspaceEntryCursor->runtimeSlotAddressOrZero != nullptr) {
+      modelNode = workspaceEntryCursor->runtimeSlotAddressOrZero->rootModelNodeOrSavedOffset.modelNode;
       deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
@@ -465,59 +467,61 @@ int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
    parameters from engine\ki.dat into g_AiKnowledgeData. Returns true on success; stops at the first failure,
    returning false with that failure's error code in *outErrorCode (buffers allocated before it are not freed).
 */
-Bool8 AiRuntime_InitWorkspace(uint32_t *outErrorCode)
+bool AiRuntime_InitWorkspace(uint32_t *outErrorCode)
 
 {
   AiKnowledgeDataImage *knowledgeDataImage;
   uint32_t allocError;
   uint32_t loadErrorCode;
 
+  /* the arena returns the block through a void ** out parameter; each typed workspace pointer is passed as one
+     (same object representation) */
   allocError = g_MemoryApi.alloc(AI_WORKSPACE00_CAPACITY * sizeof(AiStructureWorkspaceEntry),
-                                 (void **)&g_AiWorkspace00Structures);
+                                 reinterpret_cast<void **>(&g_AiWorkspace00Structures));
   if (allocError == 0) {
     allocError = g_MemoryApi.alloc(AI_WORKSPACE01_CAPACITY * sizeof(AiRuntimeWorkspaceEntry),
-                                   (void **)&g_AiWorkspace01Units);
+                                   reinterpret_cast<void **>(&g_AiWorkspace01Units));
     if (allocError == 0) {
       allocError = g_MemoryApi.alloc(AI_WORKSPACE02_CAPACITY * sizeof(AiRuntimeWorkspaceEntry),
-                                     (void **)&g_AiWorkspace02VisibleHostiles);
+                                     reinterpret_cast<void **>(&g_AiWorkspace02VisibleHostiles));
       if (allocError == 0) {
         allocError = g_MemoryApi.alloc(AI_WORKSPACE03_CAPACITY * sizeof(AiRuntimeWorkspaceEntry),
-                                       (void **)&g_AiWorkspace03UnseenHostiles);
+                                       reinterpret_cast<void **>(&g_AiWorkspace03UnseenHostiles));
         if (allocError == 0) {
           allocError = g_MemoryApi.alloc(AI_WORKSPACE04_CAPACITY * sizeof(AiRuntimeWorkspaceEntry),
-                                         (void **)&g_AiWorkspace04RequestedAssets);
+                                         reinterpret_cast<void **>(&g_AiWorkspace04RequestedAssets));
           if (allocError == 0) {
             allocError = g_MemoryApi.alloc(AI_WORKSPACE05_CAPACITY * sizeof(AiScoredSiteWorkspaceEntry),
-                                           (void **)&g_AiWorkspace05GeneralSites);
+                                           reinterpret_cast<void **>(&g_AiWorkspace05GeneralSites));
             if (allocError == 0) {
               allocError = g_MemoryApi.alloc(AI_WORKSPACE06_CAPACITY * sizeof(AiScoredSiteWorkspaceEntry),
-                                             (void **)&g_AiWorkspace06FlaggedSites);
+                                             reinterpret_cast<void **>(&g_AiWorkspace06FlaggedSites));
               if (allocError == 0) {
                 allocError = g_MemoryApi.alloc(AI_WORKSPACE07_CAPACITY * sizeof(AiTargetWorkspaceEntry),
-                                               (void **)&g_AiWorkspace07Targets);
+                                               reinterpret_cast<void **>(&g_AiWorkspace07Targets));
                 if (allocError == 0) {
                   allocError = g_MemoryApi.alloc(AI_WORKSPACE08_CAPACITY * sizeof(AiTerrainFeatureWorkspaceEntry),
-                                                 (void **)&g_AiWorkspace08TerrainFeatureSites);
+                                                 reinterpret_cast<void **>(&g_AiWorkspace08TerrainFeatureSites));
                   if (allocError == 0) {
                     allocError = g_MemoryApi.alloc(AI_WORKSPACE09_CAPACITY * sizeof(FieldGridCell *),
-                                                   (void **)&g_AiWorkspace09Cells);
+                                                   reinterpret_cast<void **>(&g_AiWorkspace09Cells));
                     if (allocError == 0) {
                       allocError = g_MemoryApi.alloc(AI_WORKSPACE10_CAPACITY * sizeof(FieldGridCell *),
-                                                     (void **)&g_AiWorkspace10Cells);
+                                                     reinterpret_cast<void **>(&g_AiWorkspace10Cells));
                       if (allocError == 0) {
                         allocError = g_MemoryApi.alloc(AI_WORKSPACE11_CAPACITY * sizeof(ArmyAssetRecordPrefix *),
-                                                       (void **)&g_AiWorkspace11ProducibleAssets);
+                                                       reinterpret_cast<void **>(&g_AiWorkspace11ProducibleAssets));
                         if (allocError == 0) {
                           allocError = g_MemoryApi.alloc(AI_WORKSPACE12_CAPACITY * sizeof(AiTechnologyPlanningCandidate),
-                                                         (void **)&g_AiWorkspace12TechnologyCandidates);
+                                                         reinterpret_cast<void **>(&g_AiWorkspace12TechnologyCandidates));
                           if (allocError == 0) {
                             allocError = g_MemoryApi.alloc(AI_CANDIDATE_WORKSPACE_CAPACITY * sizeof(AiCandidateWorkspaceEntry),
-                                                           (void **)&g_AiWorkspace13Candidates);
+                                                           reinterpret_cast<void **>(&g_AiWorkspace13Candidates));
                             if (allocError == 0) {
                               allocError = g_MemoryApi.alloc(AI_WORKSPACE14_CAPACITY * sizeof(ArmyRuntimeSlot *),
-                                                             (void **)&g_AiWorkspace14CollectedArmies);
+                                                             reinterpret_cast<void **>(&g_AiWorkspace14CollectedArmies));
                               if (allocError == 0) {
-                                knowledgeDataImage = (AiKnowledgeDataImage *)Package_LoadEntry((uint16_t *)g_EngineKiDatPathUtf16,&loadErrorCode);
+                                knowledgeDataImage = static_cast<AiKnowledgeDataImage *>(Package_LoadEntry(g_EngineKiDatPathUtf16,&loadErrorCode));
                                 if (knowledgeDataImage != nullptr) {
                                   g_AiKnowledgeData = knowledgeDataImage;
                                   return true;
@@ -552,7 +556,7 @@ void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell)
 {
   FieldGridCell **cellBuffer;
   uint32_t entryIndex;
-  Bool8 isOutsideExtents;
+  bool isOutsideExtents;
 
   entryIndex = g_AiWorkspace09Count;
   cellBuffer = g_AiWorkspace09Cells;
@@ -574,7 +578,7 @@ void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 {
   FieldGridCell **cellBuffer;
   uint32_t entryIndex;
-  Bool8 isOutsideExtents;
+  bool isOutsideExtents;
 
   entryIndex = g_AiWorkspace10Count;
   cellBuffer = g_AiWorkspace10Cells;
@@ -591,17 +595,17 @@ void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 /* Returns true when the primary workspace (workspace 00) holds an entry of this army asset whose
    runtime pointer is NULL.
 */
-Bool8 AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
+bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
-  AiRuntimeWorkspaceEntry *workspaceEntryCursor;
+  AiStructureWorkspaceEntry *workspaceEntryCursor;
   
   workspaceEntriesRemaining = g_AiWorkspace00Count;
-  workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
+  workspaceEntryCursor = g_AiWorkspace00Structures;
   for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--) {
     if ((entryId == workspaceEntryCursor->armyAssetId) &&
-       (workspaceEntryCursor->modelRuntime == nullptr)) {
+       (workspaceEntryCursor->runtimeSlotAddressOrZero == nullptr)) {
       return true;
     }
     workspaceEntryCursor++;
@@ -612,14 +616,14 @@ Bool8 AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 /* Returns true when the primary workspace (workspace 00) holds an entry of this army asset, with or
    without a runtime object.
 */
-Bool8 AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
+bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
-  AiRuntimeWorkspaceEntry *workspaceEntryCursor;
+  AiStructureWorkspaceEntry *workspaceEntryCursor;
 
   workspaceEntriesRemaining = g_AiWorkspace00Count;
-  workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
+  workspaceEntryCursor = g_AiWorkspace00Structures;
   for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--) {
     if (entryId == workspaceEntryCursor->armyAssetId) {
       return true;
@@ -636,13 +640,13 @@ int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
 {
   int matchingAssignedEntryCount;
   int workspaceEntriesRemaining;
-  AiRuntimeWorkspaceEntry *workspaceEntryCursor;
+  AiStructureWorkspaceEntry *workspaceEntryCursor;
 
   matchingAssignedEntryCount = 0;
-  workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
+  workspaceEntryCursor = g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if ((workspaceEntryCursor->modelRuntime != nullptr) &&
+    if ((workspaceEntryCursor->runtimeSlotAddressOrZero != nullptr) &&
        (entryId == workspaceEntryCursor->armyAssetId)) {
       matchingAssignedEntryCount++;
     }
@@ -700,19 +704,19 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
    supportRadius of its definition. True when it is outside all of them. Arguments are Y first, then X, as every
    caller passes them.
 */
-Bool8 AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
+bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
 
 {
   Q12 deltaXAbsQ12;
   int workspaceEntriesRemaining;
   Q12 deltaYAbsQ12;
-  AiRuntimeWorkspaceEntry *workspaceEntryCursor;
+  AiStructureWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeSlot *entryModelRuntime;
   
-  workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
+  workspaceEntryCursor = g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--, workspaceEntryCursor++) {
-    entryModelRuntime = workspaceEntryCursor->modelRuntime;
+    entryModelRuntime = workspaceEntryCursor->runtimeSlotAddressOrZero;
     if (entryModelRuntime != nullptr) {
       deltaXAbsQ12 = worldX - entryModelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform.translation.x;
       if (deltaXAbsQ12 < 0) {

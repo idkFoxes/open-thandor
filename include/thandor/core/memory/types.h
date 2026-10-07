@@ -12,17 +12,17 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef struct ArenaBlockHeader ArenaBlockHeader, *PArenaBlockHeader;
-typedef struct ArenaState ArenaState, *PArenaState;
-typedef struct MemoryApiTable MemoryApiTable, *PMemoryApiTable;
+struct ArenaBlockHeader;
+struct ArenaState;
+struct MemoryApiTable;
 
-#define ARENA_HEAP_CORRUPT 0x13 /* error code: the arena block chain is corrupt (bad stateMagic) */
+inline constexpr auto ARENA_HEAP_CORRUPT = 0x13; /* error code: the arena block chain is corrupt (bad stateMagic) */
 
-enum {
-    ARENA_BLOCK_ALLOCATED=1515870810,
-    ARENA_BLOCK_FREE=2779096485
+/* ArenaBlockHeader.stateMagic: an allocated or free block; any other value means a corrupt block chain. */
+enum class ArenaBlockStateMagic : uint32_t {
+    ARENA_BLOCK_ALLOCATED=0x5A5A5A5A,
+    ARENA_BLOCK_FREE=0xA5A5A5A5
 };
-using ArenaBlockStateMagic = int;
 
 using ArenaPayloadByteCount = uint32_t;
 
@@ -59,6 +59,6 @@ using SpinLockAcquireProc = void (RuntimeSpinLockValue * lockValue);
 using SpinLockReleaseCallbackProc = void ();
 using SpinLockReleaseAndInvokeProc = void (SpinLockReleaseCallbackProc * callback, RuntimeSpinLockValue * lockValue);
 using SpinLockReleaseProc = void (RuntimeSpinLockValue * lockValue);
-using SpinLockTryAcquireFlagsProc = Bool8 (RuntimeSpinLockValue * lockValue);
+using SpinLockTryAcquireFlagsProc = bool (RuntimeSpinLockValue * lockValue);
 
 #endif /* THANDOR_CORE_MEMORY_TYPES_H */

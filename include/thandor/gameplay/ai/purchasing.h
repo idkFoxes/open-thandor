@@ -17,7 +17,7 @@
 
 AiCandidateScore32 AiArmyCandidate_ComputeAverageCompatibleAssetScore (const AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex, ModelRuntimeClassId runtimeClassId);
 
-Bool8 AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex);
+bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex);
 
 void AiArmyCandidate_AddBestDefenseAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
@@ -25,7 +25,7 @@ void AiArmyCandidate_AddBestExplorationAsset(FactionRuntimeIndex factionIndex,Wo
 
 void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-Bool8 AiPurchaseCandidate_HasEligibleProducer
+bool AiPurchaseCandidate_HasEligibleProducer
           (AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex);
 
 void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex);

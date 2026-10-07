@@ -20,7 +20,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(FactionRuntimeIndex fa
 
 {
   ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
-            (factionIndex,(int *)(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime);
+            (factionIndex,(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime);
 }
 
 /* Marks every not yet destroyed node of the army's model hierarchy (root modelRuntimeOrSavedOffset.modelRuntime) as destroyed, dismantling
@@ -56,7 +56,7 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
 {
   int childCount;
   int childIndex;
-  if ((node->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
+  if (!Any(node->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED)) {
     node->classState.stateFlags = node->classState.stateFlags | (ARMY_MODEL_STATE_NO_REGENERATION | ARMY_MODEL_STATE_DISMANTLING | ARMY_RUNTIME_FLAG_DESTROYED);
   }
   childCount = node->attachmentCount;
@@ -68,13 +68,13 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
   }
 }
 
-/* Returns the armour of a model hierarchy (shown in the in-game selection detail): the sum of the current
+/* Returns the armour of an army's model hierarchy (shown in the in-game selection detail): the sum of the current
    armour points (ModelRuntimeSlot.health) of every node, walked depth-first.
 */
-int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
+int ModelRuntimeHierarchy_SumArmour(ArmyRuntimeSlot *armyRuntime)
 
 {
-  return ModelRuntimeHierarchy_SumArmourFrom((ModelRuntimeSlot *)(uintptr_t)*modelRuntimeRoot);
+  return ModelRuntimeHierarchy_SumArmourFrom(armyRuntime->modelRuntimeOrSavedOffset.modelRuntime);
 }
 
 /* Folds one model runtime and its attached children into the owning army's selection figures (cleared by
@@ -82,7 +82,7 @@ int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
    visibilityHeightOffset, the largest shot selection range in weaponRangeQ12 and, for armed models, the shot's
    impact damage per target class summed into targetClassShotDamage[8].
 */
-void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
+void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *modelRuntimeSlot;
@@ -97,12 +97,12 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   int targetClassIndex;
   int childrenRemaining;
 
-  modelRuntimeSlot = (ModelRuntimeSlot *)modelRuntime;
+  modelRuntimeSlot = modelRuntime;
   modelDefinition = modelRuntimeSlot->definitionOrSavedId.runtimeDefinition;
   army = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
   /* a switched-off model counts with the definition's alternative value switchedOffVisibilityRadius */
-  if ((modelRuntimeSlot->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
+  if (!Any(modelRuntimeSlot->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
     visibilityRadius = modelDefinition->visibilityRadius;
   }
   else {
@@ -136,7 +136,7 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   attachment = modelRuntimeSlot->attachments;
   for (childrenRemaining = modelRuntimeSlot->attachmentCount; childrenRemaining != 0; childrenRemaining--) {
     if (attachment->childModelRuntimeOrSavedOffset != nullptr) {
-      ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics((int *)attachment->childModelRuntimeOrSavedOffset);
+      ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(attachment->childModelRuntimeOrSavedOffset);
     }
     attachment++;
   }
@@ -194,22 +194,24 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
   totalMetric = modelRuntime->classState.energyLoadQ4;
   attachmentsRemaining = modelRuntime->attachmentCount;
   activeMetricTotal = 0;
-  if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
+  if (!Any(modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
     activeMetricTotal = totalMetric;
   }
-  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags &
-       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0) {
+  if (Any(modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags &
+       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY)) {
     for (; attachmentsRemaining != 0; attachmentsRemaining--) {
       currentChildModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
       if (currentChildModelRuntime != nullptr) {
         childMetric = currentChildModelRuntime->classState.energyLoadQ4;
-        if ((currentChildModelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
+        if (!Any(currentChildModelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
           activeMetricTotal = activeMetricTotal + childMetric;
         }
         totalMetric = totalMetric + childMetric;
       }
       /* steps the cursor by one 0x20-byte attachments[] entry */
-      modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
+      /* the slot pointer moves by one descriptor's bytes (so attachments[0] is the next descriptor) */
+      modelRuntime = reinterpret_cast<ModelRuntimeSlot *>(reinterpret_cast<uint8_t *>(modelRuntime) +
+                                                          sizeof(ModelRuntimeAttachmentDescriptor));
     }
   }
   energyDemand.activeQ4 = activeMetricTotal;
@@ -225,7 +227,7 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
    outside the aim tolerance), false once the yaw is within it or on the target.
 */
 
-Bool8 ModelNodeRuntime_SmoothYawTowardTarget
+bool ModelNodeRuntime_SmoothYawTowardTarget
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState,
           AngleTurn32 targetYawAngle16)
 
@@ -237,7 +239,7 @@ Bool8 ModelNodeRuntime_SmoothYawTowardTarget
   uint32_t yawStep;
   int acceleratedVelocity;
   uint32_t yawDelta;
-  Bool8 snapToTarget;
+  bool snapToTarget;
   uint32_t remainingYawDelta;
 
   yawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
@@ -285,12 +287,12 @@ Bool8 ModelNodeRuntime_SmoothYawTowardTarget
     currentYawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
     smoothingState->yawTurnVelocityAngle16 = 0;
     if (targetYawAngle16 != currentYawAngle) {
-      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
       modelNodeRuntime->modelPayload.localRotationAngle2 = targetYawAngle16;
     }
   }
   else {
-    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     modelNodeRuntime->modelPayload.localRotationAngle2 = yawAngle & FIXED_ANGLE16_MASK;
     remainingYawDelta = (yawAngle & 0xffff) - targetYawAngle16 & FIXED_ANGLE16_MASK;
     if (MODEL_AIM_TOLERANCE_ANGLE16 < remainingYawDelta &&
@@ -320,7 +322,7 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
   int pitchStep;
   int rateLimit;
   int acceleratedVelocity;
-  Bool8 snapToTarget;
+  bool snapToTarget;
   uint32_t clampedTarget;
 
   pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
@@ -370,14 +372,14 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
     }
   }
   if (!snapToTarget) {
-    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     modelNodeRuntime->modelPayload.localRotationAngle1 = pitchAngle;
     return (pitchAngle - clampedTarget) & FIXED_ANGLE16_MASK; /* remaining difference */
   }
   pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
   smoothingState->pitchTurnVelocityAngle16 = 0;
   if (clampedTarget != pitchAngle) {
-    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     modelNodeRuntime->modelPayload.localRotationAngle1 = clampedTarget;
   }
   return clampedTarget;
@@ -387,7 +389,7 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
    definition (variantModelDefinitionIds) that the faction's technology unlocks. The armour points (health) are
    rescaled to the new definition's maximumHealth so the condition stays the same, and the army's derived metrics are rebuilt.
 */
-void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,int *modelRuntime)
+void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *modelRuntimeSlot;
@@ -399,7 +401,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
   int variantIndex;
   int childrenRemaining;
 
-  modelRuntimeSlot = (ModelRuntimeSlot *)modelRuntime;
+  modelRuntimeSlot = modelRuntime;
   currentDefinition = modelRuntimeSlot->definitionOrSavedId.runtimeDefinition;
   for (variantIndex = 0; variantIndex < MODEL_TECHNOLOGY_VARIANT_COUNT; variantIndex++) {
     modelDefinitionId = currentDefinition->variantModelDefinitionIds[variantIndex];
@@ -418,7 +420,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
     modelRuntimeSlot->definitionOrSavedId.definition = variantDefinition;
     modelRuntimeSlot->health =
          (int)(((int64_t)(int)modelRuntimeSlot->health *
-               (int64_t)(int)((ModelDefinition *)variantDefinition)->maximumHealth) /
+               (int64_t)(int)ModelView_Cast<ModelDefinition>(variantDefinition)->maximumHealth) /
               (int64_t)(int)previousDefinition->maximumHealth);
     ArmyRuntime_RebuildDerivedSelectionMetrics(modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     break;
@@ -427,7 +429,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
   for (childrenRemaining = modelRuntimeSlot->attachmentCount; childrenRemaining != 0; childrenRemaining--) {
     if (attachment->childModelRuntimeOrSavedOffset != nullptr) {
       ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
-                (factionIndex,(int *)attachment->childModelRuntimeOrSavedOffset);
+                (factionIndex,attachment->childModelRuntimeOrSavedOffset);
     }
     attachment++;
   }

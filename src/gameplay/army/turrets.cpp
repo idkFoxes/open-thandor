@@ -39,19 +39,19 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   uint32_t pitchAimValue;
-  Bool8 waypointArrived;
+  bool waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
   GraphicsFixedVec3 aimPoint;
-  Bool8 aimPointFound;
+  bool aimPointFound;
   GameEntityRuntime *ownerEntity;
   ModelRuntimeNode *partNode;
 
   elapsedTicks = g_InGameSimulationStepTicks;
   /* switched off or destroyed: the turret does nothing this tick */
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
     weaponDefinition = modelRuntime->modelDefinition;
-    ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
+    ownerEntity = ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime);
     recoilCountdown = modelRuntime->attachment0BackwardStepCountdownTicks;
     if (modelRuntime->attachmentReloadCountdownTicks != 0) {
       /* spin the barrel for the reload ticks that elapsed (at most the remaining countdown) */
@@ -65,7 +65,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
       partNode = partNode->childNodes[0];
       rotationAngle = &(partNode->modelPayload).localRotationAngle2;
       *rotationAngle = *rotationAngle + elapsedTicks * weaponDefinition->localRotationAngle2StepPerTick;
-      partNode->runtimeFlags = partNode->runtimeFlags | 1;
+      partNode->runtimeFlags = partNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
       rotationAngle = &(partNode->modelPayload).localRotationAngle2;
       *rotationAngle = *rotationAngle & FIXED_ANGLE16_MASK;
     }
@@ -81,9 +81,9 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
         modelRuntime->attachment0BackwardStepCountdownTicks = 0;
       }
       partNode = partNode->childNodes[0];
-      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,(FixedVectorStateAddress32)partNode);
+      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
       nodeFlags = &partNode->runtimeFlags;
-      *nodeFlags = *nodeFlags | 1;
+      *nodeFlags = *nodeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     }
     partNode = modelRuntime->rootModelNode;
     aimPointFound = ArmyRuntime_ResolveShotAimPoint
@@ -96,7 +96,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
     aimWorldX = aimPoint.x;
     if (!aimPointFound) {
       waypointArrived = ArmyRuntime_UpdateMovementAndWaypoints
-                         (worldRuntime,(ArmyMovementRuntime *)ownerEntity,&waypointWorldXQ12,&waypointWorldYQ12);
+                         (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(ownerEntity),&waypointWorldXQ12,&waypointWorldYQ12);
       if (((!waypointArrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
          (modelRuntime->yawTurnVelocityAngle16 != 0)) {
         partNode = modelRuntime->rootModelNode;
@@ -126,7 +126,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
           /* reloaded and the line of fire is free */
           if ((modelRuntime->attachmentReloadCountdownTicks == 0) &&
               (!ArmyRuntimeCommand_UpdateTargetFollowingState
-                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,(ModelRuntimeSlot *)modelRuntime))) {
+                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime)))) {
             /* fire: reload, recoil the barrel, rock the owner back and launch the projectiles */
             recoilTicks = weaponDefinition->sharedInterShotTicks;
             recoilScale = weaponDefinition->backwardStepScale;
@@ -136,8 +136,8 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
                  modelRuntime->attachment0BackwardStepCountdownTicks + recoilTicks;
             partNode = pitchNode->childNodes[0];
             FixedVector_StepBackwardAlongOwnDirection
-                      (recoilTicks,recoilScale,(FixedVectorStateAddress32)partNode);
-            partNode->runtimeFlags = partNode->runtimeFlags | 1;
+                      (recoilTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
+            partNode->runtimeFlags = partNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
             ArmyRuntime_SetNonzeroActionVector
                       (launchAngles.headingAngle,weaponDefinition->postLaunchVector1Q12,weaponDefinition->postLaunchVector0Q12
                        ,modelRuntime->ownerArmyRuntime);
@@ -158,7 +158,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
     }
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Turret with two alternating barrels (runtimeUpdate slot 8 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
@@ -192,19 +192,19 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   uint32_t pitchAimValue;
-  Bool8 waypointArrived;
+  bool waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
   GraphicsFixedVec3 aimPoint;
-  Bool8 aimPointFound;
+  bool aimPointFound;
   GameEntityRuntime *ownerEntity;
   ModelRuntimeNode *partNode;
 
   elapsedTicks = g_InGameSimulationStepTicks;
   /* switched off or destroyed: the turret does nothing this tick */
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
     weaponDefinition = modelRuntime->modelDefinition;
-    ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
+    ownerEntity = ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime);
     barrel0RecoilCountdown = modelRuntime->attachment0BackwardStepCountdownTicks;
     if (modelRuntime->attachmentReloadCountdownTicks != 0) {
       /* spin the first barrel for the reload ticks that elapsed */
@@ -218,7 +218,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
       partNode = partNode->childNodes[0];
       rotationAngle = &(partNode->modelPayload).localRotationAngle2;
       *rotationAngle = *rotationAngle + elapsedTicks * weaponDefinition->localRotationAngle2StepPerTick;
-      partNode->runtimeFlags = partNode->runtimeFlags | 1;
+      partNode->runtimeFlags = partNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
       rotationAngle = &(partNode->modelPayload).localRotationAngle2;
       *rotationAngle = *rotationAngle & FIXED_ANGLE16_MASK;
     }
@@ -234,9 +234,9 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
         modelRuntime->attachment0BackwardStepCountdownTicks = 0;
       }
       partNode = partNode->childNodes[0];
-      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,(FixedVectorStateAddress32)partNode);
+      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
       nodeFlags = &partNode->runtimeFlags;
-      *nodeFlags = *nodeFlags | 1;
+      *nodeFlags = *nodeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     }
     elapsedTicks = g_InGameSimulationStepTicks;
     if (modelRuntime->attachment1BackwardStepCountdownTicks != 0) {
@@ -250,9 +250,9 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
         modelRuntime->attachment1BackwardStepCountdownTicks = 0;
       }
       partNode = partNode->childNodes[1];
-      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,(FixedVectorStateAddress32)partNode);
+      FixedVector_StepBackwardAlongOwnDirection(-elapsedTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
       nodeFlags = &partNode->runtimeFlags;
-      *nodeFlags = *nodeFlags | 1;
+      *nodeFlags = *nodeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     }
     partNode = modelRuntime->rootModelNode;
     aimPointFound = ArmyRuntime_ResolveShotAimPoint
@@ -265,7 +265,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
     aimWorldX = aimPoint.x;
     if (!aimPointFound) {
       waypointArrived = ArmyRuntime_UpdateMovementAndWaypoints
-                         (worldRuntime,(ArmyMovementRuntime *)ownerEntity,&waypointWorldXQ12,&waypointWorldYQ12);
+                         (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(ownerEntity),&waypointWorldXQ12,&waypointWorldYQ12);
       if (((!waypointArrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
          (modelRuntime->yawTurnVelocityAngle16 != 0)) {
         partNode = modelRuntime->rootModelNode;
@@ -295,7 +295,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
           /* reloaded and the line of fire is free */
           if ((modelRuntime->attachmentReloadCountdownTicks == 0) &&
               (!ArmyRuntimeCommand_UpdateTargetFollowingState
-                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,(ModelRuntimeSlot *)modelRuntime))) {
+                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime)))) {
             /* fire from the next barrel in turn */
             recoilTicks = weaponDefinition->sharedInterShotTicks;
             recoilScale = weaponDefinition->backwardStepScale;
@@ -315,8 +315,8 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
             }
             modelRuntime->alternatingAttachmentSequence++;
             FixedVector_StepBackwardAlongOwnDirection
-                      (recoilTicks,recoilScale,(FixedVectorStateAddress32)partNode);
-            partNode->runtimeFlags = partNode->runtimeFlags | 1;
+                      (recoilTicks,recoilScale,reinterpret_cast<FixedVectorStateAddress32>(partNode));
+            partNode->runtimeFlags = partNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
             ArmyRuntime_SetNonzeroActionVector
                       (launchAngles.headingAngle,weaponDefinition->postLaunchVector1Q12,weaponDefinition->postLaunchVector0Q12
                        ,modelRuntime->ownerArmyRuntime);
@@ -336,7 +336,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
     }
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Moves the local translation of the model node at vectorState along its own direction:
@@ -351,9 +351,10 @@ void FixedVector_StepBackwardAlongOwnDirection
 {
   FixedDirection stepDirection;
   FixedElevationAzimuth vectorAngles;
-  ModelRuntimeNode *node = (ModelRuntimeNode *)vectorState;
+  ModelRuntimeNode *node = reinterpret_cast<ModelRuntimeNode *>(vectorState); /* the node's address as an integer */
 
-  vectorAngles = FixedMath_VectorToAnglesVec3((GraphicsFixedVec3 *)&node->modelPayload.localTranslationXQ12);
+  /* the three consecutive Q12 coordinates localTranslationX/Y/ZQ12 as one vector */
+  vectorAngles = FixedMath_VectorToAnglesVec3(reinterpret_cast<GraphicsFixedVec3 *>(&node->modelPayload.localTranslationXQ12));
   stepDirection = FixedMath_DirectionFromAnglesScaled(vectorAngles.elevationAngle,vectorAngles.azimuthAngle,
                                                           directionScale);
   node->modelPayload.localTranslationXQ12 -= stepDirection.x * stepMultiplier;

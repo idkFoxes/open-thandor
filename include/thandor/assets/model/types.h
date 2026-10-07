@@ -16,12 +16,12 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/ui/ingame/types.h>
 
-typedef struct ModelDefinitionRecordPrefix ModelDefinitionRecordPrefix, *PModelDefinitionRecordPrefix;
-typedef struct ModelDefinition ModelDefinition, *PModelDefinition;
-typedef struct ModelDefinitionResolveView ModelDefinitionResolveView, *PModelDefinitionResolveView;
-typedef struct ModelAssetHeader ModelAssetHeader, *PModelAssetHeader;
-typedef struct EffectDefinition EffectDefinition;
-typedef struct ShotDefinition ShotDefinition;
+struct ModelDefinitionRecordPrefix;
+struct ModelDefinition;
+struct ModelDefinitionResolveView;
+struct ModelAssetHeader;
+struct EffectDefinition;
+struct ShotDefinition;
 
 struct ModelDefinitionRecordPrefix {
     AssetRecordByteCount byteSize;
@@ -56,7 +56,7 @@ struct ModelDefinition {
     int targetClassIndex; /* +0x5C target class: indexes per-class impact effects and AI class tables */
     uint32_t maximumHealth; /* +0x60 maximum health */
     uint32_t rootNodeOffsetOrPointer; /* +0x64 MDL root node: asset-relative offset on disk, MdlSerializedNodeHeader * after registration */
-    uint32_t modelFlags; /* +0x68 flag bits (0x10/0x20/0x40 become model node flags, 0x20 also used by army runtime, 0x80 by the session) */
+    ModelDefinitionFlags modelFlags; /* +0x68 flag bits (0x10/0x20/0x40 become model node flags, 0x20 also used by army runtime, 0x80 by the session) */
     uint8_t field20_0x6c;
     uint8_t field21_0x6d;
     uint8_t field22_0x6e;
@@ -157,7 +157,7 @@ struct ModelDefinitionResolveView {
     uint32_t targetClassIndex; // ModelDefinition.targetClassIndex; also indexes the AI per-class maximum array during scoring.
     uint32_t maximumHealth; /* +0x60 maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field24_0x6c;
     uint8_t field25_0x6d;
     uint8_t field26_0x6e;
@@ -216,5 +216,25 @@ struct ModelAssetHeader {
     struct GeneratedAssetRecordCountHeader recordCountHeader;
     uint8_t reservedB4_1FF[332];
 };
+
+/* One MDL definition record, three views: the registry (g_ModelDefinitionRegistry) keeps the
+   ModelDefinitionRecordPrefix (its first 0xC bytes), registration works on ModelDefinitionResolveView, the
+   runtime reads ModelDefinition. These convert between the views of the same record bytes. */
+static_assert(offsetof(ModelDefinition, byteSize) == offsetof(ModelDefinitionRecordPrefix, byteSize));
+static_assert(offsetof(ModelDefinition, definitionId) == offsetof(ModelDefinitionRecordPrefix, definitionId));
+static_assert(offsetof(ModelDefinitionResolveView, definitionId) == offsetof(ModelDefinition, definitionId));
+static_assert(sizeof(ModelDefinitionResolveView) <= sizeof(ModelDefinition));
+static inline ModelDefinition *ModelDefinition_FromPrefix(ModelDefinitionRecordPrefix *prefix)
+{
+  return reinterpret_cast<ModelDefinition *>(prefix);
+}
+static inline ModelDefinition *ModelDefinition_FromResolveView(ModelDefinitionResolveView *view)
+{
+  return reinterpret_cast<ModelDefinition *>(view);
+}
+static inline ModelDefinitionRecordPrefix *ModelDefinitionResolveView_Prefix(ModelDefinitionResolveView *view)
+{
+  return reinterpret_cast<ModelDefinitionRecordPrefix *>(view);
+}
 
 #endif /* THANDOR_ASSETS_MODEL_TYPES_H */

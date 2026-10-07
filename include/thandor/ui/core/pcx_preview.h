@@ -14,8 +14,8 @@
 
 /* Extension code for WidePath_SetExtensionCode (see WIDE_PATH_EXTENSION_* in core/text/path.h): ".pcx",
    the 64x64 player preview pictures of PcxPreview_Load64x64PaletteAndPixels. */
-#define WIDE_PATH_EXTENSION_PCX 0x786370
+inline constexpr int32_t WIDE_PATH_EXTENSION_PCX = 0x786370;
 
-Bool8 PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
+bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
 
 #endif /* THANDOR_UI_CORE_PCX_PREVIEW_H */

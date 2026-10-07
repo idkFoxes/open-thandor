@@ -37,7 +37,7 @@ SoftwareBuildPixelPackTablesProc *g_SoftwareBuildPixelPackTables = &SoftwarePixe
    g_SoftwarePixelFormatConfig (gone with 16-bit colour). The mode arguments are not used. Returns true on
    success; false with the arena error in *errorCode when the allocation fails.
 */
-Bool8 SoftwarePixelFormat_BaseDisplayModeHook
+bool SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,uint32_t *errorCode)
 
@@ -47,11 +47,13 @@ Bool8 SoftwarePixelFormat_BaseDisplayModeHook
 
   packTables = g_SoftwarePixelPackTables;
   if (g_SoftwarePixelPackTables == nullptr) {
-    tableAllocationError = g_MemoryApi.alloc(sizeof(SoftwarePixelPackTables),(void **)&packTables); /* 3 x 256 dwords */
+    void *tableBlock;
+    tableAllocationError = g_MemoryApi.alloc(sizeof(SoftwarePixelPackTables),&tableBlock); /* 3 x 256 dwords */
     if (tableAllocationError != 0) {
       *errorCode = tableAllocationError;
       return false;
     }
+    packTables = static_cast<SoftwarePixelPackTables *>(tableBlock);
   }
   g_SoftwarePixelPackTables = packTables;
   g_SoftwareBuildPixelPackTables(g_SoftwareColorScaleQ16,g_SoftwareColorBiasQ16);
@@ -70,28 +72,29 @@ SoftwareFramebufferAccess *SoftwareFramebuffer_Create
 
 {
   SoftwareFramebufferAccess *framebuffer;
-  uint32_t *cursor;
+  void *frameBlock;
+  uint8_t *cursor;
   uint32_t pixelBytes;
   uint32_t dwordsLeft;
   uint32_t frameAllocationError;
 
   pixelBytes = width * height * bytesPerPixel;
-  frameAllocationError = g_MemoryApi.alloc(pixelBytes + sizeof(SoftwareFramebufferAccess),
-                                           (void **)&framebuffer);
+  frameAllocationError = g_MemoryApi.alloc(pixelBytes + sizeof(SoftwareFramebufferAccess),&frameBlock);
   if (frameAllocationError != 0) {
     *outError = frameAllocationError;
     return nullptr;
   }
+  framebuffer = static_cast<SoftwareFramebufferAccess *>(frameBlock);
   /* the pixels follow the header */
   framebuffer->bytesPerPixel = bytesPerPixel;
   framebuffer->width = width;
   framebuffer->height = height;
-  framebuffer->pixels = (uint8_t *)(framebuffer + 1);
-  cursor = (uint32_t *)(framebuffer + 1);
+  cursor = static_cast<uint8_t *>(frameBlock) + sizeof(SoftwareFramebufferAccess);
+  framebuffer->pixels = cursor;
   /* whole dwords only; the original also leaves up to 3 trailing bytes as allocated */
   for (dwordsLeft = pixelBytes >> 2; dwordsLeft != 0; dwordsLeft--) {
-    *cursor = 0;
-    cursor++;
+    Thandor_StoreU32(cursor, 0);
+    cursor += 4;
   }
   return framebuffer;
 }
@@ -108,11 +111,10 @@ void SoftwarePixelFormat_BuildChannelPackTables
 {
   uint32_t transformedChannelValueQ16;
   uint32_t channelIndex;
-  SoftwarePixelPackTables *packTableCursor;
+  SoftwarePixelPackTables *packTables;
   
-  channelIndex = 0;
-  packTableCursor = g_SoftwarePixelPackTables;
-  do {
+  packTables = g_SoftwarePixelPackTables;
+  for (channelIndex = 0; channelIndex < 256; channelIndex++) {
     /* 0x400000 = 64.0 in Q16, the pivot of the scale */
     transformedChannelValueQ16 = (channelIndex - 64) * colorScaleQ16 + (64 << 16) + colorBiasQ16;
     if ((int)transformedChannelValueQ16 < 0) {
@@ -123,22 +125,19 @@ void SoftwarePixelFormat_BuildChannelPackTables
       transformedChannelValueQ16 = 255 << 16;
     }
     /* keep the channel's top `bits` bits of the Q16 value (a byte in bits 16..23) and shift them into place */
-    packTableCursor->blue[0] =
+    packTables->blue[channelIndex] =
          (transformedChannelValueQ16 >>
          ((24U - (char)g_SoftwarePixelFormatConfig.blueBitCount) & SHIFT_COUNT_MASK)) <<
          ((uint8_t)g_SoftwarePixelFormatConfig.blueShift & SHIFT_COUNT_MASK);
-    packTableCursor->green[0] =
+    packTables->green[channelIndex] =
          (transformedChannelValueQ16 >>
          ((24U - (char)g_SoftwarePixelFormatConfig.greenBitCount) & SHIFT_COUNT_MASK)) <<
          ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & SHIFT_COUNT_MASK);
-    packTableCursor->red[0] =
+    packTables->red[channelIndex] =
          (transformedChannelValueQ16 >>
          ((24U - (char)g_SoftwarePixelFormatConfig.redBitCount) & SHIFT_COUNT_MASK)) <<
          ((uint8_t)g_SoftwarePixelFormatConfig.redShift & SHIFT_COUNT_MASK);
-    channelIndex++;
-    /* next entry of all three tables */
-    packTableCursor = (SoftwarePixelPackTables *)(packTableCursor->blue + 1);
-  } while (channelIndex < 256);
+  }
   g_SoftwareColorBiasQ16 = colorBiasQ16;
   g_SoftwareColorScaleQ16 = colorScaleQ16;
 }
@@ -148,7 +147,7 @@ void SoftwarePixelFormat_BuildChannelPackTables
    with one of the new size (the original also rebuilt the MMX colour constants of its 16-bit paths). Returns true on
    success; false with the error in *errorCode when the chained hook or the depth-buffer allocation fails.
 */
-Bool8 SoftwareRenderer_SetDisplayMode
+bool SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width,uint32_t *errorCode)
 
@@ -174,7 +173,7 @@ Bool8 SoftwareRenderer_SetDisplayMode
       return false;
     }
     {
-      g_SoftwareDepthBuffer = (int32_t *)depthAllocationPayload;
+      g_SoftwareDepthBuffer = static_cast<int32_t *>(depthAllocationPayload);
       g_MemoryApi.free(previousDepthBuffer);
       g_SoftwareDepthEpoch = 0;
     }
@@ -190,16 +189,16 @@ Bool8 SoftwareRenderer_SetDisplayMode
 uint32_t SoftwareRenderer_InstallDisplayModeHook()
 
 {
-  int32_t *allocatedDepthBuffer;
+  void *allocatedDepthBuffer;
   uint32_t depthAllocationError;
 
   g_SoftwareChainedSetDisplayMode = g_GraphicsSetDisplayMode;
   g_SoftwareDepthRowStrideBytes = g_FramebufferWidth * 4;
   g_GraphicsSetDisplayMode = SoftwareRenderer_SetDisplayMode;
   depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight,
-                                           (void **)&allocatedDepthBuffer);
+                                           &allocatedDepthBuffer);
   if (depthAllocationError == 0) {
-    g_SoftwareDepthBuffer = allocatedDepthBuffer;
+    g_SoftwareDepthBuffer = static_cast<int32_t *>(allocatedDepthBuffer);
     g_SoftwareDepthEpoch = 0;
     return 0;
   }

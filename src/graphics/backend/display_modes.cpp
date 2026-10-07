@@ -30,7 +30,7 @@ uint32_t g_GraphicsAdapterCount = 0;
    when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/dialogs/display_settings.cpp) to offer only
    available modes. The table is assumed non-empty: the first entry is compared before the count is checked.
 */
-Bool8 GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
+bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
 {
@@ -55,7 +55,7 @@ Bool8 GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,
    the mode was enumerated. Used by FrontendDisplaySettingsPage_UpdateModeActionAvailability
    (ui/frontend/display_settings.cpp).
 */
-Bool8 DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
+bool DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex)
 
 {

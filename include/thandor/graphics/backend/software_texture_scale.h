@@ -19,8 +19,8 @@ void SoftwareTexture_BilinearBlendScaleSubresources
           GraphicsScreenCoordinate destinationTop,GraphicsScreenCoordinate destinationLeft,
           uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
           GraphicsSubresourceIndex sourceSubresourceIndexA,
-          GraphicsSubresourceIndex sourceSubresourceIndexB,int *graphicsTextureAsset,
-          int *framebufferAccess);
+          GraphicsSubresourceIndex sourceSubresourceIndexB,const GraphicsTextureSourceAsset *graphicsTextureAsset,
+          const SoftwareFramebufferAccess *framebufferAccess);
 
 /* Step 1 of SoftwareTexture_BilinearBlendScaleSubresources alone (the cross-fade into blendedSourcePixels; the GPU
    draw list scales the result on the GPU). The caller checks the asset and that both entries are paletted. */

@@ -51,7 +51,7 @@ Next:
    and asset files, local crashes, thread races, undefined behaviour ([plan](docs/plans/step11_security_crash.md)).
 5. Step 12 (later): the multiplayer security fixes - data received from peers, lobby and session transfer, the
    UDP backend; tested against the original game ([plan](docs/plans/step12_multiplayer_security.md)).
-6. Step 13 (later): modern C++ - typed UI objects instead of template offsets, named casts, `constexpr` and
+6. Step 13 (done): modern C++ - typed UI objects instead of template offsets, named casts, `constexpr` and
    `enum class`, RAII, `bool`, named key actions and plain loops ([plan](docs/plans/step13_modern_cpp.md)).
 
 ### How correctness is kept

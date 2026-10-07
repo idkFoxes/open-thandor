@@ -16,9 +16,6 @@
 #ifndef UI_NODE_NONE
 #define UI_NODE_NONE UI_TEMPLATE_NO_LINK
 #endif
-/* nodeFlags bit 0 (not in the UiNodeFlags enum): set on every node of the top root of the stack by
-   UiRootStack_Push/Pop/BringToFront through applyFlags; window frames draw their inactive variant without it. */
-#define UI_NODE_IN_FRONT_ROOT 0x01u
 
 void UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack);
 
@@ -34,7 +31,7 @@ void UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPa
 void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control);
 
 void UiLayoutContainerControl_ApplyFlagsRecursive
-          (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiPageStackControl *control);
+          (UiNodeFlags setMask,UiNodeFlags retainMask,UiPageStackControl *control);
 
 UiGridDimensions UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount);
 

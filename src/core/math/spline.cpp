@@ -7,6 +7,7 @@
 
 #include <thandor/core/math/spline.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -83,7 +84,7 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
      times, 10 or more needs more than the 32 rows); clamped here because both write outside the 32x32
      workspace. The only caller (world/camera/motion_spline.cpp) passes 2. */
   if (keyframeCount < 2 || keyframeCount > (CUBIC_SPLINE_MATRIX_ORDER + 4) / 4) {
-    static Bool8 s_KeyframeCountLogged = false;
+    static bool s_KeyframeCountLogged = false;
     if (!s_KeyframeCountLogged) {
       s_KeyframeCountLogged = true;
       Thandor_Log("spline: keyframe count %d out of 2..%d, clamped",(int)keyframeCount,
@@ -93,7 +94,7 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
   }
   /* In the matrix loops floatCursor points at the top-left of segment s's 4x4 diagonal block and steps one
      block (4 rows and 4 columns) per segment; indices below are written as row * order + column. */
-  firstChannelValue = (int *)((uint8_t *)&keyframes->channel0Q12 + channelByteOffset);
+  firstChannelValue = Thandor_At<int>(&keyframes->channel0Q12, channelByteOffset);
   *outEquationCount = keyframeCount * 4 - 4;
   floatCursor = matrix32x32;
   for (remainingCount = CUBIC_SPLINE_MATRIX_ORDER * CUBIC_SPLINE_MATRIX_ORDER; remainingCount != 0;
@@ -105,7 +106,7 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
   remainingCount = keyframeCount - 1;
   keyframeCursor = keyframes;
   floatCursor = matrix32x32;
-  do {
+  for (; remainingCount != 0; remainingCount--) {
     knotTime = (float)keyframeCursor->timeQ12 / g_Q12FloatScale4096;
     *floatCursor = 1.0;
     floatCursor[1] = knotTime;
@@ -113,22 +114,20 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
     floatCursor[3] = knotTime * knotTime * knotTime;
     keyframeCursor = keyframeCursor + 1;
     floatCursor = floatCursor + 4 * CUBIC_SPLINE_MATRIX_ORDER + 4;
-    remainingCount--;
-  } while (remainingCount != 0);
+  }
   /* row 4s+3: the segment's value at its end keyframe */
   remainingCount = keyframeCount - 1;
   floatCursor = matrix32x32;
   keyframeCursor = keyframes;
-  do {
+  for (; remainingCount != 0; remainingCount--) {
     knotTime = (float)keyframeCursor[1].timeQ12 / g_Q12FloatScale4096;
     floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 0] = 1.0;
     floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 1] = knotTime;
     floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 2] = knotTime * knotTime;
     floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 3] = knotTime * knotTime * knotTime;
     floatCursor = floatCursor + 4 * CUBIC_SPLINE_MATRIX_ORDER + 4;
-    remainingCount--;
     keyframeCursor = keyframeCursor + 1;
-  } while (remainingCount != 0);
+  }
   /* row 4s+2 (all but the last segment): slope of segment s minus slope of segment s+1 at their shared knot */
   floatCursor = matrix32x32;
   keyframeCursor = keyframes;
@@ -176,23 +175,21 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
   remainingCount = keyframeCount - 1;
   startValueCursor = firstChannelValue;
   floatCursor = outCoefficients;
-  do {
+  for (; remainingCount != 0; remainingCount--) {
     *floatCursor = (float)*startValueCursor / g_Q12FloatScale4096;
     floatCursor[1] = 0.0;
     floatCursor[2] = 0.0;
     startValueCursor = startValueCursor + sizeof(WorldMotionSplineKeyframe) / sizeof(int);
     floatCursor = floatCursor + 4;
-    remainingCount--;
-  } while (remainingCount != 0);
+  }
   remainingCount = keyframeCount - 1;
   endValueCursor = firstChannelValue;
   floatCursor = outCoefficients;
-  do {
+  for (; remainingCount != 0; remainingCount--) {
     endValueCursor = endValueCursor + sizeof(WorldMotionSplineKeyframe) / sizeof(int);
     floatCursor[3] = (float)*endValueCursor / g_Q12FloatScale4096;
     floatCursor = floatCursor + 4;
-    remainingCount--;
-  } while (remainingCount != 0);
+  }
   outCoefficients[1] = startDerivative;
 }
 

@@ -9,24 +9,30 @@
 #define THANDOR_WORLD_SHOTS_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/assets/rom/types.h>
 #include <thandor/core/types.h>
 #include <thandor/gameplay/army/types.h>
 #include <thandor/ui/ingame/types.h>
 
-typedef struct ShotRuntimeSlot ShotRuntimeSlot, *PShotRuntimeSlot;
-typedef union ShotModelNodeReferenceOrSavedOffset ShotModelNodeReferenceOrSavedOffset, *PShotModelNodeReferenceOrSavedOffset;
-typedef union ShotModelRuntimeStateOrSavedOffset ShotModelRuntimeStateOrSavedOffset, *PShotModelRuntimeStateOrSavedOffset;
-typedef struct ShotRuntimeOwnerAndTrajectoryState ShotRuntimeOwnerAndTrajectoryState, *PShotRuntimeOwnerAndTrajectoryState;
-typedef struct ShotLaunchAngles ShotLaunchAngles, *PShotLaunchAngles;
-typedef struct ShotModelRuntimeNode ShotModelRuntimeNode, *PShotModelRuntimeNode;
-typedef struct GraphicsShadingRuntimeRecord GraphicsShadingRuntimeRecord;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
+struct ShotRuntimeSlot;
+union ShotModelNodeReferenceOrSavedOffset;
+union ShotModelRuntimeStateOrSavedOffset;
+struct ShotRuntimeOwnerAndTrajectoryState;
+struct ShotLaunchAngles;
+struct ShotModelRuntimeNode;
+struct GraphicsShadingRuntimeRecord;
+struct ModelRuntimeNode;
 
 using ShotAnimationFrameAccumulatorQ4 = uint32_t;
 
-using ShotImpactEffectEmissionFlags = uint32_t;
+/* ShotRuntimeSlot.impactEffectEmissionFlags (saved with the slot). */
+enum class ShotImpactEffectEmissionFlags : uint32_t {
+    SHOT_IMPACT_EFFECT_EMITTED = 0x1 /* a beam (direct-line shot) has emitted its impact effect */
+};
+THANDOR_FLAG_ENUM(ShotImpactEffectEmissionFlags);
+using enum ShotImpactEffectEmissionFlags;
 
 using ShotProjectileAgeTicks = uint32_t;
 
@@ -56,6 +62,7 @@ union ShotModelRuntimeStateOrSavedOffset {
     uint32_t savedIdOrOffset; 
     uint32_t raw; 
     Ptr32<void> runtimeStatePointer; 
+    Ptr32<struct ModelRuntimeSlot> targetModelRuntime; /* the same pointer as the guided shot's target model (step 13 X7b, was a C-style cast of runtimeStatePointer to ModelRuntimeSlot *) */
 };
 
 struct ShotRuntimeSlot {

@@ -13,31 +13,28 @@
 #include <thandor/core/contracts.h>
 
 /* Action id of resultsSecondaryExitButton (suppressed in local games) */
-#define INGAME_ACTION_RESULTS_SECONDARY_EXIT 0x1025
-#define UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED 0x80 /* a command-mode click captured the pointer
-                                                                 (InGameWorldInput_BeginPointerCapture); the
-                                                                 release then issues the mode command */
+inline constexpr int32_t INGAME_ACTION_RESULTS_SECONDARY_EXIT = 0x1025;
 /* g_UiCommandModeG: active tab of the map editor (InGameCommandModeG_Select0..5, InGameUiImage.editorModeTab*);
    the tools of each tab are g_UiCommandModeC (height), D (material), E (smoothing), A (unit placement) and
    B (object placement). */
-#define EDITOR_MODE_TERRAIN_HEIGHT 0
-#define EDITOR_MODE_TERRAIN_MATERIAL 1
-#define EDITOR_MODE_TERRAIN_SMOOTHING 2
-#define EDITOR_MODE_UNIT_PLACEMENT 3
-#define EDITOR_MODE_OBJECT_PLACEMENT 4
-#define EDITOR_MODE_REGION 5
+inline constexpr int32_t EDITOR_MODE_TERRAIN_HEIGHT = 0;
+inline constexpr int32_t EDITOR_MODE_TERRAIN_MATERIAL = 1;
+inline constexpr int32_t EDITOR_MODE_TERRAIN_SMOOTHING = 2;
+inline constexpr int32_t EDITOR_MODE_UNIT_PLACEMENT = 3;
+inline constexpr int32_t EDITOR_MODE_OBJECT_PLACEMENT = 4;
+inline constexpr int32_t EDITOR_MODE_REGION = 5;
 
 /* Terrain material swatches of the material tool (UiCommandMatrix_SelectIndex): twelve per page, the page
    scrolls in rows of three */
-#define MATERIAL_SWATCH_COUNT 12
-#define MATERIAL_SWATCH_ROW_LENGTH 3
+inline constexpr int32_t MATERIAL_SWATCH_COUNT = 12;
+inline constexpr int32_t MATERIAL_SWATCH_ROW_LENGTH = 3;
 /* Relaxation passes of the smoothing page buttons (InGameCommandRange_DispatchState0/1) */
-#define TERRAIN_RELAXATION_BUTTON_PASSES 128
+inline constexpr int32_t TERRAIN_RELAXATION_BUTTON_PASSES = 128;
 /* g_UiCommandModeGColorVariantFlags bit and g_UiCommandModeGColorVariantLimit values of the two terrain colour
    variants (UiCommandModeG_ApplyMaskedColorVariant / _ApplyRawColorVariant) */
-#define UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED 0x1000
-#define UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED 0x7FFFFFFF
-#define UI_COMMAND_MODE_G_COLOR_LIMIT_RAW 0x00FFFFFF
+inline constexpr int32_t UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED = 0x1000;
+inline constexpr int32_t UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED = 0x7FFFFFFF;
+inline constexpr int32_t UI_COMMAND_MODE_G_COLOR_LIMIT_RAW = 0x00FFFFFF;
 
 void InGameCommandModeG_Select0(UiSelectableControl *source);
 
@@ -97,7 +94,7 @@ void InGameCommandModeF_Select0(UiSpriteButtonControl *source);
 
 void InGameCommandModeF_Select1(UiSpriteButtonControl *source);
 
-void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime);
+void UiCommandModeG_ApplyMaskedColorVariant(WorldRuntimeContext *worldRuntime);
 
 void UiCommandModeG_ShowRegionMarkers(WorldRuntimeContext *context);
 
@@ -119,7 +116,7 @@ void UiCommandModeG_HideTerrainPointMarkers(WorldRuntimeContext *context);
 
 void UiCommandModeG_ClearSecondarySurfaceOnly(WorldRuntimeContext *context);
 
-void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime);
+void UiCommandModeG_ApplyRawColorVariant(WorldRuntimeContext *worldRuntime);
 
 void UiCommandModeG_HideRegionMarkers(WorldRuntimeContext *context);
 
@@ -136,5 +133,33 @@ extern uint32_t g_UiCommandModeF;
 extern void (*g_UiCommandModeGHandlers[6])(UiSelectableControl *);
 
 extern uint32_t g_UiCommandModeGColorVariantLimit; /* uint32_t ARGB mask applied to terrain vertex diffuse colours (0x00FFFFFF raw, other value in masked command mode); its alpha byte also switches overlay/projection paths */
+
+/* The editor mode tab G4 (object placement) as the selectable control InGameCommandModeG_Select4 takes. The image
+   keeps the node as UiNodeBase + fields because it is one dword short of a UiSpriteButtonControl (minimapView
+   follows at +0x74); its selectable part lies inside. */
+inline UiSelectableControl *InGameUi_ObjectPlacementTab(InGameUiImage *image)
+{
+  return reinterpret_cast<UiSelectableControl *>(&image->editorModeTabObjectPlacement);
+}
+
+/* The tab control of an editor mode (EDITOR_MODE_*, 0..5), the control g_UiCommandModeGHandlers[editorMode] takes;
+   the original looked its image offset up in a six-entry table (g_UiCommandModeGControlOffsets). */
+inline UiSelectableControl *InGameUi_EditorModeTab(InGameUiImage *image,uint32_t editorMode)
+{
+  switch (editorMode) {
+  case EDITOR_MODE_TERRAIN_HEIGHT:
+    return &image->editorModeTabTerrainHeight.selectable;
+  case EDITOR_MODE_TERRAIN_MATERIAL:
+    return &image->editorModeTabTerrainMaterial.selectable;
+  case EDITOR_MODE_TERRAIN_SMOOTHING:
+    return &image->editorModeTabTerrainSmoothing.selectable;
+  case EDITOR_MODE_UNIT_PLACEMENT:
+    return &image->editorModeTabUnitPlacement.selectable;
+  case EDITOR_MODE_OBJECT_PLACEMENT:
+    return InGameUi_ObjectPlacementTab(image);
+  default: /* EDITOR_MODE_REGION */
+    return &image->editorModeTabRegion.selectable;
+  }
+}
 
 #endif /* THANDOR_UI_INGAME_EDITOR_TOOL_SELECTION_H */

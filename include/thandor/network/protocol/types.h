@@ -9,46 +9,50 @@
 #define THANDOR_NETWORK_PROTOCOL_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/network/backend/types.h>
 
-typedef struct FrontendPacket50001SessionAdvertisement FrontendPacket50001SessionAdvertisement, *PFrontendPacket50001SessionAdvertisement;
-typedef struct UiTransferEndpointDescriptor UiTransferEndpointDescriptor, *PUiTransferEndpointDescriptor;
-typedef struct UiTransferPacketHeader UiTransferPacketHeader, *PUiTransferPacketHeader;
-typedef struct UiCommandQueueRecord UiCommandQueueRecord, *PUiCommandQueueRecord;
-typedef struct UiTransferSenderEndpointSlot UiTransferSenderEndpointSlot, *PUiTransferSenderEndpointSlot;
-typedef struct UiTransferPacket UiTransferPacket, *PUiTransferPacket;
-typedef struct UiTransferMailboxState UiTransferMailboxState, *PUiTransferMailboxState;
-typedef struct FrontendCommandPacketRecord FrontendCommandPacketRecord, *PFrontendCommandPacketRecord;
-typedef struct FrontendPlayerRemovalPacket10007 FrontendPlayerRemovalPacket10007, *PFrontendPlayerRemovalPacket10007;
-typedef union FrontendTransferPacketUnion FrontendTransferPacketUnion, *PFrontendTransferPacketUnion;
-typedef struct FrontendPacket10000Handshake FrontendPacket10000Handshake, *PFrontendPacket10000Handshake;
-typedef struct FrontendPacket20002PlayerDescriptor FrontendPacket20002PlayerDescriptor, *PFrontendPacket20002PlayerDescriptor;
-typedef struct FrontendPacket10003JoinAck FrontendPacket10003JoinAck, *PFrontendPacket10003JoinAck;
-typedef struct FrontendPacket10004PlayerSnapshotRequest FrontendPacket10004PlayerSnapshotRequest, *PFrontendPacket10004PlayerSnapshotRequest;
-typedef struct FrontendPacket30005PlayerSnapshot FrontendPacket30005PlayerSnapshot, *PFrontendPacket30005PlayerSnapshot;
-typedef struct FrontendPacket10006CapabilityHeartbeat FrontendPacket10006CapabilityHeartbeat, *PFrontendPacket10006CapabilityHeartbeat;
-typedef struct FrontendPacket40008LobbyRosterSnapshot FrontendPacket40008LobbyRosterSnapshot, *PFrontendPacket40008LobbyRosterSnapshot;
-typedef struct FrontendPacket10009SnapshotChunkRequest FrontendPacket10009SnapshotChunkRequest, *PFrontendPacket10009SnapshotChunkRequest;
-typedef struct FrontendPacket8000ASnapshotChunk FrontendPacket8000ASnapshotChunk, *PFrontendPacket8000ASnapshotChunk;
-typedef struct FrontendPacket10012SyncPending FrontendPacket10012SyncPending, *PFrontendPacket10012SyncPending;
-typedef struct FrontendPacket10013HeartbeatAck FrontendPacket10013HeartbeatAck, *PFrontendPacket10013HeartbeatAck;
-typedef struct FrontendPacket10032HostValue FrontendPacket10032HostValue, *PFrontendPacket10032HostValue;
-typedef struct FrontendPacket10022StatePending FrontendPacket10022StatePending, *PFrontendPacket10022StatePending;
-typedef struct FrontendPacket10023StateAck FrontendPacket10023StateAck, *PFrontendPacket10023StateAck;
+struct FrontendPacket50001SessionAdvertisement;
+struct UiTransferEndpointDescriptor;
+struct UiTransferPacketHeader;
+struct UiCommandQueueRecord;
+struct UiTransferSenderEndpointSlot;
+struct UiTransferPacket;
+struct UiTransferMailboxState;
+struct FrontendCommandPacketRecord;
+struct FrontendPlayerRemovalPacket10007;
+union FrontendTransferPacketUnion;
+struct FrontendPacket10000Handshake;
+struct FrontendPacket20002PlayerDescriptor;
+struct FrontendPacket10003JoinAck;
+struct FrontendPacket10004PlayerSnapshotRequest;
+struct FrontendPacket30005PlayerSnapshot;
+struct FrontendPacket10006CapabilityHeartbeat;
+struct FrontendPacket40008LobbyRosterSnapshot;
+struct FrontendPacket10009SnapshotChunkRequest;
+struct FrontendPacket8000ASnapshotChunk;
+struct FrontendPacket10012SyncPending;
+struct FrontendPacket10013HeartbeatAck;
+struct FrontendPacket10032HostValue;
+struct FrontendPacket10022StatePending;
+struct FrontendPacket10023StateAck;
 
-enum {
+/* A player's snapshot transfer state (FrontendPlayerRuntimeRecord.snapshotTransferFlags and the flags dword in
+   front of each player's payload in the host's snapshot table); a dword in the record and on the wire. */
+enum class FrontendSnapshotTransferFlags : uint32_t {
+    FRONTEND_SNAPSHOT_NONE=0,
     FRONTEND_SNAPSHOT_SOURCE_AVAILABLE=1,
     FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE=2,
     FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY=4
 };
-using FrontendSnapshotTransferFlags = int;
+THANDOR_FLAG_ENUM(FrontendSnapshotTransferFlags);
 
-enum {
+/* joinAvailableFlag of the 0x50001 session advertisement: 0 or all bits set. */
+enum class UiTransferJoinAvailability : int {
     UI_TRANSFER_JOIN_UNAVAILABLE=0,
-    UI_TRANSFER_JOIN_AVAILABLE=0xFFFFFFFFu /* stored as -1 in the int joinAvailableFlag */
+    UI_TRANSFER_JOIN_AVAILABLE=-1 /* 0xFFFFFFFF on the wire */
 };
-using UiTransferJoinAvailability = int;
 
 enum {
     FRONTEND_PACKET_10000_HANDSHAKE=65536,
@@ -132,11 +136,15 @@ using FrontendPlayerCount = uint32_t;
 
 using FrontendStatusCode = uint32_t;
 
-using FrontendCapabilityFlags = uint32_t;
+/* A player's capability bits (player record, packet 0x10006 and the 0x20002 descriptor's status word). */
+enum class FrontendCapabilityFlags : uint32_t {
+    FRONTEND_CAPABILITY_NONE=0,
+    FRONTEND_CAPABILITY_CD=0x100 /* runs the game from the CD */
+};
+THANDOR_FLAG_ENUM(FrontendCapabilityFlags);
 
 using FrontendProtocolMagic = uint32_t;
 
-using FrontendRootRuntimeAddress32 = int;
 
 using UiTransferRetryTickCount = uint32_t;
 

@@ -14,9 +14,9 @@
 #include <thandor/core/contracts.h>
 
 /* Channels of a world-motion keyframe (position/origin x, y, z, magnitude/distance, yaw, pitch) */
-#define WORLD_MOTION_SPLINE_CHANNEL_COUNT 6
+inline constexpr int WORLD_MOTION_SPLINE_CHANNEL_COUNT = 6;
 
-Bool8 WorldMotionSpline_EvaluateAndApplyAtTime
+bool WorldMotionSpline_EvaluateAndApplyAtTime
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime);
 

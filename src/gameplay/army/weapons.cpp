@@ -31,13 +31,13 @@ void ArmyRuntime_SetNonzeroActionVector
    the command. Returns true with the point in *outAimPoint, or false (and *outAimPoint zeroed) when there is
    nothing to aim at.
 */
-Bool8
+bool
 ArmyRuntime_ResolveShotAimPoint
           (Q12 sourceWorldZQ12,Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,
           ShotDefinition *shotDefinition,GameEntityRuntime *targetState,GraphicsFixedVec3 *outAimPoint)
 
 {
-  int *targetDefinitionRecord;
+  ModelRuntimeSlot *targetModelRuntime;
   ModelDefinition *targetDefinition;
   ArmyRuntimeSlot *targetArmy;
   int64_t deltaYSquared;
@@ -79,17 +79,17 @@ ArmyRuntime_ResolveShotAimPoint
       visibilityMask = 2u << ((uint8_t)((targetState->common).ownership.ownerIndex * 2) & 31);
       targetNode = (targetEntity->common).ownership.modelNode;
       if (((targetEntity->common).damageState.factionVisibilityBits1C & visibilityMask) != 0) {
-        if (((ModelRuntimeSlot *)(targetEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+        if ((targetEntity->common).ownership.modelRuntime()->definitionOrSavedId.
             runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
           targetNode = targetNode->childNodes[0];
         }
         aimWorldX = (targetNode->worldTransform).translation.x;
-        targetDefinitionRecord = (int *)(targetEntity->common).ownership.definitionOrClassRecord;
-        targetDefinition = ((ModelRuntimeSlot *)targetDefinitionRecord)->definitionOrSavedId.runtimeDefinition;
+        targetModelRuntime = (targetEntity->common).ownership.modelRuntime();
+        targetDefinition = targetModelRuntime->definitionOrSavedId.runtimeDefinition;
         aimWorldY = (targetNode->worldTransform).translation.y;
         aimWorldZ = (targetNode->worldTransform).translation.z + targetDefinition->aimHeightOffsetQ12;
-        targetArmy = ((ModelRuntimeSlot *)targetDefinitionRecord)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-        if ((targetDefinition->accelerationPerTick != 0) && ((targetArmy->movementStateFlags & 4) == 0)) {
+        targetArmy = targetModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+        if ((targetDefinition->accelerationPerTick != 0) && !Any(targetArmy->movementStateFlags & ARMY_MOVEMENT_STATIONARY)) {
           targetDistance = FixedMath_Length3(aimWorldZ - sourceWorldZQ12,aimWorldY - sourceWorldYQ12,
                                              aimWorldX - sourceWorldXQ12);
           shotLeadSpeedQ12 = ShotDefinition_GetLeadSpeed(shotDefinition);
@@ -121,7 +121,7 @@ ArmyRuntime_ResolveShotAimPoint
                   outAimPoint->y = (targetEntity->common).pathCoordinate1Q12;
                   outAimPoint->z =
                        (((targetEntity->common).ownership.modelNode)->worldTransform).translation.z +
-                       ((ModelRuntimeSlot *)(targetEntity->common).ownership.definitionOrClassRecord)->
+                       (targetEntity->common).ownership.modelRuntime()->
                        definitionOrSavedId.runtimeDefinition->aimHeightOffsetQ12;
                   return true;
                 }
@@ -148,7 +148,7 @@ ArmyRuntime_ResolveShotAimPoint
    for zero, i.e. an unarmed army (returns true when it is zero); used by
    ArmyRuntime_ResetMovementStateFromModel to decide whether a targeted command is dropped.
 */
-Bool8 ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
+bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
 
 {
   return armyRuntime->stateOrTechnologyId == 0;
@@ -157,7 +157,7 @@ Bool8 ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
 /* Tests the army's summed weapon damage against target class 0 (targetClassShotDamage[0], stateOrTechnologyId)
    for being non-negative (returns true when it is >= 0). Used by the selection queries (selection/queries.cpp).
 */
-Bool8 ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
+bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
 
 {
   return -1 < armyRuntime->stateOrTechnologyId;
@@ -166,18 +166,18 @@ Bool8 ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
 /* Depth-first over a model runtime tree (the attached child model runtimes, null slots skipped):
    the last node whose definition has class MODEL_RUNTIME_CLASS_10_CONTINUOUS_RADAR, or null.
    Part of ArmyRuntimeClass_SelectProjectileTargetNode (the original walks the tree inline). */
-static uint8_t *ArmyRuntimeClass_FindLastClass10Node(uint8_t *node)
+static ModelRuntimeSlot *ArmyRuntimeClass_FindLastClass10Node(ModelRuntimeSlot *node)
 {
-  uint8_t *found = nullptr;
+  ModelRuntimeSlot *found = nullptr;
   int i;
-  if (((ModelRuntimeSlot *)node)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
+  if (node->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
       MODEL_RUNTIME_CLASS_10_CONTINUOUS_RADAR) {
     found = node;
   }
-  for (i = 0; i < (int)((ModelRuntimeSlot *)node)->attachmentCount; i++) {
-    uint8_t *child = (uint8_t *)((ModelRuntimeSlot *)node)->attachments[i].childModelRuntimeOrSavedOffset;
+  for (i = 0; i < (int)node->attachmentCount; i++) {
+    ModelRuntimeSlot *child = node->attachments[i].childModelRuntimeOrSavedOffset;
     if (child != nullptr) {
-      uint8_t *match = ArmyRuntimeClass_FindLastClass10Node(child);
+      ModelRuntimeSlot *match = ArmyRuntimeClass_FindLastClass10Node(child);
       if (match != nullptr) {
         found = match;
       }
@@ -221,20 +221,20 @@ void ArmyRuntimeClass_SelectProjectileTargetNode(ModelRuntimeTimedTargetProjecti
       return;
     }
     candidateFactionIndex =
-         ((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex;
+         WorldOwnerNode_ModelRuntime(candidateNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex;
     if ((candidateFactionIndex == modelRuntime->ownerArmyRuntime->factionIndex) || (candidateFactionIndex == 0)) {
       return;
     }
     /* pick the last node, depth-first, whose definition has class 10 (runtimeClassId) */
-    targetModelRuntime = (ModelRuntimeSlot *)ArmyRuntimeClass_FindLastClass10Node((uint8_t *)candidateNode->runtimePayload);
-    if ((targetModelRuntime != nullptr) && (((targetModelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0)) {
+    targetModelRuntime = ArmyRuntimeClass_FindLastClass10Node(WorldOwnerNode_ModelRuntime(candidateNode));
+    if ((targetModelRuntime != nullptr) && !Any((targetModelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED)) {
       (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = targetModelRuntime;
     }
   }
   else if ((candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&
           ((modelRuntime->modelDefinition->shotDefinitionReference).definition ==
-           (ShotDefinition *)(((ModelRuntimeSlot *)candidateNode->runtimePayload)->definitionOrSavedId).definition)) {
-    (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = (ShotRuntimeSlot *)candidateNode->runtimePayload;
+           (WorldOwnerNode_ShotRuntime(candidateNode)->definitionOrSavedId).definition.get())) {
+    (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = WorldOwnerNode_ShotRuntime(candidateNode);
   }
 }
 
@@ -258,7 +258,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
   Q12 targetWorldZQ12;
   int reloadCountdownTicks;
 
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
     timedTargetDefinition = modelRuntime->modelDefinition;
     reloadCountdownTicks = (modelRuntime->timedTargetState).targetProjectileReloadCountdownTicks -
             g_InGameSimulationStepTicks;
@@ -284,7 +284,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
         (modelRuntime->timedTargetState).targetProjectileReloadCountdownTicks +=
              (timedTargetDefinition->timedTargetParameters).reloadTicks;
         /* hide the missile and fire */
-        rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+        rootNode->runtimeFlags = rootNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
         (rootNode->modelPayload).meshGroupMask &= ~1u;
         ModelRuntime_EmitProjectilesFromAttachmentPoints
                   ((ShotTargetModelReference) /* 32-bit format field: ShotTargetModelReference (ShotRuntimeSlot +0x14) */
@@ -298,7 +298,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
   (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = nullptr;
   (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = nullptr;
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Fires a shot of the weapon code (called directly by gameplay/army/combat): looks up the launch point
@@ -306,7 +306,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
    freshly rebuilt modelNode and creates the projectile from there towards the target point. Returns true
    when the model has no such launch point.
 */
-Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
+bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
           (ShotTargetModelReference targetModelReference,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
           Q12 targetWorldZQ12,SprAttachmentSelectorOrdinal attachmentSelectorOrdinal,
           ShotDefinition *shotDefinition,ModelRuntimeNode *modelNode,
@@ -323,8 +323,7 @@ Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
   spriteModelResource = (definitionNode->spriteAssetReference).modelResource;
   remainingEntries = spriteModelResource->packedLookupTableEntryCount;
-  localPointRecord =
-       (ModelPackedPointRecord *)((uint8_t *)spriteModelResource + spriteModelResource->packedLookupTableRelativeOffset);
+  localPointRecord = spriteModelResource->packedPointRecords();
   /* find the attachment point record (key = selector << 4 | 2); none -> fail */
   while (remainingEntries != 0 && localPointRecord->packedLookupKey != (attachmentSelectorOrdinal << 4 | 2)) {
     localPointRecord = localPointRecord + 1;
@@ -338,7 +337,7 @@ Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
   launchWorldYQ12 = launchPoint.yQ12;
   ShotRuntimePool_CreateProjectileFromDefinition
             (targetModelReference,
-             (ArmyRuntimeSlot *)((modelNode->runtimePayload).armyRuntime)->linkedEntityRuntime,
+             (modelNode->runtimePayload).modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime,
              targetWorldXQ12,targetWorldYQ12,targetWorldZQ12,launchWorldZQ12,launchWorldYQ12,
              launchPoint.xQ12,shotDefinition,worldRuntime);
   return false;
@@ -352,7 +351,7 @@ Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
    modelPointOrdinal << 4 | 2.
 */
 void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-          (EffectCreationFlagBits effectFlags,Q12 worldZQ12,Q12 worldYQ12,Q12 worldXQ12,
+          (ShotTargetModelReference targetModelReference,Q12 worldZQ12,Q12 worldYQ12,Q12 worldXQ12,
           ModelAttachmentOrdinal modelPointOrdinal,PckEffectDefinitionIdCatalog effectDefinitionId,
           void *sourceRuntime,void *modelPointTable,WorldRuntimeContext *worldContext)
 
@@ -374,18 +373,19 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
   ModelWorldPoint localPoint;
   WorldOwnerListNode *bestCandidateNode;
   uint32_t pointOffsetMask;
+  ModelRuntimeNode *sourceNode = static_cast<ModelRuntimeNode *>(sourceRuntime); /* the aircraft's root node */
 
   bestCandidateNode = nullptr;
   nodeCursor = worldContext->ownerListHead;
   pointOffsetMask = UINT32_MAX;
   currentBestScore = 0;
   sourceArmyRuntime =
-       ((ModelRuntimeNode *)sourceRuntime)->runtimePayload.modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+       sourceNode->runtimePayload.modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   do {
     if ((nodeCursor->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (nodeCursor != sourceRuntime)) {
-      candidateModelRuntime = (ModelRuntimeSlot *)nodeCursor->runtimePayload;
+      candidateModelRuntime = WorldOwnerNode_ModelRuntime(nodeCursor);
       candidateArmyRuntime = candidateModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-      if (((candidateModelRuntime->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
+      if (!Any(candidateModelRuntime->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) &&
           (candidateArmyRuntime->factionIndex != 0) &&
           (candidateArmyRuntime->factionIndex != sourceArmyRuntime->factionIndex)) {
         /* Original quirk: the shooter's weaponRangeQ12 is overwritten with each candidate's footprint radius
@@ -409,7 +409,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
     deltaX = bestCandidateNode->worldXQ12 - worldXQ12;
     deltaY = bestCandidateNode->worldYQ12 - worldYQ12;
     candidateRadius =
-         ((ModelRuntimeSlot *)bestCandidateNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->
+         WorldOwnerNode_ModelRuntime(bestCandidateNode)->definitionOrSavedId.runtimeDefinition->
          footprintRadius;
     candidateDistance = FixedMath_Length2(deltaY,deltaX);
     if ((int)(candidateDistance - candidateRadius) < Q12_ONE + 1) {
@@ -419,22 +419,20 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
       worldZQ12 = candidateWorldZ;
     }
   }
-  ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)sourceRuntime);
-  spriteModelResource = ((MdlSerializedNodeHeader *)modelPointTable)->spriteAssetReference.modelResource;
-  localPointRecord =
-       (ModelPackedPointRecord *)
-       ((uint8_t *)spriteModelResource + spriteModelResource->packedLookupTableRelativeOffset);
+  ModelNodeRuntime_RebuildTransformsFromRoot(sourceNode);
+  spriteModelResource = static_cast<MdlSerializedNodeHeader *>(modelPointTable)->spriteAssetReference.modelResource;
+  localPointRecord = spriteModelResource->packedPointRecords();
   for (remainingEntries = spriteModelResource->packedLookupTableEntryCount;
       remainingEntries != 0; remainingEntries = remainingEntries - 1) {
     if (localPointRecord->packedLookupKey == (modelPointOrdinal << 4 | 2)) {
-      localPoint = ModelNodeRuntime_TransformLocalPoint(localPointRecord,(ModelRuntimeNode *)sourceRuntime);
+      localPoint = ModelNodeRuntime_TransformLocalPoint(localPointRecord,sourceNode);
       ShotRuntimePool_CreateProjectileFromDefinition
-                (effectFlags,
-                 ((ModelRuntimeNode *)sourceRuntime)->runtimePayload.modelRuntime->ownerArmyRuntimeOrSavedOffset.
+                (targetModelReference,
+                 sourceNode->runtimePayload.modelRuntime->ownerArmyRuntimeOrSavedOffset.
                  armyRuntime,worldZQ12,
-                 (localPoint.yQ12 - ((ModelRuntimeNode *)sourceRuntime)->worldTransform.translation.y &
+                 (localPoint.yQ12 - sourceNode->worldTransform.translation.y &
                  pointOffsetMask) + worldYQ12,
-                 (localPoint.xQ12 - ((ModelRuntimeNode *)sourceRuntime)->worldTransform.translation.x &
+                 (localPoint.xQ12 - sourceNode->worldTransform.translation.x &
                  pointOffsetMask) + worldXQ12,
                  localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,Thandor_U32ToPointer<ShotDefinition>(effectDefinitionId),worldContext); /* 32-bit format field: ModelDefinition.modelPointEffectId (relocated shot reference) */
     }
@@ -467,7 +465,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
 
   /* root model: the effects use the root node's orientation */
   rootModelResource =
-       (ModelResource *)Thandor_U32ToPointer<MdlSerializedNodeHeader>(
+       Thandor_U32ToPointer<MdlSerializedNodeHeader>(
                          (modelRuntime->definitionOrSavedId).runtimeDefinition->rootNodeOffsetOrPointer)-> /* 32-bit format field: ModelDefinition.rootNodeOffsetOrPointer */
        spriteAssetReference.modelResource;
   modelRuntime->health = 0;
@@ -475,9 +473,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
     if (modelRuntime->destructionEffectTimers[channelIndex] != 0) {
       continue;
     }
-    pointRecord =
-         (ModelPackedPointRecord *)
-         ((uint8_t *)rootModelResource + rootModelResource->packedLookupTableRelativeOffset);
+    pointRecord = rootModelResource->packedPointRecords();
     for (remainingRecords = rootModelResource->packedLookupTableEntryCount; remainingRecords != 0;
         remainingRecords = remainingRecords - 1) {
       if (channelIndex * 16 + 3 == pointRecord->packedLookupKey) {
@@ -503,15 +499,13 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
        Thandor_U32ToPointer<MdlSerializedNodeHeader>((modelRuntime->definitionOrSavedId).runtimeDefinition->rootNodeOffsetOrPointer); /* 32-bit format field: ModelDefinition.rootNodeOffsetOrPointer */
   if (rootNodeHeader->childCount != 0) {
     childNodeHeader = Thandor_U32ToPointer<MdlSerializedNodeHeader>(rootNodeHeader->childSerializedOffsets[0]); /* 32-bit format field: MdlSerializedNodeHeader.childSerializedOffsets */
-    childModelResource = (ModelResource *)childNodeHeader->spriteAssetReference.modelResource;
+    childModelResource = childNodeHeader->spriteAssetReference.modelResource;
     if ((childNodeHeader->nodeFlags & 0xf) == 0) {
       for (channelIndex = 0; channelIndex < 8; channelIndex = channelIndex + 1) {
         if (modelRuntime->destructionEffectTimers[channelIndex] != 0) {
           continue;
         }
-        pointRecord =
-             (ModelPackedPointRecord *)
-             ((uint8_t *)childModelResource + childModelResource->packedLookupTableRelativeOffset);
+        pointRecord = childModelResource->packedPointRecords();
         for (remainingRecords = childModelResource->packedLookupTableEntryCount; remainingRecords != 0;
             remainingRecords = remainingRecords - 1) {
           if ((channelIndex * 16 + 3 == pointRecord->packedLookupKey) &&
@@ -540,7 +534,9 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
       childModelRuntime->health = 0;
       (childModelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime = nullptr;
     }
-    modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
+    /* the slot pointer moves by one descriptor's bytes (so attachments[0] is the next descriptor) */
+    modelRuntime = reinterpret_cast<ModelRuntimeSlot *>(reinterpret_cast<uint8_t *>(modelRuntime) +
+                                                        sizeof(ModelRuntimeAttachmentDescriptor));
   }
 }
 
@@ -548,7 +544,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
    with packed keys n << 4 | 6; one of them is chosen in turn (definition modelFlags bit 0) or at random and
    transformed to world space. Returns false when the model has no such point (the caller then uses the root
    position). */
-static Bool8 ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,ModelDefinition *emitterDefinition,
+static bool ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,ModelDefinition *emitterDefinition,
           ModelWorldPoint *outWorldPoint)
 {
   MdlSerializedNodeHeader *serializedNode;
@@ -564,13 +560,14 @@ static Bool8 ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,Mo
   if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
     serializedNode = Thandor_U32ToPointer<MdlSerializedNodeHeader>(serializedNode->childSerializedOffsets[0]); /* 32-bit format field: MdlSerializedNodeHeader.childSerializedOffsets */
   }
-  modelResource = (ModelResource *)serializedNode->spriteAssetReference.modelResource;
+  modelResource = serializedNode->spriteAssetReference.modelResource;
   remainingRecords = modelResource->packedLookupTableEntryCount;
   if (remainingRecords == 0) {
     return false;
   }
   pointCount = 0;
-  pointRecordCursor = (uint32_t *)((uint8_t *)modelResource + modelResource->packedLookupTableRelativeOffset);
+  /* the records read as dwords (4 per record, the packed key first) */
+  pointRecordCursor = reinterpret_cast<uint32_t *>(modelResource->packedPointRecords());
   /* count the effect points: highest n + 1 of the packed keys n << 4 | 6 */
   for (; remainingRecords != 0; remainingRecords = remainingRecords - 1, pointRecordCursor = pointRecordCursor + 4) {
     if (((*pointRecordCursor & 0xf) == 6) && (pointCount <= *pointRecordCursor >> 4)) {
@@ -581,7 +578,7 @@ static Bool8 ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,Mo
     return false;
   }
   pointSelector = (modelRuntime->classState).effectEmitterPointIndex;
-  if ((emitterDefinition->modelFlags & 1) == 0) {
+  if (!Any(emitterDefinition->modelFlags & MODEL_DEFINITION_FLAG_EMITTER_POINTS_IN_TURN)) {
     pointSelector = g_RandomGeneratorState.next();
   }
   if (!ModelLookupTable_FindPackedPoint
@@ -636,7 +633,8 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
        (modelRuntime->classState).shotEmitterTimerTicks - g_InGameSimulationStepTicks;
   /* the shot timer has reached 0 or below (signed compare of the old value with the step) */
   if (previousTimerTicks <= (int)g_InGameSimulationStepTicks &&
-     ((emitterDefinition->emitterShotDefinitionReference).definition != (ShotDefinition *)(intptr_t)-1)) {
+     ((emitterDefinition->emitterShotDefinitionReference).definition !=
+      reinterpret_cast<ShotDefinition *>(intptr_t{-1}) /* -1: no shot */)) {
     randomTicks = 0;
     if (emitterDefinition->shotEmitterRandomTicks != 0) {
       randomValue = g_RandomGeneratorState.next();
@@ -705,7 +703,7 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
                orientationAngle1,orientationAngle2,worldZQ12,worldY,worldX,effectDefinition,worldRuntime);
     (modelRuntime->classState).effectEmitterPointIndex = (modelRuntime->classState).effectEmitterPointIndex + 1;
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record

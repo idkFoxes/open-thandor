@@ -27,7 +27,10 @@
 #include <unordered_set>
 #include <vector>
 
+#include <memory>
+#include <new>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
 
@@ -47,7 +50,7 @@ struct LoadedGfx {
 
 uint32_t UiAtlasTest_Alloc(uint32_t bytes, void **outPayload)
 {
-  void *payload = malloc(bytes);
+  void *payload = ::operator new(bytes, std::nothrow);
   if (payload == nullptr) {
     return FATAL_ERROR_ARENA_EXHAUSTED;
   }
@@ -57,9 +60,16 @@ uint32_t UiAtlasTest_Alloc(uint32_t bytes, void **outPayload)
 
 uint32_t UiAtlasTest_Free(void *memory)
 {
-  free(memory);
+  ::operator delete(memory);
   return 0;
 }
+
+/* A decoded asset buffer: owned here until it joins the asset list, which releases it through the asset clone
+   release callback (UiAtlasTest_Free). */
+struct UiAtlasTestBlockDelete {
+  void operator()(uint8_t *block) const { UiAtlasTest_Free(block); }
+};
+using UiAtlasTestBlock = std::unique_ptr<uint8_t, UiAtlasTestBlockDelete>;
 
 /* Decodes all entries of one package file and keeps the valid 'gfx' assets whose path is new. */
 void LoadPackageGfx(const char *packageName, uint8_t *packed, std::unordered_set<std::string> &seenPaths,
@@ -93,22 +103,21 @@ void LoadPackageGfx(const char *packageName, uint8_t *packed, std::unordered_set
     if (fread(packed, 1, header.packedSize, pck) != header.packedSize) {
       break;
     }
-    uint8_t *unpacked = (uint8_t *)malloc(header.unpackedSize + 4);
+    UiAtlasTestBlock unpacked(static_cast<uint8_t *>(::operator new(header.unpackedSize + 4, std::nothrow)));
     if (unpacked == nullptr) {
       break;
     }
-    if (!g_PckDecoderTable[header.compressionMethod](header.unpackedSize, unpacked, header.packedSize, packed,
+    if (!g_PckDecoderTable[header.compressionMethod](header.unpackedSize, unpacked.get(), header.packedSize, packed,
                                                        nullptr, nullptr)) {
-      free(unpacked);
       continue;
     }
-    GraphicsTextureSourceAsset *asset = (GraphicsTextureSourceAsset *)unpacked;
+    auto *asset = reinterpret_cast<GraphicsTextureSourceAsset *>(unpacked.get());
     if ((asset->common.magic != ASSET_MAGIC_GFX) || (asset->common.allocationSizeBytes > header.unpackedSize) ||
         !GraphicsTextureSource_ValidateAsset(asset)) {
-      free(unpacked);
       continue;
     }
     out.push_back(LoadedGfx{packageName, path, asset});
+    unpacked.release(); /* now owned by the asset list */
   }
   fclose(pck);
 }
@@ -123,7 +132,8 @@ void Thandor_SelfTestUiAtlas()
   uint32_t (*savedFree)(void *) = g_MemoryApi.free;
   g_MemoryApi.alloc = UiAtlasTest_Alloc;
   g_MemoryApi.free = UiAtlasTest_Free;
-  uint8_t *packed = (uint8_t *)malloc(PACKAGE_SCRATCH_BUFFER_BYTES);
+  auto packedBuffer = std::make_unique_for_overwrite<uint8_t[]>(PACKAGE_SCRATCH_BUFFER_BYTES);
+  uint8_t *packed = packedBuffer.get();
   std::unordered_set<std::string> seenPaths;
   std::vector<LoadedGfx> assets;
   unsigned entryCount = 0;
@@ -135,11 +145,9 @@ void Thandor_SelfTestUiAtlas()
     }
     fclose(probe);
     packageCount++;
-    if (packed != nullptr) {
-      LoadPackageGfx(package, packed, seenPaths, assets, entryCount);
-    }
+    LoadPackageGfx(package, packed, seenPaths, assets, entryCount);
   }
-  free(packed);
+  packedBuffer.reset();
   g_MemoryApi.alloc = savedAlloc;
   g_MemoryApi.free = savedFree;
   if (assets.empty()) {
@@ -157,8 +165,8 @@ void Thandor_SelfTestUiAtlas()
   /* frame 1: every image of every asset */
   for (const LoadedGfx &loaded : assets) {
     const GraphicsTextureSourceAsset *asset = loaded.asset;
-    const auto *entries = (const GraphicsTextureSourceEntry *)((const uint8_t *)asset +
-                                                                asset->tableDescriptor.subresourceTableOffset);
+    const auto *entries =
+        Asset_RecordAt<const GraphicsTextureSourceEntry>(asset, asset->tableDescriptor.subresourceTableOffset);
     uint64_t texels = 0;
     unsigned maxW = 0;
     unsigned maxH = 0;
@@ -226,8 +234,8 @@ void Thandor_SelfTestUiAtlas()
   /* frame 3: one changed texel converts exactly that image again, at the same place */
   {
     GraphicsTextureSourceAsset *asset = assets.front().asset;
-    const auto *entry = (const GraphicsTextureSourceEntry *)((const uint8_t *)asset +
-                                                              asset->tableDescriptor.subresourceTableOffset);
+    const auto *entry =
+        Asset_RecordAt<const GraphicsTextureSourceEntry>(asset, asset->tableDescriptor.subresourceTableOffset);
     uint32_t index = 0;
     while (index < asset->tableDescriptor.subresourceCount && (entry[index].pixelWidth == 0 || entry[index].pixelHeight == 0)) {
       index++;
@@ -237,7 +245,7 @@ void Thandor_SelfTestUiAtlas()
       GpuUiTexRegion after;
       GpuUiTextures_Lookup(asset, index, GPU_UI_TEX_ENTRY_PALETTE, &before); /* validates, nothing to convert */
       GpuUiTextures_FlushUploads(nullptr);
-      uint8_t *texel = (uint8_t *)asset + entry[index].dataOffset;
+      uint8_t *texel = Asset_RecordAt(asset, entry[index].dataOffset);
       *texel ^= 0x01;
       GpuUiTexStats before3;
       GpuUiTextures_GetStats(&before3);

@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/selection_overlay.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/debug/hooks.h>
 
 /* Module data. */
@@ -35,9 +36,9 @@ void SelectionOverlay_RenderSelectedArmyMetrics
       continue;
     }
     modelNode = (selectedEntity->common).ownership.modelNode;
-    if (!(((modelNode->runtimeFlags & 4) != 0) ||
-          (((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) &&
-           ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0)))) {
+    if (!(Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) ||
+          (!Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) &&
+           (Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE))))) {
       continue;
     }
     g_ModelProjectedBoundsPixels.minX = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
@@ -50,7 +51,7 @@ void SelectionOverlay_RenderSelectedArmyMetrics
       SelectionPanel_RenderArmyRuntimeMetrics
                 (clipBottom,clipRight,clipTop,clipLeft,g_ModelProjectedBoundsPixels.maxY,
                  g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
-                 g_ModelProjectedBoundsPixels.minX,(RuntimeModelFactionPrefix *)selectedEntity);
+                 g_ModelProjectedBoundsPixels.minX,ModelView_Cast<RuntimeModelFactionPrefix>(selectedEntity));
     }
   }
 }
@@ -70,8 +71,8 @@ void SelectionOverlay_RenderArmyMetricsForEntity
   void *savedPanelData;
   
   modelNode = (entity->common).ownership.modelNode;
-  if (((modelNode->runtimeFlags & 4) != 0) ||
-     (((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0 && ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0)))) {
+  if (Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) ||
+     ((!Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) && Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE)))) {
     g_ModelProjectedBoundsPixels.minX = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
     g_ModelProjectedBoundsPixels.minY = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
     g_ModelProjectedBoundsPixels.maxX = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;
@@ -90,7 +91,7 @@ void SelectionOverlay_RenderArmyMetricsForEntity
                 (clipBottom,clipRight,clipTop,clipLeft,g_ModelProjectedBoundsPixels.maxY,
                  g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
                  g_ModelProjectedBoundsPixels.minX,
-                 (RuntimeModelFactionPrefix *)entity);
+                 ModelView_Cast<RuntimeModelFactionPrefix>(entity));
       g_SelectionPanelTextureSource = savedTextureSource;
       g_SelectionPanelData = savedPanelData;
     }
@@ -112,7 +113,7 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipBottom,UiPixelCoordi
   UiPixelCoordinate originalCornerBY;
   UiPixelCoordinate originalCornerBX;
   uint32_t cornerWidth;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize cornerSize;
   
   /* order the corners: A becomes bottom-right (maximum), B top-left (minimum) */
@@ -184,7 +185,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
   int64_t worldYProduct;
   int screenX;
   int screenY;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   GraphicsTextureLogicalSize markerSize;
   FixedVectorQ12 terrainPoint;
@@ -195,7 +196,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
   if (markerPointCount != 0) {
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
-      do {
+      while (markerPointCount != 0) {
         /* pair (a, b) -> world point: x = (2a + b) * 0x901 / 2^13, y = -b * 1999 / 2^12 (SHRD of the 64-bit
            products); 0x901 and 1999 are about one cell width 0x900 and 0x900 * sqrt(3) / 2, so the pairs look
            like triangular-lattice coordinates in Q12 */
@@ -209,7 +210,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
           g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = terrainPoint.zQ12;
           FixedTransform_ApplyPoint
                     (&g_GraphicsTransformInputScratchVec3,
-                     (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,
+                     reinterpret_cast<GraphicsFixedVec3 *>(&g_GraphicsTransformScratchMatrix3x4) /* basisRow0: the point */,
                      &g_ViewProjectionMatrixFixed);
           if (16 < g_GraphicsTransformInputScratchVec3.z) { /* in front of the near plane */
             projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
@@ -228,7 +229,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
         }
         gridCoordinatePairs = gridCoordinatePairs + 2;
         markerPointCount--;
-      } while (markerPointCount != 0);
+      }
       g_GraphicsFramebufferEndAccess();
     }
   }
@@ -246,7 +247,7 @@ void SelectionOverlay_DrawWorldPointMarker
           FieldGridAsset *fieldGrid)
 
 {
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   GraphicsTextureLogicalSize markerSize;
   FixedVectorQ12 markerPoint;
@@ -266,7 +267,7 @@ void SelectionOverlay_DrawWorldPointMarker
   g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = markerPoint.zQ12;
   FixedTransform_ApplyPoint
             (&g_GraphicsTransformInputScratchVec3,
-             (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,&g_ViewProjectionMatrixFixed)
+             reinterpret_cast<GraphicsFixedVec3 *>(&g_GraphicsTransformScratchMatrix3x4) /* basisRow0: the point */,&g_ViewProjectionMatrixFixed)
   ;
   projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
   accessFailed = g_GraphicsFramebufferBeginAccess();
@@ -300,7 +301,7 @@ void SelectionOverlay_DrawGridVertexMarkers
   int screenY;
   uint8_t *vertexCursor;
   int coordinateOffset;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
@@ -314,17 +315,17 @@ void SelectionOverlay_DrawGridVertexMarkers
     columnCount = gridColumns >> 2;
     rowsRemaining = fieldGrid->gridHeight >> 2;
     /* row 1, column 1 */
-    vertexCursor = (uint8_t *)&fieldGrid->cells[gridColumns + 1];
+    vertexCursor = Thandor_Bytes(&fieldGrid->cells[gridColumns + 1]);
     columnsRemaining = columnCount;
     rowStart = vertexCursor;
     if ((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0) {
       coordinateOffset = 32; /* projectedPointB instead of projectedPointA (32 bytes further) */
     }
-    do {
-      do {
-        if ((*(uint32_t *)(vertexCursor + 80) & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) {
-          screenX = *(int *)(vertexCursor + coordinateOffset + 12) >> Q12_SHIFT;
-          screenY = *(int *)(vertexCursor + coordinateOffset + 16) >> Q12_SHIFT;
+    while (-1 < (int)rowsRemaining) { /* gridHeight / 4 + 1 rows (rowsRemaining < 2^30) */
+      while (-1 < (int)columnsRemaining) {
+        if ((*Thandor_At<uint32_t>(vertexCursor,80) & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) {
+          screenX = *Thandor_At<int>(vertexCursor + coordinateOffset,12) >> Q12_SHIFT;
+          screenY = *Thandor_At<int>(vertexCursor + coordinateOffset,16) >> Q12_SHIFT;
           blitTextureId = SELECTION_OVERLAY_MARKER_GRID_VERTEX;
           blitTextureSource = g_SelectionPanelTextureSource;
           blitFramebuffer = g_FramebufferAccess;
@@ -337,12 +338,12 @@ void SelectionOverlay_DrawGridVertexMarkers
         }
         vertexCursor = vertexCursor + 4 * sizeof(FieldGridCell); /* four cells on */
         columnsRemaining = columnsRemaining - 1;
-      } while (-1 < (int)columnsRemaining); /* gridWidth / 4 + 1 cells per row */
+      } /* gridWidth / 4 + 1 cells per row */
       vertexCursor = rowStart + gridColumns * 4 * sizeof(FieldGridCell); /* four rows on */
       rowsRemaining = rowsRemaining - 1;
       columnsRemaining = columnCount;
       rowStart = vertexCursor;
-    } while (-1 < (int)rowsRemaining);
+    }
     g_GraphicsFramebufferEndAccess();
   }
 }
@@ -363,7 +364,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
   int screenY;
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t receiverTextureId;
   GraphicsTextureSourceAsset *receiverTextureSource;
@@ -382,18 +383,18 @@ void SelectionOverlay_DrawFluidExclusionMarkers
     cellCursor = fieldGrid->cells;
     columnsRemaining = gridColumns;
     rowStartCell = cellCursor;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
-        if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_B_NOT_PROJECTED) == 0) &&
-           ((cellCursor->flagsAndMaterial &
-            (FIELD_CELL_FLUID_SOURCE_EXCLUDED|FIELD_CELL_FLUID_RECEIVER_EXCLUDED)) != 0)) {
+        if ((!Any(cellCursor->flagsAndMaterial & FIELD_CELL_VERTEX_POINT_B_NOT_PROJECTED)) &&
+           (Any(cellCursor->flagsAndMaterial & (FIELD_CELL_FLUID_SOURCE_EXCLUDED|FIELD_CELL_FLUID_RECEIVER_EXCLUDED)))) {
           screenX = cellCursor->secondarySurfaceScreenPoint.projectedX >> 12;
           screenY = cellCursor->secondarySurfaceScreenPoint.projectedY >> 12;
           sourceTextureId = SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED;
           receiverTextureId = SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED;
           sourceTextureSource = g_SelectionPanelTextureSource;
           sourceFramebuffer = g_FramebufferAccess;
-          if ((cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) != 0) {
+          if (Any(cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)) {
             receiverTextureSource = g_SelectionPanelTextureSource;
             receiverFramebuffer = g_FramebufferAccess;
             savedScreenY = screenY;
@@ -407,7 +408,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
             screenY = savedScreenY;
             screenX = savedScreenX;
           }
-          if ((cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) != 0) {
+          if (Any(cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED)) {
             markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED,
                                                                g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
@@ -446,7 +447,7 @@ void SelectionOverlay_DrawResourceCellMarkers
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
   FieldCellPackedFlagsAndMaterial selectedResourceFlag;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t flaggedTextureId;
   GraphicsTextureSourceAsset *flaggedTextureSource;
@@ -458,7 +459,7 @@ void SelectionOverlay_DrawResourceCellMarkers
   SoftwareFramebufferAccess *otherFramebuffer;
   FieldGridCell *rowStartCell;
   
-  selectedResourceFlag = FIELD_CELL_XENITE_SUPPORT << (selectedResourceIndex & 31);
+  selectedResourceFlag = FieldCell_ResourceSupportBit(selectedResourceIndex & 31);
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     gridColumns = fieldGrid->gridWidth;
@@ -466,17 +467,18 @@ void SelectionOverlay_DrawResourceCellMarkers
     cellCursor = fieldGrid->cells;
     columnsRemaining = gridColumns;
     rowStartCell = cellCursor;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
-        if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) &&
-           ((cellCursor->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0)) {
+        if ((!Any(cellCursor->flagsAndMaterial & FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED)) &&
+           (Any(cellCursor->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK))) {
           screenX = cellCursor->groundScreenPoint.projectedX >> 12;
           screenY = cellCursor->groundScreenPoint.projectedY >> 12;
           otherTextureId = SELECTION_OVERLAY_MARKER_OTHER_RESOURCE;
           flaggedTextureId = SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE;
           otherTextureSource = g_SelectionPanelTextureSource;
           otherFramebuffer = g_FramebufferAccess;
-          if ((cellCursor->flagsAndMaterial & selectedResourceFlag) != 0) {
+          if (Any(cellCursor->flagsAndMaterial & selectedResourceFlag)) {
             flaggedTextureSource = g_SelectionPanelTextureSource;
             flaggedFramebuffer = g_FramebufferAccess;
             savedScreenY = screenY;
@@ -490,7 +492,7 @@ void SelectionOverlay_DrawResourceCellMarkers
             screenY = savedScreenY;
             screenX = savedScreenX;
           }
-          if ((cellCursor->flagsAndMaterial & (selectedResourceFlag ^ FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)) != 0)
+          if (Any(cellCursor->flagsAndMaterial & (selectedResourceFlag ^ FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)))
           {
             markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_OTHER_RESOURCE,
                                                                g_SelectionPanelTextureSource);
@@ -528,7 +530,7 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
   int screenY;
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
-  Bool8 accessFailed;
+  bool accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
@@ -542,10 +544,11 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
     cellCursor = fieldGrid->cells;
     columnsRemaining = gridColumns;
     rowStartCell = cellCursor;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
-        if (((cellCursor->flagsAndMaterial & FIELD_CELL_DEBUG_MARKED) != 0) &&
-           ((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0)) {
+        if ((Any(cellCursor->flagsAndMaterial & FIELD_CELL_DEBUG_MARKED)) &&
+           (!Any(cellCursor->flagsAndMaterial & FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED))) {
           screenX = cellCursor->groundScreenPoint.projectedX >> 12;
           screenY = cellCursor->groundScreenPoint.projectedY >> 12;
           blitTextureId = SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED;

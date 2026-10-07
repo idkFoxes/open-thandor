@@ -22,7 +22,7 @@ static const int32_t g_TerrainAuxHeightMinimum = 12288;
 
 /* Height band: a flooded cell (waterSurfaceDelta > 0) or a height outside
    [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta] relative to g_TerrainScanReferenceHeight. */
-static Bool8 TerrainHeightBand_CellFails(const FieldGridCell *cell)
+static bool TerrainHeightBand_CellFails(const FieldGridCell *cell)
 
 {
   int relativeHeightQ12;
@@ -38,7 +38,7 @@ static Bool8 TerrainHeightBand_CellFails(const FieldGridCell *cell)
 
 /* Water-surface contact: a negative waterSurfaceDelta (Original quirk: the opposite sign of the height-band test)
    or a triangle1NormalAngles high word below g_TerrainAuxHeightMinimum. */
-static Bool8 TerrainAuxHeightThreshold_CellFails(const FieldGridCell *cell)
+static bool TerrainAuxHeightThreshold_CellFails(const FieldGridCell *cell)
 
 {
   return (cell->waterSurfaceDelta < 0) ||
@@ -50,7 +50,7 @@ static Bool8 TerrainAuxHeightThreshold_CellFails(const FieldGridCell *cell)
    TERRAIN_SCAN_RADIUS_PER_STEP clamped to 1..TERRAIN_SCAN_STEP_LIMIT_MAX), g_TerrainScanReferenceHeight and
    g_TerrainScanRowStrideBytes, and maps the world point to the field cell containing it. Returns false when that
    cell lies off the grid, otherwise true with the cell's index in *outCenterCellIndex. */
-static Bool8 TerrainScan_BeginAroundWorldPoint
+static bool TerrainScan_BeginAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid,int *outCenterCellIndex)
 
@@ -116,7 +116,7 @@ static Bool8 TerrainScan_BeginAroundWorldPoint
    [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; also when fieldGrid is NULL or the point is
    off the grid.
 */
-Bool8 TerrainHeightBand_TestAroundWorldPoint
+bool TerrainHeightBand_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
 
@@ -133,7 +133,7 @@ Bool8 TerrainHeightBand_TestAroundWorldPoint
     return true;
   }
   centerCell = &fieldGrid->cells[centerCellIndex];
-  if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return true;
   }
   relativeHeightQ12 = centerCell->terrainHeight - g_TerrainScanReferenceHeight;
@@ -158,7 +158,7 @@ Bool8 TerrainHeightBand_TestAroundWorldPoint
    cell, has a negative waterSurfaceDelta, or the high word of its packed normal angles is below
    g_TerrainAuxHeightMinimum; also when fieldGrid is NULL or the point is off the grid.
 */
-Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
+bool TerrainAuxHeightThreshold_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
 
@@ -176,7 +176,7 @@ Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
   /* Original quirk: the centre cell's threshold test reads triangle0NormalAngles, the sector walks
      (TerrainAuxHeightThreshold_CellFails) read triangle1NormalAngles. */
   centerCell = &fieldGrid->cells[centerCellIndex];
-  if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return true;
   }
   if (centerCell->waterSurfaceDelta < 0) {

@@ -9,19 +9,22 @@
 #define THANDOR_CORE_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
-typedef struct GraphicsFixedMatrix3x4 GraphicsFixedMatrix3x4, *PGraphicsFixedMatrix3x4;
-typedef struct GraphicsFixedVec3 GraphicsFixedVec3, *PGraphicsFixedVec3;
-typedef struct SoundVoiceSet SoundVoiceSet, *PSoundVoiceSet;
-typedef struct SoundVoice SoundVoice, *PSoundVoice;
-typedef struct SoundSampleAsset SoundSampleAsset, *PSoundSampleAsset;
-typedef struct SoftwareBgraWordLanes SoftwareBgraWordLanes, *PSoftwareBgraWordLanes;
-typedef struct SoftwareRgbWordLanes SoftwareRgbWordLanes, *PSoftwareRgbWordLanes;
-typedef struct ModelPackedPointRecord ModelPackedPointRecord, *PModelPackedPointRecord;
+struct GraphicsFixedMatrix3x4;
+struct GraphicsFixedVec3;
+struct SoundVoiceSet;
+struct SoundVoice;
+struct SoundSampleAsset;
+struct SoftwareBgraWordLanes;
+struct SoftwareRgbWordLanes;
+struct ModelPackedPointRecord;
 
 /* One-byte boolean of the original: any byte value, only its low byte counts (assigning 0x100 gives
-   false). Kept distinct from C/C++ bool, which normalizes to 0/1. */
+   false). Since step 13 all code uses bool; Bool8 stays only where a byte layout fixes it (owner decision D3):
+   the struct fields TerrainPlacementResult::rejected and FrameProviderResult::noFrame, and bytes read from files
+   or packets. Do not use it for new code. */
 using Bool8 = uint8_t;
 
 using FactionRuntimeIndex = int;
@@ -568,22 +571,64 @@ using FieldGridDimension = uint32_t;
 
 using AssetFormatVersion = uint32_t;
 
-enum { 
-    FIELD_CELL_MATERIAL_ID_MASK=255,
-    FIELD_CELL_RANDOM_VARIANT_MASK=1792,
-    FIELD_CELL_XENITE_SUPPORT=2048,
-    FIELD_CELL_TRITIUM_SUPPORT=4096,
-    FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK=6144,
-    FIELD_CELL_FIRST_COLUMN_BOUNDARY=8192,
-    FIELD_CELL_FIRST_ROW_BOUNDARY=16384,
-    FIELD_CELL_DEBUG_MARKED=32768, // no code in the game sets it; cleared at grid init, drawn by a debug overlay
-    FIELD_CELL_CONNECTED_REGION_VISITED=65536,
-    FIELD_CELL_LAST_COLUMN_BOUNDARY=134217728,
-    FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28=268435456,
-    FIELD_CELL_FLUID_RECEIVER_EXCLUDED=536870912,
-    FIELD_CELL_FLUID_SOURCE_EXCLUDED=1073741824
+/* FieldGridCell.flagsAndMaterial (+0x50, a dword of the FLD cell and of the savegame): the soil material in the low
+   byte, a random variant (FIELD_CELL_RANDOM_VARIANT_MASK) and flag bits. A flag enum class over the int the
+   decompiled code held (THANDOR_SIGNED_WORD_FLAG_ENUM, step 13): the stored word and every expression on it keep
+   their bits and signedness; values from a file keep bits without an enumerator. The material byte is read with
+   FieldCell_MaterialId, the whole word with FieldCell_RawWord (as the int) or FieldCell_RawBits (as the uint32_t
+   the code cast it to), and FieldCell_FromRawWord turns a raw dword back into a cell word.
+   The projection pass (graphics/terrain/terrain_render.cpp) also uses this word as
+   TerrainProjectedVertexWorkRecord.projectionFlags; its TERRAIN_VERTEX_* bits live in the same allocation. */
+enum class FieldCellPackedFlagsAndMaterial : int32_t {
+    FIELD_CELL_MATERIAL_ID_MASK = 0xff,
+    FIELD_CELL_RANDOM_VARIANT_MASK = 0x700,
+    FIELD_CELL_XENITE_SUPPORT = 0x800,
+    FIELD_CELL_TRITIUM_SUPPORT = 0x1000,
+    FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK = 0x1800,
+    FIELD_CELL_FIRST_COLUMN_BOUNDARY = 0x2000,
+    FIELD_CELL_FIRST_ROW_BOUNDARY = 0x4000,
+    FIELD_CELL_DEBUG_MARKED = 0x8000, // no code in the game sets it; cleared at grid init, drawn by a debug overlay
+    FIELD_CELL_CONNECTED_REGION_VISITED = 0x10000,
+    FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED = 0x200000, /* TERRAIN_VERTEX_POINT_A_NOT_PROJECTED of the projection pass */
+    FIELD_CELL_VERTEX_POINT_B_NOT_PROJECTED = 0x4000000, /* TERRAIN_VERTEX_POINT_B_NOT_PROJECTED of the projection pass */
+    FIELD_CELL_LAST_COLUMN_BOUNDARY = 0x8000000,
+    FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28 = 0x10000000,
+    FIELD_CELL_FLUID_RECEIVER_EXCLUDED = 0x20000000,
+    FIELD_CELL_FLUID_SOURCE_EXCLUDED = 0x40000000,
+    FIELD_CELL_LAST_ROW_BOUNDARY = static_cast<int32_t>(0x80000000u),
+    /* the four map-edge bits FieldGrid_InitializeRuntimeCellsAndBoundaryFlags sets on the outermost ring of cells;
+       neighbour loops test them before touching a neighbour */
+    FIELD_CELL_GRID_EDGE_MASK = static_cast<int32_t>(0x88006000u)
 };
-using FieldCellPackedFlagsAndMaterial = int;
+THANDOR_SIGNED_WORD_FLAG_ENUM(FieldCellPackedFlagsAndMaterial);
+using enum FieldCellPackedFlagsAndMaterial;
+
+/* The soil material id (low byte) of a cell word. */
+constexpr int FieldCell_MaterialId(FieldCellPackedFlagsAndMaterial cellWord)
+{
+    return ToBits(cellWord & FIELD_CELL_MATERIAL_ID_MASK);
+}
+/* The whole cell word as the signed dword the decompiled code read (bit 31 is FIELD_CELL_LAST_ROW_BOUNDARY). */
+constexpr int32_t FieldCell_RawWord(FieldCellPackedFlagsAndMaterial cellWord)
+{
+    return ToBits(cellWord);
+}
+/* The whole cell word as an unsigned dword (where the code cast the word to uint32_t or masked it with one). */
+constexpr uint32_t FieldCell_RawBits(FieldCellPackedFlagsAndMaterial cellWord)
+{
+    return static_cast<uint32_t>(ToBits(cellWord));
+}
+/* A raw dword (file, packet, random bits, a uint32_t mask) as a cell word; no bits are dropped. */
+constexpr FieldCellPackedFlagsAndMaterial FieldCell_FromRawWord(uint32_t rawWord)
+{
+    return FromBits<FieldCellPackedFlagsAndMaterial>(static_cast<int32_t>(rawWord));
+}
+/* The resource-support bit of a resource selector: FIELD_CELL_XENITE_SUPPORT shifted left by resourceShift
+   (0 Xenite, 1 Tritium; the callers mask the shift with 31, as the original did). */
+constexpr FieldCellPackedFlagsAndMaterial FieldCell_ResourceSupportBit(uint32_t resourceShift)
+{
+    return FromBits<FieldCellPackedFlagsAndMaterial>(ToBits(FIELD_CELL_XENITE_SUPPORT) << resourceShift);
+}
 
 using AssetRelativeOffset = uint32_t;
 
@@ -602,12 +647,12 @@ struct GraphicsFixedMatrix3x4 {
 
 using ModelDefinitionHierarchyNodeAddress32 = intptr_t; /* address of a definition hierarchy node, pointer-sized (5f) */
 
-enum {
+/* g_FileSystemEnumerateDirectoryOrVolumeEntries: what to list. */
+enum class FileSystemEnumerationMode : int {
     FILESYSTEM_ENUMERATE_FILES=0,
     FILESYSTEM_ENUMERATE_VOLUME_LABEL=1,
     FILESYSTEM_ENUMERATE_DIRECTORIES=2
 };
-using FileSystemEnumerationMode = int;
 
 enum {
     FILESYSTEM_SEEK_BEGIN=0,
@@ -616,13 +661,17 @@ enum {
 };
 using FileSystemSeekOrigin = int;
 
-enum {
+/* g_SessionNetworkRoleFlags: the session's network role. Every test masks with SESSION_NETWORK_ROLE_NETWORKED_MASK
+   or one role bit; LOCAL is the value with neither bit. The original int becomes uint32_t (only bit operations and
+   equality tests use it). */
+enum class SessionNetworkRoleFlags : uint32_t {
     SESSION_NETWORK_ROLE_LOCAL=0,
     SESSION_NETWORK_ROLE_CLIENT=1,
     SESSION_NETWORK_ROLE_HOST=2,
     SESSION_NETWORK_ROLE_NETWORKED_MASK=3
 };
-using SessionNetworkRoleFlags = int;
+THANDOR_FLAG_ENUM(SessionNetworkRoleFlags);
+using enum SessionNetworkRoleFlags;
 
 /* struct SoundVoice stays incomplete: a voice handle of the audio slots (g_Sound*), the SDL3 backend's
    voice object behind it (the original's DirectSound buffer). */
@@ -650,17 +699,20 @@ struct SoundSampleAsset {
     uint8_t reservedB4_1FF[332];
 };
 
-enum {
-    WIDE_FORMAT_SIGNED_VALUE=1,
-    WIDE_FORMAT_HEXADECIMAL=2,
-    WIDE_FORMAT_FIXED_FRACTION_WIDTH=4,
-    WIDE_FORMAT_PAD_WITH_ZERO=8,
-    WIDE_FORMAT_PAD_WITH_SPACE=16,
-    WIDE_FORMAT_SHOW_PLUS_SIGN=32,
-    WIDE_FORMAT_WRITE_TERMINATOR=64,
-    WIDE_FORMAT_GROUP_THOUSANDS=128
+/* Options of WideNumber_FormatUtf16 (g_WideNumberFormatUtf16): a flag enum class over the int parameter the code
+   had (THANDOR_SIGNED_WORD_FLAG_ENUM: unsigned, GCC compiles the formatter differently), names kept. */
+enum class WideNumberFormatFlags : int32_t {
+    WIDE_FORMAT_SIGNED_VALUE = 0x1,
+    WIDE_FORMAT_HEXADECIMAL = 0x2,
+    WIDE_FORMAT_FIXED_FRACTION_WIDTH = 0x4,
+    WIDE_FORMAT_PAD_WITH_ZERO = 0x8,
+    WIDE_FORMAT_PAD_WITH_SPACE = 0x10,
+    WIDE_FORMAT_SHOW_PLUS_SIGN = 0x20,
+    WIDE_FORMAT_WRITE_TERMINATOR = 0x40,
+    WIDE_FORMAT_GROUP_THOUSANDS = 0x80
 };
-using WideNumberFormatFlags = int;
+THANDOR_SIGNED_WORD_FLAG_ENUM(WideNumberFormatFlags);
+using enum WideNumberFormatFlags;
 
 struct SoftwareBgraWordLanes {
     SoftwareColorLaneUnsigned16 blue; 

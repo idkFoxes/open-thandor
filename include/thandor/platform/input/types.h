@@ -13,8 +13,8 @@
 #include <thandor/core/types.h>
 #include <thandor/ui/controls/types.h>
 
-typedef struct KeyboardInputEvent KeyboardInputEvent, *PKeyboardInputEvent;
-typedef struct KeyboardAsciiCaseTransformCallbackTable3 KeyboardAsciiCaseTransformCallbackTable3, *PKeyboardAsciiCaseTransformCallbackTable3;
+struct KeyboardInputEvent;
+struct KeyboardAsciiCaseTransformCallbackTable3;
 
 using KeyboardVirtualKeyCode = uint32_t;
 
@@ -28,12 +28,12 @@ struct KeyboardInputEvent {
 };
 
 struct KeyboardAsciiCaseTransformCallbackTable3 {
-    Ptr32<Bool8 (uint32_t, uint32_t)> compareCaseInsensitiveFlags; /* returns true when upper(right) < upper(left) (Keyboard_CompareAsciiCaseInsensitiveFlags) */
+    Ptr32<bool (uint32_t, uint32_t)> compareCaseInsensitiveFlags; /* returns true when upper(right) < upper(left) (Keyboard_CompareAsciiCaseInsensitiveFlags) */
     Ptr32<uint32_t (uint32_t)> toUpper; 
     Ptr32<uint32_t (uint32_t)> toLower; 
 };
 using KeyboardFlushEventsProc = void ();
-using KeyboardReadEventProc = Bool8 (uint32_t *outKeyCode, uint32_t *outStateMask);
+using KeyboardReadEventProc = bool (uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask);
 using PointerFlushEventsProc = void ();
 using PointerSetPositionProc = void (int32_t positionY, int32_t positionX);
 

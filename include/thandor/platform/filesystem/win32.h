@@ -15,9 +15,9 @@
 
 /* Size of one UTF-16 name record written by Win32FileSystem_EnumerateDirectoryOrVolumeEntries (0x100 code
    units, NUL-padded); returned to the caller as the record stride */
-#define FILESYSTEM_ENUMERATION_RECORD_BYTES 0x200
+inline constexpr auto FILESYSTEM_ENUMERATION_RECORD_BYTES = 0x200;
 /* The DOS volume-label file attribute (_A_VOLID); file enumeration skips such entries like directories */
-#define FILESYSTEM_ATTRIBUTE_VOLUME_LABEL 0x08
+inline constexpr auto FILESYSTEM_ATTRIBUTE_VOLUME_LABEL = 0x08;
 
 uintptr_t FileSystem_Init();
 
@@ -29,7 +29,7 @@ uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uin
 uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle);
 
 /* false (*outPosition 0) when the position cannot be read */
-Bool8 Win32File_GetPosition(void *handle,uint32_t *outPosition);
+bool Win32File_GetPosition(void *handle,uint32_t *outPosition);
 
 /* 0 or FATAL_ERROR_FILE_SEEK_FAILED */
 uint32_t Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle);
@@ -50,10 +50,10 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
 uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *handle);
 
 /* false (*outSize 0) when the size cannot be read */
-Bool8 Win32File_GetSize(void *handle,uint32_t *outSize);
+bool Win32File_GetSize(void *handle,uint32_t *outSize);
 
 /* false (destination emptied) when the directory cannot be read */
-Bool8 Win32File_GetCurrentDirectory(uint16_t *destination);
+bool Win32File_GetCurrentDirectory(uint16_t *destination);
 
 /* 0 or FATAL_ERROR_SET_DIRECTORY_FAILED */
 uint32_t Win32File_SetCurrentDirectory(uint16_t *path);
@@ -64,7 +64,7 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
 void Win32File_Close(void *handle);
 
 
-Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
+bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
           uint32_t *outError);
 
 extern FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries;

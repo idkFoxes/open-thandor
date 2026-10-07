@@ -12,10 +12,10 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef union PckHuffmanSymbolState PckHuffmanSymbolState, *PPckHuffmanSymbolState;
-typedef struct PckHuffmanNode PckHuffmanNode, *PPckHuffmanNode;
-typedef struct PckEntryHeader PckEntryHeader, *PPckEntryHeader;
-typedef struct PckMountSlot PckMountSlot, *PPckMountSlot;
+union PckHuffmanSymbolState;
+struct PckHuffmanNode;
+struct PckEntryHeader;
+struct PckMountSlot;
 
 using PckHuffmanFrequencyCount = uint32_t;
 
@@ -33,7 +33,9 @@ enum {
 };
 using PckCompressionMethod = int;
 
-enum {
+/* PckEntryHeader.typeTag: the first dword of the stored asset, its three-letter magic (file data; tags without
+   an enumerator stay valid) */
+enum class PckAssetTypeTag : int {
     PCK_ASSET_TYPE_TEC=6514036,
     PCK_ASSET_TYPE_FNC=6516326,
     PCK_ASSET_TYPE_FLD=6581350,
@@ -51,7 +53,7 @@ enum {
     PCK_ASSET_TYPE_LEV=7759212,
     PCK_ASSET_TYPE_GFX=7890535
 };
-using PckAssetTypeTag = int;
+using enum PckAssetTypeTag;
 
 using PckDecodedByteCount = uint32_t;
 
@@ -71,7 +73,7 @@ using PckDwordCopyCount = uint32_t;
 
 using PckCompactFieldImageByteCount = uint32_t;
 
-typedef struct PckHuffmanNode *PckHuffmanNodePtr;
+using PckHuffmanNodePtr = struct PckHuffmanNode *;
 
 using PckHuffmanWeight = uint32_t;
 
@@ -102,6 +104,6 @@ struct PckMountSlot {
     struct PckEntryHeader *entryHeaders; 
     PckEntryCount entryCount; 
 };
-using PckCodecProc = Bool8 (uint32_t destinationCapacityOrOutputSize, uint8_t * destination, uint32_t sourceSize, uint8_t * source, uint32_t * outByteCount, uint32_t * outErrorCode);
+using PckCodecProc = bool (uint32_t destinationCapacityOrOutputSize, uint8_t * destination, uint32_t sourceSize, uint8_t * source, uint32_t * outByteCount, uint32_t * outErrorCode);
 
 #endif /* THANDOR_ASSETS_PACKAGE_TYPES_H */

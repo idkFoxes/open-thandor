@@ -8,10 +8,11 @@
 #include <thandor/gameplay/session/scenario_load.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
-THANDOR_ALIGN(4) uintptr_t g_FrontendLoadedCampaignAsset = 0;
+THANDOR_ALIGN(4) CampaignAsset *g_FrontendLoadedCampaignAsset = nullptr;
 
 static uint16_t g_CampaignLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0}; /* L"level" */
 
@@ -56,7 +57,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   FieldGridAsset *sourceGrid;
   uint32_t dwordsRemaining;
   int otherPlayersRemaining;
-  uint8_t *fieldGridPath;
+  uint16_t *fieldGridPath;
   uint8_t *encodeDestination;
   uint32_t *encodedSourceDwords;
   FrontendPlayerRuntimeRecord *playerRecord;
@@ -64,7 +65,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   void *loadedEntry;
   uint32_t loadErrorCode;
   uintptr_t checkedValue;
-  Bool8 encodeOk;
+  bool encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t allocationError;
@@ -76,11 +77,11 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
   /* the level's own path (an offset into the asset) with the extension changed to .fld; the loaded grid
      later replaces that offset */
-  fieldGridPath = (uint8_t *)levelAsset + levelPathOffset;
-  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,(uint16_t *)fieldGridPath);
+  fieldGridPath = Asset_RecordAt<uint16_t>(levelAsset,levelPathOffset);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,fieldGridPath);
   WidePath_CombineDirectoryAndLeaf
-            (g_LevelResourcePathScratchUtf16,(uint16_t *)fieldGridPath,
-             (uint16_t *)&g_ExecutableDirectoryUtf16);
+            (g_LevelResourcePathScratchUtf16,fieldGridPath,
+             g_ExecutableDirectoryUtf16);
   clientLevelAsset = g_FrontendLoadedLevelAsset;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     /* Client: find the local player among the other players. */
@@ -92,45 +93,45 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
       if (otherPlayersRemaining == 0) break;
     }
     if ((otherPlayersRemaining != 0) &&
-        (((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY) != 0)) {
-      loadedEntry = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
+        Any((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY)) {
+      loadedEntry = FieldGrid_LoadValidated(fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
       checkedValue = FatalError_ExitIfFailed
-                          (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
+                          (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
       (clientLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 32-bit format field: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
     }
     else {
       /* Not found (the record one past the last player is written, as in the original) or the
          field grid is not available locally: request it through the transfer mailbox. */
-      *(uint32_t *)playerRecord->snapshotPayload = 0;
+      Thandor_StoreU32(playerRecord->snapshotPayload,0);
       UiTransferMailbox_MarkUnavailable();
-      g_FrontendScenarioTransferState = SCENARIO_TRANSFER_FIELD_GRID;
+      g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_FIELD_GRID;
     }
     return;
   }
-  loadedEntry = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
+  loadedEntry = FieldGrid_LoadValidated(fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
   checkedValue = FatalError_ExitIfFailed
-                      (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
-  sourceGrid = (FieldGridAsset *)checkedValue;
+                      (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
+  sourceGrid = reinterpret_cast<FieldGridAsset *>(checkedValue); /* the loaded grid, passed through as an integer */
   (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(sourceGrid); /* 32-bit format field: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
-  encodedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
+  encodedSourceDwords = reinterpret_cast<uint32_t *>(g_PackageScratchBuffer); /* dword copy of the transfer image */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     /* transfer image: the decoded size, then the encoded grid; copied into its own buffer */
     sourceImageSizeBytes = (sourceGrid->common).allocationSizeBytes;
     encodeDestination = g_PackageScratchBuffer + 4;
-    *(PckDecodedByteCount *)g_PackageScratchBuffer = sourceImageSizeBytes;
+    Thandor_StoreU32(g_PackageScratchBuffer,sourceImageSizeBytes);
     encodeOk = PckCodec_EncodeFieldGrid(PACKAGE_SCRATCH_BUFFER_BYTES - 4,encodeDestination,
                                         sourceImageSizeBytes,sourceGrid,&encodedByteCount,&encodeErrorCode);
     checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
     packetByteCount = (uint32_t)checkedValue + 4;
     allocationError = g_MemoryApi.alloc(packetByteCount,&allocationPayload);
-    checkedValue = FatalError_ExitIfFailed(allocationError != 0 ? allocationError : (uintptr_t)allocationPayload,allocationError != 0);
-    outgoingDwordCursor = (uint32_t *)checkedValue;
+    checkedValue = FatalError_ExitIfFailed(allocationError != 0 ? allocationError : reinterpret_cast<uintptr_t>(allocationPayload),allocationError != 0);
+    outgoingDwordCursor = reinterpret_cast<uint32_t *>(checkedValue); /* the allocation, passed through as an integer */
     for (dwordsRemaining = packetByteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
       *outgoingDwordCursor = *encodedSourceDwords;
       encodedSourceDwords++;
       outgoingDwordCursor++;
     }
-    UiTransferMailbox_SetOutgoingBuffer(packetByteCount,(uint32_t *)checkedValue);
+    UiTransferMailbox_SetOutgoingBuffer(packetByteCount,reinterpret_cast<void *>(checkedValue));
   }
 }
 
@@ -160,8 +161,9 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
   /* load the grid once if any player still lacks it */
   playersToCheck = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
-    if (((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_LEVEL_RECEIVED) == 0) {
+    if (!Any((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_LEVEL_RECEIVED)) {
       FrontendScenarioSession_LoadFieldGridOfLevel(levelAsset);
       break;
     }
@@ -173,7 +175,7 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
   for (playersRemaining = g_FrontendPlayerRuntimeBlockCount - 1; playersRemaining != 0;
       playersRemaining--) {
     playerScanBase++;
-    if ((playerScanBase->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY) != 0) {
+    if (Any(playerScanBase->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY)) {
       roleFlags = &playerScanBase->factionAssignment.roleStateFlags;
       *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
       playerScanBase->transferProgressBytes = INT32_MAX;
@@ -201,10 +203,10 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   uint32_t bundleByteCount;
   int campaignRecordsRemaining;
   uint32_t dwordsRemaining;
-  uintptr_t frontendRoot;
+  FrontendUiImage *frontendRoot;
   CampaignAsset *campaignAsset;
-  uint8_t *levelRecordCursor; /* campaign asset base advanced by whole CampaignLevelRecords */
-  uint8_t *fieldGridPath;
+  CampaignLevelRecord *levelRecord;
+  uint16_t *fieldGridPath;
   uint8_t *encodeCursor;
   uint8_t *transferBundleBytes;
   FrontendLoadedLevelAsset *source;
@@ -212,7 +214,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   void *loadedEntry;
   uint32_t loadErrorCode;
   uintptr_t checkedValue;
-  Bool8 encodeOk;
+  bool encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t allocationError;
@@ -225,23 +227,25 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     WidePath_CombineDirectoryAndLeaf
               (g_FrontendScenarioPathScratchUtf16,
-               (uint16_t *)((UiListControl *)FRONTEND_UI(frontendRoot,campaignsList))->rowSlots[selectedRecordIndex],
-               (uint16_t *)g_CampaignLevelDirectoryUtf16);
+               static_cast<uint16_t *>
+                    (frontendRoot->campaignsList.rowSlots
+                     [selectedRecordIndex]),
+               g_CampaignLevelDirectoryUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_CGN,g_FrontendScenarioPathScratchUtf16);
     loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
-                        (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
-    campaignAsset = (CampaignAsset *)checkedValue;
+                        (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
+    campaignAsset = reinterpret_cast<CampaignAsset *>(checkedValue); /* the loaded entry, passed through as an integer */
     DebugHook_CampaignLoaded(campaignAsset);
-    /* CampaignAsset: the first level becomes the current one; find its record. levelRecordCursor is the
-       asset base advanced by whole CampaignLevelRecords, so its levels[0] is the record under the cursor. */
-    levelRecordCursor = (uint8_t *)campaignAsset;
+    /* CampaignAsset: the first level becomes the current one; find its record. */
+    levelRecord = campaignAsset->levels;
     campaignRecordsRemaining = campaignAsset->levelRecordCount;
-    g_FrontendLoadedCampaignAsset = (uintptr_t)campaignAsset;
+    g_FrontendLoadedCampaignAsset = campaignAsset;
     campaignAsset->currentLevelId = campaignAsset->firstLevelId;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
-      if (campaignAsset->firstLevelId == ((CampaignAsset *)levelRecordCursor)->levels[0].levelId) break;
-      levelRecordCursor = levelRecordCursor + sizeof(CampaignLevelRecord);
+      if (campaignAsset->firstLevelId == levelRecord->levelId) break;
+      levelRecord++;
       campaignRecordsRemaining--;
     } while (campaignRecordsRemaining != 0);
     if (campaignRecordsRemaining == 0) {
@@ -251,80 +255,83 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     }
     FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
     WidePath_CombineDirectoryAndLeaf
-              (g_FrontendScenarioPathScratchUtf16,((CampaignAsset *)levelRecordCursor)->levels[0].levelFileName,
-               (uint16_t *)g_ScenarioLevelDirectoryUtf16);
+              (g_FrontendScenarioPathScratchUtf16,levelRecord->levelFileName,
+               g_ScenarioLevelDirectoryUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
     loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
-                        (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
-    g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedValue;
-    fieldGridPath = (uint8_t *)g_FrontendLoadedLevelAsset +
-                    (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
-    WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,(uint16_t *)fieldGridPath);
+                        (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
+    g_FrontendLoadedLevelAsset = reinterpret_cast<FrontendLoadedLevelAsset *>(checkedValue); /* the loaded entry, passed through as an integer */
+    fieldGridPath = Asset_RecordAt<uint16_t>
+                         (g_FrontendLoadedLevelAsset,
+                          (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid);
+    WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,fieldGridPath);
     WidePath_CombineDirectoryAndLeaf
-              (g_LevelResourcePathScratchUtf16,(uint16_t *)fieldGridPath,
-               (uint16_t *)&g_ExecutableDirectoryUtf16);
+              (g_LevelResourcePathScratchUtf16,fieldGridPath,
+               g_ExecutableDirectoryUtf16);
     /* the original does not check this load for failure */
-    sourceGrid = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
+    sourceGrid = FieldGrid_LoadValidated(fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
     if (sourceGrid == nullptr) {
       /* Original quirk: the error code is used as the grid */
-      sourceGrid = (FieldGridAsset *)(uintptr_t)loadErrorCode;
+      sourceGrid = reinterpret_cast<FieldGridAsset *>(static_cast<uintptr_t>(loadErrorCode));
     }
-    campaignAsset = (CampaignAsset *)g_FrontendLoadedCampaignAsset;
+    campaignAsset = g_FrontendLoadedCampaignAsset;
     source = g_FrontendLoadedLevelAsset;
     transferBundleBytes = g_PackageScratchBuffer;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       /* bundle header (6 dwords): decoded sizes of level, campaign and grid, then their encoded sizes;
          the three encoded images follow */
-      ((ScenarioCampaignBundleHeader *)g_PackageScratchBuffer)->levelDecodedBytes =
+      reinterpret_cast<ScenarioCampaignBundleHeader *>(g_PackageScratchBuffer)->levelDecodedBytes =
            (g_FrontendLoadedLevelAsset->header).common.allocationSizeBytes;
       campaignDecodedSizeBytes = campaignAsset->decodedSizeBytes;
-      ((ScenarioCampaignBundleHeader *)transferBundleBytes)->fieldGridDecodedBytes =
+      reinterpret_cast<ScenarioCampaignBundleHeader *>(transferBundleBytes)->fieldGridDecodedBytes =
            (sourceGrid->common).allocationSizeBytes;
-      ((ScenarioCampaignBundleHeader *)transferBundleBytes)->campaignDecodedBytes = campaignDecodedSizeBytes;
+      reinterpret_cast<ScenarioCampaignBundleHeader *>(transferBundleBytes)->campaignDecodedBytes = campaignDecodedSizeBytes;
       encodeCursor = transferBundleBytes + sizeof(ScenarioCampaignBundleHeader);
       encodeOk = PckCodec_EncodeHuffmanRle
-                         (PACKAGE_SCRATCH_BUFFER_BYTES - 24,encodeCursor,(source->header).common.allocationSizeBytes,(uint8_t *)source,
+                         (PACKAGE_SCRATCH_BUFFER_BYTES - 24,encodeCursor,(source->header).common.allocationSizeBytes,
+                          reinterpret_cast<uint8_t *>(source),
                           &encodedByteCount,&encodeErrorCode);
       checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
       encodedLevelBytes = (uint32_t)checkedValue;
-      ((ScenarioCampaignBundleHeader *)transferBundleBytes)->levelEncodedBytes = encodedLevelBytes;
+      reinterpret_cast<ScenarioCampaignBundleHeader *>(transferBundleBytes)->levelEncodedBytes = encodedLevelBytes;
       encodeCursor = encodeCursor + encodedLevelBytes;
       encodeOk = PckCodec_EncodeHuffmanRle
                          (PACKAGE_SCRATCH_BUFFER_BYTES - 24 - encodedLevelBytes,encodeCursor,
-                          campaignAsset->decodedSizeBytes,(uint8_t *)campaignAsset,&encodedByteCount,&encodeErrorCode);
+                          campaignAsset->decodedSizeBytes,reinterpret_cast<uint8_t *>(campaignAsset),&encodedByteCount,&encodeErrorCode);
       checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
       encodedCampaignBytes = (uint32_t)checkedValue;
-      ((ScenarioCampaignBundleHeader *)transferBundleBytes)->campaignEncodedBytes = encodedCampaignBytes;
+      reinterpret_cast<ScenarioCampaignBundleHeader *>(transferBundleBytes)->campaignEncodedBytes = encodedCampaignBytes;
       encodeOk = PckCodec_EncodeFieldGrid
                          ((PACKAGE_SCRATCH_BUFFER_BYTES - 24 - encodedLevelBytes) - encodedCampaignBytes,encodeCursor + encodedCampaignBytes,
                           (sourceGrid->common).allocationSizeBytes,sourceGrid,&encodedByteCount,&encodeErrorCode);
       checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
       encodedFieldGridBytes = (uint32_t)checkedValue;
-      ((ScenarioCampaignBundleHeader *)transferBundleBytes)->fieldGridEncodedBytes = encodedFieldGridBytes;
+      reinterpret_cast<ScenarioCampaignBundleHeader *>(transferBundleBytes)->fieldGridEncodedBytes = encodedFieldGridBytes;
       /* header, encoded level and campaign (up to encodeCursor + encodedCampaignBytes), then the grid */
       bundleByteCount = (uint32_t)(encodeCursor - transferBundleBytes) + encodedCampaignBytes + encodedFieldGridBytes;
       allocationError = g_MemoryApi.alloc(bundleByteCount,&allocationPayload);
-      checkedValue = FatalError_ExitIfFailed(allocationError != 0 ? allocationError : (uintptr_t)allocationPayload,allocationError != 0);
-      transferCopyDestination = (uint32_t *)checkedValue;
+      checkedValue = FatalError_ExitIfFailed(allocationError != 0 ? allocationError : reinterpret_cast<uintptr_t>(allocationPayload),allocationError != 0);
+      transferCopyDestination = reinterpret_cast<uint32_t *>(checkedValue); /* the allocation, passed through as an integer */
       for (dwordsRemaining = bundleByteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
-        *transferCopyDestination = *(uint32_t *)transferBundleBytes;
+        *transferCopyDestination = Thandor_LoadU32(transferBundleBytes);
         transferBundleBytes += 4;
         transferCopyDestination++;
       }
-      UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)bundleByteCount,(uint32_t *)checkedValue);
+      UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)bundleByteCount,reinterpret_cast<void *>(checkedValue));
     }
     (source->header).pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(sourceGrid); /* 32-bit format field: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
     FrontendPlayerRuntime_InitializeFactionAssignments();
   }
   else {
     UiTransferMailbox_MarkUnavailable();
-    g_FrontendScenarioTransferState = SCENARIO_TRANSFER_CAMPAIGN_BUNDLE;
+    g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_CAMPAIGN_BUNDLE;
   }
-  ((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags =
-       ((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags &
+  frontendRoot->menuRoomModelView.contextFlags =
+       frontendRoot->menuRoomModelView.contextFlags &
        ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+  UiPageStack_SetActiveIndex
+            (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendPageStack));
   OldUnitRuntime_ResetPendingTables();
   FrontendState_DispatchCode(3); /* ROM action table entry 3 */
 }
@@ -349,7 +356,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   uint32_t levelRecordOffset; /* byte offset of the level record in the catalog's level section */
   uint32_t packetByteCount;
   uint32_t dwordsRemaining;
-  uintptr_t frontendRoot;
+  FrontendUiImage *frontendRoot;
   int otherPlayersRemaining;
   uint8_t *packedDestination;
   uint32_t *packedSourceDwords;
@@ -357,24 +364,25 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   void *loadedEntry;
   uint32_t loadErrorCode;
   uintptr_t checkedValue;
-  Bool8 encodeOk;
+  bool encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t allocationError;
   void *allocationPayload;
-  Bool8 levelLoadedLocally;
+  bool levelLoadedLocally;
 
   frontendRoot = g_FrontendRootNode;
-  pageStack = (UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack);
+  pageStack = UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack);
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,
-             (uint16_t *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
-                     [selectedRowIndex],
-             (uint16_t *)g_ScenarioLevelDirectoryUtf16);
+             static_cast<uint16_t *>
+                  (g_FrontendRootNode->missionsList.rowSlots
+                   [selectedRowIndex]),
+             g_ScenarioLevelDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
-  ((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags =
-       ((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags &
+  frontendRoot->menuRoomModelView.contextFlags =
+       frontendRoot->menuRoomModelView.contextFlags &
        ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(1); /* ROM action table entry 1 */
   FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
@@ -383,37 +391,38 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
-                        (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
-    packedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
-    levelAsset = (FrontendLoadedLevelAsset *)checkedValue;
+                        (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
+    packedSourceDwords = reinterpret_cast<uint32_t *>(g_PackageScratchBuffer); /* dword copy of the transfer image */
+    levelAsset = reinterpret_cast<FrontendLoadedLevelAsset *>(checkedValue); /* the loaded entry, passed through as an integer */
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       /* host: mailbox packet = unpacked size dword + Huffman/RLE-packed level */
       levelSizeBytes = levelAsset->header.common.allocationSizeBytes;
       packedDestination = g_PackageScratchBuffer + 4;
       g_FrontendLoadedLevelAsset = levelAsset;
-      *(PckDecodedByteCount *)g_PackageScratchBuffer = levelSizeBytes;
+      Thandor_StoreU32(g_PackageScratchBuffer,levelSizeBytes);
       encodeOk = PckCodec_EncodeHuffmanRle(PACKAGE_SCRATCH_BUFFER_BYTES - 4,packedDestination,levelSizeBytes,
-                                           (uint8_t *)levelAsset,&encodedByteCount,&encodeErrorCode);
+                                           reinterpret_cast<uint8_t *>(levelAsset),&encodedByteCount,&encodeErrorCode);
       checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
       packetByteCount = (uint32_t)checkedValue + 4;
       allocationError = g_MemoryApi.alloc(packetByteCount,&allocationPayload);
-      checkedValue = FatalError_ExitIfFailed(allocationError != 0 ? allocationError : (uintptr_t)allocationPayload,allocationError != 0);
-      outgoingDwordCursor = (uint32_t *)checkedValue;
+      checkedValue = FatalError_ExitIfFailed(allocationError != 0 ? allocationError : reinterpret_cast<uintptr_t>(allocationPayload),allocationError != 0);
+      outgoingDwordCursor = reinterpret_cast<uint32_t *>(checkedValue); /* the allocation, passed through as an integer */
       for (dwordsRemaining = packetByteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
         *outgoingDwordCursor = *packedSourceDwords;
         packedSourceDwords++;
         outgoingDwordCursor++;
       }
-      UiTransferMailbox_SetOutgoingBuffer(packetByteCount,(uint32_t *)checkedValue);
+      UiTransferMailbox_SetOutgoingBuffer(packetByteCount,reinterpret_cast<void *>(checkedValue));
       levelAsset = g_FrontendLoadedLevelAsset;
     }
   }
   else {
     /* The level's bit in the players' level masks: record offset / 0x100 is the level index, split into
        mask dword (offset >> 13) and bit ((offset >> 8) & 31); there are three mask dwords (96 levels). */
-    levelRecordOffset = (uint32_t)((uint8_t *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
-                                   [selectedRowIndex] -
-            (uint8_t *)g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
+    levelRecordOffset = (uint32_t)Asset_ByteDistance
+                          (static_cast<uint8_t *>
+                                (g_FrontendRootNode->missionsList.rowSlots
+                                 [selectedRowIndex]),g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
     maskWordIndex = levelRecordOffset >> 13;
     /* Client: load the level locally when the local player's level mask has it, else request it. */
     levelLoadedLocally = false;
@@ -421,12 +430,13 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
       /* find the local player among the other players (block 1..) */
       otherPlayersRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
       playerRecord = g_FrontendPlayerRuntimeBlocks + 1;
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
           if (((&playerRecord->scenarioAvailabilityMask0)[maskWordIndex] &
               1 << ((uint8_t)(levelRecordOffset >> 8) & 31)) != 0) {
             /* on failure levelAsset is replaced below */
-            levelAsset = (FrontendLoadedLevelAsset *)Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,nullptr);
+            levelAsset = static_cast<FrontendLoadedLevelAsset *>(Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,nullptr));
             levelLoadedLocally = levelAsset != nullptr;
           }
           break;
@@ -437,14 +447,15 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
     }
     if (!levelLoadedLocally) {
       UiTransferMailbox_MarkUnavailable();
-      g_FrontendScenarioTransferState = SCENARIO_TRANSFER_LEVEL;
+      g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_LEVEL;
       levelAsset = g_FrontendLoadedLevelAsset;
     }
   }
   g_FrontendLoadedLevelAsset = levelAsset;
-  levelRecordOffset = (uint32_t)((uint8_t *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
-                                 [selectedRowIndex] -
-          (uint8_t *)g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
+  levelRecordOffset = (uint32_t)Asset_ByteDistance
+                        (static_cast<uint8_t *>
+                              (g_FrontendRootNode->missionsList.rowSlots
+                               [selectedRowIndex]),g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
   maskWordIndex = levelRecordOffset >> 13;
   if (maskWordIndex < 3) {
     /* every other player (block 1..) */

@@ -26,15 +26,16 @@ void InGameCommand_TogglePauseRequest
        g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->sessionFlags ^ PLAYER_SESSION_FLAG_PAUSE_REQUESTED;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) == 0) {
-      if ((g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
-           PLAYER_SESSION_FLAG_PAUSE_REQUESTED) == 0) {
+    if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
+      if (!Any(g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
+           PLAYER_SESSION_FLAG_PAUSE_REQUESTED)) {
         return;
       }
     }
-    else if ((g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
-              PLAYER_SESSION_FLAG_PAUSE_REQUESTED) != 0) {
+    else if (Any(g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
+              PLAYER_SESSION_FLAG_PAUSE_REQUESTED)) {
       return;
     }
     playerRecord++;
@@ -56,13 +57,13 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   uintptr_t pendingEntry;
   uint32_t ownerFactionIndex;
   SelectionPlayerRuntimeBlock *playerBlock;
-  ArmyRuntimeSlot *modelNodeRuntime;
-  ArmyRuntimeSlot *armySlot;
-  ModelRuntimeSlot *slotModelRuntime;
+  ModelRuntimeNode *modelNodeRuntime;
+  ModelRuntimeSlot *createdModelRuntime;
+  ModelDefinition *createdModelDefinition;
   InGameRuntimeRoot *runtimeRoot;
-  Ptr32<ArmyRuntimeSlot> *createdArmySlots;
+  ArmyRuntimeSlot *createdArmy;
   WorldRuntimeContext *worldRuntime;
-  Bool8 placementRejected;
+  bool placementRejected;
 
   runtimeRoot = g_InGameRuntimeRoot;
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerId];
@@ -74,40 +75,41 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
     /* the pending entry is the chosen army asset record */
     placementRejected = ArmyPlacement_ValidateAssetAtPointAndCellCorners
                       (0,headingAngle,worldXQ12,worldYQ12,
-                       (ArmyPlacementContext)((ArmyAssetRecordPrefix *)pendingEntry)->registryId,playerBlock->factionIndex,
+                       (ArmyPlacementContext)reinterpret_cast<ArmyAssetRecordPrefix *>(pendingEntry)->registryId,playerBlock->factionIndex,
                        worldRuntime);
     if (!placementRejected) {
       /* the validator leaves the accepted (possibly snapped) point in g_ArmyPlacementValidatedWorldX/YQ12 */
-      createdArmySlots = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
+      createdArmy = ArmyRuntime_CreateInstanceFromAsset
                         (4,headingAngle,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->factionIndex,
-                         ((ArmyAssetRecordPrefix *)pendingEntry)->registryId,worldRuntime,nullptr);
-      if (createdArmySlots != nullptr) {
+                         reinterpret_cast<ArmyAssetRecordPrefix *>(pendingEntry)->registryId,worldRuntime,nullptr);
+      if (createdArmy != nullptr) {
         ownerFactionIndex = playerBlock->factionIndex;
-        modelNodeRuntime = createdArmySlots[1];
-        armySlot = *createdArmySlots;
-        modelNodeRuntime->movementPosition0Q12 = 0;
+        modelNodeRuntime = createdArmy->modelNodeRuntime;
+        createdModelRuntime = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
+        /* the node tint (the word the decompiled code wrote as ArmyRuntimeSlot.movementPosition0Q12, layout_checks.cpp) */
+        modelNodeRuntime->tintArgb = 0;
         if (ownerFactionIndex == (runtimeRoot->worldRuntime).activeFactionRuntimeIndex) {
-          modelNodeRuntime->movementPosition0Q12 = INT32_MAX;
+          modelNodeRuntime->tintArgb = INT32_MAX;
         }
         relationCounter = &g_GameFactionRuntimeImage.records[ownerFactionIndex].relationCounterB;
         *relationCounter = *relationCounter + 1;
-        slotModelRuntime = (armySlot->modelRuntimeOrSavedOffset).modelRuntime;
-        ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
-        ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdArmySlots,worldRuntime); /* the created army */
+        createdModelDefinition = createdModelRuntime->definitionOrSavedId.runtimeDefinition;
+        ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+        ArmyRuntime_DispatchClassCommand(createdArmy,worldRuntime);
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
-                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-                   Thandor_U32ToPointer<EffectDefinition>(slotModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 (saved model pool) */
+                   modelNodeRuntime->modelPayload.worldRotationAngle2,
+                   modelNodeRuntime->modelPayload.worldRotationAngle1,
+                   modelNodeRuntime->modelPayload.worldRotationAngle0,
+                   modelNodeRuntime->worldTransform.translation.z,
+                   modelNodeRuntime->worldTransform.translation.y,
+                   modelNodeRuntime->worldTransform.translation.x,
+                   createdModelDefinition->removalEffectDefinitionReference.definition,
                    worldRuntime);
-        InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-        InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+        InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
+        InGameSpecialBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
         if (playerId != g_LocalPlayerRuntimeId) {
           return;
         }
@@ -135,8 +137,9 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
   while (control->parent != UI_NODE_NONE) {
     control = control->parent;
   }
-  INGAME_UI(control,worldView)->nodeFlags &= ~UI_NODE_SUPPRESSED;
-  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,(UiPageStackControl *)INGAME_UI(control,gameWindowPageStack));
+  InGameUi_Image(control)->worldView.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,
+                             UiLayoutContainerControl_AsPageStack(&InGameUi_Image(control)->gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != nullptr) {
     modelOffset = (int)((intptr_t)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
@@ -156,18 +159,21 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
 
 {
   UiCommandSpriteButtonControl *root;
+  WorldRuntimeContext *worldRuntime;
   FactionRuntimeIndex factionIndex;
   CommandPayload groupIndex;
-  CommandPayload transferModeFlags;
+  FrontendSelectionTransferModeFlags transferModeFlags;
 
-  if ((g_UiCommandRuntimeFlags &
-      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) != 0) {
+  if (Any(g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     return;
   }
   root = control;
   while ((root->sprite).selectable.base.parent != UI_NODE_NONE) {
-    root = (UiCommandSpriteButtonControl *)(root->sprite).selectable.base.parent;
+    root = reinterpret_cast<UiCommandSpriteButtonControl *>((root->sprite).selectable.base.parent.get());
   }
+  /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
+  worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
   /* find the group of the clicked button */
   groupIndex = SELECTION_GROUP_COUNT - 1;
   while ((int)((uintptr_t)control - (uintptr_t)root) != g_UiAction100AControlOffsets[groupIndex]) {
@@ -176,24 +182,24 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
       return;
     }
   }
-  transferModeFlags = 0;
-  if ((control->activationInputState & UI_COMMAND_ACTIVATION_LOW_INPUT_NIBBLE_MASK) != 0) {
+  transferModeFlags = FrontendSelectionTransferModeFlags{};
+  if (Any(control->activationInputState & UI_COMMAND_ACTIVATION_LOW_INPUT_NIBBLE_MASK)) {
     transferModeFlags = SELECTION_TRANSFER_MERGE;
   }
-  if ((control->activationInputState & UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON) != 0) {
+  if (Any(control->activationInputState & UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON)) {
     transferModeFlags = transferModeFlags | SELECTION_TRANSFER_TO_GROUP;
   }
-  if ((control->activationInputState & UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK) != 0) {
+  if (Any(control->activationInputState & UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK)) {
     transferModeFlags = transferModeFlags | SELECTION_TRANSFER_CENTER_VIEW;
   }
-  if ((transferModeFlags != 0) &&
+  if (Any(transferModeFlags) &&
       SelectionInfo_AllEntriesEmptyOrMatchOwner
-           ((FactionRuntimeIndex)((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex)) {
+           ((FactionRuntimeIndex)worldRuntime->activeFactionRuntimeIndex)) {
     return;
   }
-  factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+  factionIndex = worldRuntime->activeFactionRuntimeIndex;
   InGameCommand_Issue<FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh>
-            ((CommandPayload)factionIndex,transferModeFlags,groupIndex);
+            ((CommandPayload)factionIndex,ToBits(transferModeFlags),groupIndex);
 }
 
 /* Empty callback: InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState installs it as
@@ -234,8 +240,8 @@ void InGameCommand_HandlePlayerDeparture
     for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
         ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        entityRuntime = (GameEntityRuntime *)
-             (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime;
+        entityRuntime = ModelView_Cast<GameEntityRuntime>
+             ((WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset).armyRuntime);
         if (factionToken == (entityRuntime->common).ownership.ownerIndex) {
           ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
         }
@@ -245,6 +251,7 @@ void InGameCommand_HandlePlayerDeparture
   }
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     if (playerOrFactionId == playerRecord->playerRuntimeId) {
       playerRecord->heartbeatExpiryTicks = 0;
@@ -253,11 +260,11 @@ void InGameCommand_HandlePlayerDeparture
       }
       if (playerOrFactionId == (runtimeRoot->worldRuntime).selection.activePlayerRuntimeId) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT;
-        Resource_Release((void *)(uintptr_t)g_FrontendLoadedCampaignAsset);
-        g_FrontendLoadedCampaignAsset = 0;
+        Resource_Release(g_FrontendLoadedCampaignAsset);
+        g_FrontendLoadedCampaignAsset = nullptr;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          g_FrontendLoadedCampaignAsset = 0; /* stored twice, as in the original */
+          g_FrontendLoadedCampaignAsset = nullptr; /* stored twice, as in the original */
           return;
         }
         g_SessionNetworkRoleFlags =
@@ -271,7 +278,7 @@ void InGameCommand_HandlePlayerDeparture
         (playerRecord->playerName).textUtf16[0] = 0;
         (playerRecord->playerName).textUtf16[1] = 0;
         playerRecord->playerRuntimeId = 0;
-        (playerRecord->factionAssignment).roleStateFlags = 0;
+        (playerRecord->factionAssignment).roleStateFlags = FrontendRoleStateFlags{};
         return;
       }
       /* departure message with the player name patched in */
@@ -287,15 +294,16 @@ void InGameCommand_HandlePlayerDeparture
 
 /* Changes the global g_UiCommandRuntimeFlags: first clears clearMask, then sets setMask, then toggles toggleMask
    (the masks come in the reverse order as arguments). Local games call it directly, network games send the
-   same masks as player command 0x310. playerRuntimeId is not used: the flags are not per player.
+   same masks as player command 0x310. playerRuntimeId is not used: the flags are not per player. The masks are
+   the command payload dwords of UiCommandRuntimeFlagMask.
 */
-void UiCommandRuntimeFlags_ApplyClearSetToggleMasks(PlayerRuntimeId playerRuntimeId,UiCommandRuntimeFlagMask toggleMask,
-          UiCommandRuntimeFlagMask setMask,UiCommandRuntimeFlagMask clearMask)
+void UiCommandRuntimeFlags_ApplyClearSetToggleMasks(PlayerRuntimeId playerRuntimeId,CommandPayload toggleBits,
+          CommandPayload setBits,CommandPayload clearBits)
 
 {
-  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~clearMask;
-  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | setMask;
-  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ toggleMask;
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~FromBits<UiCommandRuntimeFlagMask>(clearBits);
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | FromBits<UiCommandRuntimeFlagMask>(setBits);
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ FromBits<UiCommandRuntimeFlagMask>(toggleBits);
 }
 
 InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11 = {

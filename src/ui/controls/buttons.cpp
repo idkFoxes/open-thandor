@@ -12,8 +12,8 @@
    visited before its next sibling, at every depth. */
 static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node) {
   while (node != UI_NODE_NONE) {
-    if (node->vtable == (UiNodeVtable *)&g_UiSpriteButtonControlVtable) {
-      UiSpriteButtonControl_AdvanceAnimation((UiSpriteButtonControl *)node);
+    if (node->vtable == &g_UiSpriteButtonControlVtable) {
+      UiSpriteButtonControl_AdvanceAnimation(UiNode_As<UiSpriteButtonControl>(node));
     }
     UiTree_AdvanceSpriteButtonAnimationsFrom(node->firstChild);
     node = node->nextSibling;
@@ -41,9 +41,9 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
   uint32_t randomValue;
   uint32_t normalFrameCount;
 
-  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+  if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
     control->animationFrameOffset = 0;
-    if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR) != 0) {
+    if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR)) {
       sequenceDescriptor = Thandor_U32ToPointer<int32_t>(control->normalSubresourceStartOrDescriptor); /* 5f-format: UiSpriteButtonControl.normalSubresourceStartOrDescriptor (UI template) */
       (control->selectable).base.leftOffset = sequenceDescriptor[0];
       (control->selectable).base.topOffset = sequenceDescriptor[1];
@@ -61,7 +61,7 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
       control->animationFrameOffset = randomValue % normalFrameCount;
     }
   }
-  UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
+  UiContainer_RelocateChildren(relocationDelta,&control->selectable.base);
 }
 
 /* drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable
@@ -81,12 +81,12 @@ void UiSpriteButtonControl_DrawClipped
   GraphicsTextureSourceAsset *textureSource;
   SoftwareFramebufferAccess *framebufferAccess;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   /* SELECTED_ONLY buttons are invisible while not selected */
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0 &&
-      ((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) != 0) {
+  if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) &&
+      Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY)) {
     return;
   }
   if (control->primaryTextureSource == nullptr) {
@@ -97,7 +97,7 @@ void UiSpriteButtonControl_DrawClipped
   }
 
   /* shadow pass */
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     shadowOffsetX = (control->drawOffsets).normalX;
     shadowOffsetY = (control->drawOffsets).normalY;
   }
@@ -106,17 +106,17 @@ void UiSpriteButtonControl_DrawClipped
     shadowOffsetY = (control->drawOffsets).selectedY;
   }
   textureSource = control->primaryTextureSource;
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     subresourceIndex = control->normalSubresourceStartOrDescriptor;
   }
   else {
-    if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) &&
-       (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE) != 0)) {
+    if (!Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) &&
+       (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE))) {
       textureSource = control->alternateTextureSource;
     }
     subresourceIndex = control->selectedSubresourceStart;
   }
-  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+  if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
     subresourceIndex = subresourceIndex + control->animationFrameOffset;
   }
   g_GraphicsTextureSourceBlitModulatedSourceAlpha
@@ -127,18 +127,18 @@ void UiSpriteButtonControl_DrawClipped
   /* sprite pass (the framebuffer access is read before the optional underlay blit) */
   textureSource = control->primaryTextureSource;
   framebufferAccess = g_FramebufferAccess;
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     subresourceIndex = control->normalSubresourceStartOrDescriptor;
   }
   else {
-    if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) &&
-       (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE) != 0)) {
+    if (!Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) &&
+       (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE))) {
       textureSource = control->alternateTextureSource;
     }
     subresourceIndex = control->selectedSubresourceStart;
-    if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED) != 0) {
+    if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED)) {
       underlaySubresource = control->normalSubresourceStartOrDescriptor;
-      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+      if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
         underlaySubresource = underlaySubresource + control->animationFrameOffset;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
@@ -147,7 +147,7 @@ void UiSpriteButtonControl_DrawClipped
                  g_FramebufferAccess);
     }
   }
-  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+  if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
     subresourceIndex = subresourceIndex + control->animationFrameOffset;
   }
   g_GraphicsTextureSourceBlitSourceAlpha
@@ -168,23 +168,23 @@ void UiSpriteButtonControl_NonRightPress
   UiSelectableStateFlags *pressStateFlagsField;
   UiSelectableStateFlags *selectionStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
-  Bool8 queueAction;
+  bool queueAction;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
+    if (!Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
-      if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) &&
-         ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0 ||
+      if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) &&
+         ((Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) ||
           (control->selectedSubresourceEndExclusive <=
            control->animationFrameOffset + control->selectedSubresourceStart)))) {
         control->animationFrameOffset = 0;
       }
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(&control->selectable.base);
       return;
     }
-    if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION)) {
+      if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&
           control->activationSound != nullptr) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -193,8 +193,8 @@ void UiSpriteButtonControl_NonRightPress
       selectionStateFlagsField = &(control->selectable).stateFlags;
       *selectionStateFlagsField = *selectionStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
       queueAction = true;
-      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
-        if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0) ||
+      if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
+        if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) ||
            (control->selectedSubresourceEndExclusive <=
             control->animationFrameOffset + control->selectedSubresourceStart)) {
           control->animationFrameOffset = 0;
@@ -202,16 +202,16 @@ void UiSpriteButtonControl_NonRightPress
         pressStateFlagsField = &(control->selectable).stateFlags;
         *pressStateFlagsField = *pressStateFlagsField | UI_SPRITE_BUTTON_ACTION_PENDING;
         /* ACTION_AFTER_ANIMATION: UiSpriteButtonControl_AdvanceAnimation queues it on the last frame. */
-        queueAction = ((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) == 0;
+        queueAction = !Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION);
       }
       if (queueAction) {
         UiActionQueue_Enqueue((control->selectable).actionId,control);
       }
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(&control->selectable.base);
       return;
     }
-    if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
+    if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
+      if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&
           control->activationSound != nullptr) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -220,20 +220,20 @@ void UiSpriteButtonControl_NonRightPress
       pressStateFlagsField = &(control->selectable).stateFlags;
       *pressStateFlagsField = *pressStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
       queueAction = true;
-      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
-        if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0) ||
+      if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
+        if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) ||
            (control->selectedSubresourceEndExclusive <=
             control->animationFrameOffset + control->selectedSubresourceStart)) {
           control->animationFrameOffset = 0;
         }
         pressStateFlagsField = &(control->selectable).stateFlags;
         *pressStateFlagsField = *pressStateFlagsField | UI_SPRITE_BUTTON_ACTION_PENDING;
-        queueAction = ((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) == 0;
+        queueAction = !Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION);
       }
       if (queueAction) {
         UiActionQueue_Enqueue((control->selectable).actionId,control);
       }
-      UiNode_InvalidateRoot((UiNodeBase *)control);
+      UiNode_InvalidateRoot(&control->selectable.base);
     }
   }
 }
@@ -247,20 +247,20 @@ void UiSpriteButtonControl_NonRightRelease
           UiSpriteButtonControl *control)
 
 {
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
-  if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
+  if (Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
     return;
   }
-  if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) &&
-     ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0 ||
+  if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) &&
+     ((Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) ||
       (control->normalSubresourceEndExclusive <=
        control->animationFrameOffset + control->normalSubresourceStartOrDescriptor)))) {
     control->animationFrameOffset = 0;
   }
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-    if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
+  if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
+    if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&
         control->activationSound != nullptr) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -268,7 +268,7 @@ void UiSpriteButtonControl_NonRightRelease
     }
     (control->selectable).stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     UiActionQueue_Enqueue((control->selectable).actionId,control);
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&control->selectable.base);
   }
 }
 
@@ -282,21 +282,21 @@ void UiSpriteButtonControl_NonRightDrag
           UiSpriteButtonControl *control)
 
 {
-  Bool8 pointerInside;
+  bool pointerInside;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
-  if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
+  if (Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
     return;
   }
-  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+  if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
     return;
   }
-  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_RECT_HIT_TEST) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_RECT_HIT_TEST)) {
     pointerInside = false;
     if (control->primaryTextureSource != nullptr) {
-      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) == 0) {
+      if (!Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY)) {
         pointerInside = g_GraphicsTextureSourceTestOpaquePixel
                           (pointerY,pointerX,(control->selectable).base.top,
                            (control->selectable).base.left,
@@ -319,17 +319,17 @@ void UiSpriteButtonControl_NonRightDrag
   }
   if (pointerInside) {
     /* Pointer inside: show the pressed state. */
-    if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
       return;
     }
     (control->selectable).stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&control->selectable.base);
     return;
   }
   /* Pointer outside: drop the pressed state. */
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+  if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     (control->selectable).stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&control->selectable.base);
   }
 }
 
@@ -342,15 +342,15 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSpriteButtonControl *control)
 
 {
-  Bool8 spritePixelHit;
+  bool spritePixelHit;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return UI_NODE_NONE;
   }
-  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_RECT_HIT_TEST) != 0) {
-    return (UiNodeBase *)control;
+  if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_RECT_HIT_TEST)) {
+    return &control->selectable.base;
   }
-  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY)) {
     if (control->primaryTextureSource == nullptr) {
       return UI_NODE_NONE;
     }
@@ -369,7 +369,7 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
   if (!spritePixelHit) {
     return UI_NODE_NONE;
   }
-  return (UiNodeBase *)control;
+  return &control->selectable.base;
 }
 
 /* drawClipped slot of g_UiImageActionControlVtable (briefing image, movie views). Draws the image 1:1, or
@@ -389,9 +389,9 @@ void UiImageActionControl_DrawImageAndChildren
   uint32_t horizontalMargin;
   int imageLeft;
   int imageTop;
-  Bool8 accessFailed;
+  bool accessFailed;
 
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0 && control->textureSource != nullptr) {
+  if (!Any(control->base.nodeFlags & UI_NODE_SUPPRESSED) && control->textureSource != nullptr) {
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       if ((control->displayFlags & UI_IMAGE_ACTION_STRETCH) == 0) {
@@ -477,7 +477,7 @@ void UiImageActionControl_EnqueueSecondaryAction
    UI_IMAGE_ACTION_KEY_ACTIVATES any other key queues primaryActionId, like a left click.
    Returns false when the key was consumed, true to pass it on.
 */
-Bool8 UiImageActionControl_HandleKeyboardActivation
+bool UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control)
 
 {
@@ -590,13 +590,13 @@ void UiConditionalActionControl_DrawClipped
   if (backgroundSubresource == UI_TEXT_BOX_SUBRESOURCE_INTERIOR) {
     /* lineCount != 0 here, so the first line is always drawn */
     lineIndex = 0;
-    do {
+    while (lineIndex < control->lineCount) {
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,g_UiTextStyleNormal,
                  control->textLines[lineIndex],lineTop,textLeft + 3);
       lineIndex = lineIndex + 1;
       lineTop = lineTop + textExtent.heightPixels;
-    } while (lineIndex < control->lineCount);
+    }
   }
   else {
     /* wide box: at most UI_TEXT_BOX_WIDE_MAX_LINES lines, last line first */
@@ -604,13 +604,13 @@ void UiConditionalActionControl_DrawClipped
     if (UI_TEXT_BOX_WIDE_MAX_LINES < remainingLines) {
       remainingLines = UI_TEXT_BOX_WIDE_MAX_LINES;
     }
-    do {
+    while (remainingLines != 0) {
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,g_UiTextStyleNormal,
                  control->textLines[remainingLines - 1],lineTop,textLeft + 3);
       lineTop = lineTop + textExtent.heightPixels;
       remainingLines = remainingLines - 1;
-    } while (remainingLines != 0);
+    }
   }
   g_GraphicsFramebufferEndAccess();
 }
@@ -663,10 +663,10 @@ void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
   uint32_t subresourceStart;
   uint32_t subresourceEndExclusive;
 
-  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
     return;
   }
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     subresourceStart = control->normalSubresourceStartOrDescriptor;
     subresourceEndExclusive = control->normalSubresourceEndExclusive;
   }
@@ -682,13 +682,13 @@ void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
   }
   /* last frame reached: fire a deferred (ACTION_AFTER_ANIMATION) action once */
   if (subresourceEndExclusive - 1 <= subresourceStart + control->animationFrameOffset) {
-    if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0) &&
-       (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_PENDING) != 0)) {
+    if (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) &&
+       (Any((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_PENDING))) {
       UiActionQueue_Enqueue((control->selectable).actionId,control);
     }
     (control->selectable).stateFlags &= ~UI_SPRITE_BUTTON_ACTION_PENDING;
   }
-  UiNode_InvalidateRoot((UiNodeBase *)control);
+  UiNode_InvalidateRoot(&control->selectable.base);
 }
 
 UiNodeVtable g_UiSpriteButtonControlVtable = {

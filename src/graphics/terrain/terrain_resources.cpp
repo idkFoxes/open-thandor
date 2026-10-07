@@ -41,14 +41,14 @@ static TerrainMaterialSuffixEntry *TerrainVisualResources_FindPathSuffixEntry(ui
 
   for (pathLength = 0; (pathLength < 255) && (resourcePath[pathLength] != 0); pathLength++) {
   }
-  return (TerrainMaterialSuffixEntry *)(resourcePath + pathLength);
+  return reinterpret_cast<TerrainMaterialSuffixEntry *>(resourcePath + pathLength); /* the suffix record is written over the path's end */
 }
 
 /* Loads the 26 material texture sets <secondary>a..z.gfx into g_TerrainMaterialTextureSets: those whose bit is
    set in fieldFlags are required (advancing the loading movie before and after each), the others optional
    (NULL when missing). Also sets the loading movie span from the number of required sets. Returns true on
    success; false with the load error in *outError when a required set fails. */
-static Bool8 TerrainVisualResources_LoadMaterialTextureSets
+static bool TerrainVisualResources_LoadMaterialTextureSets
           (uint16_t *secondaryResourcePath,TerrainMaterialSuffixEntry *pathSuffixEntry,FieldGridFlags fieldFlags,
           uint32_t *outError)
 
@@ -92,7 +92,7 @@ static Bool8 TerrainVisualResources_LoadMaterialTextureSets
 /* Loads <primary>.dat, <primary>.gfx, <primary>.pal, <secondary>.pal and <secondary>.dat (the secondary path
    without its material letter) into the terrain globals, advancing the loading movie after each. Returns true
    on success; false with the load error in *outError at the first failure. */
-static Bool8 TerrainVisualResources_LoadTablesAndPalettes
+static bool TerrainVisualResources_LoadTablesAndPalettes
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,
           TerrainMaterialSuffixEntry *pathSuffixEntry,uint32_t *outError)
 
@@ -109,7 +109,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
     return false;
   }
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  g_TerrainSurfacePacketTablePayload = (uint8_t *)packetTable + TERRAIN_PACKET_TABLE_HEADER_BYTES;
+  g_TerrainSurfacePacketTablePayload = static_cast<uint8_t *>(packetTable) + TERRAIN_PACKET_TABLE_HEADER_BYTES;
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
   primaryTextureSet = g_GraphicsTextureSetLoadPackage(primaryResourcePath,&loadErrorCode);
   if (primaryTextureSet == nullptr) {
@@ -145,7 +145,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
     return false;
   }
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  g_TerrainSoilPacketTablePayload = (uint8_t *)packetTable + TERRAIN_PACKET_TABLE_HEADER_BYTES;
+  g_TerrainSoilPacketTablePayload = static_cast<uint8_t *>(packetTable) + TERRAIN_PACKET_TABLE_HEADER_BYTES;
   return true;
 }
 
@@ -170,7 +170,8 @@ static void TerrainDirectionTable_RandomizeRecords()
       rotationRate = -rotationRate;
     }
     directionRecord->rateA = rotationRate;
-    ((short *)&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
+    /* packedAngles holds the two 16-bit angles in its low and high word */
+    reinterpret_cast<short *>(&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
     randomValue = Random_NextPrimary();
     directionRecord->scaleB = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
     rotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
@@ -180,7 +181,7 @@ static void TerrainDirectionTable_RandomizeRecords()
       rotationRate = -rotationRate;
     }
     directionRecord->rateB = rotationRate;
-    ((short *)&directionRecord->packedAngles)[1] = (short)randomValue; /* angle B */
+    reinterpret_cast<short *>(&directionRecord->packedAngles)[1] = (short)randomValue; /* angle B */
     directionRecord->angleAComponent0ScaledQ28 = 0;
     directionRecord->angleAComponent1ScaledQ28 = 0;
     directionRecord->angleBComponent0ScaledQ28 = 0;
@@ -194,7 +195,7 @@ static void TerrainDirectionTable_RandomizeRecords()
    animated direction table. Advances the loading movie between steps. Returns true on success; on failure
    returns false and stores the error (field check or failed resource load) in *outError (untouched on success).
 */
-Bool8 TerrainVisualResources_LoadPrimary
+bool TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError)
 
@@ -231,7 +232,7 @@ Bool8 TerrainVisualResources_LoadPrimary
    flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell. Returns true on success; on failure
    returns false and stores the error in *outError (untouched on success).
 */
-Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
+bool TerrainVisualResources_LoadAndClearCellOverlayFlags
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError)
 
@@ -263,6 +264,7 @@ Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
   /* runs at least once (as in the original), so a field without cells would run away */
   cellsRemaining = field->gridWidth * field->gridHeight;
   fieldCell = field->cells;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     fieldCell->flagsAndMaterial = fieldCell->flagsAndMaterial & ~FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28;
     fieldCell++;
@@ -286,23 +288,22 @@ void TerrainVisualResources_Shutdown()
 
   materialTextureSetCursor = g_TerrainMaterialTextureSets;
   materialTextureSetsRemaining = TERRAIN_MATERIAL_TEXTURE_SET_COUNT;
-  do {
+  for (; materialTextureSetsRemaining != 0; materialTextureSetsRemaining--) {
     if (*materialTextureSetCursor != nullptr) {
       g_GraphicsTextureSetReleasePackage(*materialTextureSetCursor);
       *materialTextureSetCursor = nullptr;
     }
     materialTextureSetCursor++;
-    materialTextureSetsRemaining--;
-  } while (materialTextureSetsRemaining != 0);
+  }
   g_GraphicsTextureSetReleasePackage(g_TerrainPrimaryTextureSet);
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainSecondaryPalette);
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainPrimaryPalette);
   surfacePacketTablePayload = g_TerrainSurfacePacketTablePayload;
   if (g_TerrainSoilPacketTablePayload != nullptr) {
-    Resource_Release((void *)((uintptr_t)g_TerrainSoilPacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
+    Resource_Release(reinterpret_cast<void *>((uintptr_t)g_TerrainSoilPacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
   if (surfacePacketTablePayload != nullptr) {
-    Resource_Release((void *)((uintptr_t)surfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
+    Resource_Release(reinterpret_cast<void *>((uintptr_t)surfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
   g_TerrainPrimaryTextureSet = nullptr;
   g_TerrainSecondaryPalette = nullptr;

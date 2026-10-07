@@ -32,7 +32,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
   Q12 cellWorldYQ12;
   uint32_t phaseSeedBitWidth;
 
-  phaseSeedBitWidth = *(uint32_t *)((uint8_t *)g_TerrainSurfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES);
+  phaseSeedBitWidth = Thandor_LoadU32(static_cast<uint8_t *>(g_TerrainSurfacePacketTablePayload) - TERRAIN_PACKET_TABLE_HEADER_BYTES);
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
   cellsPerRow = fieldGrid->gridWidth;
   cell = fieldGrid->cells;
@@ -55,7 +55,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
       materialVariantRandomBits = Random_NextPrimary();
       cell->overlayColor = 0xffffffff; /* ARGB opaque white */
       cell->flagsAndMaterial =
-           cell->flagsAndMaterial | materialVariantRandomBits & FIELD_CELL_RANDOM_VARIANT_MASK;
+           cell->flagsAndMaterial | (FieldCell_FromRawWord(materialVariantRandomBits) & FIELD_CELL_RANDOM_VARIANT_MASK);
       cell++;
     }
   }
@@ -97,6 +97,7 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
   gridWidth = fieldGrid->gridWidth;
   currentCell = fieldGrid->cells;
   columnsRemaining = gridWidth;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       /* 5f-format: FieldGridCell.persistedAux54 */
@@ -122,6 +123,7 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
 
   cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     currentCell->overlayColor = argbColor;
     currentCell++;
@@ -136,9 +138,10 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
    status is ignored), or false with the allocation or write error in *outError. Called by
    InGameUiCommand_SaveFieldAndLevelAssetImages.
 */
-Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError)
+bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError)
 
 {
+  ArenaScoped imageCopyBlock; /* freed on return; only the result stores follow the write */
   FieldGridAsset *fieldGridImageCopy;
   uint32_t imageSizeBytes;
   uint32_t dwordsLeft;
@@ -151,20 +154,22 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   uint32_t writeError;
 
   imageSizeBytes = sourceImageDwords[1];
-  allocError = g_MemoryApi.alloc(imageSizeBytes,(void **)&fieldGridImageCopy);
+  allocError = imageCopyBlock.allocate(imageSizeBytes);
   if (allocError != 0) {
     *outError = allocError;
     return false;
   }
-  copyDestinationDwords = (uint32_t *)fieldGridImageCopy;
+  fieldGridImageCopy = imageCopyBlock.as<FieldGridAsset>();
+  copyDestinationDwords = reinterpret_cast<uint32_t *>(fieldGridImageCopy); /* copied dword by dword, as the original */
   for (dwordsLeft = imageSizeBytes >> 2; dwordsLeft != 0; dwordsLeft--) {
     *copyDestinationDwords = *sourceImageDwords;
     sourceImageDwords++;
     copyDestinationDwords++;
   }
-  fieldGridCellSaveView = (FieldGridCellSaveImageView *)fieldGridImageCopy->cells;
+  fieldGridCellSaveView = reinterpret_cast<FieldGridCellSaveImageView *>(fieldGridImageCopy->cells); /* the save-image view of the cells */
   fieldGridImageCopy->fieldFlags = 0;
   cellsRemaining = fieldGridImageCopy->gridWidth * fieldGridImageCopy->gridHeight;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     fieldGridCellSaveView->surfacePacketIndex = 0;
     fieldGridCellSaveView->triangle0NormalAngles = FIXED_ANGLE16_QUARTER_TURN << 16; /* elevation: straight up */
@@ -192,8 +197,8 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
     /* one bit per material id in use */
     fieldGridImageCopy->fieldFlags =
          fieldGridImageCopy->fieldFlags |
-         1 << ((uint8_t)fieldGridCellSaveView->flagsAndMaterial & 31);
-    occupancyBytes = (uint8_t *)&fieldGridCellSaveView->occupancyMask;
+         1 << (FieldCell_MaterialId(fieldGridCellSaveView->flagsAndMaterial) & 31);
+    occupancyBytes = reinterpret_cast<uint8_t *>(&fieldGridCellSaveView->occupancyMask);
     for (occupancyBytesLeft = 8; occupancyBytesLeft != 0; occupancyBytesLeft--) {
       *occupancyBytes = 0;
       occupancyBytes++;
@@ -204,7 +209,6 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   writeError = FileSystem_WriteBufferToPath
                     ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
                      g_LevelResourcePathScratchUtf16);
-  g_MemoryApi.free(fieldGridImageCopy);
   if (writeError != 0) {
     *outError = writeError;
     return false;
@@ -221,7 +225,7 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
    Every stock grid passes: all are exactly header + cells long, with 8k + 3 (59..139) cells per side. Logs
    one line and returns false otherwise.
 */
-Bool8 FieldGrid_ValidateLoadedImage(const FieldGridAsset *fieldGrid,uint32_t loadedByteCount)
+bool FieldGrid_ValidateLoadedImage(const FieldGridAsset *fieldGrid,uint32_t loadedByteCount)
 
 {
   uint64_t requiredBytes;
@@ -256,18 +260,18 @@ FieldGridAsset *FieldGrid_LoadValidated(uint16_t *path,uint32_t *outErrorCode)
 
   loadedEntry = Package_LoadEntryWithSize(path,&loadedByteCount,&loadErrorCode);
   if (loadedEntry == nullptr) {
-    Thandor_Log("FieldGrid_LoadValidated failed: \"%ls\" (error 0x%08X)",(wchar_t *)path,loadErrorCode);
+    Thandor_Log("FieldGrid_LoadValidated failed: \"%ls\" (error 0x%08X)",reinterpret_cast<wchar_t *>(path),loadErrorCode); /* UTF-16 path for %ls (Windows wchar_t) */
     if (outErrorCode != nullptr) {
       *outErrorCode = loadErrorCode;
     }
     return nullptr;
   }
-  if (!FieldGrid_ValidateLoadedImage((FieldGridAsset *)loadedEntry,loadedByteCount)) {
+  if (!FieldGrid_ValidateLoadedImage(static_cast<FieldGridAsset *>(loadedEntry),loadedByteCount)) {
     g_MemoryApi.free(loadedEntry);
     if (outErrorCode != nullptr) {
       *outErrorCode = FATAL_ERROR_FIELD_ASSET_INVALID;
     }
     return nullptr;
   }
-  return (FieldGridAsset *)loadedEntry;
+  return static_cast<FieldGridAsset *>(loadedEntry);
 }

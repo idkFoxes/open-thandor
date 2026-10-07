@@ -113,7 +113,7 @@ static GridScratchStateMask GridScratch_ClassifyFieldCell(FieldGridCell *fieldCe
   if (triangle0Angle <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT30_MAX_TRIANGLE0_NORMAL_ANGLE]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT30;
   }
-  if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     cellClassMask = cellClassMask | GRID_SCRATCH_BLOCKED;
   }
   return cellClassMask;
@@ -136,8 +136,8 @@ static void GridScratch_FloodFillFromPlacedRuntimeModels(WorldOwnerListNode *own
 
   do {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-        (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != 0) &&
-        ((int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex != 1)) {
+        (WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != 0) &&
+        ((int)WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex != 1)) {
       wideProductX = (int64_t)ownerNode->worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
       wideProductY = (int64_t)ownerNode->worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
       scaledRowTerm = FIXED_PRODUCT_SHR(wideProductY, Q20_SHIFT + 1);
@@ -187,6 +187,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   /* one 16-cell block per field cell */
   blocksToClear = fieldGridWidth * rowsRemaining;
   scratchCursor = g_GridScratchPrimary;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     scratchCursor->stateMask = scratchCursor->stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
     scratchCursor[1].stateMask = scratchCursor[1].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
@@ -211,23 +212,24 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   fieldCell = fieldGridAsset->cells;
   columnsRemaining = fieldGridWidth;
   scratchCursor = g_GridScratchPrimary;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       cellClassMask = GridScratch_ClassifyFieldCell(fieldCell);
       cellFlags = fieldCell->flagsAndMaterial;
-      if ((cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY) == 0) {
+      if (!Any(cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY)) {
         scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(1 - scratchWidth)].stateMask = scratchCursor[(int32_t)(1 - scratchWidth)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(2 - scratchWidth)].stateMask = scratchCursor[(int32_t)(2 - scratchWidth)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(3 - scratchWidth)].stateMask = scratchCursor[(int32_t)(3 - scratchWidth)].stateMask | cellClassMask;
-        if ((cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
+        if (!Any(cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY)) {
           scratchCursor[(int32_t)(scratchWidth * -2 + 4)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 4)].stateMask | cellClassMask;
           scratchCursor[(int32_t)(4 - scratchWidth)].stateMask = scratchCursor[(int32_t)(4 - scratchWidth)].stateMask | cellClassMask;
           scratchCursor[(int32_t)(5 - scratchWidth)].stateMask = scratchCursor[(int32_t)(5 - scratchWidth)].stateMask | cellClassMask;
         }
       }
-      if ((cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
+      if (!Any(cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY)) {
         scratchCursor[4].stateMask = scratchCursor[4].stateMask | cellClassMask;
         scratchCursor[5].stateMask = scratchCursor[5].stateMask | cellClassMask;
         scratchCursor[scratchWidth + 4].stateMask = scratchCursor[scratchWidth + 4].stateMask | cellClassMask;
@@ -239,7 +241,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
       scratchCursor[2].stateMask = scratchCursor[2].stateMask | cellClassMask;
       scratchCursor[3].stateMask = scratchCursor[3].stateMask | cellClassMask;
       scratchCursor = scratchCursor + scratchWidth;
-      if ((cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY) == 0) {
+      if (!Any(cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY)) {
         scratchCursor[-1].stateMask = scratchCursor[-1].stateMask | cellClassMask;
         scratchCursor[scratchWidth - 1].stateMask = scratchCursor[scratchWidth - 1].stateMask | cellClassMask;
         scratchCursor[scratchWidth - 2].stateMask = scratchCursor[scratchWidth - 2].stateMask | cellClassMask;
@@ -259,13 +261,13 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
       scratchCursor[1].stateMask = scratchCursor[1].stateMask | cellClassMask;
       scratchCursor[2].stateMask = scratchCursor[2].stateMask | cellClassMask;
       scratchCursor[3].stateMask = scratchCursor[3].stateMask | cellClassMask;
-      if ((cellFlags & FIELD_CELL_LAST_ROW_BOUNDARY) == 0) {
+      if (!Any(cellFlags & FIELD_CELL_LAST_ROW_BOUNDARY)) {
         scratchCursor[scratchWidth].stateMask = scratchCursor[scratchWidth].stateMask | cellClassMask;
         scratchCursor[scratchWidth + 1].stateMask = scratchCursor[scratchWidth + 1].stateMask | cellClassMask;
         scratchCursor[scratchWidth + 2].stateMask = scratchCursor[scratchWidth + 2].stateMask | cellClassMask;
         scratchCursor[scratchWidth * 2].stateMask = scratchCursor[scratchWidth * 2].stateMask | cellClassMask;
         scratchCursor[scratchWidth * 2 + 1].stateMask = scratchCursor[scratchWidth * 2 + 1].stateMask | cellClassMask;
-        if ((cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY) == 0) {
+        if (!Any(cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY)) {
           scratchCursor[scratchWidth - 1].stateMask = scratchCursor[scratchWidth - 1].stateMask | cellClassMask;
           scratchCursor[scratchWidth - 2].stateMask = scratchCursor[scratchWidth - 2].stateMask | cellClassMask;
           scratchCursor[scratchWidth * 2 - 1].stateMask = scratchCursor[scratchWidth * 2 - 1].stateMask | cellClassMask;
@@ -285,6 +287,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   cellsToPromote = g_GridScratchHeight * g_GridScratchWidth;
   scratchCursor = g_GridScratchPrimary + (int32_t)(g_GridScratchWidth * -4);
   cellsRemaining = cellsToPromote;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     scratchCursor[scratchStride * 4].stateMask =
          scratchCursor[scratchStride * 4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
@@ -300,6 +303,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
     cellsRemaining--;
   } while (cellsRemaining != 0);
   promoteCursor = g_GridScratchPrimary;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     if ((promoteCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) {
       promoteCursor->stateMask = promoteCursor->stateMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
@@ -317,6 +321,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                GRID_SCRATCH_TERRAIN_CLASS_BIT28 | GRID_SCRATCH_TRAVERSAL_VISITED);
     cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT30|GRID_SCRATCH_TERRAIN_CLASS_BIT29|
@@ -336,6 +341,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                GRID_SCRATCH_TERRAIN_CLASS_BIT26 | GRID_SCRATCH_TERRAIN_CLASS_BIT25 | GRID_SCRATCH_TRAVERSAL_VISITED);
     cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT27|GRID_SCRATCH_TERRAIN_CLASS_BIT26|
@@ -356,13 +362,13 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
    pointer queue (g_GridPathCostQueueBegin..End; 0x180000 bytes in the original, 0x300000 with 8-byte pointers), each replacing and freeing the previous buffer. Returns true on success;
    on failure returns false and writes the allocator error to *outError (untouched on success).
 */
-Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError)
+bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError)
 
 {
   GridScratchCell *previousSecondaryScratchBuffer;
   GridScratchCell **previousCostQueueBuffer;
-  uint32_t *newScratchBuffer;
-  uint32_t *newSecondaryScratchBuffer;
+  GridScratchCell *newScratchBuffer;
+  GridScratchCell *newSecondaryScratchBuffer;
   void *newAuxiliaryBuffer;
   uint32_t bytes;
   uint32_t allocError;
@@ -371,21 +377,21 @@ Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outEr
   g_GridScratchWidth = fieldGrid->gridWidth * 4;
   g_GridScratchHeight = fieldGrid->gridHeight * 4;
   bytes = fieldGrid->gridWidth * (4 * sizeof(GridScratchCell)) * g_GridScratchHeight; /* scratch width * height * 8 */
-  allocError = g_MemoryApi.alloc(bytes,(void **)&newScratchBuffer);
+  allocError = g_MemoryApi.alloc(bytes,reinterpret_cast<void **>(&newScratchBuffer)); /* the arena stores the block address through void ** */
   previousScratchBuffer = g_GridScratchPrimary;
   if (allocError == 0) {
-    g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
+    g_GridScratchPrimary = newScratchBuffer;
     g_MemoryApi.free(previousScratchBuffer);
-    allocError = g_MemoryApi.alloc(bytes,(void **)&newSecondaryScratchBuffer);
+    allocError = g_MemoryApi.alloc(bytes,reinterpret_cast<void **>(&newSecondaryScratchBuffer)); /* the arena stores the block address through void ** */
     previousSecondaryScratchBuffer = g_GridScratchSecondary;
     if (allocError == 0) {
-      g_GridScratchSecondary = (GridScratchCell *)newSecondaryScratchBuffer;
+      g_GridScratchSecondary = newSecondaryScratchBuffer;
       g_MemoryApi.free(previousSecondaryScratchBuffer);
       allocError = g_MemoryApi.alloc(GRID_PATH_COST_QUEUE_BYTES,&newAuxiliaryBuffer);
       previousCostQueueBuffer = g_GridPathCostQueueBegin;
       if (allocError == 0) {
-        g_GridPathCostQueueEnd = (GridScratchCell **)((uintptr_t)newAuxiliaryBuffer + GRID_PATH_COST_QUEUE_BYTES);
-        g_GridPathCostQueueBegin = (GridScratchCell **)newAuxiliaryBuffer;
+        g_GridPathCostQueueEnd = reinterpret_cast<GridScratchCell **>(static_cast<uint8_t *>(newAuxiliaryBuffer) + GRID_PATH_COST_QUEUE_BYTES);
+        g_GridPathCostQueueBegin = static_cast<GridScratchCell **>(newAuxiliaryBuffer);
         g_MemoryApi.free(previousCostQueueBuffer);
         return true;
       }
@@ -432,12 +438,13 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
   rowsRemaining = fieldGrid->gridHeight;
   columnsRemaining = gridWidth;
   currentFieldCell = fieldGrid->cells;
-  scratchCellCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
+  scratchCellCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       /* the original advances first and then tests the flags of the current cell */
       nextScratchCellCursor = scratchCellCursor + 8;
-      if ((currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      if (!Any(currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         factionPresenceMask =
              ((uint32_t)((currentFieldCell->occupancyMask &
                          FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,1)) != 0) +
@@ -537,7 +544,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
    when it lies outside the scratch grid, the cell is GRID_SCRATCH_BLOCKED, or the cell has distance band bit
    8 + lowBandIndex or bit 24 + highBandIndex set.
 */
-Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
+bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
 
 {
   GridScratchStateMask cellStateMask;
@@ -575,8 +582,8 @@ void GridScratch_CopyPrimaryToSecondary()
   uint32_t *secondaryWriteCursor;
 
   scratchDwordsRemaining = g_GridScratchWidth * g_GridScratchHeight * 2;
-  primaryReadCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
-  secondaryWriteCursor = (uint32_t *)&g_GridScratchSecondary->stateMask;
+  primaryReadCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
+  secondaryWriteCursor = GridScratchCell_StateMaskBits(g_GridScratchSecondary);
   for (; scratchDwordsRemaining != 0; scratchDwordsRemaining--) {
     *secondaryWriteCursor = *primaryReadCursor;
     primaryReadCursor++;
@@ -625,15 +632,15 @@ void GridScratch_FloodFillConnectedCells
   /* the row above is scanned from the span's first cell up to the column of the right stopping cell, the row
      below from the column of the left stopping cell up to the span's last cell (addresses as in the original).
      Both ranges are never empty, so testing before the first cell is the same as the original's do-while. */
-  rowAboveLastCell = (GridScratchCell *)((uint8_t *)rightStopCell - rowStrideBytes);
-  for (rowAboveCell = (GridScratchCell *)((uint8_t *)(leftStopCell + 1) - rowStrideBytes);
+  rowAboveLastCell = GridScratchCell_RowAbove(rightStopCell,rowStrideBytes);
+  for (rowAboveCell = GridScratchCell_RowAbove(leftStopCell + 1,rowStrideBytes);
        rowAboveCell <= rowAboveLastCell; rowAboveCell++) {
     if ((rowAboveCell->stateMask & traversalMask) == 0) {
       GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowAboveCell);
     }
   }
-  rowBelowEndCell = (GridScratchCell *)((uint8_t *)rightStopCell + rowStrideBytes);
-  for (rowBelowCell = (GridScratchCell *)((uint8_t *)leftStopCell + rowStrideBytes);
+  rowBelowEndCell = GridScratchCell_RowBelow(rightStopCell,rowStrideBytes);
+  for (rowBelowCell = GridScratchCell_RowBelow(leftStopCell,rowStrideBytes);
        rowBelowCell < rowBelowEndCell; rowBelowCell++) {
     if ((rowBelowCell->stateMask & traversalMask) == 0) {
       GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowBelowCell);
@@ -649,10 +656,10 @@ void GridScratch_ResetTraversalFlagsAndCosts()
 {
   uint32_t cellsRemaining;
   uint32_t *scratchRecordCursor; /* dword view of the 8-byte cells: [2n] = stateMask, [2n + 1] = pathCost */
-  Bool8 fullRecordBlockRemaining;
+  bool fullRecordBlockRemaining;
 
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
-  scratchRecordCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
+  scratchRecordCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
   do {
     *scratchRecordCursor = *scratchRecordCursor & ~GRID_SCRATCH_TRAVERSAL_VISITED;
     scratchRecordCursor[1] = GRID_PATH_COST_UNREACHED;

@@ -42,13 +42,14 @@ the asset while the frame is recorded or right at its flush, before the simulati
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-enum Draw2DBackend : uint8_t {
+enum class Draw2DBackend : uint8_t {
     DRAW2D_BACKEND_SOFTWARE = 0,
     DRAW2D_BACKEND_GPU_RECORD = 1,
     DRAW2D_BACKEND_COMPARE = 2,
 };
+using enum Draw2DBackend;
 
-enum Draw2DOp : uint8_t {
+enum class Draw2DOp : uint8_t {
     DRAW2D_OP_SPRITE = 0,       /* one subresource of asset: dst <- src texels, through clip */
     DRAW2D_OP_FILL = 1,         /* dst filled with tintArgb, through clip */
     DRAW2D_OP_IMAGE_REGION = 2, /* CPU image (pixels, pitchBytes) of src size drawn at dst, through clip (no
@@ -59,8 +60,10 @@ enum Draw2DOp : uint8_t {
        frames, credits; step 9 WP5) */
     DRAW2D_OP_IMAGE_BILINEAR = 5,
 };
+using enum Draw2DOp;
 
-enum Draw2DBlend : uint8_t {
+/* The values equal the GPU backend's GpuUiBlend numbers of the same blends (the sprite items pass theirs on). */
+enum class Draw2DBlend : uint8_t {
     /* source alpha: alpha 0 is skipped, alpha 0xFF is written as is (the software path converts it through the
        brightness/contrast tables), anything else is blended. BlitSourceAlpha, translucent fills. */
     DRAW2D_BLEND_SRC_ALPHA_SKIP0 = 0,
@@ -72,9 +75,10 @@ enum Draw2DBlend : uint8_t {
        meaningful: the pixels are framebuffer pixels) */
     DRAW2D_BLEND_OPAQUE = 3,
 };
+using enum Draw2DBlend;
 
 /* paletteBank of a SPRITE item whose subresource stores ARGB8888 texels (paletteIndex -1) */
-#define DRAW2D_PALETTE_BANK_DIRECT 0xffffffffu
+inline constexpr uint32_t DRAW2D_PALETTE_BANK_DIRECT = 0xffffffffu;
 
 /* One recorded draw. Rectangles are {x0, y0, x1, y1} with x1/y1 exclusive; dst and clip are in logical
    framebuffer pixels, src in texels of the subresource (SPRITE) or pixels of the image (IMAGE_REGION).
@@ -99,6 +103,8 @@ enum Draw2DBlend : uint8_t {
      weights' rounding differs). The pixels are read when the item is recorded (g_Draw2DSpriteRecorded) and stay
      valid until the next Draw2D_BeginFrame. */
 struct Draw2DItem {
+    /* op and blend stay stored as bytes (the GPU backend hands blend on as its GpuUiBlend number, and the
+       recorder's and the GPU backend's code stays as it was); Op() and Blend() read them typed */
     uint8_t op;    /* Draw2DOp */
     uint8_t blend; /* Draw2DBlend */
     const GraphicsTextureSourceAsset *asset;
@@ -112,6 +118,8 @@ struct Draw2DItem {
     int32_t pitchBytes;     /* IMAGE_REGION and IMAGE_BILINEAR only */
     int32_t q12[6];             /* ROTATED_BILINEAR only */
     uint32_t contentGeneration; /* ROTATED_BILINEAR only */
+    Draw2DOp Op() const { return static_cast<Draw2DOp>(op); }
+    Draw2DBlend Blend() const { return static_cast<Draw2DBlend>(blend); }
 };
 
 /* ---- New slots for the former direct pixel writes (software implementations in graphics/backend) ---- */
@@ -140,8 +148,8 @@ using GraphicsGreyScaleImageProc = void (GraphicsPixelDimension destinationHeigh
                                          GraphicsScreenCoordinate destinationTop,
                                          GraphicsScreenCoordinate destinationLeft, uint64_t *blendedSourcePixels,
                                          uint64_t *blendFactorPixels, GraphicsSubresourceIndex sourceSubresourceIndexA,
-                                         GraphicsSubresourceIndex sourceSubresourceIndexB, int *graphicsTextureAsset,
-                                         int *framebufferAccess);
+                                         GraphicsSubresourceIndex sourceSubresourceIndexB, const GraphicsTextureSourceAsset *graphicsTextureAsset,
+                                         const SoftwareFramebufferAccess *framebufferAccess);
 
 extern GraphicsMinimapDrawProc *g_GraphicsMinimapDraw;
 

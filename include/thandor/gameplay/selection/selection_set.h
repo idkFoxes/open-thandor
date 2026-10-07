@@ -15,10 +15,10 @@
 #include <thandor/core/contracts.h>
 
 /* Entries of a SelectionPointerArray32 / SelectionInfoEntitySlots (empty entries are NULL). */
-#define SELECTION_ENTRY_CAPACITY 32
+inline constexpr int SELECTION_ENTRY_CAPACITY = 32;
 /* One count in byte lane laneByte of a packed per-byte counter (SelectionPointerArray_SetAircraftPadTargets: lane 0
    bits 0-7, lane 1 bits 8-15, lane 2 bits 16-23) */
-#define SELECTION_PACKED_LANE_ONE(laneByte) (1 << ((laneByte) * 8))
+constexpr int SELECTION_PACKED_LANE_ONE(int laneByte) { return 1 << (laneByte * 8); }
 
 void SelectionPlayerRuntime_MovePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved,Q12 deltaYQ12,Q12 deltaXQ12);
@@ -34,7 +34,7 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2);
 
-Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
+bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId);
 
 void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
@@ -44,9 +44,9 @@ void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRunt
 
 void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection);
 
-Bool8 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array);
+bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array);
 
-Bool8 SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection);
+bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection);
 
 void SelectionPointerArray_Clear32(SelectionPointerArray32 *array);
 

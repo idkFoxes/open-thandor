@@ -52,7 +52,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   path[pathLength] = 0;
   DebugMovie_ClearScreen();
   DebugMovie_ClearScreen();
-  if (!Movie_Open(MOVIE_OPEN_STREAM,path,&playbackRateHz,&openError)) {
+  if (!Movie_Open(MovieOpenFlags::MOVIE_OPEN_STREAM,path,&playbackRateHz,&openError)) {
     Thandor_Log("debug movie %d/%d %s: Movie_Open failed (eax=%08x)", index, count, name, openError);
     sprintf(label, "Video %d/%d: %s.flm - OEFFNEN FEHLGESCHLAGEN", index, count, name);
     if (!g_GraphicsFramebufferBeginAccess()) {
@@ -76,11 +76,11 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   start = Thandor_TickCount();
   for (;;) {
     uint32_t keyCode;
-    uint32_t keyStateMask;
+    UiKeyboardStateMask keyStateMask;
     CursorPointerEvent cursor;
     g_PlatformPumpEvents();
     if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) break;
-    if (g_GraphicsCursorConsumeEvent(&cursor) && RIGHT_PRESS < cursor.eventType) break;
+    if (g_GraphicsCursorConsumeEvent(&cursor) && GraphicsCursorEventType_IsRelease(cursor.eventType)) break;
     if (Thandor_TickCount() - start > 10000) break;
     if (g_IntroMoviePendingTicks != 0) {
       int burst = 3;
@@ -94,7 +94,8 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
       if (stretch) {
         g_GraphicsTextureSourceStretchDirectColorBilinear
                   (g_FramebufferHeight,g_FramebufferWidth,0,0,0,
-                   (GraphicsTextureSourceAsset *)movie,g_FramebufferAccess);
+                   reinterpret_cast<GraphicsTextureSourceAsset *>(movie) /* starts with a texture source header */,
+                   g_FramebufferAccess);
       }
       else {
         MovieFrameDimensions size = Movie_GetFrameDimensions();
@@ -103,7 +104,8 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
                   (g_FramebufferHeight,g_FramebufferWidth,0,0,
                    ((int)((height - (height >> 2)) - (int)size.height) >> 1) + (height >> 3),
                    (int)(g_FramebufferWidth - (int)size.width) >> 1,0,
-                   (GraphicsTextureSourceAsset *)movie,g_FramebufferAccess);
+                   reinterpret_cast<GraphicsTextureSourceAsset *>(movie) /* starts with a texture source header */,
+                   g_FramebufferAccess);
       }
       sprintf(label, "Video %d/%d: %s.flm  Frame %u/%u", index, count, name,
               g_ActiveMovie->currentFrameIndex, g_ActiveMovie->fileHeader->frameCount);
@@ -133,7 +135,7 @@ void DebugMovie_ExportOne(const char *name)
   uint32_t height;
   uint32_t playbackRateHz;
   uint32_t openError;
-  Bool8 frameDecoded;
+  bool frameDecoded;
   FILE *video;
   FILE *info;
   /* L"flm\<name>.flm", the name cut so that the extension and terminator still fit */
@@ -143,8 +145,8 @@ void DebugMovie_ExportOne(const char *name)
   }
   path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
   path[pathLength] = 0;
-  CreateDirectoryA((LPCSTR)"moviedump", nullptr);
-  if (!Movie_Open(MOVIE_OPEN_STREAM,path,&playbackRateHz,&openError)) {
+  CreateDirectoryA("moviedump", nullptr);
+  if (!Movie_Open(MovieOpenFlags::MOVIE_OPEN_STREAM,path,&playbackRateHz,&openError)) {
     Thandor_Log("movie export %s: Movie_Open failed (eax=%08x)", name, openError);
     return;
   }

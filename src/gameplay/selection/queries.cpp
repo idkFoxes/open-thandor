@@ -15,7 +15,7 @@ SelectionInfoEntitySlots *g_SelectionInfoEntitySlots = nullptr;
 /* Writes the average world position (model node translation) of the local selection's entities to
    *outPosition and returns true; returns false when the selection is empty (*outPosition is then all 0).
 */
-Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition)
+bool SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition)
 
 {
   ModelRuntimeNode *slotModelNode;
@@ -32,7 +32,7 @@ Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPo
   selectionSlotsRemaining = SELECTION_ENTRY_CAPACITY;
   selectedEntityCount = 0;
   selectionEntitySlotCursor = g_SelectionInfoEntitySlots->entries;
-  do {
+  for (; selectionSlotsRemaining != 0; selectionSlotsRemaining--) {
     if (*selectionEntitySlotCursor != nullptr) {
       slotModelNode = ((*selectionEntitySlotCursor)->common).ownership.modelNode;
       worldXAggregateQ12 = worldXAggregateQ12 + (slotModelNode->worldTransform).translation.x;
@@ -41,8 +41,7 @@ Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPo
       selectedEntityCount++;
     }
     selectionEntitySlotCursor++;
-    selectionSlotsRemaining--;
-  } while (selectionSlotsRemaining != 0);
+  }
   if (selectedEntityCount != 0) {
     worldXAggregateQ12 = worldXAggregateQ12 / selectedEntityCount;
     worldYAggregateQ12 = worldYAggregateQ12 / selectedEntityCount;
@@ -56,12 +55,12 @@ Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPo
 
 /* Returns true when the local selection holds at least one entity, false when it is empty.
 */
-Bool8 SelectionInfo_HasAnyEntry()
+bool SelectionInfo_HasAnyEntry()
 
 {
   int entriesRemaining;
   Ptr32<GameEntityRuntime> *selectionEntryCursor;
-  Bool8 entryIsEmpty;
+  bool entryIsEmpty;
   GameEntityRuntime *currentEntry;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -81,7 +80,7 @@ Bool8 SelectionInfo_HasAnyEntry()
 /* Returns false when every entity of the local selection belongs to the faction ownerIndex (an empty
    selection passes), true as soon as one belongs to another faction.
 */
-Bool8 SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
+bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 
 {
   int entriesRemaining;
@@ -104,7 +103,7 @@ Bool8 SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
    and at least one of them has a non-zero classLinkState.classState70 in its model runtime; true otherwise
    (also for an empty selection).
 */
-Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex)
+bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex)
 
 {
   ModelRuntimeSlot *classRecord;
@@ -118,7 +117,7 @@ Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex owner
     if (currentEntry == nullptr) {
       continue;
     }
-    classRecord = (ModelRuntimeSlot *)(currentEntry->common).ownership.definitionOrClassRecord; /* the model runtime */
+    classRecord = (currentEntry->common).ownership.modelRuntime(); /* the model runtime */
     if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
       return true;
     }
@@ -136,13 +135,13 @@ Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex owner
    definition has a non-zero accelerationPerTick, or the selection is a single entity of definition class 0x0D (13).
    True otherwise; the world input then ignores the ground click.
 */
-Bool8 SelectionInfo_TestAnyActiveOrSingleClass13()
+bool SelectionInfo_TestAnyActiveOrSingleClass13()
 
 {
   int entryIndex;
   int selectedEntryCount;
   GameEntityRuntime *selectedEntry;
-  Bool8 selectedEntryIsClass13;
+  bool selectedEntryIsClass13;
   ModelDefinition *selectedDefinition;
 
   selectedEntryCount = 0;
@@ -168,7 +167,7 @@ Bool8 SelectionInfo_TestAnyActiveOrSingleClass13()
 /* Fallback of SelectionInfo_TestPositionCommandAtWorldPoint: the first class-0x0D entity of the local selection
    tests the grid cell mask bands selected by its capability flags (0x80 -> band 3, 4 -> band 1, else 6);
    true when there is no such entity. */
-static Bool8 SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12)
+static bool SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12)
 
 {
   GameEntityRuntime *selectedEntity;
@@ -206,14 +205,14 @@ static Bool8 SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 wo
    through its typed callback; without such an entity the first class-0x0D entity tests the grid cell mask bands
    selected by its capability flags (0x80 -> band 3, 4 -> band 1, else 6). Returns true when neither exists.
 */
-Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
+bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
 
 {
   GraphicsWorldCoordinateQ12 savedTranslationX;
   GraphicsWorldCoordinateQ12 savedTranslationY;
   ModelRuntimeNode *selectedModelNode;
   int entryIndex;
-  Bool8 testResult;
+  bool testResult;
   GameEntityRuntime *selectedEntity;
 
   selectedEntity = nullptr;
@@ -224,7 +223,7 @@ Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,
       continue;
     }
     selectedModelNode = (selectedEntity->common).ownership.modelNode;
-    if (((ModelRuntimeSlot *)(selectedEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+    if ((selectedEntity->common).ownership.modelRuntime()->definitionOrSavedId.
         runtimeDefinition->accelerationPerTick != 0) {
       break;
     }
@@ -238,7 +237,9 @@ Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,
   (selectedModelNode->worldTransform).translation.x = worldYQ12;
   savedTranslationY = (selectedModelNode->worldTransform).translation.y;
   (selectedModelNode->worldTransform).translation.y = worldXQ12;
-  testResult = ArmyRuntimeNode_DispatchTypedCallback((Ptr32<ArmyRuntimeSlot> *)selectedEntity,inGameRuntime);
+  /* the entity's first dword (ownership.definitionOrClassRecord) is read as the holder the dispatch takes */
+  testResult = ArmyRuntimeNode_DispatchTypedCallback
+                 (reinterpret_cast<Ptr32<ArmyRuntimeSlot> *>(selectedEntity),inGameRuntime);
   (selectedModelNode->worldTransform).translation.x = savedTranslationX;
   (selectedModelNode->worldTransform).translation.y = savedTranslationY;
   return testResult;
@@ -248,55 +249,53 @@ Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,
    ArmyRuntime_TestWeaponDamageNonnegative but fails ArmyRuntime_TestHasNoWeaponDamage (its state value
    stateOrTechnologyId is positive); true when none does.
 */
-Bool8 SelectionInfo_TestNoEntryHasWeaponDamage()
+bool SelectionInfo_TestNoEntryHasWeaponDamage()
 
 {
-  GameEntityRuntime *armyRuntime;
+  ArmyRuntimeSlot *armyRuntime;
   int entriesRemaining;
   Ptr32<GameEntityRuntime> *selectionEntryCursor;
-  Bool8 stateTestResult;
+  bool stateTestResult;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  do {
-    armyRuntime = *selectionEntryCursor;
+  for (; entriesRemaining != 0; entriesRemaining--) {
+    armyRuntime = static_cast<ArmyRuntimeSlot *>(*selectionEntryCursor);
     if (armyRuntime != nullptr) {
-      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative((ArmyRuntimeSlot *)armyRuntime);
+      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative(armyRuntime);
       if (stateTestResult) {
-        stateTestResult = ArmyRuntime_TestHasNoWeaponDamage((ArmyRuntimeSlot *)armyRuntime);
+        stateTestResult = ArmyRuntime_TestHasNoWeaponDamage(armyRuntime);
         if (!stateTestResult) {
           return false;
         }
       }
     }
     selectionEntryCursor++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
   return true;
 }
 
 /* Returns true when ArmyRuntime_TestWeaponDamageNonnegative holds for any entity of the local
    selection, false otherwise.
 */
-Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative()
+bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative()
 
 {
   int entriesRemaining;
   Ptr32<GameEntityRuntime> *selectionEntryCursor;
-  Bool8 stateTestResult;
+  bool stateTestResult;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     if (*selectionEntryCursor != nullptr) {
-      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative((ArmyRuntimeSlot *)*selectionEntryCursor);
+      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative(static_cast<ArmyRuntimeSlot *>(*selectionEntryCursor));
       if (stateTestResult) {
         return true;
       }
     }
     selectionEntryCursor++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
   return false;
 }
 
@@ -310,7 +309,7 @@ GameEntityRuntime * SelectionInfo_GetFirstEntry()
   int entriesRemaining;
   Ptr32<GameEntityRuntime> *selectionEntryCursor;
   Ptr32<GameEntityRuntime> *nextSelectionEntryCursor;
-  Bool8 currentEntryIsEmpty;
+  bool currentEntryIsEmpty;
 
   /* skip the empty entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -333,7 +332,7 @@ GameEntityRuntime * SelectionInfo_GetFirstEntry()
 
 /* Tests whether entry is missing from the local selection: true when absent, false when it is selected.
 */
-Bool8 SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
+bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
 
 {
   /* search the 32 selection slots */
@@ -363,7 +362,8 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask()
     if (selectedEntry != nullptr) {
       effectVariantMask |=
            ArmyRuntime_GetAttachmentEffectVariantMask
-              ((ModelRuntimeLinkedChildSpawnAndBuildView *)(selectedEntry->common).ownership.definitionOrClassRecord);
+              (static_cast<ModelRuntimeLinkedChildSpawnAndBuildView *>
+               ((selectedEntry->common).ownership.definitionOrClassRecord.get()));
     }
   }
   return effectVariantMask;

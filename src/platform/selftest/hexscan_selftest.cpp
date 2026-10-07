@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
@@ -36,16 +37,16 @@
 #include <thandor/world/terrain/placement_tests.h>
 #include <thandor/world/terrain/sight.h>
 
-#define HEXSCAN_TEST_WIDTH 67
-#define HEXSCAN_TEST_HEIGHT 53
-#define HEXSCAN_TEST_POINTS 2000
-#define HEXSCAN_TEST_CHUNK 8
-#define HEXSCAN_TEST_MARGIN_CELLS 3 /* points reach this many cells past every grid side */
+constexpr auto HEXSCAN_TEST_WIDTH = 67;
+constexpr auto HEXSCAN_TEST_HEIGHT = 53;
+constexpr auto HEXSCAN_TEST_POINTS = 2000;
+constexpr auto HEXSCAN_TEST_CHUNK = 8;
+constexpr auto HEXSCAN_TEST_MARGIN_CELLS = 3; /* points reach this many cells past every grid side */
 #define HEXSCAN_TEST_RADIUS_MAX (TERRAIN_SCAN_RADIUS_PER_STEP * 300)
 /* the placement tests' height band is +-1024 around the reference: clean heights and references stay within
    +-HEXSCAN_TEST_CLEAN_HEIGHT, so every difference is inside it */
-#define HEXSCAN_TEST_CLEAN_HEIGHT 400
-#define HEXSCAN_TEST_AUX_MINIMUM 0x3000 /* g_TerrainAuxHeightMinimum (placement_tests.cpp) */
+constexpr auto HEXSCAN_TEST_CLEAN_HEIGHT = 400;
+constexpr auto HEXSCAN_TEST_AUX_MINIMUM = 0x3000; /* g_TerrainAuxHeightMinimum (placement_tests.cpp) */
 
 enum HexscanTestProfile {
     HEXSCAN_PROFILE_NOISE,      /* the writing drivers: random heights, water above/below/at zero, flags */
@@ -91,7 +92,7 @@ static uint32_t HexscanTest_Hash(uint32_t hash, const void *bytes, size_t count)
 {
     size_t i;
     for (i = 0; i < count; i++) {
-        hash = (hash ^ ((const uint8_t *)bytes)[i]) * 16777619u;
+        hash = (hash ^ static_cast<const uint8_t *>(bytes)[i]) * 16777619u;
     }
     return hash;
 }
@@ -110,7 +111,7 @@ static void HexscanTest_FillGrid(FieldGridAsset *grid, uint64_t seed, int profil
     uint32_t row;
     uint32_t column;
 
-    grid->runtimeStateFlags = 0;
+    grid->runtimeStateFlags = {};
     for (row = 0; row < grid->gridHeight; row++) {
         for (column = 0; column < grid->gridWidth; column++) {
             FieldGridCell *cell = &grid->cells[row * grid->gridWidth + column];
@@ -120,7 +121,7 @@ static void HexscanTest_FillGrid(FieldGridAsset *grid, uint64_t seed, int profil
             cell->overlayColor = 0xffffffffu;
             cell->worldX = (Q12)(column * 0x900);
             cell->worldY = (Q12)(row * -0x7d0);
-            cell->flagsAndMaterial = HexscanTest_Random(&seed) & ~FIELD_CELL_GRID_EDGE_MASK;
+            cell->flagsAndMaterial = FieldCell_FromRawWord(HexscanTest_Random(&seed)) & ~FIELD_CELL_GRID_EDGE_MASK;
             cell->triangle0NormalAngles = HexscanTest_NormalAngles(&seed, 0);
             cell->triangle1NormalAngles = HexscanTest_NormalAngles(&seed, 0);
             cell->occupancyMask = HexscanTest_Random64(&seed) & 0x8484848484848484ull;
@@ -264,9 +265,9 @@ static uint32_t HexscanTest_RunDriver(int driver, FieldGridAsset *grid, FieldGri
         switch (driver) {
         case HEXSCAN_OVERLAY_A:
         case HEXSCAN_OVERLAY_B: {
-            FieldCellFlagMask mask = 1u << HexscanTest_Range(&seed, 0, 24);
+            FieldCellFlagMask mask = FieldCell_FromRawWord(1u << HexscanTest_Range(&seed, 0, 24));
             TerrainOverlayCellRuntimeValue value = (TerrainOverlayCellRuntimeValue)HexscanTest_Random(&seed);
-            Bool8 rejected = driver == HEXSCAN_OVERLAY_A
+            bool rejected = driver == HEXSCAN_OVERLAY_A
                                  ? FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint(mask, value, radius, worldY,
                                                                                          worldX, grid)
                                  : FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint(mask, value, radius, worldY,
@@ -295,7 +296,7 @@ static uint32_t HexscanTest_RunDriver(int driver, FieldGridAsset *grid, FieldGri
             int i;
             Q12 reference = HexscanTest_Range(&seed, -HEXSCAN_TEST_CLEAN_HEIGHT, HEXSCAN_TEST_CLEAN_HEIGHT + 1);
             int edgeDistance = row < column ? row : column;
-            Bool8 rejected;
+            bool rejected;
             uint8_t result;
             if ((int)grid->gridHeight - 1 - row < edgeDistance) {
                 edgeDistance = (int)grid->gridHeight - 1 - row;
@@ -357,17 +358,14 @@ void Thandor_SelfTestHexScan(void)
     uint32_t savedReferenceHeight = g_TerrainScanReferenceHeight;
     size_t gridBytes =
         offsetof(FieldGridAsset, cells) + (size_t)HEXSCAN_TEST_WIDTH * HEXSCAN_TEST_HEIGHT * sizeof(FieldGridCell);
-    FieldGridAsset *grid = (FieldGridAsset *)calloc(1, gridBytes);
-    FieldGridAsset *reset = (FieldGridAsset *)calloc(1, gridBytes);
+    /* two zeroed grid images: the asset header followed by the cells (a variable-length record) */
+    std::vector<uint32_t> gridStorage((gridBytes + 3) / 4);
+    std::vector<uint32_t> resetStorage((gridBytes + 3) / 4);
+    auto *grid = reinterpret_cast<FieldGridAsset *>(gridStorage.data());
+    auto *reset = reinterpret_cast<FieldGridAsset *>(resetStorage.data());
     uint32_t summary = 2166136261u;
     int driver;
 
-    if (grid == nullptr || reset == nullptr) {
-        Thandor_Log("hexscan: out of memory");
-        free(grid);
-        free(reset);
-        return;
-    }
     grid->gridWidth = reset->gridWidth = HEXSCAN_TEST_WIDTH;
     grid->gridHeight = reset->gridHeight = HEXSCAN_TEST_HEIGHT;
     for (driver = 0; driver < HEXSCAN_DRIVER_COUNT; driver++) {
@@ -376,8 +374,6 @@ void Thandor_SelfTestHexScan(void)
     }
     Thandor_Log("hexscan: %d drivers, %d points each, %dx%d grid, summary %08X", HEXSCAN_DRIVER_COUNT,
                 HEXSCAN_TEST_POINTS, HEXSCAN_TEST_WIDTH, HEXSCAN_TEST_HEIGHT, summary);
-    free(grid);
-    free(reset);
     g_TerrainScanRowStrideBytes = savedRowStride;
     g_TerrainScanStepLimit = savedStepLimit;
     g_TerrainScanSharedSelectorValue = savedSelector;

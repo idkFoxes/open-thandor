@@ -63,7 +63,7 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   ModelRuntimeNode *rootChild0Node;
   Q12 grandchildLocalYQ12;
 
-  definitionValue0C = ((ModelDefinition *)modelDefinition)->movementSpeed;
+  definitionValue0C = ModelView_Cast<ModelDefinition>(modelDefinition)->movementSpeed;
   modelRuntimeSlot->classLinkState.classState68 = MODEL_CLASS_STATE_UNSET_COORDINATE;
   modelRuntimeSlot->classLinkState.armyLinkOrState.classState = MODEL_CLASS_STATE_UNSET_COORDINATE;
   modelRuntimeSlot->classLinkState.classState70 = MODEL_CLASS_STATE_UNSET_COORDINATE;
@@ -76,15 +76,15 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   grandchildLocalYQ12 = rootChild0Node->childNodes[0]->modelPayload.localTranslationYQ12;
   modelRuntimeSlot->classState.classStateB0 = rootChild0Node->modelPayload.localTranslationYQ12;
   modelRuntimeSlot->classState.classStateB4 = grandchildLocalYQ12;
-  definitionValueC0 = ((ModelDefinition *)modelDefinition)->classParameterC0;
+  definitionValueC0 = ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0;
   initialTimingValue =
        (int)(((int64_t)(int)(((int64_t)(int)definitionValue0C << 12) / (int64_t)(int)definitionValueC0) *
-              (int64_t)(int)(((ModelDefinition *)modelDefinition)->classParameterC4 + definitionValueC0)) /
+              (int64_t)(int)(ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC4 + definitionValueC0)) /
              (int64_t)(int)definitionValueC0) -
        (int)(((int64_t)(int)definitionValueC0 *
-              (int64_t)((ModelDefinition *)modelDefinition)->accelerationPerTick) /
+              (int64_t)ModelView_Cast<ModelDefinition>(modelDefinition)->accelerationPerTick) /
              (int64_t)(int)(definitionValue0C << 2));
-  *(int *)modelRuntimeSlot->classPrefixState = initialTimingValue;
+  *reinterpret_cast<int *>(modelRuntimeSlot->classPrefixState) = initialTimingValue;
   modelRuntimeSlot->classState.classStateD0 = initialTimingValue;
   modelRuntimeSlot->classState.effectEmitterTimerTicks = INT32_MAX;
 }
@@ -240,7 +240,7 @@ void ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
   modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime = nullptr;
   modelRuntimeSlot->classLinkState.classState64 = 0;
   modelRuntimeSlot->classLinkState.classState68 = 0;
-  primaryAnimatedSubresourceIndex = ((ModelDefinition *)modelDefinition)->classParameterC0;
+  primaryAnimatedSubresourceIndex = ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0;
   rootModelNode->primaryTextureOffsetU = 0;
   rootModelNode->primaryTextureOffsetV = 0;
   rootModelNode->primaryAnimatedSubresourceIndex = primaryAnimatedSubresourceIndex;
@@ -266,17 +266,17 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
   ownerArmy = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime = nullptr;
   factionRecord = &g_GameFactionRuntimeImage.records[ownerArmy->factionIndex];
-  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
+  if (ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0 != 0) {
     storageLimitQ4 = &factionRecord->tritiumStorageLimitQ4;
   }
   else {
     storageLimitQ4 = &factionRecord->xeniteStorageLimitQ4;
   }
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
-  *storageLimitQ4 += ((ModelDefinition *)modelDefinition)->classParameterC4;
+  *storageLimitQ4 += ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC4;
   if ((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
       (3 < rootModelNode->childCount) && (rootModelNode->childNodes[3] != nullptr)) {
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[3]);
+    WorldRuntime_UnlinkOwnerListNode(ModelView_Cast<WorldOwnerListNode>(rootModelNode->childNodes[3]));
     rootModelNode->childNodes[3] = nullptr;
   }
 }
@@ -298,17 +298,17 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
 
   ownerArmy = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   factionRecord = &g_GameFactionRuntimeImage.records[ownerArmy->factionIndex];
-  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
+  if (ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0 != 0) {
     storageLimitQ4 = &factionRecord->tritiumStorageLimitQ4;
   }
   else {
     storageLimitQ4 = &factionRecord->xeniteStorageLimitQ4;
   }
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
-  *storageLimitQ4 += ((ModelDefinition *)modelDefinition)->classParameterC4;
+  *storageLimitQ4 += ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC4;
   if ((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
       (1 < rootModelNode->childCount) && (rootModelNode->childNodes[1] != nullptr)) {
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[1]);
+    WorldRuntime_UnlinkOwnerListNode(ModelView_Cast<WorldOwnerListNode>(rootModelNode->childNodes[1]));
     rootModelNode->childNodes[1] = nullptr;
   }
 }
@@ -328,7 +328,7 @@ void ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
        &g_GameFactionRuntimeImage.records
         [modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex].
         energyGenerationCapacityQ4;
-  *factionProgressLimitQ4 = *factionProgressLimitQ4 + ((ModelDefinition *)modelDefinition)->classParameterC0;
+  *factionProgressLimitQ4 = *factionProgressLimitQ4 + ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0;
 }
 
 
@@ -346,7 +346,7 @@ void ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
        &g_GameFactionRuntimeImage.records
         [modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex].
         energyGenerationCapacityQ4;
-  *factionProgressLimitQ4 = *factionProgressLimitQ4 - ((ModelDefinition *)modelDefinition)->classParameterC0;
+  *factionProgressLimitQ4 = *factionProgressLimitQ4 - ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0;
 }
 
 
@@ -363,7 +363,7 @@ void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRunt
   if (linkedModelRuntime != nullptr) {
     /* 32-bit format field: ModelRuntimeSlot.classLinkState.modelLinkOrState (saved offset) */
     modelRuntime->classLinkState.modelLinkOrState.modelRuntime =
-         (ModelRuntimeSlot *)(Thandor_PointerToI32(linkedModelRuntime) - g_ModelRuntimeRebaseDelta);
+         reinterpret_cast<ModelRuntimeSlot *>(Thandor_PointerToI32(linkedModelRuntime) - g_ModelRuntimeRebaseDelta);
   }
 }
 
@@ -380,7 +380,8 @@ void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntim
   linkedModelRuntime = modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime;
   if (linkedModelRuntime != nullptr) {
     modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime =
-         (ModelRuntimeSlot *)((uint8_t *)linkedModelRuntime + g_ModelRuntimeRebaseDelta);
+         /* saved offset + rebase delta: the pointer moves by the delta in bytes */
+         reinterpret_cast<ModelRuntimeSlot *>(reinterpret_cast<uint8_t *>(linkedModelRuntime) + g_ModelRuntimeRebaseDelta);
   }
 }
 
@@ -417,7 +418,7 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
   AssetRecordByteCount primaryAnimatedSubresourceIndex;
 
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
-  primaryAnimatedSubresourceIndex = ((ModelDefinition *)modelDefinition)->classParameterC0;
+  primaryAnimatedSubresourceIndex = ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0;
   modelRuntimeSlot->classState.classStateAC = 0;
   modelRuntimeSlot->classState.classStateB0 = 0;
   modelRuntimeSlot->classState.classStateB4 = 0;

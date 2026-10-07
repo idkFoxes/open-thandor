@@ -99,6 +99,7 @@ static void InGameUiRuntime_SetEdgeOffsets
 static void InGameUiRuntime_SelectDisplayModeLayout(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   uint16_t variantDigit;
 
   if ((g_FramebufferWidth < 800) || (g_FramebufferHeight < 600)) {
@@ -113,16 +114,16 @@ static void InGameUiRuntime_SelectDisplayModeLayout(UiRootNode *inGameRoot)
   g_GfxPanelPanel0GfxPathUtf16[INGAME_PANEL_GFX_PATH_VARIANT_DIGIT] = variantDigit;
   g_GfxPanelDiagram0GfxPathUtf16[INGAME_DIAGRAM_GFX_PATH_VARIANT_DIGIT] = variantDigit;
   if (variantDigit == L'0') {
-    InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,xeniteGauge),36,6,94,13);
-    InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,tritiumGauge),36,17,94,24);
-    InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,energyGauge),36,28,94,35);
-    InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,xeniteAmountText),4,5,31,13);
+    InGameUiRuntime_SetEdgeOffsets(&ui->xeniteGauge.base,36,6,94,13);
+    InGameUiRuntime_SetEdgeOffsets(&ui->tritiumGauge.base,36,17,94,24);
+    InGameUiRuntime_SetEdgeOffsets(&ui->energyGauge.base,36,28,94,35);
+    InGameUiRuntime_SetEdgeOffsets(&ui->xeniteAmountText.base,4,5,31,13);
   }
   else {
-    InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,xeniteGauge),44,9,110,16);
-    InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,tritiumGauge),44,23,110,30);
-    InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,energyGauge),44,37,110,44);
-    InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,xeniteAmountText),4,7,39,15);
+    InGameUiRuntime_SetEdgeOffsets(&ui->xeniteGauge.base,44,9,110,16);
+    InGameUiRuntime_SetEdgeOffsets(&ui->tritiumGauge.base,44,23,110,30);
+    InGameUiRuntime_SetEdgeOffsets(&ui->energyGauge.base,44,37,110,44);
+    InGameUiRuntime_SetEdgeOffsets(&ui->xeniteAmountText.base,4,7,39,15);
   }
 }
 
@@ -193,218 +194,221 @@ static void InGameUiRuntime_CachePanelSubresourceSizes(GraphicsTextureSourceAsse
 static void InGameUiRuntime_BindPanelTexture(UiRootNode *inGameRoot,GraphicsTextureSourceAsset *panelTexture)
 
 {
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,sidePanelFrameLeftEdge),0,0,0,0);
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,sidePanelFrameLeftEdge))->textureSource = panelTexture;
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,sidePanelFrameRightEdge),0,0,0,0);
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,sidePanelFrameRightEdge))->textureSource = panelTexture;
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,sidePanelFrameTopCap),0,0,0,0);
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,sidePanelFrameTopCap))->textureSource = panelTexture;
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,sidePanelFrameMenuBar),0,0,0,0);
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,sidePanelFrameMenuBar))->textureSource = panelTexture;
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,sidePanelFrameInfoSection),0,0,0,0);
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,sidePanelFrameInfoSection))->textureSource = panelTexture;
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,sidePanelFrameBottomCap),0,0,0,0);
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,sidePanelFrameBottomCap))->textureSource = panelTexture;
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,resourcePanel),0,0,0,0);
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,resourcePanel))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,editorTabStripA))->textureSource = panelTexture;
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,gamePanelsArea),0,0,0,0);
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,gamePanelsArea))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,editorTabStripB))->textureSource = panelTexture;
-  ((UiNineSlicePanelControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle8Popup))->textureSource = panelTexture;
-  ((UiNineSlicePanelControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle9Popup))->textureSource = panelTexture;
-  ((UiNineSlicePanelControl *)INGAME_UI(inGameRoot,diplomacyFrame))->textureSource = panelTexture;
-  ((UiNineSlicePanelControl *)INGAME_UI(inGameRoot,buildCatalogFrame))->textureSource = panelTexture;
-  ((UiNineSlicePanelControl *)INGAME_UI(inGameRoot,specialBuildCatalogFrame))->textureSource = panelTexture;
-  ((UiNineSlicePanelControl *)INGAME_UI(inGameRoot,armyStockFrame))->textureSource = panelTexture;
-  ((UiImageControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle8))->textureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainHeight))->primaryTextureSource = panelTexture;
-  ((UiImageControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle9))->textureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainMaterial))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,resourcePanelIconButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainSmoothing))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,inGameMenuButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,missionObjectivesButton))->primaryTextureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,countdownDisplayPanel))->textureSource = panelTexture;
-  ((UiImageControl *)INGAME_UI(inGameRoot,diplomacyPanel))->textureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabRegion))->primaryTextureSource = panelTexture;
-  ((UiImageControl *)INGAME_UI(inGameRoot,buildCatalogPanel))->textureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabUnitPlacement))->primaryTextureSource = panelTexture;
-  ((UiImageControl *)INGAME_UI(inGameRoot,specialBuildCatalogPanel))->textureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabObjectPlacement))->primaryTextureSource = panelTexture;
-  ((UiImageControl *)INGAME_UI(inGameRoot,armyStockPanel))->textureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton0))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton1))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton2))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton3))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton4))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton5))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton6))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton7))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption0))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption1))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption2))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption3))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption0))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption1))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption2))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption3))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption0))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption1))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption2))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingRelaxGatedButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingRelaxLandButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption0))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption2))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption1))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption0))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption2))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption1))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,regionToolOption0))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,regionToolOption1))->primaryTextureSource = panelTexture;
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,minimapView),0,0,0,0);
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,modePreviewPageStack),0,0,0,0);
-  ((UiImageActionControl *)INGAME_UI(inGameRoot,notificationTargetButton))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,heightToolPreview))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,smoothingToolPreview))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,regionToolPreview))->textureSource = panelTexture;
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,modeDetailPageStack),0,0,0,0);
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,singleSelectionUpgradeButton))->primaryTextureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,selectionDetailPanel))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,heightToolPanel))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,materialPalettePanel))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,smoothingToolPanel))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,unitPlacementPanel))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,objectPlacementPanel))->textureSource = panelTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,regionToolPanel))->textureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry00))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry01))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry02))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry03))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry04))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry05))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry06))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry07))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry08))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry09))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry10))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry11))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry12))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry13))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry14))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry15))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry16))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry17))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry18))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry19))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry20))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry21))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry22))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry23))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry24))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry25))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry26))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry27))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry28))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry29))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry30))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry31))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry32))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry33))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry34))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry35))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry36))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry37))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry38))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry39))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry40))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry41))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry42))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry43))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry44))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry45))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry46))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry47))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry00))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry01))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry02))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry03))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry04))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry05))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry06))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry07))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry08))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry09))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry10))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry11))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry12))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry13))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry14))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry15))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry16))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry17))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry18))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry19))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry20))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry21))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry22))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry23))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry24))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry25))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry26))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry27))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry28))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry29))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry30))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry31))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry32))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry33))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry34))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry35))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry36))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry37))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry38))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry39))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry40))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry41))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot00))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot01))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot02))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot03))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot04))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot05))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot06))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot07))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot08))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot09))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot10))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot11))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot12))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot13))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot14))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot15))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot16))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot17))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot18))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot19))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot20))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot21))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot22))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot23))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow1RelationButton))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow1RelationButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow2RelationButton))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow2RelationButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow3RelationButton))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow3RelationButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow4RelationButton))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow4RelationButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow5RelationButton))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow5RelationButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow6RelationButton))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow6RelationButton))->primaryTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow7RelationButton))->alternateTextureSource = panelTexture;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow7RelationButton))->primaryTextureSource = panelTexture;
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
+  InGameUiRuntime_SetEdgeOffsets(&ui->sidePanelFrameLeftEdge.base,0,0,0,0);
+  ui->sidePanelFrameLeftEdge.textureSource = panelTexture;
+  InGameUiRuntime_SetEdgeOffsets(&ui->sidePanelFrameRightEdge.base,0,0,0,0);
+  ui->sidePanelFrameRightEdge.textureSource = panelTexture;
+  InGameUiRuntime_SetEdgeOffsets(&ui->sidePanelFrameTopCap.base,0,0,0,0);
+  ui->sidePanelFrameTopCap.textureSource = panelTexture;
+  InGameUiRuntime_SetEdgeOffsets(&ui->sidePanelFrameMenuBar.base,0,0,0,0);
+  ui->sidePanelFrameMenuBar.textureSource = panelTexture;
+  InGameUiRuntime_SetEdgeOffsets(&ui->sidePanelFrameInfoSection.base,0,0,0,0);
+  ui->sidePanelFrameInfoSection.textureSource = panelTexture;
+  InGameUiRuntime_SetEdgeOffsets(&ui->sidePanelFrameBottomCap.base,0,0,0,0);
+  ui->sidePanelFrameBottomCap.textureSource = panelTexture;
+  InGameUiRuntime_SetEdgeOffsets(&ui->resourcePanel.base,0,0,0,0);
+  ui->resourcePanel.textureSource = panelTexture;
+  ui->editorTabStripA.textureSource = panelTexture;
+  InGameUiRuntime_SetEdgeOffsets(&ui->gamePanelsArea.base,0,0,0,0);
+  ui->gamePanelsArea.textureSource = panelTexture;
+  ui->editorTabStripB.textureSource = panelTexture;
+  ui->resourcePanelImageToggle8Popup.textureSource = panelTexture;
+  ui->resourcePanelImageToggle9Popup.textureSource = panelTexture;
+  ui->diplomacyFrame.textureSource = panelTexture;
+  ui->buildCatalogFrame.textureSource = panelTexture;
+  ui->specialBuildCatalogFrame.textureSource = panelTexture;
+  ui->armyStockFrame.textureSource = panelTexture;
+  ui->resourcePanelImageToggle8.textureSource = panelTexture;
+  ui->editorModeTabTerrainHeight.primaryTextureSource = panelTexture;
+  ui->resourcePanelImageToggle9.textureSource = panelTexture;
+  ui->editorModeTabTerrainMaterial.primaryTextureSource = panelTexture;
+  ui->resourcePanelIconButton.primaryTextureSource = panelTexture;
+  ui->editorModeTabTerrainSmoothing.primaryTextureSource = panelTexture;
+  ui->inGameMenuButton.primaryTextureSource = panelTexture;
+  ui->missionObjectivesButton.primaryTextureSource = panelTexture;
+  ui->countdownDisplayPanel.textureSource = panelTexture;
+  ui->diplomacyPanel.textureSource = panelTexture;
+  ui->editorModeTabRegion.primaryTextureSource = panelTexture;
+  ui->buildCatalogPanel.textureSource = panelTexture;
+  ui->editorModeTabUnitPlacement.primaryTextureSource = panelTexture;
+  ui->specialBuildCatalogPanel.textureSource = panelTexture;
+  /* Truncated template nodes (the image ends them before the control's last field, so InGameUiImage keeps them
+     untyped): viewed as their control for the fields inside the node. */
+  reinterpret_cast<UiSpriteButtonControl *>(&ui->editorModeTabObjectPlacement)->primaryTextureSource = panelTexture;
+  ui->armyStockPanel.textureSource = panelTexture;
+  ui->selectionGroupButton0.sprite.primaryTextureSource = panelTexture;
+  ui->selectionGroupButton1.sprite.primaryTextureSource = panelTexture;
+  ui->selectionGroupButton2.sprite.primaryTextureSource = panelTexture;
+  ui->selectionGroupButton3.sprite.primaryTextureSource = panelTexture;
+  ui->selectionGroupButton4.sprite.primaryTextureSource = panelTexture;
+  ui->selectionGroupButton5.sprite.primaryTextureSource = panelTexture;
+  ui->selectionGroupButton6.sprite.primaryTextureSource = panelTexture;
+  ui->selectionGroupButton7.sprite.primaryTextureSource = panelTexture;
+  ui->heightToolOption0.primaryTextureSource = panelTexture;
+  ui->heightToolOption1.primaryTextureSource = panelTexture;
+  ui->heightToolOption2.primaryTextureSource = panelTexture;
+  ui->heightToolOption3.primaryTextureSource = panelTexture;
+  ui->materialToolOption0.primaryTextureSource = panelTexture;
+  ui->materialToolOption1.primaryTextureSource = panelTexture;
+  ui->materialToolOption2.primaryTextureSource = panelTexture;
+  ui->materialToolOption3.primaryTextureSource = panelTexture;
+  ui->smoothingToolOption0.primaryTextureSource = panelTexture;
+  ui->smoothingToolOption1.primaryTextureSource = panelTexture;
+  ui->smoothingToolOption2.primaryTextureSource = panelTexture;
+  ui->smoothingRelaxGatedButton.primaryTextureSource = panelTexture;
+  ui->smoothingRelaxLandButton.primaryTextureSource = panelTexture;
+  ui->unitPlacementOption0.primaryTextureSource = panelTexture;
+  ui->unitPlacementOption2.primaryTextureSource = panelTexture;
+  ui->unitPlacementOption1.primaryTextureSource = panelTexture;
+  ui->objectPlacementOption0.primaryTextureSource = panelTexture;
+  ui->objectPlacementOption2.primaryTextureSource = panelTexture;
+  ui->objectPlacementOption1.primaryTextureSource = panelTexture;
+  ui->regionToolOption0.primaryTextureSource = panelTexture;
+  ui->regionToolOption1.primaryTextureSource = panelTexture;
+  InGameUiRuntime_SetEdgeOffsets(&ui->minimapView.base,0,0,0,0);
+  InGameUiRuntime_SetEdgeOffsets(&ui->modePreviewPageStack.base,0,0,0,0);
+  reinterpret_cast<UiImageActionControl *>(&ui->notificationTargetButton)->textureSource = panelTexture;
+  ui->heightToolPreview.textureSource = panelTexture;
+  ui->smoothingToolPreview.textureSource = panelTexture;
+  ui->regionToolPreview.textureSource = panelTexture;
+  InGameUiRuntime_SetEdgeOffsets(&ui->modeDetailPageStack.base,0,0,0,0);
+  reinterpret_cast<UiSpriteButtonControl *>(&ui->singleSelectionUpgradeButton)->primaryTextureSource = panelTexture;
+  ui->selectionDetailPanel.textureSource = panelTexture;
+  ui->heightToolPanel.textureSource = panelTexture;
+  ui->materialPalettePanel.textureSource = panelTexture;
+  ui->smoothingToolPanel.textureSource = panelTexture;
+  ui->unitPlacementPanel.textureSource = panelTexture;
+  ui->objectPlacementPanel.textureSource = panelTexture;
+  ui->regionToolPanel.textureSource = panelTexture;
+  ui->buildCatalogEntry00.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry01.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry02.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry03.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry04.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry05.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry06.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry07.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry08.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry09.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry10.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry11.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry12.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry13.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry14.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry15.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry16.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry17.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry18.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry19.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry20.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry21.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry22.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry23.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry24.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry25.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry26.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry27.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry28.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry29.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry30.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry31.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry32.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry33.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry34.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry35.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry36.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry37.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry38.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry39.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry40.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry41.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry42.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry43.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry44.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry45.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry46.command.sprite.alternateTextureSource = panelTexture;
+  ui->buildCatalogEntry47.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry00.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry01.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry02.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry03.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry04.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry05.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry06.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry07.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry08.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry09.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry10.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry11.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry12.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry13.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry14.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry15.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry16.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry17.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry18.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry19.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry20.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry21.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry22.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry23.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry24.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry25.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry26.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry27.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry28.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry29.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry30.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry31.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry32.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry33.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry34.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry35.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry36.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry37.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry38.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry39.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry40.command.sprite.alternateTextureSource = panelTexture;
+  ui->specialBuildCatalogEntry41.command.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot00.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot01.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot02.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot03.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot04.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot05.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot06.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot07.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot08.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot09.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot10.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot11.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot12.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot13.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot14.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot15.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot16.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot17.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot18.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot19.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot20.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot21.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot22.sprite.alternateTextureSource = panelTexture;
+  ui->armyStockSlot23.command.sprite.alternateTextureSource = panelTexture;
+  ui->diplomacyRow1RelationButton.sprite.alternateTextureSource = panelTexture;
+  ui->diplomacyRow1RelationButton.sprite.primaryTextureSource = panelTexture;
+  ui->diplomacyRow2RelationButton.sprite.alternateTextureSource = panelTexture;
+  ui->diplomacyRow2RelationButton.sprite.primaryTextureSource = panelTexture;
+  ui->diplomacyRow3RelationButton.sprite.alternateTextureSource = panelTexture;
+  ui->diplomacyRow3RelationButton.sprite.primaryTextureSource = panelTexture;
+  ui->diplomacyRow4RelationButton.sprite.alternateTextureSource = panelTexture;
+  ui->diplomacyRow4RelationButton.sprite.primaryTextureSource = panelTexture;
+  ui->diplomacyRow5RelationButton.sprite.alternateTextureSource = panelTexture;
+  ui->diplomacyRow5RelationButton.sprite.primaryTextureSource = panelTexture;
+  ui->diplomacyRow6RelationButton.sprite.alternateTextureSource = panelTexture;
+  ui->diplomacyRow6RelationButton.sprite.primaryTextureSource = panelTexture;
+  ui->diplomacyRow7RelationButton.sprite.alternateTextureSource = panelTexture;
+  ui->diplomacyRow7RelationButton.sprite.primaryTextureSource = panelTexture;
 }
 
 /* Sizes the side panel parts from the panel subresources: the frame and the pages inside it move left by the
@@ -414,6 +418,7 @@ static void InGameUiRuntime_BindPanelTexture(UiRootNode *inGameRoot,GraphicsText
 static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   UiNodeBase *leftEdge;
   UiNodeBase *rightEdge;
   UiNodeBase *topCap;
@@ -425,15 +430,15 @@ static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
   UiNodeBase *modeDetail;
   int32_t size;
 
-  leftEdge = INGAME_UI(inGameRoot,sidePanelFrameLeftEdge);
-  rightEdge = INGAME_UI(inGameRoot,sidePanelFrameRightEdge);
-  topCap = INGAME_UI(inGameRoot,sidePanelFrameTopCap);
-  menuBar = INGAME_UI(inGameRoot,sidePanelFrameMenuBar);
-  infoSection = INGAME_UI(inGameRoot,sidePanelFrameInfoSection);
-  bottomCap = INGAME_UI(inGameRoot,sidePanelFrameBottomCap);
-  minimap = INGAME_UI(inGameRoot,minimapView);
-  modePreview = INGAME_UI(inGameRoot,modePreviewPageStack);
-  modeDetail = INGAME_UI(inGameRoot,modeDetailPageStack);
+  leftEdge = &ui->sidePanelFrameLeftEdge.base;
+  rightEdge = &ui->sidePanelFrameRightEdge.base;
+  topCap = &ui->sidePanelFrameTopCap.base;
+  menuBar = &ui->sidePanelFrameMenuBar.base;
+  infoSection = &ui->sidePanelFrameInfoSection.base;
+  bottomCap = &ui->sidePanelFrameBottomCap.base;
+  minimap = &ui->minimapView.base;
+  modePreview = &ui->modePreviewPageStack.base;
+  modeDetail = &ui->modeDetailPageStack.base;
   size = g_InGamePanelTextureSubresource01Width;
   leftEdge->leftOffset -= size;
   leftEdge->rightOffset -= size;
@@ -463,8 +468,8 @@ static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
   modePreview->leftOffset -= size;
   modeDetail->leftOffset -= size;
   leftEdge->leftOffset -= g_InGamePanelTextureSubresource00Width;
-  INGAME_UI(inGameRoot,resourcePanel)->leftOffset -= g_InGamePanelTextureSubresource06Width;
-  INGAME_UI(inGameRoot,gamePanelsArea)->leftOffset -= g_InGamePanelTextureSubresource07Width;
+  ui->resourcePanel.base.leftOffset -= g_InGamePanelTextureSubresource06Width;
+  ui->gamePanelsArea.base.leftOffset -= g_InGamePanelTextureSubresource07Width;
   size = g_InGamePanelTextureSubresource02Height;
   topCap->bottomOffset += size;
   menuBar->topOffset += size;
@@ -507,8 +512,8 @@ static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
   size = g_InGamePanelTextureSubresource05Height;
   bottomCap->topOffset -= size;
   modeDetail->bottomOffset -= size;
-  INGAME_UI(inGameRoot,resourcePanel)->bottomOffset += g_InGamePanelTextureSubresource06Height;
-  INGAME_UI(inGameRoot,gamePanelsArea)->topOffset -= g_InGamePanelTextureSubresource07Height;
+  ui->resourcePanel.base.bottomOffset += g_InGamePanelTextureSubresource06Height;
+  ui->gamePanelsArea.base.topOffset -= g_InGamePanelTextureSubresource07Height;
 }
 
 /* The menu buttons and the countdown share the menu bar's rows, the selection group buttons the info section's;
@@ -517,6 +522,7 @@ static void InGameUiRuntime_SizeSidePanelFrame(UiRootNode *inGameRoot)
 static void InGameUiRuntime_PlaceMenuAndSelectionGroupButtons(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   static const int32_t groupButtonColumnShifts[4] = { 5, 36, 66, 97 };
   static const int32_t groupButtonRowShifts[2] = { 17, 40 };
   UiNodeBase *groupButtons[8];
@@ -526,33 +532,33 @@ static void InGameUiRuntime_PlaceMenuAndSelectionGroupButtons(UiRootNode *inGame
   int32_t frameRight;
   int buttonIndex;
 
-  menuBar = INGAME_UI(inGameRoot,sidePanelFrameMenuBar);
-  infoSection = INGAME_UI(inGameRoot,sidePanelFrameInfoSection);
-  frameLeft = INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset;
-  frameRight = INGAME_UI(inGameRoot,sidePanelFrameRightEdge)->rightOffset;
+  menuBar = &ui->sidePanelFrameMenuBar.base;
+  infoSection = &ui->sidePanelFrameInfoSection.base;
+  frameLeft = ui->sidePanelFrameLeftEdge.base.leftOffset;
+  frameRight = ui->sidePanelFrameRightEdge.base.rightOffset;
   InGameUiRuntime_SetEdgeOffsets
-            (INGAME_UI(inGameRoot,inGameMenuButton),frameLeft,menuBar->topOffset,frameRight,menuBar->bottomOffset);
+            (&ui->inGameMenuButton.selectable.base,frameLeft,menuBar->topOffset,frameRight,menuBar->bottomOffset);
   InGameUiRuntime_SetEdgeOffsets
-            (INGAME_UI(inGameRoot,missionObjectivesButton),frameLeft,menuBar->topOffset,frameRight,
+            (&ui->missionObjectivesButton.selectable.base,frameLeft,menuBar->topOffset,frameRight,
              menuBar->bottomOffset);
   InGameUiRuntime_SetEdgeOffsets
-            (INGAME_UI(inGameRoot,countdownDisplayPanel),frameLeft,menuBar->topOffset,frameRight,
+            (&ui->countdownDisplayPanel.base,frameLeft,menuBar->topOffset,frameRight,
              menuBar->bottomOffset);
-  groupButtons[0] = INGAME_UI(inGameRoot,selectionGroupButton0);
-  groupButtons[1] = INGAME_UI(inGameRoot,selectionGroupButton1);
-  groupButtons[2] = INGAME_UI(inGameRoot,selectionGroupButton2);
-  groupButtons[3] = INGAME_UI(inGameRoot,selectionGroupButton3);
-  groupButtons[4] = INGAME_UI(inGameRoot,selectionGroupButton4);
-  groupButtons[5] = INGAME_UI(inGameRoot,selectionGroupButton5);
-  groupButtons[6] = INGAME_UI(inGameRoot,selectionGroupButton6);
-  groupButtons[7] = INGAME_UI(inGameRoot,selectionGroupButton7);
+  groupButtons[0] = &ui->selectionGroupButton0.sprite.selectable.base;
+  groupButtons[1] = &ui->selectionGroupButton1.sprite.selectable.base;
+  groupButtons[2] = &ui->selectionGroupButton2.sprite.selectable.base;
+  groupButtons[3] = &ui->selectionGroupButton3.sprite.selectable.base;
+  groupButtons[4] = &ui->selectionGroupButton4.sprite.selectable.base;
+  groupButtons[5] = &ui->selectionGroupButton5.sprite.selectable.base;
+  groupButtons[6] = &ui->selectionGroupButton6.sprite.selectable.base;
+  groupButtons[7] = &ui->selectionGroupButton7.sprite.selectable.base;
   for (buttonIndex = 0; buttonIndex < 8; buttonIndex++) {
     InGameUiRuntime_SetEdgeOffsets
               (groupButtons[buttonIndex],frameLeft + groupButtonColumnShifts[buttonIndex % 4],
                infoSection->topOffset + groupButtonRowShifts[buttonIndex / 4],frameRight,infoSection->bottomOffset);
   }
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,worldViewArea),0,0,frameLeft,0);
-  InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,sidePanelStack),frameLeft,0,0,0);
+  InGameUiRuntime_SetEdgeOffsets(&ui->worldViewArea.base,0,0,frameLeft,0);
+  InGameUiRuntime_SetEdgeOffsets(&ui->sidePanelStack.base,frameLeft,0,0,0);
 }
 
 /* Sets the edges of one grid cell: edges[n] is the right/bottom edge of column/row n (counted from the bottom right
@@ -572,6 +578,7 @@ static void InGameUiRuntime_PlaceGridCell
 static void InGameUiRuntime_PlaceCatalogGridCells(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   int32_t columnEdges[9];
   int32_t rowEdges[8];
   int edgeIndex;
@@ -585,125 +592,125 @@ static void InGameUiRuntime_PlaceCatalogGridCells(UiRootNode *inGameRoot)
     rowEdges[edgeIndex] = rowEdges[edgeIndex - 1] - g_InGamePanelTextureSubresource34Height;
   }
   /* build catalog: 4x6 cells, then 4 columns of 6 */
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry00),columnEdges,rowEdges,0,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry01),columnEdges,rowEdges,1,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry02),columnEdges,rowEdges,2,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry03),columnEdges,rowEdges,3,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry04),columnEdges,rowEdges,0,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry05),columnEdges,rowEdges,1,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry06),columnEdges,rowEdges,2,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry07),columnEdges,rowEdges,3,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry08),columnEdges,rowEdges,0,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry09),columnEdges,rowEdges,1,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry10),columnEdges,rowEdges,2,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry11),columnEdges,rowEdges,3,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry12),columnEdges,rowEdges,0,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry13),columnEdges,rowEdges,1,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry14),columnEdges,rowEdges,2,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry15),columnEdges,rowEdges,3,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry16),columnEdges,rowEdges,0,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry17),columnEdges,rowEdges,1,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry18),columnEdges,rowEdges,2,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry19),columnEdges,rowEdges,3,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry20),columnEdges,rowEdges,0,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry21),columnEdges,rowEdges,1,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry22),columnEdges,rowEdges,2,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry23),columnEdges,rowEdges,3,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry24),columnEdges,rowEdges,4,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry25),columnEdges,rowEdges,4,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry26),columnEdges,rowEdges,4,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry27),columnEdges,rowEdges,4,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry28),columnEdges,rowEdges,4,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry29),columnEdges,rowEdges,4,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry30),columnEdges,rowEdges,5,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry31),columnEdges,rowEdges,5,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry32),columnEdges,rowEdges,5,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry33),columnEdges,rowEdges,5,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry34),columnEdges,rowEdges,5,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry35),columnEdges,rowEdges,5,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry36),columnEdges,rowEdges,6,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry37),columnEdges,rowEdges,6,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry38),columnEdges,rowEdges,6,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry39),columnEdges,rowEdges,6,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry40),columnEdges,rowEdges,6,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry41),columnEdges,rowEdges,6,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry42),columnEdges,rowEdges,7,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry43),columnEdges,rowEdges,7,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry44),columnEdges,rowEdges,7,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry45),columnEdges,rowEdges,7,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry46),columnEdges,rowEdges,7,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,buildCatalogEntry47),columnEdges,rowEdges,7,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry00.command.sprite.selectable.base,columnEdges,rowEdges,0,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry01.command.sprite.selectable.base,columnEdges,rowEdges,1,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry02.command.sprite.selectable.base,columnEdges,rowEdges,2,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry03.command.sprite.selectable.base,columnEdges,rowEdges,3,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry04.command.sprite.selectable.base,columnEdges,rowEdges,0,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry05.command.sprite.selectable.base,columnEdges,rowEdges,1,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry06.command.sprite.selectable.base,columnEdges,rowEdges,2,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry07.command.sprite.selectable.base,columnEdges,rowEdges,3,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry08.command.sprite.selectable.base,columnEdges,rowEdges,0,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry09.command.sprite.selectable.base,columnEdges,rowEdges,1,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry10.command.sprite.selectable.base,columnEdges,rowEdges,2,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry11.command.sprite.selectable.base,columnEdges,rowEdges,3,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry12.command.sprite.selectable.base,columnEdges,rowEdges,0,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry13.command.sprite.selectable.base,columnEdges,rowEdges,1,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry14.command.sprite.selectable.base,columnEdges,rowEdges,2,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry15.command.sprite.selectable.base,columnEdges,rowEdges,3,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry16.command.sprite.selectable.base,columnEdges,rowEdges,0,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry17.command.sprite.selectable.base,columnEdges,rowEdges,1,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry18.command.sprite.selectable.base,columnEdges,rowEdges,2,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry19.command.sprite.selectable.base,columnEdges,rowEdges,3,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry20.command.sprite.selectable.base,columnEdges,rowEdges,0,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry21.command.sprite.selectable.base,columnEdges,rowEdges,1,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry22.command.sprite.selectable.base,columnEdges,rowEdges,2,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry23.command.sprite.selectable.base,columnEdges,rowEdges,3,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry24.command.sprite.selectable.base,columnEdges,rowEdges,4,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry25.command.sprite.selectable.base,columnEdges,rowEdges,4,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry26.command.sprite.selectable.base,columnEdges,rowEdges,4,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry27.command.sprite.selectable.base,columnEdges,rowEdges,4,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry28.command.sprite.selectable.base,columnEdges,rowEdges,4,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry29.command.sprite.selectable.base,columnEdges,rowEdges,4,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry30.command.sprite.selectable.base,columnEdges,rowEdges,5,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry31.command.sprite.selectable.base,columnEdges,rowEdges,5,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry32.command.sprite.selectable.base,columnEdges,rowEdges,5,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry33.command.sprite.selectable.base,columnEdges,rowEdges,5,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry34.command.sprite.selectable.base,columnEdges,rowEdges,5,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry35.command.sprite.selectable.base,columnEdges,rowEdges,5,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry36.command.sprite.selectable.base,columnEdges,rowEdges,6,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry37.command.sprite.selectable.base,columnEdges,rowEdges,6,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry38.command.sprite.selectable.base,columnEdges,rowEdges,6,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry39.command.sprite.selectable.base,columnEdges,rowEdges,6,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry40.command.sprite.selectable.base,columnEdges,rowEdges,6,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry41.command.sprite.selectable.base,columnEdges,rowEdges,6,5);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry42.command.sprite.selectable.base,columnEdges,rowEdges,7,0);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry43.command.sprite.selectable.base,columnEdges,rowEdges,7,1);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry44.command.sprite.selectable.base,columnEdges,rowEdges,7,2);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry45.command.sprite.selectable.base,columnEdges,rowEdges,7,3);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry46.command.sprite.selectable.base,columnEdges,rowEdges,7,4);
+  InGameUiRuntime_PlaceGridCell(&ui->buildCatalogEntry47.command.sprite.selectable.base,columnEdges,rowEdges,7,5);
   /* special build catalog: 4x7 cells, then 2 columns of 7 */
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry00),columnEdges,rowEdges,0,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry01),columnEdges,rowEdges,1,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry02),columnEdges,rowEdges,2,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry03),columnEdges,rowEdges,3,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry04),columnEdges,rowEdges,0,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry05),columnEdges,rowEdges,1,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry06),columnEdges,rowEdges,2,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry07),columnEdges,rowEdges,3,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry08),columnEdges,rowEdges,0,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry09),columnEdges,rowEdges,1,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry10),columnEdges,rowEdges,2,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry11),columnEdges,rowEdges,3,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry12),columnEdges,rowEdges,0,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry13),columnEdges,rowEdges,1,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry14),columnEdges,rowEdges,2,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry15),columnEdges,rowEdges,3,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry16),columnEdges,rowEdges,0,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry17),columnEdges,rowEdges,1,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry18),columnEdges,rowEdges,2,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry19),columnEdges,rowEdges,3,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry20),columnEdges,rowEdges,0,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry21),columnEdges,rowEdges,1,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry22),columnEdges,rowEdges,2,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry23),columnEdges,rowEdges,3,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry24),columnEdges,rowEdges,0,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry25),columnEdges,rowEdges,1,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry26),columnEdges,rowEdges,2,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry27),columnEdges,rowEdges,3,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry28),columnEdges,rowEdges,4,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry29),columnEdges,rowEdges,4,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry30),columnEdges,rowEdges,4,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry31),columnEdges,rowEdges,4,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry32),columnEdges,rowEdges,4,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry33),columnEdges,rowEdges,4,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry34),columnEdges,rowEdges,4,6);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry35),columnEdges,rowEdges,5,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry36),columnEdges,rowEdges,5,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry37),columnEdges,rowEdges,5,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry38),columnEdges,rowEdges,5,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry39),columnEdges,rowEdges,5,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry40),columnEdges,rowEdges,5,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,specialBuildCatalogEntry41),columnEdges,rowEdges,5,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry00.command.sprite.selectable.base,columnEdges,rowEdges,0,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry01.command.sprite.selectable.base,columnEdges,rowEdges,1,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry02.command.sprite.selectable.base,columnEdges,rowEdges,2,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry03.command.sprite.selectable.base,columnEdges,rowEdges,3,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry04.command.sprite.selectable.base,columnEdges,rowEdges,0,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry05.command.sprite.selectable.base,columnEdges,rowEdges,1,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry06.command.sprite.selectable.base,columnEdges,rowEdges,2,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry07.command.sprite.selectable.base,columnEdges,rowEdges,3,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry08.command.sprite.selectable.base,columnEdges,rowEdges,0,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry09.command.sprite.selectable.base,columnEdges,rowEdges,1,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry10.command.sprite.selectable.base,columnEdges,rowEdges,2,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry11.command.sprite.selectable.base,columnEdges,rowEdges,3,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry12.command.sprite.selectable.base,columnEdges,rowEdges,0,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry13.command.sprite.selectable.base,columnEdges,rowEdges,1,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry14.command.sprite.selectable.base,columnEdges,rowEdges,2,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry15.command.sprite.selectable.base,columnEdges,rowEdges,3,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry16.command.sprite.selectable.base,columnEdges,rowEdges,0,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry17.command.sprite.selectable.base,columnEdges,rowEdges,1,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry18.command.sprite.selectable.base,columnEdges,rowEdges,2,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry19.command.sprite.selectable.base,columnEdges,rowEdges,3,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry20.command.sprite.selectable.base,columnEdges,rowEdges,0,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry21.command.sprite.selectable.base,columnEdges,rowEdges,1,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry22.command.sprite.selectable.base,columnEdges,rowEdges,2,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry23.command.sprite.selectable.base,columnEdges,rowEdges,3,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry24.command.sprite.selectable.base,columnEdges,rowEdges,0,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry25.command.sprite.selectable.base,columnEdges,rowEdges,1,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry26.command.sprite.selectable.base,columnEdges,rowEdges,2,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry27.command.sprite.selectable.base,columnEdges,rowEdges,3,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry28.command.sprite.selectable.base,columnEdges,rowEdges,4,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry29.command.sprite.selectable.base,columnEdges,rowEdges,4,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry30.command.sprite.selectable.base,columnEdges,rowEdges,4,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry31.command.sprite.selectable.base,columnEdges,rowEdges,4,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry32.command.sprite.selectable.base,columnEdges,rowEdges,4,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry33.command.sprite.selectable.base,columnEdges,rowEdges,4,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry34.command.sprite.selectable.base,columnEdges,rowEdges,4,6);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry35.command.sprite.selectable.base,columnEdges,rowEdges,5,0);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry36.command.sprite.selectable.base,columnEdges,rowEdges,5,1);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry37.command.sprite.selectable.base,columnEdges,rowEdges,5,2);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry38.command.sprite.selectable.base,columnEdges,rowEdges,5,3);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry39.command.sprite.selectable.base,columnEdges,rowEdges,5,4);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry40.command.sprite.selectable.base,columnEdges,rowEdges,5,5);
+  InGameUiRuntime_PlaceGridCell(&ui->specialBuildCatalogEntry41.command.sprite.selectable.base,columnEdges,rowEdges,5,6);
   /* army stock: 4x6 cells */
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot00),columnEdges,rowEdges,0,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot01),columnEdges,rowEdges,1,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot02),columnEdges,rowEdges,2,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot03),columnEdges,rowEdges,3,0);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot04),columnEdges,rowEdges,0,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot05),columnEdges,rowEdges,1,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot06),columnEdges,rowEdges,2,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot07),columnEdges,rowEdges,3,1);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot08),columnEdges,rowEdges,0,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot09),columnEdges,rowEdges,1,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot10),columnEdges,rowEdges,2,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot11),columnEdges,rowEdges,3,2);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot12),columnEdges,rowEdges,0,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot13),columnEdges,rowEdges,1,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot14),columnEdges,rowEdges,2,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot15),columnEdges,rowEdges,3,3);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot16),columnEdges,rowEdges,0,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot17),columnEdges,rowEdges,1,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot18),columnEdges,rowEdges,2,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot19),columnEdges,rowEdges,3,4);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot20),columnEdges,rowEdges,0,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot21),columnEdges,rowEdges,1,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot22),columnEdges,rowEdges,2,5);
-  InGameUiRuntime_PlaceGridCell(INGAME_UI(inGameRoot,armyStockSlot23),columnEdges,rowEdges,3,5);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot00.sprite.selectable.base,columnEdges,rowEdges,0,0);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot01.sprite.selectable.base,columnEdges,rowEdges,1,0);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot02.sprite.selectable.base,columnEdges,rowEdges,2,0);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot03.sprite.selectable.base,columnEdges,rowEdges,3,0);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot04.sprite.selectable.base,columnEdges,rowEdges,0,1);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot05.sprite.selectable.base,columnEdges,rowEdges,1,1);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot06.sprite.selectable.base,columnEdges,rowEdges,2,1);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot07.sprite.selectable.base,columnEdges,rowEdges,3,1);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot08.sprite.selectable.base,columnEdges,rowEdges,0,2);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot09.sprite.selectable.base,columnEdges,rowEdges,1,2);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot10.sprite.selectable.base,columnEdges,rowEdges,2,2);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot11.sprite.selectable.base,columnEdges,rowEdges,3,2);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot12.sprite.selectable.base,columnEdges,rowEdges,0,3);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot13.sprite.selectable.base,columnEdges,rowEdges,1,3);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot14.sprite.selectable.base,columnEdges,rowEdges,2,3);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot15.sprite.selectable.base,columnEdges,rowEdges,3,3);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot16.sprite.selectable.base,columnEdges,rowEdges,0,4);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot17.sprite.selectable.base,columnEdges,rowEdges,1,4);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot18.sprite.selectable.base,columnEdges,rowEdges,2,4);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot19.sprite.selectable.base,columnEdges,rowEdges,3,4);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot20.sprite.selectable.base,columnEdges,rowEdges,0,5);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot21.sprite.selectable.base,columnEdges,rowEdges,1,5);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot22.sprite.selectable.base,columnEdges,rowEdges,2,5);
+  InGameUiRuntime_PlaceGridCell(&ui->armyStockSlot23.command.sprite.selectable.base,columnEdges,rowEdges,3,5);
   /* the technology description scroll's left edge and frame's right edge move one catalog cell width */
-  INGAME_UI(inGameRoot,technologyDescriptionScroll)->leftOffset += g_InGamePanelTextureSubresource34Width;
-  INGAME_UI(inGameRoot,technologyDescriptionFrame)->rightOffset += g_InGamePanelTextureSubresource34Width;
+  ui->technologyDescriptionScroll.base.leftOffset += g_InGamePanelTextureSubresource34Width;
+  ui->technologyDescriptionFrame.base.rightOffset += g_InGamePanelTextureSubresource34Width;
 }
 
 /* Shifts the right edge of one diplomacy row's label columns and places its relation button. */
@@ -723,6 +730,7 @@ static void InGameUiRuntime_ShiftDiplomacyRowLabels
 static void InGameUiRuntime_PlaceDiplomacyRows(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   UiNodeBase *rows[7];
   int32_t rowLeftOffset;
   int32_t rowRightOffset;
@@ -731,13 +739,13 @@ static void InGameUiRuntime_PlaceDiplomacyRows(UiRootNode *inGameRoot)
   int32_t labelShift;
   int rowIndex;
 
-  rows[0] = INGAME_UI(inGameRoot,diplomacyRow1);
-  rows[1] = INGAME_UI(inGameRoot,diplomacyRow2);
-  rows[2] = INGAME_UI(inGameRoot,diplomacyRow3);
-  rows[3] = INGAME_UI(inGameRoot,diplomacyRow4);
-  rows[4] = INGAME_UI(inGameRoot,diplomacyRow5);
-  rows[5] = INGAME_UI(inGameRoot,diplomacyRow6);
-  rows[6] = INGAME_UI(inGameRoot,diplomacyRow7);
+  rows[0] = &ui->diplomacyRow1.base;
+  rows[1] = &ui->diplomacyRow2.base;
+  rows[2] = &ui->diplomacyRow3.base;
+  rows[3] = &ui->diplomacyRow4.base;
+  rows[4] = &ui->diplomacyRow5.base;
+  rows[5] = &ui->diplomacyRow6.base;
+  rows[6] = &ui->diplomacyRow7.base;
   rowLeftOffset = g_InGamePanelTextureSubresource19Width;
   rowRightOffset = -g_InGamePanelTextureSubresource20Width;
   rowBottomShift = g_InGamePanelTextureSubresource23Height;
@@ -751,33 +759,33 @@ static void InGameUiRuntime_PlaceDiplomacyRows(UiRootNode *inGameRoot)
   }
   labelShift = -g_InGamePanelTextureSubresource33Width;
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow1RelationButton),INGAME_UI(inGameRoot,diplomacyRow1PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow1RelationLabel),INGAME_UI(inGameRoot,diplomacyRow1PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow1FactionLabel),labelShift);
+            (&ui->diplomacyRow1RelationButton.sprite.selectable.base,&ui->diplomacyRow1PlayerNumberLabel.base,
+             &ui->diplomacyRow1RelationLabel.base,&ui->diplomacyRow1PlayerNameLabel.base,
+             &ui->diplomacyRow1FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow2RelationButton),INGAME_UI(inGameRoot,diplomacyRow2PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow2RelationLabel),INGAME_UI(inGameRoot,diplomacyRow2PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow2FactionLabel),labelShift);
+            (&ui->diplomacyRow2RelationButton.sprite.selectable.base,&ui->diplomacyRow2PlayerNumberLabel.base,
+             &ui->diplomacyRow2RelationLabel.base,&ui->diplomacyRow2PlayerNameLabel.base,
+             &ui->diplomacyRow2FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow3RelationButton),INGAME_UI(inGameRoot,diplomacyRow3PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow3RelationLabel),INGAME_UI(inGameRoot,diplomacyRow3PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow3FactionLabel),labelShift);
+            (&ui->diplomacyRow3RelationButton.sprite.selectable.base,&ui->diplomacyRow3PlayerNumberLabel.base,
+             &ui->diplomacyRow3RelationLabel.base,&ui->diplomacyRow3PlayerNameLabel.base,
+             &ui->diplomacyRow3FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow4RelationButton),INGAME_UI(inGameRoot,diplomacyRow4PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow4RelationLabel),INGAME_UI(inGameRoot,diplomacyRow4PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow4FactionLabel),labelShift);
+            (&ui->diplomacyRow4RelationButton.sprite.selectable.base,&ui->diplomacyRow4PlayerNumberLabel.base,
+             &ui->diplomacyRow4RelationLabel.base,&ui->diplomacyRow4PlayerNameLabel.base,
+             &ui->diplomacyRow4FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow5RelationButton),INGAME_UI(inGameRoot,diplomacyRow5PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow5RelationLabel),INGAME_UI(inGameRoot,diplomacyRow5PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow5FactionLabel),labelShift);
+            (&ui->diplomacyRow5RelationButton.sprite.selectable.base,&ui->diplomacyRow5PlayerNumberLabel.base,
+             &ui->diplomacyRow5RelationLabel.base,&ui->diplomacyRow5PlayerNameLabel.base,
+             &ui->diplomacyRow5FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow6RelationButton),INGAME_UI(inGameRoot,diplomacyRow6PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow6RelationLabel),INGAME_UI(inGameRoot,diplomacyRow6PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow6FactionLabel),labelShift);
+            (&ui->diplomacyRow6RelationButton.sprite.selectable.base,&ui->diplomacyRow6PlayerNumberLabel.base,
+             &ui->diplomacyRow6RelationLabel.base,&ui->diplomacyRow6PlayerNameLabel.base,
+             &ui->diplomacyRow6FactionLabel.base,labelShift);
   InGameUiRuntime_ShiftDiplomacyRowLabels
-            (INGAME_UI(inGameRoot,diplomacyRow7RelationButton),INGAME_UI(inGameRoot,diplomacyRow7PlayerNumberLabel),
-             INGAME_UI(inGameRoot,diplomacyRow7RelationLabel),INGAME_UI(inGameRoot,diplomacyRow7PlayerNameLabel),
-             INGAME_UI(inGameRoot,diplomacyRow7FactionLabel),labelShift);
+            (&ui->diplomacyRow7RelationButton.sprite.selectable.base,&ui->diplomacyRow7PlayerNumberLabel.base,
+             &ui->diplomacyRow7RelationLabel.base,&ui->diplomacyRow7PlayerNameLabel.base,
+             &ui->diplomacyRow7FactionLabel.base,labelShift);
 }
 
 /* Gives target the edge offsets (leftOffset..bottomOffset) of source. */
@@ -795,29 +803,30 @@ static void InGameUiRuntime_CopyEdgeOffsets(UiNodeBase *target,const UiNodeBase 
 static void InGameUiRuntime_PlaceEditorToolOptions(UiRootNode *inGameRoot)
 
 {
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,editorTabStripA),INGAME_UI(inGameRoot,resourcePanel));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,editorTabStripB),INGAME_UI(inGameRoot,gamePanelsArea));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,heightToolOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,materialToolOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingToolOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,unitPlacementOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,objectPlacementOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,regionToolOption0),INGAME_UI(inGameRoot,selectionGroupButton0));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,heightToolOption1),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,materialToolOption1),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingToolOption1),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,unitPlacementOption2),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,objectPlacementOption2),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,regionToolOption1),INGAME_UI(inGameRoot,selectionGroupButton1));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,heightToolOption2),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,materialToolOption2),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingToolOption2),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,unitPlacementOption1),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,objectPlacementOption1),INGAME_UI(inGameRoot,selectionGroupButton2));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingRelaxGatedButton),INGAME_UI(inGameRoot,selectionGroupButton6));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,heightToolOption3),INGAME_UI(inGameRoot,selectionGroupButton7));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,materialToolOption3),INGAME_UI(inGameRoot,selectionGroupButton7));
-  InGameUiRuntime_CopyEdgeOffsets(INGAME_UI(inGameRoot,smoothingRelaxLandButton),INGAME_UI(inGameRoot,selectionGroupButton7));
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->editorTabStripA.base,&ui->resourcePanel.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->editorTabStripB.base,&ui->gamePanelsArea.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->heightToolOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->materialToolOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingToolOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->unitPlacementOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->objectPlacementOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->regionToolOption0.selectable.base,&ui->selectionGroupButton0.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->heightToolOption1.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->materialToolOption1.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingToolOption1.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->unitPlacementOption2.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->objectPlacementOption2.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->regionToolOption1.selectable.base,&ui->selectionGroupButton1.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->heightToolOption2.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->materialToolOption2.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingToolOption2.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->unitPlacementOption1.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->objectPlacementOption1.selectable.base,&ui->selectionGroupButton2.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingRelaxGatedButton.selectable.base,&ui->selectionGroupButton6.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->heightToolOption3.selectable.base,&ui->selectionGroupButton7.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->materialToolOption3.selectable.base,&ui->selectionGroupButton7.sprite.selectable.base);
+  InGameUiRuntime_CopyEdgeOffsets(&ui->smoothingRelaxLandButton.selectable.base,&ui->selectionGroupButton7.sprite.selectable.base);
 }
 
 /* Selection detail page: icon/metrics box of one catalog cell plus a 2 pixel border with the text below it, the
@@ -825,6 +834,7 @@ static void InGameUiRuntime_PlaceEditorToolOptions(UiRootNode *inGameRoot)
 static void InGameUiRuntime_LayoutSelectionDetailPage(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   int32_t iconHeight;
   int32_t paddedIconWidth;
   int32_t paddedIconHeight;
@@ -841,27 +851,27 @@ static void InGameUiRuntime_LayoutSelectionDetailPage(UiRootNode *inGameRoot)
   iconHeight = g_InGamePanelTextureSubresource34Height;
   paddedIconWidth = g_InGamePanelTextureSubresource34Width + 2;
   paddedIconHeight = g_InGamePanelTextureSubresource34Height + 2;
-  INGAME_UI(inGameRoot,singleSelectionMetrics)->rightOffset = paddedIconWidth;
-  INGAME_UI(inGameRoot,singleSelectionMetrics)->bottomOffset = paddedIconHeight;
-  INGAME_UI(inGameRoot,singleSelectionMetrics)->leftOffset = 2;
-  INGAME_UI(inGameRoot,singleSelectionMetrics)->topOffset = 2;
-  INGAME_UI(inGameRoot,hoverItemIcon)->rightOffset = paddedIconWidth;
-  INGAME_UI(inGameRoot,hoverItemIcon)->bottomOffset = paddedIconHeight;
-  INGAME_UI(inGameRoot,hoverItemIcon)->leftOffset = 2;
-  INGAME_UI(inGameRoot,hoverItemIcon)->topOffset = 2;
+  ui->singleSelectionMetrics.base.base.rightOffset = paddedIconWidth;
+  ui->singleSelectionMetrics.base.base.bottomOffset = paddedIconHeight;
+  ui->singleSelectionMetrics.base.base.leftOffset = 2;
+  ui->singleSelectionMetrics.base.base.topOffset = 2;
+  ui->hoverItemIcon.base.rightOffset = paddedIconWidth;
+  ui->hoverItemIcon.base.bottomOffset = paddedIconHeight;
+  ui->hoverItemIcon.base.leftOffset = 2;
+  ui->hoverItemIcon.base.topOffset = 2;
   textWrapWidth = g_InGamePanelTextureSubresource02Width - 4;
-  INGAME_UI(inGameRoot,singleSelectionStatsText)->leftOffset = 2;
-  INGAME_UI(inGameRoot,singleSelectionStatsText)->topOffset = iconHeight + 4;
-  INGAME_UI(inGameRoot,singleSelectionStatsText)->rightOffset = -2;
-  ((UiWrappedTextControl *)INGAME_UI(inGameRoot,singleSelectionStatsText))->wrapWidth = (UiPixelExtent)textWrapWidth;
-  INGAME_UI(inGameRoot,hoverItemStatsText)->leftOffset = 2;
-  INGAME_UI(inGameRoot,hoverItemStatsText)->topOffset = iconHeight + 4;
-  INGAME_UI(inGameRoot,hoverItemStatsText)->rightOffset = -2;
-  ((UiWrappedTextControl *)INGAME_UI(inGameRoot,hoverItemStatsText))->wrapWidth = (UiPixelExtent)textWrapWidth;
-  INGAME_UI(inGameRoot,unitPlacementStatsText)->leftOffset = 2;
-  INGAME_UI(inGameRoot,unitPlacementStatsText)->topOffset = 2;
-  INGAME_UI(inGameRoot,unitPlacementStatsText)->rightOffset = -2;
-  ((UiWrappedTextControl *)INGAME_UI(inGameRoot,unitPlacementStatsText))->wrapWidth = (UiPixelExtent)textWrapWidth;
+  ui->singleSelectionStatsText.base.leftOffset = 2;
+  ui->singleSelectionStatsText.base.topOffset = iconHeight + 4;
+  ui->singleSelectionStatsText.base.rightOffset = -2;
+  ui->singleSelectionStatsText.wrapWidth = (UiPixelExtent)textWrapWidth;
+  ui->hoverItemStatsText.base.leftOffset = 2;
+  ui->hoverItemStatsText.base.topOffset = iconHeight + 4;
+  ui->hoverItemStatsText.base.rightOffset = -2;
+  ui->hoverItemStatsText.wrapWidth = (UiPixelExtent)textWrapWidth;
+  ui->unitPlacementStatsText.base.leftOffset = 2;
+  ui->unitPlacementStatsText.base.topOffset = 2;
+  ui->unitPlacementStatsText.base.rightOffset = -2;
+  ui->unitPlacementStatsText.wrapWidth = (UiPixelExtent)textWrapWidth;
   /* point the placeholders 0..9 of the selection detail text templates at the shared value buffers */
   for (resourceId = TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE; resourceId < TEXT_ID_MODEL_NAME_BASE; resourceId++) {
     templateText = TextResource_Resolve(resourceId);
@@ -882,7 +892,7 @@ static void InGameUiRuntime_LayoutSelectionDetailPage(UiRootNode *inGameRoot)
   cellLeft = 0;
   cellTop = 0;
   for (cellIndex = 0; cellIndex < 12; cellIndex++) {
-    cell = THANDOR_UI_AT(inGameRoot,g_InGameSelectionDetailGridCellOffsets[cellIndex]);
+    cell = &(ui->*g_InGameSelectionDetailGridCells[cellIndex]).base.base;
     cell->leftOffset = cellLeft;
     cell->topOffset = cellTop;
     cell->rightOffset = cellLeft + cellSize;
@@ -904,28 +914,29 @@ static void InGameUiRuntime_LayoutSelectionDetailPage(UiRootNode *inGameRoot)
 static void InGameUiRuntime_SizeTechnologyWindow(UiRootNode *inGameRoot,GraphicsTextureSourceAsset *techTexture)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   GraphicsTextureLogicalSize logicalSize;
   uint32_t techTextureHeight;
   uint32_t halfWidthGrowth;
 
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,techTexture);
   techTextureHeight = logicalSize.logicalHeightPixels;
-  INGAME_UI(inGameRoot,technologyAreaTab1)->topOffset -= techTextureHeight;
-  INGAME_UI(inGameRoot,technologyAreaTab2)->topOffset -= techTextureHeight;
-  INGAME_UI(inGameRoot,technologyAreaTab3)->topOffset -= techTextureHeight;
-  INGAME_UI(inGameRoot,technologyAreaTab4)->topOffset -= techTextureHeight;
-  INGAME_UI(inGameRoot,technologyAreaTab5)->topOffset -= techTextureHeight;
-  INGAME_UI(inGameRoot,technologyAreaTab6)->topOffset -= techTextureHeight;
-  INGAME_UI(inGameRoot,technologyAreaTab7)->topOffset -= techTextureHeight;
-  INGAME_UI(inGameRoot,technologyDescriptionScroll)->bottomOffset -= techTextureHeight;
+  ui->technologyAreaTab1.selectable.base.topOffset -= techTextureHeight;
+  ui->technologyAreaTab2.selectable.base.topOffset -= techTextureHeight;
+  ui->technologyAreaTab3.selectable.base.topOffset -= techTextureHeight;
+  ui->technologyAreaTab4.selectable.base.topOffset -= techTextureHeight;
+  ui->technologyAreaTab5.selectable.base.topOffset -= techTextureHeight;
+  ui->technologyAreaTab6.selectable.base.topOffset -= techTextureHeight;
+  ui->technologyAreaTab7.selectable.base.topOffset -= techTextureHeight;
+  ui->technologyDescriptionScroll.base.bottomOffset -= techTextureHeight;
   halfWidthGrowth = logicalSize.logicalWidthPixels * 7 >> 1;
-  INGAME_UI(inGameRoot,technologyWindow)->leftOffset -= halfWidthGrowth;
-  INGAME_UI(inGameRoot,technologyWindow)->rightOffset += halfWidthGrowth;
-  INGAME_UI(inGameRoot,technologyWindow)->topOffset -= techTextureHeight >> 1;
-  INGAME_UI(inGameRoot,technologyWindow)->bottomOffset += techTextureHeight >> 1;
-  ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->wrapWidth =
-       (INGAME_UI(inGameRoot,technologyWindow)->rightOffset - INGAME_UI(inGameRoot,technologyWindow)->leftOffset) + -24 +
-       (INGAME_UI(inGameRoot,technologyDescriptionScroll)->rightOffset - INGAME_UI(inGameRoot,technologyDescriptionScroll)->leftOffset);
+  ui->technologyWindow.base.leftOffset -= halfWidthGrowth;
+  ui->technologyWindow.base.rightOffset += halfWidthGrowth;
+  ui->technologyWindow.base.topOffset -= techTextureHeight >> 1;
+  ui->technologyWindow.base.bottomOffset += techTextureHeight >> 1;
+  ui->technologyDescriptionText.wrapWidth =
+       (ui->technologyWindow.base.rightOffset - ui->technologyWindow.base.leftOffset) + -24 +
+       (ui->technologyDescriptionScroll.base.rightOffset - ui->technologyDescriptionScroll.base.leftOffset);
 }
 
 /* Click sounds: voice sets 0..6 of g_UiButtonSoundVoiceSets7, stored at the control class's sound field
@@ -933,254 +944,256 @@ static void InGameUiRuntime_SizeTechnologyWindow(UiRootNode *inGameRoot,Graphics
 static void InGameUiRuntime_AssignClickSounds(UiRootNode *inGameRoot)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   SoundVoiceSet *buttonVoiceSet;
 
   buttonVoiceSet = g_UiButtonSoundVoiceSets7[0];
-  ((UiImageControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle8))->pointerActivationSound = g_UiButtonSoundVoiceSets7[0];
-  ((UiImageControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle9))->pointerActivationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,resourcePanelIconButton))->activationSound = buttonVoiceSet;
-  ((UiImageControl *)INGAME_UI(inGameRoot,diplomacyPanel))->pointerActivationSound = buttonVoiceSet;
-  ((UiImageControl *)INGAME_UI(inGameRoot,buildCatalogPanel))->pointerActivationSound = buttonVoiceSet;
-  ((UiImageControl *)INGAME_UI(inGameRoot,specialBuildCatalogPanel))->pointerActivationSound = buttonVoiceSet;
-  ((UiImageControl *)INGAME_UI(inGameRoot,armyStockPanel))->pointerActivationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainHeight))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainMaterial))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainSmoothing))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabRegion))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabUnitPlacement))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabObjectPlacement))->activationSound = buttonVoiceSet;
+  ui->resourcePanelImageToggle8.pointerActivationSound = g_UiButtonSoundVoiceSets7[0];
+  ui->resourcePanelImageToggle9.pointerActivationSound = buttonVoiceSet;
+  ui->resourcePanelIconButton.activationSound = buttonVoiceSet;
+  ui->diplomacyPanel.pointerActivationSound = buttonVoiceSet;
+  ui->buildCatalogPanel.pointerActivationSound = buttonVoiceSet;
+  ui->specialBuildCatalogPanel.pointerActivationSound = buttonVoiceSet;
+  ui->armyStockPanel.pointerActivationSound = buttonVoiceSet;
+  ui->editorModeTabTerrainHeight.activationSound = buttonVoiceSet;
+  ui->editorModeTabTerrainMaterial.activationSound = buttonVoiceSet;
+  ui->editorModeTabTerrainSmoothing.activationSound = buttonVoiceSet;
+  ui->editorModeTabRegion.activationSound = buttonVoiceSet;
+  ui->editorModeTabUnitPlacement.activationSound = buttonVoiceSet;
+  /* Truncated template nodes, untyped in InGameUiImage (see InGameUiRuntime_BindPanelTexture). */
+  reinterpret_cast<UiSpriteButtonControl *>(&ui->editorModeTabObjectPlacement)->activationSound = buttonVoiceSet;
   buttonVoiceSet = g_UiButtonSoundVoiceSets7[1];
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,inGameMenuButton))->activationSound = g_UiButtonSoundVoiceSets7[1];
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,missionObjectivesButton))->activationSound = buttonVoiceSet;
+  ui->inGameMenuButton.activationSound = g_UiButtonSoundVoiceSets7[1];
+  ui->missionObjectivesButton.activationSound = buttonVoiceSet;
   buttonVoiceSet = g_UiButtonSoundVoiceSets7[2];
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton0))->activationSound = g_UiButtonSoundVoiceSets7[2];
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton1))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton2))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton3))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton4))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton5))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton6))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton7))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption0))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption1))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption2))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption3))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption0))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption1))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption2))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption3))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption0))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption1))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption2))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingRelaxLandButton))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption0))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption2))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption1))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption0))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption2))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption1))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,regionToolOption0))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,regionToolOption1))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,singleSelectionUpgradeButton))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow1RelationButton))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow2RelationButton))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow3RelationButton))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow4RelationButton))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow5RelationButton))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow6RelationButton))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow7RelationButton))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry00))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry01))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry02))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry03))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry04))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry05))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry06))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry07))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry08))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry09))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry10))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry11))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry12))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry13))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry14))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry15))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry16))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry17))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry18))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry19))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry20))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry21))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry22))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry23))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry24))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry25))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry26))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry27))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry28))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry29))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry30))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry31))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry32))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry33))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry34))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry35))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry36))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry37))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry38))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry39))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry40))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry41))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry42))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry43))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry44))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry45))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry46))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry47))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry00))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry01))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry02))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry03))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry04))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry05))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry06))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry07))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry08))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry09))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry10))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry11))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry12))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry13))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry14))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry15))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry16))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry17))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry18))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry19))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry20))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry21))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry22))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry23))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry24))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry25))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry26))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry27))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry28))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry29))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry30))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry31))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry32))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry33))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry34))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry35))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry36))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry37))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry38))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry39))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry40))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry41))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot00))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot01))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot02))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot03))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot04))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot05))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot06))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot07))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot08))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot09))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot10))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot11))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot12))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot13))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot14))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot15))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot16))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot17))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot18))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot19))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot20))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot21))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot22))->activationSound = buttonVoiceSet;
-  ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot23))->activationSound = buttonVoiceSet;
+  ui->selectionGroupButton0.sprite.activationSound = g_UiButtonSoundVoiceSets7[2];
+  ui->selectionGroupButton1.sprite.activationSound = buttonVoiceSet;
+  ui->selectionGroupButton2.sprite.activationSound = buttonVoiceSet;
+  ui->selectionGroupButton3.sprite.activationSound = buttonVoiceSet;
+  ui->selectionGroupButton4.sprite.activationSound = buttonVoiceSet;
+  ui->selectionGroupButton5.sprite.activationSound = buttonVoiceSet;
+  ui->selectionGroupButton6.sprite.activationSound = buttonVoiceSet;
+  ui->selectionGroupButton7.sprite.activationSound = buttonVoiceSet;
+  ui->heightToolOption0.activationSound = buttonVoiceSet;
+  ui->heightToolOption1.activationSound = buttonVoiceSet;
+  ui->heightToolOption2.activationSound = buttonVoiceSet;
+  ui->heightToolOption3.activationSound = buttonVoiceSet;
+  ui->materialToolOption0.activationSound = buttonVoiceSet;
+  ui->materialToolOption1.activationSound = buttonVoiceSet;
+  ui->materialToolOption2.activationSound = buttonVoiceSet;
+  ui->materialToolOption3.activationSound = buttonVoiceSet;
+  ui->smoothingToolOption0.activationSound = buttonVoiceSet;
+  ui->smoothingToolOption1.activationSound = buttonVoiceSet;
+  ui->smoothingToolOption2.activationSound = buttonVoiceSet;
+  ui->smoothingRelaxLandButton.activationSound = buttonVoiceSet;
+  ui->unitPlacementOption0.activationSound = buttonVoiceSet;
+  ui->unitPlacementOption2.activationSound = buttonVoiceSet;
+  ui->unitPlacementOption1.activationSound = buttonVoiceSet;
+  ui->objectPlacementOption0.activationSound = buttonVoiceSet;
+  ui->objectPlacementOption2.activationSound = buttonVoiceSet;
+  ui->objectPlacementOption1.activationSound = buttonVoiceSet;
+  ui->regionToolOption0.activationSound = buttonVoiceSet;
+  ui->regionToolOption1.activationSound = buttonVoiceSet;
+  reinterpret_cast<UiSpriteButtonControl *>(&ui->singleSelectionUpgradeButton)->activationSound = buttonVoiceSet;
+  ui->diplomacyRow1RelationButton.sprite.activationSound = buttonVoiceSet;
+  ui->diplomacyRow2RelationButton.sprite.activationSound = buttonVoiceSet;
+  ui->diplomacyRow3RelationButton.sprite.activationSound = buttonVoiceSet;
+  ui->diplomacyRow4RelationButton.sprite.activationSound = buttonVoiceSet;
+  ui->diplomacyRow5RelationButton.sprite.activationSound = buttonVoiceSet;
+  ui->diplomacyRow6RelationButton.sprite.activationSound = buttonVoiceSet;
+  ui->diplomacyRow7RelationButton.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry00.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry01.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry02.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry03.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry04.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry05.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry06.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry07.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry08.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry09.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry10.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry11.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry12.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry13.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry14.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry15.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry16.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry17.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry18.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry19.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry20.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry21.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry22.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry23.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry24.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry25.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry26.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry27.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry28.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry29.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry30.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry31.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry32.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry33.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry34.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry35.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry36.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry37.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry38.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry39.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry40.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry41.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry42.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry43.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry44.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry45.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry46.command.sprite.activationSound = buttonVoiceSet;
+  ui->buildCatalogEntry47.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry00.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry01.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry02.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry03.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry04.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry05.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry06.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry07.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry08.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry09.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry10.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry11.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry12.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry13.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry14.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry15.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry16.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry17.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry18.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry19.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry20.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry21.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry22.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry23.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry24.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry25.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry26.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry27.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry28.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry29.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry30.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry31.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry32.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry33.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry34.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry35.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry36.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry37.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry38.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry39.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry40.command.sprite.activationSound = buttonVoiceSet;
+  ui->specialBuildCatalogEntry41.command.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot00.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot01.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot02.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot03.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot04.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot05.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot06.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot07.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot08.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot09.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot10.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot11.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot12.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot13.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot14.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot15.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot16.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot17.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot18.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot19.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot20.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot21.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot22.sprite.activationSound = buttonVoiceSet;
+  ui->armyStockSlot23.command.sprite.activationSound = buttonVoiceSet;
   buttonVoiceSet = g_UiButtonSoundVoiceSets7[3];
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsTabMilitary))->activationSound = g_UiButtonSoundVoiceSets7[3];
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsTabEconomy))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsTabThird))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsContinueButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsSecondaryExitButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsChartModeButtonA))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsChartModeButtonB))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuSaveButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuGraphicsButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuQuitButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuAudioButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuCloseButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,saveGameBackButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,saveGameSaveButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,saveGameDeleteButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuBackButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuAbortMissionButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuSurrenderButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuRestartMissionButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,graphicsOptionsBackButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,soundOptionsBackButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,messageSendButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,messageSendAndCloseButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,messageCancelButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyCloseButton))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpCloseButton))->activationSound = buttonVoiceSet;
+  ui->resultsTabMilitary.activationSound = g_UiButtonSoundVoiceSets7[3];
+  ui->resultsTabEconomy.activationSound = buttonVoiceSet;
+  ui->resultsTabThird.activationSound = buttonVoiceSet;
+  ui->resultsContinueButton.activationSound = buttonVoiceSet;
+  ui->resultsSecondaryExitButton.activationSound = buttonVoiceSet;
+  ui->resultsChartModeButtonA.activationSound = buttonVoiceSet;
+  ui->resultsChartModeButtonB.activationSound = buttonVoiceSet;
+  ui->gameMenuSaveButton.activationSound = buttonVoiceSet;
+  ui->gameMenuGraphicsButton.activationSound = buttonVoiceSet;
+  ui->gameMenuQuitButton.activationSound = buttonVoiceSet;
+  ui->gameMenuAudioButton.activationSound = buttonVoiceSet;
+  ui->gameMenuCloseButton.activationSound = buttonVoiceSet;
+  ui->saveGameBackButton.activationSound = buttonVoiceSet;
+  ui->saveGameSaveButton.activationSound = buttonVoiceSet;
+  ui->saveGameDeleteButton.activationSound = buttonVoiceSet;
+  ui->quitMenuBackButton.activationSound = buttonVoiceSet;
+  ui->quitMenuAbortMissionButton.activationSound = buttonVoiceSet;
+  ui->quitMenuSurrenderButton.activationSound = buttonVoiceSet;
+  ui->quitMenuRestartMissionButton.activationSound = buttonVoiceSet;
+  ui->graphicsOptionsBackButton.activationSound = buttonVoiceSet;
+  ui->soundOptionsBackButton.activationSound = buttonVoiceSet;
+  ui->messageSendButton.activationSound = buttonVoiceSet;
+  ui->messageSendAndCloseButton.activationSound = buttonVoiceSet;
+  ui->messageCancelButton.activationSound = buttonVoiceSet;
+  ui->technologyResearchButton.activationSound = buttonVoiceSet;
+  ui->technologyCloseButton.activationSound = buttonVoiceSet;
+  ui->missionHelpCloseButton.activationSound = buttonVoiceSet;
   buttonVoiceSet = g_UiButtonSoundVoiceSets7[4];
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,autoZoomOffCheckbox))->activationSound = g_UiButtonSoundVoiceSets7[4];
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,autoRotationOffCheckbox))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,linkRotationZoomCheckbox))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,linkRotationTiltCheckbox))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,hidePanelCheckbox))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,shadingEnabledCheckbox))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,textureQualityLowButton))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,textureQualityMediumButton))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,textureQualityHighButton))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,musicEnabledCheckbox))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,effectsEnabledCheckbox))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,reverseStereoCheckbox))->activationSound = buttonVoiceSet;
-  ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel32x32Button))->base.activationSound = buttonVoiceSet;
-  ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel32x64Button))->base.activationSound = buttonVoiceSet;
-  ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel32x128Button))->base.activationSound = buttonVoiceSet;
-  ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel64x64Button))->base.activationSound = buttonVoiceSet;
-  ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel64x128Button))->base.activationSound = buttonVoiceSet;
-  ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel128x128Button))->base.activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientPlayersTab))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientAllTab))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientGroupsTab))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox1))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox2))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox3))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox4))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox5))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox6))->activationSound = buttonVoiceSet;
-  ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox7))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab1))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab2))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab3))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab4))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab5))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab6))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab7))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpBriefingTab))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpKeyboardTab))->activationSound = buttonVoiceSet;
-  ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpMouseTab))->activationSound = buttonVoiceSet;
+  ui->autoZoomOffCheckbox.activationSound = g_UiButtonSoundVoiceSets7[4];
+  ui->autoRotationOffCheckbox.activationSound = buttonVoiceSet;
+  ui->linkRotationZoomCheckbox.activationSound = buttonVoiceSet;
+  ui->linkRotationTiltCheckbox.activationSound = buttonVoiceSet;
+  ui->hidePanelCheckbox.activationSound = buttonVoiceSet;
+  ui->shadingEnabledCheckbox.activationSound = buttonVoiceSet;
+  ui->textureQualityLowButton.activationSound = buttonVoiceSet;
+  ui->textureQualityMediumButton.activationSound = buttonVoiceSet;
+  ui->textureQualityHighButton.activationSound = buttonVoiceSet;
+  ui->musicEnabledCheckbox.activationSound = buttonVoiceSet;
+  ui->effectsEnabledCheckbox.activationSound = buttonVoiceSet;
+  ui->reverseStereoCheckbox.activationSound = buttonVoiceSet;
+  ui->shadingLevel32x32Button.base.activationSound = buttonVoiceSet;
+  ui->shadingLevel32x64Button.base.activationSound = buttonVoiceSet;
+  ui->shadingLevel32x128Button.base.activationSound = buttonVoiceSet;
+  ui->shadingLevel64x64Button.base.activationSound = buttonVoiceSet;
+  ui->shadingLevel64x128Button.base.activationSound = buttonVoiceSet;
+  ui->shadingLevel128x128Button.base.activationSound = buttonVoiceSet;
+  ui->messageRecipientPlayersTab.activationSound = buttonVoiceSet;
+  ui->messageRecipientAllTab.activationSound = buttonVoiceSet;
+  ui->messageRecipientGroupsTab.activationSound = buttonVoiceSet;
+  ui->messageRecipientCheckbox1.activationSound = buttonVoiceSet;
+  ui->messageRecipientCheckbox2.activationSound = buttonVoiceSet;
+  ui->messageRecipientCheckbox3.activationSound = buttonVoiceSet;
+  ui->messageRecipientCheckbox4.activationSound = buttonVoiceSet;
+  ui->messageRecipientCheckbox5.activationSound = buttonVoiceSet;
+  ui->messageRecipientCheckbox6.activationSound = buttonVoiceSet;
+  ui->messageRecipientCheckbox7.activationSound = buttonVoiceSet;
+  ui->technologyAreaTab1.activationSound = buttonVoiceSet;
+  ui->technologyAreaTab2.activationSound = buttonVoiceSet;
+  ui->technologyAreaTab3.activationSound = buttonVoiceSet;
+  ui->technologyAreaTab4.activationSound = buttonVoiceSet;
+  ui->technologyAreaTab5.activationSound = buttonVoiceSet;
+  ui->technologyAreaTab6.activationSound = buttonVoiceSet;
+  ui->technologyAreaTab7.activationSound = buttonVoiceSet;
+  ui->missionHelpBriefingTab.activationSound = buttonVoiceSet;
+  ui->missionHelpKeyboardTab.activationSound = buttonVoiceSet;
+  ui->missionHelpMouseTab.activationSound = buttonVoiceSet;
   buttonVoiceSet = g_UiButtonSoundVoiceSets7[5];
-  ((UiRangeSliderControl *)INGAME_UI(inGameRoot,modelDetailSlider))->clickSound = g_UiButtonSoundVoiceSets7[5];
-  ((UiRangeSliderControl *)INGAME_UI(inGameRoot,effectsVolumeSlider))->clickSound = buttonVoiceSet;
-  ((UiRangeSliderControl *)INGAME_UI(inGameRoot,movieVolumeSlider))->clickSound = buttonVoiceSet;
-  ((UiRangeSliderControl *)INGAME_UI(inGameRoot,musicVolumeSlider))->clickSound = buttonVoiceSet;
-  ((UiRangeSliderControl *)INGAME_UI(inGameRoot,messageMovieVolumeSlider))->clickSound = buttonVoiceSet;
+  ui->modelDetailSlider.clickSound = g_UiButtonSoundVoiceSets7[5];
+  ui->effectsVolumeSlider.clickSound = buttonVoiceSet;
+  ui->movieVolumeSlider.clickSound = buttonVoiceSet;
+  ui->musicVolumeSlider.clickSound = buttonVoiceSet;
+  ui->messageMovieVolumeSlider.clickSound = buttonVoiceSet;
   buttonVoiceSet = g_UiButtonSoundVoiceSets7[6];
-  ((UiRequiredTextEditControl *)INGAME_UI(inGameRoot,saveNameEdit))->activationSound = g_UiButtonSoundVoiceSets7[6];
-  ((UiListControl *)INGAME_UI(inGameRoot,saveGameList))->activationSound = buttonVoiceSet;
-  ((UiRequiredTextEditControl *)INGAME_UI(inGameRoot,messageTextEdit))->activationSound = buttonVoiceSet;
-  ((UiRequiredTextEditControl *)INGAME_UI(inGameRoot,chatInputTextEdit))->activationSound = buttonVoiceSet;
+  ui->saveNameEdit.activationSound = g_UiButtonSoundVoiceSets7[6];
+  ui->saveGameList.activationSound = buttonVoiceSet;
+  ui->messageTextEdit.activationSound = buttonVoiceSet;
+  ui->chatInputTextEdit.activationSound = buttonVoiceSet;
 }
 
 /* Loads a graphics package; on success it replaces the package in *slot (an atomic exchange in the original) and
@@ -1212,9 +1225,10 @@ static GraphicsTextureSourceAsset *InGameUiRuntime_ReplaceTexturePackage
    package cannot be loaded.
    The diagram, window and technology texture slots are typed uint32_t in the image data, hence the slot casts.
 */
-Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError)
+bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError)
 
 {
+  InGameUiImage *const ui = InGameUi_Image(inGameRoot);
   uint32_t textureLoadError;
   GraphicsTextureSourceAsset *panelTexture;
   GraphicsTextureSourceAsset *diagramTexture;
@@ -1223,7 +1237,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
 
   InGameUiRuntime_SelectDisplayModeLayout(inGameRoot);
   panelTexture = InGameUiRuntime_ReplaceTexturePackage
-                   ((uint16_t *)g_GfxPanelPanel0GfxPathUtf16,&g_InGamePanelTextureSource,&textureLoadError);
+                   (g_GfxPanelPanel0GfxPathUtf16,&g_InGamePanelTextureSource,&textureLoadError);
   if (panelTexture == nullptr) {
     *outError = textureLoadError;
     return false;
@@ -1238,46 +1252,46 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   InGameUiRuntime_LayoutSelectionDetailPage(inGameRoot);
 
   diagramTexture = InGameUiRuntime_ReplaceTexturePackage
-                     ((uint16_t *)g_GfxPanelDiagram0GfxPathUtf16,
-                      (GraphicsTextureSourceAsset **)&g_InGameDiagramTextureSource,&textureLoadError);
+                     (g_GfxPanelDiagram0GfxPathUtf16,
+                      &g_InGameDiagramTextureSource,&textureLoadError);
   if (diagramTexture == nullptr) {
     *outError = textureLoadError;
     return false;
   }
-  ((UiFormattedContainer *)INGAME_UI(inGameRoot,xeniteGauge))->textureSource = diagramTexture;
-  ((UiFormattedContainer *)INGAME_UI(inGameRoot,tritiumGauge))->textureSource = diagramTexture;
-  ((UiFormattedContainer *)INGAME_UI(inGameRoot,energyGauge))->textureSource = diagramTexture;
+  ui->xeniteGauge.textureSource = diagramTexture;
+  ui->tritiumGauge.textureSource = diagramTexture;
+  ui->energyGauge.textureSource = diagramTexture;
 
   windowTexture = InGameUiRuntime_ReplaceTexturePackage
-                    ((uint16_t *)g_GfxPanelWindowGfxPathUtf16,
-                     (GraphicsTextureSourceAsset **)&g_InGameWindowTextureSource,&textureLoadError);
+                    (g_GfxPanelWindowGfxPathUtf16,
+                     &g_InGameWindowTextureSource,&textureLoadError);
   if (windowTexture == nullptr) {
     *outError = textureLoadError;
     return false;
   }
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,messageWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,gameMenuWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,quitGameWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,saveGameWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,graphicsSettingsWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,audioSettingsWindow))->textureSource = windowTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,missionHelpWindow))->textureSource = windowTexture;
+  ui->technologyWindow.textureSource = windowTexture;
+  ui->messageWindow.textureSource = windowTexture;
+  ui->gameMenuWindow.textureSource = windowTexture;
+  ui->quitGameWindow.textureSource = windowTexture;
+  ui->saveGameWindow.textureSource = windowTexture;
+  ui->graphicsSettingsWindow.textureSource = windowTexture;
+  ui->audioSettingsWindow.textureSource = windowTexture;
+  ui->missionHelpWindow.textureSource = windowTexture;
 
   techTexture = InGameUiRuntime_ReplaceTexturePackage
-                  ((uint16_t *)g_GfxPanelTechGfxPathUtf16,
-                   (GraphicsTextureSourceAsset **)&g_InGameTechnologyTextureSource,&textureLoadError);
+                  (g_GfxPanelTechGfxPathUtf16,
+                   &g_InGameTechnologyTextureSource,&textureLoadError);
   if (techTexture == nullptr) {
     *outError = textureLoadError;
     return false;
   }
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab1Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab2Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab3Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab4Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab5Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab6Icon))->textureSource = techTexture;
-  ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyAreaTab7Icon))->textureSource = techTexture;
+  ui->technologyAreaTab1Icon.textureSource = techTexture;
+  ui->technologyAreaTab2Icon.textureSource = techTexture;
+  ui->technologyAreaTab3Icon.textureSource = techTexture;
+  ui->technologyAreaTab4Icon.textureSource = techTexture;
+  ui->technologyAreaTab5Icon.textureSource = techTexture;
+  ui->technologyAreaTab6Icon.textureSource = techTexture;
+  ui->technologyAreaTab7Icon.textureSource = techTexture;
   InGameUiRuntime_SizeTechnologyWindow(inGameRoot,techTexture);
   InGameUiRuntime_AssignClickSounds(inGameRoot);
   return true;

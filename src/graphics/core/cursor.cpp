@@ -89,11 +89,11 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer()
      into every presented frame. */
 }
 
-/* Selects the software cursor frame (GRAPHICS_CURSOR_FRAME_*) that the cursor timer animates and draws.
+/* Selects the software cursor frame (a GRAPHICS_CURSOR_FRAME_* value) that the cursor timer animates and draws.
    Returns true when the frame was selected, false (frame unchanged) for an index at or above g_CursorFrameCount;
    the error to report for that is FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE. Installed in g_GraphicsCursorSetFrame.
 */
-Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
+bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 {
   if (frameIndex < g_CursorFrameCount) {
@@ -119,14 +119,14 @@ GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex()
    g_CursorButtonState keeps the raw value), which UiPointer_DispatchPendingEvents passes on to the press
    dispatchers as UI_POINTER_BUTTON_REPEAT_CLICK.
 */
-Bool8 GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
+bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
 
 {
   GraphicsCursorEventType consumedEventType;
   uint32_t nextReadIndex;
   GraphicsCursorClockValue eventClock;
   uint32_t eventIndex;
-  uint32_t rawButtonState;
+  GraphicsCursorButtonState rawButtonState;
   uint32_t ticksSinceRelease;
   UiPixelCoordinate clickDeltaX;
   UiPixelCoordinate clickDeltaY;
@@ -181,12 +181,12 @@ Bool8 GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
   g_CursorOverrideX = g_CursorInputEvents[eventIndex].pointerX;
   g_CursorOverrideY = g_CursorInputEvents[eventIndex].pointerY;
   g_CursorWheelDelta = g_CursorInputEvents[eventIndex].wheelDelta;
-  if ((consumedEventType != MOTION_OR_WHEEL) && (consumedEventType < 4)) { /* a press: LEFT/MIDDLE/RIGHT_PRESS */
+  if ((consumedEventType != MOTION_OR_WHEEL) && (consumedEventType <= RIGHT_PRESS)) { /* a press: LEFT/MIDDLE/RIGHT_PRESS */
     g_CursorLastClickX = g_CursorInputEvents[eventIndex].pointerX;
     g_CursorLastClickY = g_CursorInputEvents[eventIndex].pointerY;
   }
-  outEvent->eventType = consumedEventType;
-  outEvent->buttonState = (GraphicsCursorButtonState)rawButtonState;
+  outEvent->eventType = static_cast<uint32_t>(consumedEventType);
+  outEvent->buttonState = rawButtonState;
   outEvent->pointerX = g_CursorInputEvents[eventIndex].pointerX;
   outEvent->pointerY = g_CursorInputEvents[eventIndex].pointerY;
   outEvent->wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta;

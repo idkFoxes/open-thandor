@@ -20,10 +20,10 @@
    nothing is written and true (failure) is returned (logged once). pathCapacity defaults to
    WIDE_PATH_MAX_CODE_UNITS (path.h).
 */
-Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path,size_t pathCapacity)
+bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path,size_t pathCapacity)
 
 {
-  static Bool8 s_RejectionLogged = false;
+  static bool s_RejectionLogged = false;
   uint16_t *pathStart;
   uint16_t *extension;
   uint16_t currentCodeUnit;
@@ -69,7 +69,7 @@ Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t
    file name, parentOut the directory without the trailing backslash. Without a backslash the leaf is the
    whole path and the parent is empty. Always returns false (success).
 */
-Bool8 WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path)
+bool WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path)
 
 {
   /* Leaf gets everything after the last backslash (with the terminator); parent gets everything before
@@ -133,16 +133,16 @@ void WidePath_CombineDirectoryAndLeafBounded
           (uint16_t *destination,size_t destinationCapacity,uint16_t *leaf,uint16_t *directory)
 
 {
-  static Bool8 s_TruncationLogged = false;
+  static bool s_TruncationLogged = false;
   int codeUnitsRemaining;
   int copyCodeUnitsRemaining;
   int leafCodeUnitsRemaining;
   uint16_t *directoryScanCursor;
   uint16_t *leafScanCursor;
-  Bool8 terminatorFound;
-  Bool8 leafTerminatorFound;
-  Bool8 endsInBackslash;
-  Bool8 truncated;
+  bool terminatorFound;
+  bool leafTerminatorFound;
+  bool endsInBackslash;
+  bool truncated;
   size_t written;
 
   if (destinationCapacity == 0) {

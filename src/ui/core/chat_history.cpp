@@ -36,22 +36,23 @@ void RecentTextHistory_SortAndBuildPointerList
   
   /* selection sort, newest (highest serial) first */
   secondIndex = 0;
-  do {
+  while (secondIndex < RECENT_TEXT_HISTORY_SLOT_COUNT - 1) {
     firstIndex = secondIndex + 1;
     currentSerial = g_RecentTextEntrySerials[secondIndex];
-    do {
+    while (firstIndex < RECENT_TEXT_HISTORY_SLOT_COUNT) {
       if (currentSerial < g_RecentTextEntrySerials[firstIndex]) {
         RecentTextHistory_SwapSlots(firstIndex,secondIndex);
         currentSerial = g_RecentTextEntrySerials[secondIndex];
       }
       slotCursor = g_RecentTextSlotStorage;
       firstIndex++;
-    } while (firstIndex < RECENT_TEXT_HISTORY_SLOT_COUNT);
+    }
     secondIndex++;
-  } while (secondIndex < RECENT_TEXT_HISTORY_SLOT_COUNT - 1);
+  }
   outputIndex = 0;
   minimumRetainedSerial = g_RecentTextSerialCounter - RECENT_TEXT_HISTORY_LIFETIME;
   output->count = 0;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     if (g_RecentTextEntrySerials[outputIndex] == 0) { /* the rest is empty already */
       g_RecentTextSerialCounter++;
@@ -88,7 +89,7 @@ void RecentTextHistory_Insert(uint16_t *text)
   slotsRemaining = RECENT_TEXT_HISTORY_SLOT_COUNT;
   currentIndex = 0;
   oldestIndex = -1;
-  do {
+  while (slotsRemaining != 0) {
     if (*serialCursor <= oldestSerial) {
       oldestSerial = *serialCursor;
       oldestIndex = currentIndex;
@@ -96,7 +97,7 @@ void RecentTextHistory_Insert(uint16_t *text)
     serialCursor++;
     currentIndex++;
     slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
   if (-1 < oldestIndex) {
     g_RecentTextEntrySerials[oldestIndex] = g_RecentTextSerialCounter;
     RichTextCommandStream_CopyExpanded
@@ -152,8 +153,9 @@ void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex second
   secondSerial = g_RecentTextEntrySerials[secondIndex];
   g_RecentTextEntrySerials[secondIndex] = g_RecentTextEntrySerials[firstIndex];
   g_RecentTextEntrySerials[firstIndex] = secondSerial;
-  secondSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + secondIndex);
-  firstSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + firstIndex);
+  /* the slots are swapped as dwords */
+  secondSlotDwords = reinterpret_cast<uint32_t *>(g_RecentTextSlotStorage + secondIndex);
+  firstSlotDwords = reinterpret_cast<uint32_t *>(g_RecentTextSlotStorage + firstIndex);
   for (dwordPairsRemaining = 32; dwordPairsRemaining != 0; dwordPairsRemaining--) {
     secondHighDword = secondSlotDwords[1];
     firstLowDword = THANDOR_ATOMIC_EXCHANGE(firstSlotDwords,*secondSlotDwords);

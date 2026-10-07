@@ -6,6 +6,8 @@
  */
 
 #include <thandor/ui/dialogs/display_settings.h>
+#include <thandor/core/bytes.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -20,44 +22,53 @@ static UiRootCallbacks g_UiDisplaySettingsRootCallbacks = {
    UiDisplaySettings_OpenAndPopulateModeSelection. */
 DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
     .displaySettingsWindow = { /* g_UiResizableWindowControlVtable */
-        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = DISPLAY_SETTINGS_LINK(cancelButton), .parent = UI_TEMPLATE_NO_LINK,
-        .vtable = THANDOR_PTR(&g_UiResizableWindowControlVtable),
-        .leftOffset = -216, .topOffset = -144, .rightOffset = 216, .bottomOffset = 144,
-        .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
-        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET | 0x1},
-    .displaySettingsWindow_fields = {.rootFlags = UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME | UI_ROOT_TITLE_BAR, .titleTextResourceId = TEXT_ID_DISPLAY_SETTINGS_TITLE},
+        .root = {
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = DISPLAY_SETTINGS_LINK(cancelButton), .parent = UI_TEMPLATE_NO_LINK,
+                .vtable = THANDOR_PTR(&g_UiResizableWindowControlVtable),
+                .leftOffset = -216, .topOffset = -144, .rightOffset = 216, .bottomOffset = 144,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET | UI_NODE_IN_FRONT_ROOT},
+            .rootFlags = UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME | UI_ROOT_TITLE_BAR},
+        .titleTextResourceId = TEXT_ID_DISPLAY_SETTINGS_TITLE},
     .cancelButton = { /* g_UiFramedTextButtonControlVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(applyButton), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
         .leftOffset = 16, .topOffset = 232, .rightOffset = 112, .bottomOffset = 256,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_PREFERRED_FOCUS_TARGET},
-    .cancelButton_fields = {.stateFlags = 0x8, .actionId = UI_DISPLAY_MODE_ACTION_CANCEL, .textResourceId = TEXT_ID_CANCEL},
+    .cancelButton_fields = {.stateFlags = FromBits<UiSelectableStateFlags>(0x8), .actionId = UI_DISPLAY_MODE_ACTION_CANCEL, .textResourceId = TEXT_ID_CANCEL},
     .applyButton = { /* g_UiFramedTextButtonControlVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
-        .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
-        .leftOffset = 128, .topOffset = 232, .rightOffset = 240, .bottomOffset = 256,
-        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
-    .applyButton_fields = {.button = {.stateFlags = UI_BUTTON_FRAME_INSET, .actionId = UI_DISPLAY_MODE_ACTION_APPLY, .textResourceId = TEXT_ID_OK}},
+        .selectable = {
+            .base = {
+                .nextSibling = DISPLAY_SETTINGS_LINK(resolutionHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+                .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                .leftOffset = 128, .topOffset = 232, .rightOffset = 240, .bottomOffset = 256,
+                .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+            .stateFlags = UI_BUTTON_FRAME_INSET, .actionId = UI_DISPLAY_MODE_ACTION_APPLY},
+        .textResourceId = TEXT_ID_OK},
     /* not in the original: the colour depth heading and its four buttons are not linked into the dialog any more
        (32-bit colour only); their nodes stay as unused template data, so the image keeps its layout */
     .resolutionHeading = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(adapterHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
-        .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
-        .leftOffset = 160, .topOffset = 8, .rightOffset = 248, .bottomOffset = 28,
-        .layoutWidth = -1, .layoutHeight = -1},
-    .resolutionHeading_fields = {.textResourceId = TEXT_ID_DISPLAY_RESOLUTION_HEADING},
+        .base = {
+            .nextSibling = DISPLAY_SETTINGS_LINK(adapterHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+            .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+            .leftOffset = 160, .topOffset = 8, .rightOffset = 248, .bottomOffset = 28,
+            .layoutWidth = -1, .layoutHeight = -1},
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_RESOLUTION_HEADING)},
     .colorDepthHeading = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
-        .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
-        .leftOffset = 24, .topOffset = 8, .rightOffset = 120, .bottomOffset = 28,
-        .layoutWidth = -1, .layoutHeight = -1},
-    .colorDepthHeading_fields = {.textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_HEADING},
+        .base = {
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+            .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+            .leftOffset = 24, .topOffset = 8, .rightOffset = 120, .bottomOffset = 28,
+            .layoutWidth = -1, .layoutHeight = -1},
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_COLOR_DEPTH_HEADING)},
     .adapterHeading = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
-        .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
-        .leftOffset = 24, .topOffset = 112, .rightOffset = 120, .bottomOffset = 132,
-        .layoutWidth = -1, .layoutHeight = -1},
-    .adapterHeading_fields = {.textResourceId = TEXT_ID_DISPLAY_ADAPTER_HEADING},
+        .base = {
+            .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+            .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+            .leftOffset = 24, .topOffset = 112, .rightOffset = 120, .bottomOffset = 132,
+            .layoutWidth = -1, .layoutHeight = -1},
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_ADAPTER_HEADING)},
     .colorDepthOption1_prefix = {},
     .colorDepthOption1 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption2), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
@@ -178,11 +189,13 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .adapterOption5_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER + 4, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
     .colorScaleSliderFrame = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(colorBiasSliderFrame), .firstChild = DISPLAY_SETTINGS_LINK(colorScaleSlider), .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
-        .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
-        .leftOffset = 256, .topOffset = 8, .rightOffset = 336, .bottomOffset = 208,
-        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
-    .colorScaleSliderFrame_fields = {.labelFlags = UI_LABEL_CENTER_X, .focusChild = DISPLAY_SETTINGS_LINK(colorScaleSlider), .textResourceId = TEXT_ID_DISPLAY_COLOR_SCALE},
+        .base = {
+            .nextSibling = DISPLAY_SETTINGS_LINK(colorBiasSliderFrame), .firstChild = DISPLAY_SETTINGS_LINK(colorScaleSlider), .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+            .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+            .leftOffset = 256, .topOffset = 8, .rightOffset = 336, .bottomOffset = 208,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
+        .labelFlags = UI_LABEL_CENTER_X, .focusChild = DISPLAY_SETTINGS_LINK(colorScaleSlider),
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_COLOR_SCALE)},
     .colorScaleSlider = { /* g_UiRangeSliderControlVtable */
         .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(colorScaleSliderFrame),
         .vtable = THANDOR_PTR(&g_UiRangeSliderControlVtable),
@@ -191,11 +204,13 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
     .colorScaleSlider_fields = {.sliderFlags = UI_RANGE_SLIDER_VERTICAL, .minimumValue = 32768, .maximumValue = 0x20000, .value = 0, .stepValue = 2048, .actionId = UI_ACTION_NONE},
     .colorBiasSliderFrame = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(colorScaleValueText), .firstChild = DISPLAY_SETTINGS_LINK(colorBiasSlider), .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
-        .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
-        .leftOffset = 336, .topOffset = 8, .rightOffset = 416, .bottomOffset = 208,
-        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
-    .colorBiasSliderFrame_fields = {.labelFlags = UI_LABEL_CENTER_X, .focusChild = DISPLAY_SETTINGS_LINK(colorBiasSlider), .textResourceId = TEXT_ID_DISPLAY_COLOR_BIAS},
+        .base = {
+            .nextSibling = DISPLAY_SETTINGS_LINK(colorScaleValueText), .firstChild = DISPLAY_SETTINGS_LINK(colorBiasSlider), .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+            .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+            .leftOffset = 336, .topOffset = 8, .rightOffset = 416, .bottomOffset = 208,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
+        .labelFlags = UI_LABEL_CENTER_X, .focusChild = DISPLAY_SETTINGS_LINK(colorBiasSlider),
+        .text = THANDOR_PTR32_BITS(TEXT_ID_DISPLAY_COLOR_BIAS)},
     .colorBiasSlider = { /* g_UiRangeSliderControlVtable */
         .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(colorBiasSliderFrame),
         .vtable = THANDOR_PTR(&g_UiRangeSliderControlVtable),
@@ -204,17 +219,20 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
     .colorBiasSlider_fields = {.sliderFlags = UI_RANGE_SLIDER_VERTICAL, .minimumValue = -4194304, .maximumValue = 0x400000, .value = 0, .stepValue = 0x20000, .actionId = UI_ACTION_NONE},
     .colorScaleValueText = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(colorBiasValueText), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
-        .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
-        .leftOffset = 256, .topOffset = 208, .rightOffset = 336, .bottomOffset = 228,
-        .layoutWidth = -1, .layoutHeight = -1},
-    .colorScaleValueText_fields = {.labelFlags = UI_LABEL_CENTER_X | UI_LABEL_TEXT_IS_STREAM},
+        .base = {
+            .nextSibling = DISPLAY_SETTINGS_LINK(colorBiasValueText), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+            .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+            .leftOffset = 256, .topOffset = 208, .rightOffset = 336, .bottomOffset = 228,
+            .layoutWidth = -1, .layoutHeight = -1},
+        .labelFlags = UI_LABEL_CENTER_X | UI_LABEL_TEXT_IS_STREAM},
     .colorBiasValueText = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
-        .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
-        .leftOffset = 336, .topOffset = 208, .rightOffset = 416, .bottomOffset = 228,
-        .layoutWidth = -1, .layoutHeight = -1},
-    .colorBiasValueText_fields = {.label = {.labelFlags = UI_LABEL_CENTER_X | UI_LABEL_TEXT_IS_STREAM}}
+        .label = {
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+                .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+                .leftOffset = 336, .topOffset = 208, .rightOffset = 416, .bottomOffset = 228,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .labelFlags = UI_LABEL_CENTER_X | UI_LABEL_TEXT_IS_STREAM}}
 };
 THANDOR_STATIC_ASSERT(sizeof(DisplaySettingsUiImage) == 0xBD4, "DisplaySettingsUiImage size");
 
@@ -252,39 +270,39 @@ static UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
     .method08 = UI_SLOT(UiModalDialogRoot_BlockMissedPointerPress),
     .pointerMissPolicy = UI_SLOT(UiModalDialogRoot_BlockMissedPointerMotion)};
 
-static FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
+FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
         { /* +0000 confirmModeDialogPanel g_UiPanelControlVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
-            .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
-            .leftOffset = -128, .topOffset = -48, .rightOffset = 128, .bottomOffset = 48,
-            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
-            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x21},
-        {
-            0x00000003},
+            .root = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
+                    .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
+                    .leftOffset = -128, .topOffset = -48, .rightOffset = 128, .bottomOffset = 48,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET | UI_NODE_IN_FRONT_ROOT},
+                .rootFlags = UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME}},
         { /* +0058 revertButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = 16, .topOffset = -32, .rightOffset = 112, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
-            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
-        {
-            0x00000008, 0x0000020D, 0x00000101},
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_PREFERRED_FOCUS_TARGET},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000008), .actionId = 0x0000020D, .textResourceId = 0x00000101},
         { /* +00B4 keepModeButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x110), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = 128, .topOffset = -32, .rightOffset = 240, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
-            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
-        {
-            0x00000004, 0x00000000, 0x00000100},
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x00000004), .textResourceId = 0x00000100},
         { /* +0110 countdownMessageText g_UiListOffsetControlVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
-            .leftOffset = 8, .topOffset = 8, .rightOffset = -8, .bottomOffset = -40,
-            .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
-            .layoutWidth = -1, .layoutHeight = -1},
-        {
-            0x00000004, 0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014},
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+                .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
+                .leftOffset = 8, .topOffset = 8, .rightOffset = -8, .bottomOffset = -40,
+                .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .labelFlags = 0x00000004, .text = THANDOR_PTR32_BITS(0x00000109)},
+        {0x0000000F, 0x00000014},
 };
 
 /* frameUpdate of g_UiDisplaySettingsRootCallbacks (the display settings dialog): when the colour bias or
@@ -298,10 +316,11 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   UiAnchorFractionQ31 colorScaleQ16;
   UiDisplaySettingsApplyButton *applyButton;
 
-  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
-  /* the slider values (UiRangeSliderControl.value) */
-  colorBiasQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value;
-  colorScaleQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value;
+  applyButton = DISPLAY_SETTINGS_UI(root,applyButton);
+  /* the slider values (UiRangeSliderControl.value; the template slider nodes are 0x64 bytes, UiNodeBase +
+     UiRangeSliderTemplateFields) */
+  colorBiasQ16 = reinterpret_cast<UiRangeSliderControl *>(DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value;
+  colorScaleQ16 = reinterpret_cast<UiRangeSliderControl *>(DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value;
   if ((colorBiasQ16 != applyButton->selectedColorBiasQ16) ||
       (colorScaleQ16 != applyButton->selectedColorScaleQ16)) {
     applyButton->selectedColorBiasQ16 = colorBiasQ16;
@@ -327,7 +346,7 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
   UiDisplaySettingsApplyButton *applyButton;
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
-  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
+  applyButton = DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   UiDisplayModeSelection_RefreshEnumeratedOptions
             ((FrontendDisplayAdapterIndex)applyButton->selectedAdapterIndex,
              (FrontendColorDepthBits)applyButton->selectedBitsPerPixel,
@@ -346,7 +365,7 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
   UiDisplaySettingsApplyButton *applyButton;
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
-  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
+  applyButton = DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   UiDisplayModeSelection_RefreshEnumeratedOptions
             (DISPLAY_MODE_OPTION_PREFIX(sourceNode).modeValue,
              (FrontendColorDepthBits)applyButton->selectedBitsPerPixel,
@@ -372,8 +391,8 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
   uint32_t modeWidth;
   UiFourValueDialogCountdownText *countdownText;
 
-  root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
+  root = UiNode_As<UiRootNode>(UiNode_GetRoot(sourceNode));
+  countdownText = reinterpret_cast<UiFourValueDialogCountdownText *>(FOUR_VALUE_DIALOG_UI(root,countdownMessageText));
   modeWidth = countdownText->previousWidth;
   modeHeight = countdownText->previousHeight;
   bitsPerPixel = countdownText->previousBitsPerPixel;
@@ -401,7 +420,7 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
          (FIXED_PRODUCT_SHR(scaledAnchor, 31)) + (root->base).topOffset;
     (*((root->base).vtable)->layout)(&root->base);
     root = root->previousRoot;
-  } while (root != (UiRootNode *)UI_NODE_NONE);
+  } while (root != UiNode_As<UiRootNode>(UI_NODE_NONE));
   g_CursorVisibilityToken++;
   UiDisplaySettings_OpenAndPopulateModeSelection();
 }
@@ -428,8 +447,8 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   uint32_t currentHeight;
   UiDisplaySettingsApplyButton *applyButton;
 
-  root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
+  root = UiNode_As<UiRootNode>(UiNode_GetRoot(sourceNode));
+  applyButton = DISPLAY_SETTINGS_UI(root,applyButton);
   pendingWidth = applyButton->selectedWidth;
   pendingHeight = applyButton->selectedHeight;
   pendingBitsPerPixel = applyButton->selectedBitsPerPixel;
@@ -476,10 +495,10 @@ void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   UiDisplaySettingsApplyButton *applyButton;
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
-  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
+  applyButton = DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   colorBiasQ16 = applyButton->originalColorBiasQ16;
   colorScaleQ16 = applyButton->originalColorScaleQ16;
-  UiRootStack_Pop((UiRootNode *)sourceNode); /* the button, not the root, as in the original */
+  UiRootStack_Pop(UiNode_As<UiRootNode>(sourceNode)); /* the button, not the root, as in the original */
   g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
 }
 
@@ -494,7 +513,7 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
   int32_t *countdownField;
   UiFourValueDialogCountdownText *countdownText;
 
-  countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
+  countdownText = reinterpret_cast<UiFourValueDialogCountdownText *>(FOUR_VALUE_DIALOG_UI(root,countdownMessageText));
   stepTicksField = &countdownText->stepTicks;
   *stepTicksField = *stepTicksField - 1;
   if (*stepTicksField == 0) {
@@ -552,12 +571,11 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
 {
   uint32_t framebufferWidth;
   uint32_t framebufferHeight;
-  UiRootFlags activeAdapterIndex;
+  int32_t activeAdapterIndex; /* the original int (it was declared with the root-flag alias) */
   int32_t colorScaleQ16;
   int32_t colorBiasQ16;
   UiRootNode *root;
-  int copyCount;
-  UiNodeFlags colorDepthBits;
+  int32_t colorDepthBits; /* the original int (it was declared with the node-flag alias) */
   GraphicsDisplayModeCount remainingModes;
   uint32_t *copyCursor;
   const uint32_t *templateCursor;
@@ -567,24 +585,20 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   if (g_GraphicsDisplayModeCount <= 1) {
     return;
   }
-  if (g_MemoryApi.alloc(sizeof(DisplaySettingsUiImage),(void **)&root) != 0) {
+  if (g_MemoryApi.alloc(sizeof(DisplaySettingsUiImage),reinterpret_cast<void **>(&root)) != 0) {
     return;
   }
   /* copy the template, one dword per step */
-  templateCursor = (const uint32_t *)&g_UiDisplaySettingsRootTemplate;
-  copyCursor = (uint32_t *)root;
-  for (copyCount = sizeof(DisplaySettingsUiImage) / 4; copyCount != 0; copyCount--) {
-    *copyCursor = *templateCursor;
-    templateCursor = templateCursor + 1;
-    copyCursor = copyCursor + 1;
-  }
+  templateCursor = reinterpret_cast<const uint32_t *>(&g_UiDisplaySettingsRootTemplate);
+  copyCursor = reinterpret_cast<uint32_t *>(root);
+  std::copy_n(templateCursor,sizeof(DisplaySettingsUiImage) / 4,copyCursor);
   activeAdapterIndex = g_ActiveGraphicsAdapterIndex;
   /* not in the original: the mode's size, not the framebuffer's (a GPU UI scale divides it) */
   framebufferHeight = SdlVideo_DisplayModeHeight();
   framebufferWidth = SdlVideo_DisplayModeWidth();
   colorDepthBits = PERSISTENT_DEFAULT_BITS_PER_PIXEL; /* the original: the pixel format's RGB bits */
   /* applyButton tail: the selected mode tuple and the original one start out equal */
-  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
+  applyButton = DISPLAY_SETTINGS_UI(root,applyButton);
   applyButton->selectedWidth = framebufferWidth;
   applyButton->selectedHeight = framebufferHeight;
   applyButton->selectedBitsPerPixel = colorDepthBits;
@@ -599,16 +613,17 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   applyButton->selectedColorScaleQ16 = colorScaleQ16;
   applyButton->originalColorBiasQ16 = colorBiasQ16;
   applyButton->originalColorScaleQ16 = colorScaleQ16;
-  ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value = colorBiasQ16;
-  ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value = colorScaleQ16;
+  /* the 0x64-byte template slider nodes (UiNodeBase + UiRangeSliderTemplateFields) */
+  reinterpret_cast<UiRangeSliderControl *>(DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value = colorBiasQ16;
+  reinterpret_cast<UiRangeSliderControl *>(DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value = colorScaleQ16;
   /* The two readouts show the number buffers kept in the tail of colorBiasValueText. */
-  ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->text =
-       ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorBiasTextUtf16;
-  ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorScaleValueText))->text =
-       ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorScaleTextUtf16;
+  DISPLAY_SETTINGS_UI(root,colorBiasValueText)->label.text =
+       DISPLAY_SETTINGS_UI(root,colorBiasValueText)->colorBiasTextUtf16;
+  DISPLAY_SETTINGS_UI(root,colorScaleValueText)->text =
+       DISPLAY_SETTINGS_UI(root,colorBiasValueText)->colorScaleTextUtf16;
   UiDisplaySettingsRoot_FormatColorReadouts(root);
   UiActionHandlers_SetPage(UI_DISPLAY_MODE_ACTION_HANDLER_PAGE,
-                           (UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
+                           reinterpret_cast<UiActionHandlerPage *>(&g_UiDisplayModeSelectionActionHandlers20)); /* a short table as a page: only its action ids are queued */
   UiRootStack_Push(&g_UiDisplaySettingsRootCallbacks,root);
 
   /* distinct resolutions, keyed width << 16 | height so that they sort by width, then height */
@@ -663,7 +678,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   DISPLAY_SETTINGS_UI(root,adapterOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[3];
   DISPLAY_SETTINGS_UI(root,adapterOption5_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[4];
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            (g_ActiveGraphicsAdapterIndex,colorDepthBits,framebufferHeight,framebufferWidth,(UiNodeBase *)root);
+            (g_ActiveGraphicsAdapterIndex,colorDepthBits,framebufferHeight,framebufferWidth,&root->base);
   UiRootStack_InvalidateAll();
 }
 
@@ -689,11 +704,11 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   static const unsigned adapterButtons[5] = {offsetof(DisplaySettingsUiImage,adapterOption1),
       offsetof(DisplaySettingsUiImage,adapterOption2),offsetof(DisplaySettingsUiImage,adapterOption3),
       offsetof(DisplaySettingsUiImage,adapterOption4),offsetof(DisplaySettingsUiImage,adapterOption5)};
-  uint8_t *root = (uint8_t *)displaySettingsRoot;
-  UiDisplaySettingsApplyButton *applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
+  uint8_t *root = Thandor_Bytes(displaySettingsRoot);
+  UiDisplaySettingsApplyButton *applyButton = DISPLAY_SETTINGS_UI(root,applyButton);
   uint32_t bitsPerPixel = selectedBitsPerPixel;
   void *selected = nullptr;
-  Bool8 modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
+  bool modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
   int i;
 
   /* the original first refreshed the four colour depth buttons (gone, 32-bit colour only) */
@@ -711,7 +726,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       selected = root + sizeButtons[i];
     }
   }
-  UiSelectableGroup_SelectExclusive(8,(UiNodeBase *)selected,
+  UiSelectableGroup_SelectExclusive(8,static_cast<UiNodeBase *>(selected),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption8),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption7),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption6),
@@ -733,7 +748,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       selected = root + adapterButtons[i];
     }
   }
-  UiSelectableGroup_SelectExclusive(5,(UiNodeBase *)selected,
+  UiSelectableGroup_SelectExclusive(5,static_cast<UiNodeBase *>(selected),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption5),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption4),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption3),
@@ -768,9 +783,8 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
 void UiDisplaySettingsRoot_FormatColorReadouts(void *root)
 
 {
-  UiDisplaySettingsApplyButton *applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
-  UiDisplaySettingsValueReadout *readout =
-       (UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText);
+  UiDisplaySettingsApplyButton *applyButton = DISPLAY_SETTINGS_UI(root,applyButton);
+  UiDisplaySettingsValueReadout *readout = DISPLAY_SETTINGS_UI(root,colorBiasValueText);
 
   /* fractionalDigits 3, integerDigitLimit 10; the denominators are 64.0 and 1.0 in Q16 */
   g_WideNumberFormatUtf16
@@ -793,27 +807,22 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
 {
   uint16_t *countdownNumberBuffer;
   UiRootNode *root;
-  int remainingDwords;
   uint32_t *templateCursor;
   uint32_t *copyCursor;
   uint32_t allocError;
   uint16_t *resolvedText;
   UiFourValueDialogCountdownText *countdownText;
 
-  allocError = g_MemoryApi.alloc(sizeof(g_UiFourValueDialogTemplateImage),(void **)&root);
+  allocError = g_MemoryApi.alloc(sizeof(g_UiFourValueDialogTemplateImage),reinterpret_cast<void **>(&root));
   if (allocError != 0) {
-    root = (UiRootNode *)(uintptr_t)allocError;
+    root = reinterpret_cast<UiRootNode *>(static_cast<uintptr_t>(allocError));
   }
   else {
     /* copy the 0x1A4-byte template, one dword per step */
-    templateCursor = (uint32_t *)&g_UiFourValueDialogTemplateImage;
-    copyCursor = (uint32_t *)root;
-    countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
-    for (remainingDwords = sizeof(g_UiFourValueDialogTemplateImage) / 4; remainingDwords != 0; remainingDwords--) {
-      *copyCursor = *templateCursor;
-      templateCursor++;
-      copyCursor++;
-    }
+    templateCursor = reinterpret_cast<uint32_t *>(&g_UiFourValueDialogTemplateImage);
+    copyCursor = reinterpret_cast<uint32_t *>(root);
+    countdownText = reinterpret_cast<UiFourValueDialogCountdownText *>(FOUR_VALUE_DIALOG_UI(root,countdownMessageText));
+    std::copy_n(templateCursor,sizeof(g_UiFourValueDialogTemplateImage) / 4,copyCursor);
     countdownNumberBuffer = countdownText->countdownTextUtf16;
     resolvedText = TextResource_Resolve(TEXT_ID_DISPLAY_MODE_KEEP_COUNTDOWN);
     RichTextCommandStream_PatchPayloadBySelector(0,countdownNumberBuffer,resolvedText);

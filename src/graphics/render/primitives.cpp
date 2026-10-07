@@ -18,7 +18,7 @@ static const uint64_t g_VertexColorAlphaPreserveMaskMMX = 0xFF000000ull;
 
 static const uint64_t g_VertexColorRgbHalveMaskMMX = 0xFEFEFEull;
 
-static uint32_t g_PrimitiveRadixBucketWords[256] = {};
+static GraphicsPrimitiveRadixBucket g_PrimitiveRadixBuckets[256] = {};
 
 static uint32_t g_PrimitiveQueuePoolCapacity = 0;
 
@@ -28,14 +28,14 @@ static uint32_t GraphicsPrimitiveQueue_RenderSortKey(const GraphicsPrimitivePack
   if ((packet->renderFlags & GRAPHICS_PRIMITIVE_BLEND_MASK) == GRAPHICS_PRIMITIVE_BLEND_OPAQUE) {
     /* the texture entry address (its low 32 bits on x64) groups the opaque packets by texture */
     return ((uint32_t)(uintptr_t)packet->textureEntry | GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE) -
-           (packet->renderFlags & GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS);
+           ToBits(packet->renderFlags & GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS);
   }
   return (packet->vertices[0].depth + packet->vertices[1].depth + packet->vertices[2].depth) &
          GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK;
 }
 
 /* One stable radix pass of GraphicsPrimitiveQueue_RadixSortForRendering over the key byte at keyShift: counts
-   the keys per bucket in g_PrimitiveRadixBucketWords, turns the counts into write cursors into destination
+   the keys per bucket in g_PrimitiveRadixBuckets, turns the counts into write cursors into destination
    (bucket 0xFF first, so the order is descending) and copies sortKey and packet of every source node, in source
    order, to its bucket's next slot. The links of the nodes are not copied. */
 static void GraphicsPrimitiveQueue_RadixPass(const GraphicsPrimitiveQueueNode *source,
@@ -49,7 +49,7 @@ static void GraphicsPrimitiveQueue_RadixPass(const GraphicsPrimitiveQueueNode *s
   uint32_t nodeIndex;
   int bucketIndex;
 
-  buckets = (GraphicsPrimitiveRadixBucket *)g_PrimitiveRadixBucketWords;
+  buckets = g_PrimitiveRadixBuckets;
   for (bucketIndex = 0; bucketIndex < 256; bucketIndex++) {
     buckets[bucketIndex].count = 0;
   }
@@ -151,16 +151,16 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
 uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity)
 
 {
-  GraphicsPrimitiveQueue *allocatedQueueStorage;
+  void *allocatedQueueStorage;
   uint32_t allocError;
 
   g_PrimitiveQueuePoolCapacity = packetCapacity;
   allocError = g_MemoryApi.alloc(packetCapacity * GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET +
-                                 GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES,(void **)&allocatedQueueStorage);
+                                 GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES,&allocatedQueueStorage);
   if (allocError != 0) {
     return allocError;
   }
-  g_PrimitiveQueueStorage = allocatedQueueStorage;
+  g_PrimitiveQueueStorage = static_cast<GraphicsPrimitiveQueue *>(allocatedQueueStorage);
   return 0;
 }
 
@@ -182,8 +182,9 @@ GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal()
   g_PrimitiveQueueStorage->capacity = g_PrimitiveQueuePoolCapacity;
   globalQueue->count = 0;
   globalQueue->radixScratchPool = globalQueue->primaryNodes + poolCapacity;
+  /* the packets are the rest of the same block, after the two node arrays */
   globalQueue->packetPool =
-       (GraphicsPrimitivePacket *)(globalQueue->primaryNodes + poolCapacity + poolCapacity);
+       reinterpret_cast<GraphicsPrimitivePacket *>(globalQueue->primaryNodes + poolCapacity + poolCapacity);
   return globalQueue;
 }
 
@@ -241,7 +242,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *que
    true when the queue is full; one slot is always left unused. Called by ModelRender_SubmitTriangle and
    ModelRender_PrepareProjectedVertexAlternatePath (graphics/render/model_submit.cpp).
 */
-Bool8 GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
+bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsPrimitiveDispatchFlags renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue)
 
@@ -313,7 +314,7 @@ void GraphicsPrimitiveQueue_SetVertexColors
           GraphicsPrimitiveQueue *queue)
 
 {
-  uint32_t existingBlendModeFlags;
+  GraphicsPrimitiveDispatchFlags existingBlendModeFlags;
   GraphicsPrimitivePacket *packetPool;
   uint32_t queuedPacketCount;
   
@@ -415,7 +416,7 @@ DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthI
 /* Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): true when
    axis 0 masks and axis 1 masks both share a bin, i.e. the objects may overlap.
 */
-Bool8 DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
+bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
           DepthBinMask32 secondMaskAxis1)
 
 {

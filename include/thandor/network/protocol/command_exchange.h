@@ -14,19 +14,19 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-#define FRONTEND_PACKET_COMMAND_BATCH_TYPE 0x20             /* host -> clients; unit count = command records */
+inline constexpr auto FRONTEND_PACKET_COMMAND_BATCH_TYPE = 0x20; /* host -> clients; unit count = command records */
 #define FRONTEND_PACKET_COMMAND_SUBMIT FRONTEND_PACKET_10021_COMMAND_SUBMIT   /* client -> host: its next command record */
 #define FRONTEND_PACKET_COMMAND_WAIT FRONTEND_PACKET_10022_COMMAND_WAIT     /* host -> client: command received, batch pending */
 #define FRONTEND_PACKET_COMMAND_WAIT_ACK FRONTEND_PACKET_10023_COMMAND_WAIT_ACK /* client -> host: answer to COMMAND_WAIT */
 
 /* Reload value of a peer's heartbeatExpiryTicks and of g_SessionTransferTimeoutTicks on every packet. */
-#define FRONTEND_PEER_TIMEOUT_TICKS 0x100
+inline constexpr auto FRONTEND_PEER_TIMEOUT_TICKS = 0x100;
 
-Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
+bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          uint32_t unusedDispatchArg);
+          FrontendUiImage *unusedFrontendRoot);
 
-Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
+bool FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
 
 void FrontendTransfer_SendCommandSubmit();
 
@@ -35,7 +35,7 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
 
 void FrontendTransfer_DispatchStagedCommandRecords();
 
-Bool8 FrontendTransfer_ConsumeProcessedFlag();
+bool FrontendTransfer_ConsumeProcessedFlag();
 
 void FrontendTransfer_CopyCommandRecord
           (FrontendCommandPacketRecord *destination,const FrontendCommandPacketRecord *source);

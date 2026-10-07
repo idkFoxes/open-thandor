@@ -26,10 +26,10 @@ inline void PersistentOption_ApplyCheckbox(UiSelectableControl *control,Persiste
 
 {
   uint32_t optionFlags;
-  Bool8 isSelected;
+  bool isSelected;
 
   optionFlags = PersistentSettings_Read(defaultValue,setting);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
+  isSelected = UiSelectableControl_IsSelected(control);
   sideEffect(isSelected);
   PersistentSettings_Write(isSelected ? optionFlags | bit : optionFlags & ~bit,setting);
 }
@@ -39,7 +39,24 @@ inline void PersistentOption_ApplyCheckbox(UiSelectableControl *control,Persiste
           uint32_t bit)
 
 {
-  PersistentOption_ApplyCheckbox(control,setting,bit,[](Bool8) {});
+  PersistentOption_ApplyCheckbox(control,setting,bit,[](bool) {});
+}
+
+/* The two above for a bit of an option-flag enum (PersistentSoundOptionFlags and the like): the same dword
+   operations on its bits. */
+template<ThandorFlagEnum E,typename SideEffect>
+inline void PersistentOption_ApplyCheckbox(UiSelectableControl *control,PersistentSettingsByteOffset setting,E bit,
+          SideEffect sideEffect,E defaultValue = E{})
+
+{
+  PersistentOption_ApplyCheckbox(control,setting,ToBits(bit),sideEffect,ToBits(defaultValue));
+}
+
+template<ThandorFlagEnum E>
+inline void PersistentOption_ApplyCheckbox(UiSelectableControl *control,PersistentSettingsByteOffset setting,E bit)
+
+{
+  PersistentOption_ApplyCheckbox(control,setting,ToBits(bit));
 }
 
 /* Saves the slider's bound value as setting and returns it (for the callers that also apply it at once). */

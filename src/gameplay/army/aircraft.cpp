@@ -75,7 +75,7 @@ static void ArmyAircraft_UpdateParked(WorldRuntimeContext *worldRuntime,ModelRun
           ((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_CLOSED)) {
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
-               THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelRuntime = (ModelRuntimeSlot *)modelRuntime },
+               THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelRuntime = ModelView_Cast<ModelRuntimeSlot>(modelRuntime) },
                (rootNode->modelPayload).worldRotationAngle2,
                (rootNode->modelPayload).worldRotationAngle1,
                (rootNode->modelPayload).worldRotationAngle0,
@@ -225,7 +225,7 @@ static void ArmyAircraft_DropModelPointEffectAtMark(WorldRuntimeContext *worldRu
   if (definition->modelPointStep == 0) {
     return;
   }
-  modelPointTable = Thandor_U32ToPointer<void>(((MdlSerializedNodeHeader *)definition->rootNode)->childSerializedOffsets[0]); /* 32-bit format field: MdlSerializedNodeHeader.childSerializedOffsets */
+  modelPointTable = Thandor_U32ToPointer<void>(static_cast<MdlSerializedNodeHeader *>(definition->rootNode.get())->childSerializedOffsets[0]); /* 32-bit format field: MdlSerializedNodeHeader.childSerializedOffsets */
   for (modelPointOrdinal = 7; modelPointOrdinal != 0; modelPointOrdinal = modelPointOrdinal - 1) {
     if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
       ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
@@ -263,6 +263,7 @@ static void ArmyAircraft_UpdateAttackRun(WorldRuntimeContext *worldRuntime,Model
             (modelRuntime,definition,definition->verticalArcCoefficient,
              (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12 - terrainHeightQ12);
   remainingTicks = g_InGameSimulationStepTicks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     (modelRuntime->classLinkState).armyLinkOrState.classState =
          (modelRuntime->classLinkState).armyLinkOrState.classState - 1; /* the drop countdown */
@@ -376,10 +377,11 @@ void ArmyRuntimeClass_UpdateAircraft
   modelNode = modelRuntime->rootModelNode;
   savedAngle0 = (modelNode->modelPayload).worldRotationAngle0;
   savedAngle1 = (modelNode->modelPayload).worldRotationAngle1;
+  /* the full definition behind the class-21 definition view */
   (*g_ArmyPlacementContactKindDispatchTable.callbacks
-    [((ModelDefinition *)modelRuntime->modelDefinition)->
+    [reinterpret_cast<ModelDefinition *>(modelRuntime->modelDefinition.get())->
      placementContactKindIndex])
-            (((ModelDefinition *)modelRuntime->modelDefinition)->
+            (reinterpret_cast<ModelDefinition *>(modelRuntime->modelDefinition.get())->
              placementHeightOffsetQ12,(modelNode->worldTransform).translation.y,
              (modelNode->worldTransform).translation.x,modelNode,worldRuntime);
   behaviorState = (modelRuntime->class21State).behaviorState;
@@ -387,10 +389,11 @@ void ArmyRuntimeClass_UpdateAircraft
   (modelNode->modelPayload).worldRotationAngle0 = savedAngle0;
   if ((behaviorState != ARMY_AIRCRAFT_STATE_NO_PAD) && (behaviorState != ARMY_AIRCRAFT_STATE_PARKED)) {
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
-              (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+              (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
   }
-  semanticDefinition = (ModelDefinition *)modelRuntime->modelDefinition;
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  /* the full definition behind the class-21 definition view */
+  semanticDefinition = reinterpret_cast<ModelDefinition *>(modelRuntime->modelDefinition.get());
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
   ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(semanticDefinition->footprintRadius,modelNode);
@@ -423,7 +426,7 @@ static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpa
          g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - candidateAsset->xeniteCostQ4;
     buildTicks = candidateAsset->buildTicks;
     selectedAssetValue = candidateAsset->energyLoadQ4;
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD)) {
       buildTicks = (buildTicks >> 4) + 1;
     }
     secondaryAssetId = candidateAsset->registryId;
@@ -436,11 +439,10 @@ static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpa
          g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
     /* Remove the entry: shift the rest of the queue down by one. Original quirk: it shifts remainingAssetCount
        entries, i.e. it also copies the slot just behind the last queued entry (as in the factory queue). */
-    do {
+    for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
       *queueEntry = queueEntry[1];
       queueEntry = queueEntry + 1;
-      remainingAssetCount = remainingAssetCount - 1;
-    } while (remainingAssetCount != 0);
+    }
     padRuntime->secondaryArmyAssetBuildState = 1;
     padRuntime->linkedChildRuntimeFlags = padRuntime->linkedChildRuntimeFlags | ARMY_MODEL_STATE_PRODUCING;
     return;
@@ -458,7 +460,7 @@ static void ArmyPadHangar_PlaySound(WorldRuntimeContext *worldRuntime,ModelDefin
      (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  soundVoiceSet = (SoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
+  soundVoiceSet = ArmySound_VoiceSetRef(worldRuntime,soundAssetIndex);
   if (soundVoiceSet == nullptr) {
     return;
   }
@@ -472,18 +474,18 @@ static void ArmyPadHangar_PlaySound(WorldRuntimeContext *worldRuntime,ModelDefin
 
 /* Consumes one pending launch of a linked aircraft slot and tries to create the aircraft. On success the hangar
    starts opening (with its transition sound) and true is returned. */
-static Bool8 ArmyPadHangar_TryLaunchPendingAircraft(WorldRuntimeContext *worldRuntime,
+static bool ArmyPadHangar_TryLaunchPendingAircraft(WorldRuntimeContext *worldRuntime,
           ModelRuntimeLinkedChildSpawnAndBuildView *padRuntime,uint8_t *pendingSpawnCount,
           ModelRuntimeLinkedChildSpawnInheritedState *inheritedState,PckArmyAssetIdCatalog linkedArmyAssetId,
           ModelDefinitionLinkedChildStateView *padDefinition,ModelRuntimeNode *padNode)
 {
-  Bool8 spawnFailed;
+  bool spawnFailed;
 
   *pendingSpawnCount = *pendingSpawnCount - 1;
   spawnFailed = ArmyRuntimeSpawner_CreateLinkedChildInstance
                           (inheritedState->inheritedValue78,inheritedState->inheritedValue74,
                            inheritedState->inheritedValue70,linkedArmyAssetId,worldRuntime,
-                           (ArmyRuntimeLinkedChildMaskSlotView *)padRuntime);
+                           ModelView_Cast<ArmyRuntimeLinkedChildMaskSlotView>(padRuntime));
   if (spawnFailed) {
     return false;
   }
@@ -525,18 +527,18 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   ModelDefinitionLinkedChildStateView *linkedChildDefinition;
   ArmyRuntimeSlot *ownerArmyRuntime;
 
-  if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_DISMANTLING) != 0) {
+  if (Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_DISMANTLING)) {
     /* every aircraft (class 21) based on this pad (its classLinkState.modelLinkOrState) that is not dismantling
        already */
     ownerNode = worldRuntime->ownerListHead;
     do {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        ownerPayload = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+        ownerPayload = WorldOwnerNode_ModelRuntime(ownerNode);
         if ((ownerPayload->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
              MODEL_RUNTIME_CLASS_21_AIRCRAFT) &&
            (modelRuntime == (ModelRuntimeLinkedChildSpawnAndBuildView *)
                             ownerPayload->classLinkState.modelLinkOrState.modelRuntime) &&
-           ((ownerPayload->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLING) == 0)) {
+           (!Any(ownerPayload->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLING))) {
           ModelRuntimeHierarchy_MarkDestroyedRecursive
                     (worldRuntime,ownerPayload->ownerArmyRuntimeOrSavedOffset.armyRuntime);
         }
@@ -546,8 +548,8 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   }
   switch(modelRuntime->secondaryArmyAssetBuildState) {
   case 0:
-    if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
-      if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) {
+    if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_RESEARCHING)) {
+      if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK)) {
         factionIndex = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex;
         if ((modelRuntime->linkedChildBuildState).completedSecondaryArmyAssetCount <
             modelRuntime->modelDefinition->linkedChildSlotCapacity) {
@@ -555,23 +557,23 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
         }
       }
     }
-    else if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    else if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       ArmyRuntime_UpdateTimedShotAndEffectEmitters
-                (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+                (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
       ArmyRuntime_UpdateAnimatedModelSubnodes
-                (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+                (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
     }
     break;
   case 1:
-    if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks =
            (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks + g_InGameSimulationStepTicks;
       ownerArmyRuntime = (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime;
       ArmyRuntime_UpdateTimedShotAndEffectEmitters
-                (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+                (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
       elapsedTicks = (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks;
       ArmyRuntime_UpdateAnimatedModelSubnodes
-                (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
+                (worldRuntime,ModelView_Cast<ModelRuntimeUpdateView>(modelRuntime));
       if ((modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildRequiredTicks <= elapsedTicks)
       {
         factionIndex = ownerArmyRuntime->factionIndex;
@@ -608,7 +610,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
             ArmyAssetRegistry_FindById(secondaryAssetId,&assetRecord);
             selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                                (ownerArmyRuntime->factionIndex,assetRecord->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
-            linkedModelDefinition = (ModelDefinition *)selectedDefinition;
+            linkedModelDefinition = ModelView_Cast<ModelDefinition>(selectedDefinition);
             linkedModelDefinition->builtCount = linkedModelDefinition->builtCount + 1;
             notificationMovieId = linkedModelDefinition->firstBuiltNotificationMovieId;
             if (linkedModelDefinition->builtCount != 1) {
@@ -683,7 +685,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
     /* fall through: the idle hangar launches the next pending aircraft */
   case ARMY_PAD_HANGAR_IDLE:
     /* the original also required a world point stub (always false) to reject the pad position */
-    if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    if (!Any(modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       /* the first pending slot whose aircraft can be created opens the hangar */
       if (((modelRuntime->linkedChildPendingSpawnCounts).slot0 != 0) &&
          ArmyPadHangar_TryLaunchPendingAircraft
@@ -707,5 +709,5 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
       }
     }
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }

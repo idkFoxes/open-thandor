@@ -11,9 +11,9 @@
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
-typedef struct SpatialSoundSlot SpatialSoundSlot, *PSpatialSoundSlot;
-typedef struct SoundVoiceSet SoundVoiceSet;
-typedef struct SoundVoice SoundVoice;
+struct SpatialSoundSlot;
+struct SoundVoiceSet;
+struct SoundVoice;
 
 using SpatialSoundGainQ15 = uint32_t;
 

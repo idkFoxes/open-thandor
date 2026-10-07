@@ -79,7 +79,7 @@ static const uint8_t g_ModelBoundsHitTriangleCorners[12][3] = {
 
 /* True when the pointer lies inside one of the projected box triangles that has no corner behind the near
    plane; stops at the first hit. */
-static Bool8 ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8_t clippedCornerMask)
+static bool ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8_t clippedCornerMask)
 
 {
   int triangleIndex;
@@ -105,7 +105,7 @@ static Bool8 ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8
    in order. Returns true on a hit and stores the distance in *outDistanceQ12; returns false (and leaves
    *outDistanceQ12 unchanged) when neither the node nor a child was hit.
 */
-Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerHitContext *context,uint32_t *outDistanceQ12)
 
@@ -123,7 +123,7 @@ Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
               (&g_GraphicsTransformScratchMatrix3x4,&modelNode->worldTransform,&g_ViewProjectionMatrixFixed);
     clippedCornerMask = ModelResource_ProjectBoundsCorners(resourceView);
     if (ModelBounds_PointerHitsProjectedBox(pointerY,pointerX,clippedCornerMask)) {
-      if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER) != 0) {
+      if (Any(context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER)) {
         *outDistanceQ12 =
              FixedMath_Length3((((resourceView->localBoundsZ0Q12 + resourceView->localBoundsZ1Q12) >> 1) +
                                modelNode->worldTransform.translation.z) -
@@ -188,7 +188,7 @@ static ModelMeshGroupRelativeOffset *ModelResource_FindRaycastMeshGroup(ModelRes
     meshGroupsToSkip--;
   }
   for (; meshGroupsToSkip != 0; meshGroupsToSkip--) {
-    meshGroupCursor = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroupCursor + *meshGroupCursor);
+    meshGroupCursor = reinterpret_cast<ModelMeshGroupRelativeOffset *>(reinterpret_cast<uint8_t *>(meshGroupCursor) + *meshGroupCursor); /* each group starts with its byte size */
   }
   return meshGroupCursor;
 }
@@ -225,6 +225,7 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
   ModelPackedGeometryRecordCount meshRecordsRemaining;
   ModelMeshGroupRelativeOffset *meshGroupCursor;
   ModelRaycastTriangleDescriptor *triangle;
+  ModelMeshHeader *meshHeader;
   ModelRuntimeNode *nearestModelNode;
   ModelRuntimeNode *childNearestModelNode;
   Q12 nearestDistanceQ12;
@@ -297,15 +298,15 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
   triangle = nullptr;
   meshRecordsRemaining = 0;
   if (meshGroupCursor != nullptr) {
-    triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
+    triangle = reinterpret_cast<ModelRaycastTriangleDescriptor *>(meshGroupCursor + 8); /* the group's first mesh header */
     meshRecordsRemaining = meshGroupCursor[1];
   }
   for (; meshRecordsRemaining != 0; meshRecordsRemaining--) {
     /* triangle points at a ModelMeshHeader here: skip it and its vertex records */
-    triangleCountField = &((ModelMeshHeader *)triangle)->triangleCount;
-    triangle = (ModelRaycastTriangleDescriptor *)
-               ((uint8_t *)((ModelMeshHeader *)triangle + 1) +
-                ((ModelMeshHeader *)triangle)->vertexCount * MODEL_MESH_RECORD_SIZE);
+    meshHeader = reinterpret_cast<ModelMeshHeader *>(triangle);
+    triangleCountField = &meshHeader->triangleCount;
+    triangle = reinterpret_cast<ModelRaycastTriangleDescriptor *>
+               (reinterpret_cast<uint8_t *>(meshHeader + 1) + meshHeader->vertexCount * MODEL_MESH_RECORD_SIZE);
     for (trianglesRemaining = *triangleCountField; trianglesRemaining != 0; trianglesRemaining--) {
       if (ModelMesh_IntersectTriangleRayDistance(triangle,&triangleDistanceQ12) &&
           (triangleDistanceQ12 <= nearestDistanceQ12)) {
@@ -346,7 +347,7 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
    hierarchy test); callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.cpp) and the shot
    updates (src/world/shots/flight.cpp).
 */
-Bool8 ModelRuntime_RaycastCandidateListNearest
+bool ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,
@@ -371,11 +372,11 @@ Bool8 ModelRuntime_RaycastCandidateListNearest
             (&g_ModelRaycastWorldDirectionQ28,elevationAngle,azimuthAngle);
   nearestModelNode = nullptr;
   bestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
-  for (modelNodeRuntime = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+  for (modelNodeRuntime = WorldNode_View<ModelRuntimeNode>(worldRuntime->ownerListHead.get());
       modelNodeRuntime != nullptr;
-      modelNodeRuntime = (ModelRuntimeNode *)(modelNodeRuntime->common).nextNode) {
+      modelNodeRuntime = WorldNode_View<ModelRuntimeNode>(modelNodeRuntime->common.nextNode.get())) {
     if (modelNodeRuntime != excludedNode && modelNodeRuntime->ownerClassId == requiredOwnerId &&
-        (modelNodeRuntime->runtimeFlags & MODEL_NODE_FLAG_RAY_TRANSPARENT) == 0 &&
+        !Any(modelNodeRuntime->runtimeFlags & MODEL_NODE_FLAG_RAY_TRANSPARENT) &&
         DepthBinMasks_Overlap(modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,
                               rayYBinMask,rayXBinMask)) {
       hierarchyDistanceQ12 = ModelNodeRuntime_RaycastHierarchyNearest(modelNodeRuntime,&hierarchyNearestNode);

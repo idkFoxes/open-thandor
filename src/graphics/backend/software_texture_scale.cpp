@@ -10,13 +10,15 @@
 #include <thandor/graphics/backend/software_texture_scale.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/graphics/resources/texture.h>
 #include "software_raster.h"
 
 /* Module data. */
 
 static uint32_t g_SoftwarePixelIntensityToNativeColorLut256[256] = {};
 
-static const uint64_t g_SoftwareBlendUnityWordLanesQ14 = 0x4000400040004000ull;
+/* 1.0 in Q14 in each of the four word lanes (the original's 0x4000400040004000 MMX constant) */
+static const short g_SoftwareBlendUnityWordLanesQ14[4] = {0x4000, 0x4000, 0x4000, 0x4000};
 
 /* One byte of the cross-fade in SoftwareTexture_BilinearBlendScaleSubresources: both images and the
    factor are widened to (c * 0x101) >> 2 (PUNPCKLBW + PSRLW 2), then
@@ -74,18 +76,19 @@ void SoftwareTexture_CrossFadeSubresources
           GraphicsSubresourceIndex sourceSubresourceIndexA,GraphicsSubresourceIndex sourceSubresourceIndexB,
           const GraphicsTextureSourceAsset *asset)
 {
-  const short *unity = (const short *)&g_SoftwareBlendUnityWordLanesQ14;
-  const GraphicsTextureSourceEntry *entries = (const GraphicsTextureSourceEntry *)((const uint8_t *)asset +
-                                                 asset->tableDescriptor.subresourceTableOffset);
+  const short *unity = g_SoftwareBlendUnityWordLanesQ14;
+  const GraphicsTextureSourceEntry *entries = GraphicsTextureSource_Entries(asset);
   const GraphicsTextureSourceEntry *entryA = &entries[sourceSubresourceIndexA];
   const GraphicsTextureSourceEntry *entryB = &entries[sourceSubresourceIndexB];
-  const uint8_t *sourceA = (const uint8_t *)asset + entryA->dataOffset;
-  const uint8_t *sourceB = (const uint8_t *)asset + entryB->dataOffset;
-  const uint8_t *factor = (const uint8_t *)blendFactorPixels;
-  uint8_t *blended = (uint8_t *)blendedSourcePixels;
+  const uint8_t *sourceA = GraphicsTextureSource_Bytes(asset) + entryA->dataOffset;
+  const uint8_t *sourceB = GraphicsTextureSource_Bytes(asset) + entryB->dataOffset;
+  /* both images are 8-bit pixels, handled in blocks of eight (one uint64_t each) */
+  const uint8_t *factor = reinterpret_cast<const uint8_t *>(blendFactorPixels);
+  uint8_t *blended = reinterpret_cast<uint8_t *>(blendedSourcePixels);
   uint32_t blocks = (entryB->pixelHeight * entryB->pixelWidth) >> 3;
   int lane;
 
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     for (lane = 0; lane < 8; lane++) {
       blended[lane] = SoftwareTexture_CrossFadeByte(sourceA[lane], sourceB[lane], factor[lane], unity[lane & 3]);
@@ -117,11 +120,11 @@ void SoftwareTexture_BilinearBlendScaleSubresources
           GraphicsScreenCoordinate destinationTop,GraphicsScreenCoordinate destinationLeft,
           uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
           GraphicsSubresourceIndex sourceSubresourceIndexA,
-          GraphicsSubresourceIndex sourceSubresourceIndexB,int *graphicsTextureAsset,
-          int *framebufferAccess)
+          GraphicsSubresourceIndex sourceSubresourceIndexB,const GraphicsTextureSourceAsset *graphicsTextureAsset,
+          const SoftwareFramebufferAccess *framebufferAccess)
 {
-  const GraphicsTextureSourceAsset *asset = (const GraphicsTextureSourceAsset *)graphicsTextureAsset;
-  const SoftwareFramebufferAccess *framebuffer = (const SoftwareFramebufferAccess *)framebufferAccess;
+  const GraphicsTextureSourceAsset *asset = graphicsTextureAsset;
+  const SoftwareFramebufferAccess *framebuffer = framebufferAccess;
   const GraphicsTextureSourceEntry *entries;
   const GraphicsTextureSourceEntry *entryA;
   const GraphicsTextureSourceEntry *entryB;
@@ -138,8 +141,7 @@ void SoftwareTexture_BilinearBlendScaleSubresources
       sourceSubresourceIndexA >= asset->tableDescriptor.subresourceCount) {
     return;
   }
-  entries = (const GraphicsTextureSourceEntry *)((const uint8_t *)asset +
-                                                 asset->tableDescriptor.subresourceTableOffset);
+  entries = GraphicsTextureSource_Entries(asset);
   entryA = &entries[sourceSubresourceIndexA];
   entryB = &entries[sourceSubresourceIndexB];
   if (entryB->paletteIndex < 0 || entryA->paletteIndex < 0) {
@@ -162,8 +164,9 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   destinationRow = framebuffer->pixels + (destinationTop * (int)framebuffer->width + destinationLeft) * 4;
   yFixed = 0;
   rowsLeft = destinationHeight;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
-    const uint8_t *row = (const uint8_t *)blendedSourcePixels + (yFixed >> 8) * sourceWidth;
+    const uint8_t *row = reinterpret_cast<const uint8_t *>(blendedSourcePixels) + (yFixed >> 8) * sourceWidth;
     short upperWeight = (short)g_SoftwareBilinearInverseFactors[yFixed & 0xff].blue;
     short lowerWeight = (short)g_SoftwareBilinearForwardFactors[yFixed & 0xff].blue;
     uint32_t xFixed = 0;
@@ -171,7 +174,7 @@ void SoftwareTexture_BilinearBlendScaleSubresources
     do {
       uint32_t color = g_SoftwarePixelIntensityToNativeColorLut256[
           SoftwareTexture_SampleIntensity(row, sourceWidth, xFixed, upperWeight, lowerWeight)];
-      ((uint32_t *)destinationRow)[column] = color;
+      Thandor_StoreU32(destinationRow + static_cast<size_t>(column) * 4u, color);
       xFixed += stepX;
     } while (++column != destinationWidth);
     yFixed += stepY;
@@ -316,21 +319,21 @@ static PackedArgb32 SoftwareMinimap_SampleBilinear
     if ((-1 < sourceRow) && (sourceColumn < sourceWidth)) {
       if (-1 < sourceColumn) {
         sourcePixelSample0 =
-             *(PackedArgb32 *)((uint8_t *)sourceTexture + texelIndex * 4 + pixelDataOffset);
+             Thandor_LoadU32(GraphicsTextureSource_Bytes(sourceTexture) + texelIndex * 4 + pixelDataOffset);
       }
       if ((-1 < nextColumn) && (nextColumn < sourceWidth)) {
         sourcePixelSample1 =
-             *(PackedArgb32 *)((uint8_t *)sourceTexture + texelIndex * 4 + pixelDataOffset + 4);
+             Thandor_LoadU32(GraphicsTextureSource_Bytes(sourceTexture) + texelIndex * 4 + pixelDataOffset + 4);
       }
     }
     if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
       if (-1 < sourceColumn) {
         sourcePixelSample2 =
-             *(PackedArgb32 *)((uint8_t *)sourceTexture + (texelIndex + sourceWidth) * 4 + pixelDataOffset);
+             Thandor_LoadU32(GraphicsTextureSource_Bytes(sourceTexture) + (texelIndex + sourceWidth) * 4 + pixelDataOffset);
       }
       if ((-1 < nextColumn) && (nextColumn < sourceWidth)) {
         sourcePixelSample3 =
-             *(PackedArgb32 *)((uint8_t *)sourceTexture + (texelIndex + sourceWidth) * 4 + pixelDataOffset + 4);
+             Thandor_LoadU32(GraphicsTextureSource_Bytes(sourceTexture) + (texelIndex + sourceWidth) * 4 + pixelDataOffset + 4);
       }
     }
   }
@@ -348,7 +351,7 @@ void SoftwareTexture_DrawMinimapBilinear32
           uint32_t pixelStepU,uint32_t pixelStepV,uint32_t rowStepU,uint32_t rowStepV,
           GraphicsTextureSourceAsset *texture,SoftwareFramebufferAccess *framebuffer)
 {
-  AssetRelativeOffset subresourceTable;
+  const GraphicsTextureSourceEntry *firstRecord;
   int sourceWidth;
   int sourceHeight;
   int pixelDataOffset;
@@ -362,11 +365,11 @@ void SoftwareTexture_DrawMinimapBilinear32
   int remainingColumns;
   int remainingRows;
 
-  subresourceTable = (texture->tableDescriptor).subresourceTableOffset;
   /* fields of the first subresource record (asset + subresourceTableOffset) */
-  sourceWidth = *(int *)((uint8_t *)texture + subresourceTable + GFX_SUBRESOURCE_PIXEL_WIDTH);
-  sourceHeight = *(int *)((uint8_t *)texture + subresourceTable + GFX_SUBRESOURCE_PIXEL_HEIGHT);
-  pixelDataOffset = *(int *)((uint8_t *)texture + subresourceTable + GFX_SUBRESOURCE_PIXEL_OFFSET);
+  firstRecord = GraphicsTextureSource_Entries(texture);
+  sourceWidth = static_cast<int>(firstRecord->pixelWidth);
+  sourceHeight = static_cast<int>(firstRecord->pixelHeight);
+  pixelDataOffset = static_cast<int>(firstRecord->dataOffset);
   rowStrideBytes = framebuffer->width * 4;
   /* the original also had a 16-bit framebuffer path (packed through the 565/555 MMX constants) */
   destPixel = framebuffer->pixels + (int32_t)(rowStrideBytes * destY) + destX * 4;
@@ -377,10 +380,11 @@ void SoftwareTexture_DrawMinimapBilinear32
   destRowStart = destPixel;
   remainingRows = height;
   remainingColumns = width;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     do {
-      *(PackedArgb32 *)destPixel =
-           SoftwareMinimap_SampleBilinear(texture,pixelDataOffset,sourceWidth,sourceHeight,sourceU,sourceV);
+      Thandor_StoreU32(destPixel,
+           SoftwareMinimap_SampleBilinear(texture,pixelDataOffset,sourceWidth,sourceHeight,sourceU,sourceV));
       sourceU = sourceU + pixelStepU;
       sourceV = sourceV + pixelStepV;
       destPixel = destPixel + 4;

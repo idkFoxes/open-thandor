@@ -45,7 +45,7 @@ static AiCommandGenerationRightShiftBits g_AiCombatTargetCurrentCommandGeneratio
 
 /* Source class count AiCombatTarget_SelectBestCandidate reports for a zero class counter sum, in place of the
    original's positive stack leftover (see the quirk there). */
-#define AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER 1
+static constexpr int AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER = 1;
 
 /* Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
    (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases). Skipped while an
@@ -62,10 +62,10 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
   ArmyCommandGeneration candidateCommandGenerationBase;
   AiCommandGenerationRightShiftBits selectedCommandGenerationRightShiftBits;
 
-  if (((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_INTERRUPTED) == 0) &&
+  if (!Any(armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_INTERRUPTED) &&
      (((int)armyRuntime->commandGeneration < 1 ||
-      ((armyRuntime->commandModeFlags &
-       (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) == 0)))) {
+      (!Any(armyRuntime->commandModeFlags &
+       (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)))))) {
     selectedTargetArmyRuntime =
          AiCombatTarget_SelectBestCandidate(worldRuntime,armyRuntime,&sourceClassCount);
     /* Original quirk: without a selected target this is still the shift of an earlier call (see the static). */
@@ -78,7 +78,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
     /* signed test of the returned sum: count > 0 */
     else if ((selectedTargetArmyRuntime == nullptr) && (0 < sourceClassCount)) {
       ArmyRuntime_ResolveCommandTarget(Thandor_U32ToPointer<ArmyRuntimeSlot>(armyRuntime->assignedTargetArmyRuntime),armyRuntime); /* 32-bit format field: ArmyRuntimeSlot.assignedTargetArmyRuntime */
-      if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0) {
+      if (!Any(armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY)) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
       }
     }
@@ -126,7 +126,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
   accumulatedScaleRatio = 0;
   for (collectedIndex = 0; collectedIndex < collectedCount; collectedIndex++) {
     collectedConditionRatioQ12 =
-         ModelRuntime_QueryHierarchyConditionRatioQ12((RuntimeModelFactionPrefix *)collectedArmies[collectedIndex]);
+         ModelRuntime_QueryHierarchyConditionRatioQ12(reinterpret_cast<RuntimeModelFactionPrefix *>(collectedArmies[collectedIndex])); /* the army slot header as the hierarchy metric view */
     accumulatedScaleRatio =
          accumulatedScaleRatio + (uint32_t)(collectedConditionRatioQ12 << 8) / (uint32_t)Q12_ONE;
     if (accumulatedScaleRatio >= AI_UNIT_GROUP_ATTACK_STRENGTH) {
@@ -148,7 +148,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
        earlier rebuild, for count > 256 past the 0x1000-byte buffer. Kept: it feeds the AI decisions and the AI
        hash; a loaded game can see a different stale tail than an uninterrupted one. */
     targetCandidateCount = g_AiWorkspace03Count;
-    targetCandidateRecords = (AiTargetWorkspaceEntry *)g_AiWorkspace03UnseenHostiles;
+    targetCandidateRecords = reinterpret_cast<AiTargetWorkspaceEntry *>(g_AiWorkspace03UnseenHostiles); /* the quirk's stride */
     if (g_AiWorkspace03Count == 0) {
       return;
     }
@@ -181,7 +181,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
     ArmyRuntime_ResolveCommandTargetAndRoute(targetRuntime,collectedArmy);
     collectedArmy->assignedTargetArmyRuntime = Thandor_PointerToU32(targetRuntime); /* 32-bit format field: ArmyRuntimeSlot.assignedTargetArmyRuntime */
     collectedArmy->commandModeFlags = collectedArmy->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
-    collectedArmy->aiUnitFlags = collectedArmy->aiUnitFlags | 1;
+    collectedArmy->aiUnitFlags = collectedArmy->aiUnitFlags | AI_UNIT_STATE94_GROUP_ASSIGNED;
     collectedArmy->movementStateFlags = collectedArmy->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
     collectedArmy->aiUnitState = 8;
     collectedArmy->commandGeneration = assignedCommandGeneration;
@@ -211,7 +211,7 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
   AiCandidateScore32 candidateScore;
   int classIndex;
   FactionRuntimeIndex candidateFactionIndex;
-  Bool8 relationFitsSearch;
+  bool relationFitsSearch;
   Q12 searchRadiusQ12;
   AiCandidateScore32 currentBestScore;
   AiSourceClassCount sourceClassCount;
@@ -257,14 +257,14 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
       if (ownerNodeCursor->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
-      candidateEntityRuntime = (GameEntityRuntime *)ownerNodeCursor->runtimePayload;
-      candidateArmyRuntime = (ArmyRuntimeSlot *)(candidateEntityRuntime->common).ownership.runtimeLink;
+      candidateEntityRuntime = WorldOwnerNode_EntityRuntime(ownerNodeCursor);
+      candidateArmyRuntime = candidateEntityRuntime->common.ownership.linkedArmyRuntime();
       /* a negative sum skips entities flagged 0x400 */
       if ((sourceClassCount < 0) &&
-          (((candidateEntityRuntime->common).runtimeFlags & ARMY_MODEL_STATE_NO_REGENERATION) != 0)) {
+          (Any((candidateEntityRuntime->common).runtimeFlags & ARMY_MODEL_STATE_NO_REGENERATION))) {
         continue;
       }
-      if (((candidateEntityRuntime->common).runtimeFlags & ARMY_RUNTIME_FLAG_DESTROYED) != 0) {
+      if (Any((candidateEntityRuntime->common).runtimeFlags & ARMY_RUNTIME_FLAG_DESTROYED)) {
         continue;
       }
       candidateFactionIndex = candidateArmyRuntime->factionIndex;
@@ -334,9 +334,9 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
   ModelRuntimeSlot *sourceWeaponModelRuntime;
   ModelRuntimeNode *candidateAimModelNode;
   int classBaseScore;
-  Bool8 masksOverlap;
-  Bool8 capabilityBitClear;
-  Bool8 lineOfFireTestPassed;
+  bool masksOverlap;
+  bool capabilityBitClear;
+  bool lineOfFireTestPassed;
   Q12 conditionRatioQ12;
   uint32_t candidateScore;
   uint32_t sourceRadiusQ12;
@@ -403,7 +403,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
   classBaseScore =
        g_AiCombatTargetClassBaseScores[candidateDefinition->runtimeClassId] *
        g_AiCombatTargetClassBaseScoreMultiplier;
-  conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12((RuntimeModelFactionPrefix *)candidateArmyRuntime);
+  conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(reinterpret_cast<RuntimeModelFactionPrefix *>(candidateArmyRuntime)); /* the army slot header as the hierarchy metric view */
   /* a friendly search needs condition < 1.0 (unsigned compare as in the original) */
   if ((sourceClassCount < 0) && ((uint32_t)conditionRatioQ12 >= (uint32_t)Q12_ONE)) {
     return 0;

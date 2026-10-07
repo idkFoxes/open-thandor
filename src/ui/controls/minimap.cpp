@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/minimap.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -36,7 +37,7 @@ void UiSelectionGeometryControl_DrawClipped
   int rowStepV;
   uint64_t sourceStartU; /* a zero-extended 32-bit value, so its high half is always 0 */
   int sourceStartV;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
 
   /* intersect the clip rectangle with the node */
   if (clipLeft < (control->base).left) {
@@ -88,7 +89,7 @@ void UiSelectionGeometryControl_DrawClipped
   sourceTexture = control->textureSource;
   subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
   /* fields of the first subresource record (asset + subresourceTableOffset) */
-  if (*(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PALETTE_INDEX) >= 0) {
+  if (*reinterpret_cast<int *>(Thandor_Bytes(sourceTexture) + subresourceTable + GFX_SUBRESOURCE_PALETTE_INDEX) >= 0) {
     return;
   }
   framebufferUnavailable = g_GraphicsFramebufferBeginAccess();

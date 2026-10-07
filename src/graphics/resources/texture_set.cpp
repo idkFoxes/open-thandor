@@ -11,6 +11,7 @@
 #include <thandor/graphics/resources/texture_set.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/graphics/resources/texture.h>
 
 /* Module data. */
 
@@ -38,7 +39,8 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
 
 {
   GraphicsTextureResource *newTexture;
-  Bool8 registerFailed;
+  void *textureBlock;
+  bool registerFailed;
   GraphicsTextureSet *allocatedSet;
   uint32_t textureAllocationError;
   GraphicsTextureSetEntry *entryCursor;
@@ -52,8 +54,9 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
   entryCursor = allocatedSet->entries;
   /* the original's do-while ran once for a count of 0; AllocateMetadata rejects that count now */
   while (entriesRemaining != 0) {
-    textureAllocationError = g_MemoryApi.alloc(sizeof(GraphicsTextureResource),(void **)&newTexture);
+    textureAllocationError = g_MemoryApi.alloc(sizeof(GraphicsTextureResource),&textureBlock);
     if (textureAllocationError == 0) {
+      newTexture = static_cast<GraphicsTextureResource *>(textureBlock);
       entryCursor->texture = newTexture;
       registerFailed = GraphicsTexture_RegisterSlot(newTexture);
       if (registerFailed) {
@@ -93,12 +96,11 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
         /* find the texture's slot; if it is not registered the scan ends on (and clears) the last slot */
         slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
         slotCursor = g_GraphicsTextureSlots;
-        do {
+        for (; slotsRemaining != 0; slotsRemaining--) {
           matchedSlot = slotCursor;
           if (texture == *matchedSlot) break;
-          slotsRemaining--;
           slotCursor = matchedSlot + 1;
-        } while (slotsRemaining != 0);
+        }
         *matchedSlot = nullptr;
         g_MemoryApi.free(texture);
       }
@@ -122,7 +124,7 @@ GraphicsTextureSet * GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16,uint32_t
   GraphicsTextureSet *createdSet;
   uint32_t errorCode;
 
-  loadedSource = (GraphicsTextureSourceAsset *)Package_LoadEntry(pathUtf16,&errorCode);
+  loadedSource = static_cast<GraphicsTextureSourceAsset *>(Package_LoadEntry(pathUtf16,&errorCode));
   if (loadedSource != nullptr) {
     createdSet = g_GraphicsCreateTextureSet(loadedSource,&errorCode);
     if (createdSet != nullptr) {
@@ -164,17 +166,18 @@ void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,Gr
    Each entry gets no texture yet, its image index, the source asset and entry, and log2 of the width and
    height (31 for a zero size). Returns false at the first image whose width or height is not a power of two
    (that entry is left partly written). */
-static Bool8 GraphicsTextureSet_FillEntries
-          (GraphicsTextureSet *set,GraphicsTextureSourceAsset *sourceAsset,uint8_t *firstSourceEntry,
+static bool GraphicsTextureSet_FillEntries
+          (GraphicsTextureSet *set,GraphicsTextureSourceAsset *sourceAsset,GraphicsTextureSourceEntry *firstSourceEntry,
            GraphicsAssetAllocationByteSize entryCount)
 {
   GraphicsTextureSetEntry *entry = set->entries;
-  GraphicsTextureSourceEntry *sourceEntry = (GraphicsTextureSourceEntry *)firstSourceEntry;
+  GraphicsTextureSourceEntry *sourceEntry = firstSourceEntry;
   GraphicsAssetAllocationByteSize entriesRemaining = entryCount;
   int entryIndex = 0;
   uint32_t widthLog2;
   int heightLog2;
 
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     /* index of the highest set bit of pixelWidth; the original leaves the register undefined for 0 */
     widthLog2 = 31;
@@ -203,7 +206,7 @@ static Bool8 GraphicsTextureSet_FillEntries
       return false;
     }
     entry++;
-    sourceEntry = (GraphicsTextureSourceEntry *)((uint8_t *)sourceEntry + GFX_SUBRESOURCE_RECORD_SIZE);
+    sourceEntry++; /* GFX_SUBRESOURCE_RECORD_SIZE bytes */
     entryIndex++;
     entriesRemaining--;
   } while (entriesRemaining != 0);
@@ -222,10 +225,12 @@ GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAs
 {
   GraphicsPaletteTextureSourceAsset *convertedSource;
   GraphicsTextureSet *set;
+  void *setBlock;
   uint32_t errorCode;
   GraphicsAssetAllocationByteSize entryCount;
 
-  convertedSource = (GraphicsPaletteTextureSourceAsset *)sourceAsset;
+  /* the same asset block through the palette-texture view the conversion takes */
+  convertedSource = reinterpret_cast<GraphicsPaletteTextureSourceAsset *>(sourceAsset);
   /* The original converted and filled at least one entry for any header; a malformed header or an asset
      without images is rejected here because the conversion and the fill loop then ran outside the asset and the
      set allocation. */
@@ -240,12 +245,13 @@ GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAs
   }
   if (errorCode == 0) {
     entryCount = convertedSource->subresourceCount;
-    errorCode = g_MemoryApi.alloc(entryCount * GRAPHICS_TEXTURE_SET_ENTRY_BYTES + GRAPHICS_TEXTURE_SET_HEADER_BYTES,(void **)&set);
+    errorCode = g_MemoryApi.alloc(entryCount * GRAPHICS_TEXTURE_SET_ENTRY_BYTES + GRAPHICS_TEXTURE_SET_HEADER_BYTES,&setBlock);
     if (errorCode == 0) {
+      set = static_cast<GraphicsTextureSet *>(setBlock);
       set->sourceAsset = sourceAsset;
       set->subresourceCount = entryCount;
       if (GraphicsTextureSet_FillEntries
-               (set,sourceAsset,(uint8_t *)convertedSource + convertedSource->subresourceTableOffset,entryCount)) {
+               (set,sourceAsset,GraphicsTextureSource_Entries(sourceAsset),entryCount)) {
         return set;
       }
       errorCode = FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO;
@@ -276,7 +282,7 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet 
 /* Enters a texture into the first free slot of g_GraphicsTextureSlots (the registry the original used to evict
    and rebuild device textures). Returns true when all GRAPHICS_TEXTURE_SLOT_CAPACITY slots are taken.
 */
-Bool8 GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
+bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
 
 {
   int slotsRemaining;
@@ -284,13 +290,12 @@ Bool8 GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
   
   slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
   slotCursor = g_GraphicsTextureSlots;
-  do {
+  for (; slotsRemaining != 0; slotsRemaining--) {
     if (*slotCursor == nullptr) {
       *slotCursor = texture;
       return false;
     }
     slotCursor = slotCursor + 1;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
   return true;
 }

@@ -95,7 +95,9 @@ bool ClipToDisplay(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t
     return *right > *left && *bottom > *top;
 }
 
-Draw2DItem *AppendItem(uint8_t op, uint8_t blend)
+/* Takes op and blend as the stored bytes: GCC passes a byte parameter widened to int, a byte-sized enum
+   not, and this keeps the recorder's code as it was. Callers use the typed AppendItem below. */
+Draw2DItem *AppendItemBytes(uint8_t op, uint8_t blend)
 {
     Draw2DItem item = {};
     item.op = op;
@@ -103,6 +105,11 @@ Draw2DItem *AppendItem(uint8_t op, uint8_t blend)
     item.tintArgb = ARGB8888_OPAQUE_WHITE;
     s_items.push_back(item);
     return &s_items.back();
+}
+
+Draw2DItem *AppendItem(Draw2DOp op, Draw2DBlend blend)
+{
+    return AppendItemBytes(static_cast<uint8_t>(op), static_cast<uint8_t>(blend));
 }
 
 /* The subresource entry of a drawable texture source (as Blit_SetupSubresource checks it), or nullptr. */
@@ -113,7 +120,7 @@ const GraphicsTextureSourceEntry *SubresourceEntry(const GraphicsTextureSourceAs
         return nullptr;
     }
     const GraphicsTextureSourceEntry *entry =
-        (const GraphicsTextureSourceEntry *)((const uint8_t *)asset + asset->tableDescriptor.subresourceTableOffset) +
+        GraphicsTextureSource_Entries(asset) +
         subresource;
     if (entry->paletteIndex != -1 && (uint32_t)entry->paletteIndex >= asset->tableDescriptor.paletteBankCount) {
         return nullptr;
@@ -121,7 +128,7 @@ const GraphicsTextureSourceEntry *SubresourceEntry(const GraphicsTextureSourceAs
     return entry;
 }
 
-void RecordSprite(uint8_t blend, uint32_t tintArgb, int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY,
+void RecordSprite(Draw2DBlend blend, uint32_t tintArgb, int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY,
                   int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t subresource,
                   const GraphicsTextureSourceAsset *asset)
 {
@@ -155,7 +162,7 @@ void RecordSprite(uint8_t blend, uint32_t tintArgb, int32_t clipMaxY, int32_t cl
 
 /* ---- GPU_RECORD slot functions ---- */
 
-Bool8 RecordBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+bool RecordBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
                             int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                             SoftwareFramebufferAccess *framebuffer)
 {
@@ -168,7 +175,7 @@ Bool8 RecordBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY
     return false;
 }
 
-Bool8 RecordBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+bool RecordBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
                               int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                               SoftwareFramebufferAccess *framebuffer)
 {
@@ -181,7 +188,7 @@ Bool8 RecordBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMi
     return false;
 }
 
-Bool8 RecordBlitModulatedSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX,
+bool RecordBlitModulatedSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX,
                                      int32_t drawY, int32_t drawX, uint32_t modulationArgb8888,
                                      uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                                      SoftwareFramebufferAccess *framebuffer)
@@ -272,7 +279,9 @@ void RecordStretchDirectColorBilinear(uint32_t destinationHeight, uint32_t desti
         entry->pixelWidth > (uint32_t)INT32_MAX / 4 || entry->pixelHeight > (uint32_t)INT32_MAX) {
         return;
     }
-    const uint32_t *texels = (const uint32_t *)((const uint8_t *)sourceAsset + entry->dataOffset);
+    /* the direct-colour texels of the entry: ARGB dwords inside the asset block */
+    const uint32_t *texels =
+        reinterpret_cast<const uint32_t *>(GraphicsTextureSource_Bytes(sourceAsset) + entry->dataOffset);
     RecordImageBilinear(destinationX, destinationY, (int32_t)destinationWidth, (int32_t)destinationHeight,
                         (int32_t)(destinationWidth & ~1u), texels, (int32_t)entry->pixelWidth,
                         (int32_t)entry->pixelHeight, (int32_t)entry->pixelWidth * 4);
@@ -401,7 +410,7 @@ bool GreyScaleImageDraws(uint32_t subresourceA, uint32_t subresourceB, const Gra
         return false;
     }
     const GraphicsTextureSourceEntry *entries =
-        (const GraphicsTextureSourceEntry *)((const uint8_t *)asset + asset->tableDescriptor.subresourceTableOffset);
+        GraphicsTextureSource_Entries(asset);
     return entries[subresourceA].paletteIndex >= 0 && entries[subresourceB].paletteIndex >= 0;
 }
 
@@ -409,12 +418,12 @@ void RecordGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixe
                           GraphicsScreenCoordinate destinationTop, GraphicsScreenCoordinate destinationLeft,
                           uint64_t *blendedSourcePixels, uint64_t *blendFactorPixels,
                           GraphicsSubresourceIndex sourceSubresourceIndexA,
-                          GraphicsSubresourceIndex sourceSubresourceIndexB, int *graphicsTextureAsset,
-                          int *framebufferAccess)
+                          GraphicsSubresourceIndex sourceSubresourceIndexB, const GraphicsTextureSourceAsset *graphicsTextureAsset,
+                          const SoftwareFramebufferAccess *framebufferAccess)
 {
-    if (!IsDisplay((const SoftwareFramebufferAccess *)framebufferAccess) ||
+    if (!IsDisplay(framebufferAccess) ||
         !GreyScaleImageDraws(sourceSubresourceIndexA, sourceSubresourceIndexB,
-                             (const GraphicsTextureSourceAsset *)graphicsTextureAsset) ||
+                             graphicsTextureAsset) ||
         destinationWidth < 2 || destinationHeight < 2 || destinationWidth > 16384 || destinationHeight > 16384) {
         /* other destinations, and the cases the software function handles by itself (sizes 0 and 1 loop or divide
            by zero there) */
@@ -429,16 +438,17 @@ void RecordGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixe
        software scale shows intensity 255 - sample (g_SoftwarePixelIntensityToNativeColorLut256 runs from white to
        black), so the texels are inverted here: the GPU's bilinear sample of 255 - b is 255 - (sample of b), up to
        the weights' rounding. */
-    const GraphicsTextureSourceAsset *asset = (const GraphicsTextureSourceAsset *)graphicsTextureAsset;
+    const GraphicsTextureSourceAsset *asset = graphicsTextureAsset;
     SoftwareTexture_CrossFadeSubresources(blendedSourcePixels, blendFactorPixels, sourceSubresourceIndexA,
                                           sourceSubresourceIndexB, asset);
     const GraphicsTextureSourceEntry *entryB =
-        (const GraphicsTextureSourceEntry *)((const uint8_t *)asset + asset->tableDescriptor.subresourceTableOffset) +
+        GraphicsTextureSource_Entries(asset) +
         sourceSubresourceIndexB;
     const int32_t width = (int32_t)entryB->pixelWidth;
     const int32_t height = (int32_t)entryB->pixelHeight;
     uint32_t *pixels = AcquireScratch((std::size_t)width * (std::size_t)height);
-    const uint8_t *blended = (const uint8_t *)blendedSourcePixels;
+    /* the cross-faded image is one grey byte per pixel, kept in a qword buffer */
+    const uint8_t *blended = reinterpret_cast<const uint8_t *>(blendedSourcePixels);
     for (std::size_t index = 0; index < (std::size_t)width * (std::size_t)height; index++) {
         pixels[index] = ARGB8888_ALPHA_MASK | (uint32_t)(255 - blended[index]) * 0x010101u;
     }
@@ -450,11 +460,11 @@ void RecordGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixe
    the display framebuffer. The software functions only read their sources (the grey-scale image's cross-fade
    rewrites blendedSourcePixels from the same inputs), so drawing twice changes nothing. ---- */
 
-Bool8 CompareBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+bool CompareBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
                              int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                              SoftwareFramebufferAccess *framebuffer)
 {
-    const Bool8 result = SoftwareTextureSource_BlitSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX,
+    const bool result = SoftwareTextureSource_BlitSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX,
                                                                  subresourceIndex, sourceAsset, framebuffer);
     if (IsDisplay(framebuffer)) {
         RecordBlitSourceAlpha(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, subresourceIndex, sourceAsset,
@@ -463,11 +473,11 @@ Bool8 CompareBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMin
     return result;
 }
 
-Bool8 CompareBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+bool CompareBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
                                int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                                SoftwareFramebufferAccess *framebuffer)
 {
-    const Bool8 result = SoftwareTextureSource_BlitHalfSourceRgb32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY,
+    const bool result = SoftwareTextureSource_BlitHalfSourceRgb32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY,
                                                                    drawX, subresourceIndex, sourceAsset, framebuffer);
     if (IsDisplay(framebuffer)) {
         RecordBlitHalfSourceRgb(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, subresourceIndex, sourceAsset,
@@ -476,12 +486,12 @@ Bool8 CompareBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipM
     return result;
 }
 
-Bool8 CompareBlitModulatedSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX,
+bool CompareBlitModulatedSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX,
                                       int32_t drawY, int32_t drawX, uint32_t modulationArgb8888,
                                       uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
                                       SoftwareFramebufferAccess *framebuffer)
 {
-    const Bool8 result = SoftwareTextureSource_BlitModulatedSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX,
+    const bool result = SoftwareTextureSource_BlitModulatedSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX,
                                                                           drawY, drawX, modulationArgb8888,
                                                                           subresourceIndex, sourceAsset, framebuffer);
     if (IsDisplay(framebuffer)) {
@@ -540,16 +550,16 @@ void CompareGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPix
                            GraphicsScreenCoordinate destinationTop, GraphicsScreenCoordinate destinationLeft,
                            uint64_t *blendedSourcePixels, uint64_t *blendFactorPixels,
                            GraphicsSubresourceIndex sourceSubresourceIndexA,
-                           GraphicsSubresourceIndex sourceSubresourceIndexB, int *graphicsTextureAsset,
-                           int *framebufferAccess)
+                           GraphicsSubresourceIndex sourceSubresourceIndexB, const GraphicsTextureSourceAsset *graphicsTextureAsset,
+                           const SoftwareFramebufferAccess *framebufferAccess)
 {
     SoftwareTexture_BilinearBlendScaleSubresources(destinationHeight, destinationWidth, destinationTop, destinationLeft,
                                                    blendedSourcePixels, blendFactorPixels, sourceSubresourceIndexA,
                                                    sourceSubresourceIndexB, graphicsTextureAsset, framebufferAccess);
     /* only the cases the record function records (it would draw the others into the display a second time) */
-    if (IsDisplay((const SoftwareFramebufferAccess *)framebufferAccess) &&
+    if (IsDisplay(framebufferAccess) &&
         GreyScaleImageDraws(sourceSubresourceIndexA, sourceSubresourceIndexB,
-                            (const GraphicsTextureSourceAsset *)graphicsTextureAsset) &&
+                            graphicsTextureAsset) &&
         destinationWidth >= 2 && destinationHeight >= 2 && destinationWidth <= 16384 && destinationHeight <= 16384) {
         /* (the record function repeats the cross-fade: it depends only on the two images and the mask) */
         RecordGreyScaleImage(destinationHeight, destinationWidth, destinationTop, destinationLeft, blendedSourcePixels,

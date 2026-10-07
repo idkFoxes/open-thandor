@@ -7,6 +7,7 @@
 
 #include <thandor/assets/text/resources.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -73,12 +74,12 @@ void TextResource_SetUiScaleNote(const char *text)
    title index (+1..14).
    Returns true when the page cannot be loaded or one of the strings is missing, false on success.
 */
-Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
+bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
 
 {
   uint16_t *resolvedText;
   int lineIndex;
-  Bool8 failed;
+  bool failed;
 
   failed = !TextResourcePage_Load(TEXT_RESOURCE_PAGE_LEVEL,path,nullptr);
   if (!failed) {
@@ -91,15 +92,14 @@ Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_
         TextResourceOverride_Register(levelTitleIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE + TEXT_ID_LEVEL_DESCRIPTION_BASE,
                                       resolvedText);
         /* the extra lines are registered from the last one down */
-        do {
+        for (; -1 < lineIndex; lineIndex--) {
           if (!TextResource_TryResolve(lineIndex + TEXT_ID_LEVEL_PAGE_EXTRA_LINES,&resolvedText)) {
             return true;
           }
           TextResourceOverride_Register
                     (levelTitleIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE + (TEXT_ID_LEVEL_DESCRIPTION_BASE + 1) + lineIndex,
                      resolvedText);
-          lineIndex--;
-        } while (-1 < lineIndex);
+        }
         failed = false;
       }
     }
@@ -118,12 +118,13 @@ static TextResourceLocaleBlockPrefix *TextResourceAsset_FindLocaleBlock
   AssetRecordCount remainingBlocks;
 
   remainingBlocks = (asset->localeCountHeader).localeBlockCount;
-  block = (TextResourceLocaleBlockPrefix *)(asset + 1);
+  block = Asset_RecordAfter<TextResourceLocaleBlockPrefix>(asset);
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (block->countryCode == countryCode) {
       return block;
     }
-    block = (TextResourceLocaleBlockPrefix *)((uint8_t *)block + block->blockSizeBytes);
+    block = Asset_RecordAt<TextResourceLocaleBlockPrefix>(block,block->blockSizeBytes);
     remainingBlocks--;
   } while (remainingBlocks != 0);
   return nullptr;
@@ -145,31 +146,30 @@ static bool TextResourceAsset_HasValidBlocks(const TextResourceAssetHeader *asse
     return false;
   }
   blockOffset = sizeof(TextResourceAssetHeader);
-  do {
+  for (; remainingBlocks != 0; remainingBlocks--) {
     if (blockOffset + sizeof(TextResourceLocaleBlockPrefix) > byteCount) {
       return false;
     }
-    blockOffset += ((const TextResourceLocaleBlockPrefix *)((const uint8_t *)asset + blockOffset))->blockSizeBytes;
-    remainingBlocks--;
-  } while (remainingBlocks != 0);
+    blockOffset += Asset_RecordAt<TextResourceLocaleBlockPrefix>(asset,blockOffset)->blockSizeBytes;
+  }
   return true;
 }
 
 /* Not in the original: true when the selected block's string offset table and every string start lie inside
    the asset (assetEnd is one past its last whole code unit), with room for at least one code unit. */
 static bool TextResourceLocaleBlock_HasValidStrings(const TextResourceLocaleBlockPrefix *localeBlock,
-                                                    const uint8_t *assetEnd)
+                                                    const uint16_t *assetEnd)
 {
   uint64_t blockBytes;
   const uint32_t *stringOffsets;
   uint32_t stringIndex;
 
-  blockBytes = (uint64_t)(assetEnd - (const uint8_t *)localeBlock);
+  blockBytes = (uint64_t)Asset_ByteDistance(assetEnd,localeBlock);
   if ((blockBytes < sizeof(TextResourceLocaleBlockPrefix)) ||
       ((uint64_t)localeBlock->stringCount * sizeof(uint32_t) > blockBytes - sizeof(TextResourceLocaleBlockPrefix))) {
     return false;
   }
-  stringOffsets = (const uint32_t *)(localeBlock + 1);
+  stringOffsets = Asset_RecordAfter<uint32_t>(localeBlock);
   for (stringIndex = 0; stringIndex < localeBlock->stringCount; stringIndex++) {
     if ((uint64_t)stringOffsets[stringIndex] + sizeof(uint16_t) > blockBytes) {
       return false;
@@ -181,11 +181,11 @@ static bool TextResourceLocaleBlock_HasValidStrings(const TextResourceLocaleBloc
 /* Not in the original: logs and releases a malformed 'str' asset for TextResourcePage_Load and returns false
    with TEXT_RESOURCE_MISSING_SENTINEL_0x33 in *outLocaleBlockOrError (as for a non-'str' asset). The page
    binding is left unchanged. */
-static Bool8 TextResourcePage_RejectAsset(TextResourcePageIndex pageIndex,uint16_t *path,
+static bool TextResourcePage_RejectAsset(TextResourcePageIndex pageIndex,uint16_t *path,
                                           TextResourceAssetHeader *allocation,const char *reason,
                                           uintptr_t *outLocaleBlockOrError)
 {
-  Thandor_Log("text page 0x%02X \"%ls\": malformed asset rejected (%s)", pageIndex, (wchar_t *)path, reason);
+  Thandor_Log("text page 0x%02X \"%ls\": malformed asset rejected (%s)", pageIndex, reinterpret_cast<wchar_t *>(path), reason); /* UTF-16 for %ls */
   Resource_Release(allocation);
   if (outLocaleBlockOrError != nullptr) {
     *outLocaleBlockOrError = TEXT_RESOURCE_MISSING_SENTINEL_0x33;
@@ -200,8 +200,8 @@ static uint32_t RichTextRecord_ParseDecimalDigits(const uint16_t *recordStart)
   uint32_t highDigits;
   uint32_t lowDigits;
 
-  highDigits = *(const uint32_t *)(recordStart + 1);
-  lowDigits = *(const uint32_t *)(recordStart + 3);
+  highDigits = Thandor_LoadU32(recordStart + 1); /* the payload dwords are only 2-byte aligned */
+  lowDigits = Thandor_LoadU32(recordStart + 3);
   return ((lowDigits >> 16 & 0xf) + (lowDigits & 0xf) * 10) + (highDigits >> 16 & 0xf) * 100 +
          (highDigits & 0xf) * 1000;
 }
@@ -213,7 +213,7 @@ static uint32_t RichTextRecord_ParseDecimalDigits(const uint16_t *recordStart)
    TEXT_RESOURCE_MISSING_SENTINEL_0x33 for a non-'str' or malformed asset (which is released; the page binding
    stays unchanged). outLocaleBlockOrError may be NULL.
 */
-Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintptr_t *outLocaleBlockOrError)
+bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintptr_t *outLocaleBlockOrError)
 
 {
   uint16_t codeUnit;
@@ -230,9 +230,9 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintp
   uint32_t byteCount;
   uint16_t *assetEnd;
 
-  allocation = (TextResourceAssetHeader *)Package_LoadEntryWithSize(path,&byteCount,&loadErrorCode);
+  allocation = static_cast<TextResourceAssetHeader *>(Package_LoadEntryWithSize(path,&byteCount,&loadErrorCode));
   if (allocation == nullptr) {
-    Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
+    Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, reinterpret_cast<wchar_t *>(path), /* UTF-16 for %ls */
                 loadErrorCode);
     if (outLocaleBlockOrError != nullptr) {
       *outLocaleBlockOrError = loadErrorCode;
@@ -251,29 +251,29 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintp
   if (!TextResourceAsset_HasValidBlocks(allocation,byteCount)) {
     return TextResourcePage_RejectAsset(pageIndex,path,allocation,"locale blocks",outLocaleBlockOrError);
   }
-  countryCode = g_LocaleCountryCodeOverride;
+  countryCode = static_cast<LocaleTelephoneCountryCode>(g_LocaleCountryCodeOverride);
   if (g_LocaleCountryCodeOverride == 0) {
     countryCode = g_LocaleGetDefaultTelephoneCountryCode();
   }
   /* the block for the country code, else the Great Britain block, else the first block */
   localeBlock = TextResourceAsset_FindLocaleBlock(allocation,countryCode);
   if (localeBlock == nullptr) {
-    localeBlock = TextResourceAsset_FindLocaleBlock(allocation,LOCALE_COUNTRY_GREAT_BRITAIN);
+    localeBlock = TextResourceAsset_FindLocaleBlock(allocation,LocaleTelephoneCountryCode::LOCALE_COUNTRY_GREAT_BRITAIN);
     if (localeBlock == nullptr) {
-      localeBlock = (TextResourceLocaleBlockPrefix *)(allocation + 1);
+      localeBlock = Asset_RecordAfter<TextResourceLocaleBlockPrefix>(allocation);
     }
   }
   /* The original binds the page here, before the walk; bound after the walk here so that a rejected asset leaves
      the binding unchanged (nothing reads it during the walk). */
-  assetEnd = (uint16_t *)((uint8_t *)allocation + (byteCount & ~1u));
-  if (!TextResourceLocaleBlock_HasValidStrings(localeBlock,(uint8_t *)assetEnd)) {
+  assetEnd = Asset_RecordAt<uint16_t>(allocation,byteCount & ~1u);
+  if (!TextResourceLocaleBlock_HasValidStrings(localeBlock,assetEnd)) {
     return TextResourcePage_RejectAsset(pageIndex,path,allocation,"string table",outLocaleBlockOrError);
   }
   /* the string offsets (relative to the block) follow the 16-byte block prefix */
-  stringOffsets = (uint32_t *)(localeBlock + 1);
+  stringOffsets = Asset_RecordAfter<uint32_t>(localeBlock);
   stringIndex = 0;
   for (remainingStrings = localeBlock->stringCount; remainingStrings != 0; remainingStrings--) {
-    textCursor = (uint16_t *)((uint8_t *)localeBlock + stringOffsets[stringIndex]);
+    textCursor = Asset_RecordAt<uint16_t>(localeBlock,stringOffsets[stringIndex]);
     /* The original walks to the terminator; bounded here because a string without one, or a record cut off by
        the asset end, would be read and rewritten past the asset. */
     for (;;) {
@@ -314,13 +314,13 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintp
         case RICHTEXT_OP_JUMP_NESTED:
           decimalValue = RichTextRecord_ParseDecimalDigits(recordStart);
           THANDOR_PTR32_AT(void, recordStart + 1) = g_MissingTextResourceFallbackStream;
-          *(uint32_t *)(recordStart + 3) = decimalValue;
+          Thandor_StoreU32(recordStart + 3,decimalValue);
           textCursor = recordStart + RICHTEXT_RECORD_UNITS_NESTED;
           break;
         case RICHTEXT_OP_INLINE_IMAGE:
           decimalValue = RichTextRecord_ParseDecimalDigits(recordStart);
-          *(uint32_t *)(recordStart + 1) = 0;
-          *(uint32_t *)(recordStart + 3) = decimalValue;
+          Thandor_StoreU32(recordStart + 1,0);
+          Thandor_StoreU32(recordStart + 3,decimalValue);
           textCursor = recordStart + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
           break;
         }
@@ -365,7 +365,7 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
    resources.h). Stores the text in *outText and returns true when found; a missing text stores
    TEXT_RESOURCE_MISSING_SENTINEL_0x33 (the pointer value 0x33, not a real string) there and returns false.
 */
-Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
+bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
 
 {
   static bool loggedMissingText; /* open-thandor diagnostics: the first missing id only */
@@ -374,7 +374,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   uint32_t pageIndex;
 
   if (resourceId == TEXT_RESOURCE_ID_NONE) {
-    *outText = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
+    *outText = g_EmptyTextResourceUtf16;
     return true;
   }
   if ((resourceId >= TEXT_ID_PROJECT_BASE) && (resourceId < TEXT_ID_PROJECT_BASE + TEXT_ID_PROJECT_COUNT)) {
@@ -395,7 +395,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   pageIndex = ((resourceId & 0xff0000) == 0) ? (uint32_t)resourceId >> 8 : (uint32_t)resourceId >> 16;
   if (pageIndex >= sizeof(g_TextResourcePageBindings) / sizeof(g_TextResourcePageBindings[0])) {
     Thandor_Log("text resource 0x%08X missing (page out of range)", resourceId);
-    *outText = (uint16_t *)(uintptr_t)TEXT_RESOURCE_MISSING_SENTINEL_0x33;
+    *outText = Thandor_U32ToPointer<uint16_t>(TEXT_RESOURCE_MISSING_SENTINEL_0x33);
     return false;
   }
   if ((resourceId & 0xff0000) == 0) {
@@ -404,7 +404,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     if ((localeBlock != nullptr) &&
        ((resourceId & 0xff) < localeBlock->stringCount)) {
       /* the string offsets are relative to the block */
-      *outText = (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xff]);
+      *outText = Asset_RecordAt<uint16_t>(localeBlock,Asset_RecordAfter<uint32_t>(localeBlock)[resourceId & 0xff]);
       return true;
     }
   }
@@ -413,7 +413,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     localeBlock = g_TextResourcePageBindings[pageIndex].selectedLocaleBlock;
     if ((localeBlock != nullptr) &&
        ((resourceId & 0xffff) < localeBlock->stringCount)) {
-      *outText = (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xffff]);
+      *outText = Asset_RecordAt<uint16_t>(localeBlock,Asset_RecordAfter<uint32_t>(localeBlock)[resourceId & 0xffff]);
       return true;
     }
   }
@@ -421,9 +421,9 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   if (!loggedMissingText) {
     loggedMissingText = true;
     Thandor_Log("text resource 0x%08X missing (page binding %p; further missing ids not logged)", resourceId,
-                (void *)g_TextResourcePageBindings[pageIndex].selectedLocaleBlock);
+                static_cast<void *>(g_TextResourcePageBindings[pageIndex].selectedLocaleBlock.get()));
   }
-  *outText = (uint16_t *)(uintptr_t)TEXT_RESOURCE_MISSING_SENTINEL_0x33;
+  *outText = Thandor_U32ToPointer<uint16_t>(TEXT_RESOURCE_MISSING_SENTINEL_0x33);
   return false;
 }
 

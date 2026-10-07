@@ -61,9 +61,9 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
   resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
                      (modelNode->runtimeFlags,0,occupancyMask,
                       (char)worldRuntime->activeFactionRuntimeIndex);
-  modelNode->runtimeFlags = modelNode->runtimeFlags | resolvedMasks.runtimeFlags;
+  modelNode->runtimeFlags = modelNode->runtimeFlags | FromBits<ModelRuntimeFlags>(resolvedMasks.runtimeFlags);
   shotRuntime->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
-  ModelNodeRuntime_RefreshStateTint((ModelRuntimeNode *)modelNode);
+  ModelNodeRuntime_RefreshStateTint(WorldNode_View<ModelRuntimeNode>(modelNode));
   nodeTintArgb = modelNode->tintArgb;
   definitionTintArgb = shotRuntime->definitionOrSavedId.definition->stateTintArgb;
   /* per channel (a * 0x101 >> 4) * (b * 0x101 >> 4) >> 16, about a * b / 256 (MMX in the original) */
@@ -104,7 +104,7 @@ void ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
   if (soundSlotIndex >= worldRuntime->dwordArrayCount) {
     return;
   }
-  slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+  slot = reinterpret_cast<SpatialSoundSlot *>(worldRuntime->dwordArray[soundSlotIndex]); /* the workspace keeps pointers as uintptr_t */
   worldPosition = &modelNode->worldTransform.translation;
   if (slot == nullptr) {
     return;
@@ -120,14 +120,14 @@ void ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
 
 /* Results of the three rays a shot casts each tick (ShotModel_CastHitRays). The caller keeps one instance over
    all ticks: targetClassIndex is only refreshed on an army hit, like the original's function-wide local. */
-typedef struct ShotRayHits {
+struct ShotRayHits {
   ModelRaycastNearestNodeOrScratch4 nearestArmyHit;
   int targetClassIndex;
   uint32_t armyHitDistance;      /* MODEL_RAYCAST_NO_HIT_DISTANCE also for a target class without impact effect */
   uint32_t terrainHitDistance;   /* FIELD_GRID_RAYCAST_MISS_DISTANCE also for a material without impact effect */
   uint32_t terrainMaterialIndex;
   uint32_t secondaryHitDistance; /* FIELD_GRID_RAYCAST_MISS_DISTANCE also when there is no primary effect */
-} ShotRayHits;
+};
 
 /* One tick of age and sprite animation: the frame advances whenever the Q4 accumulator reaches the threshold
    and wraps after animationFrameCount frames. */
@@ -162,7 +162,7 @@ static void ShotModel_ReleaseAndUnlink
 {
   InterpolationState_SetNegatedTargetAndRescaleProgress
             (shotDefinition->shadingReleaseTransitionDurationTicks,modelNodeRuntime->shadingRecord);
-  WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
+  WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNodeRuntime));
   shotRuntime->modelNodeOrSavedOffset.modelNode = nullptr;
 }
 
@@ -182,8 +182,8 @@ static void ShotModel_EmitSecondaryTrailEffect
   }
   shotRuntime->ownerAndTrajectory.secondaryEffectCountdownTicks = shotDefinition->secondaryEffectIntervalTicks;
   if (ModelLookupTable_FindPackedPoint
-        (1,MODEL_POINT_CLASS_EFFECT,(ModelResource *)shotDefinition->ownedNestedResource,&emitterRecord)) {
-    emitterWorldPoint = ModelNodeRuntime_TransformLocalPoint(emitterRecord,(ModelRuntimeNode *)modelNode);
+        (1,MODEL_POINT_CLASS_EFFECT,static_cast<ModelResource *>(shotDefinition->ownedNestedResource.get()),&emitterRecord)) {
+    emitterWorldPoint = ModelNodeRuntime_TransformLocalPoint(emitterRecord,WorldNode_View<ModelRuntimeNode>(modelNode));
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },0,
                FIXED_ANGLE16_QUARTER_TURN,0,
@@ -249,8 +249,8 @@ static void ShotModel_CastHitRays
 {
   ArmyRuntimeSlot *shotOwnerArmy;
   ModelRuntimeNode *ownerModelNode;
-  Bool8 armyHit;
-  Bool8 surfaceHit;
+  bool armyHit;
+  bool surfaceHit;
   Q12 armyHitDistanceQ12;
   Q12 surfaceDistanceQ12;
   ModelRuntimeNode *nearestArmyModelNode;
@@ -290,7 +290,7 @@ static void ShotModel_CastHitRays
     /* The original indexes the 31-entry material arrays with the cell's 8-bit material id and reads the
        following ShotDefinition fields for ids 31..255; bounded here because valid maps use ids 0..25 only:
        such a material counts as one without impact effect. */
-    static Bool8 s_loggedMaterialOutOfRange = false;
+    static bool s_loggedMaterialOutOfRange = false;
     if (!s_loggedMaterialOutOfRange) {
       s_loggedMaterialOutOfRange = true;
       Thandor_Log("shot: terrain material %u out of range, no impact effect",hits->terrainMaterialIndex);
@@ -367,7 +367,7 @@ static void ShotBeam_ApplyArmyHit
   damagePerTick = shotDefinition->targetClassImpactDamageQ12[hits->targetClassIndex] /
                   (int)shotDefinition->projectileLifetimeTicks;
   effectDefinition = shotDefinition->targetClassImpactEffectDefinitions8[hits->targetClassIndex];
-  if (((shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED) == 0) &&
+  if (!Any(shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED) &&
      (effectDefinition != nullptr)) {
     shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
     ShotModel_EmitArmyImpactEffect(worldRuntime,modelNode,hits->armyHitDistance,effectDefinition);
@@ -393,7 +393,7 @@ static void ShotBeam_UpdateTick
   case SHOT_NEAREST_HIT_SECONDARY_SURFACE:
     if (hits->secondaryHitDistance <= beamLength) {
       modelNode->renderDepthBiasOrState = hits->secondaryHitDistance;
-      if ((shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED) == 0) {
+      if (!Any(shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED)) {
         shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
         ShotModel_EmitEffectAlongHeading
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
@@ -410,7 +410,7 @@ static void ShotBeam_UpdateTick
   default:
     if (hits->terrainHitDistance <= beamLength) {
       modelNode->renderDepthBiasOrState = hits->terrainHitDistance;
-      if ((shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED) == 0) {
+      if (!Any(shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED)) {
         shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
         ShotModel_EmitTerrainImpactEffect
                   (worldRuntime,modelNode,shotDefinition,hits->terrainMaterialIndex,hits->terrainHitDistance);
@@ -420,7 +420,7 @@ static void ShotBeam_UpdateTick
     break;
   }
   spinStep = shotRuntime->definitionOrSavedId.definition->modelSpinStepTurn16;
-  modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+  modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   modelNode->modelPayload.worldRotationAngle2 += spinStep;
   modelNode->modelPayload.worldRotationAngle2 &= FIXED_ANGLE16_MASK;
 }
@@ -454,14 +454,14 @@ static void ShotProjectile_ImpactArmy
   if (effectDefinition != nullptr) {
     ShotModel_EmitArmyImpactEffect(worldRuntime,modelNode,hits->armyHitDistance,effectDefinition);
   }
-  WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
+  WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNode));
   shotRuntime->modelNodeOrSavedOffset.modelNode = nullptr;
   ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(impactAngle,ownerFactionIndex,impactValue,hitModelRuntime);
 }
 
 /* Moving shot: ends at the nearest hit within this tick's step (launchSpeedQ12), emitting the impact effect.
    Returns true when the shot was removed. */
-static Bool8 ShotProjectile_ApplyNearestHit
+static bool ShotProjectile_ApplyNearestHit
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode,ShotRuntimeSlot *shotRuntime,
            const ShotRayHits *hits)
 
@@ -480,7 +480,7 @@ static Bool8 ShotProjectile_ApplyNearestHit
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
                FIXED_ANGLE16_QUARTER_TURN,0,hits->secondaryHitDistance,modelNode,
                shotDefinition->primaryEffectDefinition,worldRuntime);
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
+    WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNode));
     shotRuntime->modelNodeOrSavedOffset.modelNode = nullptr;
     return true;
   case SHOT_NEAREST_HIT_ARMY:
@@ -498,7 +498,7 @@ static Bool8 ShotProjectile_ApplyNearestHit
               (shotDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
     ShotModel_EmitTerrainImpactEffect
               (worldRuntime,modelNode,shotDefinition,hits->terrainMaterialIndex,hits->terrainHitDistance);
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
+    WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(modelNode));
     return true;
   }
 }
@@ -618,7 +618,7 @@ static void ShotProjectile_UpdateBallisticTrajectory(ShotRuntimeSlot *shotRuntim
   shotRuntime->ownerAndTrajectory.directionComponent2Q12 -=
        shotRuntime->definitionOrSavedId.definition->ballisticDivisorQ12;
   ballisticAngles = FixedMath_VectorToAnglesAndLengthVec3
-                         ((GraphicsFixedVec3 *)&shotRuntime->ownerAndTrajectory.directionComponent0Q12);
+                         (reinterpret_cast<GraphicsFixedVec3 *>(&shotRuntime->ownerAndTrajectory.directionComponent0Q12)) /* direction components 0..2 are consecutive */;
   shotRuntime->launchSpeedQ12 = ballisticAngles.lengthQ12;
   shotNode->modelPayload.worldRotationAngle0 = ballisticAngles.azimuthAngle;
   shotNode->modelPayload.worldRotationAngle1 = ballisticAngles.elevationAngle;
@@ -648,7 +648,7 @@ static void ShotProjectile_ShiftOverTarget
 /* Fixed-range shot: climbs with a cubic speed ramp until fixedRangeTransitionAgeThresholdTicks, then jumps over
    its target and turns downwards; while descending it stays over the target. Returns true when the shot was
    removed because it reached the threshold without a target. */
-static Bool8 ShotProjectile_UpdateFixedRangeTrajectory
+static bool ShotProjectile_UpdateFixedRangeTrajectory
           (ShotDefinition *shotDefinition,ShotRuntimeSlot *shotRuntime,ModelRuntimeNode *shotNode)
 
 {
@@ -659,7 +659,7 @@ static Bool8 ShotProjectile_UpdateFixedRangeTrajectory
     nodeShadingRecord = shotNode->shadingRecord;
     if (shotRuntime->runtimeStateOrSavedOffset.runtimeState != 0) {
       ShotProjectile_ShiftOverTarget
-                ((ModelRuntimeSlot *)shotRuntime->runtimeStateOrSavedOffset.runtimeStatePointer,shotNode,
+                (shotRuntime->runtimeStateOrSavedOffset.targetModelRuntime,shotNode,
                  nodeShadingRecord);
     }
     return false;
@@ -687,7 +687,7 @@ static Bool8 ShotProjectile_UpdateFixedRangeTrajectory
     }
     nodeShadingRecord = shotNode->shadingRecord;
     ShotProjectile_ShiftOverTarget
-              ((ModelRuntimeSlot *)shotRuntime->runtimeStateOrSavedOffset.runtimeStatePointer,shotNode,
+              (shotRuntime->runtimeStateOrSavedOffset.targetModelRuntime,shotNode,
                nodeShadingRecord);
     shotNode->modelPayload.worldRotationAngle1 = -shotNode->modelPayload.worldRotationAngle1;
   }
@@ -717,12 +717,13 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   InGameSimulationStepBatchTicks remainingStepTicks;
 
   remainingStepTicks = g_InGameSimulationStepTicks;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     shotRuntime = modelNode->shotRuntime;
     shotDefinition = shotRuntime->definitionOrSavedId.definition;
     ShotModel_AgeAndAdvanceAnimation(modelNode,shotRuntime,shotDefinition);
     shotRuntime->lifetimeTicksRemaining = shotRuntime->lifetimeTicksRemaining - 1;
-    modelNodeRuntime = (ModelRuntimeNode *)modelNode;
+    modelNodeRuntime = WorldNode_View<ModelRuntimeNode>(modelNode);
     if (shotRuntime->lifetimeTicksRemaining == 0) {
       ShotModel_ReleaseAndUnlink(shotRuntime,shotDefinition,modelNodeRuntime);
       return;
@@ -738,13 +739,13 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
       }
       shotDefinition = shotRuntime->definitionOrSavedId.definition;
       ShotProjectile_MoveOneStep(modelNode,shotRuntime);
-      targetModelRuntime = (ModelRuntimeSlot *)shotRuntime->runtimeStateOrSavedOffset.runtimeStatePointer;
+      targetModelRuntime = shotRuntime->runtimeStateOrSavedOffset.targetModelRuntime;
       if ((shotDefinition->guidanceTurnLimitAngle16 != 0) && (targetModelRuntime != nullptr)) {
         modelNodeRuntime = shotRuntime->modelNodeOrSavedOffset.modelNode;
         ShotProjectile_SteerTowardsTarget(shotDefinition,targetModelRuntime,modelNodeRuntime);
       }
       spinStep = shotDefinition->modelSpinStepTurn16;
-      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
       modelNodeRuntime->modelPayload.worldRotationAngle2 += spinStep;
       modelNodeRuntime->modelPayload.worldRotationAngle2 &= FIXED_ANGLE16_MASK;
       if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_LEAD_ADJUSTED) {

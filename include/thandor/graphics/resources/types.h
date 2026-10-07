@@ -15,26 +15,26 @@
 #include <thandor/ui/controls/types.h>
 
 /* Graphics/display result records. */
-typedef struct GraphicsTextureLogicalSize GraphicsTextureLogicalSize, *PGraphicsTextureLogicalSize;
-typedef struct GraphicsPaletteAsset GraphicsPaletteAsset, *PGraphicsPaletteAsset;
-typedef struct GraphicsTextureSet GraphicsTextureSet, *PGraphicsTextureSet;
-typedef struct GraphicsPaletteAssetEntry GraphicsPaletteAssetEntry, *PGraphicsPaletteAssetEntry;
-typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset, *PGraphicsTextureSourceAsset;
-typedef struct GraphicsTextureSetEntry GraphicsTextureSetEntry, *PGraphicsTextureSetEntry;
-typedef struct GeneratedAssetCommonPrefix GeneratedAssetCommonPrefix, *PGeneratedAssetCommonPrefix;
-typedef struct GraphicsTextureSourceTableDescriptor GraphicsTextureSourceTableDescriptor, *PGraphicsTextureSourceTableDescriptor;
-typedef struct GraphicsTextureResource GraphicsTextureResource, *PGraphicsTextureResource;
-typedef struct GraphicsTextureSourceEntry GraphicsTextureSourceEntry, *PGraphicsTextureSourceEntry;
-typedef struct GeneratedAssetBuildMetadata GeneratedAssetBuildMetadata, *PGeneratedAssetBuildMetadata;
-typedef struct AssetBuildTimestampSet AssetBuildTimestampSet, *PAssetBuildTimestampSet;
-typedef struct AssetProducerSourceNames AssetProducerSourceNames, *PAssetProducerSourceNames;
-typedef struct GraphicsTexturePaletteEntry GraphicsTexturePaletteEntry, *PGraphicsTexturePaletteEntry;
-typedef struct GraphicsPaletteTextureSourceAsset GraphicsPaletteTextureSourceAsset, *PGraphicsPaletteTextureSourceAsset;
-typedef struct GraphicsTextureSourceLifecycleCallbackTable GraphicsTextureSourceLifecycleCallbackTable, *PGraphicsTextureSourceLifecycleCallbackTable;
-typedef struct GraphicsPaletteAssetLifecycleCallbackTable GraphicsPaletteAssetLifecycleCallbackTable, *PGraphicsPaletteAssetLifecycleCallbackTable;
-typedef struct GraphicsTextureSourceHeaderView GraphicsTextureSourceHeaderView, *PGraphicsTextureSourceHeaderView;
-typedef struct GraphicsCapturedTextureSourceAsset GraphicsCapturedTextureSourceAsset;
-typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess;
+struct GraphicsTextureLogicalSize;
+struct GraphicsPaletteAsset;
+struct GraphicsTextureSet;
+struct GraphicsPaletteAssetEntry;
+struct GraphicsTextureSourceAsset;
+struct GraphicsTextureSetEntry;
+struct GeneratedAssetCommonPrefix;
+struct GraphicsTextureSourceTableDescriptor;
+struct GraphicsTextureResource;
+struct GraphicsTextureSourceEntry;
+struct GeneratedAssetBuildMetadata;
+struct AssetBuildTimestampSet;
+struct AssetProducerSourceNames;
+struct GraphicsTexturePaletteEntry;
+struct GraphicsPaletteTextureSourceAsset;
+struct GraphicsTextureSourceLifecycleCallbackTable;
+struct GraphicsPaletteAssetLifecycleCallbackTable;
+struct GraphicsTextureSourceHeaderView;
+struct GraphicsCapturedTextureSourceAsset;
+struct SoftwareFramebufferAccess;
 
 /* Logical size of one texture-source subresource (GraphicsTextureSource_GetLogicalSize); 0 x 0 for an invalid
    asset or index. */
@@ -44,18 +44,18 @@ struct GraphicsTextureLogicalSize {
 };
 using GraphicsFramebufferPresentProc = void (SoftwareFramebufferAccess * framebuffer);
 using GraphicsFramebufferCaptureRegionProc = GraphicsCapturedTextureSourceAsset *(uint32_t captureHeight, uint32_t captureWidth, int32_t sourceY, int32_t sourceX);
-using GraphicsFramebufferBeginAccessProc = Bool8 ();
+using GraphicsFramebufferBeginAccessProc = bool ();
 using GraphicsFramebufferEndAccessProc = void ();
 using GraphicsTextureSourceGetLogicalSizeProc = GraphicsTextureLogicalSize (uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
 using GraphicsFramebufferFillRectArgbProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t rectMaxY, int32_t rectMaxX, int32_t rectMinY, int32_t rectMinX, uint32_t argb8888, SoftwareFramebufferAccess * framebuffer);
 using GraphicsTextureSourceResolveAllocationBaseProc = GraphicsTextureSourceAsset * (GraphicsTextureSourceAsset * sourceAsset);
 using GraphicsPaletteAssetResolveAllocationBaseProc = GraphicsPaletteAsset * (GraphicsPaletteAsset * paletteAsset);
-using GraphicsTextureSourceBlitProc = Bool8 (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
-using GraphicsTextureSourceBlitModulatedSourceAlphaProc = Bool8 (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t modulationArgb8888, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
-using GraphicsTextureSourceTestOpaquePixelProc = Bool8 (int32_t queryY, int32_t queryX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
+using GraphicsTextureSourceBlitProc = bool (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
+using GraphicsTextureSourceBlitModulatedSourceAlphaProc = bool (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t modulationArgb8888, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
+using GraphicsTextureSourceTestOpaquePixelProc = bool (int32_t queryY, int32_t queryX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
 using GraphicsTextureSourceTiledBlitProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t repeatEndY, int32_t repeatEndX, int32_t tileOriginY, int32_t tileOriginX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 using GraphicsTextureSourceStretchDirectColorBilinearProc = void (uint32_t destinationHeight, uint32_t destinationWidth, int32_t destinationY, int32_t destinationX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
-using GraphicsTextureSourceDecomposeSubresourceProc = Bool8 (uint32_t entryIndex, GraphicsTextureSourceAsset * sourceAsset, GraphicsTextureSourceAsset * * outAsset, uint32_t * outError);
+using GraphicsTextureSourceDecomposeSubresourceProc = bool (uint32_t entryIndex, GraphicsTextureSourceAsset * sourceAsset, GraphicsTextureSourceAsset * * outAsset, uint32_t * outError);
 
 using GraphicsTextureSourceLoadPackageAssetProc = GraphicsTextureSourceAsset * (uint16_t * pathUtf16, uint32_t * outError);
 

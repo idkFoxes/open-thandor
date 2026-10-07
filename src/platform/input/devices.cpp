@@ -16,13 +16,13 @@ THANDOR_ALIGN(4) UiPixelCoordinate g_CursorOverrideY = 0;
 
 THANDOR_ALIGN(4) int32_t g_CursorVisibilityToken = -1;
 
-THANDOR_ALIGN(8) uint32_t g_CursorButtonState = 0;
+THANDOR_ALIGN(8) GraphicsCursorButtonState g_CursorButtonState = CURSOR_BUTTON_NONE;
 
 THANDOR_ALIGN(16) uint8_t g_KeyboardSpecialKeyDown[32] = {};
 
 THANDOR_ALIGN(16) KeyboardFlushEventsProc *g_KeyboardFlushEvents = &Keyboard_FlushEvents;
 
-THANDOR_ALIGN(8) uint32_t g_KeyboardStateMask = 0;
+THANDOR_ALIGN(8) UiKeyboardStateMask g_KeyboardStateMask = KEYBOARD_STATE_NONE;
 
 static uint32_t g_CursorMaxWidth = 0;
 
@@ -40,7 +40,7 @@ static KeyboardEventRingIndex g_KeyboardWriteIndex = 0;
 
 static KeyboardEventRingIndex g_KeyboardReadIndex = 0;
 
-static uint32_t g_KeyboardToggleLatchMask = 0;
+static UiKeyboardStateMask g_KeyboardToggleLatchMask = KEYBOARD_STATE_NONE;
 
 uint32_t g_CursorInputWriteIndex = 0;
 
@@ -60,7 +60,7 @@ UiPixelCoordinate g_MouseX = 0;
 
 UiPixelCoordinate g_MouseY = 0;
 
-GraphicsCursorButtonState g_MouseButtonMask = 0;
+GraphicsCursorButtonState g_MouseButtonMask = CURSOR_BUTTON_NONE;
 
 KeyboardReadEventProc *g_KeyboardReadEvent = &Keyboard_ReadNextEvent;
 
@@ -72,7 +72,7 @@ UiPointerWheelDelta g_CursorWheelDelta = 0;
    g_KeyboardAsciiCaseTransformCallbacks3. Both 16-bit code units are upper-cased; returns true when
    upper(right) < upper(left).
 */
-Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
+bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
 
 {
   uint32_t leftLowWord;
@@ -100,7 +100,7 @@ void Keyboard_FlushEvents()
    Returns true with the key code in *outKeyCode and the modifier state in *outStateMask, or
    false (outputs untouched) when the ring is empty.
 */
-Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask)
+bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask)
 
 {
   uint32_t nextReadIndex;
@@ -137,7 +137,7 @@ uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 /* Step of the original's DirectInputMouse_Init, called by SdlInput_Init: loads the cursor images
    (engine\mouse.gfx; the largest image size sizes the cursor buffers) and the frame table (engine\mouse.dat) and
    starts every cursor on the first frame of its animations. Returns false with the load error in *outError. */
-Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
+bool GraphicsCursor_LoadAssets(uint32_t *outError)
 
 {
   GraphicsSubresourceIndex activeFirstSubresource;
@@ -153,7 +153,7 @@ Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
   GraphicsTextureLogicalSize logicalSize;
 
   /* cursor images: the largest image size sizes the cursor buffers */
-  cursorAsset = (GraphicsTextureSourceAsset *)Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode);
+  cursorAsset = static_cast<GraphicsTextureSourceAsset *>(Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode));
   if (cursorAsset == nullptr) {
     *outError = cursorLoadErrorCode;
     return false;
@@ -181,10 +181,11 @@ Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
     return false;
   }
   remainingFrames = cursorFrameBytes / sizeof(GraphicsCursorFrameRecord);
-  frameRecord = (GraphicsCursorFrameRecord *)cursorFrameData;
+  frameRecord = static_cast<GraphicsCursorFrameRecord *>(cursorFrameData);
   g_CursorFrameRecords = frameRecord;
   g_CursorFrameCount = remainingFrames;
   /* every cursor starts on the first frame of its animations */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     activeFirstSubresource = frameRecord->activeAnimationFirstSubresourceIndex;
     frameRecord->idleSubresourceIndex = frameRecord->idleAnimationFirstSubresourceIndex;
@@ -215,7 +216,7 @@ void GraphicsCursor_FreeBuffers()
    the three cursor buffers in the new pixel format, converts the cursor palette and centres the mouse. Returns
    false with the allocator error in *errorCode when a buffer creation fails (the buffers created so far stay
    installed). */
-Bool8 GraphicsCursor_CreateBuffersAndCenter
+bool GraphicsCursor_CreateBuffersAndCenter
           (GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode)
 
 {
@@ -244,7 +245,7 @@ Bool8 GraphicsCursor_CreateBuffersAndCenter
   }
   g_CursorAlternateSavedBackground = newCursorFramebuffer;
   g_GraphicsTextureSourceConvertPaletteEntries
-            ((GraphicsPaletteTextureSourceAsset *)g_CursorSourceAsset);
+            (reinterpret_cast<GraphicsPaletteTextureSourceAsset *>(g_CursorSourceAsset));
   g_CursorOverrideX = framebufferWidth >> 1;
   g_CursorOverrideY = framebufferHeight >> 1;
   g_MouseX = g_CursorOverrideX;
@@ -255,7 +256,7 @@ Bool8 GraphicsCursor_CreateBuffersAndCenter
 
 /* Keyboard_OnKeyDown/OnKeyUp: the KEYBOARD_STATE_* bit of a Shift, Ctrl or Alt key (VK_SHIFT, VK_CONTROL
    and VK_MENU give both sides' bits), 0 for every other key. */
-static uint32_t Keyboard_ModifierStateBits(KeyboardVirtualKeyCode virtualKey)
+static UiKeyboardStateMask Keyboard_ModifierStateBits(KeyboardVirtualKeyCode virtualKey)
 {
   switch (virtualKey) {
   case VK_LSHIFT:   return KEYBOARD_STATE_LEFT_SHIFT;
@@ -267,19 +268,19 @@ static uint32_t Keyboard_ModifierStateBits(KeyboardVirtualKeyCode virtualKey)
   case VK_LCONTROL: return KEYBOARD_STATE_LEFT_CTRL;
   case VK_CONTROL:  return KEYBOARD_STATE_CTRL;
   case VK_RCONTROL: return KEYBOARD_STATE_RIGHT_CTRL;
-  default:          return 0;
+  default:          return KEYBOARD_STATE_NONE;
   }
 }
 
 
 /* Keyboard_OnKeyDown/OnKeyUp: the KEYBOARD_STATE_* bit of a lock key, 0 for every other key. */
-static uint32_t Keyboard_LockStateBit(KeyboardVirtualKeyCode virtualKey)
+static UiKeyboardStateMask Keyboard_LockStateBit(KeyboardVirtualKeyCode virtualKey)
 {
   switch (virtualKey) {
   case VK_CAPITAL: return KEYBOARD_STATE_CAPS_LOCK;
   case VK_NUMLOCK: return KEYBOARD_STATE_NUM_LOCK;
   case VK_SCROLL:  return KEYBOARD_STATE_SCROLL_LOCK;
-  default:         return 0;
+  default:         return KEYBOARD_STATE_NONE;
   }
 }
 
@@ -319,7 +320,7 @@ static uint32_t Keyboard_NavigationKeyCode(KeyboardVirtualKeyCode virtualKey)
 /* Keyboard_OnKeyDown: the KEYBOARD_KEY_CODE_* event code of a non-modifier, non-lock key in *outKeyCode.
    Digits and letters give KEYBOARD_KEY_CODE_CHAR of their ASCII code (letters lowercase), the numpad
    operators their plain ASCII character. Returns false for keys that queue no event. */
-static Bool8 Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *outKeyCode)
+static bool Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *outKeyCode)
 {
   uint32_t navigationCode;
 
@@ -379,22 +380,22 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 {
   KeyboardInputEvent *eventRecord;
   KeyboardEventRingIndex writeIndex;
-  uint32_t queuedStateMask;
-  uint32_t modifierBits;
-  uint32_t lockBit;
+  UiKeyboardStateMask queuedStateMask;
+  UiKeyboardStateMask modifierBits;
+  UiKeyboardStateMask lockBit;
   uint32_t keyCode;
   uint32_t nextWriteIndex;
 
   queuedStateMask = g_KeyboardStateMask;
   modifierBits = Keyboard_ModifierStateBits(virtualKey);
-  if (modifierBits != 0) {
+  if (Any(modifierBits)) {
     g_KeyboardStateMask = g_KeyboardStateMask | modifierBits;
     return;
   }
   lockBit = Keyboard_LockStateBit(virtualKey);
-  if (lockBit != 0) {
+  if (Any(lockBit)) {
     /* toggle once per press; auto-repeat finds the latch set */
-    if ((g_KeyboardToggleLatchMask & lockBit) == 0) {
+    if (!Any(g_KeyboardToggleLatchMask & lockBit)) {
       g_KeyboardToggleLatchMask = g_KeyboardToggleLatchMask | lockBit;
       g_KeyboardStateMask = g_KeyboardStateMask ^ lockBit;
     }
@@ -428,11 +429,11 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 
 {
-  uint32_t modifierBits;
+  UiKeyboardStateMask modifierBits;
   uint32_t navigationCode;
 
   modifierBits = Keyboard_ModifierStateBits(virtualKey);
-  if (modifierBits != 0) {
+  if (Any(modifierBits)) {
     /* releasing Shift also clears Caps Lock */
     if ((virtualKey == VK_LSHIFT) || (virtualKey == VK_SHIFT) || (virtualKey == VK_RSHIFT)) {
       modifierBits = modifierBits | KEYBOARD_STATE_CAPS_LOCK;
@@ -470,7 +471,7 @@ void Keyboard_OnChar(KeyboardCharacterCode character)
   keyCode = character & 0xffff;
   nextWriteIndex = g_KeyboardWriteIndex + 1;
   g_KeyboardWriteIndex = g_KeyboardWriteIndex + 1;
-  if (((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) && (keyCode < 26 + 1)) {
+  if ((Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) && (keyCode < 26 + 1)) {
     keyCode = keyCode + ('a' - 1);
   }
   g_KeyboardEvents[writeIndex].stateMask = g_KeyboardStateMask;

@@ -11,7 +11,7 @@
 /* Module data. */
 
 /* Clip rectangle and screen bounds of one metric frame plus the advances of its four corner cells. */
-typedef struct SelectionPanelMetricFrame {
+struct SelectionPanelMetricFrame {
   UiPixelCoordinate clipBottom;
   UiPixelCoordinate clipRight;
   UiPixelCoordinate clipTop;
@@ -24,7 +24,7 @@ typedef struct SelectionPanelMetricFrame {
   SelectionPanelCellAdvance topRight;
   SelectionPanelCellAdvance bottomLeft;
   SelectionPanelCellAdvance bottomRight;
-} SelectionPanelMetricFrame;
+};
 
 /* Four plain corner cells (entities of other factions). */
 static void SelectionPanelMetrics_DrawPlainCorners(SelectionPanelMetricFrame *frame)
@@ -47,7 +47,7 @@ static void SelectionPanelMetrics_DrawPlainCorners(SelectionPanelMetricFrame *fr
    no energy demand and alwaysDrawMeter is false), the group number top right (the plain corner when the entity is
    in no group) and the plain bottom corners. */
 static void SelectionPanelMetrics_DrawOwnCorners
-          (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,Bool8 alwaysDrawMeter)
+          (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,bool alwaysDrawMeter)
 {
   ModelHierarchyEnergyDemand energyDemand;
   uint32_t groupNumber;
@@ -132,7 +132,7 @@ static void SelectionPanelMetrics_DrawSegmentedSides(SelectionPanelMetricFrame *
   uint32_t rightFilledSegments;
   uint32_t rightTotalSegments;
 
-  slotMeter = ArmyRuntime_GetLinkedChildSlotMeter((ModelRuntimeLinkedChildSpawnAndBuildView *)armyRuntime);
+  slotMeter = ArmyRuntime_GetLinkedChildSlotMeter(ModelView_Cast<ModelRuntimeLinkedChildSpawnAndBuildView>(armyRuntime));
   rightFilledSegments = slotMeter.filledSegments >> 1;
   rightTotalSegments = slotMeter.totalSegments >> 1;
   SelectionPanel_DrawSegmentedCappedBar
@@ -150,10 +150,10 @@ static void SelectionPanelMetrics_DrawSegmentedSides(SelectionPanelMetricFrame *
 static void SelectionPanelMetrics_DrawResearchOrIdleBars
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *researchSource)
 {
-  Bool8 researching;
+  bool researching;
 
-  researching = ((researchSource->classState).stateFlags &
-                 (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) != 0;
+  researching = Any((researchSource->classState).stateFlags &
+                 (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID));
   SelectionPanelMetrics_DrawOwnCorners(frame,runtimeEntry,false);
   if (researching) {
     SelectionPanelMetrics_DrawTopBar
@@ -167,7 +167,7 @@ static void SelectionPanelMetrics_DrawResearchOrIdleBars
 
 /* Kind 1: a factory (class 13) or production building (class 11) that is building shows its build progress.
    Returns false (nothing drawn) for every other kind-1 entity. */
-static Bool8 SelectionPanelMetrics_DrawBuildProgressFrame
+static bool SelectionPanelMetrics_DrawBuildProgressFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime)
 {
   if ((armyRuntime->classState).behaviorState != ARMY_FACTORY_STATE_BUILDING) {
@@ -188,7 +188,7 @@ static Bool8 SelectionPanelMetrics_DrawBuildProgressFrame
 
 /* Kind 2: a weapon (first child of class 5-8) shows its reload countdown against the weapon definition's reload
    ticks. Returns false (nothing drawn) when there is no such child. */
-static Bool8 SelectionPanelMetrics_DrawWeaponReloadFrame
+static bool SelectionPanelMetrics_DrawWeaponReloadFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime)
 {
   ModelRuntimeSlot *childModelRuntime;
@@ -208,7 +208,7 @@ static Bool8 SelectionPanelMetrics_DrawWeaponReloadFrame
       (childDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_08)) {
     return false;
   }
-  weapon = (ModelRuntimeWeaponAimStateView *)childModelRuntime;
+  weapon = ModelView_Cast<ModelRuntimeWeaponAimStateView>(childModelRuntime);
   reloadCountdownTicks = weapon->attachmentReloadCountdownTicks;
   reloadTicks = (int)weapon->modelDefinition->attachmentReloadTicks;
   SelectionPanelMetrics_DrawOwnCorners(frame,runtimeEntry,false);
@@ -222,11 +222,12 @@ static Bool8 SelectionPanelMetrics_DrawWeaponReloadFrame
    part of its smallest slot countdown (unsigned minimum of the eight, then at least classState80, signed).
    Returns false (nothing drawn) otherwise; *researchSource then names what the generic frame reads its research
    state from. */
-static Bool8 SelectionPanelMetrics_DrawSlotReloadFrame
+static bool SelectionPanelMetrics_DrawSlotReloadFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime,
           ModelRuntimeSlot **researchSource)
 {
   ModelRuntimeSlot *childModelRuntime;
+  ModelDefinition *childModelDefinition;
   ArmyWeaponDefinitionView *childDefinition;
   ModelRuntimeWeaponAimStateView *launcher;
   uint32_t minimumReloadTicks;
@@ -238,14 +239,16 @@ static Bool8 SelectionPanelMetrics_DrawSlotReloadFrame
   if ((armyRuntime->attachmentCount == 0) || (childModelRuntime == nullptr)) {
     return false;
   }
-  childDefinition = (ArmyWeaponDefinitionView *)(childModelRuntime->definitionOrSavedId).runtimeDefinition;
+  childModelDefinition = (childModelRuntime->definitionOrSavedId).runtimeDefinition;
+  /* the weapon view of the child's definition (attachmentReloadTicks) */
+  childDefinition = reinterpret_cast<ArmyWeaponDefinitionView *>(childModelDefinition);
   /* Original quirk: when the child is not class 9, the generic frame reads the research flags and ticks at the
-     child's definition instead of the entity's own runtime. */
-  *researchSource = (ModelRuntimeSlot *)childDefinition;
-  if (((ModelDefinition *)childDefinition)->runtimeClassId != MODEL_RUNTIME_CLASS_09) {
+     child's definition instead of the entity's own runtime (the definition read as a model runtime). */
+  *researchSource = reinterpret_cast<ModelRuntimeSlot *>(childModelDefinition);
+  if (childModelDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_09) {
     return false;
   }
-  launcher = (ModelRuntimeWeaponAimStateView *)childModelRuntime;
+  launcher = ModelView_Cast<ModelRuntimeWeaponAimStateView>(childModelRuntime);
   minimumReloadTicks = UINT32_MAX;
   for (slotIndex = 7; slotIndex >= 0; slotIndex--) {
     if (launcher->attachmentReloadTicks[slotIndex] < minimumReloadTicks) {
@@ -273,8 +276,8 @@ static Bool8 SelectionPanelMetrics_DrawSlotReloadFrame
 static void SelectionPanelMetrics_DrawClass22Frame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime)
 {
-  if (((ArmyRuntimeArticulatedContactState *)&(armyRuntime->classState).classStateAC)->
-      terrainContactMode == ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) {
+  if (ModelView_Cast<ArmyArticulatedRuntimeSlotView>(armyRuntime)->articulatedContact.terrainContactMode ==
+      ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) {
     SelectionPanelMetrics_DrawOwnCorners(frame,runtimeEntry,true);
     SelectionPanelMetrics_DrawTopBar
               (frame,(UiNumericValue32)(armyRuntime->classLinkState).classState68,
@@ -289,7 +292,7 @@ static void SelectionPanelMetrics_DrawClass22Frame
 
 /* Kind-specific frame of an own entity (kinds 1-3, and class-22 entities of a higher kind). Returns false when
    nothing was drawn and the entity gets the generic frame, read from *researchSource. */
-static Bool8 SelectionPanelMetrics_DrawKindFrame
+static bool SelectionPanelMetrics_DrawKindFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,uint32_t runtimeKind,
           ModelRuntimeSlot *armyRuntime,ModelRuntimeSlot **researchSource)
 {
@@ -329,7 +332,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
   uint32_t runtimeKind;
   ModelRuntimeSlot *armyRuntime;
   ModelRuntimeSlot *researchSource;
-  Bool8 framebufferBusy;
+  bool framebufferBusy;
   SelectionPanelMetricFrame frame;
 
   inGameRoot = g_InGameRuntimeRoot;

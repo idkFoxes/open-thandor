@@ -10,17 +10,27 @@
 
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
+#include <thandor/core/flags.h>
 #include <thandor/assets/army/types.h>
 #include <thandor/core/types.h>
 
-typedef struct AiCandidateWorkspaceEntry AiCandidateWorkspaceEntry, *PAiCandidateWorkspaceEntry;
-typedef struct GameFactionRuntimeRecord GameFactionRuntimeRecord, *PGameFactionRuntimeRecord;
-typedef struct AiFactionCandidateCacheState AiFactionCandidateCacheState, *PAiFactionCandidateCacheState;
-typedef struct GameFactionRuntimeImage GameFactionRuntimeImage, *PGameFactionRuntimeImage;
-typedef struct GameFactionRuntimeImageTail GameFactionRuntimeImageTail, *PGameFactionRuntimeImageTail;
-typedef struct ArmyRuntimeSlot ArmyRuntimeSlot;
+struct AiCandidateWorkspaceEntry;
+struct GameFactionRuntimeRecord;
+struct AiFactionCandidateCacheState;
+struct GameFactionRuntimeImage;
+struct GameFactionRuntimeImageTail;
+struct ArmyRuntimeSlot;
 
-using GameRelationUiFlags = uint32_t;
+/* GameFactionRuntimeImageTail.relationUiFlags (from the level's LevelWorldSettings.relationUiFlags): relation
+   drift freezes; the in-game HUD also hides the relation icons by them. Level and savegame bytes: bit values fixed. */
+enum class GameRelationUiFlags : uint32_t {
+    FACTION_RELATION_FREEZE_NONE = 0,
+    FACTION_RELATION_FREEZE_ALLIED = 0x1, /* states 8 and up stay */
+    FACTION_RELATION_FREEZE_FRIENDLY = 0x2, /* states 4 and up stay */
+    FACTION_RELATION_FREEZE_ALL = 0x4
+};
+THANDOR_FLAG_ENUM(GameRelationUiFlags);
+using enum GameRelationUiFlags;
 
 enum /* FactionRuntimeLifecycleObservedState, stored in 1 byte(s) */ {
     FACTION_RUNTIME_LIFECYCLE_INACTIVE=0, /* slot unused, or absorbed by a merge (state 11 relation) */

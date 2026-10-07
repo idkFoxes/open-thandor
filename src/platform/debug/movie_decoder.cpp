@@ -10,6 +10,7 @@
 #include <string.h>
 #include <thandor/movie/runtime/playback.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/movie_decoder.h>
 
@@ -26,7 +27,7 @@ void DebugMovieDecoder_DumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
     const char *value = getenv("OPEN_THANDOR_MOVIEDUMP");
     enabled = (value != nullptr) && (value[0] == '1');
     if (enabled) {
-      CreateDirectoryA((LPCSTR)"moviedump", nullptr);
+      CreateDirectoryA("moviedump", nullptr);
     }
   }
   if (!enabled) {
@@ -38,7 +39,7 @@ void DebugMovieDecoder_DumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
   }
   Thandor_Log("movie frame %u/%u: consumed=%x offset=%x loadedEnd-header=%x remaining=%x state=%d worker=%d sum=%08x",
               movie->currentFrameIndex, movie->fileHeader->frameCount, consumedBytes,
-              movie->videoStreamOffset, (uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader),
+              movie->videoStreamOffset, (uint32_t)Asset_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get()),
               movie->remainingVideoBytes, (int)movie->streamState, (int)movie->workerActive, sum);
   if ((movie->currentFrameIndex % 10) == 1) {
     char name[64];

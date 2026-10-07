@@ -1,0 +1,37 @@
+# Step 13 (modern C++) report checks: one check per measured item of docs/plans/step13_modern_cpp.md, section 8.
+# Report only - never applied automatically: `python tools/dev/tidy.py --report` writes the counts per check and
+# area to build/tidy-report.txt (fixers such as google-readability-casting or modernize-macro-to-enum are run per
+# package with `tidy.py --checks=... --fix`, not from this file).
+#
+#   item 1  C-style pointer casts          cppcoreguidelines-pro-type-cstyle-cast (reinterpret/const/down casts)
+#   item 3  #define constants and macros   cppcoreguidelines-macro-usage
+#   item 4  typedef struct / enum class    modernize-use-using, cppcoreguidelines-use-enum-class
+#   item 5  libc allocation, raw new       cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory
+#   item 6  Bool8 conversions              readability-implicit-bool-conversion (pointer conditions allowed)
+#   item 9  do { } while loops             cppcoreguidelines-avoid-do-while; for loops: modernize-loop-convert
+#
+# Items 2 (UI offsets), 7 (original addresses) and 8 (0x90 fill) have no clang-tidy check; tools/dev/modern_counts.py
+# counts them.
+Checks: >
+  -*,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  cppcoreguidelines-macro-usage,
+  modernize-use-using,
+  cppcoreguidelines-use-enum-class,
+  cppcoreguidelines-no-malloc,
+  cppcoreguidelines-owning-memory,
+  readability-implicit-bool-conversion,
+  cppcoreguidelines-avoid-do-while,
+  modernize-loop-convert
+WarningsAsErrors: ''
+# Our headers only (include/thandor and the headers next to the sources); the generated imports header and the
+# configured headers in the build directory are not ours to restyle.
+HeaderFilterRegex: '.*[\\/](include[\\/]thandor|src)[\\/].*'
+ExcludeHeaderFilterRegex: '.*[\\/]generated[\\/].*'
+SystemHeaders: false
+CheckOptions:
+  # do { } while (0) inside macros is the statement-macro idiom, not a counting loop.
+  cppcoreguidelines-avoid-do-while.IgnoreMacros: true
+  # `if (ptr)` is idiomatic; integer and Bool8 conversions stay reported.
+  readability-implicit-bool-conversion.AllowPointerConditions: true
+  modernize-loop-convert.MinConfidence: reasonable

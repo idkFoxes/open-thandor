@@ -14,7 +14,7 @@
 #include <thandor/core/contracts.h>
 
 /* Smallest camera magnitude WorldRuntime_SetCameraAnglesAndMagnitudeClamped accepts (0.25 in Q12) */
-#define WORLD_MOTION_MINIMUM_MAGNITUDE_Q12 0x400
+inline constexpr int WORLD_MOTION_MINIMUM_MAGNITUDE_Q12 = 0x400;
 
 void WorldRuntime_SetCameraPositionKeepingTarget
           (Q12 positionZ,Q12 positionY,Q12 positionX,WorldRuntimeContext *runtime);

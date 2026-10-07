@@ -16,36 +16,35 @@
    Called directly by ArmyPlacement_CanPlaceMobileUnit.
 */
 
-Bool8 ArmyCollision_TestPointAgainstRuntimeList
-          (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime)
+bool ArmyCollision_TestPointAgainstRuntimeList
+          (Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,WorldRuntimeContext *worldRuntime)
 
 {
   int placementRadiusQ12;
   DepthBinMask32 firstMaskHigh;
   DepthBinMask32 firstMaskLow;
   WorldOwnerListNode *ownerNode;
-  Bool8 hit;
+  bool hit;
 
-  placementRadiusQ12 = ((ModelDefinition *)modelDefinition)->footprintRadius;
+  placementRadiusQ12 = modelDefinition->footprintRadius;
   ownerNode = worldRuntime->ownerListHead;
   if ((placementRadiusQ12 != 0) && (ownerNode != nullptr)) {
     firstMaskHigh = DepthInterval_BuildBinMask(placementRadiusQ12,worldYQ12);
     firstMaskLow = DepthInterval_BuildBinMask(placementRadiusQ12,worldXQ12);
-    do {
+    for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         hit = DepthBinMasks_Overlap
                           (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
                            ownerNode->modelDepthBinMaskNear);
         if (hit) {
           hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
-                            (placementRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+                            (placementRadiusQ12,worldXQ12,worldYQ12,WorldOwnerNode_ModelRuntime(ownerNode));
           if (hit) {
             return true;
           }
         }
       }
-      ownerNode = ownerNode->nextNode;
-    } while (ownerNode != nullptr);
+    }
   }
   return false;
 }
@@ -66,7 +65,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
   ModelRuntimeNode *currentModelNode;
   uint32_t clearanceRadiusQ12;
   ModelRuntimeSlot *candidateModelRuntime;
-  Bool8 hit;
+  bool hit;
   ModelRuntimeNode *candidateModelNode;
   
   currentModelNode = currentRuntime->modelNodeRuntime;
@@ -74,8 +73,8 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
   if (clearanceRadiusQ12 == 0) {
     return nullptr;
   }
-  for (candidateModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; candidateModelNode != nullptr;
-      candidateModelNode = (ModelRuntimeNode *)(candidateModelNode->common).nextNode) {
+  for (candidateModelNode = ModelView_Cast<ModelRuntimeNode>(worldRuntime->ownerListHead); candidateModelNode != nullptr;
+      candidateModelNode = ModelView_Cast<ModelRuntimeNode>((candidateModelNode->common).nextNode)) {
     if (candidateModelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -93,7 +92,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
     /* the unit's linked model and models linked to the unit never block it (the original also tests
        currentRuntime for NULL here, after it was already dereferenced, so that test never fired) */
     if ((candidateModelRuntime == currentRuntime->linkedRuntime) ||
-        ((ModelRuntimeSlot *)currentRuntime ==
+        (ModelView_Cast<ModelRuntimeSlot>(currentRuntime) ==
          (candidateModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime)) {
       continue;
     }
@@ -116,7 +115,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
    ArmyPlacement_CanPlaceAnchoredModel.
 */
 
-Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
+bool ArmyPlacementCollision_TestPointAgainstRuntimeList
           (ArmyPlacementCollisionFilterFlags placementFilterFlags,Q12 queryRadiusQ12,Q12 worldXQ12,
           Q12 worldYQ12,WorldRuntimeContext *worldRuntime)
 
@@ -125,7 +124,7 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
   DepthBinMask32 firstMaskHigh;
   DepthBinMask32 firstMaskLow;
   WorldOwnerListNode *ownerNode;
-  Bool8 hit;
+  bool hit;
 
   ownerNode = worldRuntime->ownerListHead;
   if ((queryRadiusQ12 == 0) || (ownerNode == nullptr)) {
@@ -137,7 +136,7 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    modelClassId = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
+    modelClassId = WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
     hit = DepthBinMasks_Overlap
                       (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
                        ownerNode->modelDepthBinMaskNear);
@@ -152,13 +151,13 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
       continue;
     }
     hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
-                      (queryRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+                      (queryRadiusQ12,worldXQ12,worldYQ12,WorldOwnerNode_ModelRuntime(ownerNode));
     if (hit) {
       return true;
     }
     if (modelClassId == MODEL_RUNTIME_CLASS_13) {
       hit = ArmyPlacementCandidate_TestModelAnchorDistance
-                        (queryRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+                        (queryRadiusQ12,worldXQ12,worldYQ12,WorldOwnerNode_ModelRuntime(ownerNode));
       if (hit) {
         return true;
       }
@@ -181,7 +180,7 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
    heap address is not guaranteed to lie at or above 0x400000. The decisions are the original's.
 */
 
-Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
+bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
           (WorldOwnerListNode *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
           ModelRuntimeSlot *candidateRuntime,Q12 radiusQ12,WorldRuntimeContext *worldRuntime)
 
@@ -190,8 +189,8 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   uint32_t modelClassId;
   WorldOwnerListNode *candidateNode;
   intptr_t queryRadiusQ12;
-  Bool8 candidateIsRuntime;
-  Bool8 hit;
+  bool candidateIsRuntime;
+  bool hit;
   WorldOwnerListNode *ownerNode;
 
   candidateIsRuntime = candidateRuntime != nullptr;
@@ -201,7 +200,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   }
   else {
     /* the runtime's root node is also its world owner-list node */
-    candidateNode = (WorldOwnerListNode *)candidateRuntime->rootModelNodeOrSavedOffset.modelNode;
+    candidateNode = ModelView_Cast<WorldOwnerListNode>(candidateRuntime->rootModelNodeOrSavedOffset.modelNode);
     queryRadiusQ12 = (intptr_t)candidateRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius;
   }
   if (queryRadiusQ12 == 0) {
@@ -220,7 +219,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
         continue;
       }
     }
-    ownerModelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    ownerModelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
     if ((candidateNode == ownerNode) || (ownerNode == excludedWorldObject)) {
       continue;
     }
@@ -260,7 +259,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
    ArmyPlacement_TestModelTerrainAndRuntimeClearance and ArmyPlacement_TestGridOccupancyMask.
 */
 
-Bool8 ArmyPlacementCollision_TestCurrentRuntime
+bool ArmyPlacementCollision_TestCurrentRuntime
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
@@ -276,8 +275,8 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
   int deltaYQ12;
   ModelRuntimeNode *ownerNode;
   ModelRuntimeSlot *neighbor;
-  Bool8 blocked;
-  Bool8 (*terrainTest)(FieldGridRadiusUnits,Q12,Q12,Q12,FieldGridAsset *);
+  bool blocked;
+  bool (*terrainTest)(FieldGridRadiusUnits,Q12,Q12,Q12,FieldGridAsset *);
   ModelRuntimeNode *rootNode;
 
   rootNode = modelRuntime->rootModelNode;
@@ -292,8 +291,8 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
     terrainTest = TerrainAuxHeightThreshold_TestAroundWorldPoint;
   }
   blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
-                    ((WorldOwnerListNode *)rootNode,(rootNode->worldTransform).translation.y,
-                     (rootNode->worldTransform).translation.x,(ModelRuntimeSlot *)modelRuntime,0,
+                    (ModelView_Cast<WorldOwnerListNode>(rootNode),(rootNode->worldTransform).translation.y,
+                     (rootNode->worldTransform).translation.x,ModelView_Cast<ModelRuntimeSlot>(modelRuntime),0,
                      worldRuntime);
   if (blocked) {
     return true;
@@ -307,7 +306,7 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
   }
   rootNode = modelRuntime->rootModelNode;
   ownerArmy = modelRuntime->ownerArmyRuntime;
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     return false;
   }
   blocked = FieldGrid_TestWorldPointBlocked
@@ -316,13 +315,13 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
   if (blocked) {
     return true;
   }
-  ownerNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+  ownerNode = ModelView_Cast<ModelRuntimeNode>(worldRuntime->ownerListHead);
   if (ownerNode == nullptr) {
     return false;
   }
   /* support check: some same-faction model with a support radius (supportRadius of its definition) must lie
      within that radius plus our own margin */
-  for (; ownerNode != nullptr; ownerNode = (ModelRuntimeNode *)(ownerNode->common).nextNode) {
+  for (; ownerNode != nullptr; ownerNode = ModelView_Cast<ModelRuntimeNode>((ownerNode->common).nextNode)) {
     if ((ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || (ownerNode == rootNode)) {
       continue;
     }
@@ -353,7 +352,7 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
    Called directly by the runtime-list collision scans in this file and by the movement code
    (gameplay/army/drive_ground.cpp, drive_banking.cpp, walker.cpp, class_updates.cpp).
 */
-Bool8 ArmyCollision_TestPointWithinExpandedRuntimeRadius
+bool ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeSlot *modelRuntime)
 
 {

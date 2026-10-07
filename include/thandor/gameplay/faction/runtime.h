@@ -14,7 +14,7 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex);
+bool GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex);
 
 FactionRelationState GameFactionRuntime_GetPackedStateNibble
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex);
@@ -28,6 +28,6 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
 uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *runtimeEntry);
 
 /* Byte size of one GameFactionRuntimeRecord (8 of them in g_GameFactionRuntimeImage). */
-#define GAME_FACTION_RUNTIME_RECORD_BYTES 0x740
+inline constexpr int GAME_FACTION_RUNTIME_RECORD_BYTES = 0x740;
 
 #endif /* THANDOR_GAMEPLAY_FACTION_RUNTIME_H */

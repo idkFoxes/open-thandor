@@ -15,19 +15,19 @@
 
 /* Tints of the ghost army that previews a placement or command-mode command
    (InGameWorldOverlay_RebuildOrReleaseTransientMarkers). */
-#define OVERLAY_PREVIEW_TINT_ARGB 0xCFFFFFFF /* translucent white */
-#define OVERLAY_PREVIEW_TINT_MULTI_CANDIDATE_ARGB 0x4FFFFFFF /* fainter: the placement has several candidates */
-#define OVERLAY_PREVIEW_TINT_BLOCKED_MASK 0xFF707070 /* darkens the preview when the placement would fail */
+inline constexpr uint32_t OVERLAY_PREVIEW_TINT_ARGB = 0xCFFFFFFF; /* translucent white */
+inline constexpr int32_t OVERLAY_PREVIEW_TINT_MULTI_CANDIDATE_ARGB = 0x4FFFFFFF; /* fainter: the placement has several candidates */
+inline constexpr uint32_t OVERLAY_PREVIEW_TINT_BLOCKED_MASK = 0xFF707070; /* darkens the preview when the placement would fail */
 /* Capacities of g_InGameOwnedEntityTransientEffectMarkers and g_InGameCommandTargetTransientEffectMarkers. */
-#define OVERLAY_OWNED_MARKER_CAPACITY 32
-#define OVERLAY_COMMAND_TARGET_MARKER_CAPACITY 128
+inline constexpr int32_t OVERLAY_OWNED_MARKER_CAPACITY = 32;
+inline constexpr int32_t OVERLAY_COMMAND_TARGET_MARKER_CAPACITY = 128;
 
 void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime);
 
 void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-          (Q12 scaleQ12,void *sourceWorldNode,Q12 worldYQ12,Q12 worldXQ12,void *effectDefinition,
-          void *inGameRuntime);
+          (Q12 scaleQ12,struct ModelRuntimeNode *sourceWorldNode,Q12 worldYQ12,Q12 worldXQ12,
+          struct EffectDefinition *effectDefinition,WorldRuntimeContext *inGameRuntime);
 
 extern intptr_t g_InGamePendingPlacementArmyAsset; /* ArmyAssetRecordPrefix * staged for placement, 0 when none */
 extern uint32_t g_InGameCommandPreviewArmyAssetId;

@@ -164,7 +164,7 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
   gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
   /* Original quirk: the dirty bit is set with a literal 1 before the bounds check, so also when nothing is
      applied */
-  fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
+  fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
   baseColumn = gridCoordinates.columnQ12 >> Q12_SHIFT;
   targetRow = gridCoordinates.rowQ12 >> Q12_SHIFT;
   columnFractionQ12 = (uint32_t)(gridCoordinates.columnQ12 & Q12_FRACTION_MASK);
@@ -200,7 +200,7 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
   vertexCell = &fieldGrid->cells[cellIndex];
   /* Original quirk: only the vertex cell is tested (edge, water above it); the walked cells are levelled
      whatever their water */
-  if ((vertexCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 || 0 < vertexCell->waterSurfaceDelta) {
+  if (Any(vertexCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) || 0 < vertexCell->waterSurfaceDelta) {
     return;
   }
   heightDeltaQ12 = g_TerrainScanReferenceHeight - vertexCell->terrainHeight;
@@ -262,7 +262,7 @@ void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial(TerrainMaterialIndex
   }
   if (-1 < terrainMaterialIndexOrNegativeSentinel) {
     cell->flagsAndMaterial =
-         cell->flagsAndMaterial & ~FIELD_CELL_MATERIAL_ID_MASK |
-         terrainMaterialIndexOrNegativeSentinel;
+         (cell->flagsAndMaterial & ~FIELD_CELL_MATERIAL_ID_MASK) |
+         FieldCell_FromRawWord(static_cast<uint32_t>(terrainMaterialIndexOrNegativeSentinel));
   }
 }

@@ -9,34 +9,35 @@
 #define THANDOR_UI_CONTROLS_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 #include <thandor/ui/text/types.h>
 
-typedef union WidePathBuffer256 WidePathBuffer256, *PWidePathBuffer256;
-typedef struct UiPageStackControl UiPageStackControl, *PUiPageStackControl;
-typedef struct UiNodeBase UiNodeBase, *PUiNodeBase;
-typedef struct UiSelectableControl UiSelectableControl, *PUiSelectableControl;
-typedef struct UiNumericTextControl UiNumericTextControl, *PUiNumericTextControl;
-typedef struct UiNodeVtable UiNodeVtable, *PUiNodeVtable;
-typedef struct UiPointerListControl UiPointerListControl, *PUiPointerListControl;
-typedef struct UiTextEditControl UiTextEditControl, *PUiTextEditControl;
-typedef struct UiTextListControl UiTextListControl, *PUiTextListControl;
-typedef struct UiListControl UiListControl, *PUiListControl;
-typedef struct UiScrollableControl UiScrollableControl, *PUiScrollableControl;
-typedef struct UiRootNode UiRootNode, *PUiRootNode;
-typedef struct RichTextExtent RichTextExtent, *PRichTextExtent;
-typedef struct UiTextButtonControl UiTextButtonControl, *PUiTextButtonControl;
-typedef struct UiSpriteButtonControl UiSpriteButtonControl, *PUiSpriteButtonControl;
-typedef struct UiSpriteButtonDrawOffsets UiSpriteButtonDrawOffsets, *PUiSpriteButtonDrawOffsets;
-typedef struct UiImageControl UiImageControl, *PUiImageControl;
-typedef struct UiFramedTextButtonControl UiFramedTextButtonControl, *PUiFramedTextButtonControl;
-typedef struct UiTooltipState UiTooltipState, *PUiTooltipState;
-typedef struct UiRequiredTextEditControl UiRequiredTextEditControl, *PUiRequiredTextEditControl;
-typedef struct UiSelectionGeometryControl UiSelectionGeometryControl, *PUiSelectionGeometryControl;
-typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
-typedef struct RuntimeModelFactionPrefix RuntimeModelFactionPrefix;
-typedef struct UiRootCallbacks UiRootCallbacks;
+union WidePathBuffer256;
+struct UiPageStackControl;
+struct UiNodeBase;
+struct UiSelectableControl;
+struct UiNumericTextControl;
+struct UiNodeVtable;
+struct UiPointerListControl;
+struct UiTextEditControl;
+struct UiTextListControl;
+struct UiListControl;
+struct UiScrollableControl;
+struct UiRootNode;
+struct RichTextExtent;
+struct UiTextButtonControl;
+struct UiSpriteButtonControl;
+struct UiSpriteButtonDrawOffsets;
+struct UiImageControl;
+struct UiFramedTextButtonControl;
+struct UiTooltipState;
+struct UiRequiredTextEditControl;
+struct UiSelectionGeometryControl;
+struct GraphicsTextureSourceAsset;
+struct RuntimeModelFactionPrefix;
+struct UiRootCallbacks;
 
 using GraphicsSubresourceIndex = uint32_t;
 
@@ -45,7 +46,9 @@ union WidePathBuffer256 {
     uint32_t firstTwoCodeUnits; 
 };
 
-enum {
+/* The state flag sets of the text edits, lists and scrollables: 32-bit fields, the original int became the
+   same-size uint32_t (offsets and sizes asserted in layout_checks.cpp). */
+enum class UiTextEditStateFlags : uint32_t {
     UI_TEXT_EDIT_VALUE_VALID=1,
     UI_TEXT_EDIT_DRAW_FRAMED_CHROME=8,
     UI_TEXT_EDIT_CARET_VISIBLE_PHASE=16,
@@ -56,9 +59,10 @@ enum {
     UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY=512,
     UI_TEXT_EDIT_PLAY_INTERACTION_SOUND=1024
 };
-using UiTextEditStateFlags = int;
+THANDOR_FLAG_ENUM(UiTextEditStateFlags);
+using enum UiTextEditStateFlags;
 
-enum {
+enum class UiScrollableStateFlags : uint32_t {
     UI_SCROLL_HORIZONTAL_BAR_AT_TOP=1,
     UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM=2,
     UI_SCROLL_VERTICAL_BAR_AT_LEFT=4,
@@ -73,11 +77,34 @@ enum {
     UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE=33554432,
     UI_SCROLL_VERTICAL_THUMB_ACTIVE=67108864,
     UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE=134217728,
-    UI_SCROLL_VERTICAL_INCREMENT_ACTIVE=268435456
+    UI_SCROLL_VERTICAL_INCREMENT_ACTIVE=268435456,
+    /* bits 4..7: the bar positions a control allows (the bar bits shifted left by 4), read by the layout */
+    UI_SCROLL_ALLOWED_HORIZONTAL_BARS=0x30,
+    UI_SCROLL_ALLOWED_VERTICAL_BARS=0xC0,
+    /* the interior fill (0x100 draws UI_WINDOW_SUBRESOURCE_INTERIOR, 0x200 alone draws subresource 0), the two
+       frame styles, the right-button drag (panning) and whether that drag started inside the content view (then
+       the hit test does not pass the pointer to the content) */
+    UI_SCROLL_FILL_INTERIOR_TEXTURED=0x100,
+    UI_SCROLL_FILL_INTERIOR=0x200,
+    UI_SCROLL_FRAME_STYLE_A=0x400,
+    UI_SCROLL_FRAME_STYLE_B=0x800,
+    /* NOTE: UiScrollableControl_BeginSecondaryScrollInteraction sets 0x1000 and clears it again a few
+       instructions later (as in the original), so the pointer wheel's test of it never sees it set. */
+    UI_SCROLL_SECONDARY_INTERACTION_ACTIVE=0x1000,
+    UI_SCROLL_SECONDARY_PANNING_CONTENT=0x4000,
+    /* All UI_SCROLL_HORIZONTAL_*_ACTIVE / UI_SCROLL_VERTICAL_*_ACTIVE part bits. */
+    UI_SCROLL_HORIZONTAL_PARTS_ACTIVE=0x1F0000,
+    UI_SCROLL_VERTICAL_PARTS_ACTIVE=0x1F000000
 };
-using UiScrollableStateFlags = int;
+THANDOR_FLAG_ENUM(UiScrollableStateFlags);
+using enum UiScrollableStateFlags;
 
-enum {
+/* UiNodeBase.nodeFlags (and the applyFlags masks): a 32-bit field, the original int became the same-size
+   uint32_t (offset and size asserted in layout_checks.cpp). Bits without an enumerator (e.g. 0x10) stay valid. */
+enum class UiNodeFlags : uint32_t {
+    /* set on every node of the top root of the stack by UiRootStack_Push/Pop/BringToFront through applyFlags;
+       window frames draw their inactive variant without it */
+    UI_NODE_IN_FRONT_ROOT=1,
     UI_NODE_PREFERRED_FOCUS_TARGET=2,
     UI_NODE_HAS_KEYBOARD_FOCUS=4,
     UI_NODE_SUPPRESSED=8,
@@ -87,25 +114,39 @@ enum {
     UI_NODE_TOOLTIP_ELIGIBLE=256,
     UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16=512
 };
-using UiNodeFlags = int;
+THANDOR_FLAG_ENUM(UiNodeFlags);
+using enum UiNodeFlags;
 
-enum {
+/* UiSelectableControl.stateFlags: the selectable bits common to every selectable control. A 32-bit field,
+   the original int became the same-size uint32_t (offset and size asserted in layout_checks.cpp). The
+   subclasses use further bits of the same field (UI_BUTTON_*, UI_SPRITE_BUTTON_*, UI_IMAGE_CONTROL_*,
+   UI_ADAPTER_TEXT_BUTTON_*, FRONTEND_CONTROL_INACTIVE); those are typed constants of this enum in the
+   subclass headers, not enumerators, because their values overlap between the subclasses. */
+enum class UiSelectableStateFlags : uint32_t {
     UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE=1,
     UI_SELECTABLE_SELECTED_OR_CHECKED=2,
+    /* read by UiSelectableControl_KeyboardEvent: Enter / Escape also activate the control; 0x80 plays
+       UiSoundSelectableControl.activationSound on a keyboard activation (the same bit is
+       UI_SPRITE_BUTTON_ANIMATED for sprite buttons) */
+    UI_SELECTABLE_ACTIVATE_ON_ENTER=4,
+    UI_SELECTABLE_ACTIVATE_ON_ESCAPE=8,
     UI_SELECTABLE_TOGGLE_ON_ACTIVATION=16,
+    UI_SELECTABLE_PLAY_KEYBOARD_SOUND=0x80,
     UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION=8192
 };
-using UiSelectableStateFlags = int;
+THANDOR_FLAG_ENUM(UiSelectableStateFlags);
+using enum UiSelectableStateFlags;
 
-enum {
+enum class UiTextListStateFlags : uint32_t {
     UI_TEXT_LIST_TYPE_SEARCH_ENABLED=1,
     UI_TEXT_LIST_DEFERRED_ACTION_PENDING=2,
     UI_TEXT_LIST_SELECTION_CONFIRMED=4,
     UI_TEXT_LIST_PLAY_SELECTION_SOUND=8
 };
-using UiTextListStateFlags = int;
+THANDOR_FLAG_ENUM(UiTextListStateFlags);
+using enum UiTextListStateFlags;
 
-enum {
+enum class UiRequiredTextEditStateFlags : uint32_t {
     UI_REQUIRED_TEXT_VALUE_VALID=1,
     UI_REQUIRED_TEXT_DRAW_FRAMED_CHROME=8,
     UI_REQUIRED_TEXT_CARET_VISIBLE_PHASE=16,
@@ -117,16 +158,18 @@ enum {
     UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND=1024,
     UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION=2048
 };
-using UiRequiredTextEditStateFlags = int;
+THANDOR_FLAG_ENUM(UiRequiredTextEditStateFlags);
+using enum UiRequiredTextEditStateFlags;
 
-enum {
+enum class UiListStateFlags : uint32_t {
     UI_LIST_DEFERRED_ACTION_PENDING=2,
     UI_LIST_SELECTION_CONFIRMED=4,
     UI_LIST_PLAY_SELECTION_SOUND=8
 };
-using UiListStateFlags = int;
+THANDOR_FLAG_ENUM(UiListStateFlags);
+using enum UiListStateFlags;
 
-enum {
+enum class UiNumericTextEditStateFlags : uint32_t {
     UI_NUMERIC_TEXT_VALUE_VALID=1,
     UI_NUMERIC_TEXT_SIGNED_VALUE=2,
     UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT=4,
@@ -139,14 +182,15 @@ enum {
     UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY=512,
     UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND=1024
 };
-using UiNumericTextEditStateFlags = int;
+THANDOR_FLAG_ENUM(UiNumericTextEditStateFlags);
+using enum UiNumericTextEditStateFlags;
 
 using UiPointerWheelDelta = int;
 
-typedef struct UiGridDimensions {
+struct UiGridDimensions {
     uint32_t columnCount;
     uint32_t rowCount;
-} UiGridDimensions;
+};
 
 using UiTextCodeUnitIndex = uint32_t;
 
@@ -162,11 +206,33 @@ using UiSerializedRelocationDelta = int;
 
 using UiPixelCoordinate = int;
 
-using UiKeyboardStateMask = uint32_t;
+/* Keyboard state word: g_KeyboardStateMask, KeyboardInputEvent.stateMask, the keyboard event handlers' first
+   argument and the key command records' modifier classes. Bits without an enumerator stay valid; the
+   enumerators are also visible unscoped (using enum below). */
+enum class UiKeyboardStateMask : uint32_t {
+    KEYBOARD_STATE_NONE = 0,
+    /* Modifier bits (Keyboard_OnKeyDown): left/right Shift 0x01/0x02, left/right Ctrl 0x04/0x08, left/right Alt
+       0x10/0x20 */
+    KEYBOARD_STATE_LEFT_SHIFT = 0x01,
+    KEYBOARD_STATE_RIGHT_SHIFT = 0x02,
+    KEYBOARD_STATE_LEFT_CTRL = 0x04,
+    KEYBOARD_STATE_RIGHT_CTRL = 0x08,
+    KEYBOARD_STATE_LEFT_ALT = 0x10,
+    KEYBOARD_STATE_RIGHT_ALT = 0x20,
+    KEYBOARD_STATE_SHIFT = 0x03,
+    KEYBOARD_STATE_CTRL = 0x0C,
+    KEYBOARD_STATE_ALT = 0x30,
+    KEYBOARD_STATE_ANY_MODIFIER = 0x3F,
+    /* Lock-key bits, seeded from the system's lock-key state (SdlInput_Init at startup and again when the window
+       regains the focus) */
+    KEYBOARD_STATE_NUM_LOCK = 0x10000,
+    KEYBOARD_STATE_SCROLL_LOCK = 0x20000,
+    KEYBOARD_STATE_CAPS_LOCK = 0x40000
+};
+THANDOR_FLAG_ENUM(UiKeyboardStateMask);
+using enum UiKeyboardStateMask;
 
 using UiKeyboardEventCode = uint32_t;
-
-using UiNodeFlagMask = uint32_t;
 
 using UiActionId = int;
 
@@ -221,7 +287,7 @@ struct UiSelectableControl {
    the activation sound, played when stateFlags bit 0x80 is set (activationSound of UiTextButtonControl and
    UiFramedTextButtonControl, keyboardActivationSound of UiImageControl). The two dwords before it differ
    per subclass. */
-typedef struct UiSoundSelectableControl UiSoundSelectableControl;
+struct UiSoundSelectableControl;
 struct UiSoundSelectableControl {
     struct UiSelectableControl selectable;
     uint32_t subclassFields[2];
@@ -241,8 +307,8 @@ struct UiNodeVtable {
     Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> rightDrag; 
     Ptr32<GraphicsCursorFrameIndex (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> pointerMove; 
     Ptr32<UiNodeBase * (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> hitTest; 
-    Ptr32<Bool8 (UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *)> keyboardEvent;
-    Ptr32<void (UiNodeFlagMask, UiNodeFlagMask, struct UiNodeBase *)> applyFlags; 
+    Ptr32<bool (UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *)> keyboardEvent;
+    Ptr32<void (UiNodeFlags, UiNodeFlags, struct UiNodeBase *)> applyFlags; 
     Ptr32<void (UiActionId, struct UiNodeBase *)> suppressActionId; 
     Ptr32<void (UiActionId, struct UiNodeBase *)> unsuppressActionId; 
     Ptr32<void (struct UiNodeBase *)> tick; 
@@ -254,6 +320,26 @@ struct UiPageStackControl {
     UiPageCount pageCount; 
     Ptr32<struct UiNodeBase> pages; 
 };
+
+/* Page stack of a template image with its page slots spelled out (g_UiLayoutContainerControlVtable, step 13 U1):
+   pageCount followed by PageCount page links (template offsets, UI_TEMPLATE_NO_LINK for an empty page; pointers
+   after relocation), 0x50 + 4 * PageCount bytes. The template instances have 1, 2, 3, 4, 8, 9 and 13 pages.
+   The class methods (container.cpp) take the one-slot view UiPageStackControl and index &pages[i]; reach it
+   with UiLayoutContainerControl_AsPageStack. */
+template <UiPageCount PageCount>
+struct UiLayoutContainerControl {
+    struct UiNodeBase base;
+    UiPageCount pageCount; // Equal to PageCount in every template instance.
+    Ptr32<struct UiNodeBase> pages[PageCount];
+};
+
+/* The UiPageStackControl view of a UiLayoutContainerControl<N> (same prefix: base, pageCount, first page slot). */
+template <UiPageCount PageCount>
+inline UiPageStackControl *UiLayoutContainerControl_AsPageStack(UiLayoutContainerControl<PageCount> *control)
+
+{
+  return reinterpret_cast<UiPageStackControl *>(control);
+}
 
 using GraphicsSubresourceEndIndex = uint32_t;
 
@@ -277,8 +363,6 @@ using UiPackedTextStyle = uint32_t;
 
 using UiPageIndex = uint32_t;
 
-using UiPointerButtonMask = uint32_t;
-
 using UiFrameCount = uint32_t;
 
 using SerializedImageRelocationDelta = int;
@@ -289,10 +373,10 @@ using UiPointerListFieldByteOffset = uint32_t;
 
 using GraphicsSubresourceOffset = uint32_t;
 
-typedef struct UiScrollableViewportSize {
+struct UiScrollableViewportSize {
     UiPixelExtent width;
     UiPixelExtent height;
-} UiScrollableViewportSize;
+};
 
 using UiControlCount = uint32_t;
 
@@ -322,7 +406,7 @@ struct UiTextListControl {
 
 /* One column of a UiListControl: the rich-text string at rowRecord + rowTextOffset is drawn in a column
    of width pixels; a negative width is a right-aligned column of -width pixels. */
-typedef struct UiListColumn UiListColumn;
+struct UiListColumn;
 struct UiListColumn {
     int32_t width;
     uint32_t rowTextOffset;
@@ -345,6 +429,13 @@ struct UiListControl {
     struct UiListColumn columns[1];
 };
 
+/* The UiPointerListControl view of a UiListControl (same first 0x64 bytes); the UiPointerList_* methods take it. */
+inline UiPointerListControl *UiListControl_AsPointerList(UiListControl *control)
+
+{
+  return reinterpret_cast<UiPointerListControl *>(control);
+}
+
 struct UiScrollableControl {
     struct UiNodeBase base; 
     UiScrollableStateFlags scrollStateFlags; 
@@ -366,10 +457,48 @@ struct UiScrollableControl {
     UiPixelOffset autoScrollStepY; 
 };
 
-enum {
-    UI_ROOT_DISABLE_POINTER_HIT_TEST=256 
+/* UiRootNode.rootFlags of panels (g_UiPanelControlVtable) and resizable windows
+   (g_UiResizableWindowControlVtable), from their draw and pointer methods in ui/controls/panels.cpp and
+   window.cpp. A 32-bit field: uint32_t has the size and alignment of the original int and no code computes with
+   it (asserted in layout_checks.cpp); the template initialisers set the same bits. `using enum` keeps the
+   UI_ROOT_* names usable unqualified. */
+enum class UiRootFlags : uint32_t {
+    UI_ROOT_TILED_BACKGROUND = 0x1,
+    UI_ROOT_FRAME = 0x2,
+    UI_ROOT_TITLE_BAR = 0x4,
+    UI_ROOT_CLOSE_BUTTON = 0x8,
+    UI_ROOT_MAXIMIZE_BUTTON = 0x10,
+    UI_ROOT_MOVABLE = 0x20,
+    UI_ROOT_RESIZABLE = 0x40,
+    UI_ROOT_MAXIMIZED = 0x80,
+    UI_ROOT_DISABLE_POINTER_HIT_TEST = 0x100, /* UiPointer_RootContainsPointer skips the root */
+    UI_ROOT_ALTERNATE_BACKGROUND = 0x200, /* panels: second background and frame style */
+    UI_ROOT_CLOSE_PRESSED = 0x800, /* the button went down over the close button */
+    UI_ROOT_MAXIMIZE_PRESSED = 0x1000,
+    UI_ROOT_MOVING = 0x2000,
+    UI_ROOT_RESIZING = 0x4000,
+    UI_ROOT_CLOSE_ARMED = 0x80000, /* pressed and the pointer is still over the close button */
+    UI_ROOT_MAXIMIZE_ARMED = 0x100000,
+    /* While resizing, the top byte holds the grabbed border, clockwise from the top edge; the masks select the
+       grabs that move one edge. */
+    UI_ROOT_RESIZE_TOP = 0x1000000,
+    UI_ROOT_RESIZE_TOP_RIGHT = 0x2000000,
+    UI_ROOT_RESIZE_RIGHT = 0x4000000,
+    UI_ROOT_RESIZE_BOTTOM_RIGHT = 0x8000000,
+    UI_ROOT_RESIZE_BOTTOM = 0x10000000,
+    UI_ROOT_RESIZE_BOTTOM_LEFT = 0x20000000,
+    UI_ROOT_RESIZE_LEFT = 0x40000000,
+    UI_ROOT_RESIZE_TOP_LEFT = 0x80000000,
+    UI_ROOT_RESIZE_EDGES = 0xff000000,
+    UI_ROOT_RESIZE_MOVES_TOP = 0x83000000,
+    UI_ROOT_RESIZE_MOVES_RIGHT = 0xe000000,
+    UI_ROOT_RESIZE_MOVES_BOTTOM = 0x38000000,
+    UI_ROOT_RESIZE_MOVES_LEFT = 0xe0000000,
+    /* Everything a button release ends: pressed, armed, moving, resizing and the grabbed border */
+    UI_ROOT_POINTER_STATE = 0xff187800
 };
-using UiRootFlags = int;
+THANDOR_FLAG_ENUM(UiRootFlags);
+using enum UiRootFlags;
 
 struct UiRootNode {
     struct UiNodeBase base;
@@ -378,13 +507,13 @@ struct UiRootNode {
     Ptr32<struct UiRootNode> previousRoot;
 };
 
-typedef struct UiPanelControl UiPanelControl;
+struct UiPanelControl;
 /* Panel (g_UiPanelControlVtable): the plain root-capable container; rootFlags bit 0x1 tiled background, 0x2 frame, 0x200 alternate background/frame. */
 struct UiPanelControl {
     struct UiRootNode root;
 };
 
-typedef struct UiResizableWindowControl UiResizableWindowControl;
+struct UiResizableWindowControl;
 /* Resizable window (g_UiResizableWindowControlVtable): root-capable window with title bar, close/maximize buttons, move and resize. */
 struct UiResizableWindowControl {
     struct UiRootNode root; // rootFlags: 0x1 tiled interior, 0x2 frame, 0x4 title bar, 0x8 close button, 0x10 maximize button, 0x20 movable, 0x40 resizable, 0x80 maximized, 0x800/0x1000 close/maximize pressed, 0x2000 moving, 0x4000 resizing, 0x80000/0x100000 close/maximize armed, 0xFF000000 resized edges.
@@ -398,7 +527,7 @@ struct UiResizableWindowControl {
     int32_t dragAnchorYOrPendingBottom; // Move: pointer y relative to top at grab time. Resize: new bottom edge being applied.
 };
 
-typedef struct UiTitledWindowControl UiTitledWindowControl;
+struct UiTitledWindowControl;
 /* Titled box (g_UiTitledWindowControlVtable): framed group box with a title text in its top edge. */
 struct UiTitledWindowControl {
     struct UiNodeBase base;
@@ -420,7 +549,7 @@ struct UiTextButtonControl {
 
 /* Text button that formats two numbers into rich-text payload selectors 0 and 1 of its text before drawing
    (g_UiNumericPairTextButtonVtable; e.g. the display-resolution options: width, height). 0x68 bytes. */
-typedef struct UiNumericPairTextButton UiNumericPairTextButton;
+struct UiNumericPairTextButton;
 struct UiNumericPairTextButton {
     struct UiTextButtonControl base;
     int32_t firstValue;
@@ -429,7 +558,7 @@ struct UiNumericPairTextButton {
 
 /* Text button that patches two payload pointers into rich-text payload selectors 0 and 1 of its text before
    drawing (g_UiPayloadPairTextButtonVtable; the display-adapter options). 0x68 bytes. */
-typedef struct UiPayloadPairTextButton UiPayloadPairTextButton;
+struct UiPayloadPairTextButton;
 struct UiPayloadPairTextButton {
     struct UiTextButtonControl base;
     Ptr32<void> firstPayload;
@@ -469,7 +598,7 @@ struct UiImageControl {
 /* Image/movie surface that queues one action on left and one on right click (g_UiImageActionControlVtable).
    letterboxWidth is only read with UI_IMAGE_ACTION_STRETCH set; most template instances end before it (0x64
    bytes, the end movie view is 0x68). */
-typedef struct UiImageActionControl UiImageActionControl;
+struct UiImageActionControl;
 struct UiImageActionControl {
     struct UiNodeBase base;
     uint32_t displayFlags; /* 1: stretch to the node, 2: Enter queues primaryActionId, 4: letterbox to letterboxWidth */
@@ -481,9 +610,22 @@ struct UiImageActionControl {
     int32_t letterboxWidth;
 };
 
+/* A UiImageActionControl node of a template image that ends before letterboxWidth (0x64 bytes; the frontend's
+   briefingImage): the class methods read letterboxWidth only with displayFlags bit 4, which such a node never
+   sets. Same prefix as UiImageActionControl. */
+struct UiImageActionTemplateNode {
+    struct UiNodeBase base;
+    uint32_t displayFlags;
+    GraphicsCursorFrameIndex cursorFrame;
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource;
+    GraphicsSubresourceIndex subresource;
+    UiActionId primaryActionId;
+    UiActionId secondaryActionId;
+};
+
 /* Framed text box drawing lineCount rich-text lines; left clicks queue actionId while it has lines
    (g_UiConditionalActionControlVtable). textLines is variable length: 1, 5 or 8 slots in the templates. */
-typedef struct UiConditionalActionControl UiConditionalActionControl;
+struct UiConditionalActionControl;
 struct UiConditionalActionControl {
     struct UiNodeBase base;
     uint32_t field4C;
@@ -493,6 +635,44 @@ struct UiConditionalActionControl {
     Ptr32<uint16_t> textLines[1];
 };
 
+/* A UiConditionalActionControl of a template image with its text line slots spelled out (step 13 U3):
+   0x5C + 4 * LineSlots bytes, same prefix. The class methods (buttons.cpp) take the one-slot view; reach it
+   with UiConditionalActionTextBox_AsControl. */
+template <uint32_t LineSlots>
+struct UiConditionalActionTextBox {
+    struct UiNodeBase base;
+    uint32_t field4C;
+    GraphicsCursorFrameIndex cursorFrame;
+    UiActionId actionId;
+    uint32_t lineCount;
+    Ptr32<uint16_t> textLines[LineSlots];
+};
+
+/* The UiConditionalActionControl view of a UiConditionalActionTextBox<N> (same prefix and first line slot). */
+template <uint32_t LineSlots>
+inline UiConditionalActionControl *UiConditionalActionTextBox_AsControl(UiConditionalActionTextBox<LineSlots> *control)
+{
+  return reinterpret_cast<UiConditionalActionControl *>(control);
+}
+
+/* A results chart of the end-of-game results screen (g_FrontendResultsTableVtable; the in-game template's
+   resultsChart1..3) with its column type list spelled out (step 13 X9e): 0x64 + 4 * ColumnSlots bytes. The class
+   methods (ui/frontend/results.cpp) get it through the vtable as the one-slot view
+   FrontendResultsColumnSequenceControl (ui/frontend/types.h, same prefix). */
+struct FrontendResultsFactionWeightPair;
+template <uint32_t ColumnSlots>
+struct FrontendResultsTable {
+    struct UiNodeBase base;
+    uint32_t modeFlags; /* +0x4C bit 0 (FRONTEND_RESULTS_MODE_GRAPH): faction-weight graph instead of the table */
+    Ptr32<void (UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *)>
+        factionWeightRaster; /* +0x50 graph mode: draws one pixel column */
+    uint32_t columnTypeCount; /* +0x54 used entries of columnTypes */
+    uint32_t rowCount; /* +0x58 rows (active factions), set by the end-of-game results screen */
+    int headerBaselineOffsetPixels; /* +0x5C (UiPixelMetric) */
+    int rowAdvancePixels; /* +0x60 (UiPixelMetric) */
+    uint32_t columnTypes[ColumnSlots]; /* +0x64 FRONTEND_RESULTS_COLUMN_* */
+};
+
 struct UiFramedTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
@@ -500,7 +680,7 @@ struct UiFramedTextButtonControl {
     Ptr32<struct SoundVoiceSet> activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
-typedef struct UiWindowControl UiWindowControl;
+struct UiWindowControl;
 /* Framed icon-and-text button (g_UiWindowControlVtable); shares the UiFramedTextButtonControl input methods, which only rely on the UiSelectableControl prefix. No template instance; the size past 0x68 is unknown. */
 struct UiWindowControl {
     struct UiSelectableControl selectable;
@@ -555,7 +735,7 @@ struct UiSelectionGeometryControl {
 /* Single-line rich-text label (g_UiSingleLineTextControlVtable, g_UiCommandVisibilitySingleLineTextVtable) that
    optionally forwards focus and pointer/keyboard input to one child (a slider or button it frames). 0x5C bytes;
    template extents beyond 0x5C are unrelated data placed after the node. */
-typedef struct UiSingleLineTextControl UiSingleLineTextControl;
+struct UiSingleLineTextControl;
 struct UiSingleLineTextControl {
     struct UiNodeBase base;
     uint32_t labelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 hide while suppressed, 0x100/0x200 keep the style override bytes 3/2, 0x400 pointer-wheel forwarding in progress, 0x800/0x1000 command-visibility conditions, 0x8000 do not forward navigation keys 0x30.
@@ -566,7 +746,7 @@ struct UiSingleLineTextControl {
 
 /* Wrapped multi-line rich-text block (g_UiWrappedTextControlVtable, g_UiCommandVisibilityWrappedTextVtable).
    0x5C bytes; template extents beyond 0x5C are unrelated data placed after the node (e.g. countdown state). */
-typedef struct UiWrappedTextControl UiWrappedTextControl;
+struct UiWrappedTextControl;
 struct UiWrappedTextControl {
     struct UiNodeBase base;
     uint32_t labelFlags; // 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 keep wrapWidth (else it follows layoutWidth), 0x100/0x200 keep the style override bytes 3/2, 0x800 command-visibility condition.
@@ -575,10 +755,23 @@ struct UiWrappedTextControl {
     UiPackedTextStyle styleOverride; // Packed style bits OR-ed over g_UiTextStyleNormal (top two bytes used).
 };
 
+/* Control types of the template vtables whose methods already work on one of the structs above (step 13 U1).
+   The template images (InGameUiImage, FrontendUiImage, the dialog images) name each node by its vtable; these
+   names give every such vtable its control type, so a member `UiNodeBase x; uint32_t x_fields[N];` can become
+   `UiFocusProxyControl x;` with the same bytes. A template member with more dwords than the type (e.g. 5 instead
+   of the 4 of UiSingleLineTextControl) is followed by data that belongs to the next node (mostly its tooltip text
+   id) and keeps those dwords as a separate trailing member.
+   - g_UiFocusProxyControlVtable: a single-line label that forwards focus, pointer, wheel, keyboard and tick to its
+     focusChild (UiSingleLineTextControl_* handlers, focus_proxy.cpp); 0x5C bytes, 4 dwords after UiNodeBase.
+   - g_UiListOffsetControlVtable: a wrapped multi-line text (UiWrappedTextControl_RelocateAndApplyDeferredOffset,
+     UiWrappedTextControl_DrawClipped); 0x5C bytes, 4 dwords after UiNodeBase. */
+using UiFocusProxyControl = UiSingleLineTextControl;
+using UiListOffsetControl = UiWrappedTextControl;
+
 /* Horizontal or vertical range slider with a draggable thumb (g_UiRangeSliderControlVtable); every value change
    enqueues actionId. 0x68 bytes; the display-settings template allocates only 0x64 bytes for its two color
    sliders, which never set sliderFlags & 4 and so never touch clickSound. */
-typedef struct UiRangeSliderControl UiRangeSliderControl;
+struct UiRangeSliderControl;
 struct UiRangeSliderControl {
     struct UiNodeBase base;
     uint32_t sliderFlags; // 1 vertical (else horizontal), 2 thumb drag in progress, 4 play clickSound on press/release/key step, 8 reversed direction.
@@ -594,7 +787,7 @@ struct UiRangeSliderControl {
    centered percent label. Only g_UiTransferProgressGaugeVtable uses it (the original's plain gauge vtable had no
    instance and was removed); it first reloads the range from the network transfer mailbox (file-transfer
    progress). 0x5C bytes. */
-typedef struct UiHorizontalGaugeControl UiHorizontalGaugeControl;
+struct UiHorizontalGaugeControl;
 struct UiHorizontalGaugeControl {
     struct UiNodeBase base;
     uint32_t gaugeFlags; // 1 draw the percent label.
@@ -606,7 +799,7 @@ struct UiHorizontalGaugeControl {
 /* Panel drawing one texture subresource aligned (or stretched) inside its layout box, optionally over a drop shadow,
    and hit-testing the texture's opaque pixels (g_UiImagePanelControlVtable). Neither the texture nor the children
    are drawn while textureSource is null. 0x5C bytes. */
-typedef struct UiImagePanelControl UiImagePanelControl;
+struct UiImagePanelControl;
 struct UiImagePanelControl {
     struct UiNodeBase base;
     uint32_t panelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 draw a drop shadow, 0x20 never hit, 0x40 hit the whole box (skip the opaque-pixel test), 0x80 stretch the texture over the layout box.
@@ -620,7 +813,7 @@ struct UiImagePanelControl {
 /* Image panel that also draws the metrics (portrait, health, value) of one selected entity over its texture
    (g_UiArmyMetricsPanelVtable; shares UiImagePanelControl_HitTestAlignedTextureAndChildren). Its draw ignores the
    drop-shadow and stretch flags. 0x60 bytes. */
-typedef struct UiArmyMetricsPanel UiArmyMetricsPanel;
+struct UiArmyMetricsPanel;
 struct UiArmyMetricsPanel {
     struct UiImagePanelControl base;
     Ptr32<struct RuntimeModelFactionPrefix> entity; // Drawn by SelectionPanel_RenderArmyRuntimeMetrics; null draws only the texture.
@@ -628,7 +821,7 @@ struct UiArmyMetricsPanel {
 
 /* Panel filling its box with a solid ARGB color, or tiling a texture subresource over it
    (g_UiFillPanelControlVtable). 0x5C bytes. */
-typedef struct UiFillPanelControl UiFillPanelControl;
+struct UiFillPanelControl;
 struct UiFillPanelControl {
     struct UiNodeBase base;
     uint32_t fillFlags; // 1 tile horizontally, 2 tile vertically (else one tile), 0x10 draw a drop shadow under each tile.
@@ -641,7 +834,7 @@ struct UiFillPanelControl {
 
 /* Panel drawing a nine-slice texture frame: four corners, four tiled edges and a tiled center
    (g_UiNineSlicePanelControlVtable). 0x5C bytes; a template extent of 0x60 includes the next node's tooltip id. */
-typedef struct UiNineSlicePanelControl UiNineSlicePanelControl;
+struct UiNineSlicePanelControl;
 struct UiNineSlicePanelControl {
     struct UiNodeBase base;
     uint32_t field4C; // Not read by the class methods; 0 in every template.
@@ -653,7 +846,7 @@ struct UiNineSlicePanelControl {
 /* Software-rendered view blending two subresources of a texture through a per-pixel mask, enqueueing actionId on a
    press or key (g_UiSoftwareTexturePreviewControlVtable; the frontend movie view). The mask animation
    (SoftwareMaskBuffer_*) addresses the same object as SoftwareMaskRuntimeView. 0x6C bytes. */
-typedef struct UiSoftwareTexturePreviewControl UiSoftwareTexturePreviewControl;
+struct UiSoftwareTexturePreviewControl;
 struct UiSoftwareTexturePreviewControl {
     struct UiNodeBase base;
     uint32_t field4C; // Not read by the class methods; 0 in the template.
@@ -671,7 +864,7 @@ struct UiSoftwareTexturePreviewControl {
    (multiplied by 4 until every value fits); the fill texture variant follows currentValue / limitValue. The values
    are also formatted into the node's tooltip text (payload selectors 0, 1 and 2), whose TextResourceId is the dword
    in front of the node. 0x94 bytes; with gaugeFlags & 2 the node continues as UiFormattedContainerWithMarker. */
-typedef struct UiFormattedContainer UiFormattedContainer;
+struct UiFormattedContainer;
 struct UiFormattedContainer {
     struct UiNodeBase base;
     uint32_t gaugeFlags; // 1 two-sided variant scale (below 40% and above 85% both use the late variants; else they rise from 80%), 2 has the markerValue tail (UiFormattedContainerWithMarker).
@@ -685,7 +878,7 @@ struct UiFormattedContainer {
 };
 
 /* Resource gauge with a second marker (gaugeFlags & 2; the energy gauge). 0xB0 bytes. */
-typedef struct UiFormattedContainerWithMarker UiFormattedContainerWithMarker;
+struct UiFormattedContainerWithMarker;
 struct UiFormattedContainerWithMarker {
     struct UiFormattedContainer base;
     int32_t markerValue; // Second marker; also caps the fill-percentage divisor when smaller than limitValue.
@@ -693,7 +886,7 @@ struct UiFormattedContainerWithMarker {
 };
 
 /* The two handlers of the root-stack action page: UiRootStack_Pop, FatalErrorDialog_DismissAndPopRoot. */
-typedef struct UiRootStackActionHandlerPage2 UiRootStackActionHandlerPage2;
+struct UiRootStackActionHandlerPage2;
 struct UiRootStackActionHandlerPage2 {
     Ptr32<void (void *)> handlers[2];
 };

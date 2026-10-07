@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/move_orders.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -23,16 +24,16 @@ void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,A
   ModelRuntimeNode *targetModelNode;
 
   standardGeneration = g_ArmyCommandGenerationStandard;
-  if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
-    if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
-      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
+  if (Any(armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING)) {
+    if (!Any(armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET)) {
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
     else {
-      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
+      ArmyRuntime_ResetMovementStateFromCurrentPosition(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
   }
   if (targetRuntime == nullptr) {
-    armyRuntime->commandModeFlags = 0;
+    armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_NONE;
     armyRuntime->commandGeneration = 0;
   }
   else {
@@ -41,9 +42,9 @@ void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,A
     targetModelNode = (targetRuntime->common).ownership.modelNode;
     ArmyRuntime_StartMoveCommandWithFallbackWaypoints
               ((targetModelNode->worldTransform).translation.y,(targetModelNode->worldTransform).translation.x
-               ,(ArmyMovementRuntime *)armyRuntime);
+               ,ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
   }
-  armyRuntime->commandTargetArmyRuntime = (ArmyRuntimeSlot *)targetRuntime;
+  armyRuntime->commandTargetArmyRuntime = ModelView_Cast<ArmyRuntimeSlot>(targetRuntime);
 }
 
 /* Helper for ArmyRuntime_ResetMovementStateFromModel (no original address: the original walks the tree
@@ -74,7 +75,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   GraphicsWorldCoordinateQ12 currentWorldY;
   ArmyCommandGeneration standardGeneration;
   ModelRuntimeSlot *attachedModelRuntime;
-  Bool8 hasNoWeaponDamage;
+  bool hasNoWeaponDamage;
   ModelRuntimeNode *modelNode;
 
   standardGeneration = g_ArmyCommandGenerationStandard;
@@ -85,7 +86,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
          ARMY_MOVEMENT_TARGET_FOLLOWING);
   hasNoWeaponDamage = ArmyRuntime_TestHasNoWeaponDamage(armyRuntime);
   if ((!hasNoWeaponDamage) &&
-      ((armyRuntime->commandModeFlags & (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) != 0)) {
+      (Any(armyRuntime->commandModeFlags & (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)))) {
     armyRuntime->commandModeFlags =
          armyRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION);
     armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
@@ -101,7 +102,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   armyRuntime->movementPosition0Q12 = currentWorldX;
   armyRuntime->movementPosition1Q12 = currentWorldY;
   attachedModelRuntime = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  if ((((attachedModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) != 0) &&
+  if (Any((attachedModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) &&
       (attachedModelRuntime->health != 0)) {
     /* clear 0x218 on the whole model tree */
     ArmyRuntime_ClearModelTreeFlags218(attachedModelRuntime);
@@ -118,7 +119,7 @@ void ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot 
   ArmyCommandGeneration commandGeneration;
 
   commandGeneration = g_ArmyCommandGenerationStandard;
-  if ((armyRuntime->commandModeFlags & (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) != 0) {
+  if (Any(armyRuntime->commandModeFlags & (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION))) {
     armyRuntime->commandModeFlags =
          armyRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION);
     armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
@@ -148,7 +149,7 @@ void ArmyRuntime_StartMoveCommandWithAuxiliaryValues
   movementRuntime->movementStateFlags =
        movementRuntime->movementStateFlags &
        ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
-  movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
+  movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~ARMY_COMMAND_MODE_SELECTION_ORDER;
   movementRuntime->queuedWaypointCount = 1;
   resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                     (targetWorldYQ12,targetWorldXQ12,movementRuntime->entityRuntime,worldRuntime);
@@ -178,15 +179,15 @@ void ArmyRuntime_SetPendingMoveTarget(Q12 targetWorldY,Q12 targetWorldX,ArmyMove
   GraphicsWorldCoordinateQ12 currentWorldY;
   ModelRuntimeNode *modelNode;
 
-  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
+  if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED)) {
     modelNode = movementRuntime->modelNodeRuntime;
     movementRuntime->movementWorldXQ12 = targetWorldX;
     movementRuntime->movementWorldYQ12 = targetWorldY;
-    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE) == 0) {
+    if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE)) {
       (movementRuntime->fallbackPosition).worldXQ12 = targetWorldX;
       (movementRuntime->fallbackPosition).worldYQ12 = targetWorldY;
     }
-    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_MIRROR_TARGET) != 0) {
+    if (Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_MIRROR_TARGET)) {
       movementRuntime->movementTargetWorldXQ12 = targetWorldX;
       movementRuntime->movementTargetWorldYQ12 = targetWorldY;
     }
@@ -222,9 +223,8 @@ void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
   WorldRuntimeContext *worldRuntime;
   PathingDestination resolvedDestination;
 
-  if (*(int *)((uintptr_t)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
-              24) != 0) {
-    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
+  if (*Thandor_At<int>((movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord.get(),24) != 0) {
+    if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED)) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
       movementRuntime->movementStateFlags =
            movementRuntime->movementStateFlags | (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_ACTIVE);
@@ -232,7 +232,7 @@ void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
            movementRuntime->movementStateFlags &
            ~(ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED |
              ARMY_MOVEMENT_WAYPOINTS_QUEUED);
-      movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
+      movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~ARMY_COMMAND_MODE_SELECTION_ORDER;
       resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                         (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
       (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
@@ -265,15 +265,14 @@ void ArmyRuntime_StartNextQueuedWaypointMove(Q12 targetWorldY,Q12 targetWorldX,A
   WorldRuntimeContext *worldRuntime;
   PathingDestination resolvedDestination;
 
-  if (*(int *)((uintptr_t)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
-              24) != 0) {
-    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
+  if (*Thandor_At<int>((movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord.get(),24) != 0) {
+    if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED)) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
       movementRuntime->movementStateFlags =
            movementRuntime->movementStateFlags | (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_ACTIVE);
       movementRuntime->movementStateFlags =
            movementRuntime->movementStateFlags & ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
-      movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
+      movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~ARMY_COMMAND_MODE_SELECTION_ORDER;
       resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                         (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
       (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
@@ -311,7 +310,7 @@ void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyM
   PathingDestination resolvedDestination;
 
   inGameRoot = g_InGameRuntimeRoot;
-  if (((movementRuntime->movementStateFlags & (ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_LOCKED)) == 0) &&
+  if (!Any(movementRuntime->movementStateFlags & (ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_LOCKED)) &&
       (movementRuntime->retryCountdown == 0)) {
     offsetAngleLength = FixedMath_Vector2AngleAndLength
                       (targetWorldY - movementRuntime->movementTargetWorldYQ12,
@@ -354,7 +353,7 @@ void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
   WorldRuntimeContext *worldRuntime;
   PathingDestination resolvedDestination;
 
-  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
+  if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED)) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
     movementRuntime->movementStateFlags =
          movementRuntime->movementStateFlags | (ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ACTIVE);
@@ -381,13 +380,13 @@ void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
    must not fire. With a clear line of fire a running target-following move is stopped and false is returned. Called
    by the aim-and-fire class updates (gameplay/army/turrets.cpp and combat.cpp).
 */
-Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
+bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   GameEntityRuntime *ownerEntity;
   ModelRuntimeSlot *ownerRootModelRuntime;
-  Bool8 lineOfFireBlocked;
+  bool lineOfFireBlocked;
 
   /* modelRuntime is the weapon's model runtime. ownerEntity is the owning army (GameEntityRuntime view: its
      common.commandFlags is ArmyRuntimeSlot.movementStateFlags and commandTarget.targetFlags is commandModeFlags);
@@ -395,28 +394,28 @@ Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targ
   ownerEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
   lineOfFireBlocked = ArmyWeaponRuntime_TestTargetLineOfFire
                     (targetWorldZQ12,targetWorldYQ12,targetWorldXQ12,worldRuntime,modelRuntime);
-  ownerRootModelRuntime = (ModelRuntimeSlot *)(ownerEntity->common).ownership.definitionOrClassRecord;
+  ownerRootModelRuntime = (ownerEntity->common).ownership.modelRuntime();
   if (lineOfFireBlocked) {
     if (((modelRuntime == ownerRootModelRuntime->attachments[0].childModelRuntimeOrSavedOffset) ||
         (ownerRootModelRuntime->attachments[0].childModelRuntimeOrSavedOffset == nullptr)
-        ) && (((ownerEntity->common).commandFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) == 0)) {
-      if (((ownerEntity->common).commandTarget.targetFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
+        ) && (((ownerEntity->common).commandFlags & ToBits(ARMY_MOVEMENT_TARGET_FOLLOWING)) == 0)) {
+      if (((ownerEntity->common).commandTarget.targetFlags & ToBits(ARMY_COMMAND_MODE_AI_COMBAT_TARGET)) == 0) {
         ArmyRuntime_StartMoveCommandWithFallbackWaypoints
-                  (targetWorldYQ12,targetWorldXQ12,(ArmyMovementRuntime *)ownerEntity);
+                  (targetWorldYQ12,targetWorldXQ12,ModelView_Cast<ArmyMovementRuntime>(ownerEntity));
       }
       else {
         ArmyRuntime_StartClampedMoveCommand
-                  (targetWorldYQ12,targetWorldXQ12,(ArmyMovementRuntime *)ownerEntity);
+                  (targetWorldYQ12,targetWorldXQ12,ModelView_Cast<ArmyMovementRuntime>(ownerEntity));
       }
     }
     return true;
   }
-  if (((ownerEntity->common).commandFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
-    if (((ownerEntity->common).commandTarget.targetFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
-      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)ownerEntity);
+  if (((ownerEntity->common).commandFlags & ToBits(ARMY_MOVEMENT_TARGET_FOLLOWING)) != 0) {
+    if (((ownerEntity->common).commandTarget.targetFlags & ToBits(ARMY_COMMAND_MODE_AI_COMBAT_TARGET)) == 0) {
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ModelView_Cast<ArmyMovementRuntime>(ownerEntity));
     }
     else {
-      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)ownerEntity);
+      ArmyRuntime_ResetMovementStateFromCurrentPosition(ModelView_Cast<ArmyMovementRuntime>(ownerEntity));
     }
   }
   return false;
@@ -432,9 +431,9 @@ void ArmyRuntime_AppendWaypointOrStartMove
 {
   uint32_t waypointCount;
 
-  if (((movementRuntime->movementStateFlags & ARMY_MOVEMENT_DIRECT) == 0) &&
-     ((movementRuntime->movementStateFlags & (ARMY_MOVEMENT_LOCKED | ARMY_MOVEMENT_ACTIVE)) != 0)) {
-    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) == 0) {
+  if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_DIRECT) &&
+     (Any(movementRuntime->movementStateFlags & (ARMY_MOVEMENT_LOCKED | ARMY_MOVEMENT_ACTIVE)))) {
+    if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED)) {
       movementRuntime->queuedWaypointCount = 0;
       movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | ARMY_MOVEMENT_WAYPOINTS_QUEUED;
     }
@@ -443,7 +442,7 @@ void ArmyRuntime_AppendWaypointOrStartMove
     if (waypointCount < ARMY_MOVEMENT_WAYPOINT_CAPACITY) {
       waypointCount = waypointCount + 1;
     }
-    movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~(uint32_t)(ARMY_COMMAND_MODE_UNUSED_400 | ARMY_COMMAND_MODE_SELECTION_ORDER);
+    movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_UNUSED_400 | ARMY_COMMAND_MODE_SELECTION_ORDER);
     movementRuntime->queuedWaypoints[waypointCount - 1].worldXQ12 = targetWorldX;
     movementRuntime->queuedWaypoints[waypointCount - 1].worldYQ12 = targetWorldY;
     movementRuntime->queuedWaypointCount = waypointCount;
@@ -469,13 +468,13 @@ void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
   Q12 *waypointCoordinateWrite;
   PathingDestination resolvedDestination;
 
-  if (((movementRuntime->movementStateFlags & (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_LOCKED)) == 0) &&
+  if (!Any(movementRuntime->movementStateFlags & (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_LOCKED)) &&
       (movementRuntime->retryCountdown == 0)) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
     movementRuntime->movementStateFlags =
          movementRuntime->movementStateFlags &
          ~(ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ROUTE_POINT_REACHED |ARMY_MOVEMENT_WAYPOINTS_QUEUED);
-    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE) != 0) {
+    if (Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE)) {
       /* Forward dword-by-dword copy (not memmove) of 16 dwords from fallbackPosition to the queuedWaypoints
          that directly follow it, exactly as in the original. The ranges overlap by 8 bytes, so this does not
          shift the queue: it fills all 8 waypoints with fallbackPosition. */
@@ -520,10 +519,10 @@ void ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *mov
   GraphicsWorldCoordinateQ12 currentWorldXQ12;
   GraphicsWorldCoordinateQ12 currentWorldYQ12;
 
-  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) == 0) {
+  if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED)) {
     movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_ACTIVE;
   }
-  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ROUTED) == 0) {
+  if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_ROUTED)) {
     currentWorldXQ12 = (movementRuntime->modelNodeRuntime->worldTransform).translation.x;
     currentWorldYQ12 = (movementRuntime->modelNodeRuntime->worldTransform).translation.y;
     (movementRuntime->fallbackPosition).worldXQ12 = currentWorldXQ12;
@@ -548,7 +547,7 @@ void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *move
   GraphicsWorldCoordinateQ12 currentWorldXQ12;
   GraphicsWorldCoordinateQ12 currentWorldYQ12;
 
-  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) == 0) {
+  if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED)) {
     movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_ACTIVE;
   }
   else {
@@ -570,7 +569,7 @@ void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *move
    step repeated); otherwise the route is rebuilt when the model moved or the retry countdown ran out. Near
    the final target the move ends (arrived, current position); farther away a direct move to it is started.
 */
-Bool8 ArmyRuntime_UpdateMovementAndWaypoints
+bool ArmyRuntime_UpdateMovementAndWaypoints
           (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime,Q12 *outWorldXQ12,
           Q12 *outWorldYQ12)
 
@@ -587,15 +586,15 @@ Bool8 ArmyRuntime_UpdateMovementAndWaypoints
   int waypointIndex;
   uint32_t distanceX;
   uint32_t distanceY;
-  Bool8 belowThreshold;
+  bool belowThreshold;
   PathingDestination resolvedDestination;
   Q12 queuedWorldYQ12;
   Q12 queuedWorldXQ12;
   ModelRuntimeNode *modelNode;
 
   modelNode = movementRuntime->modelNodeRuntime;
-  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ROUTE_POINT_REACHED) == 0) {
-    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE) != 0) {
+  if (!Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_ROUTE_POINT_REACHED)) {
+    if (Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE)) {
       movementWorldX = movementRuntime->movementWorldXQ12;
       movementWorldY = movementRuntime->movementWorldYQ12;
       *outWorldYQ12 = movementWorldY;
@@ -611,7 +610,7 @@ Bool8 ArmyRuntime_UpdateMovementAndWaypoints
             (modelNode->worldTransform).translation.y;
     if ((offsetX < ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12) && (offsetY < ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12) &&
         (-ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 < offsetX) && (-ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 < offsetY)) {
-      if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) != 0) {
+      if (Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED)) {
         /* pop queuedWaypoints[0] and move the other seven entries down */
         queuedWorldXQ12 = movementRuntime->queuedWaypoints[0].worldXQ12;
         queuedWorldYQ12 = movementRuntime->queuedWaypoints[0].worldYQ12;
@@ -703,16 +702,16 @@ void ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRun
   ArmyCommandGeneration standardGeneration;
 
   standardGeneration = g_ArmyCommandGenerationStandard;
-  if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
-    if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
-      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
+  if (Any(armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING)) {
+    if (!Any(armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET)) {
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
     else {
-      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
+      ArmyRuntime_ResetMovementStateFromCurrentPosition(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
   }
   if (targetArmyRuntime == nullptr) {
-    armyRuntime->commandModeFlags = 0;
+    armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_NONE;
     armyRuntime->commandGeneration = 0;
   }
   else {
@@ -731,12 +730,12 @@ void ArmyRuntime_ApplyTargetPositionCommand
 {
   ArmyCommandGeneration commandGeneration;
 
-  if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
-    if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
-      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
+  if (Any(armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING)) {
+    if (!Any(armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET)) {
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
     else {
-      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
+      ArmyRuntime_ResetMovementStateFromCurrentPosition(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
   }
   armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_TARGET_POSITION;
@@ -764,7 +763,7 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
   ownerModelNode = (entityRuntime->common).ownership.modelNode;
   commandFlagsField = &(entityRuntime->common).commandFlags;
   *commandFlagsField = *commandFlagsField &
-                      ~(uint32_t)(ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_WAYPOINTS_QUEUED |
+                      ~ToBits(ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_WAYPOINTS_QUEUED |
                                   ARMY_MOVEMENT_ROUTE_POINT_REACHED | ARMY_MOVEMENT_TARGET_FOLLOWING);
   modelX = (ownerModelNode->worldTransform).translation.x;
   modelY = (ownerModelNode->worldTransform).translation.y;
@@ -782,7 +781,7 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
    no longer see is dropped (entity and flags cleared). Writes the position to *outPosition and returns true, or
    returns false when there is none.
 */
-Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition)
+bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition)
 
 {
   GameEntityRuntime *commandTargetEntity;
@@ -811,7 +810,7 @@ Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetSt
   }
   /* two bits per faction; the upper one = the target is visible to that faction */
   visibilityMask = 2u << ((uint8_t)((targetState->common).ownership.ownerIndex * 2) & 31);
-  targetModelRuntime = (ModelRuntimeSlot *)(commandTargetEntity->common).ownership.definitionOrClassRecord;
+  targetModelRuntime = (commandTargetEntity->common).ownership.modelRuntime();
   if (((commandTargetEntity->common).damageState.factionVisibilityBits1C & visibilityMask) == 0) {
     /* the owner's faction lost sight of the target: drop it */
     (targetState->common).commandTarget.targetEntity = nullptr;

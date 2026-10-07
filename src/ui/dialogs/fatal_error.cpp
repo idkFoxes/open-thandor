@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/dialogs/fatal_error.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -19,39 +20,40 @@ static UiRootCallbacks g_FatalErrorDialogRootCallbacks = {
     .method08 = UI_SLOT(FatalErrorDialog_BlockMissedPointerPress),
     .pointerMissPolicy = UI_SLOT(FatalErrorDialog_BlockMissedPointerMotion)};
 
-static FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
+FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
         { /* +0000 fatalErrorPanel g_UiPanelControlVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
-            .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
-            .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -160, .rightOffset = 160, .bottomOffset = 44,
-            .leftAnchorQ31 = 0x50000000, .topAnchorQ31 = 0x50000000, .rightAnchorQ31 = 0x50000000, .bottomAnchorQ31 = 0x50000000,
-            .layoutWidth = -1, .layoutHeight = -1},
-        {
-            0x00000003, 0xFFFFFFFF, 0xFFFFFFFF},
+            .root = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
+                    .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = -160, .rightOffset = 160, .bottomOffset = 44,
+                    .leftAnchorQ31 = 0x50000000, .topAnchorQ31 = 0x50000000, .rightAnchorQ31 = 0x50000000, .bottomAnchorQ31 = 0x50000000,
+                    .layoutWidth = -1, .layoutHeight = -1},
+                .rootFlags = UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME, .callbacks = THANDOR_PTR32_BITS(0xFFFFFFFF),
+                .previousRoot = THANDOR_PTR32_BITS(0xFFFFFFFF)}},
         { /* +0058 errorMessageText g_UiListOffsetControlVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
-            .leftOffset = 6, .topOffset = 6, .rightOffset = -6, .bottomOffset = -38,
-            .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
-            .layoutWidth = -1, .layoutHeight = -1},
-        {
-            0x00000015},
+            .base = {
+                .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+                .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
+                .leftOffset = 6, .topOffset = 6, .rightOffset = -6, .bottomOffset = -38,
+                .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .labelFlags = 0x00000015},
         { /* +00B4 okButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = -108, .topOffset = -32, .rightOffset = -12, .bottomOffset = -6,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
-            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
-        {
-            0x0000000C, 0x00000001, 0x00000100},
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_PREFERRED_FOCUS_TARGET},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x0000000C), .actionId = 0x00000001, .textResourceId = 0x00000100},
 };
 
 /* method08 of g_FatalErrorDialogRootCallbacks, the callbacks of the fatal-error dialog root: always returns true, so
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).
 */
-Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
+bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
 
 {
   return true;
@@ -83,12 +85,11 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
    builds the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames
    until the dialog is dismissed, so the caller can carry on (the caller knows the failure from its own flag).
 */
-uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 failed)
+uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,bool failed)
 
 {
   UiRootNode *dialogRoot;
   uint16_t *stream;
-  int remainingDwords;
   const uint32_t *templateImageCursor;
   uint32_t *templateCopyCursor;
   RichTextExtent wrappedExtent;
@@ -104,7 +105,7 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
     /* no dialog state allocated yet: FatalError_Exit, which does not return */
     error = FatalError_ExitIfFailed(error,true);
   }
-  stream = (uint16_t *)error;
+  stream = reinterpret_cast<uint16_t *>(error); /* a rich-text stream passed as an address */
   if (FATAL_ERROR_IS_CODE(error)) {
     /* only resolved error-page texts get the payload selectors 0..3 patched (FatalError_Exit patches
        every stream) */
@@ -115,26 +116,21 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
     RichTextCommandStream_PatchPayloadBySelector(3,g_FatalErrorDetail3Utf16,stream);
   }
   /* the message text goes into the template image itself, which is then copied */
-  ((UiWrappedTextControl *)&g_FatalErrorUiRootTemplateImage.errorMessageText)->text = stream;
+  g_FatalErrorUiRootTemplateImage.errorMessageText.text = stream;
   /* copy the dialog template image into the allocated root node, one dword per step */
-  templateImageCursor = (const uint32_t *)&g_FatalErrorUiRootTemplateImage;
-  templateCopyCursor = (uint32_t *)g_FatalErrorUiRootTemplate;
-  for (remainingDwords = sizeof g_FatalErrorUiRootTemplateImage / sizeof(uint32_t); remainingDwords != 0;
-       remainingDwords--) {
-    *templateCopyCursor = *templateImageCursor;
-    templateImageCursor++;
-    templateCopyCursor++;
-  }
+  templateImageCursor = reinterpret_cast<const uint32_t *>(&g_FatalErrorUiRootTemplateImage);
+  templateCopyCursor = reinterpret_cast<uint32_t *>(g_FatalErrorUiRootTemplate);
+  std::copy_n(templateImageCursor,sizeof g_FatalErrorUiRootTemplateImage / sizeof(uint32_t),templateCopyCursor);
   dialogRoot = g_FatalErrorUiRootTemplate;
   /* the text height is subtracted from the dialog's top offset; the wrap width is the panel width (its
      right - left offset) narrowed by the text's left and right insets, all read from the template image */
   wrappedExtent = RichTextCommandStream_MeasureWrappedBlock
                     (g_UiTextStyleNormal,
-                     ((UiWrappedTextControl *)&g_FatalErrorUiRootTemplateImage.errorMessageText)->text,
-                     ((g_FatalErrorUiRootTemplateImage.fatalErrorPanel.rightOffset -
-                       g_FatalErrorUiRootTemplateImage.fatalErrorPanel.leftOffset) +
-                     g_FatalErrorUiRootTemplateImage.errorMessageText.rightOffset) -
-                    g_FatalErrorUiRootTemplateImage.errorMessageText.leftOffset);
+                     g_FatalErrorUiRootTemplateImage.errorMessageText.text,
+                     ((g_FatalErrorUiRootTemplateImage.fatalErrorPanel.root.base.rightOffset -
+                       g_FatalErrorUiRootTemplateImage.fatalErrorPanel.root.base.leftOffset) +
+                     g_FatalErrorUiRootTemplateImage.errorMessageText.base.rightOffset) -
+                    g_FatalErrorUiRootTemplateImage.errorMessageText.base.leftOffset);
   dialogRoot->base.topOffset = dialogRoot->base.topOffset - wrappedExtent.heightPixels;
   UiRootStack_Push(&g_FatalErrorDialogRootCallbacks,g_FatalErrorUiRootTemplate);
   g_UiPointerCaptureTarget = UI_NODE_NONE;
@@ -160,6 +156,6 @@ void ErrorRuntime_InstallUiHandlerAndAllocateState()
 
   if (g_MemoryApi.alloc(sizeof g_FatalErrorUiRootTemplateImage,&allocPayload) == 0) {
     g_FatalErrorReportHandler = FatalErrorRuntime_DispatchPendingError;
-    g_FatalErrorUiRootTemplate = (UiRootNode *)allocPayload;
+    g_FatalErrorUiRootTemplate = static_cast<UiRootNode *>(allocPayload);
   }
 }

@@ -14,13 +14,13 @@
 
 /* labelFlags of a UiSingleLineTextControl behind g_UiFocusProxyControlVtable (UiSingleLineTextControl_*
    forwarding handlers), next to the UI_LABEL_* bits in text.h. */
-#define UI_LABEL_TEXT_NEEDS_RELOCATION 0x20 /* text is still a serialized offset */
-#define UI_LABEL_WHEEL_FORWARD_ACTIVE 0x400 /* re-entry guard of the pointer-wheel forwarding */
-#define UI_LABEL_SWALLOW_CHARACTERS 0x8000 /* typed characters with bit 0x10 or 0x20 are consumed, not forwarded */
+inline constexpr int32_t UI_LABEL_TEXT_NEEDS_RELOCATION = 0x20; /* text is still a serialized offset */
+inline constexpr int32_t UI_LABEL_WHEEL_FORWARD_ACTIVE = 0x400; /* re-entry guard of the pointer-wheel forwarding */
+inline constexpr int32_t UI_LABEL_SWALLOW_CHARACTERS = 0x8000; /* typed characters with bit 0x10 or 0x20 are consumed, not forwarded */
 /* Character-code bits UI_LABEL_SWALLOW_CHARACTERS tests (0x10 | 0x20) */
-#define UI_LABEL_SWALLOWED_CHARACTER_BITS 0x30
+inline constexpr int32_t UI_LABEL_SWALLOWED_CHARACTER_BITS = 0x30;
 
-Bool8 UiSingleLineTextControl_ForwardKeyboardEventToChild
+bool UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control);
 
 void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent

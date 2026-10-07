@@ -11,9 +11,13 @@
 #include <thandor/world/pathing/route.h>
 #include <thandor/thandor.h>
 
+/* EntityPathing_UpdateRouteSegment reads a GameEntityRuntime through its ownership-prefix view (step 13 X7b:
+   ModelView_Cast between the two instead of C-style casts; only this file converts between them). */
+THANDOR_SLOT_OVERLAY(EntityPathingRouteEntityRuntimeView, GameEntityRuntime);
+
 /* The 32 pairs g_EntityPathingPriorityPairs points at (EntityPathing_RebuildOverlappingGroupRoutes
    fills at most ENTITY_PATHING_PRIORITY_PAIR_CAPACITY of them and heap-sorts them in place) */
-#define ENTITY_PATHING_PRIORITY_PAIR_CAPACITY 32
+static constexpr int ENTITY_PATHING_PRIORITY_PAIR_CAPACITY = 32;
 
 /* Module data. */
 
@@ -76,15 +80,15 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   uint32_t rowLimit;
   GridPathUnreachableReferenceRow32 targetRow;
   GridScratchCell *routeScratchCell;
-  Bool8 segmentBlocked;
+  bool segmentBlocked;
   WorldPositionXY primaryWorldPosition;
-  Bool8 startRelocated;
+  bool startRelocated;
   FieldGridCellCoordinate nearestRow;
   FieldGridCellCoordinate nearestColumn;
   FieldGridCellCoordinate reachableRow;
   FieldGridCellCoordinate reachableColumn;
   PathingDestination resolvedDestination;
-  Bool8 backtrackReachedTarget;
+  bool backtrackReachedTarget;
   FieldGridCellCoordinate backtrackRow;
   FieldGridCellCoordinate backtrackColumn;
   FieldGridRegionMask backtrackRouteStateMask;
@@ -142,16 +146,16 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   }
   targetColumn = columnLimit - 2;
   targetRow = rowLimit - 2;
-  modelDefinition = (ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord;
+  modelDefinition = (routeEntityRuntime->common).ownership.modelDefinition();
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
   runtimeClassId = modelDefinition->runtimeClassId;
   if (overlappedEntity != nullptr) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
-      [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId])
+      [(overlappedEntity->common).ownership.modelDefinition()->runtimeClassId])
               (overlappedEntity);
   }
-  armyRuntime = (ArmyRuntimeSlot *)(routeEntityRuntime->common).ownership.runtimeLink;
+  armyRuntime = (routeEntityRuntime->common).ownership.linkedArmyRuntime();
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove[runtimeClassId]
             (routeEntityRuntime);
   g_GridPathEntityClassMask = 1 << ((uint8_t)armyRuntime->factionIndex & 31);
@@ -218,13 +222,13 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       /* high-cost cells block the backtrack's straight-line test, unless bit 1 of the runtime record's
          movementStateFlags is set */
       callerBlockingMask = g_GridPathHighCostMask;
-      if ((((ArmyRuntimeSlot *)(routeEntityRuntime->common).ownership.runtimeLink)->movementStateFlags & 2) != 0) {
+      if (Any((routeEntityRuntime->common).ownership.linkedArmyRuntime()->movementStateFlags & ARMY_MOVEMENT_LOCKED)) {
         callerBlockingMask = 0;
       }
       /* the start cell again: one row below routeScratchCell */
       backtrackReachedTarget = GridPathCost_BacktrackBestHexRoute
                          (callerBlockingMask,startRow,startColumn,
-                          (GridScratchCell *)((uint8_t *)routeScratchCell + rowStrideBytes),
+                          GridScratchCell_RowBelow(routeScratchCell,rowStrideBytes),
                           &backtrackRow,&backtrackColumn,&backtrackRouteStateMask);
     }
     if (segmentBlocked && !backtrackReachedTarget) {
@@ -246,10 +250,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   targetWorldXQ12 = fallbackWorldPosition.worldXQ12;
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
-  runtimeClassId = ((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->runtimeClassId;
+  runtimeClassId = (routeEntityRuntime->common).ownership.modelDefinition()->runtimeClassId;
   if (overlappedEntity != nullptr) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-      [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId])
+      [(overlappedEntity->common).ownership.modelDefinition()->runtimeClassId])
               (overlappedEntity);
   }
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[runtimeClassId](routeEntityRuntime);
@@ -277,8 +281,8 @@ EntityPathing_RebuildOverlappingGroupRoutes
   int32_t swappedPriority;
   int entityWorldY;
   GameEntityRuntime *candidateEntity;
-  void *candidateRecord;
-  void *candidateDefinition;
+  ArmyRuntimeSlot *candidateArmy;
+  ModelDefinition *candidateDefinition;
   int32_t rootPriority;
   EntityPathingPriorityPair *heapBase;
   DepthBinMask32 secondMaskHigh;
@@ -294,7 +298,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
   int deltaY;
   EntityPathingPriorityPair *influencePair;
   EntityPathingPriorityPair *pairCursor;
-  Bool8 masksOverlap;
+  bool masksOverlap;
   WorldPositionXY routeTarget;
   WorldPositionXY resolvedTarget;
   ModelRuntimeNode *entityModelNode;
@@ -319,7 +323,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
     searchRadius = deltaY;
   }
   /* the definition's clearance radius */
-  searchRadius = searchRadius + (int)((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->footprintRadius;
+  searchRadius = searchRadius + (int)(routeEntityRuntime->common).ownership.modelDefinition()->footprintRadius;
   secondMaskHigh = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldX + targetWorldX) >> 1);
   secondMaskLow = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldY + targetWorldY) >> 1);
   pairSlotsLeft = ENTITY_PATHING_PRIORITY_PAIR_CAPACITY; /* g_EntityPathingPriorityPairs points at g_EntityPathingPriorityPairStorage */
@@ -327,12 +331,12 @@ EntityPathing_RebuildOverlappingGroupRoutes
   pairCursor = g_EntityPathingPriorityPairs;
   do {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      candidateEntity = (GameEntityRuntime *)ownerNode->runtimePayload;
-      candidateRecord = (candidateEntity->common).ownership.definitionOrClassRecord;
+      candidateEntity = WorldOwnerNode_EntityRuntime(ownerNode);
+      candidateDefinition = (candidateEntity->common).ownership.modelDefinition();
       masksOverlap = DepthBinMasks_Overlap
                          (ownerNode->modelDepthBinMaskFar,ownerNode->modelDepthBinMaskNear,
                           secondMaskLow,secondMaskHigh);
-      if ((masksOverlap) && (((ModelDefinition *)candidateRecord)->accelerationPerTick != 0)) {
+      if ((masksOverlap) && (candidateDefinition->accelerationPerTick != 0)) {
         pairCursor->entity = candidateEntity;
         pairCursor->priority = 0;
         g_EntityPathingPriorityPairCount++;
@@ -348,18 +352,18 @@ EntityPathing_RebuildOverlappingGroupRoutes
   if (1 < g_EntityPathingPriorityPairCount) {
     /* priority: 0 when bit 1 of the runtime record's movementStateFlags is set, 1 for another faction
        (factionIndex), 2 for the own faction, plus the definition's movementSpeed weight when flag bit 0 is clear */
-    routeFactionIndex = ((ArmyRuntimeSlot *)(routeEntityRuntime->common).ownership.runtimeLink)->factionIndex;
+    routeFactionIndex = (routeEntityRuntime->common).ownership.linkedArmyRuntime()->factionIndex;
     pairsRemaining = g_EntityPathingPriorityPairCount;
     pairCursor = g_EntityPathingPriorityPairs;
     do {
-      candidateRecord = (pairCursor->entity->common).ownership.runtimeLink;
-      candidateDefinition = (pairCursor->entity->common).ownership.definitionOrClassRecord;
-      if ((((ArmyRuntimeSlot *)candidateRecord)->movementStateFlags & 2) == 0) {
+      candidateArmy = (pairCursor->entity->common).ownership.linkedArmyRuntime();
+      candidateDefinition = (pairCursor->entity->common).ownership.modelDefinition();
+      if (!Any(candidateArmy->movementStateFlags & ARMY_MOVEMENT_LOCKED)) {
         pairCursor->priority = pairCursor->priority + 1;
-        if (routeFactionIndex == ((ArmyRuntimeSlot *)candidateRecord)->factionIndex) {
+        if (routeFactionIndex == candidateArmy->factionIndex) {
           pairCursor->priority = pairCursor->priority + 1;
-          if ((((ArmyRuntimeSlot *)candidateRecord)->movementStateFlags & 1) == 0) {
-            pairCursor->priority = pairCursor->priority + ((ModelDefinition *)candidateDefinition)->movementSpeed;
+          if (!Any(candidateArmy->movementStateFlags & ARMY_MOVEMENT_ACTIVE)) {
+            pairCursor->priority = pairCursor->priority + candidateDefinition->movementSpeed;
           }
         }
       }
@@ -393,7 +397,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
     } while (1 < heapSize);
     do {
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-        [((ModelDefinition *)(influencePair->entity->common).ownership.definitionOrClassRecord)->runtimeClassId])
+        [influencePair->entity->common.ownership.modelDefinition()->runtimeClassId])
                 (influencePair->entity);
       pairsRemaining--;
       routesRemaining = g_EntityPathingPriorityPairCount;
@@ -408,19 +412,19 @@ EntityPathing_RebuildOverlappingGroupRoutes
         /* another faction's model is only an obstacle */
         entityModelNode = (candidateEntity->common).ownership.modelNode;
         GridInfluence_SetLowDistanceBandsAroundWorldPoint
-                  (((ModelDefinition *)(candidateEntity->common).ownership.definitionOrClassRecord)->
+                  ((candidateEntity->common).ownership.modelDefinition()->
                    footprintRadius,(entityModelNode->worldTransform).translation.y,
                    (entityModelNode->worldTransform).translation.x);
       }
       else if (candidateEntity == routeEntityRuntime) {
         routeTarget = EntityPathing_UpdateRouteSegment
                            (targetWorldY,targetWorldX,routeEntityRuntime,
-                            (EntityPathingRouteEntityRuntimeView *)candidateEntity);
+                            ModelView_Cast<EntityPathingRouteEntityRuntimeView>(candidateEntity));
       }
       else {
         /* the others keep their own movement target (the 0,0 target is replaced inside) */
         EntityPathing_UpdateRouteSegment
-                  (0,0,routeEntityRuntime,(EntityPathingRouteEntityRuntimeView *)candidateEntity);
+                  (0,0,routeEntityRuntime,ModelView_Cast<EntityPathingRouteEntityRuntimeView>(candidateEntity));
       }
       routesRemaining--;
       pairCursor++;
@@ -487,9 +491,9 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   leftCellWorldX = centerCellWorldX;
   leftWalkCursor = centerCellCursor;
   while ((GridFootprint_ClearTraversalFlagsDiagonalPositive
-            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,(uint32_t *)&leftWalkCursor->stateMask) != 0) &&
+            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,GridScratchCell_StateMaskBits(leftWalkCursor)) != 0) &&
          (GridFootprint_ClearTraversalFlagsDiagonalNegative
-            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,(uint32_t *)&leftWalkCursor->stateMask) != 0)) {
+            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,GridScratchCell_StateMaskBits(leftWalkCursor)) != 0)) {
     leftWalkCursor--;
     leftCellWorldX = leftCellWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
   }
@@ -497,9 +501,9 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   rightCellWorldX = centerCellWorldX;
   rightWalkCursor = centerCellCursor;
   while ((GridFootprint_ClearTraversalFlagsDiagonalPositive
-            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,(uint32_t *)&rightWalkCursor->stateMask) != 0) &&
+            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,GridScratchCell_StateMaskBits(rightWalkCursor)) != 0) &&
          (GridFootprint_ClearTraversalFlagsDiagonalNegative
-            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,(uint32_t *)&rightWalkCursor->stateMask) != 0)) {
+            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,GridScratchCell_StateMaskBits(rightWalkCursor)) != 0)) {
     rightWalkCursor++;
     rightCellWorldX = rightCellWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
   }
@@ -510,13 +514,13 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   rightWalkCursor = leftWalkCursor + 1;
   while (GridFootprint_ClearTraversalFlagsDiagonalPositive
            (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,sideRowLeftWorldX,
-            (uint32_t *)&leftWalkCursor->stateMask) != 0) {
+            GridScratchCell_StateMaskBits(leftWalkCursor)) != 0) {
     leftWalkCursor--;
     sideRowLeftWorldX = sideRowLeftWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
   }
   while (GridFootprint_ClearTraversalFlagsDiagonalPositive
            (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,sideRowRightWorldX,
-            (uint32_t *)&rightWalkCursor->stateMask) != 0) {
+            GridScratchCell_StateMaskBits(rightWalkCursor)) != 0) {
     sideRowRightWorldX = sideRowRightWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
     rightWalkCursor++;
   }
@@ -527,13 +531,13 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   leftWalkCursor = rightWalkCursor - 1;
   while (GridFootprint_ClearTraversalFlagsDiagonalNegative
            (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,sideRowRightWorldX,
-            (uint32_t *)&rightWalkCursor->stateMask) != 0) {
+            GridScratchCell_StateMaskBits(rightWalkCursor)) != 0) {
     rightWalkCursor++;
     sideRowRightWorldX = sideRowRightWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
   }
   while (GridFootprint_ClearTraversalFlagsDiagonalNegative
            (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,sideRowLeftWorldX,
-            (uint32_t *)&leftWalkCursor->stateMask) != 0) {
+            GridScratchCell_StateMaskBits(leftWalkCursor)) != 0) {
     sideRowLeftWorldX = sideRowLeftWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
     leftWalkCursor--;
   }
@@ -564,15 +568,15 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   uint32_t rowLimit;
   uint32_t scaledRowTerm;
   uint32_t footprintRadius;
-  Bool8 segmentBlocked;
+  bool segmentBlocked;
   WorldPositionXY resolvedTarget;
-  Bool8 startRelocated;
+  bool startRelocated;
   ModelRuntimeNode *entityModelNode;
 
   entityModelNode = routeEntityRuntime->modelNode;
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
     [routeEntityRuntime->modelDefinition->runtimeClassId])
-            ((GameEntityRuntime *)routeEntityRuntime);
+            (ModelView_Cast<GameEntityRuntime>(routeEntityRuntime));
   /* start cell from the model position, clamped to 1..size-2 */
   wideProductX = (int64_t)(entityModelNode->worldTransform).translation.x * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
   wideProductY = (int64_t)(entityModelNode->worldTransform).translation.y * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
@@ -597,7 +601,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   startColumn = columnLimit - 2;
   startRow = rowLimit - 2;
   entityMovement = routeEntityRuntime->movementRuntime;
-  if ((GameEntityRuntime *)routeEntityRuntime != sourceRouteEntityRuntime) {
+  if (ModelView_Cast<GameEntityRuntime>(routeEntityRuntime) != sourceRouteEntityRuntime) {
     targetWorldXQ12 = entityMovement->movementWorldXQ12;
     targetWorldYQ12 = entityMovement->movementWorldYQ12;
   }
@@ -686,7 +690,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
     }
   }
   entityMovement = routeEntityRuntime->movementRuntime;
-  if (((GameEntityRuntime *)routeEntityRuntime != sourceRouteEntityRuntime) &&
+  if ((ModelView_Cast<GameEntityRuntime>(routeEntityRuntime) != sourceRouteEntityRuntime) &&
      ((targetWorldXQ12 != entityMovement->movementWorldXQ12 ||
       (targetWorldYQ12 != entityMovement->movementWorldYQ12)))) {
     ArmyRuntime_SetPendingMoveTarget(targetWorldYQ12,targetWorldXQ12,entityMovement);

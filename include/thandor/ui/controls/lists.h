@@ -15,12 +15,12 @@
 
 /* UiListControl.listStateFlags: bits 24..31 count down the frames until a deferred list action is queued (tick
    callbacks). */
-#define UI_LIST_COUNTDOWN_SHIFT 24
-#define UI_LIST_COUNTDOWN_ONE 0x1000000
-#define UI_LIST_COUNTDOWN_MASK 0xff000000
-#define UI_LIST_FLAGS_MASK 0xffffff
+inline constexpr int32_t UI_LIST_COUNTDOWN_SHIFT = 24;
+inline constexpr int32_t UI_LIST_COUNTDOWN_ONE = 0x1000000;
+inline constexpr uint32_t UI_LIST_COUNTDOWN_MASK = 0xff000000;
+inline constexpr int32_t UI_LIST_FLAGS_MASK = 0xffffff;
 
-Bool8 UiListControl_HandleKeyboardNavigation
+bool UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control);
 
 void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control);
@@ -46,7 +46,7 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,Ptr32<void> *r
 
 void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListControl *control);
 
-UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,Bool8 *outConfirmed);
+UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,bool *outConfirmed);
 
 void UiPointerList_SortByExpandedTextFieldAscending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
@@ -59,7 +59,7 @@ void UiTextListControl_SelectRowFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextListControl *control);
 
-Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
+bool UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextListControl *control);
 

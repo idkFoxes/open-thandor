@@ -27,6 +27,20 @@ static GraphicsFixedVec3 g_ModelBoundsTransformedPoint = {};
 
 GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix = {};
 
+/* The original walks a node's childNodes[] by moving the node pointer itself one 32-bit slot on, so that
+   cursor->childNodes[0] is the next child (step 13 X7b: one named reinterpret_cast for that walk). */
+static inline ModelRuntimeNode *ModelRuntimeNode_NextChildSlotCursor(ModelRuntimeNode *cursor)
+{
+  return reinterpret_cast<ModelRuntimeNode *>(reinterpret_cast<uint32_t *>(cursor) + 1);
+}
+
+/* The attachment transform records of a model resource: packedLookupTableRelativeOffset bytes after its start. */
+static inline ModelAttachmentTransformRecord *ModelResource_AttachmentTransformRecords(ModelResource *resource)
+{
+  return reinterpret_cast<ModelAttachmentTransformRecord *>
+           (reinterpret_cast<uint8_t *>(resource) + resource->packedLookupTableRelativeOffset);
+}
+
 /* Fades the model's tint one step toward the target its state flags ask for and applies it to the whole
    hierarchy (called by the army terrainStateRefresh maintenance phase in gameplay/army/class_dispatch.cpp). Targets:
    flag 4 white and opaque; else flag 8 with 0x10 white and transparent, flag 8 alone grey 0x87 and opaque,
@@ -39,7 +53,7 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   uint8_t *clampTable;
   uint8_t clampedColorByte;
   uint8_t clampedAlphaByte;
-  uint32_t runtimeFlags;
+  ModelRuntimeFlags runtimeFlags;
   uint32_t previousTint;
   int colorIntensity;
   PackedArgb32 tintArgb;
@@ -48,25 +62,25 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   colorIntensity = 255;
   alphaIntensity = 255;
   runtimeFlags = modelNodeRuntime->runtimeFlags;
-  if ((runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) == 0) {
+  if (!Any(runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT)) {
     colorIntensity = 0;
     alphaIntensity = 0;
-    if ((runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0) {
+    if (Any(runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE)) {
       colorIntensity = 255;
       alphaIntensity = 0;
-      if ((runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
+      if (!Any(runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED)) {
         colorIntensity = 135;
         alphaIntensity = 255;
       }
     }
   }
-  if ((runtimeFlags & MODEL_NODE_FLAG_FORCE_TRANSPARENT) != 0) {
+  if (Any(runtimeFlags & MODEL_NODE_FLAG_FORCE_TRANSPARENT)) {
     alphaIntensity = 0;
   }
   previousTint = modelNodeRuntime->tintArgb;
   /* The clamp table is 64-KiB aligned: the target intensity is the low index byte and the previous tint
      byte the high one, i.e. it is indexed with (previous << 8) | target. */
-  clampTable = (uint8_t *)g_GraphicsIntensityClampTableBase;
+  clampTable = reinterpret_cast<uint8_t *>(g_GraphicsIntensityClampTableBase); /* the table address is kept as uintptr_t */
   clampedColorByte = clampTable[(int32_t)(((previousTint >> 16) & 0xff) << 8 | (uint32_t)colorIntensity)];
   clampedAlphaByte = clampTable[(int32_t)((previousTint >> 24) << 8 | (uint32_t)alphaIntensity)];
   tintArgb = (uint32_t)clampedAlphaByte << 24 | (uint32_t)clampedColorByte << 16 | (uint32_t)clampedColorByte << 8 |
@@ -112,7 +126,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
       ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
                 (paletteAsset,textureSet,node->childNodes[0]);
       /* the original steps the node pointer by 4 bytes, so childNodes[0] walks through all children */
-      node = (ModelRuntimeNode *)((uint32_t *)node + 1);
+      node = ModelRuntimeNode_NextChildSlotCursor(node);
     }
   }
 }
@@ -134,12 +148,12 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
   
   resourceView = modelNode->modelPayload.modelResource;
   if (resourceView->meshGroupCount != 0) {
-    geometryRecord = (uint8_t *)(resourceView + 1) + 16;
+    geometryRecord = reinterpret_cast<uint8_t *>(resourceView + 1) + 16;
     /* geometry record: +0x00 byte size of the record, +0x08 vertex count, +0x20 vertices (0x40 bytes each) */
     for (geometryRecordsRemaining = resourceView->packedGeometryRecordCount; geometryRecordsRemaining != 0;
         geometryRecordsRemaining--) {
-      point = (GraphicsFixedVec3 *)(geometryRecord + 32);
-      for (verticesRemaining = *(int *)(geometryRecord + 8); verticesRemaining != 0; verticesRemaining--) {
+      point = reinterpret_cast<GraphicsFixedVec3 *>(geometryRecord + 32);
+      for (verticesRemaining = *reinterpret_cast<int *>(geometryRecord + 8); verticesRemaining != 0; verticesRemaining--) {
         FixedTransform_ApplyPoint
                   (&g_ModelBoundsTransformedPoint,point,
                    &modelNode->worldTransform);
@@ -161,9 +175,9 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
         else if (g_ModelBoundsMaximumZ < g_ModelBoundsTransformedPoint.z) {
           g_ModelBoundsMaximumZ = g_ModelBoundsTransformedPoint.z;
         }
-        point = (GraphicsFixedVec3 *)((uint8_t *)point + 64); /* the next vertex */
+        point = reinterpret_cast<GraphicsFixedVec3 *>(reinterpret_cast<uint8_t *>(point) + 64); /* the next vertex */
       }
-      geometryRecord = geometryRecord + *(int *)geometryRecord;
+      geometryRecord = geometryRecord + *reinterpret_cast<int *>(geometryRecord);
     }
   }
   childIndex = 0;
@@ -248,7 +262,7 @@ void ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNode
       }
     }
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
-    childSlotCursor = (ModelRuntimeNode *)((uint32_t *)childSlotCursor + 1);
+    childSlotCursor = ModelRuntimeNode_NextChildSlotCursor(childSlotCursor);
   }
   modelNodeRuntime->subtreeBoundingRadiusQ12 = maximumRadius;
 }
@@ -331,7 +345,7 @@ ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
    yields the variant the faction's technology selects, which is created in the matching child slot and then
    built the same way. Returns true when a child cannot be created.
 */
-Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
+bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
           GraphicsTextureSet *textureSet,ModelRuntimeSlot *modelRuntimeSlot,
           ModelDefinitionHierarchyNodeAddress32 definitionNode,WorldRuntimeContext *worldRuntime)
@@ -341,16 +355,16 @@ Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
   PckModelDefinitionIdCatalog childDefinitionId;
   int linksRemaining;
   ModelRuntimeAttachmentIndex childSlotIndex;
-  Bool8 childFailed;
+  bool childFailed;
   ModelRuntimeSlot *childModelRuntime;
 
   /* definition node: +8 link count, +0xC the linked definition lists */
-  linksRemaining = *(int *)(definitionNode + 8);
+  linksRemaining = *reinterpret_cast<int *>(definitionNode + 8); /* the node address is an integer (5f) */
   if (linksRemaining != 0) {
     childSlotIndex = 0;
-    do {
+    while (linksRemaining != 0) {
       linkedDefinitionList =
-           *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 12 + childSlotIndex * 4);
+           *reinterpret_cast<ModelLinkedDefinitionListAddress32 *>(definitionNode + 12 + childSlotIndex * 4);
       childDefinitionId =
            ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,linkedDefinitionList);
       if (!ModelRuntimePool_RepairDeferredChild
@@ -366,7 +380,7 @@ Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
       }
       childSlotIndex++;
       linksRemaining--;
-    } while (linksRemaining != 0);
+    }
   }
   return false;
 }
@@ -393,7 +407,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
                 (paletteAsset,textureSet,modelNode->childNodes[0]);
     }
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
-    modelNode = (ModelRuntimeNode *)((uint32_t *)modelNode + 1);
+    modelNode = ModelRuntimeNode_NextChildSlotCursor(modelNode);
   }
 }
 
@@ -402,7 +416,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
    of every model of class 13 (ModelDefinition.runtimeClassId) that points at targetRuntimeId, so no model keeps
    aiming at a destroyed object.
 */
-void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntimeId,int *modelRuntime)
+void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntimeId,ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *modelRuntimeSlot;
@@ -412,7 +426,7 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntim
   if (modelRuntime == nullptr) {
     return;
   }
-  modelRuntimeSlot = (ModelRuntimeSlot *)modelRuntime;
+  modelRuntimeSlot = modelRuntime;
   childrenRemaining = modelRuntimeSlot->attachmentCount;
   if (modelRuntimeSlot->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13 &&
       targetRuntimeId == modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime) {
@@ -423,7 +437,7 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntim
   attachment = modelRuntimeSlot->attachments;
   for (; childrenRemaining != 0; childrenRemaining--) {
     ModelRuntimeHierarchy_ClearMatchingTargetRecursive
-              (targetRuntimeId,(int *)attachment->childModelRuntimeOrSavedOffset);
+              (targetRuntimeId,attachment->childModelRuntimeOrSavedOffset);
     attachment++;
   }
 }
@@ -435,7 +449,7 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntim
    walked (false from the recursion), the record goes into the next of the six attachments[] entries.
    Returns true when the node was walked.
 */
-Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode)
 
 {
@@ -445,7 +459,7 @@ Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
   MdlChildCount childCountRemaining;
   uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransformCursor;
-  Bool8 childWalked;
+  bool childWalked;
   ModelResource *definitionResource;
 
   if ((definitionNode->nodeFlags & 0xf) != 0) {
@@ -456,8 +470,7 @@ Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
   childIndex = 0;
   for (; childCountRemaining != 0; childCountRemaining--) {
     attachmentTransformCursor =
-         (ModelAttachmentTransformRecord *)
-         ((uint8_t *)definitionResource + definitionResource->packedLookupTableRelativeOffset);
+         ModelResource_AttachmentTransformRecords(definitionResource);
     for (transformRecordsRemaining = definitionResource->packedLookupTableEntryCount;
         transformRecordsRemaining != 0;
         transformRecordsRemaining--) {
@@ -502,8 +515,7 @@ static ModelAttachmentTransformRecord *ModelResource_FindChildAttachmentTransfor
   ModelPackedLookupTableEntryCount transformRecordsRemaining;
   uint32_t attachmentKind;
 
-  attachmentTransform = (ModelAttachmentTransformRecord *)
-            ((uint8_t *)resourceView + resourceView->packedLookupTableRelativeOffset);
+  attachmentTransform = ModelResource_AttachmentTransformRecords(resourceView);
   for (transformRecordsRemaining = resourceView->packedLookupTableEntryCount; transformRecordsRemaining != 0;
       transformRecordsRemaining--) {
     attachmentKind = attachmentTransform->packedKindAndSelector & 0xf;
@@ -525,7 +537,7 @@ static ModelAttachmentTransformRecord *ModelResource_FindChildAttachmentTransfor
    non-instantiated definition node) in *outNode, or false when a world node could not be allocated (the
    original returned FATAL_ERROR_GENERAL_FAILURE as its failure value; *outNode is then left unchanged).
 */
-Bool8 ModelNodeRuntime_CreateHierarchyRecursive
+bool ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode,
           WorldRuntimeContext *worldRuntime,ModelRuntimeNode **outNode)
@@ -551,7 +563,7 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
     *outNode = nullptr;
     return true;
   }
-  newNode = (ModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldRuntime);
+  newNode = WorldNode_View<ModelRuntimeNode>(WorldObjectArray_AllocateFreeRecord(worldRuntime));
   if (newNode == nullptr) {
     return false; /* world object pool exhausted */
   }
@@ -567,26 +579,26 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
   newNode->modelPayload.meshGroupMask = UINT32_MAX;
   ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   newNode->runtimePayload.modelRuntime = modelRuntime;
-  newNode->runtimeFlags = newNode->runtimeFlags | 1;
+  newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   /* 0x20: the army belongs to a faction other than 0 */
   if (ownerArmy->factionIndex != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_FACTION_OWNED;
   }
   /* the four bytes of textureSubresourceBaseIndex are cleared one by one */
-  ((uint8_t *)&newNode->textureSubresourceBaseIndex)[0] = 0;
-  ((uint8_t *)&newNode->textureSubresourceBaseIndex)[1] = 0;
-  ((uint8_t *)&newNode->textureSubresourceBaseIndex)[2] = 0;
-  ((uint8_t *)&newNode->textureSubresourceBaseIndex)[3] = 0;
+  reinterpret_cast<uint8_t *>(&newNode->textureSubresourceBaseIndex)[0] = 0;
+  reinterpret_cast<uint8_t *>(&newNode->textureSubresourceBaseIndex)[1] = 0;
+  reinterpret_cast<uint8_t *>(&newNode->textureSubresourceBaseIndex)[2] = 0;
+  reinterpret_cast<uint8_t *>(&newNode->textureSubresourceBaseIndex)[3] = 0;
   modelDefinition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   newNode->tintArgb = 0xffffffff;
   /* ModelDefinition.modelFlags 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
-  if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NOT_REMEMBERED) != 0) {
+  if (Any(modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NOT_REMEMBERED)) {
     newNode->runtimeFlags = newNode->runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   }
-  if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN) != 0) {
+  if (Any(modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN)) {
     newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN;
   }
-  if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NO_SHADING_PASS) == 0) {
+  if (!Any(modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NO_SHADING_PASS)) {
     newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_SHADING_PASS;
   }
   resourceView = definitionNode->spriteAssetReference.modelResource;
@@ -605,7 +617,7 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
        (and reads the child offsets past the serialized header's six); bounded here because a node with a sprite
        and more than six children cannot be valid: registration (ModelDefinition_ResolveNodeSprites) would have
        relocated its sprite reference as a seventh child offset. Extra children are dropped. */
-    static Bool8 s_loggedChildCountOutOfRange = false;
+    static bool s_loggedChildCountOutOfRange = false;
     if (!s_loggedChildCountOutOfRange) {
       s_loggedChildCountOutOfRange = true;
       Thandor_Log("model: MDL node with %u children, only the first 6 are created",childrenRemaining);
@@ -681,7 +693,7 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
       ModelRuntimeNode_ReleaseRecursiveAndDetachParent(childSlotCursor->childNodes[0]);
     }
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
-    childSlotCursor = (ModelRuntimeNode *)((uint32_t *)childSlotCursor + 1);
+    childSlotCursor = ModelRuntimeNode_NextChildSlotCursor(childSlotCursor);
   }
   childSlotCursor = node->parentNode;
   if (childSlotCursor != nullptr) {
@@ -689,10 +701,10 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
       if (childSlotCursor->childNodes[0] == node) {
         childSlotCursor->childNodes[0] = nullptr;
       }
-      childSlotCursor = (ModelRuntimeNode *)((uint32_t *)childSlotCursor + 1);
+      childSlotCursor = ModelRuntimeNode_NextChildSlotCursor(childSlotCursor);
     }
   }
-  WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)node);
+  WorldRuntime_UnlinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(node));
 }
 
 
@@ -711,7 +723,7 @@ void ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode 
       ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNode->childNodes[0]);
     }
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
-    modelNode = (ModelRuntimeNode *)((uint32_t *)modelNode + 1);
+    modelNode = ModelRuntimeNode_NextChildSlotCursor(modelNode);
   }
 }
 
@@ -737,13 +749,13 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
                modelNodeRuntime->modelPayload.worldRotationAngle0);
   }
   if (modelNodeRuntime->childCount != 0) {
-    do {
+    while (childIndex < modelNodeRuntime->childCount) {
       currentChild = modelNodeRuntime->childNodes[childIndex];
       childIndex++;
       if (currentChild != nullptr) {
         /* the scratch matrix (rotation basis plus translation) forms the child's local transform */
         FixedTransform_BuildRotationBasis
-                  ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
+                  (&g_ModelTransformScratchMatrix,
                    currentChild->modelPayload.localRotationAngle2,
                    currentChild->modelPayload.localRotationAngle1,
                    currentChild->modelPayload.localRotationAngle0);
@@ -752,7 +764,7 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
         g_ModelTransformScratchMatrix.translation.z = currentChild->modelPayload.localTranslationZQ12;
         FixedTransform_Compose
                   (&currentChild->worldTransform,
-                   (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
+                   &g_ModelTransformScratchMatrix,
                    &modelNodeRuntime->worldTransform);
         childEulerAngles = FixedTransform_ExtractEulerAngles(&currentChild->worldTransform);
         currentChild->modelPayload.worldRotationAngle2 = childEulerAngles.rollAngle;
@@ -762,11 +774,11 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
         g_ModelTransformScratchMatrix.translation.y = 0;
         g_ModelTransformScratchMatrix.translation.z = 0;
         inheritedTintArgb = modelNodeRuntime->tintArgb;
-        currentChild->runtimeFlags = currentChild->runtimeFlags | 1;
+        currentChild->runtimeFlags = currentChild->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
         currentChild->tintArgb = inheritedTintArgb;
         ModelNodeRuntime_ComposeChildTransformsRecursive(currentChild);
       }
-    } while (childIndex < modelNodeRuntime->childCount);
+    }
   }
 }
 

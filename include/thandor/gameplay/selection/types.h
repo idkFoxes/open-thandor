@@ -9,14 +9,15 @@
 #define THANDOR_GAMEPLAY_SELECTION_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef struct SelectionInfoEntitySlots SelectionInfoEntitySlots, *PSelectionInfoEntitySlots;
-typedef struct SelectionPlayerPairRecord SelectionPlayerPairRecord, *PSelectionPlayerPairRecord;
-typedef struct SelectionPointerArray32 SelectionPointerArray32, *PSelectionPointerArray32;
-typedef struct SelectionPlayerRuntimeBlock SelectionPlayerRuntimeBlock, *PSelectionPlayerRuntimeBlock;
-typedef struct GameEntityRuntime GameEntityRuntime;
+struct SelectionInfoEntitySlots;
+struct SelectionPlayerPairRecord;
+struct SelectionPointerArray32;
+struct SelectionPlayerRuntimeBlock;
+struct GameEntityRuntime;
 
 using SelectionMarkerCoordinateValue32 = uint32_t;
 
@@ -37,6 +38,19 @@ struct SelectionPointerArray32 {
     Ptr32<struct GameEntityRuntime> entries[32]; 
 };
 
+/* SelectionPlayerRuntimeBlock.sessionFlags; PLAYER_SESSION_FLAG_SLOW_RENDERING travels as the third dword of
+   command 0x340 (INGAME_COMMAND_SET_SLOW_RENDERING): ToBits/FromBits there, bit values fixed. */
+enum class PlayerSessionFlags : uint32_t {
+    PLAYER_SESSION_FLAGS_NONE = 0,
+    PLAYER_SESSION_FLAG_PAUSE_REQUESTED = 0x01, /* the player asks for a pause (shown as "P" in the player roster;
+                                                   toggled by InGameCommand_TogglePauseRequest) */
+    PLAYER_SESSION_FLAG_SLOW_RENDERING = 0x02 /* the player's machine renders too few frames (set/cleared through
+                                                 command 0x340 by InGameHud_UpdateStatusCountersAndSessionPrompts;
+                                                 shown as a highlighted "W" in the player roster) */
+};
+THANDOR_FLAG_ENUM(PlayerSessionFlags);
+using enum PlayerSessionFlags;
+
 struct SelectionPlayerRuntimeBlock {
     struct SelectionPointerArray32 selection; 
     struct SelectionPlayerPairRecord markedCells[4096]; // field cells marked with the editor region tool (PlayerPairList_InsertUnique).
@@ -48,9 +62,9 @@ struct SelectionPlayerRuntimeBlock {
     uint32_t placedArmyToken; // army placed/picked in the editor, as an offset from g_ArmyRuntimeRebaseBaseMinusOne; moved and turned by the placement commands.
     UPtr32 pendingPlacementArmyAsset; // ArmyAssetRecordPrefix * taken from the faction's army stock for placement, 0 when none.
     uint32_t chatRecipientMaskAndWriteOffset; // chat recipient mask (bits 8+faction, 16+player) and, in the low byte, the write offset in chatStagingText.
-    UPtr32 technologyPageBuilding; // building (ModelRuntimeSlot *) whose technology page the player has open.
+    UPtr32 technologyPageBuilding; // building (a ModelRuntimeSlot) whose technology page the player has open.
     uint32_t heldResearchUnpaidFlag; // its ARMY_MODEL_STATE_RESEARCH_UNPAID bit, taken away while the page is open.
-    uint32_t sessionFlags;
+    PlayerSessionFlags sessionFlags;
     InGameSimulationStepBatchTicks simulationStepTicks; 
     union {
         uint8_t reserved80B0_8117[104];

@@ -24,7 +24,7 @@ static const uint64_t g_SoftwareBilinearPackedByteClampMask = 0xFFFFFFFFull;
    paletted texel uses the entry's second dword (+4) for everything: the alpha test, the blend colour, and the
    opaque write, which converts it through the pack tables again. Always returns false.
 */
-Bool8 SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -41,9 +41,9 @@ Bool8 SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,
   }
   for (y = 0; y < region.height; y++) {
     const uint8_t *texel = region.texels + y * region.texelStride;
-    uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
+    uint32_t *pixel = reinterpret_cast<uint32_t *>(region.pixels + y * region.pixelStride); /* ARGB row */
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t color = region.palette != nullptr ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
+      uint32_t color = region.palette != nullptr ? Blit_PalettePixel(&region, *texel) : Thandor_LoadU32(texel);
       if (Blit_IsTransparent(color)) {
         continue;
       }
@@ -60,7 +60,7 @@ Bool8 SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,
    the direct-colour path uses >> 2, i.e. it is an ordinary source-alpha blend whose alpha 0xFF still goes
    through the blend tables. Always returns false.
 */
-Bool8 SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -79,9 +79,9 @@ Bool8 SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMax
   sourceShift = region.palette != nullptr ? 3 : 2;
   for (y = 0; y < region.height; y++) {
     const uint8_t *texel = region.texels + y * region.texelStride;
-    uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
+    uint32_t *pixel = reinterpret_cast<uint32_t *>(region.pixels + y * region.pixelStride); /* ARGB row */
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t color = region.palette != nullptr ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
+      uint32_t color = region.palette != nullptr ? Blit_PalettePixel(&region, *texel) : Thandor_LoadU32(texel);
       if (Blit_IsTransparent(color)) {
         continue;
       }
@@ -116,10 +116,11 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
   /* The MMX lanes in plain C. Two destination pixels per step; each blends four ARGB8888 neighbours
      through the word tables g_SoftwareBilinearInverseFactors (weight of the left/upper neighbour) and
      g_SoftwareBilinearForwardFactors (weight of the right/lower one), as PMULHW does. */
-  const short *firstWeights = (const short *)g_SoftwareBilinearInverseFactors;
-  const short *secondWeights = (const short *)g_SoftwareBilinearForwardFactors;
+  /* both tables read flat: row f holds the four word lanes at [f * 4 + lane] */
+  const short *firstWeights = reinterpret_cast<const short *>(g_SoftwareBilinearInverseFactors);
+  const short *secondWeights = reinterpret_cast<const short *>(g_SoftwareBilinearForwardFactors);
   const unsigned long long clampMask = g_SoftwareBilinearPackedByteClampMask;
-  uint8_t *asset = (uint8_t *)sourceAsset;
+  uint8_t *asset = GraphicsTextureSource_Bytes(sourceAsset);
   GraphicsTextureSourceEntry *entry;
   uint8_t *sourceBase;
   uint8_t *sourceRow;
@@ -140,8 +141,7 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
       (subresourceIndex >= sourceAsset->tableDescriptor.subresourceCount)) {
     return;
   }
-  entry = (GraphicsTextureSourceEntry *)(asset + sourceAsset->tableDescriptor.subresourceTableOffset +
-                                         subresourceIndex * sizeof(GraphicsTextureSourceEntry));
+  entry = GraphicsTextureSource_Entries(sourceAsset) + subresourceIndex;
   /* paletteIndex -1: ARGB8888 texels */
   if (((uint32_t)framebuffer->bytesPerPixel != 4) || (entry->paletteIndex != -1)) {
     return;
@@ -158,8 +158,7 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
   if (firstPixelIndex < 0 || endPixelIndex > (int64_t)pitchPixels * framebuffer->height) {
     return;
   }
-  destinationRow = (uint32_t *)framebuffer->pixels +
-                   (int32_t)(destinationY * pitchPixels + destinationX);
+  destinationRow = SoftwareFramebuffer_Pixels32(framebuffer) + (int32_t)(destinationY * pitchPixels + destinationX);
   /* 8.8 fixed-point source steps */
   stepX = ((sourceWidth - 1) * 256) / (destinationWidth - 1);
   stepY = 0;
@@ -205,9 +204,8 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
       }
       /* PACKUSWB of the first pixel with itself duplicates it into both halves; PAND with the clamp mask,
          then POR with the second pixel shifted into the high half. */
-      *(unsigned long long *)out =
-           ((((unsigned long long)pixels[0] << 32) | pixels[0]) & clampMask) |
-           ((unsigned long long)pixels[1] << 32);
+      Thandor_StoreU64(out, ((((unsigned long long)pixels[0] << 32) | pixels[0]) & clampMask) |
+                                ((unsigned long long)pixels[1] << 32));
       out += 2;
     }
     destinationRow = destinationRow + pitchPixels;
@@ -222,7 +220,7 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
    BlitSourceAlpha32, a paletted texel uses the entry's ARGB colour (+0). Quirk: the modulated alpha is at most
    0xFE, so the opaque branch is never taken. Always returns false.
 */
-Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha32
+bool SoftwareTextureSource_BlitModulatedSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -240,9 +238,9 @@ Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha32
   }
   for (y = 0; y < region.height; y++) {
     const uint8_t *texel = region.texels + y * region.texelStride;
-    uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
+    uint32_t *pixel = reinterpret_cast<uint32_t *>(region.pixels + y * region.pixelStride); /* ARGB row */
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t argb = Blit_Modulate(region.palette != nullptr ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel,
+      uint32_t argb = Blit_Modulate(region.palette != nullptr ? Blit_PaletteColor(&region, *texel) : Thandor_LoadU32(texel),
                                  modulationArgb8888);
       if (Blit_IsTransparent(argb)) {
         continue;
@@ -277,7 +275,7 @@ void SoftwareFramebuffer_FillRectArgb32(GraphicsScreenCoordinate clipMaxY,Graphi
   }
   opaque = Blit_IsOpaque(argb8888) ? Blit_ConvertArgb(argb8888) : 0;
   for (y = rectMinY; y < rectMaxY; y++) {
-    uint32_t *pixel = (uint32_t *)framebuffer->pixels + y * (int)framebuffer->width + rectMinX;
+    uint32_t *pixel = SoftwareFramebuffer_Pixels32(framebuffer) + y * (int)framebuffer->width + rectMinX;
     for (x = rectMinX; x < rectMaxX; x++, pixel++) {
       *pixel = Blit_IsOpaque(argb8888) ? opaque : Blit_BlendArgb32(argb8888, *pixel);
     }
@@ -303,11 +301,10 @@ void SoftwareFramebuffer_FillColumnSegments32(GraphicsScreenCoordinate topY,Grap
   for (segment = 0; segment < segmentCount; segment++) {
     remaining = segmentHeights[segment];
     if (remaining != 0) {
-      do {
-        *(uint32_t *)pixelCursor = packedColors[segment];
+      for (; remaining != 0; remaining--) {
+        Thandor_StoreU32(pixelCursor, packedColors[segment]);
         pixelCursor = pixelCursor + strideBytes;
-        remaining--;
-      } while (remaining != 0);
+      }
     }
   }
 }

@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/build_catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -24,15 +25,18 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
 {
   FactionRuntimeIndex factionIndex;
   UiCatalogEntryControl *root;
+  WorldRuntimeContext *worldRuntime;
   PckArmyAssetIdCatalog assetId;
   int entryIndex;
 
-  if ((g_UiCommandRuntimeFlags &
-      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     root = source;
     while ((root->command).sprite.selectable.base.parent != UI_NODE_NONE) {
-      root = (UiCatalogEntryControl *)(root->command).sprite.selectable.base.parent;
+      root = reinterpret_cast<UiCatalogEntryControl *>((root->command).sprite.selectable.base.parent.get());
     }
+    /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
+    worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
     entryIndex = BUILD_CATALOG_ENTRY_COUNT - 1;
     while ((int)((uintptr_t)source - (uintptr_t)root) !=
            g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][entryIndex]) {
@@ -41,14 +45,13 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
         return;
       }
     }
-    if (((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)
-        == 0) {
-      factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+    if (!Any((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)) {
+      factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup48Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_RegisterArmyAssetPointers>(1,assetId,factionIndex);
     }
     else {
-      factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+      factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup48Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_CancelQueuedArmyAssetsAndRefund>(1,assetId,factionIndex);
     }
@@ -63,15 +66,18 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
 {
   FactionRuntimeIndex factionIndex;
   UiCatalogEntryControl *root;
+  WorldRuntimeContext *worldRuntime;
   PckArmyAssetIdCatalog assetId;
   int entryIndex;
 
-  if ((g_UiCommandRuntimeFlags &
-      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     root = source;
     while ((root->command).sprite.selectable.base.parent != UI_NODE_NONE) {
-      root = (UiCatalogEntryControl *)(root->command).sprite.selectable.base.parent;
+      root = reinterpret_cast<UiCatalogEntryControl *>((root->command).sprite.selectable.base.parent.get());
     }
+    /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
+    worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&InGameUi_Image(root)->worldView);
     entryIndex = SPECIAL_BUILD_CATALOG_ENTRY_COUNT - 1;
     while ((int)((uintptr_t)source - (uintptr_t)root) !=
            g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][entryIndex]) {
@@ -80,14 +86,13 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
         return;
       }
     }
-    if (((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)
-        == 0) {
-      factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+    if (!Any((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)) {
+      factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup42Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_RegisterArmyAssetPointers>(1,assetId,factionIndex);
     }
     else {
-      factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+      factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup42Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_CancelQueuedArmyAssetsAndRefund>(1,assetId,factionIndex);
     }
@@ -106,7 +111,7 @@ static void BuildCatalog_FillSlots(InGameRuntimeRootUiGridView *inGameUiGridView
   uint32_t slotIndex;
 
   for (slotIndex = 0; slotIndex < slotCount; slotIndex++) {
-    slotControl = (UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,slotOffsets[slotIndex]);
+    slotControl = Thandor_At<UiCatalogEntryControl>(inGameUiGridView,slotOffsets[slotIndex]);
     if (slotIndex < itemCount) {
       slotControl->command.sprite.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
       xeniteCost = records[slotIndex]->buildXeniteCostQ4;
@@ -147,7 +152,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   int panelHeight;
   UiGridDimensions gridDimensions;
 
-  inGameUiGridView = (InGameRuntimeRootUiGridView *)UiNode_GetRoot(node);
+  inGameUiGridView = UiNode_As<InGameRuntimeRootUiGridView>(UiNode_GetRoot(node));
   /* the local (active) faction */
   factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
   capabilityFlags = SelectionInfo_CollectCapabilityFlags();
@@ -157,7 +162,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
       if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
-      modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+      modelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
       definition = (modelRuntime->definitionOrSavedId).runtimeDefinition;
       if ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime->factionIndex != factionIndex) {
         continue;
@@ -173,7 +178,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   memset(g_UiCatalogGroup48Records,0,sizeof(g_UiCatalogGroup48Records));
   itemCount = 0;
   for (registryIndex = 0; registryIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registryIndex++) {
-    catalogRecord = (UiCommandRuntimeRecordPrefix *)g_ArmyAssetRecordRegistry[registryIndex];
+    catalogRecord = ModelView_Cast<UiCommandRuntimeRecordPrefix>(g_ArmyAssetRecordRegistry[registryIndex]);
     if (catalogRecord != nullptr &&
         (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_BUILDABLE) != 0 &&
         !ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
@@ -182,9 +187,9 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
         catalogRecord->textureSource != nullptr &&
         itemCount < BUILD_CATALOG_ENTRY_COUNT &&
         (catalogRecord->assetFlags14 & capabilityFlags) != 0 &&
-        (!FactionRuntime_IsArmyAssetNotPending(factionIndex,(ArmyAssetRecordPrefix *)catalogRecord) ||
+        (!FactionRuntime_IsArmyAssetNotPending(factionIndex,ModelView_Cast<ArmyAssetRecordPrefix>(catalogRecord)) ||
          !ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
-              (factionIndex,capabilityFlags,(ArmyAssetRecordPrefix *)catalogRecord))) {
+              (factionIndex,capabilityFlags,ModelView_Cast<ArmyAssetRecordPrefix>(catalogRecord)))) {
       g_UiCatalogGroup48Records[itemCount] = catalogRecord;
       itemCount++;
     }
@@ -247,7 +252,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   int panelHeight;
   UiGridDimensions gridDimensions;
 
-  inGameUiGridView = (InGameRuntimeRootUiGridView *)UiNode_GetRoot(node);
+  inGameUiGridView = UiNode_As<InGameRuntimeRootUiGridView>(UiNode_GetRoot(node));
   factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
   /* count the faction's class-11 models */
   structureCount = 0;
@@ -256,7 +261,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    modelRuntime = WorldOwnerNode_ModelRuntime(ownerNode);
     if ((modelRuntime->definitionOrSavedId).runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11 &&
         (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime->factionIndex == factionIndex) {
       structureCount++;
@@ -265,7 +270,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   memset(g_UiCatalogGroup42Records,0,sizeof(g_UiCatalogGroup42Records));
   itemCount = 0;
   for (registryIndex = 0; registryIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registryIndex++) {
-    catalogRecord = (UiCommandRuntimeRecordPrefix *)g_ArmyAssetRecordRegistry[registryIndex];
+    catalogRecord = ModelView_Cast<UiCommandRuntimeRecordPrefix>(g_ArmyAssetRecordRegistry[registryIndex]);
     if (catalogRecord != nullptr &&
         (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_BUILDABLE) != 0 &&
         !ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
@@ -274,9 +279,9 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
         catalogRecord->textureSource != nullptr &&
         itemCount < SPECIAL_BUILD_CATALOG_ENTRY_COUNT &&
         structureCount != 0 &&
-        (!FactionRuntime_IsArmyAssetNotPending(factionIndex,(ArmyAssetRecordPrefix *)catalogRecord) ||
+        (!FactionRuntime_IsArmyAssetNotPending(factionIndex,ModelView_Cast<ArmyAssetRecordPrefix>(catalogRecord)) ||
          !ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
-              (factionIndex,BUILD_CATALOG_ASSET_FLAG_SPECIAL,(ArmyAssetRecordPrefix *)catalogRecord))) {
+              (factionIndex,BUILD_CATALOG_ASSET_FLAG_SPECIAL,ModelView_Cast<ArmyAssetRecordPrefix>(catalogRecord)))) {
       g_UiCatalogGroup42Records[itemCount] = catalogRecord;
       itemCount++;
     }

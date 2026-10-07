@@ -15,15 +15,15 @@
 
 /* Code units of the original numeric text edit buffer (the terminator included); see
    UiTextEditControl_RecomputeLayoutAndClampScroll. */
-#define UI_NUMERIC_TEXT_BUFFER_UNITS 16
+inline constexpr int32_t UI_NUMERIC_TEXT_BUFFER_UNITS = 16;
 /* Byte capacity of each expanded-text scratch buffer of UiPointerList_CompareExpandedText. */
-#define UI_POINTER_LIST_COMPARE_SCRATCH_BYTES 0x400
+inline constexpr int32_t UI_POINTER_LIST_COMPARE_SCRATCH_BYTES = 0x400;
 
 /* The top byte of editStateFlags (text edits) and listStateFlags (text lists) counts frames down. */
-#define UI_STATE_FRAME_COUNTER_UNIT 0x1000000
-#define UI_STATE_FLAGS_MASK 0xffffff /* the flag bits below the counter */
+inline constexpr int32_t UI_STATE_FRAME_COUNTER_UNIT = 0x1000000;
+inline constexpr int32_t UI_STATE_FLAGS_MASK = 0xffffff; /* the flag bits below the counter */
 
-Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
+bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control);
 

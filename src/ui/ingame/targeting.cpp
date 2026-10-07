@@ -38,10 +38,10 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
   /* walk up to the in-game root node */
   root = targetingContext;
   while (root->base.parent != UI_NODE_NONE) {
-    root = (InGameTargetingRootTraversalView *)root->base.parent;
+    root = UiNode_As<InGameTargetingRootTraversalView>(root->base.parent.get());
   }
   payloadKind = root->activeNotificationPayload.payloadKind;
-  if ((root->worldRuntime.runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
+  if (!Any(root->worldRuntime.runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) {
     WorldRuntime_CaptureMotionStateToSnapshot(&root->worldRuntime);
   }
   switch(payloadKind) {
@@ -53,7 +53,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
           (ownerNode->worldXQ12 != root->activeNotificationPayload.worldXQ12)) {
         continue;
       }
-      ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+      ownerArmy = WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
       if ((ownerNode->worldYQ12 != root->activeNotificationPayload.worldYQ12) ||
           (root->worldRuntime.activeFactionRuntimeIndex != ownerArmy->factionIndex)) {
         continue;
@@ -79,7 +79,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
                root->activeNotificationPayload.worldYQ12,root->activeNotificationPayload.worldXQ12,
                &root->worldRuntime);
     root->worldRuntime.runtimeFlags = root->worldRuntime.runtimeFlags & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
-    root->notificationButtonCursorFrame = 27; /* next click cancels */
+    root->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_JUMPED; /* next click cancels */
     break;
   default:
     break;
@@ -100,7 +100,7 @@ void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalVi
     targetingContext->actionState = INGAME_TARGETING_OBSERVED_IDLE;
     parentCursor = targetingContext->base.parent;
     while (parentCursor != UI_NODE_NONE) {
-      targetingContext = (InGameTargetingRootTraversalView *)targetingContext->base.parent;
+      targetingContext = UiNode_As<InGameTargetingRootTraversalView>(targetingContext->base.parent.get());
       parentCursor = targetingContext->base.parent;
     }
     runtimeFlagsField = &targetingContext->worldRuntime.runtimeFlags;

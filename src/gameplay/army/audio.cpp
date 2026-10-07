@@ -22,7 +22,7 @@ static void ArmyRuntimeAudio_UpdateSoundAtModel(WorldRuntimeContext *worldRuntim
       (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+  soundSlot = ArmySound_Slot(worldRuntime,soundSlotIndex);
   if (soundSlot == nullptr) {
     return;
   }
@@ -98,8 +98,8 @@ void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRunt
   ModelDefinition *definition;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) &&
-      ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) ||
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) &&
+      (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) ||
        ((modelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING))) {
     ArmyRuntimeAudio_UpdateSoundAtModel
               (worldRuntime,definition,modelRuntime->rootModelNodeOrSavedOffset.modelNode,
@@ -124,8 +124,8 @@ void ArmyRuntimeAudio_UpdateUnitFactorySounds
 
   modelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) &&
-      ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) ||
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) &&
+      (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) ||
        ((modelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING))) {
     ArmyRuntimeAudio_UpdateSoundAtModel(worldRuntime,definition,modelNode,definition->loopingSoundSlotIndex);
   }
@@ -169,8 +169,8 @@ void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
   ModelDefinition *definition;
 
   modelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) &&
-      ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) ||
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) &&
+      (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) ||
        ((modelRuntime->classState).classStateAC == 1))) {
     definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
     ArmyRuntimeAudio_UpdateSoundAtModel(worldRuntime,definition,modelNode,definition->loopingSoundSlotIndex);
@@ -188,7 +188,7 @@ void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
 void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
+  if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING)) {
     ArmyRuntime_UpdateLoopingPositionedSound(worldRuntime,modelRuntime);
   }
 }
@@ -205,15 +205,15 @@ void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,
   ModelDefinition *definition;
   uint32_t soundSlotIndex;
   SpatialSoundSlot *slot;
-  Bool8 cellMasked;
+  bool cellMasked;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   soundSlotIndex = definition->loopingSoundSlotIndex;
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0) || (soundSlotIndex == 0) ||
+  if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) || (soundSlotIndex == 0) ||
       (soundSlotIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+  slot = ArmySound_Slot(worldRuntime,soundSlotIndex);
   if (slot == nullptr) {
     return;
   }
@@ -242,14 +242,14 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
   int cellColumn;
   uint32_t projectedRow;
   int cellRow;
-  Bool8 capabilityClear;
+  bool capabilityClear;
   FieldGridAsset *fieldGrid;
 
   if ((soundAssetIndex == 0) || (worldContext->dwordArray == nullptr) ||
       (soundAssetIndex >= worldContext->dwordArrayCount)) {
     return;
   }
-  voiceSetRef = (SoundVoiceSet **)worldContext->dwordArray[soundAssetIndex];
+  voiceSetRef = ArmySound_VoiceSetRef(worldContext,soundAssetIndex);
   if (voiceSetRef == nullptr) {
     return;
   }
@@ -272,7 +272,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
   capabilityClear = GameFactionRuntime_TestCapabilityBitClear(activeFactionIndex,factionIndex);
   /* the active faction's byte of the cell's occupancy mask */
   if ((capabilityClear) &&
-      ((((uint8_t *)&fieldGrid->cells[(int32_t)(gridWidthCells * cellRow + cellColumn)].occupancyMask)[activeFactionIndex] &
+      ((FieldGridCell_OccupancyByte(&fieldGrid->cells[(int32_t)(gridWidthCells * cellRow + cellColumn)],activeFactionIndex) &
         ARMY_DEPTH_BIN_STRUCTURE_BIT) != 0) &&
       (16 < g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick)) {
     g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick = 0;
@@ -297,7 +297,7 @@ void ModelRuntime_PlayDefinitionOneShotSound(ModelRuntimeSlot *modelRuntime,uint
   ModelDefinition *definition;
   ModelRuntimeNode *rootNode;
   SoundVoiceSet **voiceSetRef;
-  Bool8 cellMasked;
+  bool cellMasked;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   rootNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
@@ -305,7 +305,7 @@ void ModelRuntime_PlayDefinitionOneShotSound(ModelRuntimeSlot *modelRuntime,uint
       (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
+  voiceSetRef = ArmySound_VoiceSetRef(worldRuntime,soundAssetIndex);
   if (voiceSetRef == nullptr) {
     return;
   }

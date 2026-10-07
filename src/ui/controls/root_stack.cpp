@@ -19,12 +19,12 @@ UiRootNode *g_UiRootNode = UI_ROOT_STACK_END;
    g_UiRootNode (g_UiWindowTextureSource), which is never a root, so in practice this pops every
    root.
 */
-Bool8 UiRootStack_PopUntilWindowTextureBoundary()
+bool UiRootStack_PopUntilWindowTextureBoundary()
 
 {
-  Bool8 popStopped;
+  bool popStopped;
 
-  while (((GraphicsTextureSourceAsset *)g_UiRootNode != g_UiWindowTextureSource &&
+  while ((static_cast<void *>(g_UiRootNode) != static_cast<void *>(g_UiWindowTextureSource) &&
          (g_UiRootNode != UI_ROOT_STACK_END))) {
     popStopped = UiRootStack_Pop(g_UiRootNode);
     if (popStopped) {
@@ -73,10 +73,10 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   root->previousRoot = oldFrontRoot;
   if (oldFrontRoot != UI_ROOT_STACK_END) {
     (oldFrontRoot->base).nextSibling = &root->base;
-    (*((oldFrontRoot->base).vtable)->applyFlags)(0,~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
+    (*((oldFrontRoot->base).vtable)->applyFlags)(UiNodeFlags{},~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
   }
   (*((root->base).vtable)->layout)(&root->base);
-  (*((root->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,0xffffffff,&root->base);
+  (*((root->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,~UiNodeFlags{},&root->base);
   UiKeyboardFocus_SelectInitial(&root->base);
   g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
@@ -88,16 +88,16 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
    initial focus, pointer capture and hover are reset and the whole screen is redrawn. The closed root is
    assumed to be the top one: only g_UiRootNode is replaced.
 */
-Bool8 UiRootStack_Pop(UiRootNode *root)
+bool UiRootStack_Pop(UiRootNode *root)
 
 {
-  Bool8 closeCallbackVetoed;
+  bool closeCallbackVetoed;
   UiRootNode *belowRoot;
   UiNodeBase *parentCursor;
   
   parentCursor = (root->base).parent;
   while (parentCursor != UI_NODE_NONE) {
-    root = (UiRootNode *)(root->base).parent;
+    root = UiNode_As<UiRootNode>((root->base).parent);
     parentCursor = (root->base).parent;
   }
   belowRoot = root->previousRoot;
@@ -113,7 +113,7 @@ Bool8 UiRootStack_Pop(UiRootNode *root)
   g_UiRootNode = belowRoot;
   if (belowRoot != UI_ROOT_STACK_END) {
     (belowRoot->base).nextSibling = UI_NODE_NONE;
-    (*((belowRoot->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,0xffffffff,&belowRoot->base);
+    (*((belowRoot->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,~UiNodeFlags{},&belowRoot->base);
     UiKeyboardFocus_SelectInitial(&belowRoot->base);
   }
   g_UiPointerCaptureTarget = UI_NODE_NONE;
@@ -127,7 +127,7 @@ Bool8 UiRootStack_Pop(UiRootNode *root)
    the current front root, gives it the initial keyboard focus, moves the in-front flag from the old front
    root to it and invalidates both. Always returns false.
 */
-Bool8 UiRootStack_BringToFront(UiRootNode *root)
+bool UiRootStack_BringToFront(UiRootNode *root)
 
 {
   UiRootNode *belowRoot;
@@ -136,7 +136,7 @@ Bool8 UiRootStack_BringToFront(UiRootNode *root)
   UiNodeBase *nextFrontRootLink;
 
   oldFrontRoot = g_UiRootNode;
-  nextRootLink = (UiRootNode *)root->base.nextSibling;
+  nextRootLink = UiNode_As<UiRootNode>(root->base.nextSibling);
   belowRoot = root->previousRoot;
   if (nextRootLink != UI_ROOT_STACK_END) {
     nextRootLink->previousRoot = belowRoot;
@@ -150,8 +150,8 @@ Bool8 UiRootStack_BringToFront(UiRootNode *root)
   g_UiRootNode->base.nextSibling = &root->base;
   g_UiRootNode = root;
   UiKeyboardFocus_SelectInitial(&root->base);
-  (*oldFrontRoot->base.vtable->applyFlags)(0,~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
-  (*root->base.vtable->applyFlags)(UI_NODE_IN_FRONT_ROOT,0xffffffff,&root->base);
+  (*oldFrontRoot->base.vtable->applyFlags)(UiNodeFlags{},~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
+  (*root->base.vtable->applyFlags)(UI_NODE_IN_FRONT_ROOT,~UiNodeFlags{},&root->base);
   UiNode_InvalidateRoot(&oldFrontRoot->base);
   UiNode_InvalidateRoot(&root->base);
   return false;
@@ -217,7 +217,7 @@ void UiRootStack_InvalidateAll()
 static void UiRootStackAction_Pop(void *source)
 
 {
-  UiRootStack_Pop((UiRootNode *)source);
+  UiRootStack_Pop(static_cast<UiRootNode *>(source));
 }
 
 /* (handlers) without the designator: MSVC rejects UI_SLOT elements of a designated array member (C2440). */

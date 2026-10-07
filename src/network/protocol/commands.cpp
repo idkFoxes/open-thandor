@@ -8,6 +8,7 @@
 #include <thandor/network/protocol/commands.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/network/protocol/packet_bytes.h>
 
 /* Module data. */
 
@@ -62,16 +63,16 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
     outputRecord->command.packedCommandAndPlayerId = 0;
     return;
   }
-  copySourceCursor = (uint32_t *)g_FrontendCommandQueueRecords;
-  outputRecordWriteCursor = (uint32_t *)&outputRecord->command;
+  copySourceCursor = Packet_Dwords(g_FrontendCommandQueueRecords);
+  outputRecordWriteCursor = Packet_Dwords(&outputRecord->command);
   /* dword-wise copies: the first record, then the rest of the queue onto the start */
   for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0; firstRecordDwordsRemaining--) {
     *outputRecordWriteCursor = *copySourceCursor;
     copySourceCursor++;
     outputRecordWriteCursor++;
   }
-  copyDestinationCursor = (uint32_t *)g_FrontendCommandQueueRecords;
-  trailingDwordCount = (uint32_t)((uint8_t *)queueEndSnapshot - (uint8_t *)&g_FrontendCommandQueueRecords[1]) >> 2;
+  copyDestinationCursor = Packet_Dwords(g_FrontendCommandQueueRecords);
+  trailingDwordCount = (uint32_t)Packet_ByteDistance(queueEndSnapshot,&g_FrontendCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
     for (; trailingDwordCount != 0; trailingDwordCount--) {
       *copyDestinationCursor = *copySourceCursor;
@@ -126,16 +127,16 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
     outputRecord->command.packedCommandAndPlayerId = 0;
     return;
   }
-  copySourceCursor = (uint32_t *)g_InGameCommandQueueRecords;
-  outputRecordWriteCursor = (uint32_t *)&outputRecord->command;
+  copySourceCursor = Packet_Dwords(g_InGameCommandQueueRecords);
+  outputRecordWriteCursor = Packet_Dwords(&outputRecord->command);
   /* dword-wise copies: the first record (4 dwords), then the rest of the queue onto the start */
   for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0; firstRecordDwordsRemaining--) {
     *outputRecordWriteCursor = *copySourceCursor;
     copySourceCursor++;
     outputRecordWriteCursor++;
   }
-  copyDestinationCursor = (uint32_t *)g_InGameCommandQueueRecords;
-  trailingDwordCount = (uint32_t)((uint8_t *)queueEndSnapshot - (uint8_t *)&g_InGameCommandQueueRecords[1]) >> 2;
+  copyDestinationCursor = Packet_Dwords(g_InGameCommandQueueRecords);
+  trailingDwordCount = (uint32_t)Packet_ByteDistance(queueEndSnapshot,&g_InGameCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
     for (; trailingDwordCount != 0; trailingDwordCount--) {
       *copyDestinationCursor = *copySourceCursor;
@@ -151,7 +152,7 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
    with payloadValue in any of its three payload dwords, so input handlers do not queue a selection change
    twice. Single player has no queue and always answers no.
 */
-Bool8 InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
+bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress)
 
 {
@@ -183,10 +184,10 @@ Bool8 InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32
    lookup helper), and the table identifies a command by its handler's address (CommandDispatch_CodeOfHandler,
    CommandDispatch_IsCommandHandler); only CommandDispatch_ResolveHandler casts a checked entry to
    CommandQueueHandlerProc. */
-typedef struct CommandTableEntry {
+struct CommandTableEntry {
   uint32_t code;
   void *handler;
-} CommandTableEntry;
+};
 
 static const CommandTableEntry g_FrontendCommandTable[] = {
     {0x0, THANDOR_PTR(&FrontendCommandQueue_EnqueueLocalPlayerCommand)},
@@ -332,10 +333,10 @@ typedef enum CommandPayloadCheck {
   COMMAND_CHECK_SAVED_GAME_ROW    /* row of the saved games list (frontend) */
 } CommandPayloadCheck;
 
-typedef struct CommandValidationEntry {
+struct CommandValidationEntry {
   uint32_t code;
   uint8_t payloadChecks[3]; /* CommandPayloadCheck of payload1, payload2, payload3 (handler argument order) */
-} CommandValidationEntry;
+};
 
 static const CommandValidationEntry g_FrontendCommandValidation[] = {
     {FRONTEND_COMMAND_CYCLE_FACTION_COLOUR, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION_ROW}},
@@ -386,14 +387,14 @@ static uint8_t g_InGameCommandValidationLogged[COMMAND_TABLE_COUNT(g_InGameComma
 
 /* False for the table entries that are no four-argument command handlers: the queue functions and the queue
    lookup helper, listed only because they start in the handler regions. */
-static Bool8 CommandDispatch_IsCommandHandler(const void *handler)
+static bool CommandDispatch_IsCommandHandler(const void *handler)
 
 {
-  return handler != (const void *)&FrontendCommandQueue_EnqueueLocalPlayerCommand &&
-         handler != (const void *)&FrontendCommandQueue_DequeueFirstIntoRecord &&
-         handler != (const void *)&InGameCommandQueue_AppendLocalPlayerCommand &&
-         handler != (const void *)&InGameCommandQueue_DequeueFirstIntoRecord &&
-         handler != (const void *)&InGameCommandQueue_ContainsTripletValue;
+  return handler != CommandDispatch_HandlerKey(&FrontendCommandQueue_EnqueueLocalPlayerCommand) &&
+         handler != CommandDispatch_HandlerKey(&FrontendCommandQueue_DequeueFirstIntoRecord) &&
+         handler != CommandDispatch_HandlerKey(&InGameCommandQueue_AppendLocalPlayerCommand) &&
+         handler != CommandDispatch_HandlerKey(&InGameCommandQueue_DequeueFirstIntoRecord) &&
+         handler != CommandDispatch_HandlerKey(&InGameCommandQueue_ContainsTripletValue);
 }
 
 /* The handler table of a command code base (FRONTEND_COMMAND_CODE_BASE or INGAME_COMMAND_CODE_BASE). */
@@ -442,7 +443,7 @@ CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint
       if (!CommandDispatch_IsCommandHandler(table[index].handler)) {
         break;
       }
-      return (CommandQueueHandlerProc *)table[index].handler;
+      return reinterpret_cast<CommandQueueHandlerProc *>(table[index].handler); /* the table keys handlers as const void * */
     }
   }
   if (s_loggedInvalidCode == 0) {
@@ -456,7 +457,7 @@ CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint
 /* True when token is 0 (allowZero) or a slot start of a pool of slotCount slotBytes-sized slots, given as
    the slot's offset from pool base - 1 (the protocol's token form, see g_ArmyRuntimeRebaseBaseMinusOne and
    g_ModelRuntimeRebaseDelta). */
-static Bool8 CommandDispatch_IsPoolToken(uint32_t token,uint32_t slotBytes,uint32_t slotCount,Bool8 allowZero)
+static bool CommandDispatch_IsPoolToken(uint32_t token,uint32_t slotBytes,uint32_t slotCount,bool allowZero)
 
 {
   if (token == 0) {
@@ -467,7 +468,7 @@ static Bool8 CommandDispatch_IsPoolToken(uint32_t token,uint32_t slotBytes,uint3
 
 /* True when the Q12 grid coordinate names a cell index in -1..cellCount (one cell of margin: the snapped
    editor rectangle can end one cell outside the grid; the original reads such cells, too). */
-static Bool8 CommandDispatch_IsGridCoordinate(uint32_t coordinateQ12,FieldGridDimension cellCount)
+static bool CommandDispatch_IsGridCoordinate(uint32_t coordinateQ12,FieldGridDimension cellCount)
 
 {
   int cellIndex;
@@ -478,17 +479,17 @@ static Bool8 CommandDispatch_IsGridCoordinate(uint32_t coordinateQ12,FieldGridDi
 
 /* True when rowIndex names a row of the frontend list control, or the list has no rows at all (rowSlots NULL:
    the select handlers then only reset the description, as in the original). */
-static Bool8 CommandDispatch_IsListRow(const UiNodeBase *listNode,uint32_t rowIndex)
+static bool CommandDispatch_IsListRow(const UiNodeBase *listNode,uint32_t rowIndex)
 
 {
   const UiListControl *list;
 
-  list = (const UiListControl *)listNode;
+  list = reinterpret_cast<const UiListControl *>(listNode); /* the node is a list control */
   return list->rowSlots == nullptr || rowIndex < list->rowCount;
 }
 
 /* Applies one CommandPayloadCheck to a payload dword. */
-static Bool8 CommandDispatch_IsPayloadValid(CommandPayloadCheck check,uint32_t value)
+static bool CommandDispatch_IsPayloadValid(CommandPayloadCheck check,uint32_t value)
 
 {
   const FieldGridAsset *fieldGrid;
@@ -518,11 +519,11 @@ static Bool8 CommandDispatch_IsPayloadValid(CommandPayloadCheck check,uint32_t v
   case COMMAND_CHECK_RELAXATION_PASSES:
     return value != 0 && value <= TERRAIN_RELAXATION_BUTTON_PASSES;
   case COMMAND_CHECK_MISSION_ROW:
-    return CommandDispatch_IsListRow(FRONTEND_UI(g_FrontendRootNode,missionsList),value);
+    return CommandDispatch_IsListRow(&g_FrontendRootNode->missionsList.base,value);
   case COMMAND_CHECK_CAMPAIGN_ROW:
-    return CommandDispatch_IsListRow(FRONTEND_UI(g_FrontendRootNode,campaignsList),value);
+    return CommandDispatch_IsListRow(&g_FrontendRootNode->campaignsList.base,value);
   case COMMAND_CHECK_SAVED_GAME_ROW:
-    return CommandDispatch_IsListRow(FRONTEND_UI(g_FrontendRootNode,savedGamesList),value);
+    return CommandDispatch_IsListRow(&g_FrontendRootNode->savedGamesList.base,value);
   }
   return true;
 }
@@ -532,7 +533,7 @@ static Bool8 CommandDispatch_IsPayloadValid(CommandPayloadCheck check,uint32_t v
    g_SelectionPlayerRuntimeBlockPointers with it; the frontend handlers search the player list instead), and
    the payload dwords must pass the checks of the code's validation entry. A rejected record is logged once per
    code (the player id once overall). */
-static Bool8 CommandDispatch_ValidateRecord(uint32_t codeBase,const UiCommandQueueRecord *record)
+static bool CommandDispatch_ValidateRecord(uint32_t codeBase,const UiCommandQueueRecord *record)
 
 {
   static int s_loggedUnknownPlayer;
@@ -630,18 +631,18 @@ void InGameCommand_IssueHandler(CommandQueueHandlerProc *handler,CommandPayload 
           CommandPayload payload3)
 
 {
-  static Bool8 s_loggedMissing;
+  static bool s_loggedMissing;
   uint32_t code;
 
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
     handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
     return;
   }
-  code = CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,(const void *)handler);
+  code = CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,CommandDispatch_HandlerKey(handler));
   if (code == 0xFFFFFFFFu) {
     if (s_loggedMissing == 0) {
       s_loggedMissing = 1;
-      Thandor_Log("network: handler %p is not in the in-game command table, command dropped",(const void *)handler);
+      Thandor_Log("network: handler %p is not in the in-game command table, command dropped",CommandDispatch_HandlerKey(handler));
     }
     return;
   }
@@ -652,16 +653,16 @@ void InGameCommand_IssueHandler(CommandQueueHandlerProc *handler,CommandPayload 
    derives from the tables, so every handler must map back to its own entry's code (a handler listed twice
    would queue the first code), and the pilot sites of InGameCommand_Issue must derive the constants they
    queued before. Logs each mismatch; runs once during static initialisation (the tables are in this file). */
-static Bool8 CommandDispatch_CheckDerivedCodes(void)
+static bool CommandDispatch_CheckDerivedCodes(void)
 
 {
   static const struct {
     uint32_t code;
     const void *handler;
   } s_pilotCodes[] = {
-      {INGAME_COMMAND_CONSUME_PENDING_ARMY,(const void *)&GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid},
-      {INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT,(const void *)&GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer},
-      {INGAME_COMMAND_SELL_ARMY,(const void *)&GameFactionRuntime_SellArmyAssetAndRefundSevenEighths},
+      {INGAME_COMMAND_CONSUME_PENDING_ARMY,reinterpret_cast<const void *>(&GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid)},
+      {INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT,reinterpret_cast<const void *>(&GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer)},
+      {INGAME_COMMAND_SELL_ARMY,reinterpret_cast<const void *>(&GameFactionRuntime_SellArmyAssetAndRefundSevenEighths)}, /* handler keys (function addresses) */
   };
   static const uint32_t s_codeBases[2] = {FRONTEND_COMMAND_CODE_BASE,INGAME_COMMAND_CODE_BASE};
   const CommandTableEntry *table;
@@ -669,7 +670,7 @@ static Bool8 CommandDispatch_CheckDerivedCodes(void)
   uint32_t index;
   uint32_t baseIndex;
   uint32_t derived;
-  Bool8 allMatch;
+  bool allMatch;
 
   allMatch = true;
   for (baseIndex = 0; baseIndex < 2; baseIndex++) {
@@ -694,4 +695,4 @@ static Bool8 CommandDispatch_CheckDerivedCodes(void)
   return allMatch;
 }
 
-static const Bool8 g_CommandDerivedCodesMatch = CommandDispatch_CheckDerivedCodes();
+static const bool g_CommandDerivedCodesMatch = CommandDispatch_CheckDerivedCodes();

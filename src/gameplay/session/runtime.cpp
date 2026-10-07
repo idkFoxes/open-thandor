@@ -12,7 +12,7 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(8) SessionNetworkRoleFlags g_SessionNetworkRoleFlags = 0;
+THANDOR_ALIGN(8) SessionNetworkRoleFlags g_SessionNetworkRoleFlags = SESSION_NETWORK_ROLE_LOCAL;
 
 /* uint32_t network lockstep interval in simulation steps (2 * the frontend speed slider value); sent in the join ack */
 THANDOR_ALIGN(4) uint32_t g_SessionNetworkTickInterval = 2;
@@ -23,6 +23,6 @@ uint32_t g_SessionNetworkTickCounter = 0;
 
 uint32_t g_InGameNetworkTickCountdown = 0;
 
-uint32_t g_InGameStateTickSpinLock = 0;
+RuntimeSpinLockValue g_InGameStateTickSpinLock = 0;
 
 InGameSimulationStepBatchTicks g_InGameSimulationStepTicks = 0;

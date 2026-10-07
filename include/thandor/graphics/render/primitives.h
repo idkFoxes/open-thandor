@@ -15,35 +15,22 @@
 
 /* DepthInterval_BuildBinMask: world coordinates (Q12) are hashed into 32 wrapping bins of 1 << 14 units
    (4.0 world units) per axis */
-#define SPATIAL_BIN_SHIFT 14
+inline constexpr int SPATIAL_BIN_SHIFT = 14;
 
 /* Primitive queue pool layout (GraphicsPrimitiveQueue_AllocateGlobalPool/ResetGlobal): a 0x20-byte header, then
    per packet one primary node and one radix scratch node (0x10 bytes each) and the 0x80-byte packet itself
    (on x64 the header and nodes are wider; the packet stays 0x80 bytes). */
-#define GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES ((uint32_t)offsetof(GraphicsPrimitiveQueue, primaryNodes))
-#define GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET \
-    ((uint32_t)(2 * sizeof(GraphicsPrimitiveQueueNode) + sizeof(GraphicsPrimitivePacket)))
+inline constexpr uint32_t GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES = offsetof(GraphicsPrimitiveQueue, primaryNodes);
+inline constexpr uint32_t GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET =
+    2 * sizeof(GraphicsPrimitiveQueueNode) + sizeof(GraphicsPrimitivePacket);
 /* GraphicsPrimitiveQueue_RadixSortForRendering ends the sorted traversal list with this node pointer */
-#define GRAPHICS_PRIMITIVE_QUEUE_END_NODE ((GraphicsPrimitiveQueueNode *)(intptr_t)-1) /* 0xffffffff in the original */
-/* GraphicsPrimitivePacket.renderFlags: bits 12..17 select the raster handler ((flags & 0x3f000) >> 12). Bit 16
-   marks a textured packet, bits 12..14 the blend mode. */
-#define GRAPHICS_PRIMITIVE_FLAG_TEXTURED 0x10000
-#define GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT 0x20000
-/* bits 12..17: raster handler index; the software queue renderers shift by 12 and index their handler table */
-#define GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK 0x3f000
-/* set by SoftwareRenderer_PrepareTrianglePacket when all three vertex colours are equal */
-#define GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED 0x8000
-#define GRAPHICS_PRIMITIVE_BLEND_MASK 0x7000
-#define GRAPHICS_PRIMITIVE_BLEND_OPAQUE 0
-#define GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT 0x1000
-#define GRAPHICS_PRIMITIVE_BLEND_ADDITIVE 0x2000
-#define GRAPHICS_PRIMITIVE_BLEND_MODE_4 0x4000 /* kept by GraphicsPrimitiveQueue_SetVertexColors like opaque */
-#define GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE 0x6000 /* blend mode 6: alpha-blended with depth writes */
+#define GRAPHICS_PRIMITIVE_QUEUE_END_NODE (Thandor_U32ToPointer<GraphicsPrimitiveQueueNode>(-1)) /* 0xffffffff in the original */
+/* GraphicsPrimitivePacket.renderFlags: GraphicsPrimitiveDispatchFlags (graphics/render/types.h). */
 /* GraphicsPrimitiveQueue_Sort keys: an opaque packet's key is its texture entry | 0xB0000000 minus render flag
-   bits 28..29 (0x80000000 and above), a blended packet's the sum of its vertex depths below 0x80000000 */
-#define GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE 0xb0000000
-#define GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS 0x30000000
-#define GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK 0x7fffffff
+   bits 28..29 (GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS; 0x80000000 and above), a blended packet's the sum of its
+   vertex depths below 0x80000000 */
+inline constexpr uint32_t GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE = 0xb0000000;
+inline constexpr int GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK = 0x7fffffff;
 
 void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
 
@@ -57,7 +44,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *qu
 
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue);
 
-Bool8 GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
+bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsPrimitiveDispatchFlags renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue);
 
@@ -73,7 +60,7 @@ void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoo
 
 DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12);
 
-Bool8 DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
+bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
           DepthBinMask32 secondMaskAxis1);
 
 extern GraphicsPrimitiveQueueRadixSortProc *g_GraphicsPrimitiveQueueRadixSortProc;

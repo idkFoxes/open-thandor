@@ -28,7 +28,7 @@ void InGameRuntime_PeriodicCountdownAndClockTick()
    g_SessionNetworkTickInterval directly; an interval of 0 is treated as 1 here (every step a boundary) so a
    bad value cannot divide by zero. The join ack only accepts the original's even 2..14, so valid sessions
    compute exactly the original remainder. */
-static Bool8 InGameTick_IsNetworkIntervalBoundary()
+static bool InGameTick_IsNetworkIntervalBoundary()
 {
   uint32_t tickInterval;
 
@@ -42,7 +42,7 @@ static Bool8 InGameTick_IsNetworkIntervalBoundary()
 /* Network lockstep of a simulation step on the host or in single player. Returns false when the step has to wait:
    the periodic timer has not counted down yet, or (host, interval boundary) the collected command batch could not
    be broadcast because a peer has not submitted yet. */
-static Bool8 InGameTick_RunHostOrLocalLockstep()
+static bool InGameTick_RunHostOrLocalLockstep()
 
 {
   void *packet;
@@ -65,7 +65,7 @@ static Bool8 InGameTick_RunHostOrLocalLockstep()
         break;
       }
       FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+                (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet));
     }
     FrontendTransfer_DispatchStagedCommandRecords();
     g_HostCommandBatchSyncSentThisInterval = 0;
@@ -74,7 +74,7 @@ static Bool8 InGameTick_RunHostOrLocalLockstep()
     /* within the interval: handle sync requests and broadcast the batch as soon as every peer is ready */
     while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
       FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+                (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet));
     }
     if ((g_HostCommandBatchSyncSentThisInterval == 0) &&
         !FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(0)) {
@@ -87,7 +87,7 @@ static Bool8 InGameTick_RunHostOrLocalLockstep()
 /* Network lockstep of a simulation step on a client. Returns false when the step has to wait: at an interval
    boundary until the host's command batch has arrived and was executed, otherwise until the periodic timer has
    counted down. */
-static Bool8 InGameTick_RunClientLockstep()
+static bool InGameTick_RunClientLockstep()
 
 {
   void *packet;
@@ -100,7 +100,7 @@ static Bool8 InGameTick_RunClientLockstep()
     }
     while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
       if (FrontendNetwork_HandleCommandBatchAndPlayerTimeout
-                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet)) {
+                    (static_cast<NetworkSessionContext *>(packetEndpoint),static_cast<FrontendTransferPacketUnion *>(packet))) {
         break;
       }
     }
@@ -122,7 +122,7 @@ static void InGameTick_RefreshEntityTerrainStates(WorldRuntimeContext *worldRunt
   ModelRuntimeNode *modelNode;
 
   for (modelNode = firstNode; modelNode != nullptr;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+      modelNode = static_cast<ModelRuntimeNode *>((modelNode->common).nextNode)) {
     (*(&g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.army)
       [modelNode->ownerClassId])(worldRuntime,modelNode);
   }
@@ -152,7 +152,7 @@ static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPh
     break;
   case 3:
     /* field-grid clamp; with entities present: their terrain state, then the clamp once more */
-    firstModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+    firstModelNode = static_cast<ModelRuntimeNode *>(worldRuntime->ownerListHead);
     FieldGrid_ApplyByteClampLookupToCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
     if (firstModelNode != nullptr) {
       InGameTick_RefreshEntityTerrainStates(worldRuntime,firstModelNode);
@@ -172,7 +172,7 @@ static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPh
     /* occupancy rebuild: clear the mask bits, let every entity mark its cells, then refresh their terrain state */
     worldNode = worldRuntime->ownerListHead;
     FieldGrid_ClearOccupancyMaskBits0To6AllCells(worldRuntime->fieldGrid);
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED)) {
       FieldGrid_SetOccupancyMaskByteBit0AllCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
     }
     if (worldNode != nullptr) {
@@ -180,7 +180,7 @@ static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPh
         (*(&g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.army)[worldNode->ownerClassId])
                   (worldRuntime,worldNode);
       }
-      InGameTick_RefreshEntityTerrainStates(worldRuntime,(ModelRuntimeNode *)worldRuntime->ownerListHead);
+      InGameTick_RefreshEntityTerrainStates(worldRuntime,static_cast<ModelRuntimeNode *>(worldRuntime->ownerListHead));
       FieldGrid_ApplyByteClampLookupToCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
       GridScratch_PropagateFieldOccupancyMaskNeighborhood(worldRuntime->fieldGrid);
     }
@@ -221,12 +221,12 @@ static void InGameTick_RunReducedUpdate(InGameRuntimeRoot *inGameRoot)
   ModelRuntimeNode *modelNode;
   ModelDefinition *modelDefinition;
 
-  modelNode = (ModelRuntimeNode *)(inGameRoot->worldRuntime).ownerListHead;
+  modelNode = static_cast<ModelRuntimeNode *>((inGameRoot->worldRuntime).ownerListHead);
   g_GameFactionRuntimeImage.tail.simulationTick++;
   if ((g_GameFactionRuntimeImage.tail.simulationTick & 1) != 0) {
     return;
   }
-  for (; modelNode != nullptr; modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+  for (; modelNode != nullptr; modelNode = static_cast<ModelRuntimeNode *>((modelNode->common).nextNode)) {
     if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).runtimeDefinition;
       g_ArmyPlacementContactKindDispatchTable.callbacks[modelDefinition->placementContactKindIndex]
@@ -285,19 +285,19 @@ static void InGameTick_RunReducedUpdate(InGameRuntimeRoot *inGameRoot)
 void InGameRuntime_UpdateSimulationAndNetworkTick()
 
 {
-  Bool8 lockAlreadyHeld;
-  Bool8 stepDue;
+  bool lockAlreadyHeld;
+  bool stepDue;
   InGameRuntimeRoot *inGameRoot;
 
-  lockAlreadyHeld = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  lockAlreadyHeld = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   if (lockAlreadyHeld) {
     return;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS)) {
     /* do not run ahead of the renderer by more than a few steps */
     if (2 < (int)g_InGamePendingSimulationTicks) {
-      g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+      g_SpinLockRelease(&g_InGameStateTickSpinLock);
       return;
     }
     g_InGamePendingSimulationTicks++;
@@ -309,16 +309,16 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     stepDue = InGameTick_RunClientLockstep();
   }
   if (!stepDue) {
-    g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+    g_SpinLockRelease(&g_InGameStateTickSpinLock);
     return;
   }
   g_SessionNetworkTickCounter++;
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     InGameTick_RunReducedUpdate(inGameRoot);
   }
-  else if ((g_UiCommandRuntimeFlags &
-           (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
+  else if (!Any(g_UiCommandRuntimeFlags &
+           (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED))) {
     InGameTick_RunSimulationStep(inGameRoot);
   }
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  g_SpinLockRelease(&g_InGameStateTickSpinLock);
 }

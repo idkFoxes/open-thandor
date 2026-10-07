@@ -20,7 +20,7 @@
 static void FieldGridTerrainOverlayVariantA_ApplyToCell(FieldGridCell *fieldCell)
 
 {
-  if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
+  if (((FieldCell_RawBits(fieldCell->flagsAndMaterial) & FieldCell_RawBits(g_TerrainScanSharedSelectorValue.fieldCellFlagMask)) != 0) &&
       (fieldCell->waterSurfaceDelta < 0)) {
     fieldCell->overlayColor = g_TerrainScanReferenceHeight;
   }
@@ -44,7 +44,7 @@ static void FieldGridTerrainOverlayVariantB_ApplyToCell(FieldGridCell *fieldCell
    surface dirty (Original quirk: before the bounds check, so also when nothing is applied). Returns true
    (nothing applied) without a grid, outside it or on a map-edge cell.
 */
-Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
+bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -68,8 +68,8 @@ Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
     if ((-1 < (int)gridColumn) && (-1 < (int)gridRow) && (gridRow < fieldGrid->gridHeight) &&
         (gridColumn < gridWidth)) {
       centerCellIndex = gridRow * gridWidth + gridColumn;
-      if ((fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-        if (((fieldGrid->cells[centerCellIndex].flagsAndMaterial & cellFlagMask) != 0) &&
+      if (!Any(fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
+        if (((FieldCell_RawBits(fieldGrid->cells[centerCellIndex].flagsAndMaterial) & FieldCell_RawBits(cellFlagMask)) != 0) &&
            (fieldGrid->cells[centerCellIndex].waterSurfaceDelta < 0)) {
           fieldGrid->cells[centerCellIndex].overlayColor = cellValue;
         }
@@ -90,7 +90,7 @@ Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, but only for cells with water above them; the centre
    cell also needs a bit of cellFlagMask, the sector walks ignore the mask.
 */
-Bool8 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
+bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -114,8 +114,8 @@ Bool8 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
     if ((-1 < (int)gridColumn) && (-1 < (int)gridRow) && (gridRow < fieldGrid->gridHeight) &&
         (gridColumn < gridWidth)) {
       centerCellIndex = gridRow * gridWidth + gridColumn;
-      if ((fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-        if (((fieldGrid->cells[centerCellIndex].flagsAndMaterial & cellFlagMask) != 0) &&
+      if (!Any(fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
+        if (((FieldCell_RawBits(fieldGrid->cells[centerCellIndex].flagsAndMaterial) & FieldCell_RawBits(cellFlagMask)) != 0) &&
            (0 < fieldGrid->cells[centerCellIndex].waterSurfaceDelta)) {
           fieldGrid->cells[centerCellIndex].overlayColor = cellValue;
         }

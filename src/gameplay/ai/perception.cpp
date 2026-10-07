@@ -47,7 +47,7 @@ static void AiPlanningRebuild_CollectWorldEntities(FactionRuntimeIndex factionIn
       continue;
     }
     /* the node's model runtime; entityRuntime is its owning army */
-    modelRuntime = (ModelRuntimeSlot *)worldNode->runtimePayload;
+    modelRuntime = WorldOwnerNode_ModelRuntime(worldNode);
     entityRuntime = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if (factionIndex == entityRuntime->common.ownership.ownerIndex) {
       assetId = entityRuntime->common.runtimeIdentityOrArmyAssetId;
@@ -72,7 +72,7 @@ static void AiPlanningRebuild_CollectWorldEntities(FactionRuntimeIndex factionIn
       if (((visibilityBits & 2) == 0) &&
           (((visibilityBits & 1) == 0 ||
             (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
-             [((ModelRuntimeSlot *)entityRuntime->common.ownership.definitionOrClassRecord)->definitionOrSavedId.
+             [entityRuntime->common.ownership.modelRuntime()->definitionOrSavedId.
               runtimeDefinition->runtimeClassId] != ArmyRuntime_ClassCommandHandlerGroupA)))) {
         AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace03UnseenHostiles,&g_AiWorkspace03Count,
                                           AI_WORKSPACE03_CAPACITY,modelRuntime,
@@ -121,35 +121,35 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
 }
 
 /* Own structures of class 11 / 22 / 13 (among the 00 entries present before this step): the asset in production
-   (slot word 24) counts as an unassigned entry (00 for class 11, 01 otherwise) while their state word (46, 43 for
-   class 22) is 1. */
+   (slot word 24, classLinkState +0x60) counts as an unassigned entry (00 for class 11, 01 otherwise) while their
+   state word (46 = classState.behaviorState, 43 = classState.classStateAC for class 22) is 1. */
 static void AiPlanningRebuild_AddAssetsInProduction()
 
 {
   AiStructureWorkspaceEntry *structureEntry;
   uint32_t entriesRemaining;
-  int *slotWords;
+  ModelRuntimeSlot *slotRuntime;
   ModelDefinition *slotDefinition;
 
   structureEntry = g_AiWorkspace00Structures;
   for (entriesRemaining = g_AiWorkspace00Count; entriesRemaining != 0; entriesRemaining--) {
-    slotWords = (int *)structureEntry->runtimeSlotAddressOrZero;
-    if (slotWords != nullptr) {
-      slotDefinition = ((ModelRuntimeSlot *)slotWords)->definitionOrSavedId.runtimeDefinition;
+    slotRuntime = structureEntry->runtimeSlotAddressOrZero;
+    if (slotRuntime != nullptr) {
+      slotDefinition = slotRuntime->definitionOrSavedId.runtimeDefinition;
       if (slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) {
-        if (slotWords[46] == 1) {
-          AiPlanningRebuild_AddUnassignedStructureEntry(slotWords[24]);
+        if (slotRuntime->classState.behaviorState == 1) {
+          AiPlanningRebuild_AddUnassignedStructureEntry(slotRuntime->classLinkState.modelLinkOrState.signedScalarState);
         }
       }
       else if (slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
-        if (slotWords[43] == 1) {
+        if (slotRuntime->classState.classStateAC == 1) {
           AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,
-                                            nullptr,slotWords[24]);
+                                            nullptr,slotRuntime->classLinkState.modelLinkOrState.signedScalarState);
         }
       }
-      else if ((slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (slotWords[46] == 1)) {
+      else if ((slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (slotRuntime->classState.behaviorState == 1)) {
         AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,nullptr,
-                                          slotWords[24]);
+                                          slotRuntime->classLinkState.modelLinkOrState.signedScalarState);
       }
     }
     structureEntry++;
@@ -168,7 +168,7 @@ static uint32_t AiPlanningRebuild_ScratchFootprintMask(const GridScratchCell *to
 }
 
 /* True when one of the active grid mask classes 0..3 is absent from the neighbourhood mask. */
-static Bool8 AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
+static bool AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
 
 {
   return (g_AiActiveGridMaskClasses[0] & neighborhoodMask) == 0 ||
@@ -179,33 +179,33 @@ static Bool8 AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
 
 /* True when one of the six field-grid neighbours of the cell below cellAbove (the two above, left, right, the two
    below) has none of the faction's presence bits. */
-static Bool8 AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,uint32_t gridWidth,
+static bool AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,uint32_t gridWidth,
           FactionRuntimeIndex factionIndex)
 
 {
-  return (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[0],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[gridWidth - 1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
+  return (FieldGridCell_OccupancyByte(&cellAbove[0],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
+         (FieldGridCell_OccupancyByte(&cellAbove[1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
+         (FieldGridCell_OccupancyByte(&cellAbove[gridWidth - 1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
           0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[gridWidth + 1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
+         (FieldGridCell_OccupancyByte(&cellAbove[gridWidth + 1],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
           0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[gridWidth * 2 - 1],factionIndex) &
+         (FieldGridCell_OccupancyByte(&cellAbove[gridWidth * 2 - 1],factionIndex) &
           FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
-         (FIELD_CELL_OCCUPANCY_BYTE(&cellAbove[gridWidth * 2],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
+         (FieldGridCell_OccupancyByte(&cellAbove[gridWidth * 2],factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) ==
           0;
 }
 
 /* True when the cell below cellAbove or one of its six neighbours carries xenite/tritium support flags. */
-static Bool8 AiPlanningRebuild_FootprintHasResourceSupport(const FieldGridCell *cellAbove,uint32_t gridWidth)
+static bool AiPlanningRebuild_FootprintHasResourceSupport(const FieldGridCell *cellAbove,uint32_t gridWidth)
 
 {
-  return (cellAbove[gridWidth].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[0].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[gridWidth - 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[gridWidth + 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[gridWidth * 2 - 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[gridWidth * 2].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0;
+  return Any(cellAbove[gridWidth].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[0].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[gridWidth - 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[gridWidth + 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[gridWidth * 2 - 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[gridWidth * 2].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK);
 }
 
 /* Site tests of one field cell (the cell below cellAbove) against the scratch grid: scratchCell is one scratch row
@@ -223,7 +223,7 @@ static void AiPlanningRebuild_ScanSiteCell(FactionRuntimeIndex factionIndex,Fiel
   /* general site: an occupied, unblocked cell at the edge of the faction's presence where also one of the active
      mask classes is missing around it (both conditions, not either) */
   if (((scratchCell[scratchRowStride].stateMask & GRID_SCRATCH_BLOCKED) == 0) &&
-      ((FIELD_CELL_OCCUPANCY_BYTE(currentCell,factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) &&
+      ((FieldGridCell_OccupancyByte(currentCell,factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) &&
       AiPlanningRebuild_HasUnoccupiedNeighbour(cellAbove,gridWidth,factionIndex) &&
       (AiPlanningRebuild_LacksActiveMaskClass
                  (scratchCell[scratchRowStride].stateMask |
@@ -231,18 +231,18 @@ static void AiPlanningRebuild_ScanSiteCell(FactionRuntimeIndex factionIndex,Fiel
     AiSiteCandidate_AddGeneralCellIfSeparated(currentCell);
   }
   /* flagged site: occupancy bit 4 set and one of the terrain classes 24/25/28 absent around it */
-  if (((FIELD_CELL_OCCUPANCY_BYTE(currentCell,factionIndex) & 0x10) != 0) &&
+  if (((FieldGridCell_OccupancyByte(currentCell,factionIndex) & 0x10) != 0) &&
       ((scratchCell[scratchRowStride].stateMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_LOW_BAND0)) == 0)) {
     neighborhoodMask = scratchCell[scratchRowStride].stateMask |
                        AiPlanningRebuild_ScratchFootprintMask(scratchCell,scratchRowStride,4);
     if (((neighborhoodMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT24)) == 0 ||
          (neighborhoodMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT25)) == 0 ||
          (neighborhoodMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT28)) == 0) &&
-        ((currentCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) == 0)) {
+        (!Any(currentCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK))) {
       AiSiteCandidate_AddFlaggedCellIfSeparated(currentCell);
     }
   }
-  if (((FIELD_CELL_OCCUPANCY_BYTE(currentCell,factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0) ||
+  if (((FieldGridCell_OccupancyByte(currentCell,factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0) ||
       ((scratchCell[scratchRowStride].stateMask &
         (AI_SITE_SCRATCH_OBSTACLE_BITS | AI_SITE_SCRATCH_BANDS_CLASSES_0_TO_5)) != 0)) {
     return;
@@ -254,7 +254,7 @@ static void AiPlanningRebuild_ScanSiteCell(FactionRuntimeIndex factionIndex,Fiel
        0) &&
       ((AiPlanningRebuild_ScratchFootprintMask(scratchCell - scratchRowStride,scratchRowStride * 2,8) &
         AI_SITE_SCRATCH_OBSTACLE_BITS) == 0) &&
-      ((currentCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0)) {
+      (Any(currentCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK))) {
     AiSiteCandidate_AddTerrainFeatureCellIfSeparated(currentCell,terrainFeatureSpacing);
   }
   /* base site: no obstacles around it and no resource cell in its footprint */
@@ -298,6 +298,7 @@ static void AiPlanningRebuild_ScanFieldGridSites(FactionRuntimeIndex factionInde
   AiPlanning_CollectActiveGridMaskClasses();
   /* Original quirk: the first row scans gridWidth columns, the later ones gridWidth & 0x1FFFFFF. */
   columnsRemaining = gridWidth;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     do {
       AiPlanningRebuild_ScanSiteCell(factionIndex,cellAbove,gridWidth,scratchCell,scratchWidth * 3,
@@ -351,7 +352,7 @@ static void AiPlanningRebuild_CollectProducibleAssets(FactionRuntimeIndex factio
   ArmyAssetRecordPrefix **workspace11Cursor;
   ArmyAssetRecordPrefix *definitionNode;
   int slotsRemaining;
-  Bool8 technologyLocked;
+  bool technologyLocked;
 
   armyAssetRegistryCursor = g_ArmyAssetRecordRegistry;
   workspace11Cursor = g_AiWorkspace11ProducibleAssets;
@@ -360,7 +361,7 @@ static void AiPlanningRebuild_CollectProducibleAssets(FactionRuntimeIndex factio
     if ((definitionNode != nullptr) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
       /* returns true while some technology of the hierarchy is still locked */
       technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
-                               (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode);
+                               (factionIndex,reinterpret_cast<ModelDefinitionHierarchyNodeAddress32>(definitionNode));
       if (!technologyLocked && ((definitionNode[1].selectionDetailTemplateVariantIndex & productionMask) != 0) &&
           ((definitionNode->registryId < ARM_0300_BUILDING_MDL0301) ||
            ((ARM_0340_BUILDING_MDL0314 - 1) < definitionNode->registryId)) &&
@@ -416,12 +417,12 @@ static void AiPlanningRebuild_CollectResearchCandidates(FactionRuntimeIndex fact
   ModelRuntimeSlot *modelRuntime;
   ModelDefinition *slotDefinition;
   uint32_t technologySlot;
-  Bool8 notAvailable;
+  bool notAvailable;
 
   factionRecordOffset = factionIndex * (int)sizeof(GameFactionRuntimeRecord);
   structureEntry = g_AiWorkspace00Structures;
   for (entriesRemaining = g_AiWorkspace00Count; entriesRemaining != 0; entriesRemaining--) {
-    modelRuntime = (ModelRuntimeSlot *)structureEntry->runtimeSlotAddressOrZero;
+    modelRuntime = structureEntry->runtimeSlotAddressOrZero;
     if (modelRuntime != nullptr) {
       slotDefinition = modelRuntime->definitionOrSavedId.runtimeDefinition;
       for (technologySlot = 28; technologySlot != 0; technologySlot--) {

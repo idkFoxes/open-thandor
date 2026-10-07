@@ -19,12 +19,12 @@ static const uint32_t g_FactionEnergyAllocationPriorityByModelClass[24] = {
 
 /* Energy consumer of the faction economy, collected into the region scratch buffer
    (g_TerrainRegionCollectionEntries) as 16-byte entries, at most 256. */
-typedef struct FactionEnergyConsumerEntry {
+struct FactionEnergyConsumerEntry {
   uint32_t modelRuntime; /* the consumer's model runtime (pointer value) */
   uint32_t factionIndex;
   EnergyDemandQ4 demandQ4; /* model runtime classState.energyLoadQ4 */
   uint32_t priority; /* g_FactionEnergyAllocationPriorityByModelClass[runtime class] */
-} FactionEnergyConsumerEntry;
+};
 
 /* Economy step 1, per faction: reset the step's energy demand and extraction rates, decay the faction's row of
    the pair-pressure matrix by 7/8, count the notification/anchor cooldowns down (anchorCooldown1/2 are the
@@ -67,7 +67,7 @@ static void InGameFactionEconomy_ResetAndDecayFactionState()
    model offset} gives its faction (descriptor bits 13..23) a rate of cells-per-entry * 2 * share (bits 24..31) *
    terrainContributionScaleQ8 >> 15, added to the rate, the stock and the extracted total (Xenite or Tritium
    fields); the extracting model shows its current yield. */
-static void InGameFactionEconomy_PayCollectedRegion(Bool8 payTritium)
+static void InGameFactionEconomy_PayCollectedRegion(bool payTritium)
 {
   int cellsPerEntry;
   const uint32_t *entry;
@@ -80,7 +80,7 @@ static void InGameFactionEconomy_PayCollectedRegion(Bool8 payTritium)
   ModelRuntimeSlot *extractingModel;
 
   cellsPerEntry = (int)g_TerrainRegionCollectionVisitedCount / (int)g_TerrainRegionCollectionStoredCount;
-  entry = (const uint32_t *)(uintptr_t)g_TerrainRegionCollectionEntries;
+  entry = reinterpret_cast<const uint32_t *>(g_TerrainRegionCollectionEntries); /* address kept as an integer */
   for (remainingEntries = g_TerrainRegionCollectionStoredCount; remainingEntries != 0; remainingEntries--) {
     factionIndex = entry[0] >> RESOURCE_EXTRACTION_FACTION_SHIFT & RESOURCE_EXTRACTION_FACTION_MASK;
     factionRecord = &g_GameFactionRuntimeImage.records[factionIndex];
@@ -99,7 +99,7 @@ static void InGameFactionEconomy_PayCollectedRegion(Bool8 payTritium)
       factionRecord->xeniteExtractedTotalQ4 = factionRecord->xeniteExtractedTotalQ4 + tickContribution;
     }
     if (modelOffset != 0) {
-      extractingModel = (ModelRuntimeSlot *)((int)modelOffset + g_ModelRuntimeRebaseDelta);
+      extractingModel = reinterpret_cast<ModelRuntimeSlot *>((int)modelOffset + g_ModelRuntimeRebaseDelta); /* saved offset */
       if (extractingModel->rootModelNodeOrSavedOffset.raw != 0) {
         extractingModel->classLinkState.modelLinkOrState.signedScalarState = tickContribution;
       }
@@ -111,7 +111,7 @@ static void InGameFactionEconomy_PayCollectedRegion(Bool8 payTritium)
 /* One mining pass: clears the connected-region marks of all cells, then collects every not yet visited region
    of cells with requiredCellFlags (Xenite or Tritium support) and pays it out. */
 static void InGameFactionEconomy_PayResourceRegions
-          (FieldGridAsset *fieldGrid,FieldGridRegionMask requiredCellFlags,Bool8 payTritium)
+          (FieldGridAsset *fieldGrid,FieldGridRegionMask requiredCellFlags,bool payTritium)
 {
   FieldGridDimension fieldGridWidth;
   int cellCount;
@@ -128,8 +128,8 @@ static void InGameFactionEconomy_PayResourceRegions
   }
   cell = firstCell;
   for (cellIndex = 0; cellIndex < cellCount; cellIndex++) {
-    if (((cell->flagsAndMaterial & (FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_CONNECTED_REGION_VISITED)) == 0) &&
-       ((cell->flagsAndMaterial & requiredCellFlags) != 0)) {
+    if ((!Any(cell->flagsAndMaterial & (FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_CONNECTED_REGION_VISITED))) &&
+       ((FieldCell_RawBits(cell->flagsAndMaterial) & requiredCellFlags) != 0)) {
       g_TerrainRegionCollectionStoredCount = 0;
       g_TerrainRegionCollectionVisitedCount = 0;
       TerrainRegionCollection_CollectConnectedCellsRecursive(requiredCellFlags,fieldGridWidth << 7,cell);
@@ -162,12 +162,12 @@ static void InGameFactionEconomy_CapStocksAtStorageLimits()
    energy demand). */
 static void InGameFactionEconomy_FillEnergyConsumer(FactionEnergyConsumerEntry *consumer,int *modelRuntime)
 {
-  consumer->modelRuntime = (uint32_t)(uintptr_t)modelRuntime;
-  consumer->factionIndex = ((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex;
+  consumer->modelRuntime = (uint32_t)reinterpret_cast<uintptr_t>(modelRuntime);
+  consumer->factionIndex = reinterpret_cast<ModelRuntimeSlot *>(modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex;
   consumer->demandQ4 = modelRuntime[61];
   consumer->priority =
        g_FactionEnergyAllocationPriorityByModelClass
-       [((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId];
+       [reinterpret_cast<ModelRuntimeSlot *>(modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId];
 }
 
 /* Collects the powered models (energy demand classState.energyLoadQ4 != 0, not dismantling) and, for models
@@ -186,8 +186,8 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
   for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
       worldNode != nullptr; worldNode = worldNode->nextNode) {
     if (worldNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) continue;
-    modelRuntime = (int *)worldNode->runtimePayload;
-    if ((modelRuntime[59] & ARMY_MODEL_STATE_DISMANTLING) != 0) continue;
+    modelRuntime = static_cast<int *>(worldNode->runtimePayload.get()); /* the ModelRuntimeSlot as words */
+    if ((modelRuntime[59] & ToBits(ARMY_MODEL_STATE_DISMANTLING)) != 0) continue;
     if (modelRuntime[61] != 0) {
       /* buffer full: the attached parts are skipped as well */
       if (255 < consumerCount) continue;
@@ -195,8 +195,8 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
       consumerCount++;
     }
     if ((consumerCount < 256) &&
-       ((((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->modelFlags &
-         MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0)) {
+       Any(reinterpret_cast<ModelRuntimeSlot *>(modelRuntime)->definitionOrSavedId.runtimeDefinition->modelFlags &
+           MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY)) {
       attachmentSlot = modelRuntime;
       for (remainingAttachments = modelRuntime[3]; remainingAttachments != 0; remainingAttachments--) {
         attachedRuntime = Thandor_U32ToPointer<int>(attachmentSlot[80]); /* 32-bit format field: ModelRuntimeSlot.attachments[].childModelRuntimeOrSavedOffset (dword view) */
@@ -253,9 +253,9 @@ static void InGameFactionEconomy_NotifyLocalEnergyShortage
   /* Level header text starting with UTF-16 "t00_tu": a fixed notification, and both cooldowns never
      expire. */
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  if (((*(int *)&(levelConditionStorage->levelImage).header.levelFileNameUtf16[0] == UTF16_CHAR_PAIR('t','0')) &&
-      (*(int *)&(levelConditionStorage->levelImage).header.levelFileNameUtf16[2] == UTF16_CHAR_PAIR('0','_'))) &&
-     (*(int *)&(levelConditionStorage->levelImage).header.levelFileNameUtf16[4] == UTF16_CHAR_PAIR('t','u'))) {
+  if (((static_cast<int>(Thandor_LoadU32(&(levelConditionStorage->levelImage).header.levelFileNameUtf16[0])) == UTF16_CHAR_PAIR('t','0')) &&
+      (static_cast<int>(Thandor_LoadU32(&(levelConditionStorage->levelImage).header.levelFileNameUtf16[2])) == UTF16_CHAR_PAIR('0','_'))) &&
+     (static_cast<int>(Thandor_LoadU32(&(levelConditionStorage->levelImage).header.levelFileNameUtf16[4])) == UTF16_CHAR_PAIR('t','u'))) {
     notificationMovieId = 402;
     factionRecord->anchorCooldown1 = INT32_MAX;
     factionRecord->anchorCooldown2 = INT32_MAX;
@@ -303,15 +303,15 @@ static void InGameFactionEconomy_AllocateFactionEnergy
   for (consumerIndex = 0; consumerIndex < consumerCount; consumerIndex++) {
     consumer = &consumers[consumerIndex];
     if (factionIndex != consumer->factionIndex) continue;
-    consumerRuntime = (ModelRuntimeSlot *)(uintptr_t)consumer->modelRuntime;
+    consumerRuntime = reinterpret_cast<ModelRuntimeSlot *>(static_cast<uintptr_t>(consumer->modelRuntime));
     if (remainingEnergy < consumer->demandQ4) {
-      consumerRuntime->classState.stateFlags = consumerRuntime->classState.stateFlags | 1;
+      consumerRuntime->classState.stateFlags = consumerRuntime->classState.stateFlags | ARMY_MODEL_STATE_SWITCHED_OFF;
       factionRecord->unpoweredEnergyDemandQ4 = factionRecord->unpoweredEnergyDemandQ4 + consumer->demandQ4;
     }
     else {
       remainingEnergy = remainingEnergy - consumer->demandQ4;
       factionRecord->suppliedEnergyDemandQ4 = factionRecord->suppliedEnergyDemandQ4 + consumer->demandQ4;
-      consumerRuntime->classState.stateFlags = consumerRuntime->classState.stateFlags & ~1u;
+      consumerRuntime->classState.stateFlags = consumerRuntime->classState.stateFlags & ~ARMY_MODEL_STATE_SWITCHED_OFF;
     }
   }
   /* energy above the baseline supply is Tritium burnt */
@@ -344,7 +344,7 @@ static void InGameFactionEconomy_StoreStatTableSample()
   statFactionRecord = &g_GameFactionRuntimeImage.records[1];
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   if (g_GameFactionRuntimeImage.tail.simulationTick >> 7 >= 4096) return;
-  statSample = (int *)((uint8_t *)g_GameStatTableImage +
+  statSample = reinterpret_cast<int *>(static_cast<uint8_t *>(g_GameStatTableImage) +
                        (g_GameFactionRuntimeImage.tail.simulationTick >> 7) * RESULTS_STAT_SAMPLE_BYTES);
   for (factionIndex = 1; factionIndex < 8; factionIndex++) {
     GameFactionRuntime_RecomputeProgressAndScoreMetrics(factionIndex,worldRuntime);
@@ -390,11 +390,11 @@ void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState()
   InGameFactionEconomy_ResetAndDecayFactionState();
   /* 2. mining: first pass Xenite cells, second pass Tritium cells */
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  InGameFactionEconomy_PayResourceRegions(fieldGrid,FIELD_CELL_XENITE_SUPPORT,false);
-  InGameFactionEconomy_PayResourceRegions(fieldGrid,FIELD_CELL_TRITIUM_SUPPORT,true);
+  InGameFactionEconomy_PayResourceRegions(fieldGrid,ToBits(FIELD_CELL_XENITE_SUPPORT),false);
+  InGameFactionEconomy_PayResourceRegions(fieldGrid,ToBits(FIELD_CELL_TRITIUM_SUPPORT),true);
   InGameFactionEconomy_CapStocksAtStorageLimits();
   /* 3. energy */
-  consumers = (FactionEnergyConsumerEntry *)(uintptr_t)g_TerrainRegionCollectionEntries;
+  consumers = reinterpret_cast<FactionEnergyConsumerEntry *>(g_TerrainRegionCollectionEntries); /* scratch reused */
   consumerCount = InGameFactionEconomy_CollectEnergyConsumers(consumers);
   /* without any consumer the whole allocation is skipped (no army-asset demand, no Tritium burn) */
   if (consumerCount != 0) {

@@ -30,7 +30,7 @@ void ArmyPlacementContact_ApplyTerrainHeight
       (modelNode->worldTransform).translation.x = worldXQ12;
       (modelNode->worldTransform).translation.y = worldYQ12;
       (modelNode->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
-      modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+      modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     }
   }
 }
@@ -54,7 +54,7 @@ void ArmyPlacementContact_ApplyWaterSurfaceHeight
       (modelNode->worldTransform).translation.x = worldXQ12;
       (modelNode->worldTransform).translation.y = worldYQ12;
       (modelNode->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
-      modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+      modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     }
   }
 }
@@ -83,7 +83,7 @@ void ArmyPlacementContact_ApplyTerrainHeightAndNormal
            surfaceHeightQ12 + resourceHeightOffsetQ12 + heightOffsetQ12;
       (modelNode->worldTransform).translation.x = worldXQ12;
       (modelNode->worldTransform).translation.y = worldYQ12;
-      modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+      modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     }
   }
 }
@@ -107,7 +107,7 @@ void ArmyPlacementContact_ApplyTopSurfaceHeight
       (modelNode->worldTransform).translation.x = worldXQ12;
       (modelNode->worldTransform).translation.y = worldYQ12;
       (modelNode->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
-      modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+      modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
     }
   }
 }
@@ -125,7 +125,7 @@ void ArmyPlacementContact_InitializeArticulatedSuspension
 {
   (modelNode->worldTransform).translation.x = worldXQ12;
   (modelNode->worldTransform).translation.y = worldYQ12;
-  modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+  modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   ArmyArticulatedRuntime_InitializeTerrainContactGeometry(modelNode,worldRuntime);
   ArmyArticulatedRuntime_UpdateSuspensionHierarchy(modelNode,worldRuntime);
 }

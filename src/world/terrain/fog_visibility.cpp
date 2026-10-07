@@ -38,7 +38,7 @@ void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,Fiel
       /* The lookup is 64-KiB aligned: the original puts the occupancy byte and the lighting index into the
          pointer's low word, i.e. indexes the table with (occupancy << 8) | lighting index. */
       mappedLightingIndex =
-           clampLookup[(uint32_t)((uint8_t *)&currentCell->occupancyMask)[factionIndex] << 8 |
+           clampLookup[(uint32_t)FieldGridCell_OccupancyByte(currentCell,factionIndex) << 8 |
                        (uint32_t)currentCell->visibilityLightingIndex];
       currentCell->visibilityLightingIndex = mappedLightingIndex;
       currentCell = currentCell + 1;
@@ -62,7 +62,7 @@ void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,Fi
   /* for loop instead of the original's do-while (0 cells: no pass instead of 2^32) */
   currentCell = fieldGrid->cells;
   for (cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight; cellsRemaining != 0; cellsRemaining--) {
-    occupancyByte = ((uint8_t *)&currentCell->occupancyMask)[factionSlot];
+    occupancyByte = FieldGridCell_OccupancyByte(currentCell,factionSlot);
     if ((occupancyByte & FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) != 0) {
       lightingIndex = FIELD_CELL_LIGHTING_VISIBLE;
     }
@@ -111,7 +111,7 @@ static uint8_t *TerrainByteClampLookup_FillRow(uint8_t *rowCursor,int targetLeve
    aligned so the original can index it with the two bytes as the low 16 address bits. Returns true on success; false when the allocation fails,
    with the allocator error in *outError.
 */
-Bool8 TerrainByteClampLookup_Initialize(uint32_t *outError)
+bool TerrainByteClampLookup_Initialize(uint32_t *outError)
 
 {
   void *lookupAllocationBase;
@@ -126,7 +126,7 @@ Bool8 TerrainByteClampLookup_Initialize(uint32_t *outError)
     *outError = allocError;
     return false;
   }
-  lookupWriteCursor = (uint8_t *)(((uintptr_t)lookupAllocationBase + 0xffff) & ~(uintptr_t)0xffff);
+  lookupWriteCursor = reinterpret_cast<uint8_t *>((reinterpret_cast<uintptr_t>(lookupAllocationBase) + 0xffff) & ~(uintptr_t)0xffff); /* the next 64-KiB boundary */
   g_TerrainByteClampLookup = lookupWriteCursor;
   /* rows 0x00..0x7F in pairs: even rows fade to NONE, odd rows to FULL */
   for (rowPair = 0; rowPair < 64; rowPair++) {

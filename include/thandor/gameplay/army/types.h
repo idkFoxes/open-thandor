@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
+#include <thandor/core/flags.h>
 #include <thandor/assets/army/types.h>
 #include <thandor/assets/sprite/types.h>
 #include <thandor/audio/spatial/types.h>
@@ -19,106 +20,106 @@
 #include <thandor/world/camera/types.h>
 #include <thandor/world/terrain/types.h>
 
-typedef struct ArmySegmentMeter ArmySegmentMeter, *PArmySegmentMeter;
-typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
-typedef struct ArmyRuntimeSlot ArmyRuntimeSlot, *PArmyRuntimeSlot;
-typedef struct GameEntityRuntime GameEntityRuntime, *PGameEntityRuntime;
-typedef struct ArmyRuntimeMovementControlState ArmyRuntimeMovementControlState, *PArmyRuntimeMovementControlState;
-typedef struct ArmyRuntimeArticulatedContactState ArmyRuntimeArticulatedContactState, *PArmyRuntimeArticulatedContactState;
-typedef struct ArmyRuntimeLinkedChildOverloadedState ArmyRuntimeLinkedChildOverloadedState, *PArmyRuntimeLinkedChildOverloadedState;
-typedef struct ArmyRuntimeLinkedChildSpawnParameters ArmyRuntimeLinkedChildSpawnParameters, *PArmyRuntimeLinkedChildSpawnParameters;
-typedef struct ArmyRuntimeLinkedChildPendingCounts ArmyRuntimeLinkedChildPendingCounts, *PArmyRuntimeLinkedChildPendingCounts;
-typedef union EffectDefinitionReferenceOrSavedId EffectDefinitionReferenceOrSavedId, *PEffectDefinitionReferenceOrSavedId;
-typedef union ShotDefinitionReferenceOrSavedId ShotDefinitionReferenceOrSavedId, *PShotDefinitionReferenceOrSavedId;
-typedef struct GameEntityRuntimeCommon GameEntityRuntimeCommon, *PGameEntityRuntimeCommon;
-typedef union GameEntityRuntimeClassPayload GameEntityRuntimeClassPayload, *PGameEntityRuntimeClassPayload;
-typedef union ArmyRuntimeContactRadiusOrLinkedSlotMask ArmyRuntimeContactRadiusOrLinkedSlotMask, *PArmyRuntimeContactRadiusOrLinkedSlotMask;
-typedef union ArmyRuntimeCoordinateCommandOrHistoryValue ArmyRuntimeCoordinateCommandOrHistoryValue, *PArmyRuntimeCoordinateCommandOrHistoryValue;
-typedef struct ModelResource ModelResource, *PModelResource;
-typedef struct ModelRuntimeSlot ModelRuntimeSlot, *PModelRuntimeSlot;
-typedef struct GameEntityOwnershipState10 GameEntityOwnershipState10, *PGameEntityOwnershipState10;
-typedef struct GameEntityCommandTargetState GameEntityCommandTargetState, *PGameEntityCommandTargetState;
-typedef struct GameEntityDamageState2C GameEntityDamageState2C, *PGameEntityDamageState2C;
-typedef struct GameEntityPathingAndImpactState10 GameEntityPathingAndImpactState10, *PGameEntityPathingAndImpactState10;
-typedef struct GameEntityTechnologyPayload GameEntityTechnologyPayload, *PGameEntityTechnologyPayload;
-typedef struct GameEntityImpactOwnerLinksPayloadFC GameEntityImpactOwnerLinksPayloadFC, *PGameEntityImpactOwnerLinksPayloadFC;
-typedef union ModelDefinitionReferenceOrSavedId ModelDefinitionReferenceOrSavedId, *PModelDefinitionReferenceOrSavedId;
-typedef union ModelRuntimeNodeReferenceOrSavedOffset4 ModelRuntimeNodeReferenceOrSavedOffset4, *PModelRuntimeNodeReferenceOrSavedOffset4;
-typedef union ArmyRuntimeReferenceOrSavedOffset ArmyRuntimeReferenceOrSavedOffset, *PArmyRuntimeReferenceOrSavedOffset;
-typedef union ModelRuntimeSlotReferenceOrSavedOffset ModelRuntimeSlotReferenceOrSavedOffset, *PModelRuntimeSlotReferenceOrSavedOffset;
-typedef struct ModelRuntimeClassLinkState ModelRuntimeClassLinkState, *PModelRuntimeClassLinkState;
-typedef struct ModelRuntimeSlotClassState ModelRuntimeSlotClassState, *PModelRuntimeSlotClassState;
-typedef struct ModelRuntimeAttachmentDescriptor ModelRuntimeAttachmentDescriptor, *PModelRuntimeAttachmentDescriptor;
-typedef union GameEntityDamageCounterOrTerminalReference4 GameEntityDamageCounterOrTerminalReference4, *PGameEntityDamageCounterOrTerminalReference4;
-typedef struct GameEntityPathingReferenceState8 GameEntityPathingReferenceState8, *PGameEntityPathingReferenceState8;
-typedef struct GameEntityImpactReactionBytes8 GameEntityImpactReactionBytes8, *PGameEntityImpactReactionBytes8;
-typedef union ModelRuntimeSlotLinkOrState ModelRuntimeSlotLinkOrState, *PModelRuntimeSlotLinkOrState;
-typedef union ModelRuntimeArmyLinkOrState ModelRuntimeArmyLinkOrState, *PModelRuntimeArmyLinkOrState;
-typedef union SpriteAssetReferenceOrSavedId SpriteAssetReferenceOrSavedId, *PSpriteAssetReferenceOrSavedId;
-typedef struct ArmyRuntimeOrderHandlerMatrix11x24 ArmyRuntimeOrderHandlerMatrix11x24, *PArmyRuntimeOrderHandlerMatrix11x24;
-typedef struct MdlSerializedNodeHeader MdlSerializedNodeHeader, *PMdlSerializedNodeHeader;
-typedef struct ArmyArticulatedRuntimeSlotView ArmyArticulatedRuntimeSlotView, *PArmyArticulatedRuntimeSlotView;
-typedef struct ArmyRuntimeLinkedChildMaskSlotView ArmyRuntimeLinkedChildMaskSlotView, *PArmyRuntimeLinkedChildMaskSlotView;
-typedef struct ArmyRuntimeLinkedChildMaskArticulatedContactState ArmyRuntimeLinkedChildMaskArticulatedContactState, *PArmyRuntimeLinkedChildMaskArticulatedContactState;
-typedef struct ArmyRuntimeLinkedChildSlotMaskState ArmyRuntimeLinkedChildSlotMaskState, *PArmyRuntimeLinkedChildSlotMaskState;
-typedef struct ArmyGraphicsBinding ArmyGraphicsBinding, *PArmyGraphicsBinding;
-typedef struct ArmyMovementRuntime ArmyMovementRuntime, *PArmyMovementRuntime;
-typedef struct WorldPointXYQ12 WorldPointXYQ12, *PWorldPointXYQ12;
-typedef struct RuntimeMaintenanceAudioRefreshCallbacks RuntimeMaintenanceAudioRefreshCallbacks, *PRuntimeMaintenanceAudioRefreshCallbacks;
-typedef struct RuntimeMaintenancePrimaryUpdateCallbacks RuntimeMaintenancePrimaryUpdateCallbacks, *PRuntimeMaintenancePrimaryUpdateCallbacks;
-typedef struct RuntimeMaintenanceTerrainStateRefreshCallbacks RuntimeMaintenanceTerrainStateRefreshCallbacks, *PRuntimeMaintenanceTerrainStateRefreshCallbacks;
-typedef struct RuntimeMaintenanceCallbackPhasesTyped RuntimeMaintenanceCallbackPhasesTyped, *PRuntimeMaintenanceCallbackPhasesTyped;
-typedef struct RuntimeMaintenanceOccupancyRebuildCallbacks RuntimeMaintenanceOccupancyRebuildCallbacks, *PRuntimeMaintenanceOccupancyRebuildCallbacks;
-typedef struct ArmyPlacementContactCallbackTable5 ArmyPlacementContactCallbackTable5, *PArmyPlacementContactCallbackTable5;
-typedef struct FixedVectorQ12 FixedVectorQ12, *PFixedVectorQ12;
-typedef struct PathingDestination PathingDestination, *PPathingDestination;
-typedef struct ArmyRuntimeClassUpdate21DefinitionView ArmyRuntimeClassUpdate21DefinitionView, *PArmyRuntimeClassUpdate21DefinitionView;
-typedef struct ModelRuntimePlacementValidationView ModelRuntimePlacementValidationView, *PModelRuntimePlacementValidationView;
-typedef struct ArmyWeaponDefinitionView ArmyWeaponDefinitionView, *PArmyWeaponDefinitionView;
-typedef struct RuntimeCollisionQueryView RuntimeCollisionQueryView, *PRuntimeCollisionQueryView;
-typedef struct ModelRuntimeUpdateView ModelRuntimeUpdateView, *PModelRuntimeUpdateView;
-typedef struct ModelDefinitionClass14PlacementView ModelDefinitionClass14PlacementView, *PModelDefinitionClass14PlacementView;
-typedef struct ModelRuntimePlacementClass14View ModelRuntimePlacementClass14View, *PModelRuntimePlacementClass14View;
-typedef struct ModelRuntimeClass14UpdateView ModelRuntimeClass14UpdateView, *PModelRuntimeClass14UpdateView;
-typedef struct FixedLengthAngle FixedLengthAngle, *PFixedLengthAngle;
-typedef struct TerrainPlacementResult TerrainPlacementResult, *PTerrainPlacementResult;
-typedef struct ModelRuntimeLinkedChildSpawnInheritedState ModelRuntimeLinkedChildSpawnInheritedState, *PModelRuntimeLinkedChildSpawnInheritedState;
-typedef struct ModelDefinitionVerticalDeploymentView ModelDefinitionVerticalDeploymentView, *PModelDefinitionVerticalDeploymentView;
-typedef struct ModelRuntimeTimedEffectsUpdateView ModelRuntimeTimedEffectsUpdateView, *PModelRuntimeTimedEffectsUpdateView;
-typedef struct ModelDefinitionTimedEffectsUpdateView ModelDefinitionTimedEffectsUpdateView, *PModelDefinitionTimedEffectsUpdateView;
-typedef struct ModelDefinitionLinkedChildStateView ModelDefinitionLinkedChildStateView, *PModelDefinitionLinkedChildStateView;
-typedef struct ModelRuntimeTimedTargetState ModelRuntimeTimedTargetState, *PModelRuntimeTimedTargetState;
-typedef struct ModelDefinitionDestroyEffectsView ModelDefinitionDestroyEffectsView, *PModelDefinitionDestroyEffectsView;
-typedef struct ModelRuntimeDestroyEffectsView ModelRuntimeDestroyEffectsView, *PModelRuntimeDestroyEffectsView;
-typedef struct ModelRuntimeGroundMovementTrackView ModelRuntimeGroundMovementTrackView, *PModelRuntimeGroundMovementTrackView;
-typedef struct ModelDefinitionGroundMovementTrackView ModelDefinitionGroundMovementTrackView, *PModelDefinitionGroundMovementTrackView;
-typedef struct ModelRuntimeLinkedChildSpawnAndBuildView ModelRuntimeLinkedChildSpawnAndBuildView, *PModelRuntimeLinkedChildSpawnAndBuildView;
-typedef struct ModelRuntimeLinkedChildBuildState ModelRuntimeLinkedChildBuildState, *PModelRuntimeLinkedChildBuildState;
-typedef struct ModelRuntimeLinkedChildPendingSpawnCounts ModelRuntimeLinkedChildPendingSpawnCounts, *PModelRuntimeLinkedChildPendingSpawnCounts;
-typedef struct ModelRuntimeGroundMovementSteeringView ModelRuntimeGroundMovementSteeringView, *PModelRuntimeGroundMovementSteeringView;
-typedef struct ModelDefinitionGroundMovementSteeringView ModelDefinitionGroundMovementSteeringView, *PModelDefinitionGroundMovementSteeringView;
-typedef struct ModelRuntimeTimedTargetLinkState ModelRuntimeTimedTargetLinkState, *PModelRuntimeTimedTargetLinkState;
-typedef struct ModelDefinitionTimedTargetProjectileView ModelDefinitionTimedTargetProjectileView, *PModelDefinitionTimedTargetProjectileView;
-typedef struct ModelDefinitionTimedTargetParameters ModelDefinitionTimedTargetParameters, *PModelDefinitionTimedTargetParameters;
-typedef struct ModelRuntimeTimedTargetProjectileView ModelRuntimeTimedTargetProjectileView, *PModelRuntimeTimedTargetProjectileView;
-typedef struct ModelRuntimeWeaponAimStateView ModelRuntimeWeaponAimStateView, *PModelRuntimeWeaponAimStateView;
-typedef struct ModelRuntimeVerticalDeploymentView ModelRuntimeVerticalDeploymentView, *PModelRuntimeVerticalDeploymentView;
-typedef struct ModelRuntimeVerticalDeploymentLinkState ModelRuntimeVerticalDeploymentLinkState, *PModelRuntimeVerticalDeploymentLinkState;
-typedef struct ModelRuntimeClass21State ModelRuntimeClass21State, *PModelRuntimeClass21State;
-typedef struct ModelDefinitionArticulatedMovementView ModelDefinitionArticulatedMovementView, *PModelDefinitionArticulatedMovementView;
-typedef struct ModelRuntimeClass21UpdateView ModelRuntimeClass21UpdateView, *PModelRuntimeClass21UpdateView;
-typedef struct ModelRuntimeArticulatedMovementDefinitionView ModelRuntimeArticulatedMovementDefinitionView, *PModelRuntimeArticulatedMovementDefinitionView;
-typedef struct EffectDefinition EffectDefinition;
-typedef struct GraphicsPaletteAsset GraphicsPaletteAsset;
-typedef struct GraphicsTextureSet GraphicsTextureSet;
-typedef struct ModelAttachmentTransformRecord ModelAttachmentTransformRecord;
-typedef struct ModelDefinition ModelDefinition;
-typedef struct ModelDefinitionRecordPrefix ModelDefinitionRecordPrefix;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
-typedef struct ShotDefinition ShotDefinition;
-typedef struct ShotRuntimeSlot ShotRuntimeSlot;
-typedef struct WorldOwnerListNode WorldOwnerListNode;
-typedef struct WorldRuntimeContext WorldRuntimeContext;
+struct ArmySegmentMeter;
+struct ModelWorldPoint;
+struct ArmyRuntimeSlot;
+struct GameEntityRuntime;
+struct ArmyRuntimeMovementControlState;
+struct ArmyRuntimeArticulatedContactState;
+struct ArmyRuntimeLinkedChildOverloadedState;
+struct ArmyRuntimeLinkedChildSpawnParameters;
+struct ArmyRuntimeLinkedChildPendingCounts;
+union EffectDefinitionReferenceOrSavedId;
+union ShotDefinitionReferenceOrSavedId;
+struct GameEntityRuntimeCommon;
+union GameEntityRuntimeClassPayload;
+union ArmyRuntimeContactRadiusOrLinkedSlotMask;
+union ArmyRuntimeCoordinateCommandOrHistoryValue;
+struct ModelResource;
+struct ModelRuntimeSlot;
+struct GameEntityOwnershipState10;
+struct GameEntityCommandTargetState;
+struct GameEntityDamageState2C;
+struct GameEntityPathingAndImpactState10;
+struct GameEntityTechnologyPayload;
+struct GameEntityImpactOwnerLinksPayloadFC;
+union ModelDefinitionReferenceOrSavedId;
+union ModelRuntimeNodeReferenceOrSavedOffset4;
+union ArmyRuntimeReferenceOrSavedOffset;
+union ModelRuntimeSlotReferenceOrSavedOffset;
+struct ModelRuntimeClassLinkState;
+struct ModelRuntimeSlotClassState;
+struct ModelRuntimeAttachmentDescriptor;
+union GameEntityDamageCounterOrTerminalReference4;
+struct GameEntityPathingReferenceState8;
+struct GameEntityImpactReactionBytes8;
+union ModelRuntimeSlotLinkOrState;
+union ModelRuntimeArmyLinkOrState;
+union SpriteAssetReferenceOrSavedId;
+struct ArmyRuntimeOrderHandlerMatrix11x24;
+struct MdlSerializedNodeHeader;
+struct ArmyArticulatedRuntimeSlotView;
+struct ArmyRuntimeLinkedChildMaskSlotView;
+struct ArmyRuntimeLinkedChildMaskArticulatedContactState;
+struct ArmyRuntimeLinkedChildSlotMaskState;
+struct ArmyGraphicsBinding;
+struct ArmyMovementRuntime;
+struct WorldPointXYQ12;
+struct RuntimeMaintenanceAudioRefreshCallbacks;
+struct RuntimeMaintenancePrimaryUpdateCallbacks;
+struct RuntimeMaintenanceTerrainStateRefreshCallbacks;
+struct RuntimeMaintenanceCallbackPhasesTyped;
+struct RuntimeMaintenanceOccupancyRebuildCallbacks;
+struct ArmyPlacementContactCallbackTable5;
+struct FixedVectorQ12;
+struct PathingDestination;
+struct ArmyRuntimeClassUpdate21DefinitionView;
+struct ModelRuntimePlacementValidationView;
+struct ArmyWeaponDefinitionView;
+struct RuntimeCollisionQueryView;
+struct ModelRuntimeUpdateView;
+struct ModelDefinitionClass14PlacementView;
+struct ModelRuntimePlacementClass14View;
+struct ModelRuntimeClass14UpdateView;
+struct FixedLengthAngle;
+struct TerrainPlacementResult;
+struct ModelRuntimeLinkedChildSpawnInheritedState;
+struct ModelDefinitionVerticalDeploymentView;
+struct ModelRuntimeTimedEffectsUpdateView;
+struct ModelDefinitionTimedEffectsUpdateView;
+struct ModelDefinitionLinkedChildStateView;
+struct ModelRuntimeTimedTargetState;
+struct ModelDefinitionDestroyEffectsView;
+struct ModelRuntimeDestroyEffectsView;
+struct ModelRuntimeGroundMovementTrackView;
+struct ModelDefinitionGroundMovementTrackView;
+struct ModelRuntimeLinkedChildSpawnAndBuildView;
+struct ModelRuntimeLinkedChildBuildState;
+struct ModelRuntimeLinkedChildPendingSpawnCounts;
+struct ModelRuntimeGroundMovementSteeringView;
+struct ModelDefinitionGroundMovementSteeringView;
+struct ModelRuntimeTimedTargetLinkState;
+struct ModelDefinitionTimedTargetProjectileView;
+struct ModelDefinitionTimedTargetParameters;
+struct ModelRuntimeTimedTargetProjectileView;
+struct ModelRuntimeWeaponAimStateView;
+struct ModelRuntimeVerticalDeploymentView;
+struct ModelRuntimeVerticalDeploymentLinkState;
+struct ModelRuntimeClass21State;
+struct ModelDefinitionArticulatedMovementView;
+struct ModelRuntimeClass21UpdateView;
+struct ModelRuntimeArticulatedMovementDefinitionView;
+struct EffectDefinition;
+struct GraphicsPaletteAsset;
+struct GraphicsTextureSet;
+struct ModelAttachmentTransformRecord;
+struct ModelDefinition;
+struct ModelDefinitionRecordPrefix;
+struct ModelRuntimeNode;
+struct ShotDefinition;
+struct ShotRuntimeSlot;
+struct WorldOwnerListNode;
+struct WorldRuntimeContext;
 
 struct ArmySegmentMeter {
     uint32_t filledSegments; // segments shown as filled
@@ -133,13 +134,97 @@ struct ModelWorldPoint {
 using ArmyPlacementContactKindIndex32 = uint32_t;
 using WeaponAimCountdownTicks = int;
 
-using ArmyMovementStateFlags = uint32_t;
+/* ArmyRuntimeSlot/ArmyMovementRuntime.movementStateFlags bits, as set and tested by the move-command starters
+   and ArmyRuntime_UpdateMovementAndWaypoints. The field is also GameEntityRuntimeCommon.commandFlags (raw
+   uint32_t there: ToBits). Saved as raw bytes; bit values are fixed. */
+enum class ArmyMovementStateFlags : uint32_t {
+    ARMY_MOVEMENT_NONE = 0,
+    ARMY_MOVEMENT_ACTIVE = 0x1, /* a move target is set (movementWorld*Q12 / fallbackPosition) */
+    ARMY_MOVEMENT_LOCKED = 0x2, /* new move orders are appended to the waypoint queue, not started */
+    ARMY_MOVEMENT_STATIONARY = 0x4, /* set by the ground/articulated class updates at the start of a tick,
+                                       cleared again when the model moved or turned */
+    ARMY_MOVEMENT_WAYPOINTS_QUEUED = 0x8, /* queuedWaypoints[0..queuedWaypointCount-1] are in use */
+    ARMY_MOVEMENT_ROUTE_POINT_REACHED = 0x10, /* set by the class updates on reaching the current route point:
+                                                 the next ArmyRuntime_UpdateMovementAndWaypoints advances */
+    ARMY_MOVEMENT_TARGET_FOLLOWING = 0x20, /* started by ArmyRuntimeCommand_UpdateTargetFollowingState; a new
+                                              command resets the move first */
+    ARMY_MOVEMENT_ORDERED = 0x40, /* set by the routed, queued and waypoint move starters, cleared by the
+                                     direct/clamped starters and the resets; never tested by the game */
+    ARMY_MOVEMENT_DIRECT = 0x80, /* ArmyRuntime_StartDirectMoveCommand: orders are never queued */
+    ARMY_MOVEMENT_SPECIAL_BEHAVIOR = 0x100, /* class 18: AiUnitBehavior_UpdatePioneerVehicle runs each tick */
+    ARMY_MOVEMENT_ROUTED = 0x200, /* routed move command: kept by the reset/target-following paths */
+    ARMY_MOVEMENT_MIRROR_TARGET = 0x400 /* ArmyRuntime_SetPendingMoveTarget also sets movementTargetWorld*Q12 */
+};
+THANDOR_FLAG_ENUM(ArmyMovementStateFlags);
+using enum ArmyMovementStateFlags;
 
-using ArmyCommandModeFlags = uint32_t;
+/* ArmyRuntimeSlot.commandModeFlags: what the current command targets (ArmyRuntime_ResolveCommandTarget,
+   ArmyRuntime_ApplyTargetPositionCommand, ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration). The field
+   is also GameEntityCommandTargetState.targetFlags (raw uint32_t there: ToBits). Saved as raw bytes. */
+enum class ArmyCommandModeFlags : uint32_t {
+    ARMY_COMMAND_MODE_NONE = 0,
+    ARMY_COMMAND_MODE_TARGET_ARMY = 0x1, /* commandTargetArmyRuntime */
+    ARMY_COMMAND_MODE_TARGET_POSITION = 0x2, /* commandCoordinate0-2Q12 */
+    ARMY_COMMAND_MODE_INTERRUPTED = 0x4, /* a target command was cancelled; commandGeneration re-stamped */
+    ARMY_COMMAND_MODE_AI_COMBAT_TARGET = 0x8, /* target picked by the AI combat target selection: target-following
+                                                 moves are clamped (ArmyRuntime_StartClampedMoveCommand) */
+    ARMY_COMMAND_MODE_SELECTION_ORDER = 0x10, /* target/position order given to the selection (set with INTERRUPTED);
+                                                 cleared by move commands and SelectionRuntime_CancelTargets */
+    ARMY_COMMAND_MODE_UNUSED_400 = 0x400 /* cleared by ArmyRuntime_AppendWaypointOrStartMove; never set or tested */
+};
+THANDOR_FLAG_ENUM(ArmyCommandModeFlags);
+using enum ArmyCommandModeFlags;
 
 using ArmyCommandGeneration = uint32_t;
 
-using ArmyRuntimeFlags = uint32_t;
+/* ArmyRuntimeSlot.aiUnitFlags (+0x94). */
+enum class ArmyAiUnitFlags : uint32_t {
+    AI_UNIT_FLAGS_NONE = 0,
+    /* set when AiUnitGroup_AssignCollectedEntitiesToBestTarget sends the unit to a group target, cleared by the
+       direct AI move commands; AiUnitBehavior_CollectUnassignedEntity skips it */
+    AI_UNIT_STATE94_GROUP_ASSIGNED = 0x1
+};
+THANDOR_FLAG_ENUM(ArmyAiUnitFlags);
+using enum ArmyAiUnitFlags;
+
+/* The army model state word: ModelRuntimeSlot word 59 (+0xEC), named classState.stateFlags,
+   GameEntityRuntimeCommon.runtimeFlags, ArmyRuntimeSlot.runtimeFlags and linkedChildRuntimeFlags by the views.
+   Saved with the model pool: bit values fixed. */
+enum class ArmyRuntimeFlags : uint32_t {
+    ARMY_RUNTIME_FLAGS_NONE = 0,
+    /* bits set and tested by the class update callbacks (ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive,
+       the production slots 11/13/22) */
+    ARMY_MODEL_STATE_SWITCHED_OFF = 0x1, /* powered down: no Energy demand, health decays to 3/4 */
+    /* ArmyRuntime_UpdateAnimatedModelSubnodes (building idle animation) */
+    ARMY_MODEL_STATE_BOB_RISING = 0x2, /* child node 2 bobs upwards; toggled at the limits */
+    ARMY_MODEL_STATE_SWITCHED_OFF_SEEN = 0x4, /* follows SWITCHED_OFF; each change rebuilds the owner's selection
+                                                 metrics */
+    /* set when the army's health (actionVector2Q12) drops to zero (ArmyRuntime_ApplyImpactDamageAndFinalizeState
+       and the other damage helpers) */
+    ARMY_RUNTIME_FLAG_DESTROYED = 0x8,
+    ARMY_MODEL_STATE_DISMANTLING = 0x10, /* being recycled: health drains, Xenite (xeniteValueQ4 >> 5) is refunded */
+    ARMY_MODEL_STATE_DESTRUCTION_STARTED = 0x20, /* destruction effect spawned; skips the attachment channel ticks */
+    ARMY_MODEL_STATE_RESEARCHING = 0x40, /* technology research in progress (researchTechnologyId) */
+    ARMY_MODEL_STATE_RESEARCH_UNPAID = 0x80, /* research queued, Xenite not yet paid */
+    /* the same two bits as named by the technology code: Technology_IsAvailableForFaction treats an army with
+       RESEARCH_RUNNING whose researchTechnologyId holds the technology as already researching it;
+       Technology_ApplyRecordToEntity stores the technology in common.commandState (the same slot) and sets
+       RESEARCH_ASSIGNED, and does nothing while either bit is set */
+    ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING = 0x40,
+    ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED = 0x80,
+    ARMY_MODEL_STATE_PRODUCING = 0x100, /* a queued secondary army asset is being built */
+    ARMY_MODEL_STATE_DISMANTLED = 0x200, /* dismantling finished (toggled together with DISMANTLING) */
+    ARMY_MODEL_STATE_NO_REGENERATION = 0x400, /* health does not regenerate */
+    ARMY_MODEL_STATE_RALLY_POINT_SET = 0x800, /* class 13: the exit point (classLinkState.classState78/7C) was set
+                                                 by the player */
+    /* SWITCHED_OFF | DESTROYED: the model does nothing this tick */
+    ARMY_MODEL_STATE_INACTIVE_MASK = ARMY_MODEL_STATE_SWITCHED_OFF | ARMY_RUNTIME_FLAG_DESTROYED,
+    /* INACTIVE_MASK | RESEARCHING | RESEARCH_UNPAID: a production class may start a new build */
+    ARMY_MODEL_STATE_BUILD_BLOCKING_MASK =
+              ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID
+};
+THANDOR_FLAG_ENUM(ArmyRuntimeFlags);
+using enum ArmyRuntimeFlags;
 
 using ArmyRuntimeTimer = uint32_t;
 
@@ -147,7 +232,58 @@ using ArmySelectionMetric = int;
 
 using AngleTurn16Stored32 = int;
 
-using ModelRuntimeFlags = uint32_t;
+/* ModelDefinition.modelFlags (+0x68 of every model definition view; MDL file data, bits not named here stay valid). */
+enum class ModelDefinitionFlags : uint32_t {
+    MODEL_DEFINITION_FLAGS_NONE = 0,
+    MODEL_DEFINITION_FLAG_EMITTER_POINTS_IN_TURN = 0x1, /* the timed effect emitter takes its model points in turn
+                                                           (ArmyEmitter_FindEffectPoint), else at random */
+    /* copied into the node flags at creation */
+    MODEL_DEFINITION_FLAG_NOT_REMEMBERED = 0x10, /* -> TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED */
+    MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN = 0x20, /* -> MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN; the army runtime
+                                                         also skips the field grid height stamp for it */
+    MODEL_DEFINITION_FLAG_NO_SHADING_PASS = 0x40, /* clear -> MODEL_NODE_FLAG_SHADING_PASS */
+    /* the energy demand of directly attached models counts (ModelRuntimeHierarchy_ComputeEnergyDemand,
+       ArmyAssetHierarchy_SumEnergyFrom) */
+    MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY = 0x80,
+    MODEL_DEFINITION_FLAG_RAY_TRANSPARENT = 0x100 /* makes the model's root node ray transparent */
+};
+THANDOR_FLAG_ENUM(ModelDefinitionFlags);
+using enum ModelDefinitionFlags;
+
+/* ModelRuntimeNode / EffectModelRuntimeNode / ShotModelRuntimeNode.runtimeFlags (+0x4C). Bit values fixed (the
+   node pools are saved as raw bytes). */
+enum class ModelRuntimeFlags : uint32_t {
+    MODEL_RUNTIME_FLAGS_NONE = 0,
+    MODEL_NODE_FLAG_TRANSFORM_DIRTY = 0x1, /* local translation/rotation changed: world transform is rebuilt */
+    MODEL_NODE_FLAG_RENDERED = 0x2, /* drawn in the current frame (set by the model renderers) */
+    /* read and produced by TerrainOccupancyMask_ResolveRuntimeClassFlags (callers clear 0xC first; the selection
+       overlay accepts PRESENT, or SEEN_BEFORE without NOT_REMEMBERED) */
+    TERRAIN_OCCUPANCY_FLAG_PRESENT = 0x04,
+    TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE = 0x08,
+    TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED = 0x10, /* set on shots and effects */
+    /* set at creation (ModelNodeRuntime_CreateHierarchyRecursive) and read by
+       FrontendModelPointerContext_RenderWorldViewQueuesClipped and the pointer and box selection */
+    MODEL_NODE_FLAG_FACTION_OWNED = 0x20, /* the owning army's factionIndex is not 0; required for picking */
+    /* skipped by every model pass of the world view (FrontendModelPointerContext_RenderWorldViewQueuesClipped);
+       no writer with a constant mask found */
+    MODEL_NODE_FLAG_HIDDEN = 0x40,
+    /* set by the model class initializers (world/model/slots); the model renderer shifts the texture coordinates
+       of triangles using the node's primary / secondary animated subresource by its texture offsets */
+    MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL = 0x80,
+    MODEL_NODE_FLAG_SHADING_PASS = 0x100, /* drawn into the generated-texture shading pass */
+    MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN = 0x200, /* drawn in the model pass before the terrain pass */
+    MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL = 0x400,
+    MODEL_RUNTIME_FLAG_APPLY_SCALE = 0x800, /* ModelRender_PrepareProjectedVertex scales every vertex by modelScaleQ12 */
+    MODEL_NODE_FLAG_FORCE_TRANSPARENT = 0x1000, /* ModelNodeRuntime_UpdateStateTintRecursive fades the alpha to 0 */
+    MODEL_NODE_FLAG_RAY_TRANSPARENT = 0x2000, /* skipped by ModelRuntime_RaycastCandidateListNearest; set at creation
+                                                 when ModelDefinition.modelFlags has bit 0x100 */
+    /* the same word is WorldObjectRecordCommon.allocationFlags (raw uint32_t there: ToBits): the record is in use
+       (WorldObjectArray_AllocateFreeRecord) */
+    WORLD_OBJECT_RECORD_ALLOCATED = 0x40000000,
+    WORLD_OWNER_NODE_LINKED = 0x80000000 /* the node is linked into its world's owner list */
+};
+THANDOR_FLAG_ENUM(ModelRuntimeFlags);
+using enum ModelRuntimeFlags;
 
 using ModelTextureSubresourceIndex = int;
 
@@ -305,7 +441,7 @@ using GameEntityCommandFlags = uint32_t;
 
 using RuntimeToken = uint32_t;
 
-using GameEntityRuntimeFlags = uint32_t;
+using GameEntityRuntimeFlags = ArmyRuntimeFlags;
 
 using GameEntityCommandState = int;
 
@@ -755,6 +891,15 @@ struct ModelResource {
     ModelPackedGeometryRecordCount packedGeometryRecordCount; 
     uint8_t reserved208_20B[4]; 
     ModelResourceHitTestFlags hitTestFlags20C; 
+
+    /* The packed point table: packedLookupTableEntryCount records at the resource-relative byte offset
+       packedLookupTableRelativeOffset (step 13 X5; replaces the byte-offset casts to ModelPackedPointRecord at the
+       users, same address arithmetic). */
+    ModelPackedPointRecord *packedPointRecords()
+    {
+        return reinterpret_cast<ModelPackedPointRecord *>(reinterpret_cast<uint8_t *>(this) +
+                                                          packedLookupTableRelativeOffset);
+    }
 };
 
 union GameEntityDamageCounterOrTerminalReference4 {
@@ -780,8 +925,34 @@ struct ArmyRuntimeLinkedChildSpawnParameters {
 struct GameEntityOwnershipState10 {
     Ptr32<void> definitionOrClassRecord; 
     Ptr32<struct ModelRuntimeNode> modelNode; 
-    Ptr32<void> runtimeLink; 
-    FactionRuntimeIndex ownerIndex; 
+    Ptr32<void> runtimeLink;
+    FactionRuntimeIndex ownerIndex;
+
+    /* Typed views of the two untyped references (step 13 X3; they replace the C-style T * casts of ownership.<field> and
+       compile to the same load). GameEntityRuntime is a view laid over more than one record, so what +0x0 and
+       +0x8 point to depends on the record under it; the caller picks the view, as it did with the cast:
+       - modelRuntime(): +0x0 as a ModelRuntimeSlot (the army entities of selection, commands, weapons, AI:
+         ArmyRuntimeSlot.modelRuntimeOrSavedOffset);
+       - modelDefinition(): +0x0 as a ModelDefinition (pathing route and grid influence handlers);
+       - linkedArmyRuntime() / linkedModelRuntime(): +0x8 as an ArmyRuntimeSlot (route, damage, AI) or as the
+         ModelRuntimeSlot the grid influence handlers keep their stored point in.
+       Not constexpr: a Ptr32 field holds an address as an integer. */
+    struct ModelRuntimeSlot *modelRuntime() const
+    {
+        return static_cast<struct ModelRuntimeSlot *>(definitionOrClassRecord.get());
+    }
+    struct ModelDefinition *modelDefinition() const
+    {
+        return static_cast<struct ModelDefinition *>(definitionOrClassRecord.get());
+    }
+    struct ArmyRuntimeSlot *linkedArmyRuntime() const
+    {
+        return static_cast<struct ArmyRuntimeSlot *>(runtimeLink.get());
+    }
+    struct ModelRuntimeSlot *linkedModelRuntime() const
+    {
+        return static_cast<struct ModelRuntimeSlot *>(runtimeLink.get());
+    }
 };
 
 union ModelRuntimeArmyLinkOrState {
@@ -955,7 +1126,7 @@ struct ModelRuntimeSlotClassState {
     uint32_t effectEmitterPointIndex; // Next model effect point of the timed effect emitter (ArmyRuntime_UpdateTimedShotAndEffectEmitters).
     uint32_t shotEmitterTimerTicks; // Timed shot emitter countdown; constructor sets 1.
     uint32_t effectEmitterTimerTicks; // Timed effect emitter countdown; constructor sets 1, 0x7FFFFFFF = never.
-    uint32_t stateFlags; // ARMY_MODEL_STATE_* bits (gameplay/army/pool.h); constructor-cleared.
+    ArmyRuntimeFlags stateFlags; // ARMY_MODEL_STATE_* bits; constructor-cleared.
     union ArmyRuntimeReferenceOrSavedOffset linkedArmyRuntimeOrSavedOffset; // Live army pointer or serialized pool offset.
     uint32_t energyLoadQ4; // Energy demand: the definition's energyLoadQ4 plus loads held while building/researching.
     uint32_t healthRegenerationDelayTicks; // Counts down to the next health step; damage sets it to 0x200.
@@ -1048,7 +1219,7 @@ struct ArmyRuntimeSlot {
     uint32_t aiSecondaryWorkspaceScoreWeight; // AI weight of secondary workspace sites, copied from the army asset record
     uint32_t aiUnitState; // AI command state (AI_UNIT_COMMANDED_STATE when the AI gave an order), 0 on creation
     uint32_t occupancyMarkRadius; // largest ModelDefinition.occupancyMarkRadius; radius of occupancy bit 1 around the army
-    uint32_t aiUnitFlags; // AI unit flags (AI_UNIT_STATE94_GROUP_ASSIGNED)
+    ArmyAiUnitFlags aiUnitFlags; // AI unit flags (AI_UNIT_STATE94_GROUP_ASSIGNED)
     uint32_t assignedTargetArmyRuntime; // ArmyRuntimeSlot * given as target by the AI or the player's selection; pool offset in saves
     ModelRuntimeClassId depthBinClass;
     PckArmyAssetIdCatalog armyAssetId;
@@ -1170,10 +1341,10 @@ using PlayerStateLookupValue1 = int;
 using PlayerStateLookupValue0 = int;
 
 /* cos(angle) and sin(angle), scaled (FixedMath_SinCosScaled). */
-typedef struct FixedSinCos {
+struct FixedSinCos {
     int32_t cosValue;
     int32_t sinValue;
-} FixedSinCos;
+};
 
 using FixedVectorStateAddress32 = intptr_t; /* address of a ModelRuntimeNode, pointer-sized (5f) */
 
@@ -1318,7 +1489,7 @@ struct ArmyRuntimeLinkedChildMaskSlotView {
     uint32_t aiSecondaryWorkspaceScoreWeight; 
     uint32_t aiUnitState; 
     uint32_t occupancyMarkRadius; 
-    uint32_t aiUnitFlags; 
+    ArmyAiUnitFlags aiUnitFlags; 
     uint32_t assignedTargetArmyRuntime; 
     ModelRuntimeClassId depthBinClass; 
     PckArmyAssetIdCatalog armyAssetId; 
@@ -1450,10 +1621,10 @@ struct ArmyPlacementContactCallbackTable5 {
 };
 
 /* Energy demand of a model and its directly attached models (ModelRuntimeHierarchy_ComputeEnergyDemand) */
-typedef struct ModelHierarchyEnergyDemand {
+struct ModelHierarchyEnergyDemand {
     uint32_t activeQ4; /* demand of the models not switched off */
     uint32_t totalQ4;  /* demand of all counted models */
-} ModelHierarchyEnergyDemand;
+};
 
 /* Q12 vector returned by the fixed-point rotation helpers. */
 struct FixedVectorQ12 {
@@ -1483,8 +1654,8 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
     Ptr32<void (struct ModelRuntimeSlot *)> modelRebaseOrLoadRepair[24];
     Ptr32<void (struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *)> modelClassInitialize[24];
     Ptr32<void (struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *)> modelReleaseOrCommit[24];
-    Ptr32<Bool8 (struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *)> placementValidation[24]; // 24 placement validators returning a bool. Split from generic world/army callbacks.
-    Ptr32<Bool8 (uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *, uint32_t *outPlacementValue)> placementAssetClassDispatch[24]; // true = accepted, *outPlacementValue set only then
+    Ptr32<bool (struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *)> placementValidation[24]; // 24 placement validators returning a bool. Split from generic world/army callbacks.
+    Ptr32<bool (uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *, uint32_t *outPlacementValue)> placementAssetClassDispatch[24]; // true = accepted, *outPlacementValue set only then
     Ptr32<ModelRuntimeClassCallback> classCommand[24];
     Ptr32<void (struct GameEntityRuntime *)> gridInfluenceAdd[24];
     Ptr32<void (struct GameEntityRuntime *)> gridInfluenceRemove[24];
@@ -1616,7 +1787,7 @@ struct ModelDefinitionClass14PlacementView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field20_0x6c;
     uint8_t field21_0x6d;
     uint8_t field22_0x6e;
@@ -1800,7 +1971,7 @@ struct ModelDefinitionVerticalDeploymentView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field40_0x6c;
     uint8_t field41_0x6d;
     uint8_t field42_0x6e;
@@ -1912,7 +2083,7 @@ struct ModelDefinitionTimedEffectsUpdateView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field20_0x6c;
     uint8_t field21_0x6d;
     uint8_t field22_0x6e;
@@ -2157,7 +2328,7 @@ struct ModelDefinitionLinkedChildStateView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field40_0x6c;
     uint8_t field41_0x6d;
     uint8_t field42_0x6e;
@@ -2289,7 +2460,7 @@ struct ModelDefinitionDestroyEffectsView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field40_0x6c;
     uint8_t field41_0x6d;
     uint8_t field42_0x6e;
@@ -2428,7 +2599,7 @@ struct ModelDefinitionGroundMovementTrackView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field31_0x6c;
     uint8_t field32_0x6d;
     uint8_t field33_0x6e;
@@ -2542,7 +2713,7 @@ struct ModelRuntimeLinkedChildSpawnAndBuildView {
     uint32_t effectEmitterPointIndex;
     uint32_t shotEmitterTimerTicks;
     uint32_t effectEmitterTimerTicks;
-    uint32_t linkedChildRuntimeFlags; // Class runtime flags tested for transition, inhibit, and build/spawn state bits.
+    ArmyRuntimeFlags linkedChildRuntimeFlags; // Class runtime flags tested for transition, inhibit, and build/spawn state bits.
     union ArmyRuntimeReferenceOrSavedOffset linkedArmyRuntimeOrSavedOffset;
     uint32_t energyLoadQ4; // Accumulator adjusted by the selected secondary Army asset's ArmyAssetRecord.energyLoadQ4 while active.
     uint32_t healthRegenerationDelayTicks;
@@ -2617,7 +2788,7 @@ struct ModelDefinitionGroundMovementSteeringView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field34_0x6c;
     uint8_t field35_0x6d;
     uint8_t field36_0x6e;
@@ -2733,7 +2904,7 @@ struct ModelDefinitionTimedTargetProjectileView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field20_0x6c;
     uint8_t field21_0x6d;
     uint8_t field22_0x6e;
@@ -2934,7 +3105,7 @@ struct ModelRuntimeClass21State {
     uint32_t effectEmitterPointIndex; // Next model effect point of the timed effect emitter (ArmyRuntime_UpdateTimedShotAndEffectEmitters).
     uint32_t shotEmitterTimerTicks; // Timed shot emitter countdown; constructor sets 1.
     uint32_t effectEmitterTimerTicks; // Timed effect emitter countdown; constructor sets 1, 0x7FFFFFFF = never.
-    uint32_t stateFlags; // ARMY_MODEL_STATE_* bits (gameplay/army/pool.h); constructor-cleared.
+    ArmyRuntimeFlags stateFlags; // ARMY_MODEL_STATE_* bits; constructor-cleared.
     union ArmyRuntimeReferenceOrSavedOffset linkedArmyRuntimeOrSavedOffset; // Live army pointer or serialized pool offset.
     uint32_t energyLoadQ4; // Energy demand: the definition's energyLoadQ4 plus loads held while building/researching.
     uint32_t healthRegenerationDelayTicks; // Counts down to the next health step; damage sets it to 0x200.
@@ -2981,7 +3152,7 @@ struct ModelDefinitionArticulatedMovementView {
     uint8_t reserved05C_05F[4]; // Not yet named.
     uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
-    uint32_t modelFlags;
+    ModelDefinitionFlags modelFlags;
     uint8_t field40_0x6c;
     uint8_t field41_0x6d;
     uint8_t field42_0x6e;
@@ -3127,6 +3298,6 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
     uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments[6]; // Six fixed 0x20-byte attachment descriptors.
 };
-using TerrainClassOverlayCallback = Bool8 (uint32_t cellFlagMask, int cellValue, int radiusWorldUnits, Q12 worldYQ12, Q12 worldXQ12, FieldGridAsset * fieldGrid);
+using TerrainClassOverlayCallback = bool (FieldCellFlagMask cellFlagMask, int cellValue, int radiusWorldUnits, Q12 worldYQ12, Q12 worldXQ12, FieldGridAsset * fieldGrid);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_TYPES_H */

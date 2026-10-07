@@ -28,7 +28,7 @@ static const UiFrameDelayFrames g_UiTextEditCaretBlinkPhaseStep = 8;
 /* True for the characters typed with AltGr (Ctrl+Alt) on a German keyboard: @ | ~ { [ ] } backslash and, in
    Windows-1252, 0xB2/0xB3 (superscript two/three), 0xB5 (micro sign) and 0x80 (euro sign). The keyboard
    handlers treat them as text without the modifier checks. */
-static Bool8 UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
+static bool UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
 
 {
   return (keyCode == '@') || (keyCode == '|') || (keyCode == '~') || (keyCode == CP1252_SUPERSCRIPT_TWO) ||
@@ -37,17 +37,17 @@ static Bool8 UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
 }
 
 /* True when the key is a shortcut rather than text: any key with Alt, or a letter typed with Ctrl or Alt. */
-static Bool8 UiTextEdit_IsModifierShortcut(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
+static bool UiTextEdit_IsModifierShortcut(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
 
 {
-  return ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) ||
+  return (Any(keyboardStateMask & KEYBOARD_STATE_ALT)) ||
          (((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) &&
-          ((keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) &&
+          (Any(keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT))) &&
           ('@' < keyCode) && ((keyCode < '[') || (('`' < keyCode) && (keyCode < '{'))));
 }
 
 /* True for Home, End, Left and Right. */
-static Bool8 UiTextEdit_IsCursorMovementKey(UiKeyboardEventCode keyCode)
+static bool UiTextEdit_IsCursorMovementKey(UiKeyboardEventCode keyCode)
 
 {
   return (keyCode == KEYBOARD_KEY_CODE_HOME) || (keyCode == KEYBOARD_KEY_CODE_END) ||
@@ -55,7 +55,7 @@ static Bool8 UiTextEdit_IsCursorMovementKey(UiKeyboardEventCode keyCode)
 }
 
 /* True unless the selection is collapsed at the cursor. */
-static Bool8 UiTextEdit_HasSelection(const UiTextEditControl *edit)
+static bool UiTextEdit_HasSelection(const UiTextEditControl *edit)
 
 {
   return (edit->cursorIndex != edit->selectionStart) || (edit->cursorIndex != edit->selectionEnd);
@@ -109,7 +109,7 @@ static void UiTextEdit_RemoveSelectedRange(UiTextEditControl *edit,uint16_t *buf
    by one (the code unit at insertLimit - 1 falls off), in overwrite mode the code unit at the cursor is
    replaced. */
 static void UiTextEdit_InsertCodeUnit(UiTextEditControl *edit,uint16_t *buffer,uint32_t bufferUnits,
-          uint32_t insertLimit,Bool8 overwriteMode,uint16_t codeUnit)
+          uint32_t insertLimit,bool overwriteMode,uint16_t codeUnit)
 
 {
   uint32_t insertIndex;
@@ -124,12 +124,12 @@ static void UiTextEdit_InsertCodeUnit(UiTextEditControl *edit,uint16_t *buffer,u
     edit->selectionStart++;
     edit->selectionEnd++;
     if (!overwriteMode) {
-      do {
+      while (insertIndex < insertLimit) {
         displacedCodeUnit = buffer[insertIndex];
         buffer[insertIndex] = codeUnit;
         codeUnit = displacedCodeUnit;
         insertIndex++;
-      } while (insertIndex < insertLimit);
+      }
     }
     else {
       buffer[insertIndex] = codeUnit;
@@ -140,8 +140,8 @@ static void UiTextEdit_InsertCodeUnit(UiTextEditControl *edit,uint16_t *buffer,u
 /* Backspace (deleteBefore) or Delete: removes the selection, or else the code unit before / at the cursor
    (the text above it moves down). Returns false when there was nothing to delete: Backspace at the text
    start or Delete at the text end. */
-static Bool8 UiTextEdit_DeleteAtCursor(UiTextEditControl *edit,uint16_t *buffer,uint32_t bufferUnits,
-          Bool8 deleteBefore)
+static bool UiTextEdit_DeleteAtCursor(UiTextEditControl *edit,uint16_t *buffer,uint32_t bufferUnits,
+          bool deleteBefore)
 
 {
   UiTextCodeUnitIndex cursorIndex;
@@ -197,7 +197,7 @@ static void UiTextEdit_MoveCursorAndCollapseSelection(UiTextEditControl *edit,co
 /* Shift+Home/End/Left/Right: moves the cursor together with the selection end at the cursor. Home and End
    may move that end across the anchor; the selection is then reordered. Returns false when the cursor
    could not move. */
-static Bool8 UiTextEdit_ExtendSelectionByKey(UiTextEditControl *edit,const uint16_t *buffer,
+static bool UiTextEdit_ExtendSelectionByKey(UiTextEditControl *edit,const uint16_t *buffer,
           UiKeyboardEventCode keyCode)
 
 {
@@ -293,7 +293,7 @@ static UiTextCodeUnitIndex UiRequiredTextEdit_FindPreviousWordStop(const uint16_
 /* Ctrl+Right target. With skipSpaces: forward over the spaces at the cursor. Otherwise: just past the next
    space, or back onto that space when another space follows it; the end of the text when no space follows. */
 static UiTextCodeUnitIndex UiRequiredTextEdit_FindNextWordStop(const uint16_t *textBuffer,
-          UiTextCodeUnitIndex cursorIndex,Bool8 skipSpaces)
+          UiTextCodeUnitIndex cursorIndex,bool skipSpaces)
 
 {
   UiTextCodeUnitIndex wordStop;
@@ -320,14 +320,14 @@ static UiTextCodeUnitIndex UiRequiredTextEdit_FindNextWordStop(const uint16_t *t
 /* Ctrl+Left/Right: moves the cursor to the previous/next word stop. Without Shift the selection collapses
    there; with Shift the selection end at the cursor moves along and the selection is reordered. Ctrl+Left at
    the text start does nothing. */
-static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,Bool8 towardsStart,
-          Bool8 extendSelection)
+static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,bool towardsStart,
+          bool extendSelection)
 
 {
   UiTextCodeUnitIndex formerCursorIndex;
   UiTextCodeUnitIndex wordStop;
   UiTextCodeUnitIndex *selectionBoundary;
-  Bool8 skipSpaces;
+  bool skipSpaces;
 
   formerCursorIndex = control->cursorIndex;
   if (towardsStart && (formerCursorIndex == 0)) {
@@ -353,7 +353,7 @@ static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,Boo
   control->cursorIndex = wordStop;
   if (extendSelection) {
     *selectionBoundary = wordStop;
-    UiTextEdit_OrderSelection((UiTextEditControl *)control);
+    UiTextEdit_OrderSelection(UiNode_As<UiTextEditControl>(control));
   }
   else {
     control->selectionStart = wordStop;
@@ -365,7 +365,7 @@ static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,Boo
 static void UiRequiredTextEdit_PlayInteractionSound(UiRequiredTextEditControl *control)
 
 {
-  if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
+  if (Any(control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) &&
      (control->activationSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
@@ -377,19 +377,19 @@ static void UiRequiredTextEdit_PlayInteractionSound(UiRequiredTextEditControl *c
    After every handled key the non-empty validity is updated and, unless the control acts on Enter only, its
    action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
 */
-Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
+bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control)
 
 {
   UiTextEditControl *edit;
   UiTextCodeUnitIndex clearIndex;
-  Bool8 isAltGrCharacter;
-  Bool8 recomputeLayout;
+  bool isAltGrCharacter;
+  bool recomputeLayout;
 
-  edit = (UiTextEditControl *)control;
-  if (((control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) != 0) ||
-     (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+  edit = UiNode_As<UiTextEditControl>(control);
+  if (Any(control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) ||
+     (Any((control->base).nodeFlags & UI_NODE_SUPPRESSED))) {
     return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
   /* Characters typed with AltGr are inserted without the modifier checks. */
@@ -404,17 +404,17 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
     /* Insert the character, replacing a selection. */
     UiTextEdit_InsertCodeUnit(edit,control->textBuffer,control->bufferCapacityCodeUnits,
                               control->bufferCapacityCodeUnits - 1,
-                              (control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE) != 0,(uint16_t)keyCode);
+                              Any(control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE),(uint16_t)keyCode);
   }
-  else if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+  else if (Any(keyboardStateMask & KEYBOARD_STATE_CTRL)) {
     /* Ctrl+Left/Right: jump between space-separated words, Shift extends the selection. */
     if ((keyCode != KEYBOARD_KEY_CODE_LEFT) && (keyCode != KEYBOARD_KEY_CODE_RIGHT)) {
       return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     }
     UiRequiredTextEdit_JumpToWord(control,keyCode == KEYBOARD_KEY_CODE_LEFT,
-                                  (keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0);
+                                  Any(keyboardStateMask & KEYBOARD_STATE_SHIFT));
   }
-  else if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
+  else if (Any(keyboardStateMask & KEYBOARD_STATE_SHIFT)) {
     /* Shift: extend the selection from the cursor. */
     if (!UiTextEdit_IsCursorMovementKey(keyCode)) {
       return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
@@ -439,14 +439,14 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
       UiTextEdit_MoveCursorAndCollapseSelection(edit,control->textBuffer,keyCode);
       break;
     case KEYBOARD_KEY_CODE_ENTER:
-      if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
+      if (!Any(control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY)) {
         return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       }
       UiActionQueue_Enqueue(control->actionId,control);
       UiRequiredTextEdit_PlayInteractionSound(control);
       return false;
     case KEYBOARD_KEY_CODE_ESCAPE:
-      if ((control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION) == 0) {
+      if (!Any(control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION)) {
         return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       }
       for (clearIndex = 0; clearIndex != control->bufferCapacityCodeUnits; clearIndex++) {
@@ -470,7 +470,7 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
     UiTextEditControl_RecomputeLayoutAndClampScroll(edit);
   }
   UiTextControl_UpdateNonEmptyValidity(edit);
-  if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
+  if (!Any(control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY)) {
     UiActionQueue_Enqueue(control->actionId,control);
   }
   UiNode_InvalidateRoot(&control->base);
@@ -516,7 +516,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   if (g_GraphicsFramebufferBeginAccess()) {
     return;
   }
-  if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME)) {
     borderWidth = 0;
     textAreaLeft = (control->base).left;
     textAreaTop = (control->base).top;
@@ -532,7 +532,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
     borderWidth = cornerTileSize.logicalWidthPixels;
     rightEdgeOffset = rightEdgeOffset - borderWidth;
     bottomEdgeOffset = bottomEdgeOffset - tileBottom;
-    if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_TILED_INTERIOR) != 0) {
+    if (Any(control->editStateFlags & UI_TEXT_EDIT_DRAW_TILED_INTERIOR)) {
       UiWindow_BlitTiledInterior
                 (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_INTERIOR,bottomEdgeOffset,
                  rightEdgeOffset,
@@ -588,7 +588,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   }
   textOffsetY = (int)((control->base).layoutHeight - fontLineHeight) >> 1;
   selectionEnd = control->selectionEnd;
-  if (((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) == 0) &&
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) &&
      (control->selectionStart != selectionEnd)) {
     selectionStartWidth = UiTextEditControl_MeasurePrefixWidth(control->selectionStart,control);
     selectionEndWidth = UiTextEditControl_MeasurePrefixWidth(selectionEnd,control);
@@ -604,19 +604,19 @@ void UiTextEditControl_DrawTextSelectionAndCaret
                textOffsetY - 1,selectionStartWidth + textOffsetX,control);
   }
   packedStyle = g_UiTextEditActiveTextStyle;
-  if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
+  if (!Any((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS)) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE;
   }
-  if ((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) != 0) {
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_READ_ONLY)) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE;
   }
-  if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     packedStyle = g_UiTextEditInactiveTextStyle;
   }
-  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->base).nodeFlags & UI_NODE_SUPPRESSED)) {
     packedStyle = g_UiTextEditDisabledTextStyle;
   }
-  if ((control->editStateFlags & UI_TEXT_EDIT_CARET_VISIBLE_PHASE) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_CARET_VISIBLE_PHASE)) {
     RichTextCommandStream_DrawSingleLine
               (clipBottom,clipRight,clipTop,clipLeft,packedStyle,control->textBuffer,
                textOffsetY + (control->base).top,textOffsetX + (control->base).left);
@@ -625,12 +625,12 @@ void UiTextEditControl_DrawTextSelectionAndCaret
     caretWidth = UiTextEditControl_MeasurePrefixWidth(control->cursorIndex,control);
     caretX = caretWidth - 2 + textOffsetX + (control->base).left;
     caretFrame = UI_WINDOW_SUBRESOURCE_CARET_INSERT;
-    if ((control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) != 0) {
+    if (Any(control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE)) {
       caretFrame = UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE;
     }
     styleVerticalOffset = (int)(packedStyle << 16) >> 24; /* signed byte 1 of the packed style */
     caretY = textOffsetY - 1 + (control->base).top + styleVerticalOffset;
-    if ((control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) != 0) {
+    if (Any(control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE)) {
       caretY++;
     }
     caretTextureSource = g_UiWindowTextureSource;
@@ -662,14 +662,14 @@ void UiTextEditControl_BeginSelectionAtPointer
 {
   UiTextCodeUnitIndex cursorIndexAtPointer;
   
-  if ((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) == 0) {
+  if (!Any(control->editStateFlags & UI_TEXT_EDIT_READ_ONLY)) {
     control->editStateFlags = control->editStateFlags | UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE;
     cursorIndexAtPointer = UiTextEditControl_FindCursorIndexAtX(pointerX,control);
     control->cursorIndex = cursorIndexAtPointer;
     control->selectionStart = cursorIndexAtPointer;
     control->selectionEnd = cursorIndexAtPointer;
   }
-  if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) &&
      (control->activationSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
@@ -687,7 +687,7 @@ void UiTextEditControl_UpdateSelectionFromPointer
   UiTextCodeUnitIndex previousCursorIndex;
   uint32_t pointerCursorIndex;
 
-  if ((control->editStateFlags & UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE) != 0) {
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE)) {
     previousCursorIndex = control->cursorIndex;
     pointerCursorIndex = UiTextEditControl_FindCursorIndexAtX(pointerX,control);
     control->cursorIndex = pointerCursorIndex;
@@ -715,13 +715,14 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
   UiNodeFlags *nodeFlagsField;
   uint16_t currentCodeUnit;
   
-  if (((control->base).nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET) == 0) {
+  if (!Any((control->base).nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET)) {
     nodeFlagsField = &(control->base).nodeFlags;
     *nodeFlagsField = *nodeFlagsField | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
   /* clears the caret phase and the blink frame counter (top byte) */
-  control->editStateFlags = control->editStateFlags & (UI_STATE_FLAGS_MASK & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE);
-  UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)control);
+  control->editStateFlags = control->editStateFlags &
+       (FromBits<UiRequiredTextEditStateFlags>(UI_STATE_FLAGS_MASK) & ~UI_REQUIRED_TEXT_CARET_VISIBLE_PHASE);
+  UiTextControl_UpdateNonEmptyValidity(UiNode_As<UiTextEditControl>(control));
   textCursor = control->textBuffer;
   control->cursorIndex = 0;
   control->selectionStart = 0;
@@ -744,7 +745,7 @@ void UiTextEditControl_EndSelection
 
 {
   control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE;
-  if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) &&
      (control->activationSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
@@ -793,15 +794,15 @@ void UiTextEditControl_TickCaretBlink(UiTextEditControl *control)
   UiTextEditStateFlags *stateFlagsField;
   UiTextEditStateFlags previousStateFlags;
 
-  if (control == (UiTextEditControl *)g_UiKeyboardFocusNode) {
+  if (control == UiNode_As<UiTextEditControl>(g_UiKeyboardFocusNode)) {
     stateFlagsField = &control->editStateFlags;
     previousStateFlags = *stateFlagsField;
-    *stateFlagsField = *stateFlagsField - UI_STATE_FRAME_COUNTER_UNIT;
+    *stateFlagsField = FromBits<UiTextEditStateFlags>(ToBits(*stateFlagsField) - UI_STATE_FRAME_COUNTER_UNIT);
     /* the subtraction borrowed: an unsigned compare, so the counter byte runs 0xFF..0 */
-    if ((uint32_t)previousStateFlags < (uint32_t)UI_STATE_FRAME_COUNTER_UNIT) {
+    if (ToBits(previousStateFlags) < (uint32_t)UI_STATE_FRAME_COUNTER_UNIT) {
       blinkPhaseIncrement = g_UiTextEditCaretBlinkPhaseStep * UI_STATE_FRAME_COUNTER_UNIT;
       control->editStateFlags = control->editStateFlags ^ UI_TEXT_EDIT_CARET_VISIBLE_PHASE;
-      control->editStateFlags = control->editStateFlags + blinkPhaseIncrement;
+      control->editStateFlags = FromBits<UiTextEditStateFlags>(ToBits(control->editStateFlags) + blinkPhaseIncrement);
       UiNode_InvalidateRoot(&control->base);
     }
   }
@@ -821,7 +822,7 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
   glyphIndex = 0;
   accumulatedWidth = 0;
   if (prefixLength != 0) {
-    do {
+    while (glyphIndex < prefixLength) {
       if (control->textBuffer[glyphIndex] == 0) {
         return accumulatedWidth;
       }
@@ -829,7 +830,7 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
                         (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[glyphIndex],nullptr);
       glyphIndex++;
       accumulatedWidth = accumulatedWidth + glyphWidth;
-    } while (glyphIndex < prefixLength);
+    }
   }
   return accumulatedWidth;
 }
@@ -849,7 +850,7 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
   uint32_t glyphWidth;
 
   targetOffsetX = (pointerX - (control->base).left) + control->horizontalScrollPixels;
-  if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME)) {
     decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,
                                                            g_UiWindowTextureSource);
     targetOffsetX = targetOffsetX - decorationSize.logicalWidthPixels;
@@ -919,7 +920,7 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
   decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE,g_UiWindowTextureSource);
   minScrollOffset = cursorOverflow + decorationSize.logicalWidthPixels;
   contentWidth = fullTextWidth + decorationSize.logicalWidthPixels;
-  if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
+  if (Any(control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME)) {
     decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,
                                                            g_UiWindowTextureSource);
     contentWidth = contentWidth + decorationSize.logicalWidthPixels * 2;

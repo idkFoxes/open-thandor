@@ -11,19 +11,20 @@
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
+#include <thandor/core/flags.h> /* THANDOR_FLAG_ENUM: GraphicsCursorButtonState */
 #include <thandor/ui/controls/types.h>
 
-typedef struct TH_LEGACY_GUID TH_LEGACY_GUID, *PTH_LEGACY_GUID;
-typedef struct GraphicsAdapterRecord GraphicsAdapterRecord, *PGraphicsAdapterRecord;
-typedef struct GraphicsCursorInputEvent18 GraphicsCursorInputEvent18, *PGraphicsCursorInputEvent18;
-typedef struct GraphicsCursorFrameRecord GraphicsCursorFrameRecord, *PGraphicsCursorFrameRecord;
-typedef struct GraphicsPaletteEntry GraphicsPaletteEntry, *PGraphicsPaletteEntry;
-typedef struct CursorPointerEvent CursorPointerEvent, *PCursorPointerEvent;
-typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
-typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess;
+struct TH_LEGACY_GUID;
+struct GraphicsAdapterRecord;
+struct GraphicsCursorInputEvent18;
+struct GraphicsCursorFrameRecord;
+struct GraphicsPaletteEntry;
+struct CursorPointerEvent;
+struct GraphicsTextureSourceAsset;
+struct SoftwareFramebufferAccess;
 
 /* Callback/function-definition ABIs. */
-using GraphicsCursorSetFrameProc = Bool8 (uint32_t frameIndex);
+using GraphicsCursorSetFrameProc = bool (uint32_t frameIndex);
 
 using TH_LEGACY_DWORD = uint32_t;
 
@@ -47,7 +48,9 @@ struct GraphicsAdapterRecord {
     uint8_t reserved3A[0x46];
 };
 
-enum {
+/* Mouse button state of the pointer events (g_MouseButtonMask, the g_CursorInputEvents ring, CursorPointerEvent,
+   g_CursorButtonState). The enumerators are also visible unscoped (using enum below). */
+enum class GraphicsCursorButtonState : uint32_t {
     CURSOR_BUTTON_NONE=0,
     LEFT=1,
     MIDDLE=2,
@@ -55,20 +58,27 @@ enum {
     RIGHT=4,
     LEFT_RIGHT=5,
     MIDDLE_RIGHT=6,
-    LEFT_MIDDLE_RIGHT=7
+    LEFT_MIDDLE_RIGHT=7,
+    /* GraphicsCursor_ConsumeNextInputEvent: bit 31 of a press's returned button state marks a double click
+       (UI_POINTER_BUTTON_REPEAT_CLICK for the press dispatchers): the press comes less than 16 clock ticks after
+       the release of the same button and within +-4 pixels of the previous press. */
+    GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK=0x80000000u
 };
-using GraphicsCursorButtonState = int;
+THANDOR_FLAG_ENUM(GraphicsCursorButtonState);
+using enum GraphicsCursorButtonState;
 
-enum {
+/* Type of a pointer event in the g_CursorInputEvents ring. */
+enum class GraphicsCursorEventType : int {
     MOTION_OR_WHEEL=0,
     LEFT_PRESS=1,
     MIDDLE_PRESS=2,
     RIGHT_PRESS=3,
+    CURSOR_EVENT_UNUSED_4=4, /* never queued; UiPointer_DispatchPendingEvents handles it like a left release */
     LEFT_RELEASE=5,
     MIDDLE_RELEASE=6,
     RIGHT_RELEASE=7
 };
-using GraphicsCursorEventType = int;
+using enum GraphicsCursorEventType;
 
 using GraphicsCursorClockValue = uint32_t;
 
@@ -116,6 +126,13 @@ struct CursorPointerEvent {
     UiPixelCoordinate pointerY;
     UiPointerWheelDelta wheelDelta;
 };
-using GraphicsCursorConsumeEventProc = Bool8 (CursorPointerEvent *outEvent);
+using GraphicsCursorConsumeEventProc = bool (CursorPointerEvent *outEvent);
+
+/* True when the raw event type of a consumed event (CursorPointerEvent.eventType) is a button release (the
+   types above RIGHT_PRESS). */
+inline bool GraphicsCursorEventType_IsRelease(uint32_t eventType)
+{
+    return static_cast<uint32_t>(RIGHT_PRESS) < eventType;
+}
 
 #endif /* THANDOR_GRAPHICS_CORE_TYPES_H */

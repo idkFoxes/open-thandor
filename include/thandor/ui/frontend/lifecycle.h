@@ -10,22 +10,23 @@
 
 #include <thandor/assets/rom/types.h>
 #include <thandor/core/types.h>
+#include <thandor/core/memory/types.h>
 #include <thandor/graphics/resources/types.h>
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
+bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
 
 void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState);
 
 void FrontendRuntime_ShutdownAndReleaseResources();
 
 extern uint32_t g_FrontendRuntimeFlags;
-extern uintptr_t g_FrontendCentralTextureSet;
-extern uintptr_t g_FrontendCentralPaletteAsset;
+extern GraphicsTextureSet *g_FrontendCentralTextureSet;
+extern GraphicsPaletteAsset *g_FrontendCentralPaletteAsset;
 extern GraphicsTextureSourceAsset *g_FrontendMenuTextureSource;
 
-extern uint32_t g_FrontendStateTickSpinLock;
+extern RuntimeSpinLockValue g_FrontendStateTickSpinLock;
 
 extern SoundVoiceSet *g_FrontendMusicVoiceSet;
 extern uint16_t g_FrontendMusic00SamPathUtf16[18];

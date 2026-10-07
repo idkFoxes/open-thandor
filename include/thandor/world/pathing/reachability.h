@@ -13,7 +13,7 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 GridReachability_RebuildConnectedRegionAroundWorldPoint
+bool GridReachability_RebuildConnectedRegionAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12);
 
 void GridPathRegion_MarkUnreachableFromCell
@@ -29,7 +29,7 @@ void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratc
 
 void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
-Bool8 GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
+bool GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell);
 
 #endif /* THANDOR_WORLD_PATHING_REACHABILITY_H */

@@ -12,16 +12,16 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/assets/scenario/types.h>
 
-typedef struct HINSTANCE__ HINSTANCE__, *PHINSTANCE__;
-typedef struct LevelArchivePathTemplate18 LevelArchivePathTemplate18, *PLevelArchivePathTemplate18;
-typedef struct PatchArchivePathTemplate18 PatchArchivePathTemplate18, *PPatchArchivePathTemplate18;
-typedef struct GameDataAuxState GameDataAuxState, *PGameDataAuxState;
-typedef struct DynamicModuleEntry DynamicModuleEntry, *PDynamicModuleEntry;
-typedef struct DynamicApiBinding DynamicApiBinding, *PDynamicApiBinding;
-typedef struct CommandLineArgumentMirrorState500 CommandLineArgumentMirrorState500, *PCommandLineArgumentMirrorState500;
-typedef struct CommandLineWideArguments CommandLineWideArguments, *PCommandLineWideArguments;
+struct HINSTANCE__;
+struct LevelArchivePathTemplate18;
+struct PatchArchivePathTemplate18;
+struct GameDataAuxState;
+struct DynamicModuleEntry;
+struct DynamicApiBinding;
+struct CommandLineArgumentMirrorState500;
+struct CommandLineWideArguments;
 
-typedef struct HINSTANCE__ *HINSTANCE;
+using HINSTANCE = struct HINSTANCE__ *;
 
 struct HINSTANCE__ {
     int unused;

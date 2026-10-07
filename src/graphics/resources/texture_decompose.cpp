@@ -14,7 +14,7 @@
 /* Work state of GraphicsTextureSource_DecomposeSubresourceRegions while it cuts a sprite sheet into regions.
    The work area is the new asset's block: header (and palette bank), then the record table growing upwards,
    free bytes, the packed sprite pixels growing downwards, and the working copy of the sheet at the end. */
-typedef struct GraphicsTextureDecomposeState {
+struct GraphicsTextureDecomposeState {
   GraphicsTextureSourceAsset *asset;   /* the new asset */
   GraphicsTextureSourceEntry *records; /* its subresource record table */
   int sourceWidth;                     /* pixels per row of the sheet, the row stride of the working copy */
@@ -22,8 +22,8 @@ typedef struct GraphicsTextureDecomposeState {
   int freeBytes;                       /* bytes of the work area not yet taken by records or packed pixels */
   uint8_t *packedPixels;               /* lowest packed sprite pixel */
   uint32_t packedPixelBytes;
-  Bool8 edgeTransparent;                /* the edge colour is transparent, so border rows/columns in it are trimmed */
-} GraphicsTextureDecomposeState;
+  bool edgeTransparent;                /* the edge colour is transparent, so border rows/columns in it are trimmed */
+};
 
 /* Module data. */
 
@@ -32,7 +32,7 @@ typedef struct GraphicsTextureDecomposeState {
 
 /* Takes `amount` bytes of the work area's free bytes. Returns false (taking nothing) unless at least one byte
    stays free. */
-static Bool8 GraphicsTextureDecompose_ReserveBytes(int *freeBytes,int amount)
+static bool GraphicsTextureDecompose_ReserveBytes(int *freeBytes,int amount)
 {
   int bytesLeft;
 
@@ -44,14 +44,24 @@ static Bool8 GraphicsTextureDecompose_ReserveBytes(int *freeBytes,int amount)
   return true;
 }
 
-/* Copies `count` dwords upwards from the lowest one (the packed pixels move down onto the record table end). */
-static void GraphicsTextureDecompose_CopyDwords(uint32_t *destination,const uint32_t *source,uint32_t count)
+/* Copies `count` dwords upwards from the lowest one (the packed pixels move down onto the record table end). Both
+   are dword-aligned positions inside asset blocks (header, palette bank or pixels), copied as raw dwords. */
+static void GraphicsTextureDecompose_CopyDwords(void *destination,const void *source,uint32_t count)
 {
+  uint32_t *destinationDword = static_cast<uint32_t *>(destination);
+  const uint32_t *sourceDword = static_cast<const uint32_t *>(source);
+
   for (; count != 0; count--) {
-    *destination = *source;
-    destination++;
-    source++;
+    *destinationDword = *sourceDword;
+    destinationDword++;
+    sourceDword++;
   }
+}
+
+/* The work area behind the new asset's record table, as bytes (state->freeBytes counts from its start). */
+static uint8_t *GraphicsTextureDecompose_WorkBytes(const GraphicsTextureDecomposeState *state)
+{
+  return reinterpret_cast<uint8_t *>(state->records); /* byte view of the block from the record table on */
 }
 
 /* Appends a record to the new asset's table: logical height and origin zero, the given palette index; the
@@ -73,7 +83,7 @@ static GraphicsTextureSourceEntry *GraphicsTextureDecompose_AddRecord
 }
 
 /* True when the `count` (at least 1) ARGB pixels from `pixel` on, `step` pixels apart, all equal `color`. */
-static Bool8 GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t count,int step,uint32_t color)
+static bool GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t count,int step,uint32_t color)
 {
   for (; count != 0; count--) {
     if (*pixel != color) {
@@ -85,7 +95,7 @@ static Bool8 GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t c
 }
 
 /* True when the `count` (at least 1) palette indices from `pixel` on, `step` bytes apart, all equal `index`. */
-static Bool8 GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t count,int step,uint8_t index)
+static bool GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t count,int step,uint8_t index)
 {
   for (; count != 0; count--) {
     if (*pixel != index) {
@@ -102,7 +112,7 @@ static Bool8 GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t c
    border rows and columns in the edge colour when that is transparent (the origin records how much was cut at
    the top/left; at least one row and column stay), copies the remaining pixels in front of the packed ones and
    clears the whole logical block to background. Returns false when the work area is full. */
-static Bool8 GraphicsTextureDecompose_CutArgbRegion
+static bool GraphicsTextureDecompose_CutArgbRegion
           (GraphicsTextureDecomposeState *state,uint32_t *blockStart,int columnsLeft,uint32_t background,
           uint32_t edgeColor)
 {
@@ -184,7 +194,7 @@ static Bool8 GraphicsTextureDecompose_CutArgbRegion
   }
   state->packedPixels = state->packedPixels - pixelCount * 4;
   state->packedPixelBytes = state->packedPixelBytes + pixelCount * 4;
-  packed = (uint32_t *)state->packedPixels;
+  packed = reinterpret_cast<uint32_t *>(state->packedPixels); /* ARGB8888 pixels, dword-aligned */
   pixel = topLeft;
   for (rowCount = record->pixelHeight; rowCount != 0; rowCount--) {
     GraphicsTextureDecompose_CopyDwords(packed,pixel,record->pixelWidth);
@@ -203,7 +213,7 @@ static Bool8 GraphicsTextureDecompose_CutArgbRegion
 
 /* GraphicsTextureDecompose_CutArgbRegion on 8-bit palette indices: the record gets palette index 0 and the
    packed pixels are padded to whole dwords. */
-static Bool8 GraphicsTextureDecompose_CutIndexedRegion
+static bool GraphicsTextureDecompose_CutIndexedRegion
           (GraphicsTextureDecomposeState *state,uint8_t *blockStart,int columnsLeft,uint8_t backgroundIndex,
           uint8_t edgeIndex)
 {
@@ -329,7 +339,7 @@ static uint32_t GraphicsTextureDecompose_ArgbRegions
   (asset->tableDescriptor).paletteBankCount = 0;
   (asset->tableDescriptor).subresourceCount = 0;
   (asset->tableDescriptor).subresourceTableOffset = GFX_ASSET_HEADER_SIZE;
-  state->records = (GraphicsTextureSourceEntry *)((uint8_t *)asset + GFX_ASSET_HEADER_SIZE);
+  state->records = GraphicsTextureSource_Entries(asset);
   /* the first pixel is the background; the first other pixel gives the edge colour */
   background = sourcePixels[0];
   pixelCount = state->sourceWidth * state->rowsRemaining;
@@ -346,14 +356,15 @@ static uint32_t GraphicsTextureDecompose_ArgbRegions
   if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,(int)(pixelCount * 4))) {
     return FATAL_ERROR_GENERAL_FAILURE;
   }
-  workPixels = (uint32_t *)((uint8_t *)state->records + state->freeBytes);
+  state->packedPixels = GraphicsTextureDecompose_WorkBytes(state) + state->freeBytes;
+  workPixels = reinterpret_cast<uint32_t *>(state->packedPixels); /* ARGB8888 working copy, dword-aligned */
   GraphicsTextureDecompose_CopyDwords(workPixels,sourcePixels,pixelCount & DWORD_COUNT_MASK);
   state->edgeTransparent = (edgeColor & ARGB8888_ALPHA_MASK) == 0;
-  state->packedPixels = (uint8_t *)workPixels;
   state->packedPixelBytes = 0;
   /* Scan the working copy row by row for the next non-background pixel; each hit starts a region that is cut
      out and cleared to background, then the scan goes on at the same pixel. */
   scanCursor = workPixels;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     columnsLeft = state->sourceWidth;
     while (columnsLeft != 0) {
@@ -374,8 +385,7 @@ static uint32_t GraphicsTextureDecompose_ArgbRegions
   tableBytes = (asset->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
   (asset->common).allocationSizeBytes = state->packedPixelBytes + tableBytes + GFX_ASSET_HEADER_SIZE;
   GraphicsTextureDecompose_CopyDwords
-            ((uint32_t *)((uint8_t *)state->records + tableBytes),(uint32_t *)state->packedPixels,
-             state->packedPixelBytes >> 2);
+            (GraphicsTextureDecompose_WorkBytes(state) + tableBytes,state->packedPixels,state->packedPixelBytes >> 2);
   arenaError = g_MemoryApi.shrinkInPlace((asset->common).allocationSizeBytes,asset);
   if (arenaError != 0) {
     return arenaError;
@@ -383,6 +393,7 @@ static uint32_t GraphicsTextureDecompose_ArgbRegions
   pixelDataOffset = (asset->common).allocationSizeBytes;
   record = state->records;
   recordsLeft = (asset->tableDescriptor).subresourceCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     pixelDataOffset = pixelDataOffset - record->pixelWidth * record->pixelHeight * 4;
     record->dataOffset = pixelDataOffset;
@@ -419,13 +430,12 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
   (asset->tableDescriptor).paletteBankCount = 1;
   (asset->tableDescriptor).subresourceCount = 0;
   (asset->tableDescriptor).subresourceTableOffset = GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
-  state->records = (GraphicsTextureSourceEntry *)((uint8_t *)asset + (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE));
+  state->records = GraphicsTextureSource_Entries(asset);
   if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,GFX_PALETTE_BANK_SIZE)) {
     return FATAL_ERROR_GENERAL_FAILURE;
   }
   GraphicsTextureDecompose_CopyDwords
-            ((uint32_t *)((uint8_t *)asset + GFX_ASSET_HEADER_SIZE),(const uint32_t *)sourcePalette,
-             GFX_PALETTE_BANK_SIZE / 4);
+            (GraphicsTextureSource_Bytes(asset) + GFX_ASSET_HEADER_SIZE,sourcePalette,GFX_PALETTE_BANK_SIZE / 4);
   backgroundIndex = sourcePixels[0];
   pixelCount = state->sourceWidth * state->rowsRemaining;
   sourcePixel = sourcePixels;
@@ -440,7 +450,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
   if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,pixelCount)) {
     return FATAL_ERROR_GENERAL_FAILURE;
   }
-  workPixels = (uint8_t *)state->records + state->freeBytes;
+  workPixels = GraphicsTextureDecompose_WorkBytes(state) + state->freeBytes;
   sourcePixel = sourcePixels;
   workPixel = workPixels;
   for (scanLeft = pixelCount; scanLeft != 0; scanLeft--) {
@@ -449,16 +459,18 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
     workPixel++;
   }
   /* the edge colour's entry in the new palette always loses its alpha, i.e. becomes transparent */
-  edgeEntry = &((GraphicsPaletteTextureSourceAsset *)asset)->paletteEntries[(uint32_t)edgeIndex];
+  /* the new asset seen as a palette texture source, whose bank follows the header */
+  edgeEntry = &reinterpret_cast<GraphicsPaletteTextureSourceAsset *>(asset)->paletteEntries[(uint32_t)edgeIndex];
   state->edgeTransparent = (edgeEntry->argb8888 & ARGB8888_ALPHA_MASK) == 0;
   edgeEntry->argb8888 = edgeEntry->argb8888 & ARGB8888_RGB_MASK;
-  /* packed sprites are padded to whole dwords */
-  state->packedPixels = (uint8_t *)((uintptr_t)workPixels & ~(uintptr_t)3);
+  /* packed sprites are padded to whole dwords: round the work copy's start down to a dword address */
+  state->packedPixels = workPixels - (reinterpret_cast<uintptr_t>(workPixels) & 3);
   state->packedPixelBytes = 0;
   if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,3)) {
     return FATAL_ERROR_GENERAL_FAILURE;
   }
   scanCursor = workPixels;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     columnsLeft = state->sourceWidth;
     while (columnsLeft != 0) {
@@ -478,8 +490,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
   (asset->common).allocationSizeBytes =
        state->packedPixelBytes + tableBytes + (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
   GraphicsTextureDecompose_CopyDwords
-            ((uint32_t *)((uint8_t *)state->records + tableBytes),(uint32_t *)state->packedPixels,
-             state->packedPixelBytes >> 2);
+            (GraphicsTextureDecompose_WorkBytes(state) + tableBytes,state->packedPixels,state->packedPixelBytes >> 2);
   arenaError = g_MemoryApi.shrinkInPlace((asset->common).allocationSizeBytes,asset);
   if (arenaError != 0) {
     return arenaError;
@@ -487,6 +498,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
   pixelDataOffset = (asset->common).allocationSizeBytes;
   record = state->records;
   recordsLeft = (asset->tableDescriptor).subresourceCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     pixelDataOffset = pixelDataOffset - (record->pixelWidth * record->pixelHeight + 3 & ~3u);
     record->dataOffset = pixelDataOffset;
@@ -506,13 +518,14 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
    FATAL_ERROR_GFX_ASSET_INVALID, 0x2D (nothing but background), FATAL_ERROR_GENERAL_FAILURE (work area too
    small) or the allocator's error in *outError. No caller in the game code (only the hook slot).
 */
-Bool8 GraphicsTextureSource_DecomposeSubresourceRegions
+bool GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
           GraphicsTextureSourceAsset **outAsset,uint32_t *outError)
 
 {
   GraphicsTextureSourceEntry *sourceEntry;
   GraphicsTextureDecomposeState state;
+  void *block;
   GraphicsTextureSourceAsset *decomposedAsset;
   GraphicsPaletteIndex paletteIndex;
   uint8_t *sourcePixels;
@@ -525,19 +538,17 @@ Bool8 GraphicsTextureSource_DecomposeSubresourceRegions
     *outError = FATAL_ERROR_GFX_ASSET_INVALID;
     return false;
   }
-  sourceEntry = (GraphicsTextureSourceEntry *)
-                ((uint8_t *)sourceAsset +
-                 (entryIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset));
+  sourceEntry = &GraphicsTextureSource_Entries(sourceAsset)[entryIndex];
   state.sourceWidth = sourceEntry->pixelWidth;
   state.rowsRemaining = sourceEntry->pixelHeight;
-  error = g_MemoryApi.allocLargestFreeBlock((void **)&decomposedAsset,&largestBlockSize);
+  error = g_MemoryApi.allocLargestFreeBlock(&block,&largestBlockSize);
   if (error != 0) {
     *outError = error;
     return false;
   }
+  decomposedAsset = static_cast<GraphicsTextureSourceAsset *>(block);
   /* the new asset starts as a copy of the source header */
-  GraphicsTextureDecompose_CopyDwords
-            ((uint32_t *)decomposedAsset,(const uint32_t *)sourceAsset,GFX_ASSET_HEADER_SIZE / 4);
+  GraphicsTextureDecompose_CopyDwords(decomposedAsset,sourceAsset,GFX_ASSET_HEADER_SIZE / 4);
   paletteIndex = sourceEntry->paletteIndex;
   state.asset = decomposedAsset;
   state.freeBytes = (int)largestBlockSize;
@@ -554,13 +565,15 @@ Bool8 GraphicsTextureSource_DecomposeSubresourceRegions
     ((decomposedAsset)->common).buildMetadata.timestamps.dateValue2 = packedDateTime;
     g_LocaleCopyDefaultComputerLabelUtf16
               (((decomposedAsset)->common).buildMetadata.names.sourceName);
-    sourcePixels = (uint8_t *)sourceAsset + sourceEntry->dataOffset;
+    sourcePixels = GraphicsTextureSource_Bytes(sourceAsset) + sourceEntry->dataOffset;
     if (paletteIndex == -1) {
-      error = GraphicsTextureDecompose_ArgbRegions(&state,(const uint32_t *)sourcePixels);
+      error = GraphicsTextureDecompose_ArgbRegions
+                        (&state,reinterpret_cast<const uint32_t *>(sourcePixels)); /* ARGB8888 pixels */
     }
     else {
       error = GraphicsTextureDecompose_IndexedRegions
-                        (&state,(uint8_t *)sourceAsset + GFX_ASSET_HEADER_SIZE + paletteIndex * GFX_PALETTE_BANK_SIZE,
+                        (&state,GraphicsTextureSource_Bytes(sourceAsset) + GFX_ASSET_HEADER_SIZE +
+                                paletteIndex * GFX_PALETTE_BANK_SIZE,
                          sourcePixels);
     }
     if (error == 0) {

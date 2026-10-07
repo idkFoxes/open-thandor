@@ -14,11 +14,11 @@
 
 /* FixedMath_SqrtQ12Approx: the normalizing shift is even (a mask over bits 1..4), and the cubic in the
    normalized input is ((C3 * x - C2) * x + C1) * x + C0, each product a FIXED_MUL_HIGH */
-#define FIXED_SQRT_EVEN_SHIFT_MASK 0x1e
-#define FIXED_SQRT_POLY_C3 0x25ed098
-#define FIXED_SQRT_POLY_C2 0x1c71c71
-#define FIXED_SQRT_POLY_C1 0xb1c71c
-#define FIXED_SQRT_POLY_C0 0x66b75U
+inline constexpr auto FIXED_SQRT_EVEN_SHIFT_MASK = 0x1e;
+inline constexpr auto FIXED_SQRT_POLY_C3 = 0x25ed098;
+inline constexpr auto FIXED_SQRT_POLY_C2 = 0x1c71c71;
+inline constexpr auto FIXED_SQRT_POLY_C1 = 0xb1c71c;
+inline constexpr auto FIXED_SQRT_POLY_C0 = 0x66b75U;
 
 uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z);

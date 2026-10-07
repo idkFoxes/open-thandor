@@ -16,9 +16,9 @@
    ANIMATED cycles the frames of the normal/selected range (UiSpriteButtonControl_AdvanceAnimation);
    ACTION_AFTER_ANIMATION defers the action of an activation until the animation reaches its last frame;
    ACTION_PENDING marks such a deferred action. */
-#define UI_SPRITE_BUTTON_ANIMATED 0x80
-#define UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION 0x800
-#define UI_SPRITE_BUTTON_ACTION_PENDING 0x1000
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ANIMATED = FromBits<UiSelectableStateFlags>(0x80);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION = FromBits<UiSelectableStateFlags>(0x800);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ACTION_PENDING = FromBits<UiSelectableStateFlags>(0x1000);
 /* Further UiSpriteButtonControl stateFlags bits (UiSpriteButtonControl_DrawClipped, _HitTestOpaque,
    _NonRightPress/_Release/_Drag, _Relocate): RECT_HIT_TEST hit-tests the node rectangle instead of opaque
    sprite pixels; NORMAL_UNDER_SELECTED draws the normal frame below the selected one; SERIALIZED_DESCRIPTOR
@@ -26,35 +26,35 @@
    _Relocate expands; ACTIVATION_SOUND plays activationSound on activation; SELECTED_ONLY draws the button
    only while selected and hit-tests its selected frame. Without ANIMATED, the ACTION_AFTER_ANIMATION bit
    (0x800) instead selects alternateTextureSource for the selected frame. */
-#define UI_SPRITE_BUTTON_RECT_HIT_TEST 0x20
-#define UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED 0x40
-#define UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR 0x100
-#define UI_SPRITE_BUTTON_ACTIVATION_SOUND 0x200
-#define UI_SPRITE_BUTTON_SELECTED_ONLY 0x400
-#define UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE 0x800
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_RECT_HIT_TEST = FromBits<UiSelectableStateFlags>(0x20);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED = FromBits<UiSelectableStateFlags>(0x40);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR = FromBits<UiSelectableStateFlags>(0x100);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ACTIVATION_SOUND = FromBits<UiSelectableStateFlags>(0x200);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_SELECTED_ONLY = FromBits<UiSelectableStateFlags>(0x400);
+inline constexpr UiSelectableStateFlags UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE = FromBits<UiSelectableStateFlags>(0x800);
 /* Colour the sprite shadow is drawn with (ARGB, half-transparent black; UiSpriteButtonControl_DrawClipped). */
-#define UI_SPRITE_BUTTON_SHADOW_ARGB 0x7F000000
+inline constexpr int32_t UI_SPRITE_BUTTON_SHADOW_ARGB = 0x7F000000;
 /* UiImageActionControl displayFlags (UiImageActionControl_DrawImageAndChildren/_HandleKeyboardActivation). */
-#define UI_IMAGE_ACTION_STRETCH 0x1
-#define UI_IMAGE_ACTION_KEY_ACTIVATES 0x2 /* any key but Tab queues primaryActionId */
-#define UI_IMAGE_ACTION_LETTERBOX 0x4
-#define UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB 0xFF000000 /* opaque black */
+inline constexpr int32_t UI_IMAGE_ACTION_STRETCH = 0x1;
+inline constexpr int32_t UI_IMAGE_ACTION_KEY_ACTIVATES = 0x2; /* any key but Tab queues primaryActionId */
+inline constexpr int32_t UI_IMAGE_ACTION_LETTERBOX = 0x4;
+inline constexpr uint32_t UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB = 0xFF000000; /* opaque black */
 /* Framed text box pieces in g_UiWindowTextureSource (UiConditionalActionControl_DrawClipped); a 416x58
    box instead uses the single unframed background UI_TEXT_BOX_SUBRESOURCE_WIDE_BACKGROUND. */
-#define UI_TEXT_BOX_SUBRESOURCE_TOP_LEFT 0x72
-#define UI_TEXT_BOX_SUBRESOURCE_TOP_RIGHT 0x73
-#define UI_TEXT_BOX_SUBRESOURCE_BOTTOM_LEFT 0x74
-#define UI_TEXT_BOX_SUBRESOURCE_BOTTOM_RIGHT 0x75
-#define UI_TEXT_BOX_SUBRESOURCE_TOP 0x76
-#define UI_TEXT_BOX_SUBRESOURCE_LEFT 0x77
-#define UI_TEXT_BOX_SUBRESOURCE_RIGHT 0x78
-#define UI_TEXT_BOX_SUBRESOURCE_BOTTOM 0x79
-#define UI_TEXT_BOX_SUBRESOURCE_INTERIOR 0x7B
-#define UI_TEXT_BOX_SUBRESOURCE_WIDE_BACKGROUND 200
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_TOP_LEFT = 0x72;
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_TOP_RIGHT = 0x73;
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_BOTTOM_LEFT = 0x74;
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_BOTTOM_RIGHT = 0x75;
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_TOP = 0x76;
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_LEFT = 0x77;
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_RIGHT = 0x78;
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_BOTTOM = 0x79;
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_INTERIOR = 0x7B;
+inline constexpr int32_t UI_TEXT_BOX_SUBRESOURCE_WIDE_BACKGROUND = 200;
 /* Size of that unframed box; it shows only the last UI_TEXT_BOX_WIDE_MAX_LINES lines, newest first. */
-#define UI_TEXT_BOX_WIDE_WIDTH 416
-#define UI_TEXT_BOX_WIDE_HEIGHT 58
-#define UI_TEXT_BOX_WIDE_MAX_LINES 4
+inline constexpr int32_t UI_TEXT_BOX_WIDE_WIDTH = 416;
+inline constexpr int32_t UI_TEXT_BOX_WIDE_HEIGHT = 58;
+inline constexpr int32_t UI_TEXT_BOX_WIDE_MAX_LINES = 4;
 
 void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root);
 
@@ -94,7 +94,7 @@ void UiImageActionControl_EnqueueSecondaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageActionControl *control);
 
-Bool8 UiImageActionControl_HandleKeyboardActivation
+bool UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control);
 
 void UiConditionalActionControl_DrawClipped

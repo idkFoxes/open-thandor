@@ -14,7 +14,7 @@
 #include <thandor/core/contracts.h>
 
 /* g_OldUnitPrimaryTable: 0x20-byte carry-over unit records (OLD_UNIT_PRIMARY_TABLE_BYTES / 0x20). */
-#define OLD_UNIT_PRIMARY_RECORD_CAPACITY 0x200
+inline constexpr int OLD_UNIT_PRIMARY_RECORD_CAPACITY = 0x200;
 
 void OldUnitRuntime_RebuildScenarioReplayTables();
 
@@ -26,8 +26,8 @@ extern uint32_t *g_OldUnitSecondaryTable;
 extern uint32_t *g_OldUnitPrimaryTable;
 extern OldUnitRecordCount g_OldUnitRecordCount; /* followed by 8 bytes 0x90 fill (dropped) */
 
-Bool8 InGameSaveGame_OldUnitTablesAreEmpty();
+bool InGameSaveGame_OldUnitTablesAreEmpty();
 
-Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle);
+bool InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle);
 
 #endif /* THANDOR_GAMEPLAY_SESSION_CAMPAIGN_CARRYOVER_H */

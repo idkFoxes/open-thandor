@@ -15,7 +15,7 @@
 #include <thandor/platform/debug/hooks.h>
 
 /* the conditions and triggers are logged at this simulation tick, the first evaluation */
-#define LEVEL_SCRIPT_LOG_TICK 20
+constexpr auto LEVEL_SCRIPT_LOG_TICK = 20;
 
 void DebugHook_LevelScriptBeforeEvaluation()
 {
@@ -25,7 +25,7 @@ void DebugHook_LevelScriptBeforeEvaluation()
     return;
   }
   /* dump the level script before its first evaluation: every used condition (16 raw bytes) and trigger */
-  raw = (const uint8_t *)&(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
+  raw = reinterpret_cast<const uint8_t *>(&(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule); /* raw dump */
   for (index = 0; index < 64; index++) {
     const uint8_t *c = raw + index * 16;
     if (c[0] != 0) {
@@ -35,7 +35,8 @@ void DebugHook_LevelScriptBeforeEvaluation()
     }
   }
   for (index = 0; index < 16; index++) {
-    const uint8_t *t = (const uint8_t *)&(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule.triggers[index];
+    const auto *t =
+        reinterpret_cast<const uint8_t *>(&(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule.triggers[index]);
     if (t[0] != 0) {
       Thandor_Log("level script: trigger %2d: %02x %02x %02x %02x %02x %02x %02x %02x",index,t[0],t[1],t[2],t[3],
                   t[4],t[5],t[6],t[7]);
@@ -49,10 +50,10 @@ void DebugHook_LevelScriptAfterEvaluation(const InGameLevelConditionStorage *sto
   if (g_GameFactionRuntimeImage.tail.simulationTick != LEVEL_SCRIPT_LOG_TICK) {
     return;
   }
-  c = (const uint8_t *)&(storage->schedule).conditions[10];
+  c = reinterpret_cast<const uint8_t *>(&(storage->schedule).conditions[10]); /* raw dump */
   Thandor_Log("level script: after evaluation condition 10: %02x %02x %02x %02x | %02x, storage %p/%p",
-              c[0],c[1],c[2],c[3],c[4],(const void *)storage,
-              (void *)g_InGameLevelRuntimeGlobalBlock.conditionStorage);
+              c[0],c[1],c[2],c[3],c[4],static_cast<const void *>(storage),
+              static_cast<void *>(g_InGameLevelRuntimeGlobalBlock.conditionStorage));
 }
 
 void DebugHook_LevelScriptEndTrigger(const InGameLevelConditionStorage *storage, int triggerIndex,
@@ -63,7 +64,8 @@ void DebugHook_LevelScriptEndTrigger(const InGameLevelConditionStorage *storage,
               "faction %u (local %u, lifecycle %u), end selection %u",
               (unsigned)triggerIndex,(unsigned)g_GameFactionRuntimeImage.tail.simulationTick,
               (unsigned)trigger->conditionIndex,(unsigned)(condition->statusAndKind.kind & ~1u),
-              ((const int *)condition)[1],((const int *)condition)[2],((const int *)condition)[3],
+              static_cast<int>(condition->payload.operands[0]),static_cast<int>(condition->payload.operands[1]),
+              static_cast<int>(condition->payload.operands[2]),
               (unsigned)trigger->factionRuntimeIndex,
               (unsigned)(g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex,
               (unsigned)g_GameFactionRuntimeImage.tail.factionLifecycleStates[trigger->factionRuntimeIndex],

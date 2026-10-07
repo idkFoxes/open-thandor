@@ -16,11 +16,11 @@
 
 /* Frontend ROM action table (a RomRecord, g_FrontendActiveRomRecord): the 0x200-byte RomRecord header with the
    entry count in entryCount, followed by 0x200-byte FrontendRomActionEntry entries. */
-#define FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE 0x200
-#define FRONTEND_ROM_ACTION_ENTRY_SIZE 0x200
+inline constexpr int FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE = 0x200;
+inline constexpr int FRONTEND_ROM_ACTION_ENTRY_SIZE = 0x200;
 /* One 0x200-byte entry of the frontend ROM action table (FrontendRomActionTable_ExecuteRecord; some code
    also reads it as RomAssetRecordPrefix[]: record[2].recordId = +0x20, record[3] = +0x24..+0x2F). */
-typedef struct FrontendRomActionEntry {
+struct FrontendRomActionEntry {
     uint8_t unknown00_1B[0x1c];
     RomRecordId linkedRecordId;          /* +0x1C searched by RomRecordTable_FindRecordById/FindIndexById; its
                                             runtime node gets ROM_NODE_FLAG_ACTION_TARGET */
@@ -30,18 +30,18 @@ typedef struct FrontendRomActionEntry {
     uint32_t activationSoundIndex;       /* +0x2C into g_FrontendMenuSoundVoiceSets, 0 = none */
     uint8_t unknown30_3F[0x10];
     WorldMotionSplineKeyframe keyframes[14]; /* +0x40 camera flight; keyframe 0 is the current camera */
-} FrontendRomActionEntry;
+};
 /* Light of a ROM record (0x10-byte entries of RomRecord.lights), placed at the matching ROM_NODE_DESCRIPTOR_KIND_LIGHT
    descriptor of the record's root sprite (RomRuntime_ApplyIndexedDescriptor). */
-typedef struct RomRecordLight {
+struct RomRecordLight {
     PackedRgb24 packedColorRgb;          /* +0x00 */
     GraphicsRadiusQ12 radiusQ12;         /* +0x04 */
     uint8_t unknown08_0F[8];
-} RomRecordLight;
+};
 /* A registered ROM record (a menu-room location; g_RomRegistrySlots[].record, g_FrontendActiveRomRecord):
    this 0x200-byte header, then entryCount FrontendRomActionEntry entries. Some code reads the header
    as RomAssetRecordPrefix[] (12-byte elements), e.g. record[3].byteSize = +0x24. */
-typedef struct RomRecord {
+struct RomRecord {
     RomRecordByteSize byteSize;          /* +0x00 */
     uint32_t rootNodeOffsetOrPointer;    /* +0x04 serialized sprite-node tree (RomSerializedNodeHeader) */
     RomRecordId recordId;                /* +0x08 */
@@ -63,10 +63,10 @@ typedef struct RomRecord {
     PackedArgb32 nodeTintArgb;           /* +0x40 tint of the record's runtime nodes */
     uint8_t unknown44_4F[12];
     RomRecordLight lights[27];           /* +0x50 */
-} RomRecord;
+};
 
 /* g_RomRegistrySlots: fixed array of 256 {record, runtime root node} slots (RomAssetRecord_RegisterAndRelocate). */
-#define ROM_REGISTRY_SLOT_COUNT 256
+inline constexpr int ROM_REGISTRY_SLOT_COUNT = 256;
 
 uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset);
 
@@ -80,7 +80,7 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
 
 uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase);
 
-Bool8 RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
+bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
 
 RomAssetRecordPrefix * RomRegistry_FindRecordById(RomRecordId recordId);
 

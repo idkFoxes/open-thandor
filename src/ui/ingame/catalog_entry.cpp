@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/catalog_entry.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <stdarg.h>
 
 /* Module data. */
@@ -158,7 +159,7 @@ static void UiCatalogEntryControl_DrawOwnedCount
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCount,g_UiCatalogEntryRichTextScratchUtf16 + 1);
   entryTop = (control->command).sprite.selectable.base.top;
   /* ' ' and the terminator */
-  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 2) = ' ';
+  *Thandor_At<uint32_t>(g_UiCatalogEntryRichTextScratchUtf16,size_t{textLength} + 2) = ' ';
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,textStyle,g_UiCatalogEntryRichTextScratchUtf16,entryTop + 2,
              (control->command).sprite.selectable.base.left);
@@ -176,7 +177,7 @@ static void UiCatalogEntryControl_TakeBuildProgress
   if (*bestPercent <= percent) {
     *textStyle = UI_CATALOG_TEXT_STYLE_NORMAL;
     *bestPercent = percent;
-    if (((model->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0) {
+    if (Any((model->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
       *textStyle = UI_CATALOG_TEXT_STYLE_ALERT;
     }
   }
@@ -192,8 +193,8 @@ static int UiCatalogEntryControl_FindGroup42BuildPercent
   int bestPercent;
 
   bestPercent = -1;
-  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != nullptr;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+  for (modelNode = WorldNode_View<ModelRuntimeNode>((g_InGameRuntimeRoot->worldRuntime).ownerListHead.get()); modelNode != nullptr;
+      modelNode = WorldNode_View<ModelRuntimeNode>((modelNode->common).nextNode.get())) {
     if (modelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -221,8 +222,8 @@ static int UiCatalogEntryControl_FindGroup48BuildPercent
 
   factionIndex = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
   bestPercent = -1;
-  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != nullptr;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+  for (modelNode = WorldNode_View<ModelRuntimeNode>((g_InGameRuntimeRoot->worldRuntime).ownerListHead.get()); modelNode != nullptr;
+      modelNode = WorldNode_View<ModelRuntimeNode>((modelNode->common).nextNode.get())) {
     if (modelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -261,9 +262,9 @@ static void UiCatalogEntryControl_DrawBuildPercent
   g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
   textLength = g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,percent,g_UiCatalogEntryRichTextScratchUtf16 + 1);
-  *(uint16_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 2) = '%';
+  *Thandor_At<uint16_t>(g_UiCatalogEntryRichTextScratchUtf16,size_t{textLength} + 2) = '%';
   /* ' ' and the terminator */
-  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 4) = ' ';
+  *Thandor_At<uint32_t>(g_UiCatalogEntryRichTextScratchUtf16,size_t{textLength} + 4) = ' ';
   textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,textStyle,g_UiCatalogEntryRichTextScratchUtf16,
@@ -296,11 +297,11 @@ void UiCatalogEntryControl_DrawClipped
   SoftwareFramebufferAccess *framebuffer;
   UiPackedTextStyle overlayTextStyle;
 
-  if (((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
-  if ((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) &&
-      (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) != 0)) {
+  if (!Any((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) &&
+      (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY))) {
     return;
   }
   if (g_GraphicsFramebufferBeginAccess()) {
@@ -308,18 +309,18 @@ void UiCatalogEntryControl_DrawClipped
   }
   spriteTextureSource = (control->command).sprite.primaryTextureSource;
   framebuffer = g_FramebufferAccess;
-  if (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     spriteSubresource = (control->command).sprite.normalSubresourceStartOrDescriptor;
   }
   else {
-    if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) &&
-       (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE) != 0)) {
+    if (!Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) &&
+       (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE))) {
       spriteTextureSource = (control->command).sprite.alternateTextureSource;
     }
     spriteSubresource = (control->command).sprite.selectedSubresourceStart;
-    if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED) != 0) {
+    if (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED)) {
       backgroundSubresource = (control->command).sprite.normalSubresourceStartOrDescriptor;
-      if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+      if (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
         backgroundSubresource = backgroundSubresource + (control->command).sprite.animationFrameOffset;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
@@ -328,7 +329,7 @@ void UiCatalogEntryControl_DrawClipped
                  (control->command).sprite.primaryTextureSource,g_FramebufferAccess);
     }
   }
-  if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+  if (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
     spriteSubresource = spriteSubresource + (control->command).sprite.animationFrameOffset;
   }
   g_GraphicsTextureSourceBlitSourceAlpha
@@ -348,7 +349,7 @@ void UiCatalogEntryControl_DrawClipped
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->runtimeDisplayValueQ4 >> 4,
                      g_UiCatalogEntryRichTextScratchUtf16 + 1);
   /* ' ' and the terminator */
-  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 2) = ' ';
+  *Thandor_At<uint32_t>(g_UiCatalogEntryRichTextScratchUtf16,size_t{textLength} + 2) = ' ';
   textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
@@ -356,7 +357,7 @@ void UiCatalogEntryControl_DrawClipped
              ((int)((control->command).sprite.selectable.base.layoutWidth - textExtent.widthPixels) >> 1)
              + (control->command).sprite.selectable.base.left);
   for (recordIndex = 42 - 1; recordIndex >= 0; recordIndex--) {
-    if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
+    if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
         g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndex]) {
       catalogArmyAssetId = g_UiCatalogGroup42Records[recordIndex]->armyAssetId;
       UiCatalogEntryControl_DrawOwnedCount
@@ -370,7 +371,7 @@ void UiCatalogEntryControl_DrawClipped
     }
   }
   for (recordIndex = 48 - 1; recordIndex >= 0; recordIndex--) {
-    if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
+    if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
         g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][recordIndex]) {
       catalogArmyAssetId = g_UiCatalogGroup48Records[recordIndex]->armyAssetId;
       UiCatalogEntryControl_DrawOwnedCount
@@ -398,32 +399,32 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
   int recordIndex;
   int group48Index;
   
-  if (((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     recordIndex = 42 - 1; /* the last group-42 record */
-    do {
-      if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
+    while (-1 < recordIndex) {
+      if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
           g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndex]) {
         g_UiHoverSelectionRecord = g_UiCatalogGroup42Records[recordIndex];
         InGameSelectionDetailPanel_Rebuild();
         break;
       }
       recordIndex--;
-    } while (-1 < recordIndex);
+    }
     if (recordIndex < 0) {
       group48Index = 48 - 1; /* the last group-48 record */
-      do {
-        if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
+      while (-1 < group48Index) {
+        if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
             g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][group48Index]) {
           g_UiHoverSelectionRecord = g_UiCatalogGroup48Records[group48Index];
           InGameSelectionDetailPanel_Rebuild();
           break;
         }
         group48Index--;
-      } while (-1 < group48Index);
+      }
     }
   }
   cursorFrame = 10;
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+  if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
     cursorFrame = 12;
   }
   return cursorFrame;
@@ -441,19 +442,19 @@ void UiCatalogEntryControl_NonRightRelease
   UiSelectableStateFlags *stateFlagsField;
   uint32_t activationInputState;
   
-  activationInputState = g_KeyboardStateMask;
-  if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-     (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
+  activationInputState = ToBits(g_KeyboardStateMask);
+  if (!Any((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
+     (Any((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
     stateFlagsField = &(control->command).sprite.selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    (control->command).activationInputState = activationInputState;
-    if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
+    (control->command).activationInputState = FromBits<UiCommandActivationStateFlags>(activationInputState);
+    if (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&
        ((control->command).sprite.activationSound != nullptr)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
                  (control->command).sprite.activationSound,nullptr);
     }
     UiActionQueue_Enqueue((control->command).sprite.selectable.actionId,control);
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&(control->command).sprite.selectable.base);
   }
 }

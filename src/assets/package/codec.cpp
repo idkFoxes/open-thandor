@@ -6,8 +6,13 @@
  */
 
 #include <thandor/assets/package/codec.h>
+#include <algorithm>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
+
+/* The field-grid codec copies the FIELD_GRID_HEADER_DWORDS header dwords and then works on cells[]. */
+static_assert(offsetof(FieldGridAsset,cells) == FIELD_GRID_HEADER_DWORDS * sizeof(AssetMagic));
 
 /* Module data. */
 
@@ -18,7 +23,7 @@ static PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256] = {};
 static PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {};
 
 /* Success exit of a codec (PckCodecProc): stores byteCount in *outByteCount when it is not NULL. */
-static Bool8 PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
+static bool PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
 {
   if (outByteCount != nullptr) {
     *outByteCount = byteCount;
@@ -27,7 +32,7 @@ static Bool8 PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
 }
 
 /* Failure exit of a codec (PckCodecProc): stores errorCode in *outErrorCode when it is not NULL. */
-static Bool8 PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
+static bool PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
 {
   if (outErrorCode != nullptr) {
     *outErrorCode = errorCode;
@@ -41,14 +46,14 @@ static Bool8 PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
    prefix in *outByteCount (true), or false with the error code of the allocation or the method-0 encoder in
    *outErrorCode.
 */
-Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   AssetMagic pendingCellDword;
+  ArenaScoped compactBlock; /* freed when the function returns, after the result is stored */
   AssetMagic *compactFieldImageBase;
-  PckHeaderDwordCount headerDwordCount;
   uint32_t cellCount;
   uint32_t bytes;
   AssetMagic *compactWriteCursor;
@@ -61,45 +66,40 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
   
   cellCount = sourceGrid->gridWidth * sourceGrid->gridHeight;
   bytes = cellCount * FIELD_GRID_COMPACT_CELL_BYTES + FIELD_GRID_HEADER_BYTES;
-  allocError = g_MemoryApi.alloc(bytes,(void **)&compactFieldImageBase);
+  allocError = compactBlock.allocate(bytes);
   if (allocError != 0) {
-    compactFieldImageBase = (AssetMagic *)(uintptr_t)allocError; /* error code, read back below */
+    return PckCodec_Fail(outErrorCode,allocError);
   }
   else {
+    compactFieldImageBase = compactBlock.as<AssetMagic>();
     compactWriteCursor = compactFieldImageBase;
     /* the header dword by dword; the read cursor then points at cells[0] */
-    headerReadCursor = (AssetMagic *)sourceGrid;
-    for (headerDwordCount = FIELD_GRID_HEADER_DWORDS; headerDwordCount != 0; headerDwordCount--) {
-      *compactWriteCursor = *headerReadCursor;
-      headerReadCursor++;
-      compactWriteCursor++;
-    }
-    sourceCell = (FieldGridCell *)headerReadCursor;
+    headerReadCursor = reinterpret_cast<AssetMagic *>(sourceGrid);
+    compactWriteCursor = std::copy_n(headerReadCursor,FIELD_GRID_HEADER_DWORDS,compactWriteCursor);
+    sourceCell = sourceGrid->cells;
     cellCount = cellCount & 0xfffffff; /* (count * 0x10) >> 4 in the original */
     /* per cell: persistedAux54, terrainHeight, waterSurfaceDelta and flagsAndMaterial (cell offsets 0x54, 0x48,
        0x4C and 0x50) */
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       persistedCellDword = sourceCell->terrainHeight;
       *compactWriteCursor = sourceCell->persistedAux54;
       compactWriteCursor[1] = persistedCellDword;
-      pendingCellDword = sourceCell->flagsAndMaterial;
+      pendingCellDword = FieldCell_RawWord(sourceCell->flagsAndMaterial);
       compactWriteCursor[2] = sourceCell->waterSurfaceDelta;
       compactWriteCursor[3] = pendingCellDword;
       sourceCell++;
       compactWriteCursor = compactWriteCursor + 4;
       cellCount--;
     } while (cellCount != 0);
-    *(uint32_t *)destination = bytes;
+    Thandor_StoreU32(destination,bytes);
     if (PckCodec_EncodeHuffmanRle
             (destinationCapacityBytes - PCK_FIELD_GRID_PREFIX_BYTES,destination + PCK_FIELD_GRID_PREFIX_BYTES,bytes,
-             (uint8_t *)compactFieldImageBase,&encodedByteCount,&encodeErrorCode)) {
-      g_MemoryApi.free(compactFieldImageBase);
+             compactBlock.as<uint8_t>(),&encodedByteCount,&encodeErrorCode)) {
       return PckCodec_Succeed(outByteCount,encodedByteCount + PCK_FIELD_GRID_PREFIX_BYTES);
     }
-    g_MemoryApi.free(compactFieldImageBase);
     return PckCodec_Fail(outErrorCode,encodeErrorCode);
   }
-  return PckCodec_Fail(outErrorCode,(uint32_t)(uintptr_t)compactFieldImageBase);
 }
 
 
@@ -111,7 +111,6 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
 static void PckCodec_ExpandFieldGridImage(FieldGridAsset *destinationGrid,AssetMagic *compactImage)
 {
   uint32_t cellCount;
-  uint32_t dwordsLeft;
   AssetMagic *compactReadCursor;
   AssetMagic *expandedHeaderCursor;
   uint32_t *expandedZeroCursor;
@@ -119,28 +118,22 @@ static void PckCodec_ExpandFieldGridImage(FieldGridAsset *destinationGrid,AssetM
 
   cellCount = compactImage[46] * compactImage[47];
   compactReadCursor = compactImage;
-  expandedHeaderCursor = (AssetMagic *)destinationGrid;
-  for (dwordsLeft = FIELD_GRID_HEADER_DWORDS; dwordsLeft != 0; dwordsLeft--) {
-    *expandedHeaderCursor = *compactReadCursor;
-    compactReadCursor++;
-    expandedHeaderCursor++;
-  }
+  expandedHeaderCursor = reinterpret_cast<AssetMagic *>(destinationGrid); /* the header copied as dwords */
+  std::copy_n(compactReadCursor,FIELD_GRID_HEADER_DWORDS,expandedHeaderCursor);
+  compactReadCursor += FIELD_GRID_HEADER_DWORDS;
   /* the header cursor now points at cells[0]; clear all cells dword by dword */
-  expandedCell = (FieldGridCell *)expandedHeaderCursor;
-  expandedZeroCursor = (uint32_t *)expandedHeaderCursor;
-  for (dwordsLeft = cellCount * FIELD_GRID_CELL_DWORDS; dwordsLeft != 0; dwordsLeft--) {
-    *expandedZeroCursor = 0;
-    expandedZeroCursor++;
-  }
-  do {
+  expandedCell = destinationGrid->cells;
+  expandedZeroCursor = reinterpret_cast<uint32_t *>(expandedCell); /* the cells cleared as dwords */
+  std::fill_n(expandedZeroCursor,cellCount * FIELD_GRID_CELL_DWORDS,0);
+  /* cellCount != 0: PckCodec_DecodeFieldGrid rejects a grid without cells before it calls this */
+  for (; cellCount != 0; cellCount--) {
     expandedCell->persistedAux54 = compactReadCursor[0];
     expandedCell->terrainHeight = compactReadCursor[1];
     expandedCell->waterSurfaceDelta = compactReadCursor[2];
-    expandedCell->flagsAndMaterial = (FieldCellPackedFlagsAndMaterial)compactReadCursor[3];
+    expandedCell->flagsAndMaterial = FieldCell_FromRawWord(static_cast<uint32_t>(compactReadCursor[3]));
     compactReadCursor = compactReadCursor + 4;
     expandedCell++;
-    cellCount--;
-  } while (cellCount != 0);
+  }
 }
 
 /* Regenerates the world coordinates of every cell row by row: worldX = column * 0x901 + row * 0x480,
@@ -160,20 +153,19 @@ static void PckCodec_GenerateFieldGridWorldCoordinates(FieldGridAsset *grid)
   cell = grid->cells;
   rowStartX = 0;
   worldYQ12 = 0;
-  do {
+  /* width and height are non-zero: PckCodec_DecodeFieldGrid (the only caller) rejects a grid without cells */
+  for (; rowsRemaining != 0; rowsRemaining--) {
     worldX = rowStartX;
     columnsRemaining = gridWidth;
-    do {
+    for (; columnsRemaining != 0; columnsRemaining--) {
       cell->worldX = worldX;
       cell->worldY = worldYQ12;
       worldX = worldX + FIELD_GRID_WORLD_COLUMN_STEP_X;
       cell++;
-      columnsRemaining = columnsRemaining - 1;
-    } while (columnsRemaining != 0);
+    }
     rowStartX = rowStartX + FIELD_GRID_WORLD_ROW_STEP_X;
     worldYQ12 = worldYQ12 + FIELD_GRID_WORLD_ROW_STEP_Y;
-    rowsRemaining = rowsRemaining - 1;
-  } while (rowsRemaining != 0);
+  }
 }
 
 /* PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image,
@@ -188,29 +180,31 @@ static void PckCodec_GenerateFieldGridWorldCoordinates(FieldGridAsset *grid)
    the compact image or destinationCapacityBytes fail with FATAL_ERROR_GENERAL_FAILURE. Valid grids decode as
    before.
 */
-Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
+bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   uint32_t bytes;
+  void *compactBlock;
   AssetMagic *compactFieldImageBase;
   uint32_t allocError;
   uint32_t freeStatus;
   uint64_t cellCount;
 
-  if (sourceSizeBytes < PCK_FIELD_GRID_PREFIX_BYTES || *(uint32_t *)source < FIELD_GRID_HEADER_BYTES) {
+  if (sourceSizeBytes < PCK_FIELD_GRID_PREFIX_BYTES || Thandor_LoadU32(source) < FIELD_GRID_HEADER_BYTES) {
     Thandor_Log("PckCodec_DecodeFieldGrid: rejected malformed field grid (source %u bytes, capacity %u)",
                 sourceSizeBytes,destinationCapacityBytes);
     return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
-  bytes = *(uint32_t *)source;
-  allocError = g_MemoryApi.alloc(bytes,(void **)&compactFieldImageBase);
+  bytes = Thandor_LoadU32(source);
+  allocError = g_MemoryApi.alloc(bytes,&compactBlock);
   if (allocError != 0) {
     return PckCodec_Fail(outErrorCode,allocError);
   }
+  compactFieldImageBase = static_cast<AssetMagic *>(compactBlock);
   if (!PckCodec_DecodeHuffmanRle
-          (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - PCK_FIELD_GRID_PREFIX_BYTES,
+          (bytes,static_cast<uint8_t *>(compactBlock),sourceSizeBytes - PCK_FIELD_GRID_PREFIX_BYTES,
            source + PCK_FIELD_GRID_PREFIX_BYTES,nullptr,nullptr)) {
     /* Original quirk: reports the free's return value, not the decoder's error code */
     freeStatus = g_MemoryApi.free(compactFieldImageBase);
@@ -237,7 +231,7 @@ Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,F
    Copies the source dword by dword when it fits into the destination and returns true with its size rounded up
    to four bytes in *outByteCount; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when it does not fit.
 */
-Bool8 PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -247,7 +241,7 @@ Bool8 PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint
   if (sourceSizeBytes <= destinationCapacityBytes) {
     /* only whole dwords are copied; a 1..3-byte tail is left out */
     for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0; dwordCopyCount--) {
-      *(uint32_t *)destination = *(uint32_t *)source;
+      Thandor_StoreU32(destination,Thandor_LoadU32(source));
       source = source + 4;
       destination = destination + 4;
     }
@@ -265,7 +259,7 @@ Bool8 PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint
    sourceSizeBytes: the original sets no result of its own, and in Package_DecodeEntryInto the leftover value
    is the read size (packedSize).
 */
-Bool8 PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+bool PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -273,7 +267,7 @@ Bool8 PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint
   PckDwordCopyCount dwordCopyCount;
 
   for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0; dwordCopyCount--) {
-    *(uint32_t *)destination = *(uint32_t *)source;
+    Thandor_StoreU32(destination,Thandor_LoadU32(source));
     source = source + 4;
     destination = destination + 4;
   }
@@ -285,12 +279,12 @@ Bool8 PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint
 
 
 /* Bitstream writer state of PckCodec_EncodeHuffmanRle. */
-typedef struct PckHuffmanBitWriter {
-  uint32_t *window;              /* dword the tokens are ORed into; advanced byte by byte */
+struct PckHuffmanBitWriter {
+  uint8_t *window;               /* dword the tokens are ORed into; advanced byte by byte */
   PckHuffmanBitOffset bitOffset; /* next free bit in the window's first byte (0..7) */
   uint32_t packedSizeBytes;      /* table + bytes passed + 0x1F (see PckCodec_EncodeHuffmanRle) */
   uint32_t freeBytes;            /* output bytes still free; reaching 0 fails */
-} PckHuffmanBitWriter;
+};
 
 /* Clears the symbol table and both node workspaces, then counts how often each byte value occurs in source.
    The caller rejects an empty source, for which the count loop would run 2^32 times.
@@ -299,26 +293,17 @@ typedef struct PckHuffmanBitWriter {
 static void PckCodec_EncoderCountFrequencies(uint8_t *source,PckDecodedByteCount sourceSizeBytes)
 {
   uint32_t *workspaceClearCursor;
-  int clearDwordCount;
 
-  workspaceClearCursor = (uint32_t *)g_PckHuffmanSymbolWorkspace256;
-  for (clearDwordCount = sizeof(g_PckHuffmanSymbolWorkspace256) / sizeof(uint32_t); clearDwordCount != 0;
-       clearDwordCount--) {
-    *workspaceClearCursor = 0;
-    workspaceClearCursor++;
-  }
-  workspaceClearCursor = (uint32_t *)g_PckHuffmanNodeWorkspace;
-  for (clearDwordCount = sizeof(g_PckHuffmanNodeWorkspace) / (sizeof(uint32_t)); clearDwordCount != 0;
-       clearDwordCount--) {
-    *workspaceClearCursor = 0;
-    workspaceClearCursor++;
-  }
-  do {
+  workspaceClearCursor = reinterpret_cast<uint32_t *>(g_PckHuffmanSymbolWorkspace256); /* cleared as dwords */
+  std::fill_n(workspaceClearCursor,sizeof(g_PckHuffmanSymbolWorkspace256) / sizeof(uint32_t),0);
+  workspaceClearCursor = reinterpret_cast<uint32_t *>(g_PckHuffmanNodeWorkspace); /* cleared as dwords */
+  std::fill_n(workspaceClearCursor,sizeof(g_PckHuffmanNodeWorkspace) / (sizeof(uint32_t)),0);
+  /* sourceSizeBytes != 0: PckCodec_EncodeHuffmanRle (the only caller) rejects an empty source first */
+  for (; sourceSizeBytes != 0; sourceSizeBytes--) {
     g_PckHuffmanSymbolWorkspace256[*source].frequencyCount =
          g_PckHuffmanSymbolWorkspace256[*source].frequencyCount + 1;
-    sourceSizeBytes--;
     source++;
-  } while (sourceSizeBytes != 0);
+  }
 }
 
 /* Scales the counts down until the largest fits the 8-bit table; rounding up keeps rare symbols nonzero. */
@@ -375,7 +360,7 @@ static void PckCodec_EncoderEnsureTwoSymbols()
 /* Scans all leaf and internal nodes (one array in the original layout: leaves first, then internal nodes) for
    the two lightest nodes with nonzero weight. Returns false when fewer than two are left (the second-lowest
    weight is still UINT32_MAX, tested as negative like the original). */
-static Bool8 PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,uint32_t *outLowestWeight,
+static bool PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,uint32_t *outLowestWeight,
           PckHuffmanNode **outSecondLowestNode,uint32_t *outSecondLowestWeight)
 {
   PckHuffmanNode *scanNode;
@@ -418,7 +403,7 @@ static Bool8 PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode
 /* Copies the scaled counts into the leaf weights, then joins the two lightest live nodes under a new internal
    node until only the root still has a weight; a joined node's weight is cleared, so the root is the only node
    left with nonzero weight. Returns false when all 256 internal nodes are used up. */
-static Bool8 PckCodec_EncoderBuildTree()
+static bool PckCodec_EncoderBuildTree()
 {
   int symbolIndex;
   PckHuffmanNodePtr nextInternalNode;
@@ -454,7 +439,7 @@ static void PckCodec_EncoderWriteFrequencyTable(uint8_t *destination)
   int symbolIndex;
 
   for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_FREQUENCY_TABLE_BYTES; symbolIndex++) {
-    destination[symbolIndex] = *(uint8_t *)&g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
+    destination[symbolIndex] = static_cast<uint8_t>(g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount); /* low byte */
   }
 }
 
@@ -493,19 +478,20 @@ static void PckCodec_EncoderAssignCodes()
 
 /* ORs one token into the output: tokenHeader in its headerBitCount flag/count bits, then the code of symbol.
    Then moves the window on by the whole bytes written. Returns false when the output runs full. */
-static Bool8 PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t tokenHeader,uint8_t headerBitCount,
+static bool PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t tokenHeader,uint8_t headerBitCount,
           uint8_t symbol)
 {
   uint32_t symbolCode;
 
-  *output->window = *output->window | tokenHeader << (output->bitOffset & 31);
+  Thandor_StoreU32(output->window,Thandor_LoadU32(output->window) | tokenHeader << (output->bitOffset & 31));
   symbolCode = g_PckHuffmanSymbolWorkspace256[symbol].frequencyCount;
-  *output->window = *output->window | (symbolCode & 0xffffff) << (output->bitOffset + headerBitCount & 31);
+  Thandor_StoreU32(output->window,
+                   Thandor_LoadU32(output->window) | (symbolCode & 0xffffff) << (output->bitOffset + headerBitCount & 31));
   for (output->bitOffset =
             output->bitOffset + headerBitCount + (char)(symbolCode >> PCK_HUFFMAN_CODE_LENGTH_SHIFT);
        7 < output->bitOffset; output->bitOffset = output->bitOffset - 8) {
     /* advance the dword write window by one byte */
-    output->window = (uint32_t *)((uint8_t *)output->window + 1);
+    output->window = output->window + 1;
     output->packedSizeBytes++;
     output->freeBytes--;
     if (output->freeBytes == 0) {
@@ -517,7 +503,7 @@ static Bool8 PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t toke
 
 /* Encodes the source as run tokens (3..18 equal bytes: flag 1 + (count - 3) in 4 bits = count*2 - 5, then the
    byte's code) and literal tokens (flag bit 0, then the byte's code). Returns false when the output runs full. */
-static Bool8 PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *source,
+static bool PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *source,
           PckDecodedByteCount sourceBytesLeft)
 {
   uint8_t symbol;
@@ -556,14 +542,13 @@ static Bool8 PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *so
    would count 2^32 bytes); a source of one distinct byte value gets a dummy second symbol (see
    PckCodec_EncoderEnsureTwoSymbols).
 */
-Bool8 PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   uint32_t alignedOutputBytes;
   uint32_t *outputClearCursor;
-  uint32_t clearDwordCount;
   PckHuffmanBitWriter output;
 
   if (sourceSizeBytes == 0) {
@@ -585,17 +570,13 @@ Bool8 PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,
   if (alignedOutputBytes == 0) {
     return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
-  outputClearCursor = (uint32_t *)(destination + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES);
-  for (clearDwordCount = (destinationCapacityBytes - PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) >> 2; clearDwordCount != 0;
-       clearDwordCount--) {
-    *outputClearCursor = 0;
-    outputClearCursor++;
-  }
+  outputClearCursor = Asset_RecordAt<uint32_t>(destination,PCK_HUFFMAN_FREQUENCY_TABLE_BYTES); /* cleared as dwords */
+  std::fill_n(outputClearCursor,(destinationCapacityBytes - PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) >> 2,0);
   /* the original reserves 4 bytes of the capacity and fails unless some are left: exactly 4 free bytes also fail */
   if (alignedOutputBytes <= 4) {
     return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
-  output.window = (uint32_t *)(destination + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES);
+  output.window = destination + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES;
   output.bitOffset = 0;
   /* table + 0x1F, so the final AND with ~0xF rounds up and adds at least 16 bytes of slack */
   output.packedSizeBytes = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 31;
@@ -615,18 +596,13 @@ Bool8 PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,
 static void PckCodec_DecoderLoadFrequencies(uint8_t *frequencyTable)
 {
   uint32_t *workspaceClearCursor;
-  int clearDwordCount;
   int symbolIndex;
 
   for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
     g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount = frequencyTable[symbolIndex];
   }
-  workspaceClearCursor = (uint32_t *)g_PckHuffmanNodeWorkspace;
-  for (clearDwordCount = sizeof(g_PckHuffmanNodeWorkspace) / (sizeof(uint32_t)); clearDwordCount != 0;
-       clearDwordCount--) {
-    *workspaceClearCursor = 0;
-    workspaceClearCursor++;
-  }
+  workspaceClearCursor = reinterpret_cast<uint32_t *>(g_PckHuffmanNodeWorkspace); /* cleared as dwords */
+  std::fill_n(workspaceClearCursor,sizeof(g_PckHuffmanNodeWorkspace) / (sizeof(uint32_t)),0);
   for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
     g_PckHuffmanNodeWorkspace[symbolIndex].weight = g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
   }
@@ -706,7 +682,7 @@ static uint8_t *PckCodec_DecoderSkipWholeBytes(uint8_t *inputByte,PckHuffmanBitO
    may then be partly written). The encoder always leaves at least 16 bytes of slack behind the last token, so
    valid streams decode as before.
 */
-Bool8 PckCodec_DecodeHuffmanRle
+bool PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
           uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
@@ -746,7 +722,7 @@ Bool8 PckCodec_DecodeHuffmanRle
                   sourceSizeBytes,outputSizeBytes);
       return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
     }
-    bitWindow = *(uint32_t *)inputByte >> (inputBitOffset & 31);
+    bitWindow = Thandor_LoadU32(inputByte) >> (inputBitOffset & 31);
     if ((bitWindow & 1) == 0) {
       /* literal token: flag bit 0, then the code of the byte */
       codeBits = bitWindow >> 1;
@@ -766,13 +742,12 @@ Bool8 PckCodec_DecodeHuffmanRle
       inputByte = PckCodec_DecoderSkipWholeBytes(inputByte,&inputBitOffset);
       runLength = (bitWindow >> 1 & 0xf) + PCK_HUFFMAN_MIN_RUN_LENGTH;
       /* a run is cut short when the output is full; the counter then keeps its value */
-      do {
+      for (; runLength != 0; runLength--) { /* runLength >= PCK_HUFFMAN_MIN_RUN_LENGTH */
         *destination = (uint8_t)(symbolNode - g_PckHuffmanNodeWorkspace) /* symbol = leaf index */;
         destination++;
         outputSizeBytes--;
         if (outputSizeBytes == 0) break;
-        runLength--;
-      } while (runLength != 0);
+      }
       lastTokenLeftover = runLength;
     }
   } while (outputSizeBytes != 0);
@@ -784,14 +759,14 @@ Bool8 PckCodec_DecodeHuffmanRle
 
 /* Slot adapters of the field-grid codecs: the PckCodecProc slot passes the grid side as a byte buffer, which the
    field-grid codec reads/writes as the FieldGridAsset it holds. */
-static Bool8 PckCodec_EncodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
+static bool PckCodec_EncodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
           uint32_t sourceImageSizeBytes,uint8_t *source,uint32_t *outByteCount,uint32_t *outErrorCode)
 {
   return PckCodec_EncodeFieldGrid(destinationCapacityBytes,destination,sourceImageSizeBytes,
                                   reinterpret_cast<FieldGridAsset *>(source),outByteCount,outErrorCode);
 }
 
-static Bool8 PckCodec_DecodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
+static bool PckCodec_DecodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
           uint32_t sourceSizeBytes,uint8_t *source,uint32_t *outByteCount,uint32_t *outErrorCode)
 {
   return PckCodec_DecodeFieldGrid(destinationCapacityBytes,reinterpret_cast<FieldGridAsset *>(destination),

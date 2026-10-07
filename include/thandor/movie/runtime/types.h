@@ -9,13 +9,14 @@
 #define THANDOR_MOVIE_RUNTIME_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 #include <thandor/graphics/resources/types.h>
 
-typedef struct MovieRuntime MovieRuntime, *PMovieRuntime;
-typedef struct MovieFileHeader MovieFileHeader, *PMovieFileHeader;
-typedef struct FrameProviderResult FrameProviderResult, *PFrameProviderResult;
+struct MovieRuntime;
+struct MovieFileHeader;
+struct FrameProviderResult;
 
 using MovieFrameIndex = uint32_t;
 
@@ -29,7 +30,15 @@ using MovieSubresourceCount = uint32_t;
 
 using MovieSubresourceTableOffset = uint32_t;
 
-using MovieOpenFlags = uint32_t;
+/* Movie_Open flags (MovieRuntime.openFlags). Intro and end movies are streamed; in-game and briefing movies are
+   loaded from the packages only. Movie_Open clears MOVIE_OPEN_PACKAGE_ONLY when the loose path was not used, so
+   a nonzero MovieRuntime.openFlags means streaming. */
+enum class MovieOpenFlags : uint32_t {
+    MOVIE_OPEN_NONE=0,
+    MOVIE_OPEN_STREAM=0x00000001, /* load at most MOVIE_INITIAL_VIDEO_MAX_BYTES, the worker thread streams the rest */
+    MOVIE_OPEN_PACKAGE_ONLY=0x80000000u /* skip the g_LooseMoviePathPrefix directory */
+};
+THANDOR_FLAG_ENUM(MovieOpenFlags);
 
 using MovieSharedStreamHandleFlag = uint32_t;
 
@@ -43,22 +52,22 @@ using MovieFrameIntervalMilliseconds = uint32_t;
 
 using MoviePixelDimension = uint32_t;
 
-typedef struct MovieFrameDimensions {
+struct MovieFrameDimensions {
     AssetDimension width;
     AssetDimension height;
-} MovieFrameDimensions;
+};
 
 using MovieAudioTrackCount = uint32_t;
 
 using MovieStreamByteCount = uint32_t;
 
-enum {
+/* MovieRuntime.streamState, shared with the stream worker thread (accessed through std::atomic_ref). */
+enum class MovieStreamState : int {
     MOVIE_STREAM_IDLE=0,
     MOVIE_STREAM_FILL_REQUESTED=1,
     MOVIE_STREAM_READ_FAILED=2,
     MOVIE_STREAM_SHUTDOWN=3
 };
-using MovieStreamState = int;
 
 struct MovieFileHeader {
     struct GeneratedAssetCommonPrefix common; 

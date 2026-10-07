@@ -20,7 +20,7 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
 
 {
   uint8_t *storageLimit;
-  int *storageStock;
+  int storageStock;
   int storageLimitValue;
   uint32_t storageContribution;
   InGameRuntimeRoot *inGameRoot;
@@ -33,24 +33,25 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
   FieldGridAsset *activeFieldGrid;
 
   /* classParameterC0: the resource selector (0 Xenite, 1 Tritium), classParameterC4: the storage the model adds */
-  storageContribution = ((ModelDefinition *)modelDefinition)->classParameterC4;
+  storageContribution = ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC4;
   factionOffset =
        ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex *
        GAME_FACTION_RUNTIME_RECORD_BYTES;
   limitOffset = factionOffset + 4; /* xeniteStorageLimitQ4 */
-  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
+  if (ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0 != 0) {
     limitOffset = factionOffset + 20; /* tritiumStorageLimitQ4 */
   }
-  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + limitOffset;
-  storageStock = (int *)(storageLimit - 4); /* the stock is the dword before the limit */
-  storageLimitValue = *(int *)storageLimit;
+  /* the faction records read as bytes: the limit dword at the selected byte offset */
+  storageLimit = reinterpret_cast<uint8_t *>(g_GameFactionRuntimeImage.records) + limitOffset;
+  storageLimitValue = (int)Thandor_LoadU32(storageLimit);
   /* the stock loses the share this storage held */
   if ((((int)modelRuntime->health < 2) && (storageLimitValue != 0)) &&
-     (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0)) {
-    *storageStock = *storageStock -
-         (int)(((int64_t)(int)storageContribution * (int64_t)*storageStock) / (int64_t)storageLimitValue);
+     (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED))) {
+    storageStock = (int)Thandor_LoadU32(storageLimit - 4); /* the stock is the dword before the limit */
+    Thandor_StoreU32(storageLimit - 4,(uint32_t)(storageStock -
+         (int)(((int64_t)(int)storageContribution * (int64_t)storageStock) / (int64_t)storageLimitValue)));
   }
-  *(uint32_t *)storageLimit = *(int *)storageLimit - storageContribution;
+  Thandor_StoreU32(storageLimit,Thandor_LoadU32(storageLimit) - storageContribution);
   inGameRoot = g_InGameRuntimeRoot;
   gridCoordinates = FieldGrid_WorldToGridQ12
                     ((((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).
@@ -81,31 +82,32 @@ void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefi
 
 {
   uint8_t *storageLimit;
-  int *storageStock;
+  int storageStock;
   int storageLimitValue;
   uint32_t storageContribution;
   int factionOffset;
   int storageLimitOffset;
 
   /* classParameterC0: the resource selector (0 Xenite, 1 Tritium), classParameterC4: the storage the model adds */
-  storageContribution = ((ModelDefinition *)modelDefinition)->classParameterC4;
+  storageContribution = ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC4;
   factionOffset =
        ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex *
        GAME_FACTION_RUNTIME_RECORD_BYTES;
   storageLimitOffset = factionOffset + 4; /* xeniteStorageLimitQ4 */
-  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
+  if (ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0 != 0) {
     storageLimitOffset = factionOffset + 20; /* tritiumStorageLimitQ4 */
   }
-  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;
-  storageStock = (int *)(storageLimit - 4); /* the stock is the dword before the limit */
-  storageLimitValue = *(int *)storageLimit;
+  /* the faction records read as bytes: the limit dword at the selected byte offset */
+  storageLimit = reinterpret_cast<uint8_t *>(g_GameFactionRuntimeImage.records) + storageLimitOffset;
+  storageLimitValue = (int)Thandor_LoadU32(storageLimit);
   /* the stock loses the share this storage held */
   if ((((int)modelRuntime->health < 2) && (storageLimitValue != 0)) &&
-     (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0)) {
-    *storageStock = *storageStock -
-         (int)(((int64_t)(int)storageContribution * (int64_t)*storageStock) / (int64_t)storageLimitValue);
+     (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED))) {
+    storageStock = (int)Thandor_LoadU32(storageLimit - 4); /* the stock is the dword before the limit */
+    Thandor_StoreU32(storageLimit - 4,(uint32_t)(storageStock -
+         (int)(((int64_t)(int)storageContribution * (int64_t)storageStock) / (int64_t)storageLimitValue)));
   }
-  *(uint32_t *)storageLimit = *(int *)storageLimit - storageContribution;
+  Thandor_StoreU32(storageLimit,Thandor_LoadU32(storageLimit) - storageContribution);
 }
 
 /* Release handler of class 21 (aircraft): the model linked in classLinkState.modelLinkOrState (its home
@@ -143,7 +145,7 @@ void ArmyPlacement_ReleaseClassStateReservation
       *classCounter = *classCounter + 1;
       reservationBits = &(linkedModelSlot->classState).classStateB4;
       *reservationBits = *reservationBits & (reservationBit ^ 0xffffffff);
-      if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) != 0) {
+      if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED)) {
         return;
       }
       slotAssetIds[slotIndex] = 0;

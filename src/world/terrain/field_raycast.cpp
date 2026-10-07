@@ -18,7 +18,7 @@
    returns false and stores FIELD_GRID_RAYCAST_MISS_DISTANCE as the distance (both outputs are always written;
    outMaterialIndex may be NULL). Used for line-of-fire tests and terrain picking.
 */
-Bool8 FieldGrid_RaycastTerrainSurfaceDistance
+bool FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12,
           uint32_t *outMaterialIndex)
@@ -39,7 +39,7 @@ Bool8 FieldGrid_RaycastTerrainSurfaceDistance
   uint32_t currentColumnQ12;
   uint32_t currentRowQ12;
   int stepsRemaining;
-  Bool8 traversalDone;
+  bool traversalDone;
   FixedDirection rayDirection;
 
   gridWidth = fieldGrid->gridWidth;
@@ -51,7 +51,7 @@ Bool8 FieldGrid_RaycastTerrainSurfaceDistance
   rayStartRowQ12 = rayStartHalfRowQ12 * 2;
   rowLength = fieldGrid->gridWidth;
   /* &cells[row * rowLength + column], written as the original's byte arithmetic */
-  currentCell = (FieldGridCell *)((uint8_t *)&fieldGrid->cells[(int)rayStartColumnQ12 >> Q12_SHIFT] + (int32_t)(((int)rayStartRowQ12 >> Q12_SHIFT) * rowLength * sizeof(FieldGridCell)));
+  currentCell = FieldGridCell_AtByteOffset(&fieldGrid->cells[(int)rayStartColumnQ12 >> Q12_SHIFT],(int32_t)(((int)rayStartRowQ12 >> Q12_SHIFT) * rowLength * sizeof(FieldGridCell)));
   rayDirection = FixedMath_DirectionFromAnglesScaled(elevationAngle,azimuthAngle,rayScaleQ12);
   /* ...and for the ray end */
   rayEndColumnProduct = (int64_t)(int)(rayDirection.x + rayOriginXQ12) * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
@@ -74,7 +74,7 @@ Bool8 FieldGrid_RaycastTerrainSurfaceDistance
                           currentRowQ12 + rayStartHalfRowQ12 * -2,currentColumnQ12 - rayStartColumnQ12,
                           outDistanceQ12)) {
         if (outMaterialIndex != nullptr) {
-          *outMaterialIndex = currentCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+          *outMaterialIndex = FieldCell_MaterialId(currentCell->flagsAndMaterial);
         }
         return true;
       }
@@ -105,7 +105,7 @@ Bool8 FieldGrid_RaycastTerrainSurfaceDistance
    FIELD_GRID_RAYCAST_MISS_DISTANCE there on a miss (the original also returned the hit cell's material byte as a
    second result; no caller reads it).
 */
-Bool8 FieldGrid_RaycastSecondarySurfaceDistance
+bool FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12)
 
@@ -125,7 +125,7 @@ Bool8 FieldGrid_RaycastSecondarySurfaceDistance
   uint32_t currentColumnQ12;
   uint32_t currentRowQ12;
   int stepsRemaining;
-  Bool8 traversalDone;
+  bool traversalDone;
   FixedDirection rayDirection;
 
   gridWidth = fieldGrid->gridWidth;
@@ -137,7 +137,7 @@ Bool8 FieldGrid_RaycastSecondarySurfaceDistance
   rayStartRowQ12 = rayStartHalfRowQ12 * 2;
   rowLength = fieldGrid->gridWidth;
   /* &cells[row * rowLength + column], written as the original's byte arithmetic */
-  currentCell = (FieldGridCell *)((uint8_t *)&fieldGrid->cells[(int)rayStartColumnQ12 >> Q12_SHIFT] + (int32_t)(((int)rayStartRowQ12 >> Q12_SHIFT) * rowLength * sizeof(FieldGridCell)));
+  currentCell = FieldGridCell_AtByteOffset(&fieldGrid->cells[(int)rayStartColumnQ12 >> Q12_SHIFT],(int32_t)(((int)rayStartRowQ12 >> Q12_SHIFT) * rowLength * sizeof(FieldGridCell)));
   rayDirection = FixedMath_DirectionFromAnglesScaled(elevationAngle,azimuthAngle,rayScaleQ12);
   /* ...and for the ray end */
   rayEndColumnProduct = (int64_t)(int)(rayDirection.x + rayOriginXQ12) * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
@@ -188,7 +188,7 @@ Bool8 FieldGrid_RaycastSecondarySurfaceDistance
    along the render context's view angles from a model's sample points, to find terrain between
    them and the viewer.
 */
-Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
+bool FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
           Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,
           Q12 *outDistanceQ12)
@@ -215,7 +215,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
   FieldGridCell *currentCell;
   FieldGridCell *sampleCell;
   int rowStrideBytes;
-  Bool8 traversalDone;
+  bool traversalDone;
   FixedDirection rayDirection;
   FieldCellPersistedAux cornerHeight0Q12;
   FieldCellPersistedAux cornerHeight1Q12;
@@ -238,7 +238,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
   rayEndRowQ12 = rayEndHalfRowQ12 * 2;
   currentColumnQ12 = rayStartColumnQ12 & ~(FIELD_GRID_CELL_Q12 - 1u);
   currentRowQ12 = rayStartRowQ12 & ~(FIELD_GRID_CELL_Q12 - 1u);
-  currentCell = (FieldGridCell *)((uint8_t *)&fieldGrid->cells[(int)rayStartColumnQ12 >> Q12_SHIFT] + ((int)rayStartRowQ12 >> Q12_SHIFT) * rowStrideBytes);
+  currentCell = FieldGridCell_AtByteOffset(&fieldGrid->cells[(int)rayStartColumnQ12 >> Q12_SHIFT],((int)rayStartRowQ12 >> Q12_SHIFT) * rowStrideBytes);
   for (stepsRemaining = FIELD_GRID_RAYCAST_MAX_STEPS - 1; stepsRemaining != 0; stepsRemaining--) {
     rowFromStartQ12 = currentRowQ12 + rayStartHalfRowQ12 * -2;
     cellColumnIndex = (int)currentColumnQ12 >> Q12_SHIFT;
@@ -253,7 +253,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
         else {
           rowClampOffset = cellRowIndex - maxRowIndex;
         }
-        sampleCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(sampleCell,-rowClampOffset * rowStrideBytes);
+        sampleCell = FieldGridCell_AtByteOffset(sampleCell,-rowClampOffset * rowStrideBytes);
         cornerHeight3Q12 = sampleCell->terrainHeight;
         cornerHeight2Q12 = sampleCell->terrainHeight;
         cornerHeight1Q12 = sampleCell->terrainHeight;
@@ -267,7 +267,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
       }
     }
     else if (cellRowIndex < 0) {
-      sampleCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(currentCell,-cellRowIndex * rowStrideBytes);
+      sampleCell = FieldGridCell_AtByteOffset(currentCell,-cellRowIndex * rowStrideBytes);
       if (cellColumnIndex < maxColumnIndex) {
         cornerHeight3Q12 = sampleCell->terrainHeight;
         cornerHeight2Q12 = sampleCell[1].terrainHeight;
@@ -291,7 +291,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
         sampleCell = currentCell;
       }
       else {
-        sampleCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(currentCell,-(cellRowIndex - maxRowIndex) * rowStrideBytes);
+        sampleCell = FieldGridCell_AtByteOffset(currentCell,-(cellRowIndex - maxRowIndex) * rowStrideBytes);
         cornerHeight3Q12 = sampleCell->terrainHeight;
         cornerHeight2Q12 = sampleCell[1].terrainHeight;
         cornerHeight1Q12 = sampleCell->terrainHeight;
@@ -302,7 +302,7 @@ Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
       sampleCell = currentCell + -(cellColumnIndex - maxColumnIndex);
       if (maxRowIndex <= cellRowIndex) {
         /* both clamped: the single corner cell */
-        sampleCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(sampleCell,-(cellRowIndex - maxRowIndex) * rowStrideBytes);
+        sampleCell = FieldGridCell_AtByteOffset(sampleCell,-(cellRowIndex - maxRowIndex) * rowStrideBytes);
         cornerHeight3Q12 = sampleCell->terrainHeight;
         cornerHeight2Q12 = sampleCell->terrainHeight;
         cornerHeight1Q12 = sampleCell->terrainHeight;
@@ -359,7 +359,7 @@ static uint32_t TerrainTriangle_MulCrossByHeightDelta(uint64_t rayCrossLocal,uin
    2^12), shifted back down by 12 bits. Returns false (outputs untouched) when the divisor's low word is zero.
    When the divisor does not fit a signed 32-bit word, divisor and both numerators are shifted down by another
    12 bits; then both numerators are divided by it (signed 64/32 division) into the coord1 and coord0 offsets. */
-static Bool8 TerrainTriangle_DivideHitNumerators
+static bool TerrainTriangle_DivideHitNumerators
           (uint32_t remainingLow,int remainingHigh,uint32_t coord1Low,int coord1High,uint32_t coord0Low,
           int coord0High,int *outCoord1Offset,int *outCoord0Offset)
 
@@ -394,7 +394,7 @@ static Bool8 TerrainTriangle_DivideHitNumerators
 
 /* First triangle of TerrainTriangle_IntersectRayDistance, based on corner 3 (local coordinates as given). Returns
    true with the distance in *outDistanceQ12 on a hit, false on a miss. */
-static Bool8 TerrainTriangle_IntersectRayCorner3Triangle
+static bool TerrainTriangle_IntersectRayCorner3Triangle
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12,Q12 *outDistanceQ12)
@@ -504,7 +504,7 @@ static Bool8 TerrainTriangle_IntersectRayCorner3Triangle
 
 /* Second triangle of TerrainTriangle_IntersectRayDistance, based on the far corner 0 (local coordinates shifted by
    one cell). Returns true with the distance in *outDistanceQ12 on a hit, false on a miss. */
-static Bool8 TerrainTriangle_IntersectRayCorner0Triangle
+static bool TerrainTriangle_IntersectRayCorner0Triangle
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12,Q12 *outDistanceQ12)
@@ -625,7 +625,7 @@ static Bool8 TerrainTriangle_IntersectRayCorner0Triangle
    the world distance from the ray origin in *outDistanceQ12; a miss (also the quick reject when all four corners
    lie below the ray's lowest point) returns false and leaves *outDistanceQ12 untouched.
 */
-Bool8 TerrainTriangle_IntersectRayDistance
+bool TerrainTriangle_IntersectRayDistance
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12,Q12 *outDistanceQ12)
@@ -665,7 +665,7 @@ Q12 g_TerrainRayNextCoord1Q12;
    On a true return g_TerrainRayNext* hold the original's leftover results too: coord0 = end0 - cur0 for the
    destination-cell exit, cur0 with cell - 0x80 / cur1 - one cell for the no-column-movement exit.
 */
-Bool8 TerrainRay_AdvanceGridTraversal
+bool TerrainRay_AdvanceGridTraversal
           (Q12 rayEndCoord0Q12,Q12 rayEndCoord1Q12,Q12 rayStartCoord0Q12,Q12 rayStartCoord1Q12,
           FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *currentCell,Q12 currentGridCoord0Q12
           ,Q12 currentGridCoord1Q12)
@@ -673,7 +673,6 @@ Bool8 TerrainRay_AdvanceGridTraversal
 {
   /* Besides the boolean result the original returns the next cell and the next grid corner (coord0 /
      coord1); they are published in g_TerrainRayNext*. */
-  uint8_t *cell = (uint8_t *)currentCell;
   int delta0;
   int delta1;
 
@@ -702,7 +701,7 @@ Bool8 TerrainRay_AdvanceGridTraversal
              ((currentGridCoord0Q12 + FIELD_GRID_CELL_Q12) - rayStartCoord0Q12) +
              (int64_t)(rayStartCoord1Q12 - currentGridCoord1Q12) * delta0;
       if (side >= 0 && limit - side >= 0) {
-        g_TerrainRayNextCell = (FieldGridCell *)(cell + rowStrideBytes);
+        g_TerrainRayNextCell = FieldGridCell_AtByteOffset(currentCell,rowStrideBytes);
         g_TerrainRayNextCoord0Q12 = currentGridCoord0Q12 + FIELD_GRID_CELL_Q12;
         return false;
       }
@@ -712,7 +711,7 @@ Bool8 TerrainRay_AdvanceGridTraversal
              (currentGridCoord0Q12 - rayStartCoord0Q12) +
              (int64_t)(rayStartCoord1Q12 - currentGridCoord1Q12) * delta0;
       if (side < 0 && limit - side < 0) {
-        g_TerrainRayNextCell = (FieldGridCell *)(cell - rowStrideBytes);
+        g_TerrainRayNextCell = reinterpret_cast<FieldGridCell *>(reinterpret_cast<uint8_t *>(currentCell) - rowStrideBytes); /* the stride is subtracted as a 64-bit value, as in the original */
         g_TerrainRayNextCoord0Q12 = currentGridCoord0Q12 - FIELD_GRID_CELL_Q12;
         return false;
       }
@@ -721,17 +720,17 @@ Bool8 TerrainRay_AdvanceGridTraversal
   delta1 = rayEndCoord1Q12 - rayStartCoord1Q12;
   if (delta1 == 0) {
     /* returns true after cell and coord1 were already moved one column back; coord0 = cur0 */
-    g_TerrainRayNextCell = (FieldGridCell *)cell - 1;
+    g_TerrainRayNextCell = currentCell - 1;
     g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 - FIELD_GRID_CELL_Q12;
     return true;
   }
   /* next column */
   if (delta1 < 0) {
-    g_TerrainRayNextCell = (FieldGridCell *)cell - 1;
+    g_TerrainRayNextCell = currentCell - 1;
     g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 - FIELD_GRID_CELL_Q12;
   }
   else {
-    g_TerrainRayNextCell = (FieldGridCell *)cell + 1;
+    g_TerrainRayNextCell = currentCell + 1;
     g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 + FIELD_GRID_CELL_Q12;
   }
   return false;

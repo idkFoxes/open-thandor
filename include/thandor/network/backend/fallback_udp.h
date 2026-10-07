@@ -21,11 +21,11 @@ uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort);
 
 void NetworkBackendFallback_CloseActiveSocket();
 
-Bool8 NetworkBackendFallback_ReceiveDatagram(WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
+bool NetworkBackendFallback_ReceiveDatagram(WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
 
-Bool8 NetworkBackendFallback_SendDatagram(WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
+bool NetworkBackendFallback_SendDatagram(WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
-Bool8 NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpoint,char *endpointText);
+bool NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpoint,char *endpointText);
 
 void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress);
 
@@ -35,13 +35,13 @@ uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort);
 
 void NetworkFallback_CloseActiveSocket();
 
-Bool8 NetworkFallback_ReceiveDatagram
+bool NetworkFallback_ReceiveDatagram
           (WinSockAddress *sourceAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
-Bool8 NetworkFallback_SendDatagram
+bool NetworkFallback_SendDatagram
           (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
-Bool8 NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText);
+bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText);
 
 void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress);
 

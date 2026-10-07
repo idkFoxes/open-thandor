@@ -30,16 +30,16 @@ RLE: each scan line is encoded on its own. A byte equal to its successor starts 
 (n <= 63) followed by the value. A single byte below 0xC0 is stored as is, a single byte >= 0xC0 as 0xC1, value.
 */
 
-#define PCX_HEADER_SIZE 0x80
-#define PCX_PALETTE_MARKER 0x0C
+static constexpr int PCX_HEADER_SIZE = 0x80;
+static constexpr int PCX_PALETTE_MARKER = 0x0C;
 /* Bytes the original reserved in the output block beyond the scan lines: the header, plus for a palette
    source the marker, 768 palette bytes and one more for the last palette entry, which it stored as a dword. */
-#define PCX_RESERVE_DIRECT_COLOR PCX_HEADER_SIZE
-#define PCX_RESERVE_PALETTE (PCX_HEADER_SIZE + 1 + 0x300 + 1)
+static constexpr auto PCX_RESERVE_DIRECT_COLOR = PCX_HEADER_SIZE;
+static constexpr auto PCX_RESERVE_PALETTE = PCX_HEADER_SIZE + 1 + 0x300 + 1;
 /* Palette banks of a texture source asset start at +0x200, 256 entries of 8 bytes each. */
-#define PCX_PALETTE_BANKS_OFFSET 0x200
-#define PCX_PALETTE_BANK_SIZE 0x800
-#define PCX_PALETTE_ENTRY_SIZE 8
+static constexpr int PCX_PALETTE_BANKS_OFFSET = 0x200;
+static constexpr int PCX_PALETTE_BANK_SIZE = 0x800;
+static constexpr int PCX_PALETTE_ENTRY_SIZE = 8;
 
 static void Pcx_StoreU16(uint8_t *at,uint32_t value)
 {
@@ -67,7 +67,7 @@ static void Pcx_BuildCanvas(uint8_t *canvas,const uint8_t *assetBase,const Graph
 
   memset(canvas,0,rowStride * entry->logicalHeight);
   if (planeCount == 3) {
-    const uint32_t *sourcePixel = (const uint32_t *)(assetBase + entry->dataOffset);
+    const uint32_t *sourcePixel = reinterpret_cast<const uint32_t *>(assetBase + entry->dataOffset); /* ARGB pixels */
     for (row = 0; row < entry->pixelHeight; row++) {
       for (column = 0; column < entry->pixelWidth; column++) {
         uint32_t argb = *sourcePixel++;
@@ -100,7 +100,7 @@ static void Pcx_BuildCanvas(uint8_t *canvas,const uint8_t *assetBase,const Graph
 
 /* Encodes every scan line of the canvas. Returns false when the encoded lines would exceed *budget bytes
    (the original's output-block check); *budget is reduced by the bytes written. */
-static Bool8 Pcx_EncodeScanLines(uint8_t **cursor,int32_t *budget,const uint8_t *canvas,uint32_t lineCount,
+static bool Pcx_EncodeScanLines(uint8_t **cursor,int32_t *budget,const uint8_t *canvas,uint32_t lineCount,
                                 uint32_t bytesPerLine)
 {
   uint8_t *out = *cursor;
@@ -165,17 +165,18 @@ static Bool8 Pcx_EncodeScanLines(uint8_t **cursor,int32_t *budget,const uint8_t 
    file!" instead of an error code; FATAL_ERROR_GENERAL_FAILURE stands in for it (no caller reads the error).
    Original quirk: header dimensions are 16-bit (xmax/ymax computed as one dword (height << 16 | width) - 0x10001);
    zero width or height was not handled (the original's counted loops ran away) and is rejected here. */
-Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBytes,uint32_t *outByteCount,
+bool Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBytes,uint32_t *outByteCount,
                        uint32_t *outError)
 {
-  const uint8_t *assetBase = (const uint8_t *)capture;
+  const uint8_t *assetBase = reinterpret_cast<const uint8_t *>(capture); /* offsets are asset-relative */
   const GraphicsTextureSourceEntry *entry;
-  Bool8 directColor;
+  bool directColor;
   uint32_t planeCount;
   uint32_t bytesPerLine;
   uint32_t reserve;
   uint8_t *canvas;
   uint8_t *output;
+  void *block;
   uint32_t blockSize;
   uint8_t *cursor;
   int32_t budget;
@@ -187,7 +188,7 @@ Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBy
     *outError = FATAL_ERROR_GENERAL_FAILURE;
     return false;
   }
-  entry = (const GraphicsTextureSourceEntry *)(assetBase + (capture->tableDescriptor).subresourceTableOffset);
+  entry = reinterpret_cast<const GraphicsTextureSourceEntry *>(assetBase + (capture->tableDescriptor).subresourceTableOffset);
   if (entry->logicalWidth == 0 || entry->logicalHeight == 0) {
     *outError = FATAL_ERROR_GENERAL_FAILURE;
     return false;
@@ -197,14 +198,16 @@ Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBy
   reserve = directColor ? PCX_RESERVE_DIRECT_COLOR : PCX_RESERVE_PALETTE;
   bytesPerLine = (entry->logicalWidth + 1) & ~1u;
 
-  status = g_MemoryApi.alloc(bytesPerLine * entry->logicalHeight * planeCount,(void **)&canvas);
+  status = g_MemoryApi.alloc(bytesPerLine * entry->logicalHeight * planeCount,&block);
   if (status != 0) {
     *outError = status;
     return false;
   }
+  canvas = static_cast<uint8_t *>(block);
   Pcx_BuildCanvas(canvas,assetBase,entry,bytesPerLine,planeCount);
 
-  status = g_MemoryApi.allocLargestFreeBlock((void **)&output,&blockSize);
+  status = g_MemoryApi.allocLargestFreeBlock(&block,&blockSize);
+  output = static_cast<uint8_t *>(block);
   if (status != 0) {
     g_MemoryApi.free(canvas);
     *outError = status;

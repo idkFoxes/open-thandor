@@ -121,22 +121,22 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
     if ((-1 < (int)gridColumn) && (-1 < (int)gridRow) && (gridRow < fieldGrid->gridHeight) &&
         (gridColumn < gridWidth)) {
       centerCellIndex = gridRow * gridWidth + gridColumn;
-      if ((fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      if (!Any(fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         fieldGrid->cells[centerCellIndex].occupancyMask =
              fieldGrid->cells[centerCellIndex].occupancyMask | occupancyMaskBits;
         rowStrideBytes = g_TerrainScanRowStrideBytes;
         /* the six neighbours of centre cell C, one per sector: C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width;
            the first address is cells[centerCellIndex + 1]) */
         wedgeCellA = &fieldGrid->cells[centerCellIndex + 1];
-        wedgeCellB = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellA,-g_TerrainScanRowStrideBytes);
+        wedgeCellB = FieldGridCell_AtByteOffset(wedgeCellA,-g_TerrainScanRowStrideBytes);
         TerrainProjectedOcclusion_TraceSector<0>
                   (occupancyMaskBits,wedgeCellB->terrainHeight - referenceHeight,wedgeCellA);
         TerrainProjectedOcclusion_TraceSector<1>
                   (occupancyMaskBits,wedgeCellB[-1].terrainHeight - referenceHeight,wedgeCellB);
-        wedgeCellA = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellB - 2,rowStrideBytes);
+        wedgeCellA = FieldGridCell_AtByteOffset(wedgeCellB - 2,rowStrideBytes);
         TerrainProjectedOcclusion_TraceSector<2>
                   (occupancyMaskBits,wedgeCellA->terrainHeight - referenceHeight,wedgeCellB - 1);
-        wedgeCellB = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellA,rowStrideBytes);
+        wedgeCellB = FieldGridCell_AtByteOffset(wedgeCellA,rowStrideBytes);
         TerrainProjectedOcclusion_TraceSector<3>
                   (occupancyMaskBits,wedgeCellB->terrainHeight - referenceHeight,wedgeCellA);
         TerrainProjectedOcclusion_TraceSector<4>
@@ -144,7 +144,7 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
         /* the terrain height of C+1 (one row up from C+W+1), the first cell of sector 0 */
         TerrainProjectedOcclusion_TraceSector<5>
                   (occupancyMaskBits,
-                   FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellB + 2,-rowStrideBytes)->terrainHeight - referenceHeight,
+                   FieldGridCell_AtByteOffset(wedgeCellB + 2,-rowStrideBytes)->terrainHeight - referenceHeight,
                    wedgeCellB + 1);
       }
     }

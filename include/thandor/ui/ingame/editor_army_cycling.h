@@ -13,7 +13,7 @@
 #include <thandor/core/contracts.h>
 
 /* The placement lists search ids 0..0xFFF and wrap around at 0x1000. */
-#define ARMY_ASSET_EDITOR_ID_LIMIT 0x1000
+inline constexpr int32_t ARMY_ASSET_EDITOR_ID_LIMIT = 0x1000;
 
 ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog recordId);
 

@@ -7,13 +7,37 @@
 
 #include <thandor/ui/ingame/army_stock.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
+/* Byte offsets of the 24 army stock slots (armyStockSlot00..23, UiCommandSpriteButtonControl; slot 23 is typed
+   UiCatalogEntryControl, whose command part is the same control) in the in-game UI image. */
 static int32_t g_UiCommandSpriteVariantAOffsets[24] = {
-    /*  0 */ 36116, 36240, 36364, 36488, 36612, 36736, 36860, 36984,
-    /*  8 */ 37108, 37232, 37356, 37480, 37604, 37728, 37852, 37976,
-    /* 16 */ 38100, 38224, 38348, 38472, 38596, 38720, 38844, 38968};
+    /*  0 */ static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot00)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot01)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot02)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot03)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot04)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot05)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot06)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot07)),
+    /*  8 */ static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot08)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot09)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot10)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot11)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot12)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot13)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot14)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot15)),
+    /* 16 */ static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot16)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot17)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot18)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot19)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot20)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot21)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot22)),
+             static_cast<int32_t>(offsetof(InGameUiImage,armyStockSlot23))};
 
 static uint32_t g_UiCommandSpriteVariantAColumnCount = 0;
 
@@ -38,9 +62,9 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
   GraphicsCursorFrameIndex cursorFrame;
   int recordIndex;
 
-  if (((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     recordIndex = ARMY_STOCK_ENTRY_COUNT - 1;
-    do {
+    while (-1 < recordIndex) {
       if ((int)((uintptr_t)control - (uintptr_t)g_InGameRuntimeRoot) ==
           g_UiCommandSpriteVariantAOffsetTables[g_UiCommandSpriteVariantAColumnCount][recordIndex])
       {
@@ -49,10 +73,10 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
         break;
       }
       recordIndex--;
-    } while (-1 < recordIndex);
+    }
   }
   cursorFrame = INGAME_CURSOR_FRAME_ARMY_STOCK;
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+  if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
     cursorFrame = INGAME_CURSOR_FRAME_ARMY_STOCK_SELL;
   }
   return cursorFrame;
@@ -72,6 +96,7 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
   int remainingSlots;
   int panelWidth;
   int slotOffset;
+  UiCommandSpriteButtonControl *slotControl;
   uint32_t itemCount;
   FactionArmyAssetCount remainingAssets;
   int panelHeight;
@@ -79,21 +104,26 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
   UiCommandRuntimeRecordPrefix **recordCursor;
   uint32_t *assetCursor;
   UiGridDimensions gridDimensions;
+  InGameUiImage *ui;
+  WorldRuntimeContext *worldRuntime;
 
   /* node becomes the in-game UI root */
   while (node->parent != UI_NODE_NONE) {
     node = node->parent;
   }
+  ui = InGameUi_Image(node);
+  /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
+  worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&ui->worldView);
   recordCursor = g_UiCommandSpriteVariantARecords;
   for (remainingSlots = ARMY_STOCK_ENTRY_COUNT; remainingSlots != 0; remainingSlots--) {
     *recordCursor = nullptr;
     recordCursor++;
   }
   recordCursor = g_UiCommandSpriteVariantARecords;
-  remainingAssets = g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex].primaryArmyAssetCount;
+  remainingAssets = g_GameFactionRuntimeImage.records[worldRuntime->activeFactionRuntimeIndex].primaryArmyAssetCount;
   itemCount = 0;
-  assetCursor = g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex].primaryArmyAssetPointersOrIds;
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0) {
+  assetCursor = g_GameFactionRuntimeImage.records[worldRuntime->activeFactionRuntimeIndex].primaryArmyAssetPointersOrIds;
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) {
     for (; remainingAssets != 0; remainingAssets--) {
       if ((Thandor_U32ToPointer<UiCommandRuntimeRecordPrefix>(*assetCursor)->textureSource != nullptr) && (itemCount < ARMY_STOCK_ENTRY_COUNT)) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
         *recordCursor = Thandor_U32ToPointer<UiCommandRuntimeRecordPrefix>(*assetCursor); /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
@@ -114,39 +144,40 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
           g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCommandSpriteVariantAColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {
-    INGAME_UI(node,armyStockFrame)->leftOffset = -31;
-    INGAME_UI(node,armyStockFrame)->rightOffset = -31;
-    INGAME_UI(node,armyStockFrame)->topOffset = -13;
-    INGAME_UI(node,armyStockFrame)->bottomOffset = -13;
+    ui->armyStockFrame.base.leftOffset = -31;
+    ui->armyStockFrame.base.rightOffset = -31;
+    ui->armyStockFrame.base.topOffset = -13;
+    ui->armyStockFrame.base.bottomOffset = -13;
   }
   else {
-    INGAME_UI(node,armyStockFrame)->leftOffset = -39;
-    INGAME_UI(node,armyStockFrame)->rightOffset = -39;
-    INGAME_UI(node,armyStockFrame)->topOffset = -18;
-    INGAME_UI(node,armyStockFrame)->bottomOffset = -18;
+    ui->armyStockFrame.base.leftOffset = -39;
+    ui->armyStockFrame.base.rightOffset = -39;
+    ui->armyStockFrame.base.topOffset = -18;
+    ui->armyStockFrame.base.bottomOffset = -18;
   }
-  INGAME_UI(node,armyStockFrame)->leftOffset -= panelWidth;
-  INGAME_UI(node,armyStockFrame)->topOffset -= panelHeight;
+  ui->armyStockFrame.base.leftOffset -= panelWidth;
+  ui->armyStockFrame.base.topOffset -= panelHeight;
   if (itemCount == 0) {
-    INGAME_UI(node,armyStockFrame)->nodeFlags |= UI_NODE_SUPPRESSED;
+    ui->armyStockFrame.base.nodeFlags |= UI_NODE_SUPPRESSED;
   }
   else {
-    INGAME_UI(node,armyStockFrame)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    ui->armyStockFrame.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   }
   offsetTable = g_UiCommandSpriteVariantAOffsetTables[columnCount];
   for (slotIndex = 0; slotIndex < ARMY_STOCK_ENTRY_COUNT; slotIndex++) {
     slotOffset = offsetTable[slotIndex];
+    slotControl = Thandor_At<UiCommandSpriteButtonControl>(ui,slotOffset);
     if (slotIndex < itemCount) {
-      THANDOR_UI_AT(node,slotOffset)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+      slotControl->sprite.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
       slotTexture = g_UiCommandSpriteVariantARecords[slotIndex]->textureSource;
     }
     else {
-      THANDOR_UI_AT(node,slotOffset)->nodeFlags |= UI_NODE_SUPPRESSED;
+      slotControl->sprite.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
       slotTexture = nullptr;
     }
-    ((UiCommandSpriteButtonControl *)THANDOR_UI_AT(node,slotOffset))->sprite.primaryTextureSource = slotTexture;
+    slotControl->sprite.primaryTextureSource = slotTexture;
   }
-  INGAME_UI(node,armyStockPanel)->vtable->layout(INGAME_UI(node,armyStockPanel));
+  ui->armyStockPanel.selectable.base.vtable->layout(&ui->armyStockPanel.selectable.base);
 }
 
 /* Army stock slot click (action 0x1001, g_InGameUiActionHandlersPage10[1]): first drops any army still waiting
@@ -157,24 +188,27 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
 void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
 
 {
-  int32_t *flagsField;
   UiCommandSpriteButtonControl *root;
+  InGameUiImage *ui;
+  WorldRuntimeContext *worldRuntime;
   UiCommandRuntimeRecordPrefix *runtimeRecord;
   FactionRuntimeIndex factionIndex;
   PckArmyAssetIdCatalog assetId;
   int slotIndex;
 
-  if ((g_UiCommandRuntimeFlags &
-      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     root = control;
     while ((root->sprite).selectable.base.parent != UI_NODE_NONE) {
-      root = (UiCommandSpriteButtonControl *)(root->sprite).selectable.base.parent;
+      root = reinterpret_cast<UiCommandSpriteButtonControl *>((root->sprite).selectable.base.parent.get());
     }
+    ui = InGameUi_Image(root);
+    /* the world view node is also the world runtime (InGameRuntimeRoot.worldRuntime, +0xA30) */
+    worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&ui->worldView);
     /* end any hover of the stock panel (image control) */
     g_UiImageControlHoverTarget = nullptr;
-    flagsField = (int32_t *)&((UiImageControl *)INGAME_UI(root,armyStockPanel))->selectable.stateFlags;
-    *flagsField = *flagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
-    if ((((WorldRuntimeContext *)INGAME_UI(root,worldView))->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
+    ui->armyStockPanel.selectable.stateFlags &= ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
+    if (!Any(worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) {
       slotIndex = ARMY_STOCK_ENTRY_COUNT - 1;
       while ((int)((uintptr_t)control - (uintptr_t)root) !=
              g_UiCommandSpriteVariantAOffsetTables[g_UiCommandSpriteVariantAColumnCount][slotIndex]) {
@@ -184,16 +218,16 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
         }
       }
       runtimeRecord = g_UiCommandSpriteVariantARecords[slotIndex];
-      factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+      factionIndex = worldRuntime->activeFactionRuntimeIndex;
       InGameCommand_Issue<GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid>(0,0,factionIndex);
-      if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0)
+      if (!Any(control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK))
       {
-        factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+        factionIndex = worldRuntime->activeFactionRuntimeIndex;
         assetId = runtimeRecord->armyAssetId;
         InGameCommand_Issue<GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer>(0,assetId,factionIndex);
       }
       else {
-        factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
+        factionIndex = worldRuntime->activeFactionRuntimeIndex;
         assetId = runtimeRecord->armyAssetId;
         InGameCommand_Issue<GameFactionRuntime_SellArmyAssetAndRefundSevenEighths>(0,assetId,factionIndex);
       }

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/platform/filesystem/win32.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -66,6 +67,18 @@ static _WIN32_FIND_DATAA g_Win32FindDataScratch = {};
    a different file or directory. */
 static uint8_t g_Win32PathScratch[2][THANDOR_PATH_CAPACITY] = {};
 
+/* g_Win32PathScratch[0] as the char text the ANSI file APIs take (LPSTR / LPCSTR) and fill. */
+static inline char *Win32Path_ScratchText()
+{
+  return reinterpret_cast<char *>(g_Win32PathScratch[0]);
+}
+
+/* g_Win32PathScratch[0] reused as UTF-16 text. */
+static inline uint16_t *Win32Path_ScratchUtf16()
+{
+  return reinterpret_cast<uint16_t *>(g_Win32PathScratch[0]);
+}
+
 /* char[4]: "x:\" root path, drive letter patched at [0] before GetVolumeInformationA */
 static char g_Win32DriveRootPathScratchA[4] = "x:\\";
 
@@ -79,7 +92,7 @@ FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryO
 
 /* open-thandor: converts a UTF-16 path into one of the g_Win32PathScratch buffers for the ANSI file APIs.
    False when it does not fit; the original cut the path off at 0xFF bytes and used it anyway. */
-static Bool8 Win32Path_ToNarrow(uint8_t *destination,uint16_t *path)
+static bool Win32Path_ToNarrow(uint8_t *destination,uint16_t *path)
 
 {
   return RichTextCommandStream_CopyToNarrow(sizeof g_Win32PathScratch[0],destination,path);
@@ -110,11 +123,11 @@ uintptr_t FileSystem_Init()
      directory then came out empty. Use the module path instead. */
   /* an executable path of WIDE_PATH_MAX_CODE_UNITS characters or more leaves the executable directory empty
      (it would not fit g_ExecutableDirectoryUtf16) */
-  Thandor_GetExecutablePathA((char *)g_Win32PathScratch[0],WIDE_PATH_MAX_CODE_UNITS);
+  Thandor_GetExecutablePathA(Win32Path_ScratchText(),WIDE_PATH_MAX_CODE_UNITS);
   Text_CopyNarrowToUtf16(sizeof g_PackageLastErrorPath,g_PackageLastErrorPath,g_Win32PathScratch[0]);
   /* the leaf (the executable name) lands in the path scratch buffer, which is reused as UTF-16 */
   WidePath_SplitParentAndLeaf
-            ((uint16_t *)g_Win32PathScratch[0],g_ExecutableDirectoryUtf16,g_PackageLastErrorPath);
+            (Win32Path_ScratchUtf16(),g_ExecutableDirectoryUtf16,g_PackageLastErrorPath);
   g_FileSystemOpen = Win32File_Open;
   g_FileSystemClose = Win32File_Close;
   g_FileSystemReadExact = Win32File_ReadExact;
@@ -129,7 +142,7 @@ uintptr_t FileSystem_Init()
        Win32FileSystem_EnumerateDirectoryOrVolumeEntries;
   /* the original kept this GetComputerNameA size in/out in the global that later held the THANDOR.cfg cursor */
   computerNameCapacity = sizeof g_Win32PathScratch[0];
-  gotComputerName = GetComputerNameA((LPSTR)g_Win32PathScratch[0],&computerNameCapacity);
+  gotComputerName = GetComputerNameA(Win32Path_ScratchText(),&computerNameCapacity);
   if (gotComputerName != 0) {
     labelCursor = g_DefaultComputerLabelUtf16;
     for (clearCount = sizeof g_DefaultComputerLabelUtf16 / 4; clearCount != 0; clearCount--) {
@@ -139,19 +152,19 @@ uintptr_t FileSystem_Init()
     }
     Text_CopyNarrowToUtf16(sizeof g_DefaultComputerLabelUtf16,g_DefaultComputerLabelUtf16,g_Win32PathScratch[0]);
   }
-  if (ArenaHeap_Alloc(PACKAGE_SCRATCH_BUFFER_BYTES,(void **)&g_PackageScratchBuffer) != 0) {
+  if (ArenaHeap_Alloc(PACKAGE_SCRATCH_BUFFER_BYTES,reinterpret_cast<void **>(&g_PackageScratchBuffer)) != 0) {
     FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),true);
   }
-  openError = Win32File_Open(0,g_ThandorCfgPathUtf16,&configFile);
+  openError = Win32File_Open(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_ThandorCfgPathUtf16,&configFile);
   if (openError != 0) {
     WidePath_CombineDirectoryAndLeaf
               (g_FileSystemCombinedPathScratchUtf16,g_ThandorCfgPathUtf16,
                g_ExecutableDirectoryUtf16);
-    openError = Win32File_Open(0,g_FileSystemCombinedPathScratchUtf16,&configFile);
+    openError = Win32File_Open(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_FileSystemCombinedPathScratchUtf16,&configFile);
   }
   if (openError == 0) {
     if (Win32File_GetSize(configFile,&configBytesLeft) && (configBytesLeft != 0)) {
-      if (ArenaHeap_Alloc(configBytesLeft,(void **)&configCursor) == 0) {
+      if (ArenaHeap_Alloc(configBytesLeft,reinterpret_cast<void **>(&configCursor)) == 0) {
         if (Win32File_ReadExact(configBytesLeft,configCursor,configFile) != 0) {
           ArenaHeap_Free(configCursor);
         }
@@ -159,7 +172,7 @@ uintptr_t FileSystem_Init()
           /* Normalize the text in place: separators (<= ' ') and [comments] become NUL, other
              characters go through the normalization map. The original also stored the text's address and
              size in two globals that nothing read; the block stays allocated (arena layout). */
-          do {
+          for (; configBytesLeft != 0; configBytesLeft--) {
             configByte = *configCursor;
             if (configByte == '[') {
               /* blank the comment up to its closing ']', which is then blanked as a separator */
@@ -178,8 +191,7 @@ uintptr_t FileSystem_Init()
               *configCursor = g_FileSystemConfigCharacterNormalizationMap[configByte];
             }
             configCursor++;
-            configBytesLeft--;
-          } while (configBytesLeft != 0);
+          }
         }
       }
     }
@@ -209,7 +221,7 @@ void Win32FileSystem_RestoreInitialDirectory()
    FATAL_ERROR_OUT_OF_MEMORY with the file size left in g_FatalErrorDetail1Utf16. *outBuffer is only written
    on success, *outError only on failure. Used for loose files by Package_LoadEntry and Resource_Load
    (assets/package); the original's two whole-file loader entry points around it had no caller. */
-Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
+bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
           uint32_t *outError)
 
 {
@@ -223,9 +235,9 @@ Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffe
   WidePath_CombineDirectoryAndLeaf
             (g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              g_ExecutableDirectoryUtf16);
-  openError = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&handle);
+  openError = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_FileSystemCombinedPathScratchUtf16,&handle);
   if (openError != 0) {
-    openError = g_FileSystemOpen(0,pathUtf16,&handle);
+    openError = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,pathUtf16,&handle);
     if (openError != 0) {
       *outError = openError;
       return false;
@@ -268,7 +280,7 @@ uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uin
   uint32_t writeError;
   uint32_t openError;
   openError = g_FileSystemOpen
-                    (FILESYSTEM_OPEN_EXCLUSIVE_SHARE|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path,&handle);
+                    (FileSystemOpenFlags::FILESYSTEM_OPEN_EXCLUSIVE_SHARE | FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path,&handle);
   if (openError != 0) {
     return openError;
   }
@@ -311,7 +323,7 @@ uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void
 /* Stores the current position of a file in *outPosition and returns true; returns false with
    *outPosition 0 when SetFilePointer fails.
 */
-Bool8 Win32File_GetPosition(void *handle,uint32_t *outPosition)
+bool Win32File_GetPosition(void *handle,uint32_t *outPosition)
 
 {
   DWORD filePosition;
@@ -349,7 +361,7 @@ uint32_t Win32File_Delete(uint32_t unusedFlags,uint16_t *path)
 
 {
   Package_SetLastErrorPath(path);
-  if (Win32Path_ToNarrow(g_Win32PathScratch[0],path) && DeleteFileA((LPCSTR)g_Win32PathScratch[0]) != 0) {
+  if (Win32Path_ToNarrow(g_Win32PathScratch[0],path) && DeleteFileA(Win32Path_ScratchText()) != 0) {
     return 0;
   }
   return FATAL_ERROR_FILE_ACCESS_FAILED;
@@ -371,14 +383,14 @@ uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags
   if (!Win32Path_ToNarrow(g_Win32PathScratch[0],path)) {
     return FATAL_ERROR_FILE_WRITE_FAILED;
   }
-  if (CreateDirectoryA((LPCSTR)g_Win32PathScratch[0],nullptr) != 0) {
+  if (CreateDirectoryA(Win32Path_ScratchText(),nullptr) != 0) {
     return 0;
   }
-  if ((flags & FILESYSTEM_CREATE_DIRECTORY_RECURSIVE) != 0) {
+  if (Any(flags & FileSystemCreateDirectoryFlags::FILESYSTEM_CREATE_DIRECTORY_RECURSIVE)) {
     WidePath_SplitParentAndLeaf(leafName,parentPath,path);
     if (Win32File_CreateDirectoryRecursive(flags,parentPath) == 0) {
       Win32Path_ToNarrow(g_Win32PathScratch[0],path); /* fitted above */
-      if (CreateDirectoryA((LPCSTR)g_Win32PathScratch[0],nullptr) != 0) {
+      if (CreateDirectoryA(Win32Path_ScratchText(),nullptr) != 0) {
         return 0; /* created after its parents */
       }
     }
@@ -392,14 +404,14 @@ uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags
 /* Whether the entry FindFirstFileA/FindNextFileA just stored in the scratch WIN32_FIND_DATAA belongs in
    the listing: files are neither directory nor volume label; directories are directories other than
    "." and "..". Any other mode matches nothing. */
-static Bool8 Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mode)
+static bool Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mode)
 
 {
-  if (mode == FILESYSTEM_ENUMERATE_FILES) {
+  if (mode == FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_FILES) {
     return (g_Win32FindDataScratch.dwFileAttributes &
             (FILE_ATTRIBUTE_DIRECTORY | FILESYSTEM_ATTRIBUTE_VOLUME_LABEL)) == 0;
   }
-  if (mode != FILESYSTEM_ENUMERATE_DIRECTORIES) {
+  if (mode != FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_DIRECTORIES) {
     return false;
   }
   if ((g_Win32FindDataScratch.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
@@ -414,13 +426,8 @@ static Bool8 Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mod
 static void Win32FileSystem_CopyEnumerationRecord(uint32_t *destination,const uint32_t *source)
 
 {
-  int dwordsRemaining;
 
-  for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
-    *destination = *source;
-    source++;
-    destination++;
-  }
+  std::copy_n(source,FILESYSTEM_ENUMERATION_RECORD_BYTES / 4,destination);
 }
 
 /* Fills outputRecords with 0x200-byte UTF-16 name records: the files (FILESYSTEM_ENUMERATE_FILES) or
@@ -445,34 +452,34 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
   uint32_t *leftRecordDwords;
   uint32_t *rightRecordDwords;
 
-  if (mode == FILESYSTEM_ENUMERATE_VOLUME_LABEL) {
+  if (mode == FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_VOLUME_LABEL) {
     g_Win32DriveRootPathScratchA[0] = *pathOrVolumeText; /* the drive letter of the "X:\" root path scratch */
     if (GetVolumeInformationA
-          (g_Win32DriveRootPathScratchA,(LPSTR)g_Win32PathScratch[0],128,nullptr,nullptr,nullptr,nullptr,0) == 0) {
+          (g_Win32DriveRootPathScratchA,Win32Path_ScratchText(),128,nullptr,nullptr,nullptr,nullptr,0) == 0) {
       return 0;
     }
     /* the check allows 0x100 bytes, but the copy may write a whole 0x200-byte record */
     if (255 < outputCapacityBytes) {
-      Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,(uint16_t *)outputRecords,g_Win32PathScratch[0]);
+      Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,reinterpret_cast<uint16_t *>(outputRecords),g_Win32PathScratch[0]);
       return 1;
     }
     return 0;
   }
-  Package_SetLastErrorPath((uint16_t *)pathOrVolumeText);
-  if (!Win32Path_ToNarrow(g_Win32PathScratch[0],(uint16_t *)pathOrVolumeText)) {
+  Package_SetLastErrorPath(reinterpret_cast<uint16_t *>(pathOrVolumeText));
+  if (!Win32Path_ToNarrow(g_Win32PathScratch[0],reinterpret_cast<uint16_t *>(pathOrVolumeText))) {
     return 0;
   }
-  findHandle = FindFirstFileA((LPCSTR)g_Win32PathScratch[0],&g_Win32FindDataScratch);
+  findHandle = FindFirstFileA(Win32Path_ScratchText(),&g_Win32FindDataScratch);
   if (findHandle == INVALID_HANDLE_VALUE) {
     return 0;
   }
   recordCount = 0;
-  destination = (uint16_t *)outputRecords;
+  destination = reinterpret_cast<uint16_t *>(outputRecords);
   do {
     if (Win32FileSystem_FoundEntryMatchesMode(mode) &&
         (FILESYSTEM_ENUMERATION_RECORD_BYTES - 1 < outputCapacityBytes)) {
       Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,destination,
-                             (uint8_t *)g_Win32FindDataScratch.cFileName);
+                             reinterpret_cast<uint8_t *>(g_Win32FindDataScratch.cFileName));
       destination = destination + FILESYSTEM_ENUMERATION_RECORD_BYTES / 2;
       recordCount++;
       outputCapacityBytes = outputCapacityBytes - FILESYSTEM_ENUMERATION_RECORD_BYTES;
@@ -484,14 +491,14 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
      are THANDOR_PATH_CAPACITY bytes and the FILESYSTEM_ENUMERATION_RECORD_BYTES record stays in the first) */
   if (1 < recordCount) {
     for (passesRemaining = recordCount - 1; passesRemaining != 0; passesRemaining--) {
-      leftRecordDwords = (uint32_t *)outputRecords;
-      rightRecordDwords = (uint32_t *)(outputRecords + FILESYSTEM_ENUMERATION_RECORD_BYTES);
+      leftRecordDwords = reinterpret_cast<uint32_t *>(outputRecords);
+      rightRecordDwords = reinterpret_cast<uint32_t *>(outputRecords + FILESYSTEM_ENUMERATION_RECORD_BYTES);
       for (comparisonsRemaining = passesRemaining; comparisonsRemaining != 0; comparisonsRemaining--) {
         if (Utf16String_CompareAsciiCaseInsensitiveFlags
-              ((uint16_t *)rightRecordDwords,(uint16_t *)leftRecordDwords) > 0) {
-          Win32FileSystem_CopyEnumerationRecord((uint32_t *)g_Win32PathScratch,rightRecordDwords);
+              (reinterpret_cast<uint16_t *>(rightRecordDwords),reinterpret_cast<uint16_t *>(leftRecordDwords)) > 0) {
+          Win32FileSystem_CopyEnumerationRecord(reinterpret_cast<uint32_t *>(g_Win32PathScratch),rightRecordDwords);
           Win32FileSystem_CopyEnumerationRecord(rightRecordDwords,leftRecordDwords);
-          Win32FileSystem_CopyEnumerationRecord(leftRecordDwords,(uint32_t *)g_Win32PathScratch);
+          Win32FileSystem_CopyEnumerationRecord(leftRecordDwords,reinterpret_cast<uint32_t *>(g_Win32PathScratch));
         }
         leftRecordDwords = leftRecordDwords + FILESYSTEM_ENUMERATION_RECORD_BYTES / 4;
         rightRecordDwords = rightRecordDwords + FILESYSTEM_ENUMERATION_RECORD_BYTES / 4;
@@ -520,7 +527,7 @@ uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *h
 /* Stores the size of a file (low 32 bits) in *outSize and returns true; returns false with *outSize 0
    when GetFileSize fails (some callers pass that 0 on as their error code).
 */
-Bool8 Win32File_GetSize(void *handle,uint32_t *outSize)
+bool Win32File_GetSize(void *handle,uint32_t *outSize)
 
 {
   DWORD fileSize;
@@ -540,14 +547,14 @@ Bool8 Win32File_GetSize(void *handle,uint32_t *outSize)
    original also passed on the copy's byte count, or FATAL_ERROR_GENERAL_FAILURE for a cut-off path, as
    the success value; no caller read it.)
 */
-Bool8 Win32File_GetCurrentDirectory(uint16_t *destination)
+bool Win32File_GetCurrentDirectory(uint16_t *destination)
 
 {
   DWORD narrowPathLength;
 
   /* open-thandor: a directory that does not fit counts as a failure (GetCurrentDirectoryA then returns the
      size it needs and leaves the buffer as it was; the original copied that stale content) */
-  narrowPathLength = GetCurrentDirectoryA(WIDE_PATH_MAX_CODE_UNITS - 1,(LPSTR)g_Win32PathScratch[0]);
+  narrowPathLength = GetCurrentDirectoryA(WIDE_PATH_MAX_CODE_UNITS - 1,Win32Path_ScratchText());
   if (narrowPathLength != 0 && narrowPathLength < WIDE_PATH_MAX_CODE_UNITS - 1) {
     Text_CopyNarrowToUtf16(WIDE_PATH_MAX_CODE_UNITS * sizeof(uint16_t),destination,g_Win32PathScratch[0]);
     return true;
@@ -565,7 +572,7 @@ uint32_t Win32File_SetCurrentDirectory(uint16_t *path)
 
 {
   Package_SetLastErrorPath(path);
-  if (Win32Path_ToNarrow(g_Win32PathScratch[0],path) && SetCurrentDirectoryA((LPCSTR)g_Win32PathScratch[0]) != 0) {
+  if (Win32Path_ToNarrow(g_Win32PathScratch[0],path) && SetCurrentDirectoryA(Win32Path_ScratchText()) != 0) {
     return 0;
   }
   return FATAL_ERROR_SET_DIRECTORY_FAILED;
@@ -590,8 +597,8 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
   if (!Win32Path_ToNarrow(g_Win32PathScratch[0],path)) {
     return FATAL_ERROR_FILE_ACCESS_FAILED;
   }
-  if ((openFlags & FILESYSTEM_OPEN_CREATE_OR_TRUNCATE) == 0) {
-    if ((openFlags & FILESYSTEM_OPEN_EXISTING_OR_CREATE) == 0) {
+  if (!Any(openFlags & FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE)) {
+    if (!Any(openFlags & FileSystemOpenFlags::FILESYSTEM_OPEN_EXISTING_OR_CREATE)) {
       creationDisposition = OPEN_EXISTING;
     }
     else {
@@ -601,8 +608,8 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
   else {
     creationDisposition = CREATE_ALWAYS;
   }
-  if ((openFlags & FILESYSTEM_OPEN_EXCLUSIVE_SHARE) == 0) {
-    if ((openFlags & FILESYSTEM_OPEN_CREATE_OR_TRUNCATE) == 0) {
+  if (!Any(openFlags & FileSystemOpenFlags::FILESYSTEM_OPEN_EXCLUSIVE_SHARE)) {
+    if (!Any(openFlags & FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE)) {
       shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
     }
     else {
@@ -612,13 +619,13 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
   else {
     shareMode = 0;
   }
-  if ((openFlags & (FILESYSTEM_OPEN_WRITE_ACCESS|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE)) == 0) {
+  if (!Any(openFlags & (FileSystemOpenFlags::FILESYSTEM_OPEN_WRITE_ACCESS | FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE))) {
     desiredAccess = GENERIC_READ;
   }
   else {
     desiredAccess = GENERIC_READ | GENERIC_WRITE;
   }
-  fileHandle = CreateFileA((LPCSTR)g_Win32PathScratch[0],desiredAccess,shareMode,nullptr,creationDisposition,
+  fileHandle = CreateFileA(Win32Path_ScratchText(),desiredAccess,shareMode,nullptr,creationDisposition,
                            FILE_FLAG_WRITE_THROUGH | FILE_ATTRIBUTE_NORMAL,nullptr);
   if (fileHandle != INVALID_HANDLE_VALUE) {
     *outHandle = fileHandle;

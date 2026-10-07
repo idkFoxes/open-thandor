@@ -17,10 +17,10 @@
 
 /* Layout of the one-image 'gfx' asset built by the screen captures (SdlVideo_CaptureRegion*): the table of the single
    source entry starts at byte 0x200, the ARGB8888 pixels at byte 0x220. */
-#define GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET 0x200
-#define GRAPHICS_CAPTURE_PIXELS_OFFSET 0x220
+inline constexpr int GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET = 0x200;
+inline constexpr int GRAPHICS_CAPTURE_PIXELS_OFFSET = 0x220;
 
-Bool8 GraphicsFramebuffer_BeginAccessStub();
+bool GraphicsFramebuffer_BeginAccessStub();
 
 void GraphicsFramebuffer_EndAccessStub();
 

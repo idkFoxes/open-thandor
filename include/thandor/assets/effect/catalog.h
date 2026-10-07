@@ -13,13 +13,13 @@
 #include <thandor/core/contracts.h>
 
 /* Slots of g_EffectDefinitionRegistry (256 pointers; a null slot is free). */
-#define EFFECT_DEFINITION_REGISTRY_SLOT_COUNT 256
+inline constexpr int EFFECT_DEFINITION_REGISTRY_SLOT_COUNT = 256;
 
-Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError);
+bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError);
 
 uint32_t EffectDefinitions_ResolveCrossReferences();
 
-Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError);
+bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError);
 
 EffectDefinition *EffectDefinitionRegistry_LookupById(PckEffectDefinitionIdCatalog definitionId);
 

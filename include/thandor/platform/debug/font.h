@@ -11,7 +11,7 @@
 /* Built-in 5x7 debug font, drawn through the fill slot (debug tools only). */
 
 /* Text colour (32 bits per pixel), and the box behind the text (opaque black) */
-#define DEBUG_FONT_TEXT_COLOR_32BPP 0xffffff40
+inline constexpr auto DEBUG_FONT_TEXT_COLOR_32BPP = 0xffffff40;
 #define DEBUG_FONT_BOX_COLOR_32BPP ARGB8888_ALPHA_MASK
 
 /* Draws text at (x0, y0) at 1x scale with a black box behind it, into the locked framebuffer

@@ -31,7 +31,7 @@ using UQ12 = unsigned int;
    since step 8.) A plain void * that only identifies a function by its address, such as the handler of the
    network command tables (network/protocol/commands.cpp), may still hold THANDOR_PTR(&function). */
 #include <thandor/core/ptr32.h> /* ThandorAnyPtr, Ptr32 */
-#define THANDOR_PTR(p) (ThandorAnyPtr{(void *)(p)})
+#define THANDOR_PTR(p) (Thandor_AnyPtr(p))
 
 /* A temporary of type T from a braced initializer: THANDOR_COMPOUND(T){a, b}. */
 #define THANDOR_COMPOUND(T) T
@@ -55,26 +55,24 @@ using UQ12 = unsigned int;
 #define THANDOR_ALIGN(n) __attribute__((aligned(n)))
 #endif
 
-#include <stddef.h> /* offsetof (THANDOR_UI_SIBLING) */
+#include <stddef.h>
 #include <thandor/core/x86_emulation.h>
 
 /* Address of `offset` bytes into an object, as an integer: for code that steps through a table or record by
    byte offsets like the original. */
-#define THANDOR_ADDR(object, offset) ((uintptr_t)&(object) + (int)(offset))
+#define THANDOR_ADDR(object, offset) (reinterpret_cast<uintptr_t>(&(object)) + static_cast<int>(offset))
 #include <thandor/generated/imports.h>
 
-/* A UI node at a byte offset from base: the variadic UiSelectableGroup_* helpers take the group's controls
-   as extra arguments, which the original addresses as base + byte offset. */
-#define THANDOR_UI_AT(base, offset) ((UiNodeBase *)((uint8_t *)(uintptr_t)(base) + (int)(offset)))
-
-/* A field of a UI node inside a template image copy (root + byte offset), for bytes past the node's
-   UiNodeBase; the node offsets are those of the template layouts (the *UiImage structs of the ui type headers). */
-#define THANDOR_UI_FIELD(base, offset, type) (*(type *)((uint8_t *)(uintptr_t)(base) + (int)(offset)))
-
-/* Node `node` of a UI template copy, reached from `self`, which is template node `selfNode` of the same
-   copy (ImageType is the template struct, e.g. InGameUiImage): the nodes' fixed distance in the template. */
-#define THANDOR_UI_SIBLING(self, ImageType, selfNode, node) \
-    THANDOR_UI_AT(self, (int)offsetof(ImageType, node) - (int)offsetof(ImageType, selfNode))
-
+/* The byte address base stands for (a pointer, an integer address or a Ptr32/UPtr32 field), as the former
+   C-style cast to a byte pointer did: through its integer value (uintptr_t). */
+template <class B> static __forceinline uint8_t *Thandor_AddressBytes(B base)
+{
+  if constexpr (std::is_pointer_v<B>) {
+    return reinterpret_cast<uint8_t *>(reinterpret_cast<uintptr_t>(base));
+  }
+  else {
+    return reinterpret_cast<uint8_t *>(static_cast<uintptr_t>(base));
+  }
+}
 
 #endif /* THANDOR_CORE_CONTRACTS_H */

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/resources/texture.h>
+#include <thandor/core/x86_emulation.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -57,8 +58,9 @@ GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
   size.logicalHeightPixels = 0;
   if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
      (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-    entry = (GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE +
-                                           (sourceAsset->tableDescriptor).subresourceTableOffset);
+    entry = reinterpret_cast<GraphicsTextureSourceEntry *>(GraphicsTextureSource_Bytes(sourceAsset) +
+                                                          subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE +
+                                                          (sourceAsset->tableDescriptor).subresourceTableOffset);
     size.logicalWidthPixels = entry->logicalWidth;
     size.logicalHeightPixels = entry->logicalHeight;
   }
@@ -71,7 +73,7 @@ GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
    alpha, for direct ARGB and paletted subresources alike. Returns false for transparent pixels, points
    outside the stored pixels and invalid input.
 */
-Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
+bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
@@ -92,8 +94,8 @@ Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Grap
     return false;
   }
   recordOffset = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE;
-  entry = (const GraphicsTextureSourceEntry *)
-          ((uint8_t *)sourceAsset + recordOffset + (sourceAsset->tableDescriptor).subresourceTableOffset);
+  entry = reinterpret_cast<const GraphicsTextureSourceEntry *>(GraphicsTextureSource_Bytes(sourceAsset) + recordOffset +
+                                                                (sourceAsset->tableDescriptor).subresourceTableOffset);
   /* query point relative to the stored pixels, which start at (originX, originY) of the sprite */
   localX = (queryX - drawX) - entry->originX;
   if (entry->originX > queryX - drawX) {
@@ -108,14 +110,14 @@ Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Grap
   }
   paletteIndex = entry->paletteIndex;
   pixelIndex = localY * entry->pixelWidth + localX;
-  pixels = (const uint8_t *)sourceAsset + entry->dataOffset;
+  pixels = GraphicsTextureSource_Bytes(sourceAsset) + entry->dataOffset;
   /* opaque = any alpha bit set in the ARGB8888 pixel (direct) or palette entry (paletted, 8 bytes each in
      the 256-entry bank at asset + 0x200 + paletteIndex * 0x800) */
   if (paletteIndex == -1) {
-    return ARGB8888_RGB_MASK < ((const uint32_t *)pixels)[pixelIndex];
+    return ARGB8888_RGB_MASK < Thandor_LoadU32(pixels + static_cast<ptrdiff_t>(pixelIndex) * 4);
   }
   return ARGB8888_RGB_MASK <
-         ((GraphicsPaletteTextureSourceAsset *)sourceAsset)->paletteEntries
+         reinterpret_cast<GraphicsPaletteTextureSourceAsset *>(sourceAsset)->paletteEntries /* palette-texture view */
                     [(int32_t)(paletteIndex * GRAPHICS_PALETTE_BANK_ENTRIES + (uint32_t)pixels[pixelIndex])].argb8888;
 }
 
@@ -131,7 +133,7 @@ Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Grap
    passes.
    The original used the header unchecked; checked here because a malformed package entry made the palette
    conversion, the blits, the rasterizer and the hit test read or write outside the asset. */
-Bool8 GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sourceAsset)
+bool GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sourceAsset)
 
 {
   const GraphicsTextureSourceEntry *entry;
@@ -156,8 +158,7 @@ Bool8 GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sour
                 (sourceAsset->tableDescriptor).subresourceTableOffset);
     return false;
   }
-  entry = (const GraphicsTextureSourceEntry *)
-          ((const uint8_t *)sourceAsset + (sourceAsset->tableDescriptor).subresourceTableOffset);
+  entry = GraphicsTextureSource_Entries(sourceAsset);
   for (entryIndex = 0; entryIndex < subresourceCount; entryIndex++, entry++) {
     pixelBytes = (uint64_t)entry->pixelWidth * entry->pixelHeight;
     if (entry->paletteIndex == -1) {
@@ -188,17 +189,20 @@ Bool8 GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sour
 GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16,uint32_t *outError)
 
 {
+  void *loadedBlock;
   GraphicsPaletteTextureSourceAsset *loadedSource;
   uint32_t loadError;
 
-  loadedSource = (GraphicsPaletteTextureSourceAsset *)Package_LoadEntry(pathUtf16,&loadError);
+  /* the loaded block is read through both views, the texture source and the palette texture */
+  loadedBlock = Package_LoadEntry(pathUtf16,&loadError);
+  loadedSource = static_cast<GraphicsPaletteTextureSourceAsset *>(loadedBlock);
   if (loadedSource != nullptr) {
     loadError = FATAL_ERROR_GFX_ASSET_INVALID;
-    if (GraphicsTextureSource_ValidateAsset((GraphicsTextureSourceAsset *)loadedSource)) {
+    if (GraphicsTextureSource_ValidateAsset(static_cast<GraphicsTextureSourceAsset *>(loadedBlock))) {
       loadError = g_GraphicsTextureSourceConvertPaletteEntries(loadedSource);
     }
     if (loadError == 0) {
-      return (GraphicsTextureSourceAsset *)loadedSource;
+      return static_cast<GraphicsTextureSourceAsset *>(loadedBlock);
     }
     Resource_Release(loadedSource);
   }
@@ -219,6 +223,7 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsPaletteTextureSourceAsset *clonedAsset;
+  void *cloneBlock;
   uint32_t allocationSizeBytes;
   uint32_t dwordsRemaining;
   const uint32_t *sourceDword;
@@ -226,23 +231,25 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
   uint32_t cloneAllocationError;
 
   allocationSizeBytes = (sourceAsset->common).allocationSizeBytes;
-  cloneAllocationError = g_MemoryApi.alloc(allocationSizeBytes,(void **)&clonedAsset);
+  cloneAllocationError = g_MemoryApi.alloc(allocationSizeBytes,&cloneBlock);
   if (cloneAllocationError != 0) {
-    return (GraphicsTextureSourceAsset *)(uintptr_t)cloneAllocationError;
+    /* Original quirk: a failed allocation returns its error code as the asset pointer */
+    return reinterpret_cast<GraphicsTextureSourceAsset *>(static_cast<uintptr_t>(cloneAllocationError));
   }
+  clonedAsset = static_cast<GraphicsPaletteTextureSourceAsset *>(cloneBlock);
   /* copy the whole allocation dword by dword (a trailing partial dword is not copied) */
-  sourceDword = (const uint32_t *)sourceAsset;
-  cloneDword = (uint32_t *)clonedAsset;
+  sourceDword = reinterpret_cast<const uint32_t *>(sourceAsset);
+  cloneDword = static_cast<uint32_t *>(cloneBlock);
   for (dwordsRemaining = allocationSizeBytes >> 2; dwordsRemaining != 0; dwordsRemaining--) {
     *cloneDword = *sourceDword;
     sourceDword++;
     cloneDword++;
   }
   if (g_GraphicsTextureSourceConvertPaletteEntries(clonedAsset) == 0) {
-    return (GraphicsTextureSourceAsset *)clonedAsset;
+    return static_cast<GraphicsTextureSourceAsset *>(cloneBlock);
   }
   /* Original quirk: the clone's result after a failed conversion is the free's status (0 = NULL) */
-  return (GraphicsTextureSourceAsset *)(uintptr_t)g_MemoryApi.free(clonedAsset);
+  return reinterpret_cast<GraphicsTextureSourceAsset *>(static_cast<uintptr_t>(g_MemoryApi.free(clonedAsset)));
 }
 
 
@@ -265,11 +272,11 @@ uint32_t GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourc
     for (paletteEntriesRemaining = sourceAsset->paletteBankCount << 8; paletteEntriesRemaining != 0;
         paletteEntriesRemaining--) {
       argb8888 = paletteEntryCursor->argb8888;
-      /* the red and green shifts yield byte offsets into the dword tables (channel value * 4) */
+      /* the original shifts red and green to byte offsets into the dword tables (channel value * 4) */
       paletteEntryCursor->framebufferPixel =
            (argb8888 & ARGB8888_ALPHA_MASK) +
-           *(int *)((uintptr_t)g_SoftwarePixelPackTables->red + ((argb8888 & ARGB8888_RED_MASK) >> 14)) +
-           *(int *)((uintptr_t)g_SoftwarePixelPackTables->green + ((argb8888 & ARGB8888_GREEN_MASK) >> 6)) +
+           static_cast<int>(g_SoftwarePixelPackTables->red[(argb8888 & ARGB8888_RED_MASK) >> 16]) +
+           static_cast<int>(g_SoftwarePixelPackTables->green[(argb8888 & ARGB8888_GREEN_MASK) >> 8]) +
            g_SoftwarePixelPackTables->blue[argb8888 & ARGB8888_BLUE_MASK];
       paletteEntryCursor++;
     }

@@ -16,7 +16,7 @@
    `cell` is split along the diagonal from its right neighbour (cell[1]) to its lower neighbour
    (cell[rowLength]): columnFraction + rowFraction < 1 is the triangle (cell, right, lower), otherwise
    (lower-right, lower, right). */
-typedef struct FieldGridTriangleLookup {
+struct FieldGridTriangleLookup {
   FieldGridCell *cell; /* top-left cell of the grid square */
   FieldGridDimension rowLength;
   uint32_t columnFractionQ12;
@@ -24,13 +24,13 @@ typedef struct FieldGridTriangleLookup {
      on a border cell. */
   uint32_t rowFractionQ12;
   int diagonalWeightQ12; /* columnFraction + rowFraction - 1 */
-} FieldGridTriangleLookup;
+};
 
 /* Snaps a world position to the nearest grid vertex (cell): *outPoint receives that cell's worldX, worldY and
    terrain height and true is returned. Outside the grid false is returned and *outPoint is the input position
    with height 0 (always written).
 */
-Bool8 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
+bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
 
 {
   int gridColumnIndex;
@@ -38,7 +38,7 @@ Bool8 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *fie
   uint32_t gridHalfRowCoordinateQ12;
   int gridRowIndex;
   Q12 terrainHeightQ12;
-  Bool8 outOfBounds;
+  bool outOfBounds;
 
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
   gridHalfRowCoordinateQ12 =
@@ -69,7 +69,7 @@ Bool8 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *fie
    Outside the grid false is returned and *outPoint is the input position with height 0 (always written).
    Used by SelectionOverlay_DrawWorldPointMarker.
 */
-Bool8 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
+bool FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
 
 {
   int gridColumnIndex;
@@ -77,7 +77,7 @@ Bool8 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *
   int surfaceHeightQ12;
   uint32_t gridHalfRowCoordinateQ12;
   int gridRowIndex;
-  Bool8 outOfBounds;
+  bool outOfBounds;
 
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
   gridHalfRowCoordinateQ12 =
@@ -134,7 +134,7 @@ int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
    diagonal neighbour is a border cell. Entries 0, 2 and 3 of g_FieldGridInterpolationCallbacks5; also called directly by
    ArmyPlacementContact_ApplyTerrainHeight and the army movement code.
 */
-Bool8 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
+bool FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   uint32_t gridHalfRowCoordinateQ12;
@@ -164,8 +164,8 @@ Bool8 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAs
   cell = fieldGrid->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
-      (cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+      Any(cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     *outHeightQ12 = 0;
     return false;
   }
@@ -221,8 +221,8 @@ int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fi
   cell = field->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
-      (cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+      Any(cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return 0;
   }
   triangleDiagonalWeightQ12 = (columnFractionQ12 + rowFractionQ12) - FIELD_GRID_CELL_Q12;
@@ -248,7 +248,7 @@ int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fi
    g_FieldGridInterpolationCallbacks5; also called directly by
    ArmyPlacementContact_ApplyWaterSurfaceHeight.
 */
-Bool8 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
+bool FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   int gridColumnIndex;
@@ -278,8 +278,8 @@ Bool8 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldG
   cell = fieldGrid->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
-  if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
-      ((cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0)) {
+  if ((Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) ||
+      (Any(cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK))) {
     *outHeightQ12 = 0;
     return false;
   }
@@ -309,7 +309,7 @@ Bool8 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldG
    interpolation table (entry 4 of g_FieldGridInterpolationCallbacks5). Stores the Q12 height in
    *outHeightQ12; returns false (and stores height 0) outside the grid or on a border cell.
 */
-Bool8 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
+bool FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   uint32_t gridHalfRowCoordinateQ12;
@@ -344,8 +344,8 @@ Bool8 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGri
   cell = fieldGrid->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
-      (cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+      Any(cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     *outHeightQ12 = 0;
     return false;
   }
@@ -383,7 +383,7 @@ Bool8 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGri
 
 /* Finds the grid square under (worldYQ12, worldXQ12) and the fractions inside it. Returns false outside the
    grid or when the square's top-left or lower-right corner is a border cell. */
-static Bool8 FieldGrid_LocateInterpolationTriangle
+static bool FieldGrid_LocateInterpolationTriangle
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,FieldGridTriangleLookup *lookup)
 {
   uint32_t rowQ12;
@@ -410,8 +410,8 @@ static Bool8 FieldGrid_LocateInterpolationTriangle
   cell = fieldGrid->cells + (int32_t)(row * rowLength) + column;
   lookup->columnFractionQ12 = columnQ12 & Q12_FRACTION_MASK;
   lookup->rowFractionQ12 = rowQ12 & Q12_FRACTION_MASK;
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
-      (cell[rowLength + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+      Any(cell[rowLength + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return false;
   }
   lookup->cell = cell;
@@ -489,7 +489,7 @@ static uint32_t FieldGrid_BlendTriangleNormals
    Returns false (outputs untouched) outside the grid or on a border cell. Used by the articulated army contact
    code (ArmyArticulatedRuntime_UpdateLeftTerrainContact, ..RightTerrainContact and their siblings).
 */
-Bool8 FieldGrid_InterpolateTerrainHeightAndNormal
+bool FieldGrid_InterpolateTerrainHeightAndNormal
           (Q12 worldY,Q12 worldX,FieldGridAsset *field,Q12 *outHeightQ12,uint32_t *outPackedNormalAngles)
 
 {
@@ -520,7 +520,7 @@ Bool8 FieldGrid_InterpolateTerrainHeightAndNormal
    ArmyPlacement_TestGridRuntimeAndFieldBlocking, ..CanPlaceMobileUnit, ..CanPlaceBuilding and
    ArmyPlacementCollision_TestCurrentRuntime with the owner army's faction index.
 */
-Bool8 FieldGrid_TestWorldPointBlocked
+bool FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           )
 
@@ -542,7 +542,7 @@ Bool8 FieldGrid_TestWorldPointBlocked
     return true;
   }
   occupancyByte =
-       ((uint8_t *)&fieldGrid->cells[(int32_t)(fieldGrid->gridWidth * gridRowIndex + gridColumnIndex)].occupancyMask)[factionSlot];
+       FieldGridCell_OccupancyByte(&fieldGrid->cells[(int32_t)(fieldGrid->gridWidth * gridRowIndex + gridColumnIndex)],factionSlot);
   return (occupancyByte & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0;
 }
 

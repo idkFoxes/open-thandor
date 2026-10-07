@@ -41,7 +41,7 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
   int fillEndX;
   uint32_t divisionRemainder;
   uint16_t *commandStream;
-  Bool8 beginAccessFailed;
+  bool beginAccessFailed;
   GraphicsTextureLogicalSize textureSize;
 
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();
@@ -170,13 +170,13 @@ void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
     control->minimumValue = 0;
     control->maximumValue = minimumProgress;
     /* the clients follow the host's own block 0 */
-    do {
+    while (remainingPlayers != 0) {
       if ((int)playerRecord[1].transferProgressBytes < (int)minimumProgress) {
         minimumProgress = playerRecord[1].transferProgressBytes;
       }
       remainingPlayers--;
       playerRecord = playerRecord + 1;
-    } while (remainingPlayers != 0);
+    }
     control->value = minimumProgress;
     if (control->maximumValue <= minimumProgress) {
       return;

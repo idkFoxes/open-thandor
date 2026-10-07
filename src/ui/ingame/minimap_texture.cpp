@@ -12,10 +12,18 @@
 #include <thandor/thandor.h>
 #include <thandor/core/color_lanes.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
 static TerrainCompositeTextureRuntime *g_TerrainCompositeTexture = nullptr;
+
+/* The palette view of the in-game panel texture source (a palette gfx asset: the palette banks follow the
+   0x200-byte header). */
+static inline GraphicsPaletteTextureSourceAsset *TerrainMinimap_PanelPalette(GraphicsTextureSourceAsset *panelTextureSource)
+{
+  return reinterpret_cast<GraphicsPaletteTextureSourceAsset *>(panelTextureSource); /* same asset, palette view */
+}
 
 /* Adds each byte of pixel to the matching 16-bit lane of words and halves the sum: per channel the average of
    the new colour and the pixel already in the plane (used to blend water over the ground colour). */
@@ -37,7 +45,7 @@ static inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,ui
    planes 1 and 2 and then derives plane 0 from them. Returns true on success; on failure returns false and
    stores the allocator error in *outError (untouched on success).
 */
-Bool8 TerrainCompositeTexture_Create(uint32_t *outError)
+bool TerrainCompositeTexture_Create(uint32_t *outError)
 
 {
   FieldGridAsset *terrainFieldGrid;
@@ -57,7 +65,7 @@ Bool8 TerrainCompositeTexture_Create(uint32_t *outError)
   /* layout: 0x200-byte gfx header, three 0x20-byte source entries (pixels from 0x260), three planes of
      width * height * 4 bytes */
   allocError = g_MemoryApi.alloc(fieldWidth * (3 * 4) * fieldHeight + TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET,
-                                 (void **)&compositeTexture);
+                                 reinterpret_cast<void **>(&compositeTexture));
   if (allocError != 0) {
     *outError = allocError;
     return false;
@@ -131,7 +139,7 @@ void TerrainCompositeTexture_FillPlane1()
   GraphicsTextureSourceAsset *panelTextureSource;
   int lightingLevelIndex;
   AssetDimension columnsRemaining;
-  uint8_t *planePixelCursor;
+  uint32_t *planePixelCursor;
   FieldGridCell *fieldCell;
   uint64_t litGroundWords;
   uint64_t litWaterWords;
@@ -140,15 +148,16 @@ void TerrainCompositeTexture_FillPlane1()
   panelTextureSource = g_InGamePanelTextureSource;
   textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
   rowsRemaining = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  planePixelCursor = (uint8_t *)g_TerrainCompositeTexture + g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
-  panelSubresourceIndex = ((GraphicsTextureSourceEntry *)((uint8_t *)g_InGamePanelTextureSource + (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset))[36].paletteIndex;
+  planePixelCursor = Thandor_At<uint32_t>(g_TerrainCompositeTexture,g_TerrainCompositeTexture->sourceEntries[1].dataOffset);
+  panelSubresourceIndex = GraphicsTextureSource_Entries(g_InGamePanelTextureSource)[36].paletteIndex;
   fieldCell = ((g_InGameRuntimeRoot->worldRuntime).fieldGrid)->cells;
   columnsRemaining = textureWidth;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       if (fieldCell->waterSurfaceDelta < 1) {
         lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-        materialColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK)].argb8888;
+        materialColorArgb = TerrainMinimap_PanelPalette(panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + FieldCell_MaterialId(fieldCell->flagsAndMaterial)].argb8888;
         if (lightingLevelIndex < 0) {
           lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
         }
@@ -162,7 +171,7 @@ void TerrainCompositeTexture_FillPlane1()
         litGroundWords =
              pmulhw(ColorLanes_UnpackBytesShiftRight(materialColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litGroundWords);
+        *planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litGroundWords);
       }
       else {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
@@ -181,10 +190,10 @@ void TerrainCompositeTexture_FillPlane1()
         litWaterWords =
              pmulhw(ColorLanes_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litWaterWords);
+        *planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litWaterWords);
       }
       fieldCell++;
-      planePixelCursor = planePixelCursor + 4;
+      planePixelCursor = planePixelCursor + 1;
       columnsRemaining--;
     } while (columnsRemaining != 0);
     rowsRemaining--;
@@ -209,7 +218,7 @@ void TerrainCompositeTexture_FillPlane2()
   GraphicsTextureSourceAsset *panelTextureSource;
   int lightingLevelIndex;
   AssetDimension columnsRemaining;
-  uint8_t *planePixelCursor;
+  uint32_t *planePixelCursor;
   FieldGridCell *fieldCell;
   uint64_t litXeniteWords;
   uint64_t litTritiumWords;
@@ -220,16 +229,17 @@ void TerrainCompositeTexture_FillPlane2()
   panelTextureSource = g_InGamePanelTextureSource;
   textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
   rowsRemaining = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  planePixelCursor = (uint8_t *)g_TerrainCompositeTexture + g_TerrainCompositeTexture->sourceEntries[2].dataOffset;
-  panelSubresourceIndex = ((GraphicsTextureSourceEntry *)((uint8_t *)g_InGamePanelTextureSource + (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset))[36].paletteIndex;
+  planePixelCursor = Thandor_At<uint32_t>(g_TerrainCompositeTexture,g_TerrainCompositeTexture->sourceEntries[2].dataOffset);
+  panelSubresourceIndex = GraphicsTextureSource_Entries(g_InGamePanelTextureSource)[36].paletteIndex;
   fieldCell = ((g_InGameRuntimeRoot->worldRuntime).fieldGrid)->cells;
   columnsRemaining = textureWidth;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
-      if ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
-        if ((fieldCell->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT) == 0) {
+      if (!Any(fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT)) {
+        if (!Any(fieldCell->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT)) {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-          soilColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_SOIL].argb8888;
+          soilColorArgb = TerrainMinimap_PanelPalette(panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_SOIL].argb8888;
           if (lightingLevelIndex < 0) {
             lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
           }
@@ -242,11 +252,11 @@ void TerrainCompositeTexture_FillPlane2()
           litSoilWords =
                pmulhw(ColorLanes_UnpackBytesShiftRight(soilColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litSoilWords);
+          *planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litSoilWords);
         }
         else {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-          tritiumColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_TRITIUM].argb8888;
+          tritiumColorArgb = TerrainMinimap_PanelPalette(panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_TRITIUM].argb8888;
           if (lightingLevelIndex < 0) {
             lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
           }
@@ -259,12 +269,12 @@ void TerrainCompositeTexture_FillPlane2()
           litTritiumWords =
                pmulhw(ColorLanes_UnpackBytesShiftRight(tritiumColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litTritiumWords);
+          *planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litTritiumWords);
         }
       }
       else {
         lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-        xeniteColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_XENITE].argb8888;
+        xeniteColorArgb = TerrainMinimap_PanelPalette(panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_XENITE].argb8888;
         if (lightingLevelIndex < 0) {
           lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
         }
@@ -277,7 +287,7 @@ void TerrainCompositeTexture_FillPlane2()
         litXeniteWords =
              pmulhw(ColorLanes_UnpackBytesShiftRight(xeniteColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litXeniteWords);
+        *planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litXeniteWords);
       }
       if (0 < fieldCell->waterSurfaceDelta) {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
@@ -293,17 +303,17 @@ void TerrainCompositeTexture_FillPlane2()
         else {
           lightingLevelIndex = TERRAIN_MINIMAP_WATER_LIGHT_LAST;
         }
-        existingPixelArgb = *(uint32_t *)planePixelCursor;
+        existingPixelArgb = *planePixelCursor;
         litWaterWords =
              pmulhw(ColorLanes_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
         /* averaged with the pixel already in the plane, packed with saturation */
-        *(uint32_t *)planePixelCursor =
+        *planePixelCursor =
              ColorLanes_PackWordsUnsignedSaturate
                        (TerrainColor_AverageWordsWithPixelBytes(litWaterWords,existingPixelArgb));
       }
       fieldCell++;
-      planePixelCursor = planePixelCursor + 4;
+      planePixelCursor = planePixelCursor + 1;
       columnsRemaining--;
     } while (columnsRemaining != 0);
     rowsRemaining--;
@@ -336,18 +346,18 @@ void TerrainCompositeTexture_RebuildPlane0()
   int gridColumn;
   int gridRow;
   int64_t roundedRowQ12;
-  Bool8 rowRoundingOverflows;
+  bool rowRoundingOverflows;
   uint32_t colorVariant;
   AssetRelativeOffset assetOffset;
-  uint8_t *pixelCursor;
+  uint32_t *pixelCursor;
   FieldGridCell *fieldCell;
-  uint8_t *plane0Pixels;
-  uint8_t *plane0WriteCursor;
-  Bool8 notSelected;
+  uint32_t *plane0Pixels;
+  uint32_t *plane0WriteCursor;
+  bool notSelected;
   FieldGridCoordinates gridCoordinates;
 
   inGameRoot = g_InGameRuntimeRoot;
-  if ((g_InGameRuntimeRoot->minimapResourceButtonStateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any(g_InGameRuntimeRoot->minimapResourceButtonStateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     assetOffset = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
   }
   else {
@@ -355,31 +365,32 @@ void TerrainCompositeTexture_RebuildPlane0()
   }
   textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
   textureHeight = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  plane0Pixels = (uint8_t *)g_TerrainCompositeTexture + g_TerrainCompositeTexture->sourceEntries[0].dataOffset;
+  plane0Pixels = Thandor_At<uint32_t>(g_TerrainCompositeTexture,g_TerrainCompositeTexture->sourceEntries[0].dataOffset);
   cellCount = textureWidth * textureHeight;
-  pixelCursor = (uint8_t *)g_TerrainCompositeTexture + assetOffset;
+  pixelCursor = Thandor_At<uint32_t>(g_TerrainCompositeTexture,assetOffset);
   plane0WriteCursor = plane0Pixels;
   for (copyRemaining = cellCount; copyRemaining != 0; copyRemaining--) {
-    *(uint32_t *)plane0WriteCursor = *(uint32_t *)pixelCursor;
-    pixelCursor = pixelCursor + 4;
-    plane0WriteCursor = plane0WriteCursor + 4;
+    *plane0WriteCursor = *pixelCursor;
+    pixelCursor = pixelCursor + 1;
+    plane0WriteCursor = plane0WriteCursor + 1;
   }
   activeFactionIndex = (inGameRoot->worldRuntime).activeFactionRuntimeIndex;
   fieldCell = ((inGameRoot->worldRuntime).fieldGrid)->cells;
   pixelCursor = plane0Pixels;
   cellsRemaining = cellCount;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
-    visibilityFlags = ((uint8_t *)&fieldCell->occupancyMask)[activeFactionIndex];
+    visibilityFlags = FieldGridCell_OccupancyByte(fieldCell,activeFactionIndex);
     pixelArgb = (uint32_t)visibilityFlags;
     if ((visibilityFlags & FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) == 0) {
       if ((visibilityFlags & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) {
         /* seen before: halve every channel */
-        pixelArgb = (*(uint32_t *)pixelCursor & TERRAIN_ARGB_HALVE_MASK) >> 1;
+        pixelArgb = (*pixelCursor & TERRAIN_ARGB_HALVE_MASK) >> 1;
       }
-      *(uint32_t *)pixelCursor = pixelArgb;
+      *pixelCursor = pixelArgb;
     }
     fieldCell++;
-    pixelCursor = pixelCursor + 4;
+    pixelCursor = pixelCursor + 1;
     cellsRemaining--;
   } while (cellsRemaining != 0);
   for (ownerNode = (inGameRoot->worldRuntime).ownerListHead; ownerNode != nullptr;
@@ -396,7 +407,7 @@ void TerrainCompositeTexture_RebuildPlane0()
       rowRoundingOverflows = INT32_MAX < roundedRowQ12;
       if (((gridColumn < 0) == rowRoundingOverflows) && (roundedRowQ12 >= 0) &&
           (gridColumn < (int)textureWidth) && (gridRow < (int)textureHeight)) {
-        ownerEntity = (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+        ownerEntity = ModelView_Cast<GameEntityRuntime>(WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
         colorVariant = g_GameFactionRuntimeImage.records[(ownerEntity->common).ownership.ownerIndex].
                  colorIndex;
         assetOffset = (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset;
@@ -409,13 +420,13 @@ void TerrainCompositeTexture_RebuildPlane0()
           /* Original quirk: the bank is scaled by 4 entries (paletteIndex * 4), not by a whole
              bank like in FillPlane1/FillPlane2, so only bank 0 gives the right colour. Harmless:
              subresource 36 of panel0/1/2.gfx uses bank 0. */
-          pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[(int32_t)(TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST +((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant)].argb8888;
+          pixelArgb = TerrainMinimap_PanelPalette(g_InGamePanelTextureSource)->paletteEntries[(int32_t)(TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST +Thandor_At<GraphicsTextureSourceEntry>(panelTextureSource,assetOffset)[36].paletteIndex * 4 + colorVariant)].argb8888;
           if (ownerNode->modelTintArgb < ARGB8888_ALPHA_MASK) {
             pixelArgb = ((pixelArgb & TERRAIN_ARGB_HALVE_MASK) +
-                         (*(uint32_t *)(plane0Pixels + (int32_t)((gridRow * textureWidth + gridColumn) * 4)) &
+                         (*Thandor_At<uint32_t>(plane0Pixels,(int32_t)((gridRow * textureWidth + gridColumn) * 4)) &
                           TERRAIN_ARGB_HALVE_MASK)) >> 1;
           }
-          *(uint32_t *)(plane0Pixels + (int32_t)((gridRow * textureWidth + gridColumn) * 4)) = pixelArgb;
+          *Thandor_At<uint32_t>(plane0Pixels,(int32_t)((gridRow * textureWidth + gridColumn) * 4)) = pixelArgb;
         }
       }
     }

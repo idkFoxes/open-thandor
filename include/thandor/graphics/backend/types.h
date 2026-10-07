@@ -14,19 +14,19 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/ui/frontend/types.h>
 
-typedef struct GraphicsDisplayMode GraphicsDisplayMode, *PGraphicsDisplayMode;
-typedef struct SoftwarePixelFormatConfig SoftwarePixelFormatConfig, *PSoftwarePixelFormatConfig;
-typedef struct SoftwareRasterScalarMmxLane SoftwareRasterScalarMmxLane, *PSoftwareRasterScalarMmxLane;
-typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess, *PSoftwareFramebufferAccess;
-typedef struct SoftwarePixelPackTables SoftwarePixelPackTables, *PSoftwarePixelPackTables;
-typedef struct SoftwareRasterTextureAddressState SoftwareRasterTextureAddressState, *PSoftwareRasterTextureAddressState;
-typedef struct SoftwareRasterTexCoordFixed2 SoftwareRasterTexCoordFixed2, *PSoftwareRasterTexCoordFixed2;
-typedef struct SoftwareRasterScanState SoftwareRasterScanState, *PSoftwareRasterScanState;
-typedef struct SoftwareRasterColorFixed4 SoftwareRasterColorFixed4, *PSoftwareRasterColorFixed4;
+struct GraphicsDisplayMode;
+struct SoftwarePixelFormatConfig;
+struct SoftwareRasterScalarMmxLane;
+struct SoftwareFramebufferAccess;
+struct SoftwarePixelPackTables;
+struct SoftwareRasterTextureAddressState;
+struct SoftwareRasterTexCoordFixed2;
+struct SoftwareRasterScanState;
+struct SoftwareRasterColorFixed4;
 
 /* Display-mode switch slot (g_GraphicsSetDisplayMode and its chained hooks): true on success; on failure
    returns false and stores the error code (or message) in *errorCode, which is left untouched on success. */
-using SoftwareDisplayModeHookProc = Bool8 (uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
+using SoftwareDisplayModeHookProc = bool (uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
 
 enum {
     SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT=4
@@ -80,6 +80,12 @@ struct SoftwareFramebufferAccess {
     SoftwareFramebufferPixelSize bytesPerPixel; 
     Ptr32<uint8_t> pixels; 
 };
+
+/* The pixels of a 4-byte framebuffer as ARGB dwords (the pixel block is dword aligned). */
+static inline uint32_t *SoftwareFramebuffer_Pixels32(const SoftwareFramebufferAccess *framebuffer)
+{
+    return reinterpret_cast<uint32_t *>(framebuffer->pixels.get()); /* 32-bit pixels of the byte block */
+}
 
 struct SoftwarePixelPackTables {
     uint32_t blue[256]; 

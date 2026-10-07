@@ -7,6 +7,7 @@
 
 #include <thandor/assets/sprite/catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
@@ -61,32 +62,32 @@ uint32_t SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
   asset->registryHeader.previousRegistryAsset = g_SpriteAssetRegistryHead;
   g_SpriteAssetRegistryHead = asset;
 
-  groupRelocationCursor = (SprGroupRelocationHeader *)(asset + 1);
+  groupRelocationCursor = Asset_RecordAfter<SprGroupRelocationHeader>(asset);
   for (groupsRemaining = asset->registryHeader.groupCount; groupsRemaining != 0; groupsRemaining--) {
-    relocationBlockCursor = (SprRelocationBlockHeader *)(groupRelocationCursor + 1);
+    relocationBlockCursor = Asset_RecordAfter<SprRelocationBlockHeader>(groupRelocationCursor);
     for (relocationBlocksRemaining = groupRelocationCursor->relocationBlockCount;
          relocationBlocksRemaining != 0; relocationBlocksRemaining--) {
       /* the pointer records follow the block header and its fixed records (both 0x40 bytes) */
-      pointerRelocationCursor = (SprPointerRelocationRecord *)(relocationBlockCursor + 1) +
+      pointerRelocationCursor = Asset_RecordAfter<SprPointerRelocationRecord>(relocationBlockCursor) +
                                 relocationBlockCursor->fixedRecordCount;
       for (pointerRecordsRemaining = relocationBlockCursor->pointerRelocationCount;
            pointerRecordsRemaining != 0; pointerRecordsRemaining--) {
         /* asset start + serialized offset */
         pointerRelocationCursor->pointerOrSerializedOffset00 =
-             Thandor_PointerToU32((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset00); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset00 */
+             Thandor_PointerToU32(Asset_RecordAt(asset,pointerRelocationCursor->pointerOrSerializedOffset00)); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset00 */
         pointerRelocationCursor->pointerOrSerializedOffset0C =
-             Thandor_PointerToU32((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset0C); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset0C */
+             Thandor_PointerToU32(Asset_RecordAt(asset,pointerRelocationCursor->pointerOrSerializedOffset0C)); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset0C */
         pointerRelocationCursor->pointerOrSerializedOffset18 =
-             Thandor_PointerToU32((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset18); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset18 */
+             Thandor_PointerToU32(Asset_RecordAt(asset,pointerRelocationCursor->pointerOrSerializedOffset18)); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset18 */
         pointerRelocationCursor++;
       }
       /* advance by the block's leading byte size */
-      relocationBlockCursor = (SprRelocationBlockHeader *)
-           ((uint8_t *)relocationBlockCursor + relocationBlockCursor->blockByteSize);
+      relocationBlockCursor =
+           Asset_RecordAt<SprRelocationBlockHeader>(relocationBlockCursor,relocationBlockCursor->blockByteSize);
     }
     /* advance by the group's leading byte size */
-    groupRelocationCursor = (SprGroupRelocationHeader *)
-         ((uint8_t *)groupRelocationCursor + groupRelocationCursor->nextGroupByteOffset);
+    groupRelocationCursor =
+         Asset_RecordAt<SprGroupRelocationHeader>(groupRelocationCursor,groupRelocationCursor->nextGroupByteOffset);
   }
   return 0;
 }
@@ -103,32 +104,37 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
   uint32_t copyDwordsRemaining;
   int blocksRemaining;
   int recordsRemaining;
-  SpriteAssetHeader *sourceCursor;
+  const AssetMagic *sourceCursor; /* the relocated asset read as dwords */
+  SpriteAssetHeader *destinationHeader;
   SprRelocationBlockHeader *blockCursor;
   SprGroupRelocationHeader *groupCursor;
   AssetMagic *destinationCursor;
   int *recordCursor; /* 0x40-byte records (0x10 dwords) behind the block header */
   int groupsRemaining;
 
-  sourceCursor = relocatedSourceImage;
-  destinationCursor = (AssetMagic *)serializedDestination;
+  sourceCursor = &relocatedSourceImage->registryHeader.common.magic; /* the asset's first dword */
+  destinationHeader = static_cast<SpriteAssetHeader *>(serializedDestination);
+  destinationCursor = &destinationHeader->registryHeader.common.magic;
   /* dword copy of the whole asset; each step advances sourceCursor by one dword */
   for (copyDwordsRemaining = relocatedSourceImage->registryHeader.common.allocationSizeBytes >> 2;
        copyDwordsRemaining != 0; copyDwordsRemaining--) {
-    *destinationCursor = sourceCursor->registryHeader.common.magic;
-    sourceCursor = (SpriteAssetHeader *)&sourceCursor->registryHeader.common.allocationSizeBytes;
+    *destinationCursor = *sourceCursor;
+    sourceCursor++;
     destinationCursor++;
   }
   /* the groups follow the SpriteAssetHeader */
-  groupCursor = (SprGroupRelocationHeader *)((SpriteAssetHeader *)serializedDestination + 1);
-  groupsRemaining = ((SpriteAssetHeader *)serializedDestination)->registryHeader.groupCount;
+  groupCursor = Asset_RecordAfter<SprGroupRelocationHeader>(destinationHeader);
+  groupsRemaining = destinationHeader->registryHeader.groupCount;
   /* unlike the relocation, every count is assumed to be non-zero (a zero count would wrap around) */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     blocksRemaining = groupCursor->relocationBlockCount;
-    blockCursor = (SprRelocationBlockHeader *)(groupCursor + 1);
+    blockCursor = Asset_RecordAfter<SprRelocationBlockHeader>(groupCursor);
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       recordsRemaining = blockCursor->fixedRecordCount;
-      recordCursor = (int *)(blockCursor + 1);
+      recordCursor = Asset_RecordAfter<int>(blockCursor);
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         recordCursor[12] = 0;
         recordCursor[13] = 0;
@@ -139,6 +145,7 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
         recordsRemaining--;
       } while (recordsRemaining != 0);
       recordsRemaining = blockCursor->pointerRelocationCount;
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         /* pointerOrSerializedOffset00/0C/18 */
         *recordCursor = *recordCursor - Thandor_PointerToI32(relocatedSourceImage); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset00 */
@@ -147,10 +154,10 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
         recordCursor = recordCursor + 16;
         recordsRemaining--;
       } while (recordsRemaining != 0);
-      blockCursor = (SprRelocationBlockHeader *)((uint8_t *)blockCursor + blockCursor->blockByteSize);
+      blockCursor = Asset_RecordAt<SprRelocationBlockHeader>(blockCursor,blockCursor->blockByteSize);
       blocksRemaining--;
     } while (blocksRemaining != 0);
-    groupCursor = (SprGroupRelocationHeader *)((uint8_t *)groupCursor + groupCursor->nextGroupByteOffset);
+    groupCursor = Asset_RecordAt<SprGroupRelocationHeader>(groupCursor,groupCursor->nextGroupByteOffset);
     groupsRemaining--;
   } while (groupsRemaining != 0);
 }

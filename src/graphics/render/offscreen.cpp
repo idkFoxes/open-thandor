@@ -13,7 +13,7 @@
 
 GraphicsOffscreenRenderModelListToTextureSourceProc *g_GraphicsOffscreenRenderModelListToTextureSource = &GraphicsOffscreen_RenderModelListToTextureSource;
 
-/* Dword index of a field (GFX_SUBRESOURCE_*) of the first subresource record of a gfx asset */
+/* Dword index of a field (a GFX_SUBRESOURCE_* name) of the first subresource record of a gfx asset */
 #define GFX_SUBRESOURCE_DWORD(field) ((GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_##field) / 4)
 
 
@@ -44,13 +44,14 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
   uint32_t assetBytes;
   uint32_t pixelsLeft;
   void *textureAllocationPayload;
+  void *depthAllocation;
 
   /* 0x200-byte asset header, one 0x20-byte subresource entry, then the pixels */
   assetBytes = outputWidth * outputHeight * 4 + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
   if (g_MemoryApi.alloc(assetBytes,&textureAllocationPayload) != 0) {
     return nullptr;
   }
-  assetWords = (int32_t *)textureAllocationPayload;
+  assetWords = static_cast<int32_t *>(textureAllocationPayload);
   zeroCursor = assetWords;
   for (dwordsLeft = assetBytes >> 2; dwordsLeft != 0; dwordsLeft--) {
     *zeroCursor = 0;
@@ -70,9 +71,11 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
   assetWords[5] = packedDate;
   assetWords[7] = packedDate;
   assetWords[9] = packedDate;
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetWords + 12));
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetWords + 28));
-  *(uint8_t *)(assetWords + offsetof(GraphicsTextureSourceAsset, unusedText) / 4) = 0; /* +0x100 unusedText: empty */
+  /* the producer names are UTF-16 text inside the dword-built header */
+  g_LocaleCopyDefaultComputerLabelUtf16(reinterpret_cast<uint16_t *>(assetWords + 12));
+  g_LocaleCopyDefaultComputerLabelUtf16(reinterpret_cast<uint16_t *>(assetWords + 28));
+  /* +0x100 unusedText: empty (its first byte of the dword-built header) */
+  *reinterpret_cast<uint8_t *>(assetWords + offsetof(GraphicsTextureSourceAsset, unusedText) / 4) = 0;
   /* table descriptor at +0xB0: one subresource, no palette banks, entry table at +0x200 */
   assetWords[offsetof(GraphicsTextureSourceAsset, tableDescriptor.subresourceCount) / 4] = 1;
   assetWords[offsetof(GraphicsTextureSourceAsset, tableDescriptor.paletteBankCount) / 4] = 0;
@@ -86,10 +89,11 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
   assetWords[GFX_SUBRESOURCE_DWORD(ORIGIN_Y)] = 0;
   assetWords[GFX_SUBRESOURCE_DWORD(PALETTE_INDEX)] = -1;
   assetWords[GFX_SUBRESOURCE_DWORD(PIXEL_OFFSET)] = GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
-  if (g_MemoryApi.alloc(outputHeight * outputWidth * 4,(void **)&depthBuffer) != 0) {
+  if (g_MemoryApi.alloc(outputHeight * outputWidth * 4,&depthAllocation) != 0) {
     g_MemoryApi.free(assetWords);
     return nullptr;
   }
+  depthBuffer = static_cast<int32_t *>(depthAllocation);
   depthCursor = depthBuffer;
   for (pixelsLeft = outputHeight * outputWidth & DWORD_COUNT_MASK; pixelsLeft != 0; pixelsLeft--) {
     *depthCursor = -1;
@@ -128,7 +132,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
   g_SoftwareDepthBuffer = savedDepthBuffer;
   g_SoftwareDepthEpoch = savedDepthEpoch;
   g_MemoryApi.free(usedDepthBuffer);
-  return (GraphicsTextureSourceAsset *)textureAllocationPayload;
+  return static_cast<GraphicsTextureSourceAsset *>(textureAllocationPayload);
 }
 
 

@@ -15,51 +15,51 @@
 #include <thandor/core/contracts.h>
 
 /* Game data tables (GameData_ResetDefaults, GameData_LoadExternalTables, Game_LoadCoreAssets). */
-#define GAME_FACTION_IMAGE_BYTES 0x3A20 /* sizeof(GameFactionRuntimeImage): 8 records of 0x740 bytes + 0x20 tail;
+inline constexpr auto GAME_FACTION_IMAGE_BYTES = 0x3A20; /* sizeof(GameFactionRuntimeImage): 8 records of 0x740 bytes + 0x20 tail;
                                            daten.hex holds exactly this image */
-#define GAME_STAT_TABLE_BYTES 0x38000 /* g_GameStatTableImage (stat.hex); the last dword is 0xFFFFFFFF */
-#define OLD_UNIT_PRIMARY_TABLE_BYTES 0x4000 /* g_OldUnitPrimaryTable (oldunit.hex after the record count) */
-#define OLD_UNIT_SECONDARY_TABLE_BYTES 0x100 /* g_OldUnitSecondaryTable (oldunit.hex after the primary table) */
+inline constexpr auto GAME_STAT_TABLE_BYTES = 0x38000; /* g_GameStatTableImage (stat.hex); the last dword is 0xFFFFFFFF */
+inline constexpr auto OLD_UNIT_PRIMARY_TABLE_BYTES = 0x4000; /* g_OldUnitPrimaryTable (oldunit.hex after the record count) */
+inline constexpr auto OLD_UNIT_SECONDARY_TABLE_BYTES = 0x100; /* g_OldUnitSecondaryTable (oldunit.hex after the primary table) */
 /* Buffers Game_LoadCoreAssets allocates */
-#define FRONTEND_PLAYER_LIST_ROW_COUNT 8 /* entries of g_FrontendPlayerListRows */
-#define FRONTEND_PLAYER_LIST_ROW_BYTES 0x80 /* one row buffer of the lobby player list */
-#define INGAME_FACTION_STATUS_TEXT_BYTES 0x2000 /* g_InGameFactionStatusTextScratchUtf16 */
-#define INGAME_PLAYER_LIST_TEXT_BYTES 0x160 /* g_InGamePlayerListTextScratchUtf16 */
-#define SELECTION_PLAYER_BLOCK_COUNT 8 /* g_SelectionPlayerBlocks; linked from g_SelectionPlayerRuntimeBlockPointers by player runtime id */
-#define FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT 8 /* records in g_FrontendPlayerRuntimeBlocks (0x9D80 bytes) */
-#define CORE_ASSET_SCRATCH_SLICE_COUNT 7 /* tooltip texts of the in-game template's technologyAreaTab1..7, one zeroed allocation */
-#define CORE_ASSET_SCRATCH_SLICE_BYTES 0x200
+inline constexpr auto FRONTEND_PLAYER_LIST_ROW_COUNT = 8; /* entries of g_FrontendPlayerListRows */
+inline constexpr auto FRONTEND_PLAYER_LIST_ROW_BYTES = 0x80; /* one row buffer of the lobby player list */
+inline constexpr auto INGAME_FACTION_STATUS_TEXT_BYTES = 0x2000; /* g_InGameFactionStatusTextScratchUtf16 */
+inline constexpr auto INGAME_PLAYER_LIST_TEXT_BYTES = 0x160; /* g_InGamePlayerListTextScratchUtf16 */
+inline constexpr auto SELECTION_PLAYER_BLOCK_COUNT = 8; /* g_SelectionPlayerBlocks; linked from g_SelectionPlayerRuntimeBlockPointers by player runtime id */
+inline constexpr auto FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT = 8; /* records in g_FrontendPlayerRuntimeBlocks (0x9D80 bytes) */
+inline constexpr auto CORE_ASSET_SCRATCH_SLICE_COUNT = 7; /* tooltip texts of the in-game template's technologyAreaTab1..7, one zeroed allocation */
+inline constexpr auto CORE_ASSET_SCRATCH_SLICE_BYTES = 0x200;
 /* DynDLL_Load: capacity of g_DynamicModules */
-#define DYNAMIC_MODULE_CAPACITY 16
+inline constexpr auto DYNAMIC_MODULE_CAPACITY = 16;
 /* ProcessEntry sets this display mode first (in 32-bit colour); Game_Run then switches to the saved mode */
-#define GAME_START_DISPLAY_WIDTH 640
-#define GAME_START_DISPLAY_HEIGHT 480
+inline constexpr auto GAME_START_DISPLAY_WIDTH = 640;
+inline constexpr auto GAME_START_DISPLAY_HEIGHT = 480;
 /* GameRuntime_InitializeSpatialAudioAndRendering: packets of the global primitive queue */
-#define GAME_PRIMITIVE_QUEUE_PACKET_COUNT 0xA000
+inline constexpr auto GAME_PRIMITIVE_QUEUE_PACKET_COUNT = 0xA000;
 /* Text pages Game_LoadCoreAssets loads (TextResourcePage_Load), named after their files in texte\ */
-#define GAME_TEXT_PAGE_NETERROR 0xFF /* neterror.str */
-#define GAME_TEXT_PAGE_HELP 0x18 /* help.str */
-#define GAME_TEXT_PAGE_HILFE 0x20 /* hilfe.str */
-#define GAME_TEXT_PAGE_MENUE 0x21 /* menue.str */
-#define GAME_TEXT_PAGE_LEVEL 0x22 /* level.str */
-#define GAME_TEXT_PAGE_INHALT 0x23 /* inhalt.str */
-#define GAME_TEXT_PAGE_TASTATUR 0x24 /* tastatur.str */
-#define GAME_TEXT_PAGE_TECHNO 0x30 /* techno.str (page 0x30 is later the loaded level's text page) */
+inline constexpr auto GAME_TEXT_PAGE_NETERROR = 0xFF; /* neterror.str */
+inline constexpr auto GAME_TEXT_PAGE_HELP = 0x18; /* help.str */
+inline constexpr auto GAME_TEXT_PAGE_HILFE = 0x20; /* hilfe.str */
+inline constexpr auto GAME_TEXT_PAGE_MENUE = 0x21; /* menue.str */
+inline constexpr auto GAME_TEXT_PAGE_LEVEL = 0x22; /* level.str */
+inline constexpr auto GAME_TEXT_PAGE_INHALT = 0x23; /* inhalt.str */
+inline constexpr auto GAME_TEXT_PAGE_TASTATUR = 0x24; /* tastatur.str */
+inline constexpr auto GAME_TEXT_PAGE_TECHNO = 0x30; /* techno.str (page 0x30 is later the loaded level's text page) */
 /* Text 2 of tastatur.str: the mouse help whose inline icons come from the cursor texture */
-#define TEXT_ID_MOUSE_HELP 0x2402
+inline constexpr auto TEXT_ID_MOUSE_HELP = 0x2402;
 /* Slots of g_BootstrapApiBindings, bound by DynAPI_Bootstrap (order of the image data table) */
-#define BOOTSTRAP_API_LOAD_LIBRARY_A 0 /* KERNEL32 */
-#define BOOTSTRAP_API_FREE_LIBRARY 1 /* KERNEL32 */
-#define BOOTSTRAP_API_REG_OPEN_KEY_EX_A 2 /* ADVAPI32 */
-#define BOOTSTRAP_API_REG_QUERY_VALUE_EX_A 3 /* ADVAPI32 */
-#define BOOTSTRAP_API_REG_CLOSE_KEY 4 /* ADVAPI32 */
+inline constexpr auto BOOTSTRAP_API_LOAD_LIBRARY_A = 0; /* KERNEL32 */
+inline constexpr auto BOOTSTRAP_API_FREE_LIBRARY = 1; /* KERNEL32 */
+inline constexpr auto BOOTSTRAP_API_REG_OPEN_KEY_EX_A = 2; /* ADVAPI32 */
+inline constexpr auto BOOTSTRAP_API_REG_QUERY_VALUE_EX_A = 3; /* ADVAPI32 */
+inline constexpr auto BOOTSTRAP_API_REG_CLOSE_KEY = 4; /* ADVAPI32 */
 
 void ProcessEntry();
 
 /* 0, or the allocator's error code */
 uint32_t GameData_ResetDefaults();
 
-Bool8 GameData_LoadExternalTables();
+bool GameData_LoadExternalTables();
 
 /* 0 when resolved into *destination, else FATAL_ERROR_DLL_PROCEDURE_MISSING */
 uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
@@ -76,7 +76,7 @@ uint32_t GameRuntime_InitializeSpatialAudioAndRendering();
 
 uint32_t Game_LoadCoreAssets();
 
-Bool8 Game_PlayIntroMovies();
+bool Game_PlayIntroMovies();
 
 /* 0, or a FATAL_ERROR_* code */
 uint32_t DynAPI_Bootstrap();
@@ -88,15 +88,16 @@ void CommandLine_Parse();
 /*
 g_BootstrapApiBindings is resolved at startup from {name, module} pairs; each slot then
 holds the __stdcall entry of that Win32 API. Calls must use these types: calling a slot through a
-cdecl function type would leave the stack unbalanced after every call.
+cdecl function type would leave the stack unbalanced after every call. These are function types; a slot is
+called through a pointer to one.
 */
-using BootstrapLoadLibraryAProc = HINSTANCE (__stdcall *)(char *moduleName);                 /* [0] */
-using BootstrapFreeLibraryProc = BOOL (__stdcall *)(HINSTANCE module);                        /* [1] */
-using BootstrapRegOpenKeyExAProc = long (__stdcall *)(uintptr_t key, char *subKey, uint32_t options, uint32_t access,
-                                                     uintptr_t *result);                       /* [2] */
-using BootstrapRegQueryValueExAProc = long (__stdcall *)(uintptr_t key, void *valueName, uint32_t *reserved,
-                                                        void *type, void *data, void *size); /* [3] */
-using BootstrapRegCloseKeyProc = long (__stdcall *)(uintptr_t key);                               /* [4] */
+using BootstrapLoadLibraryAProc = HINSTANCE __stdcall (char *moduleName);                     /* [0] */
+using BootstrapFreeLibraryProc = BOOL __stdcall (HINSTANCE module);                            /* [1] */
+using BootstrapRegOpenKeyExAProc = long __stdcall (uintptr_t key, char *subKey, uint32_t options, uint32_t access,
+                                                  uintptr_t *result);                          /* [2] */
+using BootstrapRegQueryValueExAProc = long __stdcall (uintptr_t key, void *valueName, uint32_t *reserved,
+                                                     void *type, void *data, void *size);    /* [3] */
+using BootstrapRegCloseKeyProc = long __stdcall (uintptr_t key);                                   /* [4] */
 
 extern WidePathBuffer256 g_LooseMoviePathPrefix;
 extern uint16_t g_DatenHexPathUtf16[10];

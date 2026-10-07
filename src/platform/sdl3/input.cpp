@@ -237,10 +237,10 @@ char32_t NextCodePoint(std::span<const unsigned char> &text) noexcept
 }
 
 /* The lock-key bits of g_KeyboardStateMask from SDL's modifier state (GetKeyState's toggle bits). */
-uint32_t LockKeyBits() noexcept
+UiKeyboardStateMask LockKeyBits() noexcept
 {
   const SDL_Keymod modifiers = SDL_GetModState();
-  uint32_t bits = 0;
+  UiKeyboardStateMask bits = KEYBOARD_STATE_NONE;
   if ((modifiers & SDL_KMOD_NUM) != 0) {
     bits |= KEYBOARD_STATE_NUM_LOCK;
   }
@@ -503,7 +503,7 @@ void UpdateMouseMode() noexcept
 
 using namespace thandor::sdl3;
 
-Bool8 SdlInput_Init(uint32_t *outError)
+bool SdlInput_Init(uint32_t *outError)
 {
   SDL_HideCursor();
   /* chain in front of the graphics display-mode switch */
@@ -530,7 +530,7 @@ void SdlInput_Shutdown()
   SDL_ShowCursor();
 }
 
-Bool8 SdlInput_SetDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
+bool SdlInput_SetDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                               uint32_t *errorCode)
 {
   GraphicsCursor_FreeBuffers();

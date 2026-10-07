@@ -9,13 +9,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/statehash.h>
 
 /* FNV-1a over 32-bit words; pointers never go in (addresses differ between builds), only pool indices. */
-typedef struct StateHash {
+struct StateHash {
   uint64_t value;
-} StateHash;
+};
 
 static void StateHash_Add(StateHash *hash, uint32_t word)
 {
@@ -40,14 +41,14 @@ static int s_speedStepTicks;    /* OPEN_THANDOR_STATEHASH_SPEED, 0 = keep the ga
    load, and every step scales movement, timers and production by g_InGameSimulationStepTicks, so applying the
    speed at the session start made the runs diverge (seen as a statehash.txt starting at tick 3 or 4). Tick 2 is
    where the speed took effect in the usual unloaded run, so those runs keep their hashes. */
-#define STATEHASH_SPEED_AFTER_TICK 2u
+constexpr auto STATEHASH_SPEED_AFTER_TICK = 2u;
 
 static int32_t DebugStateHash_ArmyIndex(const void *army)
 {
   if (army == nullptr) {
     return -1;
   }
-  return (int32_t)(((const uint8_t *)army - (const uint8_t *)g_ArmyRuntimeSlots) / (int)sizeof(ArmyRuntimeSlot));
+  return (int32_t)(Asset_ByteDistance(army, g_ArmyRuntimeSlots) / (int)sizeof(ArmyRuntimeSlot));
 }
 
 void DebugStateHash_SessionInitializing()
@@ -101,12 +102,12 @@ void DebugStateHash_SessionStart()
    number of recorded steps: under load the first recorded tick can differ by one); they run in the next step, as
    the game's own commands do. The ticks equal the step numbers 100, 500 and 20 of the first version plus the two
    ticks before the first recorded one, so the stored references stay valid. */
-#define ARENA_MOVE_OUT_TICK 102
-#define ARENA_MOVE_BACK_TICK 502
-#define ARENA_MOVE_ROWS 20
-#define ARENA_PRODUCTION_TICK 22
-#define ARENA_ROW_STEP_X 0x480   /* world X per grid row (isometric lattice, see tools/data/fld.py) */
-#define ARENA_ROW_STEP_Y (-1999) /* world Y per grid row */
+constexpr auto ARENA_MOVE_OUT_TICK = 102;
+constexpr auto ARENA_MOVE_BACK_TICK = 502;
+constexpr auto ARENA_MOVE_ROWS = 20;
+constexpr auto ARENA_PRODUCTION_TICK = 22;
+constexpr auto ARENA_ROW_STEP_X = 0x480; /* world X per grid row (isometric lattice, see tools/data/fld.py) */
+constexpr auto ARENA_ROW_STEP_Y = -1999; /* world Y per grid row */
 
 static Q12 s_armyHomeX[ARMY_RUNTIME_SLOT_COUNT];
 static Q12 s_armyHomeY[ARMY_RUNTIME_SLOT_COUNT];
@@ -135,10 +136,10 @@ static void DebugArena_MoveOrders(unsigned tick)
       /* the engine takes Y first: translation.y, then translation.x */
       ArmyRuntime_StartRoutedMoveCommand(y + direction * ARENA_MOVE_ROWS * ARENA_ROW_STEP_Y,
                                          x + direction * ARENA_MOVE_ROWS * ARENA_ROW_STEP_X,
-                                         (ArmyMovementRuntime *)army);
+                                         reinterpret_cast<ArmyMovementRuntime *>(army) /* movement view of the slot */);
     }
     else if (s_armyHomeX[slotIndex] != 0 || s_armyHomeY[slotIndex] != 0) {
-      ArmyRuntime_StartRoutedMoveCommand(s_armyHomeY[slotIndex], s_armyHomeX[slotIndex], (ArmyMovementRuntime *)army);
+      ArmyRuntime_StartRoutedMoveCommand(s_armyHomeY[slotIndex], s_armyHomeX[slotIndex], reinterpret_cast<ArmyMovementRuntime *>(army) /* movement view of the slot */);
     }
   }
 }
@@ -176,7 +177,7 @@ static void DebugArena_ProductionOrders(unsigned tick)
         /* true = available (locked, prerequisites met, not researched elsewhere) */
         if (Technology_IsAvailableForFaction((PckTechnologyIdCatalog)tech, army->factionIndex)) {
           Technology_ApplyRecordToEntity((PckTechnologyIdCatalog)tech,
-                                         (GameEntityRuntime *)army->modelRuntimeOrSavedOffset.modelRuntime);
+                                         reinterpret_cast<GameEntityRuntime *>(army->modelRuntimeOrSavedOffset.modelRuntime.get()));
           Thandor_Log("test aid: arena: faction %u lab %u researches technology %d", (unsigned)army->factionIndex,
                       labs[index].assetId, tech);
           break;
@@ -304,7 +305,7 @@ void DebugStateHash_AfterStep()
     StateHash_Add(&hash, (uint32_t)army->commandGeneration);
     StateHash_Add(&hash, army->aiUnitState);
     StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex(army->commandTargetArmyRuntime));
-    StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex((const void *)(uintptr_t)army->assignedTargetArmyRuntime));
+    StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex(reinterpret_cast<const void *>(static_cast<uintptr_t>(army->assignedTargetArmyRuntime))));
     StateHash_Add(&hash, health);
     armies++;
     if (detail) {
@@ -313,7 +314,7 @@ void DebugStateHash_AfterStep()
               (unsigned)army->movementStateFlags, (unsigned)army->commandModeFlags,
               (unsigned)army->commandGeneration, (unsigned)army->aiUnitState,
               DebugStateHash_ArmyIndex(army->commandTargetArmyRuntime),
-              DebugStateHash_ArmyIndex((const void *)(uintptr_t)army->assignedTargetArmyRuntime), (unsigned)health,
+              DebugStateHash_ArmyIndex(reinterpret_cast<const void *>(static_cast<uintptr_t>(army->assignedTargetArmyRuntime))), (unsigned)health,
               army->modelNodeRuntime->worldTransform.translation.x,
               army->modelNodeRuntime->worldTransform.translation.y,
               army->modelNodeRuntime->worldTransform.translation.z);

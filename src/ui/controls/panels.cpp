@@ -27,10 +27,10 @@ void UiImagePanelControl_DrawAlignedTextureAndChildren
   int slackHeight;
   int clippedTop;
   int drawY;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   GraphicsTextureLogicalSize textureSize;
   
-  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED)) {
     clippedLeft = (control->base).left;
     if ((control->base).left < clipLeft) {
       clippedLeft = clipLeft;
@@ -100,14 +100,14 @@ UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,i
                                                                   UiImagePanelControl *control)
 
 {
-  Bool8 childrenAlreadyRetried;
-  Bool8 skipTextureTest;
+  bool childrenAlreadyRetried;
+  bool skipTextureTest;
   UiNodeBase *hitNode;
   int slackWidth;
   int drawX;
   int slackHeight;
   int drawY;
-  Bool8 opaqueHit;
+  bool opaqueHit;
   GraphicsTextureLogicalSize textureSize;
   
   hitNode = UI_NODE_NONE;
@@ -117,7 +117,7 @@ UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,i
   }
   /* The first pass skips the opaque-texture test when children may be hit outside the bounds;
      a retry (the children hit test returned the panel itself) always runs it. */
-  skipTextureTest = ((control->base).nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0;
+  skipTextureTest = Any((control->base).nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS);
   do {
     if ((!skipTextureTest) && ((control->panelFlags & UI_IMAGE_PANEL_HIT_WHOLE_BOX) == 0)) {
       drawX = (control->base).left;
@@ -202,7 +202,7 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
   int controlLeft;
   uint32_t tileHeight;
   int32_t tileTop;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   GraphicsTextureLogicalSize tileSize;
 
   controlRight = (control->base).right;
@@ -260,7 +260,7 @@ void UiNineSlicePanelControl_DrawTextureFrameAndChildren
   int topEdgeY;
   int bottomEdgeY;
   int rightEdgeX;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   GraphicsTextureLogicalSize slice0Size;
   GraphicsTextureLogicalSize slice1Size;
   GraphicsTextureLogicalSize slice2Size;
@@ -269,7 +269,7 @@ void UiNineSlicePanelControl_DrawTextureFrameAndChildren
   GraphicsTextureLogicalSize slice6Size;
   GraphicsTextureLogicalSize slice7Size;
   
-  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED)) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       baseTextureFrame = control->firstFrameSubresource;
@@ -367,25 +367,26 @@ void UiFormattedContainer_RelocateWithPatchedTextPayloads
   uint16_t *stream;
   uint16_t *resolvedText;
   
-  if (((control->base).nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) != 0) {
-    resolvedText = TextResource_Resolve(((TextResourceId *)control)[-1]);
+  if (Any((control->base).nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE)) {
+    /* the template stores the tooltip's text id in the dword just before the node */
+    resolvedText = TextResource_Resolve(reinterpret_cast<TextResourceId *>(control)[-1]);
     stream = resolvedText;
     RichTextCommandStream_PatchPayloadBySelector(0,control->currentValueTextUtf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,control->limitValueTextUtf16,stream);
     if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
-      RichTextCommandStream_PatchPayloadBySelector(2,((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16,
+      RichTextCommandStream_PatchPayloadBySelector(2,UiNode_As<UiFormattedContainerWithMarker>(control)->markerValueTextUtf16,
                                                    stream);
-      *(uint32_t *)((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16 = 0;
+      Thandor_StoreU32(UiNode_As<UiFormattedContainerWithMarker>(control)->markerValueTextUtf16,0);
     }
   }
-  *(uint32_t *)control->currentValueTextUtf16 = 0;
-  *(uint32_t *)control->limitValueTextUtf16 = 0;
+  Thandor_StoreU32(control->currentValueTextUtf16,0); /* the first two code units */
+  Thandor_StoreU32(control->limitValueTextUtf16,0);
   UiContainer_RelocateChildren(relocationDelta,&control->base);
 }
 
 /* Fill colour variant of a gauge (frame offset 3..18, three frames each) by the fill percentage: rising from
    80% on, or for the two-sided scale also rising the further it falls below 40%. */
-static int UiFormattedContainer_FillVariantOffset(uint32_t fillPercent,Bool8 twoSidedScale)
+static int UiFormattedContainer_FillVariantOffset(uint32_t fillPercent,bool twoSidedScale)
 
 {
   if (!twoSidedScale) {
@@ -498,6 +499,8 @@ void UiFormattedContainer_DrawClipped
                 (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,barEndX,
                  (control->base).top,barStartX,textureFrame + UI_GAUGE_FRAME_TRACK,
                  control->textureSource,g_FramebufferAccess);
+      /* the marker fields, read only with UI_GAUGE_HAS_MARKER set */
+      const UiFormattedContainerWithMarker *marked = UiNode_As<UiFormattedContainerWithMarker>(control);
       currentValue = control->currentValue;
       scaleRange = control->initialScaleRange;
       barSpan = barEndX - barStartX;
@@ -508,33 +511,33 @@ void UiFormattedContainer_DrawClipped
         static int s_loggedScaleRange;
         if (s_loggedScaleRange == 0) {
           s_loggedScaleRange = 1;
-          Thandor_Log("gauge %p: initial scale range %d, started at 1",(void *)control,scaleRange);
+          Thandor_Log("gauge %p: initial scale range %d, started at 1",static_cast<void *>(control),scaleRange);
         }
         scaleRange = 1;
       }
       while (((scaleRange < currentValue) || (scaleRange < control->limitValue) ||
               (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) &&
-               (scaleRange < ((UiFormattedContainerWithMarker *)control)->markerValue))) &&
+               (scaleRange < marked->markerValue))) &&
              (scaleRange <= (INT32_MAX >> 2))) {
         scaleRange = scaleRange << 2;
       }
       if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
         markerOffsetX =
-             (int)(((int64_t)((UiFormattedContainerWithMarker *)control)->markerValue * (int64_t)barSpan) /
+             (int)(((int64_t)marked->markerValue * (int64_t)barSpan) /
                    (int64_t)scaleRange);
       }
       limitValue = control->limitValue;
       scaleLimit = control->limitValue;
       if (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) &&
-          (((UiFormattedContainerWithMarker *)control)->markerValue < scaleLimit)) {
-        scaleLimit = ((UiFormattedContainerWithMarker *)control)->markerValue;
+          (marked->markerValue < scaleLimit)) {
+        scaleLimit = marked->markerValue;
       }
       if (scaleLimit == 0) {
         /* The original divides by zero here (marker value 0); bounded here because that crashes. */
         static int s_loggedScaleLimit;
         if (s_loggedScaleLimit == 0) {
           s_loggedScaleLimit = 1;
-          Thandor_Log("gauge %p: marker value 0, fill percentage taken against 1",(void *)control);
+          Thandor_Log("gauge %p: marker value 0, fill percentage taken against 1",static_cast<void *>(control));
         }
         scaleLimit = 1;
       }
@@ -589,8 +592,8 @@ void UiFormattedContainer_DrawClipped
              control->limitValueTextUtf16);
   if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
     g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,((UiFormattedContainerWithMarker *)control)->markerValue,
-               ((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16);
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,UiNode_As<UiFormattedContainerWithMarker>(control)->markerValue,
+               UiNode_As<UiFormattedContainerWithMarker>(control)->markerValueTextUtf16);
   }
 }
 
@@ -614,10 +617,10 @@ void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
   int slackHeight;
   int clippedTop;
   int drawY;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   GraphicsTextureLogicalSize textureSize;
   
-  if (((control->base).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->base).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     clippedLeft = (control->base).base.left;
     if ((control->base).base.left < clipLeft) {
       clippedLeft = clipLeft;
@@ -688,9 +691,9 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
           UiPixelCoordinate clipLeft,UiSoftwareTexturePreviewControl *control)
 
 {
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   
-  if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED) &&
      (control->textureSource != nullptr)) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
@@ -698,8 +701,8 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
                 ((control->base).layoutHeight,(control->base).layoutWidth,(control->base).top,(control->base).left,
                  control->blendedSourcePixels,control->blendFactorPixels,
                  control->incomingSubresource,
-                 control->outgoingSubresource,(int *)control->textureSource,
-                 (int *)g_FramebufferAccess);
+                 control->outgoingSubresource,control->textureSource,
+                 g_FramebufferAccess);
       g_GraphicsFramebufferEndAccess();
     }
   }
@@ -732,7 +735,7 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
    g_UiSoftwareTexturePreviewControlVtable): Tab moves the focus on, any other key queues the control's action.
    Always consumed (returns false).
 */
-Bool8 UiSoftwareTexturePreviewControl_HandleKeyboardActivation
+bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control)
 
 {
@@ -861,22 +864,22 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
   uint32_t cornerHeight;
   int bottomEdgeY;
   int rightEdgeX;
-  Bool8 beginAccessFailed;
+  bool beginAccessFailed;
   GraphicsTextureLogicalSize cornerSize;
 
-  if ((control->root.rootFlags & (UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME)) != 0) {
+  if (Any(control->root.rootFlags & (UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME))) {
     beginAccessFailed = g_GraphicsFramebufferBeginAccess();
     if (!beginAccessFailed) {
-      if ((control->root.rootFlags & UI_ROOT_TILED_BACKGROUND) != 0) {
+      if (Any(control->root.rootFlags & UI_ROOT_TILED_BACKGROUND)) {
         subresource = UI_WINDOW_SUBRESOURCE_WINDOW_INTERIOR;
-        if ((control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND) != 0) {
+        if (Any(control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND)) {
           subresource = UI_WINDOW_SUBRESOURCE_ALTERNATE_INTERIOR;
         }
         UiWindow_BlitTiledInterior
                   (clipBottom,clipRight,clipTop,clipLeft,subresource,control->root.base.layoutHeight,
                    control->root.base.layoutWidth,0,0,control);
       }
-      if ((control->root.rootFlags & UI_ROOT_FRAME) != 0) {
+      if (Any(control->root.rootFlags & UI_ROOT_FRAME)) {
         /* the bottom-right corner gives the corner size */
         cornerSize = g_GraphicsTextureSourceGetLogicalSize
                                (UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
@@ -915,7 +918,7 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
                   (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM,
                    rightEdgeX,bottomEdgeY,cornerWidth,control);
       }
-      if ((control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND) != 0) {
+      if (Any(control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND)) {
         cornerSize = g_GraphicsTextureSourceGetLogicalSize
                                (UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
                                 g_UiWindowTextureSource);
@@ -956,7 +959,7 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
       g_GraphicsFramebufferEndAccess();
     }
   }
-  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
+  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->root.base);
 }
 
 /* hitTest of g_UiFillPanelControlVtable: like UiContainer_HitTestChildren, but the container itself is never

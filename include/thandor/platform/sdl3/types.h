@@ -12,7 +12,7 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/graphics/resources/types.h>
 
-typedef struct GraphicsCapturedTextureSourceAsset GraphicsCapturedTextureSourceAsset, *PGraphicsCapturedTextureSourceAsset;
+struct GraphicsCapturedTextureSourceAsset;
 
 using TimerFrequencyHz = uint32_t;
 

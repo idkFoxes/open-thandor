@@ -15,7 +15,7 @@
 #include <thandor/core/contracts.h>
 
 /* nearest distance of a ray that hit nothing (ModelRuntime_RaycastCandidateListNearest) */
-#define MODEL_RAYCAST_NO_HIT_DISTANCE 0x7fffffff
+inline constexpr int MODEL_RAYCAST_NO_HIT_DISTANCE = 0x7fffffff;
 
 extern int32_t g_ModelRaycastMaximumDistance;
 
@@ -23,14 +23,14 @@ extern GraphicsFixedVec3 g_ModelRaycastOrigin; /* Q12 world-space ray origin */
 
 extern GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28; /* Q28 world-space ray direction */
 
-Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerHitContext *context,uint32_t *outDistanceQ12);
 
 Q12 ModelNodeRuntime_RaycastHierarchyNearest
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeNode **outNearestModelNode);
 
-Bool8 ModelRuntime_RaycastCandidateListNearest
+bool ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,

@@ -45,7 +45,7 @@ EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog 
    between the steps. Returns true with *outError = 0 on success, or false with the load/allocation error in
    *outError (always written).
 */
-Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
+bool EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
 
 {
   uint32_t error;
@@ -78,10 +78,10 @@ Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *ou
     return false;
   }
   /* pool base - 1 (the rebase value for saved offsets) */
-  g_EffectRuntimeRebaseBaseMinusOne = (uint8_t *)poolMemory - 1;
-  g_EffectRuntimeSlots = (EffectRuntimeSlot *)poolMemory;
+  g_EffectRuntimeRebaseBaseMinusOne = static_cast<uint8_t *>(poolMemory) - 1;
+  g_EffectRuntimeSlots = static_cast<EffectRuntimeSlot *>(poolMemory);
   /* zero the pool dword by dword */
-  poolDword = (uint32_t *)poolMemory;
+  poolDword = static_cast<uint32_t *>(poolMemory); /* zeroed dword by dword, as the original */
   for (poolDwordIndex = 0; poolDwordIndex < EFFECT_RUNTIME_POOL_BYTES / 4; poolDwordIndex++) {
     poolDword[poolDwordIndex] = 0;
   }
@@ -150,7 +150,7 @@ void EffectRuntime_RebaseSlotsAfterLoad()
     ownerModelNode = effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
     if (ownerModelNode != nullptr) {
       if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
-        ownerModelNode = (ModelRuntimeNode *)((uint8_t *)ownerModelNode + g_ModelRuntimeRebaseDelta);
+        ownerModelNode = reinterpret_cast<ModelRuntimeNode *>(reinterpret_cast<uint8_t *>(ownerModelNode) + g_ModelRuntimeRebaseDelta);
       }
       else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
         /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.ownerAndDefinition.owner (saved offset) */
@@ -159,7 +159,7 @@ void EffectRuntime_RebaseSlotsAfterLoad()
     }
     /* 5f-format: EffectRuntimeSlot.modelNodeOrSavedOffset */
     effectSlot->modelNodeOrSavedOffset.modelNode =
-         (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)effectSlot->modelNodeOrSavedOffset.modelNode);
+         reinterpret_cast<ModelRuntimeNode *>(g_RuntimeObjectRebaseBaseMinusOne + (int)effectSlot->modelNodeOrSavedOffset.modelNode);
     effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = ownerModelNode;
     /* the slot holds the saved definition id here */
     registryDefinition = nullptr;
@@ -214,7 +214,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   int slotIndex;
   GraphicsPaletteAsset *chosenPalette;
   EffectRuntimeSlot *effectSlot;
-  Bool8 projectedCellMasked;
+  bool projectedCellMasked;
   ModelPackedPointRecord *lightPoint;
   ModelWorldPoint localPoint;
   TerrainOccupancyResolvedMasks occupancyMasks;
@@ -240,12 +240,12 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   if (effectSlot == nullptr) {
     return nullptr;
   }
-  effectModelNode = (EffectModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldRuntime);
+  effectModelNode = WorldNode_View<EffectModelRuntimeNode>(WorldObjectArray_AllocateFreeRecord(worldRuntime));
   if (effectModelNode == nullptr) {
     return nullptr;
   }
-  WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)effectModelNode);
-  effectSlot->modelNodeOrSavedOffset.modelNode = (ModelRuntimeNode *)effectModelNode;
+  WorldRuntime_LinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(effectModelNode));
+  effectSlot->modelNodeOrSavedOffset.modelNode = WorldNode_View<ModelRuntimeNode>(effectModelNode);
   effectSlot->definitionOrSavedId.definition = effectDefinition;
   effectModelNode->ownerClassId = WORLD_OWNER_RUNTIME_EFFECT;
   effectModelNode->effectRuntime = effectSlot;
@@ -255,7 +255,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   effectModelNode->worldTransform.translation.x = worldYQ12;
   effectModelNode->worldTransform.translation.y = worldXQ12;
   effectModelNode->worldTransform.translation.z = worldZQ12;
-  if ((effectDefinition->creationFlags & EFFECT_CREATION_RANDOMIZE_ORIENTATION) != 0) {
+  if (Any(effectDefinition->creationFlags & EFFECT_CREATION_RANDOMIZE_ORIENTATION)) {
     randomValue = g_RandomGeneratorState.next();
     orientationAngle0 = randomValue & FIXED_ANGLE16_MASK;
   }
@@ -264,11 +264,11 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   effectModelNode->modelPayload.worldRotationAngle2 = orientationAngle0;
   chosenTextureSet = g_EffectTextureSet;
   chosenPalette = g_EffectPalette;
-  if ((effectDefinition->creationFlags & EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET) != 0) {
+  if (Any(effectDefinition->creationFlags & EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET)) {
     chosenTextureSet = g_ArmyGraphicsBindings[0].textureSet;
     chosenPalette = g_ArmyGraphicsBindings[0].paletteAsset;
   }
-  nestedModelResource = (ModelResource *)effectDefinition->ownedNestedResource;
+  nestedModelResource = static_cast<ModelResource *>(effectDefinition->ownedNestedResource.get());
   effectModelNode->modelPayload.textureSet = chosenTextureSet;
   resourceRadiusQ12 = nestedModelResource->boundingRadiusQ12;
   effectModelNode->modelPayload.paletteAsset = chosenPalette;
@@ -302,8 +302,8 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   /* an immediate light at the model's light point, unless the shading starts later */
   if (shadingStartTicks == 0 &&
       ModelLookupTable_FindPackedPoint
-            (0,MODEL_POINT_CLASS_LIGHT,(ModelResource *)effectDefinition->ownedNestedResource,&lightPoint)) {
-    localPoint = ModelNodeRuntime_TransformLocalPoint(lightPoint,(ModelRuntimeNode *)effectModelNode);
+            (0,MODEL_POINT_CLASS_LIGHT,static_cast<ModelResource *>(effectDefinition->ownedNestedResource.get()),&lightPoint)) {
+    localPoint = ModelNodeRuntime_TransformLocalPoint(lightPoint,WorldNode_View<ModelRuntimeNode>(effectModelNode));
     /* the alpha byte of the shading colour is the radius in 1/16 world units */
     effectModelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord
                        (effectDefinition->shadingTransitionDurationTicks,
@@ -327,11 +327,11 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   occupancyMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
                      (TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED,0,neighborhoodClassBits,runtimeClassIndex);
   effectSlot->terrainRuntimeClassState = occupancyMasks.primaryOccupancyMask;
-  effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | occupancyMasks.runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
+  effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | FromBits<ModelRuntimeFlags>(occupancyMasks.runtimeFlags) | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   effectModelNode->tintArgb = 0xffffff;
   if (soundTableIndex != 0 && soundTableIndex < worldRuntime->dwordArrayCount &&
       worldRuntime->dwordArray != nullptr) {
-    voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[soundTableIndex];
+    voiceSetRef = reinterpret_cast<SoundVoiceSet **>(worldRuntime->dwordArray[soundTableIndex]); /* the workspace keeps pointers as uintptr_t */
     if (voiceSetRef != nullptr) {
       worldPosition = &effectModelNode->worldTransform.translation;
       projectedCellMasked = TerrainGrid_TestProjectedCellMaskBits01
@@ -343,7 +343,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
       }
     }
   }
-  ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)effectModelNode);
+  ModelNodeRuntime_RebuildTransformsFromRoot(WorldNode_View<ModelRuntimeNode>(effectModelNode));
   return effectSlot;
 }
 

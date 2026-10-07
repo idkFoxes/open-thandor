@@ -18,31 +18,29 @@
 
 /* Selection groups (keys 1..8): each faction record holds 8 groups of 32 army pointers (runtimeGroupMembers8x32),
    a player's selection holds 32 entries. transferModeFlags of
-   FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh: */
-#define SELECTION_GROUP_COUNT 8
-#define SELECTION_GROUP_ENTRY_COUNT 32
-#define SELECTION_TRANSFER_TO_GROUP 0x1 /* selection -> group (else group -> selection); its entries are first
-                                           removed from every group of the faction */
-#define SELECTION_TRANSFER_MERGE 0x2 /* add missing entries instead of replacing the destination */
-#define SELECTION_TRANSFER_CENTER_VIEW 0x4 /* local player: move the camera to the selection's average position */
+   FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh: FrontendSelectionTransferModeFlags
+   (SELECTION_TRANSFER_*, ui/frontend/types.h). */
+inline constexpr int32_t SELECTION_GROUP_COUNT = 8;
+inline constexpr int32_t SELECTION_GROUP_ENTRY_COUNT = 32;
 /* Chat. A line is sent as a begin command, four append commands of 12 narrow bytes (3 dwords) each and a
    publish command. Lobby: one 100-byte record per player block in g_FrontendPlayerMessageBuffers, dword 0 the
    byte offset of the next write (starting after itself), then the 0x30-byte text. In game the text is staged
    in chatStagingText of the player's SelectionPlayerRuntimeBlock, the write offset in the low byte of
    chatRecipientMaskAndWriteOffset. */
-#define FRONTEND_PLAYER_MESSAGE_RECORD_BYTES 100
-#define FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET 4
-#define PLAYER_CHAT_TEXT_BYTES 0x30
-#define TEXT_ID_CHAT_MESSAGE 0xFF07 /* rich text: selector 0 = sender name, selector 1 = message */
+inline constexpr int32_t FRONTEND_PLAYER_MESSAGE_RECORD_BYTES = 100;
+inline constexpr int32_t FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET = 4;
+inline constexpr int32_t PLAYER_CHAT_TEXT_BYTES = 0x30;
+inline constexpr int32_t TEXT_ID_CHAT_MESSAGE = 0xFF07; /* rich text: selector 0 = sender name, selector 1 = message */
 /* Recipient mask of a chat line to everybody (bits 8+faction and 16+player); the lobby ignores the mask. */
-#define PLAYER_CHAT_RECIPIENTS_ALL 0xFFFFFF00
+inline constexpr uint32_t PLAYER_CHAT_RECIPIENTS_ALL = 0xFFFFFF00;
 /* In-game chat staging: the write offset (low byte of chatRecipientMaskAndWriteOffset) advances 12 bytes per piece
    and stops at the last piece of the 0x30-byte line. */
-#define PLAYER_CHAT_PIECE_BYTES 0xC
-#define PLAYER_CHAT_LAST_PIECE_OFFSET 0x24
+inline constexpr int32_t PLAYER_CHAT_PIECE_BYTES = 0xC;
+inline constexpr int32_t PLAYER_CHAT_LAST_PIECE_OFFSET = 0x24;
 /* The player record whose playerName field name points at (loops that walk the records by their names). */
 #define FRONTEND_PLAYER_RECORD_OF_NAME(name) \
-  ((FrontendPlayerRuntimeRecord *)((uint8_t *)(name) - offsetof(FrontendPlayerRuntimeRecord,playerName)))
+  (reinterpret_cast<FrontendPlayerRuntimeRecord *>(reinterpret_cast<uint8_t *>(name) - \
+                                                   offsetof(FrontendPlayerRuntimeRecord,playerName)))
 
 void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl);
 
@@ -56,7 +54,7 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode);
 
 void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers();
 
-Bool8 FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
+bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
           (uintptr_t assignmentToken,PlayerRuntimeId excludedPlayerId); /* the building's address */
 
 void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(uintptr_t assignmentToken); /* the building's address */
@@ -112,7 +110,7 @@ void FrontendPlayerSelection_ClearAndRefreshLocalPanels
 
 void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
           (PlayerRuntimeId playerRuntimeId,FactionRuntimeIndex factionIndex,
-          FrontendSelectionTransferModeFlags transferModeFlags,
+          CommandPayload transferModeBits,
           FrontendFactionAssignmentIndex selectionGroupIndex);
 
 void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology(FrontendPlayerIndex playerIndex,uint32_t unusedArg1,
@@ -148,7 +146,8 @@ void FrontendPlayerMessageBuffer_AppendTripleById
 void FrontendPlayerMessageBuffer_PublishTextById(PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,
           uint32_t unusedArg3);
 
-void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsRuntimeView *frontendRoot);
+void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendUiImage *frontendRoot);
+
 
 void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
           (FactionRuntimeIndex playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,

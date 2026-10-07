@@ -8,6 +8,7 @@
 #define THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H
 
 #include <thandor/core/types.h>
+#include <thandor/core/x86_emulation.h>
 #include <thandor/graphics/backend/types.h>
 #include <thandor/graphics/render/types.h>
 #include <thandor/graphics/resources/types.h>
@@ -41,12 +42,12 @@ enum {
 };
 
 /* Four 16-bit colour lanes in MMX order (blue, green, red, alpha). */
-typedef struct RasterColor {
+struct RasterColor {
     short lane[RASTER_LANE_COUNT];
-} RasterColor;
+};
 
 /* Where a family draws: the 32-bit framebuffer or the auxiliary 32-bit target. */
-typedef struct RasterTarget {
+struct RasterTarget {
     uint8_t *pixels;          /* row 0 of the colour target */
     int pixelBytes;        /* 4 */
     int pixelStride;       /* bytes per colour row */
@@ -56,35 +57,38 @@ typedef struct RasterTarget {
     int clipMinY;
     int clipMaxX;
     int clipMaxY;
-} RasterTarget;
+};
 
 /* Per-triangle gradients: change of the attributes per pixel step in X. */
-typedef struct RasterGradients {
+struct RasterGradients {
     int depthStepX;
     RasterColor colorStepX;
     int uStepX;
     int vStepX;
-} RasterGradients;
+};
 
 /* How Raster_SetupTriangle derives the colour. */
-enum {
+enum class RasterShading : int {
     RASTER_SHADE_GOURAUD, /* interpolated vertex colours (modes 0..6, 16..22) */
     RASTER_SHADE_FLAT     /* colour of v0 for the whole triangle (modes 8..14, 24..30) */
 };
-using RasterShading = int;
+using enum RasterShading;
 
 /* A texture as the textured modes (16..30) sample it: nearest texel, wrapped. */
-typedef struct RasterTexture {
+struct RasterTexture {
     const uint8_t *texels;    /* one byte per texel (paletted) or one dword (direct colour) */
     const uint8_t *palette;   /* 256 entries of 8 bytes (only the first dword is used), NULL for direct colour */
     uint32_t uMask;           /* (width - 1) << 12 */
     uint32_t vMask;           /* (height - 1) << 12 */
     int widthLog2;
-} RasterTexture;
+    /* Auxiliary textured modes only: the walker's edges, whose current long-edge U the span function of
+       modes 20/22/28/30 needs (RasterAux_SpanTexturedPrestepDepth). Not set by Raster_SetupTexture. */
+    const struct RasterEdges *edges;
+};
 
 /* Edge walker. The long edge runs from v0 to v2 (vertices sorted by Y) and carries the attribute
    values; the short edge is v0 -> v1 for the upper part and v1 -> v2 for the lower part. */
-typedef struct RasterEdges {
+struct RasterEdges {
     int longX;             /* Q12 */
     int longXStep;         /* per scanline */
     int shortX;
@@ -98,11 +102,11 @@ typedef struct RasterEdges {
     int longV;
     int longVStep;
     int scanlineY;
-} RasterEdges;
+};
 
 /* One horizontal run of pixels, handed to the mode's span function. The span is walked away from
    the long edge, so it runs left to right or right to left; the deltas already carry the sign. */
-typedef struct RasterSpan {
+struct RasterSpan {
     uint8_t *pixel;           /* first pixel */
     uint32_t *depth;          /* its depth buffer entry */
     int count;             /* pixels to draw, > 0 */
@@ -117,7 +121,7 @@ typedef struct RasterSpan {
     int uDelta;
     int vDelta;
     const RasterTexture *texture; /* textured modes, else NULL */
-} RasterSpan;
+};
 
 using RasterSpanProc = void (*)(RasterSpan *span);
 
@@ -214,8 +218,8 @@ static inline void Raster_LanesToBytes(RasterColor color, int shift, int channel
 /* ---- blending ---------------------------------------------------------------------------- */
 
 /* Original addresses of the two blend factor tables (256 rows of 8 bytes each). */
-#define RASTER_BLEND_ALPHA_FACTORS_ORIGINAL 0x00421720u
-#define RASTER_BLEND_INVERSE_FACTORS_ORIGINAL 0x00421F20u
+inline constexpr uint32_t RASTER_BLEND_ALPHA_FACTORS_ORIGINAL = 0x00421720u;
+inline constexpr uint32_t RASTER_BLEND_INVERSE_FACTORS_ORIGINAL = 0x00421F20u;
 
 /* The original dwords at 0x00422720-0x00422F1F, as the inverse table rows 256..511 read them, with
    pointers as their original values (fixed image base). Static in the original: the parts below are
@@ -297,11 +301,11 @@ static const uint32_t g_SoftwareBlendOverreadOriginalDwords[512] = {
 /* 5f-format: overread g_SoftwareBlendOverreadRanges - original 32-bit addresses and the original 32-bit dwords
    (pointers as their image values); the ranges read live hold no pointers, so the values are the same on x64 */
 /* What lies at an original address in the range a blend factor row can be read from. */
-typedef struct RasterOriginalRange {
+struct RasterOriginalRange {
     uint32_t start; /* original address */
     uint32_t end;   /* exclusive */
     const void *data;
-} RasterOriginalRange;
+};
 
 static const RasterOriginalRange g_SoftwareBlendOverreadRanges[] = {
     {0x00421720, 0x00421F20, g_SoftwareBlendAlphaFactors},
@@ -330,7 +334,7 @@ static uint32_t Raster_OriginalBlendDword(uint32_t address)
     for (i = 0; i < sizeof g_SoftwareBlendOverreadRanges / sizeof g_SoftwareBlendOverreadRanges[0]; i++) {
         const RasterOriginalRange *range = &g_SoftwareBlendOverreadRanges[i];
         if (address >= range->start && address < range->end) {
-            return *(const uint32_t *)((const uint8_t *)range->data + (address - range->start));
+            return Thandor_LoadU32(static_cast<const uint8_t *>(range->data) + (address - range->start));
         }
     }
     return 0; /* not reachable with an index of 0..0x1FF or 0xE00..0xFFF */
@@ -515,7 +519,8 @@ static __forceinline void Raster_DrawScanline(const RasterTarget *target, const 
         first--;
     }
     span.pixel = target->pixels + edges->scanlineY * target->pixelStride + first * target->pixelBytes;
-    span.depth = (uint32_t *)(target->depth + edges->scanlineY * target->depthStride) + first;
+    /* the depth row as dwords, compared unsigned */
+    span.depth = reinterpret_cast<uint32_t *>(target->depth + edges->scanlineY * target->depthStride) + first;
     span.depthValue = edges->longDepth + (uint32_t)Raster_MulShift(prestep, gradients->depthStepX, 12);
     span.u = edges->longU + Raster_MulShift(prestep, gradients->uStepX, 12);
     span.v = edges->longV + Raster_MulShift(prestep, gradients->vStepX, 12);
@@ -577,7 +582,7 @@ static inline RasterTarget Raster_FramebufferTarget(int pixelBytes, int clipMaxY
     target.pixels = g_FramebufferAccess->pixels;
     target.pixelBytes = pixelBytes;
     target.pixelStride = (int)g_FramebufferRowStrideBytes;
-    target.depth = (uint8_t *)g_SoftwareDepthBuffer;
+    target.depth = reinterpret_cast<uint8_t *>(g_SoftwareDepthBuffer); /* rows are addressed in bytes */
     target.depthStride = (int)g_SoftwareDepthRowStrideBytes;
     target.clipMinX = clipMinX;
     target.clipMinY = clipMinY;
@@ -591,10 +596,10 @@ static inline RasterTarget Raster_FramebufferTarget(int pixelBytes, int clipMaxY
 static inline RasterTarget Raster_AuxiliaryTarget(int clipMaxY, int clipMaxX, int clipMinY, int clipMinX)
 {
     RasterTarget target;
-    target.pixels = (uint8_t *)g_SoftwareAuxiliaryTargetBase;
+    target.pixels = static_cast<uint8_t *>(g_SoftwareAuxiliaryTargetBase);
     target.pixelBytes = 4;
     target.pixelStride = clipMaxX * 4;
-    target.depth = (uint8_t *)g_SoftwareDepthBuffer;
+    target.depth = reinterpret_cast<uint8_t *>(g_SoftwareDepthBuffer); /* rows are addressed in bytes */
     target.depthStride = clipMaxX * 4;
     target.clipMinX = clipMinX;
     target.clipMinY = clipMinY;
@@ -622,7 +627,7 @@ static inline void RasterSpan_Next(RasterSpan *span)
 static inline void Raster_SetupTexture(const GraphicsPrimitivePacket *packet, RasterTexture *texture)
 {
     const GraphicsTextureSetEntry *entry = packet->textureEntry;
-    const uint8_t *asset = (const uint8_t *)entry->sourceAsset;
+    const uint8_t *asset = GraphicsTextureSource_Bytes(entry->sourceAsset.get());
     const GraphicsTextureSourceEntry *source = entry->sourceEntry;
     int paletteIndex = (int)source->paletteIndex;
     texture->widthLog2 = (int)entry->widthLog2;
@@ -639,9 +644,9 @@ static inline uint32_t Raster_FetchTexel(const RasterTexture *texture, int u, in
     uint32_t index = (((uint32_t)u & texture->uMask) >> 12) +
                   (uint32_t)(((unsigned long long)((uint32_t)v & texture->vMask) << 32) >> (44 - texture->widthLog2));
     if (texture->palette != nullptr) {
-        return *(const uint32_t *)(texture->palette + texture->texels[index] * 8u);
+        return Thandor_LoadU32(texture->palette + texture->texels[index] * 8u);
     }
-    return ((const uint32_t *)texture->texels)[index];
+    return Thandor_LoadU32(texture->texels + static_cast<size_t>(index) * 4u);
 }
 
 /* An ARGB texel as lanes of (c * 0x101) >> 2 (PUNPCKLBW + PSRLW 2), ready for Raster_Modulate. */

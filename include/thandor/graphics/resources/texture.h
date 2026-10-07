@@ -20,30 +20,57 @@
 /* The 0x200-byte asset header (sizeof(GraphicsTextureSourceAsset)) is followed by paletteBankCount palette banks
    of 256 eight-byte entries (argb8888, framebuffer pixel); the subresource table and the pixels lie at the
    offsets the header and the records name. */
-#define GFX_ASSET_HEADER_SIZE 0x200
-#define GFX_PALETTE_BANK_SIZE 0x800
-#define GFX_SUBRESOURCE_RECORD_SIZE 0x20
-#define GRAPHICS_TEXTURE_SET_ENTRY_BYTES sizeof(GraphicsTextureSetEntry) /* 0x20 on x86, after the texture set header */
-#define GRAPHICS_TEXTURE_SET_HEADER_BYTES offsetof(GraphicsTextureSet, entries) /* 8 on x86 */
-#define GFX_SUBRESOURCE_LOGICAL_WIDTH 0x00  /* tile extent used by the tiled blits */
-#define GFX_SUBRESOURCE_LOGICAL_HEIGHT 0x04
-#define GFX_SUBRESOURCE_PALETTE_INDEX 0x08  /* -1: direct ARGB8888 pixels; else palette bank, 8-bit indices */
-#define GFX_SUBRESOURCE_PIXEL_OFFSET 0x0C   /* asset-relative offset of the pixels */
-#define GFX_SUBRESOURCE_ORIGIN_X 0x10       /* position of the stored pixels inside the logical extent */
-#define GFX_SUBRESOURCE_ORIGIN_Y 0x14
-#define GFX_SUBRESOURCE_PIXEL_WIDTH 0x18    /* stored pixels per row */
-#define GFX_SUBRESOURCE_PIXEL_HEIGHT 0x1C   /* stored rows */
+inline constexpr int GFX_ASSET_HEADER_SIZE = 0x200;
+inline constexpr int GFX_PALETTE_BANK_SIZE = 0x800;
+inline constexpr int GFX_SUBRESOURCE_RECORD_SIZE = 0x20;
+inline constexpr size_t GRAPHICS_TEXTURE_SET_ENTRY_BYTES = sizeof(GraphicsTextureSetEntry); /* 0x20 on x86, after the texture set header */
+inline constexpr size_t GRAPHICS_TEXTURE_SET_HEADER_BYTES = offsetof(GraphicsTextureSet, entries); /* 8 on x86 */
+inline constexpr int GFX_SUBRESOURCE_LOGICAL_WIDTH = 0x00; /* tile extent used by the tiled blits */
+inline constexpr int GFX_SUBRESOURCE_LOGICAL_HEIGHT = 0x04;
+inline constexpr int GFX_SUBRESOURCE_PALETTE_INDEX = 0x08; /* -1: direct ARGB8888 pixels; else palette bank, 8-bit indices */
+inline constexpr int GFX_SUBRESOURCE_PIXEL_OFFSET = 0x0C; /* asset-relative offset of the pixels */
+inline constexpr int GFX_SUBRESOURCE_ORIGIN_X = 0x10; /* position of the stored pixels inside the logical extent */
+inline constexpr int GFX_SUBRESOURCE_ORIGIN_Y = 0x14;
+inline constexpr int GFX_SUBRESOURCE_PIXEL_WIDTH = 0x18; /* stored pixels per row */
+inline constexpr int GFX_SUBRESOURCE_PIXEL_HEIGHT = 0x1C; /* stored rows */
 /* Pixels of an asset with a single subresource record directly after the header (offscreen renders) */
-#define GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET (GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_RECORD_SIZE)
+inline constexpr auto GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET = GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_RECORD_SIZE;
+
+/* The asset as bytes: every offset in the header and the subresource records is relative to the asset start
+   (the asset is one block of header, palette banks, record table and pixels). */
+static inline const uint8_t *GraphicsTextureSource_Bytes(const GraphicsTextureSourceAsset *sourceAsset)
+{
+    return reinterpret_cast<const uint8_t *>(sourceAsset); /* byte view of the asset block */
+}
+
+static inline uint8_t *GraphicsTextureSource_Bytes(GraphicsTextureSourceAsset *sourceAsset)
+{
+    return reinterpret_cast<uint8_t *>(sourceAsset); /* byte view of the asset block */
+}
+
+/* The subresource record table at asset + subresourceTableOffset. */
+static inline const GraphicsTextureSourceEntry *GraphicsTextureSource_Entries(const GraphicsTextureSourceAsset *sourceAsset)
+{
+    /* the records are 32-byte GraphicsTextureSourceEntry structs inside the asset block */
+    return reinterpret_cast<const GraphicsTextureSourceEntry *>(GraphicsTextureSource_Bytes(sourceAsset) +
+                                                               sourceAsset->tableDescriptor.subresourceTableOffset);
+}
+
+static inline GraphicsTextureSourceEntry *GraphicsTextureSource_Entries(GraphicsTextureSourceAsset *sourceAsset)
+{
+    /* the records are 32-byte GraphicsTextureSourceEntry structs inside the asset block */
+    return reinterpret_cast<GraphicsTextureSourceEntry *>(GraphicsTextureSource_Bytes(sourceAsset) +
+                                                         sourceAsset->tableDescriptor.subresourceTableOffset);
+}
 
 GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
-Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
+bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
-Bool8 GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sourceAsset);
+bool GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sourceAsset);
 
 GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16,uint32_t *outError);
 

@@ -9,16 +9,31 @@
 #include <thandor/thandor.h>
 #include <thandor/core/color_lanes.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/assets/record_bytes.h>
+
+/* The projection work record of a field grid cell: the terrain pass reuses the 0x80-byte cells of the field grid
+   as its vertex records. */
+static inline TerrainProjectedVertexWorkRecord *TerrainVertex_OfCell(FieldGridCell *cell)
+{
+  return reinterpret_cast<TerrainProjectedVertexWorkRecord *>(cell);
+}
+
+/* The vertex one grid row below (rowStrideBytes: one grid row of vertex records). */
+static inline TerrainProjectedVertexWorkRecord *TerrainVertex_RowBelow(TerrainProjectedVertexWorkRecord *vertex,
+                                                                       uint32_t rowStrideBytes)
+{
+  return reinterpret_cast<TerrainProjectedVertexWorkRecord *>(reinterpret_cast<uint8_t *>(vertex) + rowStrideBytes);
+}
 
 /* Module data. */
 
 /* Entries of g_TerrainProjectedRowSpans, and the most grid rows TerrainProjectedGrid_TransformShadeAndQueue draws
    (the clip pass empties rows up to gridHeight + 1; 257 is the limit the table was sized for). */
-#define TERRAIN_PROJECTED_ROW_SPAN_COUNT 260
-#define TERRAIN_PROJECTED_GRID_MAX_ROWS 257
+static constexpr int TERRAIN_PROJECTED_ROW_SPAN_COUNT = 260;
+static constexpr int TERRAIN_PROJECTED_GRID_MAX_ROWS = 257;
 
-/* per-row visible column spans of the terrain projection; entries 0..258 start zeroed, entry 259 keeps the
-   0x90 fill bytes the original image held there */
+/* per-row visible column spans of the terrain projection, all zero at start (the original held 0x90 fill bytes
+   in entry 259; the read loops stop at row gridHeight - 1 <= 256, only the clip pass's emptying writes reach it) */
 static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[TERRAIN_PROJECTED_ROW_SPAN_COUNT] = {
     /*   0 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /*  10 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
@@ -45,10 +60,9 @@ static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[TERRAIN_PROJECTED_ROW_
     /* 220 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /* 230 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /* 240 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
-    /* 250 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
-    /* 259 */ {.firstColumn = (int)0x90909090, .endColumnExclusive = (int)0x90909090}};
+    /* 250 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
 
-Bool8 g_Triangle2DBarycentricOutside;
+bool g_Triangle2DBarycentricOutside;
 
 /* Terrain pass of the world view (called by FrontendModelPointerContext_RenderWorldViewQueuesClipped): unless
    the previous projection can be reused (TERRAIN_RENDER_REUSE_PROJECTION), rebuilds the visible column span of
@@ -76,7 +90,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   TerrainProjectedVertexWorkRecord *vertexCursor;
   TerrainProjectedRowSpan *rowSpan;
   int spanPairsLeft;
-  static Bool8 loggedGridRejected;
+  static bool loggedGridRejected;
 
   /* The original trusted the FLD grid size; a grid that does not fit the span table (rows 0..256 plus the
      emptied rows past the grid) or has fewer than two rows or no columns is not drawn here, because the span
@@ -90,10 +104,11 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     }
     return;
   }
-  if ((renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION) == 0) {
+  if (!Any(renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION)) {
     rowSpan = g_TerrainProjectedRowSpans;
     gridWidth = fieldGrid->gridWidth;
     rowCount = fieldGrid->gridHeight;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       rowSpan->firstColumn = 0;
       rowSpan->endColumnExclusive = gridWidth;
@@ -109,10 +124,11 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     rowCells = fieldGrid->cells;
     rowsRemaining = rowCount;
     columnsRemaining = gridWidth;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       do {
         rowCells->flagsAndMaterial =
-             rowCells->flagsAndMaterial | (TERRAIN_VERTEX_POINT_A_NOT_PROJECTED | TERRAIN_VERTEX_POINT_B_NOT_PROJECTED);
+             rowCells->flagsAndMaterial | (FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED | FIELD_CELL_VERTEX_POINT_B_NOT_PROJECTED);
         rowCells = rowCells + 1;
         columnsRemaining--;
       } while (columnsRemaining != 0);
@@ -124,6 +140,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     spanPairsLeft = rowCount - 1;
     previousFirstColumn = g_TerrainProjectedRowSpans[0].firstColumn;
     previousEndColumn = g_TerrainProjectedRowSpans[0].endColumnExclusive;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       rowSpan = rowSpan + 1;
       spanFirstColumn = rowSpan->firstColumn;
@@ -159,19 +176,19 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   rowSpan = g_TerrainProjectedRowSpans;
   gridWidth = fieldGrid->gridWidth;
   rowCount = fieldGrid->gridHeight;
-  if (((fieldGrid->runtimeStateFlags & FIELD_GRID_RUNTIME_SURFACE_DIRTY) == 0) &&
-     ((renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION) != 0)) {
+  if (!Any(fieldGrid->runtimeStateFlags & FIELD_GRID_RUNTIME_SURFACE_DIRTY) &&
+     (Any(renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION))) {
     rowCells = fieldGrid->cells;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       spanFirstColumn = rowSpan->firstColumn;
       vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
       if (vertexCount != 0 && spanFirstColumn <= rowSpan->endColumnExclusive) {
-        vertexCursor = (TerrainProjectedVertexWorkRecord *)(rowCells + spanFirstColumn);
-        do {
+        vertexCursor = TerrainVertex_OfCell(rowCells + spanFirstColumn);
+        for (; vertexCount != 0; vertexCount = vertexCount - 1) {
           TerrainProjectedVertex_ReshadeKeepingProjection(vertexCursor);
           vertexCursor = vertexCursor + 1;
-          vertexCount = vertexCount - 1;
-        } while (vertexCount != 0);
+        }
       }
       rowSpan = rowSpan + 1;
       rowCells = rowCells + gridWidth;
@@ -182,16 +199,16 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags & ~FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     renderContext->contextFlags = renderContext->contextFlags & ~TERRAIN_RENDER_REUSE_PROJECTION;
     rowCells = fieldGrid->cells;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       spanFirstColumn = rowSpan->firstColumn;
       vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
       if (vertexCount != 0 && spanFirstColumn <= rowSpan->endColumnExclusive) {
-        vertexCursor = (TerrainProjectedVertexWorkRecord *)(rowCells + spanFirstColumn);
-        do {
+        vertexCursor = TerrainVertex_OfCell(rowCells + spanFirstColumn);
+        for (; vertexCount != 0; vertexCount = vertexCount - 1) {
           TerrainProjectedVertex_TransformProjectAndShade(vertexCursor);
           vertexCursor = vertexCursor + 1;
-          vertexCount = vertexCount - 1;
-        } while (vertexCount != 0);
+        }
       }
       rowSpan = rowSpan + 1;
       rowCells = rowCells + gridWidth;
@@ -203,18 +220,18 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   rowSpan = g_TerrainProjectedRowSpans;
   /* quads: rows 0..height-2, columns firstColumn..endColumnExclusive-2 */
   quadRowsLeft = fieldGrid->gridHeight - 1;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     spanFirstColumn = rowSpan->firstColumn;
     vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
     if (vertexCount != 0 && spanFirstColumn <= rowSpan->endColumnExclusive) {
       quadCount = vertexCount - 1;
       if (quadCount != 0) {
-        vertexCursor = (TerrainProjectedVertexWorkRecord *)(rowCells + spanFirstColumn);
-        do {
+        vertexCursor = TerrainVertex_OfCell(rowCells + spanFirstColumn);
+        for (; quadCount != 0; quadCount = quadCount - 1) {
           TerrainProjectedQuad_QueueAsTwoTriangles(gridWidth * sizeof(FieldGridCell),vertexCursor,renderContext);
           vertexCursor = vertexCursor + 1;
-          quadCount = quadCount - 1;
-        } while (quadCount != 0);
+        }
       }
     }
     rowSpan = rowSpan + 1;
@@ -255,12 +272,12 @@ void TerrainProjectedQuad_QueueAsTwoTriangles
   /* + rowStrideBytes: the vertex one row down */
   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
             (topLeftVertex->surfacePacketIndex,topLeftVertex + 1,
-             (TerrainProjectedVertexWorkRecord *)((uint8_t *)topLeftVertex + rowStrideBytes),topLeftVertex,
+             TerrainVertex_RowBelow(topLeftVertex,rowStrideBytes),topLeftVertex,
              renderContext);
   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
             (topLeftVertex->surfacePacketIndex,topLeftVertex + 1,
-             (TerrainProjectedVertexWorkRecord *)((uint8_t *)(topLeftVertex + 1) + rowStrideBytes),
-             (TerrainProjectedVertexWorkRecord *)((uint8_t *)topLeftVertex + rowStrideBytes),renderContext);
+             TerrainVertex_RowBelow(topLeftVertex + 1,rowStrideBytes),
+             TerrainVertex_RowBelow(topLeftVertex,rowStrideBytes),renderContext);
 }
 
 
@@ -410,7 +427,7 @@ static void TerrainProjectedTriangle_PickCursor
 
 {
   TriangleBarycentricWeightsQ12 barycentricWeights;
-  Bool8 outsideTriangle;
+  bool outsideTriangle;
   uint32_t vertex0ViewDepth;
 
   barycentricWeights = Triangle2D_ComputeBarycentricWeightsQ12Packed
@@ -467,9 +484,9 @@ static GraphicsPrimitivePacket *TerrainProjectedTriangle_QueueSoilPacket
   GraphicsPrimitivePacket *queuedPacket;
 
   queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
-                     ((uint32_t *)((uint8_t *)soilPacketTable + packetOffset),vertex2Color,vertex1Color,vertex0Color,
-                      (GraphicsProjectedVertexSource *)vertex2,(GraphicsProjectedVertexSource *)vertex1,
-                      (GraphicsProjectedVertexSource *)vertex0,renderContext);
+                     (Asset_RecordAt<uint32_t>(soilPacketTable,packetOffset),vertex2Color,vertex1Color,vertex0Color,
+                      TerrainVertex_AsProjectedSource(vertex2),TerrainVertex_AsProjectedSource(vertex1),
+                      TerrainVertex_AsProjectedSource(vertex0),renderContext);
   if (queuedPacket != nullptr) {
     queuedPacket->renderFlags = queuedPacket->renderFlags | layerFlags;
   }
@@ -520,10 +537,10 @@ static void TerrainProjectedTriangle_QueueSoilTriangles
   packetOffset1 = materialOffset1 + (vertex1->projectionFlags & TERRAIN_VERTEX_VARIANT_OFFSET_MASK);
   packetOffset2 = materialOffset2 + (vertex2->projectionFlags & TERRAIN_VERTEX_VARIANT_OFFSET_MASK);
   queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
-                     ((uint32_t *)((uint8_t *)soilPacketTable +
+                     (reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(soilPacketTable) +
                                materialOffset0 + (vertex0->projectionFlags & TERRAIN_VERTEX_VARIANT_OFFSET_MASK)),
-                      vertex2Color,vertex1Color,vertex0Color,(GraphicsProjectedVertexSource *)vertex2,
-                      (GraphicsProjectedVertexSource *)vertex1,(GraphicsProjectedVertexSource *)vertex0,
+                      vertex2Color,vertex1Color,vertex0Color,TerrainVertex_AsProjectedSource(vertex2),
+                      TerrainVertex_AsProjectedSource(vertex1),TerrainVertex_AsProjectedSource(vertex0),
                       renderContext);
   if (queuedPacket == nullptr) {
     return;
@@ -595,7 +612,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       }
       TerrainProjectedTriangle_QueueSoilTriangles(vertex2,vertex1,vertex0,renderContext);
     }
-    if ((((((renderContext->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) != 0) ||
+    if (((((Any(renderContext->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY)) ||
           (0 < vertex0->secondaryProjectionDepthQ12)) || (0 < vertex1->secondaryProjectionDepthQ12))
         || (0 < vertex2->secondaryProjectionDepthQ12)) &&
        (((vertex0->projectionFlags | vertex1->projectionFlags | vertex2->projectionFlags) &
@@ -618,13 +635,13 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       litProduct2 = pmulhw(ColorLanes_UnpackBytesShiftRight(vertex2Color,4),
                            g_PackedLightingLookupTable[vertex2->lightingLookupIndexOrSentinel]);
       GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
-                ((uint32_t *)((uint8_t *)g_TerrainSurfacePacketTablePayload +
+                (Asset_RecordAt<uint32_t>(g_TerrainSurfacePacketTablePayload,
                               surfacePacketIndex * TERRAIN_SURFACE_PACKET_BYTES),
                  ColorLanes_PackWordsUnsignedSaturate(litProduct2),
                  ColorLanes_PackWordsUnsignedSaturate(litProduct1),
                  ColorLanes_PackWordsUnsignedSaturate(litProduct0),
-                 (GraphicsProjectedVertexSource *)vertex2,(GraphicsProjectedVertexSource *)vertex1,
-                 (GraphicsProjectedVertexSource *)vertex0,renderContext);
+                 TerrainVertex_AsProjectedSource(vertex2),TerrainVertex_AsProjectedSource(vertex1),
+                 TerrainVertex_AsProjectedSource(vertex0),renderContext);
     }
   }
 }
@@ -708,6 +725,7 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
     /* raises every row's first column to the plane's crossing column */
     rowSpan = g_TerrainProjectedRowSpans;
     rowsRemaining = fieldGrid->gridHeight;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       columnBound = (int)(columnEdgeQ12 - FIELD_GRID_CELL_Q12) >> Q12_SHIFT;
       columnEdgeQ12 = columnEdgeQ12 + ((FIXED_PRODUCT_SHR(columnStepProduct, Q20_SHIFT)) - FIELD_GRID_CELL_Q12 / 2);
@@ -731,6 +749,7 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
     /* lowers every row's end column to the plane's crossing column */
     rowSpan = g_TerrainProjectedRowSpans;
     rowsRemaining = fieldGrid->gridHeight;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       columnBound = (int)(columnEdgeQ12 + (FIELD_GRID_TWO_CELLS_Q12 - 1)) >> Q12_SHIFT;
       columnEdgeQ12 = columnEdgeQ12 + ((FIXED_PRODUCT_SHR(columnStepProduct, Q20_SHIFT)) - FIELD_GRID_CELL_Q12 / 2);
@@ -797,11 +816,11 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
   primitiveQueue->primaryNodes[packetIndex].packet = newPacket;
   /* the vertices are TerrainProjectedVertexWorkRecords (passed with the GraphicsProjectedVertexSource type) */
   GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[0],
-          (const TerrainProjectedVertexWorkRecord *)vertex0Projected,vertex0DiffuseColor);
+          TerrainVertex_FromProjectedSource(vertex0Projected),vertex0DiffuseColor);
   GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[1],
-          (const TerrainProjectedVertexWorkRecord *)vertex1Projected,vertex1DiffuseColor);
+          TerrainVertex_FromProjectedSource(vertex1Projected),vertex1DiffuseColor);
   GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[2],
-          (const TerrainProjectedVertexWorkRecord *)vertex2Projected,vertex2DiffuseColor);
+          TerrainVertex_FromProjectedSource(vertex2Projected),vertex2DiffuseColor);
   newPacket->vertices[0].textureU = terrainPacketRecord[0];
   newPacket->vertices[1].textureU = terrainPacketRecord[2];
   newPacket->vertices[2].textureU = terrainPacketRecord[4];
@@ -861,7 +880,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
   GraphicsTextureSet *materialTextureSet;
   PackedArgb32 paletteModulationColor;
   GraphicsPrimitivePacket *newPacket;
-  static Bool8 loggedMissingMaterial;
+  static bool loggedMissingMaterial;
 
   /* The original dereferenced the material's texture set unchecked; a packet whose material index is out of
      range or names an optional material that was not loaded (a NULL entry) is skipped here, as if the queue
@@ -900,7 +919,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
   }
   newPacket->modulationColor = paletteModulationColor;
   materialTextureSet = g_TerrainMaterialTextureSets[terrainPacketRecord[6]];
-  newPacket->renderFlags = g_UiCommandModeGColorVariantFlags;
+  newPacket->renderFlags = FromBits<GraphicsPrimitiveDispatchFlags>(g_UiCommandModeGColorVariantFlags);
   newPacket->textureEntry = materialTextureSet->entries;
   return newPacket;
 }

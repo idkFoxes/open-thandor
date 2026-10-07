@@ -13,10 +13,10 @@
 #include <thandor/core/types.h>
 #include <thandor/graphics/resources/types.h>
 
-typedef struct ArmyAssetRecordPrefix ArmyAssetRecordPrefix, *PArmyAssetRecordPrefix;
-typedef struct ArmyAssetRecord ArmyAssetRecord, *PArmyAssetRecord;
-typedef struct ArmyAssetHeader ArmyAssetHeader, *PArmyAssetHeader;
-typedef struct GeneratedAssetRecordCountHeader GeneratedAssetRecordCountHeader, *PGeneratedAssetRecordCountHeader;
+struct ArmyAssetRecordPrefix;
+struct ArmyAssetRecord;
+struct ArmyAssetHeader;
+struct GeneratedAssetRecordCountHeader;
 
 using AssetRecordByteCount = uint32_t;
 
@@ -65,5 +65,21 @@ struct ArmyAssetHeader {
     struct GeneratedAssetRecordCountHeader recordCountHeader;
     uint8_t reservedB4_1FF[332];
 };
+
+/* The army registry (g_ArmyAssetRecordRegistry) keeps ArmyAssetRecordPrefix pointers; each one is the first 0x10
+   bytes of an ArmyAssetRecord of a loaded ARM asset, whose leading fields have the prefix's offsets. These
+   convert between the two views of the same record bytes. */
+static_assert(offsetof(ArmyAssetRecord, byteSize) == offsetof(ArmyAssetRecordPrefix, byteSize));
+static_assert(offsetof(ArmyAssetRecord, registryId) == offsetof(ArmyAssetRecordPrefix, registryId));
+static_assert(offsetof(ArmyAssetRecord, rootNodeOffsetOrPointer) ==
+              offsetof(ArmyAssetRecordPrefix, rootNodeOffsetOrPointer));
+static inline ArmyAssetRecord *ArmyAssetRecord_FromPrefix(ArmyAssetRecordPrefix *prefix)
+{
+  return reinterpret_cast<ArmyAssetRecord *>(prefix);
+}
+static inline ArmyAssetRecordPrefix *ArmyAssetRecord_Prefix(ArmyAssetRecord *record)
+{
+  return reinterpret_cast<ArmyAssetRecordPrefix *>(record);
+}
 
 #endif /* THANDOR_ASSETS_ARMY_TYPES_H */

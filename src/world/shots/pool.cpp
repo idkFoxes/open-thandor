@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/shots/runtime.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/core/color_lanes.h>
 
@@ -25,12 +26,11 @@ uint8_t *g_ShotRuntimeRebaseBaseMinusOne = nullptr;
    with *outError = 0 on success, or false with the error code of the first failing load or allocation in
    *outError (always written).
 */
-Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
+bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
 
 {
   ShotRuntimeSlot *pool;
   uint32_t *poolDword;
-  int poolDwordsRemaining;
   uint32_t loadError;
   GraphicsTextureSet *loadedTextureSet;
   GraphicsPaletteAsset *loadedPalette;
@@ -52,20 +52,17 @@ Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outE
   }
   MoviePlayback_AdvanceScheduledFrameAndTick();
   g_ShotPalette = loadedPalette;
-  loadError = g_MemoryApi.alloc(SHOT_RUNTIME_POOL_BYTES,(void **)&pool);
+  loadError = g_MemoryApi.alloc(SHOT_RUNTIME_POOL_BYTES,reinterpret_cast<void **>(&pool)); /* the arena stores the block address through void ** */
   if (loadError != 0) {
     *outError = loadError;
     return false;
   }
   /* pool address - 1 */
-  g_ShotRuntimeRebaseBaseMinusOne = (uint8_t *)pool - 1;
+  g_ShotRuntimeRebaseBaseMinusOne = reinterpret_cast<uint8_t *>(pool) - 1;
   g_ShotRuntimeSlots = pool;
   /* clears the pool dword by dword */
-  poolDword = (uint32_t *)pool;
-  for (poolDwordsRemaining = SHOT_RUNTIME_POOL_BYTES / 4; poolDwordsRemaining != 0; poolDwordsRemaining--) {
-    *poolDword = 0;
-    poolDword++;
-  }
+  poolDword = reinterpret_cast<uint32_t *>(pool); /* zeroed dword by dword, as the original */
+  std::fill_n(poolDword,SHOT_RUNTIME_POOL_BYTES / 4,0);
   *outError = 0;
   return true;
 }
@@ -154,7 +151,7 @@ void ShotRuntime_RebaseSlotsAfterLoad()
     if (shotSlot->modelNodeOrSavedOffset.modelNode != nullptr) {
       if (rebasedRuntimeState != nullptr) {
         /* 5f-format: ShotRuntimeSlot.runtimeStateOrSavedOffset */
-        rebasedRuntimeState = (void *)(Thandor_PointerToI32(rebasedRuntimeState) + g_ModelRuntimeRebaseDelta);
+        rebasedRuntimeState = reinterpret_cast<void *>(Thandor_PointerToI32(rebasedRuntimeState) + g_ModelRuntimeRebaseDelta);
       }
       rebasedOwnerArmy = nullptr;
       if (savedOwnerArmy != nullptr) {
@@ -164,7 +161,7 @@ void ShotRuntime_RebaseSlotsAfterLoad()
       /* saved model node offset + g_RuntimeObjectRebaseBaseMinusOne */
       /* 5f-format: ShotRuntimeSlot.modelNodeOrSavedOffset */
       shotSlot->modelNodeOrSavedOffset.modelNode =
-           (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)shotSlot->modelNodeOrSavedOffset.modelNode);
+           reinterpret_cast<ModelRuntimeNode *>(g_RuntimeObjectRebaseBaseMinusOne + (int)shotSlot->modelNodeOrSavedOffset.modelNode);
       shotSlot->runtimeStateOrSavedOffset.runtimeStatePointer = rebasedRuntimeState;
       shotSlot->ownerAndTrajectory.ownerArmyRuntime = rebasedOwnerArmy;
       /* the slot still holds the saved definition id in its definition field */
@@ -242,12 +239,12 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   if (slotsRemaining == 0) {
     return; /* no free slot */
   }
-  shotModelNode = (ShotModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldRuntime);
+  shotModelNode = WorldNode_View<ShotModelRuntimeNode>(WorldObjectArray_AllocateFreeRecord(worldRuntime));
   if (shotModelNode == nullptr) {
     return;
   }
-  WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)shotModelNode);
-  shotRuntimeCursor->modelNodeOrSavedOffset.modelNode = (ModelRuntimeNode *)shotModelNode;
+  WorldRuntime_LinkOwnerListNode(WorldNode_View<WorldOwnerListNode>(shotModelNode));
+  shotRuntimeCursor->modelNodeOrSavedOffset.modelNode = WorldNode_View<ModelRuntimeNode>(shotModelNode);
   shotRuntimeCursor->definitionOrSavedId.definition = shotDefinition;
   shotModelNode->ownerClassId = WORLD_OWNER_RUNTIME_SHOT;
   shotModelNode->shotRuntime = shotRuntimeCursor;
@@ -279,7 +276,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotRuntimeCursor->ownerAndTrajectory.directionComponent2Q12 = launchDirectionZQ12;
   shotRuntimeCursor->projectileAgeTicks = 0;
   shotPalette = g_ShotPalette;
-  nestedModelResource = (ModelResource *)shotDefinition->ownedNestedResource;
+  nestedModelResource = static_cast<ModelResource *>(shotDefinition->ownedNestedResource.get());
   shotModelNode->modelPayload.textureSet = g_ShotTextureSet;
   modelBoundingRadiusQ12 = nestedModelResource->boundingRadiusQ12;
   shotModelNode->modelPayload.paletteAsset = shotPalette;
@@ -288,24 +285,24 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   frameThresholdQ4 = shotDefinition->animationFrameAdvanceThresholdQ4;
   elevationOffsetAngle = shotDefinition->elevationOffsetAngle16;
   shotRuntimeCursor->ownerAndTrajectory.animationFrameIndex = 0;
-  shotRuntimeCursor->impactEffectEmissionFlags = 0;
+  shotRuntimeCursor->impactEffectEmissionFlags = {};
   shotRuntimeCursor->animationFrameAccumulatorQ4 = frameThresholdQ4;
   shotRuntimeCursor->runtimeStateOrSavedOffset.runtimeState = targetModelReference;
   shotRuntimeCursor->elevationOffsetAngle16 = elevationOffsetAngle;
   shotModelNode->modelPayload.meshGroupMask = UINT32_MAX;
   secondaryEffectInterval = shotDefinition->secondaryEffectIntervalTicks;
-  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | 1;
+  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   shotRuntimeCursor->ownerAndTrajectory.secondaryEffectCountdownTicks = secondaryEffectInterval;
   shotModelNode->textureSubresourceBaseIndex = 0;
   shotModelNode->modelRuntimeLinkOrSavedOffset = nullptr;
   /* optional light point of the model: allocates a shading record there */
   if (!ModelLookupTable_FindPackedPoint
-         (0,MODEL_POINT_CLASS_LIGHT,(ModelResource *)shotDefinition->ownedNestedResource,&packedPoint)) {
+         (0,MODEL_POINT_CLASS_LIGHT,static_cast<ModelResource *>(shotDefinition->ownedNestedResource.get()),&packedPoint)) {
     shotModelNode->shadingRecord = nullptr;
   }
   else {
     localPoint = ModelNodeRuntime_TransformLocalPoint
-                       (packedPoint,(ModelRuntimeNode *)shotModelNode);
+                       (packedPoint,WorldNode_View<ModelRuntimeNode>(shotModelNode));
     shotModelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord
                        (shotDefinition->shadingTransitionDurationTicks,
                         (shotDefinition->shadingColorArgb >> 24) << 8, /* alpha byte = radius / 16 */
@@ -320,19 +317,19 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   resolvedMasks =
        TerrainOccupancyMask_ResolveRuntimeClassFlags(TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED,0,neighborhoodMask,runtimeClassIndex);
   shotRuntimeCursor->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
-  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | resolvedMasks.runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
-  nodeTintArgb = ModelRuntimeNode_GetStateTintArgb((ModelRuntimeNode *)shotModelNode);
+  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | FromBits<ModelRuntimeFlags>(resolvedMasks.runtimeFlags) | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
+  nodeTintArgb = ModelRuntimeNode_GetStateTintArgb(WorldNode_View<ModelRuntimeNode>(shotModelNode));
   definitionTintArgb = shotDefinition->stateTintArgb;
   /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
   tintProduct = pmulhw(ColorLanes_UnpackBytesShiftRight(nodeTintArgb,4),
                        ColorLanes_UnpackBytesShiftRight(definitionTintArgb,4));
   shotModelNode->tintArgb = ColorLanes_PackWordsUnsignedSaturate(tintProduct);
-  ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
-  ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
+  ModelNodeRuntime_RebuildTransformsFromRoot(WorldNode_View<ModelRuntimeNode>(shotModelNode));
+  ModelNodeRuntime_UpdateDepthBinMasks(0,WorldNode_View<ModelRuntimeNode>(shotModelNode));
   if (ModelLookupTable_FindPackedPoint
-        (0,MODEL_POINT_CLASS_EFFECT,(ModelResource *)shotDefinition->ownedNestedResource,&packedPoint)) {
+        (0,MODEL_POINT_CLASS_EFFECT,static_cast<ModelResource *>(shotDefinition->ownedNestedResource.get()),&packedPoint)) {
     localPoint = ModelNodeRuntime_TransformLocalPoint
-                       (packedPoint,(ModelRuntimeNode *)shotModelNode);
+                       (packedPoint,WorldNode_View<ModelRuntimeNode>(shotModelNode));
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
                shotModelNode->modelPayload.worldRotationAngle2,

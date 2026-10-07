@@ -31,7 +31,8 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken;
   if (primaryEntityOffset != 0) {
-    target = (GameEntityRuntime *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
+    target = reinterpret_cast<GameEntityRuntime *> /* army token */
+             (reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne) + primaryEntityOffset);
     /* the result is ignored: the primary entity is moved whether or not it is still selected */
     SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -72,7 +73,8 @@ void SelectionPlayerRuntime_RotatePrimarySelectionBy
 
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken;
   if (primaryEntityOffset != 0) {
-    target = (GameEntityRuntime *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
+    target = reinterpret_cast<GameEntityRuntime *> /* army token */
+             (reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne) + primaryEntityOffset);
     /* the result is ignored, as in SelectionPlayerRuntime_MovePrimarySelectionBy */
     SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -99,24 +101,22 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
   playerBlocksRemaining = 8;
   entriesRemainingInBlock = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionPlayerBlocks;
-  do {
-    do {
+  for (; playerBlocksRemaining != 0; playerBlocksRemaining--) {
+    for (; entriesRemainingInBlock != 0; entriesRemainingInBlock--) {
       currentSelectionEntry = selectionEntryCursor;
       if (target == (currentSelectionEntry->selection).entries[0]) {
         (currentSelectionEntry->selection).entries[0] = nullptr;
       }
-      entriesRemainingInBlock--;
       selectionEntryCursor =
-           (SelectionPlayerRuntimeBlock *)((currentSelectionEntry->selection).entries + 1);
-    } while (entriesRemainingInBlock != 0);
+           reinterpret_cast<SelectionPlayerRuntimeBlock *>((currentSelectionEntry->selection).entries + 1);
+    }
     entriesRemainingInBlock = SELECTION_ENTRY_CAPACITY;
-    playerBlocksRemaining--;
     /* currentSelectionEntry points at the last entry (entries[31]); seen through that pointer,
        chatRecipientMaskAndWriteOffset lies exactly sizeof(SelectionPlayerRuntimeBlock) further on, at the first
        entry of the next block */
     selectionEntryCursor =
-         (SelectionPlayerRuntimeBlock *)&currentSelectionEntry->chatRecipientMaskAndWriteOffset;
-  } while (playerBlocksRemaining != 0);
+         reinterpret_cast<SelectionPlayerRuntimeBlock *>(&currentSelectionEntry->chatRecipientMaskAndWriteOffset);
+  }
 }
 
 /* Removes an entity from one 32-entry selection array: only the first matching entry is set to NULL
@@ -159,14 +159,14 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
    PlayerPairList_InsertUnique): false when listed, true when not. Used by the FieldGrid cell
    updates in world/terrain/field_edit_commands.cpp.
 */
-Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
+bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId)
 
 {
   uint32_t pairRecordsRemaining;
   SelectionPlayerPairRecord *pairRecordCursor;
   SelectionPlayerRuntimeBlock *playerBlock;
-  static Bool8 s_loggedUnlinkedPlayer;
+  static bool s_loggedUnlinkedPlayer;
 
   /* The original reads the player's block unchecked; an unlinked player (no block) counts as "not listed"
      and the count is bounded by the list capacity here because the player id comes from a command record. */
@@ -216,7 +216,7 @@ void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
     }
     /* model payload: the ModelRuntimeSlot; its owner army is the entity */
     entityRuntime =
-         (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+         WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if ((sourceArmyAssetId == (entityRuntime->common).runtimeIdentityOrArmyAssetId) &&
        (sourceFactionIndex == (entityRuntime->common).ownership.ownerIndex)) {
       SelectionPointerArray_InsertUniqueAndRecenter(entityRuntime,selection);
@@ -292,7 +292,7 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
    FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.cpp); the primary-selection move/rotate handlers call
    it and ignore the result.
 */
-Bool8 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
+bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
   int entryIndex;
@@ -311,7 +311,7 @@ Bool8 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerA
    than 5.0 (Q12 0x5000) on either axis or the two extents add up to more than 7.0 (0x7000). An empty
    selection returns false.
 */
-Bool8 SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
+bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
 
 {
   GameEntityRuntime *entry;
@@ -369,6 +369,6 @@ void SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
   /* array is advanced as a cursor over its entries */
   for (entriesRemaining = SELECTION_ENTRY_CAPACITY; entriesRemaining != 0; entriesRemaining--) {
     array->entries[0] = nullptr;
-    array = (SelectionPointerArray32 *)&array->entries[1];
+    array = reinterpret_cast<SelectionPointerArray32 *>(&array->entries[1]); /* cursor: the next entry */
   }
 }

@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/factory.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Takes the first queued secondary asset whose flags match the factory definition's buildable mask
@@ -38,7 +39,7 @@ static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdate
          g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - xeniteCostQ4;
     buildTicks = candidateAsset->buildTicks;
     energyLoadQ4 = candidateAsset->energyLoadQ4;
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD)) {
       buildTicks = (buildTicks >> 4) + 1;
     }
     selectedAssetId = candidateAsset->registryId;
@@ -51,11 +52,10 @@ static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdate
          g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
     /* Remove the entry: shift the rest of the queue down by one. Original quirk: it shifts remainingAssetCount
        entries, i.e. it also copies the slot just behind the last queued entry. */
-    do {
+    for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
       *queueEntry = queueEntry[1];
       queueEntry = queueEntry + 1;
-      remainingAssetCount = remainingAssetCount - 1;
-    } while (remainingAssetCount != 0);
+    }
     (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_BUILDING;
     (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags | ARMY_MODEL_STATE_PRODUCING;
     return;
@@ -80,7 +80,7 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
   rootNode = modelRuntime->rootModelNode;
   /* Original quirk: the voice set is read from rootNode + index * 4, not from
      worldRuntime->dwordArray, which is only tested for NULL. */
-  soundVoiceSet = THANDOR_PTR32_AT(SoundVoiceSet *, (uint8_t *)rootNode + soundIndex * 4);
+  soundVoiceSet = THANDOR_PTR32_AT(SoundVoiceSet *, Thandor_At(rootNode,soundIndex * 4));
   translationVec = &(rootNode->worldTransform).translation;
   if (soundVoiceSet == nullptr) {
     return;
@@ -153,7 +153,7 @@ static void ArmyUnitFactory_CreateBuiltArmy(WorldRuntimeContext *worldRuntime,Mo
   createdModelRuntime = createdArmyRuntime->modelRuntimeOrSavedOffset.modelRuntime;
   createdArmyRuntime->movementStateFlags = createdArmyRuntime->movementStateFlags | ARMY_MOVEMENT_LOCKED;
   /* the new army links back to this factory until it has left (ARMY_FACTORY_STATE_WAITING_EXIT) */
-  createdModelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = (ModelRuntimeSlot *)modelRuntime;
+  createdModelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = ModelView_Cast<ModelRuntimeSlot>(modelRuntime);
   if (createdFactionIndex != worldRuntime->activeFactionRuntimeIndex) {
     return;
   }
@@ -206,24 +206,24 @@ void ArmyRuntimeClass_UpdateUnitFactory
   behaviorState = (modelRuntime->classState).behaviorState;
   factoryDefinition = modelRuntime->modelDefinition;
   if ((3 < rootNode->childCount) && (rootNode->childNodes[3] != nullptr)) {
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNode->childNodes[3]);
+    WorldRuntime_UnlinkOwnerListNode(ModelView_Cast<WorldOwnerListNode>(rootNode->childNodes[3]));
     rootNode->childNodes[3] = nullptr;
   }
   switch(behaviorState) {
   case ARMY_FACTORY_STATE_IDLE: /* start the first affordable queued asset this factory can build */
-    if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
-      if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) {
+    if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING)) {
+      if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK)) {
         ArmyUnitFactory_StartBuildingFirstAffordableAsset(modelRuntime,modelRuntime->ownerArmyRuntime->factionIndex);
       }
     }
-    else if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    else if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       ArmyRuntime_UpdateTimedShotAndEffectEmitters(worldRuntime,modelRuntime);
       ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,modelRuntime);
     }
     break;
   case ARMY_FACTORY_STATE_BUILDING: /* when done create the army at the spawn point (lookup keys 1/5 and 0/5 give
                                        its heading) */
-    if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       (modelRuntime->classLinkState).classState64 =
            (modelRuntime->classLinkState).classState64 + g_InGameSimulationStepTicks;
       ArmyRuntime_UpdateTimedShotAndEffectEmitters(worldRuntime,modelRuntime);
@@ -248,9 +248,9 @@ void ArmyRuntimeClass_UpdateUnitFactory
         ArmyRuntime_StartMoveCommandWithAuxiliaryValues
                   ((modelRuntime->classLinkState).classState7C,
                    (modelRuntime->classLinkState).classState78,localPoint.yQ12,localPoint.xQ12,
-                   (ArmyMovementRuntime *)linkedArmyRuntime);
+                   ModelView_Cast<ArmyMovementRuntime>(linkedArmyRuntime));
         (linkedModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime =
-             (ModelRuntimeSlot *)modelRuntime;
+             ModelView_Cast<ModelRuntimeSlot>(modelRuntime);
       }
     }
     break;
@@ -276,7 +276,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
       (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags & ~ARMY_MODEL_STATE_PRODUCING;
     }
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Runtime update of production class 11, reached only through
@@ -313,8 +313,8 @@ void ArmyRuntimeClass_UpdateStructureFactory
 
   switch((modelRuntime->classState).behaviorState) {
   case ARMY_FACTORY_STATE_IDLE: /* start the first affordable queued asset with flag 0x10 */
-    if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
-      if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) {
+    if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING)) {
+      if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK)) {
         factionIndex = modelRuntime->ownerArmyRuntime->factionIndex;
         queueSlot = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
         for (remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; remainingAssetCount != 0;
@@ -327,10 +327,10 @@ void ArmyRuntimeClass_UpdateStructureFactory
                  g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - candidateAsset->xeniteCostQ4;
             buildTicks = candidateAsset->buildTicks;
             assetEnergyValue = candidateAsset->energyLoadQ4;
-            if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+            if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD)) {
               buildTicks = (buildTicks >> 4) + 1;
             }
-            selectedAssetLink = *(ModelRuntimeSlotLinkOrState *)&candidateAsset->registryId;
+            selectedAssetLink = *reinterpret_cast<ModelRuntimeSlotLinkOrState *>(&candidateAsset->registryId);
             (modelRuntime->classLinkState).classState68 = buildTicks;
             (modelRuntime->classLinkState).classState74 = assetEnergyValue;
             (modelRuntime->classLinkState).modelLinkOrState = selectedAssetLink;
@@ -340,11 +340,10 @@ void ArmyRuntimeClass_UpdateStructureFactory
                  g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
             /* Remove the entry from the queue. Original quirk: it shifts remainingAssetCount entries, i.e. it
                also copies the slot just behind the last queued entry. */
-            do {
+            for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
               *queueSlot = queueSlot[1];
               queueSlot = queueSlot + 1;
-              remainingAssetCount = remainingAssetCount - 1;
-            } while (remainingAssetCount != 0);
+            }
             (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_BUILDING;
             (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags | ARMY_MODEL_STATE_PRODUCING;
             break;
@@ -353,13 +352,13 @@ void ArmyRuntimeClass_UpdateStructureFactory
         }
       }
     }
-    else if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    else if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       ArmyRuntime_UpdateTimedShotAndEffectEmitters(worldRuntime,modelRuntime);
       ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,modelRuntime);
     }
     break;
   case ARMY_FACTORY_STATE_BUILDING:
-    if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+    if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
       ownerArmyRuntime = modelRuntime->ownerArmyRuntime;
       (modelRuntime->classLinkState).classState64 =
            (modelRuntime->classLinkState).classState64 + g_InGameSimulationStepTicks;
@@ -387,9 +386,9 @@ void ArmyRuntimeClass_UpdateStructureFactory
                  g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount + 1;
             if (activeFactionIndex == ownerArmyRuntime->factionIndex) {
               linkedRootNodeOffset = assetRecord->rootNodeOffsetOrPointer; /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
-              InGameArmyStock_RebuildGrid((UiNodeBase *)worldRuntime);
-              linkedModelDefinition = (ModelDefinition *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                                 (ownerArmyRuntime->factionIndex,linkedRootNodeOffset);
+              InGameArmyStock_RebuildGrid(reinterpret_cast<UiNodeBase *>(worldRuntime)); /* the world runtime as the node, as in the original */
+              linkedModelDefinition = ModelView_Cast<ModelDefinition>(ModelDefinition_SelectFactionUnlockedLinkedDefinition
+                                 (ownerArmyRuntime->factionIndex,linkedRootNodeOffset));
               rootNode = modelRuntime->rootModelNode;
               pitchAngle = (worldRuntime->motion).pitchAngle;
               headingAngle = (rootNode->modelPayload).worldRotationAngle2;
@@ -408,7 +407,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
       }
     }
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
 }
 
 /* Launches one linked asset of a class-22 pad (called directly by
@@ -418,7 +417,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
    point and heading (classState70..78) and the pad's platform height; its health is scaled by the pad's health.
    Returns true when no slot matches or the creation fails.
 */
-Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
+bool ArmyRuntimeSpawner_CreateLinkedChildInstance
           (WorldMotionValue78 inheritedValue78,WorldMotionValue74 inheritedValue74,
           WorldMotionValue70 inheritedValue70,PckArmyAssetIdCatalog linkedArmyAssetId,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeLinkedChildMaskSlotView *armyRuntime)
@@ -437,7 +436,7 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
      movementTarget0Q12; classParameterC4 slots). Original quirk: slot 0
      is tested even with 0 slots, and the count then runs below 0 instead of stopping. */
   slotBit = 1;
-  remainingSlots = ((ModelDefinition *)armyRuntime->definitionOrAsset)->classParameterC4;
+  remainingSlots = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get())->classParameterC4;
   slotAssetId = &armyRuntime->movementTarget0Q12;
   while ((linkedArmyAssetId != *slotAssetId ||
          (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit)
@@ -464,7 +463,7 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
   slotMaskState->linkedChildSlotMask = slotMaskState->linkedChildSlotMask | slotBit;
   armyRuntime->fallbackWorldYQ12 = armyRuntime->fallbackWorldYQ12 - 1;
   /* the aircraft's home pad, state 1 = parked (behaviorState), attack point and heading (classState70..78) */
-  childModelRuntime->classLinkState.modelLinkOrState.modelRuntime = (ModelRuntimeSlot *)armyRuntime;
+  childModelRuntime->classLinkState.modelLinkOrState.modelRuntime = ModelView_Cast<ModelRuntimeSlot>(armyRuntime);
   childModelRuntime->classState.behaviorState = ARMY_AIRCRAFT_STATE_PARKED;
   modelNode = childModelRuntime->rootModelNodeOrSavedOffset.modelNode;
   childModelRuntime->classLinkState.classState70 = inheritedValue70;
@@ -477,7 +476,7 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
   childModelRuntime->health =
        (int)(((int64_t)armyRuntime->actionVector2Q12 *
              (int64_t)(int)childModelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth)
-            / (int64_t)(int)((ModelDefinition *)armyRuntime->definitionOrAsset)->maximumHealth);
+            / (int64_t)(int)static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get())->maximumHealth);
   return false;
 }
 
@@ -485,7 +484,7 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
    within its radius + 0xC00 (0.75 in Q12) of the source model's anchor point (model lookup entry (1,5),
    transformed to world space), measured in x/y.
 */
-Bool8 ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
+bool ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
 
 {
   uint32_t candidateRadius;
@@ -532,17 +531,18 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
   factionIndex = (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex;
   slotBit = 1;
   slotIndex = 0;
-  remainingSlots = ((ModelDefinition *)armyRuntime->definitionOrAsset)->classParameterC4;
+  remainingSlots = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get())->classParameterC4;
   /* the linked asset ids are consecutive dwords starting at movementTarget0Q12 */
   linkedAssetIds = &armyRuntime->movementTarget0Q12;
   /* Original quirk: a do/while, so slot 0 is always visited; a classParameterC4 of 0 would run on until the
      counter wraps (the pad definitions all have linked slots). */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit) == 0) {
       if (ArmyAssetRegistry_FindById(linkedAssetIds[slotIndex],&assetRecord) == 0) {
         selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                           (factionIndex,assetRecord->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
-        metricSum = metricSum + ((ModelDefinition *)selectedDefinition)->xeniteValueQ4;
+        metricSum = metricSum + ModelView_Cast<ModelDefinition>(selectedDefinition)->xeniteValueQ4;
       }
     }
     slotIndex++;
@@ -567,7 +567,7 @@ void EffectLifecycle_SpawnArmyFromOwner(WorldRuntimeContext *worldRuntime,GameEn
   if (ownerEntity == nullptr) {
     return;
   }
-  ownerModelSlot = (ModelRuntimeSlot *)ownerEntity->common.ownership.definitionOrClassRecord;
+  ownerModelSlot = ownerEntity->common.ownership.modelRuntime();
   ownerModelNode = ownerEntity->common.ownership.modelNode;
   ownerDefinition = ownerModelSlot->definitionOrSavedId.runtimeDefinition;
   if (ownerDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_18) {

@@ -15,10 +15,10 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/ui/controls/types.h>
 
-typedef struct TechnologyCategoryMasks TechnologyCategoryMasks, *PTechnologyCategoryMasks;
-typedef struct TechnologyRecord TechnologyRecord, *PTechnologyRecord;
-typedef struct TechnologyAssetHeader TechnologyAssetHeader, *PTechnologyAssetHeader;
-typedef struct TechnologyAsset TechnologyAsset, *PTechnologyAsset;
+struct TechnologyCategoryMasks;
+struct TechnologyRecord;
+struct TechnologyAssetHeader;
+struct TechnologyAsset;
 
 enum {
     TECHNOLOGY_CATEGORY_A=0,

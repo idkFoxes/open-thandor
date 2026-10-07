@@ -19,16 +19,17 @@
 #include <thandor/world/effects/types.h>
 #include <thandor/world/terrain/types.h>
 
-typedef struct ShotDefinition ShotDefinition, *PShotDefinition;
-typedef struct ShotAssetHeader ShotAssetHeader, *PShotAssetHeader;
+struct ShotDefinition;
+struct ShotAssetHeader;
 
-enum {
+/* ShotDefinition.trajectoryMode (SHT file data) */
+enum class ShotTrajectoryMode : int {
     SHOT_TRAJECTORY_DIRECT_LINE=0,
     SHOT_TRAJECTORY_BALLISTIC=1,
     SHOT_TRAJECTORY_FIXED_RANGE=2,
     SHOT_TRAJECTORY_LEAD_ADJUSTED=3
 };
-using ShotTrajectoryMode = int;
+using enum ShotTrajectoryMode;
 
 using ShotProjectileLifetimeTicks = uint32_t;
 

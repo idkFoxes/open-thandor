@@ -14,18 +14,18 @@
 #include <thandor/core/types.h>
 #include <thandor/gameplay/army/types.h>
 
-typedef struct WorldRuntimeNodeCommon WorldRuntimeNodeCommon, *PWorldRuntimeNodeCommon;
-typedef struct WorldRuntimeNodeModelPayload WorldRuntimeNodeModelPayload, *PWorldRuntimeNodeModelPayload;
-typedef struct WorldRuntimeNode WorldRuntimeNode, *PWorldRuntimeNode;
-typedef union WorldRuntimeNodePayload WorldRuntimeNodePayload, *PWorldRuntimeNodePayload;
-typedef struct RomAssetHeader RomAssetHeader, *PRomAssetHeader;
-typedef struct RomRegistrySlot RomRegistrySlot, *PRomRegistrySlot;
-typedef struct RomAssetRecordPrefix RomAssetRecordPrefix, *PRomAssetRecordPrefix;
-typedef struct RomSerializedNodeHeader RomSerializedNodeHeader, *PRomSerializedNodeHeader;
-typedef union RomSerializedNodeReferenceOrSavedOffset4 RomSerializedNodeReferenceOrSavedOffset4, *PRomSerializedNodeReferenceOrSavedOffset4;
-typedef struct GraphicsPaletteAsset GraphicsPaletteAsset;
-typedef struct GraphicsTextureSet GraphicsTextureSet;
-typedef struct WorldRuntimeContext WorldRuntimeContext;
+struct WorldRuntimeNodeCommon;
+struct WorldRuntimeNodeModelPayload;
+struct WorldRuntimeNode;
+union WorldRuntimeNodePayload;
+struct RomAssetHeader;
+struct RomRegistrySlot;
+struct RomAssetRecordPrefix;
+struct RomSerializedNodeHeader;
+union RomSerializedNodeReferenceOrSavedOffset4;
+struct GraphicsPaletteAsset;
+struct GraphicsTextureSet;
+struct WorldRuntimeContext;
 
 using ModelMeshGroupMask = uint32_t;
 

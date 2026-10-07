@@ -13,7 +13,7 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 GridPathCost_BacktrackBestHexRoute
+bool GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn,FieldGridRegionMask *outRouteStateMask);
@@ -21,7 +21,7 @@ Bool8 GridPathCost_BacktrackBestHexRoute
 void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasses,GridScratchCell *originCell,
           FieldGridCellCoordinate startRow,FieldGridCellCoordinate startColumn);
 
-Bool8 GridPathCost_RelocateFromBlockedCell
+bool GridPathCost_RelocateFromBlockedCell
           (FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn);
 

@@ -48,7 +48,7 @@ volatile unsigned g_TestAidSessionCount;
    (LEFT/RIGHT of GraphicsCursorButtonState) and appends a pointer event of that type to the 256-entry ring
    g_CursorInputEvents, as the SDL3 input backend does for real mouse input, so scripted clicks
    reach the UI through the normal event path. */
-static void DebugScript_PushCursorEvent(GraphicsCursorEventType type, uint32_t buttons, int x, int y,
+static void DebugScript_PushCursorEvent(GraphicsCursorEventType type, GraphicsCursorButtonState buttons, int x, int y,
                                         UiPointerWheelDelta wheelDelta = 0)
 {
   uint32_t index = g_CursorInputWriteIndex;
@@ -80,7 +80,7 @@ void DebugScript_Tick()
   static int hold;
   static int extra;
   static int pendingRelease;
-  static uint32_t releaseButton;
+  static GraphicsCursorButtonState releaseButton;
   static unsigned releaseAt;
   static int releaseX;
   static int releaseY;
@@ -118,7 +118,7 @@ void DebugScript_Tick()
     }
   }
   if (pendingRelease && now >= releaseAt) {
-    DebugScript_PushCursorEvent(releaseButton == 1 ? LEFT_RELEASE : RIGHT_RELEASE, 0, releaseX, releaseY);
+    DebugScript_PushCursorEvent(releaseButton == LEFT ? LEFT_RELEASE : RIGHT_RELEASE, CURSOR_BUTTON_NONE, releaseX, releaseY);
     pendingRelease = 0;
   }
   if (typePosition >= 0) {
@@ -232,10 +232,10 @@ void DebugScript_Tick()
         clickY += ((int)g_FramebufferHeight - layoutHeight) / 2;
       }
       Thandor_Log("script: %u ms click %d %d (until in game)", now, clickX, clickY);
-      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 0, clickX, clickY);
-      DebugScript_PushCursorEvent(LEFT_PRESS, 1, clickX, clickY);
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, CURSOR_BUTTON_NONE, clickX, clickY);
+      DebugScript_PushCursorEvent(LEFT_PRESS, LEFT, clickX, clickY);
       pendingRelease = 1;
-      releaseButton = 1;
+      releaseButton = LEFT;
       releaseX = clickX;
       releaseY = clickY;
       releaseAt = now + 120;
@@ -255,22 +255,21 @@ void DebugScript_Tick()
     Thandor_Log("script: %u ms %s %d %d", now, command, x, y);
     if (strcmp(command, "click") == 0 || strcmp(command, "rclick") == 0) {
       int right = command[0] == 'r';
-      /* g_MouseButtonMask bits: 1 left, 4 right */
-      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
-      DebugScript_PushCursorEvent(right ? RIGHT_PRESS : LEFT_PRESS, right ? 4 : 1, x, y);
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, CURSOR_BUTTON_NONE, x, y);
+      DebugScript_PushCursorEvent(right ? RIGHT_PRESS : LEFT_PRESS, right ? RIGHT : LEFT, x, y);
       pendingRelease = 1;
-      releaseButton = right ? 4 : 1;
+      releaseButton = right ? RIGHT : LEFT;
       /* the next line is read before the release is due and overwrites x, y */
       releaseX = x;
       releaseY = y;
       releaseAt = now + (hold > 0 ? (unsigned)hold : 120);
     }
     else if (strcmp(command, "move") == 0) {
-      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, CURSOR_BUTTON_NONE, x, y);
     }
     else if (strcmp(command, "wheel") == 0) {
-      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
-      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y, hold);
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, CURSOR_BUTTON_NONE, x, y);
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, CURSOR_BUTTON_NONE, x, y, hold);
     }
     else if (strcmp(command, "drag") == 0) {
       /* drag x y x2 y2: press the left button at x,y, move with it held to x2,y2 and release there */
@@ -280,12 +279,12 @@ void DebugScript_Tick()
         toX += ((int)g_FramebufferWidth - layoutWidth) / 2;
         toY += ((int)g_FramebufferHeight - layoutHeight) / 2;
       }
-      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
-      DebugScript_PushCursorEvent(LEFT_PRESS, 1, x, y);
-      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 1, (x + toX) / 2, (y + toY) / 2);
-      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 1, toX, toY);
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, CURSOR_BUTTON_NONE, x, y);
+      DebugScript_PushCursorEvent(LEFT_PRESS, LEFT, x, y);
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, LEFT, (x + toX) / 2, (y + toY) / 2);
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, LEFT, toX, toY);
       pendingRelease = 1;
-      releaseButton = 1;
+      releaseButton = LEFT;
       releaseX = toX;
       releaseY = toY;
       releaseAt = now + 200;
@@ -310,7 +309,7 @@ void DebugScript_Tick()
       return;
     }
     else if (strcmp(command, "status") == 0) {
-      Thandor_Log("script: command flags %08x", (unsigned)g_UiCommandRuntimeFlags);
+      Thandor_Log("script: command flags %08x", ToBits(g_UiCommandRuntimeFlags));
       for (int faction = 0; faction < 8; faction++) {
         const GameFactionRuntimeRecord &record = g_GameFactionRuntimeImage.records[faction];
         if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[faction] != 0) {

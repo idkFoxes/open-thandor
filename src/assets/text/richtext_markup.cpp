@@ -7,36 +7,37 @@
 
 #include <thandor/assets/text/richtext_markup.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
 static uint16_t g_Txt2strUnknownCharacterErrorUtf16[62] = {'e', 'r', 'r', 'o', 'r', ':', ' ', 'T', 'X', 'T', '2', 'S', 'T', 'R', ':', ' ', 'u', 'n', 'k', 'n', 'o', 'w', 'n', ' ', 'c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r', ' ', 'a', 't', ':', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 0}; /* L"error: TXT2STR: unknown character at:                        " */
 
 /* Outcome of one parsing step of the TXT2STR markup (see RichTextMarkup_ParseAndBuildStringAsset). */
-enum {
+enum class RichTextMarkupParseResult : int {
   RICHTEXT_MARKUP_PARSE_CONTINUE,         /* keep reading */
   RICHTEXT_MARKUP_PARSE_END,              /* '#.' reached */
   RICHTEXT_MARKUP_PARSE_OUT_OF_SPACE,     /* the output buffer or the tag table is full */
   RICHTEXT_MARKUP_PARSE_INVALID_CHARACTER
 };
-using RichTextMarkupParseResult = int;
+using enum RichTextMarkupParseResult;
 
 /* Parser state of RichTextMarkup_ParseAndBuildStringAsset. tagStarts/tagKeys receive the (string start, key)
    pair of every '#<' in order (the original pushes these pairs on the machine stack). */
-typedef struct RichTextMarkupParser {
+struct RichTextMarkupParser {
   uint8_t *markupCursor;
   uint16_t *outputCursor;
   uint32_t remainingCapacityBytes;
   uint32_t codeUnitBias;
   int32_t key;
-  Bool8 insideTag;
+  bool insideTag;
   uint32_t tagCount;
   uint16_t **tagStarts;
   int32_t *tagKeys;
-} RichTextMarkupParser;
+};
 
 /* Appends one code unit to the output; false when no more than 2 bytes are left. */
-static Bool8 RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t codeUnit)
+static bool RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t codeUnit)
 {
   if (parser->remainingCapacityBytes <= 2) {
     return false;
@@ -47,7 +48,7 @@ static Bool8 RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t c
 }
 
 /* A text byte: emitted with the current code page bias inside a tag, ignored outside. */
-static Bool8 RichTextMarkup_EmitTextByte(RichTextMarkupParser *parser,uint32_t markupByte)
+static bool RichTextMarkup_EmitTextByte(RichTextMarkupParser *parser,uint32_t markupByte)
 {
   if (!parser->insideTag) {
     return true;
@@ -56,7 +57,7 @@ static Bool8 RichTextMarkup_EmitTextByte(RichTextMarkupParser *parser,uint32_t m
 }
 
 /* '#>': ends the string with a NUL terminator, padded to a dword boundary. */
-static Bool8 RichTextMarkup_TerminateString(RichTextMarkupParser *parser)
+static bool RichTextMarkup_TerminateString(RichTextMarkupParser *parser)
 {
   if (((uint32_t)(uintptr_t)parser->outputCursor & 2) == 0) {
     if (parser->remainingCapacityBytes <= 4) {
@@ -212,7 +213,7 @@ static uint32_t RichTextMarkup_FirstUngroupedTag(const int32_t *tagKeys,uint32_t
    {size, string count, key, 0}, the string offsets (relative to the group header) and the strings. String k
    ends at tagStarts[k + 1]. Returns false when remainingCapacityBytes runs out; otherwise advances
    *assetCursorInOut behind the last group and stores the group count. */
-static Bool8 RichTextMarkup_WriteStringGroups
+static bool RichTextMarkup_WriteStringGroups
           (uint16_t **tagStarts,int32_t *tagKeys,uint32_t tagCount,uint32_t remainingCapacityBytes,
            uint32_t **assetCursorInOut,uint32_t *outGroupCount)
 {
@@ -244,7 +245,7 @@ static Bool8 RichTextMarkup_WriteStringGroups
     for (index = first; index < tagCount; index++) {
       if (tagKeys[index] == groupKey) {
         groupHeader[1]++;
-        spanBytes = (uint32_t)((uint8_t *)tagStarts[index + 1] - (uint8_t *)tagStarts[index]) + 4;
+        spanBytes = (uint32_t)Asset_ByteDistance(tagStarts[index + 1],tagStarts[index]) + 4;
         groupHeader[0] += spanBytes;
         if (remainingCapacityBytes <= spanBytes) {
           return false;
@@ -258,9 +259,9 @@ static Bool8 RichTextMarkup_WriteStringGroups
     for (index = 0; index < tagCount; index++) {
       if (tagKeys[index] == groupKey) {
         tagKeys[index] = -1;
-        *offsetCursor++ = (uint32_t)((uint8_t *)assetCursor - (uint8_t *)groupHeader);
-        copySource = (uint32_t *)tagStarts[index];
-        for (dwordCount = (uint32_t)((uint8_t *)tagStarts[index + 1] - (uint8_t *)tagStarts[index]) >> 2;
+        *offsetCursor++ = (uint32_t)Asset_ByteDistance(assetCursor,groupHeader);
+        copySource = reinterpret_cast<uint32_t *>(tagStarts[index]); /* the UTF-16 string copied as dwords */
+        for (dwordCount = (uint32_t)Asset_ByteDistance(tagStarts[index + 1],tagStarts[index]) >> 2;
              dwordCount != 0; dwordCount--) {
           *assetCursor++ = *copySource++;
         }
@@ -273,7 +274,7 @@ static Bool8 RichTextMarkup_WriteStringGroups
 }
 
 /* Frees the string buffer and fails with FATAL_ERROR_GENERAL_FAILURE (arena space exhausted). */
-static Bool8 RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outError)
+static bool RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outError)
 {
   g_MemoryApi.free(memory);
   *outError = FATAL_ERROR_GENERAL_FAILURE;
@@ -283,7 +284,7 @@ static Bool8 RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outErro
 /* Frees the string buffer and fails with the "TXT2STR: unknown character" message, which gets the byte offset
    after the offending character(s) (markupCursor - markupBytes) written in at code unit
    RICHTEXT_MARKUP_ERROR_OFFSET_UNIT. */
-static Bool8 RichTextMarkup_ReportInvalidCharacter
+static bool RichTextMarkup_ReportInvalidCharacter
           (uint16_t *memory,uint8_t *markupBytes,uint8_t *markupCursor,uint32_t *outError)
 {
   g_MemoryApi.free(memory);
@@ -308,7 +309,7 @@ static Bool8 RichTextMarkup_ReportInvalidCharacter
    allocator's error, when the arena space runs out FATAL_ERROR_GENERAL_FAILURE. On success the original also
    returns the asset size and asset + 0x100; they are dropped (there is no caller).
 */
-Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError)
+bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError)
 
 {
   /* The original pushes a (string start, key) pair per '#<' on the machine stack (and an (end of output, -1)
@@ -320,6 +321,7 @@ Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAss
   uint32_t arenaError;
   uint32_t largestBlockSize;
   uint16_t *memory;
+  void *block;
   RichTextMarkupParser parser;
   RichTextMarkupParseResult parseResult;
   uint32_t remainingCapacityBytes;
@@ -331,11 +333,12 @@ Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAss
   uint32_t index;
   uint32_t assetSize;
 
-  arenaError = g_MemoryApi.allocLargestFreeBlock((void **)&memory,&largestBlockSize);
+  arenaError = g_MemoryApi.allocLargestFreeBlock(&block,&largestBlockSize);
   if (arenaError != 0) {
     *outError = arenaError;
     return false;
   }
+  memory = static_cast<uint16_t *>(block);
   parser.remainingCapacityBytes = largestBlockSize;
   parser.markupCursor = markupBytes;
   parser.outputCursor = memory;
@@ -356,12 +359,13 @@ Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAss
   tagStarts[parser.tagCount] = parser.outputCursor;
   tagKeys[parser.tagCount] = -1;
   parser.tagCount++;
-  if (g_MemoryApi.shrinkInPlace((uint32_t)((uint8_t *)parser.outputCursor - (uint8_t *)memory),memory) != 0) {
+  if (g_MemoryApi.shrinkInPlace((uint32_t)Asset_ByteDistance(parser.outputCursor,memory),memory) != 0) {
     return RichTextMarkup_FreeBufferAndFail(memory,outError);
   }
-  if (g_MemoryApi.allocLargestFreeBlock((void **)&asset,&largestBlockSize) != 0) {
+  if (g_MemoryApi.allocLargestFreeBlock(&block,&largestBlockSize) != 0) {
     return RichTextMarkup_FreeBufferAndFail(memory,outError);
   }
+  asset = static_cast<uint32_t *>(block);
   if (largestBlockSize <= sizeof(TextResourceAssetHeader)) {
     g_MemoryApi.free(asset);
     return RichTextMarkup_FreeBufferAndFail(memory,outError);
@@ -378,9 +382,9 @@ Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAss
     return RichTextMarkup_FreeBufferAndFail(memory,outError);
   }
   g_MemoryApi.free(memory);
-  assetSize = (uint32_t)((uint8_t *)assetCursor - (uint8_t *)asset);
+  assetSize = (uint32_t)Asset_ByteDistance(assetCursor,asset);
   g_MemoryApi.shrinkInPlace(assetSize,asset);
-  header = (TextResourceAssetHeader *)asset;
+  header = reinterpret_cast<TextResourceAssetHeader *>(asset); /* the dword buffer filled above is the asset */
   header->localeCountHeader.localeBlockCount = groupCount; /* +0xB0 */
   header->localeCountHeader.common.allocationSizeBytes = assetSize;
   header->localeCountHeader.common.magic = ASSET_MAGIC_STR;

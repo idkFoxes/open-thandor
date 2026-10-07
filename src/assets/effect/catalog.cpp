@@ -7,6 +7,7 @@
 
 #include <thandor/assets/effect/catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 
 /* Module data. */
 
@@ -23,7 +24,7 @@ static uint16_t s_EffectAssetErrorName[] = {'*', '.', 'e', 'f', 'f', 0}; /* L"*.
    Returns true on success; on failure returns false with the error code in *outError (left untouched on
    success). (The original's success return value, the last loaded sprite asset, was read by no caller.)
 */
-Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
+bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
 
 {
   uint32_t registrationStatusCode;
@@ -39,7 +40,7 @@ Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
     return false;
   }
   registrationStatusCode = FATAL_ERROR_EFFECT_ASSET_INVALID;
-  definition = (EffectDefinition *)(asset + 1);
+  definition = Asset_RecordAfter<EffectDefinition>(asset);
   for (remainingEntryCount = asset->entryCountHeader.entryCount; remainingEntryCount != 0;
        remainingEntryCount--) {
     if (!EffectDefinition_RegisterAndLoadSprite(definition,&registrationStatusCode)) {
@@ -102,7 +103,7 @@ uint32_t EffectDefinitions_ResolveCrossReferences()
    success) on a duplicate id, a full registry or a path/package/sprite failure. (The original's success return
    value, the sprite asset, was read by no caller.)
 */
-Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError)
+bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError)
 
 {
   SpriteAssetHeader *loadedSpriteAsset;
@@ -139,7 +140,7 @@ Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32
     *outError = FATAL_ERROR_EFFECT_ID_NOT_FOUND;
     return false;
   }
-  loadedSpriteAsset = (SpriteAssetHeader *)Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
+  loadedSpriteAsset = static_cast<SpriteAssetHeader *>(Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode));
   if (loadedSpriteAsset == nullptr) {
     *outError = loadErrorCode;
     return false;

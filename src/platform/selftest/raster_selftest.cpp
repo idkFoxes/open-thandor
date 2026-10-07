@@ -18,20 +18,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
 #include <vector>
 
-#define RASTER_TEST_WIDTH 320
-#define RASTER_TEST_HEIGHT 200
-#define RASTER_TEST_AUX_WIDTH 96
-#define RASTER_TEST_AUX_HEIGHT 64
-#define RASTER_TEST_TRIANGLES 48
-#define RASTER_TEST_BLITS 48
-#define RASTER_TEST_DEPTH_EPOCH 0x10000000
-#define RASTER_TEST_MAX_IMAGES 8 /* the subresource table lives in the header's 256-byte unusedText */
+constexpr auto RASTER_TEST_WIDTH = 320;
+constexpr auto RASTER_TEST_HEIGHT = 200;
+constexpr auto RASTER_TEST_AUX_WIDTH = 96;
+constexpr auto RASTER_TEST_AUX_HEIGHT = 64;
+constexpr auto RASTER_TEST_TRIANGLES = 48;
+constexpr auto RASTER_TEST_BLITS = 48;
+constexpr auto RASTER_TEST_DEPTH_EPOCH = 0x10000000;
+constexpr auto RASTER_TEST_MAX_IMAGES = 8; /* the subresource table lives in the header's 256-byte unusedText */
 
-typedef struct RasterTestImage {
+struct RasterTestImage {
     int widthLog2; /* raster textures: width = 1 << widthLog2; blit images use width/height */
     int heightLog2;
     int width;
@@ -40,22 +41,22 @@ typedef struct RasterTestImage {
     int originX;
     int originY;
     int logicalExtra; /* logical size = pixel size + this (tile spacing of the tiled blits) */
-} RasterTestImage;
+};
 
-typedef struct RasterTestAsset {
+struct RasterTestAsset {
     std::vector<uint32_t> storage;
     GraphicsTextureSourceAsset *header;
     GraphicsTextureSourceEntry *entries;
-} RasterTestAsset;
+};
 
-typedef struct RasterTestState {
+struct RasterTestState {
     std::vector<uint32_t> pixels;
     std::vector<int32_t> depth;
     std::vector<uint32_t> auxPixels;
     std::vector<uint32_t> resetPixels; /* the targets after RasterTest_ResetTargets, to count changed pixels */
     std::vector<uint32_t> resetAuxPixels;
     SoftwareFramebufferAccess framebuffer;
-} RasterTestState;
+};
 
 /* 64-bit LCG (Knuth's MMIX constants); the high half is the result. */
 static uint32_t RasterTest_Random(uint64_t *seed)
@@ -84,7 +85,7 @@ static uint32_t RasterTest_Hash(uint32_t hash, const void *bytes, size_t count)
 {
     size_t i;
     for (i = 0; i < count; i++) {
-        hash = (hash ^ ((const uint8_t *)bytes)[i]) * 16777619u;
+        hash = (hash ^ static_cast<const uint8_t *>(bytes)[i]) * 16777619u;
     }
     return hash;
 }
@@ -106,14 +107,14 @@ static void RasterTest_BuildAsset(RasterTestAsset *asset, const RasterTestImage 
         size += ((uint32_t)(images[i].width * images[i].height + images[i].width + 4) * texelBytes + 15) & ~3u;
     }
     asset->storage.assign(size / 4, 0);
-    base = (uint8_t *)asset->storage.data();
-    asset->header = (GraphicsTextureSourceAsset *)base;
+    base = reinterpret_cast<uint8_t *>(asset->storage.data());
+    asset->header = reinterpret_cast<GraphicsTextureSourceAsset *>(base);
     asset->header->common.magic = ASSET_MAGIC_GFX;
     asset->header->tableDescriptor.subresourceCount = (uint32_t)count;
     asset->header->tableDescriptor.paletteBankCount = (uint32_t)bankCount;
     asset->header->tableDescriptor.subresourceTableOffset = offsetof(GraphicsTextureSourceAsset, unusedText);
-    asset->entries = (GraphicsTextureSourceEntry *)asset->header->unusedText;
-    palette = (uint32_t *)(base + GFX_ASSET_HEADER_SIZE);
+    asset->entries = reinterpret_cast<GraphicsTextureSourceEntry *>(asset->header->unusedText);
+    palette = Asset_RecordAt<uint32_t>(base, GFX_ASSET_HEADER_SIZE);
     for (i = 0; i < bankCount * 256; i++) {
         palette[i * 2] = RasterTest_Argb(&seed);
     }
@@ -131,14 +132,14 @@ static void RasterTest_BuildAsset(RasterTestAsset *asset, const RasterTestImage 
         entry->pixelHeight = (uint32_t)images[i].height;
         for (t = 0; t < texelCount; t++) {
             if (images[i].paletteIndex < 0) {
-                ((uint32_t *)(base + offsets[i]))[t] = RasterTest_Argb(&seed);
+                Asset_RecordAt<uint32_t>(base, offsets[i])[t] = RasterTest_Argb(&seed);
             }
             else {
                 base[offsets[i] + t] = (uint8_t)RasterTest_Random(&seed);
             }
         }
     }
-    GraphicsTextureSource_ConvertPaletteEntries((GraphicsPaletteTextureSourceAsset *)base);
+    GraphicsTextureSource_ConvertPaletteEntries(reinterpret_cast<GraphicsPaletteTextureSourceAsset *>(base));
 }
 
 /* The same noise framebuffer, depth buffer and auxiliary target before every group. */
@@ -208,7 +209,7 @@ static void RasterTest_MakeTriangle(uint64_t *seed, int index, int targetWidth, 
         packet->vertices[2].diffuseColor ^= 1;
     }
     packet->modulationColor = RasterTest_Random(seed);
-    packet->renderFlags = (GraphicsPrimitiveDispatchFlags)(index << 12);
+    packet->renderFlags = FromBits<GraphicsPrimitiveDispatchFlags>(index << 12);
     if ((index & 16) != 0) {
         packet->textureEntry = &textures[RasterTest_Random(seed) % (uint32_t)textureCount];
     }
@@ -250,7 +251,7 @@ static int RasterTest_Handlers(RasterTestState *state, GraphicsTextureSetEntry *
             }
             /* as SoftwareRenderer_DrawQueue32Bit / SoftwareRenderer_DrawQueueAuxiliary do */
             SoftwareRenderer_PrepareTrianglePacket(&packet);
-            table[(packet.renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12](clipMaxY, clipMaxX, clipMinY,
+            table[ToBits(packet.renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12](clipMaxY, clipMaxX, clipMinY,
                                                                                      clipMinX, &packet);
         }
         if (auxiliary) {
@@ -404,8 +405,8 @@ static void RasterTest_BilinearBlendScale(uint64_t *seed, RasterTestState *state
             factors[f] = ((uint64_t)RasterTest_Random(seed) << 32) | RasterTest_Random(seed);
         }
         SoftwareTexture_BilinearBlendScaleSubresources((uint32_t)height, (uint32_t)width, top, left, blended.data(),
-                                                       factors.data(), 6, 5, (int *)asset->header,
-                                                       (int *)&state->framebuffer);
+                                                       factors.data(), 6, 5, asset->header,
+                                                       &state->framebuffer);
     }
 }
 
@@ -513,7 +514,7 @@ void Thandor_SelfTestRaster()
     state.framebuffer.width = RASTER_TEST_WIDTH;
     state.framebuffer.height = RASTER_TEST_HEIGHT;
     state.framebuffer.bytesPerPixel = 4;
-    state.framebuffer.pixels = (uint8_t *)state.pixels.data();
+    state.framebuffer.pixels = reinterpret_cast<uint8_t *>(state.pixels.data());
     g_FramebufferAccess = &state.framebuffer;
     g_FramebufferRowStrideBytes = RASTER_TEST_WIDTH * 4;
     g_SoftwareDepthBuffer = state.depth.data();

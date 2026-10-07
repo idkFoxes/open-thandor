@@ -16,13 +16,14 @@ static uint16_t g_FrontendMissionBriefingMoviePathUtf16[16] = {'f', 'l', 'm', '\
 
 /* True when one of the players' records has factionSlot as its faction assignment (the player list is assumed
    to hold at least one record). */
-static Bool8 FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
+static bool FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
 {
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendPlayerRuntimeBlockCount playersRemaining;
 
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (factionSlot == playerRecord->factionAssignment.factionAssignmentIndex) {
       return true;
@@ -42,8 +43,9 @@ static Bool8 FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
 void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
 
 {
+  FrontendUiImage *ui = FrontendUi_Image(frontendRoot);
   FrontendModelPointerContextFlags *menuRoomContextFlags;
-  UiAnchorFractionQ31 *control;
+  UiScrollableControl *control;
   UiTextResourceId titleTextId;
   FrontendLoadedLevelAsset *loadedLevel;
   uint32_t savedGameSpeedPercent;
@@ -59,12 +61,12 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
 
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     savedGameSpeedPercent = PersistentSettings_Read(100,PERSISTENT_SETTING_GAME_SPEED_PERCENT);
-    ((UiRangeSliderControl *)FRONTEND_UI(frontendRoot,gameSpeedSlider))->value = savedGameSpeedPercent;
+    ui->gameSpeedSlider.value = savedGameSpeedPercent;
   }
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MISSION_BRIEFING,
-                             (UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+                             UiLayoutContainerControl_AsPageStack(&ui->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    menuRoomContextFlags = &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
+    menuRoomContextFlags = &ui->menuRoomModelView.contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   /* find the local player's record (Original quirk: one past the last record if none matches) */
@@ -77,9 +79,10 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     if (playersRemaining == 0) break;
   }
   titleTextId = g_FrontendLoadedLevelAsset->header.titleTextResourceIndex;
-  /* briefingText's text resource id: the faction's briefing entry of the level's text page */
-  ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text =
-       (uint16_t *)(uintptr_t)(playerRecord->factionAssignment.factionAssignmentIndex + TEXT_ID_LEVEL_BRIEFING_BASE +
+  /* briefingText's text resource id (kept in its text pointer field): the faction's briefing entry of the
+     level's text page */
+  ui->briefingText.text =
+       THANDOR_PTR32_BITS(playerRecord->factionAssignment.factionAssignmentIndex + TEXT_ID_LEVEL_BRIEFING_BASE +
        g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
   briefingText = TextResource_Resolve(titleTextId + TEXT_ID_LEVEL_TITLE_BASE);
   *briefingText = FRONTEND_TEXT_STYLE_NORMAL;
@@ -89,13 +92,14 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,loadedLevel->header.titleTextResourceIndex,
              &g_FrontendMissionBriefingMoviePathUtf16[7]);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLM,g_FrontendMissionBriefingMoviePathUtf16);
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16,nullptr,nullptr)) {
-    ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = nullptr;
+  if (!Movie_Open(MovieOpenFlags::MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16,nullptr,nullptr)) {
+    ui->briefingImage.textureSource = nullptr;
   }
   else {
     if (Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode)) {
-      ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource =
-           (GraphicsTextureSourceAsset *)firstFrameMovie;
+      /* the movie runtime is the image's texture source (it starts with the texture asset prefix) */
+      ui->briefingImage.textureSource =
+           reinterpret_cast<GraphicsTextureSourceAsset *>(firstFrameMovie);
     }
     else {
       /* The original did not check the result and used the end code as the texture source; bounded here
@@ -103,62 +107,63 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
          movie that does not open. */
       Thandor_Log("FrontendMissionBriefingPage_Initialize: briefing movie gave no frame (end code %u)",
                   (uint32_t)movieEndCode);
-      ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = nullptr;
+      ui->briefingImage.textureSource = nullptr;
     }
-    ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->subresource = 0;
+    ui->briefingImage.subresource = 0;
   }
   /* Back only when started from the menu by a non-client; Exit (and the Save button) in a campaign or a
      re-initialised scenario; neither for a client of a fresh scenario */
   if ((((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
-      (g_FrontendLoadedCampaignAsset == 0)) && (g_FrontendScenarioInitializationCount == 0)) {
-    FRONTEND_UI(frontendRoot,briefingBackButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
-    ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingBackButton))->stateFlags &= ~FRONTEND_CONTROL_INACTIVE;
+      (g_FrontendLoadedCampaignAsset == nullptr)) && (g_FrontendScenarioInitializationCount == 0)) {
+    ui->briefingBackButton.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    ui->briefingBackButton.selectable.stateFlags &= ~FRONTEND_CONTROL_INACTIVE;
   }
   else {
-    FRONTEND_UI(frontendRoot,briefingBackButton)->nodeFlags |= UI_NODE_SUPPRESSED;
-    ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingBackButton))->stateFlags |= FRONTEND_CONTROL_INACTIVE;
+    ui->briefingBackButton.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
+    ui->briefingBackButton.selectable.stateFlags |= FRONTEND_CONTROL_INACTIVE;
   }
   /* (when Back was shown, both of these are zero) */
-  if ((g_FrontendScenarioInitializationCount != 0) || (g_FrontendLoadedCampaignAsset != 0)) {
-    FRONTEND_UI(frontendRoot,briefingExitButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
-    ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingExitButton))->stateFlags &=
+  if ((g_FrontendScenarioInitializationCount != 0) || (g_FrontendLoadedCampaignAsset != nullptr)) {
+    ui->briefingExitButton.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    ui->briefingExitButton.selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
     /* the original shows the Save button and switches it off again right away */
-    FRONTEND_UI(frontendRoot,briefingSaveButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
-    ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingSaveButton))->stateFlags &=
+    ui->briefingSaveButton.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    ui->briefingSaveButton.selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
-    FRONTEND_UI(frontendRoot,briefingSaveButton)->nodeFlags |= UI_NODE_SUPPRESSED;
-    ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingSaveButton))->stateFlags |=
+    ui->briefingSaveButton.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
+    ui->briefingSaveButton.selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
   }
   else {
-    FRONTEND_UI(frontendRoot,briefingExitButton)->nodeFlags |= UI_NODE_SUPPRESSED;
-    ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingExitButton))->stateFlags |= FRONTEND_CONTROL_INACTIVE;
-    FRONTEND_UI(frontendRoot,briefingSaveButton)->nodeFlags |= UI_NODE_SUPPRESSED;
-    ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingSaveButton))->stateFlags |= FRONTEND_CONTROL_INACTIVE;
+    ui->briefingExitButton.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
+    ui->briefingExitButton.selectable.stateFlags |= FRONTEND_CONTROL_INACTIVE;
+    ui->briefingSaveButton.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
+    ui->briefingSaveButton.selectable.stateFlags |= FRONTEND_CONTROL_INACTIVE;
   }
   /* in a network game with other players only the host starts the mission */
-  FRONTEND_UI(frontendRoot,briefingBeginButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+  ui->briefingBeginButton.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) &&
      (1 < g_FrontendPlayerRuntimeBlockCount)) {
-    FRONTEND_UI(frontendRoot,briefingBeginButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+    ui->briefingBeginButton.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
   }
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     playerRecord->factionAssignment.readyOrWaitState = 0;
     playersRemaining--;
     playerRecord++;
   } while (playersRemaining != 0);
-  briefingText = TextResource_Resolve((TextResourceId)(uintptr_t)((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text);
+  briefingText = TextResource_Resolve((TextResourceId)(uintptr_t)ui->briefingText.text);
   textExtent = RichTextCommandStream_MeasureWrappedBlock
-                     (g_UiTextStyleNormal,briefingText,((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->wrapWidth);
+                     (g_UiTextStyleNormal,briefingText,ui->briefingText.wrapWidth);
   /* size the text control to the wrapped text plus a 6-pixel margin, then refit the scroller */
-  FRONTEND_UI(frontendRoot,briefingText)->rightOffset = textExtent.widthPixels + 6;
-  FRONTEND_UI(frontendRoot,briefingText)->bottomOffset = textExtent.heightPixels + 6;
-  control = (UiAnchorFractionQ31 *)FRONTEND_UI(frontendRoot,briefingTextScroller);
-  UiScrollableControl_RebuildViewportAndScrollbars((UiScrollableControl *)control);
-  UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,(UiScrollableControl *)control);
+  ui->briefingText.base.rightOffset = textExtent.widthPixels + 6;
+  ui->briefingText.base.bottomOffset = textExtent.heightPixels + 6;
+  control = &ui->briefingTextScroller;
+  UiScrollableControl_RebuildViewportAndScrollbars(control);
+  UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,control);
   /* The "computer opponent" slider (weak..strong) is the game speed percent; clients cannot change it. */
   UiNodeList_UnsuppressActionId(FRONTEND_ACTION_GAME_SPEED,&frontendRoot->base);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -174,13 +179,13 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   }
   /* opponent settings: only with computer factions, and in a campaign only on its first level
      (CampaignAsset.firstLevelId) */
-  if ((g_FrontendLoadedCampaignAsset == 0 ||
-       ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->currentLevelId ==
-       ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->firstLevelId) && unclaimedActiveFactions != 0) {
-    FRONTEND_UI(frontendRoot,opponentSettingsGroup)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+  if ((g_FrontendLoadedCampaignAsset == nullptr ||
+       g_FrontendLoadedCampaignAsset->currentLevelId ==
+       g_FrontendLoadedCampaignAsset->firstLevelId) && unclaimedActiveFactions != 0) {
+    ui->opponentSettingsGroup.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   }
   else {
-    FRONTEND_UI(frontendRoot,opponentSettingsGroup)->nodeFlags |= UI_NODE_SUPPRESSED;
+    ui->opponentSettingsGroup.base.nodeFlags |= UI_NODE_SUPPRESSED;
     UiNodeList_SuppressActionId(FRONTEND_ACTION_GAME_SPEED,&frontendRoot->base);
   }
 }

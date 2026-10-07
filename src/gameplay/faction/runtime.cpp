@@ -13,7 +13,7 @@
    GameFactionRuntime_ApplyPairwiseRelationTransition sets or clears the others, so a clear bit marks a faction
    this one is not friendly with (the AI treats its entities as foreign/hostile).
 */
-Bool8 GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex)
+bool GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
   return (g_GameFactionRuntimeImage.records[factionIndex].capabilityFlags &
@@ -47,7 +47,7 @@ static void GameFactionRuntime_MoveImpactAlertAnchor(FactionAnchorCooldownTicks 
   GraphicsWorldCoordinateQ12 hitY;
   int distanceY;
   int distanceX;
-  Bool8 notify;
+  bool notify;
 
   hitModelNode = ownershipRecord->rootModelNodeOrSavedOffset.modelNode;
   previousCooldown = *cooldown;
@@ -140,8 +140,9 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
   exploredCellCount = 0;
   /* one byte per faction in the cell's occupancyMask; bits 3-7 set = the faction has explored the cell (0x80-byte cells).
      Original quirk: a grid with zero cells would count down from 0 (never happens). */
-  cellVisibilityCursor = (uint8_t *)&terrainGrid->cells[0].occupancyMask + factionIndex;
+  cellVisibilityCursor = reinterpret_cast<uint8_t *>(&terrainGrid->cells[0].occupancyMask) + factionIndex;
   cellsRemaining = cellCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if ((*cellVisibilityCursor & FIELD_CELL_OCCUPANCY_EXPLORED_BITS) != 0) {
       exploredCellCount++;
@@ -188,7 +189,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    ownerArmy = WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if ((factionIndex == ownerArmy->factionIndex) &&
         (ArmyAssetRegistry_FindById(ownerArmy->armyAssetId,&resolvedAsset) == 0)) {
       armyAssetValueSum = armyAssetValueSum + resolvedAsset[2].registryId;
@@ -214,7 +215,7 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
   uint32_t groupNumber;
   Ptr32<ArmyRuntimeSlot> *slotCursor;
   Ptr32<ArmyRuntimeSlot> *nextSlotCursor;
-  Bool8 found;
+  bool found;
 
   groupNumber = 0;
   nextSlotCursor = g_GameFactionRuntimeImage.records[runtimeEntry->factionIndex].runtimeGroupMembers8x32;
@@ -228,7 +229,7 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
       if (slotsRemaining == 0) break;
       slotsRemaining--;
       nextSlotCursor = slotCursor + 1;
-      found = (ArmyRuntimeSlot *)runtimeEntry == *slotCursor;
+      found = reinterpret_cast<ArmyRuntimeSlot *>(runtimeEntry) == *slotCursor; /* prefix view of the army */
       slotCursor = nextSlotCursor;
     } while (!found);
     if (found) {

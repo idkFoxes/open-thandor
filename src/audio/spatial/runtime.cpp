@@ -30,13 +30,13 @@ AudioMixerGainQ15 g_SoundEffectsGainQ15 = 32768;
    so every slot starts without a voice set. Returns true on success; false with the allocator's error in
    *outError when the arena is exhausted.
 */
-Bool8 SpatialSoundPool_Init(uint32_t *outError)
+bool SpatialSoundPool_Init(uint32_t *outError)
 
 {
   SpatialSoundSlot *clearCursor;
   uint32_t allocError;
 
-  allocError = g_MemoryApi.alloc(SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot),(void **)&clearCursor);
+  allocError = g_MemoryApi.alloc(SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot),reinterpret_cast<void **>(&clearCursor));
   if (allocError != 0) {
     *outError = allocError;
     return false;
@@ -90,7 +90,7 @@ void SpatialSound_RebuildListenerTransformFromPose
    SPATIAL_SOUND_GAIN_Q15_FULL: *firstGainQ15 is the reduced one for an azimuth in the first half turn and
    *secondGainQ15 the reduced one in the second half turn; reverse stereo swaps the two. Both callers play
    the first gain on the left channel and the second on the right. */
-static Bool8 SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,uint32_t volumeQ15,
+static bool SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,uint32_t volumeQ15,
           GraphicsFixedVec3 *worldPosition,uint32_t *firstGainQ15,uint32_t *secondGainQ15)
 
 {
@@ -227,7 +227,7 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
   }
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
-  do {
+  for (; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->voiceSet == nullptr) {
       slotCursor->voiceSet = voiceSet;
       slotCursor->desiredLeftGainQ15 = 0;
@@ -236,8 +236,7 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
       return slotCursor;
     }
     slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
   g_SoundReleaseSampleVoiceSet(voiceSet);
   return nullptr;
 }
@@ -267,14 +266,13 @@ void SpatialSoundPool_ClearDesiredGains()
   
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
-  do {
+  for (; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->voiceSet != nullptr) {
       slotCursor->desiredLeftGainQ15 = 0;
       slotCursor->desiredRightGainQ15 = 0;
     }
     slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
 }
 
 
@@ -291,7 +289,7 @@ void SpatialSoundPool_ApplyDesiredGains()
 
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
-  do {
+  for (; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->voiceSet != nullptr) {
       existingVoice = slotCursor->activeVoice;
       if (existingVoice == nullptr) {
@@ -312,7 +310,6 @@ void SpatialSoundPool_ApplyDesiredGains()
       }
     }
     slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
 }
 

@@ -27,16 +27,16 @@
 static bool KeymatchOld_R1(uint32_t flags, uint32_t modifierFlags)
 {
     if (flags == 0) {
-        if ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) return false;
+        if ((modifierFlags & (ToBits(KEYBOARD_STATE_CTRL) | ToBits(KEYBOARD_STATE_ALT))) != 0) return false;
     }
-    else if ((flags & KEYBOARD_STATE_ALT) == 0) {
-        if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) return false;
+    else if ((flags & ToBits(KEYBOARD_STATE_ALT)) == 0) {
+        if (((modifierFlags & ToBits(KEYBOARD_STATE_CTRL)) == 0) || ((modifierFlags & ToBits(KEYBOARD_STATE_ALT)) != 0)) return false;
     }
-    else if ((flags & KEYBOARD_STATE_CTRL) == 0) {
-        if (((modifierFlags & KEYBOARD_STATE_CTRL) != 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) return false;
+    else if ((flags & ToBits(KEYBOARD_STATE_CTRL)) == 0) {
+        if (((modifierFlags & ToBits(KEYBOARD_STATE_CTRL)) != 0) || ((modifierFlags & ToBits(KEYBOARD_STATE_ALT)) == 0)) return false;
     }
     else {
-        if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) return false;
+        if (((modifierFlags & ToBits(KEYBOARD_STATE_CTRL)) == 0) || ((modifierFlags & ToBits(KEYBOARD_STATE_ALT)) == 0)) return false;
     }
     return true;
 }
@@ -45,47 +45,47 @@ static bool KeymatchOld_R1(uint32_t flags, uint32_t modifierFlags)
 static bool KeymatchOld_R2(uint32_t classFlags, uint32_t modifierFlags)
 {
     if (classFlags == 0) {
-        return (modifierFlags & KEYBOARD_STATE_ANY_MODIFIER) == 0;
+        return (modifierFlags & ToBits(KEYBOARD_STATE_ANY_MODIFIER)) == 0;
     }
-    if ((classFlags & KEYBOARD_STATE_SHIFT) != 0) {
-        if ((modifierFlags & KEYBOARD_STATE_SHIFT) == 0) return false;
+    if ((classFlags & ToBits(KEYBOARD_STATE_SHIFT)) != 0) {
+        if ((modifierFlags & ToBits(KEYBOARD_STATE_SHIFT)) == 0) return false;
     }
-    else if ((modifierFlags & KEYBOARD_STATE_SHIFT) != 0) {
+    else if ((modifierFlags & ToBits(KEYBOARD_STATE_SHIFT)) != 0) {
         return false;
     }
-    if ((classFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0) {
-        return (modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0;
+    if ((classFlags & (ToBits(KEYBOARD_STATE_CTRL) | ToBits(KEYBOARD_STATE_ALT))) == 0) {
+        return (modifierFlags & (ToBits(KEYBOARD_STATE_CTRL) | ToBits(KEYBOARD_STATE_ALT))) == 0;
     }
-    if ((classFlags & KEYBOARD_STATE_ALT) == 0) {
-        return ((modifierFlags & KEYBOARD_STATE_CTRL) != 0) && ((modifierFlags & KEYBOARD_STATE_ALT) == 0);
+    if ((classFlags & ToBits(KEYBOARD_STATE_ALT)) == 0) {
+        return ((modifierFlags & ToBits(KEYBOARD_STATE_CTRL)) != 0) && ((modifierFlags & ToBits(KEYBOARD_STATE_ALT)) == 0);
     }
-    if ((classFlags & KEYBOARD_STATE_CTRL) == 0) {
-        return ((modifierFlags & KEYBOARD_STATE_CTRL) == 0) && ((modifierFlags & KEYBOARD_STATE_ALT) != 0);
+    if ((classFlags & ToBits(KEYBOARD_STATE_CTRL)) == 0) {
+        return ((modifierFlags & ToBits(KEYBOARD_STATE_CTRL)) == 0) && ((modifierFlags & ToBits(KEYBOARD_STATE_ALT)) != 0);
     }
-    return ((modifierFlags & KEYBOARD_STATE_CTRL) != 0) && ((modifierFlags & KEYBOARD_STATE_ALT) != 0);
+    return ((modifierFlags & ToBits(KEYBOARD_STATE_CTRL)) != 0) && ((modifierFlags & ToBits(KEYBOARD_STATE_ALT)) != 0);
 }
 
 /* R2': FrontendRuntime_DispatchCommandByCodeAndModifierFlags (ui/frontend/state.cpp, loop body). */
 static bool KeymatchOld_R2Frontend(uint32_t flags, uint32_t modifierFlags)
 {
     if (flags == 0) {
-        if ((modifierFlags & KEYBOARD_STATE_ANY_MODIFIER) != 0) return false;
+        if ((modifierFlags & ToBits(KEYBOARD_STATE_ANY_MODIFIER)) != 0) return false;
     }
     else {
-        if ((flags & KEYBOARD_STATE_SHIFT) != 0) {
-            if ((modifierFlags & KEYBOARD_STATE_SHIFT) == 0) return false;
+        if ((flags & ToBits(KEYBOARD_STATE_SHIFT)) != 0) {
+            if ((modifierFlags & ToBits(KEYBOARD_STATE_SHIFT)) == 0) return false;
         }
-        else if ((modifierFlags & KEYBOARD_STATE_SHIFT) != 0) {
+        else if ((modifierFlags & ToBits(KEYBOARD_STATE_SHIFT)) != 0) {
             return false;
         }
-        if ((flags & KEYBOARD_STATE_ALT) == 0) {
-            if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) return false;
+        if ((flags & ToBits(KEYBOARD_STATE_ALT)) == 0) {
+            if (((modifierFlags & ToBits(KEYBOARD_STATE_CTRL)) == 0) || ((modifierFlags & ToBits(KEYBOARD_STATE_ALT)) != 0)) return false;
         }
-        else if ((flags & KEYBOARD_STATE_CTRL) == 0) {
-            if (((modifierFlags & KEYBOARD_STATE_CTRL) != 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) return false;
+        else if ((flags & ToBits(KEYBOARD_STATE_CTRL)) == 0) {
+            if (((modifierFlags & ToBits(KEYBOARD_STATE_CTRL)) != 0) || ((modifierFlags & ToBits(KEYBOARD_STATE_ALT)) == 0)) return false;
         }
         else {
-            if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) return false;
+            if (((modifierFlags & ToBits(KEYBOARD_STATE_CTRL)) == 0) || ((modifierFlags & ToBits(KEYBOARD_STATE_ALT)) == 0)) return false;
         }
     }
     return true;
@@ -94,7 +94,7 @@ static bool KeymatchOld_R2Frontend(uint32_t flags, uint32_t modifierFlags)
 /* R3: camera_commands.cpp condition / InGameEditorKeyboard_RecordMatches (editor_keyboard.cpp) without the key. */
 static bool KeymatchOld_R3(uint32_t requiredModifiers, uint32_t modifierFlags)
 {
-    return (requiredModifiers == 0) ? ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0)
+    return (requiredModifiers == 0) ? ((modifierFlags & (ToBits(KEYBOARD_STATE_CTRL) | ToBits(KEYBOARD_STATE_ALT))) == 0)
                                     : ((modifierFlags & requiredModifiers) != 0);
 }
 
@@ -122,7 +122,7 @@ static const KeymatchRuleCase g_KeymatchRuleCases[] = {
 
 struct KeymatchTestRecord {
     uint32_t commandCode;
-    uint32_t modifierClassFlags;
+    UiKeyboardStateMask modifierClassFlags;
     uint32_t continuation;
 };
 
@@ -139,7 +139,12 @@ void Thandor_SelfTestKeyMatch(void)
 {
     /* key 0x71 three times (Alt, Ctrl, none), key 0x70 with Shift-only and Ctrl+Shift, then the terminator */
     static const KeymatchTestRecord table[] = {
-        {0x71, 0x30, 1}, {0x71, 0x0C, 2}, {0x71, 0x00, 3}, {0x70, 0x03, 4}, {0x70, 0x0F, 5}, {0, 0x90909090u, 6}};
+        {0x71, KEYBOARD_STATE_ALT, 1},
+        {0x71, KEYBOARD_STATE_CTRL, 2},
+        {0x71, KEYBOARD_STATE_NONE, 3},
+        {0x70, KEYBOARD_STATE_SHIFT, 4},
+        {0x70, KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL, 5},
+        {0, FromBits<UiKeyboardStateMask>(0x90909090u), 6}};
     uint32_t hash = 2166136261u;
     unsigned mismatchesInTables = 0;
     unsigned mismatchesOther = 0;
@@ -155,9 +160,10 @@ void Thandor_SelfTestKeyMatch(void)
             uint32_t classFlags = g_KeymatchClasses[classIndex];
             bool inTables = (ruleCase->ownClasses & (1u << classIndex)) != 0;
             unsigned differing = 0;
-            for (held = 0; held <= KEYBOARD_STATE_ANY_MODIFIER; held++) {
+            for (held = 0; held <= ToBits(KEYBOARD_STATE_ANY_MODIFIER); held++) {
                 bool oldResult = ruleCase->oldMatch(classFlags, held);
-                bool newResult = UiKeyModifiers_Match(classFlags, held, ruleCase->rule) != 0;
+                bool newResult = UiKeyModifiers_Match(FromBits<UiKeyboardStateMask>(classFlags), FromBits<UiKeyboardStateMask>(held),
+                                                      ruleCase->rule) != 0;
                 hash = KeymatchTest_Hash(hash, newResult ? 1u : 0u);
                 if (oldResult != newResult) {
                     differing++;
@@ -177,17 +183,17 @@ void Thandor_SelfTestKeyMatch(void)
     }
     /* UiCommandDispatch_Find against the old R2 scan (key_commands.cpp) on the small table */
     for (key = 0x6F; key <= 0x72; key++) {
-        for (held = 0; held <= KEYBOARD_STATE_ANY_MODIFIER; held++) {
+        for (held = 0; held <= ToBits(KEYBOARD_STATE_ANY_MODIFIER); held++) {
             const KeymatchTestRecord *record = table;
             const KeymatchTestRecord *found;
             uint32_t oldResult;
             uint32_t newResult;
             while ((record->commandCode != 0) &&
-                   ((record->commandCode != key) || !KeymatchOld_R2(record->modifierClassFlags, held))) {
+                   ((record->commandCode != key) || !KeymatchOld_R2(ToBits(record->modifierClassFlags), held))) {
                 record++;
             }
             oldResult = record->commandCode == 0 ? 0 : record->continuation;
-            found = UiCommandDispatch_Find(table, key, held, UiKeyModifierRule::ExactWithShift);
+            found = UiCommandDispatch_Find(table, key, FromBits<UiKeyboardStateMask>(held), UiKeyModifierRule::ExactWithShift);
             newResult = found == nullptr ? 0 : found->continuation;
             hash = KeymatchTest_Hash(hash, newResult);
             if (oldResult != newResult) {

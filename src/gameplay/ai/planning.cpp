@@ -58,6 +58,7 @@ void AiFactionRuntime_RebuildPlanningCapacityState()
     currentGameSpeedQ8 = g_GameFactionRuntimeImage.tail.gameSpeedQ8;
     if (*lifecycleState == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       /* Only factions without a player block are AI-controlled. */
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         if (factionIndex == (playerBlock->factionAssignment).factionAssignmentIndex) break;
         playerBlock++;
@@ -87,10 +88,10 @@ void AiFactionRuntime_RebuildPlanningCapacityState()
     /* runtimePayload is the ModelRuntimeSlot: its definition's target class is the pressure channel;
        the owner army holds the owning faction and a faction mask terrainOccupancyMask0 (bit 3 + 2 * (f - 1) for
        faction f). */
-    ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    ownerArmy = WorldOwnerNode_ModelRuntime(ownerNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if (ownerArmy->factionIndex == 0) continue;
     pressureChannel =
-         ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->targetClassIndex;
+         WorldOwnerNode_ModelRuntime(ownerNode)->definitionOrSavedId.runtimeDefinition->targetClassIndex;
     factionBit = 8;
     pressureTargetRecord = g_GameFactionRuntimeImage.records;
     for (targetFactionIndex = 1; targetFactionIndex < 8; targetFactionIndex++) {
@@ -189,11 +190,11 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InG
 {
   uint32_t planningPhaseDispatchIndex;
   WorldRuntimeContext *worldRuntime;
-  Bool8 phaseResult;
+  bool phaseResult;
   AiKnowledgeDataImage *knowledgeData;
 
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-       SESSION_NETWORK_ROLE_LOCAL) || ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF) == 0)) {
+       SESSION_NETWORK_ROLE_LOCAL) || (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF))) {
     planningPhaseDispatchIndex = g_GameFactionRuntimeImage.tail.simulationTick >> 6 & 1;
     /* the world runtime of the in-game root (the caller passes g_InGameRuntimeRoot) */
     worldRuntime = &inGameRoot->worldRuntime;
@@ -394,7 +395,7 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
     if (primaryEntry->runtimeSlotAddressOrZero != nullptr) {
       ModelRuntimeHierarchy_MarkDestroyedRecursive
                 (contextArg,
-                 ((ModelRuntimeSlot *)primaryEntry->runtimeSlotAddressOrZero)->ownerArmyRuntimeOrSavedOffset.
+                 primaryEntry->runtimeSlotAddressOrZero->ownerArmyRuntimeOrSavedOffset.
                  armyRuntime);
     }
     primaryEntry++;
@@ -443,6 +444,7 @@ AiStrategicClassSelection AiStrategicClass_SelectTerrainSuitedBuilding
   freeBits28To30Cells = 0;
   remainingCells = cellCount;
   scratchCell = g_GridScratchPrimary;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     cellStateMask = scratchCell->stateMask;
     if ((cellStateMask & GRID_SCRATCH_TERRAIN_CLASS_BIT24) == 0) {
@@ -626,7 +628,7 @@ AiStrategicClassSelection AiStrategicClass_SelectPressureWeightedBuilding
    (whole units): the usable supply is the smaller of the generation capacity and baseline supply + tritium
    extraction rate, the demand is supplied + unpowered demand (Q4 values shifted down by 4).
 */
-Bool8 AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex)
+bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex)
 
 {
   int supplyCapacity;

@@ -13,10 +13,10 @@
 #include <thandor/core/types.h>
 #include <thandor/graphics/render/types.h>
 
-typedef struct TerrainMaterialSuffixEntry TerrainMaterialSuffixEntry, *PTerrainMaterialSuffixEntry;
-typedef struct TerrainProjectedVertexWorkRecord TerrainProjectedVertexWorkRecord, *PTerrainProjectedVertexWorkRecord;
-typedef struct TriangleBarycentricWeightsQ12 TriangleBarycentricWeightsQ12, *PTriangleBarycentricWeightsQ12;
-typedef struct TerrainProjectedRowSpan TerrainProjectedRowSpan, *PTerrainProjectedRowSpan;
+struct TerrainMaterialSuffixEntry;
+struct TerrainProjectedVertexWorkRecord;
+struct TriangleBarycentricWeightsQ12;
+struct TerrainProjectedRowSpan;
 
 struct TerrainMaterialSuffixEntry {
     uint16_t lowercaseLetterUtf16;
@@ -43,6 +43,17 @@ struct TerrainProjectedVertexWorkRecord {
     uint32_t lightingLookupIndexOrSentinel; // Packed-light lookup selector; 0xff selects dynamic compact-light accumulation
     uint8_t reserved6C_7F[20]; // Unresolved tail to proven 0x80 grid stride
 };
+
+/* The primitive queue takes the terrain vertices with the GraphicsProjectedVertexSource type (the model vertex
+   record) and reads them back as TerrainProjectedVertexWorkRecords: the same 0x80-byte record either way. */
+static inline GraphicsProjectedVertexSource *TerrainVertex_AsProjectedSource(TerrainProjectedVertexWorkRecord *vertex)
+{
+    return reinterpret_cast<GraphicsProjectedVertexSource *>(vertex);
+}
+static inline const TerrainProjectedVertexWorkRecord *TerrainVertex_FromProjectedSource(const GraphicsProjectedVertexSource *vertex)
+{
+    return reinterpret_cast<const TerrainProjectedVertexWorkRecord *>(vertex);
+}
 
 struct TriangleBarycentricWeightsQ12 {
     Q12 weightVertexB_Q12; // Interpolation weight applied to vertex B relative to vertex C.
