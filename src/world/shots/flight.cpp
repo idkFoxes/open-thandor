@@ -717,6 +717,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   InGameSimulationStepBatchTicks remainingStepTicks;
 
   remainingStepTicks = g_InGameSimulationStepTicks;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     shotRuntime = modelNode->shotRuntime;
     shotDefinition = shotRuntime->definitionOrSavedId.definition;

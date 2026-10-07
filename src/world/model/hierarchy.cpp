@@ -362,7 +362,7 @@ Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
   linksRemaining = *reinterpret_cast<int *>(definitionNode + 8); /* the node address is an integer (5f) */
   if (linksRemaining != 0) {
     childSlotIndex = 0;
-    do {
+    while (linksRemaining != 0) {
       linkedDefinitionList =
            *reinterpret_cast<ModelLinkedDefinitionListAddress32 *>(definitionNode + 12 + childSlotIndex * 4);
       childDefinitionId =
@@ -380,7 +380,7 @@ Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
       }
       childSlotIndex++;
       linksRemaining--;
-    } while (linksRemaining != 0);
+    }
   }
   return false;
 }
@@ -749,7 +749,7 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
                modelNodeRuntime->modelPayload.worldRotationAngle0);
   }
   if (modelNodeRuntime->childCount != 0) {
-    do {
+    while (childIndex < modelNodeRuntime->childCount) {
       currentChild = modelNodeRuntime->childNodes[childIndex];
       childIndex++;
       if (currentChild != nullptr) {
@@ -778,7 +778,7 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
         currentChild->tintArgb = inheritedTintArgb;
         ModelNodeRuntime_ComposeChildTransformsRecursive(currentChild);
       }
-    } while (childIndex < modelNodeRuntime->childCount);
+    }
   }
 }
 

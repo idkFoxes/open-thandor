@@ -49,6 +49,7 @@ void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
     columnsLeft = rowLength - 2;
     /* cell (row 1, column 1) */
     cellCursor = &fieldGrid->cells[rowLength + 1];
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
         cell = cellCursor;
@@ -85,6 +86,7 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
     columnsLeft = rowLength - 2;
     /* cell (row 1, column 1), see FieldGrid_RecomputeInteriorTriangleNormalAngles */
     cellCursor = &fieldGrid->cells[rowLength + 1];
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
         cell = cellCursor;
@@ -114,7 +116,7 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors()
 
   currentDirectionRecord = g_TerrainDirectionRecordTable256;
   recordsRemaining = 256;
-  do {
+  while (recordsRemaining != 0) {
     previousPackedAngles = currentDirectionRecord->packedAngles;
     /* one 32-bit add advances both packed angles by rateA (low word) and rateB (high word); a carry out
        of angle A moves angle B by one more */
@@ -127,7 +129,7 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors()
     currentDirectionRecord->angleBComponent0ScaledQ28 = (uint32_t)angleBScaledSinCosPair.cosValue;
     currentDirectionRecord++;
     recordsRemaining--;
-  } while (recordsRemaining != 0);
+  }
 }
 
 /* Recomputes a cell's two vertex normals from its six lattice neighbours and stores them as packed
@@ -258,7 +260,7 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
   
   rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
-  do {
+  while (rampStepsRemaining != 0) {
     channelValue = ((rampStepColorArgb & ARGB8888_BLUE_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_BLUE_MASK);
     if (ARGB8888_BLUE_MASK < channelValue) {
       channelValue = ARGB8888_BLUE_MASK;
@@ -266,10 +268,10 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     *rampEntryCursor = channelValue;
     rampEntryCursor++;
     rampStepsRemaining--;
-  } while (rampStepsRemaining != 0);
+  }
   rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
-  do {
+  while (rampStepsRemaining != 0) {
     channelValue = ((rampStepColorArgb & ARGB8888_GREEN_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_GREEN_MASK);
     if (0xffff < channelValue) {
       channelValue = ARGB8888_GREEN_MASK;
@@ -277,10 +279,10 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     *rampEntryCursor = *rampEntryCursor | channelValue & ARGB8888_GREEN_MASK;
     rampEntryCursor++;
     rampStepsRemaining--;
-  } while (rampStepsRemaining != 0);
+  }
   rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
-  do {
+  while (rampStepsRemaining != 0) {
     channelValue = ((rampStepColorArgb & ARGB8888_RED_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_RED_MASK);
     if (0xffffff < channelValue) {
       channelValue = ARGB8888_RED_MASK;
@@ -288,14 +290,14 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     *rampEntryCursor = *rampEntryCursor | channelValue & ARGB8888_RED_MASK;
     rampEntryCursor++;
     rampStepsRemaining--;
-  } while (rampStepsRemaining != 0);
+  }
   rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
-  do {
+  while (rampStepsRemaining != 0) {
     *rampEntryCursor = *rampEntryCursor | baseColorArgb & ARGB8888_ALPHA_MASK;
     rampEntryCursor++;
     rampStepsRemaining--;
-  } while (rampStepsRemaining != 0);
+  }
   g_TerrainDirectionalLightSecondaryColor = secondaryColorArgb;
   lightLutCursor = &g_TerrainDirectionalLightColorLut[TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX];
   for (rampStepsRemaining = TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT; rampStepsRemaining != 0;
