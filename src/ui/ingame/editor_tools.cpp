@@ -455,7 +455,7 @@ void InGameUiCommand_BeginInteractionByMode
   /* remaining tools: rectangle selection of grid cells; without Shift/Ctrl a new selection replaces the old */
   g_UiCommandSelectionAnchorWorldXQ12 = WORLD_POINTER_NO_HIT;
   if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
-    if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
+    if (!Any(g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL))) {
       InGameCommand_Issue<SelectionPlayerRuntime_ClearTerrainEditSelectionState>(0,0,0);
     }
     InGameEditorPointer_GetGridPoint(pointerX,pointerY,mapControl->fieldGrid,&gridXQ12,&gridYQ12);
@@ -575,7 +575,7 @@ static uint32_t InGameEditorPointer_PackedDragDelta(WorldRuntimeExtendedMapContr
   uint32_t deltaXMask;
 
   deltaXMask = INGAME_DRAG_DELTA_X_MASK;
-  if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) != 0) {
+  if (Any(g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL))) {
     deltaXMask = 0;
   }
   return mapControl->pointerX - g_UiCommandDragStartScreenX & deltaXMask |
@@ -736,7 +736,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
         return;
       }
       deltaXMask = INGAME_DRAG_DELTA_X_MASK;
-      if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) != 0) {
+      if (Any(g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL))) {
         deltaXMask = 0;
       }
       dragDeltaX = mapControl->pointerX - g_UiCommandDragStartScreenX;

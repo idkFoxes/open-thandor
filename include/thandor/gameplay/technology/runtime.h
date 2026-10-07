@@ -15,12 +15,7 @@
 #include <thandor/gameplay/technology/types.h>
 #include <thandor/core/contracts.h>
 
-/* GameEntityRuntime.common.runtimeFlags research bits. Technology_IsAvailableForFaction treats an army with
-   RESEARCH_RUNNING whose researchTechnologyId holds the technology as already researching it;
-   Technology_ApplyRecordToEntity stores the technology in common.commandState (the same slot) and sets
-   RESEARCH_ASSIGNED, and does nothing while either bit is set. */
-inline constexpr int ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING = 0x40;
-inline constexpr int ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED = 0x80;
+/* The research bits ENTITY_RUNTIME_FLAG_RESEARCH_* are ArmyRuntimeFlags (gameplay/army/types.h). */
 /* tech.tec holds 256 technology records; a faction's unlock mask has one bit per record (8 dwords). */
 inline constexpr int TECHNOLOGY_RECORD_COUNT = 256;
 

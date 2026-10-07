@@ -21,16 +21,7 @@ inline constexpr int MODEL_RUNTIME_POOL_BYTES = 0x400000; /* MODEL_RUNTIME_SLOT_
 /* pointer slots in g_ModelDefinitionRegistry */
 inline constexpr int MODEL_DEFINITION_REGISTRY_SLOT_COUNT = 0x300;
 /* The ModelRuntimeNode.runtimeFlags bits MODEL_NODE_FLAG_* are ModelRuntimeFlags (gameplay/army/types.h). */
-/* ModelDefinition.modelFlags bit that makes the model's root node ray transparent */
-inline constexpr int MODEL_DEFINITION_FLAG_RAY_TRANSPARENT = 0x100;
-/* ModelDefinition.modelFlags bit: the energy demand of directly attached models counts
-   (ModelRuntimeHierarchy_ComputeEnergyDemand, ArmyAssetHierarchy_SumEnergyFrom) */
-inline constexpr int MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY = 0x80;
-/* ModelDefinition.modelFlags bits copied into the node flags at creation */
-inline constexpr int MODEL_DEFINITION_FLAG_NOT_REMEMBERED = 0x10; /* -> TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED */
-inline constexpr int MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN = 0x20; /* -> MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN; the army runtime
-                                                         also skips the field grid height stamp for it */
-inline constexpr int MODEL_DEFINITION_FLAG_NO_SHADING_PASS = 0x40; /* clear -> MODEL_NODE_FLAG_SHADING_PASS */
+/* The ModelDefinition.modelFlags bits MODEL_DEFINITION_FLAG_* are ModelDefinitionFlags (gameplay/army/types.h). */
 
 Bool8 ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,

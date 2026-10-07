@@ -237,10 +237,10 @@ char32_t NextCodePoint(std::span<const unsigned char> &text) noexcept
 }
 
 /* The lock-key bits of g_KeyboardStateMask from SDL's modifier state (GetKeyState's toggle bits). */
-uint32_t LockKeyBits() noexcept
+UiKeyboardStateMask LockKeyBits() noexcept
 {
   const SDL_Keymod modifiers = SDL_GetModState();
-  uint32_t bits = 0;
+  UiKeyboardStateMask bits = KEYBOARD_STATE_NONE;
   if ((modifiers & SDL_KMOD_NUM) != 0) {
     bits |= KEYBOARD_STATE_NUM_LOCK;
   }

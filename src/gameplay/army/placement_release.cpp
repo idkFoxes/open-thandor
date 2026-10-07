@@ -46,7 +46,7 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
   storageLimitValue = (int)Thandor_LoadU32(storageLimit);
   /* the stock loses the share this storage held */
   if ((((int)modelRuntime->health < 2) && (storageLimitValue != 0)) &&
-     (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0)) {
+     (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED))) {
     storageStock = (int)Thandor_LoadU32(storageLimit - 4); /* the stock is the dword before the limit */
     Thandor_StoreU32(storageLimit - 4,(uint32_t)(storageStock -
          (int)(((int64_t)(int)storageContribution * (int64_t)storageStock) / (int64_t)storageLimitValue)));
@@ -102,7 +102,7 @@ void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefi
   storageLimitValue = (int)Thandor_LoadU32(storageLimit);
   /* the stock loses the share this storage held */
   if ((((int)modelRuntime->health < 2) && (storageLimitValue != 0)) &&
-     (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0)) {
+     (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED))) {
     storageStock = (int)Thandor_LoadU32(storageLimit - 4); /* the stock is the dword before the limit */
     Thandor_StoreU32(storageLimit - 4,(uint32_t)(storageStock -
          (int)(((int64_t)(int)storageContribution * (int64_t)storageStock) / (int64_t)storageLimitValue)));
@@ -145,7 +145,7 @@ void ArmyPlacement_ReleaseClassStateReservation
       *classCounter = *classCounter + 1;
       reservationBits = &(linkedModelSlot->classState).classStateB4;
       *reservationBits = *reservationBits & (reservationBit ^ 0xffffffff);
-      if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) != 0) {
+      if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED)) {
         return;
       }
       slotAssetIds[slotIndex] = 0;

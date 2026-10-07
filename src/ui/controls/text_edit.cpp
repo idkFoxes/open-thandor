@@ -40,9 +40,9 @@ static Bool8 UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
 static Bool8 UiTextEdit_IsModifierShortcut(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
 
 {
-  return ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) ||
+  return (Any(keyboardStateMask & KEYBOARD_STATE_ALT)) ||
          (((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) &&
-          ((keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) &&
+          (Any(keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT))) &&
           ('@' < keyCode) && ((keyCode < '[') || (('`' < keyCode) && (keyCode < '{'))));
 }
 
@@ -406,15 +406,15 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
                               control->bufferCapacityCodeUnits - 1,
                               Any(control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE),(uint16_t)keyCode);
   }
-  else if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+  else if (Any(keyboardStateMask & KEYBOARD_STATE_CTRL)) {
     /* Ctrl+Left/Right: jump between space-separated words, Shift extends the selection. */
     if ((keyCode != KEYBOARD_KEY_CODE_LEFT) && (keyCode != KEYBOARD_KEY_CODE_RIGHT)) {
       return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     }
     UiRequiredTextEdit_JumpToWord(control,keyCode == KEYBOARD_KEY_CODE_LEFT,
-                                  (keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0);
+                                  Any(keyboardStateMask & KEYBOARD_STATE_SHIFT));
   }
-  else if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
+  else if (Any(keyboardStateMask & KEYBOARD_STATE_SHIFT)) {
     /* Shift: extend the selection from the cursor. */
     if (!UiTextEdit_IsCursorMovementKey(keyCode)) {
       return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);

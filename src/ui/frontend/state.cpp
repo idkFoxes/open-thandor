@@ -20,11 +20,11 @@ std::atomic<uint32_t> g_FrontendTimerCountdownTicks{0};
 /* The modifier classes of the frontend hotkey table. The original matcher sends a Shift-only class (0x03) into
    its Ctrl branch (Shift+Ctrl required); UiKeyModifierRule::ExactWithShift wants Shift alone there. No record
    uses a Shift-only class, so both agree on this table (OPEN_THANDOR_SELFTEST=keymatch, case R2'). */
-static constexpr uint32_t FRONTEND_HOTKEY_CLASS_ALT = 0x30;
-static constexpr uint32_t FRONTEND_HOTKEY_CLASS_CTRL = 0xC;
-static constexpr bool FrontendHotkey_ClassIsNotShiftOnly(uint32_t classFlags)
+static constexpr UiKeyboardStateMask FRONTEND_HOTKEY_CLASS_ALT = KEYBOARD_STATE_ALT;
+static constexpr UiKeyboardStateMask FRONTEND_HOTKEY_CLASS_CTRL = KEYBOARD_STATE_CTRL;
+static constexpr bool FrontendHotkey_ClassIsNotShiftOnly(UiKeyboardStateMask classFlags)
 {
-  return ((classFlags & KEYBOARD_STATE_SHIFT) == 0) || ((classFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0);
+  return (!Any(classFlags & KEYBOARD_STATE_SHIFT)) || (Any(classFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)));
 }
 static_assert(FrontendHotkey_ClassIsNotShiftOnly(FRONTEND_HOTKEY_CLASS_ALT) &&
               FrontendHotkey_ClassIsNotShiftOnly(FRONTEND_HOTKEY_CLASS_CTRL),

@@ -21,15 +21,15 @@ static const InGameCameraCommandDispatchTable g_InGameCameraCommandDispatchRecor
         /*  4 */ {.keyCode = EncodedDigit5, .action = InGameCameraKeyAction::RecallBookmark5},
         /*  5 */ {.keyCode = EncodedDigit6, .action = InGameCameraKeyAction::RecallBookmark6},
         /*  6 */ {.keyCode = EncodedDigit7, .action = InGameCameraKeyAction::RecallBookmark7},
-        /*  7 */ {.keyCode = EncodedLowercaseS, .requiredModifierMask = 0x30, .action = InGameCameraKeyAction::ToggleShading},
-        /*  8 */ {.keyCode = EncodedDigit1, .requiredModifierMask = 0x30, .action = InGameCameraKeyAction::StoreBookmark1},
-        /*  9 */ {.keyCode = EncodedDigit2, .requiredModifierMask = 0x30, .action = InGameCameraKeyAction::StoreBookmark2},
-        /* 10 */ {.keyCode = EncodedDigit3, .requiredModifierMask = 0x30, .action = InGameCameraKeyAction::StoreBookmark3},
-        /* 11 */ {.keyCode = EncodedDigit4, .requiredModifierMask = 0x30, .action = InGameCameraKeyAction::StoreBookmark4},
-        /* 12 */ {.keyCode = EncodedDigit5, .requiredModifierMask = 0x30, .action = InGameCameraKeyAction::StoreBookmark5},
-        /* 13 */ {.keyCode = EncodedDigit6, .requiredModifierMask = 0x30, .action = InGameCameraKeyAction::StoreBookmark6},
-        /* 14 */ {.keyCode = EncodedDigit7, .requiredModifierMask = 0x30, .action = InGameCameraKeyAction::StoreBookmark7},
-        /* 15 */ {.keyCode = EncodedLowercaseC, .requiredModifierMask = 0xC, .action = InGameCameraKeyAction::ToggleUnlimitedCamera}
+        /*  7 */ {.keyCode = EncodedLowercaseS, .requiredModifierMask = KEYBOARD_STATE_ALT, .action = InGameCameraKeyAction::ToggleShading},
+        /*  8 */ {.keyCode = EncodedDigit1, .requiredModifierMask = KEYBOARD_STATE_ALT, .action = InGameCameraKeyAction::StoreBookmark1},
+        /*  9 */ {.keyCode = EncodedDigit2, .requiredModifierMask = KEYBOARD_STATE_ALT, .action = InGameCameraKeyAction::StoreBookmark2},
+        /* 10 */ {.keyCode = EncodedDigit3, .requiredModifierMask = KEYBOARD_STATE_ALT, .action = InGameCameraKeyAction::StoreBookmark3},
+        /* 11 */ {.keyCode = EncodedDigit4, .requiredModifierMask = KEYBOARD_STATE_ALT, .action = InGameCameraKeyAction::StoreBookmark4},
+        /* 12 */ {.keyCode = EncodedDigit5, .requiredModifierMask = KEYBOARD_STATE_ALT, .action = InGameCameraKeyAction::StoreBookmark5},
+        /* 13 */ {.keyCode = EncodedDigit6, .requiredModifierMask = KEYBOARD_STATE_ALT, .action = InGameCameraKeyAction::StoreBookmark6},
+        /* 14 */ {.keyCode = EncodedDigit7, .requiredModifierMask = KEYBOARD_STATE_ALT, .action = InGameCameraKeyAction::StoreBookmark7},
+        /* 15 */ {.keyCode = EncodedLowercaseC, .requiredModifierMask = KEYBOARD_STATE_CTRL, .action = InGameCameraKeyAction::ToggleUnlimitedCamera}
     },
     .alignmentPadding = {144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144}};
 
@@ -120,7 +120,7 @@ Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
 
 {
   InGameCameraCommandKeyCode recordKeyCode;
-  uint32_t requiredModifiers;
+  UiKeyboardStateMask requiredModifiers;
   uint32_t bookmark1PackedAngles;
   uint32_t bookmark2PackedAngles;
   uint32_t bookmark3PackedAngles;
@@ -147,7 +147,7 @@ Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
     requiredModifiers = currentRecord->requiredModifierMask;
     if (recordKeyCode == InGameCameraCommandKeyCode{}) break;
     if ((static_cast<UiActionId>(recordKeyCode) != commandCode) ||
-        !UiKeyModifiers_Match(requiredModifiers,(uint32_t)modifierFlags,UiKeyModifierRule::AnyOfMask)) continue;
+        !UiKeyModifiers_Match(requiredModifiers,modifierFlags,UiKeyModifierRule::AnyOfMask)) continue;
     /* Matching record: run its action and stop (the original jumped to a continuation address per record). */
     switch(currentRecord->action) {
     case InGameCameraKeyAction::RecallBookmark1: /* 1..7: recall bookmark n */

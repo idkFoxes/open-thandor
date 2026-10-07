@@ -15,23 +15,7 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Lock-key bits of g_KeyboardStateMask, seeded from the system's lock-key state (SdlInput_Init at startup and
-   again when the window regains the focus). */
-inline constexpr auto KEYBOARD_STATE_NUM_LOCK = 0x10000;
-inline constexpr auto KEYBOARD_STATE_SCROLL_LOCK = 0x20000;
-inline constexpr auto KEYBOARD_STATE_CAPS_LOCK = 0x40000;
-/* Modifier bits of g_KeyboardStateMask (Keyboard_OnKeyDown): left/right Shift 0x01/0x02, left/right Ctrl
-   0x04/0x08, left/right Alt 0x10/0x20. */
-inline constexpr auto KEYBOARD_STATE_SHIFT = 0x03;
-inline constexpr auto KEYBOARD_STATE_CTRL = 0x0C;
-inline constexpr auto KEYBOARD_STATE_ALT = 0x30;
-inline constexpr auto KEYBOARD_STATE_ANY_MODIFIER = 0x3F;
-inline constexpr auto KEYBOARD_STATE_LEFT_SHIFT = 0x01;
-inline constexpr auto KEYBOARD_STATE_RIGHT_SHIFT = 0x02;
-inline constexpr auto KEYBOARD_STATE_LEFT_CTRL = 0x04;
-inline constexpr auto KEYBOARD_STATE_RIGHT_CTRL = 0x08;
-inline constexpr auto KEYBOARD_STATE_LEFT_ALT = 0x10;
-inline constexpr auto KEYBOARD_STATE_RIGHT_ALT = 0x20;
+/* The KEYBOARD_STATE_* bits of g_KeyboardStateMask: UiKeyboardStateMask (ui/controls/types.h). */
 /* Key codes of the events Keyboard_OnKeyDown queues (the commandCode of the keyboard dispatchers): digits and
    letters are 0x30000 + their ASCII code (letters lowercase), special keys use the 0x10000 family. */
 #define KEYBOARD_KEY_CODE_CHAR(asciiCode) (0x30000 + (asciiCode))
@@ -86,7 +70,7 @@ Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUn
 
 void Keyboard_FlushEvents();
 
-Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask);
+Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask);
 
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
@@ -123,7 +107,7 @@ extern GraphicsCursorButtonState g_MouseButtonMask;
 
 extern KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3;
 
-extern uint32_t g_KeyboardStateMask;
+extern UiKeyboardStateMask g_KeyboardStateMask;
 
 extern uint8_t g_KeyboardSpecialKeyDown[32];
 extern KeyboardFlushEventsProc *g_KeyboardFlushEvents;

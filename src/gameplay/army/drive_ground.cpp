@@ -392,7 +392,7 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
     }
   }
   /* alive and still on its way to a route point */
-  if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) &&
       !ArmyRuntime_UpdateMovementAndWaypoints
          (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(modelRuntime->ownerArmyRuntime),&waypointWorldXQ12,
           &waypointWorldYQ12)) {
@@ -476,7 +476,7 @@ void ArmyRuntimeClass_UpdateGroundMovement
     }
   }
   /* alive and still on its way to a route point */
-  if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) &&
       !ArmyRuntime_UpdateMovementAndWaypoints
          (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(modelRuntime->ownerArmyRuntime),&waypointWorldXQ12,
           &waypointWorldYQ12)) {
@@ -543,7 +543,7 @@ void ArmyRuntimeClass_UpdateWaterSurfaceMovement
   previousWorldX = (rootNode->worldTransform).translation.x;
   previousWorldY = (rootNode->worldTransform).translation.y;
   /* alive and still on its way to a route point */
-  if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) &&
       !ArmyRuntime_UpdateMovementAndWaypoints
          (worldRuntime,ModelView_Cast<ArmyMovementRuntime>(modelRuntime->ownerArmyRuntime),&waypointWorldXQ12,
           &waypointWorldYQ12)) {

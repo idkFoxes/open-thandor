@@ -116,8 +116,8 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
   ui->technologyAreaTab5.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
   ui->technologyAreaTab6.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
   ui->technologyAreaTab7.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-  if (((selectedModelRuntime->classState).stateFlags &
-       (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) != 0) {
+  if (Any((selectedModelRuntime->classState).stateFlags &
+       (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID))) {
     /* The definition lists 28 technology ids (researchTechnologyIds[1..28]), cycling through the seven areas
        0..6; the one equal to the entity's current technology picks the tab. */
     definition = (selectedModelRuntime->definitionOrSavedId).runtimeDefinition;
@@ -229,7 +229,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   if (firstSelectedEntity != nullptr) {
     entityModelRuntime = (firstSelectedEntity->common).ownership.modelRuntime();
     definition = (entityModelRuntime->definitionOrSavedId).runtimeDefinition;
-    if (((entityModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
+    if (!Any((entityModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING)) {
       UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
     }
     else {
@@ -301,7 +301,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       ui->technologyResearchButton.textResourceId = TEXT_ID_TECHNOLOGY_BUTTON_NO_AREA;
       ui->technologyDescriptionText.base.rightOffset = 6;
       ui->technologyDescriptionText.base.bottomOffset = 6;
-      if ((playerBlock->heldResearchUnpaidFlag & ARMY_MODEL_STATE_RESEARCH_UNPAID) == 0) {
+      if ((playerBlock->heldResearchUnpaidFlag & ToBits(ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) {
         UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
       }
       scrollableControl = &ui->technologyDescriptionScroll;

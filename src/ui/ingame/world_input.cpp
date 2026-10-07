@@ -156,16 +156,16 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
       return WORLD_CURSOR_OWN_ARMY;
     }
     modifierModeMask = 0;
-    if ((g_KeyboardStateMask & KEYBOARD_STATE_ANY_MODIFIER) == 0) {
+    if (!Any(g_KeyboardStateMask & KEYBOARD_STATE_ANY_MODIFIER)) {
       modifierModeMask = 7;
     }
-    if ((g_KeyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
+    if (Any(g_KeyboardStateMask & KEYBOARD_STATE_SHIFT)) {
       modifierModeMask = modifierModeMask | 1;
     }
-    if ((g_KeyboardStateMask & KEYBOARD_STATE_ALT) != 0) {
+    if (Any(g_KeyboardStateMask & KEYBOARD_STATE_ALT)) {
       modifierModeMask = modifierModeMask | 2;
     }
-    if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+    if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
       modifierModeMask = modifierModeMask | 4;
     }
     variantMask = SelectionInfo_CollectAttachmentEffectVariantMask();
@@ -198,8 +198,8 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     }
     return (ownerIndex != (entry->common).ownership.ownerIndex) ? WORLD_CURSOR_FOREIGN_ARMY : WORLD_CURSOR_OWN_ARMY;
   }
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
-    if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) != 0) {
+  if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
+    if (Any(g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT))) {
       if (entry == nullptr) {
         return GRAPHICS_CURSOR_FRAME_ARROW;
       }
@@ -223,7 +223,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     }
     return WORLD_CURSOR_MOVE;
   }
-  if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) != 0) {
+  if (Any(g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT))) {
     return (ownerIndex == (entry->common).ownership.ownerIndex) ? WORLD_CURSOR_OWN_ARMY : WORLD_CURSOR_FOREIGN_ARMY;
   }
   if (!SelectionInfo_TestAnyEntryWeaponDamageNonnegative()) {
@@ -509,16 +509,16 @@ static void InGameWorldInput_CommitCommandModeRelease
   }
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED;
   modifierModeMask = 0;
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_ANY_MODIFIER) == 0) {
+  if (!Any(g_KeyboardStateMask & KEYBOARD_STATE_ANY_MODIFIER)) {
     modifierModeMask = 7;
   }
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
+  if (Any(g_KeyboardStateMask & KEYBOARD_STATE_SHIFT)) {
     modifierModeMask = modifierModeMask | 1;
   }
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_ALT) != 0) {
+  if (Any(g_KeyboardStateMask & KEYBOARD_STATE_ALT)) {
     modifierModeMask = modifierModeMask | 2;
   }
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+  if (Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
     modifierModeMask = modifierModeMask | 4;
   }
   variantMask = SelectionInfo_CollectAttachmentEffectVariantMask();
@@ -635,11 +635,11 @@ static void InGameWorldInput_CommitSelectionModeRelease
     }
     return;
   }
-  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
+  if (!Any(g_KeyboardStateMask & KEYBOARD_STATE_CTRL)) {
     if (entry == nullptr) {
       /* ground click: move, or position with Shift/Alt */
       if (!SelectionInfo_TestAnyActiveOrSingleClass13() && (pickedHeightQ12 != WORLD_POINTER_NO_HIT)) {
-        if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) == 0) {
+        if (!Any(g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT))) {
           InGameCommand_Issue<InGamePlayerSelection_ApplyMoveCommand>(0,pointerWorldXQ12,pointerWorldYQ12);
         }
         else {
@@ -648,7 +648,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
       }
       return;
     }
-    if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) == 0) {
+    if (!Any(g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT))) {
       if (SelectionInfo_TestAnyEntryWeaponDamageNonnegative()) {
         capabilityClear =
              GameFactionRuntime_TestCapabilityBitClear((entry->common).ownership.ownerIndex,ownerIndex);
@@ -665,7 +665,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
       return;
     }
   }
-  else if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) == 0) {
+  else if (!Any(g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT))) {
     if (entry == nullptr) {
       /* Ctrl ground click: target position at the top surface height under the pointer */
       if (pickedHeightQ12 != WORLD_POINTER_NO_HIT) {

@@ -381,7 +381,7 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
   previousRotationAngle = (rootNode->modelPayload).worldRotationAngle2;
   previousWorldX = (rootNode->worldTransform).translation.x;
   previousWorldY = (rootNode->worldTransform).translation.y;
-  if (((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) != 0) {
+  if (Any((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED)) {
     rootNode = ArmyRuntimeClass_PlaceBankingUnitStationary(worldRuntime,modelRuntime);
   }
   else {

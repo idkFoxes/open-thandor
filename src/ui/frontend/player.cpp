@@ -646,7 +646,7 @@ void FrontendPlayerRuntime_SetSlowRenderingFlagById
   
   playerRuntimeBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags & ~PLAYER_SESSION_FLAG_SLOW_RENDERING;
-  playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags | slowRenderingFlag;
+  playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags | FromBits<PlayerSessionFlags>(slowRenderingFlag);
 }
 
 
@@ -988,7 +988,7 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
   }
   if ((int)technologyIndexOrRestore < 0) {
     /* cancelled: give back the held ARMY_MODEL_STATE_RESEARCH_UNPAID bit */
-    building->common.runtimeFlags = building->common.runtimeFlags | playerBlock->heldResearchUnpaidFlag;
+    building->common.runtimeFlags = building->common.runtimeFlags | FromBits<ArmyRuntimeFlags>(playerBlock->heldResearchUnpaidFlag);
   }
   else {
     Technology_ApplyRecordToEntity(technologyIndexOrRestore,building);
@@ -1458,7 +1458,7 @@ void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
 
 {
   SelectionPlayerRuntimeBlock *playerBlock;
-  uint32_t buildingStateFlags;
+  ArmyRuntimeFlags buildingStateFlags;
   ModelRuntimeSlot *building;
 
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
@@ -1471,7 +1471,7 @@ void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
   }
   buildingStateFlags = building->classState.stateFlags;
   playerBlock->technologyPageBuilding = (uintptr_t)building;
-  playerBlock->heldResearchUnpaidFlag = buildingStateFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID;
+  playerBlock->heldResearchUnpaidFlag = ToBits(buildingStateFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID);
   building->classState.stateFlags = building->classState.stateFlags & ~ARMY_MODEL_STATE_RESEARCH_UNPAID;
 }
 
