@@ -13,7 +13,7 @@
 #include <thandor/ui/dialogs/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
+bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
 
 int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);
 

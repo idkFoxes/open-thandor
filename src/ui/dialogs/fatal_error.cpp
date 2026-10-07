@@ -53,7 +53,7 @@ FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).
 */
-Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
+bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
 
 {
   return true;

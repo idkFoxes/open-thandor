@@ -16,7 +16,7 @@
    activates it: a push button queues its action, a toggle flips its selected state, a radio-style control
    gets selected; optionally with the activation sound. Other keys go to the default focus handling.
 */
-Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control)
 
 {

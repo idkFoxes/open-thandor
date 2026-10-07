@@ -115,7 +115,7 @@ uint32_t g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 = 0;
    Returns true when no record matches and false after a command; the world view's pointer
    context (FrontendModelPointerContext_KeyboardEvent) passes unmatched keys on.
 */
-Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
+bool InGameCameraCommand_DispatchByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,WorldRuntimeContext *worldRuntime)
 
 {

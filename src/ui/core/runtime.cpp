@@ -43,7 +43,7 @@ UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback = nullptr;
    heap copy of the dialog root when UiRootStack_Pop closes it. The close is vetoed (returns true) only when
    the free fails.
 */
-Bool8 UiRootCallbacks_Free(UiRootNode *root)
+bool UiRootCallbacks_Free(UiRootNode *root)
 
 {
   return g_MemoryApi.free(root) != 0;
@@ -52,7 +52,7 @@ Bool8 UiRootCallbacks_Free(UiRootNode *root)
 /* method08 of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: always returns true,
    so a pointer press that misses the dialog ends the root-stack hit test there (the dialogs are modal).
 */
-Bool8 UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root)
+bool UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root)
 
 {
   return true;

@@ -49,7 +49,7 @@ inline constexpr int32_t UI_RANGE_SLIDER_PIECE_TRACK = 1; /* piece offsets from 
 inline constexpr int32_t UI_RANGE_SLIDER_PIECE_END_CAP = 2;
 inline constexpr int32_t UI_RANGE_SLIDER_PIECE_THUMB = 3;
 
-Bool8 UiRangeSliderControl_HandleKeyboard
+bool UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control);
 
 void UiRangeSliderControl_UpdateValueFromPointer

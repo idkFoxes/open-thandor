@@ -19,7 +19,7 @@ UiNodeBase *g_UiKeyboardFocusNode = UI_NODE_NONE;
    typed characters with bit 0x10 or 0x20 set are consumed without reaching the child. Returns false
    when consumed.
 */
-Bool8 UiSingleLineTextControl_ForwardKeyboardEventToChild
+bool UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control)
 
 {

@@ -16,7 +16,7 @@
 /* The UiSelectableControl stateFlags bits UI_SELECTABLE_* are the enum class UiSelectableStateFlags in
    ui/controls/types.h. */
 
-Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control);
 
 void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control);

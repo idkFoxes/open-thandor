@@ -567,7 +567,7 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
    focus-moving handler. The key events of Keyboard_OnKeyDown carry letters as KEYBOARD_KEY_CODE_CHAR
    (0x30000 + code), so the plain 'c' / 'z' compared here never arrive and the hotkeys do not fire.
 */
-Bool8 UiResizableWindowControl_HandleWindowHotkeys
+bool UiResizableWindowControl_HandleWindowHotkeys
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control)
 
 {

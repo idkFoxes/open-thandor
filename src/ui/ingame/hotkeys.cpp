@@ -57,7 +57,7 @@ static const UiKeyCommandRecord<InGameHotkeyAction> g_EndGameResultsCommandDispa
    combination) and runs its action: chat, message window, menus, save, pause, game speed, side panel,
    screenshot, leaving the game and the three cheat keys (only while cheats are enabled).
 */
-Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           InGameRuntimeRootFrameView *inGameRoot)
 
 {

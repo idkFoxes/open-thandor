@@ -96,7 +96,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   UiListRowIndex selectedIndex;
   UiNodeBase *rootNode;
   UiListRowIndex lastRowIndex;
-  Bool8 selectionConfirmed;
+  bool selectionConfirmed;
   Bool8 isNewSaveRow;
 
   InGameUiImage *image = THANDOR_CONTAINER_OF(catalogList, InGameUiImage, saveGameList);

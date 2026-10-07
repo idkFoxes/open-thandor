@@ -735,7 +735,7 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
    g_UiSoftwareTexturePreviewControlVtable): Tab moves the focus on, any other key queues the control's action.
    Always consumed (returns false).
 */
-Bool8 UiSoftwareTexturePreviewControl_HandleKeyboardActivation
+bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control)
 
 {
