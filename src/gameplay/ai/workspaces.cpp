@@ -263,7 +263,7 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 /* Returns true when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
    or not.
 */
-Bool8 AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
+bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -467,7 +467,7 @@ int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
    parameters from engine\ki.dat into g_AiKnowledgeData. Returns true on success; stops at the first failure,
    returning false with that failure's error code in *outErrorCode (buffers allocated before it are not freed).
 */
-Bool8 AiRuntime_InitWorkspace(uint32_t *outErrorCode)
+bool AiRuntime_InitWorkspace(uint32_t *outErrorCode)
 
 {
   AiKnowledgeDataImage *knowledgeDataImage;
@@ -556,7 +556,7 @@ void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell)
 {
   FieldGridCell **cellBuffer;
   uint32_t entryIndex;
-  Bool8 isOutsideExtents;
+  bool isOutsideExtents;
 
   entryIndex = g_AiWorkspace09Count;
   cellBuffer = g_AiWorkspace09Cells;
@@ -578,7 +578,7 @@ void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 {
   FieldGridCell **cellBuffer;
   uint32_t entryIndex;
-  Bool8 isOutsideExtents;
+  bool isOutsideExtents;
 
   entryIndex = g_AiWorkspace10Count;
   cellBuffer = g_AiWorkspace10Cells;
@@ -595,7 +595,7 @@ void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 /* Returns true when the primary workspace (workspace 00) holds an entry of this army asset whose
    runtime pointer is NULL.
 */
-Bool8 AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
+bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -616,7 +616,7 @@ Bool8 AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 /* Returns true when the primary workspace (workspace 00) holds an entry of this army asset, with or
    without a runtime object.
 */
-Bool8 AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
+bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -704,7 +704,7 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
    supportRadius of its definition. True when it is outside all of them. Arguments are Y first, then X, as every
    caller passes them.
 */
-Bool8 AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
+bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
 
 {
   Q12 deltaXAbsQ12;

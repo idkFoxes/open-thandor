@@ -461,7 +461,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
   int absDeltaY;
   FieldGridCell *siteCell;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
-  Bool8 chainFailed;
+  bool chainFailed;
   FixedSinCos headingOffset;
   uint32_t bucketCount;
   Q12 steerWorldXQ12; /* unused here */

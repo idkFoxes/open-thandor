@@ -15,7 +15,7 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
@@ -27,27 +27,27 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell);
 void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
           (FieldGridCell *terrainFeatureCell,uint32_t gridScratchRowStrideBytes);
 
-Bool8 AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           ArmyPlacementContext placementContext,WorldRuntimeContext *worldRuntime);
 
-Bool8 AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-Bool8 AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outBucketCount);
 
-Bool8 AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-Bool8 AiCandidatePlanning_ComputeSpecialSiteWeight
+bool AiCandidatePlanning_ComputeSpecialSiteWeight
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outWeight);
 
-Bool8 AiPlacement_FindNearestPlaceableBaseSite
+bool AiPlacement_FindNearestPlaceableBaseSite
           (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,Q12 *outWorldYQ12,
           Q12 *outWorldXQ12);
 
-Bool8 AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 extern AiKnowledgeDataImage *g_AiKnowledgeData;

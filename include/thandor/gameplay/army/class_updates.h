@@ -26,9 +26,9 @@ int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBu
 
 void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState (WorldRuntimeContext *worldRuntime,ModelRuntimeVerticalDeploymentView *modelRuntime);
 
-Bool8 ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime);
+bool ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime);
 
-Bool8 ArmyRuntime_TestPositionDistanceWithinCombinedRadius
+bool ArmyRuntime_TestPositionDistanceWithinCombinedRadius
           (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidateModelNode,
           void *sourceModelNode);
 

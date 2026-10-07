@@ -23,7 +23,7 @@ ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount = 0;
    called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
 
-Bool8 ArmyPlacement_CanPlaceAnchoredModel
+bool ArmyPlacement_CanPlaceAnchoredModel
               (ArmyPlacementDispatchArg0 placementMode,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12,
@@ -34,7 +34,7 @@ Bool8 ArmyPlacement_CanPlaceAnchoredModel
 {
   int offsetWorldXQ12;
   int offsetWorldYQ12;
-  Bool8 blocked;
+  bool blocked;
   FixedLengthAngle offsetLengthAngle;
   FixedSinCos rotatedOffset;
   uint32_t clearanceValue;
@@ -96,7 +96,7 @@ bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
   uint32_t worldYQ12;
   Q12 worldXQ12;
   int referenceHeightQ12;
-  Bool8 blocked;
+  bool blocked;
   ModelPackedPointRecord *anchorRecord;
   ModelWorldPoint anchorWorldPoint;
 
@@ -147,7 +147,7 @@ Q12 g_ArmyPlacementValidatedWorldYQ12;
    0x240 on each axis). Returns false when one fits and leaves the accepted point in
    g_ArmyPlacementValidatedWorldXQ12/YQ12; true when none fits.
 */
-Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
+bool ArmyPlacement_ValidateAssetAtPointAndCellCorners
           (ArmyPlacementMode placementMode,uint32_t placementHeading,Q12 worldYQ12,
           Q12 worldXQ12,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionId,
           void *inGameRuntime)
@@ -192,7 +192,7 @@ Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[14],
    called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
-Bool8 ArmyPlacement_CanPlaceResourceExtractor
+bool ArmyPlacement_CanPlaceResourceExtractor
               (ArmyPlacementDispatchArg0 placementMode,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12,
@@ -245,7 +245,7 @@ bool ArmyPlacement_TestGridOccupancyMask
 {
   int cellColumn;
   int cellRow;
-  Bool8 blocked;
+  bool blocked;
   FieldGridCoordinates gridCoordinates;
   FieldGridAsset *activeFieldGrid;
   ModelRuntimeNode *rootNode;
@@ -286,7 +286,7 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
-  Bool8 blocked;
+  bool blocked;
   ModelRuntimeNode *modelNode;
   
   modelNode = modelRuntime->rootModelNode;
@@ -329,7 +329,7 @@ bool ArmyPlacement_CanPlaceMobileUnit
                uint32_t *outPlacementValue)
 
 {
-  Bool8 blocked;
+  bool blocked;
   
   blocked = GridScratch_TestProjectedCellMaskBands
                     (worldXQ12,worldYQ12,(uint8_t)modelDefinition->footprintRadiusClass,
@@ -378,7 +378,7 @@ bool ArmyPlacement_CanPlaceAnywhere
    the point or the asset or its model definition is missing. No caller used the lookup error code the
    original returned on failure.
 */
-Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
+bool ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
           uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
@@ -430,7 +430,7 @@ Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
    by ArmyPlacement_CanPlaceAnchoredModel and ArmyPlacement_CanPlaceResourceExtractor.
 */
 
-Bool8 ArmyPlacement_CanPlaceBuilding
+bool ArmyPlacement_CanPlaceBuilding
           (ArmyPlacementDispatchArg0 placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t placementHeading,
           ArmyPlacementDispatchArg3 terrainHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
@@ -454,7 +454,7 @@ Bool8 ArmyPlacement_CanPlaceBuilding
   int freeDistanceQ12;
   int placementValue;
   WorldOwnerListNode *ownerNode;
-  Bool8 blocked;
+  bool blocked;
   TerrainPlacementResult terrainTest;
   int nearestClearanceQ12 = 0; /* set together with nearestDistanceSquared */
 
@@ -559,7 +559,7 @@ Bool8 ArmyPlacement_CanPlaceBuilding
    Called directly by ArmyPlacementCollision_TestPointAgainstRuntimeList and
    ArmyPlacementCollision_TestCandidateAgainstRuntimeList.
 */
-Bool8 ArmyPlacementCandidate_TestModelAnchorDistance
+bool ArmyPlacementCandidate_TestModelAnchorDistance
           (Q12 queryRadiusQ12,Q12 targetWorldXQ12,Q12 targetWorldYQ12,ModelRuntimeSlot *modelRuntime)
 
 {

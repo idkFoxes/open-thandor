@@ -417,7 +417,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
    point and heading (classState70..78) and the pad's platform height; its health is scaled by the pad's health.
    Returns true when no slot matches or the creation fails.
 */
-Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
+bool ArmyRuntimeSpawner_CreateLinkedChildInstance
           (WorldMotionValue78 inheritedValue78,WorldMotionValue74 inheritedValue74,
           WorldMotionValue70 inheritedValue70,PckArmyAssetIdCatalog linkedArmyAssetId,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeLinkedChildMaskSlotView *armyRuntime)
@@ -484,7 +484,7 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
    within its radius + 0xC00 (0.75 in Q12) of the source model's anchor point (model lookup entry (1,5),
    transformed to world space), measured in x/y.
 */
-Bool8 ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
+bool ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
 
 {
   uint32_t candidateRadius;

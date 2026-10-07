@@ -19,7 +19,7 @@
    score = (relationScaleQ8 * 40000 >> 8) * baseCandidateScore >> 8. */
 inline constexpr int AI_TECHNOLOGY_RELATION_SCORE_FACTOR = 40000;
 
-Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
+bool AiTechnologyCandidate_IsCurrentlyAvailable
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeRecordByteOffset factionRecordOffset
           );
 

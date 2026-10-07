@@ -46,7 +46,7 @@ static void ArmyWeaponRuntime_FireFromFirstLoadedAttachment
   ArmyRuntimeSlot *commandTargetArmy;
   ShotTargetModelReference targetRuntimeReference;
   SprAttachmentSelectorOrdinal attachmentSelectorOrdinal;
-  Bool8 launchFailed;
+  bool launchFailed;
   ModelMeshGroupMask *barrelMeshMask;
 
   launchNode = pitchNode->childNodes[0];
@@ -104,15 +104,15 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
   Q12 aimYQ12;
   Q12 aimZQ12;
   AngleTurn32 targetPitchAngle16;
-  Bool8 targetFollowingFailed;
+  bool targetFollowingFailed;
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   uint32_t pitchAimValue;
-  Bool8 movementArrived;
+  bool movementArrived;
   Q12 steerWorldXQ12; /* unused here */
   Q12 steerWorldYQ12; /* unused here */
   GraphicsFixedVec3 aimPoint;
-  Bool8 aimPointFound;
+  bool aimPointFound;
   GameEntityRuntime *ownerEntity;
 
   barrelNode = modelRuntime->rootModelNode->childNodes[0]->childNodes[0];
@@ -180,11 +180,11 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
 /* Owner test for a model in the line of fire: it blocks unless it is the shooter's command target or passes
    the commandState owner test (commandState < 1: models of the own owner pass, otherwise those of other
    owners). */
-static Bool8 ArmyWeaponRuntime_IsBlockedByHitEntity(GameEntityRuntime *ownEntity,GameEntityRuntime *hitEntity)
+static bool ArmyWeaponRuntime_IsBlockedByHitEntity(GameEntityRuntime *ownEntity,GameEntityRuntime *hitEntity)
 
 {
   int ownOwnerIndex;
-  Bool8 ownerTestFails;
+  bool ownerTestFails;
 
   ownOwnerIndex = (ownEntity->common).ownership.ownerIndex;
   if ((ownEntity->common).commandState < 1) {
@@ -198,7 +198,7 @@ static Bool8 ArmyWeaponRuntime_IsBlockedByHitEntity(GameEntityRuntime *ownEntity
 
 /* Line-of-fire test for ballistic shots (true = blocked): the arc must be solvable, its elevation within
    [minPitchAngle, maxPitchAngle] and no model in the way along the horizontal distance. */
-static Bool8 ArmyWeaponRuntime_TestBallisticLineOfFire
+static bool ArmyWeaponRuntime_TestBallisticLineOfFire
           (int deltaZ,int deltaY,int deltaX,int minPitchAngle,int maxPitchAngle,ShotDefinition *shotDefinition,
            ModelRuntimeNode *originNode,WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
@@ -209,7 +209,7 @@ static Bool8 ArmyWeaponRuntime_TestBallisticLineOfFire
   int64_t discriminant;
   uint32_t discriminantRoot;
   uint32_t elevationAngle;
-  Bool8 modelHit;
+  bool modelHit;
   Q12 modelHitDistanceQ12;
   ModelRuntimeNode *hitModelNode;
   GameEntityRuntime *ownEntity;
@@ -262,7 +262,7 @@ static Bool8 ArmyWeaponRuntime_TestBallisticLineOfFire
    passes the owner test (commandState < 1: models of the own owner, otherwise those of other owners). Called
    directly by the AI combat target selection (gameplay/ai/combat.cpp) and gameplay/army/move_orders.cpp.
 */
-Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
+bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
@@ -279,8 +279,8 @@ Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorld
   int maxRayLength;
   int terrainHitDistance;
   uint32_t distanceDifference;
-  Bool8 modelHit;
-  Bool8 terrainHitFirst;
+  bool modelHit;
+  bool terrainHitFirst;
   Q12 modelHitDistanceQ12;
   ModelRuntimeNode *hitModelNode;
   FixedLengthAzimuthElevation targetVector;

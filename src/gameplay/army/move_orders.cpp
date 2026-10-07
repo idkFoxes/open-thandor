@@ -75,7 +75,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   GraphicsWorldCoordinateQ12 currentWorldY;
   ArmyCommandGeneration standardGeneration;
   ModelRuntimeSlot *attachedModelRuntime;
-  Bool8 hasNoWeaponDamage;
+  bool hasNoWeaponDamage;
   ModelRuntimeNode *modelNode;
 
   standardGeneration = g_ArmyCommandGenerationStandard;
@@ -380,13 +380,13 @@ void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
    must not fire. With a clear line of fire a running target-following move is stopped and false is returned. Called
    by the aim-and-fire class updates (gameplay/army/turrets.cpp and combat.cpp).
 */
-Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
+bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   GameEntityRuntime *ownerEntity;
   ModelRuntimeSlot *ownerRootModelRuntime;
-  Bool8 lineOfFireBlocked;
+  bool lineOfFireBlocked;
 
   /* modelRuntime is the weapon's model runtime. ownerEntity is the owning army (GameEntityRuntime view: its
      common.commandFlags is ArmyRuntimeSlot.movementStateFlags and commandTarget.targetFlags is commandModeFlags);
@@ -569,7 +569,7 @@ void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *move
    step repeated); otherwise the route is rebuilt when the model moved or the retry countdown ran out. Near
    the final target the move ends (arrived, current position); farther away a direct move to it is started.
 */
-Bool8 ArmyRuntime_UpdateMovementAndWaypoints
+bool ArmyRuntime_UpdateMovementAndWaypoints
           (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime,Q12 *outWorldXQ12,
           Q12 *outWorldYQ12)
 
@@ -586,7 +586,7 @@ Bool8 ArmyRuntime_UpdateMovementAndWaypoints
   int waypointIndex;
   uint32_t distanceX;
   uint32_t distanceY;
-  Bool8 belowThreshold;
+  bool belowThreshold;
   PathingDestination resolvedDestination;
   Q12 queuedWorldYQ12;
   Q12 queuedWorldXQ12;
@@ -781,7 +781,7 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
    no longer see is dropped (entity and flags cleared). Writes the position to *outPosition and returns true, or
    returns false when there is none.
 */
-Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition)
+bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition)
 
 {
   GameEntityRuntime *commandTargetEntity;
