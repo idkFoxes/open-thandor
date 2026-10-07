@@ -124,7 +124,7 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
   Random_SelectSecondaryStream();
   playerRecordCursor = g_FrontendPlayerRuntimeBlocks;
   for (recordsRemaining = 8; recordsRemaining != 0; recordsRemaining--) {
-    playerRecordCursor->factionAssignment.roleStateFlags = 0;
+    playerRecordCursor->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
     playerRecordCursor->colourCycleFlags = 0;
     playerRecordCursor++;
   }
@@ -188,7 +188,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   localPlayerRecord->playerName.textUtf16[0] = 0;
   localPlayerRecord->playerName.textUtf16[1] = 0;
   firstPlayerRecord->playerRuntimeId = 0;
-  firstPlayerRecord->factionAssignment.roleStateFlags = 0;
+  firstPlayerRecord->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
   firstPlayerRecord->colourCycleFlags = 0;
   firstPlayerRecord->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
 }
@@ -477,7 +477,7 @@ void FrontendClientSession_TickHostTimeout()
   localPlayerRecord->playerName.textUtf16[0] = 0;
   localPlayerRecord->playerName.textUtf16[1] = 0;
   localPlayerRecord->playerRuntimeId = 0;
-  localPlayerRecord->factionAssignment.roleStateFlags = 0;
+  localPlayerRecord->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
 }
 
 

@@ -45,8 +45,7 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
         return;
       }
     }
-    if (((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)
-        == 0) {
+    if (!Any((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)) {
       factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup48Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_RegisterArmyAssetPointers>(1,assetId,factionIndex);
@@ -87,8 +86,7 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
         return;
       }
     }
-    if (((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)
-        == 0) {
+    if (!Any((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)) {
       factionIndex = worldRuntime->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup42Records[entryIndex]->armyAssetId;
       InGameCommand_Issue<GameFactionRuntime_RegisterArmyAssetPointers>(1,assetId,factionIndex);

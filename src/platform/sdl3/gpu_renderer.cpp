@@ -762,7 +762,7 @@ Uint32 AppendSmoothTriangle(const GraphicsPrimitivePacket *packet, const AtlasSl
    beyond 0..2^32 are clamped by the GPU (depth clip off). */
 void AppendPacket(const GraphicsPrimitivePacket *packet, const SDL_Rect &scissor) noexcept
 {
-  const uint32_t handlerIndex = (packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12;
+  const uint32_t handlerIndex = ToBits(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12;
   const GpuRunKind kind = RunKindOfHandler(handlerIndex);
   if (kind == GPU_RUN_NONE) {
     return;
@@ -770,7 +770,7 @@ void AppendPacket(const GraphicsPrimitivePacket *packet, const SDL_Rect &scissor
   AtlasSlot slot{0, 0, 0, 0};
   uint16_t widthMask = kUntexturedMask;
   uint16_t heightMask = kUntexturedMask;
-  if ((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) != 0) {
+  if (Any(packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED)) {
     const GraphicsTextureSetEntry *entry = packet->textureEntry;
     if ((entry == nullptr) || !AtlasSlotOfTexture(entry, slot)) {
       return;

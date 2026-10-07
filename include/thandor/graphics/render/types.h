@@ -13,6 +13,7 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/memory/types.h>
 #include <thandor/core/types.h>
+#include <thandor/core/flags.h> /* THANDOR_FLAG_ENUM: GraphicsPrimitiveDispatchFlags */
 #include <thandor/ui/controls/types.h>
 
 struct GraphicsShadingRuntimeRecord;
@@ -99,7 +100,37 @@ using GraphicsScreenCoordinate = int;
 
 using GraphicsPlaneNormalFixed = int;
 
-using GraphicsPrimitiveDispatchFlags = uint32_t;
+/* The render flag word of a primitive packet (GraphicsPrimitivePacket.renderFlags) and of an MDL mesh triangle
+   (GraphicsTriangleInput.renderFlags, copied into the packet by GraphicsPrimitiveQueue_AppendTriangle). The bit
+   values are file data (MDL) and select the raster handler; bits without an enumerator stay valid. The
+   enumerators are also visible unscoped (using enum below), with their former constant names. */
+enum class GraphicsPrimitiveDispatchFlags : uint32_t {
+    /* Packet bits 12..17 select the raster handler ((flags & 0x3f000) >> 12); the software queue renderers
+       shift by 12 and index their handler table. Bit 16 marks a textured packet, bits 12..14 the blend mode. */
+    GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK = 0x3f000,
+    GRAPHICS_PRIMITIVE_FLAG_TEXTURED = 0x10000,
+    GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT = 0x20000,
+    GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED = 0x8000, /* set by SoftwareRenderer_PrepareTrianglePacket when all three vertex colours are equal */
+    GRAPHICS_PRIMITIVE_BLEND_MASK = 0x7000,
+    GRAPHICS_PRIMITIVE_BLEND_OPAQUE = 0,
+    GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT = 0x1000,
+    GRAPHICS_PRIMITIVE_BLEND_ADDITIVE = 0x2000,
+    GRAPHICS_PRIMITIVE_BLEND_MODE_4 = 0x4000, /* kept by GraphicsPrimitiveQueue_SetVertexColors like opaque */
+    GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE = 0x6000, /* blend mode 6: alpha-blended with depth writes */
+    /* bits 28..29: subtracted from an opaque packet's sort key (GraphicsPrimitiveQueue_RenderSortKey) */
+    GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS = 0x30000000,
+    /* Model triangle bits, read by ModelRender_SubmitTriangle*, ModelRender_PrepareProjectedVertex* */
+    MODEL_TRIANGLE_PALETTE_BANK_MASK = 0x1FF, /* material colour: index into the node's palette asset */
+    /* The palette bank mask ModelRender_SubmitTriangleAlternatePath uses: keeps bits 16..31 too */
+    MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK = 0xffff01ff,
+    MODEL_TRIANGLE_UNLIT = 0x200, /* vertices take the node tint instead of lighting */
+    MODEL_TRIANGLE_DOUBLE_SIDED = 0x400, /* drawn without the back-face test */
+    MODEL_TRIANGLE_LIGHTING_SCALED = 0x800, /* lit by ModelRender_ComputeVertexIntensityScaledPath */
+    MODEL_TRIANGLE_FLAT_SHADED = 0x8000, /* lit with the triangle normal; never reuses a cached vertex colour */
+    MODEL_TRIANGLE_VERTEX_CACHE_FLAGS = 0x8E00 /* the bits a projected vertex's cached colour was computed for */
+};
+THANDOR_FLAG_ENUM(GraphicsPrimitiveDispatchFlags);
+using enum GraphicsPrimitiveDispatchFlags;
 
 using DepthBinMask32 = uint32_t;
 
@@ -128,8 +159,6 @@ using GraphicsShadingRecordCount = uint32_t;
 using GraphicsProjectionScale = uint32_t;
 
 using GraphicsPrimitiveDepthFixed = int;
-
-using GraphicsRenderFlagMask = uint32_t;
 
 using GraphicsPixelDimension = uint32_t;
 

@@ -144,7 +144,7 @@ static void FrontendMainLoop_ExchangeScenarioCatalog()
 
   localPlayerBlock = g_FrontendPlayerRuntimeBlocks;
   FrontendScenarioTransfer_ProcessReceivedAsset();
-  if ((localPlayerBlock->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG) != 0) {
+  if (Any(localPlayerBlock->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG)) {
     return;
   }
   localRoleStateFlags = &localPlayerBlock->factionAssignment.roleStateFlags;
@@ -206,7 +206,7 @@ static void FrontendMainLoop_PollScenarioSelectionPage()
     /* the AND really clears every other progress bit of the player */
     roleStateFlags = &playerBlock->factionAssignment.roleStateFlags;
     *roleStateFlags = *roleStateFlags & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG;
-    if (*roleStateFlags == 0) {
+    if (!Any(*roleStateFlags)) {
       FrontendMainLoop_ExchangeScenarioCatalog();
       return;
     }
@@ -231,7 +231,7 @@ static Bool8 FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags sta
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
-    if ((playerBlock->factionAssignment.roleStateFlags & stateMask) == 0) {
+    if (!Any(playerBlock->factionAssignment.roleStateFlags & stateMask)) {
       return false;
     }
     playerBlock++;
@@ -270,7 +270,7 @@ static void FrontendMainLoop_RunSession(FrontendBooleanState32 loadExistingSessi
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
-    playerBlock->factionAssignment.roleStateFlags = 0;
+    playerBlock->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
     playerBlock++;
     remainingPlayerBlocks--;
   } while (remainingPlayerBlocks != 0);

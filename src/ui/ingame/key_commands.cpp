@@ -159,17 +159,19 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
   case InGameKeyCommandAction::AddGroupToSelection:
   case InGameKeyCommandAction::StoreSelectionAsGroup:
   case InGameKeyCommandAction::AddSelectionToGroup: {
-    /* FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh mode bits: 1 = the selection is the
-       source and the group the destination, 2 = merge instead of replace */
-    uint32_t transferMode = (target == InGameKeyCommandAction::RecallGroup) ? 0 :
-                            (target == InGameKeyCommandAction::AddGroupToSelection) ? 2 :
-                            (target == InGameKeyCommandAction::StoreSelectionAsGroup) ? 1 : 3;
+    /* FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh mode bits: SELECTION_TRANSFER_TO_GROUP = the
+       selection is the source and the group the destination, SELECTION_TRANSFER_MERGE = merge instead of replace */
+    FrontendSelectionTransferModeFlags transferMode =
+        (target == InGameKeyCommandAction::RecallGroup) ? FrontendSelectionTransferModeFlags{} :
+        (target == InGameKeyCommandAction::AddGroupToSelection) ? SELECTION_TRANSFER_MERGE :
+        (target == InGameKeyCommandAction::StoreSelectionAsGroup) ? SELECTION_TRANSFER_TO_GROUP :
+                                                                    SELECTION_TRANSFER_TO_GROUP | SELECTION_TRANSFER_MERGE;
     uint32_t groupIndex = commandCode - KEYBOARD_KEY_CODE_CHAR('1');
     if (commandsBlocked) {
       break;
     }
     InGameCommand_Issue<FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh>
-              (world->activeFactionRuntimeIndex,transferMode,groupIndex);
+              (world->activeFactionRuntimeIndex,ToBits(transferMode),groupIndex);
     break;
   }
   case InGameKeyCommandAction::NotificationAdvance:
@@ -414,8 +416,8 @@ void InGameNotificationQueue_InsertPriorityRecord(InGameNotificationPayloadKind 
       orientationValue =
            THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload).orientationOrPresentationValue,orientationValue);
       payloadReserved = THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload).reserved10,payloadReserved);
-      payloadKind = (InGameNotificationPayloadKind)
-           THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload).payloadKind,payloadKind);
+      payloadKind = static_cast<InGameNotificationPayloadKind>
+           (THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload).payloadKind,payloadKind));
     }
   }
 }

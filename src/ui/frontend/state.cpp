@@ -151,7 +151,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
         /* first two code units, cleared as one dword */
         *reinterpret_cast<uint32_t *>(player->playerName.textUtf16) = 0;
         player->playerRuntimeId = 0;
-        player->factionAssignment.roleStateFlags = 0;
+        player->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
         player->colourCycleFlags = 0;
         player->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
       }

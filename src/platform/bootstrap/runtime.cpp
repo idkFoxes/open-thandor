@@ -1021,7 +1021,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
   (playerRecordCursor->playerName).textUtf16[0] = 0;
   (playerRecordCursor->playerName).textUtf16[1] = 0;
   playerRecordCursor->playerRuntimeId = 0;
-  (playerRecordCursor->factionAssignment).roleStateFlags = 0;
+  (playerRecordCursor->factionAssignment).roleStateFlags = FrontendRoleStateFlags{};
   playerRecordCursor->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
   /* pointers to 32 consecutive records, although only the first
      FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT are allocated.

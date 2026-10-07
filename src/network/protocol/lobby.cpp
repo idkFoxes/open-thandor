@@ -253,7 +253,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       FrontendTransfer_SendLobbyCommandAndSnapshotRequest();
       playerRecord = g_FrontendPlayerRuntimeBlocks;
       for (playerIndex = 0; playerIndex < 8; playerIndex++) {
-        playerRecord->factionAssignment.roleStateFlags = 0;
+        playerRecord->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
         playerRecord->colourCycleFlags = 0;
         playerRecord->snapshotTransferFlags = FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_NONE;
         playerRecord++;
