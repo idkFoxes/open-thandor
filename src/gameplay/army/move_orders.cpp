@@ -102,7 +102,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   armyRuntime->movementPosition0Q12 = currentWorldX;
   armyRuntime->movementPosition1Q12 = currentWorldY;
   attachedModelRuntime = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  if ((((attachedModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) != 0) &&
+  if (Any((attachedModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) &&
       (attachedModelRuntime->health != 0)) {
     /* clear 0x218 on the whole model tree */
     ArmyRuntime_ClearModelTreeFlags218(attachedModelRuntime);

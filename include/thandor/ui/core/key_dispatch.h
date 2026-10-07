@@ -33,49 +33,50 @@ enum class UiKeyModifierRule {
 template <typename Action>
 struct UiKeyCommandRecord {
     uint32_t commandCode;
-    uint32_t modifierClassFlags;
+    UiKeyboardStateMask modifierClassFlags;
     Action action;
 };
 
 /* True when the held modifiers fit the record's modifier class under the rule. */
-inline Bool8 UiKeyModifiers_Match(uint32_t classFlags, uint32_t heldFlags, UiKeyModifierRule rule)
+inline Bool8 UiKeyModifiers_Match(UiKeyboardStateMask classFlags, UiKeyboardStateMask heldFlags, UiKeyModifierRule rule)
 {
     if (rule == UiKeyModifierRule::AnyOfMask) {
-        if (classFlags == 0) {
-            return (heldFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0;
+        if (!Any(classFlags)) {
+            return !Any(heldFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT));
         }
-        return (heldFlags & classFlags) != 0;
+        return Any(heldFlags & classFlags);
     }
     if (rule == UiKeyModifierRule::ExactShiftIgnored) {
-        classFlags &= ~(uint32_t)KEYBOARD_STATE_SHIFT;
-        heldFlags &= ~(uint32_t)KEYBOARD_STATE_SHIFT;
+        classFlags &= ~KEYBOARD_STATE_SHIFT;
+        heldFlags &= ~KEYBOARD_STATE_SHIFT;
     }
-    if (classFlags == 0) {
-        return (heldFlags & KEYBOARD_STATE_ANY_MODIFIER) == 0;
+    if (!Any(classFlags)) {
+        return !Any(heldFlags & KEYBOARD_STATE_ANY_MODIFIER);
     }
-    if ((classFlags & KEYBOARD_STATE_SHIFT) != 0) {
-        if ((heldFlags & KEYBOARD_STATE_SHIFT) == 0) return false;
+    if (Any(classFlags & KEYBOARD_STATE_SHIFT)) {
+        if (!Any(heldFlags & KEYBOARD_STATE_SHIFT)) return false;
     }
-    else if ((heldFlags & KEYBOARD_STATE_SHIFT) != 0) {
+    else if (Any(heldFlags & KEYBOARD_STATE_SHIFT)) {
         return false;
     }
-    if ((classFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0) {
-        return (heldFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0;
+    if (!Any(classFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT))) {
+        return !Any(heldFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT));
     }
-    if ((classFlags & KEYBOARD_STATE_ALT) == 0) {
-        return ((heldFlags & KEYBOARD_STATE_CTRL) != 0) && ((heldFlags & KEYBOARD_STATE_ALT) == 0);
+    if (!Any(classFlags & KEYBOARD_STATE_ALT)) {
+        return Any(heldFlags & KEYBOARD_STATE_CTRL) && !Any(heldFlags & KEYBOARD_STATE_ALT);
     }
-    if ((classFlags & KEYBOARD_STATE_CTRL) == 0) {
-        return ((heldFlags & KEYBOARD_STATE_CTRL) == 0) && ((heldFlags & KEYBOARD_STATE_ALT) != 0);
+    if (!Any(classFlags & KEYBOARD_STATE_CTRL)) {
+        return !Any(heldFlags & KEYBOARD_STATE_CTRL) && Any(heldFlags & KEYBOARD_STATE_ALT);
     }
-    return ((heldFlags & KEYBOARD_STATE_CTRL) != 0) && ((heldFlags & KEYBOARD_STATE_ALT) != 0);
+    return Any(heldFlags & KEYBOARD_STATE_CTRL) && Any(heldFlags & KEYBOARD_STATE_ALT);
 }
 
 /* The first record with this key code whose modifier class matches, or nullptr when the scan reaches the
    terminator (commandCode 0; its other fields are never read). Record is UiKeyCommandRecord<Action> or any record
    with the members commandCode and modifierClassFlags. */
 template <typename Record>
-inline Record *UiCommandDispatch_Find(Record *records, uint32_t keyCode, uint32_t heldFlags, UiKeyModifierRule rule)
+inline Record *UiCommandDispatch_Find(Record *records, uint32_t keyCode, UiKeyboardStateMask heldFlags,
+                                      UiKeyModifierRule rule)
 {
     for (Record *record = records; record->commandCode != 0; record++) {
         if ((record->commandCode == keyCode) && UiKeyModifiers_Match(record->modifierClassFlags, heldFlags, rule)) {

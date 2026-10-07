@@ -87,8 +87,8 @@ Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
   for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
     structureRuntime = workspaceEntry->runtimeSlotAddressOrZero;
     if (structureRuntime != nullptr &&
-        (structureRuntime->classState.stateFlags &
-         (ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED)) != 0 &&
+        Any(structureRuntime->classState.stateFlags &
+         (ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED)) &&
         technologyIndex == structureRuntime->researchTechnologyId) {
       return true;
     }

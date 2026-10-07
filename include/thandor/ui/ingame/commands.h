@@ -15,9 +15,7 @@
 #include <thandor/core/contracts.h>
 
 
-/* sessionFlags bit: the player's machine renders too few frames (set/cleared through command 0x340 by
-   InGameHud_UpdateStatusCountersAndSessionPrompts; shown as a highlighted "W" in the player roster) */
-inline constexpr int32_t PLAYER_SESSION_FLAG_SLOW_RENDERING = 0x02;
+/* PLAYER_SESSION_FLAG_SLOW_RENDERING is PlayerSessionFlags (gameplay/selection/types.h). */
 
 /* UI action toggling the technology window (InGameTechnologyPanel_ToggleForSelection); suppressed by
    InGameSelectionDetailPanel_Rebuild when the single selected army has no available technology */

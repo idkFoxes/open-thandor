@@ -29,13 +29,13 @@ void InGameCommand_TogglePauseRequest
   /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
-      if ((g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
-           PLAYER_SESSION_FLAG_PAUSE_REQUESTED) == 0) {
+      if (!Any(g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
+           PLAYER_SESSION_FLAG_PAUSE_REQUESTED)) {
         return;
       }
     }
-    else if ((g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
-              PLAYER_SESSION_FLAG_PAUSE_REQUESTED) != 0) {
+    else if (Any(g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
+              PLAYER_SESSION_FLAG_PAUSE_REQUESTED)) {
       return;
     }
     playerRecord++;

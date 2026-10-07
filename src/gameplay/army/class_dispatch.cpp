@@ -197,7 +197,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
   uint32_t ticksRemaining;
   uint32_t attachmentCount;
   uint32_t attachmentIndex;
-  uint32_t parentStateFlags;
+  ArmyRuntimeFlags parentStateFlags;
   ModelRuntimeSlot *childModelRuntime;
 
   definition = (modelRuntime->definitionOrSavedId).runtimeDefinition;
@@ -205,15 +205,15 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
             (worldRuntime,modelRuntime);
   /* every 4 ticks health regenerates by healthRegenerationPerStep up to 3/4 of the definition's
      health (maximumHealth), or decays down to it while bit 0 is set */
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) == 0) {
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING)) {
     (modelRuntime->classState).healthRegenerationDelayTicks -= g_InGameSimulationStepTicks;
     if ((int)(modelRuntime->classState).healthRegenerationDelayTicks < 0) {
       (modelRuntime->classState).healthRegenerationDelayTicks = 4;
       previousHealth = modelRuntime->health;
       healthLimit = (definition->maximumHealth * 3) >> 2;
       if (previousHealth != 0) {
-        if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
-          if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_NO_REGENERATION) == 0) {
+        if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
+          if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_NO_REGENERATION)) {
             clampedHealth = previousHealth + definition->healthRegenerationPerStep;
             if ((int)healthLimit < (int)clampedHealth) {
               clampedHealth = healthLimit;
@@ -238,7 +238,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
   (modelRuntime->classState).dismantleTickCountdown -= g_InGameSimulationStepTicks;
   if ((int)(modelRuntime->classState).dismantleTickCountdown < 0) {
     (modelRuntime->classState).dismantleTickCountdown += 12;
-    if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) != 0) &&
+    if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) &&
         (definition->xeniteValueQ4 != 0) && (definition->maximumHealth != 0) &&
         (0 < (int)modelRuntime->health)) {
       /* dismantling, every 12 ticks: refund 1/32 of the Xenite value and drain 1/16 of the health */
@@ -274,7 +274,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
   }
   /* health gone (and not already exploding): tick the attachment channels once per simulation tick
      (only when a linked model runtime exists) */
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0) &&
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) &&
       ((int)modelRuntime->health < 1) &&
       ((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime != nullptr)) {
     /* Original quirk: the body runs once before the counter is tested, so a step of 0 ticks wraps around. */
@@ -294,8 +294,8 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
     } while (ticksRemaining != 0);
   }
   /* research progress */
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) &&
-      (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0)) {
+  if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) &&
+      (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF))) {
     researchProgress = modelRuntime->researchElapsedTicks + g_InGameSimulationStepTicks;
     modelRuntime->researchElapsedTicks = researchProgress;
     if (modelRuntime->researchDurationTicks <= researchProgress) {
@@ -311,8 +311,8 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
     }
   }
   /* queued research starts once its Xenite cost can be paid */
-  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID) != 0) &&
-     (((modelRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_PRODUCING)) == 0)) {
+  if (Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID) &&
+     (!Any((modelRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_PRODUCING)))) {
     factionIndex = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex;
     energyRequirement = modelRuntime->researchEnergyLoadQ4;
     if (modelRuntime->researchXeniteCostQ4 <=
@@ -331,7 +331,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
   for (attachmentIndex = 0; attachmentIndex < attachmentCount; attachmentIndex++) {
     childModelRuntime = modelRuntime->attachments[attachmentIndex].childModelRuntimeOrSavedOffset;
     if (childModelRuntime != nullptr) {
-      (childModelRuntime->classState).stateFlags |= parentStateFlags & 8;
+      (childModelRuntime->classState).stateFlags |= parentStateFlags & ARMY_RUNTIME_FLAG_DESTROYED;
       ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive(worldRuntime,childModelRuntime);
     }
   }

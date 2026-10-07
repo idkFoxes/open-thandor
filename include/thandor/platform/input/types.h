@@ -33,7 +33,7 @@ struct KeyboardAsciiCaseTransformCallbackTable3 {
     Ptr32<uint32_t (uint32_t)> toLower; 
 };
 using KeyboardFlushEventsProc = void ();
-using KeyboardReadEventProc = Bool8 (uint32_t *outKeyCode, uint32_t *outStateMask);
+using KeyboardReadEventProc = Bool8 (uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask);
 using PointerFlushEventsProc = void ();
 using PointerSetPositionProc = void (int32_t positionY, int32_t positionX);
 

@@ -56,7 +56,7 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
 {
   int childCount;
   int childIndex;
-  if ((node->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
+  if (!Any(node->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED)) {
     node->classState.stateFlags = node->classState.stateFlags | (ARMY_MODEL_STATE_NO_REGENERATION | ARMY_MODEL_STATE_DISMANTLING | ARMY_RUNTIME_FLAG_DESTROYED);
   }
   childCount = node->attachmentCount;
@@ -102,7 +102,7 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(ModelRuntimeSlot *m
   army = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
   /* a switched-off model counts with the definition's alternative value switchedOffVisibilityRadius */
-  if ((modelRuntimeSlot->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
+  if (!Any(modelRuntimeSlot->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
     visibilityRadius = modelDefinition->visibilityRadius;
   }
   else {
@@ -194,16 +194,16 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
   totalMetric = modelRuntime->classState.energyLoadQ4;
   attachmentsRemaining = modelRuntime->attachmentCount;
   activeMetricTotal = 0;
-  if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
+  if (!Any(modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
     activeMetricTotal = totalMetric;
   }
-  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags &
-       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0) {
+  if (Any(modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags &
+       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY)) {
     for (; attachmentsRemaining != 0; attachmentsRemaining--) {
       currentChildModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
       if (currentChildModelRuntime != nullptr) {
         childMetric = currentChildModelRuntime->classState.energyLoadQ4;
-        if ((currentChildModelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
+        if (!Any(currentChildModelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF)) {
           activeMetricTotal = activeMetricTotal + childMetric;
         }
         totalMetric = totalMetric + childMetric;

@@ -91,7 +91,7 @@ void UiCommandSpriteButtonControl_NonRightRelease
   
   if (!Any((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
      (Any((control->sprite).selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
-    inputStateBits = FromBits<UiCommandActivationStateFlags>(g_KeyboardStateMask) &
+    inputStateBits = FromBits<UiCommandActivationStateFlags>(ToBits(g_KeyboardStateMask)) &
             ~(UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON|UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK);
     stateFlagsField = &(control->sprite).selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -120,7 +120,7 @@ void UiCommandSpriteButtonControl_RightRelease
 
   if (!Any((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
       (Any((control->sprite).selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
-    inputStateBits = FromBits<UiCommandActivationStateFlags>(g_KeyboardStateMask) & ~UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK;
+    inputStateBits = FromBits<UiCommandActivationStateFlags>(ToBits(g_KeyboardStateMask)) & ~UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK;
     (control->sprite).selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     control->activationInputState = inputStateBits | UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON;
     if (Any((control->sprite).selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&

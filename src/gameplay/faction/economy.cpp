@@ -187,7 +187,7 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
       worldNode != nullptr; worldNode = worldNode->nextNode) {
     if (worldNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) continue;
     modelRuntime = static_cast<int *>(worldNode->runtimePayload.get()); /* the ModelRuntimeSlot as words */
-    if ((modelRuntime[59] & ARMY_MODEL_STATE_DISMANTLING) != 0) continue;
+    if ((modelRuntime[59] & ToBits(ARMY_MODEL_STATE_DISMANTLING)) != 0) continue;
     if (modelRuntime[61] != 0) {
       /* buffer full: the attached parts are skipped as well */
       if (255 < consumerCount) continue;
@@ -195,8 +195,8 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
       consumerCount++;
     }
     if ((consumerCount < 256) &&
-       ((reinterpret_cast<ModelRuntimeSlot *>(modelRuntime)->definitionOrSavedId.runtimeDefinition->modelFlags &
-         MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0)) {
+       Any(reinterpret_cast<ModelRuntimeSlot *>(modelRuntime)->definitionOrSavedId.runtimeDefinition->modelFlags &
+           MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY)) {
       attachmentSlot = modelRuntime;
       for (remainingAttachments = modelRuntime[3]; remainingAttachments != 0; remainingAttachments--) {
         attachedRuntime = Thandor_U32ToPointer<int>(attachmentSlot[80]); /* 32-bit format field: ModelRuntimeSlot.attachments[].childModelRuntimeOrSavedOffset (dword view) */
@@ -305,13 +305,13 @@ static void InGameFactionEconomy_AllocateFactionEnergy
     if (factionIndex != consumer->factionIndex) continue;
     consumerRuntime = reinterpret_cast<ModelRuntimeSlot *>(static_cast<uintptr_t>(consumer->modelRuntime));
     if (remainingEnergy < consumer->demandQ4) {
-      consumerRuntime->classState.stateFlags = consumerRuntime->classState.stateFlags | 1;
+      consumerRuntime->classState.stateFlags = consumerRuntime->classState.stateFlags | ARMY_MODEL_STATE_SWITCHED_OFF;
       factionRecord->unpoweredEnergyDemandQ4 = factionRecord->unpoweredEnergyDemandQ4 + consumer->demandQ4;
     }
     else {
       remainingEnergy = remainingEnergy - consumer->demandQ4;
       factionRecord->suppliedEnergyDemandQ4 = factionRecord->suppliedEnergyDemandQ4 + consumer->demandQ4;
-      consumerRuntime->classState.stateFlags = consumerRuntime->classState.stateFlags & ~1u;
+      consumerRuntime->classState.stateFlags = consumerRuntime->classState.stateFlags & ~ARMY_MODEL_STATE_SWITCHED_OFF;
     }
   }
   /* energy above the baseline supply is Tritium burnt */

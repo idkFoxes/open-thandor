@@ -386,7 +386,7 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
     for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--, workspaceEntry++) {
       entitySlot = workspaceEntry->runtimeSlotAddressOrZero;
       if ((entitySlot != nullptr) &&
-          ((entitySlot->classState.stateFlags & (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) &&
+          (!Any(entitySlot->classState.stateFlags & (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCH_UNPAID))) &&
           AiPurchaseCandidate_DefinitionListsResearch
             (entitySlot->definitionOrSavedId.runtimeDefinition,candidateId)) {
         return false;
@@ -406,7 +406,7 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
       entitySlot = workspaceEntry->runtimeSlotAddressOrZero;
       if ((entitySlot != nullptr) &&
           (entitySlot->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) &&
-          ((entitySlot->classState.stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) && (entitySlot->classState.behaviorState == 0)) {
+          (!Any(entitySlot->classState.stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK)) && (entitySlot->classState.behaviorState == 0)) {
         return false;
       }
     }
@@ -416,7 +416,7 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
       entitySlot = workspaceEntry->runtimeSlotAddressOrZero;
       if ((entitySlot != nullptr) &&
           (entitySlot->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) &&
-          ((entitySlot->classState.stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) && (entitySlot->classState.classStateAC == 0)) {
+          (!Any(entitySlot->classState.stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK)) && (entitySlot->classState.classStateAC == 0)) {
         return false;
       }
     }
@@ -426,7 +426,7 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
       entitySlot = workspaceEntry->runtimeSlotAddressOrZero;
       if ((entitySlot != nullptr) &&
           (entitySlot->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
-          ((entitySlot->classState.stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) &&
+          (!Any(entitySlot->classState.stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK)) &&
           ((entitySlot->definitionOrSavedId.runtimeDefinition->classParameterC4 &
             producerClassMask & ARMY_ASSET_FLAGS_BUILT_BY_FACTORY) != 0) &&
           (entitySlot->classState.behaviorState == 0)) {
@@ -459,7 +459,7 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
          takes it */
       entity = reinterpret_cast<GameEntityRuntime *>(workspaceEntry->runtimeSlotAddressOrZero.get());
       if ((entity != nullptr) &&
-          (((entity->common).runtimeFlags & (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) &&
+          (!Any((entity->common).runtimeFlags & (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCH_UNPAID))) &&
           AiPurchaseCandidate_DefinitionListsResearch
             (entity->common.ownership.modelDefinition(),candidateId)) {
         Technology_ApplyRecordToEntity(candidateId,entity);
