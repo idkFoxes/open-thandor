@@ -54,9 +54,9 @@ void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,
 void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
           (int playerRuntimeId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t unusedPayload3);
 
-Bool8 UiTransfer_SendDiscoveryProbe();
+bool UiTransfer_SendDiscoveryProbe();
 
-Bool8 UiTransfer_SendPlayerDescriptor();
+bool UiTransfer_SendPlayerDescriptor();
 
 void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
@@ -72,7 +72,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
 
 void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot);
 
-Bool8 FrontendTransfer_ConsumeProcessedFlagForMenuTick();
+bool FrontendTransfer_ConsumeProcessedFlagForMenuTick();
 
 void FrontendTransfer_SendLobbyCommandAndSnapshotRequest();
 
@@ -82,7 +82,7 @@ void FrontendTransfer_ExecuteLobbyCommandRecords
 /* Not in the original: makes a plain UTF-16 text received from a peer (a typed name, a ping text) safe to draw;
    every rich-text command code becomes '?' and a missing terminator is added in the last unit. Returns whether
    anything was changed. */
-Bool8 FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount);
+bool FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount);
 
 extern UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint;
 extern uint32_t g_FrontendSessionToken;

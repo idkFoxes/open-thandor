@@ -54,7 +54,7 @@ void UiTransferMailbox_MarkUnavailable();
 
 void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *allocation);
 
-Bool8 UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet);
+bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet);
 
 extern uint32_t g_UiRuntimeRecordWriteIndex;
 extern uint32_t g_UiTransferUnitCursor;

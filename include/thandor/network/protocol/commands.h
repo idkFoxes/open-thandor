@@ -139,7 +139,7 @@ void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandP
 
 void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord);
 
-Bool8 InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
+bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress);
 
 /* Rebuild helper: the handler for a received command code from the explicit command table of codeBase, or
@@ -169,7 +169,7 @@ inline uint32_t CommandDispatch_CachedCodeOf()
 
 {
   static const uint32_t s_code = CommandDispatch_CodeOfHandler(CodeBase,CommandDispatch_HandlerKey(Handler));
-  static Bool8 s_loggedMissing;
+  static bool s_loggedMissing;
 
   if (s_code == 0xFFFFFFFFu && s_loggedMissing == 0) {
     s_loggedMissing = 1;

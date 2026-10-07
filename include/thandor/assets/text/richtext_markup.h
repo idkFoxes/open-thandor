@@ -21,6 +21,6 @@ inline constexpr int RICHTEXT_MARKUP_ERROR_OFFSET_UNIT = 38;
 /* Tags RichTextMarkup_ParseAndBuildStringAsset can collect (the original keeps them on the machine stack). */
 inline constexpr int RICHTEXT_MARKUP_TAG_LIMIT = 4096;
 
-Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError);
+bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError);
 
 #endif /* THANDOR_ASSETS_TEXT_RICHTEXT_MARKUP_H */
