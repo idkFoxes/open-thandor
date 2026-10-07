@@ -1,5 +1,5 @@
 {
- "revision": "8c63a8c7",
+ "revision": "c7e67f6f",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -169,7 +169,7 @@
   "typedef_struct": {
    "assets": 54,
    "audio": 4,
-   "core": 25,
+   "core": 24,
    "gameplay": 151,
    "graphics": 81,
    "movie": 4,
@@ -185,8 +185,7 @@
    "ui": 8
   },
   "libc_alloc": {
-   "core": 3,
-   "platform": 33
+   "platform": 6
   },
   "arena": {
    "assets": 24,
@@ -202,11 +201,11 @@
   },
   "mem_funcs": {
    "audio": 2,
-   "core": 13,
+   "core": 4,
    "gameplay": 7,
    "graphics": 8,
    "movie": 1,
-   "platform": 77,
+   "platform": 59,
    "ui": 6
   },
   "bool8": {
