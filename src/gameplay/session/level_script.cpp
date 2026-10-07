@@ -114,6 +114,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     cellBytes = reinterpret_cast<uint8_t *>(fieldGrid->cells) + operands[0];
     occupiedCellCount = 0;
     cellsLeft = cellCount;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       /* the low dword of the 64-bit occupancy mask, operand 0 bytes further */
       cellOccupancyMask =

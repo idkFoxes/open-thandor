@@ -49,6 +49,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
   if ((g_InGameRuntimeRoot != nullptr) && (g_FrontendLoadedCampaignAsset != nullptr)) {
     levelRecordsRemaining = g_FrontendLoadedCampaignAsset->levelRecordCount;
     scenarioRecord = g_FrontendLoadedCampaignAsset;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (g_FrontendLoadedCampaignAsset->currentLevelId ==
           scenarioRecord->levels[0].levelId) {
@@ -164,24 +165,22 @@ void OldUnitRuntime_MergeMasksAndReplayRecords()
   /* 8 factions x 8 dwords; the faction records are 0x740 bytes (0x1D0 dwords) apart */
   secondaryCursor = g_OldUnitSecondaryTable;
   nextMaskCursor = g_GameFactionRuntimeImage.records[0].technologyMasks256Bits;
-  do {
-    do {
+  for (; factionsRemaining != 0; factionsRemaining--) {
+    for (; wordsRemaining != 0; wordsRemaining--) {
       maskCursor = nextMaskCursor;
       *maskCursor = *maskCursor | *secondaryCursor;
       runtimeRoot = g_InGameRuntimeRoot; /* the original reads it once after the loop */
       secondaryCursor++;
-      wordsRemaining--;
       nextMaskCursor = maskCursor + 1;
-    } while (wordsRemaining != 0);
+    }
     wordsRemaining = 8;
-    factionsRemaining--;
     nextMaskCursor = maskCursor + GAME_FACTION_RUNTIME_RECORD_BYTES / 4 - 7;
-  } while (factionsRemaining != 0);
+  }
   if ((g_InGameRuntimeRoot != nullptr) && (g_OldUnitRecordCount != 0)) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
     recordsRemaining = g_OldUnitRecordCount;
     primaryRecordCursor = g_OldUnitPrimaryTable;
-    do {
+    for (; recordsRemaining != 0; recordsRemaining--) {
       /* record [2] and [3] go to the parameters named worldYQ12 / worldXQ12 (passed as in the original),
          although the rebuild stores the X coordinate in [2] */
       ArmyRuntime_CreateInstanceFromAsset
@@ -189,8 +188,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords()
                  primaryRecordCursor[3],primaryRecordCursor[2],primaryRecordCursor[1],*primaryRecordCursor,
                       worldRuntime,nullptr);
       primaryRecordCursor = primaryRecordCursor + 8; /* 0x20-byte records */
-      recordsRemaining--;
-    } while (recordsRemaining != 0);
+    }
     WorldRuntime_ForEachOwnerListNode
               (worldRuntime,
                THANDOR_SLOT(ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback),
@@ -245,14 +243,15 @@ Bool8 InGameSaveGame_OldUnitTablesAreEmpty()
 Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
 
 {
+  ArenaScoped oldUnitBlock; /* freed on return, after the entry is written */
   uint32_t *oldUnitImage;
   uint32_t *destinationCursor;
   int index;
 
-  if (g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES,
-                        reinterpret_cast<void **>(&oldUnitImage)) != 0) {
+  if (oldUnitBlock.allocate(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES) != 0) {
     return false;
   }
+  oldUnitImage = oldUnitBlock.as<uint32_t>();
   oldUnitImage[0] = g_OldUnitRecordCount;
   destinationCursor = oldUnitImage + 1;
   for (index = 0; index < OLD_UNIT_PRIMARY_TABLE_BYTES / 4; index++) {
@@ -266,6 +265,5 @@ Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
   Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                       (PckDecodedByteCount)Asset_ByteDistance(destinationCursor,oldUnitImage),oldUnitImage,
                       g_OldunitHexPathUtf16,packageHandle);
-  g_MemoryApi.free(oldUnitImage);
   return true;
 }

@@ -141,6 +141,7 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
 Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError)
 
 {
+  ArenaScoped imageCopyBlock; /* freed on return; only the result stores follow the write */
   FieldGridAsset *fieldGridImageCopy;
   uint32_t imageSizeBytes;
   uint32_t dwordsLeft;
@@ -153,11 +154,12 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   uint32_t writeError;
 
   imageSizeBytes = sourceImageDwords[1];
-  allocError = g_MemoryApi.alloc(imageSizeBytes,reinterpret_cast<void **>(&fieldGridImageCopy)); /* the arena stores the block address through void ** */
+  allocError = imageCopyBlock.allocate(imageSizeBytes);
   if (allocError != 0) {
     *outError = allocError;
     return false;
   }
+  fieldGridImageCopy = imageCopyBlock.as<FieldGridAsset>();
   copyDestinationDwords = reinterpret_cast<uint32_t *>(fieldGridImageCopy); /* copied dword by dword, as the original */
   for (dwordsLeft = imageSizeBytes >> 2; dwordsLeft != 0; dwordsLeft--) {
     *copyDestinationDwords = *sourceImageDwords;
@@ -207,7 +209,6 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   writeError = FileSystem_WriteBufferToPath
                     ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
                      g_LevelResourcePathScratchUtf16);
-  g_MemoryApi.free(fieldGridImageCopy);
   if (writeError != 0) {
     *outError = writeError;
     return false;

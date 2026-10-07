@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/text/font.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -46,7 +47,6 @@ void FontRuntime_Init()
   wchar_t pathChar;
   int scanUnitsLeft;
   int sourceIndex;
-  int dwordsLeft;
   uint16_t *pathUtf16;
   uint32_t *overrideDword;
   GraphicsTextureSourceAsset *loadedTexture;
@@ -81,10 +81,7 @@ void FontRuntime_Init()
   overrideDword = g_TextResourceOverrides->resourceIds;
   /* all dwords: resourceIds and textPointers. TextResourceOverride_Register looks for a zero id, so
      after this fill it finds no free slot (the original fills the table with -1 the same way). */
-  for (dwordsLeft = sizeof(TextResourceOverrideTable) / 4; dwordsLeft != 0; dwordsLeft--) {
-    *overrideDword = TEXT_RESOURCE_ID_NONE;
-    overrideDword++;
-  }
+  std::fill_n(overrideDword,sizeof(TextResourceOverrideTable) / 4,TEXT_RESOURCE_ID_NONE);
 }
 
 /* Returns the width of one glyph (0 when the font has no such glyph) in the active font and stores the line

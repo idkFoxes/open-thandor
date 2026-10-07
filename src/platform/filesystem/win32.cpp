@@ -6,6 +6,7 @@
  */
 
 #include <thandor/platform/filesystem/win32.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -426,13 +427,8 @@ static Bool8 Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mod
 static void Win32FileSystem_CopyEnumerationRecord(uint32_t *destination,const uint32_t *source)
 
 {
-  int dwordsRemaining;
 
-  for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
-    *destination = *source;
-    source++;
-    destination++;
-  }
+  std::copy_n(source,FILESYSTEM_ENUMERATION_RECORD_BYTES / 4,destination);
 }
 
 /* Fills outputRecords with 0x200-byte UTF-16 name records: the files (FILESYSTEM_ENUMERATE_FILES) or

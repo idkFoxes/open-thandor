@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/shots/runtime.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/core/color_lanes.h>
 
@@ -30,7 +31,6 @@ Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outE
 {
   ShotRuntimeSlot *pool;
   uint32_t *poolDword;
-  int poolDwordsRemaining;
   uint32_t loadError;
   GraphicsTextureSet *loadedTextureSet;
   GraphicsPaletteAsset *loadedPalette;
@@ -62,10 +62,7 @@ Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outE
   g_ShotRuntimeSlots = pool;
   /* clears the pool dword by dword */
   poolDword = reinterpret_cast<uint32_t *>(pool); /* zeroed dword by dword, as the original */
-  for (poolDwordsRemaining = SHOT_RUNTIME_POOL_BYTES / 4; poolDwordsRemaining != 0; poolDwordsRemaining--) {
-    *poolDword = 0;
-    poolDword++;
-  }
+  std::fill_n(poolDword,SHOT_RUNTIME_POOL_BYTES / 4,0);
   *outError = 0;
   return true;
 }

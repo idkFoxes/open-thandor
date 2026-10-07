@@ -42,6 +42,7 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
   remainingRecords = runtimeImage->recordCount;
   /* Original quirk: the record loop tests its count only after the first record, so an image with recordCount 0
      would walk 2^32 records. */
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if ((registrationRecord->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
       primaryPointer = Thandor_U32ToPointer<uint8_t>((registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/model/runtime.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -90,7 +91,6 @@ uint32_t ModelRuntimePool_Init()
 {
   ModelRuntimeSlot *modelRuntimePool;
   uint32_t *poolDword;
-  int allocationDwordsRemaining;
   uint32_t allocError;
 
   allocError = g_MemoryApi.alloc(MODEL_RUNTIME_POOL_BYTES,reinterpret_cast<void **>(&modelRuntimePool)); /* the arena stores the block address through void ** */
@@ -102,11 +102,7 @@ uint32_t ModelRuntimePool_Init()
   g_ModelRuntimeSlots = modelRuntimePool;
   /* zero the pool dword by dword */
   poolDword = reinterpret_cast<uint32_t *>(modelRuntimePool); /* zeroed dword by dword, as the original */
-  for (allocationDwordsRemaining = MODEL_RUNTIME_POOL_BYTES / 4; allocationDwordsRemaining != 0;
-       allocationDwordsRemaining--) {
-    *poolDword = 0;
-    poolDword++;
-  }
+  std::fill_n(poolDword,MODEL_RUNTIME_POOL_BYTES / 4,0);
   return 0;
 }
 
@@ -166,13 +162,9 @@ static void ModelRuntimePool_ZeroUnusedSlotBeforeSave(ModelRuntimeSlotUnrebaseVi
 
 {
   uint32_t *slotDword;
-  int dwordsRemaining;
 
   slotDword = reinterpret_cast<uint32_t *>(modelRuntime); /* zeroed dword by dword, as the original */
-  for (dwordsRemaining = sizeof(ModelRuntimeSlot) / 4; dwordsRemaining != 0; dwordsRemaining--) {
-    *slotDword = 0;
-    slotDword++;
-  }
+  std::fill_n(slotDword,sizeof(ModelRuntimeSlot) / 4,0);
 }
 
 /* True when the definition's runtimeClassId selects a column of the 24-class handler matrix

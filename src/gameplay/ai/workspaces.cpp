@@ -210,7 +210,7 @@ void AiCandidateWorkspace_SortDescending()
     recordsInCurrentPass = g_AiCandidateWorkspaceEntryCount;
     currentRecordCursor = g_AiWorkspace13Candidates;
     do {
-      do {
+      for (; comparisonsRemaining != 0; comparisonsRemaining--) {
         if (currentRecordScore < (int)scanRecordCursor->weightedScoreAndKind) {
           promotedScore = scanRecordCursor->weightedScoreAndKind;
           scanRecordCursor->weightedScoreAndKind = currentRecordScore;
@@ -222,8 +222,7 @@ void AiCandidateWorkspace_SortDescending()
           currentRecordPayload = promotedPayload;
         }
         scanRecordCursor++;
-        comparisonsRemaining--;
-      } while (comparisonsRemaining != 0);
+      }
       currentRecordScore = currentRecordCursor[1].weightedScoreAndKind;
       currentRecordPayload = currentRecordCursor[1].entityIdAndMultiplicity;
       comparisonsRemaining = recordsInCurrentPass - 2;

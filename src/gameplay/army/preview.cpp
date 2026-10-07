@@ -276,6 +276,7 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   /* downsample in place: each output pixel averages a 2x2 block of the double-size image */
   destinationPixels = sourcePixels;
   remainingRows = previewHeight;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     remainingColumns = previewWidth;
     do {
