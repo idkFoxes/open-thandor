@@ -13,28 +13,28 @@
 #include <thandor/core/contracts.h>
 
 /* panelFlags of UiImagePanelControl (also the base of UiArmyMetricsPanel). */
-#define UI_IMAGE_PANEL_CENTER_X 0x01
-#define UI_IMAGE_PANEL_ALIGN_RIGHT 0x02
-#define UI_IMAGE_PANEL_CENTER_Y 0x04
-#define UI_IMAGE_PANEL_ALIGN_BOTTOM 0x08
-#define UI_IMAGE_PANEL_DROP_SHADOW 0x10
-#define UI_IMAGE_PANEL_NEVER_HIT 0x20
-#define UI_IMAGE_PANEL_HIT_WHOLE_BOX 0x40 /* skip the opaque-pixel test */
-#define UI_IMAGE_PANEL_STRETCH 0x80 /* stretch the texture over the layout box */
+inline constexpr int32_t UI_IMAGE_PANEL_CENTER_X = 0x01;
+inline constexpr int32_t UI_IMAGE_PANEL_ALIGN_RIGHT = 0x02;
+inline constexpr int32_t UI_IMAGE_PANEL_CENTER_Y = 0x04;
+inline constexpr int32_t UI_IMAGE_PANEL_ALIGN_BOTTOM = 0x08;
+inline constexpr int32_t UI_IMAGE_PANEL_DROP_SHADOW = 0x10;
+inline constexpr int32_t UI_IMAGE_PANEL_NEVER_HIT = 0x20;
+inline constexpr int32_t UI_IMAGE_PANEL_HIT_WHOLE_BOX = 0x40; /* skip the opaque-pixel test */
+inline constexpr int32_t UI_IMAGE_PANEL_STRETCH = 0x80; /* stretch the texture over the layout box */
 
 /* fillFlags of UiFillPanelControl. */
-#define UI_FILL_PANEL_TILE_X 0x01
-#define UI_FILL_PANEL_TILE_Y 0x02
-#define UI_FILL_PANEL_DROP_SHADOW 0x10
+inline constexpr int32_t UI_FILL_PANEL_TILE_X = 0x01;
+inline constexpr int32_t UI_FILL_PANEL_TILE_Y = 0x02;
+inline constexpr int32_t UI_FILL_PANEL_DROP_SHADOW = 0x10;
 
 /* gaugeFlags of UiFormattedContainer. */
-#define UI_GAUGE_TWO_SIDED_SCALE 0x01
-#define UI_GAUGE_HAS_MARKER 0x02 /* the node is a UiFormattedContainerWithMarker */
+inline constexpr int32_t UI_GAUGE_TWO_SIDED_SCALE = 0x01;
+inline constexpr int32_t UI_GAUGE_HAS_MARKER = 0x02; /* the node is a UiFormattedContainerWithMarker */
 /* UiFormattedContainer_DrawClipped: frame offsets from firstFrameSubresource. Each bar look is three frames
    (left cap, tiled middle, right cap); the empty bar is look 0, the six fill colours start at 3, 6, ... 18. */
-#define UI_GAUGE_FRAME_TRACK 1
-#define UI_GAUGE_FRAME_END_CAP 2
-#define UI_GAUGE_FRAME_MARKER 21
+inline constexpr int32_t UI_GAUGE_FRAME_TRACK = 1;
+inline constexpr int32_t UI_GAUGE_FRAME_END_CAP = 2;
+inline constexpr int32_t UI_GAUGE_FRAME_MARKER = 21;
 
 void UiImagePanelControl_DrawAlignedTextureAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

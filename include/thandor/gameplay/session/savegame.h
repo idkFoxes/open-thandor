@@ -14,7 +14,7 @@
 #include <thandor/core/contracts.h>
 
 /* InGameSavePackageHeader.campaignIndex without a campaign */
-#define INGAME_SAVE_NO_CAMPAIGN 0xffffffffu
+inline constexpr uint32_t INGAME_SAVE_NO_CAMPAIGN = 0xffffffffu;
 
 /* The 0x200-byte header at the start of a save-game package, patched by InGameSaveGame_WritePackage
    after the entries are written (the save path's directory is split off behind the header, at +0x200). */
