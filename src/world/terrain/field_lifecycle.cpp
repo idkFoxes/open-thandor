@@ -55,7 +55,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
       materialVariantRandomBits = Random_NextPrimary();
       cell->overlayColor = 0xffffffff; /* ARGB opaque white */
       cell->flagsAndMaterial =
-           cell->flagsAndMaterial | materialVariantRandomBits & FIELD_CELL_RANDOM_VARIANT_MASK;
+           cell->flagsAndMaterial | (FieldCell_FromRawWord(materialVariantRandomBits) & FIELD_CELL_RANDOM_VARIANT_MASK);
       cell++;
     }
   }
@@ -197,7 +197,7 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
     /* one bit per material id in use */
     fieldGridImageCopy->fieldFlags =
          fieldGridImageCopy->fieldFlags |
-         1 << ((uint8_t)fieldGridCellSaveView->flagsAndMaterial & 31);
+         1 << (FieldCell_MaterialId(fieldGridCellSaveView->flagsAndMaterial) & 31);
     occupancyBytes = reinterpret_cast<uint8_t *>(&fieldGridCellSaveView->occupancyMask);
     for (occupancyBytesLeft = 8; occupancyBytesLeft != 0; occupancyBytesLeft--) {
       *occupancyBytes = 0;

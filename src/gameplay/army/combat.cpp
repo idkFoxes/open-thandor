@@ -50,7 +50,7 @@ static void ArmyWeaponRuntime_FireFromFirstLoadedAttachment
   ModelMeshGroupMask *barrelMeshMask;
 
   launchNode = pitchNode->childNodes[0];
-  launchNode->runtimeFlags = launchNode->runtimeFlags | 1;
+  launchNode->runtimeFlags = launchNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   attachmentNodeHeader = Thandor_U32ToPointer<MdlSerializedNodeHeader>(
                          Thandor_U32ToPointer<MdlSerializedNodeHeader>(weaponDefinitionView->rootNode->childSerializedOffsets[0])-> /* 32-bit format field: MdlSerializedNodeHeader.childSerializedOffsets */
                          childSerializedOffsets[0]);

@@ -284,7 +284,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
         (modelRuntime->timedTargetState).targetProjectileReloadCountdownTicks +=
              (timedTargetDefinition->timedTargetParameters).reloadTicks;
         /* hide the missile and fire */
-        rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+        rootNode->runtimeFlags = rootNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
         (rootNode->modelPayload).meshGroupMask &= ~1u;
         ModelRuntime_EmitProjectilesFromAttachmentPoints
                   ((ShotTargetModelReference) /* 32-bit format field: ShotTargetModelReference (ShotRuntimeSlot +0x14) */

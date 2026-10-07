@@ -98,7 +98,9 @@ static_assert(sizeof(WorldMotionSnapshot) == 0x1C,
               "WorldMotionSnapshot keeps its 32-bit layout");
 static_assert(sizeof(WorldLightingState) == 0x20,
               "WorldLightingState keeps its 32-bit layout");
-static_assert(sizeof(WorldRuntimeInteractionState) == 0x4C,
+static_assert(sizeof(WorldRuntimeInteractionState) == 0x4C &&
+              offsetof(WorldRuntimeInteractionState, nodeFlags) == 0x48 &&
+              sizeof(WorldRuntimeInteractionState::nodeFlags) == 4,
               "WorldRuntimeInteractionState keeps its 32-bit layout");
 static_assert(sizeof(WorldFieldRegionState) == 0x10 &&
               offsetof(WorldFieldRegionState, clearTransientStateCallback) == 0x0,
@@ -330,6 +332,8 @@ static_assert(sizeof(WorldRuntimeContext) == 0x15C &&
               offsetof(WorldRuntimeContext, ownerListHead) == 0xD8,
               "WorldRuntimeContext keeps its 32-bit layout");
 static_assert(sizeof(UiNodeBase) == 0x4C &&
+              offsetof(UiNodeBase, nodeFlags) == 0x48 && sizeof(UiNodeBase::nodeFlags) == 4 &&
+              alignof(decltype(UiNodeBase::nodeFlags)) == 4 &&
               offsetof(UiNodeBase, nextSibling) == 0x0 &&
               offsetof(UiNodeBase, firstChild) == 0x4 &&
               offsetof(UiNodeBase, parent) == 0x8 &&
@@ -495,6 +499,9 @@ static_assert(sizeof(EntityPathingPriorityPair) == 0x8 &&
               "EntityPathingPriorityPair keeps its 32-bit layout");
 static_assert(sizeof(UiTransferPacket) == 0x40,
               "UiTransferPacket keeps its 32-bit layout");
+static_assert(offsetof(InGameRuntimeRootFrameView, countdownPanelNodeFlags) == 0x44C0 &&
+              sizeof(InGameRuntimeRootFrameView::countdownPanelNodeFlags) == 4,
+              "InGameRuntimeRootFrameView.countdownPanelNodeFlags is the nodeFlags dword of the countdown panel");
 static_assert(sizeof(UiScrollableControl) == 0x90,
               "UiScrollableControl keeps its 32-bit layout");
 /* The 32-bit state flag fields of the text edits, lists and scrollables (flag enums since E1d): offset and size. */
@@ -656,6 +663,15 @@ static_assert(sizeof(ArmyAiUnitFlags) == 4 && alignof(ArmyAiUnitFlags) == 4 &&
                   offsetof(InGameEndConditionTriggerRecord8ReferenceView, stateFlags) == 0x0 &&
                   sizeof(InGameEndConditionTriggerRecord8) == 8 && offsetof(InGameEndConditionTriggerRecord8, stateFlags) == 0x0,
               "the AI unit, relation/UI and end-condition trigger flags keep their fields");
+/* Step 13 E34b: the model node runtime flags word (ModelRuntimeFlags: MODEL_NODE_FLAG_*, MODEL_RUNTIME_FLAG_*,
+   TERRAIN_OCCUPANCY_FLAG_*) at +0x4C of every model node view (saved with the node pools). */
+static_assert(sizeof(ModelRuntimeFlags) == 4 && alignof(ModelRuntimeFlags) == 4 &&
+                  offsetof(ModelRuntimeNode, runtimeFlags) == 0x4C &&
+                  offsetof(EffectModelRuntimeNode, runtimeFlags) == 0x4C &&
+                  offsetof(ShotModelRuntimeNode, runtimeFlags) == 0x4C &&
+                  offsetof(WorldOwnerListNode, runtimeFlags) == 0x4C &&
+                  offsetof(TerrainOccupancyResolvedMasks, runtimeFlags) == 0x8,
+              "the model node runtime flags keep their 4-byte fields");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");
@@ -3266,7 +3282,7 @@ static_assert(offsetof(InGameUiImage, regionToolOption1_trailing) == 0xBFE8,
 /* Typed table entries (core/slot.h): a function of exactly the slot's signature is the entry itself; one taking a
    registered prefixed type (ui/controls/node_views.h), a view of the prefix chain or void * gets a thunk. Other
    arities, return types and scalar parameter types do not compile. */
-static_assert(ThandorSlot<&UiNode_ApplyFlagsRecursive>::pick<void(UiNodeFlagMask, UiNodeFlagMask, UiNodeBase *)>() ==
+static_assert(ThandorSlot<&UiNode_ApplyFlagsRecursive>::pick<void(UiNodeFlags, UiNodeFlags, UiNodeBase *)>() ==
                   &UiNode_ApplyFlagsRecursive,
               "THANDOR_SLOT of an exact signature is the function itself");
 static_assert(ThandorSlot<&UiImageControl_PointerMove>::pick<GraphicsCursorFrameIndex(UiPixelCoordinate, UiPixelCoordinate,
@@ -3408,3 +3424,19 @@ static_assert(offsetof(InGameRuntimeRoot, notificationButtonCursorFrame) == 0x9B
                   sizeof(InGameRuntimeRoot::notificationButtonCursorFrame) == 4 &&
                   sizeof(InGameTargetingRootTraversalView::actionState) == 4,
               "the notification button cursor frame stays the dword at +0x9B4C of the root (+0x50 of the button)");
+
+/* Step 13 field-cell flags (FieldCellPackedFlagsAndMaterial as a flag enum class): the FLD/savegame cell word keeps
+   its 4 bytes at +0x50 in the cell and in the save view. */
+static_assert(sizeof(FieldGridCell) == 0x80 && offsetof(FieldGridCell, flagsAndMaterial) == 0x50 &&
+                  sizeof(FieldGridCell::flagsAndMaterial) == 4,
+              "FieldGridCell.flagsAndMaterial is the dword at +0x50");
+static_assert(sizeof(FieldGridCellSaveImageView) == 0x80 && offsetof(FieldGridCellSaveImageView, flagsAndMaterial) == 0x50 &&
+                  sizeof(FieldGridCellSaveImageView::flagsAndMaterial) == 4,
+              "FieldGridCellSaveImageView.flagsAndMaterial is the dword at +0x50");
+static_assert(std::is_same_v<std::underlying_type_t<FieldCellPackedFlagsAndMaterial>, int32_t> &&
+                  ThandorFlagEnum<FieldCellPackedFlagsAndMaterial> &&
+                  FieldCell_RawBits(FIELD_CELL_GRID_EDGE_MASK) == 0x88006000u &&
+                  FieldCell_RawWord(~FIELD_CELL_MATERIAL_ID_MASK) == -256 &&
+                  FieldCell_MaterialId(FieldCell_FromRawWord(0x800012ABu)) == 0xAB &&
+                  FieldCell_ResourceSupportBit(1) == FIELD_CELL_TRITIUM_SUPPORT,
+              "THANDOR_SIGNED_WORD_FLAG_ENUM: the cell word stays the int it was, the helpers keep its bits");

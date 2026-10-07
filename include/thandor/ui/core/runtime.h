@@ -85,7 +85,7 @@ void UiNode_DefaultNonRightDrag (UiPointerWheelDelta wheelDelta,UiPixelCoordinat
 void UiNode_DefaultRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
-void UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control);
+void UiNode_ApplyFlagsRecursive(UiNodeFlags setMask,UiNodeFlags retainMask,UiNodeBase *control);
 
 void UiNode_DefaultTick(UiNodeBase *control);
 

@@ -309,7 +309,7 @@ void DebugScript_Tick()
       return;
     }
     else if (strcmp(command, "status") == 0) {
-      Thandor_Log("script: command flags %08x", (unsigned)g_UiCommandRuntimeFlags);
+      Thandor_Log("script: command flags %08x", ToBits(g_UiCommandRuntimeFlags));
       for (int faction = 0; faction < 8; faction++) {
         const GameFactionRuntimeRecord &record = g_GameFactionRuntimeImage.records[faction];
         if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[faction] != 0) {

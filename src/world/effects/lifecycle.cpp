@@ -43,7 +43,7 @@ void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
   resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
                      (modelNode->runtimeFlags,0,primaryOccupancyMask,
                       (char)worldRuntime->activeFactionRuntimeIndex);
-  modelNode->runtimeFlags = modelNode->runtimeFlags | resolvedMasks.runtimeFlags;
+  modelNode->runtimeFlags = modelNode->runtimeFlags | FromBits<ModelRuntimeFlags>(resolvedMasks.runtimeFlags);
   effectRuntime->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
   ModelNodeRuntime_RefreshStateTint(WorldNode_View<ModelRuntimeNode>(modelNode));
   if ((modelNode->tintArgb & 0xff000000) != 0) {
@@ -161,7 +161,7 @@ static void EffectLifecycle_UpdateAlphaFadeAndTint
     effectSlot->stateTintArgb = effectSlot->stateTintArgb | 0xff000000;
   }
   /* not visible to the local faction: fully transparent */
-  if ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) == 0) {
+  if (!Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT)) {
     modelNode->tintArgb = 0xffffff;
   }
   else {
@@ -379,7 +379,7 @@ static int EffectLifecycle_AdvanceTerrainRelativeMotion
                         effectDefinition->pitchDropPerAgeSquared;
   }
   effectSlot->stateTintArgb = newStateTintArgb;
-  if ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) != 0) {
+  if (Any(modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT)) {
     modelNode->tintArgb = EffectTint_Modulate(newStateTintArgb,effectDefinition->stateTintArgb);
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(WorldNode_View<ModelRuntimeNode>(modelNode));
@@ -422,7 +422,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       EffectLifecycle_UpdateAlphaFadeAndTint(modelNode,effectSlot,effectDefinition);
     }
     /* the scale runs linearly from start to end over the whole animation */
-    if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE) != 0) {
+    if (Any(modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE)) {
       modelNode->modelScaleQ12 =
            (int)(((int64_t)
                   (effectDefinition->modelScaleEndQ12 - effectDefinition->modelScaleStartQ12) *

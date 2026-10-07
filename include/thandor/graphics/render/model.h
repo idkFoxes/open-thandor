@@ -24,13 +24,7 @@ inline constexpr int MODEL_DISTANCE_ATTENUATION_ROW0 = 136;
 /* ModelRender_ComputeVertexIntensityScaledPath's base, indexed by (dot / lightingScaleQ12) >> 9 */
 inline constexpr int MODEL_LIGHTING_SCALE_ROW0 = 682;
 
-/* ModelRuntimeNode.runtimeFlags bits */
-inline constexpr int MODEL_RUNTIME_FLAG_APPLY_SCALE = 0x800; /* ModelRender_PrepareProjectedVertex scales every vertex by
-                                                modelScaleQ12 */
-/* Set by the model class initializers (world/model/slots); the model renderer shifts the texture coordinates
-   of triangles using the node's primary / secondary animated subresource by its texture offsets */
-inline constexpr int MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL = 0x80;
-inline constexpr int MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL = 0x400;
+/* The ModelRuntimeNode.runtimeFlags bits MODEL_RUNTIME_FLAG_* are ModelRuntimeFlags (gameplay/army/types.h). */
 /* Model triangle renderFlags (GraphicsTriangleInput.renderFlags): the MODEL_TRIANGLE_* enumerators of
    GraphicsPrimitiveDispatchFlags (graphics/render/types.h) */
 /* Marker in a mesh vertex's projected X (GraphicsProjectedVertexSource.screenX): not transformed and projected yet for this draw */

@@ -33,13 +33,13 @@ PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node)
   ModelRuntimeFlags stateFlags;
 
   stateFlags = node->runtimeFlags;
-  if ((stateFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) != 0) {
+  if (Any(stateFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT)) {
     return UI_MODEL_TINT_OPAQUE_WHITE;
   }
-  if ((stateFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) == 0) {
+  if (!Any(stateFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE)) {
     return 0;
   }
-  if ((stateFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) != 0) {
+  if (Any(stateFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED)) {
     return UI_MODEL_TINT_TRANSPARENT_WHITE;
   }
   return UI_MODEL_TINT_OPAQUE_GREY;

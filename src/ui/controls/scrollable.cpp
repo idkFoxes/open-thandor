@@ -445,7 +445,7 @@ void UiScrollableControl_HandlePointerWheel
       (UI_SCROLL_PRIMARY_INTERACTION_ACTIVE|UI_SCROLL_SECONDARY_INTERACTION_ACTIVE))) {
     return;
   }
-  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->base).nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   if (wheelDelta == 0) {
@@ -909,7 +909,7 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     /* a vertical bar narrows the view: maybe a horizontal bar is needed now, and vice versa. The masks
        ~UI_SCROLL_ALLOWED_* (0xffffffcf/0xffffff3f, as in the original) are practically always nonzero; the
        allowed bits themselves were probably meant. The mask above filters disallowed bars again anyway. */
-    if ((Any(control->scrollStateFlags & ~UI_SCROLL_ALLOWED_HORIZONTAL_BARS)) &&
+    if (Any(control->scrollStateFlags & ~UI_SCROLL_ALLOWED_HORIZONTAL_BARS) &&
        (Any(control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
@@ -920,14 +920,14 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
              (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP);
       }
     }
-    if ((Any(control->scrollStateFlags & ~UI_SCROLL_ALLOWED_VERTICAL_BARS)) &&
+    if (Any(control->scrollStateFlags & ~UI_SCROLL_ALLOWED_VERTICAL_BARS) &&
        (Any(control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)))) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                           g_UiWindowTextureSource);
       if ((int)(verticalExtent - textureSize.logicalHeightPixels) < 0) {
-        if ((!Any(control->scrollStateFlags &
-             (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP))) &&
+        if (!Any(control->scrollStateFlags &
+             (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) &&
            (Any(control->scrollStateFlags & ~UI_SCROLL_ALLOWED_HORIZONTAL_BARS))) {
           textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
                                                               g_UiWindowTextureSource);

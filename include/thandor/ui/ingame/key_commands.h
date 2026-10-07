@@ -34,6 +34,6 @@ void InGameNotificationQueue_InsertPriorityRecord(InGameNotificationPayloadKind 
           Q12 secondaryWorldCoordinateQ12,Q12 primaryWorldCoordinateQ12,
           InGameNotificationPriority priority,InGameNotificationMovieId notificationMovieId);
 
-extern uint32_t g_UiCommandRuntimeFlags;
+extern UiCommandRuntimeFlagMask g_UiCommandRuntimeFlags;
 
 #endif /* THANDOR_UI_INGAME_KEY_COMMANDS_H */

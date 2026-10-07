@@ -26,7 +26,7 @@ Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
   /* Space activates the focused control (unless disabled); Enter/Escape activate it when the state flags
      bind them. Everything else goes to the default focus handling. */
   activates = false;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (keyCode == KEYBOARD_KEY_CODE_SPACE) {
       activates = (&(control->selectable).base == g_UiKeyboardFocusNode) &&
                   (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0);
@@ -136,7 +136,7 @@ Bool8 UiSelectableGroup_FindVisibleSelected
   controlIndex = 0;
   found = true;
   control = va_arg(controlArgs,UiSelectableControl *);
-  while (((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
+  while (Any(control->base.nodeFlags & UI_NODE_SUPPRESSED) ||
          ((control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0)) {
     controlIndex++;
     if (controlCount <= controlIndex) {
@@ -212,7 +212,7 @@ void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *s
 uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control)
 
 {
-  if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED) &&
      ((control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     return 1;
   }

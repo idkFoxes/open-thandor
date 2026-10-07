@@ -322,16 +322,16 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
     return;
   }
   pendingPlacementAsset = g_InGamePendingPlacementArmyAsset;
-  if (((worldRuntime->interaction).nodeFlags & 8) != 0) {
+  if (Any((worldRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0) {
     return;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) {
     return;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
     if (!SelectionInfo_TestNotOwnAircraftPadsWithAircraft(worldRuntime->activeFactionRuntimeIndex)) {
       InGameWorldOverlay_UpdateCommandPreviewArmy(releaseMode,worldRuntime);
     }

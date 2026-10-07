@@ -393,7 +393,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
      the standing path); ArmyArticulatedRuntime_UpdateSuspensionHierarchy overwrites both before anything
      reads them, so that store is left out. */
   rootNode = modelRuntime->rootModelNode;
-  rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+  rootNode->runtimeFlags = rootNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   ArmyArticulatedRuntime_UpdateSuspensionHierarchy(rootNode,worldRuntime);
   if (((previousWorldX != (rootNode->worldTransform).translation.x) ||
       (previousWorldY != (rootNode->worldTransform).translation.y)) ||
@@ -1208,7 +1208,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   (rightNode->modelPayload).localRotationAngle0 = 0;
   (rightNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
   (rightNode->modelPayload).localRotationAngle2 = 0;
-  modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+  modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
   /* foot orientation: foot heading interpolated by progress (unsigned scaling for the left foot, signed for
      the right, as in the original) with the blended normal angles */
@@ -1220,7 +1220,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
             (rightNode,
              (((rightHeading - rightStartHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * rightBlendQ12 >> Q12_SHIFT) +
              rightStartHeading & FIXED_ANGLE16_MASK,rightBlendAngles);
-  modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+  modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
 }
 
 /* Sets the step rate of a planned foot step (articulatedContact.fallbackPosition1Q12): stride length

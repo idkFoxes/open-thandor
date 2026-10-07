@@ -222,8 +222,8 @@ Bool8 ArmyPlacement_CanPlaceResourceExtractor
   if ((cellColumn >= 0) && (cellRow >= 0) &&
       (cellColumn < (int)activeFieldGrid->gridWidth) && (cellRow < (int)activeFieldGrid->gridHeight)) {
     /* the resource field selector of an extractor is its class parameter classParameterC0 */
-    if ((activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * cellRow + cellColumn)].flagsAndMaterial &
-        FIELD_CELL_XENITE_SUPPORT << ((uint8_t)ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0 & 31)) != 0) {
+    if (Any(activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * cellRow + cellColumn)].flagsAndMaterial &
+            FieldCell_ResourceSupportBit((uint8_t)ModelView_Cast<ModelDefinition>(modelDefinition)->classParameterC0 & 31))) {
       *outPlacementValue = clearanceValue;
       return true;
     }
@@ -264,9 +264,8 @@ Bool8 ArmyPlacement_TestGridOccupancyMask
     if ((0 < cellColumn) && (0 < cellRow)) {
       if ((cellColumn + 1 < (int)activeFieldGrid->gridWidth) &&
          ((cellRow + 1 < (int)activeFieldGrid->gridHeight &&
-          ((activeFieldGrid->cells[(int32_t)(cellRow * activeFieldGrid->gridWidth + cellColumn)].flagsAndMaterial &
-           FIELD_CELL_XENITE_SUPPORT <<
-           ((uint8_t)modelRuntime->modelDefinition->resourceFieldSupportSelector & 31)) != 0)))) {
+          Any(activeFieldGrid->cells[(int32_t)(cellRow * activeFieldGrid->gridWidth + cellColumn)].flagsAndMaterial &
+              FieldCell_ResourceSupportBit((uint8_t)modelRuntime->modelDefinition->resourceFieldSupportSelector & 31))))) {
         return false;
       }
     }
@@ -305,7 +304,7 @@ Bool8 ArmyPlacement_TestGridRuntimeAndFieldBlocking
                      ModelView_Cast<RuntimeCollisionQueryView>(modelRuntime),worldRuntime) != nullptr) {
     return true;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     return false;
   }
   return FieldGrid_TestWorldPointBlocked
@@ -343,7 +342,7 @@ Bool8 ArmyPlacement_CanPlaceMobileUnit
   if (blocked) {
     return false;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     blocked = FieldGrid_TestWorldPointBlocked
                       (ownerFactionIndex,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
     if (blocked) {
@@ -474,7 +473,7 @@ Bool8 ArmyPlacement_CanPlaceBuilding
   if (terrainTest.rejected) {
     return false;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     *outPlacementValue = (uint32_t)terrainTest.value;
     return true;
   }
@@ -673,7 +672,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   }
   if (ModelView_Cast<ModelDefinition>(definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
     overlayExtent =
-         FIELD_CELL_XENITE_SUPPORT << ((uint8_t)ModelView_Cast<ModelDefinition>(definitionRecord)->classParameterC0 & 31);
+         ToBits(FieldCell_ResourceSupportBit((uint8_t)ModelView_Cast<ModelDefinition>(definitionRecord)->classParameterC0 & 31));
   }
   overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
            [ModelView_Cast<ModelDefinition>(definitionRecord)->placementContactKindIndex];

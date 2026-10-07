@@ -64,12 +64,12 @@ void UiCommandSpriteButtonControl_BeginPress
 {
   UiSelectableStateFlags *stateFlagsField;
   
-  if (((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     control->activationInputState = UiCommandActivationStateFlags{};
     stateFlagsField = &(control->sprite).selectable.stateFlags;
     *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
     UiNode_InvalidateRoot(&(control->sprite).selectable.base);
-    if (((control->sprite).selectable.base.nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) {
+    if (Any((control->sprite).selectable.base.nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK)) {
       control->activationInputState =
            control->activationInputState | UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK;
     }
@@ -89,7 +89,7 @@ void UiCommandSpriteButtonControl_NonRightRelease
   UiCommandActivationStateFlags inputStateBits;
   UiSelectableStateFlags *stateFlagsField;
   
-  if ((((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if (!Any((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
      (((control->sprite).selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     inputStateBits = FromBits<UiCommandActivationStateFlags>(g_KeyboardStateMask) &
             ~(UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON|UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK);
@@ -118,7 +118,7 @@ void UiCommandSpriteButtonControl_RightRelease
 {
   UiCommandActivationStateFlags inputStateBits;
 
-  if ((((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if (!Any((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
       (((control->sprite).selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     inputStateBits = FromBits<UiCommandActivationStateFlags>(g_KeyboardStateMask) & ~UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK;
     (control->sprite).selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -143,10 +143,10 @@ void UiCommandVisibilityWrappedText_DrawWhenAllowed
           UiPixelCoordinate clipLeft,UiNodeBase *control)
 
 {
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) == 0 &&
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) &&
       (((UiNode_As<UiWrappedTextControl>(control))->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) == 0 ||
-       (g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) &&
-      (control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+       Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) &&
+      !Any(control->nodeFlags & UI_NODE_SUPPRESSED)) {
     UiWrappedTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,UiNode_As<UiWrappedTextControl>(control));
   }
 }
@@ -164,11 +164,11 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
   int drawOffsetAdjust;
 
   textControl = UiNode_As<UiSingleLineTextControl>(control);
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS)) {
     return;
   }
   if ((textControl->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) != 0 &&
-      (g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) == 0) {
+      !Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
     return;
   }
   drawOffsetAdjust = 0;

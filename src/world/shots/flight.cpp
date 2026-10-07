@@ -61,7 +61,7 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
   resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
                      (modelNode->runtimeFlags,0,occupancyMask,
                       (char)worldRuntime->activeFactionRuntimeIndex);
-  modelNode->runtimeFlags = modelNode->runtimeFlags | resolvedMasks.runtimeFlags;
+  modelNode->runtimeFlags = modelNode->runtimeFlags | FromBits<ModelRuntimeFlags>(resolvedMasks.runtimeFlags);
   shotRuntime->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
   ModelNodeRuntime_RefreshStateTint(WorldNode_View<ModelRuntimeNode>(modelNode));
   nodeTintArgb = modelNode->tintArgb;
@@ -420,7 +420,7 @@ static void ShotBeam_UpdateTick
     break;
   }
   spinStep = shotRuntime->definitionOrSavedId.definition->modelSpinStepTurn16;
-  modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+  modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   modelNode->modelPayload.worldRotationAngle2 += spinStep;
   modelNode->modelPayload.worldRotationAngle2 &= FIXED_ANGLE16_MASK;
 }
@@ -745,7 +745,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
         ShotProjectile_SteerTowardsTarget(shotDefinition,targetModelRuntime,modelNodeRuntime);
       }
       spinStep = shotDefinition->modelSpinStepTurn16;
-      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
       modelNodeRuntime->modelPayload.worldRotationAngle2 += spinStep;
       modelNodeRuntime->modelPayload.worldRotationAngle2 &= FIXED_ANGLE16_MASK;
       if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_LEAD_ADJUSTED) {

@@ -91,8 +91,8 @@ void UiSingleLineTextControl_RelocateChild(UiSerializedRelocationDelta relocatio
   UiSingleLineTextControl *controlReg = control;
   UiNodeFlags *childNodeFlagsField;
 
-  if ((((controlReg->base).nodeFlags &
-        (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) &&
+  if ((!Any((controlReg->base).nodeFlags &
+        (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET))) &&
      (controlReg->focusChild != nullptr)) {
     (controlReg->base).nodeFlags = (controlReg->base).nodeFlags | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
@@ -304,14 +304,14 @@ UiNodeBase * UiSingleLineTextControl_HitTestChildProxy
   hitNode = UiContainer_HitTestChildren(pointerY,pointerX,&control->base);
   if (hitNode == control->focusChild) {
     returnedNode = &control->base;
-    if ((hitNode->nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+    if (Any(hitNode->nodeFlags & UI_NODE_SUPPRESSED)) {
       returnedNode = UI_NODE_NONE;
     }
   }
   else {
     returnedNode = hitNode;
     if (((hitNode == &control->base) && (control->focusChild != nullptr)) &&
-       (((control->focusChild)->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+       (Any((control->focusChild)->nodeFlags & UI_NODE_SUPPRESSED))) {
       returnedNode = UI_NODE_NONE;
     }
   }

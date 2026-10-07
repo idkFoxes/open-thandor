@@ -356,7 +356,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
 
   featureAssetId = ARM_0330_BUILDING_MDL0303;
   duplicateSeparation = (g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12 * 85 >> 8; /* ~1/3 */
-  if ((terrainFeatureCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
+  if (!Any(terrainFeatureCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT)) {
     featureAssetId = ARM_0332_BUILDING_MDL0302;
   }
   if (AiSiteCandidate_IsNearClass13StructureMarker(terrainFeatureCell)) {
