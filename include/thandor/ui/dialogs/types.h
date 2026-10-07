@@ -133,7 +133,7 @@ typedef struct UiDisplaySettingsValueReadout {
 /* The <node>_prefix of the given type in front of a node the code only has as a pointer (the
    node of an action callback, a node chosen at runtime); with the node's name known,
    <TEMPLATE>_UI(root, <node>_prefix) names it directly. */
-#define UI_TEMPLATE_NODE_PREFIX(type, node) (((type *)(uintptr_t)(node))[-1])
+#define UI_TEMPLATE_NODE_PREFIX(type, node) (reinterpret_cast<type *>((uintptr_t)(node))[-1])
 #pragma pack(push, 1)
 
 /* g_FatalErrorUiRootTemplateImage: 3 UI nodes. FATAL_ERROR_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
@@ -215,7 +215,7 @@ typedef struct DisplaySettingsUiImage {
     UiFocusProxyControl colorScaleValueText; /* +0ADC g_UiFocusProxyControlVtable: Text readout below the color scale slider. */
     UiDisplaySettingsValueReadout colorBiasValueText; /* +0B38 g_UiFocusProxyControlVtable: Text readout below the color bias slider; its tail holds both number buffers (0xB94 scale, 0xBB4 bias) written by UiDisplaySettingsRoot_FormatColorReadouts. */
 } DisplaySettingsUiImage;
-#define DISPLAY_SETTINGS_UI(root, node) (&((DisplaySettingsUiImage *)(uintptr_t)(root))->node)
+#define DISPLAY_SETTINGS_UI(root, node) (&reinterpret_cast<DisplaySettingsUiImage *>((uintptr_t)(root))->node)
 /* A link to node `node` of the template (its offset in the template, made a pointer when the copy is linked). */
 #define DISPLAY_SETTINGS_LINK(node) UI_TEMPLATE_LINK(offsetof(DisplaySettingsUiImage, node))
 /* The node offsets of the original template image: the field structs must keep them. */
@@ -261,7 +261,7 @@ typedef struct FourValueDialogUiImage {
     UiListOffsetControl countdownMessageText; /* +0110 g_UiListOffsetControlVtable: Rich text 0x109 with the countdown seconds (+0x5C), tick counter (+0x60), previous mode tuple (+0x64..+0x70) and number buffer (+0x74). */
     uint32_t countdownMessageText_trailing[14]; /* +016C: template dwords behind the control */
 } FourValueDialogUiImage;
-#define FOUR_VALUE_DIALOG_UI(root, node) (&((FourValueDialogUiImage *)(uintptr_t)(root))->node)
+#define FOUR_VALUE_DIALOG_UI(root, node) (&reinterpret_cast<FourValueDialogUiImage *>((uintptr_t)(root))->node)
 #pragma pack(pop)
 
 #endif /* THANDOR_UI_DIALOGS_TYPES_H */

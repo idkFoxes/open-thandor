@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/container.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -47,7 +48,7 @@ void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta reloc
     static int s_loggedEmptyPageStack;
     if (s_loggedEmptyPageStack == 0) {
       s_loggedEmptyPageStack = 1;
-      Thandor_Log("page stack %p: page count 0, page loops skipped",(void *)control);
+      Thandor_Log("page stack %p: page count 0, page loops skipped",static_cast<void *>(control));
     }
     control->base.firstChild = UI_NODE_NONE; /* no page to show; the page slot holds an unrelocated offset */
     return;
@@ -56,7 +57,7 @@ void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta reloc
   remainingCount = control->pageCount;
   while (remainingCount != 0) {
     if (*pageSlot != UI_NODE_NONE) {
-      *pageSlot = (UiNodeBase *)((uint8_t *)*pageSlot + relocationDelta);
+      *pageSlot = Thandor_At<UiNodeBase>(pageSlot->get(), relocationDelta);
     }
     pageSlot = pageSlot + 1;
     remainingCount--;
@@ -263,13 +264,13 @@ void UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeB
       firstNode = firstNode->nextSibling) {
     firstNode->layoutWidth = ~firstNode->layoutWidth;
     if (firstNode->nextSibling != UI_NODE_NONE) {
-      firstNode->nextSibling = (UiNodeBase *)((uint8_t *)firstNode->nextSibling + imageDelta);
+      firstNode->nextSibling = Thandor_At<UiNodeBase>(firstNode->nextSibling.get(), imageDelta);
     }
     if (firstNode->firstChild != UI_NODE_NONE) {
-      firstNode->firstChild = (UiNodeBase *)((uint8_t *)firstNode->firstChild + imageDelta);
+      firstNode->firstChild = Thandor_At<UiNodeBase>(firstNode->firstChild.get(), imageDelta);
     }
     if (firstNode->parent != UI_NODE_NONE) {
-      firstNode->parent = (UiNodeBase *)((uint8_t *)firstNode->parent + imageDelta);
+      firstNode->parent = Thandor_At<UiNodeBase>(firstNode->parent.get(), imageDelta);
     }
     firstNode->nodeFlags =
          firstNode->nodeFlags & ~(UI_NODE_REPEAT_OR_DOUBLE_CLICK|UI_NODE_HAS_KEYBOARD_FOCUS);
@@ -316,14 +317,14 @@ void UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *
   GraphicsTextureLogicalSize headerSize;
 
   if ((control->root.rootFlags & UI_ROOT_TITLE_BAR) == 0) {
-    UiContainer_LayoutChildren((UiNodeBase *)control);
+    UiContainer_LayoutChildren(UiNode_As<UiNodeBase>(control));
   }
   else {
     headerSize = g_GraphicsTextureSourceGetLogicalSize
                            (UI_WINDOW_SUBRESOURCE_TITLE_BAR + UI_WINDOW_TITLE_BAR_MIDDLE,g_UiWindowTextureSource);
     headerHeight = headerSize.logicalHeightPixels;
     control->root.base.top = control->root.base.top + headerHeight;
-    UiContainer_LayoutChildren((UiNodeBase *)control);
+    UiContainer_LayoutChildren(UiNode_As<UiNodeBase>(control));
     control->root.base.top = control->root.base.top - headerHeight;
     control->root.base.layoutHeight = control->root.base.layoutHeight + headerHeight;
   }
@@ -385,13 +386,13 @@ void UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,Ui
       childNode = childNode->nextSibling) {
     childNode->layoutWidth = ~childNode->layoutWidth;
     if (childNode->nextSibling != UI_NODE_NONE) {
-      childNode->nextSibling = (UiNodeBase *)((uint8_t *)childNode->nextSibling + relocationDelta);
+      childNode->nextSibling = Thandor_At<UiNodeBase>(childNode->nextSibling.get(), relocationDelta);
     }
     if (childNode->firstChild != UI_NODE_NONE) {
-      childNode->firstChild = (UiNodeBase *)((uint8_t *)childNode->firstChild + relocationDelta);
+      childNode->firstChild = Thandor_At<UiNodeBase>(childNode->firstChild.get(), relocationDelta);
     }
     if (childNode->parent != UI_NODE_NONE) {
-      childNode->parent = (UiNodeBase *)((uint8_t *)childNode->parent + relocationDelta);
+      childNode->parent = Thandor_At<UiNodeBase>(childNode->parent.get(), relocationDelta);
     }
     childNode->nodeFlags =
          childNode->nodeFlags & ~(UI_NODE_REPEAT_OR_DOUBLE_CLICK|UI_NODE_HAS_KEYBOARD_FOCUS);

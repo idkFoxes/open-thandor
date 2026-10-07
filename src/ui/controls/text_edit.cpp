@@ -353,7 +353,7 @@ static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,Boo
   control->cursorIndex = wordStop;
   if (extendSelection) {
     *selectionBoundary = wordStop;
-    UiTextEdit_OrderSelection((UiTextEditControl *)control);
+    UiTextEdit_OrderSelection(UiNode_As<UiTextEditControl>(control));
   }
   else {
     control->selectionStart = wordStop;
@@ -387,7 +387,7 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
   Bool8 isAltGrCharacter;
   Bool8 recomputeLayout;
 
-  edit = (UiTextEditControl *)control;
+  edit = UiNode_As<UiTextEditControl>(control);
   if (((control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) != 0) ||
      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
     return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
@@ -721,7 +721,7 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
   }
   /* clears the caret phase and the blink frame counter (top byte) */
   control->editStateFlags = control->editStateFlags & (UI_STATE_FLAGS_MASK & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE);
-  UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)control);
+  UiTextControl_UpdateNonEmptyValidity(UiNode_As<UiTextEditControl>(control));
   textCursor = control->textBuffer;
   control->cursorIndex = 0;
   control->selectionStart = 0;
@@ -793,7 +793,7 @@ void UiTextEditControl_TickCaretBlink(UiTextEditControl *control)
   UiTextEditStateFlags *stateFlagsField;
   UiTextEditStateFlags previousStateFlags;
 
-  if (control == (UiTextEditControl *)g_UiKeyboardFocusNode) {
+  if (control == UiNode_As<UiTextEditControl>(g_UiKeyboardFocusNode)) {
     stateFlagsField = &control->editStateFlags;
     previousStateFlags = *stateFlagsField;
     *stateFlagsField = *stateFlagsField - UI_STATE_FRAME_COUNTER_UNIT;

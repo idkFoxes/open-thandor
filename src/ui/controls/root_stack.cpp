@@ -24,7 +24,7 @@ Bool8 UiRootStack_PopUntilWindowTextureBoundary()
 {
   Bool8 popStopped;
 
-  while (((GraphicsTextureSourceAsset *)g_UiRootNode != g_UiWindowTextureSource &&
+  while ((static_cast<void *>(g_UiRootNode) != static_cast<void *>(g_UiWindowTextureSource) &&
          (g_UiRootNode != UI_ROOT_STACK_END))) {
     popStopped = UiRootStack_Pop(g_UiRootNode);
     if (popStopped) {
@@ -97,7 +97,7 @@ Bool8 UiRootStack_Pop(UiRootNode *root)
   
   parentCursor = (root->base).parent;
   while (parentCursor != UI_NODE_NONE) {
-    root = (UiRootNode *)(root->base).parent;
+    root = UiNode_As<UiRootNode>((root->base).parent);
     parentCursor = (root->base).parent;
   }
   belowRoot = root->previousRoot;
@@ -136,7 +136,7 @@ Bool8 UiRootStack_BringToFront(UiRootNode *root)
   UiNodeBase *nextFrontRootLink;
 
   oldFrontRoot = g_UiRootNode;
-  nextRootLink = (UiRootNode *)root->base.nextSibling;
+  nextRootLink = UiNode_As<UiRootNode>(root->base.nextSibling);
   belowRoot = root->previousRoot;
   if (nextRootLink != UI_ROOT_STACK_END) {
     nextRootLink->previousRoot = belowRoot;
@@ -217,7 +217,7 @@ void UiRootStack_InvalidateAll()
 static void UiRootStackAction_Pop(void *source)
 
 {
-  UiRootStack_Pop((UiRootNode *)source);
+  UiRootStack_Pop(static_cast<UiRootNode *>(source));
 }
 
 /* (handlers) without the designator: MSVC rejects UI_SLOT elements of a designated array member (C2440). */
