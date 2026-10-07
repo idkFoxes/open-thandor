@@ -22,47 +22,47 @@
 #include <thandor/ui/text/types.h>
 #include <thandor/world/terrain/types.h>
 
-typedef struct WorldRuntimeContext WorldRuntimeContext, *PWorldRuntimeContext;
-typedef struct WorldRuntimeInteractionState WorldRuntimeInteractionState, *PWorldRuntimeInteractionState;
-typedef struct WorldMotionState WorldMotionState, *PWorldMotionState;
-typedef struct WorldFieldRegionState WorldFieldRegionState, *PWorldFieldRegionState;
-typedef struct WorldRuntimeSelectionState WorldRuntimeSelectionState, *PWorldRuntimeSelectionState;
-typedef struct WorldLightingState WorldLightingState, *PWorldLightingState;
-typedef struct WorldMotionSnapshot WorldMotionSnapshot, *PWorldMotionSnapshot;
-typedef struct InGamePersistentSettingsPage3508 InGamePersistentSettingsPage3508, *PInGamePersistentSettingsPage3508;
-typedef struct InGameCommandTextEntryPage2320 InGameCommandTextEntryPage2320, *PInGameCommandTextEntryPage2320;
-typedef struct InGameCommandTextEditControlCC InGameCommandTextEditControlCC, *PInGameCommandTextEditControlCC;
-typedef struct InGameNotificationPayload InGameNotificationPayload, *PInGameNotificationPayload;
-typedef struct RecentTextHistoryView RecentTextHistoryView, *PRecentTextHistoryView;
-typedef struct RecentTextHistoryPointerList RecentTextHistoryPointerList, *PRecentTextHistoryPointerList;
-typedef struct InGameNotificationQueueRecord InGameNotificationQueueRecord, *PInGameNotificationQueueRecord;
-typedef struct InGameCameraCommandDispatchTable InGameCameraCommandDispatchTable, *PInGameCameraCommandDispatchTable;
-typedef struct InGameCameraCommandDispatchRecord InGameCameraCommandDispatchRecord, *PInGameCameraCommandDispatchRecord;
-typedef struct InGameRuntimeRoot InGameRuntimeRoot, *PInGameRuntimeRoot;
-typedef struct TerrainCompositeTextureRuntime TerrainCompositeTextureRuntime, *PTerrainCompositeTextureRuntime;
-typedef struct UiCommandRuntimeRecordPrefix UiCommandRuntimeRecordPrefix, *PUiCommandRuntimeRecordPrefix;
-typedef struct UiCatalogEntryControl UiCatalogEntryControl, *PUiCatalogEntryControl;
-typedef struct UiCommandSpriteButtonControl UiCommandSpriteButtonControl, *PUiCommandSpriteButtonControl;
-typedef struct InGamePlayerStatusTextSlot InGamePlayerStatusTextSlot, *PInGamePlayerStatusTextSlot;
-typedef struct InGameUiActionHandlerPage12Prefix28 InGameUiActionHandlerPage12Prefix28, *PInGameUiActionHandlerPage12Prefix28;
-typedef struct InGameUiActionHandlerPage10Prefix40 InGameUiActionHandlerPage10Prefix40, *PInGameUiActionHandlerPage10Prefix40;
-typedef struct InGameUiCommandModeActionHandlerPage11 InGameUiCommandModeActionHandlerPage11, *PInGameUiCommandModeActionHandlerPage11;
-typedef struct RuntimeModelFactionPrefix RuntimeModelFactionPrefix, *PRuntimeModelFactionPrefix;
-typedef struct InGameRuntimeRootUiGridView InGameRuntimeRootUiGridView, *PInGameRuntimeRootUiGridView;
-typedef struct InGameRuntimeRootFrameView InGameRuntimeRootFrameView, *PInGameRuntimeRootFrameView;
-typedef struct ArmyModelTreeNodeAddressView ArmyModelTreeNodeAddressView, *PArmyModelTreeNodeAddressView;
-typedef struct WorldRuntimeExtendedMapControlView WorldRuntimeExtendedMapControlView, *PWorldRuntimeExtendedMapControlView;
-typedef struct SelectionPanelCellAdvance SelectionPanelCellAdvance, *PSelectionPanelCellAdvance;
-typedef struct InGameMissionHelpTextPanel InGameMissionHelpTextPanel, *PInGameMissionHelpTextPanel;
-typedef struct InGameMissionHelpRootView InGameMissionHelpRootView, *PInGameMissionHelpRootView;
-typedef struct WorldOwnerListNode WorldOwnerListNode, *PWorldOwnerListNode;
-typedef struct InGameTargetingRootTraversalView InGameTargetingRootTraversalView, *PInGameTargetingRootTraversalView;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
-typedef struct MovieRuntime MovieRuntime;
-typedef struct RecentTextHistorySlot RecentTextHistorySlot;
-typedef struct SelectionPlayerPairRecord SelectionPlayerPairRecord;
-typedef struct WorldObjectRecord WorldObjectRecord;
-typedef struct WorldRuntimeNode WorldRuntimeNode;
+struct WorldRuntimeContext;
+struct WorldRuntimeInteractionState;
+struct WorldMotionState;
+struct WorldFieldRegionState;
+struct WorldRuntimeSelectionState;
+struct WorldLightingState;
+struct WorldMotionSnapshot;
+struct InGamePersistentSettingsPage3508;
+struct InGameCommandTextEntryPage2320;
+struct InGameCommandTextEditControlCC;
+struct InGameNotificationPayload;
+struct RecentTextHistoryView;
+struct RecentTextHistoryPointerList;
+struct InGameNotificationQueueRecord;
+struct InGameCameraCommandDispatchTable;
+struct InGameCameraCommandDispatchRecord;
+struct InGameRuntimeRoot;
+struct TerrainCompositeTextureRuntime;
+struct UiCommandRuntimeRecordPrefix;
+struct UiCatalogEntryControl;
+struct UiCommandSpriteButtonControl;
+struct InGamePlayerStatusTextSlot;
+struct InGameUiActionHandlerPage12Prefix28;
+struct InGameUiActionHandlerPage10Prefix40;
+struct InGameUiCommandModeActionHandlerPage11;
+struct RuntimeModelFactionPrefix;
+struct InGameRuntimeRootUiGridView;
+struct InGameRuntimeRootFrameView;
+struct ArmyModelTreeNodeAddressView;
+struct WorldRuntimeExtendedMapControlView;
+struct SelectionPanelCellAdvance;
+struct InGameMissionHelpTextPanel;
+struct InGameMissionHelpRootView;
+struct WorldOwnerListNode;
+struct InGameTargetingRootTraversalView;
+struct ModelRuntimeNode;
+struct MovieRuntime;
+struct RecentTextHistorySlot;
+struct SelectionPlayerPairRecord;
+struct WorldObjectRecord;
+struct WorldRuntimeNode;
 
 using ModelDepthBinMask = uint32_t;
 
@@ -200,7 +200,7 @@ using UiCommandModeIndex = uint32_t;
 
 using InGameNotificationMovieId = uint32_t;
 
-typedef struct UiNodeBase *InGamePersistentSettingsPageSourceNodePtr; /* interior pointer: points at InGamePersistentSettingsPage3508.sourceNode; the containing InGamePersistentSettingsPage3508 is found by subtracting the field offset */
+using InGamePersistentSettingsPageSourceNodePtr = struct UiNodeBase *; /* interior pointer: points at InGamePersistentSettingsPage3508.sourceNode; the containing InGamePersistentSettingsPage3508 is found by subtracting the field offset */
 
 struct WorldRuntimeContext {
     struct WorldRuntimeInteractionState interaction; // In-game interaction state.
@@ -283,7 +283,7 @@ using InGameCommandPanelSourceAddress32 = intptr_t; /* address of the command pa
 
 using InGameCommandPayloadTripletValue32 = uint32_t;
 
-typedef struct InGameCommandTextEditControlCC *InGameCommandTextEntryPageTextEditPtr; /* interior pointer: points at InGameCommandTextEntryPage2320.commandTextEdit; the containing InGameCommandTextEntryPage2320 is found by subtracting the field offset */
+using InGameCommandTextEntryPageTextEditPtr = struct InGameCommandTextEditControlCC *; /* interior pointer: points at InGameCommandTextEntryPage2320.commandTextEdit; the containing InGameCommandTextEntryPage2320 is found by subtracting the field offset */
 
 struct InGameCommandTextEditControlCC {
     struct UiNodeBase base; 
@@ -764,15 +764,15 @@ struct InGameTargetingRootTraversalView {
 #define UI_TEMPLATE_NO_LINK_BITS THANDOR_PTR32_BITS(0xFFFFFFFFu)
 /* The dwords in front of a technology area tab (InGameUiImage technologyAreaTabN_prefix): the name text
    id of the tab's technology and the tab's tooltip text (the expanded label), both set at runtime. */
-typedef struct UiTechnologyAreaTabPrefix {
+struct UiTechnologyAreaTabPrefix {
     int32_t nameTextResourceId; /* -8: TECHNOLOGY_TEXT_ID_BASE + 2 * technology id */
     Ptr32<uint16_t> tooltipText; /* -4 */
-} UiTechnologyAreaTabPrefix;
+};
 #pragma pack(push, 1)
 
 /* g_InGameRuntimeDefaultImageTemplate: 452 UI nodes. InGameUi_Image(root)->node is the node in a copy of it (or a
    node's <node>_prefix), typed as its control. */
-typedef struct InGameUiImage {
+struct InGameUiImage {
     UiPanelControl inGameRootPanel; /* +0000 g_UiPanelControlVtable: Root panel of the in-game UI; its only child is the primary page stack. */
     UiLayoutContainerControl<2> chatInputPageStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack (empty or chat input) inside the world view area that shows or hides the chat text entry line. */
     UiRequiredTextEditControl chatInputTextEdit; /* +00B0 g_UiRequiredTextEditControlVtable: Chat/command text entry (action 0x1024): sends the typed text to the selected players; in single player it checks the developer cheat phrase. */
@@ -1272,7 +1272,7 @@ typedef struct InGameUiImage {
     UiSpriteButtonControl regionToolOption0; /* +BEF8 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x111C) selecting mode F=0; exact option label unresolved. */
     UiSpriteButtonControl regionToolOption1; /* +BF70 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x111D) selecting mode F=1; exact option label unresolved. */
     uint32_t regionToolOption1_trailing[255]; /* +BFE8: template dwords behind the control */
-} InGameUiImage;
+};
 /* The in-game UI image behind a root pointer (any pointer to the image start): the typed access to its nodes,
    e.g. &InGameUi_Image(rt)->chatInputTextEdit. One reinterpretation for all users. */
 template <class T> inline InGameUiImage *InGameUi_Image(T *root)
