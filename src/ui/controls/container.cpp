@@ -196,10 +196,10 @@ UiGridDimensions UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControl
       /* the mask mirrors the 32-bit maxRows << 2 of the comparison */
       rowCount = maxRows & 0x3fffffff;
       columnCount = (itemCount - 1) / rowCount + 1;
-      do {
+      while (rowCount != 0) { /* rowCount >= 1: maxRows == 0 would have divided by zero above */
         if ((rowCount - 1) * columnCount < itemCount) break;
         rowCount = rowCount - 1;
-      } while (rowCount != 0);
+      }
     }
     else {
       columnCount = 4;

@@ -124,12 +124,12 @@ static void UiTextEdit_InsertCodeUnit(UiTextEditControl *edit,uint16_t *buffer,u
     edit->selectionStart++;
     edit->selectionEnd++;
     if (!overwriteMode) {
-      do {
+      while (insertIndex < insertLimit) {
         displacedCodeUnit = buffer[insertIndex];
         buffer[insertIndex] = codeUnit;
         codeUnit = displacedCodeUnit;
         insertIndex++;
-      } while (insertIndex < insertLimit);
+      }
     }
     else {
       buffer[insertIndex] = codeUnit;
@@ -821,7 +821,7 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
   glyphIndex = 0;
   accumulatedWidth = 0;
   if (prefixLength != 0) {
-    do {
+    while (glyphIndex < prefixLength) {
       if (control->textBuffer[glyphIndex] == 0) {
         return accumulatedWidth;
       }
@@ -829,7 +829,7 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
                         (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[glyphIndex],nullptr);
       glyphIndex++;
       accumulatedWidth = accumulatedWidth + glyphWidth;
-    } while (glyphIndex < prefixLength);
+    }
   }
   return accumulatedWidth;
 }

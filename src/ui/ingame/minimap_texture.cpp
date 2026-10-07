@@ -152,6 +152,7 @@ void TerrainCompositeTexture_FillPlane1()
   panelSubresourceIndex = GraphicsTextureSource_Entries(g_InGamePanelTextureSource)[36].paletteIndex;
   fieldCell = ((g_InGameRuntimeRoot->worldRuntime).fieldGrid)->cells;
   columnsRemaining = textureWidth;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       if (fieldCell->waterSurfaceDelta < 1) {
@@ -232,6 +233,7 @@ void TerrainCompositeTexture_FillPlane2()
   panelSubresourceIndex = GraphicsTextureSource_Entries(g_InGamePanelTextureSource)[36].paletteIndex;
   fieldCell = ((g_InGameRuntimeRoot->worldRuntime).fieldGrid)->cells;
   columnsRemaining = textureWidth;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       if ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
@@ -376,6 +378,7 @@ void TerrainCompositeTexture_RebuildPlane0()
   fieldCell = ((inGameRoot->worldRuntime).fieldGrid)->cells;
   pixelCursor = plane0Pixels;
   cellsRemaining = cellCount;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     visibilityFlags = FieldGridCell_OccupancyByte(fieldCell,activeFactionIndex);
     pixelArgb = (uint32_t)visibilityFlags;

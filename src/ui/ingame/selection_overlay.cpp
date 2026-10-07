@@ -196,7 +196,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
   if (markerPointCount != 0) {
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
-      do {
+      while (markerPointCount != 0) {
         /* pair (a, b) -> world point: x = (2a + b) * 0x901 / 2^13, y = -b * 1999 / 2^12 (SHRD of the 64-bit
            products); 0x901 and 1999 are about one cell width 0x900 and 0x900 * sqrt(3) / 2, so the pairs look
            like triangular-lattice coordinates in Q12 */
@@ -229,7 +229,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
         }
         gridCoordinatePairs = gridCoordinatePairs + 2;
         markerPointCount--;
-      } while (markerPointCount != 0);
+      }
       g_GraphicsFramebufferEndAccess();
     }
   }
@@ -321,8 +321,8 @@ void SelectionOverlay_DrawGridVertexMarkers
     if ((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0) {
       coordinateOffset = 32; /* projectedPointB instead of projectedPointA (32 bytes further) */
     }
-    do {
-      do {
+    while (-1 < (int)rowsRemaining) { /* gridHeight / 4 + 1 rows (rowsRemaining < 2^30) */
+      while (-1 < (int)columnsRemaining) {
         if ((*Thandor_At<uint32_t>(vertexCursor,80) & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) {
           screenX = *Thandor_At<int>(vertexCursor + coordinateOffset,12) >> Q12_SHIFT;
           screenY = *Thandor_At<int>(vertexCursor + coordinateOffset,16) >> Q12_SHIFT;
@@ -338,12 +338,12 @@ void SelectionOverlay_DrawGridVertexMarkers
         }
         vertexCursor = vertexCursor + 4 * sizeof(FieldGridCell); /* four cells on */
         columnsRemaining = columnsRemaining - 1;
-      } while (-1 < (int)columnsRemaining); /* gridWidth / 4 + 1 cells per row */
+      } /* gridWidth / 4 + 1 cells per row */
       vertexCursor = rowStart + gridColumns * 4 * sizeof(FieldGridCell); /* four rows on */
       rowsRemaining = rowsRemaining - 1;
       columnsRemaining = columnCount;
       rowStart = vertexCursor;
-    } while (-1 < (int)rowsRemaining);
+    }
     g_GraphicsFramebufferEndAccess();
   }
 }
@@ -383,6 +383,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
     cellCursor = fieldGrid->cells;
     columnsRemaining = gridColumns;
     rowStartCell = cellCursor;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
         if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_B_NOT_PROJECTED) == 0) &&
@@ -467,6 +468,7 @@ void SelectionOverlay_DrawResourceCellMarkers
     cellCursor = fieldGrid->cells;
     columnsRemaining = gridColumns;
     rowStartCell = cellCursor;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
         if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) &&
@@ -543,6 +545,7 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
     cellCursor = fieldGrid->cells;
     columnsRemaining = gridColumns;
     rowStartCell = cellCursor;
+    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
     do {
       do {
         if (((cellCursor->flagsAndMaterial & FIELD_CELL_DEBUG_MARKED) != 0) &&
