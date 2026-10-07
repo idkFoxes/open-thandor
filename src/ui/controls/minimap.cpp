@@ -37,7 +37,7 @@ void UiSelectionGeometryControl_DrawClipped
   int rowStepV;
   uint64_t sourceStartU; /* a zero-extended 32-bit value, so its high half is always 0 */
   int sourceStartV;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
 
   /* intersect the clip rectangle with the node */
   if (clipLeft < (control->base).left) {

@@ -28,7 +28,7 @@ static const UiFrameDelayFrames g_UiTextEditCaretBlinkPhaseStep = 8;
 /* True for the characters typed with AltGr (Ctrl+Alt) on a German keyboard: @ | ~ { [ ] } backslash and, in
    Windows-1252, 0xB2/0xB3 (superscript two/three), 0xB5 (micro sign) and 0x80 (euro sign). The keyboard
    handlers treat them as text without the modifier checks. */
-static Bool8 UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
+static bool UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
 
 {
   return (keyCode == '@') || (keyCode == '|') || (keyCode == '~') || (keyCode == CP1252_SUPERSCRIPT_TWO) ||
@@ -37,7 +37,7 @@ static Bool8 UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
 }
 
 /* True when the key is a shortcut rather than text: any key with Alt, or a letter typed with Ctrl or Alt. */
-static Bool8 UiTextEdit_IsModifierShortcut(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
+static bool UiTextEdit_IsModifierShortcut(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
 
 {
   return (Any(keyboardStateMask & KEYBOARD_STATE_ALT)) ||
@@ -47,7 +47,7 @@ static Bool8 UiTextEdit_IsModifierShortcut(UiKeyboardStateMask keyboardStateMask
 }
 
 /* True for Home, End, Left and Right. */
-static Bool8 UiTextEdit_IsCursorMovementKey(UiKeyboardEventCode keyCode)
+static bool UiTextEdit_IsCursorMovementKey(UiKeyboardEventCode keyCode)
 
 {
   return (keyCode == KEYBOARD_KEY_CODE_HOME) || (keyCode == KEYBOARD_KEY_CODE_END) ||
@@ -55,7 +55,7 @@ static Bool8 UiTextEdit_IsCursorMovementKey(UiKeyboardEventCode keyCode)
 }
 
 /* True unless the selection is collapsed at the cursor. */
-static Bool8 UiTextEdit_HasSelection(const UiTextEditControl *edit)
+static bool UiTextEdit_HasSelection(const UiTextEditControl *edit)
 
 {
   return (edit->cursorIndex != edit->selectionStart) || (edit->cursorIndex != edit->selectionEnd);
@@ -109,7 +109,7 @@ static void UiTextEdit_RemoveSelectedRange(UiTextEditControl *edit,uint16_t *buf
    by one (the code unit at insertLimit - 1 falls off), in overwrite mode the code unit at the cursor is
    replaced. */
 static void UiTextEdit_InsertCodeUnit(UiTextEditControl *edit,uint16_t *buffer,uint32_t bufferUnits,
-          uint32_t insertLimit,Bool8 overwriteMode,uint16_t codeUnit)
+          uint32_t insertLimit,bool overwriteMode,uint16_t codeUnit)
 
 {
   uint32_t insertIndex;
@@ -140,8 +140,8 @@ static void UiTextEdit_InsertCodeUnit(UiTextEditControl *edit,uint16_t *buffer,u
 /* Backspace (deleteBefore) or Delete: removes the selection, or else the code unit before / at the cursor
    (the text above it moves down). Returns false when there was nothing to delete: Backspace at the text
    start or Delete at the text end. */
-static Bool8 UiTextEdit_DeleteAtCursor(UiTextEditControl *edit,uint16_t *buffer,uint32_t bufferUnits,
-          Bool8 deleteBefore)
+static bool UiTextEdit_DeleteAtCursor(UiTextEditControl *edit,uint16_t *buffer,uint32_t bufferUnits,
+          bool deleteBefore)
 
 {
   UiTextCodeUnitIndex cursorIndex;
@@ -197,7 +197,7 @@ static void UiTextEdit_MoveCursorAndCollapseSelection(UiTextEditControl *edit,co
 /* Shift+Home/End/Left/Right: moves the cursor together with the selection end at the cursor. Home and End
    may move that end across the anchor; the selection is then reordered. Returns false when the cursor
    could not move. */
-static Bool8 UiTextEdit_ExtendSelectionByKey(UiTextEditControl *edit,const uint16_t *buffer,
+static bool UiTextEdit_ExtendSelectionByKey(UiTextEditControl *edit,const uint16_t *buffer,
           UiKeyboardEventCode keyCode)
 
 {
@@ -293,7 +293,7 @@ static UiTextCodeUnitIndex UiRequiredTextEdit_FindPreviousWordStop(const uint16_
 /* Ctrl+Right target. With skipSpaces: forward over the spaces at the cursor. Otherwise: just past the next
    space, or back onto that space when another space follows it; the end of the text when no space follows. */
 static UiTextCodeUnitIndex UiRequiredTextEdit_FindNextWordStop(const uint16_t *textBuffer,
-          UiTextCodeUnitIndex cursorIndex,Bool8 skipSpaces)
+          UiTextCodeUnitIndex cursorIndex,bool skipSpaces)
 
 {
   UiTextCodeUnitIndex wordStop;
@@ -320,14 +320,14 @@ static UiTextCodeUnitIndex UiRequiredTextEdit_FindNextWordStop(const uint16_t *t
 /* Ctrl+Left/Right: moves the cursor to the previous/next word stop. Without Shift the selection collapses
    there; with Shift the selection end at the cursor moves along and the selection is reordered. Ctrl+Left at
    the text start does nothing. */
-static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,Bool8 towardsStart,
-          Bool8 extendSelection)
+static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,bool towardsStart,
+          bool extendSelection)
 
 {
   UiTextCodeUnitIndex formerCursorIndex;
   UiTextCodeUnitIndex wordStop;
   UiTextCodeUnitIndex *selectionBoundary;
-  Bool8 skipSpaces;
+  bool skipSpaces;
 
   formerCursorIndex = control->cursorIndex;
   if (towardsStart && (formerCursorIndex == 0)) {
@@ -384,8 +384,8 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
 {
   UiTextEditControl *edit;
   UiTextCodeUnitIndex clearIndex;
-  Bool8 isAltGrCharacter;
-  Bool8 recomputeLayout;
+  bool isAltGrCharacter;
+  bool recomputeLayout;
 
   edit = UiNode_As<UiTextEditControl>(control);
   if (Any(control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) ||

@@ -58,7 +58,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
   int middleEnd;
   int tileX;
   int frameTop;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   RichTextExtent textExtent;
   uint16_t *resolvedText;
   GraphicsTextureLogicalSize tileSize;

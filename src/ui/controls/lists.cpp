@@ -48,7 +48,7 @@ bool UiListControl_HandleKeyboardNavigation
   Ptr32<void> *newSelectedSlot;
   int rowValue;
   uint32_t targetRowIndex;
-  Bool8 handled;
+  bool handled;
   UiScrollableViewportSize viewportSize;
   
   previousSelectedSlot = control->selectedRowSlot;
@@ -319,7 +319,7 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
   UiListColumn *column;
   Ptr32<void> *rowSlot;
   uint16_t *commandStream;
-  Bool8 accessFailed;
+  bool accessFailed;
   RichTextExtent textExtent;
   GraphicsTextureLogicalSize textureSize;
 
@@ -633,7 +633,7 @@ void UiTextListControl_DrawRowsAndSelection
   int highlightWidth;
   Ptr32<uint16_t> *lastRowSlot;
   Ptr32<uint16_t> *rowSlot;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   RichTextExtent rowExtent;
   GraphicsTextureLogicalSize capSize;
 
@@ -763,7 +763,7 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
   uint32_t pageDownRow;
   UiListRowCount remainingRows;
   Ptr32<uint16_t> *candidateSlot;
-  Bool8 rowBelowKey;
+  bool rowBelowKey;
   UiScrollableViewportSize viewportSize;
 
   previousSelectedSlot = control->selectedRowSlot;

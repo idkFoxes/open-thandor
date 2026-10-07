@@ -20,8 +20,8 @@ bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
           UiSoundSelectableControl *control)
 
 {
-  Bool8 handled;
-  Bool8 activates;
+  bool handled;
+  bool activates;
 
   /* Space activates the focused control (unless disabled); Enter/Escape activate it when the state flags
      bind them. Everything else goes to the default focus handling. */
@@ -122,14 +122,14 @@ void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableCo
    Original quirk: when none is selected, *outNode is the last control of the group and *outIndex is
    controlCount (where the original's search loop stops); some callers use them without testing the result.
 */
-Bool8 UiSelectableGroup_FindVisibleSelected
+bool UiSelectableGroup_FindVisibleSelected
           (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...)
 
 {
   va_list controlArgs;
   UiSelectableControl *control;
   uint32_t controlIndex;
-  Bool8 found;
+  bool found;
 
   /* The control pointers follow controlCount as variadic arguments. */
   va_start(controlArgs,controlCount);
@@ -209,14 +209,14 @@ void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *s
 /* Tells whether a selectable control counts as selected/checked: only a visible (not suppressed)
    control can be.
 */
-uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control)
+bool UiSelectableControl_IsSelected(UiSelectableControl *control)
 
 {
   if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED) &&
      (Any(control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
-    return 1;
+    return true;
   }
-  return 0;
+  return false;
 }
 
 /* Sets or clears the selected/checked state of a selectable control (checkbox, radio or toggle button)

@@ -12,7 +12,7 @@
 /* Slot adapters for the handlers below whose own signature differs from the handler slot's void (void *)
    (calling through the slot type directly would be undefined behaviour). Each does the conversion the call
    through the untyped table did implicitly: the uint32_t handlers (which ignore the value) received the low 32
-   bits of the source pointer, the intptr_t handler the source address, and the Bool8 result is dropped, as the
+   bits of the source pointer, the intptr_t handler the source address, and the bool result is dropped, as the
    action queue never read it. */
 
 static void UiActionSlot_FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(void *source)

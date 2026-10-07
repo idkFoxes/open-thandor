@@ -184,7 +184,7 @@ void Frontend_StateTick()
 {
   FrontendUiImage *frontendRoot; /* passed to the packet handlers */
   uint32_t previousTickCounter;
-  Bool8 callResult;
+  bool callResult;
   void *packet;
   void *packetEndpoint;
 

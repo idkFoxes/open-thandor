@@ -43,7 +43,7 @@ uint32_t g_FrontendPendingPageActionDepth = 0;
 /* Frontend_MainLoop: presents UI frames until a page action is pending, then flushes the input and counts the
    action depth. Returns false instead when no action is pending and the UI root stack is empty (the player
    quit the game). */
-static Bool8 FrontendMainLoop_PresentFramesUntilPageAction()
+static bool FrontendMainLoop_PresentFramesUntilPageAction()
 {
   do {
     if (g_UiRootNode != UI_ROOT_STACK_END) {
@@ -137,7 +137,7 @@ static void FrontendMainLoop_ExchangeScenarioCatalog()
   uint32_t catalogUsedBytes;
   uint8_t *encodedCatalog;
   PckOutputCapacityBytes destinationCapacityBytes;
-  Bool8 encodeOk;
+  bool encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t checkedValue;
@@ -222,7 +222,7 @@ static void FrontendMainLoop_PollScenarioSelectionPage()
 }
 
 /* Frontend_MainLoop: true when every player block has one of the roleStateFlags bits in stateMask. */
-static Bool8 FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags stateMask)
+static bool FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags stateMask)
 {
   FrontendPlayerRuntimeRecord *playerBlock;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
@@ -282,7 +282,7 @@ static void FrontendMainLoop_RunSession(FrontendBooleanState32 loadExistingSessi
    campaign asset is released); a negative successor id or a current level without a record leaves it loaded.
    The record cursors start at the asset base and advance by one CampaignLevelRecord, so level record i is
    levels[0] of the cursor viewed as a CampaignAsset. */
-static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel()
+static bool FrontendMainLoop_SelectCampaignSuccessorLevel()
 {
   CampaignAsset *campaign;
   CampaignAsset *levelRecordView;
@@ -343,7 +343,7 @@ static void FrontendMainLoop_OfferLevelToClients(FrontendLoadedLevelAsset *loade
   ScenarioLevelBundleHeader *bundleHeader;
   AssetAllocationSizeBytes fieldGridAllocationSize;
   uint8_t *encodedImages;
-  Bool8 encodeOk;
+  bool encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t levelEncodedBytes;
@@ -438,7 +438,7 @@ static void FrontendMainLoop_LoadSelectedLevel()
 /* Frontend_MainLoop: rebuilds the menu in the briefing room and loads the level (host and local game) or waits
    for it from the host (client); FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE opens once every player has it.
    Returns false with Frontend_Init's error in *outError when building the menu fails. */
-static Bool8 FrontendMainLoop_EnterMissionBriefing(uint32_t *outError)
+static bool FrontendMainLoop_EnterMissionBriefing(uint32_t *outError)
 {
   FrontendRoleStateFlags *localRoleStateFlags;
 
@@ -461,9 +461,9 @@ static Bool8 FrontendMainLoop_EnterMissionBriefing(uint32_t *outError)
 
 /* Frontend_MainLoop: rebuilds the menu at nextRomRecordId with nextPageAction pending (set even when the build
    fails). Returns false with Frontend_Init's error in *outError when building the menu fails. */
-static Bool8 FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,FrontendPageAction nextPageAction,uint32_t *outError)
+static bool FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,FrontendPageAction nextPageAction,uint32_t *outError)
 {
-  Bool8 menuBuilt;
+  bool menuBuilt;
 
   menuBuilt = Frontend_Init(nextRomRecordId,outError);
   g_FrontendPendingPageAction = nextPageAction;
@@ -473,7 +473,7 @@ static Bool8 FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,FrontendPa
 /* Frontend_MainLoop, after a session: a campaign continues with the successor level in the briefing room. Without
    one, a scenario path left from the session is loaded there again; with none the menu goes back to the scenario
    selection. Returns false with Frontend_Init's error in *outError when building the menu fails. */
-static Bool8 FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
+static bool FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
 {
   if (!FrontendMainLoop_SelectCampaignSuccessorLevel() && (g_FrontendScenarioPathScratchUtf16[0] == 0)) {
     return FrontendMainLoop_RebuildMenu
@@ -486,7 +486,7 @@ static Bool8 FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
    pages only once the peers are ready, otherwise they stay pending); every other action tears the frontend down,
    runs a session if requested and rebuilds the menu. Returns false with Frontend_Init's error in *outError when
    rebuilding the menu fails. */
-static Bool8 FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordId,uint32_t *outError)
+static bool FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordId,uint32_t *outError)
 {
   if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) {
     FrontendNetworkSetupPage_InitializeBackendMode(g_FrontendRootNode);
@@ -555,7 +555,7 @@ static Bool8 FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordI
    the menu is rebuilt at the scenario selection or the entry record. Returns true when the UI root stack
    empties (quit); false with Frontend_Init's error in *outError when building the menu fails.
 */
-Bool8 Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
+bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
 
 {
   uint32_t initError;

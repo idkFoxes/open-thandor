@@ -239,9 +239,9 @@ UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
 /* The results graph columns below: true when the sample has no weight even after the active-faction fallback.
    The original divided by the total regardless (a division by zero when no faction 1..7 is active); bounded here
    because the column is then skipped (logged once). */
-static Bool8 FrontendResultsGraph_RejectZeroWeightTotal(uint32_t weightTotal)
+static bool FrontendResultsGraph_RejectZeroWeightTotal(uint32_t weightTotal)
 {
-  static Bool8 s_loggedZeroWeightTotal;
+  static bool s_loggedZeroWeightTotal;
 
   if (weightTotal != 0) {
     return false;

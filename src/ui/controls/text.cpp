@@ -24,7 +24,7 @@ static uint16_t *UiSingleLineTextControl_GetCommandStream(UiSingleLineTextContro
    itself. */
 static void UiSingleLineTextControl_BlitFocusMarkPiece
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,int markTop,int x,uint32_t subresource,Bool8 shadow)
+          UiPixelCoordinate clipLeft,int markTop,int x,uint32_t subresource,bool shadow)
 
 {
   if (shadow) {
@@ -44,7 +44,7 @@ static void UiSingleLineTextControl_BlitFocusMarkPiece
    (or clipRight). */
 static void UiSingleLineTextControl_DrawFocusMark
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,int markTop,int markLeft,int lineWidth,int capWidth,Bool8 shadow)
+          UiPixelCoordinate clipLeft,int markTop,int markLeft,int lineWidth,int capWidth,bool shadow)
 
 {
   int rightCapX;
@@ -87,7 +87,7 @@ void UiSingleLineTextControl_DrawClipped
   int lineWidth;
   int alignOffsetY;
   int alignOffsetX;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   RichTextExtent textExtent;
   GraphicsTextureLogicalSize tileSize;
 
@@ -214,7 +214,7 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
   UiPackedTextStyle packedStyleOverride;
   uint16_t *commandStream;
   uint32_t textStyle;
-  Bool8 framebufferUnavailable;
+  bool framebufferUnavailable;
   uint16_t *resolvedText;
   
   framebufferUnavailable = g_GraphicsFramebufferBeginAccess();

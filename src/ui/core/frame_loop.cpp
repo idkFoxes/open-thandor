@@ -19,7 +19,7 @@ std::atomic<uint32_t> g_UiPendingFrameTicks{0};
 void UiFrame_ProcessAndPresentWithLockTransition()
 
 {
-  Bool8 lockWasHeld;
+  bool lockWasHeld;
   
   /* the try-acquire takes a free lock, so both paths release it before the frame */
   lockWasHeld = g_SpinLockTryAcquire(g_UiRuntimeFrameLock);
