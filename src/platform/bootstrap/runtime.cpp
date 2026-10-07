@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <thandor/platform/bootstrap/runtime.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
@@ -326,10 +327,7 @@ uint32_t GameData_ResetDefaults()
   }
   /* clears the eight records (0x3A00 bytes) dword by dword, not the image tail */
   dwordCursor = reinterpret_cast<uint32_t *>(g_GameFactionRuntimeImage.records); /* the records as raw dwords */
-  for (remainingCount = sizeof g_GameFactionRuntimeImage.records / 4; remainingCount != 0; remainingCount--) {
-    *dwordCursor = 0;
-    dwordCursor++;
-  }
+  std::fill_n(dwordCursor,sizeof g_GameFactionRuntimeImage.records / 4,0);
   factionRecord = g_GameFactionRuntimeImage.records;
   remainingCount = sizeof g_GameFactionRuntimeImage.records / sizeof g_GameFactionRuntimeImage.records[0];
   factionBit = 1;
@@ -366,10 +364,7 @@ uint32_t GameData_ResetDefaults()
   g_GameStatTableImage = allocPayload;
   g_MemoryApi.free(previousStatTable);
   statTableCursor = static_cast<uint32_t *>(allocPayload);
-  for (remainingCount = GAME_STAT_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-    *statTableCursor = 0;
-    statTableCursor++;
-  }
+  statTableCursor = std::fill_n(statTableCursor,GAME_STAT_TABLE_BYTES / 4,0);
   statTableCursor[-1] = UINT32_MAX; /* end marker */
   g_GameFactionRuntimeImage.tail.periodicClockTick = 0;
   return 0;
@@ -387,17 +382,12 @@ Bool8 GameData_LoadExternalTables()
   void *previousStatTable;
   uint32_t *oldUnitBuffer;
   uint32_t *clearCursor;
-  int remainingCount;
   uint32_t *sourceCursor;
   uint32_t *destinationCursor;
   void *statTable;
 
   clearCursor = g_GameDataAuxState.pairPressureMatrix8x8;
-  for (remainingCount = sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4; remainingCount != 0;
-      remainingCount--) {
-    *clearCursor = 0;
-    clearCursor++;
-  }
+  std::fill_n(clearCursor,sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4,0);
   if (!Package_LoadEntryIntoBuffer
                     (GAME_FACTION_IMAGE_BYTES,reinterpret_cast<uint8_t *>(&g_GameFactionRuntimeImage), /* loaded as raw image bytes */
                      g_DatenHexPathUtf16,nullptr)) {
@@ -413,15 +403,9 @@ Bool8 GameData_LoadExternalTables()
   oldUnitBuffer = static_cast<uint32_t *>(Package_LoadEntry(g_OldunitHexPathUtf16,nullptr));
   if (oldUnitBuffer == nullptr) {
     clearCursor = g_OldUnitPrimaryTable;
-    for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-      *clearCursor = 0;
-      clearCursor++;
-    }
+    std::fill_n(clearCursor,OLD_UNIT_PRIMARY_TABLE_BYTES / 4,0);
     clearCursor = g_OldUnitSecondaryTable;
-    for (remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-      *clearCursor = 0;
-      clearCursor++;
-    }
+    std::fill_n(clearCursor,OLD_UNIT_SECONDARY_TABLE_BYTES / 4,0);
     g_OldUnitRecordCount = 0;
     return false;
   }
@@ -437,17 +421,10 @@ Bool8 GameData_LoadExternalTables()
   }
   sourceCursor = oldUnitBuffer + 1;
   destinationCursor = g_OldUnitPrimaryTable;
-  for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-    *destinationCursor = *sourceCursor;
-    sourceCursor++;
-    destinationCursor++;
-  }
+  std::copy_n(sourceCursor,OLD_UNIT_PRIMARY_TABLE_BYTES / 4,destinationCursor);
+  sourceCursor += OLD_UNIT_PRIMARY_TABLE_BYTES / 4;
   destinationCursor = g_OldUnitSecondaryTable;
-  for (remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-    *destinationCursor = *sourceCursor;
-    sourceCursor++;
-    destinationCursor++;
-  }
+  std::copy_n(sourceCursor,OLD_UNIT_SECONDARY_TABLE_BYTES / 4,destinationCursor);
   Resource_Release(oldUnitBuffer);
   return false;
 }

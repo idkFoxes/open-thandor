@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <thandor/movie/runtime/playback.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -85,7 +86,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   uint32_t trackIndex;
   uint32_t trackOffset;
   uint32_t trackBytes;
-  void *audioSample;
+  ArenaScoped audioSample; /* the track's sample, freed on return as before */
   uint32_t seekError;
   uint32_t allocError;
   uint32_t loadError;
@@ -113,18 +114,17 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   if (seekError != 0) {
     return seekError;
   }
-  allocError = g_MemoryApi.alloc(trackBytes,&audioSample);
+  allocError = audioSample.allocate(trackBytes);
   if (allocError != 0) {
     return allocError;
   }
-  loadError = g_FileSystemReadExact(trackBytes,audioSample,handle);
+  loadError = g_FileSystemReadExact(trackBytes,audioSample.get(),handle);
   if (loadError == 0) {
-    loadError = g_SoundCreateSampleVoiceSet(static_cast<SoundSampleAsset *>(audioSample),&voiceSet);
+    loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),&voiceSet);
     if (loadError == 0) {
       *outVoiceSet = voiceSet;
     }
   }
-  g_MemoryApi.free(audioSample);
   return loadError;
 }
 
@@ -162,7 +162,6 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   void *handle;
   uint32_t *copySource;
   uint32_t *copyDestination;
-  int copyCount;
   MovieSubresourceCount frameWidth;
   MoviePaletteBankCount frameHeight;
   MovieAudioGainQ15 defaultAudioGain;
@@ -247,11 +246,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   }
   copySource = reinterpret_cast<uint32_t *>(g_PackageScratchBuffer);
   copyDestination = static_cast<uint32_t *>(allocPayload);
-  for (copyCount = MOVIE_FILE_HEADER_BYTES / 4; copyCount != 0; copyCount--) {
-    *copyDestination = *copySource;
-    copySource++;
-    copyDestination++;
-  }
+  std::copy_n(copySource,MOVIE_FILE_HEADER_BYTES / 4,copyDestination);
   header = static_cast<MovieFileHeader *>(allocPayload);
   initialVideoBytes = header->videoStreamBytes;
   if ((MOVIE_INITIAL_VIDEO_MAX_BYTES < initialVideoBytes) && (movieOpenFlags != 0)) {
@@ -523,7 +518,6 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
 {
   uint32_t readOffset;
   uint32_t loadedSize;
-  uint32_t dwordsLeft;
   uint32_t *copySource;
   uint32_t *copyDestination;
 
@@ -535,11 +529,8 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
         reinterpret_cast<uint32_t *>(Thandor_Bytes(movie->fileHeader.get()) + readOffset - MOVIE_COMPACT_SHIFT_BYTES);
     movie->loadedVideoEnd = movie->loadedVideoEnd - MOVIE_COMPACT_SHIFT_BYTES;
     copySource = Thandor_At<uint32_t>(copyDestination, MOVIE_COMPACT_SHIFT_BYTES);
-    for (dwordsLeft = (loadedSize - readOffset) >> 2; dwordsLeft != 0; dwordsLeft--) {
-      *copyDestination = *copySource;
-      copySource++;
-      copyDestination++;
-    }
+    /* the ranges overlap (destination below source): a forward copy, as the dword loop was */
+    std::copy_n(copySource,(loadedSize - readOffset) >> 2,copyDestination);
   }
 }
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/session/savegame.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -340,7 +341,6 @@ InGameSaveGame_PrepareRegistrationRecords
   uint32_t auxiliaryOffset;
   uint32_t nestedCount;
   uint32_t payloadOffset;
-  uint32_t clearCount;
   uint32_t *recordDword;
   uint32_t *nestedOffset;
   ArmyRuntimeSlot *ownerArmy;
@@ -359,10 +359,7 @@ InGameSaveGame_PrepareRegistrationRecords
     if ((recordCursor->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) == 0) {
       /* free record: zero its 0x40 dwords */
       recordDword = SaveImage_Dwords(recordCursor);
-      for (clearCount = sizeof(ResourceRegistrationRecordSavedView) / 4; clearCount != 0; clearCount--) {
-        *recordDword = 0;
-        recordDword++;
-      }
+      std::fill_n(recordDword,sizeof(ResourceRegistrationRecordSavedView) / 4,0);
     }
     else {
       primaryOffset = recordCursor->primarySavedIdOrOffset;

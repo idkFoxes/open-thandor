@@ -39,4 +39,40 @@ uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory);
 
 extern MemoryApiTable g_MemoryApi;
 
+/* ArenaScoped: one arena block owned by a function scope and freed through the memory API when the scope ends
+   (step 13 R5, owner decision D6). Only for blocks whose free is the last arena operation of the scope on every
+   path: block addresses are sort keys and the simulation depends on the alloc/free order, so the guard must free
+   exactly where the explicit free stood (nothing but plain stores and returns may follow it). Global or
+   escaping blocks stay explicit. */
+class ArenaScoped {
+public:
+  ArenaScoped() = default;
+  ArenaScoped(const ArenaScoped &) = delete;
+  ArenaScoped &operator=(const ArenaScoped &) = delete;
+  ~ArenaScoped()
+  {
+    if (m_block != nullptr) {
+      g_MemoryApi.free(m_block);
+    }
+  }
+
+  /* Allocates bytes from the arena into this guard (which holds no block yet); returns the status, 0 on success.
+     On failure the guard stays empty. */
+  uint32_t allocate(uint32_t bytes)
+  {
+    void *payload = nullptr;
+    uint32_t status = g_MemoryApi.alloc(bytes, &payload);
+    if (status == 0) {
+      m_block = payload;
+    }
+    return status;
+  }
+
+  void *get() const { return m_block; }
+  template <class T> T *as() const { return static_cast<T *>(m_block); }
+
+private:
+  void *m_block = nullptr;
+};
+
 #endif /* THANDOR_CORE_MEMORY_ALLOCATOR_H */

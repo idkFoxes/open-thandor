@@ -7,6 +7,7 @@
 
 #include <thandor/core/bytes.h>
 #include <thandor/ui/frontend/session.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -208,7 +209,6 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontend
   FrontendSessionDiscoveryRecord *sourceRecord;
   FrontendSessionDiscoveryRecord *destinationRecord;
   UiListRowCount rowsRemaining;
-  int dwordsRemaining;
   Ptr32<void> *rowSlotCursor;
   Ptr32<FrontendSessionDiscoveryRecord> *rowPointerCursor;
   uint32_t *sourceDwordCursor;
@@ -246,12 +246,8 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendUiImage *frontend
       if (destinationDwordCursor != sourceDwordCursor) {
         sourceDwordCursor = reinterpret_cast<uint32_t *>(sourceRecord);
         destinationDwordCursor = reinterpret_cast<uint32_t *>(destinationRecord);
-        for (dwordsRemaining = sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t); dwordsRemaining != 0;
-            dwordsRemaining--) {
-          *destinationDwordCursor = *sourceDwordCursor;
-          sourceDwordCursor++;
-          destinationDwordCursor++;
-        }
+        destinationDwordCursor = std::copy_n(sourceDwordCursor,sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t),destinationDwordCursor);
+        sourceDwordCursor += sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t);
       }
     }
     rowSlotCursor++;
