@@ -16,7 +16,7 @@
    Called directly by ArmyPlacement_CanPlaceMobileUnit.
 */
 
-Bool8 ArmyCollision_TestPointAgainstRuntimeList
+bool ArmyCollision_TestPointAgainstRuntimeList
           (Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,WorldRuntimeContext *worldRuntime)
 
 {
@@ -24,7 +24,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
   DepthBinMask32 firstMaskHigh;
   DepthBinMask32 firstMaskLow;
   WorldOwnerListNode *ownerNode;
-  Bool8 hit;
+  bool hit;
 
   placementRadiusQ12 = modelDefinition->footprintRadius;
   ownerNode = worldRuntime->ownerListHead;
@@ -65,7 +65,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
   ModelRuntimeNode *currentModelNode;
   uint32_t clearanceRadiusQ12;
   ModelRuntimeSlot *candidateModelRuntime;
-  Bool8 hit;
+  bool hit;
   ModelRuntimeNode *candidateModelNode;
   
   currentModelNode = currentRuntime->modelNodeRuntime;
@@ -115,7 +115,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
    ArmyPlacement_CanPlaceAnchoredModel.
 */
 
-Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
+bool ArmyPlacementCollision_TestPointAgainstRuntimeList
           (ArmyPlacementCollisionFilterFlags placementFilterFlags,Q12 queryRadiusQ12,Q12 worldXQ12,
           Q12 worldYQ12,WorldRuntimeContext *worldRuntime)
 
@@ -124,7 +124,7 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
   DepthBinMask32 firstMaskHigh;
   DepthBinMask32 firstMaskLow;
   WorldOwnerListNode *ownerNode;
-  Bool8 hit;
+  bool hit;
 
   ownerNode = worldRuntime->ownerListHead;
   if ((queryRadiusQ12 == 0) || (ownerNode == nullptr)) {
@@ -180,7 +180,7 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
    heap address is not guaranteed to lie at or above 0x400000. The decisions are the original's.
 */
 
-Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
+bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
           (WorldOwnerListNode *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
           ModelRuntimeSlot *candidateRuntime,Q12 radiusQ12,WorldRuntimeContext *worldRuntime)
 
@@ -189,8 +189,8 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   uint32_t modelClassId;
   WorldOwnerListNode *candidateNode;
   intptr_t queryRadiusQ12;
-  Bool8 candidateIsRuntime;
-  Bool8 hit;
+  bool candidateIsRuntime;
+  bool hit;
   WorldOwnerListNode *ownerNode;
 
   candidateIsRuntime = candidateRuntime != nullptr;
@@ -275,7 +275,7 @@ bool ArmyPlacementCollision_TestCurrentRuntime
   int deltaYQ12;
   ModelRuntimeNode *ownerNode;
   ModelRuntimeSlot *neighbor;
-  Bool8 blocked;
+  bool blocked;
   bool (*terrainTest)(FieldGridRadiusUnits,Q12,Q12,Q12,FieldGridAsset *);
   ModelRuntimeNode *rootNode;
 
@@ -352,7 +352,7 @@ bool ArmyPlacementCollision_TestCurrentRuntime
    Called directly by the runtime-list collision scans in this file and by the movement code
    (gameplay/army/drive_ground.cpp, drive_banking.cpp, walker.cpp, class_updates.cpp).
 */
-Bool8 ArmyCollision_TestPointWithinExpandedRuntimeRadius
+bool ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeSlot *modelRuntime)
 
 {

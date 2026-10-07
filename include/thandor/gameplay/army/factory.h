@@ -33,12 +33,12 @@ void ArmyRuntimeClass_UpdateUnitFactory
 void ArmyRuntimeClass_UpdateStructureFactory
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
-Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
+bool ArmyRuntimeSpawner_CreateLinkedChildInstance
           (WorldMotionValue78 inheritedValue78,WorldMotionValue74 inheritedValue74,
           WorldMotionValue70 inheritedValue70,PckArmyAssetIdCatalog linkedArmyAssetId,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeLinkedChildMaskSlotView *armyRuntime);
 
-Bool8 ArmyRuntime_TestArmyNearFactoryExit
+bool ArmyRuntime_TestArmyNearFactoryExit
           (ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime);
 
 uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedChildMaskSlotView *armyRuntime);

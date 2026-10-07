@@ -16,7 +16,7 @@ AiKnowledgeDataImage *g_AiKnowledgeData = nullptr;
    report a nonzero count, the mode-4 query must fail, and the count rounded up to whole separation quanta must be
    at most 4; the result is then that of AiPlacement_ReserveSeparatedSpecialSiteChain. True means rejected.
 */
-Bool8 AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -58,7 +58,7 @@ Bool8 AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId
 void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  Bool8 hasEntry;
+  bool hasEntry;
   uint32_t siteWeight;
 
   hasEntry = AiSecondaryWorkspace_HasEntryById(ARM_0050_UNIT_MDL0103);
@@ -244,7 +244,7 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
 
 
 /* True when the cell lies within 2.0 of the 1:5 marker of any class-13 structure in workspace 00. */
-static Bool8 AiSiteCandidate_IsNearClass13StructureMarker(const FieldGridCell *terrainFeatureCell)
+static bool AiSiteCandidate_IsNearClass13StructureMarker(const FieldGridCell *terrainFeatureCell)
 
 {
   uint32_t remainingCount;
@@ -279,7 +279,7 @@ static Bool8 AiSiteCandidate_IsNearClass13StructureMarker(const FieldGridCell *t
 /* Scans the workspace-00 structures for the smallest Manhattan distance to the cell (INT32_MAX when none has a
    runtime slot). Returns false, leaving *outNearestDistance unset, as soon as a structure of the same asset lies
    closer than terrainFeatureMinimumAxisSeparationQ12 on both axes. */
-static Bool8 AiSiteCandidate_FindNearestStructureDistance(const FieldGridCell *terrainFeatureCell,
+static bool AiSiteCandidate_FindNearestStructureDistance(const FieldGridCell *terrainFeatureCell,
           PckArmyAssetIdCatalog featureAssetId,int *outNearestDistance)
 
 {
@@ -407,7 +407,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
 /* Runs the mode-0 placement query for the asset at a workspace cell (its position and heading) and returns the
    query's result inverted: true when the asset cannot be placed there.
 */
-Bool8 AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           ArmyPlacementContext placementContext,WorldRuntimeContext *worldRuntime)
 
 {
@@ -421,7 +421,7 @@ Bool8 AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,F
 /* Runs the mode-4 placement query for the asset at a workspace cell (its position and heading) and returns
    the query's result inverted: true when the asset cannot be placed there in that mode.
 */
-Bool8 AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -437,7 +437,7 @@ Bool8 AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,F
    specialSiteSeparationQuantumQ12 units; otherwise the result is 0. Returns false (*outBucketCount untouched)
    only when both the mode-3 and the mode-0 query fail; otherwise stores the count and returns true.
 */
-Bool8 AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outBucketCount)
 
 {
@@ -480,7 +480,7 @@ Bool8 AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetI
    one separation quantum (rounded up). More than 4 quanta accept the site outright; 1-4 quanta accept it only
    when AiPlacement_ReserveSeparatedSpecialSiteChain reports true. True means rejected.
 */
-Bool8 AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -519,7 +519,7 @@ Bool8 AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,Fiel
    scaled by (2 * unpowered + supplied energy demand) / (tritiumCurrentQ4 << 8) when the faction has tritium.
    Returns true with the weight in *outWeight; false (*outWeight untouched) when no site qualifies.
 */
-Bool8 AiCandidatePlanning_ComputeSpecialSiteWeight
+bool AiCandidatePlanning_ComputeSpecialSiteWeight
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outWeight)
 
 {
@@ -530,7 +530,7 @@ Bool8 AiCandidatePlanning_ComputeSpecialSiteWeight
   int tritiumScaled;
   uint32_t weight;
   AiTerrainFeatureWorkspaceEntry *featureEntry;
-  Bool8 clusterRejected;
+  bool clusterRejected;
   AiKnowledgeDataImage *knowledgeData;
 
   knowledgeData = g_AiKnowledgeData;
@@ -575,7 +575,7 @@ Bool8 AiCandidatePlanning_ComputeSpecialSiteWeight
    *outWorldXQ12, or returns false (outputs untouched) when no such cell exists.
    Note the argument order: Y first, then X, like ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
-Bool8 AiPlacement_FindNearestPlaceableBaseSite
+bool AiPlacement_FindNearestPlaceableBaseSite
           (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,Q12 *outWorldYQ12,
           Q12 *outWorldXQ12)
@@ -654,7 +654,7 @@ static uint32_t AiPlacement_AnchorManhattanDistanceToCell(Q12 anchorYQ12,Q12 anc
    that far or an anchor/instance is missing. Every temporary instance is destroyed again before returning; the
    armyAssetId argument is not used.
 */
-Bool8 AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -664,7 +664,7 @@ Bool8 AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAss
   Q12 anchorXQ12;
   Q12 anchorYQ12;
   AiKnowledgeDataImage *knowledgeData;
-  Bool8 rejected;
+  bool rejected;
 
   knowledgeData = g_AiKnowledgeData;
   rejected = true;

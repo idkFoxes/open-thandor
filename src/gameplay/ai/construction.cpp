@@ -74,7 +74,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
    330/332 site, other ids below 340 at a reachable candidate, ids from 340 on near the faction anchor.
    Returns true as soon as a handler has placed an asset (g_AiConstructionPendingAssetConsumedCount).
 */
-Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
+bool AiConstructionPlanner_ProcessPendingAssetRequests
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -132,7 +132,7 @@ Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
    class command dispatched, the removal effect of its model definition started at the node and the asset
    removed from the faction's pending list. Returns true when the attempt is over (asset created, or its creation
    failed), false when the site is not usable. */
-static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
+static bool AiConstructionPlanner_TryPlaceStorageAtResourceSite
           (AiTerrainFeatureWorkspaceEntry *siteEntry,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 {
@@ -180,7 +180,7 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
 
 /* Runs AiConstructionPlanner_TryPlaceStorageAtResourceSite for every workspace-08 site of siteAssetId in order;
    returns true as soon as one attempt is over. */
-static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSitesOf
+static bool AiConstructionPlanner_TryPlaceStorageAtResourceSitesOf
           (PckArmyAssetIdCatalog siteAssetId,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 {
@@ -278,7 +278,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
   FieldGridCell *bestCell;
   int bestScore;
   FieldGridCell *candidateCell;
-  Bool8 siteDistanceInRange;
+  bool siteDistanceInRange;
 
   if ((g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0) ||
      (g_AiWorkspace09Count == 0)) {
@@ -352,7 +352,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   int remainingCells;
   int distanceY;
   FieldGridCell **gridCellCursor;
-  Bool8 regionUnreachable;
+  bool regionUnreachable;
   ArmyAssetRecordPrefix *armyAsset;
   ModelDefinitionRecordPrefix *modelDefinition;
   FieldGridCell *bestCell;

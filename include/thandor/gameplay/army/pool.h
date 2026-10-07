@@ -37,7 +37,7 @@ inline constexpr int ARMY_GRAPHICS_PALETTE_TABLE_OFFSET = 0x200; /* first palett
 inline constexpr int ARMY_GRAPHICS_PALETTE_BYTES = 0x800; /* 256 entries of 8 bytes */
 inline constexpr int ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS = 0x400; /* 0x1000 bytes of pixel data */
 
-Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError);
+bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError);
 
 void ArmyRuntime_ShutdownPoolAndGraphics();
 

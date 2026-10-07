@@ -30,7 +30,7 @@ void ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
 void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *node);
 
-Bool8 ArmyRuntimeNode_DispatchTypedCallback(Ptr32<ArmyRuntimeSlot> *armyRuntimeHolder,WorldRuntimeContext *worldRuntime);
+bool ArmyRuntimeNode_DispatchTypedCallback(Ptr32<ArmyRuntimeSlot> *armyRuntimeHolder,WorldRuntimeContext *worldRuntime);
 
 void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime);
 
