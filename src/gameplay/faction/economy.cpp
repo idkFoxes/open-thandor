@@ -19,12 +19,12 @@ static const uint32_t g_FactionEnergyAllocationPriorityByModelClass[24] = {
 
 /* Energy consumer of the faction economy, collected into the region scratch buffer
    (g_TerrainRegionCollectionEntries) as 16-byte entries, at most 256. */
-typedef struct FactionEnergyConsumerEntry {
+struct FactionEnergyConsumerEntry {
   uint32_t modelRuntime; /* the consumer's model runtime (pointer value) */
   uint32_t factionIndex;
   EnergyDemandQ4 demandQ4; /* model runtime classState.energyLoadQ4 */
   uint32_t priority; /* g_FactionEnergyAllocationPriorityByModelClass[runtime class] */
-} FactionEnergyConsumerEntry;
+};
 
 /* Economy step 1, per faction: reset the step's energy demand and extraction rates, decay the faction's row of
    the pair-pressure matrix by 7/8, count the notification/anchor cooldowns down (anchorCooldown1/2 are the

@@ -12,15 +12,15 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef struct EntityPathingPriorityPair EntityPathingPriorityPair, *PEntityPathingPriorityPair;
-typedef struct GridScratchCell GridScratchCell, *PGridScratchCell;
-typedef struct GridPathBestUnreachableCell GridPathBestUnreachableCell, *PGridPathBestUnreachableCell;
-typedef struct EntityPathingRouteEntityRuntimeView EntityPathingRouteEntityRuntimeView, *PEntityPathingRouteEntityRuntimeView;
-typedef struct WorldPositionXY WorldPositionXY, *PWorldPositionXY;
-typedef struct ArmyMovementRuntime ArmyMovementRuntime;
-typedef struct GameEntityRuntime GameEntityRuntime;
-typedef struct ModelDefinition ModelDefinition;
-typedef struct ModelRuntimeNode ModelRuntimeNode;
+struct EntityPathingPriorityPair;
+struct GridScratchCell;
+struct GridPathBestUnreachableCell;
+struct EntityPathingRouteEntityRuntimeView;
+struct WorldPositionXY;
+struct ArmyMovementRuntime;
+struct GameEntityRuntime;
+struct ModelDefinition;
+struct ModelRuntimeNode;
 
 using PriorityPairHeapCount = int;
 

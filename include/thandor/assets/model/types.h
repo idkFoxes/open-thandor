@@ -16,12 +16,12 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/ui/ingame/types.h>
 
-typedef struct ModelDefinitionRecordPrefix ModelDefinitionRecordPrefix, *PModelDefinitionRecordPrefix;
-typedef struct ModelDefinition ModelDefinition, *PModelDefinition;
-typedef struct ModelDefinitionResolveView ModelDefinitionResolveView, *PModelDefinitionResolveView;
-typedef struct ModelAssetHeader ModelAssetHeader, *PModelAssetHeader;
-typedef struct EffectDefinition EffectDefinition;
-typedef struct ShotDefinition ShotDefinition;
+struct ModelDefinitionRecordPrefix;
+struct ModelDefinition;
+struct ModelDefinitionResolveView;
+struct ModelAssetHeader;
+struct EffectDefinition;
+struct ShotDefinition;
 
 struct ModelDefinitionRecordPrefix {
     AssetRecordByteCount byteSize;

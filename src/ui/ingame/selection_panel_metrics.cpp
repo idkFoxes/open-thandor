@@ -11,7 +11,7 @@
 /* Module data. */
 
 /* Clip rectangle and screen bounds of one metric frame plus the advances of its four corner cells. */
-typedef struct SelectionPanelMetricFrame {
+struct SelectionPanelMetricFrame {
   UiPixelCoordinate clipBottom;
   UiPixelCoordinate clipRight;
   UiPixelCoordinate clipTop;
@@ -24,7 +24,7 @@ typedef struct SelectionPanelMetricFrame {
   SelectionPanelCellAdvance topRight;
   SelectionPanelCellAdvance bottomLeft;
   SelectionPanelCellAdvance bottomRight;
-} SelectionPanelMetricFrame;
+};
 
 /* Four plain corner cells (entities of other factions). */
 static void SelectionPanelMetrics_DrawPlainCorners(SelectionPanelMetricFrame *frame)

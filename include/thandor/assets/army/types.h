@@ -13,10 +13,10 @@
 #include <thandor/core/types.h>
 #include <thandor/graphics/resources/types.h>
 
-typedef struct ArmyAssetRecordPrefix ArmyAssetRecordPrefix, *PArmyAssetRecordPrefix;
-typedef struct ArmyAssetRecord ArmyAssetRecord, *PArmyAssetRecord;
-typedef struct ArmyAssetHeader ArmyAssetHeader, *PArmyAssetHeader;
-typedef struct GeneratedAssetRecordCountHeader GeneratedAssetRecordCountHeader, *PGeneratedAssetRecordCountHeader;
+struct ArmyAssetRecordPrefix;
+struct ArmyAssetRecord;
+struct ArmyAssetHeader;
+struct GeneratedAssetRecordCountHeader;
 
 using AssetRecordByteCount = uint32_t;
 

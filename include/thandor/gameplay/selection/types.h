@@ -12,11 +12,11 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef struct SelectionInfoEntitySlots SelectionInfoEntitySlots, *PSelectionInfoEntitySlots;
-typedef struct SelectionPlayerPairRecord SelectionPlayerPairRecord, *PSelectionPlayerPairRecord;
-typedef struct SelectionPointerArray32 SelectionPointerArray32, *PSelectionPointerArray32;
-typedef struct SelectionPlayerRuntimeBlock SelectionPlayerRuntimeBlock, *PSelectionPlayerRuntimeBlock;
-typedef struct GameEntityRuntime GameEntityRuntime;
+struct SelectionInfoEntitySlots;
+struct SelectionPlayerPairRecord;
+struct SelectionPointerArray32;
+struct SelectionPlayerRuntimeBlock;
+struct GameEntityRuntime;
 
 using SelectionMarkerCoordinateValue32 = uint32_t;
 

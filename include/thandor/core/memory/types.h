@@ -12,9 +12,9 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef struct ArenaBlockHeader ArenaBlockHeader, *PArenaBlockHeader;
-typedef struct ArenaState ArenaState, *PArenaState;
-typedef struct MemoryApiTable MemoryApiTable, *PMemoryApiTable;
+struct ArenaBlockHeader;
+struct ArenaState;
+struct MemoryApiTable;
 
 inline constexpr auto ARENA_HEAP_CORRUPT = 0x13; /* error code: the arena block chain is corrupt (bad stateMagic) */
 

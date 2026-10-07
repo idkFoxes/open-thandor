@@ -24,7 +24,7 @@ using RichTextMarkupParseResult = int;
 
 /* Parser state of RichTextMarkup_ParseAndBuildStringAsset. tagStarts/tagKeys receive the (string start, key)
    pair of every '#<' in order (the original pushes these pairs on the machine stack). */
-typedef struct RichTextMarkupParser {
+struct RichTextMarkupParser {
   uint8_t *markupCursor;
   uint16_t *outputCursor;
   uint32_t remainingCapacityBytes;
@@ -34,7 +34,7 @@ typedef struct RichTextMarkupParser {
   uint32_t tagCount;
   uint16_t **tagStarts;
   int32_t *tagKeys;
-} RichTextMarkupParser;
+};
 
 /* Appends one code unit to the output; false when no more than 2 bytes are left. */
 static Bool8 RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t codeUnit)

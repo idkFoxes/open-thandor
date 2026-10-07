@@ -12,16 +12,16 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/platform/bootstrap/types.h>
 
-typedef struct _OVERLAPPED _OVERLAPPED, *P_OVERLAPPED;
-typedef union _union_518 _union_518, *P_union_518;
-typedef struct _struct_519 _struct_519, *P_struct_519;
-typedef struct _SECURITY_ATTRIBUTES _SECURITY_ATTRIBUTES, *P_SECURITY_ATTRIBUTES;
-typedef struct _SYSTEMTIME _SYSTEMTIME, *P_SYSTEMTIME;
-typedef struct HWND__ HWND__, *PHWND__;
-typedef struct Win32SystemTime16 Win32SystemTime16, *PWin32SystemTime16;
-typedef struct LocaleSystemState LocaleSystemState, *PLocaleSystemState;
-typedef struct _FILETIME _FILETIME;
-typedef struct _WIN32_FIND_DATAA _WIN32_FIND_DATAA;
+struct _OVERLAPPED;
+union _union_518;
+struct _struct_519;
+struct _SECURITY_ATTRIBUTES;
+struct _SYSTEMTIME;
+struct HWND__;
+struct Win32SystemTime16;
+struct LocaleSystemState;
+struct _FILETIME;
+struct _WIN32_FIND_DATAA;
 
 using DWORD = uint32_t;
 
@@ -75,7 +75,7 @@ struct _SYSTEMTIME {
 
 using CHAR = char;
 
-typedef struct _OVERLAPPED *LPOVERLAPPED;
+using LPOVERLAPPED = struct _OVERLAPPED *;
 
 using ThreadStartRoutineFunction = DWORD __stdcall (LPVOID); /* function type of a thread entry (__stdcall, as in the SDK) */
 
@@ -83,15 +83,15 @@ using PTHREAD_START_ROUTINE = ThreadStartRoutineFunction *;
 
 using LPTHREAD_START_ROUTINE = PTHREAD_START_ROUTINE;
 
-typedef struct _SECURITY_ATTRIBUTES *LPSECURITY_ATTRIBUTES;
+using LPSECURITY_ATTRIBUTES = struct _SECURITY_ATTRIBUTES *;
 
-typedef struct _WIN32_FIND_DATAA *LPWIN32_FIND_DATAA;
+using LPWIN32_FIND_DATAA = struct _WIN32_FIND_DATAA *;
 
-typedef struct _SYSTEMTIME *LPSYSTEMTIME;
+using LPSYSTEMTIME = struct _SYSTEMTIME *;
 
 using va_list = char *;
 
-typedef struct HWND__ *HWND;
+using HWND = struct HWND__ *;
 
 using UINT = uint32_t;
 
@@ -184,7 +184,7 @@ using HMODULE = HINSTANCE;
 
 using LPLONG = long *;
 
-typedef struct _FILETIME *LPFILETIME;
+using LPFILETIME = struct _FILETIME *;
 
 using FARPROC = int (*)();
 

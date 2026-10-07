@@ -13,14 +13,14 @@
 #include <thandor/core/types.h>
 #include <thandor/ui/controls/types.h>
 
-typedef struct TH_LEGACY_GUID TH_LEGACY_GUID, *PTH_LEGACY_GUID;
-typedef struct GraphicsAdapterRecord GraphicsAdapterRecord, *PGraphicsAdapterRecord;
-typedef struct GraphicsCursorInputEvent18 GraphicsCursorInputEvent18, *PGraphicsCursorInputEvent18;
-typedef struct GraphicsCursorFrameRecord GraphicsCursorFrameRecord, *PGraphicsCursorFrameRecord;
-typedef struct GraphicsPaletteEntry GraphicsPaletteEntry, *PGraphicsPaletteEntry;
-typedef struct CursorPointerEvent CursorPointerEvent, *PCursorPointerEvent;
-typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
-typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess;
+struct TH_LEGACY_GUID;
+struct GraphicsAdapterRecord;
+struct GraphicsCursorInputEvent18;
+struct GraphicsCursorFrameRecord;
+struct GraphicsPaletteEntry;
+struct CursorPointerEvent;
+struct GraphicsTextureSourceAsset;
+struct SoftwareFramebufferAccess;
 
 /* Callback/function-definition ABIs. */
 using GraphicsCursorSetFrameProc = Bool8 (uint32_t frameIndex);

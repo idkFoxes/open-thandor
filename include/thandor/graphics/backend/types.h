@@ -14,15 +14,15 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/ui/frontend/types.h>
 
-typedef struct GraphicsDisplayMode GraphicsDisplayMode, *PGraphicsDisplayMode;
-typedef struct SoftwarePixelFormatConfig SoftwarePixelFormatConfig, *PSoftwarePixelFormatConfig;
-typedef struct SoftwareRasterScalarMmxLane SoftwareRasterScalarMmxLane, *PSoftwareRasterScalarMmxLane;
-typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess, *PSoftwareFramebufferAccess;
-typedef struct SoftwarePixelPackTables SoftwarePixelPackTables, *PSoftwarePixelPackTables;
-typedef struct SoftwareRasterTextureAddressState SoftwareRasterTextureAddressState, *PSoftwareRasterTextureAddressState;
-typedef struct SoftwareRasterTexCoordFixed2 SoftwareRasterTexCoordFixed2, *PSoftwareRasterTexCoordFixed2;
-typedef struct SoftwareRasterScanState SoftwareRasterScanState, *PSoftwareRasterScanState;
-typedef struct SoftwareRasterColorFixed4 SoftwareRasterColorFixed4, *PSoftwareRasterColorFixed4;
+struct GraphicsDisplayMode;
+struct SoftwarePixelFormatConfig;
+struct SoftwareRasterScalarMmxLane;
+struct SoftwareFramebufferAccess;
+struct SoftwarePixelPackTables;
+struct SoftwareRasterTextureAddressState;
+struct SoftwareRasterTexCoordFixed2;
+struct SoftwareRasterScanState;
+struct SoftwareRasterColorFixed4;
 
 /* Display-mode switch slot (g_GraphicsSetDisplayMode and its chained hooks): true on success; on failure
    returns false and stores the error code (or message) in *errorCode, which is left untouched on success. */

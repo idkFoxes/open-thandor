@@ -1076,11 +1076,11 @@ static const uint8_t s_ModelLightingOriginalCode004CCFF0[0x1B0] = {
 };
 
 /* One piece of the original address window: original bytes start..end live at variable (read as bytes). */
-typedef struct ModelLightingOriginalRange {
+struct ModelLightingOriginalRange {
   uint32_t start;
   uint32_t end;
   const void *variable;
-} ModelLightingOriginalRange;
+};
 
 /* The original address window 0x004C6D54..0x004CD1A0 (whole variables listed, covers the default path's reach
    0x004C91A0..0x004CD1A0), in address order and without holes. */

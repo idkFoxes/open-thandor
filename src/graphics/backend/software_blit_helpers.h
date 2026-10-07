@@ -36,7 +36,7 @@ the same.
 */
 
 /* One clipped image in the framebuffer, and where its first texel is. */
-typedef struct BlitRegion {
+struct BlitRegion {
     const uint8_t *texels;    /* texel of the top-left drawn pixel */
     int texelBytes;        /* 1 (palette index) or 4 (ARGB) */
     int texelStride;       /* bytes per source row */
@@ -46,7 +46,7 @@ typedef struct BlitRegion {
     int pixelStride;       /* bytes per framebuffer row (framebuffer->width pixels) */
     int width;             /* drawn size in pixels, both > 0 */
     int height;
-} BlitRegion;
+};
 
 static inline int Blit_IsTransparent(uint32_t argb)
 {

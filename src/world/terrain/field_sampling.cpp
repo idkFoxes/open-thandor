@@ -16,7 +16,7 @@
    `cell` is split along the diagonal from its right neighbour (cell[1]) to its lower neighbour
    (cell[rowLength]): columnFraction + rowFraction < 1 is the triangle (cell, right, lower), otherwise
    (lower-right, lower, right). */
-typedef struct FieldGridTriangleLookup {
+struct FieldGridTriangleLookup {
   FieldGridCell *cell; /* top-left cell of the grid square */
   FieldGridDimension rowLength;
   uint32_t columnFractionQ12;
@@ -24,7 +24,7 @@ typedef struct FieldGridTriangleLookup {
      on a border cell. */
   uint32_t rowFractionQ12;
   int diagonalWeightQ12; /* columnFraction + rowFraction - 1 */
-} FieldGridTriangleLookup;
+};
 
 /* Snaps a world position to the nearest grid vertex (cell): *outPoint receives that cell's worldX, worldY and
    terrain height and true is returned. Outside the grid false is returned and *outPoint is the input position

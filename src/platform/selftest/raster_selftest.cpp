@@ -32,7 +32,7 @@ constexpr auto RASTER_TEST_BLITS = 48;
 constexpr auto RASTER_TEST_DEPTH_EPOCH = 0x10000000;
 constexpr auto RASTER_TEST_MAX_IMAGES = 8; /* the subresource table lives in the header's 256-byte unusedText */
 
-typedef struct RasterTestImage {
+struct RasterTestImage {
     int widthLog2; /* raster textures: width = 1 << widthLog2; blit images use width/height */
     int heightLog2;
     int width;
@@ -41,22 +41,22 @@ typedef struct RasterTestImage {
     int originX;
     int originY;
     int logicalExtra; /* logical size = pixel size + this (tile spacing of the tiled blits) */
-} RasterTestImage;
+};
 
-typedef struct RasterTestAsset {
+struct RasterTestAsset {
     std::vector<uint32_t> storage;
     GraphicsTextureSourceAsset *header;
     GraphicsTextureSourceEntry *entries;
-} RasterTestAsset;
+};
 
-typedef struct RasterTestState {
+struct RasterTestState {
     std::vector<uint32_t> pixels;
     std::vector<int32_t> depth;
     std::vector<uint32_t> auxPixels;
     std::vector<uint32_t> resetPixels; /* the targets after RasterTest_ResetTargets, to count changed pixels */
     std::vector<uint32_t> resetAuxPixels;
     SoftwareFramebufferAccess framebuffer;
-} RasterTestState;
+};
 
 /* 64-bit LCG (Knuth's MMIX constants); the high half is the result. */
 static uint32_t RasterTest_Random(uint64_t *seed)

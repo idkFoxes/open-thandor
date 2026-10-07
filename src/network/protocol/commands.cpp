@@ -184,10 +184,10 @@ Bool8 InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32
    lookup helper), and the table identifies a command by its handler's address (CommandDispatch_CodeOfHandler,
    CommandDispatch_IsCommandHandler); only CommandDispatch_ResolveHandler casts a checked entry to
    CommandQueueHandlerProc. */
-typedef struct CommandTableEntry {
+struct CommandTableEntry {
   uint32_t code;
   void *handler;
-} CommandTableEntry;
+};
 
 static const CommandTableEntry g_FrontendCommandTable[] = {
     {0x0, THANDOR_PTR(&FrontendCommandQueue_EnqueueLocalPlayerCommand)},
@@ -333,10 +333,10 @@ typedef enum CommandPayloadCheck {
   COMMAND_CHECK_SAVED_GAME_ROW    /* row of the saved games list (frontend) */
 } CommandPayloadCheck;
 
-typedef struct CommandValidationEntry {
+struct CommandValidationEntry {
   uint32_t code;
   uint8_t payloadChecks[3]; /* CommandPayloadCheck of payload1, payload2, payload3 (handler argument order) */
-} CommandValidationEntry;
+};
 
 static const CommandValidationEntry g_FrontendCommandValidation[] = {
     {FRONTEND_COMMAND_CYCLE_FACTION_COLOUR, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION_ROW}},

@@ -14,9 +14,9 @@
 #include <thandor/platform/debug/statehash.h>
 
 /* FNV-1a over 32-bit words; pointers never go in (addresses differ between builds), only pool indices. */
-typedef struct StateHash {
+struct StateHash {
   uint64_t value;
-} StateHash;
+};
 
 static void StateHash_Add(StateHash *hash, uint32_t word)
 {

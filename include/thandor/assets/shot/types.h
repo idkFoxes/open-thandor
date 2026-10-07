@@ -19,8 +19,8 @@
 #include <thandor/world/effects/types.h>
 #include <thandor/world/terrain/types.h>
 
-typedef struct ShotDefinition ShotDefinition, *PShotDefinition;
-typedef struct ShotAssetHeader ShotAssetHeader, *PShotAssetHeader;
+struct ShotDefinition;
+struct ShotAssetHeader;
 
 enum {
     SHOT_TRAJECTORY_DIRECT_LINE=0,

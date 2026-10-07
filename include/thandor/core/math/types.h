@@ -12,13 +12,13 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-typedef struct FixedVectorAngles FixedVectorAngles, *PFixedVectorAngles;
-typedef struct FixedDirection FixedDirection, *PFixedDirection;
-typedef struct RandomGeneratorState RandomGeneratorState, *PRandomGeneratorState;
-typedef struct FixedRollAzimuthElevation FixedRollAzimuthElevation, *PFixedRollAzimuthElevation;
-typedef struct FixedLengthAzimuthElevation FixedLengthAzimuthElevation, *PFixedLengthAzimuthElevation;
-typedef struct FixedAzimuthElevationRoll FixedAzimuthElevationRoll, *PFixedAzimuthElevationRoll;
-typedef struct FixedTriangleJointAngles FixedTriangleJointAngles, *PFixedTriangleJointAngles;
+struct FixedVectorAngles;
+struct FixedDirection;
+struct RandomGeneratorState;
+struct FixedRollAzimuthElevation;
+struct FixedLengthAzimuthElevation;
+struct FixedAzimuthElevationRoll;
+struct FixedTriangleJointAngles;
 
 struct FixedVectorAngles {
     uint32_t azimuthAngle; // atan2(y, x), low 16 bits
@@ -26,7 +26,7 @@ struct FixedVectorAngles {
 };
 
 /* The angle pair of FixedMath_VectorToAnglesVec3 (elevation first). */
-typedef struct FixedElevationAzimuth FixedElevationAzimuth;
+struct FixedElevationAzimuth;
 struct FixedElevationAzimuth {
     uint32_t elevationAngle; 
     uint32_t azimuthAngle; 
@@ -59,7 +59,7 @@ struct RandomGeneratorState {
 };
 
 /* Planar Q12 point (x, y), as FixedTrig_ProjectPlanarPoint returns it. */
-typedef struct FixedPlanarPointQ12 FixedPlanarPointQ12;
+struct FixedPlanarPointQ12;
 struct FixedPlanarPointQ12 {
     Q12 xQ12;
     Q12 yQ12;

@@ -14,7 +14,7 @@
 /* Work state of GraphicsTextureSource_DecomposeSubresourceRegions while it cuts a sprite sheet into regions.
    The work area is the new asset's block: header (and palette bank), then the record table growing upwards,
    free bytes, the packed sprite pixels growing downwards, and the working copy of the sheet at the end. */
-typedef struct GraphicsTextureDecomposeState {
+struct GraphicsTextureDecomposeState {
   GraphicsTextureSourceAsset *asset;   /* the new asset */
   GraphicsTextureSourceEntry *records; /* its subresource record table */
   int sourceWidth;                     /* pixels per row of the sheet, the row stride of the working copy */
@@ -23,7 +23,7 @@ typedef struct GraphicsTextureDecomposeState {
   uint8_t *packedPixels;               /* lowest packed sprite pixel */
   uint32_t packedPixelBytes;
   Bool8 edgeTransparent;                /* the edge colour is transparent, so border rows/columns in it are trimmed */
-} GraphicsTextureDecomposeState;
+};
 
 /* Module data. */
 

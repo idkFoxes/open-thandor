@@ -14,11 +14,11 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/platform/system/types.h>
 
-typedef struct TextResourceAssetHeader TextResourceAssetHeader, *PTextResourceAssetHeader;
-typedef struct TextResourceLocaleCountHeader TextResourceLocaleCountHeader, *PTextResourceLocaleCountHeader;
-typedef struct TextResourcePageBinding TextResourcePageBinding, *PTextResourcePageBinding;
-typedef struct TextResourceLocaleBlockPrefix TextResourceLocaleBlockPrefix, *PTextResourceLocaleBlockPrefix;
-typedef struct TextResourceOverrideTable TextResourceOverrideTable, *PTextResourceOverrideTable;
+struct TextResourceAssetHeader;
+struct TextResourceLocaleCountHeader;
+struct TextResourcePageBinding;
+struct TextResourceLocaleBlockPrefix;
+struct TextResourceOverrideTable;
 
 inline constexpr int TEXT_RESOURCE_MISSING_SENTINEL_0x33 = 0x33;
 

@@ -13,12 +13,12 @@
 #include <thandor/assets/army/types.h>
 #include <thandor/core/types.h>
 
-typedef struct AiCandidateWorkspaceEntry AiCandidateWorkspaceEntry, *PAiCandidateWorkspaceEntry;
-typedef struct GameFactionRuntimeRecord GameFactionRuntimeRecord, *PGameFactionRuntimeRecord;
-typedef struct AiFactionCandidateCacheState AiFactionCandidateCacheState, *PAiFactionCandidateCacheState;
-typedef struct GameFactionRuntimeImage GameFactionRuntimeImage, *PGameFactionRuntimeImage;
-typedef struct GameFactionRuntimeImageTail GameFactionRuntimeImageTail, *PGameFactionRuntimeImageTail;
-typedef struct ArmyRuntimeSlot ArmyRuntimeSlot;
+struct AiCandidateWorkspaceEntry;
+struct GameFactionRuntimeRecord;
+struct AiFactionCandidateCacheState;
+struct GameFactionRuntimeImage;
+struct GameFactionRuntimeImageTail;
+struct ArmyRuntimeSlot;
 
 using GameRelationUiFlags = uint32_t;
 

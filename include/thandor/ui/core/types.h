@@ -16,14 +16,14 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
 
-typedef struct RecentTextHistorySlot RecentTextHistorySlot, *PRecentTextHistorySlot;
-typedef struct UiRootCallbacks UiRootCallbacks, *PUiRootCallbacks;
-typedef struct UiDirtyRectEntry UiDirtyRectEntry, *PUiDirtyRectEntry;
-typedef struct UiActionHandlerPage UiActionHandlerPage, *PUiActionHandlerPage;
-typedef struct UiActionQueueEntry UiActionQueueEntry, *PUiActionQueueEntry;
-typedef struct UiRuntimeRecord UiRuntimeRecord, *PUiRuntimeRecord;
-typedef struct PcxPreview64 PcxPreview64, *PPcxPreview64;
-typedef struct PcxRgb24 PcxRgb24, *PPcxRgb24;
+struct RecentTextHistorySlot;
+struct UiRootCallbacks;
+struct UiDirtyRectEntry;
+struct UiActionHandlerPage;
+struct UiActionQueueEntry;
+struct UiRuntimeRecord;
+struct PcxPreview64;
+struct PcxRgb24;
 
 using UiStopMessageCode = int;
 

@@ -68,7 +68,7 @@ enum {
   INI_KIND_RAW    /* reserved dword of the original file, written as 0x... and only when nonzero */
 };
 
-typedef struct PersistentIniKey {
+struct PersistentIniKey {
   uint32_t offset;
   uint32_t kind;
   const char *section;
@@ -78,7 +78,7 @@ typedef struct PersistentIniKey {
   uint32_t defaultValue; /* INI_KIND_BIT */
   const char *const *names;
   uint32_t nameCount;
-} PersistentIniKey;
+};
 
 static const char *const s_IniRendererNames[] = {"vulkan", "d3d12", "software"};
 static const char *const s_IniDisplayModeNames[] = {"fullscreen", "borderless", "window"};

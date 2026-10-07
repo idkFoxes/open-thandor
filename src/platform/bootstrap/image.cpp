@@ -87,10 +87,10 @@ Thandor_InstallCrashHandler reads it once into memory allocated then; the lookup
 logs only read that memory (no allocation or file access while the process is crashing). A table that does not
 belong to this executable (Thandor_InstallCrashHandler not found at its own address) is dropped.
 */
-typedef struct SymbolTableEntry {
+struct SymbolTableEntry {
     uint32_t rva;        /* offset from the image base */
     uint32_t nameOffset; /* into g_SymbolTableText, zero-terminated */
-} SymbolTableEntry;
+};
 
 static char *g_SymbolTableText;
 static SymbolTableEntry *g_SymbolTableEntries;

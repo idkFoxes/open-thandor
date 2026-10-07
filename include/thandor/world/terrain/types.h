@@ -14,15 +14,15 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/graphics/resources/types.h>
 
-typedef struct FieldGridAsset FieldGridAsset, *PFieldGridAsset;
-typedef struct FieldGridCell FieldGridCell, *PFieldGridCell;
-typedef struct TerrainDirectionRecord TerrainDirectionRecord, *PTerrainDirectionRecord;
-typedef union TerrainScanSelectorUnion TerrainScanSelectorUnion, *PTerrainScanSelectorUnion;
-typedef struct TerrainClassPlacementAndOverlayCallbackTable10 TerrainClassPlacementAndOverlayCallbackTable10, *PTerrainClassPlacementAndOverlayCallbackTable10;
-typedef struct FieldGridInterpolationCallbackTable5 FieldGridInterpolationCallbackTable5, *PFieldGridInterpolationCallbackTable5;
-typedef struct FieldGridCoordinates FieldGridCoordinates, *PFieldGridCoordinates;
-typedef struct TerrainOccupancyResolvedMasks TerrainOccupancyResolvedMasks, *PTerrainOccupancyResolvedMasks;
-typedef struct FieldGridCellSaveImageView FieldGridCellSaveImageView, *PFieldGridCellSaveImageView;
+struct FieldGridAsset;
+struct FieldGridCell;
+struct TerrainDirectionRecord;
+union TerrainScanSelectorUnion;
+struct TerrainClassPlacementAndOverlayCallbackTable10;
+struct FieldGridInterpolationCallbackTable5;
+struct FieldGridCoordinates;
+struct TerrainOccupancyResolvedMasks;
+struct FieldGridCellSaveImageView;
 
 /* Recovered semantic scalar types used by canonical records. */
 using ResourceExtractionDescriptor32 = uint32_t;

@@ -120,14 +120,14 @@ void ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
 
 /* Results of the three rays a shot casts each tick (ShotModel_CastHitRays). The caller keeps one instance over
    all ticks: targetClassIndex is only refreshed on an army hit, like the original's function-wide local. */
-typedef struct ShotRayHits {
+struct ShotRayHits {
   ModelRaycastNearestNodeOrScratch4 nearestArmyHit;
   int targetClassIndex;
   uint32_t armyHitDistance;      /* MODEL_RAYCAST_NO_HIT_DISTANCE also for a target class without impact effect */
   uint32_t terrainHitDistance;   /* FIELD_GRID_RAYCAST_MISS_DISTANCE also for a material without impact effect */
   uint32_t terrainMaterialIndex;
   uint32_t secondaryHitDistance; /* FIELD_GRID_RAYCAST_MISS_DISTANCE also when there is no primary effect */
-} ShotRayHits;
+};
 
 /* One tick of age and sprite animation: the frame advances whenever the Q4 accumulator reaches the threshold
    and wraps after animationFrameCount frames. */

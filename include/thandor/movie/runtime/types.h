@@ -13,9 +13,9 @@
 #include <thandor/core/types.h>
 #include <thandor/graphics/resources/types.h>
 
-typedef struct MovieRuntime MovieRuntime, *PMovieRuntime;
-typedef struct MovieFileHeader MovieFileHeader, *PMovieFileHeader;
-typedef struct FrameProviderResult FrameProviderResult, *PFrameProviderResult;
+struct MovieRuntime;
+struct MovieFileHeader;
+struct FrameProviderResult;
 
 using MovieFrameIndex = uint32_t;
 
@@ -43,10 +43,10 @@ using MovieFrameIntervalMilliseconds = uint32_t;
 
 using MoviePixelDimension = uint32_t;
 
-typedef struct MovieFrameDimensions {
+struct MovieFrameDimensions {
     AssetDimension width;
     AssetDimension height;
-} MovieFrameDimensions;
+};
 
 using MovieAudioTrackCount = uint32_t;
 

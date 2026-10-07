@@ -42,12 +42,12 @@ enum {
 };
 
 /* Four 16-bit colour lanes in MMX order (blue, green, red, alpha). */
-typedef struct RasterColor {
+struct RasterColor {
     short lane[RASTER_LANE_COUNT];
-} RasterColor;
+};
 
 /* Where a family draws: the 32-bit framebuffer or the auxiliary 32-bit target. */
-typedef struct RasterTarget {
+struct RasterTarget {
     uint8_t *pixels;          /* row 0 of the colour target */
     int pixelBytes;        /* 4 */
     int pixelStride;       /* bytes per colour row */
@@ -57,15 +57,15 @@ typedef struct RasterTarget {
     int clipMinY;
     int clipMaxX;
     int clipMaxY;
-} RasterTarget;
+};
 
 /* Per-triangle gradients: change of the attributes per pixel step in X. */
-typedef struct RasterGradients {
+struct RasterGradients {
     int depthStepX;
     RasterColor colorStepX;
     int uStepX;
     int vStepX;
-} RasterGradients;
+};
 
 /* How Raster_SetupTriangle derives the colour. */
 enum {
@@ -75,7 +75,7 @@ enum {
 using RasterShading = int;
 
 /* A texture as the textured modes (16..30) sample it: nearest texel, wrapped. */
-typedef struct RasterTexture {
+struct RasterTexture {
     const uint8_t *texels;    /* one byte per texel (paletted) or one dword (direct colour) */
     const uint8_t *palette;   /* 256 entries of 8 bytes (only the first dword is used), NULL for direct colour */
     uint32_t uMask;           /* (width - 1) << 12 */
@@ -84,11 +84,11 @@ typedef struct RasterTexture {
     /* Auxiliary textured modes only: the walker's edges, whose current long-edge U the span function of
        modes 20/22/28/30 needs (RasterAux_SpanTexturedPrestepDepth). Not set by Raster_SetupTexture. */
     const struct RasterEdges *edges;
-} RasterTexture;
+};
 
 /* Edge walker. The long edge runs from v0 to v2 (vertices sorted by Y) and carries the attribute
    values; the short edge is v0 -> v1 for the upper part and v1 -> v2 for the lower part. */
-typedef struct RasterEdges {
+struct RasterEdges {
     int longX;             /* Q12 */
     int longXStep;         /* per scanline */
     int shortX;
@@ -102,11 +102,11 @@ typedef struct RasterEdges {
     int longV;
     int longVStep;
     int scanlineY;
-} RasterEdges;
+};
 
 /* One horizontal run of pixels, handed to the mode's span function. The span is walked away from
    the long edge, so it runs left to right or right to left; the deltas already carry the sign. */
-typedef struct RasterSpan {
+struct RasterSpan {
     uint8_t *pixel;           /* first pixel */
     uint32_t *depth;          /* its depth buffer entry */
     int count;             /* pixels to draw, > 0 */
@@ -121,7 +121,7 @@ typedef struct RasterSpan {
     int uDelta;
     int vDelta;
     const RasterTexture *texture; /* textured modes, else NULL */
-} RasterSpan;
+};
 
 using RasterSpanProc = void (*)(RasterSpan *span);
 
@@ -301,11 +301,11 @@ static const uint32_t g_SoftwareBlendOverreadOriginalDwords[512] = {
 /* 5f-format: overread g_SoftwareBlendOverreadRanges - original 32-bit addresses and the original 32-bit dwords
    (pointers as their image values); the ranges read live hold no pointers, so the values are the same on x64 */
 /* What lies at an original address in the range a blend factor row can be read from. */
-typedef struct RasterOriginalRange {
+struct RasterOriginalRange {
     uint32_t start; /* original address */
     uint32_t end;   /* exclusive */
     const void *data;
-} RasterOriginalRange;
+};
 
 static const RasterOriginalRange g_SoftwareBlendOverreadRanges[] = {
     {0x00421720, 0x00421F20, g_SoftwareBlendAlphaFactors},

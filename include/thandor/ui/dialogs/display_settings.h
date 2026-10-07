@@ -49,7 +49,7 @@ inline constexpr uint32_t UI_DISPLAY_MODE_NONE = 0xffffffffu;
 #define DISPLAY_MODE_OPTION_PREFIX(button) UI_TEMPLATE_NODE_PREFIX(UiDisplayModeOptionPrefix,button)
 /* The "keep the new display mode?" dialog's countdownMessageText (a wrapped text, g_UiListOffsetControlVtable)
    with extra fields in its tail, see UiRuntime_OpenFourValueDialog. 0x98 bytes. */
-typedef struct UiFourValueDialogCountdownText {
+struct UiFourValueDialogCountdownText {
     UiWrappedTextControl text;
     int32_t countdown;                /* +0x5C: the number shown */
     int32_t stepTicks;                /* +0x60: frame updates left until the number counts down */
@@ -58,7 +58,7 @@ typedef struct UiFourValueDialogCountdownText {
     int32_t previousBitsPerPixel;     /* +0x6C */
     int32_t previousAdapterIndex;     /* +0x70 */
     uint16_t countdownTextUtf16[18];  /* +0x74: UTF-16 digits of the countdown */
-} UiFourValueDialogCountdownText;
+};
 /* Frame updates per step of the countdown in the "keep the new display mode?" dialog
    (UiFourValueDialog_TickCountdownAndRequestClose). */
 inline constexpr int32_t UI_DISPLAY_MODE_COUNTDOWN_STEP_TICKS = 20;

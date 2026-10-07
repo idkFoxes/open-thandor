@@ -17,31 +17,31 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/ui/ingame/types.h>
 
-typedef union ResourceRegistrationRuntimePayloadReference4 ResourceRegistrationRuntimePayloadReference4, *PResourceRegistrationRuntimePayloadReference4;
-typedef struct WorldObjectRecord WorldObjectRecord, *PWorldObjectRecord;
-typedef struct WorldObjectRecordCommon WorldObjectRecordCommon, *PWorldObjectRecordCommon;
-typedef struct LevelAssetRuntimePrefix LevelAssetRuntimePrefix, *PLevelAssetRuntimePrefix;
-typedef struct LevelAssetHeader LevelAssetHeader, *PLevelAssetHeader;
-typedef struct LevelPlayerSlotRecord LevelPlayerSlotRecord, *PLevelPlayerSlotRecord;
-typedef struct LevelAssetPathOffsets LevelAssetPathOffsets, *PLevelAssetPathOffsets;
-typedef struct LevelAssetResourceTables LevelAssetResourceTables, *PLevelAssetResourceTables;
-typedef struct LevelWorldSettings LevelWorldSettings, *PLevelWorldSettings;
-typedef struct ResourceRegistrationRuntimeImageSavedView ResourceRegistrationRuntimeImageSavedView, *PResourceRegistrationRuntimeImageSavedView;
-typedef struct ResourceRegistrationRecordSavedView ResourceRegistrationRecordSavedView, *PResourceRegistrationRecordSavedView;
-typedef struct ResourceRegistrationRecord ResourceRegistrationRecord, *PResourceRegistrationRecord;
-typedef union ResourceRegistrationPointerOrSavedOffset4 ResourceRegistrationPointerOrSavedOffset4, *PResourceRegistrationPointerOrSavedOffset4;
-typedef struct InGameFieldImageSaveContext58 InGameFieldImageSaveContext58, *PInGameFieldImageSaveContext58;
-typedef struct PckArchiveHeader PckArchiveHeader, *PPckArchiveHeader;
-typedef struct ResourceRegistrationRuntimeImage ResourceRegistrationRuntimeImage, *PResourceRegistrationRuntimeImage;
-typedef struct InGameLevelSaveWorldView InGameLevelSaveWorldView, *PInGameLevelSaveWorldView;
-typedef struct InGameLevelRuntimeGlobalBlock20 InGameLevelRuntimeGlobalBlock20, *PInGameLevelRuntimeGlobalBlock20;
-typedef struct LevelInitialArmyPlacementRecord20 LevelInitialArmyPlacementRecord20, *PLevelInitialArmyPlacementRecord20;
-typedef struct ArmyRuntimeSlot ArmyRuntimeSlot;
-typedef struct EffectRuntimeSlot EffectRuntimeSlot;
-typedef struct FieldGridAsset FieldGridAsset;
-typedef struct InGameLevelConditionStorage InGameLevelConditionStorage;
-typedef struct ShotRuntimeSlot ShotRuntimeSlot;
-typedef struct SpriteAssetHeader SpriteAssetHeader;
+union ResourceRegistrationRuntimePayloadReference4;
+struct WorldObjectRecord;
+struct WorldObjectRecordCommon;
+struct LevelAssetRuntimePrefix;
+struct LevelAssetHeader;
+struct LevelPlayerSlotRecord;
+struct LevelAssetPathOffsets;
+struct LevelAssetResourceTables;
+struct LevelWorldSettings;
+struct ResourceRegistrationRuntimeImageSavedView;
+struct ResourceRegistrationRecordSavedView;
+struct ResourceRegistrationRecord;
+union ResourceRegistrationPointerOrSavedOffset4;
+struct InGameFieldImageSaveContext58;
+struct PckArchiveHeader;
+struct ResourceRegistrationRuntimeImage;
+struct InGameLevelSaveWorldView;
+struct InGameLevelRuntimeGlobalBlock20;
+struct LevelInitialArmyPlacementRecord20;
+struct ArmyRuntimeSlot;
+struct EffectRuntimeSlot;
+struct FieldGridAsset;
+struct InGameLevelConditionStorage;
+struct ShotRuntimeSlot;
+struct SpriteAssetHeader;
 
 using LevelLightingCycleDurationTicks = uint32_t;
 using LevelFactionRelationGroupMasks32 = uint32_t;
@@ -298,10 +298,10 @@ struct ResourceRegistrationRuntimeImage {
 using ResourceRegistrationImagePair = uint64_t;
 
 /* One runtime save-segment image: the block to write and its byte size. */
-typedef struct RuntimeHexSegmentImage {
+struct RuntimeHexSegmentImage {
     Ptr32<uint32_t> image;
     uint32_t byteSize;
-} RuntimeHexSegmentImage;
+};
 
 struct InGameLevelSaveWorldView {
     struct WorldRuntimeContext worldRuntime;
@@ -326,13 +326,13 @@ struct LevelInitialArmyPlacementRecord20 {
 
 /* Level script: condition schedule and end triggers (InGameLevelConditionStorage). */
 
-typedef struct InGameEndConditionTriggerRecord8 InGameEndConditionTriggerRecord8, *PInGameEndConditionTriggerRecord8;
-typedef struct InGameConditionSchedule InGameConditionSchedule, *PInGameConditionSchedule;
-typedef struct InGameScheduledConditionRecord10 InGameScheduledConditionRecord10, *PInGameScheduledConditionRecord10;
-typedef union InGameScheduledConditionStatusAndKind4 InGameScheduledConditionStatusAndKind4, *PInGameScheduledConditionStatusAndKind4;
-typedef union InGameScheduledConditionPayload0C InGameScheduledConditionPayload0C, *PInGameScheduledConditionPayload0C;
-typedef struct InGameEndConditionTriggerRecord8ReferenceView InGameEndConditionTriggerRecord8ReferenceView, *PInGameEndConditionTriggerRecord8ReferenceView;
-typedef struct InGameLevelConditionStorage InGameLevelConditionStorage, *PInGameLevelConditionStorage;
+struct InGameEndConditionTriggerRecord8;
+struct InGameConditionSchedule;
+struct InGameScheduledConditionRecord10;
+union InGameScheduledConditionStatusAndKind4;
+union InGameScheduledConditionPayload0C;
+struct InGameEndConditionTriggerRecord8ReferenceView;
+struct InGameLevelConditionStorage;
 
 enum {
     INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED=0,

@@ -11,12 +11,12 @@
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
-typedef union Utf16DecimalDigitPair4 Utf16DecimalDigitPair4, *PUtf16DecimalDigitPair4;
-typedef struct ScenarioCampaignDataPathTemplate2A ScenarioCampaignDataPathTemplate2A, *PScenarioCampaignDataPathTemplate2A;
-typedef struct ScenarioLevelDataPathTemplate24 ScenarioLevelDataPathTemplate24, *PScenarioLevelDataPathTemplate24;
-typedef struct ScenarioCatalogHeader ScenarioCatalogHeader, *PScenarioCatalogHeader;
-typedef struct ScenarioCatalogRecord ScenarioCatalogRecord, *PScenarioCatalogRecord;
-typedef struct ScenarioCatalogSaveRecord ScenarioCatalogSaveRecord, *PScenarioCatalogSaveRecord;
+union Utf16DecimalDigitPair4;
+struct ScenarioCampaignDataPathTemplate2A;
+struct ScenarioLevelDataPathTemplate24;
+struct ScenarioCatalogHeader;
+struct ScenarioCatalogRecord;
+struct ScenarioCatalogSaveRecord;
 
 union Utf16DecimalDigitPair4 {
     uint16_t codeUnits[2]; 
