@@ -14,14 +14,14 @@
 
 /* Arena heap layout (ArenaHeap_Init): one private Win32 heap block holding a 32-byte aligned chain of
    ArenaBlockHeader blocks, ended by ARENA_BLOCK_LIST_END in next/previous. */
-#define ARENA_HEAP_PAYLOAD_BYTES 0x6000000 /* 96 MiB, payload of the initial single free block */
+inline constexpr auto ARENA_HEAP_PAYLOAD_BYTES = 0x6000000; /* 96 MiB, payload of the initial single free block */
 #define ARENA_HEAP_RESERVE_BYTES (ARENA_HEAP_PAYLOAD_BYTES + 0x40) /* + header and alignment slack */
-#define ARENA_BLOCK_ALIGNMENT_MASK 0x1f /* blocks and payload sizes are 32-byte aligned */
+inline constexpr auto ARENA_BLOCK_ALIGNMENT_MASK = 0x1f; /* blocks and payload sizes are 32-byte aligned */
 #define ARENA_BLOCK_LIST_END (Thandor_U32ToPointer<ArenaBlockHeader>(-1)) /* all bits set, as 0xffffffff in the original */
-#define ARENA_BLOCK_HEADER_BYTES 0x20 /* sizeof(ArenaBlockHeader); the payload follows the header */
+inline constexpr auto ARENA_BLOCK_HEADER_BYTES = 0x20; /* sizeof(ArenaBlockHeader); the payload follows the header */
 /* A free block is split only when it exceeds the aligned request by more than this (room for a header
    and a 32-byte payload); smaller remainders stay with the allocation. */
-#define ARENA_BLOCK_SPLIT_SLACK_BYTES 0x40
+inline constexpr auto ARENA_BLOCK_SPLIT_SLACK_BYTES = 0x40;
 
 void * ArenaHeap_Init();
 
