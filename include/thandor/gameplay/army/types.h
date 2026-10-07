@@ -1654,8 +1654,8 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
     Ptr32<void (struct ModelRuntimeSlot *)> modelRebaseOrLoadRepair[24];
     Ptr32<void (struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *)> modelClassInitialize[24];
     Ptr32<void (struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *)> modelReleaseOrCommit[24];
-    Ptr32<Bool8 (struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *)> placementValidation[24]; // 24 placement validators returning a bool. Split from generic world/army callbacks.
-    Ptr32<Bool8 (uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *, uint32_t *outPlacementValue)> placementAssetClassDispatch[24]; // true = accepted, *outPlacementValue set only then
+    Ptr32<bool (struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *)> placementValidation[24]; // 24 placement validators returning a bool. Split from generic world/army callbacks.
+    Ptr32<bool (uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *, uint32_t *outPlacementValue)> placementAssetClassDispatch[24]; // true = accepted, *outPlacementValue set only then
     Ptr32<ModelRuntimeClassCallback> classCommand[24];
     Ptr32<void (struct GameEntityRuntime *)> gridInfluenceAdd[24];
     Ptr32<void (struct GameEntityRuntime *)> gridInfluenceRemove[24];
@@ -3298,6 +3298,6 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
     uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments[6]; // Six fixed 0x20-byte attachment descriptors.
 };
-using TerrainClassOverlayCallback = Bool8 (FieldCellFlagMask cellFlagMask, int cellValue, int radiusWorldUnits, Q12 worldYQ12, Q12 worldXQ12, FieldGridAsset * fieldGrid);
+using TerrainClassOverlayCallback = bool (FieldCellFlagMask cellFlagMask, int cellValue, int radiusWorldUnits, Q12 worldYQ12, Q12 worldXQ12, FieldGridAsset * fieldGrid);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_TYPES_H */

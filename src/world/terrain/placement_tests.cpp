@@ -116,7 +116,7 @@ static Bool8 TerrainScan_BeginAroundWorldPoint
    [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; also when fieldGrid is NULL or the point is
    off the grid.
 */
-Bool8 TerrainHeightBand_TestAroundWorldPoint
+bool TerrainHeightBand_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
 
@@ -158,7 +158,7 @@ Bool8 TerrainHeightBand_TestAroundWorldPoint
    cell, has a negative waterSurfaceDelta, or the high word of its packed normal angles is below
    g_TerrainAuxHeightMinimum; also when fieldGrid is NULL or the point is off the grid.
 */
-Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
+bool TerrainAuxHeightThreshold_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
 

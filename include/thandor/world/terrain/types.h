@@ -169,7 +169,7 @@ using FieldGridHeightDeltaUnits = int;
 using PackedFieldGridDeltaXY16 = uint32_t;
 
 struct FieldGridInterpolationCallbackTable5 {
-    Ptr32<Bool8 (Q12, Q12, struct FieldGridAsset *, Q12 *)> callbacks[5]; // Exact immutable callback partition: height samplers (y, x, grid, out height Q12) returning false off the grid.
+    Ptr32<bool (Q12, Q12, struct FieldGridAsset *, Q12 *)> callbacks[5]; // Exact immutable callback partition: height samplers (y, x, grid, out height Q12) returning false off the grid.
 };
 struct TerrainOccupancyResolvedMasks {
     uint32_t secondaryOccupancyMask;
@@ -212,8 +212,8 @@ struct FieldGridCellSaveImageView { // Function-local physical serialization vie
 };
 
 struct TerrainClassPlacementAndOverlayCallbackTable10 {
-    Ptr32<Bool8 (FieldGridRadiusUnits, Q12, Q12, Q12, struct FieldGridAsset *)> placementTests[5]; // Exact immutable callback partition; the bool result is true on reject.
-    Ptr32<Bool8 (FieldCellFlagMask, TerrainOverlayCellRuntimeValue, FieldGridRadiusUnits, Q12, Q12, struct FieldGridAsset *)> overlayCallbacks[5]; // Exact immutable callback partition.
+    Ptr32<bool (FieldGridRadiusUnits, Q12, Q12, Q12, struct FieldGridAsset *)> placementTests[5]; // Exact immutable callback partition; the bool result is true on reject.
+    Ptr32<bool (FieldCellFlagMask, TerrainOverlayCellRuntimeValue, FieldGridRadiusUnits, Q12, Q12, struct FieldGridAsset *)> overlayCallbacks[5]; // Exact immutable callback partition.
 };
 
 #endif /* THANDOR_WORLD_TERRAIN_TYPES_H */

@@ -12,6 +12,6 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-using FatalErrorPassThroughProc = uintptr_t (uintptr_t valueOrError, Bool8 failed); /* value or pointer (5f) */
+using FatalErrorPassThroughProc = uintptr_t (uintptr_t valueOrError, bool failed); /* value or pointer (5f) */
 
 #endif /* THANDOR_CORE_ERROR_TYPES_H */
