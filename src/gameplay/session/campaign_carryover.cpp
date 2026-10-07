@@ -17,13 +17,6 @@ uint32_t *g_OldUnitPrimaryTable = nullptr;
 
 OldUnitRecordCount g_OldUnitRecordCount = 0;
 
-/* The campaign asset viewed at a byte address: g_FrontendLoadedCampaignAsset and the scan cursor keep the
-   loaded CGN bytes as an integer address. */
-static inline CampaignAsset *CampaignCarryover_AssetAt(uintptr_t address)
-{
-  return reinterpret_cast<CampaignAsset *>(address);
-}
-
 /* Mission carry-over after a session ends: finds the current scenario's record in the loaded campaign and,
    for the outcome selected by g_EndMovieSelectionIndex, stores each faction's technology masks (8 dwords) in
    the old-unit secondary table and every unit standing inside its faction's exit zone as a primary record,
@@ -44,7 +37,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
   int levelRecordsRemaining;
   int factionsRemaining;
   int wordIndex;
-  uintptr_t scenarioRecord;
+  CampaignAsset *scenarioRecord;
   uint32_t *technologyMasks;
   uint32_t *secondaryTableCursor;
   uint32_t *primaryRecord;
@@ -53,16 +46,16 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
   scenarioFound = false;
   /* Campaign asset (CampaignAsset): the cursor starts at the asset base and advances by one 0x180-byte level
      record, so levels[0] of the asset viewed at the cursor is the current record. */
-  if ((g_InGameRuntimeRoot != nullptr) && (g_FrontendLoadedCampaignAsset != 0)) {
-    levelRecordsRemaining = CampaignCarryover_AssetAt(g_FrontendLoadedCampaignAsset)->levelRecordCount;
+  if ((g_InGameRuntimeRoot != nullptr) && (g_FrontendLoadedCampaignAsset != nullptr)) {
+    levelRecordsRemaining = g_FrontendLoadedCampaignAsset->levelRecordCount;
     scenarioRecord = g_FrontendLoadedCampaignAsset;
     do {
-      if (CampaignCarryover_AssetAt(g_FrontendLoadedCampaignAsset)->currentLevelId ==
-          CampaignCarryover_AssetAt(scenarioRecord)->levels[0].levelId) {
+      if (g_FrontendLoadedCampaignAsset->currentLevelId ==
+          scenarioRecord->levels[0].levelId) {
         scenarioFound = true;
         break;
       }
-      scenarioRecord = scenarioRecord + sizeof(CampaignLevelRecord);
+      scenarioRecord = Asset_RecordAt<CampaignAsset>(scenarioRecord,sizeof(CampaignLevelRecord));
       levelRecordsRemaining--;
     } while (levelRecordsRemaining != 0);
   }
@@ -70,7 +63,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
     OldUnitRuntime_ResetPendingTables();
     return;
   }
-  scenarioLevel = &CampaignCarryover_AssetAt(scenarioRecord)->levels[0];
+  scenarioLevel = &scenarioRecord->levels[0];
   /* Original quirk: the original offsets the faction-record cursor by an uninitialized value times the
      active faction index; the loop then walks all eight 0x740-byte faction records, which only stays
      inside the table from records[0], so the cursor always starts there. */

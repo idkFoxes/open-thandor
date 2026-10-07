@@ -177,7 +177,7 @@ void Frontend_PlaySelectedEndMovie()
     rootCallbacks->keyboardFallback = UI_SLOT(EndMovieSlot_KeyboardFallback);
     rootCallbacks->frameUpdate = UI_SLOT(EndMovieUiRuntime_HandleModeTransition);
     if (g_FrontendLoadedCampaignAsset != 0) {
-      FrontendEndMovie_SelectCampaignMoviePath(reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset));
+      FrontendEndMovie_SelectCampaignMoviePath(g_FrontendLoadedCampaignAsset);
     }
     Movie_Close();
     /* clear both buffers to black */

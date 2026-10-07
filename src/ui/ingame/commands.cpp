@@ -258,11 +258,11 @@ void InGameCommand_HandlePlayerDeparture
       }
       if (playerOrFactionId == (runtimeRoot->worldRuntime).selection.activePlayerRuntimeId) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT;
-        Resource_Release(reinterpret_cast<void *>(g_FrontendLoadedCampaignAsset)); /* the asset address kept as an integer */
-        g_FrontendLoadedCampaignAsset = 0;
+        Resource_Release(g_FrontendLoadedCampaignAsset);
+        g_FrontendLoadedCampaignAsset = nullptr;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          g_FrontendLoadedCampaignAsset = 0; /* stored twice, as in the original */
+          g_FrontendLoadedCampaignAsset = nullptr; /* stored twice, as in the original */
           return;
         }
         g_SessionNetworkRoleFlags =

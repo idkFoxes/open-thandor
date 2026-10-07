@@ -373,7 +373,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
   GraphicsTextureLogicalSize windowTextureSize;
   UiConditionalActionControl *statusBox;
 
-  const SpinLockGuard tickLock(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+  const SpinLockGuard tickLock(&g_InGameStateTickSpinLock);
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=

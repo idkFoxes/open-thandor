@@ -14,9 +14,9 @@
 
 /* FontRuntime_Init: terminator-scan limit in code units for stepping over the two consecutive font paths at
    g_FontTexturePathsUtf16 (0x42 bytes); shared by both scans. */
-#define FONT_TEXTURE_PATHS_SCAN_UNITS 0x21
+inline constexpr int32_t FONT_TEXTURE_PATHS_SCAN_UNITS = 0x21;
 /* Number of fonts (engine\font.gfx and engine\fontk.gfx); the valid font indices are 0 and 1. */
-#define FONT_TEXTURE_SOURCE_COUNT 2
+inline constexpr int32_t FONT_TEXTURE_SOURCE_COUNT = 2;
 /* Colour of the drop shadow drawn under glyphs and UI icons: black at half alpha (ARGB). */
 #ifndef TEXT_SHADOW_COLOR_ARGB
 #define TEXT_SHADOW_COLOR_ARGB 0x7F000000

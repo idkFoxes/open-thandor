@@ -33,9 +33,9 @@
 
 void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          uint32_t unusedDispatchArg);
+          struct FrontendUiImage *unusedFrontendRoot);
 
-Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg);
+Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(struct FrontendUiImage *unusedFrontendRoot);
 
 void FrontendNetwork_TickDisconnectTimeoutAndResetSession();
 

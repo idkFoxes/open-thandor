@@ -18,7 +18,7 @@
 #endif
 /* nodeFlags bit 0 (not in the UiNodeFlags enum): set on every node of the top root of the stack by
    UiRootStack_Push/Pop/BringToFront through applyFlags; window frames draw their inactive variant without it. */
-#define UI_NODE_IN_FRONT_ROOT 0x01u
+inline constexpr uint32_t UI_NODE_IN_FRONT_ROOT = 0x01u;
 
 void UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack);
 

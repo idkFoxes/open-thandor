@@ -284,7 +284,7 @@ static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel()
   int remainingLevelRecords;
   int successorLevelId;
 
-  campaign = reinterpret_cast<CampaignAsset *>(g_FrontendLoadedCampaignAsset);
+  campaign = g_FrontendLoadedCampaignAsset;
   if (campaign == nullptr) {
     return false;
   }
@@ -317,8 +317,8 @@ static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel()
     remainingLevelRecords--;
     if (remainingLevelRecords == 0) {
       /* Successor level missing: the campaign is finished. */
-      Resource_Release(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
-      g_FrontendLoadedCampaignAsset = 0;
+      Resource_Release(g_FrontendLoadedCampaignAsset);
+      g_FrontendLoadedCampaignAsset = nullptr;
       g_FrontendScenarioInitializationCount = 0;
       return false;
     }
@@ -484,12 +484,12 @@ static Bool8 FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
 static Bool8 FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordId,uint32_t *outError)
 {
   if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) {
-    FrontendNetworkSetupPage_InitializeBackendMode(FrontendUi_Image(g_FrontendRootNode));
+    FrontendNetworkSetupPage_InitializeBackendMode(g_FrontendRootNode);
     g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
     return true;
   }
   if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) {
-    FrontendGameplaySettingsPage_InitializeFromPersistentSettings(&FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root);
+    FrontendGameplaySettingsPage_InitializeFromPersistentSettings(&g_FrontendRootNode->frontendRoot.root);
     g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
     return true;
   }
@@ -510,7 +510,7 @@ static Bool8 FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordI
     FrontendScenarioTransfer_ProcessReceivedAsset();
     if (FrontendMainLoop_AllPlayersHaveRoleState(FRONTEND_PLAYER_STATE_LEVEL_READY_MASK)) {
       FrontendMainLoop_ReleaseHostTransfer();
-      FrontendMissionBriefingPage_Initialize(&FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root);
+      FrontendMissionBriefingPage_Initialize(&g_FrontendRootNode->frontendRoot.root);
       g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
     }
     return true;
@@ -521,7 +521,7 @@ static Bool8 FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordI
     return true;
   }
   if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE) {
-    FrontendSession_ShowQuitConfirmPage(FrontendUi_Image(g_FrontendRootNode));
+    FrontendSession_ShowQuitConfirmPage(g_FrontendRootNode);
     g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
     return true;
   }

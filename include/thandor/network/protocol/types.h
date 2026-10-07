@@ -136,7 +136,6 @@ using FrontendCapabilityFlags = uint32_t;
 
 using FrontendProtocolMagic = uint32_t;
 
-using FrontendRootRuntimeAddress32 = int;
 
 using UiTransferRetryTickCount = uint32_t;
 

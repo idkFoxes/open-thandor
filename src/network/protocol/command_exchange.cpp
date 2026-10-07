@@ -56,7 +56,7 @@ void FrontendTransfer_CopyCommandRecord
 */
 Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          uint32_t unusedDispatchArg)
+          FrontendUiImage *unusedFrontendRoot)
 
 {
   UiTransferSenderContext batchSenderContext;

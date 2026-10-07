@@ -9,6 +9,7 @@
 #define THANDOR_GAMEPLAY_SESSION_SCENARIO_LOAD_H
 
 #include <thandor/ui/frontend/types.h>
+#include <thandor/assets/scenario/catalog.h>
 #include <thandor/core/contracts.h>
 #include <thandor/core/text/path.h>
 
@@ -28,6 +29,6 @@ extern FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset;
 
 extern uint16_t g_FrontendScenarioPathScratchUtf16[256]; /* level/campaign/save path (level\<name>.lev etc.) built for Package_LoadEntry */
 
-extern uintptr_t g_FrontendLoadedCampaignAsset;
+extern CampaignAsset *g_FrontendLoadedCampaignAsset;
 
 #endif /* THANDOR_GAMEPLAY_SESSION_SCENARIO_LOAD_H */
