@@ -342,7 +342,9 @@ static_assert(sizeof(UiNodeBase) == 0x4C &&
 static_assert(sizeof(UiNumericTextControl) == 0x94 &&
               offsetof(UiNumericTextControl, activationSound) == 0x68,
               "UiNumericTextControl keeps its 32-bit layout");
-static_assert(sizeof(UiSelectableControl) == 0x54,
+static_assert(sizeof(UiSelectableControl) == 0x54
+              && offsetof(UiSelectableControl, stateFlags) == 0x4C && sizeof(UiSelectableControl::stateFlags) == 4 &&
+              alignof(decltype(UiSelectableControl::stateFlags)) == 4,
               "UiSelectableControl keeps its 32-bit layout");
 static_assert(sizeof(UiSoundSelectableControl) == 0x60 &&
               offsetof(UiSoundSelectableControl, activationSound) == 0x5C,
@@ -552,6 +554,11 @@ static_assert(sizeof(UiResizableWindowControl) == 0x78,
 static_assert(sizeof(UiTitledWindowControl) == 0x54,
               "UiTitledWindowControl keeps its 32-bit layout");
 static_assert(sizeof(InGameRuntimeRoot) == 0xC3E4 &&
+              offsetof(InGameRuntimeRoot, diplomacyPanelNodeFlags) == 0x4D54 &&
+              offsetof(InGameRuntimeRoot, minimapResourceButtonStateFlags) == 0x4938 &&
+              sizeof(InGameRuntimeRoot::minimapResourceButtonStateFlags) == 4 &&
+              offsetof(InGameRuntimeRootUiGridView, minimapResourceButtonStateFlags) == 0x4938 &&
+              sizeof(InGameRuntimeRoot::diplomacyPanelNodeFlags) == 4 &&
               offsetof(InGameRuntimeRoot, activeEndMovieRuntime) == 0x22C &&
               offsetof(InGameRuntimeRoot, levelMovieRuntime) == 0x8D4 &&
               offsetof(InGameRuntimeRoot, worldOverlayCallback) == 0xB8C &&
@@ -1700,7 +1707,9 @@ static_assert(sizeof(UiFormattedContainerWithMarker) == 0xB0,
 static_assert(sizeof(UiRootStackActionHandlerPage2) == 0x8 &&
               offsetof(UiRootStackActionHandlerPage2, handlers) == 0x0,
               "UiRootStackActionHandlerPage2 keeps its 32-bit layout");
-static_assert(sizeof(UiTextButtonTemplateFields) == 0x10,
+static_assert(sizeof(UiTextButtonTemplateFields) == 0x10
+              && offsetof(UiTextButtonTemplateFields, stateFlags) == 0x0 &&
+              sizeof(UiTextButtonTemplateFields::stateFlags) == 4,
               "UiTextButtonTemplateFields keeps its 32-bit layout");
 static_assert(sizeof(UiLabelTemplateFields) == 0x10 &&
               offsetof(UiLabelTemplateFields, focusChild) == 0x4,

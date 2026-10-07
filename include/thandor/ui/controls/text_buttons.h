@@ -36,14 +36,14 @@ inline constexpr int32_t UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE = 0x8A;
 inline constexpr int32_t UI_WINDOW_SUBRESOURCE_TEXT_SELECTION = 0x8B;
 
 /* stateFlags bits (UiSelectableControl) that the text and framed buttons read. */
-inline constexpr int32_t UI_BUTTON_FRAME_INSET = 0x04; /* framed buttons: inset frame, the hit area shrinks by g_UiWindowFrameInset */
-inline constexpr int32_t UI_BUTTON_ALTERNATE_STATE = 0x40; /* text buttons: third checkbox state, alternate text style; cleared on toggle */
-inline constexpr int32_t UI_BUTTON_PLAY_ACTIVATION_SOUND = 0x80; /* play activationSound on activation */
-inline constexpr int32_t UI_BUTTON_OWN_STYLE_FONT = 0x100; /* the font byte of packedTextStyle replaces the state style's */
-inline constexpr int32_t UI_BUTTON_OWN_STYLE_PALETTE = 0x200; /* the palette byte of packedTextStyle replaces the state style's */
-inline constexpr int32_t UI_BUTTON_HIDDEN_WHILE_SUPPRESSED = 0x400;
-inline constexpr int32_t UI_BUTTON_NO_FRAME_WHILE_SUPPRESSED = 0x800; /* framed text button */
-inline constexpr int32_t UI_BUTTON_NO_FOCUS_MARK = 0x1000;
+inline constexpr UiSelectableStateFlags UI_BUTTON_FRAME_INSET = FromBits<UiSelectableStateFlags>(0x04); /* framed buttons: inset frame, the hit area shrinks by g_UiWindowFrameInset */
+inline constexpr UiSelectableStateFlags UI_BUTTON_ALTERNATE_STATE = FromBits<UiSelectableStateFlags>(0x40); /* text buttons: third checkbox state, alternate text style; cleared on toggle */
+inline constexpr UiSelectableStateFlags UI_BUTTON_PLAY_ACTIVATION_SOUND = FromBits<UiSelectableStateFlags>(0x80); /* play activationSound on activation */
+inline constexpr UiSelectableStateFlags UI_BUTTON_OWN_STYLE_FONT = FromBits<UiSelectableStateFlags>(0x100); /* the font byte of packedTextStyle replaces the state style's */
+inline constexpr UiSelectableStateFlags UI_BUTTON_OWN_STYLE_PALETTE = FromBits<UiSelectableStateFlags>(0x200); /* the palette byte of packedTextStyle replaces the state style's */
+inline constexpr UiSelectableStateFlags UI_BUTTON_HIDDEN_WHILE_SUPPRESSED = FromBits<UiSelectableStateFlags>(0x400);
+inline constexpr UiSelectableStateFlags UI_BUTTON_NO_FRAME_WHILE_SUPPRESSED = FromBits<UiSelectableStateFlags>(0x800); /* framed text button */
+inline constexpr UiSelectableStateFlags UI_BUTTON_NO_FOCUS_MARK = FromBits<UiSelectableStateFlags>(0x1000);
 
 /* Packed text style (UiPackedTextStyle): a control's own style (packedTextStyle, styleOverride) may replace
    the font byte and the palette byte of the state style (UI_BUTTON_OWN_STYLE_*, UI_LABEL_OWN_STYLE_*). */

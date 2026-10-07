@@ -46,7 +46,7 @@ FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
             .leftOffset = -108, .topOffset = -32, .rightOffset = -12, .bottomOffset = -6,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_PREFERRED_FOCUS_TARGET},
-        {.stateFlags = 0x0000000C, .actionId = 0x00000001, .textResourceId = 0x00000100},
+        {.stateFlags = FromBits<UiSelectableStateFlags>(0x0000000C), .actionId = 0x00000001, .textResourceId = 0x00000100},
 };
 
 /* method08 of g_FatalErrorDialogRootCallbacks, the callbacks of the fatal-error dialog root: always returns true, so

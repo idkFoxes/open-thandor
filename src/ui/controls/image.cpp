@@ -67,7 +67,7 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
   UiImageControl *hitControl;
   UiNodeBase *previousActiveChild;
 
-  if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
+  if (!Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
     return;
   }
   hitControl = UiNode_As<UiImageControl>(UiImageControl_HitTestOpaque(pointerY,pointerX,control));
@@ -119,7 +119,7 @@ void UiImageControl_TickHover(UiImageControl *control)
   UiSelectableStateFlags *hoverStateFlagsField;
 
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
-    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED)) {
       if ((g_CursorButtonState & RIGHT) != 0) {
         hitControl = (UiImageControl *)
                      UiImageControl_HitTestOpaque(g_CursorOverrideY,g_CursorOverrideX,control);
@@ -158,15 +158,15 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate c
   GraphicsSubresourceIndex subresource;
 
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
-    if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
       UiContainer_DrawIntersectingChildren
                 (clipBottom,clipRight,clipTop,clipLeft,&control->selectable.base);
     }
-    if ((((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) ||
-       (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0)) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) ||
+       (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE))) {
       accessFailed = g_GraphicsFramebufferBeginAccess();
       if (!accessFailed) {
-        if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+        if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
           subresource = control->normalSubresource;
         }
         else {
@@ -197,16 +197,16 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
   if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
-  if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 &&
-      ((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
+  if (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) &&
+      Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) &&
       control->pointerActivationSound != nullptr) {
     g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
                control->pointerActivationSound,nullptr);
   }
   opaqueHit = false;
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
+  if (Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
+    if (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE)) {
       opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
@@ -252,20 +252,20 @@ void UiImageControl_NonRightRelease
 
   previousActiveChild = control->activeChild;
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
-    preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESSED_ON_IMAGE) != 0;
+    preserveHover = Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESSED_ON_IMAGE);
     if (!preserveHover) {
       if (previousActiveChild != nullptr) {
         activeChildVtable = previousActiveChild->vtable;
         control->activeChild = nullptr;
         activeChildVtable->nonRightRelease(wheelDelta,pointerY,pointerX,previousActiveChild);
-        preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 ||
-                        ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESS_STARTED) != 0;
+        preserveHover = !Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) ||
+                        Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESS_STARTED);
       }
       if (!preserveHover) {
         g_UiImageControlHoverTarget = nullptr;
         stateFlagsField = &(control->selectable).stateFlags;
         *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
-        if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
+        if (Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) &&
             control->pointerActivationSound != nullptr) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -297,7 +297,7 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
   if (Any(control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return UI_NODE_NONE;
   }
-  if ((control->selectable.stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
+  if (!Any(control->selectable.stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE)) {
     opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                       (pointerY,pointerX,control->selectable.base.top,
                        control->selectable.base.left,control->normalSubresource,
@@ -313,7 +313,7 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
     return &control->selectable.base;
   }
   control->selectable.stateFlags &= ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE;
-  if ((control->selectable.stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
+  if (!Any(control->selectable.stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
     return UI_NODE_NONE;
   }
   /* UiContainer_HitTestChildren returns the control itself when no child is hit; that only counts
@@ -358,7 +358,7 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
   Bool8 overOpaquePixel;
 
   if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
-    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
+    if (!Any((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE)) {
       overOpaquePixel = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
@@ -376,7 +376,7 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
         return GRAPHICS_CURSOR_FRAME_ARROW;
       }
     }
-    if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
       hitControl = (UiImageControl *)
                    UiContainer_HitTestChildren(pointerY,pointerX,&control->selectable.base);
       if (hitControl != control) {

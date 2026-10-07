@@ -129,7 +129,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     toggleButton = (target == InGameHotkeyAction::ToggleMissionObjectives) ? &image->missionObjectivesButton : &image->inGameMenuButton;
     toggle = &toggleButton->selectable;
     UiSelectableControl_SetSelected(1,toggle);
-    if (((toggle->stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
+    if (Any(toggle->stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&
         (toggleButton->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,
                             toggleButton->activationSound,nullptr);

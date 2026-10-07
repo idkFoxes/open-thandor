@@ -300,8 +300,8 @@ void UiCatalogEntryControl_DrawClipped
   if (Any((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
-  if ((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) &&
-      (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) != 0)) {
+  if (!Any((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) &&
+      (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY))) {
     return;
   }
   if (g_GraphicsFramebufferBeginAccess()) {
@@ -309,18 +309,18 @@ void UiCatalogEntryControl_DrawClipped
   }
   spriteTextureSource = (control->command).sprite.primaryTextureSource;
   framebuffer = g_FramebufferAccess;
-  if (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     spriteSubresource = (control->command).sprite.normalSubresourceStartOrDescriptor;
   }
   else {
-    if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) &&
-       (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE) != 0)) {
+    if (!Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) &&
+       (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE))) {
       spriteTextureSource = (control->command).sprite.alternateTextureSource;
     }
     spriteSubresource = (control->command).sprite.selectedSubresourceStart;
-    if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED) != 0) {
+    if (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED)) {
       backgroundSubresource = (control->command).sprite.normalSubresourceStartOrDescriptor;
-      if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+      if (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
         backgroundSubresource = backgroundSubresource + (control->command).sprite.animationFrameOffset;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
@@ -329,7 +329,7 @@ void UiCatalogEntryControl_DrawClipped
                  (control->command).sprite.primaryTextureSource,g_FramebufferAccess);
     }
   }
-  if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+  if (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED)) {
     spriteSubresource = spriteSubresource + (control->command).sprite.animationFrameOffset;
   }
   g_GraphicsTextureSourceBlitSourceAlpha
@@ -444,11 +444,11 @@ void UiCatalogEntryControl_NonRightRelease
   
   activationInputState = g_KeyboardStateMask;
   if (!Any((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
-     (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
+     (Any((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
     stateFlagsField = &(control->command).sprite.selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     (control->command).activationInputState = FromBits<UiCommandActivationStateFlags>(activationInputState);
-    if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
+    if (Any((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&
        ((control->command).sprite.activationSound != nullptr)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
