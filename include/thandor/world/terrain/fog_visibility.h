@@ -16,11 +16,11 @@
    occupancy byte, column = its runtime byte visibilityLightingIndex. Each row moves the runtime byte by one fade step towards the
    row's target level (the levels FieldGrid_ClassifyCellFlagsToRuntimeByte writes directly): rows 0x00..0x7F
    by bit 0 (clear -> NONE, set -> FULL), 0x80 and 0x82 -> PERSISTENT, 0x81 and 0x83..0xFF -> FULL. */
-#define TERRAIN_BYTE_CLAMP_LOOKUP_BYTES 0x10000
-#define TERRAIN_RUNTIME_BYTE_FADE_STEP 0x15
-#define TERRAIN_RUNTIME_BYTE_LEVEL_NONE 0x00
-#define TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT 0x87 /* only the persistent occupancy bit 7 */
-#define TERRAIN_RUNTIME_BYTE_LEVEL_FULL 0xff
+inline constexpr int TERRAIN_BYTE_CLAMP_LOOKUP_BYTES = 0x10000;
+inline constexpr int TERRAIN_RUNTIME_BYTE_FADE_STEP = 0x15;
+inline constexpr int TERRAIN_RUNTIME_BYTE_LEVEL_NONE = 0x00;
+inline constexpr int TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT = 0x87; /* only the persistent occupancy bit 7 */
+inline constexpr int TERRAIN_RUNTIME_BYTE_LEVEL_FULL = 0xff;
 
 extern uint8_t *g_TerrainByteClampLookup;
 

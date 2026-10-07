@@ -17,7 +17,7 @@ THANDOR_SLOT_OVERLAY(EntityPathingRouteEntityRuntimeView, GameEntityRuntime);
 
 /* The 32 pairs g_EntityPathingPriorityPairs points at (EntityPathing_RebuildOverlappingGroupRoutes
    fills at most ENTITY_PATHING_PRIORITY_PAIR_CAPACITY of them and heap-sorts them in place) */
-#define ENTITY_PATHING_PRIORITY_PAIR_CAPACITY 32
+static constexpr int ENTITY_PATHING_PRIORITY_PAIR_CAPACITY = 32;
 
 /* Module data. */
 

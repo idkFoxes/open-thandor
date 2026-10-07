@@ -13,7 +13,7 @@
 #include <thandor/core/contracts.h>
 
 /* ShotRuntimeSlot.impactEffectEmissionFlags bit: a beam (direct-line shot) has emitted its impact effect. */
-#define SHOT_IMPACT_EFFECT_EMITTED 0x1
+inline constexpr int SHOT_IMPACT_EFFECT_EMITTED = 0x1;
 
 void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode);
