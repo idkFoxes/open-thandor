@@ -66,7 +66,7 @@ void GraphicsShadingGeneratedTexture_AdvanceTileCursor();
 
 void GraphicsShadingGeneratedTexture_FilterGridScratchMmx();
 
-Bool8 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
+bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
 
 GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext);

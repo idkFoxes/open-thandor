@@ -206,7 +206,7 @@ uint32_t Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *
 {
   uint16_t *destinationStart;
   uint32_t remainingCapacityBytes;
-  Bool8 capacityExhausted;
+  bool capacityExhausted;
   uint8_t sourceByte;
 
   destinationStart = destination;

@@ -37,7 +37,7 @@ uint16_t g_ErrorTextIoInitializationFailed[34] = {'e', 'r', 'r', 'o', 'r', ':', 
 void ErrorSystem_Init()
 
 {
-  Bool8 errorTextsLoaded;
+  bool errorTextsLoaded;
 
   g_FatalErrorExitHandler = FatalError_Exit;
   g_FatalErrorReportHandler = FatalError_Exit;

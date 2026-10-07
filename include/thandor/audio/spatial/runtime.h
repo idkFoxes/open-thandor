@@ -19,7 +19,7 @@ inline constexpr int SPATIAL_SOUND_SLOT_COUNT = 0x100;
 inline constexpr int SPATIAL_SOUND_GAIN_Q15_FULL = 0x8000;
 inline constexpr int SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 = 0x100;
 
-Bool8 SpatialSoundPool_Init(uint32_t *outError);
+bool SpatialSoundPool_Init(uint32_t *outError);
 
 void SpatialSound_RebuildListenerTransformFromPose
           (AngleTurn32 viewAngle1,AngleTurn32 viewAngle0,GraphicsWorldCoordinateQ12 originZ,

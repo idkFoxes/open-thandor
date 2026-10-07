@@ -12,9 +12,9 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(intptr_t textureSourceBase);
+bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(intptr_t textureSourceBase);
 
-Bool8 GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount);
+bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount);
 
 GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
           (GraphicsPaletteTextureSourceAsset *appendedAsset,

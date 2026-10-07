@@ -137,7 +137,7 @@ uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 /* Step of the original's DirectInputMouse_Init, called by SdlInput_Init: loads the cursor images
    (engine\mouse.gfx; the largest image size sizes the cursor buffers) and the frame table (engine\mouse.dat) and
    starts every cursor on the first frame of its animations. Returns false with the load error in *outError. */
-Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
+bool GraphicsCursor_LoadAssets(uint32_t *outError)
 
 {
   GraphicsSubresourceIndex activeFirstSubresource;
@@ -216,7 +216,7 @@ void GraphicsCursor_FreeBuffers()
    the three cursor buffers in the new pixel format, converts the cursor palette and centres the mouse. Returns
    false with the allocator error in *errorCode when a buffer creation fails (the buffers created so far stay
    installed). */
-Bool8 GraphicsCursor_CreateBuffersAndCenter
+bool GraphicsCursor_CreateBuffersAndCenter
           (GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode)
 
 {
@@ -320,7 +320,7 @@ static uint32_t Keyboard_NavigationKeyCode(KeyboardVirtualKeyCode virtualKey)
 /* Keyboard_OnKeyDown: the KEYBOARD_KEY_CODE_* event code of a non-modifier, non-lock key in *outKeyCode.
    Digits and letters give KEYBOARD_KEY_CODE_CHAR of their ASCII code (letters lowercase), the numpad
    operators their plain ASCII character. Returns false for keys that queue no event. */
-static Bool8 Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *outKeyCode)
+static bool Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *outKeyCode)
 {
   uint32_t navigationCode;
 

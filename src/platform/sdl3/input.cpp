@@ -503,7 +503,7 @@ void UpdateMouseMode() noexcept
 
 using namespace thandor::sdl3;
 
-Bool8 SdlInput_Init(uint32_t *outError)
+bool SdlInput_Init(uint32_t *outError)
 {
   SDL_HideCursor();
   /* chain in front of the graphics display-mode switch */

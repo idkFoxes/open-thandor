@@ -74,11 +74,11 @@ bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, UiKeyboardStateMask *outStateM
 
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
-Bool8 GraphicsCursor_LoadAssets(uint32_t *outError);
+bool GraphicsCursor_LoadAssets(uint32_t *outError);
 
 void GraphicsCursor_FreeBuffers();
 
-Bool8 GraphicsCursor_CreateBuffersAndCenter
+bool GraphicsCursor_CreateBuffersAndCenter
           (GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode);
 
 void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey);

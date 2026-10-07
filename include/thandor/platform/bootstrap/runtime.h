@@ -59,7 +59,7 @@ void ProcessEntry();
 /* 0, or the allocator's error code */
 uint32_t GameData_ResetDefaults();
 
-Bool8 GameData_LoadExternalTables();
+bool GameData_LoadExternalTables();
 
 /* 0 when resolved into *destination, else FATAL_ERROR_DLL_PROCEDURE_MISSING */
 uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
@@ -76,7 +76,7 @@ uint32_t GameRuntime_InitializeSpatialAudioAndRendering();
 
 uint32_t Game_LoadCoreAssets();
 
-Bool8 Game_PlayIntroMovies();
+bool Game_PlayIntroMovies();
 
 /* 0, or a FATAL_ERROR_* code */
 uint32_t DynAPI_Bootstrap();
