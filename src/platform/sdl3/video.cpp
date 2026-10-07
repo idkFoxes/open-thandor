@@ -252,10 +252,10 @@ void CopyCursorRectangle(SoftwareFramebufferAccess &buffer, int drawY, int drawX
   const std::size_t rowBytes = static_cast<std::size_t>(copyWidth * bytesPerPixel);
   for (; copyHeight != 0; copyHeight--) {
     if (toBuffer) {
-      std::memcpy(bufferCursor, screenCursor, rowBytes);
+      std::copy_n(screenCursor, rowBytes, bufferCursor);
     }
     else {
-      std::memcpy(screenCursor, bufferCursor, rowBytes);
+      std::copy_n(bufferCursor, rowBytes, screenCursor);
     }
     bufferCursor += rowPixels * bytesPerPixel;
     screenCursor += s_video.pitchBytes;
@@ -1108,8 +1108,7 @@ GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t capture
   for (uint32_t row = 0; row < captureHeight; row++) {
     const std::byte *sourcePixel = sourceRow;
     for (uint32_t column = 0; column < captureWidth; column++) {
-      uint32_t pixel = 0;
-      std::memcpy(&pixel, sourcePixel, sizeof pixel);
+      const uint32_t pixel = Thandor_LoadU32(sourcePixel);
       *destinationPixel = pixel | ARGB8888_ALPHA_MASK; /* RGB kept, alpha forced to 0xFF */
       sourcePixel += 4;
       destinationPixel++;
