@@ -332,7 +332,7 @@ uint32_t GameData_ResetDefaults()
   remainingCount = sizeof g_GameFactionRuntimeImage.records / sizeof g_GameFactionRuntimeImage.records[0];
   factionBit = 1;
   relationStatePattern = FACTION_RELATION_DEFAULT_PATTERN; /* one nibble per faction, rotated by one nibble per record */
-  do {
+  for (; remainingCount != 0; remainingCount--) {
     capabilityFlagsSlot = &factionRecord->capabilityFlags;
     *capabilityFlagsSlot = *capabilityFlagsSlot | factionBit;
     dwordCursor = factionRecord->technologyMasks256Bits;
@@ -354,8 +354,7 @@ uint32_t GameData_ResetDefaults()
     factionBit = factionBit * 2;
     relationStatePattern = relationStatePattern << 4 | relationStatePattern >> 28; /* rotate left by a nibble */
     factionRecord++;
-    remainingCount--;
-  } while (remainingCount != 0);
+  }
   allocError = g_MemoryApi.alloc(GAME_STAT_TABLE_BYTES,&allocPayload);
   previousStatTable = g_GameStatTableImage;
   if (allocError != 0) {

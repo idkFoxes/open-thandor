@@ -219,7 +219,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCatalog()
     if ((newRecordsRemaining != 0) && (oldRecordCount != 0)) {
       maskBit = 1;
       maskSlot = 3;
-      do {
+      for (; newRecordsRemaining != 0; newRecordsRemaining--) {
         if (!DwordBlock64Array_ContainsExactRecord(oldRecordCount,oldLevelRecords,receivedRecord)) {
           changedLevelMask[maskSlot] = changedLevelMask[maskSlot] | maskBit;
         }
@@ -230,8 +230,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCatalog()
           maskSlot--;
           if (maskSlot == 0) break;
         }
-        newRecordsRemaining--;
-      } while (newRecordsRemaining != 0);
+      }
     }
   }
   g_MemoryApi.free(previousCatalog);

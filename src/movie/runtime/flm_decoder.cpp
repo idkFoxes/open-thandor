@@ -97,7 +97,9 @@ uint32_t Movie_DecodeFrame4x4Delta
   skipRemaining = 0;
   streamCursor = encodedFrame;
   blocksLeftInRow = widthPixels >> 2;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (skipRemaining != 0) {
         skipRemaining--;

@@ -107,7 +107,7 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
       return false;
     }
     playerRecord = g_FrontendPlayerRuntimeBlocks;
-    do {
+    for (; playersRemaining != 0; playersRemaining--) {
       if (packet->playerRemoval10007.removedPlayerToken == playerRecord->playerRuntimeId) {
         /* "player left" message with the name, then close the gap in the record array */
         resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
@@ -125,8 +125,7 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
         return false;
       }
       playerRecord++;
-      playersRemaining--;
-    } while (playersRemaining != 0);
+    }
     return false;
   }
   if (packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_30005_PLAYER_SNAPSHOT) {

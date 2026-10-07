@@ -172,7 +172,7 @@ uintptr_t FileSystem_Init()
           /* Normalize the text in place: separators (<= ' ') and [comments] become NUL, other
              characters go through the normalization map. The original also stored the text's address and
              size in two globals that nothing read; the block stays allocated (arena layout). */
-          do {
+          for (; configBytesLeft != 0; configBytesLeft--) {
             configByte = *configCursor;
             if (configByte == '[') {
               /* blank the comment up to its closing ']', which is then blanked as a separator */
@@ -191,8 +191,7 @@ uintptr_t FileSystem_Init()
               *configCursor = g_FileSystemConfigCharacterNormalizationMap[configByte];
             }
             configCursor++;
-            configBytesLeft--;
-          } while (configBytesLeft != 0);
+          }
         }
       }
     }

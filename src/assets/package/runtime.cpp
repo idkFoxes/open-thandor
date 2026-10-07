@@ -610,7 +610,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
   if (entriesRemaining == 0) {
     return nullptr; /* empty package */
   }
-  do {
+  for (; entriesRemaining != 0; entriesRemaining--) {
     /* compare code units over the path length including its terminator, stopping at the first difference */
     matched = false;
     remainingCount = -(lengthRemaining - PCK_ENTRY_PATH_UNITS);
@@ -627,8 +627,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
       return currentEntry;
     }
     currentEntry++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
   return nullptr;
 }
 

@@ -348,7 +348,7 @@ void SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,sh
   
   outputPassesRemaining = SAM_BLOCK_SAMPLE_COUNT / SAM_MMX_OUTPUTS_PER_PASS;
   cosineRowCursor = g_CosineDerivedLookupAllocation;
-  do {
+  for (; outputPassesRemaining != 0; outputPassesRemaining--) {
     /* One pass = coefficients u..u+3: all 256 samples, 8 at a time and pre-scaled >> 4 for headroom, are
        multiplied pairwise (PMADDWD) with the cosine rows at cosineRowCursor + 0, + 0x100, + 0x200 and + 0x300. */
     mm0PackedValue0 = psraw(Thandor_LoadU64(inputPcm),4);
@@ -998,10 +998,9 @@ void SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,sh
                                 (int)((uint64_t)mm0PackedValue33 >> 0x20) +
                                 (int)((uint64_t)mm1PackedValue63 >> 0x20),bank2LowLaneSum) >> 0x10 &
                g_SoundDecodeMmxWordLaneMask2,3);
-    outputPassesRemaining--;
     Thandor_StoreU64(outputCoefficients, mm0PackedValue64);
     outputCoefficients = outputCoefficients + SAM_MMX_OUTPUTS_PER_PASS;
-  } while (outputPassesRemaining != 0);
+  }
 }
 
 /* Packs 256 transform coefficients into one SAM block, the exact format SoundSample_DecodePackedCoefficientBlock
@@ -1024,7 +1023,7 @@ uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *i
   pendingBitCount = 0;
   bitAccumulator = 0;
   outputCursor = reinterpret_cast<uint32_t *>(encodedBlock);
-  do {
+  for (; coefficientsRemaining != 0; coefficientsRemaining--) {
     coefficientValue = (uint32_t)*inputCoefficients;
     /* -1, 0 and +1 all become the 1-bit zero code (a 0 bit, nothing to OR in) */
     if (((int)coefficientValue < -1) || (1 < (int)coefficientValue)) {
@@ -1082,8 +1081,7 @@ uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *i
       pendingBitCount = pendingBitCount - 24;
     }
     inputCoefficients++;
-    coefficientsRemaining--;
-  } while (coefficientsRemaining != 0);
+  }
   /* write out the last partial byte (fewer than 8 bits remain after the flush above) */
   if (pendingBitCount < 8) {
     if (pendingBitCount != 0) {

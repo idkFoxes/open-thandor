@@ -435,6 +435,7 @@ Bool8 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
       sessionContext->ipv4AddressNetworkOrder)) {
     remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (packet->playerRemoval10007.removedPlayerToken == playerRecord->playerRuntimeId) {
         resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);

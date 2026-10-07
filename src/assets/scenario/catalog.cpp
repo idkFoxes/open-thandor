@@ -172,13 +172,12 @@ void ScenarioCatalog_Rebuild()
                       (g_ScenarioLevelDataPathTemplateUtf16.prefixCodeUnits,
                        &g_ScenarioLevelDataPathTemplateUtf16.decimalDigits,recordCount,recordsBase);
     /* count the records (at least one: files without a record are skipped above) */
-    do {
+    for (; recordCount != 0; recordCount--) {
       catalog->campaignRecordsOffset = catalog->campaignRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
       catalog->saveRecordsOffset = catalog->saveRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
       catalog->levelRecordCount++;
       g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + SCENARIO_CATALOG_RECORD_STRIDE;
-      recordCount--;
-    } while (recordCount != 0);
+    }
   }
   loaded = Resource_Load(g_LevelCampagneDatPathUtf16,&loadedBuffer,&loadedByteCount,nullptr);
   catalog = g_ScenarioCatalog;
@@ -195,12 +194,11 @@ void ScenarioCatalog_Rebuild()
                       (g_ScenarioCampaignDataPathTemplateUtf16.prefixCodeUnits,
                        &g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits,recordCount,recordsBase);
     /* count the records (at least one: files without a record are skipped above) */
-    do {
+    for (; recordCount != 0; recordCount--) {
       catalog->saveRecordsOffset = catalog->saveRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
       catalog->campaignRecordCount++;
       g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + SCENARIO_CATALOG_RECORD_STRIDE;
-      recordCount--;
-    } while (recordCount != 0);
+    }
   }
   WidePath_CombineDirectoryAndLeaf
             (g_ScenarioCatalogPathScratchUtf16,g_SaveSvePatternUtf16,g_ExecutableDirectoryUtf16);
@@ -305,7 +303,7 @@ ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
                 sourceByteCount,existingRecordCount);
     return existingRecordCount;
   }
-  do {
+  for (; sourceRecordsRemaining != 0; sourceRecordsRemaining--) {
     /* find the destination record with the same identifier */
     destinationRecordsRemaining = existingRecordCount;
     destinationRecordCursor = destinationRecords;
@@ -328,7 +326,6 @@ ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
     /* copy the whole 0x100-byte record */
     *destinationRecordCursor = *sourceRecords;
     sourceRecords++;
-    sourceRecordsRemaining--;
-  } while (sourceRecordsRemaining != 0);
+  }
   return existingRecordCount;
 }
