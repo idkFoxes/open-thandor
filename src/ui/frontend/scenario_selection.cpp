@@ -159,7 +159,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
     if (codeUnit == 0) break;
   }
   compareUnitCount = (uint32_t)(levelNameEnd - levelName);
-  rowsRemaining = FrontendUi_Image(g_FrontendRootNode)->missionsList.rowCount;
+  rowsRemaining = g_FrontendRootNode->missionsList.rowCount;
   if (rowsRemaining == 0) {
     return false;
   }
@@ -167,7 +167,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
   do {
     if (FrontendScenarioSelectionPage_CodeUnitsEqual
             (levelName,
-             static_cast<const uint16_t *>(FrontendUi_Image(g_FrontendRootNode)->missionsList.rowSlots[selectionIndex]),
+             static_cast<const uint16_t *>(g_FrontendRootNode->missionsList.rowSlots[selectionIndex]),
              compareUnitCount)) {
       controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
       *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
@@ -357,11 +357,11 @@ void ScenarioCatalog_RebuildSaveRecordListPage
   Ptr32<void> *rowPointers;
   Ptr32<void> *rowPointerCursor;
   
-  firstNode = &FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root.base;
-  UiSelectableGroup_SelectExclusive(3,&FrontendUi_Image(g_FrontendRootNode)->loadGameTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->campaignsTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->singleGameTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->loadGameTabButton.selectable.base);
+  firstNode = &g_FrontendRootNode->frontendRoot.root.base;
+  UiSelectableGroup_SelectExclusive(3,&g_FrontendRootNode->loadGameTabButton.selectable.base,
+      &g_FrontendRootNode->campaignsTabButton.selectable.base,
+      &g_FrontendRootNode->singleGameTabButton.selectable.base,
+      &g_FrontendRootNode->loadGameTabButton.selectable.base);
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SAVED_GAMES,
                              UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(firstNode)->gameSelectTabStack));
   if (g_ScenarioCatalog != nullptr) {
@@ -409,11 +409,11 @@ void ScenarioCatalog_RebuildLevelRecordListPage
   UiListRowCount rowCount;
   Ptr32<ScenarioCatalogDisplayRecord> *rowPointers;
   
-  firstNode = &FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root.base;
-  UiSelectableGroup_SelectExclusive(3,&FrontendUi_Image(g_FrontendRootNode)->singleGameTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->campaignsTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->singleGameTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->loadGameTabButton.selectable.base);
+  firstNode = &g_FrontendRootNode->frontendRoot.root.base;
+  UiSelectableGroup_SelectExclusive(3,&g_FrontendRootNode->singleGameTabButton.selectable.base,
+      &g_FrontendRootNode->campaignsTabButton.selectable.base,
+      &g_FrontendRootNode->singleGameTabButton.selectable.base,
+      &g_FrontendRootNode->loadGameTabButton.selectable.base);
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SINGLE_GAMES,
                              UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(firstNode)->gameSelectTabStack));
   if (g_ScenarioCatalog != nullptr) {
@@ -487,11 +487,11 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
   UiListRowCount rowCount;
   Ptr32<void> *rowPointers;
   
-  firstNode = &FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root.base;
-  UiSelectableGroup_SelectExclusive(3,&FrontendUi_Image(g_FrontendRootNode)->campaignsTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->campaignsTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->singleGameTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->loadGameTabButton.selectable.base);
+  firstNode = &g_FrontendRootNode->frontendRoot.root.base;
+  UiSelectableGroup_SelectExclusive(3,&g_FrontendRootNode->campaignsTabButton.selectable.base,
+      &g_FrontendRootNode->campaignsTabButton.selectable.base,
+      &g_FrontendRootNode->singleGameTabButton.selectable.base,
+      &g_FrontendRootNode->loadGameTabButton.selectable.base);
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_CAMPAIGNS,
                              UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(firstNode)->gameSelectTabStack));
   if (g_ScenarioCatalog != nullptr) {
@@ -550,15 +550,15 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
   Ptr32<ScenarioCatalogSaveRecord> *rowPointers;
   ScenarioCatalogSaveRecord *saveRecord;
   TextResourceId resourceId;
-  uintptr_t frontendRoot;
+  FrontendUiImage *frontendRoot;
   uint16_t *primaryText;
   uint16_t *fieldText;
 
   frontendRoot = g_FrontendRootNode;
   rowPointers =
-       static_cast<Ptr32<ScenarioCatalogSaveRecord> *>(FrontendUi_Image(g_FrontendRootNode)->savedGamesList.rowSlots);
-  control = UiListControl_AsPointerList(&FrontendUi_Image(g_FrontendRootNode)->savedGamesList);
-  FrontendUi_Image(g_FrontendRootNode)->savedGameDescriptionText.text =
+       static_cast<Ptr32<ScenarioCatalogSaveRecord> *>(g_FrontendRootNode->savedGamesList.rowSlots);
+  control = UiListControl_AsPointerList(&g_FrontendRootNode->savedGamesList);
+  g_FrontendRootNode->savedGameDescriptionText.text =
        reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_SCENARIO_DESCRIPTION_EMPTY));
   if (rowPointers != nullptr) {
     UiPointerList_SelectColumnListIndex(selectionIndex,control);
@@ -574,7 +574,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
       primaryText = TextResource_Resolve(resourceId);
       /* the first code unit becomes palette colour 0 */
       *primaryText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-      FrontendUi_Image(frontendRoot)->savedGameDescriptionText.text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(resourceId));
+      frontendRoot->savedGameDescriptionText.text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(resourceId));
     }
     else {
       primaryText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
@@ -583,7 +583,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
       RichTextCommandStream_PatchPayloadBySelector(1,fieldText,primaryText);
       fieldText = TextResource_Resolve(saveRecord->campaignTitleTextId);
       RichTextCommandStream_PatchPayloadBySelector(0,fieldText,primaryText);
-      FrontendUi_Image(frontendRoot)->savedGameDescriptionText.text =
+      frontendRoot->savedGameDescriptionText.text =
            reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE));
     }
   }
@@ -600,13 +600,13 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
 {
   UiPointerListControl *control;
   Ptr32<ScenarioCatalogDisplayRecord> *rowPointers;
-  uintptr_t frontendRoot;
+  FrontendUiImage *frontendRoot;
   
   frontendRoot = g_FrontendRootNode;
   rowPointers =
-       static_cast<Ptr32<ScenarioCatalogDisplayRecord> *>(FrontendUi_Image(g_FrontendRootNode)->campaignsList.rowSlots);
-  control = UiListControl_AsPointerList(&FrontendUi_Image(g_FrontendRootNode)->campaignsList);
-  FrontendUi_Image(g_FrontendRootNode)->campaignDescriptionText.text =
+       static_cast<Ptr32<ScenarioCatalogDisplayRecord> *>(g_FrontendRootNode->campaignsList.rowSlots);
+  control = UiListControl_AsPointerList(&g_FrontendRootNode->campaignsList);
+  g_FrontendRootNode->campaignDescriptionText.text =
        reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_SCENARIO_DESCRIPTION_EMPTY));
   if (rowPointers != nullptr) {
     UiPointerList_SelectColumnListIndex(selectionIndex,control);
@@ -616,7 +616,7 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
       FrontendScenarioSelection_LogRejectedRowIndex(selectionIndex);
       return;
     }
-    FrontendUi_Image(frontendRoot)->campaignDescriptionText.text =
+    frontendRoot->campaignDescriptionText.text =
          reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(rowPointers[selectionIndex]->titleTextResourceId +
                                                              TEXT_ID_CAMPAIGN_DESCRIPTION_BASE));
   }
@@ -693,13 +693,13 @@ void ScenarioCatalog_SelectLevelAndShowDescription
 {
   UiPointerListControl *listControl;
   Ptr32<ScenarioCatalogDisplayRecord> *rowPointers;
-  uintptr_t frontendRoot;
+  FrontendUiImage *frontendRoot;
 
   frontendRoot = g_FrontendRootNode;
   rowPointers =
-       static_cast<Ptr32<ScenarioCatalogDisplayRecord> *>(FrontendUi_Image(g_FrontendRootNode)->missionsList.rowSlots);
-  listControl = UiListControl_AsPointerList(&FrontendUi_Image(g_FrontendRootNode)->missionsList);
-  FrontendUi_Image(g_FrontendRootNode)->missionDescriptionText.text =
+       static_cast<Ptr32<ScenarioCatalogDisplayRecord> *>(g_FrontendRootNode->missionsList.rowSlots);
+  listControl = UiListControl_AsPointerList(&g_FrontendRootNode->missionsList);
+  g_FrontendRootNode->missionDescriptionText.text =
        reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_SCENARIO_DESCRIPTION_EMPTY));
   if (rowPointers != nullptr) {
     UiPointerList_SelectColumnListIndex(selectionIndex,listControl);
@@ -709,7 +709,7 @@ void ScenarioCatalog_SelectLevelAndShowDescription
       FrontendScenarioSelection_LogRejectedRowIndex(selectionIndex);
       return;
     }
-    FrontendUi_Image(frontendRoot)->missionDescriptionText.text =
+    frontendRoot->missionDescriptionText.text =
          reinterpret_cast<uint16_t *>(static_cast<uintptr_t>
               (rowPointers[selectionIndex]->scenarioTextResourceId * TEXT_ID_LEVEL_DESCRIPTION_STRIDE +
                TEXT_ID_LEVEL_DESCRIPTION_BASE));

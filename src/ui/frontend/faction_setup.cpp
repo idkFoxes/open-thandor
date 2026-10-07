@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-uintptr_t g_FrontendRootNode = 0;
+FrontendUiImage *g_FrontendRootNode = nullptr;
 
 static uint32_t g_FrontendFactionAssignmentReadyStateGeneration = 0;
 
@@ -45,7 +45,7 @@ void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
   
   rowIndex = 0;
   do {
-    if ((int)(reinterpret_cast<uintptr_t>(factionControl) - g_FrontendRootNode) ==
+    if ((int)Thandor_ByteDistance(factionControl,g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_CycleFactionColour>(0,0,rowIndex);
       return;
@@ -66,7 +66,7 @@ void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
   
   rowIndex = 0;
   do {
-    if ((int)(reinterpret_cast<uintptr_t>(playerControl) - g_FrontendRootNode) ==
+    if ((int)Thandor_ByteDistance(playerControl,g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_ToggleFactionActive>(0,0,rowIndex);
       return;
@@ -87,7 +87,7 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
   
   rowIndex = 0;
   do {
-    if ((int)(reinterpret_cast<uintptr_t>(selectionRowControl) - g_FrontendRootNode) ==
+    if ((int)Thandor_ByteDistance(selectionRowControl,g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_ChooseFaction>(0,0,rowIndex);
       return;
@@ -141,7 +141,7 @@ void FrontendFactionSetup_CycleFactionColour
       }
       playerSlotOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowIndex];
       selectionControl = Thandor_At<UiFramedTextButtonControl>
-           (FrontendUi_Image(g_FrontendRootNode),g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]);
+           (g_FrontendRootNode,g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]);
       nextSelectionTextId = selectionControl->textResourceId + 1;
       selectionCycleCounterField =
            reinterpret_cast<int *>(&Thandor_At<LevelPlayerSlotRecord>(g_FrontendLoadedLevelAsset->playerSlots,playerSlotOffset)->aiClassOrMode);
@@ -187,7 +187,7 @@ void FrontendFactionSetup_ToggleFactionActive
   } while (remainingPlayerBlocks != 0);
   lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates + rowIndex + 1;
   *lifecycleState = *lifecycleState ^ FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(&FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root);
+  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(&g_FrontendRootNode->frontendRoot.root);
 }
 
 /* Handler of frontend command FRONTEND_COMMAND_CHOOSE_FACTION (0x750), called directly by
@@ -211,17 +211,17 @@ void FrontendFactionSetup_ChooseFaction
     return;
   }
   selectedControl =
-       FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]);
+       g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]);
   if ((selectedControl->selectable.stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
     if (playerRuntimeId == g_LocalPlayerRuntimeId) {
       UiSelectableGroup_SelectExclusive(7,&selectedControl->selectable.base,
-          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[0])->selectable.base,
-          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[1])->selectable.base,
-          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[2])->selectable.base,
-          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[3])->selectable.base,
-          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[4])->selectable.base,
-          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[5])->selectable.base,
-          &FrontendUi_Image(g_FrontendRootNode)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[6])->selectable.base);
+          &g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[0])->selectable.base,
+          &g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[1])->selectable.base,
+          &g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[2])->selectable.base,
+          &g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[3])->selectable.base,
+          &g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[4])->selectable.base,
+          &g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[5])->selectable.base,
+          &g_FrontendRootNode->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[6])->selectable.base);
     }
     readyStateGeneration = g_FrontendFactionAssignmentReadyStateGeneration;
     /* network game: search the player's record; when the count runs out first, the first record is used
@@ -242,6 +242,6 @@ void FrontendFactionSetup_ChooseFaction
     matchedPlayerBlock->factionAssignment.factionAssignmentIndex = rowIndex + 1;
     matchedPlayerBlock->factionAssignment.readyOrWaitState = readyStateGeneration;
     g_FrontendFactionAssignmentReadyStateGeneration++;
-    FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(&FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root);
+    FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(&g_FrontendRootNode->frontendRoot.root);
   }
 }

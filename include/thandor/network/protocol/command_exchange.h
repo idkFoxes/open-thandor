@@ -24,7 +24,7 @@
 
 Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          uint32_t unusedDispatchArg);
+          FrontendUiImage *unusedFrontendRoot);
 
 Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
 

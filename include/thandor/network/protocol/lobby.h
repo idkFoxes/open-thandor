@@ -47,7 +47,7 @@
 
 void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          FrontendRootRuntimeAddress32 frontendRuntime);
+          struct FrontendUiImage *frontendRuntime);
 
 void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t unusedPayload3);
 
@@ -60,15 +60,15 @@ Bool8 UiTransfer_SendPlayerDescriptor();
 
 void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          FrontendRootRuntimeAddress32 frontendRuntime);
+          struct FrontendUiImage *frontendRuntime);
 
-void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRuntimeAddress32 frontendRuntime);
+void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(struct FrontendUiImage *frontendRuntime);
 
 void FrontendTransfer_SendCapabilityHeartbeat();
 
 void FrontendTransfer_HandleSessionListAndJoinAckPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          FrontendRootRuntimeAddress32 frontendRuntime);
+          struct FrontendUiImage *frontendRuntime);
 
 void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot);
 

@@ -142,7 +142,7 @@ void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unuse
           GameSpeedPercent gameSpeedPercent)
 
 {
-  FrontendUi_Image(g_FrontendRootNode)->gameSpeedSlider.value = gameSpeedPercent;
+  g_FrontendRootNode->gameSpeedSlider.value = gameSpeedPercent;
 }
 
 
@@ -499,15 +499,15 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
 
 {
   uint32_t *displayFlags;
-  uintptr_t frontendRootAddress;
+  FrontendUiImage *frontendRoot;
 
-  frontendRootAddress = g_FrontendRootNode;
+  frontendRoot = g_FrontendRootNode;
   Movie_Close();
   /* percent * 256 / 100 */
   g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
-       (uint32_t)(FrontendUi_Image(frontendRootAddress)->gameSpeedSlider.value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
+       (uint32_t)(frontendRoot->gameSpeedSlider.value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
   /* briefingImage: an image action control, its template node is shorter than the class */
-  displayFlags = &reinterpret_cast<UiImageActionControl *>(&FrontendUi_Image(frontendRootAddress)->briefingImage)->displayFlags;
+  displayFlags = &reinterpret_cast<UiImageActionControl *>(&frontendRoot->briefingImage)->displayFlags;
   *displayFlags = *displayFlags | 8;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,romActionIndex);
 }
@@ -522,11 +522,11 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
           FrontendStatusCode romActionIndex)
 
 {
-  uintptr_t frontendRootAddress;
+  FrontendUiImage *frontendRoot;
 
-  frontendRootAddress = g_FrontendRootNode;
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(g_FrontendRootNode)->frontendPageStack));
-  FrontendUi_Image(frontendRootAddress)->menuRoomModelView.contextFlags &=
+  frontendRoot = g_FrontendRootNode;
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack));
+  frontendRoot->menuRoomModelView.contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(romActionIndex);
 }

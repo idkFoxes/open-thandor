@@ -77,7 +77,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
   /* Each dispatch record names its handler by continuationEntryAddress, which only serves as the case label
      of the switch below. root is g_FrontendRootNode. Returns true = not handled. */
   UiCommandDispatchRecord *record = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30;
-  FrontendUiImage *root = FrontendUi_Image(g_FrontendRootNode);
+  FrontendUiImage *root = g_FrontendRootNode;
   uint32_t target;
 
   (void)frontendRuntime;
@@ -175,7 +175,7 @@ void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex)
 void Frontend_StateTick()
 
 {
-  uintptr_t frontendRoot; /* passed to the packet handlers */
+  FrontendUiImage *frontendRoot; /* passed to the packet handlers */
   uint32_t previousTickCounter;
   Bool8 callResult;
   void *packet;
@@ -331,11 +331,11 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   uint16_t availabilityMarker;
   
   networkState = g_FrontendNetworkState;
-  frontendRoot = FrontendUi_Image(g_FrontendRootNode);
+  frontendRoot = g_FrontendRootNode;
   /* the text box's lineCount and textLines slots are the count and entries of a pointer list */
   RecentTextHistory_SortAndBuildPointerList
             (5,reinterpret_cast<RecentTextHistoryPointerList *>
-                 (&FrontendUi_Image(g_FrontendRootNode)->chatMessageHistory.lineCount));
+                 (&g_FrontendRootNode->chatMessageHistory.lineCount));
   switch(networkState) {
   case FRONTEND_NETWORK_STATE_BROWSING:
     FrontendSessionList_DecrementExpiryAndCompactRows(frontendRoot);
@@ -355,25 +355,25 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
     /* briefingImage: an image action control, its template node is shorter than the class */
-    if ((reinterpret_cast<UiImageActionControl *>(&FrontendUi_Image(frontendRoot)->briefingImage)->textureSource != nullptr) &&
+    if ((reinterpret_cast<UiImageActionControl *>(&frontendRoot->briefingImage)->textureSource != nullptr) &&
        !Movie_AdvanceFrame(nullptr,nullptr)) {
       Movie_Rewind();
     }
-    if (FrontendUi_Image(frontendRoot)->moviePlaybackView.textureSource != nullptr) {
+    if (frontendRoot->moviePlaybackView.textureSource != nullptr) {
       SoftwareMaskBuffer_AdvancePatternByPercentTick /* the mask view of the texture preview */
-                (reinterpret_cast<SoftwareMaskRuntimeView *>(&FrontendUi_Image(frontendRoot)->moviePlaybackView));
+                (reinterpret_cast<SoftwareMaskRuntimeView *>(&frontendRoot->moviePlaybackView));
     }
   }
   /* bottom bar: empty page in a local game, the chat input line in a network game */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->chatInputSlot));
+    UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&frontendRoot->chatInputSlot));
   }
   else {
-    UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->chatInputSlot));
+    UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&frontendRoot->chatInputSlot));
   }
   (*g_FrontendModelPointerContextVtable.pointerMove)
-            (g_CursorOverrideY,g_CursorOverrideX,&FrontendUi_Image(frontendRoot)->menuRoomModelView.base);
+            (g_CursorOverrideY,g_CursorOverrideX,&frontendRoot->menuRoomModelView.base);
   hoveredNode = (*frontendRoot->frontendRoot.root.base.vtable->hitTest)
                     (g_CursorOverrideY,g_CursorOverrideX,&frontendRoot->frontendRoot.root.base);
   if (hoveredNode == UI_NODE_NONE) {
@@ -387,12 +387,12 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
     g_FrontendPlayerRuntimeBlocks->capabilityFlags = FRONTEND_CAPABILITY_CD;
   }
   activePageIndex = UiPageStack_ActivePageIndex
-                     (UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendPageStack));
+                     (UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendPageStack));
   if (activePageIndex == FRONTEND_PAGE_STACK_CHOOSE_GAME) {
     selectedTabIndex = UiSelectableGroup_SelectedIndex(3,
-      &FrontendUi_Image(g_FrontendRootNode)->loadGameTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->singleGameTabButton.selectable.base,
-      &FrontendUi_Image(g_FrontendRootNode)->campaignsTabButton.selectable.base);
+      &g_FrontendRootNode->loadGameTabButton.selectable.base,
+      &g_FrontendRootNode->singleGameTabButton.selectable.base,
+      &g_FrontendRootNode->campaignsTabButton.selectable.base);
     /* none selected gives 3, never the single-games tab */
     if ((selectedTabIndex == SCENARIO_SELECTION_TAB_SINGLE_GAMES) && (g_ScenarioCatalog != nullptr)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;

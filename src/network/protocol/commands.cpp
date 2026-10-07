@@ -519,11 +519,11 @@ static Bool8 CommandDispatch_IsPayloadValid(CommandPayloadCheck check,uint32_t v
   case COMMAND_CHECK_RELAXATION_PASSES:
     return value != 0 && value <= TERRAIN_RELAXATION_BUTTON_PASSES;
   case COMMAND_CHECK_MISSION_ROW:
-    return CommandDispatch_IsListRow(&FrontendUi_Image(g_FrontendRootNode)->missionsList.base,value);
+    return CommandDispatch_IsListRow(&g_FrontendRootNode->missionsList.base,value);
   case COMMAND_CHECK_CAMPAIGN_ROW:
-    return CommandDispatch_IsListRow(&FrontendUi_Image(g_FrontendRootNode)->campaignsList.base,value);
+    return CommandDispatch_IsListRow(&g_FrontendRootNode->campaignsList.base,value);
   case COMMAND_CHECK_SAVED_GAME_ROW:
-    return CommandDispatch_IsListRow(&FrontendUi_Image(g_FrontendRootNode)->savedGamesList.base,value);
+    return CommandDispatch_IsListRow(&g_FrontendRootNode->savedGamesList.base,value);
   }
   return true;
 }

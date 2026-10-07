@@ -202,7 +202,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   uint32_t bundleByteCount;
   int campaignRecordsRemaining;
   uint32_t dwordsRemaining;
-  uintptr_t frontendRoot;
+  FrontendUiImage *frontendRoot;
   CampaignAsset *campaignAsset;
   CampaignLevelRecord *levelRecord;
   uint16_t *fieldGridPath;
@@ -227,7 +227,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     WidePath_CombineDirectoryAndLeaf
               (g_FrontendScenarioPathScratchUtf16,
                static_cast<uint16_t *>
-                    (FrontendUi_Image(frontendRoot)->campaignsList.rowSlots
+                    (frontendRoot->campaignsList.rowSlots
                      [selectedRecordIndex]),
                g_CampaignLevelDirectoryUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_CGN,g_FrontendScenarioPathScratchUtf16);
@@ -325,11 +325,11 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     UiTransferMailbox_MarkUnavailable();
     g_FrontendScenarioTransferState = SCENARIO_TRANSFER_CAMPAIGN_BUNDLE;
   }
-  FrontendUi_Image(frontendRoot)->menuRoomModelView.contextFlags =
-       FrontendUi_Image(frontendRoot)->menuRoomModelView.contextFlags &
+  frontendRoot->menuRoomModelView.contextFlags =
+       frontendRoot->menuRoomModelView.contextFlags &
        ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   UiPageStack_SetActiveIndex
-            (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendPageStack));
+            (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendPageStack));
   OldUnitRuntime_ResetPendingTables();
   FrontendState_DispatchCode(3); /* ROM action table entry 3 */
 }
@@ -354,7 +354,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   uint32_t levelRecordOffset; /* byte offset of the level record in the catalog's level section */
   uint32_t packetByteCount;
   uint32_t dwordsRemaining;
-  uintptr_t frontendRoot;
+  FrontendUiImage *frontendRoot;
   int otherPlayersRemaining;
   uint8_t *packedDestination;
   uint32_t *packedSourceDwords;
@@ -370,17 +370,17 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   Bool8 levelLoadedLocally;
 
   frontendRoot = g_FrontendRootNode;
-  pageStack = UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(g_FrontendRootNode)->frontendPageStack);
+  pageStack = UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack);
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,
              static_cast<uint16_t *>
-                  (FrontendUi_Image(g_FrontendRootNode)->missionsList.rowSlots
+                  (g_FrontendRootNode->missionsList.rowSlots
                    [selectedRowIndex]),
              g_ScenarioLevelDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
-  FrontendUi_Image(frontendRoot)->menuRoomModelView.contextFlags =
-       FrontendUi_Image(frontendRoot)->menuRoomModelView.contextFlags &
+  frontendRoot->menuRoomModelView.contextFlags =
+       frontendRoot->menuRoomModelView.contextFlags &
        ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(1); /* ROM action table entry 1 */
   FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
@@ -419,7 +419,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
        mask dword (offset >> 13) and bit ((offset >> 8) & 31); there are three mask dwords (96 levels). */
     levelRecordOffset = (uint32_t)Asset_ByteDistance
                           (static_cast<uint8_t *>
-                                (FrontendUi_Image(g_FrontendRootNode)->missionsList.rowSlots
+                                (g_FrontendRootNode->missionsList.rowSlots
                                  [selectedRowIndex]),g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
     maskWordIndex = levelRecordOffset >> 13;
     /* Client: load the level locally when the local player's level mask has it, else request it. */
@@ -451,7 +451,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   g_FrontendLoadedLevelAsset = levelAsset;
   levelRecordOffset = (uint32_t)Asset_ByteDistance
                         (static_cast<uint8_t *>
-                              (FrontendUi_Image(g_FrontendRootNode)->missionsList.rowSlots
+                              (g_FrontendRootNode->missionsList.rowSlots
                                [selectedRowIndex]),g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
   maskWordIndex = levelRecordOffset >> 13;
   if (maskWordIndex < 3) {

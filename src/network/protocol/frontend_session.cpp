@@ -58,7 +58,7 @@ static FrontendPlayerRuntimeRecord *FrontendNetwork_FindPlayerBySender
 */
 void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          uint32_t unusedDispatchArg)
+          FrontendUiImage *unusedFrontendRoot)
 
 {
   NetworkIpv4AddressNetworkOrder senderAddress;
@@ -279,7 +279,7 @@ static void FrontendNetwork_TickSnapshotExchange()
    the snapshot exchange: re-requests a missing chunk, or once every snapshot is complete packs all of them,
    PCK-encodes the block into the outgoing transfer mailbox and queues FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE.
 */
-Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
+Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(FrontendUiImage *unusedFrontendRoot)
 
 {
   uint32_t commandCount;
@@ -312,7 +312,7 @@ Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
 void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
 
 {
-  int frontendRootBase;
+  FrontendUiImage *frontendRoot;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
@@ -327,16 +327,16 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
   g_NetworkBackendSlot3(); /* close the socket */
   g_NetworkBackendSlot1(); /* backend cleanup */
-  frontendRootBase = g_FrontendRootNode;
+  frontendRoot = g_FrontendRootNode;
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
     UiPageStack_SetActiveIndex
-              (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(g_FrontendRootNode)->frontendPageStack));
-    FrontendUi_Image(frontendRootBase)->menuRoomModelView.contextFlags &=
+              (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack));
+    frontendRoot->menuRoomModelView.contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
     g_FrontendRomTransitionPageAction = 0;
     FrontendRomTransition_ActivateRecordById
-              (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(&FrontendUi_Image(frontendRootBase)->menuRoomModelView));
+              (FRONTEND_ROM_RECORD_MAIN_MENU,FrontendModelPointerContext_AsWorldRuntime(&frontendRoot->menuRoomModelView));
   }
   /* player block 0 is the host's while connected */
   resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_HOST_LOST);

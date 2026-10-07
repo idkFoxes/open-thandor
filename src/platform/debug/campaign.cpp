@@ -218,13 +218,13 @@ int DebugCampaign_ApplyScenarioOptions()
   used = 1;
   if (getenv("OPEN_THANDOR_LIST_SCENARIOS") != nullptr) {
     ScenarioCatalog_RebuildLevelRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
-    list = &FrontendUi_Image(g_FrontendRootNode)->missionsList;
+    list = &g_FrontendRootNode->missionsList;
     for (row = 0; row < list->rowCount; row++) {
       Thandor_Log("scenario: single \"%s\"",
                   DebugCampaign_RowName(static_cast<const uint16_t *>(list->rowSlots[row].get()),name,sizeof name));
     }
     ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
-    list = &FrontendUi_Image(g_FrontendRootNode)->campaignsList;
+    list = &g_FrontendRootNode->campaignsList;
     for (row = 0; row < list->rowCount; row++) {
       Thandor_Log("scenario: campaign %u \"%s\"",row,
                   DebugCampaign_RowName(static_cast<const uint16_t *>(list->rowSlots[row].get()),name,sizeof name));
@@ -236,7 +236,7 @@ int DebugCampaign_ApplyScenarioOptions()
     return 0;
   }
   ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
-  list = &FrontendUi_Image(g_FrontendRootNode)->campaignsList;
+  list = &g_FrontendRootNode->campaignsList;
   for (row = 0; row < list->rowCount; row++) {
     DebugCampaign_RowName(static_cast<const uint16_t *>(list->rowSlots[row].get()),name,sizeof name);
     if (_stricmp(name,wanted) == 0 ||
