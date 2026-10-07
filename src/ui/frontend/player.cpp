@@ -39,7 +39,7 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
   uint16_t *textCursor;
   
   UiTextControl_UpdateNonEmptyValidity(textEditControl);
-  if ((textEditControl->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
+  if (Any(textEditControl->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     RichTextCommandStream_CopyToNarrow
               (PLAYER_CHAT_TEXT_BYTES,g_UiSevenSlotCommandPayloadText.textBytes,textEditControl->textBuffer);
     /* the in-game "all recipients" mask; the lobby handler ignores it */

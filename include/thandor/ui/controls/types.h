@@ -46,7 +46,9 @@ union WidePathBuffer256 {
     uint32_t firstTwoCodeUnits; 
 };
 
-enum {
+/* The state flag sets of the text edits, lists and scrollables: 32-bit fields, the original int became the
+   same-size uint32_t (offsets and sizes asserted in layout_checks.cpp). */
+enum class UiTextEditStateFlags : uint32_t {
     UI_TEXT_EDIT_VALUE_VALID=1,
     UI_TEXT_EDIT_DRAW_FRAMED_CHROME=8,
     UI_TEXT_EDIT_CARET_VISIBLE_PHASE=16,
@@ -57,9 +59,10 @@ enum {
     UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY=512,
     UI_TEXT_EDIT_PLAY_INTERACTION_SOUND=1024
 };
-using UiTextEditStateFlags = int;
+THANDOR_FLAG_ENUM(UiTextEditStateFlags);
+using enum UiTextEditStateFlags;
 
-enum {
+enum class UiScrollableStateFlags : uint32_t {
     UI_SCROLL_HORIZONTAL_BAR_AT_TOP=1,
     UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM=2,
     UI_SCROLL_VERTICAL_BAR_AT_LEFT=4,
@@ -74,9 +77,27 @@ enum {
     UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE=33554432,
     UI_SCROLL_VERTICAL_THUMB_ACTIVE=67108864,
     UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE=134217728,
-    UI_SCROLL_VERTICAL_INCREMENT_ACTIVE=268435456
+    UI_SCROLL_VERTICAL_INCREMENT_ACTIVE=268435456,
+    /* bits 4..7: the bar positions a control allows (the bar bits shifted left by 4), read by the layout */
+    UI_SCROLL_ALLOWED_HORIZONTAL_BARS=0x30,
+    UI_SCROLL_ALLOWED_VERTICAL_BARS=0xC0,
+    /* the interior fill (0x100 draws UI_WINDOW_SUBRESOURCE_INTERIOR, 0x200 alone draws subresource 0), the two
+       frame styles, the right-button drag (panning) and whether that drag started inside the content view (then
+       the hit test does not pass the pointer to the content) */
+    UI_SCROLL_FILL_INTERIOR_TEXTURED=0x100,
+    UI_SCROLL_FILL_INTERIOR=0x200,
+    UI_SCROLL_FRAME_STYLE_A=0x400,
+    UI_SCROLL_FRAME_STYLE_B=0x800,
+    /* NOTE: UiScrollableControl_BeginSecondaryScrollInteraction sets 0x1000 and clears it again a few
+       instructions later (as in the original), so the pointer wheel's test of it never sees it set. */
+    UI_SCROLL_SECONDARY_INTERACTION_ACTIVE=0x1000,
+    UI_SCROLL_SECONDARY_PANNING_CONTENT=0x4000,
+    /* All UI_SCROLL_HORIZONTAL_*_ACTIVE / UI_SCROLL_VERTICAL_*_ACTIVE part bits. */
+    UI_SCROLL_HORIZONTAL_PARTS_ACTIVE=0x1F0000,
+    UI_SCROLL_VERTICAL_PARTS_ACTIVE=0x1F000000
 };
-using UiScrollableStateFlags = int;
+THANDOR_FLAG_ENUM(UiScrollableStateFlags);
+using enum UiScrollableStateFlags;
 
 enum {
     UI_NODE_PREFERRED_FOCUS_TARGET=2,
@@ -98,15 +119,16 @@ enum {
 };
 using UiSelectableStateFlags = int;
 
-enum {
+enum class UiTextListStateFlags : uint32_t {
     UI_TEXT_LIST_TYPE_SEARCH_ENABLED=1,
     UI_TEXT_LIST_DEFERRED_ACTION_PENDING=2,
     UI_TEXT_LIST_SELECTION_CONFIRMED=4,
     UI_TEXT_LIST_PLAY_SELECTION_SOUND=8
 };
-using UiTextListStateFlags = int;
+THANDOR_FLAG_ENUM(UiTextListStateFlags);
+using enum UiTextListStateFlags;
 
-enum {
+enum class UiRequiredTextEditStateFlags : uint32_t {
     UI_REQUIRED_TEXT_VALUE_VALID=1,
     UI_REQUIRED_TEXT_DRAW_FRAMED_CHROME=8,
     UI_REQUIRED_TEXT_CARET_VISIBLE_PHASE=16,
@@ -118,16 +140,18 @@ enum {
     UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND=1024,
     UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION=2048
 };
-using UiRequiredTextEditStateFlags = int;
+THANDOR_FLAG_ENUM(UiRequiredTextEditStateFlags);
+using enum UiRequiredTextEditStateFlags;
 
-enum {
+enum class UiListStateFlags : uint32_t {
     UI_LIST_DEFERRED_ACTION_PENDING=2,
     UI_LIST_SELECTION_CONFIRMED=4,
     UI_LIST_PLAY_SELECTION_SOUND=8
 };
-using UiListStateFlags = int;
+THANDOR_FLAG_ENUM(UiListStateFlags);
+using enum UiListStateFlags;
 
-enum {
+enum class UiNumericTextEditStateFlags : uint32_t {
     UI_NUMERIC_TEXT_VALUE_VALID=1,
     UI_NUMERIC_TEXT_SIGNED_VALUE=2,
     UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT=4,
@@ -140,7 +164,8 @@ enum {
     UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY=512,
     UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND=1024
 };
-using UiNumericTextEditStateFlags = int;
+THANDOR_FLAG_ENUM(UiNumericTextEditStateFlags);
+using enum UiNumericTextEditStateFlags;
 
 using UiPointerWheelDelta = int;
 
