@@ -116,7 +116,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
   GameEntityRuntime *ownerEntity;
 
   barrelNode = modelRuntime->rootModelNode->childNodes[0]->childNodes[0];
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
     ArmyWeaponRuntime_CountDownReloadTimers(modelRuntime,barrelNode,g_InGameSimulationStepTicks);
     weaponDefinitionView = modelRuntime->modelDefinition;
     ownerEntity = ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime);

@@ -227,7 +227,7 @@ void ArmyRuntimeClass_SelectProjectileTargetNode(ModelRuntimeTimedTargetProjecti
     }
     /* pick the last node, depth-first, whose definition has class 10 (runtimeClassId) */
     targetModelRuntime = ArmyRuntimeClass_FindLastClass10Node(WorldOwnerNode_ModelRuntime(candidateNode));
-    if ((targetModelRuntime != nullptr) && (((targetModelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0)) {
+    if ((targetModelRuntime != nullptr) && !Any((targetModelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED)) {
       (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = targetModelRuntime;
     }
   }
@@ -258,7 +258,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
   Q12 targetWorldZQ12;
   int reloadCountdownTicks;
 
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
     timedTargetDefinition = modelRuntime->modelDefinition;
     reloadCountdownTicks = (modelRuntime->timedTargetState).targetProjectileReloadCountdownTicks -
             g_InGameSimulationStepTicks;
@@ -385,7 +385,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
     if ((nodeCursor->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (nodeCursor != sourceRuntime)) {
       candidateModelRuntime = WorldOwnerNode_ModelRuntime(nodeCursor);
       candidateArmyRuntime = candidateModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-      if (((candidateModelRuntime->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
+      if (!Any(candidateModelRuntime->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) &&
           (candidateArmyRuntime->factionIndex != 0) &&
           (candidateArmyRuntime->factionIndex != sourceArmyRuntime->factionIndex)) {
         /* Original quirk: the shooter's weaponRangeQ12 is overwritten with each candidate's footprint radius

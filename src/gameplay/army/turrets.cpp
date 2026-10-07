@@ -49,7 +49,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
 
   elapsedTicks = g_InGameSimulationStepTicks;
   /* switched off or destroyed: the turret does nothing this tick */
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
     weaponDefinition = modelRuntime->modelDefinition;
     ownerEntity = ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime);
     recoilCountdown = modelRuntime->attachment0BackwardStepCountdownTicks;
@@ -202,7 +202,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
 
   elapsedTicks = g_InGameSimulationStepTicks;
   /* switched off or destroyed: the turret does nothing this tick */
-  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
+  if (!Any((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK)) {
     weaponDefinition = modelRuntime->modelDefinition;
     ownerEntity = ModelView_Cast<GameEntityRuntime>(modelRuntime->ownerArmyRuntime);
     barrel0RecoilCountdown = modelRuntime->attachment0BackwardStepCountdownTicks;

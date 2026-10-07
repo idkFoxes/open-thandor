@@ -187,7 +187,44 @@ enum class ArmyAiUnitFlags : uint32_t {
 THANDOR_FLAG_ENUM(ArmyAiUnitFlags);
 using enum ArmyAiUnitFlags;
 
-using ArmyRuntimeFlags = uint32_t;
+/* The army model state word: ModelRuntimeSlot word 59 (+0xEC), named classState.stateFlags,
+   GameEntityRuntimeCommon.runtimeFlags, ArmyRuntimeSlot.runtimeFlags and linkedChildRuntimeFlags by the views.
+   Saved with the model pool: bit values fixed. */
+enum class ArmyRuntimeFlags : uint32_t {
+    ARMY_RUNTIME_FLAGS_NONE = 0,
+    /* bits set and tested by the class update callbacks (ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive,
+       the production slots 11/13/22) */
+    ARMY_MODEL_STATE_SWITCHED_OFF = 0x1, /* powered down: no Energy demand, health decays to 3/4 */
+    /* ArmyRuntime_UpdateAnimatedModelSubnodes (building idle animation) */
+    ARMY_MODEL_STATE_BOB_RISING = 0x2, /* child node 2 bobs upwards; toggled at the limits */
+    ARMY_MODEL_STATE_SWITCHED_OFF_SEEN = 0x4, /* follows SWITCHED_OFF; each change rebuilds the owner's selection
+                                                 metrics */
+    /* set when the army's health (actionVector2Q12) drops to zero (ArmyRuntime_ApplyImpactDamageAndFinalizeState
+       and the other damage helpers) */
+    ARMY_RUNTIME_FLAG_DESTROYED = 0x8,
+    ARMY_MODEL_STATE_DISMANTLING = 0x10, /* being recycled: health drains, Xenite (xeniteValueQ4 >> 5) is refunded */
+    ARMY_MODEL_STATE_DESTRUCTION_STARTED = 0x20, /* destruction effect spawned; skips the attachment channel ticks */
+    ARMY_MODEL_STATE_RESEARCHING = 0x40, /* technology research in progress (researchTechnologyId) */
+    ARMY_MODEL_STATE_RESEARCH_UNPAID = 0x80, /* research queued, Xenite not yet paid */
+    /* the same two bits as named by the technology code: Technology_IsAvailableForFaction treats an army with
+       RESEARCH_RUNNING whose researchTechnologyId holds the technology as already researching it;
+       Technology_ApplyRecordToEntity stores the technology in common.commandState (the same slot) and sets
+       RESEARCH_ASSIGNED, and does nothing while either bit is set */
+    ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING = 0x40,
+    ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED = 0x80,
+    ARMY_MODEL_STATE_PRODUCING = 0x100, /* a queued secondary army asset is being built */
+    ARMY_MODEL_STATE_DISMANTLED = 0x200, /* dismantling finished (toggled together with DISMANTLING) */
+    ARMY_MODEL_STATE_NO_REGENERATION = 0x400, /* health does not regenerate */
+    ARMY_MODEL_STATE_RALLY_POINT_SET = 0x800, /* class 13: the exit point (classLinkState.classState78/7C) was set
+                                                 by the player */
+    /* SWITCHED_OFF | DESTROYED: the model does nothing this tick */
+    ARMY_MODEL_STATE_INACTIVE_MASK = ARMY_MODEL_STATE_SWITCHED_OFF | ARMY_RUNTIME_FLAG_DESTROYED,
+    /* INACTIVE_MASK | RESEARCHING | RESEARCH_UNPAID: a production class may start a new build */
+    ARMY_MODEL_STATE_BUILD_BLOCKING_MASK =
+              ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID
+};
+THANDOR_FLAG_ENUM(ArmyRuntimeFlags);
+using enum ArmyRuntimeFlags;
 
 using ArmyRuntimeTimer = uint32_t;
 
@@ -404,7 +441,7 @@ using GameEntityCommandFlags = uint32_t;
 
 using RuntimeToken = uint32_t;
 
-using GameEntityRuntimeFlags = uint32_t;
+using GameEntityRuntimeFlags = ArmyRuntimeFlags;
 
 using GameEntityCommandState = int;
 
@@ -1089,7 +1126,7 @@ struct ModelRuntimeSlotClassState {
     uint32_t effectEmitterPointIndex; // Next model effect point of the timed effect emitter (ArmyRuntime_UpdateTimedShotAndEffectEmitters).
     uint32_t shotEmitterTimerTicks; // Timed shot emitter countdown; constructor sets 1.
     uint32_t effectEmitterTimerTicks; // Timed effect emitter countdown; constructor sets 1, 0x7FFFFFFF = never.
-    uint32_t stateFlags; // ARMY_MODEL_STATE_* bits (gameplay/army/pool.h); constructor-cleared.
+    ArmyRuntimeFlags stateFlags; // ARMY_MODEL_STATE_* bits; constructor-cleared.
     union ArmyRuntimeReferenceOrSavedOffset linkedArmyRuntimeOrSavedOffset; // Live army pointer or serialized pool offset.
     uint32_t energyLoadQ4; // Energy demand: the definition's energyLoadQ4 plus loads held while building/researching.
     uint32_t healthRegenerationDelayTicks; // Counts down to the next health step; damage sets it to 0x200.
@@ -2676,7 +2713,7 @@ struct ModelRuntimeLinkedChildSpawnAndBuildView {
     uint32_t effectEmitterPointIndex;
     uint32_t shotEmitterTimerTicks;
     uint32_t effectEmitterTimerTicks;
-    uint32_t linkedChildRuntimeFlags; // Class runtime flags tested for transition, inhibit, and build/spawn state bits.
+    ArmyRuntimeFlags linkedChildRuntimeFlags; // Class runtime flags tested for transition, inhibit, and build/spawn state bits.
     union ArmyRuntimeReferenceOrSavedOffset linkedArmyRuntimeOrSavedOffset;
     uint32_t energyLoadQ4; // Accumulator adjusted by the selected secondary Army asset's ArmyAssetRecord.energyLoadQ4 while active.
     uint32_t healthRegenerationDelayTicks;
@@ -3068,7 +3105,7 @@ struct ModelRuntimeClass21State {
     uint32_t effectEmitterPointIndex; // Next model effect point of the timed effect emitter (ArmyRuntime_UpdateTimedShotAndEffectEmitters).
     uint32_t shotEmitterTimerTicks; // Timed shot emitter countdown; constructor sets 1.
     uint32_t effectEmitterTimerTicks; // Timed effect emitter countdown; constructor sets 1, 0x7FFFFFFF = never.
-    uint32_t stateFlags; // ARMY_MODEL_STATE_* bits (gameplay/army/pool.h); constructor-cleared.
+    ArmyRuntimeFlags stateFlags; // ARMY_MODEL_STATE_* bits; constructor-cleared.
     union ArmyRuntimeReferenceOrSavedOffset linkedArmyRuntimeOrSavedOffset; // Live army pointer or serialized pool offset.
     uint32_t energyLoadQ4; // Energy demand: the definition's energyLoadQ4 plus loads held while building/researching.
     uint32_t healthRegenerationDelayTicks; // Counts down to the next health step; damage sets it to 0x200.

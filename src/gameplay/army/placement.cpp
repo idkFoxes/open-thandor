@@ -504,8 +504,8 @@ Bool8 ArmyPlacement_CanPlaceBuilding
     supportReachQ12 = supportReachQ12 + placementClearancePaddingQ12;
     if ((supporterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) &&
         (((placementMode & ARMY_PLACEMENT_MODE_SKIP_CLASS18_SUPPORT) != 0) ||
-         ((supporter->classState.stateFlags &
-           (ARMY_RUNTIME_FLAG_DESTROYED | ARMY_MODEL_STATE_DISMANTLING)) != 0))) {
+         (Any(supporter->classState.stateFlags &
+           (ARMY_RUNTIME_FLAG_DESTROYED | ARMY_MODEL_STATE_DISMANTLING))))) {
       continue;
     }
     reachQ12 = supportReachQ12 + modelDefinition->placementFlags;

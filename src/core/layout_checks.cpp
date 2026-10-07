@@ -681,6 +681,21 @@ static_assert(sizeof(ModelDefinitionFlags) == 4 && alignof(ModelDefinitionFlags)
 static_assert(sizeof(PlayerSessionFlags) == 4 && alignof(PlayerSessionFlags) == 4 &&
                   offsetof(SelectionPlayerRuntimeBlock, sessionFlags) == 0x80A8,
               "the player session flags keep their 4-byte field");
+/* Step 13 E34c: the army model state word (ArmyRuntimeFlags: ARMY_MODEL_STATE_*, ARMY_RUNTIME_FLAG_DESTROYED,
+   ENTITY_RUNTIME_FLAG_RESEARCH_*) is ModelRuntimeSlot word 59 (+0xEC) in every view that names it. */
+static_assert(sizeof(ArmyRuntimeFlags) == 4 && alignof(ArmyRuntimeFlags) == 4 &&
+                  offsetof(GameEntityRuntime, common) + offsetof(GameEntityRuntimeCommon, runtimeFlags) == 0xEC &&
+                  offsetof(ArmyRuntimeSlot, runtimeFlags) == 0xEC &&
+                  offsetof(ArmyArticulatedRuntimeSlotView, runtimeFlags) == 0xEC &&
+                  offsetof(ArmyRuntimeLinkedChildMaskSlotView, runtimeFlags) == 0xEC &&
+                  offsetof(ModelRuntimeLinkedChildSpawnAndBuildView, linkedChildRuntimeFlags) == 0xEC &&
+                  offsetof(ModelRuntimeArticulatedMovementDefinitionView, runtimeFlags) == 0xEC &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, stateFlags) == 0xEC &&
+                  offsetof(ModelRuntimeClass21State, stateFlags) == 0x68 &&
+                  offsetof(ModelRuntimeClass21UpdateView, class21State) + offsetof(ModelRuntimeClass21State, stateFlags) == 0xEC &&
+                  offsetof(ModelRuntimeSlotClassStateSerializedScalar, stateFlags) == 0x68 &&
+                  offsetof(ModelRuntimeSlotUnrebaseView, classState) + offsetof(ModelRuntimeSlotClassStateSerializedScalar, stateFlags) == 0xEC,
+              "the army model state word keeps its 4-byte fields at +0xEC");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");

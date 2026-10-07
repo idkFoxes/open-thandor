@@ -168,7 +168,7 @@ static Bool8 InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *wor
     if (factoryModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_13) {
       continue;
     }
-    if (((factoryModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RALLY_POINT_SET) == 0 ||
+    if (!Any((factoryModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RALLY_POINT_SET) ||
         (factoryModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex !=
          worldRuntime->activeFactionRuntimeIndex)) {
       continue;
