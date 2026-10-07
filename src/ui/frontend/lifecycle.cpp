@@ -249,6 +249,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       playerBlock->factionAssignment.readyOrWaitState = 0;
       playerBlock->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
@@ -483,9 +484,8 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
     frontendUiState->buttonVoiceSet4_3FE4 = buttonVoiceSet;
     frontendUiState->buttonVoiceSet4_4044 = buttonVoiceSet;
     frontendUiState->buttonVoiceSet4_28B0 = buttonVoiceSet;
-    controlIndex = 7;
     /* the seven faction, player and selection-row controls of the faction setup page (entries 1..7) */
-    do {
+    for (controlIndex = 7; controlIndex != 0; controlIndex--) {
       FrontendUi_Image(frontendUiState)->NodeAt<UiFramedTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[controlIndex - 1])->activationSound =
            buttonVoiceSet;
       FrontendUi_Image(frontendUiState)->NodeAt<UiFramedTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[controlIndex - 1])->activationSound =
@@ -493,8 +493,7 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
       FrontendUi_Image(frontendUiState)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[controlIndex - 1])->activationSound =
            buttonVoiceSet;
       buttonVoiceSet5 = g_UiButtonSoundVoiceSets7[5];
-      controlIndex--;
-    } while (controlIndex != 0);
+    }
     frontendUiState->buttonVoiceSet5_3C98 = g_UiButtonSoundVoiceSets7[5];
     frontendUiState->buttonVoiceSet5_41C0 = buttonVoiceSet5;
     frontendUiState->buttonVoiceSet5_433C = buttonVoiceSet5;
@@ -573,15 +572,13 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   g_FrontendMenuTextureSource = nullptr;
   /* all 100 menu sound slots (Frontend_Init fills 1..99) */
   voiceSetCursor = g_FrontendMenuSoundVoiceSets;
-  voiceSetsRemaining = 100;
-  do {
+  for (voiceSetsRemaining = 100; voiceSetsRemaining != 0; voiceSetsRemaining--) {
     if (*voiceSetCursor != nullptr) {
       g_SoundReleaseSampleVoiceSet(*voiceSetCursor);
     }
     *voiceSetCursor = nullptr;
     voiceSetCursor++;
-    voiceSetsRemaining--;
-  } while (voiceSetsRemaining != 0);
+  }
   g_SoundStopVoice(g_FrontendMusicActiveBuffer);
   g_SoundReleaseSampleVoiceSet(g_FrontendMusicVoiceSet);
   g_FrontendMusicActiveBuffer = nullptr;

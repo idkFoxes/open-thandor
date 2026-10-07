@@ -15,10 +15,10 @@
 /* Hexagonal radius scans (TerrainHeightDelta_*, TerrainHeightBand_*, TerrainAuxHeightThreshold_*): the scan step
    counter grows by 4 per cell along a straight direction and by 7 (about 4 * sqrt(3)) per step along a wedge's
    diagonal, and a scan stops at g_TerrainScanStepLimit (radius / 0x240, clamped to 1..255). */
-#define TERRAIN_SCAN_STEP_STRAIGHT 4
-#define TERRAIN_SCAN_STEP_DIAGONAL 7
-#define TERRAIN_SCAN_RADIUS_PER_STEP 0x240 /* world units per step: one cell (0x900) is 4 steps */
-#define TERRAIN_SCAN_STEP_LIMIT_MAX 255
+inline constexpr int TERRAIN_SCAN_STEP_STRAIGHT = 4;
+inline constexpr int TERRAIN_SCAN_STEP_DIAGONAL = 7;
+inline constexpr int TERRAIN_SCAN_RADIUS_PER_STEP = 0x240; /* world units per step: one cell (0x900) is 4 steps */
+inline constexpr int TERRAIN_SCAN_STEP_LIMIT_MAX = 255;
 
 extern uint32_t g_TerrainScanRowStrideBytes;
 

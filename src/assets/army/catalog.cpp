@@ -182,7 +182,7 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
    to the record. Returns the last lookup error, or 0. The original trusts childCount and the nesting depth;
    bounded here because the walk follows file data: a node with more children than children[] holds or a tree
    deeper than ARMY_MODEL_TREE_MAX_DEPTH (a cyclic offset) fails with FATAL_ERROR_ARMY_ASSET_INVALID. */
-#define ARMY_MODEL_TREE_MAX_DEPTH 64
+static constexpr int ARMY_MODEL_TREE_MAX_DEPTH = 64;
 static uint32_t ArmyAssetRecord_RelocateModelTree
           (ArmyAssetRecord *record,ArmyAssetHeader *assetBase,ArmyModelTreeNode *node,uint32_t depth)
 {

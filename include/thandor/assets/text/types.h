@@ -20,7 +20,7 @@ typedef struct TextResourcePageBinding TextResourcePageBinding, *PTextResourcePa
 typedef struct TextResourceLocaleBlockPrefix TextResourceLocaleBlockPrefix, *PTextResourceLocaleBlockPrefix;
 typedef struct TextResourceOverrideTable TextResourceOverrideTable, *PTextResourceOverrideTable;
 
-#define TEXT_RESOURCE_MISSING_SENTINEL_0x33 0x33
+inline constexpr int TEXT_RESOURCE_MISSING_SENTINEL_0x33 = 0x33;
 
 using TextResourceStringCount = uint32_t;
 

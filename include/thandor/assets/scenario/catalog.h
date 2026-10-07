@@ -16,14 +16,14 @@
 /* Scenario catalog (g_ScenarioCatalog): ScenarioCatalogHeader followed by the level, campaign and save
    records (0x100 bytes each). Every counted record advances the following section offsets and
    g_ScenarioCatalogUsedBytes by 0x104, although the records are packed 0x100 apart. */
-#define SCENARIO_CATALOG_CAPACITY 0x30000
-#define SCENARIO_CATALOG_HEADER_SIZE 0x18
-#define SCENARIO_CATALOG_RECORD_SIZE 0x100
-#define SCENARIO_CATALOG_RECORD_STRIDE 0x104
+inline constexpr int SCENARIO_CATALOG_CAPACITY = 0x30000;
+inline constexpr int SCENARIO_CATALOG_HEADER_SIZE = 0x18;
+inline constexpr int SCENARIO_CATALOG_RECORD_SIZE = 0x100;
+inline constexpr int SCENARIO_CATALOG_RECORD_STRIDE = 0x104;
 /* Text resource ids: a level title is 0x2230 + its title index, a campaign title 0x2220 + its index (the
    level text page aliases, see TextResourcePage_LoadCompatibilityAliases). */
-#define TEXT_ID_LEVEL_TITLE_BASE 0x2230
-#define TEXT_ID_CAMPAIGN_TITLE_BASE 0x2220
+inline constexpr int TEXT_ID_LEVEL_TITLE_BASE = 0x2230;
+inline constexpr int TEXT_ID_CAMPAIGN_TITLE_BASE = 0x2220;
 
 /* Campaign asset (level\<name>.cgn, g_FrontendLoadedCampaignAsset): a 0x200-byte header followed by
    levelRecordCount level records of 0x180 bytes. The original walks the records with a cursor that starts at

@@ -142,6 +142,7 @@ void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView
   }
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   blocksLeft = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 5;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     for (i = 0; i < 32; i++) {
       if (mask[i] != 0) {
@@ -244,6 +245,7 @@ void SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
   columnsRemaining = maskWidth;
   diagonalSum = 0;
   if (invertSelection == 0) {
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       do {
         if (diagonalSum < thresholdSum) {
@@ -260,6 +262,7 @@ void SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
     } while (rowsRemaining != 0);
     return;
   }
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     do {
       if (thresholdSum < diagonalSum) {
@@ -291,6 +294,7 @@ void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
   /* the byte mask, four mask bytes per dword */
   maskWordCursor = reinterpret_cast<uint32_t *>(maskControl->maskPixels.get());
   maskBlocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 4;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     *maskWordCursor = *maskWordCursor | ARGB8888_CHANNEL_ONES;
     maskWordCursor[1] = maskWordCursor[1] | ARGB8888_CHANNEL_ONES;

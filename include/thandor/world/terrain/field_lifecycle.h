@@ -22,7 +22,7 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
 
 /* Smallest accepted field grid side in cells (FieldGrid_ValidateLoadedImage): the map-edge ring plus an
    interior; tools/data/fld.py uses the same bound. */
-#define FIELD_GRID_MIN_SIDE_CELLS 4
+inline constexpr int FIELD_GRID_MIN_SIDE_CELLS = 4;
 
 Bool8 FieldGrid_ValidateLoadedImage(const FieldGridAsset *fieldGrid,uint32_t loadedByteCount);
 

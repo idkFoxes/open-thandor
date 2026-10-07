@@ -16,8 +16,8 @@
 #include <thandor/world/shots/types.h>
 #include <thandor/core/contracts.h>
 
-#define SHOT_RUNTIME_SLOT_COUNT 0x1000 /* g_ShotRuntimeSlots, 0x40-byte slots */
-#define SHOT_RUNTIME_POOL_BYTES 0x40000 /* SHOT_RUNTIME_SLOT_COUNT * sizeof(ShotRuntimeSlot) */
+inline constexpr int SHOT_RUNTIME_SLOT_COUNT = 0x1000; /* g_ShotRuntimeSlots, 0x40-byte slots */
+inline constexpr int SHOT_RUNTIME_POOL_BYTES = 0x40000; /* SHOT_RUNTIME_SLOT_COUNT * sizeof(ShotRuntimeSlot) */
 
 Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
 

@@ -13,7 +13,7 @@
 #include <thandor/core/contracts.h>
 
 /* Slots of g_EffectDefinitionRegistry (256 pointers; a null slot is free). */
-#define EFFECT_DEFINITION_REGISTRY_SLOT_COUNT 256
+inline constexpr int EFFECT_DEFINITION_REGISTRY_SLOT_COUNT = 256;
 
 Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError);
 

@@ -14,9 +14,9 @@
 #include <thandor/core/contracts.h>
 
 /* WorldObjectRecord.common.allocationFlags value of a record in use (WorldObjectArray_AllocateFreeRecord). */
-#define WORLD_OBJECT_RECORD_ALLOCATED 0x40000000
+inline constexpr int WORLD_OBJECT_RECORD_ALLOCATED = 0x40000000;
 /* WorldOwnerListNode.runtimeFlags bit: the node is linked into its world's owner list. */
-#define WORLD_OWNER_NODE_LINKED 0x80000000
+inline constexpr uint32_t WORLD_OWNER_NODE_LINKED = 0x80000000;
 
 void WorldRuntime_AttachObjectArray
           (WorldObjectRecordCount count,WorldObjectRecord *objectArray,WorldRuntimeContext *world);

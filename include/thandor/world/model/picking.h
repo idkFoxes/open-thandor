@@ -15,7 +15,7 @@
 #include <thandor/core/contracts.h>
 
 /* nearest distance of a ray that hit nothing (ModelRuntime_RaycastCandidateListNearest) */
-#define MODEL_RAYCAST_NO_HIT_DISTANCE 0x7fffffff
+inline constexpr int MODEL_RAYCAST_NO_HIT_DISTANCE = 0x7fffffff;
 
 extern int32_t g_ModelRaycastMaximumDistance;
 

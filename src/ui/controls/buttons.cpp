@@ -590,13 +590,13 @@ void UiConditionalActionControl_DrawClipped
   if (backgroundSubresource == UI_TEXT_BOX_SUBRESOURCE_INTERIOR) {
     /* lineCount != 0 here, so the first line is always drawn */
     lineIndex = 0;
-    do {
+    while (lineIndex < control->lineCount) {
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,g_UiTextStyleNormal,
                  control->textLines[lineIndex],lineTop,textLeft + 3);
       lineIndex = lineIndex + 1;
       lineTop = lineTop + textExtent.heightPixels;
-    } while (lineIndex < control->lineCount);
+    }
   }
   else {
     /* wide box: at most UI_TEXT_BOX_WIDE_MAX_LINES lines, last line first */
@@ -604,13 +604,13 @@ void UiConditionalActionControl_DrawClipped
     if (UI_TEXT_BOX_WIDE_MAX_LINES < remainingLines) {
       remainingLines = UI_TEXT_BOX_WIDE_MAX_LINES;
     }
-    do {
+    while (remainingLines != 0) {
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,g_UiTextStyleNormal,
                  control->textLines[remainingLines - 1],lineTop,textLeft + 3);
       lineTop = lineTop + textExtent.heightPixels;
       remainingLines = remainingLines - 1;
-    } while (remainingLines != 0);
+    }
   }
   g_GraphicsFramebufferEndAccess();
 }
