@@ -18,27 +18,27 @@
 /* placementMode bits of the placement asset-class dispatch (ArmyPlacement_CanPlaceAssetAtFieldPoint passes
    the mode as the first argument of every g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.
    placementAssetClassDispatch handler; the player uses 0/1, the AI 0, 3, 4 and 7). */
-#define ARMY_PLACEMENT_MODE_SKIP_CLASS18_SUPPORT 0x1   /* runtime-class-18 neighbours do not count as the
+inline constexpr int ARMY_PLACEMENT_MODE_SKIP_CLASS18_SUPPORT = 0x1; /* runtime-class-18 neighbours do not count as the
                                                           same-faction support that a candidate must be near */
-#define ARMY_PLACEMENT_MODE_MEASURE_SUPPORT_DISTANCE 0x2 /* do not accept at the first supporting neighbour:
+inline constexpr int ARMY_PLACEMENT_MODE_MEASURE_SUPPORT_DISTANCE = 0x2; /* do not accept at the first supporting neighbour:
                                                             return the free distance to the nearest one */
-#define ARMY_PLACEMENT_MODE_STRUCTURES_ONLY 0x4    /* the runtime-list collision only considers armies whose
+inline constexpr int ARMY_PLACEMENT_MODE_STRUCTURES_ONLY = 0x4; /* the runtime-list collision only considers armies whose
                                                           g_ArmyRuntimeDepthBinClassByModelClass entry is 0x90 */
 /* Clearance (3.0 in Q12) kept around a model's (1,5) anchor point, the point placement offsets by the model's
    heading (ArmyPlacement_CanPlaceAnchoredModel,ArmyPlacement_TestModelTerrainAndRuntimeClearance,
    ArmyPlacementCandidate_TestModelAnchorDistance). */
-#define ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 0xc00
+inline constexpr int ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 = 0xc00;
 /* ArmyPlacement_ValidateAssetAtPointAndCellCorners: offset (Q12, each axis) of the retry corners from the point
    rounded down to a multiple of 0x100 */
-#define ARMY_PLACEMENT_CORNER_OFFSET_Q12 0x240
+inline constexpr int ARMY_PLACEMENT_CORNER_OFFSET_Q12 = 0x240;
 /* nearest-support search: a squared distance above this still has the INT64_MAX start value's high dword
    (no supporting model found) */
 #define ARMY_PLACEMENT_NO_SUPPORT_DISTANCE_SQUARED (INT64_MAX - ((int64_t)1 << 32))
 /* Placement contact kinds (ModelDefinition.placementContactKindIndex): index into
    g_ArmyPlacementContactKindDispatchTable and g_TerrainClassPlacementAndOverlayCallbacks10.placementTests.
    0 terrain height, 1 water surface, 2 terrain height and normal, 3 articulated suspension, 4 top surface. */
-#define ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE 1
-#define ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION 3
+inline constexpr int ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE = 1;
+inline constexpr int ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION = 3;
 
 Bool8 ArmyPlacement_CanPlaceAnchoredModel (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 

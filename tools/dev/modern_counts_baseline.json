@@ -1,5 +1,5 @@
 {
- "revision": "4b1c5ec4",
+ "revision": "cf395f03",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -124,7 +124,6 @@
    "assets": 102,
    "audio": 15,
    "core": 161,
-   "gameplay": 185,
    "graphics": 147,
    "movie": 30,
    "network": 136,
@@ -136,7 +135,7 @@
    "assets": 159,
    "audio": 28,
    "core": 234,
-   "gameplay": 274,
+   "gameplay": 89,
    "generated": 1,
    "graphics": 206,
    "movie": 36,
@@ -162,7 +161,7 @@
   },
   "constexpr": {
    "core": 50,
-   "gameplay": 2,
+   "gameplay": 187,
    "network": 2,
    "platform": 52,
    "ui": 9,

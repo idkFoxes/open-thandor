@@ -14,10 +14,10 @@
 #include <thandor/core/contracts.h>
 
 /* healthRegenerationDelayTicks after every hit: health regenerates again this many ticks later */
-#define ARMY_DAMAGE_REGENERATION_DELAY_TICKS 0x200
+inline constexpr int ARMY_DAMAGE_REGENERATION_DELAY_TICKS = 0x200;
 
 /* packed point key class of a model's damage-effect emitter points (ArmyRuntime_EmitDamageThresholdEffect) */
-#define ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER 3
+inline constexpr int ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER = 3;
 
 void ArmyRuntimeClass_UpdateTransformAndDamageEffect
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);

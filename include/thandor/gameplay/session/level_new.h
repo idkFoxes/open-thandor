@@ -18,12 +18,12 @@
 /* g_InGameLoadedResourcePointers: the level loaders allocate room for 512 loaded EFF/SHT/MDL/ARM file pointers and
    fail with FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES beyond that. The pointers are kept as Ptr32 (4 bytes each, like the
    original's 32-bit pointers), so the original's 512 * 4-byte arena block holds all of them on x64 too. */
-#define INGAME_LOADED_RESOURCE_CAPACITY 0x200
+inline constexpr int INGAME_LOADED_RESOURCE_CAPACITY = 0x200;
 /* WidePath records of the EFF/SHT/MDL/ARM path tables: 32 UTF-16 code units each */
-#define LEVEL_ASSET_PATH_RECORD_UNITS 32
+inline constexpr int LEVEL_ASSET_PATH_RECORD_UNITS = 32;
 /* g_MoviePlaybackScheduleSpan of a loading stage without a known step count: so many ticks per 8 frames that
    the loading movie stays in the stage's frame group (MoviePlayback_AdvanceScheduledFrameAndTick) */
-#define LEVEL_LOAD_MOVIE_SPAN_HOLD 0x10000
+inline constexpr int LEVEL_LOAD_MOVIE_SPAN_HOLD = 0x10000;
 
 /* Prepares one loaded file of a LEV file list (assetByteCount: the loaded byte count); false with the step's
    error code in *outError. */

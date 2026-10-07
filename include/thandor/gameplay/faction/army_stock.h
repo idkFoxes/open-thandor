@@ -16,7 +16,7 @@
 
 /* GameFactionRuntimeRecord army-asset lists (64 entries each): secondaryArmyAssetPointersOrIds is the production
    queue, primaryArmyAssetPointersOrIds the finished armies waiting for placement. */
-#define FACTION_ARMY_ASSET_LIST_CAPACITY 64
+inline constexpr int FACTION_ARMY_ASSET_LIST_CAPACITY = 64;
 
 void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember);
 

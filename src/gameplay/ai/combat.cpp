@@ -45,7 +45,7 @@ static AiCommandGenerationRightShiftBits g_AiCombatTargetCurrentCommandGeneratio
 
 /* Source class count AiCombatTarget_SelectBestCandidate reports for a zero class counter sum, in place of the
    original's positive stack leftover (see the quirk there). */
-#define AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER 1
+static constexpr int AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER = 1;
 
 /* Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
    (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases). Skipped while an

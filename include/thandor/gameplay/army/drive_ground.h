@@ -13,7 +13,7 @@
 #include <thandor/core/contracts.h>
 
 /* Tracked vehicles: the track texture U offsets are kept within +-one texture width (Q20) */
-#define ARMY_TRACK_TEXTURE_U_WRAP 0x100000
+inline constexpr int ARMY_TRACK_TEXTURE_U_WRAP = 0x100000;
 
 void ArmyGroundMovement_ApplyRecoilTilt (ModelRuntimeGroundMovementSteeringView *modelRuntime,ModelRuntimeNode *rootNode,int recoilTilt);
 
