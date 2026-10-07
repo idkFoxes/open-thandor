@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/dialogs/fatal_error.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -89,7 +90,6 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
 {
   UiRootNode *dialogRoot;
   uint16_t *stream;
-  int remainingDwords;
   const uint32_t *templateImageCursor;
   uint32_t *templateCopyCursor;
   RichTextExtent wrappedExtent;
@@ -120,12 +120,7 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
   /* copy the dialog template image into the allocated root node, one dword per step */
   templateImageCursor = reinterpret_cast<const uint32_t *>(&g_FatalErrorUiRootTemplateImage);
   templateCopyCursor = reinterpret_cast<uint32_t *>(g_FatalErrorUiRootTemplate);
-  for (remainingDwords = sizeof g_FatalErrorUiRootTemplateImage / sizeof(uint32_t); remainingDwords != 0;
-       remainingDwords--) {
-    *templateCopyCursor = *templateImageCursor;
-    templateImageCursor++;
-    templateCopyCursor++;
-  }
+  std::copy_n(templateImageCursor,sizeof g_FatalErrorUiRootTemplateImage / sizeof(uint32_t),templateCopyCursor);
   dialogRoot = g_FatalErrorUiRootTemplate;
   /* the text height is subtracted from the dialog's top offset; the wrap width is the panel width (its
      right - left offset) narrowed by the text's left and right insets, all read from the template image */

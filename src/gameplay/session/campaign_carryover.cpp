@@ -243,14 +243,15 @@ Bool8 InGameSaveGame_OldUnitTablesAreEmpty()
 Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
 
 {
+  ArenaScoped oldUnitBlock; /* freed on return, after the entry is written */
   uint32_t *oldUnitImage;
   uint32_t *destinationCursor;
   int index;
 
-  if (g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES,
-                        reinterpret_cast<void **>(&oldUnitImage)) != 0) {
+  if (oldUnitBlock.allocate(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES) != 0) {
     return false;
   }
+  oldUnitImage = oldUnitBlock.as<uint32_t>();
   oldUnitImage[0] = g_OldUnitRecordCount;
   destinationCursor = oldUnitImage + 1;
   for (index = 0; index < OLD_UNIT_PRIMARY_TABLE_BYTES / 4; index++) {
@@ -264,6 +265,5 @@ Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
   Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                       (PckDecodedByteCount)Asset_ByteDistance(destinationCursor,oldUnitImage),oldUnitImage,
                       g_OldunitHexPathUtf16,packageHandle);
-  g_MemoryApi.free(oldUnitImage);
   return true;
 }

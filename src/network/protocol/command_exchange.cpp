@@ -7,6 +7,7 @@
 
 #include <thandor/network/protocol/command_exchange.h>
 #include <thandor/network/protocol/lockstep.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/network/protocol/packet_bytes.h>
@@ -37,15 +38,10 @@ void FrontendTransfer_CopyCommandRecord
 {
   uint32_t *destinationDwords;
   const uint32_t *sourceDwords;
-  int dwordCount;
 
   destinationDwords = Packet_Dwords(destination);
   sourceDwords = Packet_Dwords(source);
-  for (dwordCount = sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t); dwordCount != 0; dwordCount--) {
-    *destinationDwords = *sourceDwords;
-    sourceDwords++;
-    destinationDwords++;
-  }
+  std::copy_n(sourceDwords,sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t),destinationDwords);
 }
 
 /* Client side of the session start: executes a new command batch from the host (a repeated batch only
@@ -144,11 +140,7 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
       packetCursor = Packet_Dwords(packet);
       recordDwordCursor = Packet_Dwords(g_FrontendPlayerRuntimeBlocks + playerIndex);
       /* the first 0x60 bytes of the packet become the head of the player's record */
-      for (dwordCount = 24; dwordCount != 0; dwordCount--) {
-        *recordDwordCursor = *packetCursor;
-        packetCursor++;
-        recordDwordCursor++;
-      }
+      std::copy_n(packetCursor,24,recordDwordCursor);
       resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_ARRIVED);
       RichTextCommandStream_PatchPayloadBySelector
                 (0,packet->packet30005PlayerSnapshot.playerDescriptorPayload,resolvedText);
@@ -257,7 +249,6 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
   UiTransferSequenceToken senderSequenceToken;
   UiTransferSenderContext packetSenderContext;
   FrontendPlayerRuntimeBlockCount playersRemaining;
-  int dwordCount;
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendCommandPacketRecord *commandRecord;
   uint32_t *copySource;
@@ -303,11 +294,7 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
     /* copy the whole 0x20-byte packet, header included, into the slot */
     copySource = Packet_Dwords(packet);
     copyDestination = Packet_Dwords(commandRecord);
-    for (dwordCount = sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t); dwordCount != 0; dwordCount--) {
-      *copyDestination = *copySource;
-      copySource++;
-      copyDestination++;
-    }
+    std::copy_n(copySource,sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t),copyDestination);
     /* The original keeps the player id the client put into the record, so a client could act as another
        player; replaced here by the id of the player the packet came from. A valid client always sends its own
        id, so its records stay unchanged; an empty record (code 0) is left as it is. */

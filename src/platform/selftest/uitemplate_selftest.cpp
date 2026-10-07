@@ -35,6 +35,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
+#include <memory>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
@@ -256,12 +258,7 @@ static void UiTemplate_BuildInGameRoot(InGameRuntimeRoot *root)
 {
     const uint32_t *templateCursor = reinterpret_cast<const uint32_t *>(&g_InGameRuntimeDefaultImageTemplate);
     uint32_t *copyCursor = reinterpret_cast<uint32_t *>(root);
-    unsigned remainingCount;
-    for (remainingCount = sizeof(InGameRuntimeRoot) / 4; remainingCount != 0; remainingCount--) {
-        *copyCursor = *templateCursor;
-        templateCursor++;
-        copyCursor++;
-    }
+    std::copy_n(templateCursor, sizeof(InGameRuntimeRoot) / 4, copyCursor);
     Random_SetBothSeeds(0x5EED);
     root->rootUi.base.nextSibling = UI_NODE_NONE;
     UiSerializedTree_Relocate(Thandor_PointerToI32(root), &root->rootUi.base);
@@ -271,17 +268,14 @@ static void UiTemplate_LogRelocatedInGameRoot()
 {
     RandomGeneratorState savedRandom = g_RandomGeneratorState;
     TextResourceOverrideTable *savedOverrides = g_TextResourceOverrides;
-    InGameRuntimeRoot *first = static_cast<InGameRuntimeRoot *>(malloc(sizeof(InGameRuntimeRoot)));
-    InGameRuntimeRoot *second = static_cast<InGameRuntimeRoot *>(malloc(sizeof(InGameRuntimeRoot)));
+    /* two raw blocks for the copies (written in full by UiTemplate_BuildInGameRoot) */
+    auto firstBlock = std::make_unique_for_overwrite<uint8_t[]>(sizeof(InGameRuntimeRoot));
+    auto secondBlock = std::make_unique_for_overwrite<uint8_t[]>(sizeof(InGameRuntimeRoot));
+    auto *first = reinterpret_cast<InGameRuntimeRoot *>(firstBlock.get());
+    auto *second = reinterpret_cast<InGameRuntimeRoot *>(secondBlock.get());
     UiTemplateHash state;
     uint32_t distance;
     uint32_t offset;
-    if (first == nullptr || second == nullptr) {
-        Thandor_Log("uitemplate InGameUiImage relocated: allocation failed");
-        free(first);
-        free(second);
-        return;
-    }
     UiTemplate_InstallGaugeTextOverrides(&g_InGameRuntimeDefaultImageTemplate, sizeof(InGameUiImage));
     UiTemplate_BuildInGameRoot(first);
     UiTemplate_BuildInGameRoot(second);
@@ -313,8 +307,6 @@ static void UiTemplate_LogRelocatedInGameRoot()
                 "hash=%08X",
                 (unsigned)sizeof(InGameRuntimeRoot), state.links, state.objectPointers, state.unresolved,
                 state.mismatches, state.hash);
-    free(first);
-    free(second);
 }
 
 void Thandor_SelfTestUiTemplate()

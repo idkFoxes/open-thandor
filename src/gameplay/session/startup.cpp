@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/session/startup.h>
+#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
@@ -242,7 +243,6 @@ Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,In
   uint32_t *clearCursor;
   uint32_t *copyCursor;
   uint32_t *templateCursor;
-  int remainingCount;
   uint32_t allocationError;
   uint32_t stepError;
 
@@ -255,11 +255,7 @@ Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,In
   g_RuntimeObjectRebaseBaseMinusOne = static_cast<uint8_t *>(objectPool) - 1;
   g_InGameWorldObjectRecords = static_cast<WorldObjectRecord *>(objectPool);
   clearCursor = static_cast<uint32_t *>(objectPool);
-  for (remainingCount = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingCount != 0;
-       remainingCount--) {
-    *clearCursor = 0;
-    clearCursor++;
-  }
+  std::fill_n(clearCursor,INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4,0);
   if (!SelectionInfoPanel_InitResources(localPlayerInfoSlots,&stepError)) {
     *outError = stepError;
     return false;
@@ -273,11 +269,7 @@ Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,In
   g_InGameRuntimeRoot = inGameRoot;
   /* copy the in-game root template (sizeof(InGameRuntimeRoot) / 4 dwords) */
   copyCursor = reinterpret_cast<uint32_t *>(inGameRoot);
-  for (remainingCount = sizeof(InGameRuntimeRoot) / 4; remainingCount != 0; remainingCount--) {
-    *copyCursor = *templateCursor;
-    templateCursor++;
-    copyCursor++;
-  }
+  std::copy_n(templateCursor,sizeof(InGameRuntimeRoot) / 4,copyCursor);
   if (!InGameUiRuntime_InitializeControlTreeResources(&inGameRoot->rootUi,&stepError)) {
     *outError = stepError;
     return false;
@@ -359,15 +351,11 @@ Bool8 InGameSession_ClearNotificationsAndCreateTerrainTexture(InGameRuntimeRoot 
 
 {
   uint32_t *clearCursor;
-  int remainingCount;
   uint32_t stepError;
 
   /* clear the four notification queue records (0x80 bytes) */
   clearCursor = reinterpret_cast<uint32_t *>(inGameRoot->notificationQueue);
-  for (remainingCount = 32; remainingCount != 0; remainingCount--) {
-    *clearCursor = 0;
-    clearCursor++;
-  }
+  std::fill_n(clearCursor,32,0);
   if (!TerrainCompositeTexture_Create(&stepError)) {
     *outError = stepError;
     return false;
