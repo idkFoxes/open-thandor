@@ -22,7 +22,9 @@ struct SoftwareRgbWordLanes;
 struct ModelPackedPointRecord;
 
 /* One-byte boolean of the original: any byte value, only its low byte counts (assigning 0x100 gives
-   false). Kept distinct from C/C++ bool, which normalizes to 0/1. */
+   false). Since step 13 all code uses bool; Bool8 stays only where a byte layout fixes it (owner decision D3):
+   the struct fields TerrainPlacementResult::rejected and FrameProviderResult::noFrame, and bytes read from files
+   or packets. Do not use it for new code. */
 using Bool8 = uint8_t;
 
 using FactionRuntimeIndex = int;
