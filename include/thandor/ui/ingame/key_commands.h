@@ -14,11 +14,11 @@
 #include <thandor/core/contracts.h>
 
 /* Slots of the in-game notification queue (notificationQueue, InGameNotificationQueue_InsertPriorityRecord) */
-#define INGAME_NOTIFICATION_QUEUE_SLOTS 4
+inline constexpr int32_t INGAME_NOTIFICATION_QUEUE_SLOTS = 4;
 
 /* Notification target button: cursor frame after a jump (the next click cancels), and the panel subresource shown
    when no notification movie plays */
-#define INGAME_NOTIFICATION_CURSOR_CANCEL 0x1B
+inline constexpr int32_t INGAME_NOTIFICATION_CURSOR_CANCEL = 0x1B;
 
 Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world);

@@ -14,9 +14,9 @@
 
 /* UiCatalogEntryControl_DrawClipped: packed text styles of the overlays (price, count, percentage); the alert
    colour marks an unaffordable price or a flagged army. MEASURE is only used to measure the text. */
-#define UI_CATALOG_TEXT_STYLE_NORMAL 0x1040000
-#define UI_CATALOG_TEXT_STYLE_ALERT 0x1050000
-#define UI_CATALOG_TEXT_STYLE_MEASURE 0x1000000
+inline constexpr int32_t UI_CATALOG_TEXT_STYLE_NORMAL = 0x1040000;
+inline constexpr int32_t UI_CATALOG_TEXT_STYLE_ALERT = 0x1050000;
+inline constexpr int32_t UI_CATALOG_TEXT_STYLE_MEASURE = 0x1000000;
 
 void UiCatalogEntryControl_DrawClipped
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
