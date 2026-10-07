@@ -25,10 +25,8 @@ inline constexpr int GRAPHICS_CURSOR_FRAME_SIZE_NWSE = 2; /* top-left and bottom
 inline constexpr int GRAPHICS_CURSOR_FRAME_SIZE_NESW = 3; /* top-right and bottom-left corner */
 inline constexpr int GRAPHICS_CURSOR_FRAME_SIZE_NS = 4; /* top and bottom edge */
 inline constexpr int GRAPHICS_CURSOR_FRAME_SIZE_WE = 5; /* left and right edge */
-/* GraphicsCursor_ConsumeNextInputEvent: bit 31 of a press's returned button state marks a double click (the
-   same bit as UI_POINTER_BUTTON_REPEAT_CLICK): the press comes less than 16 clock ticks after the release of
-   the same button and within +-4 pixels of the previous press. */
-inline constexpr uint32_t GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK = 0x80000000u;
+/* GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK (bit 31 of a press's button state) is a GraphicsCursorButtonState
+   enumerator (graphics/core/types.h); its time and distance limits: */
 inline constexpr uint32_t GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS = 16u;
 inline constexpr int GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE = 4;
 /* Entries of the g_CursorInputEvents ring (read by GraphicsCursor_ConsumeNextInputEvent). */
