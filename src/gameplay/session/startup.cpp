@@ -20,7 +20,7 @@ static void *g_InGameFactionScratchBufferSetB8[8] = {};
 int32_t g_InGamePendingSimulationTicks = 0;
 
 /* Failure exit of InGameRuntime_RunSessionUntilExit: releases what the session set up and reports the error. */
-static Bool8 InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
+static bool InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
 
 {
   InGameRuntime_ShutdownAndReleaseResources();
@@ -33,12 +33,12 @@ static Bool8 InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
    player left, tears the session down along the matching path and returns true. A failed start or an emptied UI
    root stack returns false with the error code in *outError, which the caller hands to the fatal-error dispatcher.
 */
-Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
+bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError)
 
 {
   uint32_t startupError;
-  Bool8 started;
+  bool started;
 
   /* Original quirk: a local game leaves the simulation on the primary random stream, which the frontend and the
      in-game UI also advance per drawn frame, so its outcome depends on the frame rate (a network game seeds both
@@ -105,7 +105,7 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
 }
 
 /* Sets or clears flag in the world runtime flags. */
-void InGameSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRuntimeFlags flag,Bool8 enabled)
+void InGameSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRuntimeFlags flag,bool enabled)
 
 {
   if (enabled) {
@@ -127,7 +127,7 @@ void InGameRuntime_ShutdownAndReleaseResources()
 {
   WorldRuntimeContext *world;
   InGameRuntimeRoot *inGameRoot;
-  Bool8 beginAccessFailed;
+  bool beginAccessFailed;
   
   g_TimerUnregisterPeriodic(InGameRuntime_PeriodicCountdownAndClockTick);
   inGameRoot = g_InGameRuntimeRoot;
@@ -233,7 +233,7 @@ void InGameSession_InstallStepTimerAndHooks()
    world callbacks and camera limits) and pushes the root onto the UI root stack. Returns true with the root in
    *outRoot; on failure returns false with the error in *outError.
 */
-Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,InGameRuntimeRoot **outRoot,
+bool InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,InGameRuntimeRoot **outRoot,
           uint32_t *outError)
 
 {
@@ -311,7 +311,7 @@ Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,In
    frames, builds the recent text history and attaches the world object array. Returns true on success; on failure
    returns false with the error in *outError.
 */
-Bool8 InGameSession_OpenLoadingMovieAndAttachObjects(uint16_t *levelMoviePath,LevelAssetHeader *levelHeader,
+bool InGameSession_OpenLoadingMovieAndAttachObjects(uint16_t *levelMoviePath,LevelAssetHeader *levelHeader,
           InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
@@ -347,7 +347,7 @@ Bool8 InGameSession_OpenLoadingMovieAndAttachObjects(uint16_t *levelMoviePath,Le
 
 /* Clears the four notification queue records and creates the terrain texture. Returns true on success; on failure
    returns false with the error in *outError. */
-Bool8 InGameSession_ClearNotificationsAndCreateTerrainTexture(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
+bool InGameSession_ClearNotificationsAndCreateTerrainTexture(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
   uint32_t *clearCursor;
@@ -394,7 +394,7 @@ void InGameSession_InitShadingAndMirrorViewOptions(WorldRuntimeContext *world)
 
 /* Allocates the grid scratch for the world's field grid and rebuilds the derived terrain classification,
    influence and technology data. Returns true on success; on failure returns false with the error in *outError. */
-Bool8 InGameSession_AllocateGridScratchAndRebuildDerived(WorldRuntimeContext *world,uint32_t *outError)
+bool InGameSession_AllocateGridScratchAndRebuildDerived(WorldRuntimeContext *world,uint32_t *outError)
 
 {
   uint32_t gridScratchError;

@@ -33,7 +33,7 @@ static uint16_t g_LevelStrPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*'
    g_LevelEndingMovieSourcePath, which the loaders report on errors. Returns true on success; false with FATAL_ERROR_LEVEL_ASSET_INVALID in *outError when asset is not a LEV
    asset of converter version 0x70001.
 */
-Bool8 LevelAsset_PrepareEndingMoviePath
+bool LevelAsset_PrepareEndingMoviePath
           (uint16_t *currentLevelPath,LevelAssetHeader *asset,uint16_t **outMoviePath,uint32_t *outError)
 
 {
@@ -138,7 +138,7 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
    InGameUiCommand_SaveFieldAndLevelAssetImages (ui/ingame/editor_tools.cpp); the field grid itself is written separately.
 */
 
-Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError)
+bool InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError)
 
 {
   uint32_t placementTableOffset;
@@ -150,7 +150,7 @@ Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldV
   uint32_t loadError;
   uint32_t writeError;
   LevelInitialArmyPlacementRecord20 *placementRecordCursor;
-  Bool8 imageLoaded;
+  bool imageLoaded;
 
   imageLoaded = Package_LoadEntryIntoBuffer(PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
                                             g_LevelEndingMovieSourcePath,&loadError);
@@ -243,7 +243,7 @@ Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldV
    aliases (keyed by the level's title text id). Returns false when the package stays mounted; on any failure
    it is unmounted again and true is returned (a failed mount returns without unmounting).
 */
-Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
+bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
 
 {
   uint32_t levelTitleTextId;

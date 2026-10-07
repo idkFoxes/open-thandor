@@ -19,7 +19,7 @@ SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks = nullptr;
    unmounts the save package (levelAsset is NULL and saveHandle 0 when they were not loaded yet), stores the error
    in *outError and returns false.
 */
-static Bool8 InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,EngineFileHandle saveHandle,uint32_t error,
+static bool InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,EngineFileHandle saveHandle,uint32_t error,
                                      uint32_t *outError)
 
 {
@@ -45,7 +45,7 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
   uint16_t *sourceCursor;
   uint32_t copyCount;
   int remainingCount;
-  Bool8 terminatorFound;
+  bool terminatorFound;
 
   headerBuffer = g_PackageScratchBuffer;
   sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
@@ -116,7 +116,7 @@ static void InGameLoadedSession_ResetSessionState(uint32_t savedFactionIndex)
 /* Creates the in-game root (InGameSession_CreateRoot with the info slots of player block 0) and builds the level's
    scenario path. Returns true with the root in *outRoot; on failure returns false with the error in *outError.
 */
-static Bool8 InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage,InGameRuntimeRoot **outRoot,
+static bool InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage,InGameRuntimeRoot **outRoot,
                                            uint32_t *outError)
 
 {
@@ -135,7 +135,7 @@ static Bool8 InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage
    field grid with the level resources, clears the notification queue and creates the terrain texture. Returns
    true on success; on failure returns false with the error in *outError.
 */
-static Bool8 InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoadedLevelAsset *levelImage,
+static bool InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoadedLevelAsset *levelImage,
                                           InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
@@ -180,7 +180,7 @@ static Bool8 InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoa
    true on success with the lock still held; on failure returns false with the error in *outError.
    Original quirk: the spin lock is not released on failure.
 */
-static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
+static bool InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
   WorldRuntimeContext *world;
@@ -203,7 +203,7 @@ static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inG
    queued. The package and the level entry are released again at the end. Returns true on success; on failure
    returns false and stores the error of the failing step in *outError.
 */
-Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError)
+bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError)
 
 {
   uintptr_t mountResult; /* the save package's handle, or the mount error code */

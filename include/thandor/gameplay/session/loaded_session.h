@@ -12,7 +12,7 @@
 #include <thandor/gameplay/selection/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError);
+bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError);
 
 extern SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks;
 

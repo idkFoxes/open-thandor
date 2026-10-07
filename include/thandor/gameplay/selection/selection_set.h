@@ -34,7 +34,7 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2);
 
-Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
+bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId);
 
 void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
@@ -44,9 +44,9 @@ void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRunt
 
 void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection);
 
-Bool8 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array);
+bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array);
 
-Bool8 SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection);
+bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection);
 
 void SelectionPointerArray_Clear32(SelectionPointerArray32 *array);
 
