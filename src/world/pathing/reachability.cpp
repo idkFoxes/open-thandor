@@ -124,6 +124,7 @@ Bool8 GridReachability_RebuildConnectedRegionAroundWorldPoint
   /* any other marked edge cell belongs to a separate piece of the ring */
   scratchCursor = g_GridScratchPrimary + scratchWidth * 3;
   cellsToScan = (g_GridScratchHeight - 8) * g_GridScratchWidth;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     if (GridReachability_IsMarkedRingEdgeCell(scratchCursor,scratchWidth)) {
       return true;

@@ -41,6 +41,7 @@ Bool8 WorldMotionSpline_EvaluateAndApplyAtTime
   /* Every channel evaluates the same segment (keyframeIndex - 1). A time before the first keyframe gives
      segment -1. */
   keyframeIndex = 0;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     currentKeyframe = keyframes;
     if ((uint32_t)timeQ12 < (uint32_t)currentKeyframe->timeQ12) {
@@ -116,7 +117,7 @@ void WorldMotionSpline_BuildSixChannelCurves
     remainingCount = keyframeCount - 1;
     previousAngle = unwrappedAngle;
     keyframeCursor = keyframes;
-    do {
+    while (remainingCount != 0) {
       /* shortest signed turn from the previous yaw to the next one */
       unwrapDelta = (keyframeCursor[1].channel4Q12 & 0xffffU) - (previousAngle & FIXED_ANGLE16_MASK);
       if (FIXED_ANGLE16_HALF_TURN < unwrapDelta) {
@@ -130,7 +131,7 @@ void WorldMotionSpline_BuildSixChannelCurves
       keyframeCursor[1].channel4Q12 = unwrappedAngle;
       remainingCount--;
       keyframeCursor++;
-    } while (remainingCount != 0);
+    }
   }
   /* the sixth argument is the channel's byte offset in the keyframe (channel n at n * 4) */
   CubicSpline_BuildNaturalCoefficientSystem

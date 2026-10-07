@@ -97,6 +97,7 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
   gridWidth = fieldGrid->gridWidth;
   currentCell = fieldGrid->cells;
   columnsRemaining = gridWidth;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
       /* 5f-format: FieldGridCell.persistedAux54 */
@@ -122,6 +123,7 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
 
   cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     currentCell->overlayColor = argbColor;
     currentCell++;
@@ -165,6 +167,7 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   fieldGridCellSaveView = reinterpret_cast<FieldGridCellSaveImageView *>(fieldGridImageCopy->cells); /* the save-image view of the cells */
   fieldGridImageCopy->fieldFlags = 0;
   cellsRemaining = fieldGridImageCopy->gridWidth * fieldGridImageCopy->gridHeight;
+  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     fieldGridCellSaveView->surfacePacketIndex = 0;
     fieldGridCellSaveView->triangle0NormalAngles = FIXED_ANGLE16_QUARTER_TURN << 16; /* elevation: straight up */
