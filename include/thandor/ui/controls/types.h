@@ -9,6 +9,7 @@
 #define THANDOR_UI_CONTROLS_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 #include <thandor/ui/text/types.h>
@@ -393,10 +394,48 @@ struct UiScrollableControl {
     UiPixelOffset autoScrollStepY; 
 };
 
-enum {
-    UI_ROOT_DISABLE_POINTER_HIT_TEST=256 
+/* UiRootNode.rootFlags of panels (g_UiPanelControlVtable) and resizable windows
+   (g_UiResizableWindowControlVtable), from their draw and pointer methods in ui/controls/panels.cpp and
+   window.cpp. A 32-bit field: uint32_t has the size and alignment of the original int and no code computes with
+   it (asserted in layout_checks.cpp); the template initialisers set the same bits. `using enum` keeps the
+   UI_ROOT_* names usable unqualified. */
+enum class UiRootFlags : uint32_t {
+    UI_ROOT_TILED_BACKGROUND = 0x1,
+    UI_ROOT_FRAME = 0x2,
+    UI_ROOT_TITLE_BAR = 0x4,
+    UI_ROOT_CLOSE_BUTTON = 0x8,
+    UI_ROOT_MAXIMIZE_BUTTON = 0x10,
+    UI_ROOT_MOVABLE = 0x20,
+    UI_ROOT_RESIZABLE = 0x40,
+    UI_ROOT_MAXIMIZED = 0x80,
+    UI_ROOT_DISABLE_POINTER_HIT_TEST = 0x100, /* UiPointer_RootContainsPointer skips the root */
+    UI_ROOT_ALTERNATE_BACKGROUND = 0x200, /* panels: second background and frame style */
+    UI_ROOT_CLOSE_PRESSED = 0x800, /* the button went down over the close button */
+    UI_ROOT_MAXIMIZE_PRESSED = 0x1000,
+    UI_ROOT_MOVING = 0x2000,
+    UI_ROOT_RESIZING = 0x4000,
+    UI_ROOT_CLOSE_ARMED = 0x80000, /* pressed and the pointer is still over the close button */
+    UI_ROOT_MAXIMIZE_ARMED = 0x100000,
+    /* While resizing, the top byte holds the grabbed border, clockwise from the top edge; the masks select the
+       grabs that move one edge. */
+    UI_ROOT_RESIZE_TOP = 0x1000000,
+    UI_ROOT_RESIZE_TOP_RIGHT = 0x2000000,
+    UI_ROOT_RESIZE_RIGHT = 0x4000000,
+    UI_ROOT_RESIZE_BOTTOM_RIGHT = 0x8000000,
+    UI_ROOT_RESIZE_BOTTOM = 0x10000000,
+    UI_ROOT_RESIZE_BOTTOM_LEFT = 0x20000000,
+    UI_ROOT_RESIZE_LEFT = 0x40000000,
+    UI_ROOT_RESIZE_TOP_LEFT = 0x80000000,
+    UI_ROOT_RESIZE_EDGES = 0xff000000,
+    UI_ROOT_RESIZE_MOVES_TOP = 0x83000000,
+    UI_ROOT_RESIZE_MOVES_RIGHT = 0xe000000,
+    UI_ROOT_RESIZE_MOVES_BOTTOM = 0x38000000,
+    UI_ROOT_RESIZE_MOVES_LEFT = 0xe0000000,
+    /* Everything a button release ends: pressed, armed, moving, resizing and the grabbed border */
+    UI_ROOT_POINTER_STATE = 0xff187800
 };
-using UiRootFlags = int;
+THANDOR_FLAG_ENUM(UiRootFlags);
+using enum UiRootFlags;
 
 struct UiRootNode {
     struct UiNodeBase base;
