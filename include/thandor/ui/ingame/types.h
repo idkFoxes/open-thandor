@@ -222,7 +222,7 @@ struct WorldRuntimeContext {
     WorldWorkspaceElementCount dwordArrayCount; // Attached workspace element count.
     uint32_t reservedC8; // Never accessed.
     WorldRuntimeControlFlags runtimeControlFlags; // Secondary world control/state flags.
-    Ptr32<uint32_t> tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
+    Ptr32<RuntimeSpinLockValue> tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
     Ptr32<void ()> simulationAndNetworkTickCallback; // In-game simulation/network tick callback installed by both session initializers.
     Ptr32<struct WorldOwnerListNode> ownerListHead; // World-runtime owner-list head.
     struct WorldRuntimeSelectionState selection; // In-game selection and overlay state.
@@ -675,7 +675,7 @@ struct WorldRuntimeExtendedMapControlView {
     WorldWorkspaceElementCount dwordArrayCount;
     uint32_t reservedC8;
     WorldRuntimeControlFlags runtimeControlFlags;
-    Ptr32<uint32_t> tickSpinLock;
+    Ptr32<RuntimeSpinLockValue> tickSpinLock;
     Ptr32<void ()> simulationAndNetworkTickCallback;
     Ptr32<struct WorldOwnerListNode> ownerListHead;
     struct WorldRuntimeSelectionState selection;

@@ -9,6 +9,7 @@
 #define THANDOR_GAMEPLAY_SESSION_RUNTIME_H
 
 #include <thandor/core/types.h>
+#include <thandor/core/memory/types.h>
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
@@ -17,7 +18,7 @@ extern InGameSimulationStepBatchTicks g_InGameSimulationStepTicks;
 extern uint32_t g_SessionNetworkTickCounter;
 
 extern uint32_t g_InGameNetworkTickCountdown;
-extern uint32_t g_InGameStateTickSpinLock;
+extern RuntimeSpinLockValue g_InGameStateTickSpinLock;
 
 extern InGameRuntimeRoot *g_InGameRuntimeRoot;
 

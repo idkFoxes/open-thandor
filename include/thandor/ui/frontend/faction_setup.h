@@ -33,6 +33,6 @@ void FrontendFactionSetup_ChooseFaction
           (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 
-extern uintptr_t g_FrontendRootNode; /* the FrontendUiImage copy (address) */
+extern FrontendUiImage *g_FrontendRootNode; /* the frontend UI: the FrontendUiImage copy of Frontend_Init */
 
 #endif /* THANDOR_UI_FRONTEND_FACTION_SETUP_H */

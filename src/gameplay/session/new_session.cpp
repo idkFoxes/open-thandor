@@ -222,8 +222,7 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
   uint32_t mapMouseOptionFlags;
 
   world = &inGameRoot->worldRuntime;
-  /* g_InGameStateTickSpinLock is a uint32_t word; the spin lock API takes it as its int */
-  g_SpinLockAcquire(reinterpret_cast<RuntimeSpinLockValue *>(&g_InGameStateTickSpinLock));
+  g_SpinLockAcquire(&g_InGameStateTickSpinLock);
   InGameSession_InitShadingAndMirrorViewOptions(world);
   mapMouseOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   if ((mapMouseOptionFlags & 4) != 0) {
@@ -234,7 +233,7 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
     UiContainer_LayoutChildren(&inGameRoot->rootUi.base);
   }
   /* a campaign carries units over from the previous level */
-  if (g_FrontendLoadedCampaignAsset == 0) {
+  if (g_FrontendLoadedCampaignAsset == nullptr) {
     OldUnitRuntime_ResetPendingTables();
   }
   else {

@@ -332,7 +332,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   worldRuntime = FrontendModelPointerContext_AsWorldRuntime(&FrontendUi_Image(frontendUiState)->menuRoomModelView);
   /* the template image and the new root are copied dword by dword */
   templateDwords = reinterpret_cast<uint32_t *>(&g_FrontendRootInitializationTemplate);
-  g_FrontendRootNode = reinterpret_cast<uintptr_t>(frontendUiState);
+  g_FrontendRootNode = FrontendUi_Image(frontendUiState);
   rootDwords = reinterpret_cast<uint32_t *>(frontendUiState);
   for (remainingDwords = sizeof(FrontendUiImage) / 4; remainingDwords != 0; remainingDwords--) {
     *rootDwords = *templateDwords;
@@ -565,13 +565,13 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
   g_TimerUnregisterPeriodic(FrontendRuntime_TimerCountdownTick);
   g_TimerUnregisterPeriodic(FrontendRomTransition_AdvanceElapsedTicks);
-  root = &FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root;
+  root = &g_FrontendRootNode->frontendRoot.root;
   g_CursorVisibilityToken--;
-  if (g_FrontendRootNode != 0) {
-    FrontendTeardown_SaveStatusTextAndHostAddress(&FrontendUi_Image(g_FrontendRootNode)->frontendRoot.root);
+  if (g_FrontendRootNode != nullptr) {
+    FrontendTeardown_SaveStatusTextAndHostAddress(&g_FrontendRootNode->frontendRoot.root);
     UiRootStack_Pop(root);
     g_MemoryApi.free(root);
-    g_FrontendRootNode = 0;
+    g_FrontendRootNode = nullptr;
   }
   FrontendRomRegistry_ClearAndReleaseNestedResources();
   g_MemoryApi.free(g_FrontendWorldObjectRecords);
@@ -620,20 +620,20 @@ void FrontendVersionLabel_Draw()
     }
     return utf16;
   }();
-  const uintptr_t frontendRoot = g_FrontendRootNode;
+  FrontendUiImage *const frontendRoot = g_FrontendRootNode;
   uint32_t lineHeight;
   int barTop;
   int lineTop;
 
-  if ((frontendRoot == 0) || (g_UiRootNode != &FrontendUi_Image(frontendRoot)->frontendRoot.root) || (g_FrontendActiveRomRecord == nullptr) ||
+  if ((frontendRoot == nullptr) || (g_UiRootNode != &frontendRoot->frontendRoot.root) || (g_FrontendActiveRomRecord == nullptr) ||
       (g_FrontendActiveRomRecord->recordId != FRONTEND_ROM_RECORD_MAIN_MENU) ||
-      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendViewModeStack)) != 0) ||
-      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendPageStack)) !=
+      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendViewModeStack)) != 0) ||
+      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendPageStack)) !=
        FRONTEND_PAGE_MAIN)) {
     return;
   }
   const FrontendModelPointerContext *room =
-       &FrontendUi_Image(frontendRoot)->menuRoomModelView;
+       &frontendRoot->menuRoomModelView;
   if ((room->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED) != 0) {
     return;
   }
