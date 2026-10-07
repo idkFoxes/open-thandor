@@ -75,7 +75,7 @@ using WorldWorkspaceElementCount = uint32_t;
 
 using WorldRuntimeControlFlags = uint32_t;
 
-using WorldInteractionFlags = uint32_t;
+using WorldInteractionFlags = UiNodeFlags; /* the world view's UiNodeBase.nodeFlags */
 
 using WorldFieldDimension = uint32_t;
 
