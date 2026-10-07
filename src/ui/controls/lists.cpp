@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/lists.h>
+#include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 #include <stdarg.h>
 
@@ -69,7 +70,7 @@ Bool8 UiListControl_HandleKeyboardNavigation
       control->selectedRowSlot = control->rowSlots + (control->rowCount - 1);
     }
     else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
-      viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
+      viewportSize = UiScrollableControl_GetViewportSize(UiNode_As<UiScrollableControl>((control->base).parent));
       rowValue = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowSlots) / sizeof(Ptr32<void>))) -
               ((int)(viewportSize.height / control->rowHeight) - 1);
       if (rowValue < 0) {
@@ -78,7 +79,7 @@ Bool8 UiListControl_HandleKeyboardNavigation
       control->selectedRowSlot = control->rowSlots + rowValue;
     }
     else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
-      viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
+      viewportSize = UiScrollableControl_GetViewportSize(UiNode_As<UiScrollableControl>((control->base).parent));
       targetRowIndex = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowSlots) / sizeof(Ptr32<void>))) +
               (int)(viewportSize.height / control->rowHeight) - 1;
       if (control->rowCount <= targetRowIndex) {
@@ -110,7 +111,7 @@ Bool8 UiListControl_HandleKeyboardNavigation
       rowValue = ((uint32_t)(((uintptr_t)newSelectedSlot - (uintptr_t)control->rowSlots) / sizeof(Ptr32<void>))) * control->rowHeight;
       UiScrollableControl_ClampOffsetsToViewport
                 (rowValue + control->rowHeight + 1,(control->base).rightOffset,rowValue,0,
-                 (UiScrollableControl *)(control->base).parent);
+                 UiNode_As<UiScrollableControl>((control->base).parent));
       rowValue = g_UiListActivationPulseFrames;
       control->listStateFlags = control->listStateFlags | UI_LIST_DEFERRED_ACTION_PENDING;
       control->listStateFlags = control->listStateFlags & UI_LIST_FLAGS_MASK;
@@ -173,7 +174,7 @@ void UiListControl_SelectRowFromPointer
       rowTop = rowIndex * control->rowHeight;
       UiScrollableControl_ClampOffsetsToViewport
                 (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
-                 (UiScrollableControl *)(control->base).parent);
+                 UiNode_As<UiScrollableControl>((control->base).parent));
       UiActionQueue_Enqueue(control->actionId,control);
       if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
          (control->activationSound != nullptr)) {
@@ -216,8 +217,8 @@ void UiPointerList_SortByDwordPairFieldDescending
     scanSlot = pivotSlot;
     for (compareCount = passLength; compareCount != 0; compareCount--) {
       scanSlot++;
-      pivotKey = (const uint32_t *)((uint8_t *)*pivotSlot + fieldOffset);
-      scanKey = (const uint32_t *)((uint8_t *)*scanSlot + fieldOffset);
+      pivotKey = Thandor_At<const uint32_t>(pivotSlot->get(), fieldOffset);
+      scanKey = Thandor_At<const uint32_t>(scanSlot->get(), fieldOffset);
       if ((pivotKey[0] <= scanKey[0]) && ((pivotKey[0] < scanKey[0]) || (pivotKey[1] <= scanKey[1]))) {
         swapEntry = *scanSlot;
         *scanSlot = *pivotSlot;
@@ -240,7 +241,7 @@ void UiPointerList_SortByDwordPairFieldDescending
   control->selectedRowSlot = scanSlot;
   UiScrollableControl_ClampOffsetsToViewport
             (selectedRowTop + 1 + control->rowHeight,control->base.rightOffset,selectedRowTop,0,
-             (UiScrollableControl *)control->base.parent);
+             UiNode_As<UiScrollableControl>(control->base.parent));
 }
 
 /* Sorts the rows of a pointer list by the unsigned dword at fieldOffset in each row entry with an exchange
@@ -273,7 +274,7 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
     scanSlot = pivotSlot;
     for (compareCount = passLength; compareCount != 0; compareCount--) {
       scanSlot++;
-      if (*(uint32_t *)((uint8_t *)*scanSlot + fieldOffset) <= *(uint32_t *)((uint8_t *)*pivotSlot + fieldOffset)) {
+      if (*Thandor_At<uint32_t>(scanSlot->get(), fieldOffset) <= *Thandor_At<uint32_t>(pivotSlot->get(), fieldOffset)) {
         swapEntry = *scanSlot;
         *scanSlot = *pivotSlot;
         *pivotSlot = swapEntry;
@@ -295,7 +296,7 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
   control->selectedRowSlot = scanSlot;
   UiScrollableControl_ClampOffsetsToViewport
             (selectedRowTop + 1 + control->rowHeight,(control->base).rightOffset,selectedRowTop,0,
-             (UiScrollableControl *)(control->base).parent);
+             UiNode_As<UiScrollableControl>((control->base).parent));
 }
 
 /* Draws the visible rows of the column list (g_UiListControlVtable drawClipped): the highlight bar behind
@@ -364,14 +365,14 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
                          g_FramebufferAccess);
             }
           }
-          rowRecord = (uint8_t *)*rowSlot;
+          rowRecord = static_cast<uint8_t *>(rowSlot->get());
           columnX = 3; /* text inset */
           column = control->columns;
           for (columnsRemaining = control->columnCount; columnsRemaining != 0; columnsRemaining--) {
             columnWidth = column->width;
             if (columnWidth < 0) {
               columnX = columnX - columnWidth;
-              commandStream = (uint16_t *)(rowRecord + column->rowTextOffset);
+              commandStream = Thandor_At<uint16_t>(rowRecord, column->rowTextOffset);
               textExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,commandStream);
               RichTextCommandStream_DrawSingleLine
                         (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,commandStream,
@@ -382,7 +383,7 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
               columnX = columnX + columnWidth;
               RichTextCommandStream_DrawSingleLine
                         (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,
-                         (uint16_t *)(rowRecord + column->rowTextOffset),
+                         Thandor_At<uint16_t>(rowRecord, column->rowTextOffset),
                          rowTop + 1 + (control->base).top,(columnX - columnWidth) + (control->base).left);
             }
             column++;
@@ -473,9 +474,9 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,Ptr32<void> *r
   control->selectedRowSlot = rowPointers;
   totalWidth = 6;
   /* The columns follow the 0x64-byte pointer-list prefix: view the control as the full UiListControl. */
-  columnsRemaining = ((UiListControl *)control)->columnCount;
+  columnsRemaining = UiNode_As<UiListControl>(control)->columnCount;
   (control->base).bottomOffset = computedRowHeight * rowCount + 1;
-  column = ((UiListControl *)control)->columns;
+  column = UiNode_As<UiListControl>(control)->columns;
   for (; columnsRemaining != 0; columnsRemaining--) {
     columnWidth = column->width;
     if (columnWidth < 0) {
@@ -506,7 +507,7 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
     rowTop = control->rowHeight * index;
     UiScrollableControl_ClampOffsetsToViewport
               (rowTop + 1 + control->rowHeight,control->base.rightOffset,rowTop,0,
-               (UiScrollableControl *)control->base.parent);
+               UiNode_As<UiScrollableControl>(control->base.parent));
   }
 }
 
@@ -569,7 +570,7 @@ static void UiPointerList_ReselectRecordAfterSort(void *selectedRecord,UiPointer
   control->selectedRowSlot = rowSlotCursor;
   UiScrollableControl_ClampOffsetsToViewport
             (selectedRowTop + 1 + control->rowHeight,(control->base).rightOffset,selectedRowTop,0,
-             (UiScrollableControl *)(control->base).parent);
+             UiNode_As<UiScrollableControl>((control->base).parent));
 }
 
 /* Sorts the rows of a pointer list in ascending order of the rich text found fieldOffset bytes into each row
@@ -600,8 +601,8 @@ void UiPointerList_SortByExpandedTextFieldAscending
         for (comparisonsLeft = remainingPasses; comparisonsLeft != 0; comparisonsLeft--) {
           rowSlotCursor++;
           textOrder = UiPointerList_CompareExpandedText
-                            ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
-                             (uint16_t *)((uint8_t *)*passAnchorSlot + fieldOffset));
+                            (Thandor_At<uint16_t>(rowSlotCursor->get(), fieldOffset),
+                             Thandor_At<uint16_t>(passAnchorSlot->get(), fieldOffset));
           if (textOrder >= 0) {
             swappedRecord = *rowSlotCursor;
             *rowSlotCursor = *passAnchorSlot;
@@ -730,7 +731,7 @@ void UiTextListControl_SelectRowFromPointer
   rowTop = rowIndex * control->rowHeight;
   UiScrollableControl_ClampOffsetsToViewport
             (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
-             (UiScrollableControl *)(control->base).parent);
+             UiNode_As<UiScrollableControl>((control->base).parent));
   UiActionQueue_Enqueue(control->actionId,control);
   if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
      (control->activationSound != nullptr)) {
@@ -776,7 +777,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
       do {
         candidateSlot = scanSlot;
         rowBelowKey = g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags
-                          (keyCode,*(uint32_t *)*candidateSlot);
+                          (keyCode,*reinterpret_cast<uint32_t *>(candidateSlot->get())); /* the row's first two code units as one dword */
         if (!rowBelowKey) break;
         remainingRows--;
         scanSlot = candidateSlot + 1;
@@ -800,7 +801,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
     control->selectedRowSlot = control->rowTextSlots + (control->rowCount - 1);
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
-    viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
+    viewportSize = UiScrollableControl_GetViewportSize(UiNode_As<UiScrollableControl>((control->base).parent));
     pageUpRow = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(Ptr32<uint16_t>))) -
             ((int)(viewportSize.height / control->rowHeight) - 1);
     if (pageUpRow < 0) {
@@ -809,7 +810,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
     control->selectedRowSlot = control->rowTextSlots + pageUpRow;
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
-    viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
+    viewportSize = UiScrollableControl_GetViewportSize(UiNode_As<UiScrollableControl>((control->base).parent));
     pageDownRow = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(Ptr32<uint16_t>))) +
             (int)(viewportSize.height / control->rowHeight) - 1;
     if (control->rowCount <= pageDownRow) {
@@ -840,7 +841,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
     selectedRowTop = ((uint32_t)(((uintptr_t)selectedSlot - (uintptr_t)control->rowTextSlots) / sizeof(Ptr32<uint16_t>))) * control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
               (selectedRowTop + control->rowHeight + 1,(control->base).rightOffset,selectedRowTop,0,
-               (UiScrollableControl *)(control->base).parent);
+               UiNode_As<UiScrollableControl>((control->base).parent));
     /* arm the deferred action: the frame counter lives in the top byte */
     pulseFrames = g_UiListActivationPulseFrames;
     control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_DEFERRED_ACTION_PENDING;
@@ -892,7 +893,7 @@ void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,Ptr32<void
   control->selectedRowSlot = rowPointers;
   (control->base).bottomOffset = rowHeightPixels * rowCount + 1;
   for (; rowCount != 0; rowCount--) {
-    measuredTextExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,(uint16_t *)*rowPointers);
+    measuredTextExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,static_cast<uint16_t *>(rowPointers->get()));
     if (maximumTextWidthPixels < measuredTextExtent.widthPixels) {
       maximumTextWidthPixels = measuredTextExtent.widthPixels;
     }
