@@ -28,7 +28,7 @@ extern SoftwareDisplayModeHookProc *g_GraphicsSetDisplayMode;
 
 extern SoftwareBuildPixelPackTablesProc *g_SoftwareBuildPixelPackTables;
 
-Bool8 SoftwarePixelFormat_BaseDisplayModeHook
+bool SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,uint32_t *errorCode);
 
@@ -39,7 +39,7 @@ SoftwareFramebufferAccess *SoftwareFramebuffer_Create
 void SoftwarePixelFormat_BuildChannelPackTables
           (SoftwareColorTransformQ16 colorScaleQ16,SoftwareColorTransformQ16 colorBiasQ16);
 
-Bool8 SoftwareRenderer_SetDisplayMode
+bool SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width,uint32_t *errorCode);
 

@@ -72,7 +72,7 @@ UiPointerWheelDelta g_CursorWheelDelta = 0;
    g_KeyboardAsciiCaseTransformCallbacks3. Both 16-bit code units are upper-cased; returns true when
    upper(right) < upper(left).
 */
-Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
+bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
 
 {
   uint32_t leftLowWord;
@@ -100,7 +100,7 @@ void Keyboard_FlushEvents()
    Returns true with the key code in *outKeyCode and the modifier state in *outStateMask, or
    false (outputs untouched) when the ring is empty.
 */
-Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask)
+bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, UiKeyboardStateMask *outStateMask)
 
 {
   uint32_t nextReadIndex;

@@ -530,7 +530,7 @@ void SdlInput_Shutdown()
   SDL_ShowCursor();
 }
 
-Bool8 SdlInput_SetDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
+bool SdlInput_SetDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                               uint32_t *errorCode)
 {
   GraphicsCursor_FreeBuffers();
