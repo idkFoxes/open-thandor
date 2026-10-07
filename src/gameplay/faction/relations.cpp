@@ -89,7 +89,7 @@ Bool8 GameFactionRelations_TestPairTransitionAllowed
   FactionActiveMask targetEligibleMask;
   FactionActiveMask sourceEligibleMask;
   FactionActiveMask combinedMask;
-  uint32_t relationUiFlags;
+  GameRelationUiFlags relationUiFlags;
 
   relationState = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
   if (relationState == 2 || relationState == 5 || relationState == 9) {
@@ -97,15 +97,15 @@ Bool8 GameFactionRelations_TestPairTransitionAllowed
   }
   /* relationUiFlags: bit 4 freezes every relation, bit 2 states 4 and up, bit 1 states 8 and up */
   relationUiFlags = g_GameFactionRuntimeImage.tail.relationUiFlags;
-  if ((relationUiFlags & FACTION_RELATION_FREEZE_ALL) != 0) {
+  if (Any(relationUiFlags & FACTION_RELATION_FREEZE_ALL)) {
     return true;
   }
   if (relationState >= FACTION_RELATION_STATE_FRIENDLY &&
-      (relationUiFlags & FACTION_RELATION_FREEZE_FRIENDLY) != 0) {
+      Any(relationUiFlags & FACTION_RELATION_FREEZE_FRIENDLY)) {
     return true;
   }
   if (relationState >= FACTION_RELATION_STATE_ALLIED &&
-      (relationUiFlags & FACTION_RELATION_FREEZE_ALLIED) != 0) {
+      Any(relationUiFlags & FACTION_RELATION_FREEZE_ALLIED)) {
     return true;
   }
   if (relationState >= FACTION_RELATION_STATE_FRIENDLY) {

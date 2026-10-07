@@ -616,6 +616,19 @@ static_assert(sizeof(ArmyMovementStateFlags) == 4 && alignof(ArmyMovementStateFl
                   offsetof(GameEntityRuntime, common) + offsetof(GameEntityRuntimeCommon, commandFlags) ==
                       offsetof(ArmyRuntimeSlot, movementStateFlags),
               "the army movement and command mode flags keep their 4-byte fields");
+/* Step 13 E4: the AI unit flags (ArmyAiUnitFlags), the level's relation/UI flags (GameRelationUiFlags, loaded from
+   the level and saved in the faction image) and the end-condition trigger state byte keep their fields. */
+static_assert(sizeof(ArmyAiUnitFlags) == 4 && alignof(ArmyAiUnitFlags) == 4 &&
+                  offsetof(ArmyRuntimeSlot, aiUnitFlags) == 0x94 &&
+                  offsetof(ArmyRuntimeLinkedChildMaskSlotView, aiUnitFlags) == 0x94 &&
+                  sizeof(GameRelationUiFlags) == 4 && alignof(GameRelationUiFlags) == 4 &&
+                  offsetof(GameFactionRuntimeImageTail, relationUiFlags) == 0x1C &&
+                  offsetof(LevelWorldSettings, relationUiFlags) == 0x38 &&
+                  sizeof(InGameEndConditionTriggerStateFlags) == 1 && alignof(InGameEndConditionTriggerStateFlags) == 1 &&
+                  sizeof(InGameEndConditionTriggerRecord8ReferenceView) == 8 &&
+                  offsetof(InGameEndConditionTriggerRecord8ReferenceView, stateFlags) == 0x0 &&
+                  sizeof(InGameEndConditionTriggerRecord8) == 8 && offsetof(InGameEndConditionTriggerRecord8, stateFlags) == 0x0,
+              "the AI unit, relation/UI and end-condition trigger flags keep their fields");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");

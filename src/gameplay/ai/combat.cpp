@@ -181,7 +181,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
     ArmyRuntime_ResolveCommandTargetAndRoute(targetRuntime,collectedArmy);
     collectedArmy->assignedTargetArmyRuntime = Thandor_PointerToU32(targetRuntime); /* 32-bit format field: ArmyRuntimeSlot.assignedTargetArmyRuntime */
     collectedArmy->commandModeFlags = collectedArmy->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
-    collectedArmy->aiUnitFlags = collectedArmy->aiUnitFlags | 1;
+    collectedArmy->aiUnitFlags = collectedArmy->aiUnitFlags | AI_UNIT_STATE94_GROUP_ASSIGNED;
     collectedArmy->movementStateFlags = collectedArmy->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
     collectedArmy->aiUnitState = 8;
     collectedArmy->commandGeneration = assignedCommandGeneration;

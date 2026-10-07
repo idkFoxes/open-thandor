@@ -177,6 +177,16 @@ using enum ArmyCommandModeFlags;
 
 using ArmyCommandGeneration = uint32_t;
 
+/* ArmyRuntimeSlot.aiUnitFlags (+0x94). */
+enum class ArmyAiUnitFlags : uint32_t {
+    AI_UNIT_FLAGS_NONE = 0,
+    /* set when AiUnitGroup_AssignCollectedEntitiesToBestTarget sends the unit to a group target, cleared by the
+       direct AI move commands; AiUnitBehavior_CollectUnassignedEntity skips it */
+    AI_UNIT_STATE94_GROUP_ASSIGNED = 0x1
+};
+THANDOR_FLAG_ENUM(ArmyAiUnitFlags);
+using enum ArmyAiUnitFlags;
+
 using ArmyRuntimeFlags = uint32_t;
 
 using ArmyRuntimeTimer = uint32_t;
@@ -1121,7 +1131,7 @@ struct ArmyRuntimeSlot {
     uint32_t aiSecondaryWorkspaceScoreWeight; // AI weight of secondary workspace sites, copied from the army asset record
     uint32_t aiUnitState; // AI command state (AI_UNIT_COMMANDED_STATE when the AI gave an order), 0 on creation
     uint32_t occupancyMarkRadius; // largest ModelDefinition.occupancyMarkRadius; radius of occupancy bit 1 around the army
-    uint32_t aiUnitFlags; // AI unit flags (AI_UNIT_STATE94_GROUP_ASSIGNED)
+    ArmyAiUnitFlags aiUnitFlags; // AI unit flags (AI_UNIT_STATE94_GROUP_ASSIGNED)
     uint32_t assignedTargetArmyRuntime; // ArmyRuntimeSlot * given as target by the AI or the player's selection; pool offset in saves
     ModelRuntimeClassId depthBinClass;
     PckArmyAssetIdCatalog armyAssetId;
@@ -1391,7 +1401,7 @@ struct ArmyRuntimeLinkedChildMaskSlotView {
     uint32_t aiSecondaryWorkspaceScoreWeight; 
     uint32_t aiUnitState; 
     uint32_t occupancyMarkRadius; 
-    uint32_t aiUnitFlags; 
+    ArmyAiUnitFlags aiUnitFlags; 
     uint32_t assignedTargetArmyRuntime; 
     ModelRuntimeClassId depthBinClass; 
     PckArmyAssetIdCatalog armyAssetId; 

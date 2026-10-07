@@ -363,7 +363,7 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
 
 {
   if ((g_AiCollectedEntityCount < AI_WORKSPACE14_CAPACITY) &&
-      ((armyRuntimeSlot->aiUnitFlags & AI_UNIT_STATE94_GROUP_ASSIGNED) == 0)) {
+      !Any(armyRuntimeSlot->aiUnitFlags & AI_UNIT_STATE94_GROUP_ASSIGNED)) {
     g_AiWorkspace14CollectedArmies[g_AiCollectedEntityCount] = armyRuntimeSlot;
     g_AiCollectedEntityCount++;
   }

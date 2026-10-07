@@ -336,7 +336,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   armyRuntime->occupancyMarkRadius = 0;
   armyRuntime->visibilityRadius = 0;
   armyRuntime->visibilityHeightOffset = 0;
-  armyRuntime->aiUnitFlags = 0;
+  armyRuntime->aiUnitFlags = AI_UNIT_FLAGS_NONE;
   rootNodeReference = armyAssetRecord->rootNodeOffsetOrPointer;
   (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
