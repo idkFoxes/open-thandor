@@ -21,7 +21,7 @@ void GameFactionRelations_UpdateAllPairsForFaction
   Bool8 pairTestResult;
 
   opposingFactionIndex = 7;
-  do {
+  for (; opposingFactionIndex != 0; opposingFactionIndex--) {
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[opposingFactionIndex] ==
          FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (sourceFactionIndex != opposingFactionIndex)) {
       pairTestResult = GameFactionRelations_TestPairTransitionAllowed
@@ -44,8 +44,7 @@ void GameFactionRelations_UpdateAllPairsForFaction
         }
       }
     }
-    opposingFactionIndex--;
-  } while (opposingFactionIndex != 0);
+  }
 }
 
 
@@ -701,6 +700,7 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   /* the player blocks are read after the repaint walk */
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
   playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (absorbedFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
       playerRuntimeId = playerBlockCursor->playerRuntimeId;
@@ -714,6 +714,7 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   terrainGrid = runtimeRoot->worldRuntime.fieldGrid;
   cellsRemaining = terrainGrid->gridWidth * terrainGrid->gridHeight;
   gridCell = terrainGrid->cells;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     /* byte view of the 64-bit mask: one byte per faction */
     FieldGridCell_OccupancyByte(gridCell,survivingFactionIndex) =
@@ -853,6 +854,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
     firstFactionPlayerCount = 0;
     playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
         secondFactionPlayerCount++;

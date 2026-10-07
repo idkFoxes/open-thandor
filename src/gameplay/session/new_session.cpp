@@ -84,7 +84,7 @@ static void InGameNewSession_ResetSessionState()
   }
   selectionBlock = g_SelectionPlayerBlocks;
   frontendPlayer = g_FrontendPlayerRuntimeBlocks;
-  do {
+  for (; remainingPlayers != 0; remainingPlayers--) {
     playerId = frontendPlayer->playerRuntimeId;
     (frontendPlayer->factionAssignment).readyOrWaitState = 0;
     frontendPlayer->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
@@ -108,10 +108,9 @@ static void InGameNewSession_ResetSessionState()
       nameSource++;
       nameDestination++;
     }
-    remainingPlayers--;
     selectionBlock++;
     frontendPlayer++;
-  } while (remainingPlayers != 0);
+  }
   g_SessionTransferTimeoutTicks = 1024;
   InGameSession_InstallStepTimerAndHooks();
 }

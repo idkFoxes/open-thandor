@@ -619,6 +619,7 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
   }
   /* factions 1..activeFactionCount; faction 1 is checked even when the count is 0 */
   factionIndex = 1;
+  /* Original quirk: a do-while, faction 1 is checked even with an active faction count of 0 (D8: kept for step 11) */
   do {
     factionModelFlags = 0;
     for (ownerListNode = worldRuntime->ownerListHead; ownerListNode != nullptr;

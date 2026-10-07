@@ -277,7 +277,7 @@ void AiArmyCandidate_AddBestExplorationAsset(FactionRuntimeIndex factionIndex,Wo
     bestScore = 0;
     remainingEntries = g_AiWorkspace11Count;
     armyAssetRegistryCursor = g_AiWorkspace11ProducibleAssets;
-    do {
+    for (; remainingEntries != 0; remainingEntries--) {
       if ((AiPurchase_FullAssetRecord(*armyAssetRegistryCursor)->flags & 1) != 0) {
         candidateScore = AiArmyCandidate_ComputeFactionWeightedScore
                           (&g_AiArmyCandidateScoreWeightsVariantB15,factionIndex,
@@ -288,8 +288,7 @@ void AiArmyCandidate_AddBestExplorationAsset(FactionRuntimeIndex factionIndex,Wo
         }
       }
       armyAssetRegistryCursor++;
-      remainingEntries--;
-    } while (remainingEntries != 0);
+    }
     if (0 < bestScore) {
       weightRange = (uint32_t)(((int64_t)
                              (int)(100 - g_GameFactionRuntimeImage.records[factionIndex].exploredTerrainPercent) *
@@ -324,7 +323,7 @@ void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRu
     bestScore = 0;
     remainingEntries = g_AiWorkspace11Count;
     armyAssetRegistryCursor = g_AiWorkspace11ProducibleAssets;
-    do {
+    for (; remainingEntries != 0; remainingEntries--) {
       if ((AiPurchase_FullAssetRecord(*armyAssetRegistryCursor)->flags & 1) != 0) {
         candidateScore = AiArmyCandidate_ComputeFactionWeightedScore
                           (&g_AiArmyCandidateScoreWeightsVariantC15,factionIndex,
@@ -335,8 +334,7 @@ void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRu
         }
       }
       armyAssetRegistryCursor++;
-      remainingEntries--;
-    } while (remainingEntries != 0);
+    }
     if (0 < bestScore) {
       weightRange = g_AiKnowledgeData->parameters.armyVariantCBaseWeight;
       if (g_AiWorkspace07Count == 0) {

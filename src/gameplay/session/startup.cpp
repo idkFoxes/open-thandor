@@ -186,15 +186,14 @@ void InGameRuntime_ReleaseFactionScratchBuffers()
   remainingFactions = 8;
   scratchBufferSetACursor = g_InGameFactionScratchBufferSetA8;
   scratchBufferSetBCursor = g_InGameFactionScratchBufferSetB8;
-  do {
+  for (; remainingFactions != 0; remainingFactions--) {
     g_MemoryApi.free(*scratchBufferSetACursor);
     g_MemoryApi.free(*scratchBufferSetBCursor);
     *scratchBufferSetACursor = nullptr;
     *scratchBufferSetBCursor = nullptr;
     scratchBufferSetACursor++;
     scratchBufferSetBCursor++;
-    remainingFactions--;
-  } while (remainingFactions != 0);
+  }
 }
 
 /* Shared session start steps of InGameRuntime_InitializeNewSession (new_session.cpp) and
