@@ -51,7 +51,7 @@ extern ScenarioTransferState g_FrontendScenarioTransferState;
 /* DwordBlock64Array_ContainsExactRecord: dwords per compared record */
 inline constexpr auto DWORD_BLOCK64_RECORD_DWORDS = 0x40;
 
-Bool8 DwordBlock64Array_ContainsExactRecord
+bool DwordBlock64Array_ContainsExactRecord
           (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord);
 
 #endif /* THANDOR_NETWORK_PROTOCOL_SCENARIO_TRANSFER_H */

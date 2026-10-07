@@ -141,7 +141,7 @@ void ScenarioCatalog_Rebuild()
   uintptr_t checkedValue;
   uint32_t openError;
   uint32_t readError;
-  Bool8 loaded;
+  bool loaded;
   void *loadedBuffer;
   uint32_t loadedByteCount;
   void *handleToClose;
@@ -265,7 +265,7 @@ void ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,u
 }
 
 /* Compares the 0x40-byte identifiers of two catalog records dword by dword. */
-static Bool8 ScenarioCatalog_RecordIdentifiersEqual
+static bool ScenarioCatalog_RecordIdentifiersEqual
           (const ScenarioCatalogRecord *firstRecord,const ScenarioCatalogRecord *secondRecord)
 {
   /* the UTF-16 identifiers compared as dwords */

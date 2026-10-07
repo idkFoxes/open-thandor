@@ -20,7 +20,7 @@
    Called directly by the save-game writers in gameplay/session/savegame.cpp and campaign_carryover.cpp (no
    callback table).
 */
-Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
+bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle)
 
 {
@@ -175,7 +175,7 @@ static uint32_t Package_MoveTailOverEntry(FileSystemFilePosition entryOffset,Fil
    NULL. Called directly by Package_UpsertEntry and the save-game writer in gameplay/session/savegame.cpp (no callback
    table).
 */
-Bool8 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode)
+bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode)
 
 {
   PckStoredByteCount entryPackedSize;

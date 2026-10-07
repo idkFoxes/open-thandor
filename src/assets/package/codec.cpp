@@ -360,7 +360,7 @@ static void PckCodec_EncoderEnsureTwoSymbols()
 /* Scans all leaf and internal nodes (one array in the original layout: leaves first, then internal nodes) for
    the two lightest nodes with nonzero weight. Returns false when fewer than two are left (the second-lowest
    weight is still UINT32_MAX, tested as negative like the original). */
-static Bool8 PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,uint32_t *outLowestWeight,
+static bool PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,uint32_t *outLowestWeight,
           PckHuffmanNode **outSecondLowestNode,uint32_t *outSecondLowestWeight)
 {
   PckHuffmanNode *scanNode;
@@ -403,7 +403,7 @@ static Bool8 PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode
 /* Copies the scaled counts into the leaf weights, then joins the two lightest live nodes under a new internal
    node until only the root still has a weight; a joined node's weight is cleared, so the root is the only node
    left with nonzero weight. Returns false when all 256 internal nodes are used up. */
-static Bool8 PckCodec_EncoderBuildTree()
+static bool PckCodec_EncoderBuildTree()
 {
   int symbolIndex;
   PckHuffmanNodePtr nextInternalNode;
@@ -478,7 +478,7 @@ static void PckCodec_EncoderAssignCodes()
 
 /* ORs one token into the output: tokenHeader in its headerBitCount flag/count bits, then the code of symbol.
    Then moves the window on by the whole bytes written. Returns false when the output runs full. */
-static Bool8 PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t tokenHeader,uint8_t headerBitCount,
+static bool PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t tokenHeader,uint8_t headerBitCount,
           uint8_t symbol)
 {
   uint32_t symbolCode;
@@ -503,7 +503,7 @@ static Bool8 PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t toke
 
 /* Encodes the source as run tokens (3..18 equal bytes: flag 1 + (count - 3) in 4 bits = count*2 - 5, then the
    byte's code) and literal tokens (flag bit 0, then the byte's code). Returns false when the output runs full. */
-static Bool8 PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *source,
+static bool PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *source,
           PckDecodedByteCount sourceBytesLeft)
 {
   uint8_t symbol;

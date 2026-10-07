@@ -54,13 +54,13 @@ inline constexpr int TEXT_ID_PROJECT_COUNT = 24;
 /* Not in the original: sets the text of TEXT_ID_ADVANCED_NOTE_UI_SCALE (Latin-1, cut to its buffer). */
 void TextResource_SetUiScaleNote(const char *text);
 
-Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
+bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 
-Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintptr_t *outLocaleBlockOrError);
+bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintptr_t *outLocaleBlockOrError);
 
 void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text);
 
-Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText);
+bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText);
 
 /* TextResource_TryResolve without the found flag (a missing text gives TEXT_RESOURCE_MISSING_SENTINEL_0x33) */
 uint16_t *TextResource_Resolve(TextResourceId resourceId);

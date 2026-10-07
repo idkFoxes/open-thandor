@@ -20,7 +20,7 @@ ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768] = {};
    (untouched on success) for an invalid header or at the first record that fails. (The original's success
    return value, the last registration's value, was read by no caller.)
 */
-Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
+bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
 
 {
   uint32_t registrationStatusCode;
@@ -51,7 +51,7 @@ Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
    ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters (a model class-init callback table slot) and by the
    army hangar-lowering step in gameplay/army/aircraft.cpp.
 */
-Bool8 ModelLookupTable_GetPackedPointPosition
+bool ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,GraphicsFixedVec3 *outLocalPosition)
 
@@ -84,7 +84,7 @@ Bool8 ModelLookupTable_GetPackedPointPosition
    otherwise returns false and stores the address just past the table's last entry in *outEntry (one caller,
    ArmyPlacement_CanPlaceAnchoredModel, reads it anyway).
 */
-Bool8 ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
+bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,ModelPackedPointRecord **outEntry)
 
 {
@@ -170,7 +170,7 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
    MDL_NODE_TREE_MAX_DEPTH (a cyclic offset) fails with FATAL_ERROR_MODEL_ASSET_INVALID before its sprite is
    loaded. The stock models use at most 5 children and depth 5. */
 static constexpr int MDL_NODE_TREE_MAX_DEPTH = 64;
-static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ModelAssetHeader *asset,uint32_t *error,
+static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ModelAssetHeader *asset,uint32_t *error,
                                                 uint32_t depth)
 {
   uint32_t childIndex;
@@ -350,7 +350,7 @@ static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *d
    duplicate id, a full registry or any failed load/lookup returns false with its error code in *outError
    (untouched on success; the original's success return value was read by no caller).
 */
-Bool8 ModelDefinition_RegisterAndResolveReferences
+bool ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError)
 
 {

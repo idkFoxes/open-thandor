@@ -65,7 +65,7 @@ uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset,uint32_t assetByteCount
 /* Checks whether an army asset id is registered and enabled: returns false only when the record exists
    and bit 0 (ARMY_ASSET_FLAG_ENABLED) of its flags is set, true when it is missing or disabled.
 */
-Bool8 ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
+bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 
 {
   ArmyAssetRecordPrefix *registeredRecord;
@@ -81,14 +81,14 @@ Bool8 ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
    model tree, rootNodeOffsetOrPointer), whose selectionDetailValue is non-zero and whose flags share a bit with
    requiredDefinitionFlags.
 */
-Bool8 ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
+bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
   ArmyAssetRecord *linkedAsset;
   int linksRemaining;
-  Bool8 technologyLocked;
+  bool technologyLocked;
   uint32_t lookupError;
   ArmyAssetRecordPrefix *linkedRecord;
 
@@ -299,12 +299,12 @@ uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRe
   return FATAL_ERROR_ARMY_ID_NOT_FOUND;
 }
 
-/* Returns 0 when some registered army record with this id is a unit, i.e. has flag 0x0200 of its flags clear;
-   1 otherwise. Several records may share an id, so the scan goes on past a match
+/* Returns false when some registered army record with this id is a unit, i.e. has flag 0x0200 of its flags
+   clear; true otherwise. Several records may share an id, so the scan goes on past a match
    with the wrong flags. Predicate of the editor's unit-placement id searches
    (FindNext/FindPrevious/Step*Flag0100Without0200).
 */
-uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
+bool ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
 
 {
   int slotIndex;
@@ -314,17 +314,17 @@ uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
     candidateAsset = ArmyAssetRecord_FromPrefix(g_ArmyAssetRecordRegistry[slotIndex]);
     if (candidateAsset != nullptr && recordId == candidateAsset->registryId &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
-      return 0; /* found a unit */
+      return false; /* found a unit */
     }
   }
-  return 1;
+  return true;
 }
 
-/* Returns 0 when some registered army record with this id is an object, i.e. has flag 0x0200 of its flags set;
-   1 otherwise. Predicate of the editor's object-placement id searches
+/* Returns false when some registered army record with this id is an object, i.e. has flag 0x0200 of its flags
+   set; true otherwise. Predicate of the editor's object-placement id searches
    (FindNext/FindPrevious/Step*Flags0100And0200).
 */
-uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
+bool ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
 
 {
   int slotIndex;
@@ -334,10 +334,10 @@ uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
     candidateAsset = ArmyAssetRecord_FromPrefix(g_ArmyAssetRecordRegistry[slotIndex]);
     if (candidateAsset != nullptr && recordId == candidateAsset->registryId &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
-      return 0; /* found an object */
+      return false; /* found an object */
     }
   }
-  return 1;
+  return true;
 }
 
 /* Returns 0 when some registered army record with this id is a placeable unit (flags with 0x0100 set and 0x0200

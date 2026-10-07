@@ -51,7 +51,7 @@ void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path)
    false with an error code there instead, FATAL_ERROR_OUT_OF_MEMORY when the entry does not fit (or is to be
    decoded into g_PackageScratchBuffer, which holds the packed data). outByteCountOrError may be NULL.
 */
-Bool8 Package_LoadEntryIntoBuffer
+bool Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
            uint32_t *outByteCountOrError)
 
@@ -63,7 +63,7 @@ Bool8 Package_LoadEntryIntoBuffer
   uint32_t byteCount;
   uint32_t decodedByteCount;
   uint32_t decodeErrorCode;
-  Bool8 decoded;
+  bool decoded;
   uint32_t statusCode;
   uint32_t errorCode;
 
@@ -137,7 +137,7 @@ Bool8 Package_LoadEntryIntoBuffer
    executable first, then as given), allocates the entry-header array and reads the directory into
    mountSlot. Stores the file handle or the open/allocation/directory error code in *outFileHandleOrError (may
    be NULL); returns true on success. On a failed directory read the file is closed and the slot left free. */
-static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintptr_t *outFileHandleOrError)
+static bool Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintptr_t *outFileHandleOrError)
 
 {
   void *handle;
@@ -196,7 +196,7 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
    archive loses against every other one. FileSystem_Init mounts engine.pck this way. Same result as
    Package_Mount.
 */
-Bool8 Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError)
+bool Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError)
 
 {
   int slotsRemaining;
@@ -298,7 +298,7 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
    allocation fails or the directory cannot be read (see Package_MountIntoSlot). outFileHandleOrError may be
    NULL.
 */
-Bool8 Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError)
+bool Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError)
 
 {
   int slotsRemaining;
@@ -343,7 +343,7 @@ static PckMountSlot *Package_FindMountSlot(EngineFileHandle fileHandle)
 /* Package_FindEntry sort order: true when record later is smaller than record front, comparing the whole
    PCK_ENTRY_HEADER_BYTES record as unsigned UTF-16 code units (the path first, then whatever the output
    record held behind it). Equal records are not smaller. */
-static Bool8 Package_FoundEntryIsSmaller(const PckEntryHeader *later,const PckEntryHeader *front)
+static bool Package_FoundEntryIsSmaller(const PckEntryHeader *later,const PckEntryHeader *front)
 
 {
   const uint16_t *laterUnits;
@@ -403,7 +403,7 @@ static void Package_SortFoundEntries(PckEntryHeader *entries,int entryCount)
    PCK_ENTRY_HEADER_BYTES); returns false when the handle is not mounted, leaving *outMatchCount unchanged
    (the original returned FATAL_ERROR_GENERAL_FAILURE, which no caller reads).
 */
-Bool8 Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
+bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
                        uint16_t *pattern,EngineFileHandle fileHandle,uint32_t *outMatchCount)
 
 {
@@ -467,7 +467,7 @@ void Package_Unmount(EngineFileHandle fileHandle)
    unit; '*' only skips the candidate to its next dot or terminator (no full globbing), which is enough for
    patterns like "level\*.lev". The comparison is case-sensitive. Returns false on a match.
 */
-Bool8 Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
+bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
 
 {
   uint16_t patternCodeUnit;
@@ -493,7 +493,7 @@ Bool8 Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
    decoder's byte count in *outByteCount; on failure returns false with the seek, read or decoder error code in
    *outErrorCode and leaves the entry path in g_PackageLastErrorPath. Either out pointer may be NULL.
 */
-Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
+bool Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
                              uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
@@ -582,7 +582,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
   PckMountSlot *mountSlot;
   uint16_t *pathCursor;
   uint16_t *nameCursor;
-  Bool8 matched;
+  bool matched;
   PckEntryHeader *currentEntry;
 
   matched = true;
@@ -649,7 +649,7 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
   PckMountSlot *mountSlot;
   uint16_t *pathCursor;
   uint16_t *nameCursor;
-  Bool8 matched;
+  bool matched;
   PckEntryHeader *currentEntry;
 
   /* Lowercase the path in place and count its code units, terminator included. A path that reaches
@@ -753,7 +753,7 @@ static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFile
    the file-system error, or FATAL_ERROR_GENERAL_FAILURE when fileHandle is not mounted, in *outErrorCode
    (which may be NULL). The original also returned the last seek position on success; no caller used it.
 */
-Bool8 Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode)
+bool Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode)
 
 {
   uint32_t statusCode;
