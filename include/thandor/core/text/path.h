@@ -43,10 +43,10 @@ inline constexpr auto WIDE_PATH_EXTENSION_SVE = 0x657673; /* ".sve" saved game *
 #define UTF16_CHAR_PAIR(first,second) ((second) << 16 | (first))
 
 /* pathCapacity: code units of the buffer holding path */
-Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path,
+bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path,
                                 size_t pathCapacity = WIDE_PATH_MAX_CODE_UNITS);
 
-Bool8 WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path);
+bool WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path);
 
 /* destinationCapacity: code units of the destination buffer */
 void WidePath_CombineDirectoryAndLeafBounded

@@ -62,7 +62,7 @@ static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[TERRAIN_PROJECTED_ROW_
     /* 240 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /* 250 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
 
-Bool8 g_Triangle2DBarycentricOutside;
+bool g_Triangle2DBarycentricOutside;
 
 /* Terrain pass of the world view (called by FrontendModelPointerContext_RenderWorldViewQueuesClipped): unless
    the previous projection can be reused (TERRAIN_RENDER_REUSE_PROJECTION), rebuilds the visible column span of
@@ -90,7 +90,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   TerrainProjectedVertexWorkRecord *vertexCursor;
   TerrainProjectedRowSpan *rowSpan;
   int spanPairsLeft;
-  static Bool8 loggedGridRejected;
+  static bool loggedGridRejected;
 
   /* The original trusted the FLD grid size; a grid that does not fit the span table (rows 0..256 plus the
      emptied rows past the grid) or has fewer than two rows or no columns is not drawn here, because the span
@@ -427,7 +427,7 @@ static void TerrainProjectedTriangle_PickCursor
 
 {
   TriangleBarycentricWeightsQ12 barycentricWeights;
-  Bool8 outsideTriangle;
+  bool outsideTriangle;
   uint32_t vertex0ViewDepth;
 
   barycentricWeights = Triangle2D_ComputeBarycentricWeightsQ12Packed
@@ -880,7 +880,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
   GraphicsTextureSet *materialTextureSet;
   PackedArgb32 paletteModulationColor;
   GraphicsPrimitivePacket *newPacket;
-  static Bool8 loggedMissingMaterial;
+  static bool loggedMissingMaterial;
 
   /* The original dereferenced the material's texture set unchecked; a packet whose material index is out of
      range or names an optional material that was not loaded (a NULL entry) is skipped here, as if the queue

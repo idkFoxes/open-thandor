@@ -70,7 +70,7 @@ bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Graph
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
-Bool8 GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sourceAsset);
+bool GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sourceAsset);
 
 GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16,uint32_t *outError);
 

@@ -92,7 +92,7 @@ FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryO
 
 /* open-thandor: converts a UTF-16 path into one of the g_Win32PathScratch buffers for the ANSI file APIs.
    False when it does not fit; the original cut the path off at 0xFF bytes and used it anyway. */
-static Bool8 Win32Path_ToNarrow(uint8_t *destination,uint16_t *path)
+static bool Win32Path_ToNarrow(uint8_t *destination,uint16_t *path)
 
 {
   return RichTextCommandStream_CopyToNarrow(sizeof g_Win32PathScratch[0],destination,path);
@@ -221,7 +221,7 @@ void Win32FileSystem_RestoreInitialDirectory()
    FATAL_ERROR_OUT_OF_MEMORY with the file size left in g_FatalErrorDetail1Utf16. *outBuffer is only written
    on success, *outError only on failure. Used for loose files by Package_LoadEntry and Resource_Load
    (assets/package); the original's two whole-file loader entry points around it had no caller. */
-Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
+bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
           uint32_t *outError)
 
 {
@@ -404,7 +404,7 @@ uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags
 /* Whether the entry FindFirstFileA/FindNextFileA just stored in the scratch WIN32_FIND_DATAA belongs in
    the listing: files are neither directory nor volume label; directories are directories other than
    "." and "..". Any other mode matches nothing. */
-static Bool8 Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mode)
+static bool Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mode)
 
 {
   if (mode == FileSystemEnumerationMode::FILESYSTEM_ENUMERATE_FILES) {
@@ -547,7 +547,7 @@ bool Win32File_GetSize(void *handle,uint32_t *outSize)
    original also passed on the copy's byte count, or FATAL_ERROR_GENERAL_FAILURE for a cut-off path, as
    the success value; no caller read it.)
 */
-Bool8 Win32File_GetCurrentDirectory(uint16_t *destination)
+bool Win32File_GetCurrentDirectory(uint16_t *destination)
 
 {
   DWORD narrowPathLength;

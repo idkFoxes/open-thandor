@@ -25,7 +25,7 @@ GraphicsFixedVec3 g_ModelCullViewRelative = {};
    radius; g_ModelCullViewRelative holds its view-relative position. Projects it and, when it lies fully in
    front of the near plane, collects the nearby shading records and draws the mesh group picked by depth.
    Returns false when the node's depth is not beyond the near plane (the walk then also skips its children). */
-static Bool8 ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
+static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
 
 {
   ModelResource *renderView;
@@ -84,7 +84,7 @@ static Bool8 ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
    g_ModelCullViewRelative) against the four side planes of the view frustum and draws it when it passes.
    A plane distance above the subtree radius means the whole subtree is outside: returns false and the walk
    ends here. Above only the node radius, just the node is culled and the children are still visited. */
-static Bool8 ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
+static bool ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
 
 {
   int subtreeRadius;

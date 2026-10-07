@@ -22,7 +22,7 @@ struct GraphicsTextureDecomposeState {
   int freeBytes;                       /* bytes of the work area not yet taken by records or packed pixels */
   uint8_t *packedPixels;               /* lowest packed sprite pixel */
   uint32_t packedPixelBytes;
-  Bool8 edgeTransparent;                /* the edge colour is transparent, so border rows/columns in it are trimmed */
+  bool edgeTransparent;                /* the edge colour is transparent, so border rows/columns in it are trimmed */
 };
 
 /* Module data. */
@@ -32,7 +32,7 @@ struct GraphicsTextureDecomposeState {
 
 /* Takes `amount` bytes of the work area's free bytes. Returns false (taking nothing) unless at least one byte
    stays free. */
-static Bool8 GraphicsTextureDecompose_ReserveBytes(int *freeBytes,int amount)
+static bool GraphicsTextureDecompose_ReserveBytes(int *freeBytes,int amount)
 {
   int bytesLeft;
 
@@ -83,7 +83,7 @@ static GraphicsTextureSourceEntry *GraphicsTextureDecompose_AddRecord
 }
 
 /* True when the `count` (at least 1) ARGB pixels from `pixel` on, `step` pixels apart, all equal `color`. */
-static Bool8 GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t count,int step,uint32_t color)
+static bool GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t count,int step,uint32_t color)
 {
   for (; count != 0; count--) {
     if (*pixel != color) {
@@ -95,7 +95,7 @@ static Bool8 GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t c
 }
 
 /* True when the `count` (at least 1) palette indices from `pixel` on, `step` bytes apart, all equal `index`. */
-static Bool8 GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t count,int step,uint8_t index)
+static bool GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t count,int step,uint8_t index)
 {
   for (; count != 0; count--) {
     if (*pixel != index) {
@@ -112,7 +112,7 @@ static Bool8 GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t c
    border rows and columns in the edge colour when that is transparent (the origin records how much was cut at
    the top/left; at least one row and column stay), copies the remaining pixels in front of the packed ones and
    clears the whole logical block to background. Returns false when the work area is full. */
-static Bool8 GraphicsTextureDecompose_CutArgbRegion
+static bool GraphicsTextureDecompose_CutArgbRegion
           (GraphicsTextureDecomposeState *state,uint32_t *blockStart,int columnsLeft,uint32_t background,
           uint32_t edgeColor)
 {
@@ -213,7 +213,7 @@ static Bool8 GraphicsTextureDecompose_CutArgbRegion
 
 /* GraphicsTextureDecompose_CutArgbRegion on 8-bit palette indices: the record gets palette index 0 and the
    packed pixels are padded to whole dwords. */
-static Bool8 GraphicsTextureDecompose_CutIndexedRegion
+static bool GraphicsTextureDecompose_CutIndexedRegion
           (GraphicsTextureDecomposeState *state,uint8_t *blockStart,int columnsLeft,uint8_t backgroundIndex,
           uint8_t edgeIndex)
 {

@@ -21,7 +21,7 @@ inline constexpr int MOVIE_CHROMA_SQRT3_Q15 = 0xddb4;
 /* 2^16 / 3: (r + g + b) * this >> 19 is the channel average scaled to 5 bits (MovieColor_ComputeLuma5FromRgb888) */
 inline constexpr int MOVIE_LUMA_THIRD_Q16 = 0x5555;
 
-Bool8 Movie_EncodeFlmBufferFromFrameProvider
+bool Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider,uint32_t *outByteCount);
 

@@ -84,7 +84,7 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
      times, 10 or more needs more than the 32 rows); clamped here because both write outside the 32x32
      workspace. The only caller (world/camera/motion_spline.cpp) passes 2. */
   if (keyframeCount < 2 || keyframeCount > (CUBIC_SPLINE_MATRIX_ORDER + 4) / 4) {
-    static Bool8 s_KeyframeCountLogged = false;
+    static bool s_KeyframeCountLogged = false;
     if (!s_KeyframeCountLogged) {
       s_KeyframeCountLogged = true;
       Thandor_Log("spline: keyframe count %d out of 2..%d, clamped",(int)keyframeCount,

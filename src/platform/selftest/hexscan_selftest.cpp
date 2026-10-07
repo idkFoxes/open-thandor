@@ -267,7 +267,7 @@ static uint32_t HexscanTest_RunDriver(int driver, FieldGridAsset *grid, FieldGri
         case HEXSCAN_OVERLAY_B: {
             FieldCellFlagMask mask = FieldCell_FromRawWord(1u << HexscanTest_Range(&seed, 0, 24));
             TerrainOverlayCellRuntimeValue value = (TerrainOverlayCellRuntimeValue)HexscanTest_Random(&seed);
-            Bool8 rejected = driver == HEXSCAN_OVERLAY_A
+            bool rejected = driver == HEXSCAN_OVERLAY_A
                                  ? FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint(mask, value, radius, worldY,
                                                                                          worldX, grid)
                                  : FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint(mask, value, radius, worldY,
@@ -296,7 +296,7 @@ static uint32_t HexscanTest_RunDriver(int driver, FieldGridAsset *grid, FieldGri
             int i;
             Q12 reference = HexscanTest_Range(&seed, -HEXSCAN_TEST_CLEAN_HEIGHT, HEXSCAN_TEST_CLEAN_HEIGHT + 1);
             int edgeDistance = row < column ? row : column;
-            Bool8 rejected;
+            bool rejected;
             uint8_t result;
             if ((int)grid->gridHeight - 1 - row < edgeDistance) {
                 edgeDistance = (int)grid->gridHeight - 1 - row;

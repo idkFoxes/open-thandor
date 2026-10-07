@@ -76,7 +76,7 @@ void DestroyMainWindow() noexcept
 
 using namespace thandor::sdl3;
 
-Bool8 SdlPlatform_CreateMainWindow(const char *title)
+bool SdlPlatform_CreateMainWindow(const char *title)
 {
   /* the original window procedure swallows WM_SYSKEYDOWN, so Alt+F4 does not close the game */
   SDL_SetHint(SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, "0");

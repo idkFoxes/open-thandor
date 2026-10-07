@@ -223,19 +223,19 @@ static void GraphicsShadingGeneratedTexture_PlaceSamplePoints
    and the point is cast again from twice the radius back along the light.
    Returns false when the point finds no terrain or its offset leaves the grid step (the caller abandons the
    model). */
-static Bool8 GraphicsShadingGeneratedTexture_DropSampleOntoTerrain
+static bool GraphicsShadingGeneratedTexture_DropSampleOntoTerrain
           (struct GeneratedTextureSampleWorkRecord *sample,ModelRuntimeNode *modelNode,
            GeneratedTextureRenderContextView *renderContext)
 {
   GraphicsWorldCoordinateQ12 sampleWorldZ;
   Q12 surfaceHeightQ12;
   int32_t startTextureOffset;
-  Bool8 terrainHit;
+  bool terrainHit;
   Q12 terrainHitDistanceQ12;
   int missRayLength;
   Q12 remainingRayLength;
   AngleTurn32 oppositeAzimuth;
-  Bool8 terrainSurfaceHit;
+  bool terrainSurfaceHit;
   Q12 surfaceDistanceQ12;
   uint32_t terrainHitMaterial;
   uint32_t heightDelta;
@@ -356,7 +356,7 @@ static GraphicsFixedVec3 *ShadowSample_ViewPoint(GraphicsProjectedPointPair *ver
 
 /* Not in the original as a separate function: transforms the twelve sample points into view space (pairs
    [1] and [2] of their vertices) and reports whether any of them lies in front of the near plane. */
-static Bool8 GraphicsShadingGeneratedTexture_TransformSamplesToView(GraphicsProjectedPointPair *projectedBlocks)
+static bool GraphicsShadingGeneratedTexture_TransformSamplesToView(GraphicsProjectedPointPair *projectedBlocks)
 {
   GraphicsProjectedPointPair *vertex;
   int sampleIndex;
@@ -1269,7 +1269,7 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
    group (ModelResource.shadowMeshGroupOffset), so GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy skips hierarchies
    that cannot cast a shadow. Children are probed from the last to the first; the first hit ends the search.
 */
-Bool8 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
+bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
 
 {
   int childIndex;

@@ -1,5 +1,5 @@
 {
- "revision": "a2cadee8",
+ "revision": "7c0eaa5f",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -198,12 +198,9 @@
    "ui": 6
   },
   "bool8": {
-   "audio": 3,
-   "core": 15,
+   "core": 2,
    "gameplay": 1,
-   "graphics": 63,
-   "movie": 12,
-   "platform": 34,
+   "movie": 1,
    "ui": 81,
    "world": 110
   },

@@ -33,7 +33,7 @@ void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsSc
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX)
 
 {
-  Bool8 accessFailed;
+  bool accessFailed;
   
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
@@ -51,7 +51,7 @@ void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsSc
 static SoftwareRasterHandler *SoftwareRenderer_SelectHandler(SoftwareRasterHandler **handlers,
                                                              const GraphicsPrimitivePacket *packet)
 {
-  static Bool8 loggedEmptyHandler;
+  static bool loggedEmptyHandler;
   SoftwareRasterHandler *handler;
 
   handler = handlers[ToBits(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12];
@@ -125,7 +125,7 @@ void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY
           GraphicsPrimitiveQueue *queue)
 
 {
-  Bool8 accessFailed;
+  bool accessFailed;
   
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
@@ -969,7 +969,7 @@ void SoftwareRenderer_AdvanceDepthEpoch()
 {
   int pixelsRemaining;
   int32_t *depthValueCursor;
-  Bool8 depthEpochWrapped;
+  bool depthEpochWrapped;
 
   depthEpochWrapped = (uint32_t)g_SoftwareDepthEpoch < SOFTWARE_DEPTH_EPOCH_STEP;
   g_SoftwareDepthEpoch = g_SoftwareDepthEpoch - SOFTWARE_DEPTH_EPOCH_STEP;

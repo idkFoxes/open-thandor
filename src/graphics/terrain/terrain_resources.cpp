@@ -48,7 +48,7 @@ static TerrainMaterialSuffixEntry *TerrainVisualResources_FindPathSuffixEntry(ui
    set in fieldFlags are required (advancing the loading movie before and after each), the others optional
    (NULL when missing). Also sets the loading movie span from the number of required sets. Returns true on
    success; false with the load error in *outError when a required set fails. */
-static Bool8 TerrainVisualResources_LoadMaterialTextureSets
+static bool TerrainVisualResources_LoadMaterialTextureSets
           (uint16_t *secondaryResourcePath,TerrainMaterialSuffixEntry *pathSuffixEntry,FieldGridFlags fieldFlags,
           uint32_t *outError)
 
@@ -92,7 +92,7 @@ static Bool8 TerrainVisualResources_LoadMaterialTextureSets
 /* Loads <primary>.dat, <primary>.gfx, <primary>.pal, <secondary>.pal and <secondary>.dat (the secondary path
    without its material letter) into the terrain globals, advancing the loading movie after each. Returns true
    on success; false with the load error in *outError at the first failure. */
-static Bool8 TerrainVisualResources_LoadTablesAndPalettes
+static bool TerrainVisualResources_LoadTablesAndPalettes
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,
           TerrainMaterialSuffixEntry *pathSuffixEntry,uint32_t *outError)
 
@@ -195,7 +195,7 @@ static void TerrainDirectionTable_RandomizeRecords()
    animated direction table. Advances the loading movie between steps. Returns true on success; on failure
    returns false and stores the error (field check or failed resource load) in *outError (untouched on success).
 */
-Bool8 TerrainVisualResources_LoadPrimary
+bool TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError)
 
@@ -232,7 +232,7 @@ Bool8 TerrainVisualResources_LoadPrimary
    flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell. Returns true on success; on failure
    returns false and stores the error in *outError (untouched on success).
 */
-Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
+bool TerrainVisualResources_LoadAndClearCellOverlayFlags
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError)
 
