@@ -7,8 +7,11 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <algorithm>
+#include <iterator>
+#include <string>
+#include <vector>
 #include <thandor/core/settings/persistent.h>
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
@@ -194,41 +197,43 @@ static bool PersistentSettings_IsPresent(uint32_t offset, uint32_t byteCount)
 
 static uint32_t PersistentIni_GetDword(const uint8_t *image, uint32_t offset)
 {
-  uint32_t value;
-
-  memcpy(&value, image + offset, 4);
-  return value;
+  return Thandor_LoadU32(image + offset);
 }
 
 static void PersistentIni_SetDword(uint8_t *image, uint32_t offset, uint32_t value)
 {
-  memcpy(image + offset, &value, 4);
+  Thandor_StoreU32(image + offset, value);
 }
 
-/* Appends to the ini text being written (silently truncated at the capacity). */
-typedef struct PersistentIniWriter {
-  char *out;
+/* The ini text being written: at most capacity - 1 characters (the caller's buffer keeps room for the NUL);
+   what does not fit is silently dropped. */
+struct PersistentIniWriter {
+  std::string text;
   uint32_t capacity;
-  uint32_t length;
-} PersistentIniWriter;
+};
 
 static void PersistentIni_Append(PersistentIniWriter *writer, const char *format, ...)
 {
   va_list args;
+  va_list measureArgs;
   int written;
 
-  if (writer->length + 1 >= writer->capacity) {
+  if (writer->text.size() + 1 >= writer->capacity) {
     return;
   }
   va_start(args, format);
-  written = vsnprintf(writer->out + writer->length, writer->capacity - writer->length, format, args);
-  va_end(args);
+  va_copy(measureArgs, args);
+  written = vsnprintf(nullptr, 0, format, measureArgs);
+  va_end(measureArgs);
   if (written > 0) {
-    writer->length += (uint32_t)written;
-    if (writer->length >= writer->capacity) {
-      writer->length = writer->capacity - 1;
+    std::vector<char> formatted((size_t)written + 1);
+    vsnprintf(formatted.data(), formatted.size(), format, args);
+    writer->text.append(formatted.data(), (size_t)written);
+    if (writer->text.size() >= writer->capacity) {
+      writer->text.resize(writer->capacity - 1);
     }
   }
+  va_end(args);
 }
 
 /* UTF-16 name field -> UTF-8 (up to the first NUL; a lone surrogate is encoded like a code point). */
@@ -242,7 +247,7 @@ static void PersistentIni_AppendName(PersistentIniWriter *writer, const uint8_t 
     uint16_t unit;
     uint32_t codePoint;
 
-    memcpy(&unit, field + index * 2, 2);
+    unit = Thandor_LoadU16(field + index * 2);
     if (unit == 0) {
       break;
     }
@@ -251,7 +256,7 @@ static void PersistentIni_AppendName(PersistentIniWriter *writer, const uint8_t 
     if (unit >= 0xD800 && unit < 0xDC00 && index < unitCount) {
       uint16_t low;
 
-      memcpy(&low, field + index * 2, 2);
+      low = Thandor_LoadU16(field + index * 2);
       if (low >= 0xDC00 && low < 0xE000) {
         codePoint = 0x10000 + (((uint32_t)unit - 0xD800) << 10) + (low - 0xDC00);
         index++;
@@ -286,14 +291,13 @@ static void PersistentIni_AppendName(PersistentIniWriter *writer, const uint8_t 
 /* Writes the ini text of every key whose dword is in presentMask; returns the text length (no NUL counted). */
 uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity)
 {
-  PersistentIniWriter writer = {out, capacity, 0};
+  PersistentIniWriter writer = {std::string(), capacity};
   const char *section = nullptr;
   uint32_t index;
 
   if (capacity == 0) {
     return 0;
   }
-  out[0] = 0;
   PersistentIni_Append(&writer,
       "; Open Thandor settings. The game rewrites this file when a setting changes in its menus.\r\n"
       "; A missing key means the game's default; unknown keys are ignored.\r\n");
@@ -362,7 +366,9 @@ uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask
     }
     PersistentIni_Append(&writer, "\r\n");
   }
-  return writer.length;
+  std::copy(writer.text.begin(), writer.text.end(), out);
+  out[writer.text.size()] = 0;
+  return (uint32_t)writer.text.size();
 }
 
 static bool PersistentIni_IsSpace(char c)
@@ -401,7 +407,7 @@ static bool PersistentIni_ParseNumber(const char *begin, const char *end, uint32
   if (length == 0 || length >= sizeof text) {
     return false;
   }
-  memcpy(text, begin, length);
+  std::copy(begin, end, text);
   text[length] = 0;
   digits = text;
   if (*digits == '-' || *digits == '+') {
@@ -491,7 +497,7 @@ static void PersistentIni_ParseName(const char *begin, const char *end, uint8_t 
   const uint8_t *cursor = reinterpret_cast<const uint8_t *>(begin);
   const uint8_t *limit = reinterpret_cast<const uint8_t *>(end);
 
-  memset(field, 0, PERSISTENT_SETTINGS_NAME_BYTES);
+  std::fill_n(field, PERSISTENT_SETTINGS_NAME_BYTES, 0);
   while (cursor < limit) {
     uint32_t codePoint = *cursor;
     uint32_t extra = 0;
@@ -539,7 +545,9 @@ static void PersistentIni_ParseName(const char *begin, const char *end, uint8_t 
     if (units[0] == 0 || written + units16 > unitCount) {
       break;
     }
-    memcpy(field + written * 2, units, units16 * 2);
+    for (index = 0; index < units16; index++) {
+      Thandor_StoreU16(field + (written + index) * 2, units[index]);
+    }
     written += units16;
   }
 }
@@ -713,7 +721,6 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
 {
   void *fileHandle;
   uint32_t fileSize;
-  char *text;
   uint32_t index;
   uint64_t presentMask;
 
@@ -733,16 +740,13 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
     g_FileSystemClose(fileHandle);
     return false;
   }
-  text = static_cast<char *>(malloc(fileSize + 1));
-  if (text == nullptr || (fileSize != 0 && g_FileSystemReadExact(fileSize,text,fileHandle) != 0)) {
-    free(text);
+  std::vector<char> text(fileSize + 1); /* the file and a NUL */
+  if (fileSize != 0 && g_FileSystemReadExact(fileSize,text.data(),fileHandle) != 0) {
     g_FileSystemClose(fileHandle);
     return false;
   }
   g_FileSystemClose(fileHandle);
-  text[fileSize] = 0;
-  presentMask = PersistentSettings_ParseIni(text,fileSize,Thandor_Bytes(image));
-  free(text);
+  presentMask = PersistentSettings_ParseIni(text.data(),fileSize,Thandor_Bytes(image));
   s_PersistentSettingsPresentMask = presentMask;
   if ((presentMask & PersistentSettings_DwordMask(PERSISTENT_SETTING_LOCALE_COUNTRY_CODE,4)) != 0) {
     g_LocaleCountryCodeOverride = image->localeCountryCodeOverride;
@@ -778,7 +782,7 @@ static void PersistentSettings_LoadImage()
   g_PersistentSettings.image = nullptr;
   s_PersistentSettingsPresentMask = 0;
   s_PersistentSettingsWrittenMask = 0;
-  memcpy(s_PersistentSettingsIniPath,s_PersistentSettingsIniLeaf,sizeof s_PersistentSettingsIniLeaf);
+  std::copy(std::begin(s_PersistentSettingsIniLeaf),std::end(s_PersistentSettingsIniLeaf),s_PersistentSettingsIniPath);
   if (g_MemoryApi.alloc(PERSISTENT_SETTINGS_IMAGE_BYTES,reinterpret_cast<void **>(&clearCursor)) /* the payload as dwords */ != 0) {
     return;
   }
@@ -834,7 +838,7 @@ static void PersistentSettings_LoadImage()
   }
   g_FileSystemClose(fileHandle);
   /* the failed read may have left bytes behind */
-  memset(image,0,PERSISTENT_SETTINGS_IMAGE_BYTES);
+  std::fill_n(Thandor_Bytes(image),PERSISTENT_SETTINGS_IMAGE_BYTES,0);
 }
 
 /* open-thandor: the game runs in 32-bit colour only. A colour depth other than 32 from an older thandor.ini or
