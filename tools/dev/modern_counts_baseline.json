@@ -1,5 +1,5 @@
 {
- "revision": "3bd57e1b",
+ "revision": "00e6f711",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -160,7 +160,7 @@
    "movie": 30,
    "network": 138,
    "platform": 162,
-   "ui": 640,
+   "ui": 624,
    "world": 130
   },
   "typedef_struct": {},
@@ -169,7 +169,7 @@
    "graphics": 3,
    "network": 1,
    "platform": 1,
-   "ui": 19
+   "ui": 23
   },
   "libc_alloc": {},
   "arena": {
