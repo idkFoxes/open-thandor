@@ -608,6 +608,36 @@ static_assert(sizeof(ArmyMovementRuntime) == 0x120 &&
               offsetof(ArmyMovementRuntime, commandTargetArmyRuntime) == 0x1C &&
               offsetof(ArmyMovementRuntime, linkedArmyRuntimeOrSavedOffset) == 0x6C,
               "ArmyMovementRuntime keeps its 32-bit layout");
+/* Step 13 E3: movementStateFlags / commandModeFlags (ArmyMovementStateFlags, ArmyCommandModeFlags) are 4-byte
+   fields at +0x18 / +0x2C of every army runtime view; the savegame writes them as raw bytes. */
+static_assert(sizeof(ArmyMovementStateFlags) == 4 && alignof(ArmyMovementStateFlags) == 4 &&
+                  sizeof(ArmyCommandModeFlags) == 4 && alignof(ArmyCommandModeFlags) == 4 &&
+                  offsetof(ArmyRuntimeSlot, movementStateFlags) == 0x18 &&
+                  offsetof(ArmyRuntimeSlot, commandModeFlags) == 0x2C &&
+                  offsetof(ArmyArticulatedRuntimeSlotView, movementStateFlags) == 0x18 &&
+                  offsetof(ArmyArticulatedRuntimeSlotView, commandModeFlags) == 0x2C &&
+                  offsetof(ArmyRuntimeLinkedChildMaskSlotView, movementStateFlags) == 0x18 &&
+                  offsetof(ArmyRuntimeLinkedChildMaskSlotView, commandModeFlags) == 0x2C &&
+                  offsetof(ArmyMovementRuntime, movementStateFlags) == 0x18 &&
+                  offsetof(ArmyMovementRuntime, commandModeFlags) == 0x2C &&
+                  offsetof(ModelRuntimeArticulatedMovementDefinitionView, movementStateFlags) == 0x18 &&
+                  offsetof(ModelRuntimeArticulatedMovementDefinitionView, commandModeFlags) == 0x2C &&
+                  offsetof(GameEntityRuntime, common) + offsetof(GameEntityRuntimeCommon, commandFlags) ==
+                      offsetof(ArmyRuntimeSlot, movementStateFlags),
+              "the army movement and command mode flags keep their 4-byte fields");
+/* Step 13 E4: the AI unit flags (ArmyAiUnitFlags), the level's relation/UI flags (GameRelationUiFlags, loaded from
+   the level and saved in the faction image) and the end-condition trigger state byte keep their fields. */
+static_assert(sizeof(ArmyAiUnitFlags) == 4 && alignof(ArmyAiUnitFlags) == 4 &&
+                  offsetof(ArmyRuntimeSlot, aiUnitFlags) == 0x94 &&
+                  offsetof(ArmyRuntimeLinkedChildMaskSlotView, aiUnitFlags) == 0x94 &&
+                  sizeof(GameRelationUiFlags) == 4 && alignof(GameRelationUiFlags) == 4 &&
+                  offsetof(GameFactionRuntimeImageTail, relationUiFlags) == 0x1C &&
+                  offsetof(LevelWorldSettings, relationUiFlags) == 0x38 &&
+                  sizeof(InGameEndConditionTriggerStateFlags) == 1 && alignof(InGameEndConditionTriggerStateFlags) == 1 &&
+                  sizeof(InGameEndConditionTriggerRecord8ReferenceView) == 8 &&
+                  offsetof(InGameEndConditionTriggerRecord8ReferenceView, stateFlags) == 0x0 &&
+                  sizeof(InGameEndConditionTriggerRecord8) == 8 && offsetof(InGameEndConditionTriggerRecord8, stateFlags) == 0x0,
+              "the AI unit, relation/UI and end-condition trigger flags keep their fields");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");
@@ -3294,6 +3324,47 @@ static_assert(sizeof(AiStructureWorkspaceEntry) == sizeof(AiRuntimeWorkspaceEntr
                   offsetof(AiScoredSiteWorkspaceEntry, cellWorldYQ12) == 0x4 &&
                   offsetof(AiScoredSiteWorkspaceEntry, score) == 0x8,
               "AI workspace entries the AI walks as each other");
+
+/* Step 13 E5/E6 (world enum classes): the fields that become enum classes keep their 4 bytes and offsets
+   (FieldGridAsset is the FLD header, the effect and shot slots are written into the savegame as raw bytes). */
+static_assert(sizeof(FieldGridAsset) == 0x280 && offsetof(FieldGridAsset, runtimeStateFlags) == 0xB4 &&
+                  sizeof(FieldGridAsset::runtimeStateFlags) == 4 && alignof(FieldGridAsset) == 8,
+              "FieldGridAsset.runtimeStateFlags is the dword at +0xB4");
+static_assert(sizeof(EffectRuntimeSlot) == 0x40 && offsetof(EffectRuntimeSlot, completionAction) == 0x24 &&
+                  sizeof(EffectRuntimeSlot::completionAction) == 4 && alignof(EffectRuntimeSlot) == 4,
+              "EffectRuntimeSlot.completionAction is the dword at +0x24");
+static_assert(sizeof(ShotRuntimeSlot) == 0x40 && offsetof(ShotRuntimeSlot, impactEffectEmissionFlags) == 0x1C &&
+                  sizeof(ShotRuntimeSlot::impactEffectEmissionFlags) == 4 && alignof(ShotRuntimeSlot) == 4,
+              "ShotRuntimeSlot.impactEffectEmissionFlags is the dword at +0x1C");
+
+/* Step 13 E8 (network flag and value sets as enum class): the fields that change from an integer alias to an
+   enum class of the same width keep their size, alignment and offset (packet bytes and player records). */
+static_assert(sizeof(FrontendPlayerRuntimeRecord) == 0x13B0 && alignof(FrontendPlayerRuntimeRecord) == 4 &&
+                  offsetof(FrontendPlayerRuntimeRecord, snapshotTransferFlags) == 0x68 &&
+                  sizeof(FrontendPlayerRuntimeRecord::snapshotTransferFlags) == 4 &&
+                  offsetof(FrontendPlayerRuntimeRecord, capabilityFlags) == 0x74 &&
+                  sizeof(FrontendPlayerRuntimeRecord::capabilityFlags) == 4,
+              "FrontendPlayerRuntimeRecord snapshotTransferFlags +0x68 and capabilityFlags +0x74 stay dwords");
+static_assert(sizeof(FrontendPacket10006CapabilityHeartbeat) == 0x20 &&
+                  offsetof(FrontendPacket10006CapabilityHeartbeat, capabilityFlags) == 0x10 &&
+                  sizeof(FrontendPacket10006CapabilityHeartbeat::capabilityFlags) == 4,
+              "packet 0x10006 capabilityFlags stays the dword at +0x10");
+static_assert(sizeof(FrontendPacket50001SessionAdvertisement) == 0xA0 &&
+                  offsetof(FrontendPacket50001SessionAdvertisement, joinAvailableFlag) == 0x14 &&
+                  sizeof(FrontendPacket50001SessionAdvertisement::joinAvailableFlag) == 4,
+              "packet 0x50001 joinAvailableFlag stays the dword at +0x14");
+static_assert(sizeof(NetworkEndpointFamilyPortFields4) == 0x4 && alignof(NetworkEndpointFamilyPortFields4) == 2 &&
+                  offsetof(NetworkEndpointFamilyPortFields4, addressFamily) == 0x0 &&
+                  sizeof(NetworkEndpointFamilyPortFields4::addressFamily) == 2 &&
+                  offsetof(NetworkEndpointFamilyPortFields4, portNetworkOrder) == 0x2,
+              "NetworkEndpointFamilyPortFields4 addressFamily stays the word at +0");
+
+/* Step 13 E9 (movie and file system flag and value sets as enum class): MovieRuntime keeps openFlags and
+   streamState as dwords at their offsets. */
+static_assert(sizeof(MovieRuntime) == 0x224 && alignof(MovieRuntime) == 4 &&
+                  offsetof(MovieRuntime, openFlags) == 0xE8 && sizeof(MovieRuntime::openFlags) == 4 &&
+                  offsetof(MovieRuntime, streamState) == 0xF4 && sizeof(MovieRuntime::streamState) == 4,
+              "MovieRuntime openFlags +0xE8 and streamState +0xF4 stay dwords");
 
 /* Step 13 E2 (ui/frontend and ui/ingame state families as enum class): the fields keep their offsets, sizes and
    underlying types (player records are copied dword by dword and sent; the cursor frame is a UiImageActionControl

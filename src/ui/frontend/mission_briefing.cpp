@@ -92,7 +92,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,loadedLevel->header.titleTextResourceIndex,
              &g_FrontendMissionBriefingMoviePathUtf16[7]);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLM,g_FrontendMissionBriefingMoviePathUtf16);
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16,nullptr,nullptr)) {
+  if (!Movie_Open(MovieOpenFlags::MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16,nullptr,nullptr)) {
     ui->briefingImage.textureSource = nullptr;
   }
   else {

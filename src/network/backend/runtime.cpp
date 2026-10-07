@@ -88,7 +88,7 @@ static char s_Wsock32Export_WSAGetLastError[16] = "WSAGetLastError";
 
 static char s_Wsock32Export_WSAStartup[11] = "WSAStartup";
 
-static uint32_t g_NetworkBackendMode = 0;
+static NetworkBackendMode g_NetworkBackendMode = NetworkBackendMode::NETWORK_BACKEND_MODE_NONE;
 
 static WinSockData11 g_WinSockStartupData = {};
 
@@ -147,7 +147,7 @@ uint32_t Network_Init()
   if (resolveError != 0) return resolveError;
   startupError = (uint32_t)g_WinSock_WSAStartup(MAKEWORD(1,1),&g_WinSockStartupData);
   if (startupError != 0) return startupError;
-  g_NetworkBackendMode = NETWORK_BACKEND_MODE_WSOCK32;
+  g_NetworkBackendMode = NetworkBackendMode::NETWORK_BACKEND_MODE_WSOCK32;
   g_NetworkBackendSlot0 = NetworkBackend_SetSessionContext;
   g_NetworkBackendSlot1 = NetworkFallback_NoOpBackendCleanup;
   g_NetworkBackendSlot2 = NetworkFallback_OpenAndBindUdpSocket;
@@ -166,9 +166,9 @@ uint32_t Network_Init()
 void Network_Shutdown()
 
 {
-  if (g_NetworkBackendMode == NETWORK_BACKEND_MODE_WSOCK32) {
+  if (g_NetworkBackendMode == NetworkBackendMode::NETWORK_BACKEND_MODE_WSOCK32) {
     g_WinSock_WSACleanup();
-    g_NetworkBackendMode = NETWORK_BACKEND_MODE_NONE;
+    g_NetworkBackendMode = NetworkBackendMode::NETWORK_BACKEND_MODE_NONE;
     return;
   }
 }

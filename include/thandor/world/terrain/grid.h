@@ -59,9 +59,8 @@ inline constexpr int FIELD_CELL_LIGHTING_VISIBLE = 0xff; /* a current presence b
 inline constexpr int FIELD_CELL_LIGHTING_EXPLORED = 0x87; /* only the persistent occupancy bit 7 is set */
 inline constexpr int FIELD_CELL_LIGHTING_UNEXPLORED = 0x00;
 
-/* FieldGridAsset.runtimeStateFlags bit 0: set by every height/cell edit, cleared by the projection pass
-   (graphics/terrain/terrain_render.cpp) after it rebuilt the terrain surface. */
-inline constexpr int FIELD_GRID_RUNTIME_SURFACE_DIRTY = 0x01;
+/* FieldGridAsset.runtimeStateFlags: FIELD_GRID_RUNTIME_SURFACE_DIRTY is an enumerator of FieldGridRuntimeFlags
+   (world/terrain/types.h). */
 /* FieldGrid_RaycastTerrainSurfaceDistance / ..SecondarySurfaceDistance: at most this many cell steps per ray
    (the counter is decremented before the first step, so 1023 cells are visited), and the miss distance. */
 inline constexpr int FIELD_GRID_RAYCAST_MAX_STEPS = 1024;

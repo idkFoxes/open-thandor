@@ -9,6 +9,7 @@
 #define THANDOR_WORLD_TERRAIN_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 #include <thandor/graphics/render/types.h>
@@ -33,7 +34,14 @@ using TerrainMaterialIndex = int;
 
 using FieldGridFlags = uint32_t;
 
-using FieldGridRuntimeFlags = uint32_t;
+/* FieldGridAsset.runtimeStateFlags (the FLD header dword at +0xB4). Bit 0: set by every height/cell edit, cleared
+   by the projection pass (graphics/terrain/terrain_render.cpp) after it rebuilt the terrain surface. The other bits
+   have no name; values from a file keep them (fixed underlying type). */
+enum class FieldGridRuntimeFlags : uint32_t {
+    FIELD_GRID_RUNTIME_SURFACE_DIRTY = 0x01
+};
+THANDOR_FLAG_ENUM(FieldGridRuntimeFlags);
+using enum FieldGridRuntimeFlags;
 
 using PackedTerrainNormalAngles = uint32_t;
 
@@ -43,11 +51,13 @@ using TerrainOccupancyMask = uint64_t;
 
 using FieldGridCellCoordinate = int;
 
-enum {
-    TERRAIN_RELAXATION_SIGN_GATED=0,
-    TERRAIN_RELAXATION_UNGATED_LAND_TOOL=1
+/* Mode of the in-game command INGAME_COMMAND_TERRAIN_RELAXATION (a command payload dword: any value can arrive
+   from the network; TerrainGrid_RunDirectionalRelaxationPasses tests only bit 0). */
+enum class TerrainRelaxationMode : int {
+    TERRAIN_RELAXATION_SIGN_GATED = 0,
+    TERRAIN_RELAXATION_UNGATED_LAND_TOOL = 1
 };
-using TerrainRelaxationMode = int;
+using enum TerrainRelaxationMode;
 
 using TerrainRelaxationPassCount = uint32_t;
 

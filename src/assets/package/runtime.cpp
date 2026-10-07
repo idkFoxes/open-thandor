@@ -88,15 +88,15 @@ Bool8 Package_LoadEntryIntoBuffer
   else {
     /* not in a mounted package (or packages skipped): load the loose file */
     if (!Any(loadFlags & PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST)) {
-      statusCode = g_FileSystemOpen(0,path,&handle);
+      statusCode = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,path,&handle);
     }
     else {
       WidePath_CombineDirectoryAndLeaf
                 (g_FileSystemCombinedPathScratchUtf16,path,
                  g_ExecutableDirectoryUtf16);
-      statusCode = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&handle);
+      statusCode = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,g_FileSystemCombinedPathScratchUtf16,&handle);
       if (statusCode != 0) {
-        statusCode = g_FileSystemOpen(0,path,&handle);
+        statusCode = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,path,&handle);
       }
     }
     if (statusCode != 0) {
@@ -151,9 +151,9 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
             (g_FileSystemCombinedPathScratchUtf16,path,
              g_ExecutableDirectoryUtf16);
   openError = g_FileSystemOpen
-                    (FILESYSTEM_OPEN_WRITE_ACCESS,g_FileSystemCombinedPathScratchUtf16,&handle);
+                    (FileSystemOpenFlags::FILESYSTEM_OPEN_WRITE_ACCESS,g_FileSystemCombinedPathScratchUtf16,&handle);
   if (openError != 0) {
-    openError = g_FileSystemOpen(FILESYSTEM_OPEN_WRITE_ACCESS,path,&handle);
+    openError = g_FileSystemOpen(FileSystemOpenFlags::FILESYSTEM_OPEN_WRITE_ACCESS,path,&handle);
   }
   if (openError != 0) {
     errorCode = openError;

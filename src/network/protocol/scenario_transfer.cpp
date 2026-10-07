@@ -13,7 +13,7 @@
 
 /* Module data. */
 
-uint32_t g_FrontendScenarioTransferState = 0;
+ScenarioTransferState g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_NONE;
 
 /* Allocates byteCount bytes through g_MemoryApi; FatalError_ExitIfFailed does not return on failure. */
 static uintptr_t FrontendScenarioTransfer_AllocateOrExit(uint32_t byteCount)
@@ -53,7 +53,7 @@ static void FrontendScenarioTransfer_FinishReceive(uint32_t *receivedDwords)
 {
   g_MemoryApi.free(receivedDwords);
   UiTransferMailbox_ClearReceivedState();
-  g_FrontendScenarioTransferState = SCENARIO_TRANSFER_NONE;
+  g_FrontendScenarioTransferState = ScenarioTransferState::SCENARIO_TRANSFER_NONE;
 }
 
 /* The original unpacked every received asset unchecked; bounded here because sizes, offsets and packed streams
@@ -457,17 +457,17 @@ void FrontendScenarioTransfer_ProcessReceivedAsset()
 
 {
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) &&
-     (g_FrontendScenarioTransferState != SCENARIO_TRANSFER_NONE)) {
-    if (g_FrontendScenarioTransferState == SCENARIO_TRANSFER_CATALOG) {
+     (g_FrontendScenarioTransferState != ScenarioTransferState::SCENARIO_TRANSFER_NONE)) {
+    if (g_FrontendScenarioTransferState == ScenarioTransferState::SCENARIO_TRANSFER_CATALOG) {
       FrontendScenarioTransfer_ProcessReceivedCatalog();
     }
-    else if (g_FrontendScenarioTransferState < SCENARIO_TRANSFER_FIELD_GRID) {
+    else if (g_FrontendScenarioTransferState < ScenarioTransferState::SCENARIO_TRANSFER_FIELD_GRID) {
       FrontendScenarioTransfer_ProcessReceivedLevel();
     }
-    else if (g_FrontendScenarioTransferState == SCENARIO_TRANSFER_FIELD_GRID) {
+    else if (g_FrontendScenarioTransferState == ScenarioTransferState::SCENARIO_TRANSFER_FIELD_GRID) {
       FrontendScenarioTransfer_ProcessReceivedFieldGrid();
     }
-    else if (g_FrontendScenarioTransferState < SCENARIO_TRANSFER_LEVEL_BUNDLE) {
+    else if (g_FrontendScenarioTransferState < ScenarioTransferState::SCENARIO_TRANSFER_LEVEL_BUNDLE) {
       FrontendScenarioTransfer_ProcessReceivedCampaignBundle();
     }
     else {
