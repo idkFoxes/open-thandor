@@ -16,10 +16,10 @@
 using SoundCreateSampleVoiceSetProc = uint32_t (SoundSampleAsset * sampleAsset, SoundVoiceSet * * outVoiceSet);
 /* Play a voice of the set: true when it plays; the voice (NULL on failure and from the silent backend) goes to
    *outVoice unless outVoice is NULL. */
-using SoundPlayVoiceProc = Bool8 (uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, SoundVoiceSet * voiceSet, SoundVoice * * outVoice);
+using SoundPlayVoiceProc = bool (uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, SoundVoiceSet * voiceSet, SoundVoice * * outVoice);
 using SoundReleaseSampleVoiceSetProc = void (SoundVoiceSet * voiceSet);
 using SoundStopVoiceProc = void (SoundVoice * voice);
-using SoundIsVoiceFinishedProc = Bool8 (SoundVoice * voice);
+using SoundIsVoiceFinishedProc = bool (SoundVoice * voice);
 using SoundStopAllVoicesProc = void ();
 using SoundSetVoiceGainsProc = void (uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, SoundVoice * voice);
 

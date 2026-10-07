@@ -16,17 +16,17 @@ uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset
 
 void SoundBackendDisabled_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet);
 
-Bool8 SoundBackendDisabled_PlayOneShot
+bool SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           SoundVoiceSet *voiceSet,SoundVoice **outVoice);
 
-Bool8 SoundBackendDisabled_PlayLooping
+bool SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           SoundVoiceSet *voiceSet,SoundVoice **outVoice);
 
 void SoundBackendDisabled_StopVoice(SoundVoice *voice);
 
-Bool8 SoundBackendDisabled_IsVoiceFinished(SoundVoice *voice);
+bool SoundBackendDisabled_IsVoiceFinished(SoundVoice *voice);
 
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           SoundVoice *voice);

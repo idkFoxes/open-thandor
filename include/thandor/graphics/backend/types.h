@@ -26,7 +26,7 @@ struct SoftwareRasterColorFixed4;
 
 /* Display-mode switch slot (g_GraphicsSetDisplayMode and its chained hooks): true on success; on failure
    returns false and stores the error code (or message) in *errorCode, which is left untouched on success. */
-using SoftwareDisplayModeHookProc = Bool8 (uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
+using SoftwareDisplayModeHookProc = bool (uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
 
 enum {
     SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT=4
