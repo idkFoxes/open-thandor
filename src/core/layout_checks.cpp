@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <thandor/thandor.h>
 #include <thandor/core/flags.h>
+#include <thandor/graphics/render/model.h> /* ModelMeshGroupHeader, ModelMeshHeader (MDL records) */
 
 static_assert(sizeof(GraphicsTextureLogicalSize) == 0x8,
               "GraphicsTextureLogicalSize keeps its 32-bit layout");
@@ -512,6 +513,8 @@ static_assert(sizeof(SelectionPlayerPairRecord) == 0x8,
 static_assert(sizeof(MovieFileHeader) == 0x200,
               "MovieFileHeader keeps its 32-bit layout");
 static_assert(sizeof(UiRootNode) == 0x58 &&
+              offsetof(UiRootNode, rootFlags) == 0x4C &&
+              sizeof(UiRootNode::rootFlags) == 4 && alignof(decltype(UiRootNode::rootFlags)) == 4 &&
               offsetof(UiRootNode, callbacks) == 0x50 &&
               offsetof(UiRootNode, previousRoot) == 0x54,
               "UiRootNode keeps its 32-bit layout");
@@ -798,6 +801,9 @@ static_assert(sizeof(GraphicsPrimitiveVertexRaw) == 0x20,
 static_assert(sizeof(GraphicsPrimitivePacket) == 0x80 &&
               offsetof(GraphicsPrimitivePacket, textureEntry) == 0x64,
               "GraphicsPrimitivePacket keeps its 32-bit layout");
+static_assert(offsetof(GraphicsPrimitivePacket, renderFlags) == 0x68 && sizeof(GraphicsPrimitivePacket::renderFlags) == 4 &&
+                  alignof(GraphicsPrimitivePacket) == 4,
+              "GraphicsPrimitivePacket.renderFlags stays a 4-byte field at +0x68 (raster handler, GPU packet)");
 static_assert(sizeof(GraphicsPrimitiveRadixBucket) == 0x4 &&
               offsetof(GraphicsPrimitiveRadixBucket, writeCursor) == 0x0,
               "GraphicsPrimitiveRadixBucket keeps its 32-bit layout");
@@ -811,6 +817,17 @@ static_assert(sizeof(GraphicsTriangleInput) == 0x38 &&
               offsetof(GraphicsTriangleInput, vertex1) == 0xC &&
               offsetof(GraphicsTriangleInput, vertex2) == 0x18,
               "GraphicsTriangleInput keeps its 32-bit layout");
+static_assert(offsetof(GraphicsTriangleInput, renderFlags) == 0x34 && sizeof(GraphicsTriangleInput::renderFlags) == 4 &&
+                  alignof(GraphicsTriangleInput) == 4,
+              "GraphicsTriangleInput.renderFlags stays the 4-byte MDL triangle flag word at +0x34");
+static_assert(sizeof(ModelMeshGroupHeader) == 0x20 && alignof(ModelMeshGroupHeader) == 4 &&
+                  offsetof(ModelMeshGroupHeader, meshCount) == 0x4 && offsetof(ModelMeshGroupHeader, groupFlags) == 0xC &&
+                  sizeof(ModelMeshGroupHeader::groupFlags) == 4,
+              "ModelMeshGroupHeader keeps the MDL mesh group header layout");
+static_assert(sizeof(ModelMeshHeader) == 0x20 && alignof(ModelMeshHeader) == 4 && offsetof(ModelMeshHeader, groupMask) == 0x4 &&
+                  offsetof(ModelMeshHeader, vertexCount) == 0x8 && offsetof(ModelMeshHeader, triangleCount) == 0xC &&
+                  offsetof(ModelMeshHeader, flags) == 0x10 && sizeof(ModelMeshHeader::flags) == 4,
+              "ModelMeshHeader keeps the MDL mesh header layout");
 static_assert(sizeof(SoftwareRgbWordLanes) == 0x8,
               "SoftwareRgbWordLanes keeps its 32-bit layout");
 static_assert(sizeof(SoftwareFramebufferAccess) == 0x10 &&
@@ -1650,6 +1667,8 @@ static_assert(sizeof(UiLabelTemplateFields) == 0x10 &&
 static_assert(sizeof(UiRangeSliderTemplateFields) == 0x18,
               "UiRangeSliderTemplateFields keeps its 32-bit layout");
 static_assert(sizeof(UiResizableWindowTemplateFields) == 0x2C &&
+              offsetof(UiResizableWindowTemplateFields, rootFlags) == 0x0 &&
+              sizeof(UiResizableWindowTemplateFields::rootFlags) == 4 &&
               offsetof(UiResizableWindowTemplateFields, callbacks) == 0x4 &&
               offsetof(UiResizableWindowTemplateFields, previousRoot) == 0x8,
               "UiResizableWindowTemplateFields keeps its 32-bit layout");
@@ -3296,3 +3315,22 @@ static_assert(sizeof(AiStructureWorkspaceEntry) == sizeof(AiRuntimeWorkspaceEntr
                   offsetof(AiScoredSiteWorkspaceEntry, cellWorldYQ12) == 0x4 &&
                   offsetof(AiScoredSiteWorkspaceEntry, score) == 0x8,
               "AI workspace entries the AI walks as each other");
+
+/* Step 13 E2 (ui/frontend and ui/ingame state families as enum class): the fields keep their offsets, sizes and
+   underlying types (player records are copied dword by dword and sent; the cursor frame is a UiImageActionControl
+   dword of the in-game template image). */
+static_assert(offsetof(FrontendPlayerRuntimeRecord, commandSyncPending) == 0x50 &&
+                  offsetof(FrontendPlayerRuntimeRecord, factionAssignment) == 0x54 &&
+                  offsetof(FrontendPlayerFactionAssignmentState, roleStateFlags) == 0xC &&
+                  sizeof(FrontendPlayerRuntimeRecord::commandSyncPending) == 4 &&
+                  sizeof(FrontendPlayerFactionAssignmentState::roleStateFlags) == 4,
+              "commandSyncPending and roleStateFlags stay dwords at +0x50 and +0x60 of the player record");
+static_assert(offsetof(InGameNotificationPayload, payloadKind) == 0x14 && sizeof(InGameNotificationPayload::payloadKind) == 4,
+              "InGameNotificationPayload.payloadKind stays the dword at +0x14");
+static_assert(offsetof(InGameRuntimeRoot, notificationButtonCursorFrame) == 0x9B4C &&
+                  offsetof(InGameRuntimeRootUiGridView, notificationButtonCursorFrame) == 0x9B4C &&
+                  offsetof(InGameTargetingRootTraversalView, notificationButtonCursorFrame) == 0x9B4C &&
+                  offsetof(InGameTargetingRootTraversalView, actionState) == 0x50 &&
+                  sizeof(InGameRuntimeRoot::notificationButtonCursorFrame) == 4 &&
+                  sizeof(InGameTargetingRootTraversalView::actionState) == 4,
+              "the notification button cursor frame stays the dword at +0x9B4C of the root (+0x50 of the button)");

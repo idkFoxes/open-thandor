@@ -279,7 +279,7 @@ FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
                     .leftOffset = -128, .topOffset = -48, .rightOffset = 128, .bottomOffset = 48,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x21},
-                .rootFlags = 0x00000003}},
+                .rootFlags = UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME}},
         { /* +0058 revertButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
@@ -571,7 +571,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
 {
   uint32_t framebufferWidth;
   uint32_t framebufferHeight;
-  UiRootFlags activeAdapterIndex;
+  int32_t activeAdapterIndex; /* the original int (it was declared with the root-flag alias) */
   int32_t colorScaleQ16;
   int32_t colorBiasQ16;
   UiRootNode *root;

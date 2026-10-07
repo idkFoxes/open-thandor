@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <thandor/core/bytes.h> /* Thandor_At: FrontendUi_ImageOfNode */
 #include <thandor/core/contracts.h> /* Thandor_AddressBytes: FrontendUiImage::NodeAt */
+#include <thandor/core/flags.h> /* THANDOR_FLAG_ENUM: FrontendRoleStateFlags, FrontendSelectionTransferModeFlags */
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/memory/types.h>
 #include <thandor/core/types.h>
@@ -145,20 +146,31 @@ union FrontendUiScratch {
     uint8_t raw[640]; 
 };
 
-enum {
+/* FrontendPlayerRuntimeRecord.commandSyncPending (a dword of the player record, copied and sent with it). */
+enum class FrontendCommandSyncPendingState : int32_t {
     FRONTEND_COMMAND_SYNC_CLEAR=0,
     FRONTEND_COMMAND_SYNC_PENDING=1
 };
-using FrontendCommandSyncPendingState = int;
+using enum FrontendCommandSyncPendingState;
 
-enum {
+/* Hit priority of a model runtime class in the menu room (ordered: a higher priority wins). */
+enum class RuntimeModelClassPriority : int32_t {
     RUNTIME_MODEL_CLASS_PRIORITY_LOW=0,
     RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM=1,
     RUNTIME_MODEL_CLASS_PRIORITY_HIGH=2
 };
-using RuntimeModelClassPriority = int;
+using enum RuntimeModelClassPriority;
 
-using FrontendSelectionTransferModeFlags = uint32_t;
+/* transferModeFlags of FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh (selection groups 0..7 of a
+   faction). */
+enum class FrontendSelectionTransferModeFlags : uint32_t {
+    SELECTION_TRANSFER_TO_GROUP = 0x1, /* selection -> group (else group -> selection); its entries are first
+                                          removed from every group of the faction */
+    SELECTION_TRANSFER_MERGE = 0x2, /* add missing entries instead of replacing the destination */
+    SELECTION_TRANSFER_CENTER_VIEW = 0x4, /* local player: move the camera to the selection's average position */
+};
+THANDOR_FLAG_ENUM(FrontendSelectionTransferModeFlags);
+using enum FrontendSelectionTransferModeFlags;
 
 using UiListRowIndex = uint32_t;
 
@@ -172,7 +184,20 @@ using RomVisibilityFrontendValue = uint32_t;
 
 using FrontendReadyFlagMask = uint32_t;
 
-using FrontendRoleStateFlags = uint32_t;
+/* Bits of FrontendPlayerRuntimeRecord.factionAssignment.roleStateFlags: per-player progress through the
+   network menu handshake, set locally or from the peer's packets (ui/frontend/player, assets/scenario/catalog). */
+enum class FrontendRoleStateFlags : uint32_t {
+    FRONTEND_PLAYER_STATE_SCENARIO_CATALOG = 0x01, /* scenario catalogue exchanged */
+    FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT = 0x02, /* ready for the task-assignment page */
+    FRONTEND_PLAYER_STATE_LEVEL_LOADED = 0x04, /* level package loaded locally */
+    FRONTEND_PLAYER_STATE_LEVEL_RECEIVED = 0x08, /* level package received from / confirmed to the host */
+    FRONTEND_PLAYER_STATE_LEVEL_READY_MASK = 0x0C,
+    /* set by FrontendScenarioSession_LoadOrRequestLevelAsset for players whose catalog level mask has the selected
+       level, i.e. who can load it from their own disk instead of receiving it */
+    FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY = 0x10,
+};
+THANDOR_FLAG_ENUM(FrontendRoleStateFlags);
+using enum FrontendRoleStateFlags;
 
 using SoftwareMaskRadiusStep = int;
 

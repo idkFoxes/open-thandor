@@ -61,8 +61,8 @@ inline constexpr int TERRAIN_SURFACE_PACKET_BYTES = 0x20;
 /* renderFlags of the queued material blend packets: translucent, and a sort layer bit (28 or 29,
    GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS) that lowers the sort key so they are drawn after the plain triangle;
    the second blend packet of a three-material triangle uses the higher layer */
-inline constexpr int TERRAIN_BLEND_PACKET_SORT_LAYER_1 = 0x10000000;
-inline constexpr int TERRAIN_BLEND_PACKET_SORT_LAYER_2 = 0x20000000;
+inline constexpr auto TERRAIN_BLEND_PACKET_SORT_LAYER_1 = FromBits<GraphicsPrimitiveDispatchFlags>(0x10000000);
+inline constexpr auto TERRAIN_BLEND_PACKET_SORT_LAYER_2 = FromBits<GraphicsPrimitiveDispatchFlags>(0x20000000);
 inline constexpr auto TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS =
   GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_1;
 inline constexpr auto TERRAIN_BLEND_PACKET_SECOND_LAYER_FLAGS =

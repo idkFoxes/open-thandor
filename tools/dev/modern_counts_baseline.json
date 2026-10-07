@@ -1,5 +1,5 @@
 {
- "revision": "2db6cb94",
+ "revision": "9500f77d",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -156,20 +156,21 @@
    "audio": 15,
    "core": 211,
    "gameplay": 187,
-   "graphics": 163,
+   "graphics": 142,
    "movie": 30,
    "network": 138,
    "platform": 162,
-   "ui": 678,
+   "ui": 640,
    "world": 130
   },
   "typedef_struct": {},
   "enum_class": {
-   "core": 4,
+   "core": 5,
    "gameplay": 5,
+   "graphics": 3,
    "network": 1,
    "platform": 1,
-   "ui": 8
+   "ui": 19
   },
   "libc_alloc": {},
   "arena": {
