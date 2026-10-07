@@ -172,7 +172,7 @@ static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPh
     /* occupancy rebuild: clear the mask bits, let every entity mark its cells, then refresh their terrain state */
     worldNode = worldRuntime->ownerListHead;
     FieldGrid_ClearOccupancyMaskBits0To6AllCells(worldRuntime->fieldGrid);
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED)) {
       FieldGrid_SetOccupancyMaskByteBit0AllCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
     }
     if (worldNode != nullptr) {
@@ -294,7 +294,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
   if (lockAlreadyHeld) {
     return;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS)) {
     /* do not run ahead of the renderer by more than a few steps */
     if (2 < (int)g_InGamePendingSimulationTicks) {
       g_SpinLockRelease(&g_InGameStateTickSpinLock);
@@ -313,11 +313,11 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     return;
   }
   g_SessionNetworkTickCounter++;
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     InGameTick_RunReducedUpdate(inGameRoot);
   }
-  else if ((g_UiCommandRuntimeFlags &
-           (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
+  else if (!Any(g_UiCommandRuntimeFlags &
+           (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED))) {
     InGameTick_RunSimulationStep(inGameRoot);
   }
   g_SpinLockRelease(&g_InGameStateTickSpinLock);

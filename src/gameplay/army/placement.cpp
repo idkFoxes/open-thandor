@@ -305,7 +305,7 @@ Bool8 ArmyPlacement_TestGridRuntimeAndFieldBlocking
                      ModelView_Cast<RuntimeCollisionQueryView>(modelRuntime),worldRuntime) != nullptr) {
     return true;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     return false;
   }
   return FieldGrid_TestWorldPointBlocked
@@ -343,7 +343,7 @@ Bool8 ArmyPlacement_CanPlaceMobileUnit
   if (blocked) {
     return false;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     blocked = FieldGrid_TestWorldPointBlocked
                       (ownerFactionIndex,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
     if (blocked) {
@@ -474,7 +474,7 @@ Bool8 ArmyPlacement_CanPlaceBuilding
   if (terrainTest.rejected) {
     return false;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     *outPlacementValue = (uint32_t)terrainTest.value;
     return true;
   }

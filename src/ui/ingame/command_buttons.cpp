@@ -143,9 +143,9 @@ void UiCommandVisibilityWrappedText_DrawWhenAllowed
           UiPixelCoordinate clipLeft,UiNodeBase *control)
 
 {
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) == 0 &&
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) &&
       (((UiNode_As<UiWrappedTextControl>(control))->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) == 0 ||
-       (g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) &&
+       Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) &&
       (control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     UiWrappedTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,UiNode_As<UiWrappedTextControl>(control));
   }
@@ -164,11 +164,11 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
   int drawOffsetAdjust;
 
   textControl = UiNode_As<UiSingleLineTextControl>(control);
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS)) {
     return;
   }
   if ((textControl->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) != 0 &&
-      (g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) == 0) {
+      !Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
     return;
   }
   drawOffsetAdjust = 0;

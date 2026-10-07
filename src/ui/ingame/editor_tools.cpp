@@ -979,7 +979,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
   root = g_InGameRuntimeRoot;
   image = InGameUi_Image(root);
   if ((activeStateFlags & EDITOR_ACTIVE_STATE_LEAVE) == 0) {
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
+    if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
       modePreviewPageStack =
            UiLayoutContainerControl_AsPageStack(&InGameUi_Image(g_InGameRuntimeRoot)->modePreviewPageStack);
       g_UiCommandRuntimeFlags =
@@ -1073,7 +1073,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       } while (remainingCount != 0);
     }
   }
-  else if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+  else if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     g_UiCommandRuntimeFlags =
          g_UiCommandRuntimeFlags &
          ~(UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
@@ -1115,7 +1115,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
         armyAsset[2].byteSize = 0;
       }
     }
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED) == 0) {
+    if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED)) {
       FieldGrid_ClearOccupancyMaskByteBit0AllCells
                 ((root->worldRuntime).activeFactionRuntimeIndex,
                  (root->worldRuntime).fieldGrid);

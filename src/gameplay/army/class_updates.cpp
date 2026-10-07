@@ -86,7 +86,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
 
   /* crush every class-0/class-12 model standing inside the structure */
   ownNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     for (scanNode = ModelView_Cast<ModelRuntimeNode>(worldRuntime->ownerListHead); scanNode != nullptr;
         scanNode = ModelView_Cast<ModelRuntimeNode>((scanNode->common).nextNode)) {
       if (scanNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {

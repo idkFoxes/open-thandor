@@ -46,7 +46,7 @@ void Technology_UnlockForFaction
   }
   *factionTechnologyMaskWord = *factionTechnologyMaskWord | technologyBitMask;
   /* no announcement while the session still waits for its players */
-  if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) &&
+  if ((!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS)) &&
      (factionIndex == (root->worldRuntime).activeFactionRuntimeIndex)) {
     if ((notificationYQ12 == 0) && (notificationXQ12 == 0)) {
       InGameNotificationQueue_InsertPriorityRecord
@@ -158,7 +158,7 @@ void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameE
     researchDurationQ5 = g_TechnologyAsset->records[technologyIndex].researchDurationQ5;
     (entity->classPayload).technology.entityValue24 = 0;
     (entity->common).commandState = technologyIndex;
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD)) {
       researchDurationQ5 = (researchDurationQ5 >> 4) + 1;
     }
     (entity->classPayload).technology.xeniteCostQ4 = xeniteCostQ4;

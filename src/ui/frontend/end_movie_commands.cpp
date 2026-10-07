@@ -79,7 +79,7 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     /* UI_NODE_SUPPRESSED in the nodeFlags of the results continue button */
     if (((InGameUi_Image(endMovieRuntime)->resultsContinueButton.selectable.base.nodeFlags &
           UI_NODE_SUPPRESSED) != 0) ||
-        ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0)) {
+        (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING))) {
       break;
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != 0) {
@@ -93,11 +93,11 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     }
     else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != 0) {
       InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_APPLY_UI_FLAG_MASKS,0,
-                                                  UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
+                                                  ToBits(UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED),0);
     }
     else {
       UiCommandRuntimeFlags_ApplyClearSetToggleMasks(g_LocalPlayerRuntimeId,0,
-                                                     UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
+                                                     ToBits(UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED),0);
     }
     break;
   default:
