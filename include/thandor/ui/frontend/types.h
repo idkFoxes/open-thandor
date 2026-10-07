@@ -950,12 +950,12 @@ using ScenarioCatalogRefreshSelectedRecordCallback = void (uint32_t arg0, uint32
 
 /* Not in the original: the resolution rows of the display settings page: displayResolutionOption1..10 and the
    extra rows (FrontendUiImage displayResolutionExtraOptions), 24 pixels apart in displayResolutionRowPanel */
-#define FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS 10
-#define FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS 54
+inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS = 10;
+inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS = 54;
 #define FRONTEND_DISPLAY_RESOLUTION_OPTIONS \
           (FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS + FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS)
-#define FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT 24
-#define FRONTEND_DISPLAY_RESOLUTION_ROW_INSET 3 /* the rows' left/top/right offsets in the panel */
+inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT = 24;
+inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_ROW_INSET = 3; /* the rows' left/top/right offsets in the panel */
 
 /* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
    nodes of the advanced settings page). FrontendUi_Image(root)->node is the node in a copy of it (or a node's <node>_prefix),
