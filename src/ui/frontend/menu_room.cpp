@@ -74,7 +74,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
 
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget(pointerY,pointerX,context);
   context->selectedHitMetric = (int)bestHit;
-  context->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
+  context->selectedModelNode = reinterpret_cast<ModelRuntimeNode *>(bestHit >> 32);
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK) != 0) {
     if (context->heldButtonCursorCallback != nullptr)
     {
@@ -191,9 +191,9 @@ void FrontendModelPointerContext_NonRightPress
   callbackContext->dragFrameStartX = pointerX;
   callbackContext->dragFrameStartY = pointerY;
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget
-                    (pointerY,pointerX,(FrontendModelPointerHitContext *)callbackContext
+                    (pointerY,pointerX,UiNode_As<FrontendModelPointerHitContext>(&callbackContext->base)
                     );
-  callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
+  callbackContext->selectedModelNode = reinterpret_cast<ModelRuntimeNode *>(bestHit >> 32);
   callbackContext->selectedHitMetric = (int)bestHit;
   callbackContext->contextFlags =
        callbackContext->contextFlags | FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK;
@@ -203,7 +203,7 @@ void FrontendModelPointerContext_NonRightPress
               (callbackContext->surfaceHitDepth,callbackContext->surfaceHitWorldY,
                callbackContext->surfaceHitWorldX,callbackContext->selectedHitMetric,
                callbackContext->selectedModelNode,
-               (FrontendModelPointerHitContext *)callbackContext);
+               UiNode_As<FrontendModelPointerHitContext>(&callbackContext->base));
   }
 }
 
@@ -220,7 +220,7 @@ void FrontendModelPointerContext_NonRightRelease
   
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget
                     (pointerY,pointerX,callbackContext);
-  callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
+  callbackContext->selectedModelNode = reinterpret_cast<ModelRuntimeNode *>(bestHit >> 32);
   callbackContext->selectedHitMetric = (int)bestHit;
   callbackContext->contextFlags =
        callbackContext->contextFlags & ~FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK;
@@ -247,9 +247,9 @@ void FrontendModelPointerContext_NonRightDrag
   callbackContext->dragFrameEndX = pointerX;
   callbackContext->dragFrameEndY = pointerY;
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget
-                    (pointerY,pointerX,(FrontendModelPointerHitContext *)callbackContext
+                    (pointerY,pointerX,UiNode_As<FrontendModelPointerHitContext>(&callbackContext->base)
                     );
-  callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
+  callbackContext->selectedModelNode = reinterpret_cast<ModelRuntimeNode *>(bestHit >> 32);
   callbackContext->selectedHitMetric = (int)bestHit;
   if (callbackContext->buttonDragCallback !=
       nullptr) {
@@ -257,7 +257,7 @@ void FrontendModelPointerContext_NonRightDrag
               (callbackContext->surfaceHitDepth,callbackContext->surfaceHitWorldY,
                callbackContext->surfaceHitWorldX,callbackContext->selectedHitMetric,
                callbackContext->selectedModelNode,
-               (FrontendModelPointerHitContext *)callbackContext);
+               UiNode_As<FrontendModelPointerHitContext>(&callbackContext->base));
   }
 }
 
@@ -302,7 +302,8 @@ void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
 
 {
   WorldRuntime_ClearFieldGridDirtyFlag(callbackContext);
-  UiContainer_LayoutChildren((UiNodeBase *)callbackContext);
+  /* the world runtime view starts with the view control's UiNodeBase (WorldRuntimeInteractionState) */
+  UiContainer_LayoutChildren(reinterpret_cast<UiNodeBase *>(callbackContext));
 }
 
 /* Hierarchy renderer for the model passes of FrontendModelPointerContext_RenderWorldViewQueuesClipped. */
@@ -410,11 +411,11 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   Graphics_SetActivePrimitiveQueue(frameQueue);
   control->activePrimitiveQueue = frameQueue;
   if (control->renderPhaseCallback != nullptr) {
-    control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
+    control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,FrontendModelPointerContext_AsWorldRuntime(control));
   }
   renderHierarchyProc = FrontendModelPointerContext_SelectRenderHierarchyProc(control);
   for (modelNode = control->candidateModelListHead; modelNode != nullptr;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+      modelNode = WorldNode_View<ModelRuntimeNode>(modelNode->common.nextNode.get())) {
     if (((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) &&
         ((modelNode->runtimeFlags & MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN) != 0)) {
       modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
@@ -424,7 +425,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     }
   }
   if (control->renderPhaseCallback != nullptr) {
-    control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
+    control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,FrontendModelPointerContext_AsWorldRuntime(control));
   }
   FrontendModelPointerContext_DrawActiveQueue(control,clipBottom,clipRight,clipTop,clipLeft);
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
@@ -445,12 +446,12 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     control->activePrimitiveQueue = frameQueue;
     if (modelNode != nullptr) {
       GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes();
-      for (; modelNode != nullptr; modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+      for (; modelNode != nullptr; modelNode = WorldNode_View<ModelRuntimeNode>(modelNode->common.nextNode.get())) {
         if (((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) &&
             ((modelNode->runtimeFlags & MODEL_NODE_FLAG_SHADING_PASS) != 0) &&
             ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
           GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
-                    (modelNode,(GeneratedTextureRenderContextView *)control);
+                    (modelNode,reinterpret_cast<GeneratedTextureRenderContextView *>(control)); /* the shading view of this context's bytes */
         }
       }
       GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources();
@@ -463,11 +464,11 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   Graphics_SetActivePrimitiveQueue(frameQueue);
   control->activePrimitiveQueue = frameQueue;
   if (control->renderPhaseCallback != nullptr) {
-    control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
+    control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,FrontendModelPointerContext_AsWorldRuntime(control));
   }
   renderHierarchyProc = FrontendModelPointerContext_SelectRenderHierarchyProc(control);
   for (modelNode = control->candidateModelListHead; modelNode != nullptr;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+      modelNode = WorldNode_View<ModelRuntimeNode>(modelNode->common.nextNode.get())) {
     if ((modelNode->runtimeFlags & (MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN | MODEL_NODE_FLAG_HIDDEN)) == 0) {
       modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
       if ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0) {
@@ -476,7 +477,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     }
   }
   if (control->renderPhaseCallback != nullptr) {
-    control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
+    control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,FrontendModelPointerContext_AsWorldRuntime(control));
   }
   FrontendModelPointerContext_DrawActiveQueue(control,clipBottom,clipRight,clipTop,clipLeft);
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
@@ -756,7 +757,7 @@ Bool8 FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStat
 
 {
   if (control->keyboardFallback != nullptr &&
-      !control->keyboardFallback(keyboardStateMask,keyCode,(UiRootNode *)control)) {
+      !control->keyboardFallback(keyboardStateMask,keyCode,UiNode_As<UiRootNode>(&control->base))) {
     return false;
   }
   return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
@@ -849,12 +850,12 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
   hintValue = 0;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
      (UiPageStack_ActivePageIndex(&frontendRuntime->activePageStack) == 0)) {
-    pointedRomRecord = RomRegistry_FindRecordBySlotValue((RomRegistrySlotValue)pointedModelNode);
+    pointedRomRecord = RomRegistry_FindRecordBySlotValue(reinterpret_cast<RomRegistrySlotValue>(pointedModelNode));
     recordId = FRONTEND_ROM_RECORD_ID_NONE;
     if (pointedRomRecord != nullptr) {
       recordId = pointedRomRecord->recordId;
     }
-    transitionRecord = (int *)RomRecordTable_FindRecordById(recordId,(void *)g_FrontendActiveRomRecord);
+    transitionRecord = static_cast<int *>(RomRecordTable_FindRecordById(recordId,g_FrontendActiveRomRecord));
     /* Skip records without a transition, network-only pages (3/4/9/negative) in a networked session and the
        network page (2) when no backend exists. */
     if ((transitionRecord != nullptr) &&
@@ -891,7 +892,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
         g_FrontendRomTransitionElapsedTicks = 0;
         g_FrontendRomTransitionTargetRecordId = FRONTEND_ROM_TRANSITION_NO_TARGET;
         g_FrontendRomTransitionSplineKeyframeCount = 2;
-        g_FrontendRomTransitionSplineKeyframes = (uintptr_t)g_FrontendRomTransitionKeyframes;
+        g_FrontendRomTransitionSplineKeyframes = g_FrontendRomTransitionKeyframes;
         g_FrontendRomTransitionKeyframes[1].channel3Q12 = keyframeChannel3;
         g_FrontendRomTransitionKeyframes[1].channel4Q12 = keyframeChannel4;
         g_FrontendRomTransitionKeyframes[1].channel5Q12 = keyframeChannel5;
@@ -971,7 +972,7 @@ void FrontendMenuRoom_ExecuteClickedRomAction
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     slotRecord = RomRegistry_FindRecordBySlotValue(pointedModelNode);
     if (slotRecord != nullptr) {
-      recordIndex = RomRecordTable_FindIndexById(slotRecord->recordId,(void *)g_FrontendActiveRomRecord);
+      recordIndex = RomRecordTable_FindIndexById(slotRecord->recordId,g_FrontendActiveRomRecord);
       if (-1 < (int)recordIndex) {
         FrontendCommand_Issue<FrontendRomActionTable_ExecuteRecord>(0,0,recordIndex);
       }
@@ -1029,7 +1030,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   bestModelNode = nullptr;
   bestHitMetric = WORLD_POINTER_NO_HIT;
   for (modelNode = context->candidateModelListHead; modelNode != nullptr;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+      modelNode = WorldNode_View<ModelRuntimeNode>(modelNode->common.nextNode.get())) {
     if ((modelNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) != 0 && modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
         ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_NON_FACTION_MODELS) != 0 ||
          (modelNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) != 0)) {
@@ -1052,7 +1053,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
       bestModelNode = modelNode;
     }
   }
-  return ((uint64_t)(uintptr_t)bestModelNode << 32) | (uint64_t)bestHitMetric;
+  return (static_cast<uint64_t>(reinterpret_cast<uintptr_t>(bestModelNode)) << 32) | (uint64_t)bestHitMetric;
 }
 
 /* unaligned in the original; one NOP byte after it dropped */

@@ -89,7 +89,7 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer()
     }
   }
   /* notificationButtonTextureSource holds the playing movie, or the panel texture source when none plays */
-  if (panelTextureSource != (GraphicsTextureSourceAsset *)inGameRoot->notificationButtonTextureSource) {
+  if (panelTextureSource != static_cast<GraphicsTextureSourceAsset *>(inGameRoot->notificationButtonTextureSource)) {
     if (!Movie_AdvanceFrame(nullptr,nullptr)) {
       Movie_Close();
       g_InGameSessionNotificationTimeoutTicks = 640;

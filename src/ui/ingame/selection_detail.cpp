@@ -148,7 +148,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
                 (armyLookupError != 0 ? armyLookupError : (uintptr_t)foundArmyAsset,armyLookupError != 0));
   UiPageStack_SetActiveIndex(1,stack);
   selectionDetailValue = armyAsset->selectionDetailValue;
-  armour = ModelRuntimeHierarchy_SumArmour((int *)entity);
+  armour = ModelRuntimeHierarchy_SumArmour(ModelView_Cast<ArmyRuntimeSlot>(entity));
   root->selectionDetailArmyAssetValue = selectionDetailValue;
   root->selectionDetailEntity = entity;
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armour,g_InGameSelectionDetailArmourTextUtf16);
@@ -275,7 +275,7 @@ static void InGameSelectionDetailPanel_ShowEntityGrid(InGameRuntimeRoot *root,Ui
     entity = entitySlots[slotIndex];
     if ((entity != nullptr) && (remainingCells != 0)) {
       cell = Thandor_At<UiArmyMetricsPanel>(root,*gridCellOffset);
-      cell->entity = (RuntimeModelFactionPrefix *)entity;
+      cell->entity = ModelView_Cast<RuntimeModelFactionPrefix>(entity);
       /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
          foundArmyAsset) */
       ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);

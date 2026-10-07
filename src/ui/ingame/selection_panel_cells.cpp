@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/selection_panel_cells.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -19,7 +20,7 @@ static uint16_t g_SelectionPanelNumberScratchUtf16[16] = {};
 static uint8_t *SelectionPanel_GetCellRecord(SelectionPanelCellIndex cellIndex)
 
 {
-  return (uint8_t *)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE;
+  return Thandor_Bytes(g_SelectionPanelData) + cellIndex * SELECTION_PANEL_CELL_SIZE;
 }
 
 /* Shared tail of the cell draw functions: the coordinates after a cell drawn at (cellY, cellX) with a sprite of
@@ -35,7 +36,7 @@ static SelectionPanelCellAdvance SelectionPanel_AdvancePastCell
 
   advanceWidth = spriteSize.logicalWidthPixels;
   advanceHeight = spriteSize.logicalHeightPixels;
-  cellFlags = *(uint32_t *)(cell + SELECTION_PANEL_CELL_FLAGS);
+  cellFlags = *Thandor_At<uint32_t>(cell,SELECTION_PANEL_CELL_FLAGS);
   if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X) != 0) {
     advanceWidth = 0;
   }
@@ -71,9 +72,9 @@ SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
   textExtent = RichTextCommandStream_MeasureLine
                     (g_SelectionPanelNumberTextStyle,g_SelectionPanelNumberScratchUtf16);
   cell = SelectionPanel_GetCellRecord(cellIndex);
-  cellX = originX + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_X);
-  cellY = originY + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_Y);
-  subresource = *(uint32_t *)(cell + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cellX = originX + *Thandor_At<int>(cell,SELECTION_PANEL_CELL_OFFSET_X);
+  cellY = originY + *Thandor_At<int>(cell,SELECTION_PANEL_CELL_OFFSET_Y);
+  subresource = *Thandor_At<uint32_t>(cell,SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,subresource,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
@@ -103,9 +104,9 @@ SelectionPanelCellAdvance SelectionPanel_DrawIconCellAndAdvance
   GraphicsTextureLogicalSize spriteSize;
 
   cell = SelectionPanel_GetCellRecord(cellIndex);
-  subresource = *(uint32_t *)(cell + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
-  cellY = originY + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_Y);
-  cellX = originX + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_X);
+  subresource = *Thandor_At<uint32_t>(cell,SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cellY = originY + *Thandor_At<int>(cell,SELECTION_PANEL_CELL_OFFSET_Y);
+  cellX = originX + *Thandor_At<int>(cell,SELECTION_PANEL_CELL_OFFSET_X);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,subresource,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
@@ -146,9 +147,9 @@ SelectionPanelCellAdvance SelectionPanel_DrawSteppedMeterCellAndAdvance
     meterFrame = ((uint32_t)(currentValue * 32 + maximumValue) / (uint32_t)maximumValue >> 1) + 1;
   }
   cell = SelectionPanel_GetCellRecord(cellIndex);
-  baseSubresource = *(int *)(cell + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
-  cellX = originX + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_X);
-  cellY = originY + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_Y);
+  baseSubresource = *Thandor_At<int>(cell,SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cellX = originX + *Thandor_At<int>(cell,SELECTION_PANEL_CELL_OFFSET_X);
+  cellY = originY + *Thandor_At<int>(cell,SELECTION_PANEL_CELL_OFFSET_Y);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,baseSubresource,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
@@ -197,8 +198,8 @@ void SelectionPanel_DrawProportionalCappedBar
   GraphicsTextureLogicalSize capSize;
 
   cell = SelectionPanel_GetCellRecord(cellIndex);
-  fixedDrawCoordinate = fixedCoordinate + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_Y);
-  baseSubresource = *(uint32_t *)(cell + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  fixedDrawCoordinate = fixedCoordinate + *Thandor_At<int>(cell,SELECTION_PANEL_CELL_OFFSET_Y);
+  baseSubresource = *Thandor_At<uint32_t>(cell,SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
@@ -250,8 +251,8 @@ void SelectionPanel_DrawForwardCappedBar
   GraphicsTextureLogicalSize startCapSize;
   GraphicsTextureLogicalSize endCapSize;
   
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
-  baseSubresource = *(uint32_t *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  fixedDrawCoordinate = fixedCoordinate + *Thandor_At<int>(SelectionPanel_GetCellRecord(cellIndex),SELECTION_PANEL_CELL_OFFSET_Y);
+  baseSubresource = *Thandor_At<uint32_t>(SelectionPanel_GetCellRecord(cellIndex),SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
@@ -284,8 +285,8 @@ void SelectionPanel_DrawSolidCappedBar
   GraphicsTextureLogicalSize startCapSize;
   GraphicsTextureLogicalSize endCapSize;
   
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
-  baseSubresource = *(uint32_t *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  fixedDrawCoordinate = fixedCoordinate + *Thandor_At<int>(SelectionPanel_GetCellRecord(cellIndex),SELECTION_PANEL_CELL_OFFSET_X);
+  baseSubresource = *Thandor_At<uint32_t>(SelectionPanel_GetCellRecord(cellIndex),SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
@@ -322,9 +323,9 @@ void SelectionPanel_DrawSegmentedCappedBar
   uint32_t *cellFlags;
   GraphicsTextureLogicalSize spriteSize;
   
-  cellFlags = (uint32_t *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_FLAGS);
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
-  baseSubresource = *(uint32_t *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cellFlags = Thandor_At<uint32_t>(SelectionPanel_GetCellRecord(cellIndex),SELECTION_PANEL_CELL_FLAGS);
+  fixedDrawCoordinate = fixedCoordinate + *Thandor_At<int>(SelectionPanel_GetCellRecord(cellIndex),SELECTION_PANEL_CELL_OFFSET_X);
+  baseSubresource = *Thandor_At<uint32_t>(SelectionPanel_GetCellRecord(cellIndex),SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource,

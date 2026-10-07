@@ -42,12 +42,12 @@ uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId
       if (ownerListNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
-      armyRuntime = ((ModelRuntimeSlot *)ownerListNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+      armyRuntime = WorldOwnerNode_ModelRuntime(ownerListNode)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
       if (activeFactionIndex != armyRuntime->factionIndex) {
         continue;
       }
       if (ArmyAssetRegistry_FindById(armyRuntime->armyAssetId,&foundArmyAsset) == 0) {
-        armyDefinition = (ArmyAssetRecord *)foundArmyAsset;
+        armyDefinition = ModelView_Cast<ArmyAssetRecord>(foundArmyAsset);
         registryWeight = 1;
         if ((armyRuntime->commandModeFlags & 1) != 0) {
           registryWeight = 3;
