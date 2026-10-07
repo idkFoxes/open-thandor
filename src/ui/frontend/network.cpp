@@ -288,6 +288,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   if (FrontendNetworkSetupPage_OpenBackend(backendIndex) != 0) {
     /* the selected backend fails: try every backend from the first one (the selected one again included) */
     backendIndex = 0;
+    /* Original quirk: a do-while, with no network backend it still opens backend 0 once (D8: kept) */
     do {
       backendError = FrontendNetworkSetupPage_OpenBackend(backendIndex);
       if (backendError == 0) {

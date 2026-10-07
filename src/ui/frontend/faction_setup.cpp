@@ -43,15 +43,13 @@ void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
 {
   CommandPayload rowIndex;
   
-  rowIndex = 0;
-  do {
+  for (rowIndex = 0; rowIndex < 7; rowIndex++) {
     if ((int)Thandor_ByteDistance(factionControl,g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_CycleFactionColour>(0,0,rowIndex);
       return;
     }
-    rowIndex++;
-  } while (rowIndex < 7);
+  }
 }
 
 /* Handler of action 0x2045 (slot 69 of g_FrontendUiActionHandlersPage20.handlers00_54), the mode buttons of
@@ -64,15 +62,13 @@ void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
 {
   CommandPayload rowIndex;
   
-  rowIndex = 0;
-  do {
+  for (rowIndex = 0; rowIndex < 7; rowIndex++) {
     if ((int)Thandor_ByteDistance(playerControl,g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_ToggleFactionActive>(0,0,rowIndex);
       return;
     }
-    rowIndex++;
-  } while (rowIndex < 7);
+  }
 }
 
 /* Handler of action 0x2046 (slot 70 of g_FrontendUiActionHandlersPage20.handlers00_54), the "play" checkboxes
@@ -85,15 +81,13 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
 {
   CommandPayload rowIndex;
   
-  rowIndex = 0;
-  do {
+  for (rowIndex = 0; rowIndex < 7; rowIndex++) {
     if ((int)Thandor_ByteDistance(selectionRowControl,g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]) {
       FrontendCommand_Issue<FrontendFactionSetup_ChooseFaction>(0,0,rowIndex);
       return;
     }
-    rowIndex++;
-  } while (rowIndex < 7);
+  }
 }
 
 /* Handler of action 0x2040 (slot 64 of g_FrontendUiActionHandlersPage20.handlers00_54), the faction setup
@@ -134,6 +128,7 @@ void FrontendFactionSetup_CycleFactionColour
   selectionTextCycleLength = 7;
   playerRecordsRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecordCursor = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (playerRuntimeId == playerRecordCursor->playerRuntimeId) {
       if ((playerRecordCursor->colourCycleFlags & 1) != 0) {
@@ -178,6 +173,7 @@ void FrontendFactionSetup_ToggleFactionActive
   }
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
+  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     if (rowIndex + 1 == playerBlock->factionAssignment.factionAssignmentIndex) {
       return;
@@ -230,6 +226,7 @@ void FrontendFactionSetup_ChooseFaction
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
       remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
       playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
       do {
         if (playerRuntimeId == playerBlockCursor->playerRuntimeId) {
           matchedPlayerBlock = playerBlockCursor;
