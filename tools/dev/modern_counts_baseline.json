@@ -1,5 +1,5 @@
 {
- "revision": "a71954fc",
+ "revision": "a196a452",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -114,8 +114,7 @@
  },
  "counts": {
   "cstyle_cast": {
-   "ui": 4,
-   "world": 61
+   "ui": 4
   },
   "ingame_ui": {},
   "ui_at_sibling": {},
@@ -233,7 +232,7 @@
    "network": 15,
    "platform": 19,
    "ui": 103,
-   "world": 55
+   "world": 49
   },
   "while_tail": {
    "assets": 28,
@@ -245,7 +244,7 @@
    "network": 15,
    "platform": 15,
    "ui": 102,
-   "world": 54
+   "world": 48
   }
  }
 }
