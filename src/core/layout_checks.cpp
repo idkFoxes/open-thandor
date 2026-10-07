@@ -3448,3 +3448,13 @@ static_assert(sizeof(TerrainScanSelectorUnion) == 4 && offsetof(TerrainScanSelec
 static_assert(std::is_same_v<std::underlying_type_t<WideNumberFormatFlags>, int32_t> && ThandorFlagEnum<WideNumberFormatFlags> &&
                   ToBits(WIDE_FORMAT_WRITE_TERMINATOR | WIDE_FORMAT_SIGNED_VALUE) == 0x41,
               "WideNumberFormatFlags keeps the int option bits of WideNumber_FormatUtf16");
+
+/* Step 13 settings option flags (flag enum classes): the three option dwords of the settings image keep their
+   4 bytes at the PERSISTENT_SETTING_* offsets. */
+static_assert(sizeof(PersistentSettingsImage) == 0xC8 && offsetof(PersistentSettingsImage, soundOptionFlags) == 0x20 &&
+                  offsetof(PersistentSettingsImage, mapMouseOptionFlags) == 0x40 &&
+                  offsetof(PersistentSettingsImage, mouseLinkPanelOptionFlags) == 0x5C &&
+                  sizeof(PersistentSettingsImage::soundOptionFlags) == 4 &&
+                  sizeof(PersistentSettingsImage::mapMouseOptionFlags) == 4 &&
+                  sizeof(PersistentSettingsImage::mouseLinkPanelOptionFlags) == 4,
+              "the option-flag dwords of the settings image stay at +0x20, +0x40 and +0x5C");

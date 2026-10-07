@@ -120,6 +120,8 @@ void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *f
   FrontendUiImage *ui = FrontendUi_Image(frontendRoot);
   FrontendModelPointerContextFlags *menuRoomContextFlags;
   uint32_t persistedValue;
+  PersistentMapMouseOptionFlags mapMouseOptions;
+  PersistentMouseLinkPanelOptionFlags linkOptions;
 
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,UiLayoutContainerControl_AsPageStack(&ui->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
@@ -127,29 +129,29 @@ void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *f
          &ui->menuRoomModelView.contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
+  mapMouseOptions = PersistentSettings_ReadMapMouseOptions();
   UiSelectableControl_SetSelected
-            (persistedValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF,
+            (ToBits(mapMouseOptions & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF),
              &ui->autoZoomOffCheckbox.selectable);
   UiSelectableControl_SetSelected
-            (persistedValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
+            (ToBits(mapMouseOptions & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF),
              &ui->autoRotationOffCheckbox.selectable);
   /* Bit 4 is the "right button does not scroll" checkbox (its action 0x2049 handler is
      FrontendGameplaySettings_SetRightButtonDoesNotScroll), which hides the in-game side panel; the template
      calls this control hidePanelCheckbox. */
-  UiSelectableControl_SetSelected(persistedValue & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,
+  UiSelectableControl_SetSelected(ToBits(mapMouseOptions & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN),
                                   &ui->hidePanelCheckbox.selectable);
-  persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  if ((persistedValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0) {
+  linkOptions = PersistentSettings_ReadMouseLinkPanelOptions();
+  if (Any(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_ZOOM)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected
-            (persistedValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM,
+            (ToBits(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_ZOOM),
              &ui->linkRotationZoomCheckbox.selectable);
-  if ((persistedValue & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0) {
+  if (Any(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_TILT)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,&frontendRoot->base);
   }
-  UiSelectableControl_SetSelected(persistedValue & PERSISTENT_LINK_OPTION_ROTATION_TILT,
+  UiSelectableControl_SetSelected(ToBits(linkOptions & PERSISTENT_LINK_OPTION_ROTATION_TILT),
                                   &ui->linkRotationTiltCheckbox.selectable);
   /* bit 4 of this word (hide panel, action 0x2051) is not loaded into its checkbox here */
   persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
@@ -255,7 +257,7 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
 {
   UiNodeFlags *compactLayoutFlags;
   UiNodeBase *parentCursor;
-  uint32_t audioFlags;
+  PersistentSoundOptionFlags audioFlags;
   uint32_t gainValue;
 
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_AUDIO_SETTINGS,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->settingsPageStack);
@@ -263,10 +265,10 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
     compactLayoutFlags = &THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->pageRoot.nodeFlags;
     *compactLayoutFlags = *compactLayoutFlags | FromBits<UiNodeFlags>(FRONTEND_MENU_ROOM_RENDER_SUPPRESSED);
   }
-  audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->soundEffectsEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->musicEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->reverseStereoControl);
+  audioFlags = PersistentSettings_ReadSoundOptions();
+  UiSelectableControl_SetSelected(ToBits(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS),&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->soundEffectsEnabledControl);
+  UiSelectableControl_SetSelected(ToBits(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC),&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->musicEnabledControl);
+  UiSelectableControl_SetSelected(ToBits(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO),&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->reverseStereoControl);
   gainValue = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN); /* Q15 1.0 */
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->soundEffectsGainControl).currentValue = gainValue;
   gainValue = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
@@ -279,7 +281,7 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
     settingsSourceNode = settingsSourceNode->parent;
     parentCursor = settingsSourceNode->parent;
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,settingsSourceNode);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,settingsSourceNode);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,settingsSourceNode);
@@ -289,13 +291,13 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,settingsSourceNode);
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,settingsSourceNode);
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,settingsSourceNode);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,settingsSourceNode);
   }
-  if ((audioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC)) == 0) {
+  if (!Any(audioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC))) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,settingsSourceNode);
   }
   else {
@@ -429,17 +431,17 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
-  uint32_t audioFlags;
+  PersistentSoundOptionFlags audioFlags;
   AudioMixerGainQ15 effectsGain;
   MovieAudioGainQ15 movieDefaultGain;
   MovieAudioGainQ15 movieAlternateGain;
   Bool8 isSelected;
 
   isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  audioFlags = PersistentSettings_ReadSoundOptions();
   /* isSelected is the PERSISTENT_SOUND_OPTION_EFFECTS bit */
-  PersistentSettings_Write((uint32_t)isSelected | audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS,
-                           PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  PersistentSettings_WriteSoundOptions(FromBits<PersistentSoundOptionFlags>((uint32_t)isSelected) |
+                                      (audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS));
   parentCursor = control->base.parent;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
@@ -456,13 +458,13 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
   }
-  if ((audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
-  if (isSelected == 0 && (audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (isSelected == 0 && !Any(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,&control->base);
   }
   else {
@@ -495,12 +497,12 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
-  uint32_t savedAudioFlags;
-  uint32_t musicEnabledBit;
-  uint32_t newAudioFlags;
+  PersistentSoundOptionFlags savedAudioFlags;
+  PersistentSoundOptionFlags musicEnabledBit;
+  PersistentSoundOptionFlags newAudioFlags;
   Bool8 isSelected;
 
-  musicEnabledBit = 0;
+  musicEnabledBit = {};
   isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
@@ -514,16 +516,16 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     g_FrontendMusicActiveBuffer = nullptr;
     g_FrontendMusicVoiceSet = nullptr;
   }
-  savedAudioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  newAudioFlags = musicEnabledBit | savedAudioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC;
-  PersistentSettings_Write(newAudioFlags,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  savedAudioFlags = PersistentSettings_ReadSoundOptions();
+  newAudioFlags = musicEnabledBit | (savedAudioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC);
+  PersistentSettings_WriteSoundOptions(newAudioFlags);
   parentCursor = control->base.parent;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
     control = UiNode_As<UiSelectableControl>((control->base).parent.get());
     parentCursor = control->base.parent;
   }
-  if ((newAudioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
+  if (!Any(newAudioFlags & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,&control->base);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
@@ -533,13 +535,13 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
   }
-  if ((musicEnabledBit & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+  if (!Any(musicEnabledBit & PERSISTENT_SOUND_OPTION_MUSIC)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
-  if ((newAudioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC)) == 0) {
+  if (!Any(newAudioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC))) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,&control->base);
   }
   else {

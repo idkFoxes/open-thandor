@@ -371,7 +371,7 @@ void InGameSession_InitShadingAndMirrorViewOptions(WorldRuntimeContext *world)
   uint32_t textureDimension;
   uint32_t gridHalfSize;
   uint32_t subresourceCount;
-  uint32_t linkOptionFlags;
+  PersistentMouseLinkPanelOptionFlags linkOptionFlags;
 
   g_InGameSimulationStepTicks = 1;
   textureDimension =
@@ -383,13 +383,13 @@ void InGameSession_InitShadingAndMirrorViewOptions(WorldRuntimeContext *world)
   /* mirror the shading and mouse/panel options into the world runtime flags */
   InGameSession_SetWorldRuntimeFlag
             (world,WORLD_RUNTIME_FLAG_SHADING_ENABLED,PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED) != 0);
-  linkOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
+  linkOptionFlags = PersistentSettings_ReadMouseLinkPanelOptions();
   InGameSession_SetWorldRuntimeFlag
-            (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0);
+            (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM,Any(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_ZOOM));
   InGameSession_SetWorldRuntimeFlag
-            (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0);
+            (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT,Any(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_TILT));
   InGameSession_SetWorldRuntimeFlag
-            (world,WORLD_RUNTIME_FLAG_HIDE_PANEL,(linkOptionFlags & PERSISTENT_LINK_OPTION_HIDE_PANEL) != 0);
+            (world,WORLD_RUNTIME_FLAG_HIDE_PANEL,Any(linkOptionFlags & PERSISTENT_LINK_OPTION_HIDE_PANEL));
 }
 
 /* Allocates the grid scratch for the world's field grid and rebuilds the derived terrain classification,

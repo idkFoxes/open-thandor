@@ -69,20 +69,9 @@ inline constexpr auto PERSISTENT_VSYNC_COUNT = 2;
 inline constexpr auto PERSISTENT_FRAME_LIMIT_OFF = 0; /* default: no frame rate limit */
 inline constexpr auto PERSISTENT_FRAME_LIMIT_MAX = 1000; /* larger saved values are read as no limit; the menu offers 60, 120, 144 */
 inline constexpr auto PERSISTENT_SETTINGS_IMAGE_BYTES = 200; /* size of the settings file and of the in-memory image */
-/* Bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS (Game_LoadCoreAssets) */
-inline constexpr auto PERSISTENT_SOUND_OPTION_EFFECTS = 0x1;
-inline constexpr auto PERSISTENT_SOUND_OPTION_MUSIC = 0x2;
-inline constexpr auto PERSISTENT_SOUND_OPTION_REVERSE_STEREO = 0x4;
-inline constexpr auto PERSISTENT_SOUND_OPTION_DEFAULT = 3; /* effects and music on */
-/* Bits of PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS (gameplay settings page, InGameRuntime_UpdateCursorGridAndViewScaleCache) */
-inline constexpr auto PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF = 0x1;
-inline constexpr auto PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF = 0x2;
-inline constexpr auto PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN = 0x4; /* checkbox text "right button does not scroll" */
-/* Bits of PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS (in-game gameplay settings page), mirrored to
-   WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM / _LINK_ROTATION_TILT / _HIDE_PANEL */
-inline constexpr auto PERSISTENT_LINK_OPTION_ROTATION_ZOOM = 0x1;
-inline constexpr auto PERSISTENT_LINK_OPTION_ROTATION_TILT = 0x2;
-inline constexpr auto PERSISTENT_LINK_OPTION_HIDE_PANEL = 0x4;
+/* The bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS, _MAP_MOUSE_OPTION_FLAGS and _MOUSE_LINK_PANEL_OPTION_FLAGS are
+   the flag enum classes PersistentSoundOptionFlags, PersistentMapMouseOptionFlags and
+   PersistentMouseLinkPanelOptionFlags (settings/types.h); the typed accessors below read and write those dwords. */
 /* Default values passed to PersistentSettings_Read (the settings' defaults listed above) */
 inline constexpr auto PERSISTENT_DEFAULT_GAIN_Q15 = 0x8000; /* full volume, all four gain settings */
 inline constexpr auto PERSISTENT_DEFAULT_SHADING_GRID_HALF_SIZE = 0x20;
@@ -107,6 +96,34 @@ void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,u
           PersistentSettingsByteOffset settingsOffsetBytes);
 
 void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
+
+/* Typed accessors of the three option-flag dwords (Read/Write at the same offsets with the same defaults). */
+inline PersistentSoundOptionFlags PersistentSettings_ReadSoundOptions()
+{
+  return FromBits<PersistentSoundOptionFlags>(
+      PersistentSettings_Read(ToBits(PERSISTENT_SOUND_OPTION_DEFAULT),PERSISTENT_SETTING_SOUND_OPTION_FLAGS));
+}
+inline void PersistentSettings_WriteSoundOptions(PersistentSoundOptionFlags flags)
+{
+  PersistentSettings_Write(ToBits(flags),PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+}
+inline PersistentMapMouseOptionFlags PersistentSettings_ReadMapMouseOptions()
+{
+  return FromBits<PersistentMapMouseOptionFlags>(PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS));
+}
+inline void PersistentSettings_WriteMapMouseOptions(PersistentMapMouseOptionFlags flags)
+{
+  PersistentSettings_Write(ToBits(flags),PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
+}
+inline PersistentMouseLinkPanelOptionFlags PersistentSettings_ReadMouseLinkPanelOptions()
+{
+  return FromBits<PersistentMouseLinkPanelOptionFlags>(
+      PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS));
+}
+inline void PersistentSettings_WriteMouseLinkPanelOptions(PersistentMouseLinkPanelOptionFlags flags)
+{
+  PersistentSettings_Write(ToBits(flags),PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
+}
 /* Not in the original: Write for open-thandor's own settings chosen in its menus; the value is read back at once
    (Write leaves a dword that was not loaded reading its default). */
 void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);

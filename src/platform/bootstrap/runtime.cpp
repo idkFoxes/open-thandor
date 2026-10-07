@@ -852,29 +852,29 @@ static Bool8 CoreAssets_LoadTextPages(uintptr_t *error)
 static void CoreAssets_ApplySoundSettings()
 
 {
-  uint32_t soundOptions;
+  PersistentSoundOptionFlags soundOptions;
   AudioMixerGainQ15 uiSoundGain;
   MovieAudioGainQ15 movieGain;
   MovieAudioGainQ15 alternateMovieGain;
 
-  soundOptions = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  soundOptions = PersistentSettings_ReadSoundOptions();
   uiSoundGain = 0;
-  if ((soundOptions & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+  if (Any(soundOptions & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     uiSoundGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
   }
   movieGain = 0;
   g_UiSoundGainQ15 = uiSoundGain;
   g_SoundEffectsGainQ15 = uiSoundGain;
-  if ((soundOptions & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+  if (Any(soundOptions & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     movieGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
   }
   alternateMovieGain = 0;
   g_MovieDefaultAudioGainQ15 = movieGain;
-  if ((soundOptions & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+  if (Any(soundOptions & PERSISTENT_SOUND_OPTION_EFFECTS)) {
     alternateMovieGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
   }
   g_ReverseStereoMask = 0;
-  if ((soundOptions & PERSISTENT_SOUND_OPTION_REVERSE_STEREO) != 0) {
+  if (Any(soundOptions & PERSISTENT_SOUND_OPTION_REVERSE_STEREO)) {
     g_ReverseStereoMask = 0xffffffff;
   }
   g_MovieAlternateAudioGainQ15 = alternateMovieGain;
