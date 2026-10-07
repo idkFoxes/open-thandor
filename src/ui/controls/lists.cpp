@@ -164,7 +164,7 @@ void UiListControl_SelectRowFromPointer
     rowIndex = (uint32_t)(pointerY - *topEdgeField) / control->rowHeight;
     if (rowIndex < control->rowCount) {
       control->listStateFlags = control->listStateFlags | UI_LIST_SELECTION_CONFIRMED;
-      if (((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) == 0) {
+      if (!Any((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK)) {
         /* Single click: not confirmed, and the already selected row does nothing. */
         control->listStateFlags = control->listStateFlags & ~UI_LIST_SELECTION_CONFIRMED;
         if (control->rowSlots + rowIndex == control->selectedRowSlot) {
@@ -342,7 +342,7 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
         for (; rowSlot <= lastRowSlot; rowSlot++) {
           if (rowSlot == control->selectedRowSlot) {
             highlightWidth = (control->base).layoutWidth;
-            if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
+            if (!Any((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS)) {
               UiWindow_BlitTiledHorizontalEdge
                         (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,highlightWidth,
                          rowTop,0,control);
@@ -656,7 +656,7 @@ void UiTextListControl_DrawRowsAndSelection
           if (rowSlot == control->selectedRowSlot) {
             rowExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,*rowSlot);
             highlightWidth = rowExtent.widthPixels + 6;
-            if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
+            if (!Any((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS)) {
               UiWindow_BlitTiledHorizontalEdge
                         (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_LIST_SELECTION,highlightWidth,
                          rowTop,0,control);
@@ -722,7 +722,7 @@ void UiTextListControl_SelectRowFromPointer
     return;
   }
   control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_SELECTION_CONFIRMED;
-  if (((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) == 0) {
+  if (!Any((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK)) {
     /* A single click: not confirmed, and nothing to do on the already selected row. */
     control->listStateFlags = control->listStateFlags & ~UI_TEXT_LIST_SELECTION_CONFIRMED;
     if (clickedRowSlot == control->selectedRowSlot) {

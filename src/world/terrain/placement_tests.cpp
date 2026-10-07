@@ -133,7 +133,7 @@ Bool8 TerrainHeightBand_TestAroundWorldPoint
     return true;
   }
   centerCell = &fieldGrid->cells[centerCellIndex];
-  if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return true;
   }
   relativeHeightQ12 = centerCell->terrainHeight - g_TerrainScanReferenceHeight;
@@ -176,7 +176,7 @@ Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
   /* Original quirk: the centre cell's threshold test reads triangle0NormalAngles, the sector walks
      (TerrainAuxHeightThreshold_CellFails) read triangle1NormalAngles. */
   centerCell = &fieldGrid->cells[centerCellIndex];
-  if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return true;
   }
   if (centerCell->waterSurfaceDelta < 0) {

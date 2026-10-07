@@ -199,13 +199,13 @@ static Bool8 AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,u
 static Bool8 AiPlanningRebuild_FootprintHasResourceSupport(const FieldGridCell *cellAbove,uint32_t gridWidth)
 
 {
-  return (cellAbove[gridWidth].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[0].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[gridWidth - 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[gridWidth + 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[gridWidth * 2 - 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
-         (cellAbove[gridWidth * 2].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0;
+  return Any(cellAbove[gridWidth].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[0].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[gridWidth - 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[gridWidth + 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[gridWidth * 2 - 1].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ||
+         Any(cellAbove[gridWidth * 2].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK);
 }
 
 /* Site tests of one field cell (the cell below cellAbove) against the scratch grid: scratchCell is one scratch row
@@ -238,7 +238,7 @@ static void AiPlanningRebuild_ScanSiteCell(FactionRuntimeIndex factionIndex,Fiel
     if (((neighborhoodMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT24)) == 0 ||
          (neighborhoodMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT25)) == 0 ||
          (neighborhoodMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT28)) == 0) &&
-        ((currentCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) == 0)) {
+        (!Any(currentCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK))) {
       AiSiteCandidate_AddFlaggedCellIfSeparated(currentCell);
     }
   }
@@ -254,7 +254,7 @@ static void AiPlanningRebuild_ScanSiteCell(FactionRuntimeIndex factionIndex,Fiel
        0) &&
       ((AiPlanningRebuild_ScratchFootprintMask(scratchCell - scratchRowStride,scratchRowStride * 2,8) &
         AI_SITE_SCRATCH_OBSTACLE_BITS) == 0) &&
-      ((currentCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0)) {
+      (Any(currentCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK))) {
     AiSiteCandidate_AddTerrainFeatureCellIfSeparated(currentCell,terrainFeatureSpacing);
   }
   /* base site: no obstacles around it and no resource cell in its footprint */

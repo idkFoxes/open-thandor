@@ -99,7 +99,12 @@ enum class UiScrollableStateFlags : uint32_t {
 THANDOR_FLAG_ENUM(UiScrollableStateFlags);
 using enum UiScrollableStateFlags;
 
-enum {
+/* UiNodeBase.nodeFlags (and the applyFlags masks): a 32-bit field, the original int became the same-size
+   uint32_t (offset and size asserted in layout_checks.cpp). Bits without an enumerator (e.g. 0x10) stay valid. */
+enum class UiNodeFlags : uint32_t {
+    /* set on every node of the top root of the stack by UiRootStack_Push/Pop/BringToFront through applyFlags;
+       window frames draw their inactive variant without it */
+    UI_NODE_IN_FRONT_ROOT=1,
     UI_NODE_PREFERRED_FOCUS_TARGET=2,
     UI_NODE_HAS_KEYBOARD_FOCUS=4,
     UI_NODE_SUPPRESSED=8,
@@ -109,15 +114,28 @@ enum {
     UI_NODE_TOOLTIP_ELIGIBLE=256,
     UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16=512
 };
-using UiNodeFlags = int;
+THANDOR_FLAG_ENUM(UiNodeFlags);
+using enum UiNodeFlags;
 
-enum {
+/* UiSelectableControl.stateFlags: the selectable bits common to every selectable control. A 32-bit field,
+   the original int became the same-size uint32_t (offset and size asserted in layout_checks.cpp). The
+   subclasses use further bits of the same field (UI_BUTTON_*, UI_SPRITE_BUTTON_*, UI_IMAGE_CONTROL_*,
+   UI_ADAPTER_TEXT_BUTTON_*, FRONTEND_CONTROL_INACTIVE); those are typed constants of this enum in the
+   subclass headers, not enumerators, because their values overlap between the subclasses. */
+enum class UiSelectableStateFlags : uint32_t {
     UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE=1,
     UI_SELECTABLE_SELECTED_OR_CHECKED=2,
+    /* read by UiSelectableControl_KeyboardEvent: Enter / Escape also activate the control; 0x80 plays
+       UiSoundSelectableControl.activationSound on a keyboard activation (the same bit is
+       UI_SPRITE_BUTTON_ANIMATED for sprite buttons) */
+    UI_SELECTABLE_ACTIVATE_ON_ENTER=4,
+    UI_SELECTABLE_ACTIVATE_ON_ESCAPE=8,
     UI_SELECTABLE_TOGGLE_ON_ACTIVATION=16,
+    UI_SELECTABLE_PLAY_KEYBOARD_SOUND=0x80,
     UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION=8192
 };
-using UiSelectableStateFlags = int;
+THANDOR_FLAG_ENUM(UiSelectableStateFlags);
+using enum UiSelectableStateFlags;
 
 enum class UiTextListStateFlags : uint32_t {
     UI_TEXT_LIST_TYPE_SEARCH_ENABLED=1,
@@ -191,8 +209,6 @@ using UiPixelCoordinate = int;
 using UiKeyboardStateMask = uint32_t;
 
 using UiKeyboardEventCode = uint32_t;
-
-using UiNodeFlagMask = uint32_t;
 
 using UiActionId = int;
 
@@ -268,7 +284,7 @@ struct UiNodeVtable {
     Ptr32<GraphicsCursorFrameIndex (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> pointerMove; 
     Ptr32<UiNodeBase * (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> hitTest; 
     Ptr32<Bool8 (UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *)> keyboardEvent;
-    Ptr32<void (UiNodeFlagMask, UiNodeFlagMask, struct UiNodeBase *)> applyFlags; 
+    Ptr32<void (UiNodeFlags, UiNodeFlags, struct UiNodeBase *)> applyFlags; 
     Ptr32<void (UiActionId, struct UiNodeBase *)> suppressActionId; 
     Ptr32<void (UiActionId, struct UiNodeBase *)> unsuppressActionId; 
     Ptr32<void (struct UiNodeBase *)> tick; 
@@ -322,8 +338,6 @@ struct UiPointerListControl {
 using UiPackedTextStyle = uint32_t;
 
 using UiPageIndex = uint32_t;
-
-using UiPointerButtonMask = uint32_t;
 
 using UiFrameCount = uint32_t;
 

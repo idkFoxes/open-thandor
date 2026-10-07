@@ -104,7 +104,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   }
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT) != 0)
   {
-    if ((g_CursorButtonState & LEFT) != 0) {
+    if (Any(g_CursorButtonState & LEFT)) {
       return 17;
     }
     return 16;
@@ -112,12 +112,12 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN) != 0)
   {
     if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
-      if ((g_CursorButtonState & LEFT) != 0) {
+      if (Any(g_CursorButtonState & LEFT)) {
         return 17;
       }
       return 18;
     }
-    if ((g_CursorButtonState & LEFT) != 0) {
+    if (Any(g_CursorButtonState & LEFT)) {
       return 20;
     }
     return 19;
@@ -135,7 +135,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
     }
     if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIDE_PANEL) ==
         0) {
-      if ((g_CursorButtonState & LEFT) == 0) {
+      if (!Any(g_CursorButtonState & LEFT)) {
         return 1;
       }
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)
@@ -148,7 +148,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
       }
     }
     else {
-      if ((g_CursorButtonState & LEFT) != 0) {
+      if (Any(g_CursorButtonState & LEFT)) {
         if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM)
             != 0) {
           return 15;
@@ -325,7 +325,7 @@ static void FrontendModelPointerContext_DrawActiveQueue
   uint32_t queuedPrimitiveCount;
 
   g_GraphicsPrimitiveQueueRadixSortProc
-            (control->base.nodeFlags & 8,control->activePrimitiveQueue);
+            (ToBits(control->base.nodeFlags & UI_NODE_SUPPRESSED),control->activePrimitiveQueue);
   g_GraphicsDrawPrimitiveQueue
             (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
   queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
@@ -491,7 +491,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   /* the 2D draw list: the 3D scene goes here (GPU_RECORD only) */
   Draw2D_MarkExternal3D(clipBottom,clipRight,clipTop,clipLeft);
   g_RenderedFrameCountSinceDebugRefresh++;
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any(control->base.nodeFlags & UI_NODE_SUPPRESSED)) {
     g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitSourceAlpha;
     g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledSourceAlpha;
   }
@@ -499,7 +499,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitHalfSourceRgb;
     g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledHalfSourceRgb;
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS)) {
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS) != 0) {
       SelectionOverlay_RenderSelectedArmyMetrics(clipBottom,clipRight,clipTop,clipLeft);
       if ((control->selectedOverlayEntity != nullptr) &&
@@ -537,7 +537,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
                  control->fieldGrid);
     }
     if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != nullptr))
-       && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS) != 0)) {
+       && (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS))) {
       SelectionOverlay_DrawDebugMarkedCellMarkers(clipBottom,clipRight,clipTop,clipLeft,control->fieldGrid);
     }
   }
@@ -614,7 +614,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
     return;
   }
   if ((callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_ORBIT) != 0) {
-    if ((g_CursorButtonState & LEFT) == 0) {
+    if (!Any(g_CursorButtonState & LEFT)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_DISTANCE);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | (FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_PITCH);
       WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
@@ -627,7 +627,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
     }
   }
   else if ((callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_CAMERA_PAN) != 0) {
-    if ((g_CursorButtonState & LEFT) == 0) {
+    if (!Any(g_CursorButtonState & LEFT)) {
       if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_MOVE;
@@ -674,7 +674,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_HEADING;
       WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
     }
-    else if (((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL) != 0) && ((g_CursorButtonState & LEFT) != 0)) {
+    else if (((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL) != 0) && Any(g_CursorButtonState & LEFT)) {
       /* Flag 0x4000000 with the button held: 0x40000000 selects pitch, 0x80000000 distance. */
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~FRONTEND_CAMERA_MOTION_MASK;
       if ((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM) != 0) {
@@ -686,7 +686,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
         WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
     }
-    else if (((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL) == 0) && ((g_CursorButtonState & LEFT) == 0)) {
+    else if (((callbackContext->runtimeFlags & WORLD_RUNTIME_FLAG_HIDE_PANEL) == 0) && !Any(g_CursorButtonState & LEFT)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_DISTANCE | FRONTEND_CAMERA_MOTION_PITCH);
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | FRONTEND_CAMERA_MOTION_MOVE;
       WorldRuntime_TranslateCameraByScreenDelta(pointerDeltaY,pointerDeltaX,callbackContext);

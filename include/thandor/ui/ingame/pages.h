@@ -34,54 +34,8 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source);
 
 extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10;
 
-/* g_UiCommandRuntimeFlags bits that gate the simulation step (InGameRuntime_UpdateSimulationAndNetworkTick) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_PAUSED = 0x01; /* toggled once every player agrees
-
-                                               (InGameCommand_TogglePauseRequest); set at session start */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED = 0x08; /* an end trigger ended the local faction
-
-                                                            (InGameConditionRuntime_UpdateScheduledRecords);
-                                                            the step then sets occupancy bit 0 on every cell */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS = 0x10; /* set with PAUSED at session start, cleared with it when
-
-                                                            every player is ready
-                                                            (FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED = 0x100; /* set with LOCAL_FACTION_ENDED; the world input
-
-                                                              handlers (ui/ingame/world_input.cpp) then ignore the map */
-/* g_UiCommandRuntimeFlags bit that ends the results screen after the end movie (Frontend_PlaySelectedEndMovie) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED = 0x1000; /* set by the results buttons (actions 0x101B and 0x1025,
-
-                                                         ui/ingame/pages.cpp) */
-/* further g_UiCommandRuntimeFlags bits (gameplay/session/tick.cpp, gameplay/ai/planning.cpp) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF = 0x02; /* skips the AI planning phase in local games; no writer
-
-                                                        with a constant mask in the original, so it can only come
-                                                        from UiCommandRuntimeFlags_ApplyClearSetToggleMasks */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE = 0x04; /* set with PAUSED by
-
-                                                                     InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState;
-                                                                     world sounds, camera keys and the full
-                                                                     simulation step are skipped meanwhile */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING = 0x20; /* an army asset waits for placement on the map
-
-                                                          (InGameCommand_ExecuteLocalPlacementFromSelection) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN = 0x2000; /* the placement overlay was drawn onto the field
-
-                                                                  grid (InGameUiRoot_UpdateFrame) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED = 0x40000; /* toggled by typing the cheat code into the chat line
-
-                                                          (InGameChatInput_SendLineOrCheckCheatPhrase) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD = 0x100000; /* cheat hotkey: build and research times / 16 */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED = 0x80000; /* set with every cheat toggle by the chat phrase;
-
-                                                                no reader found */
 /* PLAYER_SESSION_FLAG_PAUSE_REQUESTED is PlayerSessionFlags (gameplay/selection/types.h). */
 
-/* g_UiCommandRuntimeFlags bits of windows that pause a local game while open (mission help:
-   InGameMissionHelpPage_Toggle, settings: InGameSettingsPage_ToggleAndSynchronizeControls) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE = 0x4000; /* an open window paused the game */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW = 0x400; /* the game was already paused when it opened */
 
 /* Buttons of the quit game window (InGameUiImage.quitMenuSurrenderButton / quitMenuRestartMissionButton) */
 inline constexpr int32_t INGAME_ACTION_QUIT_SURRENDER = 0x101E; /* command 150 mode 1: destroys the local faction's armies */

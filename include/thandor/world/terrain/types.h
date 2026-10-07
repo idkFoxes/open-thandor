@@ -61,7 +61,9 @@ using enum TerrainRelaxationMode;
 
 using TerrainRelaxationPassCount = uint32_t;
 
-using FieldCellFlagMask = uint32_t;
+/* A set of FieldGridCell.flagsAndMaterial bits a terrain-class overlay or scan looks for (the overlay callbacks,
+   the shared scan selector): the cell-word flag enum itself. */
+using FieldCellFlagMask = FieldCellPackedFlagsAndMaterial;
 
 struct FieldGridCoordinates {
     Q12 columnQ12;

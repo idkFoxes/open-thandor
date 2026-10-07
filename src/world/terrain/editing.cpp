@@ -42,15 +42,15 @@ void TerrainRegionCollection_CollectConnectedCellsRecursive
   /* the start cell and the matching cells to its left */
   spanStartCell = cell;
   TerrainRegionCollection_RecordConnectedCell(requiredCellFlags,spanStartCell);
-  while (((spanStartCell[-1].flagsAndMaterial & requiredCellFlags) != 0) &&
-         ((spanStartCell[-1].flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0)) {
+  while (((FieldCell_RawBits(spanStartCell[-1].flagsAndMaterial) & requiredCellFlags) != 0) &&
+         ((FieldCell_RawBits(spanStartCell[-1].flagsAndMaterial) & TERRAIN_REGION_STOP_FLAGS) == 0)) {
     spanStartCell = spanStartCell - 1;
     TerrainRegionCollection_RecordConnectedCell(requiredCellFlags,spanStartCell);
   }
   /* the matching cells to its right; spanStopCell ends as the first cell right of the span */
   spanStopCell = cell + 1;
-  while (((spanStopCell->flagsAndMaterial & requiredCellFlags) != 0) &&
-         ((spanStopCell->flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0)) {
+  while (((FieldCell_RawBits(spanStopCell->flagsAndMaterial) & requiredCellFlags) != 0) &&
+         ((FieldCell_RawBits(spanStopCell->flagsAndMaterial) & TERRAIN_REGION_STOP_FLAGS) == 0)) {
     TerrainRegionCollection_RecordConnectedCell(requiredCellFlags,spanStopCell);
     spanStopCell = spanStopCell + 1;
   }
@@ -58,8 +58,8 @@ void TerrainRegionCollection_CollectConnectedCellsRecursive
   for (aboveRowCell = FieldGridCell_AtByteOffset(spanStartCell,-rowStrideBytes);
        aboveRowCell <= FieldGridCell_AtByteOffset(spanStopCell,-rowStrideBytes);
        aboveRowCell = aboveRowCell + 1) {
-    if (((aboveRowCell->flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0) &&
-       ((aboveRowCell->flagsAndMaterial & requiredCellFlags) != 0)) {
+    if (((FieldCell_RawBits(aboveRowCell->flagsAndMaterial) & TERRAIN_REGION_STOP_FLAGS) == 0) &&
+       ((FieldCell_RawBits(aboveRowCell->flagsAndMaterial) & requiredCellFlags) != 0)) {
       TerrainRegionCollection_CollectConnectedCellsRecursive
                 (requiredCellFlags,rowStrideBytes,aboveRowCell);
     }
@@ -68,8 +68,8 @@ void TerrainRegionCollection_CollectConnectedCellsRecursive
   for (belowRowCell = FieldGridCell_AtByteOffset(spanStartCell - 1,rowStrideBytes);
        belowRowCell < FieldGridCell_AtByteOffset(spanStopCell,rowStrideBytes);
        belowRowCell = belowRowCell + 1) {
-    if (((belowRowCell->flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0) &&
-       ((belowRowCell->flagsAndMaterial & requiredCellFlags) != 0)) {
+    if (((FieldCell_RawBits(belowRowCell->flagsAndMaterial) & TERRAIN_REGION_STOP_FLAGS) == 0) &&
+       ((FieldCell_RawBits(belowRowCell->flagsAndMaterial) & requiredCellFlags) != 0)) {
       TerrainRegionCollection_CollectConnectedCellsRecursive
                 (requiredCellFlags,rowStrideBytes,belowRowCell);
     }
@@ -100,7 +100,7 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
   }
   /* The original keeps the whole command value; bounded here to the material byte because it comes from any
      network peer and a larger value would carry into the cell flags (the edge ring) during the fill. */
-  replacementMaterialByte &= FIELD_CELL_MATERIAL_ID_MASK;
+  replacementMaterialByte &= ToBits(FIELD_CELL_MATERIAL_ID_MASK);
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   for (remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; remainingCount != 0;
        remainingCount--) {
@@ -114,8 +114,7 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
       (gridY >= (int)fieldGridAsset->gridHeight)) {
     return;
   }
-  referenceMaterial = fieldGridAsset->cells[(int32_t)(gridY * fieldGridAsset->gridWidth + gridX)].flagsAndMaterial &
-          FIELD_CELL_MATERIAL_ID_MASK;
+  referenceMaterial = FieldCell_MaterialId(fieldGridAsset->cells[(int32_t)(gridY * fieldGridAsset->gridWidth + gridX)].flagsAndMaterial);
   if (referenceMaterial != replacementMaterialByte) {
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     g_TerrainMaterialEditReplacementMaterialByte = replacementMaterialByte;
@@ -149,7 +148,7 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
   }
   /* The original keeps the whole command value; bounded here to the material byte because it comes from any
      network peer and a larger value would carry into the cell flags (the edge ring) during the fill. */
-  referenceMaterialByte &= FIELD_CELL_MATERIAL_ID_MASK;
+  referenceMaterialByte &= ToBits(FIELD_CELL_MATERIAL_ID_MASK);
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   for (remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; remainingCount != 0;
        remainingCount--) {
@@ -163,8 +162,8 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
       (gridY >= (int)fieldGridAsset->gridHeight)) {
     return;
   }
-  if ((fieldGridAsset->cells[(int32_t)(gridY * fieldGridAsset->gridWidth + gridX)].flagsAndMaterial &
-      FIELD_CELL_MATERIAL_ID_MASK) != referenceMaterialByte) {
+  if (ToBits(fieldGridAsset->cells[(int32_t)(gridY * fieldGridAsset->gridWidth + gridX)].flagsAndMaterial &
+             FIELD_CELL_MATERIAL_ID_MASK) != referenceMaterialByte) {
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     g_TerrainMaterialEditReferenceMaterialByte = referenceMaterialByte;
     g_TerrainMaterialEditFieldGrid = fieldGridAsset;
@@ -210,36 +209,36 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
       fieldCell->terrainHeight = fieldCell->terrainHeight - heightDelta;
       fieldCell->waterSurfaceDelta = fieldCell->waterSurfaceDelta + heightDelta;
       *heightDeltaCursor = -*heightDeltaCursor;
-      if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      if (!Any(fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
         FieldGridCell_ComputeDirectionalLightColor(fieldCell);
         /* left and right neighbours; one with its own delta is refreshed on its own turn */
-        if (((fieldCell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) && (heightDeltaCursor[-1] == 0)) {
+        if ((!Any(fieldCell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) && (heightDeltaCursor[-1] == 0)) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell - 1);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell - 1);
         }
-        if (((fieldCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) && (heightDeltaCursor[1] == 0)) {
+        if ((!Any(fieldCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) && (heightDeltaCursor[1] == 0)) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell + 1);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell + 1);
         }
         /* the two neighbours in the previous row (same column and the one to the right) */
         fieldCell = fieldCell + -(int32_t)widthCells;
-        if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+        if (!Any(fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell);
         }
-        if ((fieldCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+        if (!Any(fieldCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell + 1);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell + 1);
         }
         /* the two neighbours in the next row (the one to the left and same column) */
         fieldCell = fieldCell + widthCells * 2 + -1;
-        if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+        if (!Any(fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell);
         }
         cell = fieldCell + 1;
-        if ((fieldCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+        if (!Any(fieldCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
           FieldGridCell_ComputeDirectionalLightColor(cell);
         }
@@ -276,7 +275,7 @@ void TerrainEditBuffer_CopyCellMaterialBytes
   fieldCell = fieldGridAsset->cells;
   /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
-    *materialCursor = fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+    *materialCursor = FieldCell_MaterialId(fieldCell->flagsAndMaterial);
     fieldCell = fieldCell + 1;
     materialCursor = materialCursor + 1;
     remainingCount--;
@@ -307,7 +306,7 @@ void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
   fieldCell = fieldGridAsset->cells;
   /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
-    *materialDeltaCursor = *materialDeltaCursor - (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK);
+    *materialDeltaCursor = *materialDeltaCursor - FieldCell_MaterialId(fieldCell->flagsAndMaterial);
     fieldCell = fieldCell + 1;
     materialDeltaCursor = materialDeltaCursor + 1;
     remainingCount--;
@@ -347,8 +346,9 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
        can hold any values when the commands come out of order from a network peer (valid deltas only
        change the material byte). */
     fieldCell->flagsAndMaterial =
-         (((uint32_t)fieldCell->flagsAndMaterial + *materialDeltaCursor) & ~FIELD_CELL_GRID_EDGE_MASK) |
-         ((uint32_t)fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK);
+         FieldCell_FromRawWord(((FieldCell_RawBits(fieldCell->flagsAndMaterial) + *materialDeltaCursor) &
+                                ~FieldCell_RawBits(FIELD_CELL_GRID_EDGE_MASK)) |
+                               (FieldCell_RawBits(fieldCell->flagsAndMaterial) & FieldCell_RawBits(FIELD_CELL_GRID_EDGE_MASK)));
     *materialDeltaCursor = -*materialDeltaCursor;
     fieldCell = fieldCell + 1;
     materialDeltaCursor = materialDeltaCursor + 1;
@@ -424,7 +424,7 @@ void TerrainRegionCollection_RecordConnectedCell(FieldGridRegionMask requiredOcc
    material) and adds the delta to the cell's slot in the undo delta buffer. */
 static void TerrainMaterialEdit_ApplyCellMaterialDelta(FieldGridCell *cell,int *deltaSlot,int materialDelta)
 {
-  cell->flagsAndMaterial = cell->flagsAndMaterial - materialDelta;
+  cell->flagsAndMaterial = FromBits<FieldCellPackedFlagsAndMaterial>(FieldCell_RawWord(cell->flagsAndMaterial) - materialDelta);
   *deltaSlot = *deltaSlot + materialDelta;
 }
 
@@ -464,7 +464,7 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
   cellIndex = gridY * gridWidth + gridX;
   rightDeltaCursor = g_TerrainMaterialEditDeltaBuffer + cellIndex;
   rightCell = &fieldGrid->cells[cellIndex];
-  cellMaterial = (uint32_t)rightCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+  cellMaterial = FieldCell_RawBits(rightCell->flagsAndMaterial) & ToBits(FIELD_CELL_MATERIAL_ID_MASK);
   if (referenceMaterial != cellMaterial) {
     return;
   }
@@ -475,7 +475,7 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
   TerrainMaterialEdit_ApplyCellMaterialDelta
             (leftCell,leftDeltaCursor,(int)(cellMaterial - g_TerrainMaterialEditReplacementMaterialByte));
   while (spanStartColumn > 0) {
-    cellMaterial = (uint32_t)leftCell[-1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+    cellMaterial = FieldCell_RawBits(leftCell[-1].flagsAndMaterial) & ToBits(FIELD_CELL_MATERIAL_ID_MASK);
     if (referenceMaterial != cellMaterial) break;
     spanStartColumn = spanStartColumn - 1;
     leftCell = leftCell - 1;
@@ -485,7 +485,7 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
   }
   /* the matching cells to its right; spanStopColumn ends one past the run */
   for (spanStopColumn = gridX + 1; spanStopColumn < gridWidth; spanStopColumn = spanStopColumn + 1) {
-    cellMaterial = (uint32_t)rightCell[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+    cellMaterial = FieldCell_RawBits(rightCell[1].flagsAndMaterial) & ToBits(FIELD_CELL_MATERIAL_ID_MASK);
     if (referenceMaterial != cellMaterial) break;
     rightCell = rightCell + 1;
     rightDeltaCursor = rightDeltaCursor + 1;
@@ -537,7 +537,7 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
   cellIndex = gridY * gridWidth + gridX;
   rightDeltaCursor = g_TerrainMaterialEditDeltaBuffer + cellIndex;
   rightCell = &fieldGrid->cells[cellIndex];
-  cellMaterial = (uint32_t)rightCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+  cellMaterial = FieldCell_RawBits(rightCell->flagsAndMaterial) & ToBits(FIELD_CELL_MATERIAL_ID_MASK);
   if (referenceMaterial == cellMaterial) {
     return;
   }
@@ -547,7 +547,7 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
   leftDeltaCursor = rightDeltaCursor;
   TerrainMaterialEdit_ApplyCellMaterialDelta(leftCell,leftDeltaCursor,(int)(cellMaterial - referenceMaterial));
   while (spanStartColumn > 0) {
-    cellMaterial = (uint32_t)leftCell[-1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+    cellMaterial = FieldCell_RawBits(leftCell[-1].flagsAndMaterial) & ToBits(FIELD_CELL_MATERIAL_ID_MASK);
     if (referenceMaterial == cellMaterial) break;
     spanStartColumn = spanStartColumn - 1;
     leftCell = leftCell - 1;
@@ -556,7 +556,7 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
   }
   /* the non-target cells to its right; spanStopColumn ends one past the run */
   for (spanStopColumn = gridX + 1; spanStopColumn < gridWidth; spanStopColumn = spanStopColumn + 1) {
-    cellMaterial = (uint32_t)rightCell[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+    cellMaterial = FieldCell_RawBits(rightCell[1].flagsAndMaterial) & ToBits(FIELD_CELL_MATERIAL_ID_MASK);
     if (referenceMaterial == cellMaterial) break;
     rightCell = rightCell + 1;
     rightDeltaCursor = rightDeltaCursor + 1;

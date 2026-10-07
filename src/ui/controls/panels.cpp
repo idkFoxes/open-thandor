@@ -30,7 +30,7 @@ void UiImagePanelControl_DrawAlignedTextureAndChildren
   Bool8 framebufferUnavailable;
   GraphicsTextureLogicalSize textureSize;
   
-  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED)) {
     clippedLeft = (control->base).left;
     if ((control->base).left < clipLeft) {
       clippedLeft = clipLeft;
@@ -117,7 +117,7 @@ UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,i
   }
   /* The first pass skips the opaque-texture test when children may be hit outside the bounds;
      a retry (the children hit test returned the panel itself) always runs it. */
-  skipTextureTest = ((control->base).nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0;
+  skipTextureTest = Any((control->base).nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS);
   do {
     if ((!skipTextureTest) && ((control->panelFlags & UI_IMAGE_PANEL_HIT_WHOLE_BOX) == 0)) {
       drawX = (control->base).left;
@@ -269,7 +269,7 @@ void UiNineSlicePanelControl_DrawTextureFrameAndChildren
   GraphicsTextureLogicalSize slice6Size;
   GraphicsTextureLogicalSize slice7Size;
   
-  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED)) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       baseTextureFrame = control->firstFrameSubresource;
@@ -367,7 +367,7 @@ void UiFormattedContainer_RelocateWithPatchedTextPayloads
   uint16_t *stream;
   uint16_t *resolvedText;
   
-  if (((control->base).nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) != 0) {
+  if (Any((control->base).nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE)) {
     /* the template stores the tooltip's text id in the dword just before the node */
     resolvedText = TextResource_Resolve(reinterpret_cast<TextResourceId *>(control)[-1]);
     stream = resolvedText;
@@ -620,7 +620,7 @@ void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
   Bool8 framebufferUnavailable;
   GraphicsTextureLogicalSize textureSize;
   
-  if (((control->base).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->base).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     clippedLeft = (control->base).base.left;
     if ((control->base).base.left < clipLeft) {
       clippedLeft = clipLeft;
@@ -693,7 +693,7 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
 {
   Bool8 framebufferUnavailable;
   
-  if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED) &&
      (control->textureSource != nullptr)) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {

@@ -117,7 +117,7 @@ void FrontendPlayerConsensus_SubmitSelectedValue(UiNodeBase *source)
 {
   uint32_t consensusValue;
   
-  consensusValue = UiNode_As<UiSelectableControl>(source)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED;
+  consensusValue = ToBits(UiNode_As<UiSelectableControl>(source)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED);
   FrontendCommand_Issue<FrontendPlayerRuntime_SetConsensusValueAndRefresh>(0,0,consensusValue);
 }
 
@@ -714,7 +714,7 @@ static Bool8 FrontendPlayerRuntime_HaveAllPlayersReported()
 static void FrontendPlayerRuntime_EndInGameStartPause()
 
 {
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS)) {
     g_UiCommandRuntimeFlags &=
          ~(UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS);
   }

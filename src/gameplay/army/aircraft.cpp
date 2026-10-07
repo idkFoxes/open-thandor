@@ -426,7 +426,7 @@ static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpa
          g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - candidateAsset->xeniteCostQ4;
     buildTicks = candidateAsset->buildTicks;
     selectedAssetValue = candidateAsset->energyLoadQ4;
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD)) {
       buildTicks = (buildTicks >> 4) + 1;
     }
     secondaryAssetId = candidateAsset->registryId;

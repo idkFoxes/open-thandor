@@ -157,7 +157,7 @@ void TerrainCompositeTexture_FillPlane1()
     do {
       if (fieldCell->waterSurfaceDelta < 1) {
         lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-        materialColorArgb = TerrainMinimap_PanelPalette(panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK)].argb8888;
+        materialColorArgb = TerrainMinimap_PanelPalette(panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + FieldCell_MaterialId(fieldCell->flagsAndMaterial)].argb8888;
         if (lightingLevelIndex < 0) {
           lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
         }
@@ -236,8 +236,8 @@ void TerrainCompositeTexture_FillPlane2()
   /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
   do {
     do {
-      if ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
-        if ((fieldCell->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT) == 0) {
+      if (!Any(fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT)) {
+        if (!Any(fieldCell->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT)) {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
           soilColorArgb = TerrainMinimap_PanelPalette(panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_SOIL].argb8888;
           if (lightingLevelIndex < 0) {
@@ -357,7 +357,7 @@ void TerrainCompositeTexture_RebuildPlane0()
   FieldGridCoordinates gridCoordinates;
 
   inGameRoot = g_InGameRuntimeRoot;
-  if ((g_InGameRuntimeRoot->minimapResourceButtonStateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any(g_InGameRuntimeRoot->minimapResourceButtonStateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     assetOffset = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
   }
   else {

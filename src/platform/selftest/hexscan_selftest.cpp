@@ -121,7 +121,7 @@ static void HexscanTest_FillGrid(FieldGridAsset *grid, uint64_t seed, int profil
             cell->overlayColor = 0xffffffffu;
             cell->worldX = (Q12)(column * 0x900);
             cell->worldY = (Q12)(row * -0x7d0);
-            cell->flagsAndMaterial = HexscanTest_Random(&seed) & ~FIELD_CELL_GRID_EDGE_MASK;
+            cell->flagsAndMaterial = FieldCell_FromRawWord(HexscanTest_Random(&seed)) & ~FIELD_CELL_GRID_EDGE_MASK;
             cell->triangle0NormalAngles = HexscanTest_NormalAngles(&seed, 0);
             cell->triangle1NormalAngles = HexscanTest_NormalAngles(&seed, 0);
             cell->occupancyMask = HexscanTest_Random64(&seed) & 0x8484848484848484ull;
@@ -265,7 +265,7 @@ static uint32_t HexscanTest_RunDriver(int driver, FieldGridAsset *grid, FieldGri
         switch (driver) {
         case HEXSCAN_OVERLAY_A:
         case HEXSCAN_OVERLAY_B: {
-            FieldCellFlagMask mask = 1u << HexscanTest_Range(&seed, 0, 24);
+            FieldCellFlagMask mask = FieldCell_FromRawWord(1u << HexscanTest_Range(&seed, 0, 24));
             TerrainOverlayCellRuntimeValue value = (TerrainOverlayCellRuntimeValue)HexscanTest_Random(&seed);
             Bool8 rejected = driver == HEXSCAN_OVERLAY_A
                                  ? FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint(mask, value, radius, worldY,

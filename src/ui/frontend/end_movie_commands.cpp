@@ -77,27 +77,27 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     break;
   case EndMovieCommandAction::SkipEndMovie: /* skip the end movie */
     /* UI_NODE_SUPPRESSED in the nodeFlags of the results continue button */
-    if (((InGameUi_Image(endMovieRuntime)->resultsContinueButton.selectable.base.nodeFlags &
-          UI_NODE_SUPPRESSED) != 0) ||
-        ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0)) {
+    if (Any(InGameUi_Image(endMovieRuntime)->resultsContinueButton.selectable.base.nodeFlags &
+            UI_NODE_SUPPRESSED) ||
+        Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) {
       break;
     }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != 0) {
+    if (Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT)) {
       /* always true here: the direct call below is unreachable in the original as well */
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != 0) {
+      if (Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK)) {
         InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_RESULTS_READY,0,0,0);
       }
       else {
         FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(g_LocalPlayerRuntimeId);
       }
     }
-    else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != 0) {
+    else if (Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK)) {
       InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_APPLY_UI_FLAG_MASKS,0,
-                                                  UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
+                                                  ToBits(UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED),0);
     }
     else {
       UiCommandRuntimeFlags_ApplyClearSetToggleMasks(g_LocalPlayerRuntimeId,0,
-                                                     UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
+                                                     ToBits(UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED),0);
     }
     break;
   default:

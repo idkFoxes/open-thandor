@@ -15,8 +15,8 @@
 #include <thandor/core/contracts.h>
 
 /* Cells that stop TerrainRegionCollection_CollectConnectedCellsRecursive: the map-edge ring and cells already
-   collected (FieldGridCell.flagsAndMaterial; = 0x88016000). */
-#define TERRAIN_REGION_STOP_FLAGS (FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_CONNECTED_REGION_VISITED)
+   collected (FieldGridCell.flagsAndMaterial; = 0x88016000), as the unsigned mask the fill tests the word with. */
+inline constexpr uint32_t TERRAIN_REGION_STOP_FLAGS = FieldCell_RawBits(FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_CONNECTED_REGION_VISITED);
 /* Capacity of g_TerrainRegionCollectionEntries (8-byte records: extraction descriptor, model offset); further
    extractors of a region are cleared but not recorded (TerrainRegionCollection_RecordConnectedCell). */
 inline constexpr int TERRAIN_REGION_COLLECTION_CAPACITY = 2048;

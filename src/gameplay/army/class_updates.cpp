@@ -38,13 +38,12 @@ void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
     if ((0 < cellColumn) && (0 < cellRow)) {
       if ((cellColumn + 1 < (int)fieldGrid->gridWidth) && (cellRow + 1 < (int)fieldGrid->gridHeight)) {
         cellIndex = cellRow * fieldGrid->gridWidth + cellColumn;
-        supportFlagMask = FIELD_CELL_XENITE_SUPPORT << ((uint8_t)modelRuntime->modelDefinition->resourceFieldSupportSelector & 31
-                         );
+        supportFlagMask = FieldCell_ResourceSupportBit((uint8_t)modelRuntime->modelDefinition->resourceFieldSupportSelector & 31);
         /* claim the cell: faction << 13, the support bit, claimedCellTag << 24 */
         fieldGrid->cells[cellIndex].resourceExtractionDescriptor =
-             modelRuntime->ownerArmyRuntime->factionIndex << 13 | supportFlagMask |
+             modelRuntime->ownerArmyRuntime->factionIndex << 13 | FieldCell_RawWord(supportFlagMask) |
              modelRuntime->modelDefinition->claimedCellTag << 24;
-        if ((fieldGrid->cells[cellIndex].flagsAndMaterial & supportFlagMask) != 0) {
+        if (Any(fieldGrid->cells[cellIndex].flagsAndMaterial & supportFlagMask)) {
           /* the cell supports this extractor: register it (as a saved offset) and run its emitters */
           fieldGrid->cells[cellIndex].armyRuntimeSavedOffset =
                Thandor_PointerToI32(modelRuntime) - g_ModelRuntimeRebaseDelta; /* 32-bit format field: FieldGridCell.armyRuntimeSavedOffset */
@@ -86,7 +85,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
 
   /* crush every class-0/class-12 model standing inside the structure */
   ownNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     for (scanNode = ModelView_Cast<ModelRuntimeNode>(worldRuntime->ownerListHead); scanNode != nullptr;
         scanNode = ModelView_Cast<ModelRuntimeNode>((scanNode->common).nextNode)) {
       if (scanNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {

@@ -52,7 +52,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
   uint16_t *digitText;
   uint16_t *destinationCursor;
 
-  if ((flags & WIDE_FORMAT_HEXADECIMAL) != 0) {
+  if (Any(flags & WIDE_FORMAT_HEXADECIMAL)) {
     WideText_CopyCodeUnits
               (g_WideNumberFormatState.hexPrefixLength,g_WideNumberFormatState.hexPrefix,destination);
     destinationCursor = destination + g_WideNumberFormatState.hexPrefixLength;
@@ -75,14 +75,14 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
     /* without a sign zero code units are copied, so signText is never read */
     signText = nullptr;
     signLength = 0;
-    if ((flags & WIDE_FORMAT_SIGNED_VALUE) != 0) {
+    if (Any(flags & WIDE_FORMAT_SIGNED_VALUE)) {
       if (value < 0) {
         signText = g_WideNumberFormatState.negativeSign;
         signLength = g_WideNumberFormatState.negativeSignLength;
         /* the original negates with wrap-around (INT_MIN stays 0x80000000, printed as 2147483648) */
         value = (WideNumberSignedValue32)(0u - (uint32_t)value);
       }
-      else if ((flags & WIDE_FORMAT_SHOW_PLUS_SIGN) != 0) {
+      else if (Any(flags & WIDE_FORMAT_SHOW_PLUS_SIGN)) {
         signText = g_WideNumberFormatState.positiveSign;
         signLength = g_WideNumberFormatState.positiveSignLength;
       }
@@ -104,8 +104,8 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
     if (integerDigitLimit < digitCount) {
       digitCount = integerDigitLimit;
     }
-    if ((flags & (WIDE_FORMAT_PAD_WITH_SPACE|WIDE_FORMAT_PAD_WITH_ZERO)) != 0) {
-      if ((flags & WIDE_FORMAT_PAD_WITH_ZERO) != 0) {
+    if (Any(flags & (WIDE_FORMAT_PAD_WITH_SPACE|WIDE_FORMAT_PAD_WITH_ZERO))) {
+      if (Any(flags & WIDE_FORMAT_PAD_WITH_ZERO)) {
         paddingText = g_WideNumberFormatState.zeroPadding;
       }
       else {
@@ -115,7 +115,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
       destinationCursor = destinationCursor + (integerDigitLimit - digitCount);
     }
     /* a single group separator, before the last three digits */
-    if (((flags & WIDE_FORMAT_GROUP_THOUSANDS) != 0) && (3 < digitCount)) {
+    if ((Any(flags & WIDE_FORMAT_GROUP_THOUSANDS)) && (3 < digitCount)) {
       leadingDigitCount = digitCount - 3;
       WideText_CopyCodeUnits(leadingDigitCount,digitText,destinationCursor);
       destinationCursor = destinationCursor + leadingDigitCount;
@@ -128,7 +128,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
     }
     WideText_CopyCodeUnits(digitCount,digitText,destinationCursor);
     destinationCursor = destinationCursor + digitCount;
-    if (((flags & WIDE_FORMAT_FIXED_FRACTION_WIDTH) != 0) || (denominator != 1)) {
+    if ((Any(flags & WIDE_FORMAT_FIXED_FRACTION_WIDTH)) || (denominator != 1)) {
       WideText_CopyCodeUnits
                 (g_WideNumberFormatState.decimalSeparatorLength,
                  g_WideNumberFormatState.decimalSeparator,destinationCursor);
@@ -143,14 +143,14 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
           fractionalDigits--;
         } while ((fractionalDigits != 0) && (fractionRemainder != 0));
         /* exact fraction before the digit limit: zero-pad to the fixed width */
-        if ((fractionalDigits != 0) && ((flags & WIDE_FORMAT_FIXED_FRACTION_WIDTH) != 0)) {
+        if ((fractionalDigits != 0) && (Any(flags & WIDE_FORMAT_FIXED_FRACTION_WIDTH))) {
           WideText_CopyCodeUnits(fractionalDigits,g_WideNumberFormatState.zeroPadding,destinationCursor);
           destinationCursor = destinationCursor + fractionalDigits;
         }
       }
     }
   }
-  if ((flags & WIDE_FORMAT_WRITE_TERMINATOR) != 0) {
+  if (Any(flags & WIDE_FORMAT_WRITE_TERMINATOR)) {
     *destinationCursor = 0;
   }
   return Thandor_ByteDistance(destinationCursor, destination);

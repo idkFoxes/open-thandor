@@ -38,7 +38,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
     *interactionFlagsField = *interactionFlagsField & ~UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW) == 0) {
+      if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW)) {
         g_UiCommandRuntimeFlags =
              g_UiCommandRuntimeFlags & ~(UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
       }
@@ -81,8 +81,8 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->mouseHelpPanel).scrollable);
   UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->mouseHelpPanel).scrollable);
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-       SESSION_NETWORK_ROLE_LOCAL) && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE) == 0)) {
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) {
+       SESSION_NETWORK_ROLE_LOCAL) && (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE))) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW;
     }
     g_UiCommandRuntimeFlags =
@@ -138,8 +138,8 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
-  if ((g_UiCommandRuntimeFlags &
-       (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags &
+       (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED))) {
     InGameUi_Image(source)->worldView.base.nodeFlags =
          InGameUi_Image(source)->worldView.base.nodeFlags & ~UI_NODE_SUPPRESSED;
     gameWindowStack = UiLayoutContainerControl_AsPageStack(&InGameUi_Image(source)->gameWindowPageStack);
@@ -217,7 +217,7 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
+    InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,ToBits(UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED),0);
   }
   else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
            SESSION_NETWORK_ROLE_LOCAL) {
@@ -235,7 +235,7 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
 void InGameEndMovie_Skip(void *source)
 
 {
-  InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
+  InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,0,ToBits(UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING));
 }
 
 /* Quit game window restart button (action INGAME_ACTION_QUIT_RESTART_MISSION 0x1027,
@@ -275,7 +275,7 @@ void InGameQuitMenu_OpenAndRefreshButtons(InGameCommandPanelSourceAddress32 sour
   else {
     UiNodeList_SuppressActionId(INGAME_ACTION_QUIT_RESTART_MISSION,firstNode);
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_QUIT_SURRENDER,firstNode);
   }
   else {

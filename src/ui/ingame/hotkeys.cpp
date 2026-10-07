@@ -65,7 +65,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
      this function). image is the in-game UI image
      of the runtime root. */
   InGameUiImage *image = InGameUi_Image(inGameRoot);
-  Bool8 localSession = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0;
+  Bool8 localSession = !Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK);
 
   /* A record without modifier class matches only without Ctrl and Alt; otherwise exactly the named
      combination (Ctrl, Alt, or both) must be held. Shift is ignored. */
@@ -78,18 +78,18 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
   InGameHotkeyAction target = record->action;
   switch (target) {
   case InGameHotkeyAction::CheatToggleFastBuild: /* Ctrl+Alt+Z, cheat: toggle fast build and research */
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED)) {
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD;
     }
     break;
   case InGameHotkeyAction::CheatAddXenite: /* Ctrl+Alt+X, cheat: +1000 Xenite (xeniteCurrentQ4 += 1000 << Q4_SHIFT) */
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED)) {
       g_GameFactionRuntimeImage.records[reinterpret_cast<WorldRuntimeContext *>(
            &image->worldView)->activeFactionRuntimeIndex].xeniteCurrentQ4 += 1000 << Q4_SHIFT;
     }
     break;
   case InGameHotkeyAction::CheatAddEnergy: /* Ctrl+Alt+E, cheat: +100 energy supply and capacity (Q4) */
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED)) {
       g_GameFactionRuntimeImage.records[reinterpret_cast<WorldRuntimeContext *>(
            &image->worldView)->activeFactionRuntimeIndex].baselineEnergySupplyQ4 += 100 << Q4_SHIFT;
       g_GameFactionRuntimeImage.records[reinterpret_cast<WorldRuntimeContext *>(
@@ -129,7 +129,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     toggleButton = (target == InGameHotkeyAction::ToggleMissionObjectives) ? &image->missionObjectivesButton : &image->inGameMenuButton;
     toggle = &toggleButton->selectable;
     UiSelectableControl_SetSelected(1,toggle);
-    if (((toggle->stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
+    if (Any(toggle->stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) &&
         (toggleButton->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,
                             toggleButton->activationSound,nullptr);
@@ -217,7 +217,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     Screenshot_SaveFramebufferAsPcx();
     break;
   case InGameHotkeyAction::LeaveGame: /* Alt+Q: leave the game (not as host) */
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != 0) {
+    if (Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST)) {
       break;
     }
     InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);

@@ -86,7 +86,7 @@ void UiPointer_DispatchPendingEvents()
     pointerY = pointerEvent.pointerY;
     buttonMask = pointerEvent.buttonState;
     eventKind = (char)pointerEvent.eventType; /* GraphicsCursorEventType */
-    switch (eventKind) {
+    switch (static_cast<GraphicsCursorEventType>(eventKind)) {
     case MOTION_OR_WHEEL:
       UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
       break;
@@ -99,7 +99,7 @@ void UiPointer_DispatchPendingEvents()
     case RIGHT_PRESS:
       UiPointer_DispatchRightPress(buttonMask,wheelDelta,pointerY,pointerX);
       break;
-    case 4: /* unused code, handled like a left release */
+    case CURSOR_EVENT_UNUSED_4: /* unused code, handled like a left release */
     case LEFT_RELEASE:
       UiPointer_ReleaseCapture(control,UI_POINTER_CAPTURE_LEFT,wheelDelta,pointerY,pointerX);
       break;
@@ -114,7 +114,7 @@ void UiPointer_DispatchPendingEvents()
     default:
       /* codes the queue never holds: the original compare chain treats those below 0 as motion and those
          above RIGHT_RELEASE as a right release */
-      if (eventKind < MOTION_OR_WHEEL) {
+      if (static_cast<GraphicsCursorEventType>(eventKind) < MOTION_OR_WHEEL) {
         UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
       }
       else {
@@ -187,11 +187,11 @@ static Bool8 UiKeyboard_PassToFollowingFocusTargets
       }
       wrappedOnce = true;
     }
-    if ((control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) continue;
+    if (!Any(control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET))) continue;
     if (control == g_UiKeyboardFocusNode) {
       return true;
     }
-    if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
+    if (Any(control->nodeFlags & UI_NODE_SUPPRESSED)) continue;
     passToNext = control->vtable->keyboardEvent(keyboardStateMask,keyCode,control);
   }
   UiKeyboardFocus_Set(control);
@@ -266,9 +266,9 @@ void UiKeyboardFocus_SelectInitial(UiNodeBase *root)
      the first unsuppressed preferred focus target wins, else the last unsuppressed fallback. */
   fallbackFocusNode = UI_NODE_NONE;
   for (node = root; node != UI_NODE_NONE; node = UiKeyboardFocus_NextInPreOrderOrNone(node)) {
-    if ((node->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
-    if ((node->nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET) != 0) break;
-    if ((node->nodeFlags & UI_NODE_FALLBACK_FOCUS_TARGET) != 0) {
+    if (Any(node->nodeFlags & UI_NODE_SUPPRESSED)) continue;
+    if (Any(node->nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET)) break;
+    if (Any(node->nodeFlags & UI_NODE_FALLBACK_FOCUS_TARGET)) {
       fallbackFocusNode = node;
     }
   }
@@ -290,7 +290,7 @@ void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
 
 {
   if ((g_UiKeyboardFocusNode == UI_NODE_NONE) &&
-     ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0)) {
+     (Any(node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)))) {
     UiKeyboardFocus_Set(node);
   }
 }
@@ -383,7 +383,7 @@ static void UiPointer_CaptureAndPress
   }
   nodeVtable = node->vtable;
   g_UiPointerCaptureTarget = node;
-  if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
+  if (Any(node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET))) {
     UiKeyboardFocus_Set(node);
   }
   if (captureButton == UI_POINTER_CAPTURE_RIGHT) {
@@ -427,7 +427,7 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
     return;
   }
   UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_LEFT,
-                            (buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) != CURSOR_BUTTON_NONE,
+                            Any(buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK),
                             wheelDelta,pointerY,pointerX);
 }
 
@@ -436,7 +436,7 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
    repeated click (UI_NODE_REPEAT_OR_DOUBLE_CLICK), whatever buttonMask says.
 */
 void UiPointer_DispatchMiddlePress
-          (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
+          (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX)
 
 {
@@ -462,7 +462,7 @@ void UiPointer_DispatchMiddlePress
    rightDrag. Ignored while any button holds a capture.
 */
 void UiPointer_DispatchRightPress
-          (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
+          (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX)
 
 {
@@ -482,7 +482,7 @@ void UiPointer_DispatchRightPress
   if (node == UI_NODE_NONE) {
     return;
   }
-  UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_RIGHT,(buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) != 0,
+  UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_RIGHT,Any(buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK),
                             wheelDelta,pointerY,pointerX);
 }
 
@@ -522,8 +522,8 @@ void UiKeyboardFocus_MoveNext()
      that is the focus node itself or is not suppressed. */
   do {
     node = UiKeyboardFocus_NextInPreOrderWrapping(node);
-  } while (((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) ||
-           ((node != g_UiKeyboardFocusNode) && ((node->nodeFlags & UI_NODE_SUPPRESSED) != 0)));
+  } while (!Any(node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) ||
+           ((node != g_UiKeyboardFocusNode) && (Any(node->nodeFlags & UI_NODE_SUPPRESSED))));
   if (node == g_UiKeyboardFocusNode) {
     return; /* back at the focus node: no other focus target */
   }

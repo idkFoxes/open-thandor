@@ -105,7 +105,7 @@ static UiKeyCommandRecord<InGameKeyCommandAction> g_InGameCommandDispatchRecords
     /* 63 */ {.commandCode = 0x30069, .modifierClassFlags = 0xC, .action = InGameKeyCommandAction::InfoTextNext},
     /* 64 */ {.commandCode = 0x0}}; /* terminator: commandCode 0 (the original's other two dwords were NOP fill, never read) */
 
-uint32_t g_UiCommandRuntimeFlags = 0;
+UiCommandRuntimeFlagMask g_UiCommandRuntimeFlags = UiCommandRuntimeFlagMask{};
 
 
 /* In-game key commands (the world view's dispatchCommandCallback): the first record of
@@ -146,7 +146,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
   Bool8 localSession =
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL;
   Bool8 commandsBlocked =
-       (g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) != 0;
+       Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED));
 
   record = UiCommandDispatch_Find(g_InGameCommandDispatchRecords,commandCode,modifierFlags,
                                   UiKeyModifierRule::ExactWithShift);
@@ -255,7 +255,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     /* a sprite button; the template member is still an untyped node */
     UiSpriteButtonControl *upgradeButton =
          reinterpret_cast<UiSpriteButtonControl *>(&THANDOR_CONTAINER_OF(world, InGameUiImage, worldView)->singleSelectionUpgradeButton);
-    if (commandsBlocked || (((upgradeButton->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+    if (commandsBlocked || (Any((upgradeButton->selectable).base.nodeFlags & UI_NODE_SUPPRESSED))) {
       break;
     }
     /* only while the single-selection page is shown */
@@ -265,7 +265,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
         != 1) {
       break;
     }
-        if ((((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (upgradeButton->activationSound != nullptr)) {
+        if (Any((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) && (upgradeButton->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,upgradeButton->activationSound,nullptr);
     }
     InGameTechnologyPanel_ToggleForSelection(reinterpret_cast<UiNodeBase *>(world)); /* the world view node */
@@ -287,12 +287,12 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
          UI_NODE_SUPPRESSED;
     break;
   case InGameKeyCommandAction::CheatOccupancyToggle:
-    if (!localSession || ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) == 0)) {
+    if (!localSession || (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED))) {
       break;
     }
     /* the flag an ended local faction gets, whose simulation step also sets occupancy bit 0 on every cell */
     g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED;
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED) == 0) {
+    if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED)) {
       FieldGrid_ClearOccupancyMaskByteBit0AllCells(world->activeFactionRuntimeIndex,world->fieldGrid);
     }
     else {
@@ -359,11 +359,11 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
   Bool8 hasActiveOwnerType16;
 
   /* the original tests WORLD_INPUT_DISABLED twice */
-  if ((((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) &&
-      (((world->interaction).nodeFlags & 8) == 0)) &&
-     ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0)) {
+  if (((!Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) &&
+      (!Any((world->interaction).nodeFlags & UI_NODE_SUPPRESSED))) &&
+     (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
     if ((world->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
-      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
+      if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING)) {
         hasActiveOwnerType16 = SelectionInfo_TestNotOwnAircraftPadsWithAircraft(world->activeFactionRuntimeIndex);
         if (hasActiveOwnerType16) {
           InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);

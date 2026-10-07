@@ -500,7 +500,7 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
     if (((g_GameFactionRuntimeImage.tail.factionLifecycleStates[countedFactionIndex] ==
           FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
          (countedFactionIndex != world->activeFactionRuntimeIndex)) &&
-       ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0)) {
+       (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED))) {
       otherActiveCount++;
     }
     countedFactionIndex++;
@@ -576,8 +576,8 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
                 offsetof(InGameUiImage,worldView) + offsetof(WorldRuntimeContext,activeFactionRuntimeIndex),
                 "rootControl[21].sprite.primaryTextureSource overlays the world view's activeFactionRuntimeIndex");
 
-  if ((g_UiCommandRuntimeFlags &
-       (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
+  if (!Any(g_UiCommandRuntimeFlags &
+       (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED))) {
     rootControl = &control->sprite.selectable.base;
     while (rootControl->parent != UI_NODE_NONE) {
       rootControl = rootControl->parent;

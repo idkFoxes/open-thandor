@@ -26,16 +26,16 @@ Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
   /* Space activates the focused control (unless disabled); Enter/Escape activate it when the state flags
      bind them. Everything else goes to the default focus handling. */
   activates = false;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (keyCode == KEYBOARD_KEY_CODE_SPACE) {
       activates = (&(control->selectable).base == g_UiKeyboardFocusNode) &&
-                  (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0);
+                  (!Any((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION));
     }
     else if (keyCode == KEYBOARD_KEY_CODE_ENTER) {
-      activates = ((control->selectable).stateFlags & UI_SELECTABLE_ACTIVATE_ON_ENTER) != 0;
+      activates = Any((control->selectable).stateFlags & UI_SELECTABLE_ACTIVATE_ON_ENTER);
     }
     else if (keyCode == KEYBOARD_KEY_CODE_ESCAPE) {
-      activates = ((control->selectable).stateFlags & UI_SELECTABLE_ACTIVATE_ON_ESCAPE) != 0;
+      activates = Any((control->selectable).stateFlags & UI_SELECTABLE_ACTIVATE_ON_ESCAPE);
     }
   }
   if (!activates) {
@@ -43,8 +43,8 @@ Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
                         (keyboardStateMask,keyCode,&(control->selectable).base);
     return handled;
   }
-  if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
-    if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
+  if (!Any((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE)) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) &&
        (control->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
     }
@@ -52,8 +52,8 @@ Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
     UiNode_InvalidateRoot(&(control->selectable).base);
     return false;
   }
-  if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-    if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
+  if (Any((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION)) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) &&
        (control->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
     }
@@ -63,8 +63,8 @@ Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
     UiNode_InvalidateRoot(&(control->selectable).base);
     return false;
   }
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-    if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
+  if (!Any((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
+    if (Any((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) &&
        (control->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
     }
@@ -136,8 +136,8 @@ Bool8 UiSelectableGroup_FindVisibleSelected
   controlIndex = 0;
   found = true;
   control = va_arg(controlArgs,UiSelectableControl *);
-  while (((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
-         ((control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0)) {
+  while (Any(control->base.nodeFlags & UI_NODE_SUPPRESSED) ||
+         (!Any(control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
     controlIndex++;
     if (controlCount <= controlIndex) {
       found = false;
@@ -169,7 +169,7 @@ uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...)
   controlIndex = 0;
   /* Original quirk: a do/while, so it runs once even with a count of 0 (kept as in the original; step 11). */
   do {
-    if ((va_arg(controlArgs,UiSelectableControl *)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if (Any(va_arg(controlArgs,UiSelectableControl *)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
       va_end(controlArgs);
       return controlIndex;
     }
@@ -212,8 +212,8 @@ void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *s
 uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control)
 
 {
-  if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-     ((control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
+  if (!Any((control->base).nodeFlags & UI_NODE_SUPPRESSED) &&
+     (Any(control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED))) {
     return 1;
   }
   return 0;

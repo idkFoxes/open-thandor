@@ -323,27 +323,29 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
 /* Faction setup page: shows the row control at controlOffset with the page's nodeFlags set/clear masks
    (hidden once the local player has confirmed) and makes it active. */
 static void FrontendTaskAssignmentPage_ShowRowControl(UiRootNode *taskAssignmentRoot, uint32_t controlOffset,
-                                                      uint32_t controlSetMask, uint32_t controlClearMask)
+                                                      UiNodeFlags controlSetMask, UiNodeFlags controlClearMask)
 {
-  UiNodeFlags *controlFlags; /* a nodeFlags or stateFlags field (both int) */
+  UiNodeFlags *controlFlags;
+  UiSelectableStateFlags *controlStateFlags;
 
   controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
   *controlFlags = *controlFlags | controlSetMask;
   controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
   *controlFlags = *controlFlags & controlClearMask;
-  controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags;
-  *controlFlags = *controlFlags & ~FRONTEND_CONTROL_INACTIVE;
+  controlStateFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags;
+  *controlStateFlags = *controlStateFlags & ~FRONTEND_CONTROL_INACTIVE;
 }
 
 /* Faction setup page: hides the row control at controlOffset and marks it inactive. */
 static void FrontendTaskAssignmentPage_DisableRowControl(UiRootNode *taskAssignmentRoot, uint32_t controlOffset)
 {
-  UiNodeFlags *controlFlags; /* a nodeFlags or stateFlags field (both int) */
+  UiNodeFlags *controlFlags;
+  UiSelectableStateFlags *controlStateFlags;
 
   controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
   *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
-  controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags;
-  *controlFlags = *controlFlags | FRONTEND_CONTROL_INACTIVE;
+  controlStateFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags;
+  *controlStateFlags = *controlStateFlags | FRONTEND_CONTROL_INACTIVE;
 }
 
 /* Refreshes the faction setup page (FRONTEND_PAGE_FACTION_SETUP) from the player records: the task description
@@ -357,7 +359,8 @@ void
 FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot)
 
 {
-  UiNodeFlags *controlFlags; /* a nodeFlags or stateFlags field (both int) */
+  UiNodeFlags *controlFlags;
+  UiSelectableStateFlags *controlStateFlags;
   uint32_t controlOffset;
   FrontendFactionAssignmentIndex rosterFactionIndex;
   FrontendFactionAssignmentIndex localFactionIndex;
@@ -375,11 +378,11 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   uint16_t *rosterTextCursor;
   uint16_t *rosterRowStart;
   uint16_t *rosterRowEnd;
-  uint32_t controlClearMask;
-  uint32_t controlSetMask;
+  UiNodeFlags controlClearMask;
+  UiNodeFlags controlSetMask;
   
   /* the rows get these nodeFlags masks: shown, or hidden once the local player has confirmed */
-  controlSetMask = 0;
+  controlSetMask = UiNodeFlags{};
   controlClearMask = ~UI_NODE_SUPPRESSED;
   localFactionIndex = g_FrontendPlayerRuntimeBlocks->factionAssignment.factionAssignmentIndex;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -391,7 +394,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
         localFactionIndex = playerRecord->factionAssignment.factionAssignmentIndex;
         if (playerRecord->factionAssignment.consensusValue != 0) {
           controlSetMask = UI_NODE_SUPPRESSED;
-          controlClearMask = 0xffffffff;
+          controlClearMask = ~UiNodeFlags{};
         }
         break;
       }
@@ -408,8 +411,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
      caption text id. Rows 7..1 (entry row - 1). Some nodeFlags accesses add offsetof(UiNodeBase,nodeFlags) to
      the offset first (NodeAt<UiNodeFlags>): that order is the one of the original code there. */
   for (row = 7; row != 0; row--) {
-    if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1])->stateFlags &
-         UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if (Any(FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1])->stateFlags &
+         UI_SELECTABLE_SELECTED_OR_CHECKED)) {
       FrontendTaskAssignmentPage_ShowRowControl(taskAssignmentRoot,
                                                 g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[row - 1],
                                                 controlSetMask, controlClearMask);
@@ -419,8 +422,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
                                                    g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[row - 1]);
     }
     else if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
-             ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1])->nodeFlags &
-               UI_NODE_SUPPRESSED) != 0)) {
+             Any(FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1])->nodeFlags &
+                 UI_NODE_SUPPRESSED)) {
       /* not a client and the row's assignment control is suppressed */
       controlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1];
       if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSingleLineTextControl>(controlOffset)->labelFlags &
@@ -439,8 +442,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
       controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[row - 1];
       controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(controlOffset)->nodeFlags;
       *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
-      controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags;
-      *controlFlags = *controlFlags & ~FRONTEND_CONTROL_INACTIVE;
+      controlStateFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags;
+      *controlStateFlags = *controlStateFlags & ~FRONTEND_CONTROL_INACTIVE;
     }
     else {
       FrontendTaskAssignmentPage_ShowRowControl(taskAssignmentRoot,
@@ -456,8 +459,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiFramedTextButtonControl>(controlOffset)->textResourceId = TEXT_ID_FACTION_MODE_NOBODY;
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[row] == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiFramedTextButtonControl>(controlOffset)->textResourceId = TEXT_ID_FACTION_MODE_COMPUTER;
-      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1])->nodeFlags &
-           UI_NODE_SUPPRESSED) == 0) {
+      if (!Any(FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[row - 1])->nodeFlags &
+               UI_NODE_SUPPRESSED)) {
         FrontendTaskAssignmentPage_ShowRowControl(taskAssignmentRoot,
                                                   g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1],
                                                   controlSetMask, controlClearMask);
@@ -593,11 +596,11 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     playerName = playerName + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16);
   } while (remainingPlayers != 0);
   /* once the local player has pressed Finish, the faction rows are hidden */
-  if ((FrontendUi_Image(taskAssignmentRoot)->factionSetupFinishButton.selectable.stateFlags &
-       UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+  if (!Any(FrontendUi_Image(taskAssignmentRoot)->factionSetupFinishButton.selectable.stateFlags &
+       UI_SELECTABLE_SELECTED_OR_CHECKED)) {
     for (row = 7; row != 0; row--) {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1];
-      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+      if (!Any(FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE)) {
         controlFlags = FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeFlags>(controlOffset + offsetof(UiNodeBase,nodeFlags));
         *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
       }
@@ -606,7 +609,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   else {
     for (row = 7; row != 0; row--) {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1];
-      if ((FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+      if (!Any(FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiSelectableControl>(controlOffset)->stateFlags & FRONTEND_CONTROL_INACTIVE)) {
         controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(controlOffset)->nodeFlags;
         *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       }

@@ -14,12 +14,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* g_UiCommandRuntimeFlags bits that end the in-game session loop (InGameRuntime_RunSessionUntilExit) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING = 0x800; /* an end trigger fired and chose the end movie
-                                                           (set in gameplay/session/level_script.cpp) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED = 0x10000; /* command 150 with flag bit 1: the session is closed
-                                                          (InGameCommand_HandlePlayerDeparture) */
-inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT = 0x20000; /* command 150 reported the local player's departure */
 
 /* PLAYER_SESSION_FLAG_SLOW_RENDERING is PlayerSessionFlags (gameplay/selection/types.h). */
 
@@ -59,8 +53,8 @@ void InGameCommand_HandlePlayerDeparture
           (PlayerOrFactionRuntimeId32 playerOrFactionId,uint32_t value1,uint32_t value2,
           GameEntityCommandFlags flags);
 
-void UiCommandRuntimeFlags_ApplyClearSetToggleMasks(PlayerRuntimeId playerRuntimeId,UiCommandRuntimeFlagMask toggleMask,
-          UiCommandRuntimeFlagMask setMask,UiCommandRuntimeFlagMask clearMask);
+void UiCommandRuntimeFlags_ApplyClearSetToggleMasks(PlayerRuntimeId playerRuntimeId,CommandPayload toggleBits,
+          CommandPayload setBits,CommandPayload clearBits);
 
 extern InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11;
 
