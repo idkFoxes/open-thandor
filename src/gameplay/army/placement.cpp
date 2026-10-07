@@ -651,7 +651,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   int modelOverlayBase;
   ModelDefinitionRecordPrefix *definitionRecord;
   WorldOwnerListNode *ownerNode;
-  uint32_t overlayExtent;
+  FieldCellFlagMask overlayExtent;
   ModelRuntimeSlot *modelRuntime;
 
   if (sourceRuntime == nullptr) {
@@ -664,7 +664,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   if (definitionRecord == nullptr) {
     return;
   }
-  overlayExtent = UINT32_MAX;
+  overlayExtent = FieldCell_FromRawWord(UINT32_MAX);
   ownerNode = worldRuntime->ownerListHead;
   overlayBaseOffset = ModelView_Cast<ModelDefinition>(definitionRecord)->placementFlags;
   if (ownerNode == nullptr) {
@@ -672,7 +672,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   }
   if (ModelView_Cast<ModelDefinition>(definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
     overlayExtent =
-         ToBits(FieldCell_ResourceSupportBit((uint8_t)ModelView_Cast<ModelDefinition>(definitionRecord)->classParameterC0 & 31));
+         FieldCell_ResourceSupportBit((uint8_t)ModelView_Cast<ModelDefinition>(definitionRecord)->classParameterC0 & 31);
   }
   overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
            [ModelView_Cast<ModelDefinition>(definitionRecord)->placementContactKindIndex];

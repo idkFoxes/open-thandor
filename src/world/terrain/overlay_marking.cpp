@@ -20,7 +20,7 @@
 static void FieldGridTerrainOverlayVariantA_ApplyToCell(FieldGridCell *fieldCell)
 
 {
-  if (((FieldCell_RawBits(fieldCell->flagsAndMaterial) & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
+  if (((FieldCell_RawBits(fieldCell->flagsAndMaterial) & FieldCell_RawBits(g_TerrainScanSharedSelectorValue.fieldCellFlagMask)) != 0) &&
       (fieldCell->waterSurfaceDelta < 0)) {
     fieldCell->overlayColor = g_TerrainScanReferenceHeight;
   }
@@ -69,7 +69,7 @@ Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
         (gridColumn < gridWidth)) {
       centerCellIndex = gridRow * gridWidth + gridColumn;
       if (!Any(fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
-        if (((FieldCell_RawBits(fieldGrid->cells[centerCellIndex].flagsAndMaterial) & cellFlagMask) != 0) &&
+        if (((FieldCell_RawBits(fieldGrid->cells[centerCellIndex].flagsAndMaterial) & FieldCell_RawBits(cellFlagMask)) != 0) &&
            (fieldGrid->cells[centerCellIndex].waterSurfaceDelta < 0)) {
           fieldGrid->cells[centerCellIndex].overlayColor = cellValue;
         }
@@ -115,7 +115,7 @@ Bool8 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
         (gridColumn < gridWidth)) {
       centerCellIndex = gridRow * gridWidth + gridColumn;
       if (!Any(fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
-        if (((FieldCell_RawBits(fieldGrid->cells[centerCellIndex].flagsAndMaterial) & cellFlagMask) != 0) &&
+        if (((FieldCell_RawBits(fieldGrid->cells[centerCellIndex].flagsAndMaterial) & FieldCell_RawBits(cellFlagMask)) != 0) &&
            (0 < fieldGrid->cells[centerCellIndex].waterSurfaceDelta)) {
           fieldGrid->cells[centerCellIndex].overlayColor = cellValue;
         }
