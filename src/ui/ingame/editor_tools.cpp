@@ -206,7 +206,7 @@ static void InGameEditorPointer_GetGridPoint(Q12 pointerX,Q12 pointerY,FieldGrid
 
 /* Flags of the field cell at the (rounded) grid point; false when the point lies outside the field. */
 static Bool8 InGameEditorPointer_GetCellFlags(FieldGridAsset *fieldGrid,uint32_t gridXQ12,uint32_t gridYQ12,
-          uint32_t *cellFlags)
+          FieldCellPackedFlagsAndMaterial *cellFlags)
 
 {
   int cellX;
@@ -220,7 +220,7 @@ static Bool8 InGameEditorPointer_GetCellFlags(FieldGridAsset *fieldGrid,uint32_t
   if ((cellY < 0) || ((int)fieldGrid->gridWidth <= cellX) || ((int)fieldGrid->gridHeight <= cellY)) {
     return false;
   }
-  *cellFlags = (uint32_t)fieldGrid->cells[(int32_t)(cellY * fieldGrid->gridWidth + cellX)].flagsAndMaterial;
+  *cellFlags = fieldGrid->cells[(int32_t)(cellY * fieldGrid->gridWidth + cellX)].flagsAndMaterial;
   return true;
 }
 
@@ -294,10 +294,10 @@ static void InGameEditorPointer_BeginSmoothingTool
           WorldRuntimeExtendedMapControlView *mapControl)
 
 {
-  uint32_t exclusionFlag;
+  FieldCellPackedFlagsAndMaterial exclusionFlag;
   uint32_t gridXQ12;
   uint32_t gridYQ12;
-  uint32_t cellFlags;
+  FieldCellPackedFlagsAndMaterial cellFlags;
 
   if (g_UiCommandModeE == 0) {
     if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
@@ -318,10 +318,10 @@ static void InGameEditorPointer_BeginSmoothingTool
   }
   InGameEditorPointer_GetGridPoint(pointerX,pointerY,mapControl->fieldGrid,&gridXQ12,&gridYQ12);
   if (InGameEditorPointer_GetCellFlags(mapControl->fieldGrid,gridXQ12,gridYQ12,&cellFlags)) {
-    g_UiCommandTerrainMaskToggleValue = cellFlags & exclusionFlag ^ exclusionFlag;
+    g_UiCommandTerrainMaskToggleValue = ToBits((cellFlags & exclusionFlag) ^ exclusionFlag);
   }
   else {
-    g_UiCommandTerrainMaskToggleValue = exclusionFlag;
+    g_UiCommandTerrainMaskToggleValue = ToBits(exclusionFlag);
   }
 }
 
@@ -391,14 +391,14 @@ static void InGameEditorPointer_BeginRegionToggle
 {
   uint32_t gridXQ12;
   uint32_t gridYQ12;
-  uint32_t cellFlags;
+  FieldCellPackedFlagsAndMaterial cellFlags;
 
   if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
     return;
   }
   InGameEditorPointer_GetGridPoint(pointerX,pointerY,mapControl->fieldGrid,&gridXQ12,&gridYQ12);
   if (InGameEditorPointer_GetCellFlags(mapControl->fieldGrid,gridXQ12,gridYQ12,&cellFlags) &&
-      ((cellFlags & FIELD_CELL_XENITE_SUPPORT << ((uint8_t)g_UiCommandModeF & SHIFT_COUNT_MASK)) != 0)) {
+      Any(cellFlags & FieldCell_ResourceSupportBit((uint8_t)g_UiCommandModeF & SHIFT_COUNT_MASK))) {
     g_UiCommandCallerMaskHighBit = INGAME_REGION_MASK_REMOVE;
     return;
   }

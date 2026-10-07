@@ -322,7 +322,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
     return;
   }
   pendingPlacementAsset = g_InGamePendingPlacementArmyAsset;
-  if (((worldRuntime->interaction).nodeFlags & 8) != 0) {
+  if (Any((worldRuntime->interaction).nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0) {

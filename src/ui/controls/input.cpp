@@ -187,11 +187,11 @@ static Bool8 UiKeyboard_PassToFollowingFocusTargets
       }
       wrappedOnce = true;
     }
-    if ((control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) continue;
+    if (!Any(control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET))) continue;
     if (control == g_UiKeyboardFocusNode) {
       return true;
     }
-    if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
+    if (Any(control->nodeFlags & UI_NODE_SUPPRESSED)) continue;
     passToNext = control->vtable->keyboardEvent(keyboardStateMask,keyCode,control);
   }
   UiKeyboardFocus_Set(control);
@@ -266,9 +266,9 @@ void UiKeyboardFocus_SelectInitial(UiNodeBase *root)
      the first unsuppressed preferred focus target wins, else the last unsuppressed fallback. */
   fallbackFocusNode = UI_NODE_NONE;
   for (node = root; node != UI_NODE_NONE; node = UiKeyboardFocus_NextInPreOrderOrNone(node)) {
-    if ((node->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
-    if ((node->nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET) != 0) break;
-    if ((node->nodeFlags & UI_NODE_FALLBACK_FOCUS_TARGET) != 0) {
+    if (Any(node->nodeFlags & UI_NODE_SUPPRESSED)) continue;
+    if (Any(node->nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET)) break;
+    if (Any(node->nodeFlags & UI_NODE_FALLBACK_FOCUS_TARGET)) {
       fallbackFocusNode = node;
     }
   }
@@ -290,7 +290,7 @@ void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
 
 {
   if ((g_UiKeyboardFocusNode == UI_NODE_NONE) &&
-     ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0)) {
+     (Any(node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)))) {
     UiKeyboardFocus_Set(node);
   }
 }
@@ -383,7 +383,7 @@ static void UiPointer_CaptureAndPress
   }
   nodeVtable = node->vtable;
   g_UiPointerCaptureTarget = node;
-  if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
+  if (Any(node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET))) {
     UiKeyboardFocus_Set(node);
   }
   if (captureButton == UI_POINTER_CAPTURE_RIGHT) {
@@ -522,8 +522,8 @@ void UiKeyboardFocus_MoveNext()
      that is the focus node itself or is not suppressed. */
   do {
     node = UiKeyboardFocus_NextInPreOrderWrapping(node);
-  } while (((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) ||
-           ((node != g_UiKeyboardFocusNode) && ((node->nodeFlags & UI_NODE_SUPPRESSED) != 0)));
+  } while (!Any(node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) ||
+           ((node != g_UiKeyboardFocusNode) && (Any(node->nodeFlags & UI_NODE_SUPPRESSED))));
   if (node == g_UiKeyboardFocusNode) {
     return; /* back at the focus node: no other focus target */
   }

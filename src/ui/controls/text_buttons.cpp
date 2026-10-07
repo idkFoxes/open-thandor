@@ -46,7 +46,7 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
   uint16_t *stream;
   uint16_t *resolvedText;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     resolvedText = TextResource_Resolve(control->textResourceId);
     stream = resolvedText;
     if (((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER) != 0) {
@@ -89,7 +89,7 @@ void UiNumericPairTextButton_DrawFormattedValues
 {
   uint16_t *resolvedText;
 
-  if (((control->base).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->base).selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     resolvedText = TextResource_Resolve((control->base).textResourceId);
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->firstValue,
@@ -114,7 +114,7 @@ void UiPayloadPairTextButton_DrawFormattedPayloads
 {
   uint16_t *resolvedText;
 
-  if (((control->base).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->base).selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     resolvedText = TextResource_Resolve((control->base).textResourceId);
     RichTextCommandStream_PatchPayloadBySelector(0,control->firstPayload,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,control->secondPayload,resolvedText);
@@ -183,7 +183,7 @@ void UiFramedTextButtonControl_DrawClipped
   if (framebufferUnavailable) {
     drawFrame = false;
   }
-  else if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  else if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     drawFrame = true;
     if (((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) == 0) {
       framePiece = UI_WINDOW_SUBRESOURCE_BUTTON_FRAME;
@@ -211,7 +211,7 @@ void UiFramedTextButtonControl_DrawClipped
     cornerWidth = cornerTileSize.logicalWidthPixels;
     rightCornerX = (control->selectable).base.layoutWidth - cornerWidth;
     bottomCornerY = (control->selectable).base.layoutHeight - cornerHeight;
-    if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) ||
+    if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) ||
        (((control->selectable).stateFlags & UI_BUTTON_NO_FRAME_WHILE_SUPPRESSED) == 0)) {
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipBottom,clipRight,clipTop,clipLeft,(control->selectable).base.top,
@@ -251,7 +251,7 @@ void UiFramedTextButtonControl_DrawClipped
     textX = (int)((control->selectable).base.layoutWidth - textWidth) >> 1;
     textY = (int)((control->selectable).base.layoutHeight - textExtent.heightPixels) >> 1;
     textStyle = g_UiTextStyleDisabled;
-    if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+    if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
       textStyle = g_UiTextStyleNormal;
       if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
         textStyle = g_UiTextStyleSelected;
@@ -271,7 +271,7 @@ void UiFramedTextButtonControl_DrawClipped
       textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
     }
     textStyle = textStyle | control->packedTextStyle;
-    if ((((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) ||
+    if (!Any((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) ||
        (((control->selectable).stateFlags & UI_BUTTON_NO_FOCUS_MARK) != 0)) {
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,textStyle,commandStream,
@@ -342,7 +342,7 @@ void UiFramedTextButtonControl_DrawClipped
   if (!framebufferUnavailable) {
     g_GraphicsFramebufferEndAccess();
   }
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     UiContainer_DrawIntersectingChildren
               (clipBottom,clipRight,clipTop,clipLeft,UiNode_As<UiNodeBase>(control));
   }
@@ -362,7 +362,7 @@ void UiFramedTextButtonControl_NonRightPress
   UiSelectableStateFlags *stateFlagsField;
   UiSelectableStateFlags *toggleStateFlagsField;
   
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -408,7 +408,7 @@ void UiFramedTextButtonControl_NonRightRelease
 {
   UiSelectableStateFlags *stateFlagsField;
   
-  if (((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if ((!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) &&
       (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
@@ -456,7 +456,7 @@ void UiFramedTextButtonControl_NonRightDrag
           UiFramedTextButtonControl *control)
 
 {
-  if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) {
     if (!UiFramedTextButtonControl_ContainsPoint(pointerY,pointerX,control)) {
       if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
@@ -479,7 +479,7 @@ UiNodeBase * UiFramedTextButtonControl_HitTestRect
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFramedTextButtonControl *control)
 
 {
-  if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) &&
      (UiFramedTextButtonControl_ContainsPoint(pointerY,pointerX,control))) {
     return UiNode_As<UiNodeBase>(control);
   }
@@ -512,7 +512,7 @@ void UiTextButtonControl_NonRightPress
   UiSelectableStateFlags *toggleStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
   
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) == 0) {
       pixelHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
@@ -571,7 +571,7 @@ Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
   UiSelectableStateFlags *stateFlagsField;
   UiSelectableStateFlags *selectionStateFlagsField;
   
-  if ((((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) && (keyCode == KEYBOARD_KEY_CODE_SPACE)) &&
+  if (((!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) && (keyCode == KEYBOARD_KEY_CODE_SPACE)) &&
       (control == UiNode_As<UiTextButtonControl>(g_UiKeyboardFocusNode))) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
@@ -644,7 +644,7 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
       buttonFrame = UI_WINDOW_SUBRESOURCE_CHECKBOX + 4;
     }
   }
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (((control->selectable).stateFlags & UI_BUTTON_HIDDEN_WHILE_SUPPRESSED) != 0) {
       g_GraphicsFramebufferEndAccess();
       return;
@@ -661,7 +661,7 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
   textExtent = RichTextCommandStream_MeasureLine(control->packedTextStyle,commandStream);
   textY = (int)(buttonSize.logicalHeightPixels - textExtent.heightPixels) >> 1;
   textStyle = g_UiTextStyleDisabled;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     textStyle = g_UiTextStyleNormal;
     if (((control->selectable).stateFlags & UI_BUTTON_ALTERNATE_STATE) != 0) {
       textStyle = g_UiTextStyleAlternate;
@@ -681,7 +681,7 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
     textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
   }
   textStyle = textStyle | control->packedTextStyle;
-  if ((((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) ||
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) ||
      (((control->selectable).stateFlags & UI_BUTTON_NO_FOCUS_MARK) != 0)) {
     RichTextCommandStream_DrawSingleLine
               (clipBottom,clipRight,clipTop,clipLeft,textStyle,commandStream,

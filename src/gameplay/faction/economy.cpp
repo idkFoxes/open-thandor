@@ -128,8 +128,8 @@ static void InGameFactionEconomy_PayResourceRegions
   }
   cell = firstCell;
   for (cellIndex = 0; cellIndex < cellCount; cellIndex++) {
-    if (((cell->flagsAndMaterial & (FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_CONNECTED_REGION_VISITED)) == 0) &&
-       ((cell->flagsAndMaterial & requiredCellFlags) != 0)) {
+    if ((!Any(cell->flagsAndMaterial & (FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_CONNECTED_REGION_VISITED))) &&
+       ((FieldCell_RawBits(cell->flagsAndMaterial) & requiredCellFlags) != 0)) {
       g_TerrainRegionCollectionStoredCount = 0;
       g_TerrainRegionCollectionVisitedCount = 0;
       TerrainRegionCollection_CollectConnectedCellsRecursive(requiredCellFlags,fieldGridWidth << 7,cell);
@@ -390,8 +390,8 @@ void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState()
   InGameFactionEconomy_ResetAndDecayFactionState();
   /* 2. mining: first pass Xenite cells, second pass Tritium cells */
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  InGameFactionEconomy_PayResourceRegions(fieldGrid,FIELD_CELL_XENITE_SUPPORT,false);
-  InGameFactionEconomy_PayResourceRegions(fieldGrid,FIELD_CELL_TRITIUM_SUPPORT,true);
+  InGameFactionEconomy_PayResourceRegions(fieldGrid,ToBits(FIELD_CELL_XENITE_SUPPORT),false);
+  InGameFactionEconomy_PayResourceRegions(fieldGrid,ToBits(FIELD_CELL_TRITIUM_SUPPORT),true);
   InGameFactionEconomy_CapStocksAtStorageLimits();
   /* 3. energy */
   consumers = reinterpret_cast<FactionEnergyConsumerEntry *>(g_TerrainRegionCollectionEntries); /* scratch reused */

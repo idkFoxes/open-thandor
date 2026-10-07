@@ -297,7 +297,7 @@ void UiCatalogEntryControl_DrawClipped
   SoftwareFramebufferAccess *framebuffer;
   UiPackedTextStyle overlayTextStyle;
 
-  if (((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   if ((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) &&
@@ -399,7 +399,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
   int recordIndex;
   int group48Index;
   
-  if (((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     recordIndex = 42 - 1; /* the last group-42 record */
     while (-1 < recordIndex) {
       if (Thandor_ByteDistance(control,g_InGameRuntimeRoot) ==
@@ -443,7 +443,7 @@ void UiCatalogEntryControl_NonRightRelease
   uint32_t activationInputState;
   
   activationInputState = g_KeyboardStateMask;
-  if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if (!Any((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) &&
      (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     stateFlagsField = &(control->command).sprite.selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;

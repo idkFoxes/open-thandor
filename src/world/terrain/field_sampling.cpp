@@ -164,8 +164,8 @@ Bool8 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAs
   cell = fieldGrid->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
-      (cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+      Any(cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     *outHeightQ12 = 0;
     return false;
   }
@@ -221,8 +221,8 @@ int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fi
   cell = field->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
-      (cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+      Any(cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return 0;
   }
   triangleDiagonalWeightQ12 = (columnFractionQ12 + rowFractionQ12) - FIELD_GRID_CELL_Q12;
@@ -278,8 +278,8 @@ Bool8 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldG
   cell = fieldGrid->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
-  if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
-      ((cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0)) {
+  if ((Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) ||
+      (Any(cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK))) {
     *outHeightQ12 = 0;
     return false;
   }
@@ -344,8 +344,8 @@ Bool8 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGri
   cell = fieldGrid->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
-      (cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+      Any(cell[gridWidth + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     *outHeightQ12 = 0;
     return false;
   }
@@ -410,8 +410,8 @@ static Bool8 FieldGrid_LocateInterpolationTriangle
   cell = fieldGrid->cells + (int32_t)(row * rowLength) + column;
   lookup->columnFractionQ12 = columnQ12 & Q12_FRACTION_MASK;
   lookup->rowFractionQ12 = rowQ12 & Q12_FRACTION_MASK;
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
-      (cell[rowLength + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+      Any(cell[rowLength + 1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return false;
   }
   lookup->cell = cell;

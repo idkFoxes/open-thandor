@@ -66,7 +66,7 @@ void UiRangeSliderControl_DrawTrackAndThumb
     return; /* framebuffer access failed */
   }
   subresourceBase = UI_RANGE_SLIDER_SUBRESOURCE_BASE;
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any(control->base.nodeFlags & UI_NODE_SUPPRESSED)) {
     subresourceBase = UI_RANGE_SLIDER_SUBRESOURCE_BASE_SUPPRESSED;
   }
   if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) != 0) {
@@ -136,7 +136,7 @@ void UiRangeSliderControl_BeginThumbDrag
   int localY;
   GraphicsTextureLogicalSize thumbSize;
 
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any(control->base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   if (pointerX < control->base.left || pointerY < control->base.top) {
@@ -176,7 +176,7 @@ void UiRangeSliderControl_EndThumbDrag
 
 {
   control->sliderFlags = control->sliderFlags & ~UI_RANGE_SLIDER_DRAGGING;
-  if ((((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+  if ((!Any(control->base.nodeFlags & UI_NODE_SUPPRESSED) &&
        ((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0)) && (control->clickSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,nullptr);
   }
@@ -241,7 +241,7 @@ Bool8 UiRangeSliderControl_HandleKeyboard
   UiKeyboardEventCode decreaseKey;
   UiKeyboardEventCode increaseKey;
 
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any(control->base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
   if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {
@@ -368,7 +368,7 @@ void UiRangeSliderControl_HandlePointerWheel
 {
   int32_t adjustedSliderValue;
 
-  if ((control->sliderFlags & UI_RANGE_SLIDER_DRAGGING) == 0 && (control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0 &&
+  if ((control->sliderFlags & UI_RANGE_SLIDER_DRAGGING) == 0 && !Any(control->base.nodeFlags & UI_NODE_SUPPRESSED) &&
       wheelDelta != 0) {
     adjustedSliderValue =
          control->value + wheelDelta * g_UiRangeSliderDragScale * control->stepValue;

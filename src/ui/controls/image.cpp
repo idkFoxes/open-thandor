@@ -118,7 +118,7 @@ void UiImageControl_TickHover(UiImageControl *control)
   UiSelectableStateFlags *stateFlagsField;
   UiSelectableStateFlags *hoverStateFlagsField;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED) == 0) {
       if ((g_CursorButtonState & RIGHT) != 0) {
         hitControl = (UiImageControl *)
@@ -157,7 +157,7 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate c
   Bool8 accessFailed;
   GraphicsSubresourceIndex subresource;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
       UiContainer_DrawIntersectingChildren
                 (clipBottom,clipRight,clipTop,clipLeft,&control->selectable.base);
@@ -194,7 +194,7 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
   Bool8 opaqueHit;
   UiSelectableStateFlags *stateFlagsField;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return;
   }
   if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 &&
@@ -251,7 +251,7 @@ void UiImageControl_NonRightRelease
   Bool8 preserveHover;
 
   previousActiveChild = control->activeChild;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESSED_ON_IMAGE) != 0;
     if (!preserveHover) {
       if (previousActiveChild != nullptr) {
@@ -294,7 +294,7 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
   UiNodeBase *hitNode;
   Bool8 opaqueHit;
 
-  if ((control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+  if (Any(control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED)) {
     return UI_NODE_NONE;
   }
   if ((control->selectable.stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
@@ -357,7 +357,7 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
   GraphicsCursorFrameIndex cursorFrame;
   Bool8 overOpaquePixel;
 
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED)) {
     if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
       overOpaquePixel = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,

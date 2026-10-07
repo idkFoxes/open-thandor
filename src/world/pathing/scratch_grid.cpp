@@ -113,7 +113,7 @@ static GridScratchStateMask GridScratch_ClassifyFieldCell(FieldGridCell *fieldCe
   if (triangle0Angle <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT30_MAX_TRIANGLE0_NORMAL_ANGLE]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT30;
   }
-  if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     cellClassMask = cellClassMask | GRID_SCRATCH_BLOCKED;
   }
   return cellClassMask;
@@ -217,19 +217,19 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
     do {
       cellClassMask = GridScratch_ClassifyFieldCell(fieldCell);
       cellFlags = fieldCell->flagsAndMaterial;
-      if ((cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY) == 0) {
+      if (!Any(cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY)) {
         scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(1 - scratchWidth)].stateMask = scratchCursor[(int32_t)(1 - scratchWidth)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(2 - scratchWidth)].stateMask = scratchCursor[(int32_t)(2 - scratchWidth)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(3 - scratchWidth)].stateMask = scratchCursor[(int32_t)(3 - scratchWidth)].stateMask | cellClassMask;
-        if ((cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
+        if (!Any(cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY)) {
           scratchCursor[(int32_t)(scratchWidth * -2 + 4)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 4)].stateMask | cellClassMask;
           scratchCursor[(int32_t)(4 - scratchWidth)].stateMask = scratchCursor[(int32_t)(4 - scratchWidth)].stateMask | cellClassMask;
           scratchCursor[(int32_t)(5 - scratchWidth)].stateMask = scratchCursor[(int32_t)(5 - scratchWidth)].stateMask | cellClassMask;
         }
       }
-      if ((cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
+      if (!Any(cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY)) {
         scratchCursor[4].stateMask = scratchCursor[4].stateMask | cellClassMask;
         scratchCursor[5].stateMask = scratchCursor[5].stateMask | cellClassMask;
         scratchCursor[scratchWidth + 4].stateMask = scratchCursor[scratchWidth + 4].stateMask | cellClassMask;
@@ -241,7 +241,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
       scratchCursor[2].stateMask = scratchCursor[2].stateMask | cellClassMask;
       scratchCursor[3].stateMask = scratchCursor[3].stateMask | cellClassMask;
       scratchCursor = scratchCursor + scratchWidth;
-      if ((cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY) == 0) {
+      if (!Any(cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY)) {
         scratchCursor[-1].stateMask = scratchCursor[-1].stateMask | cellClassMask;
         scratchCursor[scratchWidth - 1].stateMask = scratchCursor[scratchWidth - 1].stateMask | cellClassMask;
         scratchCursor[scratchWidth - 2].stateMask = scratchCursor[scratchWidth - 2].stateMask | cellClassMask;
@@ -261,13 +261,13 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
       scratchCursor[1].stateMask = scratchCursor[1].stateMask | cellClassMask;
       scratchCursor[2].stateMask = scratchCursor[2].stateMask | cellClassMask;
       scratchCursor[3].stateMask = scratchCursor[3].stateMask | cellClassMask;
-      if ((cellFlags & FIELD_CELL_LAST_ROW_BOUNDARY) == 0) {
+      if (!Any(cellFlags & FIELD_CELL_LAST_ROW_BOUNDARY)) {
         scratchCursor[scratchWidth].stateMask = scratchCursor[scratchWidth].stateMask | cellClassMask;
         scratchCursor[scratchWidth + 1].stateMask = scratchCursor[scratchWidth + 1].stateMask | cellClassMask;
         scratchCursor[scratchWidth + 2].stateMask = scratchCursor[scratchWidth + 2].stateMask | cellClassMask;
         scratchCursor[scratchWidth * 2].stateMask = scratchCursor[scratchWidth * 2].stateMask | cellClassMask;
         scratchCursor[scratchWidth * 2 + 1].stateMask = scratchCursor[scratchWidth * 2 + 1].stateMask | cellClassMask;
-        if ((cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY) == 0) {
+        if (!Any(cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY)) {
           scratchCursor[scratchWidth - 1].stateMask = scratchCursor[scratchWidth - 1].stateMask | cellClassMask;
           scratchCursor[scratchWidth - 2].stateMask = scratchCursor[scratchWidth - 2].stateMask | cellClassMask;
           scratchCursor[scratchWidth * 2 - 1].stateMask = scratchCursor[scratchWidth * 2 - 1].stateMask | cellClassMask;
@@ -444,7 +444,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
     do {
       /* the original advances first and then tests the flags of the current cell */
       nextScratchCellCursor = scratchCellCursor + 8;
-      if ((currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      if (!Any(currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         factionPresenceMask =
              ((uint32_t)((currentFieldCell->occupancyMask &
                          FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,1)) != 0) +

@@ -88,7 +88,7 @@ inline TerrainHexScan_CellPolicy<true,VisitFn> TerrainHexScan_TestPolicy(VisitFn
 template <class Policy>
 inline bool TerrainHexScan_EndsAt(FieldGridCell *cell,TerrainDirectionalScanStep scanStep,Policy &policy)
 {
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+  if (Any(cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
     return true;
   }
   if constexpr (requires { policy.visit(cell,scanStep); }) {

@@ -73,10 +73,10 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   root->previousRoot = oldFrontRoot;
   if (oldFrontRoot != UI_ROOT_STACK_END) {
     (oldFrontRoot->base).nextSibling = &root->base;
-    (*((oldFrontRoot->base).vtable)->applyFlags)(0,~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
+    (*((oldFrontRoot->base).vtable)->applyFlags)(UiNodeFlags{},~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
   }
   (*((root->base).vtable)->layout)(&root->base);
-  (*((root->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,0xffffffff,&root->base);
+  (*((root->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,~UiNodeFlags{},&root->base);
   UiKeyboardFocus_SelectInitial(&root->base);
   g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
@@ -113,7 +113,7 @@ Bool8 UiRootStack_Pop(UiRootNode *root)
   g_UiRootNode = belowRoot;
   if (belowRoot != UI_ROOT_STACK_END) {
     (belowRoot->base).nextSibling = UI_NODE_NONE;
-    (*((belowRoot->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,0xffffffff,&belowRoot->base);
+    (*((belowRoot->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,~UiNodeFlags{},&belowRoot->base);
     UiKeyboardFocus_SelectInitial(&belowRoot->base);
   }
   g_UiPointerCaptureTarget = UI_NODE_NONE;
@@ -150,8 +150,8 @@ Bool8 UiRootStack_BringToFront(UiRootNode *root)
   g_UiRootNode->base.nextSibling = &root->base;
   g_UiRootNode = root;
   UiKeyboardFocus_SelectInitial(&root->base);
-  (*oldFrontRoot->base.vtable->applyFlags)(0,~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
-  (*root->base.vtable->applyFlags)(UI_NODE_IN_FRONT_ROOT,0xffffffff,&root->base);
+  (*oldFrontRoot->base.vtable->applyFlags)(UiNodeFlags{},~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
+  (*root->base.vtable->applyFlags)(UI_NODE_IN_FRONT_ROOT,~UiNodeFlags{},&root->base);
   UiNode_InvalidateRoot(&oldFrontRoot->base);
   UiNode_InvalidateRoot(&root->base);
   return false;
