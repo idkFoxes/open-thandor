@@ -32,19 +32,19 @@ ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
-  Bool8 broaderAbsent;
+  bool broaderAbsent;
   ArmyAssetId candidateId;
 
   baseId = recordId;
   candidateId = baseId + 1;
   while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(candidateId)) {
-    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
+    broaderAbsent = ArmyAssetRegistry_HasNoUnitWithId(candidateId);
     recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
         baseId--;
-        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(baseId);
+        broaderAbsent = ArmyAssetRegistry_HasNoUnitWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -64,19 +64,19 @@ ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
-  Bool8 broaderAbsent;
+  bool broaderAbsent;
   ArmyAssetId candidateId;
 
   baseId = recordId;
   candidateId = baseId - 1;
   while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(candidateId)) {
-    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
+    broaderAbsent = ArmyAssetRegistry_HasNoUnitWithId(candidateId);
     recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
         baseId++;
-        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(baseId);
+        broaderAbsent = ArmyAssetRegistry_HasNoUnitWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -136,19 +136,19 @@ ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
-  Bool8 broaderAbsent;
+  bool broaderAbsent;
   ArmyAssetId candidateId;
 
   baseId = recordId;
   candidateId = baseId + 1;
   while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(candidateId)) {
-    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
+    broaderAbsent = ArmyAssetRegistry_HasNoObjectWithId(candidateId);
     recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
         baseId--;
-        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(baseId);
+        broaderAbsent = ArmyAssetRegistry_HasNoObjectWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -168,19 +168,19 @@ ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
-  Bool8 broaderAbsent;
+  bool broaderAbsent;
   ArmyAssetId candidateId;
 
   baseId = recordId;
   candidateId = baseId - 1;
   while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(candidateId)) {
-    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
+    broaderAbsent = ArmyAssetRegistry_HasNoObjectWithId(candidateId);
     recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
         baseId++;
-        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(baseId);
+        broaderAbsent = ArmyAssetRegistry_HasNoObjectWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }

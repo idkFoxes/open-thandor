@@ -110,7 +110,7 @@ void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl)
 static int InGameHud_FormatFactionRoster(uint32_t factionIndex)
 
 {
-  static Bool8 s_rosterTruncationLogged = false;
+  static bool s_rosterTruncationLogged = false;
   SelectionPlayerRuntimeBlock *selectionBlock;
   uint32_t stepTicks;
   uint32_t playerIndex;
@@ -119,7 +119,7 @@ static int InGameHud_FormatFactionRoster(uint32_t factionIndex)
   uint16_t *rosterEnd;
   uint32_t copiedByteCount;
   uint32_t nameCapacityBytes;
-  Bool8 truncated;
+  bool truncated;
   int rosterCount;
 
   rosterCount = 0;
@@ -506,7 +506,7 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
     countedFactionIndex++;
   }
   if (remainingFactions != 0) {
-    static Bool8 s_factionCountLogged = false;
+    static bool s_factionCountLogged = false;
     if (!s_factionCountLogged) {
       Thandor_Log("diplomacy: activeFactionCount %u bounded to 7",g_GameFactionRuntimeImage.tail.activeFactionCount);
       s_factionCountLogged = true;

@@ -65,7 +65,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
      this function). image is the in-game UI image
      of the runtime root. */
   InGameUiImage *image = InGameUi_Image(inGameRoot);
-  Bool8 localSession = !Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK);
+  bool localSession = !Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK);
 
   /* A record without modifier class matches only without Ctrl and Alt; otherwise exactly the named
      combination (Ctrl, Alt, or both) must be held. Shift is ignored. */

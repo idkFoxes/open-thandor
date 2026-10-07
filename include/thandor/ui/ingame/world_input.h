@@ -65,7 +65,7 @@ extern uint32_t g_InGameCommandPreviewWorldXQ12;
 extern uint32_t g_InGameCommandPreviewSurfaceHeightQ12OrSentinel;
 extern uint32_t g_InGamePointerInteractionStateFlags;
 
-Bool8 WorldRuntimeNode_IsPositionInsideBounds
+bool WorldRuntimeNode_IsPositionInsideBounds
           (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl);
 
 /* Scroll-arrow cursor frames returned by WorldRuntime_ApplyEdgeScrollAndGetCursorFrame (clockwise from up). */

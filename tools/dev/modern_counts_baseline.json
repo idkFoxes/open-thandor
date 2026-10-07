@@ -1,5 +1,5 @@
 {
- "revision": "942dd0ef",
+ "revision": "ff502ffd",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -200,8 +200,7 @@
   "bool8": {
    "core": 2,
    "gameplay": 1,
-   "movie": 1,
-   "ui": 81
+   "movie": 1
   },
   "addr_5xxxxx": {},
   "fill_90": {

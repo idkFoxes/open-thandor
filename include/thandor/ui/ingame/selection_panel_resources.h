@@ -13,7 +13,7 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError);
+bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError);
 
 void SelectionInfoPanel_ShutdownResources();
 

@@ -36,7 +36,7 @@ inline constexpr int32_t TERRAIN_MINIMAP_PANEL_COLOR_TRITIUM = 0x42;
 /* faction dots, + colorIndex (0 = unselected); RebuildPlane0 adds the panel paletteIndex * 4, not * bank size */
 inline constexpr int32_t TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST = 0x20;
 
-Bool8 TerrainCompositeTexture_Create(uint32_t *outError);
+bool TerrainCompositeTexture_Create(uint32_t *outError);
 
 void TerrainCompositeTexture_Destroy();
 

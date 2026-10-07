@@ -104,7 +104,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   int ownerIndex;
   uint32_t modifierModeMask;
   GameEntityRuntime *entry;
-  Bool8 testResult;
+  bool testResult;
 
   g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = WORLD_POINTER_NO_HIT;
   (inGameRuntime->selection).selectedEntity = nullptr;
@@ -569,7 +569,7 @@ static void InGameWorldInput_CommitCandidateConditionClick
           (WorldRuntimeContext *inGameRuntime,int ownerIndex,GameEntityRuntime *entry)
 
 {
-  Bool8 capabilityClear;
+  bool capabilityClear;
   Q12 conditionRatioQ12;
 
   capabilityClear = GameFactionRuntime_TestCapabilityBitClear((entry->common).ownership.ownerIndex,ownerIndex);
@@ -589,7 +589,7 @@ static void InGameWorldInput_CommitCandidateConditionClick
 static void InGameWorldInput_ToggleCandidateArmy(int ownerIndex,GameEntityRuntime *entry)
 
 {
-  Bool8 entryAbsent;
+  bool entryAbsent;
 
   if (ownerIndex == (entry->common).ownership.ownerIndex) {
     entryAbsent = SelectionInfo_IsEntryAbsent(entry);
@@ -616,7 +616,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
   int ownerIndex;
   GameEntityRuntime *entry;
   uint32_t surfaceHeightQ12;
-  Bool8 capabilityClear;
+  bool capabilityClear;
 
   /* same candidate filter as InGameWorldInput_ResolveContextActionAndCursor; entry stays NULL without a
      candidate army */
@@ -745,7 +745,7 @@ void InGameWorldInput_CommitPointerAction
    lies inside the rectangle spanned by the pointer press position and the current pointer position of
    boundsControl (inclusive, in either corner order).
 */
-Bool8 WorldRuntimeNode_IsPositionInsideBounds
+bool WorldRuntimeNode_IsPositionInsideBounds
           (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl)
 
 {
