@@ -42,10 +42,10 @@ struct RecentTextHistorySlot {
 };
 
 struct UiRootCallbacks {
-    Ptr32<Bool8 (struct UiRootNode *)> vetoClose; // Optional close/pop callback. Returning true vetoes removal of the root; false permits the pop.
+    Ptr32<bool (struct UiRootNode *)> vetoClose; // Optional close/pop callback. Returning true vetoes removal of the root; false permits the pop.
     Ptr32<void (struct UiRootNode *)> frameUpdate; // Optional per-frame callback invoked by UiFrame_Update while this root is active.
-    Ptr32<Bool8 (struct UiRootNode *)> method08; // Caller-cleanup root method invoked with UiRootNode *; mixed convention is intentional.
-    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback; // Optional root-level keyboard fallback used after focused controls decline an event. The bool result conveys handling/traversal state.
+    Ptr32<bool (struct UiRootNode *)> method08; // Caller-cleanup root method invoked with UiRootNode *; mixed convention is intentional.
+    Ptr32<bool (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback; // Optional root-level keyboard fallback used after focused controls decline an event. The bool result conveys handling/traversal state.
     Ptr32<int (struct UiRootNode *)> pointerMissPolicy; // Signed return policy; nonnegative stops pointer root traversal, negative continues to previousRoot.
 };
 

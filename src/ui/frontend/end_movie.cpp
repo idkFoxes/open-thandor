@@ -19,7 +19,7 @@ static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {};
 
 /* The end movie's keyboard fallback returns nothing; the root keyboard fallback slot returns Bool8, but its only
    caller (UiKeyboard_DispatchPendingEvents) ignores the result, so false is returned. */
-static Bool8 EndMovieSlot_KeyboardFallback(UiKeyboardStateMask keyboardStateMask,UiActionId keyCode,UiRootNode *uiRoot)
+static bool EndMovieSlot_KeyboardFallback(UiKeyboardStateMask keyboardStateMask,UiActionId keyCode,UiRootNode *uiRoot)
 
 {
   EndMovieUiRuntime_DispatchCommandByFlags(keyboardStateMask,keyCode,uiRoot);

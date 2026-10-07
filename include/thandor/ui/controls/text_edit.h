@@ -23,7 +23,7 @@ inline constexpr int32_t UI_POINTER_LIST_COMPARE_SCRATCH_BYTES = 0x400;
 inline constexpr int32_t UI_STATE_FRAME_COUNTER_UNIT = 0x1000000;
 inline constexpr int32_t UI_STATE_FLAGS_MASK = 0xffffff; /* the flag bits below the counter */
 
-Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
+bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control);
 

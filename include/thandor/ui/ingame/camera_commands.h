@@ -13,7 +13,7 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
+bool InGameCameraCommand_DispatchByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,WorldRuntimeContext *worldRuntime);
 
 extern uint32_t g_LevelCameraBookmark1PositionXQ12;

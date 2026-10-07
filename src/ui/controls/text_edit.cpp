@@ -377,7 +377,7 @@ static void UiRequiredTextEdit_PlayInteractionSound(UiRequiredTextEditControl *c
    After every handled key the non-empty validity is updated and, unless the control acts on Enter only, its
    action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
 */
-Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
+bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control)
 

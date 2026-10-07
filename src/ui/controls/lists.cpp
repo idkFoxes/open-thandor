@@ -40,7 +40,7 @@ static bool UiList_IsNavigationKey(UiKeyboardEventCode keyCode)
    g_UiListActivationPulseFrames frames (UiListControl_TickActivationPulse). Other keys go to the default
    focus handling; the keys handled here return false.
 */
-Bool8 UiListControl_HandleKeyboardNavigation
+bool UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control)
 
 {
@@ -517,7 +517,7 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
    The original has a second copy for the text lists (UiPointerList_GetSelectedIndex) that reports the flag
    in a register no caller reads.
 */
-UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,Bool8 *outConfirmed)
+UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,bool *outConfirmed)
 
 {
   if (outConfirmed != nullptr) {
@@ -749,7 +749,7 @@ void UiTextListControl_SelectRowFromPointer
    UiTextListControl_TickActivationPulse queues after g_UiListActivationPulseFrames frames. Other keys go to
    UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
 */
-Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
+bool UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextListControl *control)
 

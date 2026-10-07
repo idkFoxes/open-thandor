@@ -20,7 +20,7 @@ inline constexpr int32_t UI_LABEL_SWALLOW_CHARACTERS = 0x8000; /* typed characte
 /* Character-code bits UI_LABEL_SWALLOW_CHARACTERS tests (0x10 | 0x20) */
 inline constexpr int32_t UI_LABEL_SWALLOWED_CHARACTER_BITS = 0x30;
 
-Bool8 UiSingleLineTextControl_ForwardKeyboardEventToChild
+bool UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control);
 
 void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent

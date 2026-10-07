@@ -1,5 +1,5 @@
 {
- "revision": "f7522b9b",
+ "revision": "b7f3372b",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -200,13 +200,13 @@
   "bool8": {
    "assets": 92,
    "audio": 11,
-   "core": 22,
+   "core": 21,
    "gameplay": 354,
-   "graphics": 101,
+   "graphics": 100,
    "movie": 12,
    "network": 72,
    "platform": 57,
-   "ui": 298,
+   "ui": 241,
    "world": 127
   },
   "addr_5xxxxx": {},

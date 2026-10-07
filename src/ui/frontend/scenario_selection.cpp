@@ -39,7 +39,7 @@ void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *list
 
 {
   UiListRowIndex selectedRowIndex;
-  Bool8 selectionConfirmed;
+  bool selectionConfirmed;
 
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
   if (!selectionConfirmed) {
@@ -59,7 +59,7 @@ void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listCont
 
 {
   UiListRowIndex selectedRowIndex;
-  Bool8 selectionConfirmed;
+  bool selectionConfirmed;
 
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
   if (!selectionConfirmed) {
@@ -79,7 +79,7 @@ void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listC
 
 {
   UiListRowIndex selectedRowIndex;
-  Bool8 selectionConfirmed;
+  bool selectionConfirmed;
 
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
   if (!selectionConfirmed) {
