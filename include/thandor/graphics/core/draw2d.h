@@ -74,7 +74,7 @@ enum Draw2DBlend : uint8_t {
 };
 
 /* paletteBank of a SPRITE item whose subresource stores ARGB8888 texels (paletteIndex -1) */
-#define DRAW2D_PALETTE_BANK_DIRECT 0xffffffffu
+inline constexpr uint32_t DRAW2D_PALETTE_BANK_DIRECT = 0xffffffffu;
 
 /* One recorded draw. Rectangles are {x0, y0, x1, y1} with x1/y1 exclusive; dst and clip are in logical
    framebuffer pixels, src in texels of the subresource (SPRITE) or pixels of the image (IMAGE_REGION).

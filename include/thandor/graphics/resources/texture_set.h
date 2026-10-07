@@ -15,7 +15,7 @@
 
 /* Number of entries in g_GraphicsTextureSlots, the registry of live texture resources
    (GraphicsTexture_RegisterSlot, GraphicsTextureSet_Destroy). */
-#define GRAPHICS_TEXTURE_SLOT_CAPACITY 4096
+inline constexpr int GRAPHICS_TEXTURE_SLOT_CAPACITY = 4096;
 
 extern GraphicsTextureSetLoadPackageProc *g_GraphicsTextureSetLoadPackage;
 

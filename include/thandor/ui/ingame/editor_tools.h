@@ -16,31 +16,31 @@
 /* Editor tools of the in-game map callbacks: a Q12 grid coordinate (world point through
    FIELD_GRID_WORLD_*_Q20) is rounded to a whole cell by adding the bias and dropping the fraction
    (INGAME_SNAP_GRID_Q12, or + bias >> Q12_SHIFT for the cell index). */
-#define INGAME_GRID_SNAP_BIAS_Q12 0x3ffU
+inline constexpr uint32_t INGAME_GRID_SNAP_BIAS_Q12 = 0x3ffU;
 #define INGAME_SNAP_GRID_Q12(value) ((value) + INGAME_GRID_SNAP_BIAS_Q12 & ~(uint32_t)Q12_FRACTION_MASK)
 /* Cursor frames the editor tools show (InGameUiCommand_ResolveCursorCodeByMode); placement and moving use
    WORLD_CURSOR_MOVE / _NO_TARGET / _OWN_ARMY / _FOREIGN_ARMY */
-#define EDITOR_CURSOR_DELETE_TARGET 0x19   /* delete tool over a model */
-#define EDITOR_CURSOR_DELETE_NONE 0x1A     /* delete tool, nothing under the pointer */
-#define EDITOR_CURSOR_HEIGHT_RAISE 0x1C
-#define EDITOR_CURSOR_SMOOTH 0x1D
-#define EDITOR_CURSOR_HEIGHT_LOWER 0x1E
-#define EDITOR_CURSOR_RECEIVER_MASK 0x1F   /* smoothing tab, fluid receiver exclusion */
-#define EDITOR_CURSOR_REBUILD_INFLUENCE 0x20
-#define EDITOR_CURSOR_REGION 0x21
-#define EDITOR_CURSOR_PAINT 0x22           /* material paint, and the fluid source exclusion */
-#define EDITOR_CURSOR_MATERIAL_MODE2 0x23
-#define EDITOR_CURSOR_MATERIAL_MODE1 0x24
+inline constexpr int32_t EDITOR_CURSOR_DELETE_TARGET = 0x19; /* delete tool over a model */
+inline constexpr int32_t EDITOR_CURSOR_DELETE_NONE = 0x1A; /* delete tool, nothing under the pointer */
+inline constexpr int32_t EDITOR_CURSOR_HEIGHT_RAISE = 0x1C;
+inline constexpr int32_t EDITOR_CURSOR_SMOOTH = 0x1D;
+inline constexpr int32_t EDITOR_CURSOR_HEIGHT_LOWER = 0x1E;
+inline constexpr int32_t EDITOR_CURSOR_RECEIVER_MASK = 0x1F; /* smoothing tab, fluid receiver exclusion */
+inline constexpr int32_t EDITOR_CURSOR_REBUILD_INFLUENCE = 0x20;
+inline constexpr int32_t EDITOR_CURSOR_REGION = 0x21;
+inline constexpr int32_t EDITOR_CURSOR_PAINT = 0x22; /* material paint, and the fluid source exclusion */
+inline constexpr int32_t EDITOR_CURSOR_MATERIAL_MODE2 = 0x23;
+inline constexpr int32_t EDITOR_CURSOR_MATERIAL_MODE1 = 0x24;
 /* Region tool: bit 31 of the region argument makes the drag remove the region flag again */
-#define INGAME_REGION_MASK_REMOVE 0x80000000u
+inline constexpr uint32_t INGAME_REGION_MASK_REMOVE = 0x80000000u;
 /* Editor drag deltas: screen dx in the low word (masked unless Shift/Ctrl), dy times this in the high word */
-#define INGAME_DRAG_DELTA_X_MASK 0xffff
-#define INGAME_DRAG_DELTA_Y_SCALE 0x10000
+inline constexpr int32_t INGAME_DRAG_DELTA_X_MASK = 0xffff;
+inline constexpr int32_t INGAME_DRAG_DELTA_Y_SCALE = 0x10000;
 /* WorldRuntimeContext.runtimeFlags bit set while the map editor is active
    (InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState) */
-#define INGAME_WORLD_FLAG_EDITOR 0x400000u
+inline constexpr uint32_t INGAME_WORLD_FLAG_EDITOR = 0x400000u;
 
-#define INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE 0x25
+inline constexpr int32_t INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE = 0x25;
 
 uint32_t InGameUiCommand_ResolveCursorCodeByMode
                 (UiPointerRegionCode pointerRegionCode,Q12 pointerWorldXQ12,Q12 pointerWorldYQ12,

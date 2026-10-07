@@ -13,7 +13,7 @@
 
 /* Bit 31 as an unsigned int: (uint32_t)value < INTERPOLATION_SIGN_BIT tests a signed value for >= 0 (the
    original's unsigned compare) */
-#define INTERPOLATION_SIGN_BIT 0x80000000
+inline constexpr uint32_t INTERPOLATION_SIGN_BIT = 0x80000000;
 
 void InterpolationState_SetNegatedTargetAndRescaleProgress
           (GraphicsTransitionTickCount fadeOutTicks,GraphicsShadingRuntimeRecord *shadingRecord);

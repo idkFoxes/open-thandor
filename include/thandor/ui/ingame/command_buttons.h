@@ -14,7 +14,7 @@
 
 /* g_UiCommandRuntimeFlags bit hiding the world view status texts (UiCommandVisibility*Text_DrawWhenAllowed); no
    writer with a constant mask, so it can only come from command 0x310 */
-#define UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS 0x200
+inline constexpr int32_t UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS = 0x200;
 
 void UiCommandSpriteButtonControl_BeginPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,

@@ -15,19 +15,19 @@
 
 /* g_TerrainMaterialTextureSets: one texture set per terrain material, loaded from the secondary path with
    the suffix letter a..z (TerrainVisualResources_LoadPrimary). */
-#define TERRAIN_MATERIAL_TEXTURE_SET_COUNT 26
+inline constexpr int TERRAIN_MATERIAL_TEXTURE_SET_COUNT = 26;
 /* ".dat" extension code for WidePath_SetExtensionCode (see WIDE_PATH_EXTENSION_* in core/text/path.h) */
-#define WIDE_PATH_EXTENSION_DAT 0x746164
+inline constexpr int WIDE_PATH_EXTENSION_DAT = 0x746164;
 /* <primary>.dat / <secondary>.dat packet tables: a 0x20-byte header (first dword: phase seed bit width, read by
    FieldGrid_InitializeRuntimeCellsAndBoundaryFlags), then the 0x20-byte packets. g_TerrainSurfacePacketTablePayload / g_TerrainSoilPacketTablePayload
    point past the header; release subtracts it again. */
-#define TERRAIN_PACKET_TABLE_HEADER_BYTES 0x20
+inline constexpr int TERRAIN_PACKET_TABLE_HEADER_BYTES = 0x20;
 /* Random animation of the 256 terrain direction records (TerrainVisualResources_Load*): scale (sin/cos
    amplitude) MIN + (random & MASK), rotation rate +-(MIN + (random & MASK)) 16-bit angle units per step. */
-#define TERRAIN_DIRECTION_SCALE_MIN 0x80
-#define TERRAIN_DIRECTION_SCALE_RANDOM_MASK 0x1f
-#define TERRAIN_DIRECTION_RATE_MIN_ANGLE16 0x200
-#define TERRAIN_DIRECTION_RATE_RANDOM_MASK 0x7f
+inline constexpr int TERRAIN_DIRECTION_SCALE_MIN = 0x80;
+inline constexpr int TERRAIN_DIRECTION_SCALE_RANDOM_MASK = 0x1f;
+inline constexpr int TERRAIN_DIRECTION_RATE_MIN_ANGLE16 = 0x200;
+inline constexpr int TERRAIN_DIRECTION_RATE_RANDOM_MASK = 0x7f;
 
 Bool8 TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,

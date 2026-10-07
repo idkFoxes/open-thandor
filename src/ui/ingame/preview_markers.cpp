@@ -197,7 +197,7 @@ static Bool8 InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *wor
 static Bool8 InGameWorldOverlay_CommandTargetMarkersFull()
 
 {
-  return OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount;
+  return static_cast<Bool8>(OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount);
 }
 
 /* Places the waypoint (EWAYP0) and target (ETARG0) markers of the selected own armies. The markers use scale

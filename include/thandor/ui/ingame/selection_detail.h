@@ -15,10 +15,10 @@
    InGameSelectionDetailPanel_Rebuild): 0x18002C.. single selection + the asset's template variant, 0x18003C..
    the same while researching, 0x180045.. hover/placement stats; 0x18004E fills an unused weapon slot. Model
    names are TEXT_ID_MODEL_NAME_BASE (ui/ingame/technology.h) + name index. */
-#define TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE 0x18002C
-#define TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE 0x18003C
-#define TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE 0x180045
-#define TEXT_ID_SELECTION_DETAIL_NO_WEAPON 0x18004E
+inline constexpr int32_t TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE = 0x18002C;
+inline constexpr int32_t TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE = 0x18003C;
+inline constexpr int32_t TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE = 0x180045;
+inline constexpr int32_t TEXT_ID_SELECTION_DETAIL_NO_WEAPON = 0x18004E;
 
 void InGameSelectionDetailPanel_Rebuild();
 
