@@ -199,6 +199,6 @@ template <class P> static __forceinline ThandorAnyPtr Thandor_AnyPtr(P p)
 #endif
 
 /* Bytes of a 32-bit pointer field (sizeof(Ptr32<void>)). */
-#define THANDOR_PTR32_BYTES 4
+inline constexpr auto THANDOR_PTR32_BYTES = 4;
 
 #endif

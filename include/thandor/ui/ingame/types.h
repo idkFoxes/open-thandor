@@ -47,7 +47,6 @@ typedef struct InGamePlayerStatusTextSlot InGamePlayerStatusTextSlot, *PInGamePl
 typedef struct InGameUiActionHandlerPage12Prefix28 InGameUiActionHandlerPage12Prefix28, *PInGameUiActionHandlerPage12Prefix28;
 typedef struct InGameUiActionHandlerPage10Prefix40 InGameUiActionHandlerPage10Prefix40, *PInGameUiActionHandlerPage10Prefix40;
 typedef struct InGameUiCommandModeActionHandlerPage11 InGameUiCommandModeActionHandlerPage11, *PInGameUiCommandModeActionHandlerPage11;
-typedef struct UiCommandDispatchRecord UiCommandDispatchRecord, *PUiCommandDispatchRecord;
 typedef struct RuntimeModelFactionPrefix RuntimeModelFactionPrefix, *PRuntimeModelFactionPrefix;
 typedef struct InGameRuntimeRootUiGridView InGameRuntimeRootUiGridView, *PInGameRuntimeRootUiGridView;
 typedef struct InGameRuntimeRootFrameView InGameRuntimeRootFrameView, *PInGameRuntimeRootFrameView;
@@ -277,8 +276,6 @@ using UiCommandRuntimeFlagMask = uint32_t;
 using ModelLinkedDefinitionListAddress32 = int;
 
 using SelectionPanelNumericValue32 = int;
-
-using ContinuationEntryAddress32 = uint32_t;
 
 using MusicTrackClassId = uint32_t;
 
@@ -525,12 +522,6 @@ struct InGameUiActionHandlerPage10Prefix40 {
 
 struct InGameUiCommandModeActionHandlerPage11 {
     Ptr32<void (void *)> handlers[30]; 
-};
-
-struct UiCommandDispatchRecord {
-    uint32_t commandCode; 
-    uint32_t modifierClassFlags; 
-    ContinuationEntryAddress32 continuationEntryAddress; 
 };
 
 struct RuntimeModelFactionPrefix {

@@ -47,9 +47,9 @@ static uint64_t s_PersistentSettingsPresentMask;
 static uint64_t s_PersistentSettingsWrittenMask;
 
 #define PERSISTENT_SETTINGS_DWORD_COUNT (PERSISTENT_SETTINGS_IMAGE_BYTES / 4)
-#define PERSISTENT_SETTINGS_INI_MAX_BYTES 0x4000 /* written ini text; the full key set needs about 3 KB */
-#define PERSISTENT_SETTINGS_INI_MAX_LINE 256
-#define PERSISTENT_SETTINGS_GAIN_FULL 0x8000 /* Q15 gain of 100 % */
+constexpr auto PERSISTENT_SETTINGS_INI_MAX_BYTES = 0x4000; /* written ini text; the full key set needs about 3 KB */
+constexpr auto PERSISTENT_SETTINGS_INI_MAX_LINE = 256;
+constexpr auto PERSISTENT_SETTINGS_GAIN_FULL = 0x8000; /* Q15 gain of 100 % */
 
 /* thandor.ini key table: one entry per key, in the order they are written. */
 

@@ -24,106 +24,106 @@
 
 /* Error codes handed to the fatal-error dispatcher (FatalError_ExitIfFailed); the code selects
    the message text. Named as they are found. */
-#define FATAL_ERROR_CPU_WITHOUT_MMX 0x51 /* the original's ProcessEntry: CPUID reports no MMX (check dropped: x64 has MMX) */
+inline constexpr auto FATAL_ERROR_CPU_WITHOUT_MMX = 0x51; /* the original's ProcessEntry: CPUID reports no MMX (check dropped: x64 has MMX) */
 /* DLL binding (DynAPI_Bootstrap, DynAPI_Resolve, DynDLL_Load); the DLL/procedure name is left in
    g_PackageLastErrorPath */
-#define FATAL_ERROR_LOADER_MODULE_MISSING 0x0F /* the module of LoadLibraryA itself is not mapped */
-#define FATAL_ERROR_DLL_PROCEDURE_MISSING 0x10 /* GetProcAddress failed */
-#define FATAL_ERROR_DLL_LOAD_FAILED 0x11 /* LoadLibraryA failed */
+inline constexpr auto FATAL_ERROR_LOADER_MODULE_MISSING = 0x0F; /* the module of LoadLibraryA itself is not mapped */
+inline constexpr auto FATAL_ERROR_DLL_PROCEDURE_MISSING = 0x10; /* GetProcAddress failed */
+inline constexpr auto FATAL_ERROR_DLL_LOAD_FAILED = 0x11; /* LoadLibraryA failed */
 /* Sound setup: SdlAudio_CreateSampleVoiceSet returns it for a sample without decoded blocks (the voice stage
    number is left in g_PackageLastErrorPath). The original named it after its DirectSound primary/secondary
    buffer setup; 0x17, 0x18 (no DirectDraw adapter / display mode) and 0x25 (DirectInput mouse setup) were the
    original's other startup errors of the DirectX backend and are no longer returned. */
-#define FATAL_ERROR_AUDIO_SETUP 0x29
+inline constexpr auto FATAL_ERROR_AUDIO_SETUP = 0x29;
 /* Generic failure code returned as a failure by many helpers (package mount/lookup, PCK codec, text copies,
    runtime pools); InGameRuntime_RunSessionUntilExit returns it when the UI root stack runs empty */
-#define FATAL_ERROR_GENERAL_FAILURE 0x14
+inline constexpr auto FATAL_ERROR_GENERAL_FAILURE = 0x14;
 /* Out of memory: the arena allocation failed (Package_LoadEntry, Resource_Load and the FileSystem whole-file
    loaders then leave the requested byte count in g_FatalErrorDetail1Utf16); the package loaders also return
    it for entries whose packed size exceeds PACKAGE_SCRATCH_BUFFER_BYTES */
-#define FATAL_ERROR_OUT_OF_MEMORY 0x05
+inline constexpr auto FATAL_ERROR_OUT_OF_MEMORY = 0x05;
 /* Network socket setup/send failed (NetworkFallback_OpenAndBindUdpSocket, NetworkFallback_SendDatagram); the
    WSAGetLastError code is left in g_PackageLastErrorPath */
-#define FATAL_ERROR_NETWORK_SOCKET 0x2A
+inline constexpr auto FATAL_ERROR_NETWORK_SOCKET = 0x2A;
 /* No network backend: the default g_NetworkBackendSlot0/Slot2 entries (NetworkBackendFallback_SetSessionContext /
    NetworkBackendFallback_OpenAndBindUdpSocket, left in place when Network_Init could not start WinSock) return it;
    the frontend reports it when no backend opens */
-#define FATAL_ERROR_NETWORK_UNAVAILABLE 0x2B
+inline constexpr auto FATAL_ERROR_NETWORK_UNAVAILABLE = 0x2B;
 /* SdlAudio_CreateSampleVoiceSet: the asset is not a 'sam' of format version 0x10000 */
-#define FATAL_ERROR_SOUND_SAMPLE_INVALID 0x4A
+inline constexpr auto FATAL_ERROR_SOUND_SAMPLE_INVALID = 0x4A;
 /* Arena heap (core/memory/allocator): no free block is large enough (ArenaHeap_Alloc,
    ArenaHeap_AllocLargestFreeBlock; the largest free payload size is left in g_PackageLastErrorPath).
    A corrupt block chain returns ARENA_HEAP_CORRUPT instead. */
-#define FATAL_ERROR_ARENA_EXHAUSTED 0x12
+inline constexpr auto FATAL_ERROR_ARENA_EXHAUSTED = 0x12;
 /* Win32 file layer (platform/filesystem/win32, the g_FileSystem* table); the path is left in
    g_PackageLastErrorPath. Named after the operations that return them. */
-#define FATAL_ERROR_FILE_ACCESS_FAILED 0x01 /* CreateFileA, DeleteFileA, MoveFileA, CopyFileA or GetFileTime failed */
-#define FATAL_ERROR_FILE_READ_FAILED 0x06 /* ReadFile transferred fewer bytes than requested */
-#define FATAL_ERROR_FILE_WRITE_INCOMPLETE 0x07 /* WriteFile succeeded but wrote fewer bytes than requested */
-#define FATAL_ERROR_FILE_WRITE_FAILED 0x08 /* WriteFile failed; also CreateDirectoryA */
-#define FATAL_ERROR_FILE_SEEK_FAILED 0x09 /* SetFilePointer failed */
-#define FATAL_ERROR_SET_DIRECTORY_FAILED 0x0A /* SetCurrentDirectoryA failed */
-#define FATAL_ERROR_REMOVE_DIRECTORY_FAILED 0x0B /* RemoveDirectoryA failed */
+inline constexpr auto FATAL_ERROR_FILE_ACCESS_FAILED = 0x01; /* CreateFileA, DeleteFileA, MoveFileA, CopyFileA or GetFileTime failed */
+inline constexpr auto FATAL_ERROR_FILE_READ_FAILED = 0x06; /* ReadFile transferred fewer bytes than requested */
+inline constexpr auto FATAL_ERROR_FILE_WRITE_INCOMPLETE = 0x07; /* WriteFile succeeded but wrote fewer bytes than requested */
+inline constexpr auto FATAL_ERROR_FILE_WRITE_FAILED = 0x08; /* WriteFile failed; also CreateDirectoryA */
+inline constexpr auto FATAL_ERROR_FILE_SEEK_FAILED = 0x09; /* SetFilePointer failed */
+inline constexpr auto FATAL_ERROR_SET_DIRECTORY_FAILED = 0x0A; /* SetCurrentDirectoryA failed */
+inline constexpr auto FATAL_ERROR_REMOVE_DIRECTORY_FAILED = 0x0B; /* RemoveDirectoryA failed */
 /* Level loading (gameplay/session/level_new.cpp, level_saved.cpp); the level path is left in g_PackageLastErrorPath */
-#define FATAL_ERROR_LEVEL_ASSET_INVALID 0x39 /* not a 'lev' asset of converter version 0x70001 */
-#define FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES 0x3A /* the EFF/SHT/MDL/ARM lists name 0x200 or more files */
-#define FATAL_ERROR_TECHNOLOGY_ASSET_INVALID 0x4F /* the level's technology file is not a 'tec' asset of
+inline constexpr auto FATAL_ERROR_LEVEL_ASSET_INVALID = 0x39; /* not a 'lev' asset of converter version 0x70001 */
+inline constexpr auto FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES = 0x3A; /* the EFF/SHT/MDL/ARM lists name 0x200 or more files */
+inline constexpr auto FATAL_ERROR_TECHNOLOGY_ASSET_INVALID = 0x4F; /* the level's technology file is not a 'tec' asset of
                                                      converter version 0x20000 */
 /* Terrain visuals (graphics/terrain/terrain_resources.cpp) */
-#define FATAL_ERROR_FIELD_ASSET_INVALID 0x38 /* TerrainVisualResources_Load*: the field grid is not an 'fld' asset of
+inline constexpr auto FATAL_ERROR_FIELD_ASSET_INVALID = 0x38; /* TerrainVisualResources_Load*: the field grid is not an 'fld' asset of
                                                 converter version 0x60006, or its dimensions do not fit
                                                 (FieldGrid_ValidateLoadedImage, also for loaded/received grids) */
 /* Model definitions (assets/model/definitions.cpp) */
-#define FATAL_ERROR_MODEL_ASSET_INVALID 0x3D /* ModelAsset_PrepareRecords: not an 'mdl' asset of converter version
+inline constexpr auto FATAL_ERROR_MODEL_ASSET_INVALID = 0x3D; /* ModelAsset_PrepareRecords: not an 'mdl' asset of converter version
                                                 0x8000A */
-#define FATAL_ERROR_MODEL_DEFINITION_MISSING 0x3E /* ModelDefinitionRegistry_FindById: the id is not in the
+inline constexpr auto FATAL_ERROR_MODEL_DEFINITION_MISSING = 0x3E; /* ModelDefinitionRegistry_FindById: the id is not in the
                                                      768-slot registry */
-#define FATAL_ERROR_MODEL_REGISTRY_FULL 0x3F /* ModelDefinition_RegisterAndResolveReferences: all 768 slots are
+inline constexpr auto FATAL_ERROR_MODEL_REGISTRY_FULL = 0x3F; /* ModelDefinition_RegisterAndResolveReferences: all 768 slots are
                                                 taken (768 is left in g_PackageLastErrorPath) */
-#define FATAL_ERROR_MODEL_ID_DUPLICATE 0x4B /* ModelDefinition_RegisterAndResolveReferences: the id is already
+inline constexpr auto FATAL_ERROR_MODEL_ID_DUPLICATE = 0x4B; /* ModelDefinition_RegisterAndResolveReferences: the id is already
                                                registered (the id is left in g_PackageLastErrorPath) */
-#define FATAL_ERROR_SPRITE_ASSET_INVALID 0x36 /* SpriteAsset_RegisterAndRelocatePointers: not an 'spr' asset of
+inline constexpr auto FATAL_ERROR_SPRITE_ASSET_INVALID = 0x36; /* SpriteAsset_RegisterAndRelocatePointers: not an 'spr' asset of
                                                  converter version 0x20007 */
-#define FATAL_ERROR_PALETTE_ASSET_INVALID 0x35 /* GraphicsPaletteAsset_Validate: not a 'pal' asset */
+inline constexpr auto FATAL_ERROR_PALETTE_ASSET_INVALID = 0x35; /* GraphicsPaletteAsset_Validate: not a 'pal' asset */
 /* ROM registry (assets/rom/runtime) */
-#define FATAL_ERROR_ROM_REGISTRY_FULL 0x3B /* RomAssetRecord_RegisterAndRelocate: all 256 slots are taken; the
+inline constexpr auto FATAL_ERROR_ROM_REGISTRY_FULL = 0x3B; /* RomAssetRecord_RegisterAndRelocate: all 256 slots are taken; the
                                               path "engine\zentrale.rom" is left in g_PackageLastErrorPath */
-#define FATAL_ERROR_ROM_RECORD_NOT_REGISTERED 0x3C /* RomRegistry_FindRecordById/FindSlotValueByRecordId miss */
+inline constexpr auto FATAL_ERROR_ROM_RECORD_NOT_REGISTERED = 0x3C; /* RomRegistry_FindRecordById/FindSlotValueByRecordId miss */
 /* Shot and effect catalogs (assets/shot/catalog.cpp, assets/effect/catalog.cpp). An invalid asset leaves its path,
    the other codes leave the offending definition id (or registry index / slot count) in g_PackageLastErrorPath. */
-#define FATAL_ERROR_SHOT_ASSET_INVALID 0x43 /* not a 'sht' asset of converter version 0x60006 */
-#define FATAL_ERROR_SHOT_ID_NOT_FOUND 0x44 /* ShotDefinitionRegistry_FindByIdWithError: id not registered */
-#define FATAL_ERROR_SHOT_REGISTRY_FULL 0x45 /* all 256 shot-definition registry slots are taken */
-#define FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID 0x46 /* a shot names a terrain material that is out of
+inline constexpr auto FATAL_ERROR_SHOT_ASSET_INVALID = 0x43; /* not a 'sht' asset of converter version 0x60006 */
+inline constexpr auto FATAL_ERROR_SHOT_ID_NOT_FOUND = 0x44; /* ShotDefinitionRegistry_FindByIdWithError: id not registered */
+inline constexpr auto FATAL_ERROR_SHOT_REGISTRY_FULL = 0x45; /* all 256 shot-definition registry slots are taken */
+inline constexpr auto FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID = 0x46; /* a shot names a terrain material that is out of
                                                           range or not loaded */
-#define FATAL_ERROR_EFFECT_ASSET_INVALID 0x47 /* not an 'eff' asset of converter version 0x40007 */
-#define FATAL_ERROR_EFFECT_ID_NOT_FOUND 0x48 /* EffectDefinitionRegistry_FindById: id not registered */
-#define FATAL_ERROR_EFFECT_REGISTRY_FULL 0x49 /* all 256 effect-definition registry slots are taken */
-#define FATAL_ERROR_SHOT_ID_DUPLICATE 0x4D /* a shot definition id is registered twice */
-#define FATAL_ERROR_EFFECT_ID_DUPLICATE 0x4E /* an effect definition id is registered twice */
+inline constexpr auto FATAL_ERROR_EFFECT_ASSET_INVALID = 0x47; /* not an 'eff' asset of converter version 0x40007 */
+inline constexpr auto FATAL_ERROR_EFFECT_ID_NOT_FOUND = 0x48; /* EffectDefinitionRegistry_FindById: id not registered */
+inline constexpr auto FATAL_ERROR_EFFECT_REGISTRY_FULL = 0x49; /* all 256 effect-definition registry slots are taken */
+inline constexpr auto FATAL_ERROR_SHOT_ID_DUPLICATE = 0x4D; /* a shot definition id is registered twice */
+inline constexpr auto FATAL_ERROR_EFFECT_ID_DUPLICATE = 0x4E; /* an effect definition id is registered twice */
 /* Movie_Open: the file is not an 'flm' of converter version 0x20001 (Movie_AdvanceFrame also returns it as a
    failure when no movie is open) */
-#define FATAL_ERROR_MOVIE_INVALID 0x30
+inline constexpr auto FATAL_ERROR_MOVIE_INVALID = 0x30;
 /* Army catalog (assets/army/catalog.cpp), same scheme as the shot/effect codes above */
-#define FATAL_ERROR_ARMY_ASSET_INVALID 0x40 /* ArmyAsset_PrepareRecords: not an 'arm' asset of converter version
+inline constexpr auto FATAL_ERROR_ARMY_ASSET_INVALID = 0x40; /* ArmyAsset_PrepareRecords: not an 'arm' asset of converter version
                                                0x20008 (the path is left in g_PackageLastErrorPath) */
-#define FATAL_ERROR_ARMY_ID_NOT_FOUND 0x41 /* ArmyAssetRegistry_FindById: id not registered (the id is left in
+inline constexpr auto FATAL_ERROR_ARMY_ID_NOT_FOUND = 0x41; /* ArmyAssetRegistry_FindById: id not registered (the id is left in
                                               g_PackageLastErrorPath) */
-#define FATAL_ERROR_ARMY_REGISTRY_FULL 0x42 /* all 768 army registry slots are taken */
-#define FATAL_ERROR_ARMY_ID_DUPLICATE 0x4C /* ArmyAssetRecord_RegisterAndRelocate: an army id is registered twice
+inline constexpr auto FATAL_ERROR_ARMY_REGISTRY_FULL = 0x42; /* all 768 army registry slots are taken */
+inline constexpr auto FATAL_ERROR_ARMY_ID_DUPLICATE = 0x4C; /* ArmyAssetRecord_RegisterAndRelocate: an army id is registered twice
                                               (the id is left in g_PackageLastErrorPath) */
 /* Display mode switch (SdlVideo_ApplyDisplayMode): no renderer starts or the frame's SDL texture cannot be
    created ("0" is left in g_PackageLastErrorPath). The original named it after its DirectDraw surface creation;
    0x19, 0x1A and 0x1C were its other DirectDraw setup steps and are no longer returned. */
-#define FATAL_ERROR_DISPLAY_CREATE_SURFACES 0x1B
+inline constexpr auto FATAL_ERROR_DISPLAY_CREATE_SURFACES = 0x1B;
 /* 0x1D..0x21: unused since the software renderer is the only renderer (they were hardware renderer setup errors) */
 /* GraphicsTextureSet_AllocateMetadata: an image of a texture set is not a power of two wide and high */
-#define FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO 0x2F
+inline constexpr auto FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO = 0x2F;
 /* GraphicsCursor_SetFrameIndex: the frame index is not below g_CursorFrameCount (it returns false) */
-#define FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE 0x2D
+inline constexpr auto FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE = 0x2D;
 /* Texture sources (graphics/resources/texture): not a 'gfx' asset or the subresource index is out of range
    (GraphicsTextureSource_ConvertPaletteEntries, GraphicsTextureSource_DecomposeSubresourceRegions) */
-#define FATAL_ERROR_GFX_ASSET_INVALID 0x2C
+inline constexpr auto FATAL_ERROR_GFX_ASSET_INVALID = 0x2C;
 
 /* The fatal-error handlers take an error code (a text id of the error page, below 0x100) or a pointer to a
    rich-text message; a value with no bits above the low byte is a code */
