@@ -57,15 +57,15 @@ Software blits into the 32-bit framebuffer: texture source blits (alpha, half, b
 - [`SoftwareTextureSource_BlitSourceAlpha32`](../../src/graphics/backend/software_blit.cpp#L27) - Clips and draws one source subresource into a four-byte framebuffer (source-alpha blit, see docs/software_raster.md "Blits").
 - [`SoftwareTextureSource_BlitHalfSourceRgb32`](../../src/graphics/backend/software_blit.cpp#L63) - Clips and draws one source subresource into a four-byte framebuffer, with the source RGB at half strength (see docs/software_raster.md "Blits").
 - [`SoftwareTextureSource_StretchDirectColorBilinear32`](../../src/graphics/backend/software_blit.cpp#L109) - Stretches one direct-color source subresource into a four-byte framebuffer using two-dimensional linear interpolation.
-- [`SoftwareTextureSource_BlitModulatedSourceAlpha32`](../../src/graphics/backend/software_blit.cpp#L225) - Clips and draws one source subresource into a four-byte framebuffer, each source channel multiplied by the matching channel of modulationArgb8888 first (Blit_Modulate, see docs/software_raster.md ...
-- [`SoftwareFramebuffer_FillRectArgb32`](../../src/graphics/backend/software_blit.cpp#L261) - Fills the intersection of [rectMinX, rectMaxX) x [rectMinY, rectMaxY), the framebuffer and the clip rectangle of a four-byte framebuffer with argb8888: alpha 0 draws nothing, alpha 0xFF writes the ...
-- [`SoftwareFramebuffer_FillColumnSegments32`](../../src/graphics/backend/software_blit.cpp#L291) - Software implementation of g_GraphicsFillColumnSegments (the pixel loop of the results graph columns, ui/frontend/results.cpp): from (drawX, topY) downwards, segmentHeights[i] pixels of ...
+- [`SoftwareTextureSource_BlitModulatedSourceAlpha32`](../../src/graphics/backend/software_blit.cpp#L223) - Clips and draws one source subresource into a four-byte framebuffer, each source channel multiplied by the matching channel of modulationArgb8888 first (Blit_Modulate, see docs/software_raster.md ...
+- [`SoftwareFramebuffer_FillRectArgb32`](../../src/graphics/backend/software_blit.cpp#L259) - Fills the intersection of [rectMinX, rectMaxX) x [rectMinY, rectMaxY), the framebuffer and the clip rectangle of a four-byte framebuffer with argb8888: alpha 0 draws nothing, alpha 0xFF writes the ...
+- [`SoftwareFramebuffer_FillColumnSegments32`](../../src/graphics/backend/software_blit.cpp#L289) - Software implementation of g_GraphicsFillColumnSegments (the pixel loop of the results graph columns, ui/frontend/results.cpp): from (drawX, topY) downwards, segmentHeights[i] pixels of ...
 
 **Data** (0 shared, 1 file-local): `g_SoftwareBilinearPackedByteClampMask`.
 
 **Called from** (3 files): [`graphics/core/draw2d`](#file-graphics-core-draw2d) (`CompareBlitHalfSourceRgb`, `CompareBlitModulatedSourceAlpha` +12); [`platform/selftest/raster_selftest`](platform.md#file-platform-selftest-raster-selftest) (`Thandor_SelfTestRaster`); [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestStretch`).
 
-**Depends on** (3 files, names used): [`graphics/backend/software_blit_helpers`](#file-graphics-backend-software-blit-helpers) (12), [`graphics/backend/software`](#file-graphics-backend-software) (2), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (6 files, names used): [`graphics/backend/software_blit_helpers`](#file-graphics-backend-software-blit-helpers) (12), [`core/x86_emulation`](core.md#file-core-x86-emulation) (3), [`graphics/backend/software`](#file-graphics-backend-software) (2), [`graphics/resources/texture`](#file-graphics-resources-texture) (2), [`graphics/backend/types`](#file-graphics-backend-types) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 **Includes:** `thandor/platform/bootstrap/image.h`, `software_blit_helpers.h`.
 
@@ -78,23 +78,23 @@ Software blits into the 32-bit framebuffer: texture source blits (alpha, half, b
 
 **Functions** (12 public):
 
-- [`Blit_IsTransparent`](../../src/graphics/backend/software_blit_helpers.h#L49)
-- [`Blit_IsOpaque`](../../src/graphics/backend/software_blit_helpers.h#L54)
-- [`Blit_PaletteColor`](../../src/graphics/backend/software_blit_helpers.h#L60) - The two dwords of a palette entry: +0 ARGB colour, +4 converted pixel with the alpha on top.
-- [`Blit_PalettePixel`](../../src/graphics/backend/software_blit_helpers.h#L65)
-- [`Blit_ConvertArgb`](../../src/graphics/backend/software_blit_helpers.h#L72) - ARGB -&gt; framebuffer pixel through the g_SoftwarePixelPackTables channel tables.
-- [`Blit_ArgbLanes`](../../src/graphics/backend/software_blit_helpers.h#L80) - ARGB (or a 32-bit pixel) as lanes of (c * 0x101) &gt;&gt; shift (PUNPCKLBW with itself + PSRLW).
-- [`Blit_BlendLanes`](../../src/graphics/backend/software_blit_helpers.h#L92) - source * alpha + destination * (1 - alpha) through the blend factor tables (two PMULHW + PADDW).
-- [`Blit_PackLanes32`](../../src/graphics/backend/software_blit_helpers.h#L110) - Blended lanes -&gt; 32-bit pixel: PSRLW 4 (logical) + PACKUSWB, alpha lane included.
-- [`Blit_BlendArgb32`](../../src/graphics/backend/software_blit_helpers.h#L121) - Source-alpha blend of an ARGB colour over a 32-bit pixel, alpha = the colour's top byte.
-- [`Blit_ClipRect`](../../src/graphics/backend/software_blit_helpers.h#L129) - Intersects [left, right) x [top, bottom) with the framebuffer and the clip rectangle, in the original's order: rectangle clamped to 0 and to the framebuffer size, then to the clip rectangle (all ...
+- [`Blit_IsTransparent`](../../src/graphics/backend/software_blit_helpers.h#L51)
+- [`Blit_IsOpaque`](../../src/graphics/backend/software_blit_helpers.h#L56)
+- [`Blit_PaletteColor`](../../src/graphics/backend/software_blit_helpers.h#L62) - The two dwords of a palette entry: +0 ARGB colour, +4 converted pixel with the alpha on top.
+- [`Blit_PalettePixel`](../../src/graphics/backend/software_blit_helpers.h#L67)
+- [`Blit_ConvertArgb`](../../src/graphics/backend/software_blit_helpers.h#L74) - ARGB -&gt; framebuffer pixel through the g_SoftwarePixelPackTables channel tables.
+- [`Blit_ArgbLanes`](../../src/graphics/backend/software_blit_helpers.h#L82) - ARGB (or a 32-bit pixel) as lanes of (c * 0x101) &gt;&gt; shift (PUNPCKLBW with itself + PSRLW).
+- [`Blit_BlendLanes`](../../src/graphics/backend/software_blit_helpers.h#L94) - source * alpha + destination * (1 - alpha) through the blend factor tables (two PMULHW + PADDW).
+- [`Blit_PackLanes32`](../../src/graphics/backend/software_blit_helpers.h#L112) - Blended lanes -&gt; 32-bit pixel: PSRLW 4 (logical) + PACKUSWB, alpha lane included.
+- [`Blit_BlendArgb32`](../../src/graphics/backend/software_blit_helpers.h#L123) - Source-alpha blend of an ARGB colour over a 32-bit pixel, alpha = the colour's top byte.
+- [`Blit_ClipRect`](../../src/graphics/backend/software_blit_helpers.h#L131) - Intersects [left, right) x [top, bottom) with the framebuffer and the clip rectangle, in the original's order: rectangle clamped to 0 and to the framebuffer size, then to the clip rectangle (all ...
 - 2 more: `Blit_SetupSubresource`, `Blit_Modulate`
 
 **Called from** (1 files): [`graphics/backend/software_blit`](#file-graphics-backend-software-blit) (`SoftwareFramebuffer_FillRectArgb32`, `SoftwareTextureSource_BlitHalfSourceRgb32` +2).
 
-**Depends on** (4 files, names used): [`graphics/backend/software_raster`](#file-graphics-backend-software-raster) (4), [`graphics/backend/software`](#file-graphics-backend-software) (2), [`graphics/backend/software_display_mode`](#file-graphics-backend-software-display-mode) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (6 files, names used): [`graphics/backend/software_raster`](#file-graphics-backend-software-raster) (4), [`graphics/backend/software`](#file-graphics-backend-software) (2), [`graphics/resources/texture`](#file-graphics-resources-texture) (2), [`core/x86_emulation`](core.md#file-core-x86-emulation) (1), [`graphics/backend/software_display_mode`](#file-graphics-backend-software-display-mode) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `thandor/graphics/backend/types.h`, `thandor/graphics/resources/types.h`, `thandor/ui/controls/types.h`, `software_raster.h`.
+**Includes:** `thandor/core/x86_emulation.h`, `thandor/graphics/backend/types.h`, `thandor/graphics/resources/texture.h`, `thandor/graphics/resources/types.h`, `thandor/ui/controls/types.h`, `software_raster.h`.
 
 <a id="file-graphics-backend-software-display-mode"></a>
 #### `software_display_mode.cpp / software_display_mode.h`
@@ -106,16 +106,16 @@ Software renderer display mode: the pixel format and channel pack tables of a mo
 **Functions** (5 public):
 
 - [`SoftwarePixelFormat_BaseDisplayModeHook`](../../src/graphics/backend/software_display_mode.cpp#L40) - Initial g_GraphicsSetDisplayMode hook of the software pixel format: allocates the SoftwarePixelPackTables once and rebuilds them through g_SoftwareBuildPixelPackTables with the current colour ...
-- [`SoftwareFramebuffer_Create`](../../src/graphics/backend/software_display_mode.cpp#L67) - g_SoftwareFramebufferCreate: creates an in-memory framebuffer of width x height pixels in one allocation, the SoftwareFramebufferAccess header (width, height, bytesPerPixel, pixels) followed by the ...
-- [`SoftwarePixelFormat_BuildChannelPackTables`](../../src/graphics/backend/software_display_mode.cpp#L105) - g_SoftwareBuildPixelPackTables: rebuilds the blue, green and red tables that turn an 8-bit channel into its bits of a framebuffer pixel, applying the display settings' colour scale (contrast) and ...
-- [`SoftwareRenderer_SetDisplayMode`](../../src/graphics/backend/software_display_mode.cpp#L151) - Software hook in front of g_GraphicsSetDisplayMode (see SoftwareRenderer_InstallDisplayModeHook): after the chained mode switch succeeds it replaces the depth buffer with one of the new size (the ...
-- [`SoftwareRenderer_InstallDisplayModeHook`](../../src/graphics/backend/software_display_mode.cpp#L190) - Hooks the software renderer into the display-mode switch: chains SoftwareRenderer_SetDisplayMode in front of the current g_GraphicsSetDisplayMode and allocates the depth buffer (one int32 per pixel) ...
+- [`SoftwareFramebuffer_Create`](../../src/graphics/backend/software_display_mode.cpp#L69) - g_SoftwareFramebufferCreate: creates an in-memory framebuffer of width x height pixels in one allocation, the SoftwareFramebufferAccess header (width, height, bytesPerPixel, pixels) followed by the ...
+- [`SoftwarePixelFormat_BuildChannelPackTables`](../../src/graphics/backend/software_display_mode.cpp#L108) - g_SoftwareBuildPixelPackTables: rebuilds the blue, green and red tables that turn an 8-bit channel into its bits of a framebuffer pixel, applying the display settings' colour scale (contrast) and ...
+- [`SoftwareRenderer_SetDisplayMode`](../../src/graphics/backend/software_display_mode.cpp#L152) - Software hook in front of g_GraphicsSetDisplayMode (see SoftwareRenderer_InstallDisplayModeHook): after the chained mode switch succeeds it replaces the depth buffer with one of the new size (the ...
+- [`SoftwareRenderer_InstallDisplayModeHook`](../../src/graphics/backend/software_display_mode.cpp#L191) - Hooks the software renderer into the display-mode switch: chains SoftwareRenderer_SetDisplayMode in front of the current g_GraphicsSetDisplayMode and allocates the depth buffer (one int32 per pixel) ...
 
 **Data** (7 shared, 1 file-local): `g_SoftwareFramebufferCreate`, `g_SoftwarePixelPackTables`, `g_SoftwareColorScaleQ16`, `g_SoftwareColorBiasQ16`, `g_SoftwarePixelFormatConfig`, `g_GraphicsSetDisplayMode`, `g_SoftwareBuildPixelPackTables`.
 
 **Called from** (11 files): [`ui/dialogs/display_settings`](ui.md#file-ui-dialogs-display-settings) (`UiDisplayModeAction_ApplyPendingMode`, `UiDisplayModeAction_CancelAndRebuildPixelPacking` +3); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`GameRuntime_InitializeSpatialAudioAndRendering`, `Game_Run` +1); [`platform/sdl3/video`](platform.md#file-platform-sdl3-video) (`SdlVideo_ApplyDisplayMode`, `SdlVideo_Init`); [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings) (`FrontendAdvancedSettingsAction_SelectUiScale`, `FrontendDisplaySettings_ApplyMode`); [`graphics/backend/software_blit_helpers`](#file-graphics-backend-software-blit-helpers) (`Blit_ConvertArgb`); [`graphics/backend/software_texture_scale`](#file-graphics-backend-software-texture-scale) (`SoftwareTexture_BuildIntensityLut`); [`graphics/resources/texture_source`](#file-graphics-resources-texture-source) (`GraphicsTextureSource_ConvertPaletteEntries`); [`platform/input/devices`](platform.md#file-platform-input-devices) (`GraphicsCursor_CreateBuffersAndCenter`); [`platform/sdl3/input`](platform.md#file-platform-sdl3-input) (`SdlInput_Init`); [`platform/selftest/raster_selftest`](platform.md#file-platform-selftest-raster-selftest) (`Thandor_SelfTestRaster`); 1 more: [`ui/frontend/results`](ui.md#file-ui-frontend-results).
 
-**Depends on** (4 files, names used): [`graphics/backend/software_rasterizer`](#file-graphics-backend-software-rasterizer) (3), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (2), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (5 files, names used): [`graphics/backend/software_rasterizer`](#file-graphics-backend-software-rasterizer) (3), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (2), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/x86_emulation`](core.md#file-core-x86-emulation) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 **Includes:** `thandor/platform/bootstrap/image.h`, `software_raster.h`.
 
@@ -128,25 +128,25 @@ Shared helpers of the software triangle rasterizer (SoftwareRaster{32,Aux}_ModeN
 
 **Functions** (27 public):
 
-- [`Raster_Channel`](../../src/graphics/backend/software_raster.h#L139) - One byte channel (0 = blue .. 3 = alpha) of a packed ARGB colour.
-- [`Raster_SaturateByte`](../../src/graphics/backend/software_raster.h#L145) - PACKUSWB of one lane: clamps a signed 16-bit value to 0..255.
-- [`Raster_MulHigh`](../../src/graphics/backend/software_raster.h#L151) - PMULHW of one lane: high half of the signed 16 x 16 product.
-- [`RasterColor_Add`](../../src/graphics/backend/software_raster.h#L156)
-- [`RasterColor_ShiftRight`](../../src/graphics/backend/software_raster.h#L175) - PSRAW of every lane.
-- [`Raster_Unpack32`](../../src/graphics/backend/software_raster.h#L188) - Unpacks a 32-bit pixel (blue in the low byte) into lanes of (c * 0x101) &gt;&gt; 4, about channel * 16 (Q4): MOVD + PUNPCKLBW with itself + PSRLW 4.
-- [`Raster_Pack32`](../../src/graphics/backend/software_raster.h#L199) - Packs four channel bytes into a 32-bit pixel (blue in the low byte, PACKUSWB + MOVD).
-- [`Raster_LanesToBytes`](../../src/graphics/backend/software_raster.h#L206) - Lanes &gt;&gt; shift, saturated to bytes (PSRAW + PACKUSWB).
-- [`Raster_BlendAlpha`](../../src/graphics/backend/software_raster.h#L354) - Alpha blend of two Q4 colours: source * alpha + destination * (1 - alpha), both through the g_SoftwareBlendAlphaFactors / g_SoftwareBlendInverseAlphaFactors tables (PMULHW).
-- [`Raster_SetupTriangle`](../../src/graphics/backend/software_raster.h#L401) - Sets up the long edge (position, depth, colour, texture coordinates) and the X gradients of a triangle.
+- [`Raster_Channel`](../../src/graphics/backend/software_raster.h#L143) - One byte channel (0 = blue .. 3 = alpha) of a packed ARGB colour.
+- [`Raster_SaturateByte`](../../src/graphics/backend/software_raster.h#L149) - PACKUSWB of one lane: clamps a signed 16-bit value to 0..255.
+- [`Raster_MulHigh`](../../src/graphics/backend/software_raster.h#L155) - PMULHW of one lane: high half of the signed 16 x 16 product.
+- [`RasterColor_Add`](../../src/graphics/backend/software_raster.h#L160)
+- [`RasterColor_ShiftRight`](../../src/graphics/backend/software_raster.h#L179) - PSRAW of every lane.
+- [`Raster_Unpack32`](../../src/graphics/backend/software_raster.h#L192) - Unpacks a 32-bit pixel (blue in the low byte) into lanes of (c * 0x101) &gt;&gt; 4, about channel * 16 (Q4): MOVD + PUNPCKLBW with itself + PSRLW 4.
+- [`Raster_Pack32`](../../src/graphics/backend/software_raster.h#L203) - Packs four channel bytes into a 32-bit pixel (blue in the low byte, PACKUSWB + MOVD).
+- [`Raster_LanesToBytes`](../../src/graphics/backend/software_raster.h#L210) - Lanes &gt;&gt; shift, saturated to bytes (PSRAW + PACKUSWB).
+- [`Raster_BlendAlpha`](../../src/graphics/backend/software_raster.h#L358) - Alpha blend of two Q4 colours: source * alpha + destination * (1 - alpha), both through the g_SoftwareBlendAlphaFactors / g_SoftwareBlendInverseAlphaFactors tables (PMULHW).
+- [`Raster_SetupTriangle`](../../src/graphics/backend/software_raster.h#L405) - Sets up the long edge (position, depth, colour, texture coordinates) and the X gradients of a triangle.
 - 17 more: `Raster_MulShift`, `Raster_Diff`, `RasterColor_Negate`, `Raster_OriginalBlendDword`, `Raster_OriginalBlendRow`, `Raster_GradientX`, `Raster_DrawScanline`, `Raster_WalkRows`, `Raster_WalkTriangle`, `Raster_FramebufferTarget`, `Raster_AuxiliaryTarget`, `RasterSpan_Next`, `Raster_SetupTexture`, `Raster_FetchTexel`, `Raster_TexelLanes`, `Raster_Modulate`, `Raster_AlphaWritesDepth`
 
 **Data** (2 shared, 0 file-local): `g_SoftwareBlendOverreadOriginalDwords`, `g_SoftwareBlendOverreadRanges`.
 
 **Called from** (3 files): [`graphics/backend/software_rasterizer`](#file-graphics-backend-software-rasterizer) (`Raster32_DrawFlatAlphaBlendDepth`, `Raster32_DrawShadedAlphaBlendDepth` +24); [`graphics/backend/software_blit_helpers`](#file-graphics-backend-software-blit-helpers) (`Blit_ArgbLanes`, `Blit_BlendLanes` +1); [`graphics/backend/software_texture_scale`](#file-graphics-backend-software-texture-scale) (`SoftwareTexture_CrossFadeByte`, `SoftwareTexture_SampleIntensity`).
 
-**Depends on** (6 files, names used): [`graphics/backend/software_rasterizer`](#file-graphics-backend-software-rasterizer) (3), [`graphics/backend/software`](#file-graphics-backend-software) (2), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (2), [`ui/controls/text_buttons`](ui.md#file-ui-controls-text-buttons) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (8 files, names used): [`graphics/backend/software_rasterizer`](#file-graphics-backend-software-rasterizer) (3), [`graphics/backend/software`](#file-graphics-backend-software) (2), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (2), [`ui/controls/text_buttons`](ui.md#file-ui-controls-text-buttons) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`core/x86_emulation`](core.md#file-core-x86-emulation) (1), [`graphics/resources/texture`](#file-graphics-resources-texture) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `thandor/graphics/backend/types.h`, `thandor/graphics/render/types.h`, `thandor/graphics/resources/types.h`.
+**Includes:** `thandor/core/x86_emulation.h`, `thandor/graphics/backend/types.h`, `thandor/graphics/render/types.h`, `thandor/graphics/resources/types.h`.
 
 <a id="file-graphics-backend-software-rasterizer"></a>
 #### `software_rasterizer.cpp / software_rasterizer.h`
@@ -157,23 +157,23 @@ Software triangle rasterizer: the primitive queue walkers per pixel family (32-b
 
 **Functions** (46 public, 22 file-local):
 
-- [`SoftwareRenderer_ClearViewport`](../../src/graphics/backend/software_rasterizer.cpp#L40) - g_GraphicsSetViewportAndClearDepth: fills the rectangle with opaque black and starts a new depth epoch instead of clearing a depth buffer.
-- [`SoftwareRenderer_DrawQueue32Bit`](../../src/graphics/backend/software_rasterizer.cpp#L77) - Queue renderer for the 32-bit framebuffer (called by SoftwareRenderer_DrawPrimitiveQueueBridge): prepares every packet of the queue and draws it with the raster handler its render flags select.
-- [`SoftwareRenderer_DrawQueueAuxiliary`](../../src/graphics/backend/software_rasterizer.cpp#L102) - Queue renderer for an off-screen 32-bit target (GraphicsOffscreen_RenderModelListToTextureSource): like SoftwareRenderer_DrawQueue32Bit, but it draws into targetBase, whose rows are clipMaxX pixels ...
-- [`SoftwareRenderer_DrawPrimitiveQueueBridge`](../../src/graphics/backend/software_rasterizer.cpp#L131) - g_GraphicsDrawPrimitiveQueue: locks the framebuffer and hands the queue to the queue renderer SoftwareRenderer_DrawQueue32Bit (the original called it through a slot that the display mode set to the ...
-- [`SoftwareRaster32_Mode16`](../../src/graphics/backend/software_rasterizer.cpp#L182) - g_SoftwareRasterHandlers32Bit entry 16 (render mode 16): textured, Gouraud-shaded, depth-tested, opaque triangle on the 32-bit framebuffer.
-- [`SoftwareRaster32_Mode22`](../../src/graphics/backend/software_rasterizer.cpp#L216) - g_SoftwareRasterHandlers32Bit entry 22 (render mode 22): textured, Gouraud-shaded, depth-tested, alpha-blended triangle with the alpha-tested depth write (Raster32_SpanTexturedAlphaTested).
-- [`SoftwareRaster32_Mode17`](../../src/graphics/backend/software_rasterizer.cpp#L244) - g_SoftwareRasterHandlers32Bit entries 17 and 48, 49, 52, 54 (render mode 17): textured, Gouraud-shaded, depth-tested, alpha-blended triangle without depth write (Raster32_SpanTexturedAlphaBlend).
-- [`SoftwareRaster32_Mode18`](../../src/graphics/backend/software_rasterizer.cpp#L272) - g_SoftwareRasterHandlers32Bit entries 18 and 50 (render mode 18): textured, Gouraud-shaded, depth-tested, additive triangle without depth write (Raster32_SpanTexturedAdd).
-- [`SoftwareRaster32_Mode20`](../../src/graphics/backend/software_rasterizer.cpp#L284) - g_SoftwareRasterHandlers32Bit entry 20 (render mode 20): byte-identical to mode 22 (see SoftwareRaster32_Mode22).
-- [`SoftwareRenderer_PrepareTrianglePacket`](../../src/graphics/backend/software_rasterizer.cpp#L1051) - Readies one packet for the software raster handlers: sorts the three 0x20-byte vertices by screen Y, snaps screen X/Y to whole Q12 pixels, adds the current depth epoch to each depth, sets the ...
+- [`SoftwareRenderer_ClearViewport`](../../src/graphics/backend/software_rasterizer.cpp#L32) - g_GraphicsSetViewportAndClearDepth: fills the rectangle with opaque black and starts a new depth epoch instead of clearing a depth buffer.
+- [`SoftwareRenderer_DrawQueue32Bit`](../../src/graphics/backend/software_rasterizer.cpp#L69) - Queue renderer for the 32-bit framebuffer (called by SoftwareRenderer_DrawPrimitiveQueueBridge): prepares every packet of the queue and draws it with the raster handler its render flags select.
+- [`SoftwareRenderer_DrawQueueAuxiliary`](../../src/graphics/backend/software_rasterizer.cpp#L94) - Queue renderer for an off-screen 32-bit target (GraphicsOffscreen_RenderModelListToTextureSource): like SoftwareRenderer_DrawQueue32Bit, but it draws into targetBase, whose rows are clipMaxX pixels ...
+- [`SoftwareRenderer_DrawPrimitiveQueueBridge`](../../src/graphics/backend/software_rasterizer.cpp#L123) - g_GraphicsDrawPrimitiveQueue: locks the framebuffer and hands the queue to the queue renderer SoftwareRenderer_DrawQueue32Bit (the original called it through a slot that the display mode set to the ...
+- [`SoftwareRaster32_Mode16`](../../src/graphics/backend/software_rasterizer.cpp#L174) - g_SoftwareRasterHandlers32Bit entry 16 (render mode 16): textured, Gouraud-shaded, depth-tested, opaque triangle on the 32-bit framebuffer.
+- [`SoftwareRaster32_Mode22`](../../src/graphics/backend/software_rasterizer.cpp#L208) - g_SoftwareRasterHandlers32Bit entry 22 (render mode 22): textured, Gouraud-shaded, depth-tested, alpha-blended triangle with the alpha-tested depth write (Raster32_SpanTexturedAlphaTested).
+- [`SoftwareRaster32_Mode17`](../../src/graphics/backend/software_rasterizer.cpp#L236) - g_SoftwareRasterHandlers32Bit entries 17 and 48, 49, 52, 54 (render mode 17): textured, Gouraud-shaded, depth-tested, alpha-blended triangle without depth write (Raster32_SpanTexturedAlphaBlend).
+- [`SoftwareRaster32_Mode18`](../../src/graphics/backend/software_rasterizer.cpp#L264) - g_SoftwareRasterHandlers32Bit entries 18 and 50 (render mode 18): textured, Gouraud-shaded, depth-tested, additive triangle without depth write (Raster32_SpanTexturedAdd).
+- [`SoftwareRaster32_Mode20`](../../src/graphics/backend/software_rasterizer.cpp#L276) - g_SoftwareRasterHandlers32Bit entry 20 (render mode 20): byte-identical to mode 22 (see SoftwareRaster32_Mode22).
+- [`SoftwareRenderer_PrepareTrianglePacket`](../../src/graphics/backend/software_rasterizer.cpp#L1043) - Readies one packet for the software raster handlers: sorts the three 0x20-byte vertices by screen Y, snaps screen X/Y to whole Q12 pixels, adds the current depth epoch to each depth, sets the ...
 - 36 more: `SoftwareRaster32_Mode24`, `SoftwareRaster32_Mode30`, `SoftwareRaster32_Mode25`, `SoftwareRaster32_Mode26`, `SoftwareRaster32_Mode28`, `SoftwareRaster32_Mode00`, `SoftwareRaster32_Mode06`, `SoftwareRaster32_Mode01`, `SoftwareRaster32_Mode02`, `SoftwareRaster32_Mode04`, `SoftwareRaster32_Mode08`, `SoftwareRaster32_Mode14`, `SoftwareRaster32_Mode09`, `SoftwareRaster32_Mode10`, `SoftwareRaster32_Mode12`, `SoftwareRasterAux_Mode16`, `SoftwareRasterAux_Mode22`, `SoftwareRasterAux_Mode17`, `SoftwareRasterAux_Mode18`, `SoftwareRasterAux_Mode20`, `SoftwareRasterAux_Mode24`, `SoftwareRasterAux_Mode30`, `SoftwareRasterAux_Mode25`, `SoftwareRasterAux_Mode26`, `SoftwareRasterAux_Mode28`, `SoftwareRasterAux_Mode00`, `SoftwareRasterAux_Mode06`, `SoftwareRasterAux_Mode01`, `SoftwareRasterAux_Mode02`, `SoftwareRasterAux_Mode04`, `SoftwareRasterAux_Mode08`, `SoftwareRasterAux_Mode14`, `SoftwareRasterAux_Mode09`, `SoftwareRasterAux_Mode10`, `SoftwareRasterAux_Mode12`, `SoftwareRenderer_AdvanceDepthEpoch`
 
 **Data** (7 shared, 0 file-local): `g_SoftwareRasterScanState`, `g_SoftwareDepthBuffer`, `g_SoftwareDepthRowStrideBytes`, `g_SoftwareAuxiliaryTargetBase`, `g_SoftwareDepthEpoch`, `g_SoftwareRasterHandlers32Bit`, `g_SoftwareRasterHandlersAuxiliary`.
 
 **Called from** (7 files): [`platform/sdl3/gpu_renderer`](platform.md#file-platform-sdl3-gpu-renderer) (`AppendSoftwareTriangle`, `GpuRenderer_DrawPrimitiveQueue` +2); [`graphics/backend/software`](#file-graphics-backend-software) (`g_GraphicsDrawPrimitiveQueue`, `g_GraphicsSetViewportAndClearDepth`); [`graphics/backend/software_display_mode`](#file-graphics-backend-software-display-mode) (`SoftwareRenderer_InstallDisplayModeHook`, `SoftwareRenderer_SetDisplayMode`); [`graphics/backend/software_raster`](#file-graphics-backend-software-raster) (`Raster_AuxiliaryTarget`, `Raster_FramebufferTarget`); [`platform/selftest/raster_selftest`](platform.md#file-platform-selftest-raster-selftest) (`RasterTest_Handlers`, `Thandor_SelfTestRaster`); [`graphics/render/offscreen`](#file-graphics-render-offscreen) (`GraphicsOffscreen_RenderModelListToTextureSource`); [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestTriangleSetup`).
 
-**Depends on** (6 files, names used): [`graphics/backend/software_raster`](#file-graphics-backend-software-raster) (16), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (6), [`graphics/render/primitives`](#file-graphics-render-primitives) (2), [`graphics/backend/software`](#file-graphics-backend-software) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (7 files, names used): [`graphics/backend/software_raster`](#file-graphics-backend-software-raster) (16), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (6), [`core/x86_emulation`](core.md#file-core-x86-emulation) (2), [`graphics/render/primitives`](#file-graphics-render-primitives) (2), [`graphics/backend/software`](#file-graphics-backend-software) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 **Includes:** `thandor/platform/bootstrap/image.h`, `software_raster.h`.
 
@@ -186,18 +186,18 @@ Bilinear down-scaling of texture subresources for the software renderer (texture
 
 **Functions** (4 public, 8 file-local):
 
-- [`SoftwareTexture_CrossFadeSubresources`](../../src/graphics/backend/software_texture_scale.cpp#L72) - Step 1 of SoftwareTexture_BilinearBlendScaleSubresources, on its own for the GPU draw list (graphics/core/draw2d.cpp draws the scale on the GPU): blendedSourcePixels = per-pixel cross-fade of ...
-- [`SoftwareTexture_BilinearBlendScaleSubresources`](../../src/graphics/backend/software_texture_scale.cpp#L115) - Draws the cross-fade of two 8-bit subresources of a texture source, scaled to destinationWidth x destinationHeight at (destinationLeft, destinationTop) of the software framebuffer (32 bit), as grey ...
-- [`SoftwareMinimap_BuildPixelWeightTables`](../../src/graphics/backend/software_texture_scale.cpp#L194) - Not in the original (it carried the tables precomputed): builds the scaler weights.
-- [`SoftwareTexture_DrawMinimapBilinear32`](../../src/graphics/backend/software_texture_scale.cpp#L346) - Software implementation of g_GraphicsMinimapDraw (the pixel loop of UiSelectionGeometryControl_DrawClipped): width x height opaque pixels at (destX, destY) of a 32-bit framebuffer, each a bilinear ...
+- [`SoftwareTexture_CrossFadeSubresources`](../../src/graphics/backend/software_texture_scale.cpp#L74) - Step 1 of SoftwareTexture_BilinearBlendScaleSubresources, on its own for the GPU draw list (graphics/core/draw2d.cpp draws the scale on the GPU): blendedSourcePixels = per-pixel cross-fade of ...
+- [`SoftwareTexture_BilinearBlendScaleSubresources`](../../src/graphics/backend/software_texture_scale.cpp#L117) - Draws the cross-fade of two 8-bit subresources of a texture source, scaled to destinationWidth x destinationHeight at (destinationLeft, destinationTop) of the software framebuffer (32 bit), as grey ...
+- [`SoftwareMinimap_BuildPixelWeightTables`](../../src/graphics/backend/software_texture_scale.cpp#L195) - Not in the original (it carried the tables precomputed): builds the scaler weights.
+- [`SoftwareTexture_DrawMinimapBilinear32`](../../src/graphics/backend/software_texture_scale.cpp#L347) - Software implementation of g_GraphicsMinimapDraw (the pixel loop of UiSelectionGeometryControl_DrawClipped): width x height opaque pixels at (destX, destY) of a 32-bit framebuffer, each a bilinear ...
 
 **Data** (0 shared, 4 file-local): `g_SoftwarePixelIntensityToNativeColorLut256`, `g_SoftwareBlendUnityWordLanesQ14`, `g_SoftwareMinimapFirstPixelWeights`, `g_SoftwareMinimapSecondPixelWeights`.
 
 **Called from** (3 files): [`graphics/core/draw2d`](#file-graphics-core-draw2d) (`CompareGreyScaleImage`, `CompareMinimapDraw` +5); [`platform/bootstrap/main`](platform.md#file-platform-bootstrap-main) (`WinMain`); [`platform/selftest/raster_selftest`](platform.md#file-platform-selftest-raster-selftest) (`RasterTest_BilinearBlendScale`).
 
-**Depends on** (4 files, names used): [`graphics/backend/software`](#file-graphics-backend-software) (3), [`graphics/backend/software_display_mode`](#file-graphics-backend-software-display-mode) (1), [`graphics/backend/software_raster`](#file-graphics-backend-software-raster) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (6 files, names used): [`graphics/backend/software`](#file-graphics-backend-software) (3), [`core/x86_emulation`](core.md#file-core-x86-emulation) (2), [`graphics/resources/texture`](#file-graphics-resources-texture) (2), [`graphics/backend/software_display_mode`](#file-graphics-backend-software-display-mode) (1), [`graphics/backend/software_raster`](#file-graphics-backend-software-raster) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `thandor/platform/bootstrap/image.h`, `software_raster.h`.
+**Includes:** `thandor/platform/bootstrap/image.h`, `thandor/graphics/resources/texture.h`, `software_raster.h`.
 
 <a id="file-graphics-backend-types"></a>
 #### `types.h`
@@ -205,6 +205,12 @@ Bilinear down-scaling of texture subresources for the software renderer (texture
 [Header](../../include/thandor/graphics/backend/types.h)
 
 The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
+
+**Functions** (1 public):
+
+- [`SoftwareFramebuffer_Pixels32`](../../include/thandor/graphics/backend/types.h#L85) - The pixels of a 4-byte framebuffer as ARGB dwords (the pixel block is dword aligned).
+
+**Called from** (1 files): [`graphics/backend/software_blit`](#file-graphics-backend-software-blit) (`SoftwareFramebuffer_FillRectArgb32`, `SoftwareTextureSource_StretchDirectColorBilinear32`).
 
 **Includes:** `stdint.h`, `thandor/core/ptr32.h`, `thandor/graphics/render/types.h`, `thandor/ui/frontend/types.h`.
 
@@ -223,7 +229,7 @@ The mouse cursor: frame animation (the cursor timer) and the input event ring wi
 **Functions** (4 public):
 
 - [`GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer`](../../src/graphics/core/cursor.cpp#L57) - Periodic cursor timer callback: keeps the software mouse cursor animated and in place independently of the game's frame rate.
-- [`GraphicsCursor_SetFrameIndex`](../../src/graphics/core/cursor.cpp#L96) - Selects the software cursor frame (GRAPHICS_CURSOR_FRAME_*) that the cursor timer animates and draws.
+- [`GraphicsCursor_SetFrameIndex`](../../src/graphics/core/cursor.cpp#L96) - Selects the software cursor frame (a GRAPHICS_CURSOR_FRAME_* value) that the cursor timer animates and draws.
 - [`GraphicsCursor_GetFrameIndex`](../../src/graphics/core/cursor.cpp#L108) - The software cursor frame selected by GraphicsCursor_SetFrameIndex (for backends that compose the cursor themselves, such as the SDL3 backend).
 - [`GraphicsCursor_ConsumeNextInputEvent`](../../src/graphics/core/cursor.cpp#L122) - Takes the next mouse event from the 256-entry ring the mouse input code fills (returns false and leaves outEvent untouched when it is empty; true with the event in *outEvent otherwise) and publishes ...
 
@@ -265,19 +271,19 @@ The 2D draw-list front end (see graphics/core/draw2d.h): the backend switch, the
 
 **Functions** (7 public, 25 file-local):
 
-- [`Draw2D_InstallSlots`](../../src/graphics/core/draw2d.cpp#L563)
-- [`Draw2D_SetBackend`](../../src/graphics/core/draw2d.cpp#L597)
-- [`Draw2D_GetBackend`](../../src/graphics/core/draw2d.cpp#L604)
-- [`Draw2D_BeginFrame`](../../src/graphics/core/draw2d.cpp#L609)
-- [`Draw2D_FrameItems`](../../src/graphics/core/draw2d.cpp#L616)
-- [`Draw2D_EndFrame`](../../src/graphics/core/draw2d.cpp#L622)
-- [`Draw2D_MarkExternal3D`](../../src/graphics/core/draw2d.cpp#L627)
+- [`Draw2D_InstallSlots`](../../src/graphics/core/draw2d.cpp#L566)
+- [`Draw2D_SetBackend`](../../src/graphics/core/draw2d.cpp#L600)
+- [`Draw2D_GetBackend`](../../src/graphics/core/draw2d.cpp#L607)
+- [`Draw2D_BeginFrame`](../../src/graphics/core/draw2d.cpp#L612)
+- [`Draw2D_FrameItems`](../../src/graphics/core/draw2d.cpp#L619)
+- [`Draw2D_EndFrame`](../../src/graphics/core/draw2d.cpp#L625)
+- [`Draw2D_MarkExternal3D`](../../src/graphics/core/draw2d.cpp#L630)
 
 **Data** (5 shared, 5 file-local): `g_GraphicsMinimapDraw`, `g_GraphicsFillColumnSegments`, `g_GraphicsGreyScaleImage`, `g_Draw2DSpriteRecorded`, `g_Draw2DMinimapContentGeneration`.
 
 **Called from** (7 files): [`platform/sdl3/gpu_renderer`](platform.md#file-platform-sdl3-gpu-renderer) (`CompareGpuFrame`, `EndGpuFrame` +3); [`graphics/core/device`](#file-graphics-core-device) (`GraphicsDisplay_PublishFramebuffer`); [`ui/controls/minimap`](ui.md#file-ui-controls-minimap) (`UiSelectionGeometryControl_DrawClipped`); [`ui/controls/panels`](ui.md#file-ui-controls-panels) (`UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren`); [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room) (`FrontendModelPointerContext_RenderWorldViewQueuesClipped`); [`ui/frontend/results`](ui.md#file-ui-frontend-results) (`FrontendResultsGraph_DrawSegments`); [`ui/ingame/minimap_texture`](ui.md#file-ui-ingame-minimap-texture) (`TerrainCompositeTexture_RebuildPlane0`).
 
-**Depends on** (5 files, names used): [`graphics/backend/software_blit`](#file-graphics-backend-software-blit) (6), [`graphics/resources/texture_source`](#file-graphics-resources-texture-source) (4), [`graphics/backend/software_texture_scale`](#file-graphics-backend-software-texture-scale) (3), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (2), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (6 files, names used): [`graphics/backend/software_blit`](#file-graphics-backend-software-blit) (6), [`graphics/resources/texture_source`](#file-graphics-resources-texture-source) (4), [`graphics/backend/software_texture_scale`](#file-graphics-backend-software-texture-scale) (3), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (2), [`graphics/resources/texture`](#file-graphics-resources-texture) (2), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 **Includes:** `vector`.
 
@@ -315,10 +321,10 @@ Dynamic light records: the record table and its compact copy, record allocation,
 - [`GraphicsShadingRuntime_AccumulateCompactLightingAtPoint`](../../src/graphics/render/light_records.cpp#L96) - Adds the light of every active compact light record (view space, see GraphicsShadingRuntime_RebuildCompactLightingRecords) whose sphere contains worldPointQ12 to the packed light accumulator (four ...
 - [`GraphicsShadingRuntime_AllocateRecord`](../../src/graphics/render/light_records.cpp#L144) - Claims the first free runtime light record (colour 0) for a point light at the given world position and returns it.
 - [`GraphicsShadingRuntime_ClearRecordTable`](../../src/graphics/render/light_records.cpp#L185) - Zeroes the 256 runtime light records (0x40 bytes each, 0x4000 bytes in total) so that no light source is active; GraphicsShadingRuntime_RebuildCompactLightingRecords only picks up records with a ...
-- [`GraphicsShadingRuntime_RebuildCompactLightingRecords`](../../src/graphics/render/light_records.cpp#L203) - Once per rendered world frame (frontend world render in src/ui/frontend/menu_room.cpp): copies every active runtime light record (colour set) into the compact table with its position transformed into ...
-- [`GraphicsShadingRuntime_CollectNearbyRecords`](../../src/graphics/render/light_records.cpp#L239) - Copies every compact light record whose sphere overlaps the query sphere (distance^2 &lt;= (queryRadius + lightRadius)^2, compared in 64 bits) into g_GraphicsShadingNearbyRecords and publishes ...
-- [`GraphicsShading_BuildIntensityScaleTable`](../../src/graphics/render/light_records.cpp#L280) - Not in the original (it carried the table precomputed): builds g_ShadingIntensityScaleMmx.
-- [`GraphicsLighting_BuildPackedLookupTable`](../../src/graphics/render/light_records.cpp#L296) - Not in the original: the original executable carries g_PackedLightingLookupTable precomputed (512 entries).
+- [`GraphicsShadingRuntime_RebuildCompactLightingRecords`](../../src/graphics/render/light_records.cpp#L204) - Once per rendered world frame (frontend world render in src/ui/frontend/menu_room.cpp): copies every active runtime light record (colour set) into the compact table with its position transformed into ...
+- [`GraphicsShadingRuntime_CollectNearbyRecords`](../../src/graphics/render/light_records.cpp#L240) - Copies every compact light record whose sphere overlaps the query sphere (distance^2 &lt;= (queryRadius + lightRadius)^2, compared in 64 bits) into g_GraphicsShadingNearbyRecords and publishes ...
+- [`GraphicsShading_BuildIntensityScaleTable`](../../src/graphics/render/light_records.cpp#L281) - Not in the original (it carried the table precomputed): builds g_ShadingIntensityScaleMmx.
+- [`GraphicsLighting_BuildPackedLookupTable`](../../src/graphics/render/light_records.cpp#L297) - Not in the original: the original executable carries g_PackedLightingLookupTable precomputed (512 entries).
 
 **Data** (7 shared, 1 file-local): `g_PackedLightingLookupTable`, `g_GraphicsShadingRuntimeRecords`, `g_GraphicsIntensityClampTableBase`, `g_GraphicsShadingCompactRecordCount`, `g_ShadingIntensityScaleMmx`, `g_GraphicsShadingNearbyRecords`, `g_GraphicsShadingNearbyRecordCount`.
 
@@ -338,7 +344,7 @@ No file comment; function families: `InterpolationState_*` (1), `InterpolationSt
 **Functions** (2 public):
 
 - [`InterpolationState_SetNegatedTargetAndRescaleProgress`](../../src/graphics/render/light_transitions.cpp#L15) - Starts fading out a dynamic light (shading record) over fadeOutTicks: a negative transition duration makes InterpolationStateTable_Advance256ByTicks shrink the radius to zero and then free the light.
-- [`InterpolationStateTable_Advance256ByTicks`](../../src/graphics/render/light_transitions.cpp#L61) - Advances the radius transitions of all 256 dynamic lights (shading records) by elapsedTicks.
+- [`InterpolationStateTable_Advance256ByTicks`](../../src/graphics/render/light_transitions.cpp#L62) - Advances the radius transitions of all 256 dynamic lights (shading records) by elapsedTicks.
 
 **Called from** (4 files): [`world/shots/flight`](world.md#file-world-shots-flight) (`ShotModel_ReleaseAndUnlink`, `ShotProjectile_ApplyNearestHit` +1); [`world/effects/lifecycle`](world.md#file-world-effects-lifecycle) (`EffectLifecycle_ReleaseShadingAndUnlink`, `EffectLifecycle_UpdateShadingOnFrameAdvance`); [`ui/ingame/preview_markers`](ui.md#file-ui-ingame-preview-markers) (`InGameWorldOverlay_ReleaseMarkers`); [`ui/ingame/root_frame`](ui.md#file-ui-ingame-root-frame) (`InGameUiRoot_UpdateFrame`).
 
@@ -349,7 +355,19 @@ No file comment; function families: `InterpolationState_*` (1), `InterpolationSt
 
 [Header](../../include/thandor/graphics/render/model.h)
 
-**Includes:** `thandor/graphics/render/types.h`.
+No file comment; function families: `ModelVertex_*` (4), `ModelTriangle_*` (1).
+
+**Functions** (5 public):
+
+- [`ModelVertex_Words`](../../include/thandor/graphics/render/model.h#L83) - A mesh vertex record (MODEL_MESH_RECORD_SIZE bytes, no struct of its own) is walked as GraphicsFixedVec3 words: [0] local position, +0x10 normal, +0x1C packed colour, +0x20 view position (the shadow ...
+- [`ModelVertex_Normal`](../../include/thandor/graphics/render/model.h#L87)
+- [`ModelVertex_ViewPosition`](../../include/thandor/graphics/render/model.h#L91)
+- [`ModelVertex_ShadowXY`](../../include/thandor/graphics/render/model.h#L95)
+- [`ModelTriangle_PlaneNormal`](../../include/thandor/graphics/render/model.h#L101) - The triangle's plane normal (planeNormalX/Y/ZQ12) as one vector.
+
+**Called from** (2 files): [`graphics/render/model_submit`](#file-graphics-render-model-submit) (`ModelRender_ComputeFacingDotQ12`, `ModelRender_PrepareProjectedVertex` +3); [`graphics/render/shadow_texture`](#file-graphics-render-shadow-texture) (`GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords`, `GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh`).
+
+**Includes:** `thandor/graphics/render/types.h`, `thandor/assets/record_bytes.h`.
 
 <a id="file-graphics-render-model-draw"></a>
 #### `model_draw.cpp / model_draw.h`
@@ -360,16 +378,16 @@ Model hierarchy drawing: view culling, level of detail and projection of the nod
 
 **Functions** (2 public, 2 file-local):
 
-- [`ModelRuntime_CullAndRenderHierarchyRecursive`](../../src/graphics/render/model_draw.cpp#L117) - Renders a model node and its children for the main view: clears the node's MODEL_NODE_FLAG_RENDERED, culls it against the four side planes of the view frustum and the near plane, and draws it when it ...
-- [`ModelRuntime_RenderHierarchyRecursiveAlternatePath`](../../src/graphics/render/model_draw.cpp#L150) - Alternate model renderer of the frontend/in-game world view (src/ui/frontend/menu_room.cpp, chosen when the pointer context compares hits by metric only): draws a node and all its children without ...
+- [`ModelRuntime_CullAndRenderHierarchyRecursive`](../../src/graphics/render/model_draw.cpp#L118) - Renders a model node and its children for the main view: clears the node's MODEL_NODE_FLAG_RENDERED, culls it against the four side planes of the view frustum and the near plane, and draws it when it ...
+- [`ModelRuntime_RenderHierarchyRecursiveAlternatePath`](../../src/graphics/render/model_draw.cpp#L151) - Alternate model renderer of the frontend/in-game world view (src/ui/frontend/menu_room.cpp, chosen when the pointer context compares hits by metric only): draws a node and all its children without ...
 
 **Data** (2 shared, 1 file-local): `g_ModelLodDepthThresholdQ8`, `g_ModelCullViewRelative`.
 
 **Called from** (6 files): [`graphics/render/offscreen`](#file-graphics-render-offscreen) (`GraphicsOffscreen_RenderModelListToTextureSource`); [`graphics/render/shadow_texture`](#file-graphics-render-shadow-texture) (`GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy`); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`CoreAssets_ApplySoundSettings`); [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room) (`FrontendModelPointerContext_SelectRenderHierarchyProc`); [`ui/frontend/settings`](ui.md#file-ui-frontend-settings) (`FrontendModelSettings_SetLodDepthThresholdQ8`); [`ui/ingame/settings`](ui.md#file-ui-ingame-settings) (`InGameModelSettings_SetLodDepthThresholdQ8`).
 
-**Depends on** (6 files, names used): [`graphics/render/projection`](#file-graphics-render-projection) (4), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (2), [`graphics/render/light_records`](#file-graphics-render-light-records) (2), [`graphics/render/model_submit`](#file-graphics-render-model-submit) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (7 files, names used): [`graphics/render/projection`](#file-graphics-render-projection) (4), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (2), [`graphics/render/light_records`](#file-graphics-render-light-records) (2), [`graphics/render/model_submit`](#file-graphics-render-model-submit) (2), [`assets/record_bytes`](assets.md#file-assets-record-bytes) (1), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `thandor/platform/bootstrap/image.h`.
+**Includes:** `thandor/assets/record_bytes.h`, `thandor/platform/bootstrap/image.h`.
 
 <a id="file-graphics-render-model-lighting"></a>
 #### `model_lighting.cpp`
@@ -380,9 +398,9 @@ No file comment; function families: `ModelLighting_*` (8), `ModelRender_*` (3).
 
 **Functions** (3 public, 8 file-local):
 
-- [`ModelRender_ComputeVertexIntensityDefaultPath`](../../src/graphics/render/model_lighting.cpp#L1185) - Lit colour of a mesh vertex for ModelRender_PrepareProjectedVertex, in MMX word lanes: the directional light (scenePackedColor1, weighted by the attenuation table entry for dot(lightDirection, ...
-- [`ModelRender_ComputeVertexIntensityScaledPath`](../../src/graphics/render/model_lighting.cpp#L1278) - The same vertex lighting as ModelRender_ComputeVertexIntensityDefaultPath for MODEL_TRIANGLE_LIGHTING_SCALED triangles: the directional weight comes from g_ModelLightingMmxMultiplierRows at ...
-- [`ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath`](../../src/graphics/render/model_lighting.cpp#L1365) - Vertex colour of the alternate model renderer (ModelRender_PrepareProjectedVertexAlternatePath): ambient scenePackedColor0 times the material colour, plus every nearby light whose sphere contains the ...
+- [`ModelRender_ComputeVertexIntensityDefaultPath`](../../src/graphics/render/model_lighting.cpp#L1186) - Lit colour of a mesh vertex for ModelRender_PrepareProjectedVertex, in MMX word lanes: the directional light (scenePackedColor1, weighted by the attenuation table entry for dot(lightDirection, ...
+- [`ModelRender_ComputeVertexIntensityScaledPath`](../../src/graphics/render/model_lighting.cpp#L1279) - The same vertex lighting as ModelRender_ComputeVertexIntensityDefaultPath for MODEL_TRIANGLE_LIGHTING_SCALED triangles: the directional weight comes from g_ModelLightingMmxMultiplierRows at ...
+- [`ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath`](../../src/graphics/render/model_lighting.cpp#L1366) - Vertex colour of the alternate model renderer (ModelRender_PrepareProjectedVertexAlternatePath): ambient scenePackedColor0 times the material colour, plus every nearby light whose sphere contains the ...
 
 **Data** (3 shared, 4 file-local): `g_ModelLightingMmxMultiplierRows`, `g_ModelLightingVertexToLightVectorScratch`, `g_ModelLightingTransformedSurfaceNormalScratch`.
 
@@ -401,23 +419,23 @@ Model mesh submission: projects the vertices of a node's mesh groups, clips and 
 
 **Functions** (13 public, 2 file-local):
 
-- [`ModelRender_DrawMeshGroupsWithTemporaryTransform`](../../src/graphics/render/model_submit.cpp#L37) - Draws the chosen level-of-detail mesh group of a model node (from ModelRuntime_CullAndRenderHierarchyRecursive).
-- [`ModelRender_DrawMeshGroupsAlternatePath`](../../src/graphics/render/model_submit.cpp#L116) - The same mesh group draw for the alternate model renderer (ModelRuntime_RenderHierarchyRecursiveAlternatePath, chosen by the world views with ...
-- [`ModelProjectedBounds_AccumulateHierarchyRecursive`](../../src/graphics/render/model_submit.cpp#L145) - Grows bounds by the projected bounding boxes of a model node and all its descendants, for the selection frame of SelectionOverlay_RenderSelectedArmyMetrics and the other overlay code in ...
-- [`ModelRender_PrepareProjectedVertex`](../../src/graphics/render/model_submit.cpp#L167) - Transforms and projects one mesh vertex for ModelRender_SubmitTriangle the first time a triangle of this draw uses it (projected X = MODEL_VERTEX_NOT_PROJECTED); the node's depth bias and, with ...
-- [`ModelRender_SubmitTriangle`](../../src/graphics/render/model_submit.cpp#L295) - Submits one mesh triangle of ModelRender_SubmitMeshTriangles: skips it when it faces away (facing dot not below facingThresholdQ12, unless MODEL_TRIANGLE_DOUBLE_SIDED), projects and lights its three ...
-- [`ModelRender_SubmitMeshTriangles`](../../src/graphics/render/model_submit.cpp#L358) - Draws one mesh of ModelRender_DrawMeshGroupsWithTemporaryTransform: prepares the model-space view directions, marks the mesh's vertices as not projected for this draw, then submits its triangles ...
-- [`ModelRender_SubmitMeshTrianglesAlternatePath`](../../src/graphics/render/model_submit.cpp#L381) - Draws one mesh of ModelRender_DrawMeshGroupsAlternatePath: the same as ModelRender_SubmitMeshTriangles, but through ModelRender_SubmitTriangleAlternatePath.
-- [`ModelRender_PrepareProjectedVertexAlternatePath`](../../src/graphics/render/model_submit.cpp#L406) - Vertex preparation of the alternate model renderer (ModelRender_SubmitTriangleAlternatePath): transforms and projects the vertex once per draw, but rejects it (returns true, projected X = 0x7FFFFFFF) ...
-- [`ModelRender_SubmitTriangleAlternatePath`](../../src/graphics/render/model_submit.cpp#L461) - Triangle submission of the alternate model renderer (from ModelRender_SubmitMeshTrianglesAlternatePath): no back-face test; the triangle is dropped when a vertex lies in front of the near plane or ...
-- [`ModelProjectedBounds_AccumulateNode`](../../src/graphics/render/model_submit.cpp#L522) - Grows bounds by the screen projection of the eight corners of a model node's local bounding box (for ModelProjectedBounds_AccumulateHierarchyRecursive).
+- [`ModelRender_DrawMeshGroupsWithTemporaryTransform`](../../src/graphics/render/model_submit.cpp#L41) - Draws the chosen level-of-detail mesh group of a model node (from ModelRuntime_CullAndRenderHierarchyRecursive).
+- [`ModelRender_DrawMeshGroupsAlternatePath`](../../src/graphics/render/model_submit.cpp#L120) - The same mesh group draw for the alternate model renderer (ModelRuntime_RenderHierarchyRecursiveAlternatePath, chosen by the world views with ...
+- [`ModelProjectedBounds_AccumulateHierarchyRecursive`](../../src/graphics/render/model_submit.cpp#L149) - Grows bounds by the projected bounding boxes of a model node and all its descendants, for the selection frame of SelectionOverlay_RenderSelectedArmyMetrics and the other overlay code in ...
+- [`ModelRender_PrepareProjectedVertex`](../../src/graphics/render/model_submit.cpp#L171) - Transforms and projects one mesh vertex for ModelRender_SubmitTriangle the first time a triangle of this draw uses it (projected X = MODEL_VERTEX_NOT_PROJECTED); the node's depth bias and, with ...
+- [`ModelRender_SubmitTriangle`](../../src/graphics/render/model_submit.cpp#L299) - Submits one mesh triangle of ModelRender_SubmitMeshTriangles: skips it when it faces away (facing dot not below facingThresholdQ12, unless MODEL_TRIANGLE_DOUBLE_SIDED), projects and lights its three ...
+- [`ModelRender_SubmitMeshTriangles`](../../src/graphics/render/model_submit.cpp#L362) - Draws one mesh of ModelRender_DrawMeshGroupsWithTemporaryTransform: prepares the model-space view directions, marks the mesh's vertices as not projected for this draw, then submits its triangles ...
+- [`ModelRender_SubmitMeshTrianglesAlternatePath`](../../src/graphics/render/model_submit.cpp#L385) - Draws one mesh of ModelRender_DrawMeshGroupsAlternatePath: the same as ModelRender_SubmitMeshTriangles, but through ModelRender_SubmitTriangleAlternatePath.
+- [`ModelRender_PrepareProjectedVertexAlternatePath`](../../src/graphics/render/model_submit.cpp#L410) - Vertex preparation of the alternate model renderer (ModelRender_SubmitTriangleAlternatePath): transforms and projects the vertex once per draw, but rejects it (returns true, projected X = 0x7FFFFFFF) ...
+- [`ModelRender_SubmitTriangleAlternatePath`](../../src/graphics/render/model_submit.cpp#L465) - Triangle submission of the alternate model renderer (from ModelRender_SubmitMeshTrianglesAlternatePath): no back-face test; the triangle is dropped when a vertex lies in front of the near plane or ...
+- [`ModelProjectedBounds_AccumulateNode`](../../src/graphics/render/model_submit.cpp#L526) - Grows bounds by the screen projection of the eight corners of a model node's local bounding box (for ModelProjectedBounds_AccumulateHierarchyRecursive).
 - 3 more: `ModelRender_ComputeFacingDotQ12`, `ModelProjectedBounds_ExpandWithCurrentScratchPoint`, `ModelRender_PrepareViewDirections`
 
 **Data** (4 shared, 3 file-local): `g_GraphicsTransformInputScratchVec3`, `g_GraphicsTransformOutputScratchVec3`, `g_ModelViewCompositeTransform`, `g_GraphicsTransformScratchMatrix3x4`.
 
 **Called from** (4 files): [`ui/ingame/selection_overlay`](ui.md#file-ui-ingame-selection-overlay) (`SelectionOverlay_DrawTerrainPointMarkers`, `SelectionOverlay_DrawWorldPointMarker` +2); [`world/model/picking`](world.md#file-world-model-picking) (`ModelBounds_ProjectCorner`, `ModelNodeRuntime_RaycastHierarchyNearest` +1); [`graphics/render/model_draw`](#file-graphics-render-model-draw) (`ModelRuntime_ProjectAndDrawNode`, `ModelRuntime_RenderHierarchyRecursiveAlternatePath`); [`graphics/render/model_lighting`](#file-graphics-render-model-lighting) (`ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath`).
 
-**Depends on** (8 files, names used): [`graphics/render/projection`](#file-graphics-render-projection) (8), [`graphics/render/model_lighting`](#file-graphics-render-model-lighting) (4), [`graphics/render/primitives`](#file-graphics-render-primitives) (4), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (3), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (2), [`world/model/hierarchy`](world.md#file-world-model-hierarchy) (2), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (9 files, names used): [`graphics/render/projection`](#file-graphics-render-projection) (8), [`graphics/render/model`](#file-graphics-render-model) (4), [`graphics/render/model_lighting`](#file-graphics-render-model-lighting) (4), [`graphics/render/primitives`](#file-graphics-render-primitives) (4), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (3), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (2), [`world/model/hierarchy`](world.md#file-world-model-hierarchy) (2), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 **Includes:** `thandor/platform/bootstrap/image.h`.
 
@@ -452,13 +470,13 @@ No file comment; function families: `GraphicsPrimitiveQueue_*` (12), `GraphicsPr
 - [`GraphicsPrimitiveQueue_RadixSortForRendering`](../../src/graphics/render/primitives.cpp#L104) - Sorts a filled primitive queue for drawing and links the sorted nodes into the traversal list read by GraphicsPrimitiveQueue_Begin/Next.
 - [`GraphicsPrimitiveQueue_AllocateGlobalPool`](../../src/graphics/render/primitives.cpp#L151) - Allocates the global primitive queue pool for packetCapacity packets (header, two nodes and one packet each) and remembers the capacity for GraphicsPrimitiveQueue_ResetGlobal.
 - [`GraphicsPrimitiveQueue_ResetGlobal`](../../src/graphics/render/primitives.cpp#L173) - Empties the global primitive queue (g_PrimitiveQueueStorage) for a new frame and lays out its pool: primaryNodes right after the 0x20-byte header, then radixScratchPool, then the packets, each part ...
-- [`GraphicsPrimitiveQueue_GetCount`](../../src/graphics/render/primitives.cpp#L194) - Returns the number of packets queued in queue.
-- [`GraphicsPrimitiveQueue_Begin`](../../src/graphics/render/primitives.cpp#L205) - Starts walking a sorted primitive queue: returns the packet of the node at traversalCursor (set by GraphicsPrimitiveQueue_RadixSortForRendering) and advances the cursor to the next node.
-- [`GraphicsPrimitiveQueue_Next`](../../src/graphics/render/primitives.cpp#L222) - Continues a walk begun by GraphicsPrimitiveQueue_Begin: returns the packet of the node at traversalCursor and advances the cursor.
-- [`GraphicsPrimitiveQueue_AppendTriangle`](../../src/graphics/render/primitives.cpp#L244) - Appends a triangle packet for the model renderer: copies screen position, backend coordinates and depth of the three projected vertices and the texture coordinates from triangle, and sets renderFlags.
-- [`GraphicsPrimitiveQueue_SetVertexColors`](../../src/graphics/render/primitives.cpp#L311) - Sets the three vertex colours of the packet appended last.
-- [`DepthInterval_BuildBinMask`](../../src/graphics/render/primitives.cpp#L395) - Broad-phase helper: returns a 32-bit mask with one bit per 1 &lt;&lt; SPATIAL_BIN_SHIFT wide bin touched by the interval [center - radius, center + radius] on one world axis (Q12).
-- [`DepthBinMasks_Overlap`](../../src/graphics/render/primitives.cpp#L418) - Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): true when axis 0 masks and axis 1 masks both share a bin, i.e. the objects may overlap.
+- [`GraphicsPrimitiveQueue_GetCount`](../../src/graphics/render/primitives.cpp#L195) - Returns the number of packets queued in queue.
+- [`GraphicsPrimitiveQueue_Begin`](../../src/graphics/render/primitives.cpp#L206) - Starts walking a sorted primitive queue: returns the packet of the node at traversalCursor (set by GraphicsPrimitiveQueue_RadixSortForRendering) and advances the cursor to the next node.
+- [`GraphicsPrimitiveQueue_Next`](../../src/graphics/render/primitives.cpp#L223) - Continues a walk begun by GraphicsPrimitiveQueue_Begin: returns the packet of the node at traversalCursor and advances the cursor.
+- [`GraphicsPrimitiveQueue_AppendTriangle`](../../src/graphics/render/primitives.cpp#L245) - Appends a triangle packet for the model renderer: copies screen position, backend coordinates and depth of the three projected vertices and the texture coordinates from triangle, and sets renderFlags.
+- [`GraphicsPrimitiveQueue_SetVertexColors`](../../src/graphics/render/primitives.cpp#L312) - Sets the three vertex colours of the packet appended last.
+- [`DepthInterval_BuildBinMask`](../../src/graphics/render/primitives.cpp#L396) - Broad-phase helper: returns a 32-bit mask with one bit per 1 &lt;&lt; SPATIAL_BIN_SHIFT wide bin touched by the interval [center - radius, center + radius] on one world axis (Q12).
+- [`DepthBinMasks_Overlap`](../../src/graphics/render/primitives.cpp#L419) - Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): true when axis 0 masks and axis 1 masks both share a bin, i.e. the objects may overlap.
 - 2 more: `GraphicsPrimitiveQueue_SetMaterial`, `GraphicsPrimitiveQueue_OffsetTextureCoordinates`
 
 **Data** (2 shared, 4 file-local): `g_GraphicsPrimitiveQueueRadixSortProc`, `g_PrimitiveQueueStorage`.
@@ -499,29 +517,29 @@ View projection: the view and projection parameters, the projection viewport and
 
 [Source](../../src/graphics/render/shadow_texture.cpp) · [Header](../../include/thandor/graphics/render/shadow_texture.h)
 
-No file comment; function families: `GraphicsShadingGeneratedTexture_*` (23), `Shading_*` (5), `GraphicsShadingRuntime_*` (2), `ShadingFilter_*` (2).
+Mesh groups, mesh records, vertices and triangles are bytes of the loaded model asset, passed as addresses (ModelMeshGroupAddress32) or byte cursors: the reinterpret_casts in this file view those bytes as the record structs (ModelMeshGroupHeader, ModelMeshHeader, GraphicsTriangleInput, GraphicsFixedVec3 vertex words).
 
-**Functions** (20 public, 14 file-local):
+**Functions** (20 public, 15 file-local):
 
-- [`GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy`](../../src/graphics/render/shadow_texture.cpp#L495) - Casts the shadow of one model hierarchy onto the terrain (world view render pass, context flag 0x20000, called per candidate model from the frontend world render in src/ui/frontend/menu_room.cpp).
-- [`GraphicsShadingRuntime_InitializeGeneratedTexture`](../../src/graphics/render/shadow_texture.cpp#L578) - Sets up the generated shading textures: a zeroed square scratch grid of (2 * gridHalfSize)^2 bytes and an in-memory gfx asset with one palette (white with an alpha ramp) and subresourceCount 8-bit ...
-- [`GraphicsShadingRuntime_Shutdown`](../../src/graphics/render/shadow_texture.cpp#L692) - Counterpart of GraphicsShadingRuntime_InitializeGeneratedTexture: destroys the texture set, frees the generated gfx asset and the scratch grid, and clears the three pointers.
-- [`GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes`](../../src/graphics/render/shadow_texture.cpp#L709) - Starts a shadow pass (frontend world render in src/ui/frontend/menu_room.cpp, before the per-model GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy calls): puts the tile cursor on the first ...
-- [`GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources`](../../src/graphics/render/shadow_texture.cpp#L752) - Ends a shadow pass (frontend world render in src/ui/frontend/menu_room.cpp): uploads the alpha of every generated shadow texture the pass filled, i.e. all subresources before the current one plus the ...
-- [`GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh`](../../src/graphics/render/shadow_texture.cpp#L777) - Shadow silhouette pass for a mesh record without MODEL_MESH_SOFT_SHADOW (ModelMeshHeader.flags), called per mesh record by GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy after the blur: ...
-- [`GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy`](../../src/graphics/render/shadow_texture.cpp#L815) - Second silhouette pass of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy (after the blur): for the node and, recursively, all its children builds the node-to-shadow-tile transform (world ...
-- [`GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh`](../../src/graphics/render/shadow_texture.cpp#L874) - Counterpart of GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh for mesh records with MODEL_MESH_SOFT_SHADOW (the parts that get the soft, filtered shadow); called per mesh record by ...
-- [`GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy`](../../src/graphics/render/shadow_texture.cpp#L919) - First silhouette pass of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy: like GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy, but rasterizes the mesh records with ...
-- [`GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords`](../../src/graphics/render/shadow_texture.cpp#L981) - Projects every vertex of one mesh record with the current node transform (light-space rotation, see GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds, which calls it per ...
+- [`GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy`](../../src/graphics/render/shadow_texture.cpp#L509) - Casts the shadow of one model hierarchy onto the terrain (world view render pass, context flag 0x20000, called per candidate model from the frontend world render in src/ui/frontend/menu_room.cpp).
+- [`GraphicsShadingRuntime_InitializeGeneratedTexture`](../../src/graphics/render/shadow_texture.cpp#L592) - Sets up the generated shading textures: a zeroed square scratch grid of (2 * gridHalfSize)^2 bytes and an in-memory gfx asset with one palette (white with an alpha ramp) and subresourceCount 8-bit ...
+- [`GraphicsShadingRuntime_Shutdown`](../../src/graphics/render/shadow_texture.cpp#L708) - Counterpart of GraphicsShadingRuntime_InitializeGeneratedTexture: destroys the texture set, frees the generated gfx asset and the scratch grid, and clears the three pointers.
+- [`GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes`](../../src/graphics/render/shadow_texture.cpp#L725) - Starts a shadow pass (frontend world render in src/ui/frontend/menu_room.cpp, before the per-model GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy calls): puts the tile cursor on the first ...
+- [`GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources`](../../src/graphics/render/shadow_texture.cpp#L766) - Ends a shadow pass (frontend world render in src/ui/frontend/menu_room.cpp): uploads the alpha of every generated shadow texture the pass filled, i.e. all subresources before the current one plus the ...
+- [`GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh`](../../src/graphics/render/shadow_texture.cpp#L791) - Shadow silhouette pass for a mesh record without MODEL_MESH_SOFT_SHADOW (ModelMeshHeader.flags), called per mesh record by GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy after the blur: ...
+- [`GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy`](../../src/graphics/render/shadow_texture.cpp#L829) - Second silhouette pass of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy (after the blur): for the node and, recursively, all its children builds the node-to-shadow-tile transform (world ...
+- [`GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh`](../../src/graphics/render/shadow_texture.cpp#L888) - Counterpart of GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh for mesh records with MODEL_MESH_SOFT_SHADOW (the parts that get the soft, filtered shadow); called per mesh record by ...
+- [`GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy`](../../src/graphics/render/shadow_texture.cpp#L933) - First silhouette pass of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy: like GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy, but rasterizes the mesh records with ...
+- [`GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords`](../../src/graphics/render/shadow_texture.cpp#L995) - Projects every vertex of one mesh record with the current node transform (light-space rotation, see GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds, which calls it per ...
 - 10 more: `GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds`, `GraphicsShadingGeneratedTexture_TransformPointXY`, `GraphicsShadingGeneratedTexture_AdvanceTileCursor`, `GraphicsShadingGeneratedTexture_FilterGridScratchMmx`, `GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry`, `GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks`, `GraphicsShadingGeneratedTexture_RollbackFourteenProjectedPointBlocks`, `GraphicsShadingGeneratedTexture_TransformPointXYQuantized`, `GraphicsShadingGeneratedTexture_ComposeTransform`, `GraphicsShadingGeneratedTexture_RasterizeTriangleMask`
 
 **Data** (20 shared, 3 file-local): `g_GraphicsShadingTextureDimension`, `g_GraphicsShadingGridHalfSize`, `g_GraphicsShadingGeneratedTexturePixelCursor`, `g_GraphicsShadingGeneratedTextureTileX`, `g_GraphicsShadingGeneratedTextureTileY`, `g_GraphicsShadingGeneratedTextureSubresourceIndex`, `g_GraphicsShadingSubresourceCount`, `g_GraphicsShadingGeneratedTextureTileXQ20` and 12 more.
 
 **Called from** (8 files): [`gameplay/session/startup`](gameplay.md#file-gameplay-session-startup) (`InGameRuntime_ShutdownAndReleaseResources`, `InGameSession_InitShadingAndMirrorViewOptions`); [`ui/ingame/settings`](ui.md#file-ui-ingame-settings) (`InGameShadingSettings_ApplyLevel`, `InGameTextureSettings_SetQuality`); [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session) (`InGameRuntime_InitializeLoadedSession`); [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session) (`InGameNewSession_ResetSessionState`); [`graphics/render/model_lighting`](#file-graphics-render-model-lighting) (`s_ModelLightingOriginalWindow`); [`ui/frontend/lifecycle`](ui.md#file-ui-frontend-lifecycle) (`Frontend_Init`); [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room) (`FrontendModelPointerContext_RenderWorldViewQueuesClipped`); [`ui/frontend/settings`](ui.md#file-ui-frontend-settings) (`FrontendTextureSettings_SetQuality`).
 
-**Depends on** (13 files, names used): [`graphics/render/projection`](#file-graphics-render-projection) (6), [`graphics/resources/texture_set`](#file-graphics-resources-texture-set) (3), [`core/color_lanes`](core.md#file-core-color-lanes) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (2), [`world/terrain/field_raycast`](world.md#file-world-terrain-field-raycast) (2), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/ptr32`](core.md#file-core-ptr32) (1), [`graphics/render/light_records`](#file-graphics-render-light-records) (1), [`graphics/render/model_draw`](#file-graphics-render-model-draw) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1), [`world/terrain/field_sampling`](world.md#file-world-terrain-field-sampling) (1).
+**Depends on** (16 files, names used): [`graphics/render/projection`](#file-graphics-render-projection) (6), [`graphics/resources/texture_set`](#file-graphics-resources-texture-set) (3), [`core/color_lanes`](core.md#file-core-color-lanes) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (2), [`graphics/resources/texture`](#file-graphics-resources-texture) (2), [`world/terrain/field_raycast`](world.md#file-world-terrain-field-raycast) (2), [`assets/record_bytes`](assets.md#file-assets-record-bytes) (1), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/ptr32`](core.md#file-core-ptr32) (1), [`graphics/render/light_records`](#file-graphics-render-light-records) (1), [`graphics/render/model`](#file-graphics-render-model) (1), [`graphics/render/model_draw`](#file-graphics-render-model-draw) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1), [`world/terrain/field_sampling`](world.md#file-world-terrain-field-sampling) (1).
 
-**Includes:** `thandor/core/color_lanes.h`, `emmintrin.h`.
+**Includes:** `thandor/assets/record_bytes.h`, `thandor/core/color_lanes.h`, `emmintrin.h`.
 
 <a id="file-graphics-render-types"></a>
 #### `types.h`
@@ -529,6 +547,12 @@ No file comment; function families: `GraphicsShadingGeneratedTexture_*` (23), `S
 [Header](../../include/thandor/graphics/render/types.h)
 
 The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
+
+**Functions** (1 public):
+
+- [`FrontendModelPointerContext_AsWorldRuntime`](../../include/thandor/graphics/render/types.h#L346) - A FrontendModelPointerContext as the world runtime context it shares its storage with (see the field comments above): the menu room node of the frontend (ROM transitions, menu room scene, debug ...
+
+**Called from** (11 files): [`ui/frontend/menu_room_scene`](ui.md#file-ui-frontend-menu-room-scene) (`FrontendRomActionTable_ExecuteRecord`, `FrontendRomTransition_ProcessPendingRecord`); [`ui/ingame/army_stock`](ui.md#file-ui-ingame-army-stock) (`InGameArmyStock_RebuildGrid`, `InGameArmyStock_TakeOrSellSlotArmy`); [`ui/ingame/build_catalog`](ui.md#file-ui-ingame-build-catalog) (`InGameBuildCatalog_QueueOrCancelEntry`, `InGameSpecialBuildCatalog_QueueOrCancelEntry`); [`network/protocol/frontend_session`](network.md#file-network-protocol-frontend-session) (`FrontendNetwork_TickDisconnectTimeoutAndResetSession`); [`ui/frontend/debug_overlay`](ui.md#file-ui-frontend-debug-overlay) (`FrontendDebugOverlay_RefreshCountersAndWorldCoordinates`); [`ui/frontend/lifecycle`](ui.md#file-ui-frontend-lifecycle) (`Frontend_Init`); [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room) (`FrontendModelPointerContext_RenderWorldViewQueuesClipped`); [`ui/frontend/state`](ui.md#file-ui-frontend-state) (`FrontendRuntime_DispatchCommandByCodeAndModifierFlags`); [`ui/ingame/commands`](ui.md#file-ui-ingame-commands) (`InGameSelectionGroupButton_RecallOrStoreGroup`); [`ui/ingame/technology`](ui.md#file-ui-ingame-technology) (`InGameTechnologyPanel_Rebuild`); 1 more: [`ui/ingame/types`](ui.md#file-ui-ingame-types).
 
 **Includes:** `stdint.h`, `stddef.h`, `thandor/core/ptr32.h`, `thandor/core/memory/types.h`, `thandor/ui/controls/types.h`.
 
@@ -570,9 +594,9 @@ No file comment; function families: `GraphicsPaletteAsset_*` (6).
 - [`GraphicsPaletteAsset_LoadPackage`](../../src/graphics/resources/palette.cpp#L31) - Loads a 'pal' palette asset from pathUtf16 (Package_LoadEntry) and validates it through g_GraphicsPaletteAssetValidate; an invalid asset is released again.
 - [`GraphicsPaletteAsset_ReleasePackage`](../../src/graphics/resources/palette.cpp#L57) - Releases a palette asset loaded by GraphicsPaletteAsset_LoadPackage: resolves its allocation through g_GraphicsPaletteAssetResolveAllocationBase and hands it to Resource_Release.
 - [`GraphicsPaletteAsset_Clone`](../../src/graphics/resources/palette.cpp#L71) - Makes an independently owned heap copy of a palette asset (allocationSizeBytes, copied dword by dword) and validates it; an invalid copy is freed again and the free result returned.
-- [`GraphicsPaletteAsset_ReleaseClone`](../../src/graphics/resources/palette.cpp#L108) - Frees a palette asset made by GraphicsPaletteAsset_Clone: resolves its allocation through g_GraphicsPaletteAssetResolveAllocationBase and frees it with g_MemoryApi.free.
-- [`GraphicsPaletteAsset_Validate`](../../src/graphics/resources/palette.cpp#L125) - Returns paletteAsset when it starts with the 'pal' signature and its paletteBankCount entries (8 bytes each, from GRAPHICS_PALETTE_BANKS_OFFSET) lie inside allocationSizeBytes, otherwise NULL with ...
-- [`GraphicsPaletteAsset_ResolveAllocationBase`](../../src/graphics/resources/palette.cpp#L147) - Returns the allocation that owns a palette asset, which is the asset itself; both release callbacks go through this slot.
+- [`GraphicsPaletteAsset_ReleaseClone`](../../src/graphics/resources/palette.cpp#L111) - Frees a palette asset made by GraphicsPaletteAsset_Clone: resolves its allocation through g_GraphicsPaletteAssetResolveAllocationBase and frees it with g_MemoryApi.free.
+- [`GraphicsPaletteAsset_Validate`](../../src/graphics/resources/palette.cpp#L128) - Returns paletteAsset when it starts with the 'pal' signature and its paletteBankCount entries (8 bytes each, from GRAPHICS_PALETTE_BANKS_OFFSET) lie inside allocationSizeBytes, otherwise NULL with ...
+- [`GraphicsPaletteAsset_ResolveAllocationBase`](../../src/graphics/resources/palette.cpp#L150) - Returns the allocation that owns a palette asset, which is the asset itself; both release callbacks go through this slot.
 
 **Data** (2 shared, 2 file-local): `g_GraphicsPaletteAssetLoadPackage`, `g_GraphicsPaletteAssetLifecycleCallbacks3`.
 
@@ -589,15 +613,15 @@ No file comment; function families: `GraphicsPaletteAsset_*` (6).
 
 Palette optimiser and combiner (converter/editor code, no caller in the game): folds and packs the used colours of the palette banks, merges and removes banks and combines assets, remapping the colour indices of the subresources.
 
-**Functions** (7 public, 9 file-local):
+**Functions** (7 public, 12 file-local):
 
-- [`GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices`](../../src/graphics/resources/palette_optimizer.cpp#L211) - Shrinks the palette banks of a palette texture source in place: marks every entry unused, clears the mark on each entry a subresource pixel references, removes banks without a used colour, folds ...
-- [`GraphicsPaletteAsset_GetBankCount`](../../src/graphics/resources/palette_optimizer.cpp#L258) - Checks the 'pal' signature: returns true and stores paletteBankCount (+0xB0) in *outBankCount, or returns false (leaving *outBankCount untouched) for a wrong signature.
-- [`GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets`](../../src/graphics/resources/palette_optimizer.cpp#L286) - Builds a new palette texture source from baseAsset followed by appendedAsset: one header (base's, with the size and the bank and subresource counts summed), base banks, appended banks, base ...
-- [`GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources`](../../src/graphics/resources/palette_optimizer.cpp#L376) - Moves the used colours of bank sourcePaletteBank into bank destinationPaletteBank (reusing identical colours, otherwise taking free entries), rewrites the pixels of every subresource that used the ...
-- [`GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank`](../../src/graphics/resources/palette_optimizer.cpp#L452) - Replaces colour index oldColorIndex by newColorIndex in the pixels of every subresource that uses palette bank paletteBank (nothing to do when both are equal).
-- [`GraphicsPaletteTextureSource_CountCombinedUsedColors`](../../src/graphics/resources/palette_optimizer.cpp#L488) - Returns how many entries one bank would need to hold the used colours of both destinationPaletteBank and candidatePaletteBank (colours present in both counted once).
-- [`GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources`](../../src/graphics/resources/palette_optimizer.cpp#L540) - Deletes palette bank paletteIndex: moves everything behind it 0x800 bytes down, lowers the bank count, the subresource table offset, the allocation size and every subresource's pixel offset ...
+- [`GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices`](../../src/graphics/resources/palette_optimizer.cpp#L231) - Shrinks the palette banks of a palette texture source in place: marks every entry unused, clears the mark on each entry a subresource pixel references, removes banks without a used colour, folds ...
+- [`GraphicsPaletteAsset_GetBankCount`](../../src/graphics/resources/palette_optimizer.cpp#L278) - Checks the 'pal' signature: returns true and stores paletteBankCount (+0xB0) in *outBankCount, or returns false (leaving *outBankCount untouched) for a wrong signature.
+- [`GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets`](../../src/graphics/resources/palette_optimizer.cpp#L309) - Builds a new palette texture source from baseAsset followed by appendedAsset: one header (base's, with the size and the bank and subresource counts summed), base banks, appended banks, base ...
+- [`GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources`](../../src/graphics/resources/palette_optimizer.cpp#L402) - Moves the used colours of bank sourcePaletteBank into bank destinationPaletteBank (reusing identical colours, otherwise taking free entries), rewrites the pixels of every subresource that used the ...
+- [`GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank`](../../src/graphics/resources/palette_optimizer.cpp#L475) - Replaces colour index oldColorIndex by newColorIndex in the pixels of every subresource that uses palette bank paletteBank (nothing to do when both are equal).
+- [`GraphicsPaletteTextureSource_CountCombinedUsedColors`](../../src/graphics/resources/palette_optimizer.cpp#L510) - Returns how many entries one bank would need to hold the used colours of both destinationPaletteBank and candidatePaletteBank (colours present in both counted once).
+- [`GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources`](../../src/graphics/resources/palette_optimizer.cpp#L560) - Deletes palette bank paletteIndex: moves everything behind it 0x800 bytes down, lowers the bank count, the subresource table offset, the allocation size and every subresource's pixel offset ...
 
 **Data** (0 shared, 2 file-local): `g_GraphicsPaletteBankSlots`, `g_GraphicsPaletteRemapBytes`.
 
@@ -624,7 +648,7 @@ Replaces export 2 of engine\pcx.fnc (module offset 0x3B0, header check at 0x320)
 **Functions** (2 public, 1 file-local):
 
 - [`Pcx_DecodeIndexed8`](../../src/graphics/resources/pcx_read.cpp#L58) - Decodes an 8-bit, 1-plane, RLE-encoded PCX file with a 256-colour palette at its end.
-- [`Pcx_FreeIndexed8`](../../src/graphics/resources/pcx_read.cpp#L168) - Releases the pixels of an image decoded by Pcx_DecodeIndexed8 (NULL pixels are ignored).
+- [`Pcx_FreeIndexed8`](../../src/graphics/resources/pcx_read.cpp#L171) - Releases the pixels of an image decoded by Pcx_DecodeIndexed8 (NULL pixels are ignored).
 
 **Called from** (2 files): [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestPcx`); [`ui/core/pcx_preview`](ui.md#file-ui-core-pcx-preview) (`PcxPreview_Load64x64PaletteAndPixels`).
 
@@ -656,6 +680,15 @@ PCX encoder, replacing export 3 (module offset 0x980) of engine\pcx.fnc together
 
 Subresource table of a 'gfx' texture source: one 32-byte record per subresource at asset + subresourceTableOffset (+ index * GFX_SUBRESOURCE_RECORD_SIZE). The pixel data offset is relative to the asset start as well.
 
+**Functions** (4 public):
+
+- [`GraphicsTextureSource_Bytes`](../../include/thandor/graphics/resources/texture.h#L41) - The asset as bytes: every offset in the header and the subresource records is relative to the asset start (the asset is one block of header, palette banks, record table and pixels).
+- [`GraphicsTextureSource_Bytes`](../../include/thandor/graphics/resources/texture.h#L46)
+- [`GraphicsTextureSource_Entries`](../../include/thandor/graphics/resources/texture.h#L52) - The subresource record table at asset + subresourceTableOffset.
+- [`GraphicsTextureSource_Entries`](../../include/thandor/graphics/resources/texture.h#L59)
+
+**Called from** (11 files): [`graphics/backend/software_texture_scale`](#file-graphics-backend-software-texture-scale) (`SoftwareMinimap_SampleBilinear`, `SoftwareTexture_BilinearBlendScaleSubresources` +2); [`graphics/core/draw2d`](#file-graphics-core-draw2d) (`GreyScaleImageDraws`, `RecordGreyScaleImage` +2); [`graphics/resources/texture_decompose`](#file-graphics-resources-texture-decompose) (`GraphicsTextureDecompose_ArgbRegions`, `GraphicsTextureDecompose_IndexedRegions` +1); [`graphics/resources/texture_source`](#file-graphics-resources-texture-source) (`GraphicsTextureSource_GetLogicalSize`, `GraphicsTextureSource_TestOpaquePixel` +1); [`ui/ingame/minimap_texture`](ui.md#file-ui-ingame-minimap-texture) (`TerrainCompositeTexture_FillPlane1`, `TerrainCompositeTexture_FillPlane2`); [`ui/ingame/selection_panel_resources`](ui.md#file-ui-ingame-selection-panel-resources) (`SelectionInfoPanel_PatchInfoTexture`, `SelectionInfoPanel_TextureEntries`); [`graphics/backend/software_blit`](#file-graphics-backend-software-blit) (`SoftwareTextureSource_StretchDirectColorBilinear32`); [`graphics/backend/software_blit_helpers`](#file-graphics-backend-software-blit-helpers) (`Blit_SetupSubresource`); [`graphics/backend/software_raster`](#file-graphics-backend-software-raster) (`Raster_SetupTexture`); [`graphics/render/shadow_texture`](#file-graphics-render-shadow-texture) (`GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes`); 1 more: [`graphics/resources/texture_set`](#file-graphics-resources-texture-set).
+
 **Includes:** `thandor/graphics/render/types.h`, `thandor/graphics/resources/types.h`, `thandor/ui/controls/types.h`.
 
 <a id="file-graphics-resources-texture-decompose"></a>
@@ -665,13 +698,13 @@ Subresource table of a 'gfx' texture source: one 32-byte record per subresource 
 
 Subresource decomposition of a texture source: cuts the ARGB or indexed pixels of every subresource into rectangular regions (asset conversion).
 
-**Functions** (1 public, 9 file-local):
+**Functions** (1 public, 10 file-local):
 
-- [`GraphicsTextureSource_DecomposeSubresourceRegions`](../../src/graphics/resources/texture_decompose.cpp#L509) - Cuts one subresource of a 'gfx' texture source (a sheet of sprites) into its separate sprites and returns them as a new 'gfx' asset, one subresource per sprite (installed as ...
+- [`GraphicsTextureSource_DecomposeSubresourceRegions`](../../src/graphics/resources/texture_decompose.cpp#L517) - Cuts one subresource of a 'gfx' texture source (a sheet of sprites) into its separate sprites and returns them as a new 'gfx' asset, one subresource per sprite (installed as ...
 
 **Called from:** no other file (entry points, slots filled at run time or file-local use).
 
-**Depends on** (3 files, names used): [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (4 files, names used): [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`graphics/resources/texture`](#file-graphics-resources-texture) (2), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 <a id="file-graphics-resources-texture-set"></a>
 #### `texture_set.cpp / texture_set.h`
@@ -682,22 +715,22 @@ Texture sets: creation and destruction through the device slots, package load/re
 
 **Functions** (8 public, 1 file-local):
 
-- [`GraphicsTextureSet_Create`](../../src/graphics/resources/texture_set.cpp#L37) - Creates the renderer textures of a texture asset: allocates the set metadata, then one texture resource per subresource, registered in g_GraphicsTextureSlots.
-- [`GraphicsTextureSet_Destroy`](../../src/graphics/resources/texture_set.cpp#L74) - Destroys a texture set made by GraphicsTextureSet_Create: every texture resource is removed from g_GraphicsTextureSlots and freed, then the set metadata is freed.
-- [`GraphicsTextureSet_LoadPackage`](../../src/graphics/resources/texture_set.cpp#L118) - Loads a 'gfx' texture source from the package and builds a renderer texture set from it through g_GraphicsCreateTextureSet (installed as g_GraphicsTextureSetLoadPackage).
-- [`GraphicsTextureSet_ReleasePackage`](../../src/graphics/resources/texture_set.cpp#L142) - Counterpart of GraphicsTextureSet_LoadPackage (installed as g_GraphicsTextureSetReleasePackage): destroys the texture set through g_GraphicsDestroyTextureSet and releases the 'gfx' source asset that ...
-- [`GraphicsTextureSet_RefreshNoOp`](../../src/graphics/resources/texture_set.cpp#L156) - g_GraphicsRefreshTextureAlpha: the software renderer reads the source pixels directly, so there is nothing to re-upload after they changed (the original's hardware renderers installed their own ...
-- [`GraphicsTextureSet_AllocateMetadata`](../../src/graphics/resources/texture_set.cpp#L220) - Builds a texture set for a 'gfx' asset: converts its palettes to the display format, then allocates the set (an 8-byte header with the source asset and image count, then one 0x20-byte ...
-- [`GraphicsTextureSet_FreeMetadata`](../../src/graphics/resources/texture_set.cpp#L263) - Counterpart of GraphicsTextureSet_AllocateMetadata: frees the set and returns its source asset so the caller can release that too.
-- [`GraphicsTexture_RegisterSlot`](../../src/graphics/resources/texture_set.cpp#L279) - Enters a texture into the first free slot of g_GraphicsTextureSlots (the registry the original used to evict and rebuild device textures).
+- [`GraphicsTextureSet_Create`](../../src/graphics/resources/texture_set.cpp#L38) - Creates the renderer textures of a texture asset: allocates the set metadata, then one texture resource per subresource, registered in g_GraphicsTextureSlots.
+- [`GraphicsTextureSet_Destroy`](../../src/graphics/resources/texture_set.cpp#L77) - Destroys a texture set made by GraphicsTextureSet_Create: every texture resource is removed from g_GraphicsTextureSlots and freed, then the set metadata is freed.
+- [`GraphicsTextureSet_LoadPackage`](../../src/graphics/resources/texture_set.cpp#L121) - Loads a 'gfx' texture source from the package and builds a renderer texture set from it through g_GraphicsCreateTextureSet (installed as g_GraphicsTextureSetLoadPackage).
+- [`GraphicsTextureSet_ReleasePackage`](../../src/graphics/resources/texture_set.cpp#L145) - Counterpart of GraphicsTextureSet_LoadPackage (installed as g_GraphicsTextureSetReleasePackage): destroys the texture set through g_GraphicsDestroyTextureSet and releases the 'gfx' source asset that ...
+- [`GraphicsTextureSet_RefreshNoOp`](../../src/graphics/resources/texture_set.cpp#L159) - g_GraphicsRefreshTextureAlpha: the software renderer reads the source pixels directly, so there is nothing to re-upload after they changed (the original's hardware renderers installed their own ...
+- [`GraphicsTextureSet_AllocateMetadata`](../../src/graphics/resources/texture_set.cpp#L223) - Builds a texture set for a 'gfx' asset: converts its palettes to the display format, then allocates the set (an 8-byte header with the source asset and image count, then one 0x20-byte ...
+- [`GraphicsTextureSet_FreeMetadata`](../../src/graphics/resources/texture_set.cpp#L269) - Counterpart of GraphicsTextureSet_AllocateMetadata: frees the set and returns its source asset so the caller can release that too.
+- [`GraphicsTexture_RegisterSlot`](../../src/graphics/resources/texture_set.cpp#L285) - Enters a texture into the first free slot of g_GraphicsTextureSlots (the registry the original used to evict and rebuild device textures).
 
 **Data** (6 shared, 0 file-local): `g_GraphicsTextureSetLoadPackage`, `g_GraphicsTextureSetReleasePackage`, `g_GraphicsRefreshTextureAlpha`, `g_GraphicsTextureSlots`, `g_GraphicsCreateTextureSet`, `g_GraphicsDestroyTextureSet`.
 
 **Called from** (8 files): [`graphics/render/shadow_texture`](#file-graphics-render-shadow-texture) (`GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources`, `GraphicsShadingRuntime_InitializeGeneratedTexture` +1); [`graphics/terrain/terrain_resources`](#file-graphics-terrain-terrain-resources) (`TerrainVisualResources_LoadMaterialTextureSets`, `TerrainVisualResources_LoadTablesAndPalettes` +1); [`gameplay/army/pool`](gameplay.md#file-gameplay-army-pool) (`ArmyRuntime_InitializePoolAndGraphics`, `ArmyRuntime_ShutdownPoolAndGraphics`); [`ui/frontend/lifecycle`](ui.md#file-ui-frontend-lifecycle) (`FrontendRuntime_ShutdownAndReleaseResources`, `Frontend_Init`); [`world/effects/pool`](world.md#file-world-effects-pool) (`EffectRuntime_InitGraphicsResources`, `EffectRuntime_ShutdownGraphicsResources`); [`world/shots/pool`](world.md#file-world-shots-pool) (`ShotRuntime_InitGraphicsResources`, `ShotRuntime_ShutdownGraphicsResources`); [`graphics/core/device`](#file-graphics-core-device) (`Graphics_AllocateTables`); [`platform/sdl3/video`](platform.md#file-platform-sdl3-video) (`SdlVideo_Init`).
 
-**Depends on** (6 files, names used): [`graphics/resources/texture_source`](#file-graphics-resources-texture-source) (2), [`assets/package/resource_loader`](assets.md#file-assets-package-resource-loader) (1), [`assets/package/runtime`](assets.md#file-assets-package-runtime) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (7 files, names used): [`graphics/resources/texture_source`](#file-graphics-resources-texture-source) (2), [`assets/package/resource_loader`](assets.md#file-assets-package-resource-loader) (1), [`assets/package/runtime`](assets.md#file-assets-package-runtime) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`graphics/resources/texture`](#file-graphics-resources-texture) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `thandor/platform/bootstrap/image.h`.
+**Includes:** `thandor/platform/bootstrap/image.h`, `thandor/graphics/resources/texture.h`.
 
 <a id="file-graphics-resources-texture-source"></a>
 #### `texture_source.cpp`
@@ -708,23 +741,23 @@ No file comment; function families: `GraphicsTextureSource_*` (9).
 
 **Functions** (9 public):
 
-- [`GraphicsTextureSource_GetLogicalSize`](../../src/graphics/resources/texture_source.cpp#L49) - Returns the logical width and height of one subresource of a 'gfx' texture source, i.e. the extent the tiled blits repeat (installed as g_GraphicsTextureSourceGetLogicalSize), or 0 x 0 when the asset ...
-- [`GraphicsTextureSource_TestOpaquePixel`](../../src/graphics/resources/texture_source.cpp#L74) - Hit test of a sprite drawn at (drawX, drawY) (installed as g_GraphicsTextureSourceTestOpaquePixel): maps the query point into the stored pixels of the subresource and returns true when that pixel has ...
-- [`GraphicsTextureSource_ValidateAsset`](../../src/graphics/resources/texture_source.cpp#L134) - Checks a 'gfx' texture source header against its allocation size (common.allocationSizeBytes): the palette banks, the subresource table and every record's pixels (pixelWidth * pixelHeight bytes, 4 ...
-- [`GraphicsTextureSource_LoadPackageAsset`](../../src/graphics/resources/texture_source.cpp#L188) - Loads a 'gfx' texture source for the software renderer (installed as g_GraphicsTextureSourceLoadPackageAsset; used for the UI, text and selection-panel graphics): the package entry is loaded, its ...
-- [`GraphicsTextureSource_CloneAsset`](../../src/graphics/resources/texture_source.cpp#L218) - Makes a private heap copy of a 'gfx' texture source with its palettes converted to the current framebuffer format, so it can be modified independently ...
-- [`GraphicsTextureSource_ConvertPaletteEntries`](../../src/graphics/resources/texture_source.cpp#L255) - Fills the framebuffer-pixel half of every palette entry of a 'gfx' texture source from its ARGB8888 half, packed for the current framebuffer format through g_SoftwarePixelPackTables (alpha is kept in ...
-- [`GraphicsTextureSource_ReleasePackageAsset`](../../src/graphics/resources/texture_source.cpp#L286) - Releases a texture source loaded by GraphicsTextureSource_LoadPackageAsset back to the resource cache (g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage).
-- [`GraphicsTextureSource_ReleaseClonedAsset`](../../src/graphics/resources/texture_source.cpp#L302) - Frees a copy made by GraphicsTextureSource_CloneAsset (g_GraphicsTextureSourceLifecycleCallbacks3.releaseClone), after telling g_GraphicsTextureSourceReleaseObserver (open-thandor, as above).
-- [`GraphicsTextureSource_ResolveAllocationBase`](../../src/graphics/resources/texture_source.cpp#L318) - Returns the allocation that holds a texture source (installed as g_GraphicsTextureSourceResolveAllocationBase); the asset is its own allocation, but both release callbacks ask this slot first.
+- [`GraphicsTextureSource_GetLogicalSize`](../../src/graphics/resources/texture_source.cpp#L50) - Returns the logical width and height of one subresource of a 'gfx' texture source, i.e. the extent the tiled blits repeat (installed as g_GraphicsTextureSourceGetLogicalSize), or 0 x 0 when the asset ...
+- [`GraphicsTextureSource_TestOpaquePixel`](../../src/graphics/resources/texture_source.cpp#L76) - Hit test of a sprite drawn at (drawX, drawY) (installed as g_GraphicsTextureSourceTestOpaquePixel): maps the query point into the stored pixels of the subresource and returns true when that pixel has ...
+- [`GraphicsTextureSource_ValidateAsset`](../../src/graphics/resources/texture_source.cpp#L136) - Checks a 'gfx' texture source header against its allocation size (common.allocationSizeBytes): the palette banks, the subresource table and every record's pixels (pixelWidth * pixelHeight bytes, 4 ...
+- [`GraphicsTextureSource_LoadPackageAsset`](../../src/graphics/resources/texture_source.cpp#L189) - Loads a 'gfx' texture source for the software renderer (installed as g_GraphicsTextureSourceLoadPackageAsset; used for the UI, text and selection-panel graphics): the package entry is loaded, its ...
+- [`GraphicsTextureSource_CloneAsset`](../../src/graphics/resources/texture_source.cpp#L222) - Makes a private heap copy of a 'gfx' texture source with its palettes converted to the current framebuffer format, so it can be modified independently ...
+- [`GraphicsTextureSource_ConvertPaletteEntries`](../../src/graphics/resources/texture_source.cpp#L262) - Fills the framebuffer-pixel half of every palette entry of a 'gfx' texture source from its ARGB8888 half, packed for the current framebuffer format through g_SoftwarePixelPackTables (alpha is kept in ...
+- [`GraphicsTextureSource_ReleasePackageAsset`](../../src/graphics/resources/texture_source.cpp#L293) - Releases a texture source loaded by GraphicsTextureSource_LoadPackageAsset back to the resource cache (g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage).
+- [`GraphicsTextureSource_ReleaseClonedAsset`](../../src/graphics/resources/texture_source.cpp#L309) - Frees a copy made by GraphicsTextureSource_CloneAsset (g_GraphicsTextureSourceLifecycleCallbacks3.releaseClone), after telling g_GraphicsTextureSourceReleaseObserver (open-thandor, as above).
+- [`GraphicsTextureSource_ResolveAllocationBase`](../../src/graphics/resources/texture_source.cpp#L325) - Returns the allocation that holds a texture source (installed as g_GraphicsTextureSourceResolveAllocationBase); the asset is its own allocation, but both release callbacks ask this slot first.
 
 **Data** (11 shared, 0 file-local): `g_GraphicsTextureSourceLifecycleCallbacks3`, `g_GraphicsTextureSourceLoadPackageAsset`, `g_GraphicsTextureSourceBlitHalfSourceRgb`, `g_GraphicsTextureSourceStretchDirectColorBilinear`, `g_GraphicsTextureSourceConvertPaletteEntries`, `g_GraphicsTextureSourceResolveAllocationBase`, `g_GraphicsTextureSourceGetLogicalSize`, `g_GraphicsTextureSourceTestOpaquePixel` and 3 more.
 
 **Called from** (39 files): [`ui/controls/panels`](ui.md#file-ui-controls-panels) (`UiArmyMetricsPanel_DrawTextureMetricsAndChildren`, `UiFillPanelControl_DrawColorOrTiledTextureAndChildren` +6); [`ui/controls/window`](ui.md#file-ui-controls-window) (`UiResizableWindowControl_BeginMoveResizeOrWindowAction`, `UiResizableWindowControl_DrawFrameTitleAndChildren` +6); [`ui/controls/scrollable`](ui.md#file-ui-controls-scrollable) (`UiScrollableControl_BeginPrimaryScrollInteraction`, `UiScrollableControl_DrawFrameStyle` +5); [`ui/frontend/credits_mask`](ui.md#file-ui-frontend-credits-mask) (`SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31`, `SoftwareMaskBuffer_AdvancePatternByPercentTick` +5); [`ui/ingame/selection_overlay`](ui.md#file-ui-ingame-selection-overlay) (`SelectionOverlay_DrawBoundsFrame`, `SelectionOverlay_DrawDebugMarkedCellMarkers` +5); [`ui/ingame/selection_panel_cells`](ui.md#file-ui-ingame-selection-panel-cells) (`SelectionPanel_DrawForwardCappedBar`, `SelectionPanel_DrawIconCellAndAdvance` +5); [`ui/controls/buttons`](ui.md#file-ui-controls-buttons) (`UiConditionalActionControl_DrawClipped`, `UiImageActionControl_DrawImageAndChildren` +3); [`ui/text/font`](ui.md#file-ui-text-font) (`FontGlyph_DrawBottomAligned`, `FontGlyph_DrawVerticallyCentered` +3); [`ui/controls/image`](ui.md#file-ui-controls-image) (`UiImageControl_DrawClipped`, `UiImageControl_HitTestOpaque` +2); [`ui/text/richtext_render`](ui.md#file-ui-text-richtext-render) (`RichTextCommandStream_DrawNextWrappedLine`, `RichTextCommandStream_DrawSingleLine` +2); 29 more: [`platform/selftest/raster_selftest`](platform.md#file-platform-selftest-raster-selftest), [`ui/controls/slider`](ui.md#file-ui-controls-slider), [`ui/controls/text`](ui.md#file-ui-controls-text), [`ui/controls/text_buttons`](ui.md#file-ui-controls-text-buttons), [`ui/controls/text_edit`](ui.md#file-ui-controls-text-edit), [`ui/ingame/layout`](ui.md#file-ui-ingame-layout), [`graphics/resources/tiled_blit`](#file-graphics-resources-tiled-blit), [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime), [`platform/input/devices`](platform.md#file-platform-input-devices), [`platform/sdl3/gpu_ui_textures`](platform.md#file-platform-sdl3-gpu-ui-textures), [`platform/selftest/uiatlas_selftest`](platform.md#file-platform-selftest-uiatlas-selftest), [`ui/controls/lists`](ui.md#file-ui-controls-lists), [`ui/controls/tooltip`](ui.md#file-ui-controls-tooltip), [`ui/frontend/lifecycle`](ui.md#file-ui-frontend-lifecycle), [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room), [`ui/ingame/selection_panel_resources`](ui.md#file-ui-ingame-selection-panel-resources), [`gameplay/session/startup`](gameplay.md#file-gameplay-session-startup), [`graphics/core/draw2d`](#file-graphics-core-draw2d), [`graphics/resources/texture_set`](#file-graphics-resources-texture-set), [`platform/debug/movie_player`](platform.md#file-platform-debug-movie-player), [`platform/sdl3/video`](platform.md#file-platform-sdl3-video), [`ui/controls/container`](ui.md#file-ui-controls-container), [`ui/controls/gauge`](ui.md#file-ui-controls-gauge), [`ui/frontend/credits`](ui.md#file-ui-frontend-credits), [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings), [`ui/frontend/session`](ui.md#file-ui-frontend-session), [`ui/ingame/catalog_entry`](ui.md#file-ui-ingame-catalog-entry), [`ui/ingame/hud`](ui.md#file-ui-ingame-hud), [`ui/ingame/minimap_texture`](ui.md#file-ui-ingame-minimap-texture).
 
-**Depends on** (6 files, names used): [`assets/package/resource_loader`](assets.md#file-assets-package-resource-loader) (1), [`assets/package/runtime`](assets.md#file-assets-package-runtime) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`graphics/backend/software_display_mode`](#file-graphics-backend-software-display-mode) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (8 files, names used): [`graphics/resources/texture`](#file-graphics-resources-texture) (2), [`assets/package/resource_loader`](assets.md#file-assets-package-resource-loader) (1), [`assets/package/runtime`](assets.md#file-assets-package-runtime) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/x86_emulation`](core.md#file-core-x86-emulation) (1), [`graphics/backend/software_display_mode`](#file-graphics-backend-software-display-mode) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `thandor/graphics/resources/texture.h`, `thandor/platform/bootstrap/image.h`.
+**Includes:** `thandor/graphics/resources/texture.h`, `thandor/core/x86_emulation.h`, `thandor/platform/bootstrap/image.h`.
 
 <a id="file-graphics-resources-tiled-blit"></a>
 #### `tiled_blit.cpp / tiled_blit.h`
@@ -765,27 +798,27 @@ Module header: [`terrain.h`](../../include/thandor/graphics/terrain.h) · Files:
 
 [Source](../../src/graphics/terrain/terrain_render.cpp) · [Header](../../include/thandor/graphics/terrain/terrain_render.h)
 
-No file comment; function families: `TerrainProjectedTriangle_*` (5), `TerrainProjectedVertex_*` (4), `TerrainProjectedGrid_*` (2), `GraphicsPrimitiveVertex_*` (2).
+No file comment; function families: `TerrainProjectedTriangle_*` (5), `TerrainProjectedVertex_*` (4), `TerrainVertex_*` (2), `TerrainProjectedGrid_*` (2).
 
-**Functions** (9 public, 8 file-local):
+**Functions** (9 public, 10 file-local):
 
-- [`TerrainProjectedGrid_TransformShadeAndQueue`](../../src/graphics/terrain/terrain_render.cpp#L60) - Terrain pass of the world view (called by FrontendModelPointerContext_RenderWorldViewQueuesClipped): unless the previous projection can be reused (TERRAIN_RENDER_REUSE_PROJECTION), rebuilds the ...
-- [`TerrainProjectedQuad_QueueAsTwoTriangles`](../../src/graphics/terrain/terrain_render.cpp#L250) - Queues the grid quad whose top-left vertex is topLeftVertex as two triangles, (top-left, bottom-left, top-right) and (bottom-left, bottom-right, top-right) as vertex0..2, both with the top-left ...
-- [`TerrainProjectedVertex_TransformProjectAndShade`](../../src/graphics/terrain/terrain_render.cpp#L340) - Full per-frame update of one terrain vertex (a field cell): transforms the terrain point to view space, projects it when it lies beyond the near plane and records on which sides of the clip rectangle ...
-- [`TerrainProjectedVertex_ReshadeKeepingProjection`](../../src/graphics/terrain/terrain_render.cpp#L386) - Cheap per-frame update of one terrain vertex while the view and grid are unchanged: keeps the projection of the terrain point and only re-shades it; point B (the secondary surface point) is projected ...
-- [`TerrainProjectedTriangle_ClipInterpolateAndQueueTextured`](../../src/graphics/terrain/terrain_render.cpp#L573) - Queues one terrain triangle.
-- [`TerrainProjectedGrid_ClipRowSpansAgainstPlane`](../../src/graphics/terrain/terrain_render.cpp#L638) - Narrows the per-row visible column spans (g_TerrainProjectedRowSpans) by one frustum side plane through the view origin: a plane with an x component moves the first or end column of every row to the ...
-- [`GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle`](../../src/graphics/terrain/terrain_render.cpp#L773) - Terrain counterpart of GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle for the second projected surface: appends a packet from the terrain vertices' second screen/depth block (projectedPointB, ...
-- [`GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle`](../../src/graphics/terrain/terrain_render.cpp#L850) - Appends a textured terrain triangle: copies each terrain vertex's screen position, backend coordinates and depth (texturedPacketAttributes) and its colour, the texture coordinates of ...
-- [`Triangle2D_ComputeBarycentricWeightsQ12Packed`](../../src/graphics/terrain/terrain_render.cpp#L915) - Computes the barycentric weights of a screen point for vertices A and B of a projected triangle (C's weight is the remainder to 1.0), used to interpolate texture/shade values when a clipped terrain ...
+- [`TerrainProjectedGrid_TransformShadeAndQueue`](../../src/graphics/terrain/terrain_render.cpp#L74) - Terrain pass of the world view (called by FrontendModelPointerContext_RenderWorldViewQueuesClipped): unless the previous projection can be reused (TERRAIN_RENDER_REUSE_PROJECTION), rebuilds the ...
+- [`TerrainProjectedQuad_QueueAsTwoTriangles`](../../src/graphics/terrain/terrain_render.cpp#L264) - Queues the grid quad whose top-left vertex is topLeftVertex as two triangles, (top-left, bottom-left, top-right) and (bottom-left, bottom-right, top-right) as vertex0..2, both with the top-left ...
+- [`TerrainProjectedVertex_TransformProjectAndShade`](../../src/graphics/terrain/terrain_render.cpp#L354) - Full per-frame update of one terrain vertex (a field cell): transforms the terrain point to view space, projects it when it lies beyond the near plane and records on which sides of the clip rectangle ...
+- [`TerrainProjectedVertex_ReshadeKeepingProjection`](../../src/graphics/terrain/terrain_render.cpp#L400) - Cheap per-frame update of one terrain vertex while the view and grid are unchanged: keeps the projection of the terrain point and only re-shades it; point B (the secondary surface point) is projected ...
+- [`TerrainProjectedTriangle_ClipInterpolateAndQueueTextured`](../../src/graphics/terrain/terrain_render.cpp#L587) - Queues one terrain triangle.
+- [`TerrainProjectedGrid_ClipRowSpansAgainstPlane`](../../src/graphics/terrain/terrain_render.cpp#L652) - Narrows the per-row visible column spans (g_TerrainProjectedRowSpans) by one frustum side plane through the view origin: a plane with an x component moves the first or end column of every row to the ...
+- [`GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle`](../../src/graphics/terrain/terrain_render.cpp#L787) - Terrain counterpart of GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle for the second projected surface: appends a packet from the terrain vertices' second screen/depth block (projectedPointB, ...
+- [`GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle`](../../src/graphics/terrain/terrain_render.cpp#L864) - Appends a textured terrain triangle: copies each terrain vertex's screen position, backend coordinates and depth (texturedPacketAttributes) and its colour, the texture coordinates of ...
+- [`Triangle2D_ComputeBarycentricWeightsQ12Packed`](../../src/graphics/terrain/terrain_render.cpp#L929) - Computes the barycentric weights of a screen point for vertices A and B of a projected triangle (C's weight is the remainder to 1.0), used to interpolate texture/shade values when a clipped terrain ...
 
 **Data** (1 shared, 1 file-local): `g_Triangle2DBarycentricOutside`.
 
 **Called from** (1 files): [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room) (`FrontendModelPointerContext_RenderWorldViewQueuesClipped`).
 
-**Depends on** (8 files, names used): [`graphics/render/projection`](#file-graphics-render-projection) (6), [`graphics/terrain/terrain_resources`](#file-graphics-terrain-terrain-resources) (6), [`core/color_lanes`](core.md#file-core-color-lanes) (2), [`graphics/render/light_records`](#file-graphics-render-light-records) (2), [`ui/ingame/editor_tool_selection`](ui.md#file-ui-ingame-editor-tool-selection) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (10 files, names used): [`graphics/render/projection`](#file-graphics-render-projection) (6), [`graphics/terrain/terrain_resources`](#file-graphics-terrain-terrain-resources) (6), [`core/color_lanes`](core.md#file-core-color-lanes) (2), [`graphics/render/light_records`](#file-graphics-render-light-records) (2), [`graphics/terrain/types`](#file-graphics-terrain-types) (2), [`ui/ingame/editor_tool_selection`](ui.md#file-ui-ingame-editor-tool-selection) (2), [`assets/record_bytes`](assets.md#file-assets-record-bytes) (1), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `thandor/core/color_lanes.h`, `thandor/platform/bootstrap/image.h`.
+**Includes:** `thandor/core/color_lanes.h`, `thandor/platform/bootstrap/image.h`, `thandor/assets/record_bytes.h`.
 
 <a id="file-graphics-terrain-terrain-resources"></a>
 #### `terrain_resources.cpp / terrain_resources.h`
@@ -796,9 +829,9 @@ No file comment; function families: `TerrainVisualResources_*` (6), `TerrainDire
 
 **Functions** (3 public, 4 file-local):
 
-- [`TerrainVisualResources_LoadPrimary`](../../src/graphics/terrain/terrain_resources.cpp#L197) - Loads the terrain graphics of a field (fld asset with valid dimensions, FieldGrid_ValidateLoadedImage, else FATAL_ERROR_FIELD_ASSET_INVALID): the 26 material texture sets &lt;secondary&gt;a..z.gfx (those ...
-- [`TerrainVisualResources_LoadAndClearCellOverlayFlags`](../../src/graphics/terrain/terrain_resources.cpp#L234) - Variant of TerrainVisualResources_LoadPrimary for a field whose runtime cells already exist (loading a savegame): the same resources are loaded, but the cells only get their lookup pointers rebuilt, ...
-- [`TerrainVisualResources_Shutdown`](../../src/graphics/terrain/terrain_resources.cpp#L280) - Releases everything TerrainVisualResources_Load* loaded: the 26 material texture sets, the primary texture set, both palettes and both .dat tables (their globals point 0x20 bytes into the loaded ...
+- [`TerrainVisualResources_LoadPrimary`](../../src/graphics/terrain/terrain_resources.cpp#L198) - Loads the terrain graphics of a field (fld asset with valid dimensions, FieldGrid_ValidateLoadedImage, else FATAL_ERROR_FIELD_ASSET_INVALID): the 26 material texture sets &lt;secondary&gt;a..z.gfx (those ...
+- [`TerrainVisualResources_LoadAndClearCellOverlayFlags`](../../src/graphics/terrain/terrain_resources.cpp#L235) - Variant of TerrainVisualResources_LoadPrimary for a field whose runtime cells already exist (loading a savegame): the same resources are loaded, but the cells only get their lookup pointers rebuilt, ...
+- [`TerrainVisualResources_Shutdown`](../../src/graphics/terrain/terrain_resources.cpp#L281) - Releases everything TerrainVisualResources_Load* loaded: the 26 material texture sets, the primary texture set, both palettes and both .dat tables (their globals point 0x20 bytes into the loaded ...
 
 **Data** (6 shared, 1 file-local): `g_TerrainMaterialTextureSets`, `g_TerrainPrimaryTextureSet`, `g_TerrainSoilPacketTablePayload`, `g_TerrainSurfacePacketTablePayload`, `g_TerrainPrimaryPalette`, `g_TerrainSecondaryPalette`.
 
@@ -814,5 +847,12 @@ No file comment; function families: `TerrainVisualResources_*` (6), `TerrainDire
 [Header](../../include/thandor/graphics/terrain/types.h)
 
 The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
+
+**Functions** (2 public):
+
+- [`TerrainVertex_AsProjectedSource`](../../include/thandor/graphics/terrain/types.h#L49) - The primitive queue takes the terrain vertices with the GraphicsProjectedVertexSource type (the model vertex record) and reads them back as TerrainProjectedVertexWorkRecords: the same 0x80-byte ...
+- [`TerrainVertex_FromProjectedSource`](../../include/thandor/graphics/terrain/types.h#L53)
+
+**Called from** (1 files): [`graphics/terrain/terrain_render`](#file-graphics-terrain-terrain-render) (`GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle`, `TerrainProjectedTriangle_ClipInterpolateAndQueueTextured` +2).
 
 **Includes:** `stdint.h`, `thandor/core/ptr32.h`, `thandor/graphics/render/types.h`.

@@ -36,7 +36,7 @@ No file comment; function families: `SoundBackendDisabled_*` (8).
 
 [Source](../../src/audio/backend/runtime.cpp) · [Header](../../include/thandor/audio/backend/runtime.h)
 
-The sound slots (g_Sound*) the game plays through, with the silent backend that fills them until SdlAudio_Init installs the SDL3 audio backend. The original's DirectSound backend is replaced by platform/sdl3/audio.cpp.
+The sound slots (the g_Sound... pointers) the game plays through, with the silent backend that fills them until SdlAudio_Init installs the SDL3 audio backend. The original's DirectSound backend is replaced by platform/sdl3/audio.cpp.
 
 **Data** (9 shared, 0 file-local): `g_SoundCreateSampleVoiceSet`, `g_SoundReleaseSampleVoiceSet`, `g_SoundStopAllVoices`, `g_SoundGainAttenuation`, `g_SoundPlayLooping`, `g_SoundStopVoice`, `g_SoundIsVoiceFinished`, `g_SoundSetVoiceGains` and 1 more.
 
@@ -69,16 +69,18 @@ No file comment; function families: `SoundSample_*` (2), `SoundCoefficientTransf
 
 **Functions** (4 public):
 
-- [`SoundCoefficientTransform_ApplyCosineBanksMmx`](../../src/audio/codec/sam.cpp#L31) - Mono variant of SoundSample_DecodeCoefficientBlockToPcmMmx: the same inverse cosine transform of 256 coefficients with g_CosineDerivedLookupSecondTable (each sample is bits 16..31 of the wrapping ...
-- [`SoundSample_DecodeCoefficientBlockToPcmMmx`](../../src/audio/codec/sam.cpp#L971) - Synthesizes one SAM block: transforms 256 decoded coefficients into 256 PCM samples with the MMX cosine tables (each sample is bits 16..31 of the wrapping 256-tap dot product x32, doubled with ...
-- [`SoundSample_DecodePackedCoefficientBlock`](../../src/audio/codec/sam.cpp#L1898) - Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of SoundSample_EncodePackedCoefficientBlock).
-- [`CosineDerivedLookupTables_Init`](../../src/audio/codec/sam.cpp#L1979) - Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by SdlAudio_Init, as by the original's DirectSound_Init).
+- [`SoundCoefficientTransform_ApplyCosineBanksMmx`](../../src/audio/codec/sam.cpp#L32) - Mono variant of SoundSample_DecodeCoefficientBlockToPcmMmx: the same inverse cosine transform of 256 coefficients with g_CosineDerivedLookupSecondTable (each sample is bits 16..31 of the wrapping ...
+- [`SoundSample_DecodeCoefficientBlockToPcmMmx`](../../src/audio/codec/sam.cpp#L972) - Synthesizes one SAM block: transforms 256 decoded coefficients into 256 PCM samples with the MMX cosine tables (each sample is bits 16..31 of the wrapping 256-tap dot product x32, doubled with ...
+- [`SoundSample_DecodePackedCoefficientBlock`](../../src/audio/codec/sam.cpp#L1899) - Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of SoundSample_EncodePackedCoefficientBlock).
+- [`CosineDerivedLookupTables_Init`](../../src/audio/codec/sam.cpp#L1980) - Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by SdlAudio_Init, as by the original's DirectSound_Init).
 
 **Data** (6 shared, 0 file-local): `g_SoundDecodeMmxWordLaneMask0`, `g_SoundDecodeMmxWordLaneMask1`, `g_SoundDecodeMmxWordLaneMask2`, `g_SoundDecodeMmxWordLaneMask3`, `g_CosineDerivedLookupAllocation`, `g_CosineDerivedLookupSecondTable`.
 
 **Called from** (3 files): [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`SelfTest_BuildSamCosineTables`, `SelfTest_FreeSamCosineTables` +2); [`platform/sdl3/audio`](platform.md#file-platform-sdl3-audio) (`SdlAudio_CreateSampleVoiceSet`, `SdlAudio_Init`); [`audio/codec/sam_encoder`](#file-audio-codec-sam-encoder) (`SoundSample_TransformPcmBlockToCoefficientsMmx`).
 
-**Depends on** (3 files, names used): [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (5 files, names used): [`core/x86_emulation`](core.md#file-core-x86-emulation) (2), [`core/bytes`](core.md#file-core-bytes) (1), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+
+**Includes:** `thandor/core/bytes.h`.
 
 <a id="file-audio-codec-sam-encoder"></a>
 #### `sam_encoder.cpp / sam_encoder.h`
@@ -89,12 +91,14 @@ No file comment; function families: `SoundSample_*` (2).
 
 **Functions** (2 public):
 
-- [`SoundSample_TransformPcmBlockToCoefficientsMmx`](../../src/audio/codec/sam_encoder.cpp#L17) - Forward cosine transform of the .sam codec (the encoder side; the decoders run the transposed matrix in the other direction): turns 256 mono 16-bit PCM samples into 256 coefficients, coefficient u = ...
-- [`SoundSample_EncodePackedCoefficientBlock`](../../src/audio/codec/sam_encoder.cpp#L1012) - Packs 256 transform coefficients into one SAM block, the exact format SoundSample_DecodePackedCoefficientBlock reads: prefix codes in a little-endian bit stream (prefix bits from bit 0): 0 -&gt; zero (1 ...
+- [`SoundSample_TransformPcmBlockToCoefficientsMmx`](../../src/audio/codec/sam_encoder.cpp#L18) - Forward cosine transform of the .sam codec (the encoder side; the decoders run the transposed matrix in the other direction): turns 256 mono 16-bit PCM samples into 256 coefficients, coefficient u = ...
+- [`SoundSample_EncodePackedCoefficientBlock`](../../src/audio/codec/sam_encoder.cpp#L1013) - Packs 256 transform coefficients into one SAM block, the exact format SoundSample_DecodePackedCoefficientBlock reads: prefix codes in a little-endian bit stream (prefix bits from bit 0): 0 -&gt; zero (1 ...
 
 **Called from** (1 files): [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestSam`).
 
-**Depends on** (2 files, names used): [`audio/codec/sam`](#file-audio-codec-sam) (5), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (4 files, names used): [`audio/codec/sam`](#file-audio-codec-sam) (5), [`core/x86_emulation`](core.md#file-core-x86-emulation) (2), [`core/bytes`](core.md#file-core-bytes) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+
+**Includes:** `thandor/core/bytes.h`.
 
 <a id="file-audio-codec-types"></a>
 #### `types.h`
