@@ -183,15 +183,9 @@ GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
 void GraphicsShadingRuntime_ClearRecordTable()
 
 {
-  int recordDwordsRemaining;
-  GraphicsShadingRuntimeRecord *recordDwordCursor;
-
-  recordDwordCursor = g_GraphicsShadingRuntimeRecords;
-  for (recordDwordsRemaining = GRAPHICS_SHADING_RUNTIME_RECORD_COUNT * sizeof(GraphicsShadingRuntimeRecord) / 4;
-       recordDwordsRemaining != 0; recordDwordsRemaining--) {
-    recordDwordCursor->worldXQ12 = 0;
-    /* the table is cleared dword by dword: the cursor moves on by one dword, not by one record */
-    recordDwordCursor = reinterpret_cast<GraphicsShadingRuntimeRecord *>(&recordDwordCursor->worldYQ12);
+  /* the original cleared the table dword by dword */
+  for (GraphicsShadingRuntimeRecord &record : g_GraphicsShadingRuntimeRecords) {
+    record = {};
   }
 }
 
@@ -214,9 +208,13 @@ void GraphicsShadingRuntime_RebuildCompactLightingRecords()
   compactCount = 0;
   for (; recordsRemaining != 0; recordsRemaining--) {
     if (sourceRecord->packedColorRgbActive != 0) {
-      FixedTransform_ApplyPoint
-                (reinterpret_cast<GraphicsFixedVec3 *>(compactRecord),reinterpret_cast<GraphicsFixedVec3 *>(sourceRecord),
-                 &g_ViewProjectionMatrixFixed);
+      /* the record's leading x, y, z through GraphicsFixedVec3 copies (the original viewed them as one) */
+      GraphicsFixedVec3 worldPosition = {sourceRecord->worldXQ12,sourceRecord->worldYQ12,sourceRecord->worldZQ12};
+      GraphicsFixedVec3 viewPosition;
+      FixedTransform_ApplyPoint(&viewPosition,&worldPosition,&g_ViewProjectionMatrixFixed);
+      compactRecord->worldXQ12 = viewPosition.x;
+      compactRecord->worldYQ12 = viewPosition.y;
+      compactRecord->worldZQ12 = viewPosition.z;
       targetRadius = sourceRecord->targetRadiusQ12;
       compactRecord->packedColorRgbActive = sourceRecord->packedColorRgbActive;
       compactRecord->targetRadiusQ12 = targetRadius;

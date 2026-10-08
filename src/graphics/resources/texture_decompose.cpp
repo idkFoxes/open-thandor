@@ -5,8 +5,9 @@
  * Reverse engineering by idkFoxes 2026
  */
 
-/* Subresource decomposition of a texture source: cuts the ARGB or indexed pixels of every subresource into
-   rectangular regions (asset conversion). */
+/* Subresource decomposition of a texture source (converter code, no caller in the game, only its hook slot;
+   kept like the palette optimiser): cuts the ARGB or indexed pixels of a subresource into rectangular
+   regions. */
 
 #include <thandor/graphics/resources/texture_decompose.h>
 #include <thandor/thandor.h>
@@ -364,7 +365,7 @@ static uint32_t GraphicsTextureDecompose_ArgbRegions
   /* Scan the working copy row by row for the next non-background pixel; each hit starts a region that is cut
      out and cleared to background, then the scan goes on at the same pixel. */
   scanCursor = workPixels;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* at least one row and column: an empty sheet has no non-background pixel and returned 0x2D above */
   do {
     columnsLeft = state->sourceWidth;
     while (columnsLeft != 0) {
@@ -393,7 +394,7 @@ static uint32_t GraphicsTextureDecompose_ArgbRegions
   pixelDataOffset = (asset->common).allocationSizeBytes;
   record = state->records;
   recordsLeft = (asset->tableDescriptor).subresourceCount;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* at least one record: the scan reached the non-background pixel found above and cut its region */
   do {
     pixelDataOffset = pixelDataOffset - record->pixelWidth * record->pixelHeight * 4;
     record->dataOffset = pixelDataOffset;
@@ -470,7 +471,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
     return FATAL_ERROR_GENERAL_FAILURE;
   }
   scanCursor = workPixels;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* at least one row and column: an empty sheet has no non-background pixel and returned 0x2D above */
   do {
     columnsLeft = state->sourceWidth;
     while (columnsLeft != 0) {
@@ -498,7 +499,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
   pixelDataOffset = (asset->common).allocationSizeBytes;
   record = state->records;
   recordsLeft = (asset->tableDescriptor).subresourceCount;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* at least one record: the scan reached the non-background pixel found above and cut its region */
   do {
     pixelDataOffset = pixelDataOffset - (record->pixelWidth * record->pixelHeight + 3 & ~3u);
     record->dataOffset = pixelDataOffset;

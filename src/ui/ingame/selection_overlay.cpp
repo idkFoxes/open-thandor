@@ -383,9 +383,11 @@ void SelectionOverlay_DrawFluidExclusionMarkers
     cellCursor = fieldGrid->cells;
     columnsRemaining = gridColumns;
     rowStartCell = cellCursor;
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-    do {
-      do {
+    /* The original loops with do/while, so a field width or height of 0 (a malformed level) walks 2^32 cells
+       past the grid; bounded here because such a grid is reachable (guarded loops, same body and order for
+       counts >= 1). */
+    while (rowsRemaining != 0) {
+      while (columnsRemaining != 0) {
         if ((!Any(cellCursor->flagsAndMaterial & FIELD_CELL_VERTEX_POINT_B_NOT_PROJECTED)) &&
            (Any(cellCursor->flagsAndMaterial & (FIELD_CELL_FLUID_SOURCE_EXCLUDED|FIELD_CELL_FLUID_RECEIVER_EXCLUDED)))) {
           screenX = cellCursor->secondarySurfaceScreenPoint.projectedX >> 12;
@@ -419,12 +421,12 @@ void SelectionOverlay_DrawFluidExclusionMarkers
         }
         cellCursor = cellCursor + 1;
         columnsRemaining = columnsRemaining - 1;
-      } while (columnsRemaining != 0);
+      }
       cellCursor = rowStartCell + gridColumns;
       rowsRemaining = rowsRemaining - 1;
       columnsRemaining = gridColumns;
       rowStartCell = cellCursor;
-    } while (rowsRemaining != 0);
+    }
     g_GraphicsFramebufferEndAccess();
   }
 }
@@ -467,9 +469,11 @@ void SelectionOverlay_DrawResourceCellMarkers
     cellCursor = fieldGrid->cells;
     columnsRemaining = gridColumns;
     rowStartCell = cellCursor;
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-    do {
-      do {
+    /* The original loops with do/while, so a field width or height of 0 (a malformed level) walks 2^32 cells
+       past the grid; bounded here because such a grid is reachable (guarded loops, same body and order for
+       counts >= 1). */
+    while (rowsRemaining != 0) {
+      while (columnsRemaining != 0) {
         if ((!Any(cellCursor->flagsAndMaterial & FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED)) &&
            (Any(cellCursor->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK))) {
           screenX = cellCursor->groundScreenPoint.projectedX >> 12;
@@ -504,12 +508,12 @@ void SelectionOverlay_DrawResourceCellMarkers
         }
         cellCursor = cellCursor + 1;
         columnsRemaining = columnsRemaining - 1;
-      } while (columnsRemaining != 0);
+      }
       cellCursor = rowStartCell + gridColumns;
       rowsRemaining = rowsRemaining - 1;
       columnsRemaining = gridColumns;
       rowStartCell = cellCursor;
-    } while (rowsRemaining != 0);
+    }
     g_GraphicsFramebufferEndAccess();
   }
 }
@@ -544,9 +548,11 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
     cellCursor = fieldGrid->cells;
     columnsRemaining = gridColumns;
     rowStartCell = cellCursor;
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-    do {
-      do {
+    /* The original loops with do/while, so a field width or height of 0 (a malformed level) walks 2^32 cells
+       past the grid; bounded here because such a grid is reachable (guarded loops, same body and order for
+       counts >= 1). */
+    while (rowsRemaining != 0) {
+      while (columnsRemaining != 0) {
         if ((Any(cellCursor->flagsAndMaterial & FIELD_CELL_DEBUG_MARKED)) &&
            (!Any(cellCursor->flagsAndMaterial & FIELD_CELL_VERTEX_POINT_A_NOT_PROJECTED))) {
           screenX = cellCursor->groundScreenPoint.projectedX >> 12;
@@ -563,12 +569,12 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
         }
         cellCursor = cellCursor + 1;
         columnsRemaining = columnsRemaining - 1;
-      } while (columnsRemaining != 0);
+      }
       cellCursor = rowStartCell + gridColumns;
       rowsRemaining = rowsRemaining - 1;
       columnsRemaining = gridColumns;
       rowStartCell = cellCursor;
-    } while (rowsRemaining != 0);
+    }
     g_GraphicsFramebufferEndAccess();
   }
 }

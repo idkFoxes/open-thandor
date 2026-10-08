@@ -9,6 +9,8 @@
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
 
+#include <cassert>
+
 /* Module data. */
 
 const uint64_t g_SoundDecodeMmxWordLaneMask0 = 0xFFFFull;
@@ -1880,10 +1882,10 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
     outputWord3 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x30);
     outputWord2 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x20);
     /* every output word becomes a left/right stereo pair with the same sample (w * 0x10001 = w:w). */
-    *reinterpret_cast<uint64_t *>(outputStereoPcm) =
-         ((uint64_t)((uint32_t)outputWord1 * 0x10001) << 32) | (uint32_t)(uint16_t)mm0PackedValue32 * 0x10001;
-    *reinterpret_cast<uint64_t *>(outputStereoPcm + 4) =
-         ((uint64_t)((uint32_t)outputWord3 * 0x10001) << 32) | (uint32_t)outputWord2 * 0x10001;
+    Thandor_StoreU64(outputStereoPcm,
+         ((uint64_t)((uint32_t)outputWord1 * 0x10001) << 32) | (uint32_t)(uint16_t)mm0PackedValue32 * 0x10001);
+    Thandor_StoreU64(outputStereoPcm + 4,
+         ((uint64_t)((uint32_t)outputWord3 * 0x10001) << 32) | (uint32_t)outputWord2 * 0x10001);
     outputStereoPcm = outputStereoPcm + 8;
   }
 }
@@ -1903,13 +1905,17 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
   uint32_t bitAccumulator;
   uint8_t refillShift;
   uint32_t availableBitCount;
-  uint16_t *inputCursor;
+  const uint8_t *inputCursor; /* advances by 3, 2 or 1 bytes, so it is a byte cursor read with unaligned loads */
   int coefficientsRemaining;
 
+  /* The returned count rounds the cursor ADDRESS down to 4 (as the original did), which is the byte count
+     rounded down only while the block start is 4-aligned. It is: sample assets are arena allocations, the
+     blocks follow the 0x200-byte header, and every block advances by a multiple of 4. */
+  assert((reinterpret_cast<uintptr_t>(encodedBlock) & 3u) == 0);
   coefficientsRemaining = SAM_BLOCK_SAMPLE_COUNT;
-  bitAccumulator = *reinterpret_cast<uint32_t *>(encodedBlock);
+  bitAccumulator = Thandor_LoadU32(encodedBlock);
   availableBitCount = 32;
-  inputCursor = reinterpret_cast<uint16_t *>(encodedBlock + 4);
+  inputCursor = encodedBlock + 4;
   for (; coefficientsRemaining != 0; coefficientsRemaining--) {
     /* the value fields are sign-extended by shifting them to the top of a 32-bit int and back */
     if ((bitAccumulator & 1) == 0) {
@@ -1938,30 +1944,30 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
     /* refill whole bytes above the remaining bits so that at least 25 bits are available again */
     refillShift = (uint8_t)availableBitCount;
     if (availableBitCount < 9) {
-      refillDword = *reinterpret_cast<int *>(inputCursor);
-      inputCursor = Thandor_At<uint16_t>(inputCursor,3);
+      refillDword = (int)Thandor_LoadU32(inputCursor);
+      inputCursor = inputCursor + 3;
       availableBitCount = availableBitCount + 24;
       bitAccumulator = bitAccumulator | refillDword << (refillShift & 0x1f);
     }
     else if (availableBitCount < 17) {
-      refillWord = *inputCursor;
-      inputCursor = inputCursor + 1;
+      refillWord = Thandor_LoadU16(inputCursor);
+      inputCursor = inputCursor + 2;
       availableBitCount = availableBitCount + 16;
       bitAccumulator = bitAccumulator | (uint32_t)refillWord << (refillShift & 0x1f);
     }
     else if (availableBitCount < 25) {
-      refillWord = *inputCursor;
-      inputCursor = Thandor_At<uint16_t>(inputCursor,1);
+      refillWord = Thandor_LoadU16(inputCursor);
+      inputCursor = inputCursor + 1;
       availableBitCount = availableBitCount + 8;
       bitAccumulator = bitAccumulator | (uint32_t)(uint8_t)refillWord << (refillShift & 0x1f);
     }
     outputCoefficients++;
   }
   if (availableBitCount == 32) {
-    inputCursor = reinterpret_cast<uint16_t *>(reinterpret_cast<uintptr_t>(inputCursor) - 1);
+    inputCursor = inputCursor - 1;
   }
   else if (availableBitCount < 24) {
-    inputCursor = Thandor_At<uint16_t>(inputCursor,1);
+    inputCursor = inputCursor + 1;
   }
   return (uint32_t)((reinterpret_cast<uintptr_t>(inputCursor) & ~(uintptr_t)3) - reinterpret_cast<uintptr_t>(encodedBlock));
 }
