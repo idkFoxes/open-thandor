@@ -58,6 +58,7 @@ static uint32_t FrontendInit_LoadMenuSounds()
 {
   SoundVoiceSet **voiceSetSlot;
   SoundSampleAsset *loadedSample;
+  uint32_t loadedSampleBytes;
   SoundVoiceSet *menuVoiceSet;
   uint32_t voiceSetError;
 
@@ -66,10 +67,11 @@ static uint32_t FrontendInit_LoadMenuSounds()
   voiceSetSlot = &g_FrontendMenuSoundVoiceSets[1];
   while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1) {
     while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] < L'9' + 1) {
-      if (!Resource_Load(g_SoundMenue01SamPathUtf16,reinterpret_cast<void **>(&loadedSample),nullptr,nullptr)) {
+      if (!Resource_Load(g_SoundMenue01SamPathUtf16,reinterpret_cast<void **>(&loadedSample),&loadedSampleBytes,
+                         nullptr)) {
         return 0;
       }
-      voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,&menuVoiceSet);
+      voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,loadedSampleBytes,&menuVoiceSet);
       if (voiceSetError != 0) {
         Resource_Release(loadedSample);
         return voiceSetError;
@@ -94,12 +96,14 @@ void FrontendMusic_StartMenuMusic()
 {
   uint32_t musicGain;
   SoundSampleAsset *loadedSample;
+  uint32_t loadedSampleBytes;
   SoundVoiceSet *musicVoiceSet;
   SoundVoice *musicBuffer;
 
   musicBuffer = g_FrontendMusicActiveBuffer;
-  if (Resource_Load(g_FrontendMusic00SamPathUtf16,reinterpret_cast<void **>(&loadedSample),nullptr,nullptr)) {
-    if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
+  if (Resource_Load(g_FrontendMusic00SamPathUtf16,reinterpret_cast<void **>(&loadedSample),&loadedSampleBytes,
+                    nullptr)) {
+    if (g_SoundCreateSampleVoiceSet(loadedSample,loadedSampleBytes,&musicVoiceSet) != 0) {
       Resource_Release(loadedSample);
     }
     else {

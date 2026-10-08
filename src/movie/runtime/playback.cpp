@@ -145,7 +145,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   }
   loadError = g_FileSystemReadExact(trackBytes,audioSample.get(),handle);
   if (loadError == 0) {
-    loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),&voiceSet);
+    loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),trackBytes,&voiceSet);
     if (loadError == 0) {
       *outVoiceSet = voiceSet;
     }
@@ -566,8 +566,9 @@ void Movie_Close()
         CloseHandle(movie->refillSemaphore);
         movie->refillSemaphore = nullptr;
       }
+      /* back to the game's priority; the original restored real-time, high here (see ProcessEntry) */
       hProcess = GetCurrentProcess();
-      SetPriorityClass(hProcess,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
+      SetPriorityClass(hProcess,DebugHook_ProcessPriorityClass(HIGH_PRIORITY_CLASS));
     }
     g_ActiveMovie = nullptr;
     g_MemoryApi.free(movie->fileHeader);

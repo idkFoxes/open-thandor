@@ -33,7 +33,8 @@ void SoundCoefficientTransform_ApplyCosineBanksMmx(short *outputMonoPcm,SoundCoe
 
 void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients);
 
-uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock);
+uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock,
+                                                  const uint8_t *encodedEnd);
 
 /* Returns 0, or the allocation error (the tables stay unset; no sample may be decoded then). */
 uint32_t CosineDerivedLookupTables_Init();
