@@ -1175,6 +1175,37 @@ static uint64_t ModelLighting_ReadDistanceAttenuationRow
             rowOffset * 8);
 }
 
+/* g_PackedLightingLookupTable index of a nearby light. A light inside its radius gives (r^2 - d^2) / r^2 * 128,
+   i.e. 0..128. The original indexed the table with the quotient (as int32) unchecked, so a light whose r^2 >> 12
+   wraps the low dword (r^2 >= 2^44, malformed light records) read far outside the table; bounded here because
+   that read leaves the 512 qwords: such an index takes the last entry. */
+static inline uint32_t ModelLighting_ClampLookupIndex(uint32_t index)
+{
+  constexpr uint32_t LAST_INDEX = sizeof g_PackedLightingLookupTable / sizeof g_PackedLightingLookupTable[0] - 1;
+  return index > LAST_INDEX ? LAST_INDEX : index;
+}
+
+/* Row offset of ModelRender_ComputeVertexIntensityScaledPath: trunc(dot / lightingScaleQ12) >> 9. The original
+   divided unchecked and faulted (divide error) for a model resource with lightingScaleQ12 == 0 and for
+   dot == INT32_MIN with lightingScaleQ12 == -1; bounded here because both crash the game: a scale of 0 takes row 0
+   (logged once), the overflowing quotient is computed in 64 bit (2^31 >> 9, an out-of-table row read as 0). */
+static int32_t ModelLighting_ScaledRowOffset(int32_t lightFacingDotQ12, Q12 lightingScaleQ12)
+{
+  static bool s_ZeroScaleLogged = false;
+
+  if (lightingScaleQ12 == 0) {
+    if (!s_ZeroScaleLogged) {
+      s_ZeroScaleLogged = true;
+      Thandor_Log("model lighting: model resource with lighting scale 0, using row 0");
+    }
+    return 0;
+  }
+  if (lightingScaleQ12 == -1 && lightFacingDotQ12 == INT32_MIN) {
+    return static_cast<int32_t>(-static_cast<int64_t>(lightFacingDotQ12) >> 9);
+  }
+  return lightFacingDotQ12 / lightingScaleQ12 >> 9;
+}
+
 
 /* Lit colour of a mesh vertex for ModelRender_PrepareProjectedVertex, in MMX word lanes: the directional light
    (scenePackedColor1, weighted by the attenuation table entry for dot(lightDirection, normal) >> 21) plus a quarter
@@ -1218,7 +1249,7 @@ ModelRender_ComputeVertexIntensityDefaultPath
       /* r^2 - dx^2 - dy^2 - dz^2 as a 64-bit subtraction on dword halves (remainderHigh:remainderLow, the low
          dword borrowing from the high one); the light reaches the vertex while remainderHigh stays >= 0 */
       remainderLow = (uint32_t)shadingRecord->squaredRadiusQ24;
-      remainderHigh = reinterpret_cast<const int *>(&shadingRecord->squaredRadiusQ24)[1]; /* the qword's high dword */
+      remainderHigh = static_cast<int>(shadingRecord->squaredRadiusQ24 >> 32); /* the qword's high dword */
       axisDelta = *vertexPositionQ12 - shadingRecord->worldXQ12;
       axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
       axisSquareLow = (uint32_t)axisDistanceSquared;
@@ -1242,14 +1273,14 @@ ModelRender_ComputeVertexIntensityDefaultPath
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (64-bit shift, low dword kept) */
-            lookupDivisor = reinterpret_cast<const int *>(&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
-                     (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
+            lookupDivisor = static_cast<uint32_t>(shadingRecord->squaredRadiusQ24 >> Q12_SHIFT);
             if (lookupDivisor != 0) {
               /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
               lightLanes =
                    pmulhw(ColorLanes_UnpackBytesShiftRight(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(int32_t)((remainderHigh * (1 << 27) | remainderLow >> 5) /
-                                                      lookupDivisor)]);
+                          g_PackedLightingLookupTable[ModelLighting_ClampLookupIndex
+                                                        ((static_cast<uint32_t>(remainderHigh) << 27 |
+                                                          remainderLow >> 5) / lookupDivisor)]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }
@@ -1272,7 +1303,8 @@ ModelRender_ComputeVertexIntensityDefaultPath
    dword, wraps from |P| >= 8) and the row offset is floor(trunc(dot / s) / 512) with s = lightingScaleQ12 = S units * 4096, i.e. about 128 * P / S. The table holds offsets -682..136
    (P / S in -5.33..1.06). For |s| >= 4096 any wrapped dot gives offsets -1024..1023 (0x004CA2B0..0x004CE2B0);
    smaller |s| reach up to +-2^22 rows (+-32 MB), far outside the original image. s == 0 and
-   dot == INT_MIN with s == -1 fault (divide error) in the original as in this C division. Out-of-table rows go
+   dot == INT_MIN with s == -1 fault (divide error) in the original; ModelLighting_ScaledRowOffset bounds both
+   (row 0 for s == 0, the 64-bit quotient for the overflow). Out-of-table rows go
    through ModelLighting_ReadMultiplierQword: exact original bytes within 0x004C6D54..0x004CD1A0, 0 beyond it.
 */
 PackedArgb32
@@ -1302,7 +1334,8 @@ ModelRender_ComputeVertexIntensityScaledPath
   directionalLanes =
        pmulhw(ColorLanes_UnpackBytesShiftRight(scenePackedColor1,2),
               ModelLighting_ReadMultiplierQword
-                (((int32_t)MODEL_LIGHTING_SCALE_ROW0 + (lightFacingDotQ12 / lightingScaleQ12 >> 9)) * 8));
+                (((int32_t)MODEL_LIGHTING_SCALE_ROW0 +
+                  ModelLighting_ScaledRowOffset(lightFacingDotQ12,lightingScaleQ12)) * 8));
   shadingRecord = g_GraphicsShadingNearbyRecords;
   accumulatedLanes =
        pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ColorLanes_UnpackBytesShiftRight(scenePackedColor0,4)),
@@ -1312,7 +1345,7 @@ ModelRender_ComputeVertexIntensityScaledPath
       /* r^2 - dx^2 - dy^2 - dz^2 as a 64-bit subtraction on dword halves (remainderHigh:remainderLow, the low
          dword borrowing from the high one); the light reaches the vertex while remainderHigh stays >= 0 */
       remainderLow = (uint32_t)shadingRecord->squaredRadiusQ24;
-      remainderHigh = reinterpret_cast<const int *>(&shadingRecord->squaredRadiusQ24)[1]; /* the qword's high dword */
+      remainderHigh = static_cast<int>(shadingRecord->squaredRadiusQ24 >> 32); /* the qword's high dword */
       axisDelta = *vertexPositionQ12 - shadingRecord->worldXQ12;
       axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
       axisSquareLow = (uint32_t)axisDistanceSquared;
@@ -1336,14 +1369,14 @@ ModelRender_ComputeVertexIntensityScaledPath
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (64-bit shift, low dword kept) */
-            lookupDivisor = reinterpret_cast<const int *>(&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
-                     (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
+            lookupDivisor = static_cast<uint32_t>(shadingRecord->squaredRadiusQ24 >> Q12_SHIFT);
             if (lookupDivisor != 0) {
               /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
               lightLanes =
                    pmulhw(ColorLanes_UnpackBytesShiftRight(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(int32_t)((remainderHigh * (1 << 27) | remainderLow >> 5) /
-                                                      lookupDivisor)]);
+                          g_PackedLightingLookupTable[ModelLighting_ClampLookupIndex
+                                                        ((static_cast<uint32_t>(remainderHigh) << 27 |
+                                                          remainderLow >> 5) / lookupDivisor)]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }
@@ -1389,7 +1422,7 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
     uint32_t divisor;
     uint32_t numerator;
     int32_t facing;
-    int quotient;
+    int64_t quotient;
     uint32_t tableIndex;
 
     if (record->targetRadiusQ12 == 0) {
@@ -1422,8 +1455,12 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
     if (facing < 0) {
       facing = 0;
     }
-    quotient = (int)((int64_t)numerator / (int)divisor);
-    tableIndex = (uint32_t)(((int64_t)quotient * facing) >> 28);
+    /* The original divided by the divisor as a signed int (negative from 2^31, i.e. r^2 >= 2^51) and indexed the
+       table with the unchecked product; bounded here because that reads outside the 512 qwords: the divisor stays
+       unsigned in the 64-bit division and the index is clamped. In range (r > d gives 9 r^2 / (8 d^2 + r^2) * 32
+       <= 288, times facing <= 1.0) both are no-ops. */
+    quotient = static_cast<int64_t>(numerator) / static_cast<int64_t>(divisor);
+    tableIndex = ModelLighting_ClampLookupIndex(static_cast<uint32_t>((quotient * facing) >> 28));
     ModelLighting_UnpackBytes(record->packedColorRgbActive,2,lanes);
     ModelLighting_MulHigh(lanes,lightingTable + tableIndex * 4);
     ModelLighting_AddSaturate(color,lanes);
