@@ -88,12 +88,12 @@ static void FrontendMainLoop_TakeReceivedSnapshots(PckDecodedByteCount *received
     return;
   }
   remainingDecodedBytes = *receivedBuffer;
-  remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   /* the decoded table: per player its transfer flags dword, then the payload dwords when complete */
   receivedFlagsCursor = reinterpret_cast<FrontendSnapshotTransferFlags *>(g_PackageScratchBuffer);
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original looped do-while, a block count of 0 ran it 2^32 times; bounded here because a client's count
+     is 0 while the lobby rebuilds the roster (players leaving / a new session start): no blocks, nothing merged. */
+  for (remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount; remainingPlayerBlocks != 0; remainingPlayerBlocks--) {
     if ((remainingDecodedBytes < sizeof(FrontendSnapshotTransferFlags)) ||
         (Any(*receivedFlagsCursor & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) &&
          (remainingDecodedBytes - sizeof(FrontendSnapshotTransferFlags) < FRONTEND_SNAPSHOT_PAYLOAD_BYTES))) {
@@ -119,8 +119,7 @@ static void FrontendMainLoop_TakeReceivedSnapshots(PckDecodedByteCount *received
       }
     }
     playerBlock++;
-    remainingPlayerBlocks--;
-  } while (remainingPlayerBlocks != 0);
+  }
   FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SNAPSHOTS_RECEIVED,0,0,0);
   UiTransferMailbox_ClearReceivedState();
 }
@@ -181,10 +180,15 @@ static void FrontendMainLoop_PollScenarioSelectionPage()
   PckDecodedByteCount *receivedBuffer; /* unpacked size, then the packed snapshot flags */
   uint32_t receivedByteCount;
 
+  /* The original's do-while loops below ran 2^32 times for a block count of 0; bounded here because a client's
+     count is 0 while the lobby rebuilds the roster (players leaving / a new session start): keep waiting until
+     player blocks exist. Both loops below run with a count >= 1. */
+  if (g_FrontendPlayerRuntimeBlockCount == 0) {
+    return;
+  }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
     do {
       if (!Any(playerBlock->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY)) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -201,7 +205,6 @@ static void FrontendMainLoop_PollScenarioSelectionPage()
   }
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
   do {
     /* the AND really clears every other progress bit of the player */
     roleStateFlags = &playerBlock->factionAssignment.roleStateFlags;
@@ -229,7 +232,11 @@ static bool FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags stat
 
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* The original's do-while ran 2^32 times for a block count of 0; bounded here because a client's count is 0
+     while the lobby rebuilds the roster (players leaving / a new session start): not ready, keep waiting. */
+  if (remainingPlayerBlocks == 0) {
+    return false;
+  }
   do {
     if (!Any(playerBlock->factionAssignment.roleStateFlags & stateMask)) {
       return false;
@@ -266,14 +273,13 @@ static void FrontendMainLoop_RunSession(FrontendBooleanState32 loadExistingSessi
   PersistentSettings_Flush();
   UiFrame_FlushInputAndResetPendingTicks();
   g_FrontendScenarioInitializationCount = 0;
-  remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original looped do-while, a block count of 0 ran it 2^32 times; bounded here because the count can drop
+     to 0 while the session runs (players leaving): no blocks, nothing to clear. */
+  for (remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount; remainingPlayerBlocks != 0; remainingPlayerBlocks--) {
     playerBlock->factionAssignment.roleStateFlags = FrontendRoleStateFlags{};
     playerBlock++;
-    remainingPlayerBlocks--;
-  } while (remainingPlayerBlocks != 0);
+  }
 }
 
 /* Frontend_MainLoop, after a session in a campaign: follows the successor of the campaign's current level chosen
@@ -369,9 +375,19 @@ static void FrontendMainLoop_OfferLevelToClients(FrontendLoadedLevelAsset *loade
                   Thandor_Bytes(loadedLevelAsset),&encodedByteCount,&encodeErrorCode);
   levelEncodedBytes = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
   bundleHeader->levelEncodedBytes = levelEncodedBytes;
-  encodeOk = PckCodec_EncodeFieldGrid
-                 (PACKAGE_SCRATCH_BUFFER_BYTES - 24 - levelEncodedBytes,encodedImages + levelEncodedBytes,
-                  fieldGrid->common.allocationSizeBytes,fieldGrid,&encodedByteCount,&encodeErrorCode);
+  /* The original subtracts the encoded level size from the capacity unchecked; bounded here because a size
+     beyond the buffer would wrap it to a huge capacity. Fails like a failed encode. */
+  if ((uint64_t)levelEncodedBytes > (uint64_t)(PACKAGE_SCRATCH_BUFFER_BYTES - 24)) {
+    Thandor_Log("FrontendMainLoop_OfferLevelToClients: encoded level %u bytes exceed the transfer buffer",
+                levelEncodedBytes);
+    encodeOk = false;
+    encodeErrorCode = FATAL_ERROR_GENERAL_FAILURE;
+  }
+  else {
+    encodeOk = PckCodec_EncodeFieldGrid
+                   (PACKAGE_SCRATCH_BUFFER_BYTES - 24 - levelEncodedBytes,encodedImages + levelEncodedBytes,
+                    fieldGrid->common.allocationSizeBytes,fieldGrid,&encodedByteCount,&encodeErrorCode);
+  }
   fieldGridEncodedBytes = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
   bundleHeader->fieldGridEncodedBytes = fieldGridEncodedBytes;
   transferByteCount =
@@ -397,6 +413,7 @@ static void FrontendMainLoop_LoadSelectedLevel()
 {
   void *loadedPackageEntry;
   uint32_t packageLoadErrorCode;
+  uint32_t loadedByteCount;
   uintptr_t checkedValue;
   uint16_t *fieldGridPath;
   FieldGridAsset *fieldGrid;
@@ -410,7 +427,30 @@ static void FrontendMainLoop_LoadSelectedLevel()
   }
   Resource_Release(g_FrontendLoadedLevelAsset);
   g_FrontendLoadedLevelAsset = nullptr;
-  loadedPackageEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&packageLoadErrorCode);
+  /* Package_LoadEntryWithSize is the core of Package_LoadEntry (same allocation); the original used
+     Package_LoadEntry and trusted the level header's size */
+  loadedPackageEntry =
+       Package_LoadEntryWithSize(g_FrontendScenarioPathScratchUtf16,&loadedByteCount,&packageLoadErrorCode);
+  if (loadedPackageEntry == nullptr) {
+    Thandor_Log("FrontendMainLoop_LoadSelectedLevel: loading \"%ls\" failed (error 0x%08X)",
+                reinterpret_cast<wchar_t *>(g_FrontendScenarioPathScratchUtf16),packageLoadErrorCode);
+  }
+  /* The original took the level header's allocationSizeBytes as the image size (the host encodes that many
+     bytes for the clients, NewLevel_ValidateImage bounds the level by it); bounded here because a level shorter
+     than its header or than the size its header claims was read past its allocation: rejected like a level that
+     fails to load. */
+  else if ((loadedByteCount < sizeof(FrontendLoadedLevelAsset)) ||
+           (static_cast<FrontendLoadedLevelAsset *>(loadedPackageEntry)->header.common.allocationSizeBytes >
+            loadedByteCount)) {
+    Thandor_Log("FrontendMainLoop_LoadSelectedLevel: level \"%ls\" rejected, header size 0x%X, decoded 0x%X bytes",
+                reinterpret_cast<wchar_t *>(g_FrontendScenarioPathScratchUtf16),
+                (loadedByteCount < sizeof(FrontendLoadedLevelAsset)) ? 0U :
+                     static_cast<FrontendLoadedLevelAsset *>(loadedPackageEntry)->header.common.allocationSizeBytes,
+                loadedByteCount);
+    Resource_Release(loadedPackageEntry);
+    loadedPackageEntry = nullptr;
+    packageLoadErrorCode = FATAL_ERROR_LEVEL_ASSET_INVALID;
+  }
   checkedValue = FatalError_ExitIfFailed
                       (loadedPackageEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedPackageEntry) : packageLoadErrorCode,
                        loadedPackageEntry == nullptr);
