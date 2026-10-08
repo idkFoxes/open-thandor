@@ -1,5 +1,5 @@
 {
- "revision": "c6581321",
+ "revision": "76ce9910",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -218,7 +218,7 @@
    "movie": 6,
    "network": 10,
    "platform": 17,
-   "ui": 102,
+   "ui": 95,
    "world": 49
   },
   "while_tail": {
@@ -230,7 +230,7 @@
    "movie": 6,
    "network": 10,
    "platform": 13,
-   "ui": 101,
+   "ui": 94,
    "world": 48
   }
  }
