@@ -169,8 +169,9 @@ uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue)
 }
 
 /* Integer square root of the 64-bit value high:low, used for vector lengths from 64-bit sums of squares.
-   The start value is the power of two just above the root (from the highest set bit); three Newton
-   steps x = (x + value / x) / 2 follow, the divisions being unsigned 64-by-32-bit divisions.
+   The start value is the power of two near the root (from the highest set bit); three Newton
+   steps x = (x + value / x) / 2 follow, the divisions being unsigned 64-by-32-bit divisions. Values of
+   2^61 and more (start shift 31 or 32) run the same steps in 64 bits.
 */
 uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
 
@@ -200,8 +201,20 @@ uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
   }
   else {
     initialRootShift = (uint8_t)(highestSetBitIndex + 33U >> 1);
+    if (initialRootShift >= 31) {
+      /* The original computed the start value as 1 << (shift & 31) (1 instead of 2^32 for shift 32) and ran
+         the steps in 32 bits, which wraps near 2^62 and above and can divide by zero (e.g. 2^62 - 1); bounded
+         here because the steps now run in 64 bits from 2^shift. Where the 32-bit steps did not wrap the
+         result is the same; no game value comes near 2^61 (Q12 world distances). */
+      const uint64_t wideValue = (uint64_t)high << 32 | (uint64_t)low;
+      uint64_t wideRootEstimate = (uint64_t)1 << initialRootShift;
+      for (int newtonStep = 0; newtonStep < 3; newtonStep++) {
+        wideRootEstimate = (wideRootEstimate + wideValue / wideRootEstimate) >> 1;
+      }
+      return (uint32_t)wideRootEstimate;
+    }
   }
-  rootEstimate = 1 << (initialRootShift & 31);
+  rootEstimate = 1U << initialRootShift; /* shift <= 30 here */
   /* unsigned division of the 64-bit value high:low */
   refinedRootEstimate = (rootEstimate + (int)(((uint64_t)high << 32 | (uint64_t)low) / (uint64_t)rootEstimate)) >> 1;
   secondRootEstimate =
