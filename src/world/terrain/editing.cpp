@@ -202,7 +202,7 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
   fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
   rowStrideBytes = widthCells * sizeof(FieldGridCell); /* 0x80-byte FieldGridCell records */
   fieldCell = fieldGridAsset->cells;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* count >= 16: the world field grid passed FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) on load */
   do {
     heightDelta = *heightDeltaCursor;
     if (heightDelta != 0) {
@@ -273,7 +273,7 @@ void TerrainEditBuffer_CopyCellMaterialBytes
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   fieldCell = fieldGridAsset->cells;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* count >= 16: the world field grid passed FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) on load */
   do {
     *materialCursor = FieldCell_MaterialId(fieldCell->flagsAndMaterial);
     fieldCell = fieldCell + 1;
@@ -304,7 +304,7 @@ void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   fieldCell = fieldGridAsset->cells;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* count >= 16: the world field grid passed FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) on load */
   do {
     *materialDeltaCursor = *materialDeltaCursor - FieldCell_MaterialId(fieldCell->flagsAndMaterial);
     fieldCell = fieldCell + 1;
@@ -340,7 +340,7 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
      command is editor-only (no determinism check runs the editor). The surface stays not marked dirty, as in the
      original. */
   fieldCell = fieldGridAsset->cells;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* count >= 16: the world field grid passed FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) on load */
   do {
     /* The original adds the delta to the whole dword; the edge-ring bits are kept here because the plane
        can hold any values when the commands come out of order from a network peer (valid deltas only
@@ -378,7 +378,7 @@ void TerrainEditBuffer_ConvertHeightsToDeltas
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   fieldCell = fieldGridAsset->cells;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* count >= 16: the world field grid passed FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) on load */
   do {
     *heightCursor = fieldCell->terrainHeight - *heightCursor;
     fieldCell = fieldCell + 1;

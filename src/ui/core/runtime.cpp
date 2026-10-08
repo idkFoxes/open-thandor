@@ -9,6 +9,8 @@
 #include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
 
+#include <algorithm>
+
 /* Module data. */
 
 UiRuntimeRecord *g_UiRuntimeRecordRing = nullptr;
@@ -68,11 +70,19 @@ int UiModalDialogRoot_BlockMissedPointerMotion(UiRootNode *root)
   return 8;
 }
 
+/* Copies of the ring slot UiRuntimeRecordRing_TakeOldest handed out last (per thread; the callers use them
+   only until their next call). */
+static thread_local UiRuntimeRecord t_UiRuntimeRecordTakenPacket;
+alignas(8) static thread_local uint8_t t_UiRuntimeRecordTakenEndpoint[UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE];
+
 /* Takes the oldest received network packet out of the receive ring (under the ring lock) and returns
-   pointers to it and to its sender endpoint. The slot is released, not copied, so the data stays valid only
-   until the receiver wraps around to it again. Returns true with *outPacket (the packet slot) and
-   *outEndpoint (its sender-endpoint slot) set; returns false and leaves both untouched when nothing was
-   pending.
+   pointers to a copy of it and of its sender endpoint. The copies stay valid until the next call on the same
+   thread. Returns true with *outPacket (the packet copy) and *outEndpoint (its sender-endpoint copy) set;
+   returns false and leaves both untouched when nothing was pending.
+   The original returned pointers into the ring itself after releasing the slot, so the mailbox timer thread
+   (UiTransferMailbox_ServiceAndRetransmitTimer) could overwrite the packet while it was being handled once
+   the ring wrapped around; copied under the ring lock here because the handlers only read the packet within
+   the call. Without such a wrap the copy holds the same bytes the slot held.
 */
 bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
 
@@ -82,9 +92,12 @@ bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
   g_SpinLockAcquire(&g_UiRuntimeRecordRingLock);
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
     nextReadIndex = g_UiRuntimeRecordReadIndex + 1;
-    *outPacket = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
-    *outEndpoint = reinterpret_cast<void *>
-         (g_UiRuntimeRecordReadIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots);
+    t_UiRuntimeRecordTakenPacket = g_UiRuntimeRecordRing[g_UiRuntimeRecordReadIndex];
+    std::copy_n(reinterpret_cast<const uint8_t *>
+                (g_UiRuntimeRecordReadIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots),
+                UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE,t_UiRuntimeRecordTakenEndpoint);
+    *outPacket = &t_UiRuntimeRecordTakenPacket;
+    *outEndpoint = t_UiRuntimeRecordTakenEndpoint;
     g_UiRuntimeRecordReadIndex = nextReadIndex;
     if (UI_RUNTIME_RECORD_RING_LAST_INDEX < nextReadIndex) {
       g_UiRuntimeRecordReadIndex = 0;
@@ -235,6 +248,9 @@ void UiRuntime_IncrementPeriodicTickCounter()
    action id selects the handler page by its high byte (g_UiActionHandlerPages) and the handler by its low
    byte; the handler gets the control that queued it. Each entry is removed (the rest moved down) before its
    handler runs, so handlers may queue further actions.
+   The original called through the handler slot unchecked, so an action id whose page (high byte, or bits
+   above 15) or handler is not installed jumped to address 0 or read past g_UiActionHandlerPages; such an
+   entry is removed and skipped here (one log line) because action ids also come from UI template data.
 */
 void UiActionQueue_DispatchPending()
 
@@ -242,25 +258,34 @@ void UiActionQueue_DispatchPending()
   void *actionSource;
   void (*actionHandler)(void *);
   UiActionQueueEntry *queueHead;
-  int remainingCount;
-  UiActionQueueEntry *sourceEntry;
-  UiActionQueueEntry *destinationEntry;
-  
+  uint32_t actionPageIndex;
+  const UiActionHandlerPage *actionPage;
+  UiActionId actionId;
+
   g_SpinLockAcquire(g_UiRuntimeFrameLock);
   queueHead = g_UiActionQueueEntries;
   while (g_UiActionQueueUsedBytes != 0) {
     actionSource = queueHead->source;
+    actionId = queueHead->actionId;
     g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - sizeof(UiActionQueueEntry);
-    actionHandler = g_UiActionHandlerPages[(int32_t)((uint32_t)queueHead->actionId >> 8)]->handlers
-                    [(int32_t)((uint32_t)queueHead->actionId & (UI_ACTION_HANDLER_PAGE_COUNT - 1))];
-    sourceEntry = queueHead + 1;
-    destinationEntry = queueHead;
-    /* move entries 1..15 (30 dwords) down by one */
-    for (remainingCount = 30; queueHead = g_UiActionQueueEntries, remainingCount != 0; remainingCount--) {
-      destinationEntry->actionId = sourceEntry->actionId;
-      /* one dword further: the entries are moved dword by dword */
-      sourceEntry = reinterpret_cast<UiActionQueueEntry *>(&sourceEntry->source);
-      destinationEntry = reinterpret_cast<UiActionQueueEntry *>(&destinationEntry->source);
+    actionPageIndex = static_cast<uint32_t>(actionId) >> 8;
+    actionHandler = nullptr;
+    if (actionPageIndex < static_cast<uint32_t>(UI_ACTION_HANDLER_PAGE_COUNT)) {
+      actionPage = g_UiActionHandlerPages[actionPageIndex];
+      if (actionPage != nullptr) {
+        actionHandler = actionPage->handlers
+                        [static_cast<uint32_t>(actionId) & static_cast<uint32_t>(UI_ACTION_HANDLER_PAGE_COUNT - 1)];
+      }
+    }
+    /* move the remaining entries down by one, exactly the used ones (the original moved all 15 dword by dword
+       through overlapping actionId stores; entries past the used bytes are never read). A forward std::copy is
+       defined here because the destination starts before the source. */
+    std::copy_n(queueHead + 1,g_UiActionQueueUsedBytes / sizeof(UiActionQueueEntry),queueHead);
+    queueHead = g_UiActionQueueEntries;
+    if (actionHandler == nullptr) {
+      Thandor_Log("UiActionQueue_DispatchPending: no handler installed for action id 0x%X, skipped",
+                  static_cast<uint32_t>(actionId));
+      continue;
     }
     actionHandler(actionSource);
   }

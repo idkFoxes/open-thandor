@@ -16,7 +16,8 @@
 /* In-game command INGAME_COMMAND_TERRAIN_RELAXATION (0x3200, handler at INGAME_COMMAND_CODE_BASE + code):
    runs passCount pairs of forward and reverse water relaxation sweeps over the active field grid, the
    sign-gated pair or (mode bit 0 set) the ungated land-tool pair. Queued or called directly by
-   InGameCommandRange_DispatchState0/1 (ui/ingame/editor_tool_selection.cpp) with 0x80 passes. passCount must not be 0.
+   InGameCommandRange_DispatchState0/1 (ui/ingame/editor_tool_selection.cpp) with 0x80 passes. passCount must not be 0
+   (a network peer's command is checked by COMMAND_CHECK_RELAXATION_PASSES).
 */
 void TerrainGrid_RunDirectionalRelaxationPasses(FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero,
           TerrainRelaxationPassCount passCount,TerrainRelaxationMode mode)
@@ -79,8 +80,9 @@ static inline void FieldGridCell_RelaxNeighbors(FieldGridCell *source,ptrdiff_t 
 
 /* Relaxes around every interior cell (rows 1 .. gridHeight - 2, columns 1 .. gridWidth - 2) as a source: forward
    row by row from the top-left, or (Reverse) backwards from the bottom-right. Each source sees the neighbour
-   values its predecessors in the scan left. Original quirk: both counts are do/while counters, so a grid with
-   fewer than 3 rows or columns runs 2^32 times (kept as in the original; step 11). */
+   values its predecessors in the scan left. Both counts are do/while counters (a grid with fewer than 3 rows or
+   columns would wrap), but both are >= 2: every caller passes the world field grid, which passed
+   FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) on load. */
 template <bool SignGated,bool Reverse>
 static void TerrainGrid_RelaxInteriorCells(FieldGridAsset *fieldGrid)
 

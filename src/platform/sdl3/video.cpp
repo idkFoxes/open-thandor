@@ -60,6 +60,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <span>
 #include <utility>
@@ -262,6 +263,24 @@ void CopyCursorRectangle(SoftwareFramebufferAccess &buffer, int drawY, int drawX
   }
 }
 
+/* The cursor frame record selected by GraphicsCursor_SetFrameIndex, nullptr when there is none. The original
+   indexes the frame table unchecked; bounded here because an empty engine\mouse.dat (frame count 0, no table)
+   leaves no record to read, so the cursor is not drawn (logged once). */
+const GraphicsCursorFrameRecord *CurrentCursorFrame() noexcept
+{
+  const GraphicsCursorFrameIndex frameIndex = GraphicsCursor_GetFrameIndex();
+  if ((frameIndex >= g_CursorFrameCount) || (g_CursorFrameRecords == nullptr)) {
+    static bool s_logged = false;
+    if (!s_logged) {
+      s_logged = true;
+      Thandor_Log("cursor frame %u not in the %u cursor frames, the cursor is not drawn", frameIndex,
+                  g_CursorFrameCount);
+    }
+    return nullptr;
+  }
+  return &g_CursorFrameRecords[frameIndex];
+}
+
 /* GraphicsCursor_ComposeBeforePresent on the memory framebuffer: saves the background under the cursor twice,
    blends the cursor frame (the pressed image while a button is down) onto the first copy and writes it back. The
    visibility token is latched so the restore matches what was drawn. */
@@ -277,7 +296,12 @@ void ComposeCursor() noexcept
     cursorX = g_CursorOverrideX;
     cursorY = g_CursorOverrideY;
   }
-  const GraphicsCursorFrameRecord &cursorFrame = g_CursorFrameRecords[GraphicsCursor_GetFrameIndex()];
+  const GraphicsCursorFrameRecord *frameRecord = CurrentCursorFrame();
+  if (frameRecord == nullptr) {
+    g_CursorCurrentVisibilityToken = -1; /* nothing drawn, so RestoreCursor has nothing to restore */
+    return;
+  }
+  const GraphicsCursorFrameRecord &cursorFrame = *frameRecord;
   const int drawX = cursorX - cursorFrame.hotspotX;
   const int drawY = cursorY - cursorFrame.hotspotY;
   s_video.cursorDrawX = drawX;
@@ -308,7 +332,11 @@ bool CursorSprite(thandor::sdl3::GpuCursorSprite &outCursor) noexcept
     cursorX = g_CursorOverrideX;
     cursorY = g_CursorOverrideY;
   }
-  const GraphicsCursorFrameRecord &cursorFrame = g_CursorFrameRecords[GraphicsCursor_GetFrameIndex()];
+  const GraphicsCursorFrameRecord *frameRecord = CurrentCursorFrame();
+  if (frameRecord == nullptr) {
+    return false;
+  }
+  const GraphicsCursorFrameRecord &cursorFrame = *frameRecord;
   outCursor.asset = g_CursorSourceAsset;
   outCursor.subresource = !Any(g_CursorButtonState & LEFT_MIDDLE_RIGHT) ? cursorFrame.idleSubresourceIndex
                                                                          : cursorFrame.activeSubresourceIndex;
@@ -329,6 +357,11 @@ void RestoreCursor() noexcept
 /* A newly allocated one-image capture asset of captureWidth x captureHeight, NULL when the allocation fails. */
 GraphicsCapturedTextureSourceAsset *AllocateCapture(uint32_t captureHeight, uint32_t captureWidth) noexcept
 {
+  /* bounded: a region whose byte size does not fit 32 bits would wrap to a too small allocation */
+  if ((captureWidth != 0) && (captureHeight > (UINT32_MAX - GRAPHICS_CAPTURE_PIXELS_OFFSET) / 4 / captureWidth)) {
+    Thandor_Log("capture %ux%u rejected: too large", captureWidth, captureHeight);
+    return nullptr;
+  }
   const uint32_t allocationSize = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
   void *allocation = nullptr;
   if (g_MemoryApi.alloc(allocationSize, &allocation) != 0) {
@@ -1047,7 +1080,7 @@ bool SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint3
 
 void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer)
 {
-  g_ThandorFrameHeartbeat++;
+  g_ThandorFrameHeartbeat = g_ThandorFrameHeartbeat + 1; /* one volatile read and write, as the ++ did */
   if ((framebuffer == &g_DisplayFramebufferAccess) && !s_video.framebuffer.empty()) {
     WaitForFrameSlot(); /* the frame limit, before the backend lock (the cursor timer skips while it is held) */
   }
@@ -1103,8 +1136,31 @@ GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t capture
     return capturedAsset;
   }
 #endif
-  const std::byte *sourceRow = s_video.framebuffer.data() + (sourceY * static_cast<int32_t>(g_FramebufferWidth) + sourceX) * 4;
   uint32_t *destinationPixel = capturedAsset->argb8888Pixels;
+  /* The original reads the region unchecked; bounded here because a region outside the framebuffer would read
+     past it: such pixels come out opaque black (logged). The stock callers capture the whole framebuffer. */
+  const int64_t framebufferWidth = std::min<int64_t>(g_FramebufferWidth, s_video.pitchBytes / 4);
+  const int64_t framebufferHeight =
+      std::min<int64_t>(g_FramebufferHeight, static_cast<int64_t>(s_video.framebuffer.size()) / s_video.pitchBytes);
+  if ((sourceX < 0) || (sourceY < 0) || (sourceX + static_cast<int64_t>(captureWidth) > framebufferWidth) ||
+      (sourceY + static_cast<int64_t>(captureHeight) > framebufferHeight)) {
+    Thandor_Log("capture %ux%u at (%d,%d) outside the %lldx%lld framebuffer, clipped", captureWidth, captureHeight,
+                sourceX, sourceY, static_cast<long long>(framebufferWidth), static_cast<long long>(framebufferHeight));
+    for (uint32_t row = 0; row < captureHeight; row++) {
+      const int64_t y = sourceY + static_cast<int64_t>(row);
+      for (uint32_t column = 0; column < captureWidth; column++) {
+        const int64_t x = sourceX + static_cast<int64_t>(column);
+        uint32_t pixel = 0;
+        if ((x >= 0) && (y >= 0) && (x < framebufferWidth) && (y < framebufferHeight)) {
+          pixel = Thandor_LoadU32(s_video.framebuffer.data() + (y * s_video.pitchBytes) + (x * 4));
+        }
+        *destinationPixel = pixel | ARGB8888_ALPHA_MASK;
+        destinationPixel++;
+      }
+    }
+    return capturedAsset;
+  }
+  const std::byte *sourceRow = s_video.framebuffer.data() + (sourceY * static_cast<int32_t>(g_FramebufferWidth) + sourceX) * 4;
   for (uint32_t row = 0; row < captureHeight; row++) {
     const std::byte *sourcePixel = sourceRow;
     for (uint32_t column = 0; column < captureWidth; column++) {
