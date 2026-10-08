@@ -380,6 +380,13 @@ static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRunti
   }
 }
 
+/* Not in the original: true when linkedRuntime (a rebased link already known to land on a model runtime slot,
+   or NULL) names a free slot (no root node: free in the file or dropped at load). */
+static bool ModelRuntimePool_PointsToFreeSlot(const ModelRuntimeSlot *linkedRuntime)
+{
+  return linkedRuntime != nullptr && linkedRuntime->rootModelNodeOrSavedOffset.modelNode == nullptr;
+}
+
 /* After a savegame load, counterpart of ModelRuntimePool_UnrebaseBeforeSave: turns the saved offsets of every
    used model runtime slot back into pointers, replaces the saved definition id by the registered definition,
    runs the class's load-repair callback and rebuilds the attachment descriptors from the definition. A slot
@@ -403,6 +410,7 @@ void ModelRuntimePool_RebaseAfterLoad()
   int droppedInvalidNodeCount = 0;
   int droppedAttachmentCount = 0;
   int clearedAttachmentLinkCount = 0;
+  int clearedFreeSlotLinkCount = 0;
 
   for (slotIndex = 0; slotIndex < MODEL_RUNTIME_SLOT_COUNT; slotIndex++) {
     modelRuntime = &g_ModelRuntimeSlots[slotIndex];
@@ -516,13 +524,35 @@ void ModelRuntimePool_RebaseAfterLoad()
         modelRuntime->attachments[attachmentIndex].childModelRuntimeOrSavedOffset = nullptr;
       }
     }
+    /* Not in the original: the same for the three model links of a kept slot, which were checked to land on a
+       model runtime slot (ModelRuntimePool_RebasedSlotInPools, the class-link check above and
+       ModelRuntimeSlot_RebaseClassModelLinkOffset60); every reader treats NULL as "no link" and follows any
+       other value into the slot's definition and nodes. A save written by the game has none of them pointing
+       at a free slot: linkedModelRuntimeOrSavedOffset is NULL or the slot itself (ArmyRuntime_ApplyDamage*),
+       and the class link and the aircraft home pad are only ever held by army root models (stock data: no
+       attached child model has a moving, factory, aircraft, pad or platform class), whose links to a model
+       are cleared when it is destroyed (WorldRuntimeNode_ClearDetachedEntityReferencesCallback). */
+    if (ModelRuntimePool_PointsToFreeSlot(modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime)) {
+      clearedFreeSlotLinkCount++;
+      modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = nullptr;
+    }
+    if (ModelRuntimePool_PointsToFreeSlot(modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime)) {
+      clearedFreeSlotLinkCount++;
+      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
+    }
+    if (modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT &&
+        ModelRuntimePool_PointsToFreeSlot(modelRuntime->classLinkState.modelLinkOrState.modelRuntime)) {
+      clearedFreeSlotLinkCount++;
+      modelRuntime->classLinkState.modelLinkOrState.modelRuntime = nullptr;
+    }
   }
   if (droppedOutOfPoolCount != 0 || clearedClassLinkCount != 0 || droppedInvalidNodeCount != 0 ||
-      droppedAttachmentCount != 0 || clearedAttachmentLinkCount != 0) {
+      droppedAttachmentCount != 0 || clearedAttachmentLinkCount != 0 || clearedFreeSlotLinkCount != 0) {
     Thandor_Log("model: invalid savegame instances: %d with offsets outside their pools, %d with invalid nodes and"
-                " %d with extra attachments dropped, %d class links and %d attachment links cleared",
+                " %d with extra attachments dropped, %d class links, %d attachment links and %d links to free"
+                " slots cleared",
                 droppedOutOfPoolCount,droppedInvalidNodeCount,droppedAttachmentCount,clearedClassLinkCount,
-                clearedAttachmentLinkCount);
+                clearedAttachmentLinkCount,clearedFreeSlotLinkCount);
   }
 }
 
