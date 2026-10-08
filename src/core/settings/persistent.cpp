@@ -853,10 +853,47 @@ static void PersistentSettings_NormalizeColorDepth()
   g_PersistentSettings.dirtyWriteCount++; /* the next Flush writes it */
 }
 
+/* Largest shading depth (stored as a quarter of the depth the menus name) the menus offer: 128 / 4. */
+constexpr uint32_t PERSISTENT_SHADING_SUBRESOURCE_COUNT_MAX = 32;
+
+/* open-thandor: the shading settings go unchecked into GraphicsShadingRuntime_InitializeGeneratedTexture (session
+   start and the in-game shading option). The menus only write the grid half sizes 32, 64 and 128 with a texture
+   size of twice that and the depths 32, 64 and 128 (stored as 8, 16 and 32). A hand-edited thandor.ini (or
+   thandor.dat) could give a texture size of 0 (division by zero in the grid step), a grid half size that is no
+   multiple of 32 or a texture size other than twice it (the filter and the tile walk run past the scratch grid
+   and the textures), or a depth of 0 or one so large that the texture asset size overflows. Such values are
+   dropped from the loaded image here (one log line each), so PersistentSettings_Read returns the defaults;
+   grid half size and texture size only together, as they must match. Values the game writes pass unchanged. */
+static void PersistentSettings_ValidateShading()
+{
+  if (g_PersistentSettings.image == nullptr) {
+    return;
+  }
+  const uint32_t gridHalfSize =
+      PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_GRID_HALF_SIZE, PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
+  const uint32_t textureDimension = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_TEXTURE_DIMENSION,
+                                                            PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
+  const uint32_t subresourceCount = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_SUBRESOURCE_COUNT,
+                                                            PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
+
+  if ((gridHalfSize != 32 && gridHalfSize != 64 && gridHalfSize != 128) || textureDimension != gridHalfSize * 2) {
+    Thandor_Log("settings: shading_grid_half_size %u / shading_texture_size %u not 32/64, 64/128 or 128/256, "
+                "defaults used", gridHalfSize, textureDimension);
+    s_PersistentSettingsPresentMask &= ~(PersistentSettings_DwordMask(PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE, 4) |
+                                         PersistentSettings_DwordMask(PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION, 4));
+  }
+  if (subresourceCount == 0 || subresourceCount > PERSISTENT_SHADING_SUBRESOURCE_COUNT_MAX) {
+    Thandor_Log("settings: shading_depth %u not 1..%u, default used", subresourceCount,
+                PERSISTENT_SHADING_SUBRESOURCE_COUNT_MAX);
+    s_PersistentSettingsPresentMask &= ~PersistentSettings_DwordMask(PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT, 4);
+  }
+}
+
 void PersistentSettings_Load()
 {
   PersistentSettings_LoadImage();
   PersistentSettings_NormalizeColorDepth();
+  PersistentSettings_ValidateShading();
 }
 
 

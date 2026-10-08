@@ -279,7 +279,8 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
       ((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime != nullptr)) {
     /* Original quirk: the body runs once before the counter is tested, so a step of 0 ticks wraps around. */
     ticksRemaining = g_InGameSimulationStepTicks;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* ticksRemaining >= 1: g_InGameSimulationStepTicks starts at 1 and only takes player batches of
+       1..INGAME_SIMULATION_STEP_TICKS_MAX (InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks) */
     do {
       ArmyRuntime_ProcessReadyAttachmentChannels(worldRuntime,modelRuntime);
       modelRuntime->destructionEffectTimers[0] = modelRuntime->destructionEffectTimers[0] - 1;
