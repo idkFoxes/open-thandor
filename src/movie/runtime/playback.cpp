@@ -140,7 +140,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   }
   loadError = g_FileSystemReadExact(trackBytes,audioSample.get(),handle);
   if (loadError == 0) {
-    loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),&voiceSet);
+    loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),trackBytes,&voiceSet);
     if (loadError == 0) {
       *outVoiceSet = voiceSet;
     }

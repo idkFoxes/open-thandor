@@ -12,8 +12,10 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-/* Voice-set creation: 0 on success (*outVoiceSet written), else an error code (*outVoiceSet untouched). */
-using SoundCreateSampleVoiceSetProc = uint32_t (SoundSampleAsset * sampleAsset, SoundVoiceSet * * outVoiceSet);
+/* Voice-set creation from a loaded .sam of sampleByteCount bytes: 0 on success (*outVoiceSet written), else an
+   error code (*outVoiceSet untouched). */
+using SoundCreateSampleVoiceSetProc = uint32_t (SoundSampleAsset * sampleAsset, uint32_t sampleByteCount,
+                                               SoundVoiceSet * * outVoiceSet);
 /* Play a voice of the set: true when it plays; the voice (NULL on failure and from the silent backend) goes to
    *outVoice unless outVoice is NULL. */
 using SoundPlayVoiceProc = bool (uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, SoundVoiceSet * voiceSet, SoundVoice * * outVoice);

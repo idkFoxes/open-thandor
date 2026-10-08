@@ -664,7 +664,8 @@ static void Thandor_SelfTestSam()
     }
     offset = 0;
     for (block = 0; block < BLOCKS; block++) {
-        uint32_t consumed = SoundSample_DecodePackedCoefficientBlock(coefficients, stream.data() + offset);
+        uint32_t consumed = SoundSample_DecodePackedCoefficientBlock(coefficients, stream.data() + offset,
+                                                                     stream.data() + stream.size());
         offset += consumed;
         memcpy(monoInput.coefficients, coefficients, sizeof coefficients);
         SoundSample_DecodeCoefficientBlockToPcmMmx(stereo, coefficients);
@@ -701,7 +702,8 @@ static void Thandor_SelfTestSam()
     hashRoundTrip = SelfTest_HashBytes(hashRoundTrip, stream.data(), offset);
     offset = 0;
     for (block = 0; block < BLOCKS; block++) {
-        uint32_t consumed = SoundSample_DecodePackedCoefficientBlock(coefficients, stream.data() + offset);
+        uint32_t consumed = SoundSample_DecodePackedCoefficientBlock(coefficients, stream.data() + offset,
+                                                                     stream.data() + stream.size());
         offset += consumed;
         SoundSample_DecodeCoefficientBlockToPcmMmx(stereo, coefficients);
         hashRoundTrip = SelfTest_HashBytes(hashRoundTrip, &consumed, 4);
