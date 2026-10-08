@@ -221,6 +221,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   uint32_t allocationError;
   void *allocationPayload;
   PckDecodedByteCount campaignDecodedSizeBytes;
+  uint32_t campaignByteCount;
   
   frontendRoot = g_FrontendRootNode;
   roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
@@ -233,10 +234,23 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
                      [selectedRecordIndex]),
                g_CampaignLevelDirectoryUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_CGN,g_FrontendScenarioPathScratchUtf16);
-    loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
+    /* Package_LoadEntryWithSize is the core of Package_LoadEntry (same allocation); the byte count bounds the
+       campaign check below. */
+    loadedEntry = Package_LoadEntryWithSize(g_FrontendScenarioPathScratchUtf16,&campaignByteCount,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
                         (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
     campaignAsset = reinterpret_cast<CampaignAsset *>(checkedValue); /* the loaded entry, passed through as an integer */
+    /* The original takes a local .cgn as it is (only a network campaign is checked); bounded here because a
+       campaign with no, too many or no matching level records makes the search below and every later campaign
+       walk read behind the asset. Fails like a failed load. */
+    if (!CampaignAsset_Fits(campaignAsset,campaignByteCount)) {
+      Thandor_Log("campaign \"%ls\": %u bytes, %d level records or no record of level %d, load rejected",
+                  reinterpret_cast<wchar_t *>(g_FrontendScenarioPathScratchUtf16),campaignByteCount,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->levelRecordCount : 0,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->firstLevelId : 0);
+      FatalError_ExitIfFailed(FATAL_ERROR_GENERAL_FAILURE,true); /* exits, as a failed load does */
+      return;
+    }
     DebugHook_CampaignLoaded(campaignAsset);
     /* CampaignAsset: the first level becomes the current one; find its record. */
     levelRecord = campaignAsset->levels;
@@ -250,11 +264,9 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
       levelRecord++;
       campaignRecordsRemaining--;
     }
-    if (campaignRecordsRemaining == 0) {
-      /* No record for the current level. As in the original this check never fails (it passes a cleared
-         failure flag); the cursor then points behind the last record. */
-      FatalError_ExitIfFailed(0,false);
-    }
+    /* The original then checks for "no record of the current level" with a cleared failure flag (a no-op) and
+       goes on with the cursor behind the last record; CampaignAsset_Fits above rejected such a campaign, so the
+       search always ends on the first level's record. */
     FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
     WidePath_CombineDirectoryAndLeaf
               (g_FrontendScenarioPathScratchUtf16,levelRecord->levelFileName,
