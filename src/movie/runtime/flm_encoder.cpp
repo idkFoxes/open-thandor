@@ -5,6 +5,9 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+/* FLM movie encoder (converter code, no caller in the game; kept with its movieenc self-test): encodes the
+   frames of a frame provider into an FLM buffer, a 4x4 block keyframe followed by delta frames against it. */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -177,20 +180,18 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
   blockRowsLeft = frameHeightPixels >> 2;
   outputCursor = encodedOutput;
   blocksLeftInRow = frameWidthPixels >> 2;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+  /* The original ran both loops as do-whiles, so a frame under 4 pixels wide or high looped 2^32 times; bounded
+     here because the frame size comes unchecked from the caller (such a frame encodes no block). */
+  for (; blockRowsLeft != 0; blockRowsLeft--) {
+    for (; blocksLeftInRow != 0; blocksLeftInRow--) {
       MovieDeltaEncode_Block(outputCursor,sourcePixels,frameWidthPixels);
       sourcePixels = sourcePixels + 4;
       outputCursor = outputCursor + 2;
-      blocksLeftInRow--;
-    } while (blocksLeftInRow != 0);
+    }
     /* past the other three pixel rows of this block row */
     sourcePixels = sourcePixels + frameWidthPixels * 3;
-    blockRowsLeft--;
     blocksLeftInRow = frameWidthPixels >> 2;
-  } while (blockRowsLeft != 0);
+  }
   return (uint32_t)Thandor_ByteDistance(outputCursor, encodedOutput);
 }
 
@@ -398,11 +399,10 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
   currentBlock = Thandor_Bytes(currentFramePixels);
   referenceBlock = Thandor_Bytes(previousFramePixels);
   outputCursor = Thandor_Bytes(encodedOutput);
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
-    blocksLeftInRow = frameWidthPixels >> 2;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+  /* The original ran both loops as do-whiles, so a frame under 4 pixels wide or high looped 2^32 times; bounded
+     here because the frame size comes unchecked from the caller (such a frame encodes no block). */
+  for (; blockRowsLeft != 0; blockRowsLeft--) {
+    for (blocksLeftInRow = frameWidthPixels >> 2; blocksLeftInRow != 0; blocksLeftInRow--) {
       if (!MovieDeltaEncode_BlockChanged(currentBlock,referenceBlock,rowStrideBytes)) {
         pendingSkipCount++;
       }
@@ -418,13 +418,11 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
       }
       currentBlock = currentBlock + 16;
       referenceBlock = referenceBlock + 16;
-      blocksLeftInRow--;
-    } while (blocksLeftInRow != 0);
+    }
     /* past the other three pixel rows of this block row */
     currentBlock = currentBlock + frameWidthPixels * 12;
     referenceBlock = referenceBlock + frameWidthPixels * 12;
-    blockRowsLeft--;
-  } while (blockRowsLeft != 0);
+  }
   if (pendingSkipCount != 0) {
     outputCursor = MovieDeltaEncode_WriteSkipToken(outputCursor,pendingSkipCount);
   }

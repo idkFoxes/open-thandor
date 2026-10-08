@@ -5,6 +5,7 @@
  * Project code (not in the original game)
  */
 
+#include <atomic>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +20,13 @@
    Each movie runs at its own rate for at most 10 seconds; a key or mouse click skips to the next.
    The name and frame counter are drawn top left. OPEN_THANDOR_MOVIE_STRETCH=1 draws full screen
    with the end-movie bilinear stretch. The process exits after the last movie. */
+
+/* g_IntroMoviePendingTicks is counted up by IntroMovie_TimerTick on the timer thread, so it is accessed as an
+   atomic here too (std::atomic_ref keeps the plain uint32_t global). */
+static std::atomic_ref<uint32_t> DebugMovie_PendingTicks()
+{
+  return std::atomic_ref<uint32_t>(g_IntroMoviePendingTicks);
+}
 
 /* Fills the framebuffer with opaque black and presents it (called twice to clear both page buffers). */
 static void DebugMovie_ClearScreen()
@@ -70,7 +78,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   }
   Thandor_Log("debug movie %d/%d %s: playing, %u frames at %u Hz", index, count, name,
               g_ActiveMovie->fileHeader->frameCount, playbackRateHz);
-  g_IntroMoviePendingTicks = 0;
+  DebugMovie_PendingTicks().store(0);
   UiFrame_FlushInputAndResetPendingTicks();
   g_TimerRegisterPeriodic(playbackRateHz,IntroMovie_TimerTick);
   start = Thandor_TickCount();
@@ -82,13 +90,12 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
     if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) break;
     if (g_GraphicsCursorConsumeEvent(&cursor) && GraphicsCursorEventType_IsRelease(cursor.eventType)) break;
     if (Thandor_TickCount() - start > 10000) break;
-    if (g_IntroMoviePendingTicks != 0) {
+    if (DebugMovie_PendingTicks().load() != 0) {
       int burst = 3;
       int ended = 0;
       do {
         if (!Movie_AdvanceFrame(nullptr,nullptr)) { ended = 1; break; }
-        g_IntroMoviePendingTicks--;
-      } while ((g_IntroMoviePendingTicks != 0) && (--burst != 0));
+      } while ((--DebugMovie_PendingTicks() != 0) && (--burst != 0));
       if (ended) break;
       if (g_GraphicsFramebufferBeginAccess()) break;
       if (stretch) {

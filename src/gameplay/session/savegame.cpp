@@ -57,18 +57,22 @@ static inline uint32_t *SaveImage_PairImage(ResourceRegistrationImagePair pair)
 }
 
 /* Creates the save package at savePath; when that fails, creates the package's directory and tries once more.
-   Returns true when the package is open in *packageHandle. */
-static bool InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packageHandle)
+   Returns 0 when the package is open in *packageHandle, else the error code of the failed creation: the first
+   attempt's when the directory cannot be created (it usually exists and the file is locked or read-only). */
+static uint32_t InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packageHandle)
 
 {
-  if (InGameSaveGame_CreatePackage(savePath,packageHandle)) {
-    return true;
+  uint32_t createError;
+
+  createError = InGameSaveGame_CreatePackage(savePath,packageHandle);
+  if (createError == 0) {
+    return 0;
   }
   WidePath_SplitParentAndLeaf(reinterpret_cast<uint16_t *>(g_PackageScratchBuffer), /* scratch for the leaf */
                               g_ResourceRegistrationDirectoryUtf16,static_cast<uint16_t *>(savePath));
   if (g_FileSystemCreateDirectoryRecursive
           (FileSystemCreateDirectoryFlags::FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,g_ResourceRegistrationDirectoryUtf16) != 0) {
-    return false;
+    return createError;
   }
   return InGameSaveGame_CreatePackage(savePath,packageHandle);
 }
@@ -165,8 +169,8 @@ static bool InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle 
 
 /* Reads the 0x200-byte package header into g_PackageScratchBuffer, fills in the save name (file name of savePath;
    the directory lands behind the header), the packed date and time, the "date, time" text, the level title text
-   id and the campaign index, and writes it back. Returns true on success. */
-static bool InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle)
+   id and the campaign index, and writes it back. Returns 0 on success, else the file-system error code. */
+static uint32_t InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle)
 
 {
   void *handle = reinterpret_cast<void *>(packageHandle); /* the Win32 HANDLE */
@@ -174,10 +178,14 @@ static bool InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle pa
   uint32_t dateTextByteLength;
   uint16_t *timeText;
   uint32_t campaignIndex;
+  uint32_t fileError;
 
-  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle) != 0 ||
-      g_FileSystemReadExact(sizeof(InGameSavePackageHeader),header,handle) != 0) {
-    return false;
+  fileError = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle);
+  if (fileError == 0) {
+    fileError = g_FileSystemReadExact(sizeof(InGameSavePackageHeader),header,handle);
+  }
+  if (fileError != 0) {
+    return fileError;
   }
   WidePath_SplitParentAndLeaf
             (header->saveNameUtf16,Asset_RecordAfter<uint16_t>(header),static_cast<uint16_t *>(savePath));
@@ -196,50 +204,83 @@ static bool InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle pa
   }
   header->levelTitleTextId = g_InGameLevelTitleTextResourceIndex;
   header->campaignIndex = campaignIndex;
-  return g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle) == 0 &&
-         g_FileSystemWriteExactOrFlush(sizeof(InGameSavePackageHeader),header,handle) == 0;
+  fileError = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle);
+  if (fileError == 0) {
+    fileError = g_FileSystemWriteExactOrFlush(sizeof(InGameSavePackageHeader),header,handle);
+  }
+  return fileError;
 }
 
-/* Logs the step at which writing a save game failed; returns false for the caller's failure return. */
-static bool InGameSaveGame_LogWriteFailure(const char *step)
+/* Logs the step at which writing a save game failed and the error code; returns the error code for the
+   caller's failure return. */
+static uint32_t InGameSaveGame_LogWriteFailure(const char *step,uint32_t errorCode)
 {
-  Thandor_Log("savegame write: %s failed, save reported as failed",step);
-  return false;
+  Thandor_Log("savegame write: %s failed (error 0x%02X), save reported as failed",step,errorCode);
+  return errorCode;
 }
 
-/* Creates the package and writes every entry and the header; on success the package is unmounted.
-   Returns true on success; on failure (one log line naming the step) the package stays as it is.
-   The original ignored the results of the package creation write, the stat upsert and the entry deletes and
-   reported such a save as written; they fail the save here. */
-static bool InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
+/* A step of the package write failed: discards the temporary package (unmounts packageHandle, 0 when it was
+   never mounted, and deletes the temporary file; the old save at the target path stays as it was) and logs the
+   step. Unmounting also closes the file, so a later save does not find it locked by this one. Returns errorCode. */
+static uint32_t InGameSaveGame_FailPackageWrite(EngineFileHandle packageHandle,uint16_t *temporaryPath,
+                                                const char *step,uint32_t errorCode)
+{
+  Package_DiscardTemporary(packageHandle,temporaryPath);
+  return InGameSaveGame_LogWriteFailure(step,errorCode);
+}
+
+/* Creates the package at the temporary path savePath + ".tmp", writes every entry and the header into it and
+   then replaces the save at savePath by it (Package_CommitTemporary); on any failure the temporary package is
+   discarded and the old save is kept. The header still takes the save name from savePath, so the bytes are the
+   same as written in place. Returns 0 on success, else the error code of the failed step (one log line naming
+   the step); a failed Package_UpsertEntry, which reports no code, counts as FATAL_ERROR_FILE_WRITE_FAILED, and a
+   failed replace (the save file locked or read-only) as FATAL_ERROR_FILE_ACCESS_FAILED.
+   The original wrote the package in place, ignored the results of the package creation write, the stat upsert
+   and the entry deletes and reported such a save as written; they fail the save here. It also left the package
+   mounted after a failed step, so its open file made every later save to that path fail. */
+static uint32_t InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
 
 {
+  uint16_t temporaryPath[THANDOR_PATH_CAPACITY];
   EngineFileHandle packageHandle;
+  uint32_t errorCode;
 
-  if (!InGameSaveGame_OpenNewPackage(savePath,&packageHandle)) {
-    return InGameSaveGame_LogWriteFailure("creating the package");
+  packageHandle = 0;
+  if (!Package_MakeTemporaryPath(temporaryPath,static_cast<const uint16_t *>(savePath))) {
+    return InGameSaveGame_LogWriteFailure("building the temporary path",FATAL_ERROR_FILE_ACCESS_FAILED);
+  }
+  errorCode = InGameSaveGame_OpenNewPackage(temporaryPath,&packageHandle);
+  if (errorCode != 0) {
+    return InGameSaveGame_FailPackageWrite(0,temporaryPath,"creating the package",errorCode);
   }
   if (!InGameSaveGame_WriteRuntimeEntries(worldView,packageHandle)) {
-    return InGameSaveGame_LogWriteFailure("a runtime entry");
+    return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"a runtime entry",
+                                           FATAL_ERROR_FILE_WRITE_FAILED);
   }
   if (!Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,
                            static_cast<uint32_t *>(g_GameStatTableImage),g_StatHexPathUtf16,packageHandle)) {
-    return InGameSaveGame_LogWriteFailure("the stat entry");
+    return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the stat entry",
+                                           FATAL_ERROR_FILE_WRITE_FAILED);
   }
   /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
   if (InGameSaveGame_OldUnitTablesAreEmpty()) {
-    if (!Package_DeleteEntry(g_OldunitHexPathUtf16,packageHandle,nullptr)) {
-      return InGameSaveGame_LogWriteFailure("deleting the oldunit entry");
+    if (!Package_DeleteEntry(g_OldunitHexPathUtf16,packageHandle,&errorCode)) {
+      return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"deleting the oldunit entry",errorCode);
     }
   }
   else if (!InGameSaveGame_WriteOldUnitEntry(packageHandle)) {
-    return InGameSaveGame_LogWriteFailure("the oldunit entry");
+    return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the oldunit entry",
+                                           FATAL_ERROR_FILE_WRITE_FAILED);
   }
-  if (!InGameSaveGame_WritePackageHeader(savePath,packageHandle)) {
-    return InGameSaveGame_LogWriteFailure("the package header");
+  errorCode = InGameSaveGame_WritePackageHeader(savePath,packageHandle);
+  if (errorCode != 0) {
+    return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the package header",errorCode);
   }
-  Package_Unmount(packageHandle);
-  return true;
+  /* unmounts the package in either case and deletes the temporary file when the replace fails */
+  if (!Package_CommitTemporary(packageHandle,temporaryPath,static_cast<uint16_t *>(savePath))) {
+    return InGameSaveGame_LogWriteFailure("replacing the save file",FATAL_ERROR_FILE_ACCESS_FAILED);
+  }
+  return 0;
 }
 
 /* Writes a save game (called by InGameSaveGame_SaveSelectedOrTypedName with the world view): opens or creates
@@ -247,15 +288,18 @@ static bool InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
    Huffman/RLE entry - army, modul, shot, effect, widget, light, field, level, daten, campagne (deleted without
    a campaign), stat and oldunit (deleted when empty). Pointer-holding images are converted to offsets for
    writing and rebased afterwards. Finally the 0x200-byte package header gets the save name, date and time
-   and the level title and campaign index. Returns true on failure (an opened package is then not unmounted); the busy
-   count is raised meanwhile.
+   and the level title and campaign index. The package is built under a temporary name and replaces the old
+   save only when complete (InGameSaveGame_WritePackageContents). Returns 0 on success, else the error code of the failed step (for
+   FatalError_ReportIfFailed) with savePath in g_PackageLastErrorPath; the package is unmounted either way. The
+   busy count is raised meanwhile.
+   The original returned only a failure flag (true on failure) and left a failed package mounted.
 */
-bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
+uint32_t InGameSaveGame_WritePackage(void *worldView,void *savePath)
 
 {
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  bool written;
+  uint32_t errorCode;
 
   g_InGameResourceRegistrationBusyCount++;
   /* first hand every player's pending army asset back to its faction */
@@ -266,20 +310,25 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
               (playerBlock->playerRuntimeId,0,0,(playerBlock->factionAssignment).factionAssignmentIndex);
     playerBlock++;
   }
-  written = InGameSaveGame_WritePackageContents(worldView,savePath);
+  errorCode = InGameSaveGame_WritePackageContents(worldView,savePath);
   g_InGameResourceRegistrationBusyCount--;
-  return !written;
+  if (errorCode != 0) {
+    /* the error message names the save file, not the last path a file-system call left there */
+    Package_SetLastErrorPath(static_cast<uint16_t *>(savePath));
+  }
+  return errorCode;
 }
 
 /* Creates a new, empty PCK package at packagePath and mounts it: builds a fresh 0x200-byte archive header
    (magic "pck", timestamps of now, the computer label as producer and source name, no entries) in the
-   package scratch buffer, writes it as the whole file and mounts it. Returns true and the mounted package's
-   file handle in *outHandle, or false (outHandle untouched) when the write or Package_Mount fails (the original
-   ignored a failed write and mounted whatever file was left at packagePath).
+   package scratch buffer, writes it as the whole file and mounts it. Returns 0 and the mounted package's
+   file handle in *outHandle, or the error code of the write or of Package_Mount (outHandle untouched; the
+   original returned only a success flag, ignored a failed write and mounted whatever file was left at
+   packagePath). A locked or read-only file fails the write with FATAL_ERROR_FILE_ACCESS_FAILED.
    Called directly by the save-game writer InGameSaveGame_WritePackage, which creates the
    save directory and retries when it fails.
 */
-bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
+uint32_t InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
 
 {
   uint8_t *header;
@@ -287,7 +336,8 @@ bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
   uint32_t packedTime;
   uint32_t packedDate;
   int byteIndex;
-  EngineFileHandle mountedHandle;
+  EngineFileHandle mountedHandle; /* the mounted handle, or Package_Mount's error code */
+  uint32_t writeError;
 
   header = g_PackageScratchBuffer;
   archiveHeader = reinterpret_cast<PckArchiveHeader *>(header); /* the same 0x200 bytes */
@@ -329,14 +379,15 @@ bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
   header[177] = 0;
   header[178] = 0;
   header[179] = 0;
-  if (FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,static_cast<uint16_t *>(packagePath)) != 0) {
-    return false;
+  writeError = FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,static_cast<uint16_t *>(packagePath));
+  if (writeError != 0) {
+    return writeError;
   }
   if (!Package_Mount(static_cast<uint16_t *>(packagePath),&mountedHandle)) {
-    return false;
+    return static_cast<uint32_t>(mountedHandle);
   }
   *outHandle = mountedHandle;
-  return true;
+  return 0;
 }
 
 /* Save-game preparation of the runtime registration records (the "widget.hex" entry): turns the pointers of
