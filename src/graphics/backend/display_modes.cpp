@@ -28,7 +28,7 @@ uint32_t g_GraphicsAdapterCount = 0;
 /* Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
    (g_GraphicsDisplayModes, filled by SdlVideo_Init): returns false when it was, true
    when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/dialogs/display_settings.cpp) to offer only
-   available modes. The table is assumed non-empty: the first entry is compared before the count is checked.
+   available modes. An empty table (no enumerated mode) gives true (not enumerated).
 */
 bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
@@ -39,6 +39,11 @@ bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,F
   
   modesRemaining = g_GraphicsDisplayModeCount;
   modeCursor = g_GraphicsDisplayModes;
+  /* The original compared the first entry before checking the count, so an empty table read entry 0 (a NULL
+     table) and then counted down from 0 past the end; bounded here because the enumeration can find no mode. */
+  if (modesRemaining == 0 || modeCursor == nullptr) {
+    return true;
+  }
   while ((((width != modeCursor->width || (height != modeCursor->height)) ||
           (bitsPerPixel != modeCursor->bitsPerPixel)) || (adapterIndex != modeCursor->adapterIndex))) {
     modeCursor++;
@@ -52,7 +57,7 @@ bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,F
 
 
 /* Same test as GraphicsDisplayMode_IsEnumerated with the parameters in a different order: returns false when
-   the mode was enumerated. Used by FrontendDisplaySettingsPage_UpdateModeActionAvailability
+   the mode was enumerated (true for an empty table). Used by FrontendDisplaySettingsPage_UpdateModeActionAvailability
    (ui/frontend/display_settings.cpp).
 */
 bool DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
@@ -64,6 +69,11 @@ bool DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,Fron
   
   modesRemaining = g_GraphicsDisplayModeCount;
   modeCursor = g_GraphicsDisplayModes;
+  /* The original compared the first entry before checking the count, so an empty table read entry 0 (a NULL
+     table) and then counted down from 0 past the end; bounded here because the enumeration can find no mode. */
+  if (modesRemaining == 0 || modeCursor == nullptr) {
+    return true;
+  }
   while ((((width != modeCursor->width || (height != modeCursor->height)) ||
           (bitsPerPixel != modeCursor->bitsPerPixel)) || (adapterIndex != modeCursor->adapterIndex))
         ) {
