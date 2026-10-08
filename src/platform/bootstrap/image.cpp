@@ -669,6 +669,12 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
 
 static HANDLE g_watchedThread;
 
+/* Stack reserve of the hang detector and the dev watchdog (instead of 0 = the executable's 32 MiB reserve, which
+   only the pathing recursion on the main thread needs). Their 64 KiB StackSnapshot is static, not on the stack; what
+   remains is a MAX_PATH path, the symbol name buffers (under 1 KiB) and dbghelp (SymInitialize, StackWalk64,
+   SymFromAddr, SymGetLineFromAddr64), which is built for the 1 MiB default reserve of MSVC executables. */
+constexpr SIZE_T DIAGNOSTIC_THREAD_STACK_RESERVE_BYTES = 0x100000;
+
 #ifdef THANDOR_DEV_TOOLS
 /* Diagnostics (developer tools): with OPEN_THANDOR_WATCHDOG=<seconds>, log the main thread's stack at that
    interval. */
@@ -699,7 +705,8 @@ static void start_watchdog()
     char seconds[16];
     if (GetEnvironmentVariableA("OPEN_THANDOR_WATCHDOG", seconds, sizeof seconds) != 0 && atoi(seconds) > 0) {
         /* the thread parameter carries the period in seconds as its value */
-        CreateThread(nullptr, 0, watchdog_thread, reinterpret_cast<void *>(static_cast<uintptr_t>(atoi(seconds))), 0,
+        CreateThread(nullptr, DIAGNOSTIC_THREAD_STACK_RESERVE_BYTES, watchdog_thread,
+                     reinterpret_cast<void *>(static_cast<uintptr_t>(atoi(seconds))), STACK_SIZE_PARAM_IS_A_RESERVATION,
                      nullptr);
     }
 }
@@ -764,7 +771,8 @@ void Thandor_InstallCrashHandler()
     SetUnhandledExceptionFilter(crash_filter);
     DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_watchedThread, 0, FALSE,
                     DUPLICATE_SAME_ACCESS);
-    CreateThread(nullptr, 0, hang_detector_thread, nullptr, 0, nullptr);
+    CreateThread(nullptr, DIAGNOSTIC_THREAD_STACK_RESERVE_BYTES, hang_detector_thread, nullptr,
+                 STACK_SIZE_PARAM_IS_A_RESERVATION, nullptr);
     start_watchdog();
 }
 
