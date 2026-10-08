@@ -52,7 +52,7 @@ void RecentTextHistory_SortAndBuildPointerList
   outputIndex = 0;
   minimumRetainedSerial = g_RecentTextSerialCounter - RECENT_TEXT_HISTORY_LIFETIME;
   output->count = 0;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* maxEntries >= 1 here: every caller passes the constant 5 or 8 (both <= RECENT_TEXT_HISTORY_SLOT_COUNT). */
   do {
     if (g_RecentTextEntrySerials[outputIndex] == 0) { /* the rest is empty already */
       g_RecentTextSerialCounter++;
