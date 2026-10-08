@@ -219,51 +219,67 @@ static uint32_t InGameSaveGame_LogWriteFailure(const char *step,uint32_t errorCo
   return errorCode;
 }
 
-/* A step behind the successful package creation failed: unmounts the package (which closes its file, so a later
-   save to the same path does not find it locked by this one) and logs the step. Returns errorCode. */
-static uint32_t InGameSaveGame_FailOpenPackage(EngineFileHandle packageHandle,const char *step,uint32_t errorCode)
+/* A step of the package write failed: discards the temporary package (unmounts packageHandle, 0 when it was
+   never mounted, and deletes the temporary file; the old save at the target path stays as it was) and logs the
+   step. Unmounting also closes the file, so a later save does not find it locked by this one. Returns errorCode. */
+static uint32_t InGameSaveGame_FailPackageWrite(EngineFileHandle packageHandle,uint16_t *temporaryPath,
+                                                const char *step,uint32_t errorCode)
 {
-  Package_Unmount(packageHandle);
+  Package_DiscardTemporary(packageHandle,temporaryPath);
   return InGameSaveGame_LogWriteFailure(step,errorCode);
 }
 
-/* Creates the package and writes every entry and the header; the package is unmounted again in every case.
-   Returns 0 on success, else the error code of the failed step (one log line naming the step); a failed
-   Package_UpsertEntry, which reports no code, counts as FATAL_ERROR_FILE_WRITE_FAILED.
-   The original ignored the results of the package creation write, the stat upsert and the entry deletes and
-   reported such a save as written; they fail the save here. It also left the package mounted after a failed
-   step, so its open file made every later save to that path fail. */
+/* Creates the package at the temporary path savePath + ".tmp", writes every entry and the header into it and
+   then replaces the save at savePath by it (Package_CommitTemporary); on any failure the temporary package is
+   discarded and the old save is kept. The header still takes the save name from savePath, so the bytes are the
+   same as written in place. Returns 0 on success, else the error code of the failed step (one log line naming
+   the step); a failed Package_UpsertEntry, which reports no code, counts as FATAL_ERROR_FILE_WRITE_FAILED, and a
+   failed replace (the save file locked or read-only) as FATAL_ERROR_FILE_ACCESS_FAILED.
+   The original wrote the package in place, ignored the results of the package creation write, the stat upsert
+   and the entry deletes and reported such a save as written; they fail the save here. It also left the package
+   mounted after a failed step, so its open file made every later save to that path fail. */
 static uint32_t InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
 
 {
+  uint16_t temporaryPath[THANDOR_PATH_CAPACITY];
   EngineFileHandle packageHandle;
   uint32_t errorCode;
 
-  errorCode = InGameSaveGame_OpenNewPackage(savePath,&packageHandle);
+  packageHandle = 0;
+  if (!Package_MakeTemporaryPath(temporaryPath,static_cast<const uint16_t *>(savePath))) {
+    return InGameSaveGame_LogWriteFailure("building the temporary path",FATAL_ERROR_FILE_ACCESS_FAILED);
+  }
+  errorCode = InGameSaveGame_OpenNewPackage(temporaryPath,&packageHandle);
   if (errorCode != 0) {
-    return InGameSaveGame_LogWriteFailure("creating the package",errorCode);
+    return InGameSaveGame_FailPackageWrite(0,temporaryPath,"creating the package",errorCode);
   }
   if (!InGameSaveGame_WriteRuntimeEntries(worldView,packageHandle)) {
-    return InGameSaveGame_FailOpenPackage(packageHandle,"a runtime entry",FATAL_ERROR_FILE_WRITE_FAILED);
+    return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"a runtime entry",
+                                           FATAL_ERROR_FILE_WRITE_FAILED);
   }
   if (!Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,
                            static_cast<uint32_t *>(g_GameStatTableImage),g_StatHexPathUtf16,packageHandle)) {
-    return InGameSaveGame_FailOpenPackage(packageHandle,"the stat entry",FATAL_ERROR_FILE_WRITE_FAILED);
+    return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the stat entry",
+                                           FATAL_ERROR_FILE_WRITE_FAILED);
   }
   /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
   if (InGameSaveGame_OldUnitTablesAreEmpty()) {
     if (!Package_DeleteEntry(g_OldunitHexPathUtf16,packageHandle,&errorCode)) {
-      return InGameSaveGame_FailOpenPackage(packageHandle,"deleting the oldunit entry",errorCode);
+      return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"deleting the oldunit entry",errorCode);
     }
   }
   else if (!InGameSaveGame_WriteOldUnitEntry(packageHandle)) {
-    return InGameSaveGame_FailOpenPackage(packageHandle,"the oldunit entry",FATAL_ERROR_FILE_WRITE_FAILED);
+    return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the oldunit entry",
+                                           FATAL_ERROR_FILE_WRITE_FAILED);
   }
   errorCode = InGameSaveGame_WritePackageHeader(savePath,packageHandle);
   if (errorCode != 0) {
-    return InGameSaveGame_FailOpenPackage(packageHandle,"the package header",errorCode);
+    return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the package header",errorCode);
   }
-  Package_Unmount(packageHandle);
+  /* unmounts the package in either case and deletes the temporary file when the replace fails */
+  if (!Package_CommitTemporary(packageHandle,temporaryPath,static_cast<uint16_t *>(savePath))) {
+    return InGameSaveGame_LogWriteFailure("replacing the save file",FATAL_ERROR_FILE_ACCESS_FAILED);
+  }
   return 0;
 }
 
@@ -272,7 +288,8 @@ static uint32_t InGameSaveGame_WritePackageContents(void *worldView,void *savePa
    Huffman/RLE entry - army, modul, shot, effect, widget, light, field, level, daten, campagne (deleted without
    a campaign), stat and oldunit (deleted when empty). Pointer-holding images are converted to offsets for
    writing and rebased afterwards. Finally the 0x200-byte package header gets the save name, date and time
-   and the level title and campaign index. Returns 0 on success, else the error code of the failed step (for
+   and the level title and campaign index. The package is built under a temporary name and replaces the old
+   save only when complete (InGameSaveGame_WritePackageContents). Returns 0 on success, else the error code of the failed step (for
    FatalError_ReportIfFailed) with savePath in g_PackageLastErrorPath; the package is unmounted either way. The
    busy count is raised meanwhile.
    The original returned only a failure flag (true on failure) and left a failed package mounted.
