@@ -124,41 +124,31 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
   }
   /* the groups follow the SpriteAssetHeader */
   groupCursor = Asset_RecordAfter<SprGroupRelocationHeader>(destinationHeader);
-  groupsRemaining = destinationHeader->registryHeader.groupCount;
-  /* unlike the relocation, every count is assumed to be non-zero (a zero count would wrap around) */
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
-    blocksRemaining = groupCursor->relocationBlockCount;
+  /* The original used do-whiles here (unlike the relocation), so a count of 0 (an empty group or block, or a
+     block without fixed or pointer records) wrapped and ran 2^32 times past the asset; bounded here because the
+     counts come from the asset file: a count of 0 now skips its loop, counts >= 1 run as before. */
+  for (groupsRemaining = destinationHeader->registryHeader.groupCount; groupsRemaining != 0; groupsRemaining--) {
     blockCursor = Asset_RecordAfter<SprRelocationBlockHeader>(groupCursor);
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
-      recordsRemaining = blockCursor->fixedRecordCount;
+    for (blocksRemaining = groupCursor->relocationBlockCount; blocksRemaining != 0; blocksRemaining--) {
       recordCursor = Asset_RecordAfter<int>(blockCursor);
-      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-      do {
+      for (recordsRemaining = blockCursor->fixedRecordCount; recordsRemaining != 0; recordsRemaining--) {
         recordCursor[12] = 0;
         recordCursor[13] = 0;
         recordCursor[8] = 0;
         recordCursor[9] = 0;
         recordCursor[10] = 0;
         recordCursor = recordCursor + 16;
-        recordsRemaining--;
-      } while (recordsRemaining != 0);
-      recordsRemaining = blockCursor->pointerRelocationCount;
-      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-      do {
+      }
+      for (recordsRemaining = blockCursor->pointerRelocationCount; recordsRemaining != 0; recordsRemaining--) {
         /* pointerOrSerializedOffset00/0C/18 */
         *recordCursor = *recordCursor - Thandor_PointerToI32(relocatedSourceImage); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset00 */
         recordCursor[3] = recordCursor[3] - Thandor_PointerToI32(relocatedSourceImage); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset0C */
         recordCursor[6] = recordCursor[6] - Thandor_PointerToI32(relocatedSourceImage); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset18 */
         recordCursor = recordCursor + 16;
-        recordsRemaining--;
-      } while (recordsRemaining != 0);
+      }
       blockCursor = Asset_RecordAt<SprRelocationBlockHeader>(blockCursor,blockCursor->blockByteSize);
-      blocksRemaining--;
-    } while (blocksRemaining != 0);
+    }
     groupCursor = Asset_RecordAt<SprGroupRelocationHeader>(groupCursor,groupCursor->nextGroupByteOffset);
-    groupsRemaining--;
-  } while (groupsRemaining != 0);
+  }
 }
 
