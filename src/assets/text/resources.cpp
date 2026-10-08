@@ -427,13 +427,18 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   return false;
 }
 
-/* Returns the text of a resource id (see TextResource_TryResolve); a missing text gives
-   TEXT_RESOURCE_MISSING_SENTINEL_0x33, which callers use like any other text pointer. */
+/* Returns the text of a resource id (see TextResource_TryResolve); a missing text gives the shared empty string.
+   The original returns TEXT_RESOURCE_MISSING_SENTINEL_0x33 there, which every caller dereferences like any other
+   text pointer (copy, measure, draw, nested-stream payload); bounded here because ids come from user maps, model
+   files and savegames (e.g. an out-of-range model nameTextIndex), and no caller tests for the sentinel. The miss
+   is logged by TextResource_TryResolve. */
 uint16_t *TextResource_Resolve(TextResourceId resourceId)
 
 {
   uint16_t *text;
 
-  TextResource_TryResolve(resourceId,&text);
+  if (!TextResource_TryResolve(resourceId,&text)) {
+    return g_EmptyTextResourceUtf16;
+  }
   return text;
 }
