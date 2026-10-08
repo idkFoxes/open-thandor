@@ -8,6 +8,7 @@
 #include <thandor/assets/rom/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/assets/record_bytes.h>
+#include <thandor/core/math/spline.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -16,12 +17,56 @@ RomRegistrySlot *g_RomRegistrySlots = nullptr;
 
 uint16_t g_EngineZentraleRomPathUtf16[20] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'z', 'e', 'n', 't', 'r', 'a', 'l', 'e', '.', 'r', 'o', 'm', 0}; /* L"engine\\zentrale.rom" */
 
+/* Most keyframes a camera flight may have: the natural cubic spline of one channel (CubicSpline functions) has
+   CUBIC_SPLINE_MATRIX_ORDER equations, four per segment plus four, and its coefficient table holds
+   CUBIC_SPLINE_MATRIX_ORDER floats. */
+static constexpr uint32_t ROM_ACTION_MAX_KEYFRAMES = (CUBIC_SPLINE_MATRIX_ORDER + 4) / 4;
+static_assert(ROM_ACTION_MAX_KEYFRAMES <= sizeof(FrontendRomActionEntry::keyframes) /
+                                          sizeof(FrontendRomActionEntry::keyframes[0]));
+static_assert(sizeof(FrontendRomActionEntry) == FRONTEND_ROM_ACTION_ENTRY_SIZE &&
+              sizeof(RomRecord) == FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE);
+
+/* True when the record's header and its action table (entryCount FrontendRomActionEntry entries after the
+   0x200-byte header) lie inside its byteSize, and every entry that starts a camera flight (targetRecordId != 0)
+   has 2..ROM_ACTION_MAX_KEYFRAMES keyframes. Logs the first violation. The record prefix is known to fit. */
+static bool RomRecord_ActionTableIsValid(const RomAssetRecordPrefix *record)
+{
+  const RomRecord *romRecord = reinterpret_cast<const RomRecord *>(record);
+  const FrontendRomActionEntry *entry;
+
+  /* The original trusts entryCount and the keyframe counts; rejected here because
+     FrontendRomActionTable_ExecuteRecord indexes the table up to entryCount, and a flight with more than
+     ROM_ACTION_MAX_KEYFRAMES keyframes (it lets up to 14 through) is clamped by the curve build while the
+     evaluator reads segments past the CUBIC_SPLINE_MATRIX_ORDER-float coefficient tables. A flight with fewer
+     than 2 keyframes is skipped by ExecuteRecord already (the curve build would clamp it to 2 and read the
+     second keyframe); it is rejected here as well. The stock records are 0x1080 bytes with at most 5 entries;
+     their flights have 2, 3, 4 or 9 keyframes, the entries without a flight 0. */
+  if (record->byteSize < sizeof(RomRecord) ||
+      static_cast<uint64_t>(romRecord->entryCount) * FRONTEND_ROM_ACTION_ENTRY_SIZE >
+          record->byteSize - sizeof(RomRecord)) {
+    Thandor_Log("RomAsset_PrepareRecords: record %u (byteSize 0x%X) too small for its header and %u action "
+                "entries, rejected",record->recordId,record->byteSize,
+                record->byteSize < sizeof(RomRecord) ? 0u : romRecord->entryCount);
+    return false;
+  }
+  entry = Asset_RecordAfter<FrontendRomActionEntry>(romRecord);
+  for (uint32_t entryIndex = 0; entryIndex < romRecord->entryCount; entryIndex++) {
+    if (entry[entryIndex].targetRecordId != 0 &&
+        (entry[entryIndex].keyframeCount < 2 || entry[entryIndex].keyframeCount > ROM_ACTION_MAX_KEYFRAMES)) {
+      Thandor_Log("RomAsset_PrepareRecords: record %u action entry %u has %u keyframes (2..%u), rejected",
+                  record->recordId,entryIndex,entry[entryIndex].keyframeCount,ROM_ACTION_MAX_KEYFRAMES);
+      return false;
+    }
+  }
+  return true;
+}
+
 /* Checks that the asset (assetByteCount bytes) is a 'rom' of converter version 0x10005 and registers each of
    its variable-size records (from +0x200, each advanced by its leading byteSize) with
-   RomAssetRecord_RegisterAndRelocate. An invalid header, or a record that is shorter than its prefix or does
-   not fit into the asset, leaves "engine\zentrale.rom" in g_PackageLastErrorPath and fails with
-   FATAL_ERROR_ROM_REGISTRY_FULL. Returns 0 on success, otherwise the error code (the original's success return
-   value was never used by its caller).
+   RomAssetRecord_RegisterAndRelocate. An invalid header, a record that is shorter than its prefix or does
+   not fit into the asset, or one whose action table is invalid (RomRecord_ActionTableIsValid), leaves
+   "engine\zentrale.rom" in g_PackageLastErrorPath and fails with FATAL_ERROR_ROM_REGISTRY_FULL. Returns 0 on
+   success, otherwise the error code (the original's success return value was never used by its caller).
 */
 uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset,uint32_t assetByteCount)
 
@@ -45,6 +90,10 @@ uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset,uint32_t assetByteCount)
         Thandor_Log("RomAsset_PrepareRecords: record at offset 0x%X (byteSize 0x%X) does not fit the asset of "
                     "0x%X bytes, rejected",(uint32_t)Asset_ByteDistance(record,asset),
                     bytesLeft < sizeof(RomRecordByteSize) ? 0u : record->byteSize,assetByteCount);
+        Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
+        return FATAL_ERROR_ROM_REGISTRY_FULL;
+      }
+      if (!RomRecord_ActionTableIsValid(record)) {
         Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
         return FATAL_ERROR_ROM_REGISTRY_FULL;
       }
