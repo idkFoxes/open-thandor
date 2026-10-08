@@ -23,7 +23,7 @@ inline constexpr int MODEL_POINT_CLASS_SHOT = 2; /* shot launch point, keyIndex 
 inline constexpr int MODEL_POINT_CLASS_EFFECT = 3; /* effect spawn point (0 linked effect, 1 periodic effect) */
 inline constexpr int MODEL_POINT_CLASS_LIGHT = 4; /* shading light position */
 
-bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError);
+bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t assetByteCount,uint32_t *outError);
 
 bool ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
@@ -39,7 +39,8 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
 ModelDefinitionRecordPrefix * ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId);
 
 bool ModelDefinition_RegisterAndResolveReferences
-          (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError);
+          (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t assetByteCount,
+           uint32_t *outError);
 
 ModelDefinitionRecordPrefix *ModelDefinitionRegistry_LookupById(PckModelDefinitionIdCatalog definitionId);
 
