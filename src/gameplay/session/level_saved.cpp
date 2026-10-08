@@ -237,6 +237,13 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
       ((levelImage->header).common.converterVersion != PCK_CONVERTER_LEV_00070001)) {
     return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
   }
+  /* level.hex of a save holds only the runtime prefix (the save writes the condition storage with the header's
+     prefix byte size), so the paths must lie inside it */
+  if (!NewLevel_ValidateImage(levelPrefix,
+                              (levelImage->header).resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset,
+                              worldRuntime->activeFactionRuntimeIndex,outError)) {
+    return false;
+  }
   if (!NewLevel_CopyRuntimePrefix(levelPrefix,outError)) {
     return false;
   }

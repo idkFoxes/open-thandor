@@ -112,17 +112,24 @@ bool TerrainCompositeTexture_Create(uint32_t *outError)
   return true;
 }
 
-/* Frees the terrain composite texture built by TerrainCompositeTexture_Create (through its allocation base).
-   g_TerrainCompositeTexture and the in-game root keep the stale pointer.
+/* Frees the terrain composite texture built by TerrainCompositeTexture_Create (through its allocation base) and
+   clears g_TerrainCompositeTexture; without a texture (Create failed or never ran) it does nothing. The in-game
+   root's minimapTextureSource is not cleared: the root is already freed when the session shuts down.
 */
 void TerrainCompositeTexture_Destroy()
 
 {
   GraphicsTextureSourceAsset *allocationBase;
 
+  /* The original frees unchecked and keeps the stale pointer; bounded here because a failed Create leaves it
+     NULL and a second Destroy would free it twice. */
+  if (g_TerrainCompositeTexture == nullptr) {
+    return;
+  }
   allocationBase = g_GraphicsTextureSourceResolveAllocationBase
                      (&g_TerrainCompositeTexture->textureSource);
   g_MemoryApi.free(allocationBase);
+  g_TerrainCompositeTexture = nullptr;
 }
 
 /* Renders plane 1 of the terrain composite texture (the minimap image, one ARGB pixel per field cell):
@@ -152,9 +159,11 @@ void TerrainCompositeTexture_FillPlane1()
   panelSubresourceIndex = GraphicsTextureSource_Entries(g_InGamePanelTextureSource)[36].paletteIndex;
   fieldCell = ((g_InGameRuntimeRoot->worldRuntime).fieldGrid)->cells;
   columnsRemaining = textureWidth;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-  do {
-    do {
+  /* The original loops with do/while, so a field width or height of 0 (a malformed level) writes 2^32 pixels
+     past the plane; bounded here because such a grid is reachable (guarded loops, same body and order for
+     counts >= 1). */
+  while (rowsRemaining != 0) {
+    while (columnsRemaining != 0) {
       if (fieldCell->waterSurfaceDelta < 1) {
         lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
         materialColorArgb = TerrainMinimap_PanelPalette(panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + FieldCell_MaterialId(fieldCell->flagsAndMaterial)].argb8888;
@@ -195,10 +204,10 @@ void TerrainCompositeTexture_FillPlane1()
       fieldCell++;
       planePixelCursor = planePixelCursor + 1;
       columnsRemaining--;
-    } while (columnsRemaining != 0);
+    }
     rowsRemaining--;
     columnsRemaining = textureWidth;
-  } while (rowsRemaining != 0);
+  }
 }
 
 /* Renders plane 2 of the terrain composite texture, the resource view of the minimap: Xenite, Tritium and
@@ -233,9 +242,11 @@ void TerrainCompositeTexture_FillPlane2()
   panelSubresourceIndex = GraphicsTextureSource_Entries(g_InGamePanelTextureSource)[36].paletteIndex;
   fieldCell = ((g_InGameRuntimeRoot->worldRuntime).fieldGrid)->cells;
   columnsRemaining = textureWidth;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-  do {
-    do {
+  /* The original loops with do/while, so a field width or height of 0 (a malformed level) writes 2^32 pixels
+     past the plane; bounded here because such a grid is reachable (guarded loops, same body and order for
+     counts >= 1). */
+  while (rowsRemaining != 0) {
+    while (columnsRemaining != 0) {
       if (!Any(fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT)) {
         if (!Any(fieldCell->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT)) {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
@@ -315,10 +326,10 @@ void TerrainCompositeTexture_FillPlane2()
       fieldCell++;
       planePixelCursor = planePixelCursor + 1;
       columnsRemaining--;
-    } while (columnsRemaining != 0);
+    }
     rowsRemaining--;
     columnsRemaining = textureWidth;
-  } while (rowsRemaining != 0);
+  }
 }
 
 /* Builds the displayed minimap (plane 0): copies plane 1 (terrain) or, with bit 1 of
@@ -378,8 +389,9 @@ void TerrainCompositeTexture_RebuildPlane0()
   fieldCell = ((inGameRoot->worldRuntime).fieldGrid)->cells;
   pixelCursor = plane0Pixels;
   cellsRemaining = cellCount;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-  do {
+  /* The original loops with a do/while, so a cell count of 0 (a malformed level) touches 2^32 cells; bounded
+     here because such a grid is reachable (a guarded loop, same body and order for a count >= 1). */
+  while (cellsRemaining != 0) {
     visibilityFlags = FieldGridCell_OccupancyByte(fieldCell,activeFactionIndex);
     pixelArgb = (uint32_t)visibilityFlags;
     if ((visibilityFlags & FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) == 0) {
@@ -392,7 +404,7 @@ void TerrainCompositeTexture_RebuildPlane0()
     fieldCell++;
     pixelCursor = pixelCursor + 1;
     cellsRemaining--;
-  } while (cellsRemaining != 0);
+  }
   for (ownerNode = (inGameRoot->worldRuntime).ownerListHead; ownerNode != nullptr;
       ownerNode = ownerNode->nextNode) {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (0xffffff < ownerNode->modelTintArgb)) {

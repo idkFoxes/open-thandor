@@ -171,7 +171,16 @@ void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionIma
   int copyDwordsRemaining;
   uint32_t *factionImageSourceCursor;
   uint32_t *candidateWorkspaceDestinationCursor;
-  
+
+  /* The original trusts savedEntryCount, which a savegame restores verbatim; bounded here because a count above
+     the 3 saved entries reads past the cache into the rest of the faction record (and past the image for the
+     last faction). AiCandidateWorkspace_SaveToFactionImage never stores more than 3, so valid data is unchanged.
+     The clamped count is written back so a malformed record is logged once. */
+  if (AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntryCount > 3) {
+    Thandor_Log("AI: faction candidate cache with %u saved entries, bounded to 3",
+                (unsigned)AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntryCount);
+    AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntryCount = 3;
+  }
   g_AiCandidateWorkspaceEntryCount = AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntryCount;
   factionImageSourceCursor =
        &AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntries[0].weightedScoreAndKind;
