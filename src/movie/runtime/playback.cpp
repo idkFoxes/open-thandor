@@ -6,6 +6,7 @@
  */
 
 #include <atomic>
+#include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -290,6 +291,15 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
   MovieStreamFileOffset streamPosition;
   MovieSharedStreamHandleFlag isSharedPackageHandle;
 
+  /* Not in the original: only one movie can be open at a time (g_ActiveMovie, the refill worker and Movie_Close
+     know only one); debug builds assert it, the others log it. Original quirk: a second open replaces
+     g_ActiveMovie and leaks the open movie. Kept, because callers may still draw the old movie as a texture
+     (closing it here would free it under them), and a caller can reach it with a movie whose first frame
+     failed (the in-game notification movies leave it open and open the next one). */
+  if (g_ActiveMovie != nullptr) {
+    Thandor_Log("Movie_Open: a movie is already open; it is replaced without being closed");
+  }
+  assert(g_ActiveMovie == nullptr);
   isSharedPackageHandle = 0;
   looseFileOpened = false;
   entryBytes = 0;
@@ -578,7 +588,10 @@ void Movie_Close()
 void IntroMovie_TimerTick()
 
 {
-  g_IntroMoviePendingTicks++;
+  /* Not in the original: an atomic increment, because the timer thread runs this while the intro loop counts
+     the ticks down (the original used a plain read-modify-write, a data race). atomic_ref keeps the plain
+     uint32_t global. */
+  std::atomic_ref<uint32_t>(g_IntroMoviePendingTicks).fetch_add(1);
 }
 
 /* Not in the original (split out of Movie_AdvanceFrame): stores endCode in *outEndCode when given and
@@ -592,14 +605,14 @@ static bool Movie_ReportAdvanceEnd(uint32_t *outEndCode,uint32_t endCode)
 }
 
 /* Not in the original (split out of Movie_AdvanceFrame): once the read position of a streamed movie is a
-   whole MOVIE_COMPACT_SHIFT_BYTES past the header, moves the unplayed bytes down by that shift (dword by
-   dword) to make room for further refills. Called only in MOVIE_STREAM_IDLE, when no refill runs. */
+   whole MOVIE_COMPACT_SHIFT_BYTES past the header, moves the unplayed bytes down by that shift to make room
+   for further refills. Called only in MOVIE_STREAM_IDLE, when no refill runs. */
 static void Movie_CompactStreamBuffer(MovieRuntime *movie)
 {
   uint32_t readOffset;
   uint32_t loadedSize;
-  uint32_t *copySource;
-  uint32_t *copyDestination;
+  uint8_t *copySource;
+  uint8_t *copyDestination;
   uint8_t *loadedEnd;
 
   readOffset = movie->videoStreamOffset;
@@ -607,12 +620,16 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
   loadedSize = (uint32_t)Thandor_ByteDistance(loadedEnd, movie->fileHeader.get());
   if ((MOVIE_COMPACT_SHIFT_BYTES + MOVIE_FILE_HEADER_BYTES - 1 < readOffset) && (readOffset < loadedSize)) {
     movie->videoStreamOffset = movie->videoStreamOffset - MOVIE_COMPACT_SHIFT_BYTES;
-    copyDestination =
-        reinterpret_cast<uint32_t *>(Thandor_Bytes(movie->fileHeader.get()) + readOffset - MOVIE_COMPACT_SHIFT_BYTES);
+    copyDestination = Thandor_Bytes(movie->fileHeader.get()) + readOffset - MOVIE_COMPACT_SHIFT_BYTES;
     Movie_StoreLoadedVideoEnd(movie,loadedEnd - MOVIE_COMPACT_SHIFT_BYTES);
-    copySource = Thandor_At<uint32_t>(copyDestination, MOVIE_COMPACT_SHIFT_BYTES);
-    /* the ranges overlap (destination below source): a forward copy, as the dword loop was */
-    std::copy_n(copySource,(loadedSize - readOffset) >> 2,copyDestination);
+    copySource = copyDestination + MOVIE_COMPACT_SHIFT_BYTES;
+    /* The original copied (loadedSize - readOffset) / 4 dwords forward, dropping up to 3 tail bytes of an
+       unplayed size that is not a multiple of 4; bounded here because those bytes stay stale in front of
+       loadedVideoEnd and are decoded. Now the exact byte count is moved; std::copy_n is a forward copy, which
+       is defined for these overlapping ranges because the destination starts below the source (a memmove for
+       bytes). Every stock FLM has a video stream size and frame sizes that are multiples of 8, so the count is
+       a multiple of 4 and the same bytes move as before. */
+    std::copy_n(copySource,loadedSize - readOffset,copyDestination);
   }
 }
 
@@ -688,7 +705,8 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
        advanced to the pixels further down. Callers keep the value as the movie only after the first-frame call, which cannot
        get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
     if (outMovie != nullptr) {
-      *outMovie = reinterpret_cast<MovieRuntime *>(Thandor_Bytes(movie) - MOVIE_RUNTIME_PIXELS_OFFSET);
+      /* computed in uintptr_t: the value lies before the allocation, so pointer arithmetic would be UB */
+      *outMovie = reinterpret_cast<MovieRuntime *>(reinterpret_cast<uintptr_t>(movie) - MOVIE_RUNTIME_PIXELS_OFFSET);
     }
     return true;
   }

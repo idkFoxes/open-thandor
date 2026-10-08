@@ -5,6 +5,7 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <atomic>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -146,6 +147,14 @@ UPtr32 g_FrontendPlayerListRows[8] = {
 };
 
 uint32_t g_IntroMoviePendingTicks = 0;
+
+/* Not in the original: g_IntroMoviePendingTicks is counted up by IntroMovie_TimerTick on the timer thread and
+   down here on the main thread, so both sides access it as an atomic (std::atomic_ref keeps the plain uint32_t
+   global). The original used plain reads and writes, a data race. */
+static std::atomic_ref<uint32_t> IntroMovie_PendingTicks()
+{
+  return std::atomic_ref<uint32_t>(g_IntroMoviePendingTicks);
+}
 
 /* "screen00.pcx" with its two-digit counter at code units 6 and 7 */
 uint16_t g_ScreenshotFileNameUtf16[13] = {'s', 'c', 'r', 'e', 'e', 'n', '0', '0', '.', 'p', 'c', 'x', 0}; /* L"screen00.pcx" */
@@ -1165,8 +1174,7 @@ static bool IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
       return false;
     }
     frameHeightSnapshot = g_FramebufferHeight;
-    g_IntroMoviePendingTicks--;
-    if (g_IntroMoviePendingTicks == 0) break;
+    if (--IntroMovie_PendingTicks() == 0) break;
   }
   quarterFrameHeight = g_FramebufferHeight >> 2;
   if (g_GraphicsFramebufferBeginAccess()) {
@@ -1224,11 +1232,11 @@ bool Game_PlayIntroMovies()
         Movie_Close();
         return true;
       }
-      g_IntroMoviePendingTicks = 0;
+      IntroMovie_PendingTicks().store(0);
       UiFrame_FlushInputAndResetPendingTicks();
       g_TimerRegisterPeriodic(playbackRateHz,IntroMovie_TimerTick);
       while (!IntroMovie_PollSkipRequest()) {
-        if ((g_IntroMoviePendingTicks != 0) && !IntroMovie_PresentPendingFrames(introMovie)) break;
+        if ((IntroMovie_PendingTicks().load() != 0) && !IntroMovie_PresentPendingFrames(introMovie)) break;
       }
       /* stop playback: key, mouse button release, movie end or framebuffer loss */
       g_TimerUnregisterPeriodic(IntroMovie_TimerTick);
