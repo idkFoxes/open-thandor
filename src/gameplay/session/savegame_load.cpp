@@ -225,6 +225,67 @@ static bool ResourceRegistrationRuntime_FindLoadedRecordCycle
   return false;
 }
 
+/* Not in the original: checks the world's owner list in the saved records (widget.hex), which every owner-list
+   walk (WorldRuntime_ForEachOwnerListNode, the AI, collision and class scans) follows from the head through
+   nextNode until NULL, and which WorldRuntime_UnlinkOwnerListNode edits through previousNode / nextNode.
+   The saved head is the last nested slot of the last record (ownerListHead, saved as "tail record"); a node's
+   previousNode is primarySavedIdOrOffset and its nextNode secondarySavedIdOrOffset (WorldOwnerListNode +0x0/+0x4).
+   Walking from the head, every link must name a record start below recordCount, every node must be allocated
+   and marked linked (WORLD_OWNER_NODE_LINKED), and its previousNode must be the node before it (NULL for the
+   head). That last rule already rules out a revisit: the first record reached twice would need two different
+   predecessors, or a predecessor although it is the head; the walk is bounded by recordCount steps anyway.
+   Finally no linked record may be off the list, so an unlink never writes through stale links. No static state
+   or arena memory is needed. Returns the problem and the record holding the bad link or node, nullptr when the
+   list is sound. */
+static const char *ResourceRegistrationRuntime_FindBrokenOwnerList
+          (const ResourceRegistrationRuntimeImageSavedView *runtimeImage,uint32_t *outRecordIndex)
+{
+  const uint32_t recordCount = runtimeImage->recordCount;
+  const uint32_t linkedFlag = ToBits(WORLD_OWNER_NODE_LINKED);
+  const uint32_t nodeFlags = linkedFlag | ToBits(WORLD_OBJECT_RECORD_ALLOCATED);
+  const ResourceRegistrationRecordSavedView *node;
+  uint32_t linkedCount;
+  uint32_t listLength;
+  uint32_t recordIndex;
+  uint32_t linkIndex;
+  uint32_t nodeOffset;
+  uint32_t previousOffset;
+
+  linkedCount = 0;
+  for (recordIndex = 0; recordIndex < recordCount; recordIndex++) {
+    if ((static_cast<uint32_t>(runtimeImage->records[recordIndex].flags) & linkedFlag) != 0) {
+      linkedCount++;
+    }
+  }
+  linkIndex = recordCount - 1; /* the record that holds the saved head */
+  nodeOffset = runtimeImage->records[linkIndex].nestedSavedOffsets[12];
+  previousOffset = 0;
+  for (listLength = 0; nodeOffset != 0; listLength++) {
+    *outRecordIndex = linkIndex;
+    if (listLength == recordCount || (nodeOffset - 1) % sizeof(WorldObjectRecord) != 0 ||
+        (nodeOffset - 1) / sizeof(WorldObjectRecord) >= recordCount) {
+      return "owner list link";
+    }
+    recordIndex = (nodeOffset - 1) / sizeof(WorldObjectRecord);
+    node = &runtimeImage->records[recordIndex];
+    *outRecordIndex = recordIndex;
+    if ((static_cast<uint32_t>(node->flags) & nodeFlags) != nodeFlags) {
+      return "owner list node";
+    }
+    if (node->primarySavedIdOrOffset != previousOffset) {
+      return "owner list back link";
+    }
+    previousOffset = nodeOffset;
+    nodeOffset = node->secondarySavedIdOrOffset;
+    linkIndex = recordIndex;
+  }
+  if (listLength != linkedCount) {
+    *outRecordIndex = recordCount - 1;
+    return "owner list length";
+  }
+  return nullptr;
+}
+
 /* Checks the saved form of the resource registration records (widget.hex) before
    ResourceRegistrationRuntime_RebaseLoadedRecords turns it back into pointers. The original trusts the file: a
    nestedCount above the 13 nested slots writes past the record, the army texture-set field indexes the eight
@@ -243,7 +304,15 @@ static bool ResourceRegistrationRuntime_FindLoadedRecordCycle
    child reachable twice. Original quirk: a shot node (ShotRuntimePool_CreateProjectileFromDefinition) does not
    reset childCount, childNodes or parentNode of the record it reuses, so a shot keeps the stale child links of
    the record's earlier model node, which may name records that are free or children of other nodes by now; a
-   game-written save can therefore hold both. */
+   game-written save can therefore hold both.
+   The owner list is checked as well (ResourceRegistrationRuntime_FindBrokenOwnerList): a broken or cyclic
+   nextNode chain makes every owner-list walk loop without end or walk into free records. Game-written saves
+   pass: WorldRuntime_LinkOwnerListNode and WorldRuntime_UnlinkOwnerListNode are the only writers of the links
+   and keep head->previousNode NULL and next->previousNode == node; the linked mark is set only by the link and
+   cleared only by the unlink (which removes the node and frees its record) and by the session shutdown
+   callback (no save follows), and WorldObjectArray_AllocateFreeRecord takes only free records, so a record is
+   on the list exactly when it is allocated and linked; a cycle would already hang the running game. Records
+   that are allocated but not linked keep stale links (the unlink leaves them), which are not checked here. */
 static bool ResourceRegistrationRuntime_ValidateLoadedRecords
           (const ResourceRegistrationRuntimeImageSavedView *runtimeImage,uint32_t *outError)
 
@@ -335,6 +404,11 @@ static bool ResourceRegistrationRuntime_ValidateLoadedRecords
   }
   if (ResourceRegistrationRuntime_FindLoadedRecordCycle(runtimeImage,&recordIndex)) {
     Thandor_Log("savegame load: widget.hex record %u: invalid child cycle, rejected",recordIndex);
+    return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
+  }
+  problem = ResourceRegistrationRuntime_FindBrokenOwnerList(runtimeImage,&recordIndex);
+  if (problem != nullptr) {
+    Thandor_Log("savegame load: widget.hex record %u: invalid %s, rejected",recordIndex,problem);
     return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
   }
   return true;
