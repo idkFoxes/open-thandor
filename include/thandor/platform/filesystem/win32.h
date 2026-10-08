@@ -37,6 +37,9 @@ uint32_t Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition d
 /* 0 or FATAL_ERROR_FILE_ACCESS_FAILED */
 uint32_t Win32File_Delete(uint32_t unusedFlags,uint16_t *path);
 
+/* 0 or FATAL_ERROR_FILE_ACCESS_FAILED; replaces an existing destinationPath */
+uint32_t Win32File_Replace(uint16_t *destinationPath,uint16_t *sourcePath);
+
 /* 0 or FATAL_ERROR_FILE_WRITE_FAILED */
 uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags,uint16_t *path);
 
