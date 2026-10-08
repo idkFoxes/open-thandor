@@ -14,7 +14,7 @@
 #include <thandor/core/text/path.h>
 
 /* True when a level of loadedByteCount bytes holds its header, is not shorter than its header's allocationSizeBytes
-   and its own path (header pathState.levelPathOffsetOrLoadedFieldGrid, still an offset) starts inside those bytes
+   and its own path (header pathState.levelPathOffsetOrLoadedFieldGrid, still an offset, at most 0xFFFF) starts inside those bytes
    with its terminator at least 5 code units before their end (room for the ".fld" rewrite). Otherwise logs one
    line (context, the level path in g_FrontendScenarioPathScratchUtf16) and returns false. */
 bool FrontendLevelAsset_LoadedImageFits(const FrontendLoadedLevelAsset *level,uint32_t loadedByteCount,

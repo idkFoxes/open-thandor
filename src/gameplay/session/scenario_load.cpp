@@ -48,7 +48,8 @@ bool FrontendLevelAsset_LoadedImageFits(const FrontendLoadedLevelAsset *level,ui
   if (loadedByteCount >= sizeof(FrontendLoadedLevelAsset)) {
     allocationSizeBytes = level->header.common.allocationSizeBytes;
     pathOffset = level->header.pathState.levelPathOffsetOrLoadedFieldGrid;
-    if ((allocationSizeBytes <= loadedByteCount) && (pathOffset < loadedByteCount)) {
+    /* an offset above 0xFFFF would read as an attached grid pointer (every release of the level frees it) */
+    if ((allocationSizeBytes <= loadedByteCount) && (pathOffset <= 0xffff) && (pathOffset < loadedByteCount)) {
       pathUnitsAvailable = (loadedByteCount - pathOffset) / sizeof(uint16_t);
       const uint16_t *path = Asset_RecordAt<uint16_t>(level,pathOffset);
       while ((terminatorIndex < pathUnitsAvailable) && (path[terminatorIndex] != 0)) {
@@ -134,23 +135,34 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   uint32_t allocationError;
   void *allocationPayload;
 
-  /* Every producer of the level checked its path against the loaded or received bytes (and allocationSizeBytes
-     against the loaded bytes). The original rewrites the path at the offset unchecked; bounded here because a
-     missing level or one whose grid is already attached (the offset then holds the grid pointer, e.g. a second
-     run of this command) made the ".fld" write land outside the level. Fails like a failed grid load. */
-  if ((levelAsset == nullptr) ||
-      !FrontendLevelAsset_LoadedImageFits(levelAsset,levelAsset->header.common.allocationSizeBytes,
-                                          "FrontendScenarioSession_LoadFieldGridOfLevel")) {
-    if (levelAsset == nullptr) {
-      Thandor_Log("FrontendScenarioSession_LoadFieldGridOfLevel: no level loaded");
-    }
+  /* The original reads the level unchecked; bounded here because no level at all was a null read. Fails like a
+     failed grid load. */
+  if (levelAsset == nullptr) {
+    Thandor_Log("FrontendScenarioSession_LoadFieldGridOfLevel: no level loaded");
     FatalError_ExitIfFailed(FATAL_ERROR_LEVEL_ASSET_INVALID,true); /* does not return */
     return;
   }
-  levelPathOffset =(g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
+  levelPathOffset = (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
   /* original quirk: the flag goes to the first player record, not to the one found (see the caller) */
   roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
   *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
+  /* The original runs again when the grid is already attached (a second run of this command, see the caller's
+     quirk): the offset then holds the grid pointer (above 0xFFFF, the rule of every release of the level), and
+     the ".fld" write and the path reads land at level + pointer, outside the level. Bounded here because that
+     corrupts memory: the attached grid is kept, nothing is rewritten, reloaded or republished. */
+  if (0xffff < levelPathOffset) {
+    Thandor_Log("FrontendScenarioSession_LoadFieldGridOfLevel: field grid already attached, kept");
+    return;
+  }
+  /* Every producer of the level checked its path against the loaded or received bytes (and allocationSizeBytes
+     against the loaded bytes); the original rewrites the path at the offset unchecked. Bounded here once more
+     against allocationSizeBytes because a path outside the level made the ".fld" write land outside it. Fails
+     like a failed grid load. */
+  if (!FrontendLevelAsset_LoadedImageFits(levelAsset,levelAsset->header.common.allocationSizeBytes,
+                                          "FrontendScenarioSession_LoadFieldGridOfLevel")) {
+    FatalError_ExitIfFailed(FATAL_ERROR_LEVEL_ASSET_INVALID,true); /* does not return */
+    return;
+  }
   /* the level's own path (an offset into the asset) with the extension changed to .fld; the loaded grid
      later replaces that offset */
   fieldGridPath = Asset_RecordAt<uint16_t>(levelAsset,levelPathOffset);
