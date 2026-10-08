@@ -40,15 +40,6 @@ int WindowCoordinateFromEnvironment(const char *name) noexcept
   return (value != nullptr) ? std::atoi(value) : 0;
 }
 
-/* The original's Win32_ShutdownAndExit: shuts the game down and ends the process (does not return). */
-[[noreturn]] void ShutdownAndExit()
-{
-  Runtime_Shutdown();
-  SdlPlatform_Quit();
-  ExitProcess(0);
-  std::abort(); /* not reached */
-}
-
 } // namespace
 
 SDL_Window *MainWindow() noexcept
@@ -144,7 +135,7 @@ void SdlPlatform_PumpEvents()
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     if (g_WindowDestroyDepth != 0) {
-      ShutdownAndExit();
+      Runtime_ShutdownAndExit(nullptr); /* the original's Win32_ShutdownAndExit */
     }
     switch (event.type) {
     case SDL_EVENT_QUIT:
@@ -188,7 +179,7 @@ void SdlPlatform_PumpEvents()
     }
   }
   if (g_WindowDestroyDepth != 0) {
-    ShutdownAndExit();
+    Runtime_ShutdownAndExit(nullptr); /* the original's Win32_ShutdownAndExit */
   }
 }
 

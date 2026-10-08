@@ -27,6 +27,8 @@ void * ArenaHeap_Init();
 
 void ArenaHeap_Shutdown();
 
+bool ArenaHeap_IsReady();
+
 uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload);
 
 uint32_t ArenaHeap_QueryFreeBytes();
