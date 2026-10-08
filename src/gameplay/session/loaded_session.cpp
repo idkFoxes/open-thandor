@@ -32,6 +32,27 @@ static bool InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,Engine
   return false;
 }
 
+/* Tells whether a saved campaign (the save package's campagne entry, campaignBytes bytes) passes CampaignAsset_Fits
+   and also holds a record of its current level. The game writes the entry from a loaded campaign that passed
+   CampaignAsset_Fits (a .cgn or a network campaign), with exactly decodedSizeBytes bytes, and its current level
+   is the first level or a successor whose record was found (a missing successor releases the campaign, and the
+   save then has no campagne entry), so every game-written entry passes. */
+static bool InGameLoadedSession_CampaignFits(const CampaignAsset *campaignAsset,uint32_t campaignBytes)
+
+{
+  int32_t recordIndex;
+
+  if (!CampaignAsset_Fits(campaignAsset,campaignBytes)) {
+    return false;
+  }
+  for (recordIndex = 0; recordIndex < campaignAsset->levelRecordCount; recordIndex++) {
+    if (campaignAsset->levels[recordIndex].levelId == campaignAsset->currentLevelId) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /* Sets the text of the in-game template's save-name edit (saveNameEdit, 32 code units) to the session name of a
    mounted save package: the UTF-16 string at offset 256 of the package header (scanned for at most 36
    characters), without its four-character file extension and cut to 31 characters. Without a terminator the name
@@ -217,7 +238,8 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
 {
   uintptr_t mountResult; /* the save package's handle, or the mount error code */
   EngineFileHandle saveHandle;
-  void *campaignAsset;
+  CampaignAsset *campaignAsset;
+  uint32_t campaignByteCount;
   FrontendLoadedLevelAsset *levelImage;
   uint32_t packageLoadErrorCode;
   InGameRuntimeRoot *inGameRoot;
@@ -233,9 +255,24 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
   if (stepError != 0) {
     return InGameLoadedSession_Fail(nullptr,saveHandle,stepError,outError);
   }
-  campaignAsset = Package_LoadEntry(g_CampagneHexPathUtf16,nullptr);
+  /* Package_LoadEntryWithSize is the core of Package_LoadEntry (same allocation, without its failure log line); the
+     byte count bounds the campaign check below. A save outside a campaign has no campagne entry. */
+  campaignAsset = static_cast<CampaignAsset *>(Package_LoadEntryWithSize(g_CampagneHexPathUtf16,&campaignByteCount,
+                                                                          nullptr));
   if (campaignAsset != nullptr) {
-    g_FrontendLoadedCampaignAsset = static_cast<CampaignAsset *>(campaignAsset);
+    /* The original takes the saved campaign as it is; bounded here because the campaign walks (carry-over, end
+       movie, successor level) trust its record count and the next save writes decodedSizeBytes bytes of it, both
+       of which read behind a short entry. Rejected like a failed load. */
+    if (!InGameLoadedSession_CampaignFits(campaignAsset,campaignByteCount)) {
+      Thandor_Log("loaded session: campagne entry of %u bytes, %d level records, no record of level %d or %d, "
+                  "load rejected",campaignByteCount,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->levelRecordCount : 0,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->firstLevelId : 0,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->currentLevelId : 0);
+      Resource_Release(campaignAsset);
+      return InGameLoadedSession_Fail(nullptr,saveHandle,FATAL_ERROR_GENERAL_FAILURE,outError);
+    }
+    g_FrontendLoadedCampaignAsset = campaignAsset;
   }
   levelImage = static_cast<FrontendLoadedLevelAsset *>(Package_LoadEntry(g_LevelHexPathUtf16,&packageLoadErrorCode));
   if (levelImage == nullptr) {

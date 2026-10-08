@@ -50,8 +50,8 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
     levelRecordsRemaining = g_FrontendLoadedCampaignAsset->levelRecordCount;
     scenarioRecord = g_FrontendLoadedCampaignAsset;
     /* The original tested the count only after the first record (a do-while), so a campaign asset with no level
-       records (the CGN file or the campagne.hex save entry is not checked) walked on far past the asset;
-       bounded here because that reads outside it. Such a campaign finds no scenario. */
+       records walked on far past the asset; bounded here because that reads outside it. Since step 11 the CGN
+       file and the campagne.hex save entry are checked on load (CampaignAsset_Fits), so the guard is a backstop. */
     while (levelRecordsRemaining > 0) {
       if (g_FrontendLoadedCampaignAsset->currentLevelId ==
           scenarioRecord->levels[0].levelId) {
