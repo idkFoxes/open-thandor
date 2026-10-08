@@ -254,6 +254,64 @@ void ModelRuntimePool_UnrebaseBeforeSave()
   }
 }
 
+/* Not in the original: true when pointer is the start of one of the recordCount records of recordSize bytes
+   at poolBase (a rebased savegame offset that lands in its pool). */
+static bool ModelRuntimePool_PointsToPoolRecord(const void *pointer,const void *poolBase,size_t recordSize,
+                                                size_t recordCount)
+{
+  const uintptr_t distance = reinterpret_cast<uintptr_t>(pointer) - reinterpret_cast<uintptr_t>(poolBase);
+  return distance % recordSize == 0 && distance / recordSize < recordCount;
+}
+
+/* Not in the original: true when the rebased pointers of a used slot (ModelRuntimePool_RebaseAfterLoad has
+   stored them) and the saved attachment descriptors (rebased later, in the same way as
+   ModelRuntime_RebaseAttachmentsAfterLoad) all land on a record of their pool, and attachmentCount fits the six
+   descriptors. The owner and the root node are always set; the linked model and the attachment children and
+   parent nodes may be NULL. The class-state link is checked by the caller. */
+static bool ModelRuntimePool_RebasedSlotInPools(const ModelRuntimeSlot *modelRuntime)
+{
+  constexpr size_t attachmentCapacity = sizeof(modelRuntime->attachments) / sizeof(modelRuntime->attachments[0]);
+  const ModelRuntimeSlot *linkedRuntime;
+  uint32_t attachmentIndex;
+  const ModelRuntimeAttachmentDescriptor *attachment;
+
+  if (!ModelRuntimePool_PointsToPoolRecord(modelRuntime->rootModelNodeOrSavedOffset.modelNode.get(),
+                                           g_RuntimeObjectRebaseBaseMinusOne + 1,sizeof(WorldObjectRecord),
+                                           INGAME_WORLD_OBJECT_RECORD_COUNT) ||
+      !ModelRuntimePool_PointsToPoolRecord(modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime.get(),
+                                           static_cast<const uint8_t *>(g_ArmyRuntimeRebaseBaseMinusOne) + 1,
+                                           sizeof(ArmyRuntimeSlot),ARMY_RUNTIME_SLOT_COUNT)) {
+    return false;
+  }
+  linkedRuntime = modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime;
+  if (linkedRuntime != nullptr &&
+      !ModelRuntimePool_PointsToPoolRecord(linkedRuntime,g_ModelRuntimeSlots,sizeof(ModelRuntimeSlot),
+                                           MODEL_RUNTIME_SLOT_COUNT)) {
+    return false;
+  }
+  if (modelRuntime->attachmentCount > attachmentCapacity) {
+    return false;
+  }
+  for (attachmentIndex = 0; attachmentIndex < modelRuntime->attachmentCount; attachmentIndex++) {
+    attachment = &modelRuntime->attachments[attachmentIndex];
+    if (attachment->childModelRuntimeOrSavedOffset != nullptr &&
+        !ModelRuntimePool_PointsToPoolRecord
+                   (reinterpret_cast<const uint8_t *>(attachment->childModelRuntimeOrSavedOffset.get()) +
+                    g_ModelRuntimeRebaseDelta,
+                    g_ModelRuntimeSlots,sizeof(ModelRuntimeSlot),MODEL_RUNTIME_SLOT_COUNT)) {
+      return false;
+    }
+    if (attachment->parentModelNodeOrSavedOffset != nullptr &&
+        !ModelRuntimePool_PointsToPoolRecord
+                   (g_RuntimeObjectRebaseBaseMinusOne + Thandor_PointerToI32(attachment->parentModelNodeOrSavedOffset),
+                    g_RuntimeObjectRebaseBaseMinusOne + 1,sizeof(WorldObjectRecord),
+                    INGAME_WORLD_OBJECT_RECORD_COUNT)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /* Turns the saved offsets of the used attachment descriptors back into pointers: children get
    g_ModelRuntimeRebaseDelta, parent nodes g_RuntimeObjectRebaseBaseMinusOne; zero offsets stay NULL. */
 static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRuntime)
@@ -299,6 +357,8 @@ void ModelRuntimePool_RebaseAfterLoad()
   ArmyRuntimeSlot *rebasedLinkedArmy;
   ModelRuntimeSlot *rebasedLinkedRuntime;
   ModelDefinitionRecordPrefix *registeredDefinition;
+  int droppedOutOfPoolCount = 0;
+  int clearedClassLinkCount = 0;
 
   for (slotIndex = 0; slotIndex < MODEL_RUNTIME_SLOT_COUNT; slotIndex++) {
     modelRuntime = &g_ModelRuntimeSlots[slotIndex];
@@ -329,6 +389,23 @@ void ModelRuntimePool_RebaseAfterLoad()
     }
     modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = rebasedLinkedRuntime;
     modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = rebasedLinkedArmy;
+    /* Not in the original: the class-state link holds a model runtime rebased with the army delta (see
+       ArmyRuntimeReferenceOrSavedOffset); one that does not land on a model runtime slot is cleared (NULL is
+       its "no link" value). */
+    if (rebasedLinkedArmy != nullptr &&
+        !ModelRuntimePool_PointsToPoolRecord(modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime.get(),
+                                             g_ModelRuntimeSlots,sizeof(ModelRuntimeSlot),MODEL_RUNTIME_SLOT_COUNT)) {
+      clearedClassLinkCount++;
+      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = nullptr;
+    }
+    if (!ModelRuntimePool_RebasedSlotInPools(modelRuntime)) {
+      /* The original rebases and later follows the saved offsets unchecked; bounded here because an offset
+         outside its pool (or more than six attachments) would read and write outside the pools: dropped like an
+         unregistered definition. */
+      droppedOutOfPoolCount++;
+      modelRuntime->rootModelNodeOrSavedOffset.modelNode = nullptr;
+      continue;
+    }
 
     registeredDefinition = ModelDefinitionRegistry_FindById
                              ((PckModelDefinitionIdCatalog)modelRuntime->definitionOrSavedId.savedIdOrOffset);
@@ -359,6 +436,10 @@ void ModelRuntimePool_RebaseAfterLoad()
                  modelRuntime->definitionOrSavedId.runtimeDefinition->rootNodeOffsetOrPointer));
     }
   }
+  if (droppedOutOfPoolCount != 0 || clearedClassLinkCount != 0) {
+    Thandor_Log("model: savegame offsets outside their pools: %d instances dropped, %d class links cleared",
+                droppedOutOfPoolCount,clearedClassLinkCount);
+  }
 }
 
 /* Destroys a model runtime: drops player references to it, runs its class release handler, destroys the
@@ -386,6 +467,17 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
   ModelRuntimeSlot *parentRuntime;
   ModelRuntimeNode *parentModelNode;
 
+  if (modelRuntime->rootModelNodeOrSavedOffset.modelNode == nullptr) {
+    /* The original dereferences the root node unchecked; bounded here because a slot without a root node is
+       free (or was dropped at load, ModelRuntimePool_RebaseAfterLoad) and its definition may still be a saved
+       id: there is nothing to destroy. Model definitions with a root of 0 are rejected at registration. */
+    static bool s_loggedNullRoot = false;
+    if (!s_loggedNullRoot) {
+      s_loggedNullRoot = true;
+      Thandor_Log("model: destroy of a model runtime without a root node ignored");
+    }
+    return;
+  }
   modelDefinition = modelRuntime->definitionOrSavedId.definition;
   runtimeClassId = ModelView_Cast<ModelDefinition>(modelDefinition)->runtimeClassId;
   FrontendPlayerRuntime_ClearAssignmentTokenFromAll(reinterpret_cast<uintptr_t>(modelRuntime));

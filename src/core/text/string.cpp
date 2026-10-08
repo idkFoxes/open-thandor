@@ -8,6 +8,7 @@
 #include <thandor/core/text/string.h>
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
+#include <iterator>
 
 /* Module data. */
 
@@ -91,8 +92,10 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
     destinationCursor = destination + signLength;
     integerPart = (uint32_t)value / denominator;
     fractionRemainder = (uint32_t)value % denominator;
-    /* the integer digits are built backwards in the scratch array just before digitAlphabet */
-    digitText = g_WideNumberFormatState.digitAlphabet;
+    /* the integer digits are built backwards in integerDigitScratch, from its end (at most 10 digits). The
+       original started at digitAlphabet and walked below it into the array before; the named scratch field is
+       the same memory, so the pointer now stays inside the array it was derived from. */
+    digitText = g_WideNumberFormatState.integerDigitScratch + std::size(g_WideNumberFormatState.integerDigitScratch);
     digitCount = 0;
     do {
       digitText--;

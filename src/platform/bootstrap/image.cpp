@@ -270,10 +270,78 @@ static void code_address_name(char *out, size_t capacity, HANDLE process, DWORD6
     }
 }
 
+/* Hang detector and dev watchdog: what is taken of the main thread while it is suspended - its context and a raw
+   copy of the top of its stack. The suspended thread may hold the process heap lock, the loader lock or dbghelp's
+   lock, so between SuspendThread and ResumeThread nothing may allocate, take a user-mode lock or call dbghelp
+   (only GetThreadContext, VirtualQuery and ReadProcessMemory, which are plain system calls, into this fixed
+   buffer); the stack walk and the symbol lookups run on the copies after the thread is resumed. */
+constexpr auto STACK_SNAPSHOT_BYTES = 0x10000u;
+struct StackSnapshot {
+    CONTEXT context;
+    DWORD64 stackStart; /* address of stack[0]: the stack pointer of the captured context */
+    SIZE_T stackBytes;  /* bytes copied, 0 when the stack could not be read */
+    BYTE stack[STACK_SNAPSHOT_BYTES];
+};
+
+/* Suspends thread, copies its context and up to STACK_SNAPSHOT_BYTES of its stack from the stack pointer up
+   (bounded by the committed region), resumes it. false when the context could not be read. */
+static bool capture_thread(HANDLE thread, StackSnapshot *snapshot)
+{
+    MEMORY_BASIC_INFORMATION region;
+    bool captured;
+    SuspendThread(thread);
+    memset(&snapshot->context, 0, sizeof snapshot->context);
+    snapshot->context.ContextFlags = CONTEXT_FULL;
+    snapshot->stackStart = 0;
+    snapshot->stackBytes = 0;
+    captured = GetThreadContext(thread, &snapshot->context) != FALSE;
+    if (captured && VirtualQuery(register_address(CONTEXT_SP(snapshot->context)), &region, sizeof region) != 0 &&
+        region.State == MEM_COMMIT) {
+        const BYTE *start = static_cast<const BYTE *>(register_address(CONTEXT_SP(snapshot->context)));
+        const BYTE *end = static_cast<const BYTE *>(region.BaseAddress) + region.RegionSize;
+        SIZE_T bytes = static_cast<SIZE_T>(end - start);
+        SIZE_T copied = 0;
+        if (bytes > sizeof snapshot->stack) {
+            bytes = sizeof snapshot->stack;
+        }
+        /* ReadProcessMemory reports an unreadable page instead of faulting */
+        if (ReadProcessMemory(GetCurrentProcess(), start, snapshot->stack, bytes, &copied) != FALSE) {
+            snapshot->stackStart = CONTEXT_SP(snapshot->context);
+            snapshot->stackBytes = copied;
+        }
+    }
+    ResumeThread(thread);
+    return captured;
+}
+
+/* The snapshot whose stack copy log_stack_thread's walk on this thread reads (nullptr: read live memory). */
+static thread_local const StackSnapshot *t_walkSnapshot;
+
+/* StackWalk64 memory reader: reads inside the copied stack range come from the snapshot (the thread has run on
+   since), everything else (code bytes, unwind data, a stack deeper than the copy) from the process. */
+static BOOL CALLBACK read_walk_memory(HANDLE process, DWORD64 address, PVOID buffer, DWORD size, LPDWORD read)
+{
+    const StackSnapshot *snapshot = t_walkSnapshot;
+    SIZE_T copied = 0;
+    BOOL ok;
+    if (snapshot != nullptr && address >= snapshot->stackStart &&
+        address - snapshot->stackStart <= snapshot->stackBytes &&
+        size <= snapshot->stackBytes - (address - snapshot->stackStart)) {
+        memcpy(buffer, snapshot->stack + (address - snapshot->stackStart), size);
+        *read = size;
+        return TRUE;
+    }
+    ok = ReadProcessMemory(process, register_address(address), buffer, size, &copied);
+    *read = static_cast<DWORD>(copied);
+    return ok;
+}
+
 /* Crash log: raw stack qwords below REBUILT_IMAGE_BASE + this are symbolized as code addresses (upper bound
    of the rebuilt executable's image) */
 constexpr auto CRASH_LOG_REBUILT_IMAGE_SPAN = 0x400000u;
-static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
+/* snapshot: the stack copy of a suspended-and-resumed thread (hang detector, watchdog), read instead of the live
+   stack; nullptr for the calling thread's own stack. */
+static void log_stack_thread(FILE *out, const CONTEXT *start, HANDLE thread, const StackSnapshot *snapshot)
 {
     HANDLE process = GetCurrentProcess();
     CONTEXT context = *start;
@@ -293,12 +361,14 @@ static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
     frame.AddrFrame.Mode = AddrModeFlat;
     frame.AddrStack.Offset = CONTEXT_SP(context);
     frame.AddrStack.Mode = AddrModeFlat;
+    t_walkSnapshot = snapshot;
     for (depth = 0; depth < 48; depth++) {
         char name[MAX_PATH + 320];
         IMAGEHLP_LINE64 line;
         DWORD lineDisplacement = 0;
-        if (!StackWalk64(CRASH_MACHINE_TYPE, process, thread, &frame, &context, nullptr,
-                         SymFunctionTableAccess64, SymGetModuleBase64, nullptr) || frame.AddrPC.Offset == 0) {
+        if (!StackWalk64(CRASH_MACHINE_TYPE, process, thread, &frame, &context,
+                         snapshot != nullptr ? read_walk_memory : nullptr, SymFunctionTableAccess64,
+                         SymGetModuleBase64, nullptr) || frame.AddrPC.Offset == 0) {
             break;
         }
         line.SizeOfStruct = sizeof line;
@@ -309,6 +379,7 @@ static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
         }
         fprintf(out, "\n");
     }
+    t_walkSnapshot = nullptr;
 }
 
 const char *Thandor_SymbolName(const void *address)
@@ -343,7 +414,7 @@ void Thandor_LogStack(const char *reason, unsigned value)
     context.ContextFlags = CONTEXT_CONTROL;
     /* x64: the stack walk unwinds through the unwind tables, not a frame pointer */
     RtlCaptureContext(&context);
-    log_stack_thread(out, &context, GetCurrentThread());
+    log_stack_thread(out, &context, GetCurrentThread(), nullptr);
     fclose(out);
 }
 
@@ -529,24 +600,21 @@ static HANDLE g_watchedThread;
 static DWORD WINAPI watchdog_thread(void *parameter)
 {
     DWORD interval = static_cast<DWORD>(reinterpret_cast<uintptr_t>(parameter));
+    static StackSnapshot snapshot; /* this thread's own: filled only while the main thread is suspended */
     for (;;) {
         char path[MAX_PATH];
         FILE *out;
-        CONTEXT context;
         Sleep(interval * 1000);
         executable_directory(path, sizeof path);
         strncat(path, "thandor.log", sizeof path - strlen(path) - 1);
         if ((out = fopen(path, "a")) == nullptr) {
             continue;
         }
-        SuspendThread(g_watchedThread);
-        memset(&context, 0, sizeof context);
-        context.ContextFlags = CONTEXT_FULL;
-        if (GetThreadContext(g_watchedThread, &context)) {
-            fprintf(out, "watchdog: main thread at %s\n", Thandor_SymbolName(register_address(CONTEXT_PC(context))));
-            log_stack_thread(out, &context, g_watchedThread);
+        if (capture_thread(g_watchedThread, &snapshot)) {
+            fprintf(out, "watchdog: main thread at %s\n",
+                    Thandor_SymbolName(register_address(CONTEXT_PC(snapshot.context))));
+            log_stack_thread(out, &snapshot.context, g_watchedThread, &snapshot);
         }
-        ResumeThread(g_watchedThread);
         fclose(out);
     }
 }
@@ -575,6 +643,7 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
     long last = 0;
     int stalled = 0;
     int reported = 0;
+    static StackSnapshot snapshot; /* this thread's own: filled only while the main thread is suspended */
     (void)parameter;
     for (;;) {
         long now;
@@ -592,7 +661,6 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
         {
             char path[MAX_PATH];
             FILE *out;
-            CONTEXT context;
             executable_directory(path, sizeof path);
             strncat(path, "hang.log", sizeof path - strlen(path) - 1);
             if ((out = fopen(path, "a")) == nullptr) {
@@ -604,15 +672,11 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
                 fprintf(out, "\n==== %04u-%02u-%02u %02u:%02u:%02u no frame for %d s ====\n", time.wYear,
                         time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, stalled);
             }
-            SuspendThread(g_watchedThread);
-            memset(&context, 0, sizeof context);
-            context.ContextFlags = CONTEXT_FULL;
-            if (GetThreadContext(g_watchedThread, &context)) {
+            if (capture_thread(g_watchedThread, &snapshot)) {
                 fprintf(out, "sample %d: main thread at %s\n", reported + 1,
-                        Thandor_SymbolName(register_address(CONTEXT_PC(context))));
-                log_stack_thread(out, &context, g_watchedThread);
+                        Thandor_SymbolName(register_address(CONTEXT_PC(snapshot.context))));
+                log_stack_thread(out, &snapshot.context, g_watchedThread, &snapshot);
             }
-            ResumeThread(g_watchedThread);
             fclose(out);
             reported++;
         }
