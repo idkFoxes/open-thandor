@@ -12,7 +12,8 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet);
+uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,uint32_t sampleByteCount,
+                                                   SoundVoiceSet **outVoiceSet);
 
 void SoundBackendDisabled_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet);
 

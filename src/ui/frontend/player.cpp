@@ -41,7 +41,7 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
   UiTextControl_UpdateNonEmptyValidity(textEditControl);
   if (Any(textEditControl->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     RichTextCommandStream_CopyToNarrow
-              (PLAYER_CHAT_TEXT_BYTES,g_UiSevenSlotCommandPayloadText.textBytes,textEditControl->textBuffer);
+              (PLAYER_CHAT_TEXT_BYTES,g_UiSevenSlotCommandPayloadText.textBytes,UiTextEdit_Text(textEditControl).data());
     /* the in-game "all recipients" mask; the lobby handler ignores it */
     FrontendCommand_Issue<FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById>(0,0,PLAYER_CHAT_RECIPIENTS_ALL);
     FrontendCommand_Issue<FrontendPlayerMessageBuffer_AppendTripleById>
@@ -65,7 +65,7 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
     textEditControl->selectionStart = 0;
     textEditControl->selectionEnd = 0;
     /* clear the 48 UTF-16 units of the text, two per step */
-    textCursor = textEditControl->textBuffer;
+    textCursor = UiTextEdit_Text(textEditControl).data();
     for (remainingPairs = 24; remainingPairs != 0; remainingPairs--) {
       textCursor[0] = 0;
       textCursor[1] = 0;

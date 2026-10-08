@@ -152,7 +152,8 @@ void SdlInput_FlushEvents();
 uint32_t SdlAudio_Init();
 /* Runtime_Shutdown: closes the audio stream and frees the voice-set registry. */
 void SdlAudio_Shutdown();
-uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet);
+uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,uint32_t sampleByteCount,
+                                       SoundVoiceSet **outVoiceSet);
 void SdlAudio_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet);
 bool SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
                            SoundVoice **outVoice);

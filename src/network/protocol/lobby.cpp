@@ -411,7 +411,7 @@ static void FrontendTransfer_SendSessionAdvertisement
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);
   /* the game name typed into gameNameEdit */
   RichTextCommandStream_PatchPayloadBySelector
-            (0,frontendRootNode->gameNameEdit.textBuffer,resolvedText);
+            (0,UiTextEdit_Text(&frontendRootNode->gameNameEdit).data(),resolvedText);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
   RichTextCommandStream_CopyExpanded
             (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText,nullptr);

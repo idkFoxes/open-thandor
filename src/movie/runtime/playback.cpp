@@ -17,11 +17,6 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
-/* KERNEL32 ReOpenFile (Vista and later), not in thandor/generated/imports.h: a second handle to the file of an
-   open handle, with its own file position (see Movie_StartStreamWorker). */
-extern "C" __declspec(dllimport) HANDLE __stdcall ReOpenFile(HANDLE hOriginalFile, DWORD dwDesiredAccess,
-                                                             DWORD dwShareMode, DWORD dwFlagsAndAttributes);
-
 /* Module data. */
 
 THANDOR_ALIGN(4) MovieAudioGainQ15 g_MovieDefaultAudioGainQ15 = 32768;
@@ -145,7 +140,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   }
   loadError = g_FileSystemReadExact(trackBytes,audioSample.get(),handle);
   if (loadError == 0) {
-    loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),&voiceSet);
+    loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),trackBytes,&voiceSet);
     if (loadError == 0) {
       *outVoiceSet = voiceSet;
     }
@@ -294,8 +289,7 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
   /* Not in the original: only one movie can be open at a time (g_ActiveMovie, the refill worker and Movie_Close
      know only one); debug builds assert it, the others log it. Original quirk: a second open replaces
      g_ActiveMovie and leaks the open movie. Kept, because callers may still draw the old movie as a texture
-     (closing it here would free it under them), and a caller can reach it with a movie whose first frame
-     failed (the in-game notification movies leave it open and open the next one). */
+     (closing it here would free it under them). */
   if (g_ActiveMovie != nullptr) {
     Thandor_Log("Movie_Open: a movie is already open; it is replaced without being closed");
   }
@@ -641,8 +635,8 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
    after the last frame, on a seek or read failure of a refill or when no movie is open; *outEndCode then gets
    FATAL_ERROR_MOVIE_INVALID (no movie / read failure) or the unplayed bytes left in the buffer (after the
    last frame). Either output may be NULL; only the one for the returned case is written.
-   Original quirk: after a worker read failure it closes an unrelated value left over by its caller instead
-   of the stream handle; the C closes NULL, which has the same effect on the movie (see the body).
+   After a read failure the stream handle is closed here (unless it is the shared package handle), because
+   remainingVideoBytes becomes 0 and Movie_Close then no longer closes it (see the body).
 */
 bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
 
@@ -671,10 +665,15 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
     /* The original passes g_FileSystemClose a value it never sets on this path, so it closes whatever
        its caller left there -- never the movie stream handle: a UI/runtime object pointer in the
        frontend/in-game/briefing callers, g_FramebufferHeight in the Game_PlayIntroMovies frame loop, the
-       outer caller's value via MoviePlayback_AdvanceToFrameAndPresent. Closing NULL keeps the effect (the stream handle stays
-       open; remainingVideoBytes = 0 also keeps Movie_Close from closing it) without the stray
-       CloseHandle on an unrelated value. */
-    g_FileSystemClose(nullptr);
+       outer caller's value via MoviePlayback_AdvanceToFrameAndPresent. The stream handle stayed open, and
+       remainingVideoBytes = 0 kept Movie_Close from closing it, so a loose file or the private package
+       handle leaked; bounded here because every failed movie leaked one handle: the movie's own stream
+       handle is closed instead (still open while remainingVideoBytes != 0; the worker has left its refill
+       loop once it stored READ_FAILED, and the next call finds remainingVideoBytes = 0 and closes nothing). */
+    if ((Movie_RemainingVideoBytes(movie).load(std::memory_order_acquire) != 0) &&
+        (movie->streamHandleIsSharedPackage == 0)) {
+      g_FileSystemClose(movie->streamHandle);
+    }
     Movie_RemainingVideoBytes(movie).store(0,std::memory_order_release);
     return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }

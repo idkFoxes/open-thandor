@@ -49,7 +49,8 @@ inline constexpr auto FATAL_ERROR_NETWORK_SOCKET = 0x2A;
    NetworkBackendFallback_OpenAndBindUdpSocket, left in place when Network_Init could not start WinSock) return it;
    the frontend reports it when no backend opens */
 inline constexpr auto FATAL_ERROR_NETWORK_UNAVAILABLE = 0x2B;
-/* SdlAudio_CreateSampleVoiceSet: the asset is not a 'sam' of format version 0x10000 */
+/* SdlAudio_CreateSampleVoiceSet: the asset is not a 'sam' of format version 0x10000, or its blocks do not fit
+   its bytes */
 inline constexpr auto FATAL_ERROR_SOUND_SAMPLE_INVALID = 0x4A;
 /* Arena heap (core/memory/allocator): no free block is large enough (ArenaHeap_Alloc,
    ArenaHeap_AllocLargestFreeBlock; the largest free payload size is left in g_PackageLastErrorPath).
