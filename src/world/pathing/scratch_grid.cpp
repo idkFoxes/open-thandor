@@ -10,6 +10,7 @@
 
 #include <thandor/world/pathing/scratch_grid.h>
 #include <thandor/thandor.h>
+#include <cassert>
 
 /* Module data. */
 
@@ -160,7 +161,8 @@ static void GridScratch_FloodFillFromPlacedRuntimeModels(WorldOwnerListNode *own
    Then every class-24 area is grown by one field cell, and each runtime model flood-fills the region it stands
    in; cells no model can reach get classes 28..30 resp. 25..27 so they count as unreachable. The class
    bits are a scratch-only namespace and never written back to FieldGridCell.flagsAndMaterial.
-   The dilation pass reads four scratch rows before the first and after the last row, as in the original.
+   The dilation pass reads four scratch rows above and below each open cell; the blocked map-edge ring keeps
+   those reads inside the grid.
 */
 void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime)
 
@@ -176,6 +178,10 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   FieldGridDimension columnsRemaining;
   FieldGridCell *fieldCell;
   GridScratchCell *promoteCursor;
+  GridScratchCell *scratchGrid;
+  GridScratchCell *centerCell;
+  int cellIndex;
+  int fieldRowCells;
   GridScratchCell *scratchCursor;
   WorldOwnerListNode *ownerNode;
   FieldGridDimension rowsRemaining;
@@ -187,7 +193,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   /* one 16-cell block per field cell */
   blocksToClear = fieldGridWidth * rowsRemaining;
   scratchCursor = g_GridScratchPrimary;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* blocksToClear >= 16: the world's field grid passed FieldGrid_ValidateLoadedImage (sides >= 4 cells) */
   do {
     scratchCursor->stateMask = scratchCursor->stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
     scratchCursor[1].stateMask = scratchCursor[1].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
@@ -212,11 +218,17 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   fieldCell = fieldGridAsset->cells;
   columnsRemaining = fieldGridWidth;
   scratchCursor = g_GridScratchPrimary;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* rows and columns >= FIELD_GRID_MIN_SIDE_CELLS: the world's field grid passed FieldGrid_ValidateLoadedImage */
   do {
     do {
       cellClassMask = GridScratch_ClassifyFieldCell(fieldCell);
       cellFlags = fieldCell->flagsAndMaterial;
+      /* The writes into the neighbouring blocks stay inside the grid only because the outermost ring of field
+         cells carries its boundary flags (as in the original). */
+      assert(rowsRemaining != fieldGridAsset->gridHeight || Any(cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY));
+      assert(rowsRemaining != 1 || Any(cellFlags & FIELD_CELL_LAST_ROW_BOUNDARY));
+      assert(columnsRemaining != fieldGridWidth || Any(cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY));
+      assert(columnsRemaining != 1 || Any(cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY));
       if (!Any(cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY)) {
         scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask | cellClassMask;
@@ -285,25 +297,30 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   /* grow class 24 by one field cell: mark (visited) every open cell with a class-24 cell four scratch cells
      away in one of the six hex directions, then promote the marks */
   cellsToPromote = g_GridScratchHeight * g_GridScratchWidth;
-  scratchCursor = g_GridScratchPrimary + (int32_t)(g_GridScratchWidth * -4);
-  cellsRemaining = cellsToPromote;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-  do {
-    scratchCursor[scratchStride * 4].stateMask =
-         scratchCursor[scratchStride * 4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    if (((scratchCursor[scratchStride * 4].stateMask & GRID_SCRATCH_BLOCKED) == 0) &&
-       (((scratchCursor[scratchStride * 4].stateMask | scratchCursor->stateMask | scratchCursor[4].stateMask |
-          scratchCursor[scratchStride * 4 - 4].stateMask | scratchCursor[scratchStride * 4 + 4].stateMask |
-          scratchCursor[scratchStride * 8 - 4].stateMask | scratchCursor[scratchStride * 8].stateMask) &
-        GRID_SCRATCH_TERRAIN_CLASS_BIT24) != 0)) {
-      scratchCursor[scratchStride * 4].stateMask =
-           scratchCursor[scratchStride * 4].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+  /* The original walks a cursor that starts four scratch rows before the grid (the centre cell is cursor[4 *
+     width]); index loop here, so no pointer outside the grid is formed. The neighbour reads four rows above
+     and below are only made for an open centre cell: the first and last four scratch rows and columns belong to
+     the map-edge field cells and are GRID_SCRATCH_BLOCKED, so they never leave the grid (the original relies on
+     the same invariant). cellsToPromote >= 256: 4x4 scratch cells per field cell of a grid validated by
+     FieldGrid_ValidateLoadedImage. */
+  scratchGrid = g_GridScratchPrimary;
+  fieldRowCells = (int)(scratchStride * 4);
+  for (cellIndex = 0; cellIndex < cellsToPromote; cellIndex++) {
+    centerCell = scratchGrid + cellIndex;
+    centerCell->stateMask = centerCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    if ((centerCell->stateMask & GRID_SCRATCH_BLOCKED) == 0) {
+      assert(cellIndex >= fieldRowCells + 4 && cellIndex + fieldRowCells < cellsToPromote);
+      if (((centerCell->stateMask | scratchGrid[cellIndex - fieldRowCells].stateMask |
+            scratchGrid[cellIndex - fieldRowCells + 4].stateMask | centerCell[-4].stateMask |
+            centerCell[4].stateMask | scratchGrid[cellIndex + fieldRowCells - 4].stateMask |
+            scratchGrid[cellIndex + fieldRowCells].stateMask) &
+           GRID_SCRATCH_TERRAIN_CLASS_BIT24) != 0) {
+        centerCell->stateMask = centerCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+      }
     }
-    scratchCursor++;
-    cellsRemaining--;
-  } while (cellsRemaining != 0);
+  }
   promoteCursor = g_GridScratchPrimary;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* cellsToPromote >= 256: 4x4 scratch cells per field cell of a grid validated by FieldGrid_ValidateLoadedImage */
   do {
     if ((promoteCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) {
       promoteCursor->stateMask = promoteCursor->stateMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
@@ -321,7 +338,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                GRID_SCRATCH_TERRAIN_CLASS_BIT28 | GRID_SCRATCH_TRAVERSAL_VISITED);
     cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+    /* >= 256 scratch cells: 4x4 per field cell of a grid validated by FieldGrid_ValidateLoadedImage */
     do {
       if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT30|GRID_SCRATCH_TERRAIN_CLASS_BIT29|
@@ -341,7 +358,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                GRID_SCRATCH_TERRAIN_CLASS_BIT26 | GRID_SCRATCH_TERRAIN_CLASS_BIT25 | GRID_SCRATCH_TRAVERSAL_VISITED);
     cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+    /* >= 256 scratch cells: 4x4 per field cell of a grid validated by FieldGrid_ValidateLoadedImage */
     do {
       if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT27|GRID_SCRATCH_TERRAIN_CLASS_BIT26|
@@ -418,6 +435,9 @@ void GridScratch_ReleaseBuffers()
 /* Tail of tick-wheel case 7: after the occupancy rebuild, turns each non-edge field cell's occupancy bytes
    of faction slots 1..7 into scratch bits 1..7 and ORs them into the cell's 4x4 scratch block and a ring of
    surrounding scratch cells, so faction presence is dilated into the scratch grid used by pathing.
+   Original quirk (as decompiled; there is no original binary left to check it against): the presence bits are
+   only ever OR-ed in here; only GridScratch_RebuildTerrainAndRuntimeClassificationMasks clears them, so between
+   two rebuilds a faction's presence stays on cells its units have already left.
 */
 void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
 
@@ -439,11 +459,16 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
   columnsRemaining = gridWidth;
   currentFieldCell = fieldGrid->cells;
   scratchCellCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* rows and columns >= FIELD_GRID_MIN_SIDE_CELLS: the world's field grid passed FieldGrid_ValidateLoadedImage */
   do {
     do {
       /* the original advances first and then tests the flags of the current cell */
       nextScratchCellCursor = scratchCellCursor + 8;
+      /* The writes reach up to six scratch rows around the block; they stay inside the grid only because the
+         outermost ring of field cells is flagged FIELD_CELL_GRID_EDGE_MASK and skipped (as in the original). */
+      assert(Any(currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+             (rowsRemaining != fieldGrid->gridHeight && rowsRemaining != 1 && columnsRemaining != gridWidth &&
+              columnsRemaining != 1));
       if (!Any(currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         factionPresenceMask =
              ((uint32_t)((currentFieldCell->occupancyMask &
