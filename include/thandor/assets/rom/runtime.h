@@ -68,7 +68,7 @@ struct RomRecord {
 /* g_RomRegistrySlots: fixed array of 256 {record, runtime root node} slots (RomAssetRecord_RegisterAndRelocate). */
 inline constexpr int ROM_REGISTRY_SLOT_COUNT = 256;
 
-uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset);
+uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset,uint32_t assetByteCount);
 
 void FrontendRomRegistry_ClearAndReleaseNestedResources();
 
@@ -78,7 +78,8 @@ void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable);
 
 RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *table);
 
-uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase);
+uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase,
+                                            uint32_t assetByteCount);
 
 bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
 
