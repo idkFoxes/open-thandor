@@ -46,6 +46,28 @@ static uint32_t ScenarioCatalog_FreeRecordSlots()
   return (SCENARIO_CATALOG_USABLE_BYTES - g_ScenarioCatalogUsedBytes) / SCENARIO_CATALOG_RECORD_STRIDE;
 }
 
+/* Tells whether a campaign asset (.cgn, or a campaign received over the network) of campaignBytes bytes holds
+   its header, at least one level record, all levelRecordCount records, a decoded size no larger than the asset
+   (a host re-encodes that many bytes for the transfer bundle) and a record of its first level (the start of the
+   campaign looks it up). Every stock .cgn passes. */
+bool CampaignAsset_Fits(const CampaignAsset *campaignAsset,uint32_t campaignBytes)
+{
+  int32_t recordIndex;
+
+  if ((campaignBytes < offsetof(CampaignAsset,levels)) || (campaignAsset->decodedSizeBytes > campaignBytes) ||
+      (campaignAsset->levelRecordCount < 1) ||
+      ((uint64_t)campaignAsset->levelRecordCount * sizeof(CampaignLevelRecord) >
+       campaignBytes - offsetof(CampaignAsset,levels))) {
+    return false;
+  }
+  for (recordIndex = 0; recordIndex < campaignAsset->levelRecordCount; recordIndex++) {
+    if (campaignAsset->levels[recordIndex].levelId == campaignAsset->firstLevelId) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /* Copies a whole loaded catalog file (byteCount / 4 dwords) into a catalog section. */
 static void ScenarioCatalog_CopyFileIntoSection
           (ScenarioCatalogRecord *sectionRecords,const void *fileBytes,uint32_t byteCount)
