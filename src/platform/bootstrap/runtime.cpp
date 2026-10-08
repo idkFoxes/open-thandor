@@ -283,8 +283,12 @@ static void ProcessEntry_RunGame()
 }
 
 
-/* Process entry: raises the process to real-time priority, creates the full-screen main window (only
+/* Process entry: raises the process to high priority, creates the full-screen main window (only
    one instance may run), runs the game (ProcessEntry_RunGame) and ends the process.
+   The original used REALTIME_PRIORITY_CLASS; high priority here because a real-time process can starve the
+   system's own input and audio threads (a busy game loop then freezes mouse, keyboard and sound system-wide).
+   The same class is used when the window regains focus (HandleFocusGained) and after a movie (Movie_Close);
+   Runtime_Shutdown and focus loss return to NORMAL_PRIORITY_CLASS.
 */
 void ProcessEntry()
 
@@ -293,7 +297,7 @@ void ProcessEntry()
   HANDLE threadHandle;
 
   processHandle = GetCurrentProcess();
-  SetPriorityClass(processHandle,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
+  SetPriorityClass(processHandle,DebugHook_ProcessPriorityClass(HIGH_PRIORITY_CLASS));
   threadHandle = GetCurrentThread();
   SetThreadPriority(threadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
