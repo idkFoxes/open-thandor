@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <iterator>
 #include <thandor/thandor.h>
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -26,6 +27,9 @@
    up to 3 bytes behind the source; bounded here because the source need not extend that far: the payload is
    written as its unpackedSize bytes plus zero padding to the dword boundary, and a size that would wrap when
    rounded up is rejected (one log line). The entry header and the file size are unchanged.
+   The original indexed g_PckEncoderTable with compressionMethod unchecked; bounded here because an
+   out-of-range method would call through a pointer behind the table: such a method is rejected (one log line)
+   before the file is touched. All callers pass PCK_COMPRESSION_HUFFMAN_RLE.
 */
 bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle)
@@ -38,6 +42,10 @@ bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCo
   FileIoByteCount byteCount;
   uint32_t alignedByteCount;
 
+  if (compressionMethod < 0 || static_cast<size_t>(compressionMethod) >= std::size(g_PckEncoderTable)) {
+    Thandor_Log("Package_UpsertEntry: rejected compression method %d",compressionMethod);
+    return false;
+  }
   if (compressionMethod == PCK_COMPRESSION_STORED && unpackedSize > UINT32_MAX - 3) {
     Thandor_Log("Package_UpsertEntry: rejected stored entry of %u bytes",unpackedSize);
     return false;
