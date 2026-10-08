@@ -134,12 +134,44 @@ static bool EffectRuntime_SavedOffsetInPool(uint32_t savedOffset,size_t poolByte
 }
 
 
+/* True when the saved owner of a terrain impact effect (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER, saved
+   as the raw 32-bit pointer &ShotDefinition.terrainImpactHeightDeltasQ12[i], not as an offset) is such an entry
+   of a registered shot definition. Compares addresses as integers, so a foreign value is never dereferenced. */
+static bool EffectRuntime_SavedOwnerIsShotImpactColumn(uint32_t savedOwnerBits)
+
+{
+  uintptr_t ownerAddress;
+  uintptr_t columnStart;
+  int registryIndex;
+  ShotDefinition *shotDefinition;
+
+  ownerAddress = reinterpret_cast<uintptr_t>(Thandor_U32ToPointer<void>(savedOwnerBits));
+  for (registryIndex = 0; registryIndex < SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registryIndex++) {
+    shotDefinition = g_ShotDefinitionRegistry[registryIndex];
+    if (shotDefinition == nullptr) {
+      continue;
+    }
+    columnStart = reinterpret_cast<uintptr_t>(shotDefinition->terrainImpactHeightDeltasQ12);
+    if (ownerAddress >= columnStart && ownerAddress - columnStart < sizeof(shotDefinition->terrainImpactHeightDeltasQ12) &&
+        (ownerAddress - columnStart) % sizeof(shotDefinition->terrainImpactHeightDeltasQ12[0]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 /* After a savegame load: turns the saved offsets of every live effect slot back into pointers (the model node,
    and the owner as a model runtime or an army depending on the completion action) and replaces the saved
    definition id by the registered definition; an effect whose definition is no longer registered is dropped.
    The original adds the saved offsets to the pool bases unchecked; bounded here because a savegame is a user
    file: an effect whose model node offset lies outside the world object pool is dropped (model node cleared),
    an owner offset outside its pool (model runtime or army) is cleared to none (0), one log line each.
+   The owner of a terrain impact effect (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) is saved and loaded
+   as a raw pointer into a ShotDefinition, as in the original; it stays valid because the level's shot
+   definitions are loaded again before the pools and land at the same address. The original took it unchecked;
+   bounded here because a savegame is a user file: a value that is not a terrainImpactHeightDeltasQ12 entry of
+   a registered shot definition is cleared to none (0, no crater on completion), one log line.
 */
 void EffectRuntime_RebaseSlotsAfterLoad()
 
@@ -192,6 +224,12 @@ void EffectRuntime_RebaseSlotsAfterLoad()
           /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.ownerAndDefinition.owner (saved offset) */
           ownerModelNode = Thandor_U32ToPointer<ModelRuntimeNode>(Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne) + Thandor_PointerToI32(ownerModelNode));
         }
+      }
+      else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER &&
+               !EffectRuntime_SavedOwnerIsShotImpactColumn(effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.serializedOffset)) {
+        Thandor_Log("effect: saved slot %d has terrain impact owner 0x%08X outside the shot definitions, cleared",
+                    effectSlotIndex,effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.serializedOffset);
+        ownerModelNode = nullptr;
       }
     }
     /* 5f-format: EffectRuntimeSlot.modelNodeOrSavedOffset */

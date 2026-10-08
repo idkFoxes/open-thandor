@@ -1,5 +1,5 @@
 {
- "revision": "22253e1d",
+ "revision": "719f2444",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -152,15 +152,15 @@
    "world": 51
   },
   "constexpr": {
-   "assets": 100,
+   "assets": 101,
    "audio": 15,
-   "core": 209,
+   "core": 210,
    "gameplay": 175,
    "graphics": 138,
    "movie": 28,
    "network": 129,
    "platform": 148,
-   "ui": 585,
+   "ui": 588,
    "world": 96
   },
   "typedef_struct": {},
@@ -213,11 +213,11 @@
    "assets": 11,
    "audio": 2,
    "core": 15,
-   "gameplay": 30,
+   "gameplay": 23,
    "graphics": 39,
    "movie": 2,
    "network": 7,
-   "platform": 16,
+   "platform": 15,
    "ui": 51,
    "world": 48
   },
@@ -225,11 +225,11 @@
    "assets": 11,
    "audio": 2,
    "core": 15,
-   "gameplay": 30,
+   "gameplay": 23,
    "graphics": 39,
    "movie": 2,
    "network": 7,
-   "platform": 12,
+   "platform": 11,
    "ui": 50,
    "world": 47
   }

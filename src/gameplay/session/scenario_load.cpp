@@ -161,15 +161,16 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
   /* load the grid once if any player still lacks it */
   playersToCheck = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while; bounded here because a player block count of 0 (every block dropped by
+     player-removal packets) ran it 2^32 times. */
+  while (playersToCheck != 0) {
     if (!Any((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_LEVEL_RECEIVED)) {
       FrontendScenarioSession_LoadFieldGridOfLevel(levelAsset);
       break;
     }
     playerRecord++;
     playersToCheck--;
-  } while (playersToCheck != 0);
+  }
   /* Every other player that has the level locally counts as having received it. */
   playerScanBase = g_FrontendPlayerRuntimeBlocks;
   for (playersRemaining = g_FrontendPlayerRuntimeBlockCount - 1; playersRemaining != 0;
@@ -242,12 +243,13 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     campaignRecordsRemaining = campaignAsset->levelRecordCount;
     g_FrontendLoadedCampaignAsset = campaignAsset;
     campaignAsset->currentLevelId = campaignAsset->firstLevelId;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original is a do-while; bounded here because a .cgn with a level record count of 0 (or a negative
+       one) ran it 2^32 times over the records. */
+    while (campaignRecordsRemaining > 0) {
       if (campaignAsset->firstLevelId == levelRecord->levelId) break;
       levelRecord++;
       campaignRecordsRemaining--;
-    } while (campaignRecordsRemaining != 0);
+    }
     if (campaignRecordsRemaining == 0) {
       /* No record for the current level. As in the original this check never fails (it passes a cleared
          failure flag); the cursor then points behind the last record. */
@@ -302,9 +304,20 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
       checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
       encodedCampaignBytes = (uint32_t)checkedValue;
       reinterpret_cast<ScenarioCampaignBundleHeader *>(transferBundleBytes)->campaignEncodedBytes = encodedCampaignBytes;
-      encodeOk = PckCodec_EncodeFieldGrid
-                         ((PACKAGE_SCRATCH_BUFFER_BYTES - 24 - encodedLevelBytes) - encodedCampaignBytes,encodeCursor + encodedCampaignBytes,
-                          (sourceGrid->common).allocationSizeBytes,sourceGrid,&encodedByteCount,&encodeErrorCode);
+      /* The original subtracts the encoded sizes from the capacity unchecked; bounded here because sizes beyond
+         the buffer would wrap it to a huge capacity. Fails like a failed encode. */
+      if ((uint64_t)encodedLevelBytes + encodedCampaignBytes > (uint64_t)(PACKAGE_SCRATCH_BUFFER_BYTES - 24)) {
+        Thandor_Log("campaign bundle: encoded level %u + campaign %u bytes exceed the transfer buffer",
+                    encodedLevelBytes,encodedCampaignBytes);
+        encodeOk = false;
+        encodeErrorCode = FATAL_ERROR_GENERAL_FAILURE;
+      }
+      else {
+        encodeOk = PckCodec_EncodeFieldGrid
+                           ((PACKAGE_SCRATCH_BUFFER_BYTES - 24 - encodedLevelBytes) - encodedCampaignBytes,
+                            encodeCursor + encodedCampaignBytes,(sourceGrid->common).allocationSizeBytes,sourceGrid,
+                            &encodedByteCount,&encodeErrorCode);
+      }
       checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
       encodedFieldGridBytes = (uint32_t)checkedValue;
       reinterpret_cast<ScenarioCampaignBundleHeader *>(transferBundleBytes)->fieldGridEncodedBytes = encodedFieldGridBytes;
@@ -430,8 +443,9 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
       /* find the local player among the other players (block 1..) */
       otherPlayersRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
       playerRecord = g_FrontendPlayerRuntimeBlocks + 1;
-      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-      do {
+      /* The original is a do-while; bounded here because a single player block (the others dropped by
+         player-removal packets) left a count of 0 that ran it 2^32 times. */
+      while (otherPlayersRemaining != 0) {
         if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
           if (((&playerRecord->scenarioAvailabilityMask0)[maskWordIndex] &
               1 << ((uint8_t)(levelRecordOffset >> 8) & 31)) != 0) {
@@ -443,7 +457,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
         }
         otherPlayersRemaining--;
         playerRecord++;
-      } while (otherPlayersRemaining != 0);
+      }
     }
     if (!levelLoadedLocally) {
       UiTransferMailbox_MarkUnavailable();
