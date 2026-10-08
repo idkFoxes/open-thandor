@@ -11,6 +11,8 @@
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/assets/record_bytes.h>
 
+#include <iterator>
+
 /* Module data. */
 
 SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks = nullptr;
@@ -33,9 +35,10 @@ static bool InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,Engine
 /* Sets the text of the in-game template's save-name edit (saveNameEdit, 32 code units) to the session name of a
    mounted save package: the UTF-16 string at offset 256 of the package header (scanned for at most 36
    characters), without its four-character file extension and cut to 31 characters. Without a terminator the name
-   stays empty.
+   stays empty. Returns 0, or the error of the header seek or read: the original ignores both and then takes the
+   name from whatever the scratch buffer held; rejected here (one log line, the caller's failure exit).
 */
-static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
+static uint32_t InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
 
 {
   uint8_t *headerBuffer;
@@ -46,6 +49,7 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
   uint32_t copyCount;
   int remainingCount;
   bool terminatorFound;
+  uint32_t statusCode;
 
   headerBuffer = g_PackageScratchBuffer;
   sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
@@ -54,8 +58,14 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
     *sessionNameCursor = 0;
     sessionNameCursor++;
   }
-  g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(saveHandle));
-  g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,headerBuffer,THANDOR_PTR(saveHandle));
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(saveHandle));
+  if (statusCode == 0) {
+    statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,headerBuffer,THANDOR_PTR(saveHandle));
+  }
+  if (statusCode != 0) {
+    Thandor_Log("loaded session: save package header not readable (error 0x%X), load rejected",statusCode);
+    return statusCode;
+  }
   nameStart = Asset_RecordAt<uint16_t>(headerBuffer,256);
   terminatorFound = false;
   scanEnd = nameStart;
@@ -64,7 +74,7 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
     scanEnd++;
   }
   if (!terminatorFound) {
-    return;
+    return 0;
   }
   /* scanEnd is just past the terminator: the four characters before the terminator (the file extension) are cut
      off */
@@ -84,6 +94,7 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
     sourceCursor++;
     sessionNameCursor++;
   }
+  return 0;
 }
 
 /* Resets the session state for a loaded game: clears all selection blocks and sets up only block 0 (local player 0
@@ -213,13 +224,17 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
   uint32_t packageLoadErrorCode;
   InGameRuntimeRoot *inGameRoot;
   uint32_t stepError;
+  uint32_t savedFactionIndex;
 
   g_TextureDownsampleShift = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (!Package_Mount(savePackagePath,&mountResult)) {
     return InGameLoadedSession_Fail(nullptr,0,(uint32_t)mountResult,outError);
   }
   saveHandle = mountResult;
-  InGameLoadedSession_ReadSessionName(saveHandle);
+  stepError = InGameLoadedSession_ReadSessionName(saveHandle);
+  if (stepError != 0) {
+    return InGameLoadedSession_Fail(nullptr,saveHandle,stepError,outError);
+  }
   campaignAsset = Package_LoadEntry(g_CampagneHexPathUtf16,nullptr);
   if (campaignAsset != nullptr) {
     g_FrontendLoadedCampaignAsset = static_cast<CampaignAsset *>(campaignAsset);
@@ -228,7 +243,16 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
   if (levelImage == nullptr) {
     return InGameLoadedSession_Fail(nullptr,saveHandle,packageLoadErrorCode,outError);
   }
-  InGameLoadedSession_ResetSessionState(levelImage->playerSlots[6].aiClassOrMode);
+  /* The original takes the saved local faction as it is; bounded here because it indexes the 7-faction tables
+     (playerSlotByteOffsets and the faction arrays) before the level image check of
+     InGameLevelRuntime_LoadResourcesAfterExternalTables runs. Same bound as NewLevel_ValidateImage. */
+  savedFactionIndex = levelImage->playerSlots[6].aiClassOrMode;
+  if ((savedFactionIndex < 1) ||
+      (savedFactionIndex > std::size(g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets))) {
+    Thandor_Log("loaded session: saved local faction %u outside 1..7, load rejected",savedFactionIndex);
+    return InGameLoadedSession_Fail(levelImage,saveHandle,FATAL_ERROR_LEVEL_ASSET_INVALID,outError);
+  }
+  InGameLoadedSession_ResetSessionState(savedFactionIndex);
   if (!InGameLoadedSession_CreateRoot(levelImage,&inGameRoot,&stepError) ||
       !InGameLoadedSession_LoadWorld(savePackagePath,levelImage,inGameRoot,&stepError) ||
       !InGameLoadedSession_FinishWorldUnderTickLock(inGameRoot,&stepError)) {

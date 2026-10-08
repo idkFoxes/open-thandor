@@ -462,10 +462,10 @@ void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
-  int remainingCount;
+  int waypointIndex;
   WorldRuntimeContext *worldRuntime;
-  Q12 *fallbackCoordinateRead;
-  Q12 *waypointCoordinateWrite;
+  const WorldPointXYQ12 *sourceWaypoint;
+  WorldPointXYQ12 *waypoints;
   PathingDestination resolvedDestination;
 
   if (!Any(movementRuntime->movementStateFlags & (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_LOCKED)) &&
@@ -475,16 +475,17 @@ void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
          movementRuntime->movementStateFlags &
          ~(ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ROUTE_POINT_REACHED |ARMY_MOVEMENT_WAYPOINTS_QUEUED);
     if (Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE)) {
-      /* Forward dword-by-dword copy (not memmove) of 16 dwords from fallbackPosition to the queuedWaypoints
-         that directly follow it, exactly as in the original. The ranges overlap by 8 bytes, so this does not
-         shift the queue: it fills all 8 waypoints with fallbackPosition. */
-      remainingCount = 16;
-      fallbackCoordinateRead = &(movementRuntime->fallbackPosition).worldXQ12;
-      waypointCoordinateWrite = &movementRuntime->queuedWaypoints[0].worldXQ12;
-      for (; remainingCount != 0; remainingCount--) {
-        *waypointCoordinateWrite = *fallbackCoordinateRead;
-        fallbackCoordinateRead++;
-        waypointCoordinateWrite++;
+      /* Original quirk: the original copies 16 dwords forward (not memmove) with one pointer that starts at
+         fallbackPosition and runs on into queuedWaypoints, the field directly after it. Source and destination
+         overlap by 8 bytes, so this does not shift the queue: it fills all 8 waypoints with fallbackPosition.
+         Written as an explicit loop over the 8 waypoints with the same reads and writes in the same order:
+         waypoint 0 reads fallbackPosition, waypoint i reads waypoint i - 1 (just written). */
+      sourceWaypoint = &movementRuntime->fallbackPosition;
+      waypoints = movementRuntime->queuedWaypoints;
+      for (waypointIndex = 0; waypointIndex < ARMY_MOVEMENT_WAYPOINT_CAPACITY; waypointIndex++) {
+        waypoints[waypointIndex].worldXQ12 = sourceWaypoint->worldXQ12;
+        waypoints[waypointIndex].worldYQ12 = sourceWaypoint->worldYQ12;
+        sourceWaypoint = &waypoints[waypointIndex];
       }
       movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | ARMY_MOVEMENT_WAYPOINTS_QUEUED;
       if (movementRuntime->queuedWaypointCount < ARMY_MOVEMENT_WAYPOINT_CAPACITY) {
