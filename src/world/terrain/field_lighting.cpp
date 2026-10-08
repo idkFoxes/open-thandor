@@ -49,7 +49,7 @@ void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
     columnsLeft = rowLength - 2;
     /* cell (row 1, column 1) */
     cellCursor = &fieldGrid->cells[rowLength + 1];
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+    /* counts >= 2: the grid passed FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) on load */
     do {
       do {
         cell = cellCursor;
@@ -86,7 +86,7 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
     columnsLeft = rowLength - 2;
     /* cell (row 1, column 1), see FieldGrid_RecomputeInteriorTriangleNormalAngles */
     cellCursor = &fieldGrid->cells[rowLength + 1];
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+    /* counts >= 2: the world field grid passed FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) */
     do {
       do {
         cell = cellCursor;
