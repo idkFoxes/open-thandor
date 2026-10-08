@@ -623,7 +623,10 @@ bool GameFactionRuntime_IsRecentTimedRelationState
 }
 
 /* Appends an absorbed faction's army-asset list to the survivor's list of the same kind, stopping when the
-   survivor's 64 entries are full. */
+   survivor's 64 entries are full. The bound is the original's (slotIndex < 64), so a merge never writes past
+   the list: a survivor count >= 64 appends nothing, and every read index stays below 64 - survivor count.
+   Original quirk: when both lists hold more than 64 entries together (reachable in valid play, e.g. 40 + 40),
+   the absorbed faction's entries beyond the 64th are dropped without notice. */
 static void GameFactionRuntime_AppendArmyAssetList(FactionArmyAssetCount *survivorCount,uint32_t *survivorList,
           FactionArmyAssetCount absorbedCount,const uint32_t *absorbedList)
 {

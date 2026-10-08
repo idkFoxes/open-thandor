@@ -37,8 +37,10 @@ static void FrontendEndMovie_SelectCampaignMoviePath(CampaignAsset *campaign)
 
   remainingRecords = campaign->levelRecordCount;
   levelRecord = campaign->levels;
-  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because a campaign file can hold 0 level records. */
-  while (remainingRecords != 0) {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because a campaign file can hold 0
+     (or, from a savegame's campagne entry, a negative number of) level records. A loaded .cgn and a network
+     campaign passed CampaignAsset_Fits. */
+  while (remainingRecords > 0) {
     if (campaign->currentLevelId == levelRecord->levelId) {
       if (g_EndMovieVariantIndex == 0) {
         endMovieNumber = levelRecord->endMovieNumbers[g_EndMovieSelectionIndex];

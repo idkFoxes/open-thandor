@@ -56,6 +56,8 @@ struct CampaignAsset {
     CampaignLevelRecord levels[1];       /* +0x200, levelRecordCount records */
 };
 
+bool CampaignAsset_Fits(const CampaignAsset *campaignAsset,uint32_t campaignBytes);
+
 void ScenarioCatalog_Rebuild();
 
 void ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,

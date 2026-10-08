@@ -130,25 +130,6 @@ static bool FrontendScenarioTransfer_CatalogFits(const ScenarioCatalogHeader *ca
               (uint64_t)catalog->saveRecordCount * SCENARIO_CATALOG_RECORD_SIZE <= catalogBytes);
 }
 
-/* Tells whether a decoded campaign of campaignBytes bytes holds its header, at least one level record, all
-   levelRecordCount records, and a record of its first level (the start of the campaign looks it up). */
-static bool FrontendScenarioTransfer_CampaignFits(const CampaignAsset *campaignAsset,uint32_t campaignBytes)
-{
-  int32_t recordIndex;
-
-  if ((campaignBytes < offsetof(CampaignAsset,levels)) || (campaignAsset->levelRecordCount < 1) ||
-      ((uint64_t)campaignAsset->levelRecordCount * sizeof(CampaignLevelRecord) >
-       campaignBytes - offsetof(CampaignAsset,levels))) {
-    return false;
-  }
-  for (recordIndex = 0; recordIndex < campaignAsset->levelRecordCount; recordIndex++) {
-    if (campaignAsset->levels[recordIndex].levelId == campaignAsset->firstLevelId) {
-      return true;
-    }
-  }
-  return false;
-}
-
 /* The level's relative path (asset base + path offset) becomes <exe dir>\<level>.fld in
    g_LevelResourcePathScratchUtf16, the path the game uses for the field grid. */
 static void FrontendScenarioTransfer_SetFieldGridPathOfLevel(FrontendLoadedLevelAsset *levelAsset)
@@ -351,8 +332,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle()
   decodeOk = decodeOk &&
              PckCodec_DecodeHuffmanRle(bundle->campaignDecodedBytes,reinterpret_cast<uint8_t *>(g_FrontendLoadedCampaignAsset),
                                        bundle->campaignEncodedBytes,campaignStream,nullptr,nullptr) &&
-             FrontendScenarioTransfer_CampaignFits(g_FrontendLoadedCampaignAsset,
-                                                   bundle->campaignDecodedBytes);
+             CampaignAsset_Fits(g_FrontendLoadedCampaignAsset,bundle->campaignDecodedBytes);
   if (!decodeOk) {
     /* the level's path offset field may hold anything: free the level alone */
     g_MemoryApi.free(g_FrontendLoadedLevelAsset);
@@ -381,7 +361,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle()
   /* The campaign starts at its first level (stored as the current level): find that level's record
      and build level\<name>.lev. levelRecordCursor is the asset base advanced by whole
      CampaignLevelRecords, so its levels[0] is the record under the cursor. The original lets the cursor end
-     behind the last record without a match; FrontendScenarioTransfer_CampaignFits rejected such a campaign. */
+     behind the last record without a match; CampaignAsset_Fits rejected such a campaign. */
   campaignAsset = g_FrontendLoadedCampaignAsset;
   levelRecordCursor = reinterpret_cast<uint8_t *>(campaignAsset);
   levelRecordsRemaining = campaignAsset->levelRecordCount;
