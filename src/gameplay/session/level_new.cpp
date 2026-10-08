@@ -277,8 +277,7 @@ bool NewLevel_PrepareShotAsset(void *asset,uint32_t assetByteCount,uint32_t *out
 bool NewLevel_PrepareModelAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
-  (void)assetByteCount;
-  return ModelAsset_PrepareRecords(static_cast<ModelAssetHeader *>(asset),outError);
+  return ModelAsset_PrepareRecords(static_cast<ModelAssetHeader *>(asset),assetByteCount,outError);
 }
 
 bool NewLevel_PrepareArmyAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
