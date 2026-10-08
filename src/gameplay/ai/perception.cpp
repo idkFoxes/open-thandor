@@ -298,7 +298,7 @@ static void AiPlanningRebuild_ScanFieldGridSites(FactionRuntimeIndex factionInde
   AiPlanning_CollectActiveGridMaskClasses();
   /* Original quirk: the first row scans gridWidth columns, the later ones gridWidth & 0x1FFFFFF. */
   columnsRemaining = gridWidth;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* rowsRemaining >= 2, gridWidth >= 4: FieldGrid_ValidateLoadedImage rejects sides < FIELD_GRID_MIN_SIDE_CELLS */
   do {
     do {
       AiPlanningRebuild_ScanSiteCell(factionIndex,cellAbove,gridWidth,scratchCell,scratchWidth * 3,
