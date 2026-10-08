@@ -17,4 +17,11 @@ bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCo
 
 bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
+/* transactional package writes: build the package in the temporary path, then commit or discard it */
+bool Package_MakeTemporaryPath(uint16_t *temporaryPath,const uint16_t *targetPath);
+
+bool Package_CommitTemporary(EngineFileHandle fileHandle,uint16_t *temporaryPath,uint16_t *targetPath);
+
+void Package_DiscardTemporary(EngineFileHandle fileHandle,uint16_t *temporaryPath);
+
 #endif /* THANDOR_ASSETS_PACKAGE_ARCHIVE_WRITE_H */
