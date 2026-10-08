@@ -114,7 +114,7 @@ static bool InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCon
     cellBytes = reinterpret_cast<uint8_t *>(fieldGrid->cells) + operands[0];
     occupiedCellCount = 0;
     cellsLeft = cellCount;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* cellCount >= 16: the terrain loader rejects grids below FIELD_GRID_MIN_SIDE_CELLS per side */
     do {
       /* the low dword of the 64-bit occupancy mask, operand 0 bytes further */
       cellOccupancyMask =
@@ -262,6 +262,97 @@ static void InGameConditionRuntime_EndTriggerFaction(const InGameEndConditionTri
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   }
   InGameConditionRuntime_RequestEndMovie(endTrigger,worldRuntime,endedFactionIndex);
+}
+
+/* Faction slots of g_GameFactionRuntimeImage (records and tail.factionLifecycleStates). */
+static constexpr uint32_t LEVEL_SCRIPT_FACTION_SLOT_COUNT = 8;
+static_assert(sizeof(g_GameFactionRuntimeImage.records) ==
+                  LEVEL_SCRIPT_FACTION_SLOT_COUNT * sizeof(g_GameFactionRuntimeImage.records[0]) &&
+              sizeof(g_GameFactionRuntimeImage.tail.factionLifecycleStates) ==
+                  LEVEL_SCRIPT_FACTION_SLOT_COUNT * sizeof(g_GameFactionRuntimeImage.tail.factionLifecycleStates[0]),
+              "level script faction checks match the faction arrays");
+
+/* Number of leading operands of a condition kind that are faction indices (0..7). They index the 8-entry
+   faction arrays of g_GameFactionRuntimeImage, or the 8 per-faction bytes of a cell's occupancy mask (kind 18);
+   the army kinds only compare them. */
+static int InGameScheduledCondition_FactionOperandCount(uint32_t kind)
+{
+  switch(kind) {
+  case INGAME_SCHEDULED_CONDITION_FACTION_INACTIVE_OR_RELATION_AT_LEAST_8:
+    return 2;
+  case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY:
+  case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_COMMAND_GROUP_A_ARMY:
+  case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY_OF_ASSET:
+  case INGAME_SCHEDULED_CONDITION_XENITE_AT_LEAST:
+  case INGAME_SCHEDULED_CONDITION_TRITIUM_AT_LEAST:
+  case INGAME_SCHEDULED_CONDITION_TRITIUM_EXTRACTION_RATE_AT_LEAST:
+  case INGAME_SCHEDULED_CONDITION_ARMY_OF_ASSET_COUNT_AT_LEAST:
+  case INGAME_SCHEDULED_CONDITION_FACTION_TERRAIN_OCCUPANCY_MASK_F9_PERCENT_AT_LEAST:
+  case INGAME_SCHEDULED_CONDITION_XENITE_STORAGE_LIMIT_AT_MOST_0FA0:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+/* Checks a level script right after its level prefix was copied (new level or savegame), before anything
+   evaluates it: faction operands and the factions of used end triggers below 8, the conditions of used end
+   triggers below 64, and every postfix expression ends (0xFC) inside its 16-byte record with only condition
+   operands below 64. The original trusts the level file and indexes past the faction arrays, the condition
+   records and the level storage on such values; rejected here because they read out of bounds. Every stock
+   level script passes (55 levels of LEVEL.PCK and PATCH00.PCK). Logs one line and returns false otherwise. */
+bool InGameLevelScript_Validate(const InGameConditionSchedule *schedule)
+{
+  int conditionIndex;
+  int triggerIndex;
+  int operandIndex;
+  int byteIndex;
+  uint32_t kind;
+  uint8_t token;
+  const InGameScheduledConditionRecord10 *condition;
+  const InGameEndConditionTriggerRecord8ReferenceView *trigger;
+
+  for (conditionIndex = 0; conditionIndex < INGAME_SCHEDULED_CONDITION_COUNT; conditionIndex++) {
+    condition = &schedule->conditions[conditionIndex];
+    kind = condition->statusAndKind.raw & INGAME_SCHEDULED_CONDITION_KIND_MASK;
+    for (operandIndex = 0; operandIndex < InGameScheduledCondition_FactionOperandCount(kind); operandIndex++) {
+      if (condition->payload.operands[operandIndex] >= LEVEL_SCRIPT_FACTION_SLOT_COUNT) {
+        Thandor_Log("level script: condition %d (kind %u): faction operand %u out of range, rejected",
+                    conditionIndex,kind,condition->payload.operands[operandIndex]);
+        return false;
+      }
+    }
+    if (kind != INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION) {
+      continue;
+    }
+    /* the expression runs from byte 1 of the record (after the kind byte) to its last byte */
+    token = INGAME_CONDITION_TOKEN_NOT;
+    for (byteIndex = 1; byteIndex < (int)sizeof(InGameScheduledConditionRecord10); byteIndex++) {
+      token = reinterpret_cast<const uint8_t *>(condition)[byteIndex];
+      if (token == INGAME_CONDITION_TOKEN_END) {
+        break;
+      }
+      if (token < INGAME_CONDITION_TOKEN_NOT && token >= INGAME_SCHEDULED_CONDITION_COUNT) {
+        Thandor_Log("level script: condition %d: postfix operand %u out of range, rejected",conditionIndex,token);
+        return false;
+      }
+    }
+    if (token != INGAME_CONDITION_TOKEN_END) {
+      Thandor_Log("level script: condition %d: postfix expression without end token, rejected",conditionIndex);
+      return false;
+    }
+  }
+  for (triggerIndex = 0; triggerIndex < INGAME_END_CONDITION_TRIGGER_COUNT; triggerIndex++) {
+    trigger = &schedule->triggers[triggerIndex];
+    if ((trigger->stateFlags != INGAME_END_CONDITION_TRIGGER_NONE) &&
+        ((trigger->factionRuntimeIndex >= LEVEL_SCRIPT_FACTION_SLOT_COUNT) ||
+         (trigger->conditionIndex >= INGAME_SCHEDULED_CONDITION_COUNT))) {
+      Thandor_Log("level script: end trigger %d: faction %u / condition %u out of range, rejected",triggerIndex,
+                  (unsigned)trigger->factionRuntimeIndex,(unsigned)trigger->conditionIndex);
+      return false;
+    }
+  }
+  return true;
 }
 
 /* The level script, evaluated every 20 simulation steps: first promotes factions that were marked as ending to
