@@ -425,8 +425,8 @@ void RecordGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixe
         !GreyScaleImageDraws(sourceSubresourceIndexA, sourceSubresourceIndexB,
                              graphicsTextureAsset) ||
         destinationWidth < 2 || destinationHeight < 2 || destinationWidth > 16384 || destinationHeight > 16384) {
-        /* other destinations, and the cases the software function handles by itself (sizes 0 and 1 loop or divide
-           by zero there) */
+        /* other destinations, and the cases the software function handles by itself (it draws nothing for a size
+           of 0 and uses step 0 for a destination size of 1) */
         SoftwareTexture_BilinearBlendScaleSubresources(destinationHeight, destinationWidth, destinationTop,
                                                        destinationLeft, blendedSourcePixels, blendFactorPixels,
                                                        sourceSubresourceIndexA, sourceSubresourceIndexB,

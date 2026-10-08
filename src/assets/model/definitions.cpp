@@ -188,13 +188,45 @@ static bool ModelDefinition_NodeFitsAsset(uint32_t nodeOffset,uint32_t assetByte
          nodeOffset <= assetByteCount - sizeof(MdlSerializedNodeHeader);
 }
 
+/* Slots of ModelRuntimeLinkedChildSpawnAndBuildView.completedSecondaryArmyAssetIds that a class-22 pad's
+   linkedChildSlotCapacity may use; the definition is read through the ModelDefinitionLinkedChildStateView of the
+   same record bytes. */
+static constexpr uint32_t MODEL_DEFINITION_LINKED_CHILD_SLOT_COUNT =
+          sizeof(ModelRuntimeLinkedChildSpawnAndBuildView::completedSecondaryArmyAssetIds) /
+          sizeof(ModelRuntimeLinkedChildSpawnAndBuildView::completedSecondaryArmyAssetIds[0]);
+static_assert(MODEL_DEFINITION_LINKED_CHILD_SLOT_COUNT == 13);
+static_assert(offsetof(ModelDefinitionLinkedChildStateView,linkedChildSlotCapacity) == 0xC4 &&
+              offsetof(ModelDefinitionLinkedChildStateView,definitionId) ==
+              offsetof(ModelDefinitionResolveView,definitionId));
+
+/* True when the UTF-16 sprite path that follows a node header is terminated inside the asset of assetByteCount
+   bytes and within WIDE_PATH_MAX_CODE_UNITS units. *outCapacity gets the code units the path may use (up to the
+   asset end, at most WIDE_PATH_MAX_CODE_UNITS). The node header itself must fit into the asset. */
+static bool ModelDefinition_SpritePathFitsAsset(const uint16_t *path,const ModelAssetHeader *asset,
+                                                uint32_t assetByteCount,size_t *outCapacity)
+{
+  size_t capacity = ((size_t)assetByteCount - (size_t)Asset_ByteDistance(path,asset)) / sizeof(uint16_t);
+  if (capacity > (size_t)WIDE_PATH_MAX_CODE_UNITS) {
+    capacity = (size_t)WIDE_PATH_MAX_CODE_UNITS;
+  }
+  *outCapacity = capacity;
+  for (size_t unitIndex = 0; unitIndex < capacity; unitIndex++) {
+    if (path[unitIndex] == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /* Serialized model node tree: nodeFlags (low nibble 0 = has a sprite), sprite path right after the header,
    spriteAssetReference, ownedNestedResourcePresent (owned-copy count), childCount, childSerializedOffsets
    (relative to the asset, relocated in place). Loads or reuses each node's sprite; returns true with *error
    on failure. The original trusts childCount and the nesting depth; bounded here because the walk follows file
    data: a node with more children than childSerializedOffsets holds or a tree deeper than
    MDL_NODE_TREE_MAX_DEPTH (a cyclic offset) fails with FATAL_ERROR_MODEL_ASSET_INVALID before its sprite is
-   loaded. The stock models use at most 5 children and depth 5. A child offset whose node header does not fit
+   loaded. The six-child bound also keeps every runtime node built from the tree below the 13 childNodes slots
+   that the render walks (model_draw.cpp, shadow_texture.cpp) index up to childCount without a slot bound. The
+   stock models use at most 5 children and depth 5. A child offset whose node header does not fit
    into the asset (assetByteCount bytes) fails the same way before it is relocated (the original follows it). */
 static constexpr int MDL_NODE_TREE_MAX_DEPTH = 64;
 static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ModelAssetHeader *asset,
@@ -212,11 +244,23 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,Mod
     uint16_t *spritePath = Asset_RecordAfter<uint16_t>(node); /* the node's sprite path text follows it */
     SpriteAssetHeader *loadedSprite;
     SpriteAssetHeader *registered;
+    size_t spritePathCapacity;
+    /* The original scans and extends the path without a bound; bounded here because a path without a
+       terminator would be read and written past the asset. The stock paths have at most 20 units including the
+       terminator and leave at least 17 units to the asset end. */
+    if (!ModelDefinition_SpritePathFitsAsset(spritePath,asset,assetByteCount,&spritePathCapacity)) {
+      Thandor_Log("ModelDefinition_RegisterAndResolveReferences: sprite path at offset 0x%X not terminated within "
+                  "%u units inside the asset of 0x%X bytes, rejected",(uint32_t)Asset_ByteDistance(spritePath,asset),
+                  (uint32_t)spritePathCapacity,assetByteCount);
+      *error = FATAL_ERROR_MODEL_ASSET_INVALID;
+      return true;
+    }
     /* ".spr". The original checks this call for failure, but in the original WidePath_SetExtensionCode never
-       fails, so that branch is dead (open-thandor: it fails only for a path longer than
-       WIDE_PATH_MAX_CODE_UNITS units and then leaves it unchanged). On an error the original abandons the whole tree walk at once; returning up the
-       recursion is equivalent. */
-    WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
+       fails, so that branch is dead (open-thandor: it fails only when the new extension does not fit in
+       spritePathCapacity units - the asset end or WIDE_PATH_MAX_CODE_UNITS - and then leaves the path
+       unchanged). On an error the original abandons the whole tree walk at once; returning up the recursion is
+       equivalent. */
+    WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath,spritePathCapacity);
     loadedSprite = static_cast<SpriteAssetHeader *>(Package_LoadEntry(spritePath,error));
     if (loadedSprite == nullptr) {
       return true;
@@ -414,6 +458,23 @@ bool ModelDefinition_RegisterAndResolveReferences
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     *outError = FATAL_ERROR_MODEL_ASSET_INVALID;
     return false;
+  }
+  /* The original accepts any linked-child slot capacity (+0xC4) for a class-22 pad; rejected here because the pad
+     code stores its completed linked assets into the 13 completedSecondaryArmyAssetIds slots of the model runtime
+     up to that capacity and the selection meter counts with it. Only class 22 reads the field this way (the
+     other classes keep unrelated values there, e.g. 16000 or 8192); the stock class-22 pads 310/1310/2310 have
+     6 (1762 records measured). */
+  if (definition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
+    const ModelDefinitionLinkedChildStateView *linkedChildView =
+              Asset_RecordAt<ModelDefinitionLinkedChildStateView>(definition,0);
+    if (linkedChildView->linkedChildSlotCapacity > MODEL_DEFINITION_LINKED_CHILD_SLOT_COUNT) {
+      Thandor_Log("ModelDefinition_RegisterAndResolveReferences: model %u has linked-child slot capacity %u, "
+                  "rejected",(uint32_t)definition->definitionId,(uint32_t)linkedChildView->linkedChildSlotCapacity);
+      g_WideNumberFormatUtf16
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
+      *outError = FATAL_ERROR_MODEL_ASSET_INVALID;
+      return false;
+    }
   }
   status = ModelDefinition_ClaimRegistrySlot(definition);
   if (status != 0) {

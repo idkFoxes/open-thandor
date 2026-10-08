@@ -42,8 +42,8 @@ void DebugHook_MessagePump();
 void DebugHook_BeforeIntroMovies();
 /* ProcessEntry: nonzero lets a second instance start although a game window exists. */
 int DebugHook_AllowSecondInstance();
-/* SetPriorityClass: the priority class to use instead of the original's real-time class (windowed test runs
-   keep normal priority, many instances at real-time priority starve each other). */
+/* SetPriorityClass: the priority class to use instead of the game's high class (windowed test runs
+   keep normal priority, many instances at raised priority starve each other). */
 unsigned long DebugHook_ProcessPriorityClass(unsigned long priorityClass);
 
 /* --- windowed mode (OPEN_THANDOR_WINDOWED) --- */
