@@ -23,12 +23,14 @@ uint16_t g_EngineZentraleRomPathUtf16[20] = {'e', 'n', 'g', 'i', 'n', 'e', '\\',
 static constexpr uint32_t ROM_ACTION_MAX_KEYFRAMES = (CUBIC_SPLINE_MATRIX_ORDER + 4) / 4;
 static_assert(ROM_ACTION_MAX_KEYFRAMES <= sizeof(FrontendRomActionEntry::keyframes) /
                                           sizeof(FrontendRomActionEntry::keyframes[0]));
+/* Light slots of a ROM record (RomRecord.lights). */
+static constexpr uint32_t ROM_RECORD_LIGHT_SLOTS = sizeof(RomRecord::lights) / sizeof(RomRecord::lights[0]);
 static_assert(sizeof(FrontendRomActionEntry) == FRONTEND_ROM_ACTION_ENTRY_SIZE &&
               sizeof(RomRecord) == FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE);
 
 /* True when the record's header and its action table (entryCount FrontendRomActionEntry entries after the
-   0x200-byte header) lie inside its byteSize, and every entry that starts a camera flight (targetRecordId != 0)
-   has 2..ROM_ACTION_MAX_KEYFRAMES keyframes. Logs the first violation. The record prefix is known to fit. */
+   0x200-byte header) lie inside its byteSize, its lightCount is at most ROM_RECORD_LIGHT_SLOTS, and every entry
+   that starts a camera flight (targetRecordId != 0) has 2..ROM_ACTION_MAX_KEYFRAMES keyframes. Logs the first violation. The record prefix is known to fit. */
 static bool RomRecord_ActionTableIsValid(const RomAssetRecordPrefix *record)
 {
   const RomRecord *romRecord = reinterpret_cast<const RomRecord *>(record);
@@ -47,6 +49,14 @@ static bool RomRecord_ActionTableIsValid(const RomAssetRecordPrefix *record)
     Thandor_Log("RomAsset_PrepareRecords: record %u (byteSize 0x%X) too small for its header and %u action "
                 "entries, rejected",record->recordId,record->byteSize,
                 record->byteSize < sizeof(RomRecord) ? 0u : romRecord->entryCount);
+    return false;
+  }
+  /* The original trusts lightCount as well; rejected here because the light creation and lookup
+     (menu_room_scene.cpp) index the 27 RomRecord.lights slots up to lightCount and a larger count read past
+     them. The stock records have 0, 2 or 4 lights. */
+  if (romRecord->lightCount > ROM_RECORD_LIGHT_SLOTS) {
+    Thandor_Log("RomAsset_PrepareRecords: record %u has %u lights (at most %u), rejected",record->recordId,
+                romRecord->lightCount,ROM_RECORD_LIGHT_SLOTS);
     return false;
   }
   entry = Asset_RecordAfter<FrontendRomActionEntry>(romRecord);
