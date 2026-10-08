@@ -154,8 +154,8 @@ static bool InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle 
     return false;
   }
   if (g_FrontendLoadedCampaignAsset == nullptr) {
-    Package_DeleteEntry(g_CampagneHexPathUtf16,packageHandle,nullptr);
-    return true;
+    /* The original ignored a failed delete; reported here so a stale campagne entry fails the save. */
+    return Package_DeleteEntry(g_CampagneHexPathUtf16,packageHandle,nullptr);
   }
   /* the loaded CGN image, kept as an integer address; its dword 1 is the allocation size */
   return Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,reinterpret_cast<uint32_t *>(g_FrontendLoadedCampaignAsset)[1],
@@ -200,30 +200,43 @@ static bool InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle pa
          g_FileSystemWriteExactOrFlush(sizeof(InGameSavePackageHeader),header,handle) == 0;
 }
 
+/* Logs the step at which writing a save game failed; returns false for the caller's failure return. */
+static bool InGameSaveGame_LogWriteFailure(const char *step)
+{
+  Thandor_Log("savegame write: %s failed, save reported as failed",step);
+  return false;
+}
+
 /* Creates the package and writes every entry and the header; on success the package is unmounted.
-   Returns true on success; on failure the package stays as it is. */
+   Returns true on success; on failure (one log line naming the step) the package stays as it is.
+   The original ignored the results of the package creation write, the stat upsert and the entry deletes and
+   reported such a save as written; they fail the save here. */
 static bool InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
 
 {
   EngineFileHandle packageHandle;
 
   if (!InGameSaveGame_OpenNewPackage(savePath,&packageHandle)) {
-    return false;
+    return InGameSaveGame_LogWriteFailure("creating the package");
   }
   if (!InGameSaveGame_WriteRuntimeEntries(worldView,packageHandle)) {
-    return false;
+    return InGameSaveGame_LogWriteFailure("a runtime entry");
   }
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,static_cast<uint32_t *>(g_GameStatTableImage),
-                      g_StatHexPathUtf16,packageHandle);
+  if (!Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,
+                           static_cast<uint32_t *>(g_GameStatTableImage),g_StatHexPathUtf16,packageHandle)) {
+    return InGameSaveGame_LogWriteFailure("the stat entry");
+  }
   /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
   if (InGameSaveGame_OldUnitTablesAreEmpty()) {
-    Package_DeleteEntry(g_OldunitHexPathUtf16,packageHandle,nullptr);
+    if (!Package_DeleteEntry(g_OldunitHexPathUtf16,packageHandle,nullptr)) {
+      return InGameSaveGame_LogWriteFailure("deleting the oldunit entry");
+    }
   }
   else if (!InGameSaveGame_WriteOldUnitEntry(packageHandle)) {
-    return false;
+    return InGameSaveGame_LogWriteFailure("the oldunit entry");
   }
   if (!InGameSaveGame_WritePackageHeader(savePath,packageHandle)) {
-    return false;
+    return InGameSaveGame_LogWriteFailure("the package header");
   }
   Package_Unmount(packageHandle);
   return true;
@@ -261,7 +274,8 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
 /* Creates a new, empty PCK package at packagePath and mounts it: builds a fresh 0x200-byte archive header
    (magic "pck", timestamps of now, the computer label as producer and source name, no entries) in the
    package scratch buffer, writes it as the whole file and mounts it. Returns true and the mounted package's
-   file handle in *outHandle, or false (outHandle untouched) when Package_Mount fails.
+   file handle in *outHandle, or false (outHandle untouched) when the write or Package_Mount fails (the original
+   ignored a failed write and mounted whatever file was left at packagePath).
    Called directly by the save-game writer InGameSaveGame_WritePackage, which creates the
    save directory and retries when it fails.
 */
@@ -315,7 +329,9 @@ bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
   header[177] = 0;
   header[178] = 0;
   header[179] = 0;
-  FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,static_cast<uint16_t *>(packagePath));
+  if (FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,static_cast<uint16_t *>(packagePath)) != 0) {
+    return false;
+  }
   if (!Package_Mount(static_cast<uint16_t *>(packagePath),&mountedHandle)) {
     return false;
   }
@@ -352,9 +368,7 @@ InGameSaveGame_PrepareRegistrationRecords
 
   recordCursor = runtimeImage->records;
   recordsRemaining = runtimeImage->recordCount;
-  /* Original quirk: a do-while, so a record count of 0 still processes the first record and then wraps
-     the counter. */
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* recordCount is always INGAME_WORLD_OBJECT_RECORD_COUNT (WorldRuntime_AttachObjectArray in startup.cpp), so >= 1 */
   do {
     if ((recordCursor->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) == 0) {
       /* free record: zero its 0x40 dwords */

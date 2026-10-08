@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/package/archive_write.h>
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <thandor/thandor.h>
@@ -227,4 +228,63 @@ bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *ou
     *outErrorCode = statusCode;
   }
   return false;
+}
+
+/* open-thandor: transactional package writes. The original built a save package directly in the target
+   file (created empty, then filled entry by entry through Package_UpsertEntry / Package_DeleteEntry), so a
+   failed write (disk full, a crash) left a truncated or inconsistent package in place of the old one. A
+   writer instead creates and mounts the package at the temporary path from Package_MakeTemporaryPath (the
+   target path plus ".tmp", so the same directory and volume), writes it exactly as before and then calls
+   Package_CommitTemporary, which unmounts it and replaces the target in one step; on any failure
+   Package_DiscardTemporary unmounts and deletes it and the old target stays intact. The package bytes are
+   unchanged: no entry or header field depends on the file name the package is built under. */
+
+/* ".tmp", appended to the target path */
+static constexpr std::array<uint16_t,5> PACKAGE_TEMPORARY_SUFFIX = {'.','t','m','p',0};
+
+/* Writes targetPath plus ".tmp" to temporaryPath (THANDOR_PATH_CAPACITY code units). Returns false (one log
+   line, temporaryPath unspecified) when the result does not fit. */
+bool Package_MakeTemporaryPath(uint16_t *temporaryPath,const uint16_t *targetPath)
+
+{
+  size_t pathLength = 0;
+
+  while (pathLength < THANDOR_PATH_CAPACITY && targetPath[pathLength] != 0) {
+    temporaryPath[pathLength] = targetPath[pathLength];
+    pathLength++;
+  }
+  if (pathLength + PACKAGE_TEMPORARY_SUFFIX.size() > THANDOR_PATH_CAPACITY) {
+    Thandor_Log("Package_MakeTemporaryPath: path too long for the temporary package");
+    return false;
+  }
+  std::copy(PACKAGE_TEMPORARY_SUFFIX.begin(),PACKAGE_TEMPORARY_SUFFIX.end(),temporaryPath + pathLength);
+  return true;
+}
+
+/* Commits a package written at temporaryPath and mounted as fileHandle: unmounts it and replaces targetPath
+   with it (Win32File_Replace). Returns true on success; on failure the temporary file is deleted, targetPath
+   is unchanged and one line is logged. */
+bool Package_CommitTemporary(EngineFileHandle fileHandle,uint16_t *temporaryPath,uint16_t *targetPath)
+
+{
+  uint32_t replaceError;
+
+  Package_Unmount(fileHandle);
+  replaceError = Win32File_Replace(targetPath,temporaryPath);
+  if (replaceError == 0) {
+    return true;
+  }
+  Thandor_Log("Package_CommitTemporary: replacing \"%ls\" failed (error 0x%08X), the old file is kept",
+              reinterpret_cast<wchar_t *>(targetPath),replaceError); /* UTF-16 for %ls */
+  g_FileSystemDelete(1,temporaryPath); /* the first argument is unused by Win32File_Delete */
+  return false;
+}
+
+/* Abandons a failed package write at temporaryPath: unmounts fileHandle (0, or a handle that is no longer
+   mounted, is skipped) and deletes the temporary file (a missing one is fine). The target is not touched. */
+void Package_DiscardTemporary(EngineFileHandle fileHandle,uint16_t *temporaryPath)
+
+{
+  Package_Unmount(fileHandle);
+  g_FileSystemDelete(1,temporaryPath); /* the first argument is unused by Win32File_Delete */
 }
