@@ -1,5 +1,5 @@
 {
- "revision": "25588cbf",
+ "revision": "d7a59ddf",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -154,12 +154,12 @@
   "constexpr": {
    "assets": 100,
    "audio": 15,
-   "core": 209,
+   "core": 210,
    "gameplay": 175,
    "graphics": 138,
    "movie": 28,
    "network": 129,
-   "platform": 151,
+   "platform": 152,
    "ui": 585,
    "world": 96
   },
@@ -210,28 +210,28 @@
    "ui": 2
   },
   "do_while": {
-   "assets": 15,
+   "assets": 11,
    "audio": 2,
    "core": 15,
-   "gameplay": 32,
-   "graphics": 45,
-   "movie": 6,
-   "network": 10,
+   "gameplay": 30,
+   "graphics": 39,
+   "movie": 2,
+   "network": 7,
    "platform": 16,
-   "ui": 95,
-   "world": 49
+   "ui": 51,
+   "world": 48
   },
   "while_tail": {
-   "assets": 15,
+   "assets": 11,
    "audio": 2,
    "core": 15,
-   "gameplay": 32,
-   "graphics": 45,
-   "movie": 6,
-   "network": 10,
+   "gameplay": 30,
+   "graphics": 39,
+   "movie": 2,
+   "network": 7,
    "platform": 12,
-   "ui": 94,
-   "world": 48
+   "ui": 50,
+   "world": 47
   }
  }
 }

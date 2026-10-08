@@ -558,7 +558,7 @@ static void UiPointerList_ReselectRecordAfterSort(void *selectedRecord,UiPointer
   rowSlotCursor = control->rowSlots;
   remainingRows = control->rowCount;
   selectedRowTop = 0;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* rowCount >= 2 here: the only caller (the sort below) runs only for rowCount - 1 > 0. */
   do {
     if (selectedRecord == *rowSlotCursor) break;
     selectedRowTop = selectedRowTop + control->rowHeight;

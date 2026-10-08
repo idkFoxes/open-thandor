@@ -5,6 +5,8 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <span>
+
 #include <thandor/gameplay/army/placement_release.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -125,7 +127,6 @@ void ArmyPlacement_ReleaseClassStateReservation
   uint32_t *classCounter;
   int32_t *reservationBits;
   ModelRuntimeArmyLinkOrState *armyLinkState;
-  uint32_t *slotAssetIds;
   int slotIndex;
   uint32_t reservationBit;
   ModelRuntimeSlot *linkedModelSlot;
@@ -134,8 +135,10 @@ void ArmyPlacement_ReleaseClassStateReservation
   if (linkedModelSlot == nullptr) {
     return;
   }
-  /* the 13 asset-id dwords start at classState78 and run on past it */
-  slotAssetIds = &(linkedModelSlot->classLinkState).classState78;
+  /* the pad's 13 asset-id slots: ModelRuntimeSlot +0x78..+0xAB, from classLinkState.classState78 up to
+     classState.classStateA8 (layout_checks.cpp) */
+  const std::span<PckArmyAssetIdCatalog,13> slotAssetIds(
+      ModelView_Cast<ModelRuntimeLinkedChildSpawnAndBuildView>(linkedModelSlot)->completedSecondaryArmyAssetIds);
   reservationBit = 1;
   for (slotIndex = 0; slotIndex < 13; slotIndex++) {
     if ((((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->armyAssetId ==

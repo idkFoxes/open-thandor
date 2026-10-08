@@ -566,8 +566,9 @@ void Movie_Close()
         CloseHandle(movie->refillSemaphore);
         movie->refillSemaphore = nullptr;
       }
+      /* back to the game's priority; the original restored real-time, high here (see ProcessEntry) */
       hProcess = GetCurrentProcess();
-      SetPriorityClass(hProcess,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
+      SetPriorityClass(hProcess,DebugHook_ProcessPriorityClass(HIGH_PRIORITY_CLASS));
     }
     g_ActiveMovie = nullptr;
     g_MemoryApi.free(movie->fileHeader);

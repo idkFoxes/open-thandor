@@ -9,6 +9,9 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#include <cassert>
+#include <iterator>
+
 /* Poses the aircraft body (the root's first child) on its vertical arc: the arc position (classState7C) gives the
    height above heightBaseQ12 (arcCoefficient * ticks * position^2) and the pitch, then the arc position advances
    by one movement step for this batch of ticks. Returns that step. */
@@ -100,18 +103,28 @@ static void ArmyAircraft_TouchDownOnPad(WorldRuntimeContext *worldRuntime,ModelR
           ModelRuntimeSlot *homeModelRuntime)
 {
   ArmyRuntimeClassUpdate21DefinitionView *definition;
-  ModelRuntimeSlot *homeDefinitionSlot;
+  ModelDefinition *padDefinition;
+  int padMaximumHealth;
   int scaledPadHealth;
   uint32_t healthDifference;
 
   definition = modelRuntime->modelDefinition;
-  homeDefinitionSlot = Thandor_U32ToPointer<ModelRuntimeSlot>((homeModelRuntime->definitionOrSavedId).savedIdOrOffset); /* 32-bit format field: ModelRuntimeSlot.definitionOrSavedId */
+  padDefinition = homeModelRuntime->definitionOrSavedId.runtimeDefinition;
   (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
   ModelRuntime_PlayDefinitionOneShotSound
             (homeModelRuntime,homeModelRuntime->definitionOrSavedId.runtimeDefinition->secondarySoundIndex,
              worldRuntime);
+  /* the pad's ModelDefinition.maximumHealth (+0x60), read as a signed value like the original's divisor */
+  padMaximumHealth = (int)padDefinition->maximumHealth;
+  /* The original divides by it unchecked (stock pads: 20000); bounded here because a model definition with
+     maximum health 0 is a division by zero. Such a pad takes no damage. */
+  if (padMaximumHealth == 0) {
+    Thandor_Log("aircraft: home pad definition %u has maximum health 0, no touch-down damage",
+                static_cast<uint32_t>(padDefinition->definitionId));
+    return;
+  }
   scaledPadHealth = (int)(((int64_t)(int)homeModelRuntime->health * (int64_t)definition->maximumHealth) /
-                          (int64_t)(homeDefinitionSlot->classLinkState).modelLinkOrState.signedScalarState);
+                          (int64_t)padMaximumHealth);
   healthDifference = scaledPadHealth - modelRuntime->health;
   if (healthDifference != 0 && (int)modelRuntime->health <= scaledPadHealth) {
     ArmyRuntime_ApplyDamageAndPropagateToParent(healthDifference >> 1,homeModelRuntime);
@@ -263,7 +276,8 @@ static void ArmyAircraft_UpdateAttackRun(WorldRuntimeContext *worldRuntime,Model
             (modelRuntime,definition,definition->verticalArcCoefficient,
              (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12 - terrainHeightQ12);
   remainingTicks = g_InGameSimulationStepTicks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* do-while: g_InGameSimulationStepTicks is 1..INGAME_SIMULATION_STEP_TICKS_MAX in a session (every writer
+     stores 1 or a checked 1..5) */
   do {
     (modelRuntime->classLinkState).armyLinkOrState.classState =
          (modelRuntime->classLinkState).armyLinkOrState.classState - 1; /* the drop countdown */
@@ -588,15 +602,26 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
         (modelRuntime->linkedChildBuildState).selectedSecondaryArmyAssetId = 0;
         if (completedAssetValue <= energyLoadBefore) {
           /* the last free slot of completedSecondaryArmyAssetIds (scanning down from the capacity) */
-          for (reverseSlotIndex = modelRuntime->modelDefinition->linkedChildSlotCapacity - 1; -1 < reverseSlotIndex;
-               reverseSlotIndex = reverseSlotIndex - 1) {
+          reverseSlotIndex = (int)modelRuntime->modelDefinition->linkedChildSlotCapacity - 1;
+          /* The original scans from the definition's linkedChildSlotCapacity (stock pads: 6) unchecked; bounded
+             here because a capacity above 13 reads and writes past the 13 slots into the pad's runtime state. */
+          if (reverseSlotIndex >= (int)std::size(modelRuntime->completedSecondaryArmyAssetIds)) {
+            Thandor_Log("aircraft pad: linked slot capacity %u above %u, scan clamped",
+                        modelRuntime->modelDefinition->linkedChildSlotCapacity,
+                        (uint32_t)std::size(modelRuntime->completedSecondaryArmyAssetIds));
+            reverseSlotIndex = (int)std::size(modelRuntime->completedSecondaryArmyAssetIds) - 1;
+          }
+          for (; -1 < reverseSlotIndex; reverseSlotIndex = reverseSlotIndex - 1) {
             if (modelRuntime->completedSecondaryArmyAssetIds[reverseSlotIndex] == 0) {
               break;
             }
           }
           if (reverseSlotIndex < 0) {
-            reverseSlotIndex = 0; /* no free slot: overwrite the first */
+            /* Original quirk: with no free slot the first slot's asset id is overwritten (that asset is lost) */
+            reverseSlotIndex = 0;
           }
+          assert(reverseSlotIndex >= 0 &&
+                 reverseSlotIndex < (int)std::size(modelRuntime->completedSecondaryArmyAssetIds));
           modelRuntime->completedSecondaryArmyAssetIds[reverseSlotIndex] = secondaryAssetId;
           g_GameFactionRuntimeImage.records[factionIndex].relationCounterA =
                g_GameFactionRuntimeImage.records[factionIndex].relationCounterA + 1;

@@ -113,6 +113,12 @@ bool GridReachability_RebuildConnectedRegionAroundWorldPoint
      tested cell is scratchCursor[scratchWidth], the cursor sits on the row above it */
   scratchCursor = g_GridScratchPrimary + scratchWidth * 3;
   cellsToScan = (g_GridScratchHeight - 8) * g_GridScratchWidth;
+  /* The original scans ~2^32 cells here and below when the scratch grid has no row inside the 4-row border
+     (a field grid of height <= 2 or width 0); bounded here because the scan runs far past the scratch grid:
+     such a grid has no ring to split. */
+  if (cellsToScan <= 0) {
+    return false;
+  }
   while (!GridReachability_IsMarkedRingEdgeCell(scratchCursor,scratchWidth)) {
     scratchCursor = scratchCursor + 1;
     cellsToScan--;
@@ -124,7 +130,7 @@ bool GridReachability_RebuildConnectedRegionAroundWorldPoint
   /* any other marked edge cell belongs to a separate piece of the ring */
   scratchCursor = g_GridScratchPrimary + scratchWidth * 3;
   cellsToScan = (g_GridScratchHeight - 8) * g_GridScratchWidth;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* count >= 1: the same count as the first scan, which returned for a count <= 0. */
   do {
     if (GridReachability_IsMarkedRingEdgeCell(scratchCursor,scratchWidth)) {
       return true;

@@ -41,7 +41,13 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
   /* Every channel evaluates the same segment (keyframeIndex - 1). A time before the first keyframe gives
      segment -1. */
   keyframeIndex = 0;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* The original runs the do/while below with a count of 0 (a ROM action entry with no keyframes; the curve
+     build clamps it to 2 and logs) ~2^32 times and then holds an unset keyframe; bounded here because it
+     reads far past the keyframes: no keyframe ends the flight at once. */
+  if (keyframeCount == 0) {
+    WorldMotionSpline_ClearCachedDerivatives();
+    return false;
+  }
   do {
     currentKeyframe = keyframes;
     if ((uint32_t)timeQ12 < (uint32_t)currentKeyframe->timeQ12) {

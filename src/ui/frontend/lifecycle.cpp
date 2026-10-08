@@ -254,13 +254,13 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+    while (remainingBlockCount != 0) {
       playerBlock->factionAssignment.readyOrWaitState = 0;
       playerBlock->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
       playerBlock++;
       remainingBlockCount--;
-    } while (remainingBlockCount != 0);
+    }
   }
   if (!g_GraphicsFramebufferBeginAccess()) {
     g_GraphicsFramebufferFillRectArgb

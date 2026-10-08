@@ -10,6 +10,7 @@
 
 #include <thandor/world/pathing/route.h>
 #include <thandor/thandor.h>
+#include <cassert>
 
 /* EntityPathing_UpdateRouteSegment reads a GameEntityRuntime through its ownership-prefix view (step 13 X7b:
    ModelView_Cast between the two instead of C-style casts; only this file converts between them). */
@@ -26,6 +27,15 @@ static EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHI
 static uint32_t g_EntityPathingPriorityPairCount = 0;
 
 EntityPathingPriorityPair *g_EntityPathingPriorityPairs = g_EntityPathingPriorityPairStorage;
+
+/* Debug check of the footprint walkers: scratchRecord (a dword view of a cell) lies inside the primary grid. */
+[[maybe_unused]] static bool GridScratch_PrimaryContainsRecord(const uint32_t *scratchRecord)
+{
+  const uint32_t *gridBegin = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
+
+  return scratchRecord >= gridBegin &&
+         scratchRecord < gridBegin + (size_t)g_GridScratchWidth * (uint32_t)g_GridScratchHeight * 2;
+}
 
 /* World position of the centre of scratch cell (row, column). */
 static WorldPositionXY GridScratch_CellCenterWorldPosition(FieldGridCellCoordinate row,FieldGridCellCoordinate column)
@@ -88,7 +98,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   FieldGridCellCoordinate reachableRow;
   FieldGridCellCoordinate reachableColumn;
   PathingDestination resolvedDestination;
-  bool backtrackReachedTarget;
+  bool backtrackReachedTarget = false; /* only read when segmentBlocked, after the backtrack has set it */
   FieldGridCellCoordinate backtrackRow;
   FieldGridCellCoordinate backtrackColumn;
   FieldGridRegionMask backtrackRouteStateMask;
@@ -705,6 +715,11 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
    world space, while the cell centre lies within g_GridInfluenceSquaredThreshold[6] of the centre point. Each cell
    loses its blocked and visited bits and has its pathCost counter incremented. Stops before a blocked cell.
    Returns the number of cells cleared, one less when the walk ended at a blocked cell (as in the original).
+   Original quirk: the walk clears GRID_SCRATCH_BLOCKED on the cells it passes, also on the primary grid (the AI
+   reachability test, AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate, runs without copy and swap), so
+   it can erode the blocked map-edge ring (four scratch cells thick after a terrain rebuild) until the next
+   rebuild. Every bounded walk over the grid relies on that ring; debug builds check that this walk stays
+   inside the grid.
 */
 int GridFootprint_ClearTraversalFlagsDiagonalNegative
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
@@ -729,13 +744,14 @@ int GridFootprint_ClearTraversalFlagsDiagonalNegative
     cellWorldYQ12 = cellWorldYQ12 - GRID_SCRATCH_ROW_PAIR_WORLD_Y;
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchRecord = scratchRecord + g_GridScratchWidth * 4 - 2;
+    assert(GridScratch_PrimaryContainsRecord(scratchRecord));
     nextCount = visitedCount + 1;
   } while ((*scratchRecord & GRID_SCRATCH_BLOCKED) == 0);
   return visitedCount;
 }
 
 /* Mirror of GridFootprint_ClearTraversalFlagsDiagonalNegative walking upwards (two scratch rows up and one
-   column right per step), with the same clearing and the same return value.
+   column right per step), with the same clearing, the same return value and the same quirk.
 */
 int GridFootprint_ClearTraversalFlagsDiagonalPositive
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
@@ -759,6 +775,7 @@ int GridFootprint_ClearTraversalFlagsDiagonalPositive
     scratchRecord[1]++;
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchRecord = scratchRecord + (int32_t)(g_GridScratchWidth * -4) + 2;
+    assert(GridScratch_PrimaryContainsRecord(scratchRecord));
     nextCount = visitedCount + 1;
   } while ((*scratchRecord & GRID_SCRATCH_BLOCKED) == 0);
   return visitedCount;

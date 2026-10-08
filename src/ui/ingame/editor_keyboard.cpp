@@ -329,7 +329,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         g_UiCommandModeGOwnerFactionIndex = 1;
       }
       ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected
-                (static_cast<uint32_t>(reinterpret_cast<uintptr_t>(uiRoot)));
+                (reinterpret_cast<uintptr_t>(uiRoot));
     }
     break;
   case InGameEditorKeyAction::PreviousUnitOwnerFaction: /* Page Down: previous owner faction for unit placement */
@@ -339,7 +339,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         g_UiCommandModeGOwnerFactionIndex = g_GameFactionRuntimeImage.tail.activeFactionCount;
       }
       ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected
-                (static_cast<uint32_t>(reinterpret_cast<uintptr_t>(uiRoot)));
+                (reinterpret_cast<uintptr_t>(uiRoot));
     }
     break;
   /* Letter keys: editor tab and tool */

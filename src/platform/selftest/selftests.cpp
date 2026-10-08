@@ -114,7 +114,12 @@ static void Thandor_SelfTestStretch()
     /* header, the subresource record in the header's unused text, pixels behind the header */
     static uint32_t asset[2 * GFX_ASSET_HEADER_SIZE / sizeof(uint32_t)];
     static uint32_t target[8 * 4];
-    uint32_t framebuffer[4] = {8, 0, 4, 0};
+    /* the 8x4 target, 4 bytes per pixel. The former dword array set height 0, which the stretch's bounds check
+       (step 8) rejects, so the test drew nothing. */
+    SoftwareFramebufferAccess framebuffer{};
+    framebuffer.width = 8;
+    framebuffer.height = 4;
+    framebuffer.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
     auto *header = reinterpret_cast<GraphicsTextureSourceAsset *>(asset);
     GraphicsTextureSourceEntry *entry;
     uint32_t *pixels;
@@ -135,9 +140,8 @@ static void Thandor_SelfTestStretch()
             pixels[y * 4 + x] = ARGB8888_ALPHA_MASK | ((uint32_t)(x * 85) << 16) | ((uint32_t)(y * 255) << 8);
         }
     }
-    framebuffer[3] = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(target));
-    SoftwareTextureSource_StretchDirectColorBilinear32(4, 8, 0, 0, 0, header,
-                                                       reinterpret_cast<SoftwareFramebufferAccess *>(framebuffer));
+    framebuffer.pixels = reinterpret_cast<uint8_t *>(target);
+    SoftwareTextureSource_StretchDirectColorBilinear32(4, 8, 0, 0, 0, header, &framebuffer);
     for (y = 0; y < 4; y++) {
         Thandor_Log("stretch selftest row %d: %08x %08x %08x %08x %08x %08x %08x %08x", y,
                     target[y * 8 + 0], target[y * 8 + 1], target[y * 8 + 2], target[y * 8 + 3],
@@ -965,13 +969,21 @@ static void Thandor_SelfTestScanAddresses()
                     char dumpPath[600];
                     FILE *dump;
                     int j;
-                    sprintf(dumpPath, "%s\\%s_%s", dumpDirectory, list[p], name);
-                    for (j = (int)strlen(dumpDirectory) + 1; dumpPath[j] != 0; j++) {
-                        if (dumpPath[j] == '\\' || dumpPath[j] == '/') {
-                            dumpPath[j] = '_';
-                        }
+                    const int pathLength =
+                        snprintf(dumpPath, sizeof dumpPath, "%s\\%s_%s", dumpDirectory, list[p], name);
+                    if ((pathLength < 0) || (static_cast<size_t>(pathLength) >= sizeof dumpPath)) {
+                        /* a truncated path would also start the '_' pass below behind its end */
+                        Thandor_Log("scanaddr: dump path for %s too long, not dumped", name);
+                        dump = nullptr;
                     }
-                    dump = fopen(dumpPath, "wb");
+                    else {
+                        for (j = (int)strlen(dumpDirectory) + 1; dumpPath[j] != 0; j++) {
+                            if (dumpPath[j] == '\\' || dumpPath[j] == '/') {
+                                dumpPath[j] = '_';
+                            }
+                        }
+                        dump = fopen(dumpPath, "wb");
+                    }
                     if (dump != nullptr) {
                         fwrite(unpacked, 1, header.unpackedSize, dump);
                         fclose(dump);
