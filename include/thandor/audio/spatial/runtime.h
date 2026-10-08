@@ -32,7 +32,7 @@ void SpatialSound_UpdateDesiredPositionedGains
           (SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,SpatialSoundGainQ15 gainQ15,
           GraphicsFixedVec3 *worldPosition,SpatialSoundSlot *slot);
 
-SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset);
+SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset,uint32_t sampleByteCount);
 
 void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot);
 

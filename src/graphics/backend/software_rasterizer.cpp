@@ -76,19 +76,26 @@ void SoftwareRenderer_DrawQueue32Bit(GraphicsScreenCoordinate clipMaxY,GraphicsS
   SoftwareRasterHandler *handler;
 
   /* The original trusted the clip rectangle; bounded here because the scanlines clip only against it, so a
-     maximum past the framebuffer (and depth buffer) wrote out of bounds. A no-op for a rectangle inside. */
+     maximum past the framebuffer (and depth buffer) or a negative minimum wrote out of bounds. A no-op for a
+     rectangle inside. */
   if (clipMaxX > static_cast<GraphicsScreenCoordinate>(g_FramebufferWidth) ||
-      clipMaxY > static_cast<GraphicsScreenCoordinate>(g_FramebufferHeight)) {
+      clipMaxY > static_cast<GraphicsScreenCoordinate>(g_FramebufferHeight) || clipMinX < 0 || clipMinY < 0) {
     if (!loggedClipClamp) {
       loggedClipClamp = true;
-      Thandor_Log("SoftwareRenderer: clip maximum %d,%d clamped to the %ux%u framebuffer",clipMaxX,clipMaxY,
-                  g_FramebufferWidth,g_FramebufferHeight);
+      Thandor_Log("SoftwareRenderer: clip rectangle %d,%d-%d,%d clamped to the %ux%u framebuffer",clipMinX,
+                  clipMinY,clipMaxX,clipMaxY,g_FramebufferWidth,g_FramebufferHeight);
     }
     if (clipMaxX > static_cast<GraphicsScreenCoordinate>(g_FramebufferWidth)) {
       clipMaxX = static_cast<GraphicsScreenCoordinate>(g_FramebufferWidth);
     }
     if (clipMaxY > static_cast<GraphicsScreenCoordinate>(g_FramebufferHeight)) {
       clipMaxY = static_cast<GraphicsScreenCoordinate>(g_FramebufferHeight);
+    }
+    if (clipMinX < 0) {
+      clipMinX = 0;
+    }
+    if (clipMinY < 0) {
+      clipMinY = 0;
     }
   }
   packet = GraphicsPrimitiveQueue_Begin(queue);
