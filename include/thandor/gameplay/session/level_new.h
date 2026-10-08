@@ -34,6 +34,14 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
 
 bool NewLevel_Fail(uint32_t *outError,uint32_t error);
 
+/* Code units a level path needs after its terminator for the in-place suffix writes: the terrain material letter
+   moves the terminator one unit on, then ".gfx" and a terminator follow (TerrainVisualResources_FindPathSuffixEntry,
+   WidePath_SetExtensionCode). */
+inline constexpr uint32_t LEVEL_IMAGE_PATH_SUFFIX_UNITS = 6;
+
+bool NewLevel_ValidateImage(LevelAssetRuntimePrefix *levelImage,uint32_t pathAreaByteSize,
+                            FactionRuntimeIndex localFactionIndex,uint32_t *outError);
+
 bool NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *outError);
 
 bool NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t *outError);

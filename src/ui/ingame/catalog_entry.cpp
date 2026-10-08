@@ -166,12 +166,18 @@ static void UiCatalogEntryControl_DrawOwnedCount
 }
 
 /* Takes a building model's progress (elapsed * 100 / required ticks) when it is at least the best so far;
-   the text style then follows that model (alert colour when it is switched off). */
+   the text style then follows that model (alert colour when it is switched off). A model with 0 required
+   ticks is skipped. */
 static void UiCatalogEntryControl_TakeBuildProgress
           (const ModelRuntimeSlot *model,int *bestPercent,UiPackedTextStyle *textStyle)
 {
   int percent;
 
+  /* The original divides by the required build ticks unchecked; bounded here because 0 (a malformed model or
+     savegame) divides by zero: such a model shows no percent. No log line - this runs every frame. */
+  if ((int)(model->classLinkState).classState68 == 0) {
+    return;
+  }
   percent = (int)(((int64_t)(int)(model->classLinkState).classState64 * 100) /
                   (int64_t)(int)(model->classLinkState).classState68);
   if (*bestPercent <= percent) {
