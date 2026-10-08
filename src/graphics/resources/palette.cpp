@@ -65,8 +65,8 @@ void GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset)
 
 
 /* Makes an independently owned heap copy of a palette asset (allocationSizeBytes, copied dword by dword) and
-   validates it; an invalid copy is freed again and the free result returned. Installed as
-   g_GraphicsPaletteAssetLifecycleCallbacks3.clone.
+   validates it. Returns NULL when the allocation fails (one log line) or the copy does not validate (it is
+   freed again). Installed as g_GraphicsPaletteAssetLifecycleCallbacks3.clone.
 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteAsset)
 
@@ -83,8 +83,10 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
   allocationSize = paletteAsset->allocationSizeBytes;
   allocError = g_MemoryApi.alloc(allocationSize,&cloneBlock);
   if (allocError != 0) {
-    /* Original quirk: a failed allocation returns its error code as the asset pointer */
-    return reinterpret_cast<GraphicsPaletteAsset *>(static_cast<uintptr_t>(allocError));
+    /* The original returned the allocation error code as the asset pointer; bounded here because a caller
+       would use that code as an address. */
+    Thandor_Log("GraphicsPaletteAsset_Clone: allocation of %u bytes failed (error %u)",allocationSize,allocError);
+    return nullptr;
   }
   clonedAsset = static_cast<GraphicsPaletteAsset *>(cloneBlock);
   /* both asset blocks as dwords: the copy is dword by dword */
@@ -99,8 +101,10 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
   if (validatedAsset != nullptr) {
     return validatedAsset;
   }
-  /* Original quirk: the clone's result after a failed validation is the free's status (0 = NULL) */
-  return reinterpret_cast<GraphicsPaletteAsset *>(static_cast<uintptr_t>(g_MemoryApi.free(clonedAsset)));
+  /* The original returned the free's status here (0 = NULL, otherwise an error code used as a pointer);
+     bounded here because a failed free would hand out that code as an address. */
+  g_MemoryApi.free(clonedAsset);
+  return nullptr;
 }
 
 
