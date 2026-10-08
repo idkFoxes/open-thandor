@@ -396,6 +396,10 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
                            candidateCell->worldX,armyAssetId,factionIndex,worldRuntime,
                            nullptr))) {
+      /* Original quirk: the reachability test edits g_GridScratchPrimary itself (no copy and swap as in
+         EntityPathing_RebuildOverlappingGroupRoutes); its footprint walkers can clear GRID_SCRATCH_BLOCKED on
+         the blocked map-edge ring until the next terrain rebuild (see
+         GridFootprint_ClearTraversalFlagsDiagonalNegative). */
       regionUnreachable = GridReachability_RebuildConnectedRegionAroundWorldPoint
                             (radiusMetric,candidateCell->worldY,candidateCell->worldX);
       if (!regionUnreachable) {
