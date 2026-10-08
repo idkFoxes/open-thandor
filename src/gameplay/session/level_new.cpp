@@ -165,6 +165,10 @@ bool NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *ou
     copySourceCursor++;
     copyTargetCursor++;
   }
+  /* the copied level script (P20 checks): out-of-range factions, condition indexes or postfix operands */
+  if (!InGameLevelScript_Validate(&g_InGameLevelRuntimeGlobalBlock.conditionStorage->schedule)) {
+    return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
+  }
   return true;
 }
 
