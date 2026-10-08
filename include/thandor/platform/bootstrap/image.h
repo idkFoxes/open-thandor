@@ -15,10 +15,6 @@ compiles that data in as ordinary variables (the "Module data." sections of src/
 is mapped.
 */
 
-/* Address range of the original thandor.exe's single RWX .text section (code and data); the scanaddr self-test
-   looks for these values in assets */
-inline constexpr auto ORIGINAL_TEXT_START = 0x401000u;
-inline constexpr auto ORIGINAL_TEXT_END = 0x58C000u;
 /* The rebuilt executable is linked at this fixed base (/BASE or --image-base in CMakeLists.txt); its code starts
    one page in. The crash log symbolizes stack values in this range. */
 #define REBUILT_IMAGE_BASE 0x10000000u
