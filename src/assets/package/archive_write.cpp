@@ -6,6 +6,8 @@
  */
 
 #include <thandor/assets/package/archive_write.h>
+#include <array>
+#include <cstdint>
 #include <thandor/thandor.h>
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -18,7 +20,11 @@
    deleting the old entry, a seek/read/write, the encoder or the directory reload fails (the error code is
    dropped: no caller uses it).
    Called directly by the save-game writers in gameplay/session/savegame.cpp and campaign_carryover.cpp (no
-   callback table).
+   callback table); all of them use PCK_COMPRESSION_HUFFMAN_RLE, so no caller reaches the stored branch.
+   The original wrote a stored payload as unpackedSize rounded up to whole dwords straight from sourceData, reading
+   up to 3 bytes behind the source; bounded here because the source need not extend that far: the payload is
+   written as its unpackedSize bytes plus zero padding to the dword boundary, and a size that would wrap when
+   rounded up is rejected (one log line). The entry header and the file size are unchanged.
 */
 bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle)
@@ -31,6 +37,10 @@ bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCo
   FileIoByteCount byteCount;
   uint32_t alignedByteCount;
 
+  if (compressionMethod == PCK_COMPRESSION_STORED && unpackedSize > UINT32_MAX - 3) {
+    Thandor_Log("Package_UpsertEntry: rejected stored entry of %u bytes",unpackedSize);
+    return false;
+  }
   destination = g_PackageScratchBuffer;
   archiveHeader = reinterpret_cast<PckArchiveHeader *>(destination);
   newEntry = Asset_RecordAt<PckEntryHeader>(destination,PCK_ENTRY_HEADER_BYTES);
@@ -50,6 +60,8 @@ bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCo
   }
   archiveHeader->entryCount++;
   if (compressionMethod == PCK_COMPRESSION_STORED) {
+    std::array<uint8_t,3> storedPadding = {}; /* zero padding behind the payload */
+
     alignedByteCount = unpackedSize + 3 & PACKAGE_DWORD_ALIGN_MASK;
     newEntry->packedSize = alignedByteCount;
     newEntry->compressionMethod = PCK_COMPRESSION_STORED;
@@ -68,7 +80,11 @@ bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCo
                                       THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
-    if (g_FileSystemWriteExactOrFlush(alignedByteCount,sourceData,THANDOR_PTR(fileHandle)) != 0) {
+    if (g_FileSystemWriteExactOrFlush(unpackedSize,sourceData,THANDOR_PTR(fileHandle)) != 0) {
+      return false;
+    }
+    if (alignedByteCount != unpackedSize &&
+        g_FileSystemWriteExactOrFlush(alignedByteCount - unpackedSize,storedPadding.data(),THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
   }
