@@ -717,13 +717,14 @@ static bool CoreAssets_LoadButtonSound(uint16_t *samplePath,SoundVoiceSet **voic
 
 {
   SoundSampleAsset *sample;
+  uint32_t sampleBytes;
   SoundVoiceSet *voiceSet;
   uint32_t voiceSetError;
 
-  if (!Resource_Load(samplePath,PointerSlot_AsVoid(&sample),nullptr,error)) {
+  if (!Resource_Load(samplePath,PointerSlot_AsVoid(&sample),&sampleBytes,error)) {
     return false;
   }
-  voiceSetError = g_SoundCreateSampleVoiceSet(sample,&voiceSet);
+  voiceSetError = g_SoundCreateSampleVoiceSet(sample,sampleBytes,&voiceSet);
   Resource_Release(sample);
   if (voiceSetError != 0) {
     *error = voiceSetError;
