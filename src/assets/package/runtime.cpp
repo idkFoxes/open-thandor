@@ -133,13 +133,29 @@ bool Package_LoadEntryIntoBuffer
   return false;
 }
 
+/* True when the freshly opened archive handle starts with the PckArchiveHeader magic "pck\0" (every stock
+   package and every save package InGameSaveGame_CreatePackage writes). Leaves the file position behind the
+   magic; Package_ReadDirectory seeks back to the start. */
+static bool Package_HasArchiveMagic(void *handle)
+
+{
+  uint8_t magic[4];
+
+  if (g_FileSystemReadExact(sizeof magic,magic,handle) != 0) {
+    return false;
+  }
+  return magic[0] == 'p' && magic[1] == 'c' && magic[2] == 'k' && magic[3] == 0;
+}
+
 /* Package_Mount and Package_MountLowPriority, once a free slot is chosen: opens path for writing (next to the
-   executable first, then as given), allocates the entry-header array and reads the directory into
-   mountSlot. Stores the file handle or the open/allocation/directory error code in *outFileHandleOrError (may
-   be NULL); returns true on success. On a failed directory read the file is closed and the slot left free. */
+   executable first, then as given), checks the archive magic, allocates the entry-header array and reads the
+   directory into mountSlot. Stores the file handle or the open/allocation/directory error code in
+   *outFileHandleOrError (may be NULL); returns true on success. On a wrong magic or a failed directory read
+   the file is closed and the slot left free. */
 static bool Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintptr_t *outFileHandleOrError)
 
 {
+  static bool loggedWrongMagic;
   void *handle;
   PckEntryHeader *allocatedEntryHeaders;
   void *directoryBlock;
@@ -157,6 +173,19 @@ static bool Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintptr
   }
   if (openError != 0) {
     errorCode = openError;
+  }
+  /* The original mounted any file without looking at its magic and read its directory from whatever the
+     header held. Rejected here because such a file is no package archive (PATCH01.PCK of the stock game is a
+     RAR archive; the game only ever tries patch00.pck): the mount fails as for a missing file. Every stock
+     package and every save package starts with "pck\0", and no allocation is made before the check. */
+  else if (!Package_HasArchiveMagic(handle)) {
+    if (!loggedWrongMagic) {
+      loggedWrongMagic = true;
+      Thandor_Log("Package_Mount: \"%ls\" is no package archive (wrong magic); not mounted",
+                  reinterpret_cast<wchar_t *>(path)); /* UTF-16 for %ls */
+    }
+    errorCode = FATAL_ERROR_FILE_ACCESS_FAILED; /* as for a missing file */
+    g_FileSystemClose(handle);
   }
   else {
     allocError = g_MemoryApi.alloc(PACKAGE_DIRECTORY_BYTES,&directoryBlock);
@@ -320,7 +349,8 @@ bool Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError)
 }
 
 /* The mount slot holding fileHandle, or NULL when it is not mounted. A zero handle is never found (it would
-   otherwise match a free slot). Used by Package_FindEntry and Package_Unmount. */
+   otherwise match a free slot). Used by Package_FindEntry, Package_Unmount, Package_FindEntryInMount and
+   Package_ReadDirectory. */
 static PckMountSlot *Package_FindMountSlot(EngineFileHandle fileHandle)
 
 {
@@ -466,24 +496,33 @@ void Package_Unmount(EngineFileHandle fileHandle)
 /* Compares a UTF-16 archive path against a pattern for the package entry search. '?' matches any one code
    unit; '*' only skips the candidate to its next dot or terminator (no full globbing), which is enough for
    patterns like "level\*.lev". The comparison is case-sensitive. Returns false on a match.
+   The candidate is an entry path field of PCK_ENTRY_PATH_UNITS code units. The original scanned it without a
+   limit; bounded here because the field comes from the file and need not be terminated: a candidate that runs
+   to the end of the field before the pattern has ended is a mismatch. Terminated paths compare as before.
 */
 bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
 
 {
   uint16_t patternCodeUnit;
+  int candidateIndex;
 
+  candidateIndex = 0;
   do {
     patternCodeUnit = *pattern++;
     while (patternCodeUnit == '*') {
-      while (*candidate != '.' && *candidate != 0) {
-        candidate++;
+      while (candidateIndex < PCK_ENTRY_PATH_UNITS && candidate[candidateIndex] != '.' &&
+             candidate[candidateIndex] != 0) {
+        candidateIndex++;
       }
       patternCodeUnit = *pattern++;
     }
-    if (patternCodeUnit != '?' && patternCodeUnit != *candidate) {
+    if (candidateIndex == PCK_ENTRY_PATH_UNITS) {
+      return true; /* end of the path field: mismatch */
+    }
+    if (patternCodeUnit != '?' && patternCodeUnit != candidate[candidateIndex]) {
       return true; /* mismatch */
     }
-    candidate++;
+    candidateIndex++;
   } while (patternCodeUnit != 0);
   return false; /* both ended together */
 }
@@ -597,14 +636,11 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
   if (!matched) {
     return nullptr; /* path too long */
   }
-  mountSlot = g_PackageMountSlots;
-  remainingCount = PACKAGE_MOUNT_SLOT_COUNT;
-  while (fileHandle != mountSlot->fileHandle) {
-    mountSlot++;
-    remainingCount--;
-    if (remainingCount == 0) {
-      return nullptr; /* not mounted */
-    }
+  /* The original scanned the slots itself, so a zero handle matched the first free slot (no entries, so
+     NULL as well); Package_FindMountSlot rejects it directly. */
+  mountSlot = Package_FindMountSlot(fileHandle);
+  if (mountSlot == nullptr) {
+    return nullptr; /* not mounted */
   }
   currentEntry = mountSlot->entryHeaders;
   entriesRemaining = mountSlot->entryCount;
@@ -633,15 +669,20 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
 }
 
 /* Finds path in the mounted packages, scanning the mount slots from the front so that the first mounted
-   package that has the entry wins. The path is lowercased in place first (package paths are stored in lower
-   case). Returns the entry header and stores the package's handle in *outFileHandle; returns NULL (leaving
+   package that has the entry wins. The path is lowercased first (package paths are stored in lower case).
+   Returns the entry header and stores the package's handle in *outFileHandle; returns NULL (leaving
    *outFileHandle unchanged) when the path is too long for an entry or no package has it. A found entry is
    never NULL.
+   Original quirk: an accepted path is left lowercased in the caller's buffer. Kept because the EFF/SHT/MDL/ARM
+   path tables of the level image (NewLevel_LoadAssetList; stock levels have mixed-case names) end up
+   lowercased in the image the save game writes as level.hex, so dropping it would change the saved bytes.
 */
 PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *outFileHandle)
 
 {
+  uint16_t loweredPath[PCK_ENTRY_PATH_UNITS];
   uint32_t codeUnit;
+  int unitIndex;
   int pathLength;
   int compareRemaining;
   int slotsRemaining;
@@ -652,18 +693,29 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
   bool matched;
   PckEntryHeader *currentEntry;
 
-  /* Lowercase the path in place and count its code units, terminator included. A path that reaches
-     PCK_ENTRY_PATH_UNITS code units (terminator included) is rejected after its last unit was written. */
+  /* Lowercase the path into loweredPath and count its code units, terminator included. A path that reaches
+     PCK_ENTRY_PATH_UNITS code units (terminator included) is rejected.
+     The original lowercased in place before the length check, so for an unterminated path (e.g. a 0x40-byte
+     level path record without a terminator) it rewrote up to PCK_ENTRY_PATH_UNITS units from its start,
+     turning every 'A'-'Z' value in the data behind it into lower case. Bounded here because that write runs
+     past the caller's object: a rejected path is left untouched, an accepted one is copied back (the quirk
+     above), which gives the caller exactly the original's result. */
   pathLength = 0;
-  do {
+  codeUnit = 1;
+  while (codeUnit != 0) {
     codeUnit = path[pathLength];
     if ('A' - 1 < codeUnit && codeUnit < 'Z' + 1) {
       codeUnit = codeUnit + ('a' - 'A');
     }
-    path[pathLength] = (uint16_t)codeUnit;
+    loweredPath[pathLength] = static_cast<uint16_t>(codeUnit);
     pathLength++;
-    if (pathLength == PCK_ENTRY_PATH_UNITS) return nullptr; /* path too long */
-  } while (codeUnit != 0);
+    if (pathLength == PCK_ENTRY_PATH_UNITS) {
+      return nullptr; /* path too long */
+    }
+  }
+  for (unitIndex = 0; unitIndex < pathLength; unitIndex++) {
+    path[unitIndex] = loweredPath[unitIndex];
+  }
   mountSlot = g_PackageMountSlots;
   for (slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     currentEntry = mountSlot->entryHeaders;
@@ -673,7 +725,7 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
         /* compare the lowercased path, terminator included, with the entry's path */
         matched = false;
         compareRemaining = pathLength;
-        pathCursor = path;
+        pathCursor = loweredPath;
         nameCursor = currentEntry->path;
         while (compareRemaining != 0) {
           matched = *pathCursor == *nameCursor;
@@ -757,17 +809,13 @@ bool Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode)
 
 {
   uint32_t statusCode;
-  int slotsRemaining;
   PckMountSlot *mountSlot;
 
-  /* no zero-handle check here: a zero handle matches the first free slot */
-  mountSlot = g_PackageMountSlots;
-  slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
-  while (slotsRemaining != 0 && fileHandle != mountSlot->fileHandle) {
-    mountSlot++;
-    slotsRemaining--;
-  }
-  if (slotsRemaining == 0) {
+  /* The original had no zero-handle check, so a zero handle read a directory into the first free slot.
+     Rejected here (Package_FindMountSlot) because that slot is not mounted; every caller passes the handle
+     of a mounted package. */
+  mountSlot = Package_FindMountSlot(fileHandle);
+  if (mountSlot == nullptr) {
     statusCode = FATAL_ERROR_GENERAL_FAILURE; /* not mounted */
   }
   else {
