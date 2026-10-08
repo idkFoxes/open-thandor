@@ -1639,6 +1639,20 @@ static_assert(sizeof(ModelRuntimeLinkedChildBuildState) == 0x18,
 static_assert(sizeof(ModelRuntimeLinkedChildSpawnAndBuildView) == 0x200 &&
               offsetof(ModelRuntimeLinkedChildSpawnAndBuildView, modelDefinition) == 0x0,
               "ModelRuntimeLinkedChildSpawnAndBuildView keeps its 32-bit layout");
+/* The aircraft pad's 13 army-asset-id slots (step 11 P26): the class 22 initializer and the class 21 release
+   handler index them through completedSecondaryArmyAssetIds instead of running on from classState78. They are the
+   13 dwords +0x78..+0xAB of ModelRuntimeSlot, from classLinkState.classState78 up to classState.classStateA8;
+   classStateAC is the first dword after them and classStateB4 (the reservation bits) is outside them. */
+static_assert(offsetof(ModelRuntimeLinkedChildSpawnAndBuildView, completedSecondaryArmyAssetIds) == 0x78 &&
+                  sizeof(ModelRuntimeLinkedChildSpawnAndBuildView::completedSecondaryArmyAssetIds) == 13 * 4 &&
+                  offsetof(ModelRuntimeSlot, classLinkState) + offsetof(ModelRuntimeClassLinkState, classState78) ==
+                      0x78 &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, classStateA8) ==
+                      0x78 + 12 * 4 &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, classStateAC) ==
+                      0x78 + 13 * 4 &&
+                  offsetof(ModelRuntimeSlot, classState) + offsetof(ModelRuntimeSlotClassState, classStateB4) == 0xB4,
+              "the aircraft pad's 13 asset-id slots are ModelRuntimeSlot +0x78..+0xAB");
 static_assert(sizeof(ModelRuntimeGroundMovementSteeringView) == 0x200 &&
               offsetof(ModelRuntimeGroundMovementSteeringView, modelDefinition) == 0x0 &&
               offsetof(ModelRuntimeGroundMovementSteeringView, rootModelNode) == 0x4 &&
