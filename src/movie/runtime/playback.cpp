@@ -150,6 +150,9 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
 
 static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext);
 
+/* Stack reserve of the refill worker (see Movie_StartStreamWorker). */
+constexpr SIZE_T MOVIE_WORKER_STACK_RESERVE_BYTES = 0x100000;
+
 /* Not in the original (split out of Movie_StreamWorkerThread, also used by the synchronous fallback in
    Movie_AdvanceFrame): while the buffer holds less than MOVIE_REFILL_LIMIT_BYTES, appends the next
    MOVIE_REFILL_CHUNK_BYTES (at most the rest) of the video stream from streamFileOffset. A loose file is closed
@@ -220,8 +223,11 @@ static void Movie_StartStreamWorker(MovieRuntime *movie)
   movie->refillSemaphore = refillSemaphore;
   movie->workerActive++;
   /* (The original passed the address of its remainingByteCount local as lpThreadId.) */
-  workerThread = CreateThread(nullptr,0,(LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,nullptr,0,
-                              &workerThreadId);
+  /* 1 MiB reserve (not the original's 0 = the executable's reserve, now 32 MiB for the pathing recursion): the
+     worker only waits on the semaphore and calls Movie_RefillChunk, a few hundred bytes of stack. */
+  workerThread = CreateThread(nullptr,MOVIE_WORKER_STACK_RESERVE_BYTES,
+                              (LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,nullptr,
+                              STACK_SIZE_PARAM_IS_A_RESERVATION,&workerThreadId);
   if (workerThread == nullptr) {
     Thandor_Log("Movie_Open: CreateThread failed; movie refilled on the main thread");
     movie->workerActive--;

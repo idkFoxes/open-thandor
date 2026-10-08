@@ -397,4 +397,11 @@
 #define ERROR_SUCCESS 0L
 #endif
 
+/* CreateThread dwCreationFlags: dwStackSize is the stack reserve (not the initial commit), so a thread does not
+   inherit the executable's 32 MiB reserve (CMakeLists.txt). constexpr, not #define: the guard skips it when
+   <windows.h> came first. */
+#ifndef STACK_SIZE_PARAM_IS_A_RESERVATION
+inline constexpr uint32_t STACK_SIZE_PARAM_IS_A_RESERVATION = 0x00010000;
+#endif
+
 #endif /* THANDOR_PLATFORM_WIN32_CONSTANTS_H */
