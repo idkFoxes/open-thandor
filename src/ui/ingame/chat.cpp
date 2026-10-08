@@ -10,6 +10,7 @@
 #include <thandor/platform/bootstrap/image.h>
 
 #include <cstring>
+#include <span>
 
 /* Module data. */
 
@@ -39,12 +40,13 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
 /* True when the first 32 UTF-16 units of the chat line equal the cheat phrase g_DeveloperChatPhraseUtf16. The
    original compares 16 dwords (REPE CMPSD) through int pointers; done here as a memcmp of exactly the phrase's
    64 bytes, which stays inside the 48-unit text buffer and needs no type-punned reads. */
-static bool InGameChatInput_MatchesCheatPhrase(const uint16_t (&text)[48])
+static bool InGameChatInput_MatchesCheatPhrase(std::span<const uint16_t> text)
 
 {
-  static_assert(sizeof(g_DeveloperChatPhraseUtf16) == 64 && sizeof(text) >= sizeof(g_DeveloperChatPhraseUtf16),
-                "the cheat phrase compare reads 64 bytes of the chat line");
-  return std::memcmp(g_DeveloperChatPhraseUtf16,text,sizeof(g_DeveloperChatPhraseUtf16)) == 0;
+  static_assert(sizeof(g_DeveloperChatPhraseUtf16) == 64,"the cheat phrase compare reads 64 bytes of the chat line");
+  /* the chat line holds 0x30 units (96 bytes), so the size test only fails for a shorter capacity */
+  return text.size_bytes() >= sizeof(g_DeveloperChatPhraseUtf16) &&
+         std::memcmp(g_DeveloperChatPhraseUtf16,text.data(),sizeof(g_DeveloperChatPhraseUtf16)) == 0;
 }
 
 /* Recipient bits of the message window's seven check boxes (g_UiSevenSlotSelectionControls of the
@@ -107,7 +109,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
   if (Any(commandTextEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      if (InGameChatInput_MatchesCheatPhrase(commandTextEdit->textBuffer)) {
+      if (InGameChatInput_MatchesCheatPhrase(UiTextEdit_Text(commandTextEdit))) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED;
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED;
         InGameRecentTextHistory_InsertAndRebuild8(g_HmmNaGutChatPhraseUtf16);
@@ -116,7 +118,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
     else {
       RichTextCommandStream_CopyToNarrow
                 (sizeof(g_UiSevenSlotCommandPayloadText.textBytes),g_UiSevenSlotCommandPayloadText.textBytes,
-                 commandTextEdit->textBuffer);
+                 UiTextEdit_Text(commandTextEdit).data());
       /* Original quirk: the result is not tested; with no tab selected this is the last tab */
       UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,
       &image->messageRecipientAllTab.selectable.base,
@@ -140,7 +142,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
       commandTextEdit->selectionStart = 0;
       commandTextEdit->selectionEnd = 0;
       for (unitIndex = 0; unitIndex < 48; unitIndex++) {
-        commandTextEdit->textBuffer[unitIndex] = 0;
+        UiTextEdit_Text(commandTextEdit)[unitIndex] = 0;
       }
     }
   }
@@ -346,7 +348,7 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   /* the 48-code-unit view of the message text edit (its text buffer runs on into the trailing template dwords) */
   messageTextEdit = reinterpret_cast<InGameCommandTextEditControlCC *>(&image->messageTextEdit);
   RichTextCommandStream_CopyToNarrow
-            (sizeof(g_UiSevenSlotCommandPayloadText.textBytes),g_UiSevenSlotCommandPayloadText.textBytes,messageTextEdit->textBuffer);
+            (sizeof(g_UiSevenSlotCommandPayloadText.textBytes),g_UiSevenSlotCommandPayloadText.textBytes,UiTextEdit_Text(messageTextEdit).data());
   /* Original quirk: the result is not tested; with no tab selected this is the last tab */
   UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,
       &image->messageRecipientAllTab.selectable.base,
@@ -366,6 +368,6 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   messageTextEdit->selectionStart = 0;
   messageTextEdit->selectionEnd = 0;
   for (unitIndex = 0; unitIndex < 48; unitIndex++) {
-    messageTextEdit->textBuffer[unitIndex] = 0;
+    UiTextEdit_Text(messageTextEdit)[unitIndex] = 0;
   }
 }
