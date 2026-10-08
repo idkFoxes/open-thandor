@@ -109,8 +109,8 @@ bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t
 
 /* Returns the first locale block of a 'str' asset whose country code is countryCode, or NULL. The blocks follow
    the 0x200-byte asset header; block + blockSizeBytes is the next block.
-   Original quirk: the first block is always checked and the count is only tested after stepping, so a block
-   count of 0 wraps and keeps scanning past the asset (TextResourceAsset_HasValidBlocks rejects that before). */
+   The first block is always checked and the count is only tested after stepping; the count is >= 1 because
+   TextResourceAsset_HasValidBlocks rejects a block count of 0 before. */
 static TextResourceLocaleBlockPrefix *TextResourceAsset_FindLocaleBlock
           (TextResourceAssetHeader *asset,LocaleTelephoneCountryCode countryCode)
 {
@@ -119,7 +119,7 @@ static TextResourceLocaleBlockPrefix *TextResourceAsset_FindLocaleBlock
 
   remainingBlocks = (asset->localeCountHeader).localeBlockCount;
   block = Asset_RecordAfter<TextResourceLocaleBlockPrefix>(asset);
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* a do-while: remainingBlocks >= 1 because TextResourceAsset_HasValidBlocks rejects a count of 0 before */
   do {
     if (block->countryCode == countryCode) {
       return block;

@@ -1,5 +1,5 @@
 {
- "revision": "76034967",
+ "revision": "e6570a89",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -210,7 +210,7 @@
    "ui": 2
   },
   "do_while": {
-   "assets": 15,
+   "assets": 11,
    "audio": 2,
    "core": 15,
    "gameplay": 30,
@@ -222,7 +222,7 @@
    "world": 48
   },
   "while_tail": {
-   "assets": 15,
+   "assets": 11,
    "audio": 2,
    "core": 15,
    "gameplay": 30,
