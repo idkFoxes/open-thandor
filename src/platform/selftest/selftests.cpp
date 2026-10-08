@@ -11,7 +11,6 @@
 #include <memory>
 #include <new>
 #include <thandor/thandor.h>
-#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
 #include <thandor/platform/sdl3/window_icon.h>
@@ -23,8 +22,6 @@
 constexpr auto SELFTEST_GUARD_BYTES = 0x10000; /* codec: bytes behind each output buffer that must stay untouched */
 constexpr auto SELFTEST_GUARD_FILL = 0xCD; /* codec: fill byte of the output buffers and their guards */
 constexpr auto SELFTEST_UNWRITTEN_FILL = 0xAB; /* path split: fill byte that marks untouched output */
-constexpr auto SCANADDR_MAX_UNPACKED_BYTES = 0x4000000; /* scanaddr: entries claiming more are taken as the end of the package */
-constexpr auto SCANADDR_REBUILT_IMAGE_SPAN = 0x300000; /* scanaddr: dwords in [REBUILT_IMAGE_BASE, + this) are reported */
 
 /* Diagnostics: OPEN_THANDOR_SELFTEST=codec round-trips synthetic save-sized data through the PCK
    encoder/decoder tables, checks guard bytes behind the output and logs the result. */
@@ -878,136 +875,6 @@ static void Thandor_SelfTestSettings()
     }
 }
 
-/* OPEN_THANDOR_SELFTEST=scanaddr decodes every entry of the packages next to the executable (all
-   but FILME.PCK) and writes each aligned dword in the original image range
-   [ORIGINAL_TEXT_START, ORIGINAL_TEXT_END) or in the first SCANADDR_REBUILT_IMAGE_SPAN bytes of the rebuilt
-   image to scanaddr.txt: package, entry path, type tag, offset, value. Used to find assets that store
-   original code or data addresses. With OPEN_THANDOR_DUMPTEXT=<dir> it also writes every decoded
-   text page (*.str, *.txt) to <dir>\<package>_<entry path>. */
-static void Thandor_SelfTestScanAddresses()
-{
-    uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
-    uint32_t (*savedFree)(void *) = g_MemoryApi.free;
-    static const char *packages[] = {"DATEN.PCK", "ENGINE.PCK", "GRAPHIK.PCK", "LEVEL.PCK",
-                                     "MODELLE.PCK", "PATCH00.PCK", "PATCH01.PCK", "SOUND.PCK"};
-    unsigned p;
-    FILE *out = fopen("scanaddr.txt", "w");
-    auto packedBuffer = std::make_unique_for_overwrite<uint8_t[]>(PACKAGE_SCRATCH_BUFFER_BYTES);
-    uint8_t *packed = packedBuffer.get();
-    unsigned totalEntries = 0;
-    unsigned totalHits = 0;
-    if (out == nullptr) {
-        Thandor_Log("scanaddr: setup failed");
-        return;
-    }
-    g_MemoryApi.alloc = SelfTest_Alloc;
-    g_MemoryApi.free = SelfTest_Free;
-    /* OPEN_THANDOR_SCANFILES=a;b;... scans those package-format files (e.g. saves) instead. */
-    const char *extra = getenv("OPEN_THANDOR_SCANFILES");
-    static char extraNames[32][260];
-    const char *list[32];
-    unsigned listCount = 0;
-    if (extra != nullptr) {
-        const char *cursor = extra;
-        while (*cursor != 0 && listCount < 32) {
-            unsigned n = 0;
-            while (*cursor != 0 && *cursor != ';' && n < 259) extraNames[listCount][n++] = *cursor++;
-            extraNames[listCount][n] = 0;
-            if (*cursor == ';') cursor++;
-            if (n != 0) { list[listCount] = extraNames[listCount]; listCount++; }
-        }
-    }
-    else {
-        for (p = 0; p < sizeof packages / sizeof packages[0]; p++) list[listCount++] = packages[p];
-    }
-    for (p = 0; p < listCount; p++) {
-        FILE *pck;
-        long position = PCK_ENTRY_HEADER_BYTES;
-        pck = fopen(list[p], "rb");
-        if (pck == nullptr) {
-            continue;
-        }
-        for (;;) {
-            PckEntryHeader header;
-            bool decoded;
-            char name[PCK_ENTRY_PATH_UNITS + 1];
-            int k;
-            uint32_t i;
-            if (fseek(pck, position, SEEK_SET) != 0 || fread(&header, sizeof header, 1, pck) != 1) {
-                break;
-            }
-            if (header.packedSize == 0 || header.packedSize > PACKAGE_SCRATCH_BUFFER_BYTES || header.unpackedSize > SCANADDR_MAX_UNPACKED_BYTES ||
-                (uint32_t)header.compressionMethod >= sizeof g_PckDecoderTable / sizeof g_PckDecoderTable[0]) {
-                break;
-            }
-            for (k = 0; k < PCK_ENTRY_PATH_UNITS && header.path[k] != 0; k++) {
-                name[k] = (char)header.path[k];
-            }
-            name[k] = 0;
-            if (fread(packed, 1, header.packedSize, pck) != header.packedSize) {
-                break;
-            }
-            auto unpackedBuffer = std::make_unique_for_overwrite<uint8_t[]>(header.unpackedSize + 4);
-            uint8_t *unpacked = unpackedBuffer.get();
-            if (g_PckDecoderTable[header.compressionMethod] == nullptr) {
-                fprintf(out, "%s %s NO-DECODER method %u\n", list[p], name, (uint32_t)header.compressionMethod);
-                position += PCK_ENTRY_HEADER_BYTES + (long)header.packedSize;
-                continue;
-            }
-            decoded = g_PckDecoderTable[header.compressionMethod]
-                          (header.unpackedSize, unpacked, header.packedSize, packed, nullptr, nullptr);
-            totalEntries++;
-            if (!decoded) {
-                fprintf(out, "%s %s DECODE-FAILED\n", list[p], name);
-            }
-            else {
-                const char *dumpDirectory = getenv("OPEN_THANDOR_DUMPTEXT");
-                size_t nameLength = strlen(name);
-                if (dumpDirectory != nullptr && nameLength > 4 &&
-                    (_stricmp(name + nameLength - 4, ".str") == 0 || _stricmp(name + nameLength - 4, ".txt") == 0)) {
-                    /* <dir>\<package>_<entry path with '\' as '_'> holds the decoded entry */
-                    char dumpPath[600];
-                    FILE *dump;
-                    int j;
-                    const int pathLength =
-                        snprintf(dumpPath, sizeof dumpPath, "%s\\%s_%s", dumpDirectory, list[p], name);
-                    if ((pathLength < 0) || (static_cast<size_t>(pathLength) >= sizeof dumpPath)) {
-                        /* a truncated path would also start the '_' pass below behind its end */
-                        Thandor_Log("scanaddr: dump path for %s too long, not dumped", name);
-                        dump = nullptr;
-                    }
-                    else {
-                        for (j = (int)strlen(dumpDirectory) + 1; dumpPath[j] != 0; j++) {
-                            if (dumpPath[j] == '\\' || dumpPath[j] == '/') {
-                                dumpPath[j] = '_';
-                            }
-                        }
-                        dump = fopen(dumpPath, "wb");
-                    }
-                    if (dump != nullptr) {
-                        fwrite(unpacked, 1, header.unpackedSize, dump);
-                        fclose(dump);
-                    }
-                }
-                for (i = 0; i + 4 <= header.unpackedSize; i += 4) {
-                    uint32_t value = *Asset_RecordAt<uint32_t>(unpacked, i);
-                    if ((value >= ORIGINAL_TEXT_START && value < ORIGINAL_TEXT_END) ||
-                        (value >= REBUILT_IMAGE_BASE && value < REBUILT_IMAGE_BASE + SCANADDR_REBUILT_IMAGE_SPAN)) {
-                        fprintf(out, "%s %s %08x %x %08x\n", list[p], name, (uint32_t)header.typeTag, i, value);
-                        totalHits++;
-                    }
-                }
-            }
-            position += PCK_ENTRY_HEADER_BYTES + (long)header.packedSize;
-        }
-        fclose(pck);
-    }
-    fclose(out);
-    g_MemoryApi.alloc = savedAlloc;
-    g_MemoryApi.free = savedFree;
-    Thandor_Log("scanaddr: %u entries decoded, %u dwords in the original image range", totalEntries, totalHits);
-}
-
 /* OPEN_THANDOR_SELFTEST=icon: the .ico parser of the window icon (platform/sdl3/window_icon.cpp) on a synthetic
    icon file built here: 32-bit with alpha, 4-bit with palette and mask, 32-bit without alpha (the mask decides),
    24-bit 32x32, an 8-bit image of a size already present, a PNG entry and an entry outside the file; then the
@@ -1253,10 +1120,6 @@ int SelfTest_Run(const char *name)
     }
     if (name != nullptr && strcmp(name, "uiatlas") == 0) {
         Thandor_SelfTestUiAtlas();
-        return 1;
-    }
-    if (name != nullptr && strcmp(name, "scanaddr") == 0) {
-        Thandor_SelfTestScanAddresses();
         return 1;
     }
     if (name != nullptr && strcmp(name, "crash") == 0) {
