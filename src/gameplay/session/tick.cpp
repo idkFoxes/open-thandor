@@ -26,9 +26,8 @@ void InGameRuntime_PeriodicCountdownAndClockTick()
 
   while ((remaining != 0) && !countdown.compare_exchange_weak(remaining,remaining - 1,std::memory_order_relaxed)) {
   }
-  if (std::atomic_ref<uint8_t>(g_InGameResourceRegistrationBusyCount).load(std::memory_order_relaxed) == 0) {
-    std::atomic_ref<InGamePeriodicClockTick>(g_GameFactionRuntimeImage.tail.periodicClockTick)
-              .fetch_add(1,std::memory_order_relaxed);
+  if (InGameTick_ResourceRegistrationBusyCount().load(std::memory_order_relaxed) == 0) {
+    InGameTick_PeriodicClockTick().fetch_add(1,std::memory_order_relaxed);
   }
 }
 

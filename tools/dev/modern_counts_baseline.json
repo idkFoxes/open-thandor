@@ -1,5 +1,5 @@
 {
- "revision": "c1fc4726",
+ "revision": "d4968711",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -152,16 +152,16 @@
    "world": 51
   },
   "constexpr": {
-   "assets": 101,
+   "assets": 102,
    "audio": 15,
    "core": 210,
    "gameplay": 175,
    "graphics": 138,
    "movie": 28,
    "network": 129,
-   "platform": 149,
+   "platform": 151,
    "ui": 588,
-   "world": 96
+   "world": 97
   },
   "typedef_struct": {},
   "enum_class": {
@@ -218,7 +218,7 @@
    "movie": 2,
    "network": 7,
    "platform": 15,
-   "ui": 51,
+   "ui": 49,
    "world": 48
   },
   "while_tail": {
@@ -230,7 +230,7 @@
    "movie": 2,
    "network": 7,
    "platform": 11,
-   "ui": 50,
+   "ui": 48,
    "world": 47
   }
  }

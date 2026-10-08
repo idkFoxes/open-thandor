@@ -189,13 +189,29 @@ bool GraphicsCursor_LoadAssets(uint32_t *outError)
   remainingFrames = cursorFrameBytes / sizeof(GraphicsCursorFrameRecord);
   frameRecord = static_cast<GraphicsCursorFrameRecord *>(cursorFrameData);
   g_CursorFrameRecords = frameRecord;
-  g_CursorFrameCount = remainingFrames;
   /* The original's do-while runs 2^32 times over an empty frame table (an engine\mouse.dat shorter than one
      record); bounded here because that writes far past the loaded data. The frame table stays empty, so no
      cursor frame can be selected (GraphicsCursor_SetFrameIndex) or animated. */
   if (remainingFrames == 0) {
     Thandor_Log("GraphicsCursor_LoadAssets: engine\\mouse.dat holds no cursor frame (%u bytes)", cursorFrameBytes);
   }
+  /* The original trusts the animation ranges of the frame table; bounded here because a first or last
+     subresource index past the images of engine\mouse.gfx makes the cursor blit (SdlVideo_Present) read past
+     the asset. Such a table is dropped as a whole (frame count 0), like an empty one. The stock table passes. */
+  const AssetSubresourceCount cursorImageCount = (cursorAsset->tableDescriptor).subresourceCount;
+  for (uint32_t checkedFrame = 0; checkedFrame < remainingFrames; checkedFrame++) {
+    const GraphicsCursorFrameRecord &checkedRecord = frameRecord[checkedFrame];
+    if ((checkedRecord.idleAnimationFirstSubresourceIndex >= cursorImageCount) ||
+        (checkedRecord.idleAnimationLastSubresourceIndex >= cursorImageCount) ||
+        (checkedRecord.activeAnimationFirstSubresourceIndex >= cursorImageCount) ||
+        (checkedRecord.activeAnimationLastSubresourceIndex >= cursorImageCount)) {
+      Thandor_Log("GraphicsCursor_LoadAssets: engine\\mouse.dat frame %u uses a subresource index past the %u "
+                  "images of engine\\mouse.gfx; cursor frames disabled", checkedFrame, cursorImageCount);
+      remainingFrames = 0;
+      break;
+    }
+  }
+  g_CursorFrameCount = remainingFrames;
   /* every cursor starts on the first frame of its animations */
   while (remainingFrames != 0) {
     activeFirstSubresource = frameRecord->activeAnimationFirstSubresourceIndex;
