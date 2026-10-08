@@ -313,17 +313,16 @@ set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc APPEND PROP
 target_link_libraries(thandor PRIVATE thandor_resources)
 target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
 target_link_libraries(thandor PRIVATE kernel32 user32 dbghelp)
-# Stack reserve 32 MiB (linker defaults: 1 MiB MSVC, 2 MiB GNU ld). The pathing scanline flood fills
-# (GridReachability_MarkOpenRegionRecursive, GridReachability_ClearCostedRegionRecursive,
-# GridPathRegion_MarkUnreachableRecursive, GridScratch_FloodFillConnectedCells) recurse once per span, so at most once
-# per scratch cell (16 per field cell), at 96 bytes per level (GCC and MSVC release): any grid up to the largest stock
-# side (139 x 139 field cells, 309136 scratch cells) needs at most 28.3 MiB, the largest stock map (gemezel,
-# 131 x 131) 25.1 MiB. Only address space is reserved; the stack is committed as it grows. Threads created with stack
-# size 0 get the same reserve.
+# Stack reserve 8 MiB (linker defaults: 1 MiB MSVC, 2 MiB GNU ld). The pathing flood fills recursed once per scratch
+# cell in the original (up to 28 MiB on the largest stock maps); since step 11 they keep an explicit heap stack
+# (src/world/pathing/reachability.cpp, scratch_grid.cpp). The remaining recursive walks are the model node hierarchies
+# (render, shadow, release; a loaded savegame's record graph is checked for cycles, at most 0x4000 records deep), well
+# inside 8 MiB. Only address space is reserved; the stack is committed as it grows. Threads created with stack size 0
+# (SDL, drivers) get the same reserve; our own threads pass 1 MiB.
 if(MSVC)
-    target_link_options(thandor PRIVATE /STACK:0x2000000)
+    target_link_options(thandor PRIVATE /STACK:0x800000)
 else()
-    target_link_options(thandor PRIVATE -Wl,--stack,0x2000000)
+    target_link_options(thandor PRIVATE -Wl,--stack,0x800000)
 endif()
 # The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
 # (/LARGEADDRESSAWARE:NO) so every pointer fits.
