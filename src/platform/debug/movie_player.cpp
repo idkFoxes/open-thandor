@@ -62,7 +62,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   DebugMovie_ClearScreen();
   if (!Movie_Open(MovieOpenFlags::MOVIE_OPEN_STREAM,path,&playbackRateHz,&openError)) {
     Thandor_Log("debug movie %d/%d %s: Movie_Open failed (eax=%08x)", index, count, name, openError);
-    sprintf(label, "Video %d/%d: %s.flm - OEFFNEN FEHLGESCHLAGEN", index, count, name);
+    snprintf(label, sizeof label, "Video %d/%d: %s.flm - OEFFNEN FEHLGESCHLAGEN", index, count, name);
     if (!g_GraphicsFramebufferBeginAccess()) {
       DebugFont_DrawText(8, 8, label);
       g_GraphicsFramebufferEndAccess();
@@ -114,7 +114,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
                    reinterpret_cast<GraphicsTextureSourceAsset *>(movie) /* starts with a texture source header */,
                    g_FramebufferAccess);
       }
-      sprintf(label, "Video %d/%d: %s.flm  Frame %u/%u", index, count, name,
+      snprintf(label, sizeof label, "Video %d/%d: %s.flm  Frame %u/%u", index, count, name,
               g_ActiveMovie->currentFrameIndex, g_ActiveMovie->fileHeader->frameCount);
       DebugFont_DrawText(8, 8, label);
       g_GraphicsFramebufferEndAccess();
@@ -160,7 +160,7 @@ void DebugMovie_ExportOne(const char *name)
   width = g_ActiveMovie->fileHeader->widthPixels;
   height = g_ActiveMovie->fileHeader->heightPixels;
   /* the soundtrack is not exported: the SDL3 audio backend keeps no sound buffer to read it from */
-  sprintf(fileName, "moviedump\\%s.rgb", name);
+  snprintf(fileName, sizeof fileName, "moviedump\\%s.rgb", name);
   video = fopen(fileName, "wb");
   for (;;) {
     int attempts = 0;
@@ -175,7 +175,7 @@ void DebugMovie_ExportOne(const char *name)
     frames++;
   }
   if (video != nullptr) fclose(video);
-  sprintf(fileName, "moviedump\\%s.txt", name);
+  snprintf(fileName, sizeof fileName, "moviedump\\%s.txt", name);
   info = fopen(fileName, "w");
   if (info != nullptr) {
     fprintf(info, "%u %u %u %u\n", width, height, frames, playbackRateHz);
