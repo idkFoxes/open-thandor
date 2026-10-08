@@ -15,6 +15,8 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
+#include <atomic>
+
 /* Frames for g_GraphicsCursorSetFrame (GraphicsCursor_SetFrameIndex). */
 inline constexpr int GRAPHICS_CURSOR_FRAME_ARROW = 0;
 inline constexpr int GRAPHICS_CURSOR_FRAME_BUSY = 6; /* shown while something loads (credits, session start, savegame list) */
@@ -42,7 +44,8 @@ extern GraphicsCursorInputEvent18 g_CursorInputEvents[256];
 
 extern uint32_t g_CursorInputReadIndex;
 
-extern uint32_t g_CursorInputClockValue;
+/* The input clock: advanced by the cursor timer thread, read by the input code that stamps the mouse events. */
+extern std::atomic<uint32_t> g_CursorInputClockValue;
 
 extern GraphicsTextureSourceAsset *g_CursorSourceAsset;
 

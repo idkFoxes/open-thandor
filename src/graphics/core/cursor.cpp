@@ -13,6 +13,8 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
+#include <atomic>
+
 /* Module data. */
 
 THANDOR_ALIGN(8) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = &GraphicsCursor_SetFrameIndex;
@@ -26,7 +28,14 @@ static uint32_t g_GraphicsCursorAnimationCountdown = 2;
 
 static uint32_t g_CursorButtonReleaseClock[3] = {};
 
+/* Written by GraphicsCursor_SetFrameIndex (main thread), read by the cursor timer thread; accessed through
+   CursorFrameIndex() as an atomic. */
 static GraphicsCursorFrameIndex g_CursorFrameIndex = 0;
+
+static std::atomic_ref<GraphicsCursorFrameIndex> CursorFrameIndex()
+{
+  return std::atomic_ref<GraphicsCursorFrameIndex>(g_CursorFrameIndex);
+}
 
 static UiPixelCoordinate g_CursorLastClickX = 0;
 
@@ -36,7 +45,7 @@ GraphicsCursorInputEvent18 g_CursorInputEvents[256] = {};
 
 uint32_t g_CursorInputReadIndex = 0;
 
-uint32_t g_CursorInputClockValue = 0;
+std::atomic<uint32_t> g_CursorInputClockValue{0};
 
 GraphicsTextureSourceAsset *g_CursorSourceAsset = nullptr;
 
@@ -62,26 +71,35 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer()
   GraphicsSubresourceIndex nextIdleSubresource;
   GraphicsSubresourceIndex nextActiveSubresource;
 
-  activeFrameIndex = g_CursorFrameIndex;
+  /* The frame index is set by the main thread while this timer runs: one snapshot serves the bounds check and
+     every index below. The original re-reads it for each access; a frame change in between could mix two frames. */
+  activeFrameIndex = CursorFrameIndex().load(std::memory_order_relaxed);
   frameRecords = g_CursorFrameRecords;
   if (g_CursorVisibilityToken < 0) {
     return;
   }
-  g_CursorInputClockValue++;
+  g_CursorInputClockValue.fetch_add(1, std::memory_order_relaxed);
   g_GraphicsCursorAnimationCountdown--;
   if (g_GraphicsCursorAnimationCountdown == 0) {
     g_GraphicsCursorAnimationCountdown = 2;
-    nextIdleSubresource = g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex + 1;
-    nextActiveSubresource = g_CursorFrameRecords[g_CursorFrameIndex].activeSubresourceIndex + 1;
-    if (g_CursorFrameRecords[g_CursorFrameIndex].idleAnimationLastSubresourceIndex < nextIdleSubresource) {
-      nextIdleSubresource = g_CursorFrameRecords[g_CursorFrameIndex].idleAnimationFirstSubresourceIndex;
-    }
-    if (g_CursorFrameRecords[g_CursorFrameIndex].activeAnimationLastSubresourceIndex < nextActiveSubresource) {
-      nextActiveSubresource = g_CursorFrameRecords[g_CursorFrameIndex].activeAnimationFirstSubresourceIndex;
-    }
-    if (nextIdleSubresource != g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex) {
-      g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex = nextIdleSubresource;
-      frameRecords[activeFrameIndex].activeSubresourceIndex = nextActiveSubresource;
+    /* activeFrameIndex < g_CursorFrameCount always holds on valid data (GraphicsCursor_SetFrameIndex only accepts
+       such an index, and the stock frame table is not empty). The original indexes the table unchecked; bounded
+       here because an empty engine\mouse.dat (count 0) leaves no frame to animate. */
+    if (activeFrameIndex < g_CursorFrameCount) {
+      GraphicsCursorFrameRecord &frame = frameRecords[activeFrameIndex];
+      nextIdleSubresource = frame.idleSubresourceIndex + 1;
+      nextActiveSubresource = frame.activeSubresourceIndex + 1;
+      if (frame.idleAnimationLastSubresourceIndex < nextIdleSubresource) {
+        nextIdleSubresource = frame.idleAnimationFirstSubresourceIndex;
+      }
+      if (frame.activeAnimationLastSubresourceIndex < nextActiveSubresource) {
+        nextActiveSubresource = frame.activeAnimationFirstSubresourceIndex;
+      }
+      /* Original quirk: the active subresource only advances together with the idle one. */
+      if (nextIdleSubresource != frame.idleSubresourceIndex) {
+        frame.idleSubresourceIndex = nextIdleSubresource;
+        frame.activeSubresourceIndex = nextActiveSubresource;
+      }
     }
   }
   /* The original redraws the cursor on the primary surface here when its frame changed or the mouse moved. The
@@ -97,7 +115,7 @@ bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 {
   if (frameIndex < g_CursorFrameCount) {
-    g_CursorFrameIndex = frameIndex;
+    CursorFrameIndex().store(frameIndex, std::memory_order_relaxed);
     return true;
   }
   return false;
@@ -108,7 +126,7 @@ bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex()
 
 {
-  return g_CursorFrameIndex;
+  return CursorFrameIndex().load(std::memory_order_relaxed);
 }
 
 /* Takes the next mouse event from the 256-entry ring the mouse input code fills (returns false and leaves
