@@ -7,6 +7,7 @@
 
 #include <thandor/platform/input/devices.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -184,15 +185,20 @@ bool GraphicsCursor_LoadAssets(uint32_t *outError)
   frameRecord = static_cast<GraphicsCursorFrameRecord *>(cursorFrameData);
   g_CursorFrameRecords = frameRecord;
   g_CursorFrameCount = remainingFrames;
+  /* The original's do-while runs 2^32 times over an empty frame table (an engine\mouse.dat shorter than one
+     record); bounded here because that writes far past the loaded data. The frame table stays empty, so no
+     cursor frame can be selected (GraphicsCursor_SetFrameIndex) or animated. */
+  if (remainingFrames == 0) {
+    Thandor_Log("GraphicsCursor_LoadAssets: engine\\mouse.dat holds no cursor frame (%u bytes)", cursorFrameBytes);
+  }
   /* every cursor starts on the first frame of its animations */
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  while (remainingFrames != 0) {
     activeFirstSubresource = frameRecord->activeAnimationFirstSubresourceIndex;
     frameRecord->idleSubresourceIndex = frameRecord->idleAnimationFirstSubresourceIndex;
     frameRecord->activeSubresourceIndex = activeFirstSubresource;
     frameRecord++;
     remainingFrames--;
-  } while (remainingFrames != 0);
+  }
   return true;
 }
 
