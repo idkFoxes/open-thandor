@@ -10,6 +10,19 @@
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* The 32-bit word just behind queueSlot in the faction's production queue (secondaryArmyAssetPointersOrIds, 64
+   entries) as the original read it: behind the last slot that is the field that follows the queue in the record,
+   primaryArmyAssetPointersOrIds[0]. */
+static uint32_t ArmyUnitFactory_QueueWordBehind(const GameFactionRuntimeRecord *factionRecord,const uint32_t *queueSlot)
+{
+  const ptrdiff_t nextIndex = (queueSlot - factionRecord->secondaryArmyAssetPointersOrIds) + 1;
+
+  if (nextIndex < FACTION_ARMY_ASSET_LIST_CAPACITY) {
+    return factionRecord->secondaryArmyAssetPointersOrIds[nextIndex];
+  }
+  return factionRecord->primaryArmyAssetPointersOrIds[0];
+}
+
 /* Takes the first queued secondary asset whose flags match the factory definition's buildable mask
    (classParameterC4) and which the faction can pay for: the Xenite is paid, the build interval and the asset's
    Energy load (held while building) are stored in the factory, and the factory starts building. */
@@ -50,12 +63,14 @@ static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdate
     (modelRuntime->classLinkState).classState64 = 0;
     g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount =
          g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
-    /* Remove the entry: shift the rest of the queue down by one. Original quirk: it shifts remainingAssetCount
-       entries, i.e. it also copies the slot just behind the last queued entry. */
-    for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
+    /* Remove the entry: shift the rest of the queue down by one. */
+    for (; remainingAssetCount > 1; remainingAssetCount = remainingAssetCount - 1) {
       *queueEntry = queueEntry[1];
       queueEntry = queueEntry + 1;
     }
+    /* Original quirk: the last move copies the slot just behind the last queued entry; with a full queue of 64
+       that is the next field, primaryArmyAssetPointersOrIds[0] (read explicitly here). */
+    *queueEntry = ArmyUnitFactory_QueueWordBehind(&g_GameFactionRuntimeImage.records[factionIndex],queueEntry);
     (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_BUILDING;
     (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags | ARMY_MODEL_STATE_PRODUCING;
     return;
@@ -338,12 +353,14 @@ void ArmyRuntimeClass_UpdateStructureFactory
             (modelRuntime->classLinkState).classState64 = 0;
             g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount =
                  g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
-            /* Remove the entry from the queue. Original quirk: it shifts remainingAssetCount entries, i.e. it
-               also copies the slot just behind the last queued entry. */
-            for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
+            /* Remove the entry from the queue. */
+            for (; remainingAssetCount > 1; remainingAssetCount = remainingAssetCount - 1) {
               *queueSlot = queueSlot[1];
               queueSlot = queueSlot + 1;
             }
+            /* Original quirk: the last move copies the slot just behind the last queued entry; with a full queue
+               of 64 that is the next field, primaryArmyAssetPointersOrIds[0] (read explicitly here). */
+            *queueSlot = ArmyUnitFactory_QueueWordBehind(&g_GameFactionRuntimeImage.records[factionIndex],queueSlot);
             (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_BUILDING;
             (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags | ARMY_MODEL_STATE_PRODUCING;
             break;
@@ -534,9 +551,13 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
   remainingSlots = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get())->classParameterC4;
   /* the linked asset ids are consecutive dwords starting at movementTarget0Q12 */
   linkedAssetIds = &armyRuntime->movementTarget0Q12;
-  /* Original quirk: a do/while, so slot 0 is always visited; a classParameterC4 of 0 would run on until the
-     counter wraps (the pad definitions all have linked slots). */
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* The original ran a do/while, so slot 0 was always visited and a classParameterC4 of 0 (or below) ran on
+     until the counter wrapped, reading far past the slots; bounded here because a malformed model definition
+     would crash. Valid pad definitions all have linked slots and take the old path. */
+  if (remainingSlots <= 0) {
+    Thandor_Log("factory: pad definition without linked slots (classParameterC4 %d), no refund",remainingSlots);
+    return 0;
+  }
   do {
     if (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit) == 0) {
       if (ArmyAssetRegistry_FindById(linkedAssetIds[slotIndex],&assetRecord) == 0) {

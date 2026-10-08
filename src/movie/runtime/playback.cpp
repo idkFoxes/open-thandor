@@ -16,6 +16,11 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* KERNEL32 ReOpenFile (Vista and later), not in thandor/generated/imports.h: a second handle to the file of an
+   open handle, with its own file position (see Movie_StartStreamWorker). */
+extern "C" __declspec(dllimport) HANDLE __stdcall ReOpenFile(HANDLE hOriginalFile, DWORD dwDesiredAccess,
+                                                             DWORD dwShareMode, DWORD dwFlagsAndAttributes);
+
 /* Module data. */
 
 THANDOR_ALIGN(4) MovieAudioGainQ15 g_MovieDefaultAudioGainQ15 = 32768;
@@ -38,6 +43,25 @@ static std::atomic_ref<MovieStreamState> Movie_StreamState(MovieRuntime *movie)
 static std::atomic_ref<MovieWorkerActiveFlag> Movie_WorkerActive(MovieRuntime *movie)
 {
   return std::atomic_ref<MovieWorkerActiveFlag>(movie->workerActive);
+}
+
+/* Not in the original: the refill worker advances remainingVideoBytes and loadedVideoEnd while the main thread
+   reads them in Movie_AdvanceFrame (the original used plain fields, a data race). The worker stores them with
+   release after the read has filled the buffer, the readers load them with acquire, so the main thread sees the
+   new bytes before it sees the larger end. On x86 these are the same plain moves as before. */
+static std::atomic_ref<MovieStreamByteCount> Movie_RemainingVideoBytes(MovieRuntime *movie)
+{
+  return std::atomic_ref<MovieStreamByteCount>(movie->remainingVideoBytes);
+}
+
+static uint8_t *Movie_LoadLoadedVideoEnd(MovieRuntime *movie)
+{
+  return std::atomic_ref<Ptr32<uint8_t>>(movie->loadedVideoEnd).load(std::memory_order_acquire).get();
+}
+
+static void Movie_StoreLoadedVideoEnd(MovieRuntime *movie,uint8_t *loadedEnd)
+{
+  std::atomic_ref<Ptr32<uint8_t>>(movie->loadedVideoEnd).store(Ptr32<uint8_t>(loadedEnd),std::memory_order_release);
 }
 
 /* Not in the original: the size of the FLM buffer Movie_Open allocates (header plus video stream, capped when
@@ -130,6 +154,88 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
 
 static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext);
 
+/* Not in the original (split out of Movie_StreamWorkerThread, also used by the synchronous fallback in
+   Movie_AdvanceFrame): while the buffer holds less than MOVIE_REFILL_LIMIT_BYTES, appends the next
+   MOVIE_REFILL_CHUNK_BYTES (at most the rest) of the video stream from streamFileOffset. A loose file is closed
+   once fully read; a shared package handle stays open for other entries. Returns false when the seek or the read
+   fails. The original ignored the seek result (a failed seek read the chunk from the wrong position); a failed
+   seek now ends the stream like a failed read. */
+static bool Movie_RefillChunk(MovieRuntime *movie)
+{
+  void *handle;
+  uint32_t byteCount;
+  uint32_t remainingBytes;
+  uint8_t *loadedEnd;
+
+  remainingBytes = Movie_RemainingVideoBytes(movie).load(std::memory_order_acquire);
+  loadedEnd = Movie_LoadLoadedVideoEnd(movie);
+  byteCount = remainingBytes;
+  if ((uint32_t)Thandor_ByteDistance(loadedEnd, movie->fileHeader.get()) < MOVIE_REFILL_LIMIT_BYTES) {
+    handle = movie->streamHandle;
+    if (MOVIE_REFILL_CHUNK_BYTES < byteCount) {
+      byteCount = MOVIE_REFILL_CHUNK_BYTES;
+    }
+    if ((g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,movie->streamFileOffset,handle) != 0) ||
+        (g_FileSystemReadExact(byteCount,loadedEnd,handle) != 0)) {
+      return false;
+    }
+    remainingBytes = remainingBytes - byteCount;
+    Movie_RemainingVideoBytes(movie).store(remainingBytes,std::memory_order_release);
+    movie->streamFileOffset = movie->streamFileOffset + byteCount;
+    Movie_StoreLoadedVideoEnd(movie,loadedEnd + byteCount);
+    /* a loose file is closed once fully read; a package handle stays open for other entries */
+    if ((remainingBytes == 0) && (movie->streamHandleIsSharedPackage == 0)) {
+      g_FileSystemClose(handle);
+    }
+  }
+  return true;
+}
+
+/* Not in the original (split out of Movie_Open): starts the refill worker of a partly loaded movie. Without a
+   worker (semaphore or thread creation failed, or no private package handle) refillSemaphore stays NULL and
+   Movie_AdvanceFrame refills synchronously on the main thread instead, so the movie still plays to its end.
+   The original ignored a failed semaphore creation and, on a failed thread creation, left the movie waiting
+   forever for refills that never came.
+   A movie in a mounted package was streamed on the package's shared handle, whose file position the main
+   thread also moves (other entries of the same package); the worker now gets a private handle to the same
+   file (ReOpenFile), so the two threads never share a file position. That handle is the movie's own and is
+   closed like a loose file. */
+static void Movie_StartStreamWorker(MovieRuntime *movie)
+{
+  HANDLE privateHandle;
+  HANDLE refillSemaphore;
+  HANDLE workerThread;
+  DWORD workerThreadId;
+
+  if (movie->streamHandleIsSharedPackage != 0) {
+    privateHandle = ReOpenFile(movie->streamHandle,GENERIC_READ,FILE_SHARE_READ | FILE_SHARE_WRITE,0);
+    if (privateHandle == INVALID_HANDLE_VALUE) {
+      Thandor_Log("Movie_Open: no private package handle; movie refilled on the main thread");
+      return;
+    }
+    movie->streamHandle = privateHandle;
+    movie->streamHandleIsSharedPackage = 0;
+  }
+  refillSemaphore = CreateSemaphoreA(nullptr,0,1,nullptr);
+  if (refillSemaphore == nullptr) {
+    Thandor_Log("Movie_Open: CreateSemaphore failed; movie refilled on the main thread");
+    return;
+  }
+  movie->refillSemaphore = refillSemaphore;
+  movie->workerActive++;
+  /* (The original passed the address of its remainingByteCount local as lpThreadId.) */
+  workerThread = CreateThread(nullptr,0,(LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,nullptr,0,
+                              &workerThreadId);
+  if (workerThread == nullptr) {
+    Thandor_Log("Movie_Open: CreateThread failed; movie refilled on the main thread");
+    movie->workerActive--;
+    CloseHandle(refillSemaphore);
+    movie->refillSemaphore = nullptr;
+    return;
+  }
+  CloseHandle(workerThread);
+}
+
 /* Failure exit of Movie_Open once a file or package handle is open: closes the handle unless it is a shared
    package handle, stores error in *outError (when not NULL) and returns false. */
 static bool Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPackageHandle,uint32_t error,
@@ -165,7 +271,6 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
   MovieSubresourceCount frameWidth;
   MoviePaletteBankCount frameHeight;
   MovieAudioGainQ15 defaultAudioGain;
-  HANDLE workerThread;
   uint32_t streamBufferBytes;
   uint32_t runtimeBytes;
   uint32_t packedTime;
@@ -325,17 +430,7 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
   movie->streamState = MovieStreamState::MOVIE_STREAM_IDLE;
   movie->refillSemaphore = nullptr;
   if ((remainingByteCount != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
-    movie->workerActive++;
-    movie->refillSemaphore = CreateSemaphoreA(nullptr,0,1,nullptr);
-    /* The original passes the address of its remainingByteCount local as lpThreadId. */
-    workerThread = CreateThread(nullptr,0,(LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,nullptr,0,
-                                &remainingByteCount);
-    if (workerThread == nullptr) {
-      movie->workerActive--;
-    }
-    else {
-      CloseHandle(workerThread);
-    }
+    Movie_StartStreamWorker(movie);
   }
   if (outPlaybackRateHz != nullptr) {
     *outPlaybackRateHz = header->frameIntervalMilliseconds;
@@ -374,15 +469,14 @@ void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
 /* Background thread of a streamed movie: whenever Movie_AdvanceFrame signals the refill semaphore (or every
    256 ms), appends the next MOVIE_REFILL_CHUNK_BYTES of video to the buffer while it stays below
    MOVIE_REFILL_LIMIT_BYTES, so playback does not stall on disk reads. Ends when the movie is closed, fully
-   loaded or a read fails (MovieStreamState::MOVIE_STREAM_READ_FAILED), and clears workerActive on the way out.
+   loaded or a seek or read fails (MovieStreamState::MOVIE_STREAM_READ_FAILED), and clears workerActive on the way
+   out.
 */
 static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
 {
-  void *handle;
   HANDLE refillSemaphore;
   MovieRuntime *movie;
-  uint32_t byteCount;
   MovieStreamState expectedState;
 
   /* The original keeps the movie in a local: it re-reads g_ActiveMovie only at the loop top, after the
@@ -392,30 +486,16 @@ static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
     MsgWaitForMultipleObjects(1,&refillSemaphore,FALSE,256,0);
     movie = g_ActiveMovie;
     if ((movie == nullptr) || (Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_SHUTDOWN) ||
-        (Movie_WorkerActive(movie).load() == 0) || (movie->remainingVideoBytes == 0)) break;
+        (Movie_WorkerActive(movie).load() == 0) ||
+        (Movie_RemainingVideoBytes(movie).load(std::memory_order_acquire) == 0)) break;
     if (Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_IDLE) continue;
-    byteCount = movie->remainingVideoBytes;
-    if ((uint32_t)Thandor_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get()) < MOVIE_REFILL_LIMIT_BYTES) {
-      handle = movie->streamHandle;
-      if (MOVIE_REFILL_CHUNK_BYTES < byteCount) {
-        byteCount = MOVIE_REFILL_CHUNK_BYTES;
-      }
-      g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,movie->streamFileOffset,handle);
-      if (g_FileSystemReadExact(byteCount,movie->loadedVideoEnd,handle) != 0) {
-        /* only FILL_REQUESTED becomes READ_FAILED; a SHUTDOWN stored by Movie_Close stays */
-        expectedState = MovieStreamState::MOVIE_STREAM_FILL_REQUESTED;
-        Movie_StreamState(movie).compare_exchange_strong(expectedState,MovieStreamState::MOVIE_STREAM_READ_FAILED);
-        break;
-      }
-      movie->remainingVideoBytes = movie->remainingVideoBytes - byteCount;
-      movie->streamFileOffset = movie->streamFileOffset + byteCount;
-      movie->loadedVideoEnd = movie->loadedVideoEnd + byteCount;
-      /* a loose file is closed once fully read; a package handle stays open for other entries */
-      if ((movie->remainingVideoBytes == 0) && (movie->streamHandleIsSharedPackage == 0)) {
-        g_FileSystemClose(handle);
-      }
+    if (!Movie_RefillChunk(movie)) {
+      /* only FILL_REQUESTED becomes READ_FAILED; a SHUTDOWN stored by Movie_Close stays */
+      expectedState = MovieStreamState::MOVIE_STREAM_FILL_REQUESTED;
+      Movie_StreamState(movie).compare_exchange_strong(expectedState,MovieStreamState::MOVIE_STREAM_READ_FAILED);
+      break;
     }
-    if (movie->remainingVideoBytes == 0) break;
+    if (Movie_RemainingVideoBytes(movie).load(std::memory_order_acquire) == 0) break;
     /* The original checked for SHUTDOWN and then stored IDLE, so a Movie_Close between the two lost its
        SHUTDOWN and waited forever for this worker. Changed to one compare-exchange: it fails (and the worker
        leaves) exactly when Movie_Close has stored SHUTDOWN. */
@@ -513,21 +593,23 @@ static bool Movie_ReportAdvanceEnd(uint32_t *outEndCode,uint32_t endCode)
 
 /* Not in the original (split out of Movie_AdvanceFrame): once the read position of a streamed movie is a
    whole MOVIE_COMPACT_SHIFT_BYTES past the header, moves the unplayed bytes down by that shift (dword by
-   dword) to make room for further refills. */
+   dword) to make room for further refills. Called only in MOVIE_STREAM_IDLE, when no refill runs. */
 static void Movie_CompactStreamBuffer(MovieRuntime *movie)
 {
   uint32_t readOffset;
   uint32_t loadedSize;
   uint32_t *copySource;
   uint32_t *copyDestination;
+  uint8_t *loadedEnd;
 
   readOffset = movie->videoStreamOffset;
-  loadedSize = (uint32_t)Thandor_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get());
+  loadedEnd = Movie_LoadLoadedVideoEnd(movie);
+  loadedSize = (uint32_t)Thandor_ByteDistance(loadedEnd, movie->fileHeader.get());
   if ((MOVIE_COMPACT_SHIFT_BYTES + MOVIE_FILE_HEADER_BYTES - 1 < readOffset) && (readOffset < loadedSize)) {
     movie->videoStreamOffset = movie->videoStreamOffset - MOVIE_COMPACT_SHIFT_BYTES;
     copyDestination =
         reinterpret_cast<uint32_t *>(Thandor_Bytes(movie->fileHeader.get()) + readOffset - MOVIE_COMPACT_SHIFT_BYTES);
-    movie->loadedVideoEnd = movie->loadedVideoEnd - MOVIE_COMPACT_SHIFT_BYTES;
+    Movie_StoreLoadedVideoEnd(movie,loadedEnd - MOVIE_COMPACT_SHIFT_BYTES);
     copySource = Thandor_At<uint32_t>(copyDestination, MOVIE_COMPACT_SHIFT_BYTES);
     /* the ranges overlap (destination below source): a forward copy, as the dword loop was */
     std::copy_n(copySource,(loadedSize - readOffset) >> 2,copyDestination);
@@ -538,7 +620,7 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
    Asks the worker for more data when the buffer has room, starts the soundtrack with the first frame, and
    waits (returns true without decoding) while a streamed movie has less than one refill chunk buffered. A
    streamed movie drops played bytes from the buffer front in MOVIE_COMPACT_SHIFT_BYTES steps. Returns false
-   after the last frame, on a read failure of the worker or when no movie is open; *outEndCode then gets
+   after the last frame, on a seek or read failure of a refill or when no movie is open; *outEndCode then gets
    FATAL_ERROR_MOVIE_INVALID (no movie / read failure) or the unplayed bytes left in the buffer (after the
    last frame). Either output may be NULL; only the one for the returned case is written.
    Original quirk: after a worker read failure it closes an unrelated value left over by its caller instead
@@ -560,6 +642,13 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
   if (movie == nullptr) {
     return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }
+  /* Not in the original: a partly loaded movie without a refill worker (see Movie_StartStreamWorker) refills
+     here on the main thread; a failed seek or read ends it like a failed worker read. With a worker
+     refillSemaphore is never NULL, so this does not run. */
+  if ((movie->refillSemaphore == nullptr) && (Movie_RemainingVideoBytes(movie).load(std::memory_order_acquire) != 0) &&
+      (Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_IDLE) && !Movie_RefillChunk(movie)) {
+    Movie_StreamState(movie).store(MovieStreamState::MOVIE_STREAM_READ_FAILED);
+  }
   if (Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_READ_FAILED) {
     /* The original passes g_FileSystemClose a value it never sets on this path, so it closes whatever
        its caller left there -- never the movie stream handle: a UI/runtime object pointer in the
@@ -568,12 +657,12 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
        open; remainingVideoBytes = 0 also keeps Movie_Close from closing it) without the stray
        CloseHandle on an unrelated value. */
     g_FileSystemClose(nullptr);
-    movie->remainingVideoBytes = 0;
+    Movie_RemainingVideoBytes(movie).store(0,std::memory_order_release);
     return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }
   if ((Movie_StreamState(movie).load() == MovieStreamState::MOVIE_STREAM_IDLE) && (Movie_WorkerActive(movie).load() != 0) &&
-      (movie->remainingVideoBytes != 0) &&
-      ((uint32_t)Thandor_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get()) < MOVIE_REFILL_LIMIT_BYTES)) {
+      (Movie_RemainingVideoBytes(movie).load(std::memory_order_acquire) != 0) &&
+      ((uint32_t)Thandor_ByteDistance(Movie_LoadLoadedVideoEnd(movie), movie->fileHeader.get()) < MOVIE_REFILL_LIMIT_BYTES)) {
     /* only the worker leaves FILL_REQUESTED, so IDLE cannot change between the check and this store */
     Movie_StreamState(movie).store(MovieStreamState::MOVIE_STREAM_FILL_REQUESTED);
     ReleaseSemaphore(movie->refillSemaphore,1,nullptr);
@@ -587,12 +676,13 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
     movie->activeAudioBuffer = playedVoice;
   }
   nextFrameIndex = previousFrameIndex + 1;
-  bufferedBytes = (uint32_t)(movie->loadedVideoEnd - streamCursor);
+  bufferedBytes = (uint32_t)(Movie_LoadLoadedVideoEnd(movie) - streamCursor);
   if (nextFrameIndex > flmHeader->frameCount) {
     /* past the last frame: the end code is the unplayed byte count */
     return Movie_ReportAdvanceEnd(outEndCode,bufferedBytes);
   }
-  if ((movie->remainingVideoBytes != 0) && (bufferedBytes < MOVIE_REFILL_CHUNK_BYTES)) {
+  if ((Movie_RemainingVideoBytes(movie).load(std::memory_order_acquire) != 0) &&
+      (bufferedBytes < MOVIE_REFILL_CHUNK_BYTES)) {
     /* Not enough bytes buffered yet: success without decoding. Original quirk: the original returns
        the movie pointer minus MOVIE_RUNTIME_PIXELS_OFFSET here, because its working pointer is only
        advanced to the pixels further down. Callers keep the value as the movie only after the first-frame call, which cannot

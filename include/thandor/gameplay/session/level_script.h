@@ -56,6 +56,9 @@ BitStack InGameScheduledCondition_EvaluatePostfixExpression
 }
 
 void InGameConditionRuntime_UpdateScheduledRecords();
+/* False (one log line) when the level script holds an out-of-range faction, condition index or postfix operand;
+   to be called on the copied level prefix (NewLevel_CopyRuntimePrefix) before anything evaluates it. */
+bool InGameLevelScript_Validate(const InGameConditionSchedule *schedule);
 
 extern uint16_t g_SessionEndMoviePathUtf16[17];
 extern uint16_t g_FlmEnde0001FlmPathUtf16[17];
