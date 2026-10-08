@@ -406,37 +406,6 @@ static void FrontendMainLoop_OfferLevelToClients(FrontendLoadedLevelAsset *loade
   UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)transferByteCount,transferAllocation);
 }
 
-/* Code units WidePath_SetExtensionCode writes from the path's terminator on when the path has no extension
-   ('.', three characters, terminator); a path with an extension is rewritten within its old length. */
-static constexpr uint32_t FRONTEND_LEVEL_PATH_EXTENSION_UNITS = 5;
-
-/* True when the level's own path (header pathState.levelPathOffsetOrLoadedFieldGrid, still an offset here)
-   starts inside the loadedByteCount bytes of the level and is terminated at least
-   FRONTEND_LEVEL_PATH_EXTENSION_UNITS code units before their end, so the ".fld" rewrite and the path reads stay
-   inside the level. Logs the rejection.
-   The original trusts the offset (up to 0xFFFF) and the terminator; bounded here because a malformed level made
-   the extension write (and the field grid path reads) run past the level's allocation. The 55 stock levels
-   keep 298 or more code units after their path's terminator. */
-static bool FrontendMainLoop_LevelPathFits(const FrontendLoadedLevelAsset *level,uint32_t loadedByteCount)
-{
-  const uint32_t pathOffset = level->header.pathState.levelPathOffsetOrLoadedFieldGrid;
-  const uint32_t pathUnitsAvailable = (pathOffset < loadedByteCount) ?
-                                      (loadedByteCount - pathOffset) / sizeof(uint16_t) : 0;
-  const uint16_t *path = Thandor_At<uint16_t>(level,(pathUnitsAvailable != 0) ? pathOffset : 0);
-  uint32_t terminatorIndex = 0;
-
-  while ((terminatorIndex < pathUnitsAvailable) && (path[terminatorIndex] != 0)) {
-    terminatorIndex++;
-  }
-  if (pathUnitsAvailable - terminatorIndex < FRONTEND_LEVEL_PATH_EXTENSION_UNITS) {
-    Thandor_Log("FrontendMainLoop_LoadSelectedLevel: level \"%ls\" rejected, its path at 0x%X is not terminated %u "
-                "units before the end (0x%X bytes)",reinterpret_cast<wchar_t *>(g_FrontendScenarioPathScratchUtf16),
-                pathOffset,FRONTEND_LEVEL_PATH_EXTENSION_UNITS,loadedByteCount);
-    return false;
-  }
-  return true;
-}
-
 /* Frontend_MainLoop, host and local game: replaces the loaded level by the one at
    g_FrontendScenarioPathScratchUtf16, loads its field grid (the level's path with the extension "fld", under the
    executable directory), offers both to the clients when hosting and assigns the factions. */
@@ -466,24 +435,10 @@ static void FrontendMainLoop_LoadSelectedLevel()
     Thandor_Log("FrontendMainLoop_LoadSelectedLevel: loading \"%ls\" failed (error 0x%08X)",
                 reinterpret_cast<wchar_t *>(g_FrontendScenarioPathScratchUtf16),packageLoadErrorCode);
   }
-  /* The original took the level header's allocationSizeBytes as the image size (the host encodes that many
-     bytes for the clients, NewLevel_ValidateImage bounds the level by it); bounded here because a level shorter
-     than its header or than the size its header claims was read past its allocation: rejected like a level that
-     fails to load. */
-  else if ((loadedByteCount < sizeof(FrontendLoadedLevelAsset)) ||
-           (static_cast<FrontendLoadedLevelAsset *>(loadedPackageEntry)->header.common.allocationSizeBytes >
-            loadedByteCount)) {
-    Thandor_Log("FrontendMainLoop_LoadSelectedLevel: level \"%ls\" rejected, header size 0x%X, decoded 0x%X bytes",
-                reinterpret_cast<wchar_t *>(g_FrontendScenarioPathScratchUtf16),
-                (loadedByteCount < sizeof(FrontendLoadedLevelAsset)) ? 0U :
-                     static_cast<FrontendLoadedLevelAsset *>(loadedPackageEntry)->header.common.allocationSizeBytes,
-                loadedByteCount);
-    Resource_Release(loadedPackageEntry);
-    loadedPackageEntry = nullptr;
-    packageLoadErrorCode = FATAL_ERROR_LEVEL_ASSET_INVALID;
-  }
-  else if (!FrontendMainLoop_LevelPathFits(static_cast<FrontendLoadedLevelAsset *>(loadedPackageEntry),
-                                           loadedByteCount)) {
+  /* a level shorter than its header or its header's size, or with its path outside it, is rejected like a level
+     that fails to load (see FrontendLevelAsset_LoadedImageFits) */
+  else if (!FrontendLevelAsset_LoadedImageFits(static_cast<FrontendLoadedLevelAsset *>(loadedPackageEntry),
+                                               loadedByteCount,"FrontendMainLoop_LoadSelectedLevel")) {
     Resource_Release(loadedPackageEntry);
     loadedPackageEntry = nullptr;
     packageLoadErrorCode = FATAL_ERROR_LEVEL_ASSET_INVALID;
