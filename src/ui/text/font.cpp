@@ -6,7 +6,6 @@
  */
 
 #include <thandor/ui/text/font.h>
-#include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -38,8 +37,8 @@ static GraphicsTextureSourceAsset *FontTextureSource_Get(uint32_t fontIndex)
 }
 
 /* Loads the two font texture sources from the consecutive UTF-16 paths in g_FontTexturePathsUtf16, allocates
-   the 16 KiB font runtime buffer (the flattened text of the wrapped-text functions) and the text-resource
-   override table, and fills that whole table (ids and text pointers) with 0xFFFFFFFF. Any failure is fatal.
+   the 16 KiB font runtime buffer (the flattened text of the wrapped-text functions) and a 32 KiB placeholder
+   (see below). Any failure is fatal.
 */
 void FontRuntime_Init()
 
@@ -48,7 +47,6 @@ void FontRuntime_Init()
   int scanUnitsLeft;
   int sourceIndex;
   uint16_t *pathUtf16;
-  uint32_t *overrideDword;
   GraphicsTextureSourceAsset *loadedTexture;
   uint32_t textureLoadError;
   uintptr_t checkedValue;
@@ -75,13 +73,15 @@ void FontRuntime_Init()
   allocError = g_MemoryApi.alloc(RICHTEXT_RUNTIME_BUFFER_UNITS * sizeof(uint16_t),&allocPayload); /* 16 KiB */
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_FontRuntimeBuffer = reinterpret_cast<uint8_t *>(checkedValue);
+  /* Placeholder for the original's text-resource override table. The original allocates the table here and
+     fills it with -1 (0xFFFFFFFF), so TextResourceOverride_Register never finds a free (zero) slot and
+     TextResource_TryResolve never matches an entry (TEXT_RESOURCE_ID_NONE is answered before the table): the
+     table is inert. It is no longer installed - g_TextResourceOverrides stays NULL, which both functions treat
+     the same way - but a block of the same size is still allocated at this exact point, so the g_MemoryApi
+     allocation order and sizes (and with them every later arena address the determinism references depend on)
+     stay unchanged. The block is never used and, like the original table, never freed. */
   allocError = g_MemoryApi.alloc(sizeof(TextResourceOverrideTable),&allocPayload);
-  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
-  g_TextResourceOverrides = reinterpret_cast<TextResourceOverrideTable *>(checkedValue);
-  overrideDword = g_TextResourceOverrides->resourceIds;
-  /* all dwords: resourceIds and textPointers. TextResourceOverride_Register looks for a zero id, so
-     after this fill it finds no free slot (the original fills the table with -1 the same way). */
-  std::fill_n(overrideDword,sizeof(TextResourceOverrideTable) / 4,TEXT_RESOURCE_ID_NONE);
+  FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
 }
 
 /* Returns the width of one glyph (0 when the font has no such glyph) in the active font and stores the line
