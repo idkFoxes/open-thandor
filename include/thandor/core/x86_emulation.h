@@ -133,12 +133,15 @@ static inline unsigned long long thandor_mmx_pmulhw(unsigned long long a, unsign
     return r.q;
 }
 
+/* PMADDWD: each 16x16 product fits in int; the pair sum overflows int only for
+   -32768 * -32768 + -32768 * -32768 (= 2^31), which the instruction wraps to 0x80000000. The sum is
+   done in uint32_t to give those bits without signed-overflow undefined behaviour. */
 static inline unsigned long long thandor_mmx_pmaddwd(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     x.q = a; y.q = b;
-    r.sd[0] = (int)x.sw[0] * y.sw[0] + (int)x.sw[1] * y.sw[1];
-    r.sd[1] = (int)x.sw[2] * y.sw[2] + (int)x.sw[3] * y.sw[3];
+    r.sd[0] = static_cast<int>(static_cast<uint32_t>(x.sw[0] * y.sw[0]) + static_cast<uint32_t>(x.sw[1] * y.sw[1]));
+    r.sd[1] = static_cast<int>(static_cast<uint32_t>(x.sw[2] * y.sw[2]) + static_cast<uint32_t>(x.sw[3] * y.sw[3]));
     return r.q;
 }
 

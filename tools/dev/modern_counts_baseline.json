@@ -1,5 +1,5 @@
 {
- "revision": "fa4468ff",
+ "revision": "87788a37",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -154,9 +154,9 @@
   "constexpr": {
    "assets": 99,
    "audio": 15,
-   "core": 206,
-   "gameplay": 173,
-   "graphics": 137,
+   "core": 209,
+   "gameplay": 174,
+   "graphics": 138,
    "movie": 28,
    "network": 129,
    "platform": 149,

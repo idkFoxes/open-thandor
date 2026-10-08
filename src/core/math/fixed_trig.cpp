@@ -296,9 +296,29 @@ FixedVectorAngles FixedMath_VectorToAngles
   return vectorAngles;
 }
 
+/* 32-bit add / subtract / negate with the original's two's-complement wraparound (x86 ADD, SUB,
+   NEG), done in uint32_t: components near the int limits wrap exactly as in the original (and as
+   under GCC's -fwrapv) instead of overflowing int, which is undefined behaviour. */
+static constexpr int FixedMath_WrapAdd32(int a,int b)
+{
+  return static_cast<int>(static_cast<uint32_t>(a) + static_cast<uint32_t>(b));
+}
+
+static constexpr int FixedMath_WrapSub32(int a,int b)
+{
+  return static_cast<int>(static_cast<uint32_t>(a) - static_cast<uint32_t>(b));
+}
+
+static constexpr int FixedMath_WrapNeg32(int a)
+{
+  return static_cast<int>(0U - static_cast<uint32_t>(a));
+}
+
 /* atan2(y, x) as an engine angle (1/65536 turns, not masked to 16 bits). The plane is split into
    eighth-turn sectors, rotating (x, y) so the remaining angle is within +-1/16 turn, which an odd
    polynomial in the ratio numerator/denominator approximates. (0, 0) yields 0.
+   Original quirk: components beyond +-2^30 wrap in the doublings and sums (32-bit registers), which
+   can pick a wrong sector; the wraparound is reproduced bit-exactly via the FixedMath_Wrap*32 helpers.
 */
 uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
 
@@ -307,65 +327,68 @@ uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComp
   int doubledY;
   int denominator;
   uint32_t reducedAngleNumerator;
+  int doubledDenominator;
   int ratioQ31;
   int ratioSquaredQ30;
   AngleTurn16Stored32 octantBaseAngle16;
 
   octantBaseAngle16 = 0;
-  doubledX = x * 2;
-  doubledY = y * 2;
+  doubledX = FixedMath_WrapAdd32(x,x);
+  doubledY = FixedMath_WrapAdd32(y,y);
   if (doubledY <= x) {
-    if (doubledX < -y) {
+    if (doubledX < FixedMath_WrapNeg32(y)) {
       if (y < doubledX) {
         octantBaseAngle16 = -FIXED_ANGLE16_QUARTER_TURN;
-        denominator = -y;
+        denominator = FixedMath_WrapNeg32(y);
         reducedAngleNumerator = x;
       }
       else {
-        reducedAngleNumerator = x - y;
+        reducedAngleNumerator = FixedMath_WrapSub32(x,y);
         octantBaseAngle16 = -3 * FIXED_ANGLE16_EIGHTH_TURN;
-        denominator = -(x + y);
+        denominator = FixedMath_WrapNeg32(FixedMath_WrapAdd32(x,y));
       }
     }
     else {
       denominator = x;
       reducedAngleNumerator = y;
-      if (doubledY < -x) {
-        reducedAngleNumerator = x + y;
+      if (doubledY < FixedMath_WrapNeg32(x)) {
+        reducedAngleNumerator = FixedMath_WrapAdd32(x,y);
         octantBaseAngle16 = -FIXED_ANGLE16_EIGHTH_TURN;
-        denominator = x - y;
+        denominator = FixedMath_WrapSub32(x,y);
       }
     }
   }
-  else if (doubledX < -y) {
-    if (doubledY < -x) {
+  else if (doubledX < FixedMath_WrapNeg32(y)) {
+    if (doubledY < FixedMath_WrapNeg32(x)) {
       octantBaseAngle16 = FIXED_ANGLE16_HALF_TURN;
-      denominator = -x;
-      reducedAngleNumerator = -y;
+      denominator = FixedMath_WrapNeg32(x);
+      reducedAngleNumerator = FixedMath_WrapNeg32(y);
       if (0 < (int)reducedAngleNumerator) {
         octantBaseAngle16 = -FIXED_ANGLE16_HALF_TURN;
       }
     }
     else {
-      denominator = y - x;
+      denominator = FixedMath_WrapSub32(y,x);
       octantBaseAngle16 = 3 * FIXED_ANGLE16_EIGHTH_TURN;
-      reducedAngleNumerator = -(x + y);
+      reducedAngleNumerator = FixedMath_WrapNeg32(FixedMath_WrapAdd32(x,y));
     }
   }
   else if (y < doubledX) {
-    denominator = x + y;
+    denominator = FixedMath_WrapAdd32(x,y);
     octantBaseAngle16 = FIXED_ANGLE16_EIGHTH_TURN;
-    reducedAngleNumerator = y - x;
+    reducedAngleNumerator = FixedMath_WrapSub32(y,x);
   }
   else {
     octantBaseAngle16 = FIXED_ANGLE16_QUARTER_TURN;
-    reducedAngleNumerator = -x;
+    reducedAngleNumerator = FixedMath_WrapNeg32(x);
     denominator = y;
   }
-  if (denominator * 2 == 0) {
+  doubledDenominator = FixedMath_WrapAdd32(denominator,denominator);
+  if (doubledDenominator == 0) {
     return 0;
   }
-  ratioQ31 = (int)((int64_t)((uint64_t)reducedAngleNumerator << 32) / (int64_t)(denominator * 2));
+  /* doubledDenominator is even, so the INT64_MIN / -1 overflow cannot occur */
+  ratioQ31 = (int)((int64_t)((uint64_t)reducedAngleNumerator << 32) / (int64_t)doubledDenominator);
   ratioSquaredQ30 = FIXED_MUL_HIGH(ratioQ31,ratioQ31);
   /* atan(t) in angle units (the FIXED_ATAN_ANGLE16_C... constants) */
   return octantBaseAngle16 +

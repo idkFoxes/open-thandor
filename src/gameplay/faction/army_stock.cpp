@@ -99,7 +99,7 @@ void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId
   factionRecord = &g_GameFactionRuntimeImage.records[factionIndex];
   /* Original quirk: the count is tested after the first append, so repetitionCount 0 wraps around and fills
      the list up to its capacity. */
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* Count 0 stays bounded: the capacity check in the loop ends it after at most 64 appends (local callers pass 1 or 2). */
   do {
     if (factionRecord->secondaryArmyAssetCount >= FACTION_ARMY_ASSET_LIST_CAPACITY) {
       return;
@@ -218,11 +218,20 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
   }
 }
 
+/* The 32-bit word at index of the primary army-asset list as the original read it: index 64, one past a full
+   list, is the field that follows the list in the record, the raw bits of runtimeGroupMembers8x32[0]. */
+static uint32_t GameFactionRuntime_PrimaryArmyAssetWordAt(const GameFactionRuntimeRecord *factionRecord,
+          FactionArmyAssetCount index)
+{
+  if (index < FACTION_ARMY_ASSET_LIST_CAPACITY) {
+    return factionRecord->primaryArmyAssetPointersOrIds[index]; /* 32-bit format field: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+  }
+  return static_cast<uint32_t>(factionRecord->runtimeGroupMembers8x32[0]); /* 32-bit format field: GameFactionRuntimeRecord.runtimeGroupMembers8x32 */
+}
+
 /* Takes the first entry equal to armyDefinition out of the faction's primary army-asset list
    (primaryArmyAssetPointersOrIds),
-   moving the later entries down one slot, and returns true; returns false when there is none.
-   Original quirk: the last move reads the entry one past the count (with a full list of 64 that is the first
-   runtime group member pointer that follows the list). */
+   moving the later entries down one slot, and returns true; returns false when there is none. */
 static bool GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRecord *factionRecord,
           const ArmyAssetRecordPrefix *armyDefinition)
 {
@@ -233,9 +242,12 @@ static bool GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRec
   for (assetIndex = 0; assetIndex < factionRecord->primaryArmyAssetCount; assetIndex++) {
     if (armyDefinition == Thandor_U32ToPointer<const ArmyAssetRecordPrefix>(primaryAssets[assetIndex])) { /* 32-bit format field: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       /* close the gap */
-      for (; assetIndex < factionRecord->primaryArmyAssetCount; assetIndex++) {
+      for (; assetIndex + 1 < factionRecord->primaryArmyAssetCount; assetIndex++) {
         primaryAssets[assetIndex] = primaryAssets[assetIndex + 1];
       }
+      /* Original quirk: the last move copies the word just behind the last entry into the freed slot; with a
+         full list of 64 that word is the next field, runtimeGroupMembers8x32[0] (read explicitly here). */
+      primaryAssets[assetIndex] = GameFactionRuntime_PrimaryArmyAssetWordAt(factionRecord,assetIndex + 1);
       factionRecord->primaryArmyAssetCount--;
       return true;
     }
