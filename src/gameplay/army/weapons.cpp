@@ -483,7 +483,8 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
 {
   ModelRuntimeSlot *childModelRuntime;
   uint32_t channelIndex;
-  uint32_t remainingAttachments;
+  uint32_t attachmentCount;
+  uint32_t attachmentIndex;
   int remainingRecords;
   ModelResource *rootModelResource;
   ModelResource *childModelResource;
@@ -559,16 +560,14 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
       }
     }
   }
-  /* modelRuntime advances by one 0x20-byte attachment record per iteration */
-  for (remainingAttachments = modelRuntime->attachmentCount; remainingAttachments != 0; remainingAttachments = remainingAttachments - 1) {
-    childModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
+  /* every attached child, attachments[0 .. attachmentCount-1] in order */
+  attachmentCount = modelRuntime->attachmentCount;
+  for (attachmentIndex = 0; attachmentIndex < attachmentCount; attachmentIndex = attachmentIndex + 1) {
+    childModelRuntime = modelRuntime->attachments[attachmentIndex].childModelRuntimeOrSavedOffset;
     if (childModelRuntime != nullptr) {
       childModelRuntime->health = 0;
       (childModelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime = nullptr;
     }
-    /* the slot pointer moves by one descriptor's bytes (so attachments[0] is the next descriptor) */
-    modelRuntime = reinterpret_cast<ModelRuntimeSlot *>(reinterpret_cast<uint8_t *>(modelRuntime) +
-                                                        sizeof(ModelRuntimeAttachmentDescriptor));
   }
 }
 
