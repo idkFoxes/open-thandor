@@ -9,6 +9,8 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#include <cstring>
+
 /* Module data. */
 
 /* The message window's seven recipient check boxes (the original kept their offsets from the image start,
@@ -34,23 +36,15 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
   InGameSevenSlotCommand_ClosePage(source);
 }
 
-/* True when the first 32 UTF-16 units of text equal the cheat phrase g_DeveloperChatPhraseUtf16 (compared as
-   16 dwords, like the original REPE CMPSD). */
-static bool InGameChatInput_MatchesCheatPhrase(const uint16_t *text)
+/* True when the first 32 UTF-16 units of the chat line equal the cheat phrase g_DeveloperChatPhraseUtf16. The
+   original compares 16 dwords (REPE CMPSD) through int pointers; done here as a memcmp of exactly the phrase's
+   64 bytes, which stays inside the 48-unit text buffer and needs no type-punned reads. */
+static bool InGameChatInput_MatchesCheatPhrase(const uint16_t (&text)[48])
 
 {
-  const int *phraseDwords;
-  const int *textDwords;
-  int dwordIndex;
-
-  phraseDwords = reinterpret_cast<const int *>(g_DeveloperChatPhraseUtf16);
-  textDwords = reinterpret_cast<const int *>(text);
-  for (dwordIndex = 0; dwordIndex < 16; dwordIndex++) {
-    if (phraseDwords[dwordIndex] != textDwords[dwordIndex]) {
-      return false;
-    }
-  }
-  return true;
+  static_assert(sizeof(g_DeveloperChatPhraseUtf16) == 64 && sizeof(text) >= sizeof(g_DeveloperChatPhraseUtf16),
+                "the cheat phrase compare reads 64 bytes of the chat line");
+  return std::memcmp(g_DeveloperChatPhraseUtf16,text,sizeof(g_DeveloperChatPhraseUtf16)) == 0;
 }
 
 /* Recipient bits of the message window's seven check boxes (g_UiSevenSlotSelectionControls of the
@@ -240,8 +234,10 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
   UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(&image->messageRecipientPageStack));
   resourceId = TEXT_ID_MESSAGE_RECIPIENT_LABEL_BASE;
   filledSlotCount = 0;
-  /* Original quirk: a do/while, so it runs once even with a count of 0 (kept as in the original; step 11). */
-  do {
+  /* The original is a do/while that fills one box even with a player count of 0 (reading an unset player
+     block's selection pointer); bounded here because the count drops to 0 when the network session falls
+     apart (players leaving, lobby reset). For a count >= 1 the loop runs exactly as before. */
+  while ((filledSlotCount < g_FrontendPlayerRuntimeBlockCount) && (filledSlotCount < 7)) {
     resolvedText = TextResource_Resolve(resourceId);
     selectionBlock = g_SelectionPlayerRuntimeBlockPointers
              [g_FrontendPlayerRuntimeBlocks[filledSlotCount].playerRuntimeId];
@@ -250,8 +246,7 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
     *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
     filledSlotCount++;
     RichTextCommandStream_PatchPayloadBySelector(0,selectionBlock->playerNameUtf16,resolvedText);
-    if (6 < filledSlotCount) break;
-  } while (filledSlotCount < g_FrontendPlayerRuntimeBlockCount);
+  }
   image->messageRecipientList.root.base.bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
   UiScrollableControl_RebuildViewportAndScrollbars
             (&image->messageRecipientScroll);

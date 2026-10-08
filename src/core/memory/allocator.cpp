@@ -61,12 +61,32 @@ void * ArenaHeap_Init()
 }
 
 /* Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.
+   The original called HeapFree/HeapDestroy unconditionally; bounded here because the fatal-error path
+   (ArenaHeap_Init failing, then Runtime_Shutdown) reaches this without a heap or without the arena
+   allocation, and HeapFree/HeapDestroy on a null heap handle is undefined. The state is cleared, so a
+   second call does nothing.
 */
 void ArenaHeap_Shutdown()
 
 {
-  HeapFree(g_Arena.processHeap,0,g_Arena.rawAllocation);
+  if (g_Arena.processHeap == nullptr) {
+    return;
+  }
+  if (g_Arena.rawAllocation != nullptr) {
+    HeapFree(g_Arena.processHeap,0,g_Arena.rawAllocation);
+  }
   HeapDestroy(g_Arena.processHeap);
+  g_Arena = ArenaState{};
+}
+
+/* open-thandor: true once ArenaHeap_Init has created the arena (heap and arena allocation), until
+   ArenaHeap_Shutdown. Runtime_Shutdown asks it to skip the subsystem shutdowns on the fatal-error path of a
+   failed ArenaHeap_Init, where nothing else is initialised yet.
+*/
+bool ArenaHeap_IsReady()
+
+{
+  return g_Arena.firstBlock != nullptr;
 }
 
 /* The arena's malloc (g_MemoryApi.alloc): first fit over the block chain for the size rounded up to 32
