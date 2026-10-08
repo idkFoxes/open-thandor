@@ -11,6 +11,16 @@
 #include <thandor/world/pathing/scratch_grid.h>
 #include <thandor/thandor.h>
 #include <cassert>
+#include <vector>
+
+/* One span of GridScratch_FloodFillConnectedCells that still has neighbour-row cells to test: its two stop cells,
+   the next neighbour cell to test and whether that cell is in the row below (else the row above). */
+struct GridScratchFloodFillFrame {
+  GridScratchCell *leftStopCell;
+  GridScratchCell *rightStopCell;
+  GridScratchCell *rowCursor;
+  bool inRowBelow;
+};
 
 /* Module data. */
 
@@ -21,6 +31,9 @@ GridScratchCell *g_GridScratchPrimary = nullptr;
 uint32_t g_GridScratchWidth = 0;
 
 int32_t g_GridScratchHeight = 0;
+
+/* The explicit call stack of GridScratch_FloodFillConnectedCells (CRT heap, see there). */
+static std::vector<GridScratchFloodFillFrame> s_GridScratchFloodFillFrames;
 
 /* int32_t[17] terrain-class thresholds, one table in the original
    (indexed by GRID_TERRAIN_THRESHOLD_*). GridScratch classification reads each entry by name;
@@ -629,23 +642,17 @@ void GridScratch_SwapPrimarySecondary()
   g_GridScratchPrimary = previousSecondaryBuffer;
 }
 
-/* Scanline flood fill over the scratch grid: marks the horizontal run of cells around currentCell that have no
-   traversalMask bit as visited, then recurses into every such cell of the row above and the row below that span.
-   A blocked or already visited start cell does nothing.
-*/
-void GridScratch_FloodFillConnectedCells
-          (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell)
-
+/* One span of GridScratch_FloodFillConnectedCells: marks the horizontal run of cells around currentCell that
+   have no traversalMask bit as visited and returns its two stop cells. False (nothing marked) for a blocked or
+   already visited currentCell. */
+static bool GridScratch_FloodFillSpan(GridScratchStateMask traversalMask,GridScratchCell *currentCell,
+          GridScratchCell **outLeftStopCell,GridScratchCell **outRightStopCell)
 {
   GridScratchCell *leftStopCell;
   GridScratchCell *rightStopCell;
-  GridScratchCell *rowAboveCell;
-  GridScratchCell *rowAboveLastCell;
-  GridScratchCell *rowBelowCell;
-  GridScratchCell *rowBelowEndCell;
 
   if ((currentCell->stateMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TRAVERSAL_VISITED)) != 0) {
-    return;
+    return false;
   }
   currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   for (leftStopCell = currentCell - 1; (leftStopCell->stateMask & traversalMask) == 0; leftStopCell--) {
@@ -654,21 +661,54 @@ void GridScratch_FloodFillConnectedCells
   for (rightStopCell = currentCell + 1; (rightStopCell->stateMask & traversalMask) == 0; rightStopCell++) {
     rightStopCell->stateMask = rightStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   }
-  /* the row above is scanned from the span's first cell up to the column of the right stopping cell, the row
-     below from the column of the left stopping cell up to the span's last cell (addresses as in the original).
-     Both ranges are never empty, so testing before the first cell is the same as the original's do-while. */
-  rowAboveLastCell = GridScratchCell_RowAbove(rightStopCell,rowStrideBytes);
-  for (rowAboveCell = GridScratchCell_RowAbove(leftStopCell + 1,rowStrideBytes);
-       rowAboveCell <= rowAboveLastCell; rowAboveCell++) {
-    if ((rowAboveCell->stateMask & traversalMask) == 0) {
-      GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowAboveCell);
-    }
+  *outLeftStopCell = leftStopCell;
+  *outRightStopCell = rightStopCell;
+  return true;
+}
+
+/* Scanline flood fill over the scratch grid: marks the horizontal run of cells around currentCell that have no
+   traversalMask bit as visited (GridScratch_FloodFillSpan), then continues from every such cell of the row above
+   and the row below that span. A blocked or already visited start cell does nothing.
+   The row above is scanned from the span's first cell up to the column of the right stopping cell, the row below
+   from the column of the left stopping cell up to the span's last cell (addresses as in the original). Both ranges
+   are never empty, so testing before the first cell is the same as the original's do-while.
+   The original recursed into each such cell before testing the next one (up to one level per scratch cell, so a
+   large field grid overflowed the stack). Here an explicit stack of frames (one per span whose neighbour rows are
+   not done yet) replays that call/return order exactly, so the cells are marked in the same order. The frames live
+   on the CRT heap (std::vector), not in the g_MemoryApi arena, so the arena's allocation order and sizes stay as
+   they were; the vector keeps its capacity between fills (main thread only, never nested).
+*/
+void GridScratch_FloodFillConnectedCells
+          (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell)
+
+{
+  GridScratchFloodFillFrame frame;
+  GridScratchCell *cell;
+
+  if (!GridScratch_FloodFillSpan(traversalMask,currentCell,&frame.leftStopCell,&frame.rightStopCell)) {
+    return;
   }
-  rowBelowEndCell = GridScratchCell_RowBelow(rightStopCell,rowStrideBytes);
-  for (rowBelowCell = GridScratchCell_RowBelow(leftStopCell,rowStrideBytes);
-       rowBelowCell < rowBelowEndCell; rowBelowCell++) {
-    if ((rowBelowCell->stateMask & traversalMask) == 0) {
-      GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowBelowCell);
+  frame.inRowBelow = false;
+  frame.rowCursor = GridScratchCell_RowAbove(frame.leftStopCell + 1,rowStrideBytes);
+  s_GridScratchFloodFillFrames.push_back(frame);
+  while (!s_GridScratchFloodFillFrames.empty()) {
+    GridScratchFloodFillFrame &top = s_GridScratchFloodFillFrames.back();
+    if (!top.inRowBelow && GridScratchCell_RowAbove(top.rightStopCell,rowStrideBytes) < top.rowCursor) {
+      top.inRowBelow = true;
+      top.rowCursor = GridScratchCell_RowBelow(top.leftStopCell,rowStrideBytes);
+    }
+    if (top.inRowBelow && GridScratchCell_RowBelow(top.rightStopCell,rowStrideBytes) <= top.rowCursor) {
+      s_GridScratchFloodFillFrames.pop_back();
+      continue;
+    }
+    cell = top.rowCursor;
+    top.rowCursor++;
+    /* the original's recursive call (with its own blocked / visited test); top is not used again before the
+       next iteration re-reads the back frame */
+    if ((cell->stateMask & traversalMask) == 0 &&
+        GridScratch_FloodFillSpan(traversalMask,cell,&frame.leftStopCell,&frame.rightStopCell)) {
+      frame.rowCursor = GridScratchCell_RowAbove(frame.leftStopCell + 1,rowStrideBytes);
+      s_GridScratchFloodFillFrames.push_back(frame);
     }
   }
 }
