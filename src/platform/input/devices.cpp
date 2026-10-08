@@ -163,7 +163,12 @@ bool GraphicsCursor_LoadAssets(uint32_t *outError)
   maxHeight = 0;
   subresourceIndex = 0;
   g_CursorSourceAsset = cursorAsset;
-  do {
+  /* The original's do-while read the size of image 0 even when engine\mouse.gfx holds no image; bounded here
+     because that reads past the asset's empty subresource table. The cursor buffers then stay 0 x 0. */
+  if ((cursorAsset->tableDescriptor).subresourceCount == 0) {
+    Thandor_Log("GraphicsCursor_LoadAssets: engine\\mouse.gfx holds no cursor image");
+  }
+  while (subresourceIndex < (cursorAsset->tableDescriptor).subresourceCount) {
     logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,cursorAsset);
     subresourceIndex++;
     if ((int)maxWidth < (int)logicalSize.logicalWidthPixels) {
@@ -172,7 +177,7 @@ bool GraphicsCursor_LoadAssets(uint32_t *outError)
     if ((int)maxHeight < (int)logicalSize.logicalHeightPixels) {
       maxHeight = logicalSize.logicalHeightPixels;
     }
-  } while (subresourceIndex < (cursorAsset->tableDescriptor).subresourceCount);
+  }
   g_CursorMaxWidth = maxWidth;
   g_CursorMaxHeight = maxHeight;
 

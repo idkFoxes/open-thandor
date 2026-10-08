@@ -200,21 +200,55 @@ static bool RomSerializedNode_FitsAsset(uint32_t nodeOffset,uint32_t assetByteCo
          nodeOffset <= assetByteCount - sizeof(RomSerializedNodeHeader);
 }
 
+/* True when the UTF-16 sprite path that follows a node header is terminated inside the asset of assetByteCount
+   bytes and within WIDE_PATH_MAX_CODE_UNITS units. *outCapacity gets the code units the path may use (up to the
+   asset end, at most WIDE_PATH_MAX_CODE_UNITS). The node header itself must fit into the asset. */
+static bool RomSerializedNode_SpritePathFitsAsset(const uint16_t *path,const RomAssetHeader *assetBase,
+                                                  uint32_t assetByteCount,size_t *outCapacity)
+{
+  size_t capacity = ((size_t)assetByteCount - (size_t)Asset_ByteDistance(path,assetBase)) / sizeof(uint16_t);
+  if (capacity > (size_t)WIDE_PATH_MAX_CODE_UNITS) {
+    capacity = (size_t)WIDE_PATH_MAX_CODE_UNITS;
+  }
+  *outCapacity = capacity;
+  for (size_t unitIndex = 0; unitIndex < capacity; unitIndex++) {
+    if (path[unitIndex] == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /* Loads the ".spr" sprite named after a serialized node header (UTF-16 file name) into the node, or reuses an
    already registered sprite with the same registry id. Returns true with the error in *outError when loading
-   or registering fails. */
-static bool RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t *outError)
+   or registering fails, or when the file name is not terminated inside the asset of assetByteCount bytes
+   (FATAL_ERROR_ROM_REGISTRY_FULL, the code of an invalid ROM header). */
+static bool RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,const RomAssetHeader *assetBase,
+                                         uint32_t assetByteCount,uint32_t *outError)
 {
   SpriteAssetHeader *asset;
   SpriteAssetHeader *existingSprite;
   uint16_t *spritePath;
+  size_t spritePathCapacity;
   uint32_t loadErrorCode;
   uint32_t spriteRegisterError;
 
   /* the sprite file name (UTF-16) follows the node header */
-  /* cannot fail */
   spritePath = Asset_RecordAfter<uint16_t>(node);
-  WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
+  /* The original scans and extends the path without a bound; bounded here because a path without a terminator
+     would be read and written past the asset. The stock paths have at most 20 units including the terminator
+     and leave at least 17 units to the asset end. */
+  if (!RomSerializedNode_SpritePathFitsAsset(spritePath,assetBase,assetByteCount,&spritePathCapacity)) {
+    Thandor_Log("RomAssetRecord_RegisterAndRelocate: sprite path at offset 0x%X not terminated within %u units "
+                "inside the asset of 0x%X bytes, rejected",(uint32_t)Asset_ByteDistance(spritePath,assetBase),
+                (uint32_t)spritePathCapacity,assetByteCount);
+    Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
+    *outError = FATAL_ERROR_ROM_REGISTRY_FULL;
+    return true;
+  }
+  /* cannot fail on a terminated path whose ".spr" fits in spritePathCapacity units (all stock paths); otherwise
+     the path is left unchanged */
+  WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath,spritePathCapacity);
   asset = static_cast<SpriteAssetHeader *>(Package_LoadEntry(spritePath,&loadErrorCode));
   if (asset == nullptr) {
     *outError = loadErrorCode;
@@ -260,7 +294,7 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
       Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
       return FATAL_ERROR_ROM_REGISTRY_FULL;
     }
-    if (RomSerializedNode_LoadSprite(node,&loadError)) {
+    if (RomSerializedNode_LoadSprite(node,assetBase,assetByteCount,&loadError)) {
       return loadError;
     }
     if (node->childCount > ROM_NODE_MAX_CHILDREN) {

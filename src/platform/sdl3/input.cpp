@@ -480,9 +480,9 @@ void HandleMouseEvent(const SDL_Event &event)
 
 void HandleFocusGained()
 {
-  /* MainWindowProc on WM_ACTIVATEAPP: back to real-time priority, lock keys reseeded (modifiers released),
-     queued keys dropped */
-  SetPriorityClass(GetCurrentProcess(), DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
+  /* MainWindowProc on WM_ACTIVATEAPP: back to the game's priority, lock keys reseeded (modifiers released),
+     queued keys dropped. The original restored real-time priority; high here (see ProcessEntry). */
+  SetPriorityClass(GetCurrentProcess(), DebugHook_ProcessPriorityClass(HIGH_PRIORITY_CLASS));
   g_KeyboardStateMask = LockKeyBits();
   g_KeyboardFlushEvents();
 }
@@ -523,7 +523,12 @@ bool SdlInput_Init(uint32_t *outError)
 
 void SdlInput_Shutdown()
 {
-  g_TimerUnregisterPeriodic(GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
+  /* The original called the unregister hook unconditionally; checked here because the hook is only installed
+     by SdlPlatform_InstallTimersAndPump, so a fatal error before it (file system, locale, error system,
+     DynAPI bootstrap) reached Runtime_Shutdown with a null pointer and crashed. */
+  if (g_TimerUnregisterPeriodic != nullptr) {
+    g_TimerUnregisterPeriodic(GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
+  }
   if (MainWindow() != nullptr) {
     SDL_SetWindowRelativeMouseMode(MainWindow(), false);
   }
