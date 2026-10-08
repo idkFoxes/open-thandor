@@ -239,10 +239,12 @@ static void InGameWorldOverlay_BuildCommandTargetMarkers(WorldRuntimeContext *wo
         return;
       }
       if (((entityRuntime->common).commandFlags & ToBits(ARMY_MOVEMENT_WAYPOINTS_QUEUED)) != 0) {
-        /* further waypoints: the army's queued waypoints (at least one is visited) */
+        /* further waypoints: the army's queued waypoints */
         waypointIndex = 0;
-        /* Original quirk: a do/while, so it runs once even with a count of 0 (kept as in the original; step 11). */
-        do {
+        /* The original is a do/while that draws waypoint 0 even with a queued count of 0; bounded here because a
+           savegame can carry the queued flag with a count of 0 (the game itself clears the flag at 0). A guarded
+           loop, same body and order for a count >= 1. */
+        while (waypointIndex < ModelView_Cast<ArmyMovementRuntime>(entityRuntime)->queuedWaypointCount) {
           InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                     (Q12_ONE,(entityRuntime->common).ownership.modelNode,
                      ModelView_Cast<ArmyMovementRuntime>(entityRuntime)->queuedWaypoints[waypointIndex].worldYQ12,
@@ -252,7 +254,7 @@ static void InGameWorldOverlay_BuildCommandTargetMarkers(WorldRuntimeContext *wo
           if (InGameWorldOverlay_CommandTargetMarkersFull()) {
             return;
           }
-        } while (waypointIndex < ModelView_Cast<ArmyMovementRuntime>(entityRuntime)->queuedWaypointCount);
+        }
       }
     }
     if (((entityRuntime->common).commandTarget.targetFlags & 2) != 0) {

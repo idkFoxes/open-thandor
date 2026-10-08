@@ -316,7 +316,7 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
   if (assetCount < FACTION_ARMY_ASSET_LIST_CAPACITY) {
     /* primaryArmyAssetPointersOrIds[assetCount] */
     g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[assetCount] =
-         (uint32_t)pendingAsset; /* 32-bit format field: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+         (uint32_t)pendingAsset; /* 32-bit format field: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds; read from the UPtr32 field above, so it fits (checked when stored) */
     g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount++;
   }
   if (factionIndex == runtimeRoot->worldRuntime.activeFactionRuntimeIndex) {

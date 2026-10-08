@@ -23,14 +23,14 @@ static bool FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
 
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (playersRemaining != 0) {
     if (factionSlot == playerRecord->factionAssignment.factionAssignmentIndex) {
       return true;
     }
     playerRecord++;
     playersRemaining--;
-  } while (playersRemaining != 0);
+  }
   return false;
 }
 
@@ -149,12 +149,12 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   }
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (playersRemaining != 0) {
     playerRecord->factionAssignment.readyOrWaitState = 0;
     playersRemaining--;
     playerRecord++;
-  } while (playersRemaining != 0);
+  }
   briefingText = TextResource_Resolve((TextResourceId)(uintptr_t)ui->briefingText.text);
   textExtent = RichTextCommandStream_MeasureWrappedBlock
                      (g_UiTextStyleNormal,briefingText,ui->briefingText.wrapWidth);
