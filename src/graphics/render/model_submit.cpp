@@ -12,6 +12,8 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#include <iterator>
+
 /* Mesh groups, mesh records, vertices and triangles are bytes of the loaded model asset, passed as addresses
    (ModelMeshGroupAddress32) or byte cursors: the reinterpret_casts in this file view those bytes as the record
    structs (ModelMeshGroupHeader, ModelMeshHeader, GraphicsTriangleInput, GraphicsFixedVec3 vertex words). */
@@ -149,15 +151,18 @@ void ModelRender_DrawMeshGroupsAlternatePath(ModelMeshGroupAddress32 meshGroup,M
 void ModelProjectedBounds_AccumulateHierarchyRecursive(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
 
 {
-  uint32_t remainingChildCount;
-
+  /* The original steps the node pointer by one dword per child (so childNodes[0] reads the next slot) and
+     trusts childCount; walked here by index and bounded to the 13 child slots, plus a NULL node check,
+     because a corrupt count would read past the node. */
+  if (modelNode == nullptr) {
+    return;
+  }
   ModelProjectedBounds_AccumulateNode(bounds,modelNode);
-  for (remainingChildCount = modelNode->childCount; remainingChildCount != 0; remainingChildCount--) {
-    if (modelNode->childNodes[0] != nullptr) {
-      ModelProjectedBounds_AccumulateHierarchyRecursive(bounds,modelNode->childNodes[0]);
+  for (uint32_t childIndex = 0;
+       childIndex < modelNode->childCount && childIndex < std::size(modelNode->childNodes); childIndex++) {
+    if (modelNode->childNodes[childIndex] != nullptr) {
+      ModelProjectedBounds_AccumulateHierarchyRecursive(bounds,modelNode->childNodes[childIndex]);
     }
-    /* moves the node pointer by one dword, so childNodes[0] reads the next child slot */
-    modelNode = reinterpret_cast<ModelRuntimeNode *>(&(modelNode->common).nextNode);
   }
 }
 
@@ -337,8 +342,13 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
              triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
   nodeTextureSet = (modelNode->modelPayload).textureSet;
   textureEntry = nullptr;
+  /* The original only tests the subresource index against the set's count and then adds the node's flipbook
+     base; bounded here because a corrupt model or effect/shot frame count makes index + base step past the
+     set (no stock effect or shot reaches it). Out of range draws the triangle untextured. */
   if ((nodeTextureSet != nullptr) &&
-     (triangle->subresourceIndex < nodeTextureSet->subresourceCount)) {
+     (triangle->subresourceIndex < nodeTextureSet->subresourceCount) &&
+     (triangle->subresourceIndex + static_cast<uint32_t>(modelNode->textureSubresourceBaseIndex) <
+      nodeTextureSet->subresourceCount)) {
     textureEntry = nodeTextureSet->entries +
                    triangle->subresourceIndex + modelNode->textureSubresourceBaseIndex;
   }
@@ -500,9 +510,13 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
   nodeTextureSet = (modelNode->modelPayload).textureSet;
   subresourceIndex = triangle->subresourceIndex;
   textureEntry = nullptr;
-  /* unlike ModelRender_SubmitTriangle there is no NULL check of the texture set */
-  if (subresourceIndex != UINT32_MAX &&
-      subresourceIndex < nodeTextureSet->subresourceCount) {
+  /* The original has no NULL check of the texture set here (unlike ModelRender_SubmitTriangle) and only tests
+     the subresource index without the node's flipbook base; bounded here because a node without a set or a
+     corrupt index + base would read outside the set. Out of range draws the triangle untextured. */
+  if (nodeTextureSet != nullptr && subresourceIndex != UINT32_MAX &&
+      subresourceIndex < nodeTextureSet->subresourceCount &&
+      subresourceIndex + static_cast<uint32_t>(modelNode->textureSubresourceBaseIndex) <
+      nodeTextureSet->subresourceCount) {
     textureEntry = nodeTextureSet->entries + subresourceIndex +
                    modelNode->textureSubresourceBaseIndex;
   }
