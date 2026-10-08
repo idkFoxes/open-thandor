@@ -9,6 +9,8 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#include <atomic>
+
 /* Module data. */
 
 THANDOR_ALIGN(4) uint16_t g_FatalErrorDetail1Utf16[256] = {};
@@ -61,12 +63,21 @@ uintptr_t FatalError_Exit(uintptr_t valueOrError,bool failed)
 /* The failing half of FatalError_Exit: builds the error message (a code below 0x100 selects a text of the
    error page, anything else is a rich-text stream), fills in the last path and the three detail strings,
    shuts everything down, shows the text in a message box and exits the process.
+   open-thandor: entered at most once. The original had no guard, so a fatal error raised while building the
+   message or shutting down (or one from another thread meanwhile) re-entered it and recursed or shut down
+   twice; bounded here because that recursion overflows the stack or frees the arena twice. A second fatal
+   error is only logged and ends the process at once.
 */
 void FatalError_ShowAndExit(uintptr_t error)
 
 {
+  static std::atomic<bool> s_fatalErrorActive{false};
   uint16_t *messageText;
 
+  if (s_fatalErrorActive.exchange(true)) {
+    Thandor_Log("fatal error 0x%08IX during the fatal-error path, exiting at once", error);
+    Runtime_ExitProcess();
+  }
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
   Thandor_Log("fatal error 0x%08IX, last path \"%ls\"", error, reinterpret_cast<wchar_t *>(g_PackageLastErrorPath)); /* UTF-16 as %ls */
   Thandor_LogStack("fatal error stack", (unsigned)error);
@@ -82,8 +93,6 @@ void FatalError_ShowAndExit(uintptr_t error)
   RichTextCommandStream_PatchPayloadBySelector(2,g_FatalErrorDetail2Utf16,messageText);
   RichTextCommandStream_PatchPayloadBySelector(3,g_FatalErrorDetail3Utf16,messageText);
   FatalError_CopyRichTextToNarrow(sizeof g_FatalErrorNarrowBuffer,g_FatalErrorNarrowBuffer,messageText);
-  Runtime_Shutdown();
-  DestroyWindow(g_MainWindow);
-  MessageBoxA(nullptr,reinterpret_cast<LPCSTR>(g_FatalErrorNarrowBuffer),nullptr,MB_ICONEXCLAMATION);
-  ExitProcess(0);
+  /* the original: Runtime_Shutdown, DestroyWindow(g_MainWindow), the message box, ExitProcess(0) */
+  Runtime_ShutdownAndExit(reinterpret_cast<const char *>(g_FatalErrorNarrowBuffer));
 }

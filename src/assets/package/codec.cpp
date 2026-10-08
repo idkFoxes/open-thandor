@@ -45,6 +45,11 @@ static bool PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
    method 0 behind a PCK_FIELD_GRID_PREFIX_BYTES prefix holding its size. Returns the packed size including the
    prefix in *outByteCount (true), or false with the error code of the allocation or the method-0 encoder in
    *outErrorCode.
+   The original trusts the grid dimensions, sourceImageSizeBytes and destinationCapacityBytes blindly; bounded
+   here because a grid of 0 cells ran the cell loop 2^32 times and a capacity below the prefix wrapped the
+   method-0 capacity: a grid of 0 cells, a grid whose cells do not fit sourceImageSizeBytes or a capacity
+   smaller than the prefix fail with FATAL_ERROR_GENERAL_FAILURE (one log line) before anything is allocated.
+   Valid grids encode as before.
 */
 bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid,
@@ -63,7 +68,16 @@ bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,ui
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   AssetMagic persistedCellDword;
-  
+  uint64_t checkedCellCount;
+
+  checkedCellCount = static_cast<uint64_t>(sourceGrid->gridWidth) * sourceGrid->gridHeight;
+  if (checkedCellCount == 0 ||
+      FIELD_GRID_HEADER_BYTES + checkedCellCount * sizeof(FieldGridCell) > sourceImageSizeBytes ||
+      destinationCapacityBytes < PCK_FIELD_GRID_PREFIX_BYTES) {
+    Thandor_Log("PckCodec_EncodeFieldGrid: rejected grid %ux%u (image %u bytes, capacity %u)",
+                sourceGrid->gridWidth,sourceGrid->gridHeight,sourceImageSizeBytes,destinationCapacityBytes);
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
+  }
   cellCount = sourceGrid->gridWidth * sourceGrid->gridHeight;
   bytes = cellCount * FIELD_GRID_COMPACT_CELL_BYTES + FIELD_GRID_HEADER_BYTES;
   allocError = compactBlock.allocate(bytes);
@@ -80,8 +94,8 @@ bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,ui
     cellCount = cellCount & 0xfffffff; /* (count * 0x10) >> 4 in the original */
     /* per cell: persistedAux54, terrainHeight, waterSurfaceDelta and flagsAndMaterial (cell offsets 0x54, 0x48,
        0x4C and 0x50) */
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* cellCount != 0: a grid without cells is rejected above (the original's do-while ran 2^32 times for it) */
+    for (; cellCount != 0; cellCount--) {
       persistedCellDword = sourceCell->terrainHeight;
       *compactWriteCursor = sourceCell->persistedAux54;
       compactWriteCursor[1] = persistedCellDword;
@@ -90,8 +104,7 @@ bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,ui
       compactWriteCursor[3] = pendingCellDword;
       sourceCell++;
       compactWriteCursor = compactWriteCursor + 4;
-      cellCount--;
-    } while (cellCount != 0);
+    }
     Thandor_StoreU32(destination,bytes);
     if (PckCodec_EncodeHuffmanRle
             (destinationCapacityBytes - PCK_FIELD_GRID_PREFIX_BYTES,destination + PCK_FIELD_GRID_PREFIX_BYTES,bytes,
