@@ -8,7 +8,9 @@
 #ifndef THANDOR_UI_CONTROLS_TYPES_H
 #define THANDOR_UI_CONTROLS_TYPES_H
 
+#include <stddef.h> /* offsetof */
 #include <stdint.h>
+#include <span>
 #include <thandor/core/flags.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
@@ -718,6 +720,21 @@ struct UiRequiredTextEditControl {
     Ptr32<struct SoundVoiceSet> activationSound; 
     uint16_t textBuffer[10]; 
 };
+
+/* The edit text of a text edit control (UiTextEditControl, UiRequiredTextEditControl or the 0xCC-byte
+   InGameCommandTextEditControlCC view): bufferCapacityCodeUnits UTF-16 code units from textBuffer (+0x6C) on.
+   The declared textBuffer[10] only covers the 20 bytes left in the 0x80-byte control; the original's buffer
+   runs on into the <field>_trailing template dwords behind each control in its UI image (0x14, 0x20, 0x30 or
+   0x40 units; layout_checks.cpp asserts that every embedded control plus its trailing dwords spans exactly
+   +0x6C + capacity * 2 bytes). The span is formed from the control's byte address inside that image, so the
+   text is never indexed past a declared array. Every textBuffer access goes through this accessor. */
+template <typename TextEditControl>
+inline std::span<uint16_t> UiTextEdit_Text(TextEditControl *control)
+{
+    unsigned char *const textBytes =
+        reinterpret_cast<unsigned char *>(control) + offsetof(TextEditControl, textBuffer);
+    return {reinterpret_cast<uint16_t *>(textBytes), static_cast<size_t>(control->bufferCapacityCodeUnits)};
+}
 
 struct UiSelectionGeometryControl {
     struct UiNodeBase base; // Common UI-node prefix.

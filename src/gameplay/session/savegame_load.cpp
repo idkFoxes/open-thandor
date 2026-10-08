@@ -285,11 +285,25 @@ void ArmyRuntimePool_RebaseAfterLoad()
   int slotIndex;
   ArmyRuntimeSlot *rebasedCommandTarget;
   ArmyRuntimeSlot *slot;
+  ArmyMovementRuntime *movementRuntime;
+  int droppedWaypointQueueCount = 0;
 
   for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
     slot = &g_ArmyRuntimeSlots[slotIndex];
     if (slot->modelNodeRuntime == nullptr) {
       continue;
+    }
+    /* The original trusts the saved waypoint queue; bounded here because a queued count above
+       ARMY_MOVEMENT_WAYPOINT_CAPACITY makes the waypoint markers and the move orders read and write past
+       queuedWaypoints, and a count of 0 underflows when the next waypoint is popped. The game keeps the count in
+       1..8 while ARMY_MOVEMENT_WAYPOINTS_QUEUED is set (it clears the flag at 0), so every save it writes passes;
+       an invalid queue is dropped. */
+    movementRuntime = ModelView_Cast<ArmyMovementRuntime>(slot);
+    if (Any(movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) &&
+        movementRuntime->queuedWaypointCount - 1 >= static_cast<ArmyWaypointCount>(ARMY_MOVEMENT_WAYPOINT_CAPACITY)) {
+      droppedWaypointQueueCount++;
+      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_WAYPOINTS_QUEUED;
+      movementRuntime->queuedWaypointCount = 0;
     }
     /* modelRuntime + g_ModelRuntimeRebaseDelta */
     rebasedModelRuntime =
@@ -310,6 +324,10 @@ void ArmyRuntimePool_RebaseAfterLoad()
     slot->commandTargetArmyRuntime = rebasedCommandTarget;
     slot->assignedTargetArmyRuntime = savedAssignedTargetOffset;
   }
+  if (droppedWaypointQueueCount != 0) {
+    Thandor_Log("savegame load: %d army waypoint queues with a count outside 1..%d dropped",
+                droppedWaypointQueueCount,ARMY_MOVEMENT_WAYPOINT_CAPACITY);
+  }
 }
 
 /* Turns the *assetCount saved army-asset ids of one list back into registry pointers, in place. The first
@@ -320,6 +338,15 @@ static void GameFactionRuntime_ResolveLoadedArmyAssetIds(uint32_t *assetIds,Fact
   uint32_t *assetIdCursor;
   ArmyAssetRecordPrefix *resolvedAsset;
 
+  /* The original converts the saved count unchecked; bounded here because a count above the 64-entry list
+     reads past it here and lets the queue code write past it later: emptied like a list with an unknown id. The
+     game keeps both counts <= FACTION_ARMY_ASSET_LIST_CAPACITY, so every save it writes passes. */
+  if (*assetCount > static_cast<FactionArmyAssetCount>(FACTION_ARMY_ASSET_LIST_CAPACITY)) {
+    Thandor_Log("savegame load: faction army asset count %u above %d, list emptied",*assetCount,
+                FACTION_ARMY_ASSET_LIST_CAPACITY);
+    *assetCount = 0;
+    return;
+  }
   assetIdCursor = assetIds;
   for (assetsRemaining = *assetCount; assetsRemaining != 0; assetsRemaining--) {
     if (ArmyAssetRegistry_FindById(*assetIdCursor,&resolvedAsset) != 0) {

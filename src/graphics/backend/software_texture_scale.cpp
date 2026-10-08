@@ -127,8 +127,10 @@ void SoftwareTexture_CrossFadeSubresources
    is assumed to be as large as B.
    The original's do-while loops ran 2^32 times for a destination or source size of 0, a size of 1
    divided by zero (destination) or underflowed the step (source 0), and the scale read the row below
-   the last source row. Bounded here because those were crashes and reads past the blended image: a
-   destination or source size of 0 draws nothing (logged once), a destination size of 1 uses step 0,
+   the last source row; it also wrote outside the framebuffer for a destination that does not fit. Bounded
+   here because those were crashes and reads/writes past the buffers: a destination or source size of 0 and a
+   destination whose pixels would leave the framebuffer memory draw nothing (logged once each, as the
+   direct-colour stretch in software_blit.cpp), a destination size of 1 uses step 0,
    and the row below the last row is the row itself. That row's weight is always 0 there (the source
    position is then exactly the last row), so every pixel is unchanged.
 */
@@ -153,6 +155,7 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   uint32_t yFixed;
   uint32_t rowsLeft;
   static bool loggedEmptySize;
+  static bool loggedOutside;
 
   if (asset == nullptr || asset->common.magic != ASSET_MAGIC_GFX ||
       sourceSubresourceIndexB >= asset->tableDescriptor.subresourceCount ||
@@ -174,6 +177,21 @@ void SoftwareTexture_BilinearBlendScaleSubresources
                   sourceHeight, (uint32_t)destinationWidth, (uint32_t)destinationHeight);
     }
     return;
+  }
+  /* the written pixels, first to one past the last, must lie in the framebuffer's width * height pixels */
+  {
+    const int64_t pitchPixels = framebuffer->width;
+    const int64_t firstPixelIndex = (int64_t)destinationTop * pitchPixels + destinationLeft;
+    const int64_t endPixelIndex = firstPixelIndex + (int64_t)(destinationHeight - 1) * pitchPixels + destinationWidth;
+    if (firstPixelIndex < 0 || endPixelIndex > pitchPixels * framebuffer->height) {
+      if (!loggedOutside) {
+        loggedOutside = true;
+        Thandor_Log("SoftwareTexture: skipped a grey-scale scale to %ux%u at %d,%d (outside the %ux%u framebuffer)",
+                    (uint32_t)destinationWidth, (uint32_t)destinationHeight, destinationLeft, destinationTop,
+                    (uint32_t)framebuffer->width, (uint32_t)framebuffer->height);
+      }
+      return;
+    }
   }
 
   /* 1. cross-fade B -> A */
