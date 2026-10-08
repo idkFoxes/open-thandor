@@ -12,6 +12,13 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* The index 0..255 of a cell's terrain direction record in g_TerrainDirectionRecordTable256: the low nibbles of
+   its world Y (low 4 bits of the index) and world X (high 4 bits), a 16x16 tiling of the 256 records. */
+static inline FieldCellPersistedAux TerrainDirectionRecord_IndexForCell(Q12 worldXQ12,Q12 worldYQ12)
+{
+  return (FieldCellPersistedAux)((worldYQ12 & 0xfU) + (worldXQ12 & 0xfU) * 16);
+}
+
 /* Load-time cell setup: marks the field surface dirty and gives every cell a random animation phase (masked to
    the bit width stored just before the terrain surface packet table), a terrain direction record chosen by the
    low nibbles of its world X/Y, a white overlay colour and random material variant bits 8-10. Then it rebuilds
@@ -47,10 +54,9 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
       cell->flagsAndMaterial = cell->flagsAndMaterial & ~FIELD_CELL_RANDOM_VARIANT_MASK;
       cell->surfacePacketIndex = phaseRandomValue & (1 << ((uint8_t)phaseSeedBitWidth & 31)) - 1U;
       /* 16x16 tiling of the 256 direction records over the world */
-      /* 5f-format: FieldGridCell.persistedAux54 (direction record address in a 32-bit FLD field) */
-      cell->persistedAux54 =
-           Thandor_PointerToU32(
-           g_TerrainDirectionRecordTable256 + (int32_t)(cellWorldYQ12 & 0xfU) + (int32_t)((cellWorldXQ12 & 0xfU) * 16));
+      /* FieldGridCell.persistedAux54: the record's index in g_TerrainDirectionRecordTable256 (the original stored
+         its address; an index fits the 32-bit field on 64-bit and is resolved by the terrain projection) */
+      cell->persistedAux54 = TerrainDirectionRecord_IndexForCell(cellWorldXQ12,cellWorldYQ12);
       cell->armyRuntimeSavedOffset = 0;
       materialVariantRandomBits = Random_NextPrimary();
       cell->overlayColor = 0xffffffff; /* ARGB opaque white */
@@ -80,7 +86,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
   }
 }
 
-/* Marks the field surface dirty and re-binds every cell's terrain direction record (persistedAux54) from the low nibbles
+/* Marks the field surface dirty and re-binds every cell's terrain direction record index (persistedAux54) from the low nibbles
    of its world X/Y, the same 16x16 tiling FieldGrid_InitializeRuntimeCellsAndBoundaryFlags uses. The secondary
    terrain resource load calls this instead of the full initialization, so the other cell state is kept.
 */
@@ -100,11 +106,8 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
   /* counts >= FIELD_GRID_MIN_SIDE_CELLS: the only caller (the savegame terrain loader) validated the grid first */
   do {
     do {
-      /* 5f-format: FieldGridCell.persistedAux54 */
-      currentCell->persistedAux54 =
-           Thandor_PointerToU32(
-           g_TerrainDirectionRecordTable256 +
-           (int32_t)(currentCell->worldY & 0xfU) + (int32_t)((currentCell->worldX & 0xfU) * 16));
+      /* FieldGridCell.persistedAux54: the direction record index, as in FieldGrid_InitializeRuntimeCellsAndBoundaryFlags */
+      currentCell->persistedAux54 = TerrainDirectionRecord_IndexForCell(currentCell->worldX,currentCell->worldY);
       currentCell++;
       columnsRemaining--;
     } while (columnsRemaining != 0);

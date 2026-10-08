@@ -309,18 +309,20 @@ static uint32_t TerrainProjectedVertex_TransformAndProjectPointB
           (TerrainProjectedVertexWorkRecord *vertex,uint32_t flagsWithoutPointB)
 
 {
-  GraphicsFixedVec3 *offsetVector;
+  const TerrainDirectionRecord *offsetRecord;
   int offsetX;
   int offsetY;
   int offsetZ;
   uint32_t resultFlags;
   GraphicsProjectedPointPair projectedPoint;
 
-  offsetVector = vertex->secondaryOffset;
+  /* the offset is the first three dwords of the cell's direction record; secondaryOffset is its index, 0..255 by
+     construction (FieldGrid_InitializeRuntimeCellsAndBoundaryFlags), the mask keeps any other value in the table */
+  offsetRecord = &g_TerrainDirectionRecordTable256[vertex->secondaryOffset & 0xffU];
   resultFlags = flagsWithoutPointB | TERRAIN_VERTEX_POINT_B_NOT_PROJECTED;
-  offsetX = offsetVector->x;
-  offsetY = offsetVector->y;
-  offsetZ = offsetVector->z + vertex->secondaryProjectionDepthQ12;
+  offsetX = (int)offsetRecord->angleAComponent0ScaledQ28;
+  offsetY = (int)offsetRecord->angleAComponent1ScaledQ28;
+  offsetZ = (int)offsetRecord->angleBComponent0ScaledQ28 + vertex->secondaryProjectionDepthQ12;
   (vertex->sourcePoint).x = (vertex->sourcePoint).x + offsetX;
   (vertex->sourcePoint).y = (vertex->sourcePoint).y + offsetY;
   (vertex->sourcePoint).z = (vertex->sourcePoint).z + offsetZ;

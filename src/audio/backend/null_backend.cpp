@@ -13,7 +13,8 @@
    audio backend, and for good when there is no audio device). Always succeeds (returns 0) with the dummy voice set 0xFFFFFFFF in
    *outVoiceSet, so callers holding a sample keep a non-NULL handle even without sound.
 */
-uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet)
+uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,uint32_t sampleByteCount,
+                                                   SoundVoiceSet **outVoiceSet)
 
 {
   *outVoiceSet = reinterpret_cast<SoundVoiceSet *>(static_cast<intptr_t>(-1));

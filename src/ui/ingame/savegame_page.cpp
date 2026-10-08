@@ -326,7 +326,7 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
   saveList = reinterpret_cast<UiPointerListControl *>(&image->saveGameList); /* the list's prefix view */
   rowOrdinal = UiPointerList_GetSelectedIndexAndConfirmed(saveList,nullptr) + 1;
   /* the typed name of the trailing new-save row, else the selected row's file name */
-  leaf = image->saveNameEdit.textBuffer;
+  leaf = UiTextEdit_Text(&image->saveNameEdit).data();
   if (rowOrdinal != saveList->rowCount) {
     leaf = static_cast<uint16_t *>(saveList->rowSlots[rowOrdinal - 1]);
   }
@@ -378,7 +378,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
   }
   nameValid = false;
   if (Any(nameEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
-    name = nameEdit->textBuffer;
+    name = UiTextEdit_Text(nameEdit).data();
     capacity = nameEdit->bufferCapacityCodeUnits;
     nameLength = 0;
     while (nameLength < capacity && name[nameLength] != 0) {

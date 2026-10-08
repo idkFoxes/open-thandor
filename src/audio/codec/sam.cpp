@@ -1890,13 +1890,40 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
   }
 }
 
+/* Bytes from cursor up to encodedEnd (0 when the cursor stands at or past it). */
+static uintptr_t SamDecode_BytesLeft(const uint8_t *cursor,const uint8_t *encodedEnd)
+{
+  const uintptr_t cursorAddress = reinterpret_cast<uintptr_t>(cursor);
+  const uintptr_t endAddress = reinterpret_cast<uintptr_t>(encodedEnd);
+  return (cursorAddress < endAddress) ? endAddress - cursorAddress : 0;
+}
+
+/* Little-endian load of byteCount (2 or 4) bytes; the bytes at or past encodedEnd load as 0. The original
+   loaded the whole word, so the last block's refills read 1..5 bytes past the asset (every stock .sam does);
+   bounded here because those bytes lie outside the asset buffer. No decoded coefficient of a stock .sam
+   depends on them (measured), so valid samples decode exactly as before. */
+static uint32_t SamDecode_LoadBounded(const uint8_t *cursor,const uint8_t *encodedEnd,uintptr_t byteCount)
+{
+  const uintptr_t bytesLeft = SamDecode_BytesLeft(cursor,encodedEnd);
+  if (bytesLeft >= byteCount) {
+    return (byteCount == 4) ? Thandor_LoadU32(cursor) : Thandor_LoadU16(cursor);
+  }
+  uint32_t value = 0;
+  for (uintptr_t index = 0; index < bytesLeft; index++) {
+    value |= (uint32_t)cursor[index] << (8 * index);
+  }
+  return value;
+}
+
 /* Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of
    SoundSample_EncodePackedCoefficientBlock). Each coefficient is prefix-coded from the low bits of a 32-bit
    little-endian bit accumulator (prefix bits listed from bit 0): 0 -> zero (1 bit), 1,0 -> 3-bit value (5 bits),
    1,1,0 -> 6-bit value (9 bits), 1,1,1 -> 12-bit value (15 bits). Returns the encoded byte count consumed,
-   rounded DOWN to a multiple of 4.
+   rounded DOWN to a multiple of 4. encodedEnd is the end of the encoded bytes (the asset end): the bit refills
+   load up to 4 bytes ahead of the cursor; bytes at or past encodedEnd load as 0.
 */
-uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock)
+uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock,
+                                                  const uint8_t *encodedEnd)
 
 {
   uint16_t refillWord;
@@ -1913,7 +1940,7 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
      blocks follow the 0x200-byte header, and every block advances by a multiple of 4. */
   assert((reinterpret_cast<uintptr_t>(encodedBlock) & 3u) == 0);
   coefficientsRemaining = SAM_BLOCK_SAMPLE_COUNT;
-  bitAccumulator = Thandor_LoadU32(encodedBlock);
+  bitAccumulator = SamDecode_LoadBounded(encodedBlock,encodedEnd,4);
   availableBitCount = 32;
   inputCursor = encodedBlock + 4;
   for (; coefficientsRemaining != 0; coefficientsRemaining--) {
@@ -1944,19 +1971,19 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
     /* refill whole bytes above the remaining bits so that at least 25 bits are available again */
     refillShift = (uint8_t)availableBitCount;
     if (availableBitCount < 9) {
-      refillDword = (int)Thandor_LoadU32(inputCursor);
+      refillDword = (int)SamDecode_LoadBounded(inputCursor,encodedEnd,4);
       inputCursor = inputCursor + 3;
       availableBitCount = availableBitCount + 24;
       bitAccumulator = bitAccumulator | refillDword << (refillShift & 0x1f);
     }
     else if (availableBitCount < 17) {
-      refillWord = Thandor_LoadU16(inputCursor);
+      refillWord = (uint16_t)SamDecode_LoadBounded(inputCursor,encodedEnd,2);
       inputCursor = inputCursor + 2;
       availableBitCount = availableBitCount + 16;
       bitAccumulator = bitAccumulator | (uint32_t)refillWord << (refillShift & 0x1f);
     }
     else if (availableBitCount < 25) {
-      refillWord = Thandor_LoadU16(inputCursor);
+      refillWord = (uint16_t)SamDecode_LoadBounded(inputCursor,encodedEnd,2);
       inputCursor = inputCursor + 1;
       availableBitCount = availableBitCount + 8;
       bitAccumulator = bitAccumulator | (uint32_t)(uint8_t)refillWord << (refillShift & 0x1f);

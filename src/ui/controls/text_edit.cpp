@@ -339,16 +339,16 @@ static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,boo
     selectionBoundary = &control->selectionEnd;
   }
   if (towardsStart) {
-    wordStop = UiRequiredTextEdit_FindPreviousWordStop(control->textBuffer,formerCursorIndex);
+    wordStop = UiRequiredTextEdit_FindPreviousWordStop(UiTextEdit_Text(control).data(),formerCursorIndex);
   }
   else {
     /* NOTE: as in the original, with Shift and the cursor at selectionStart the space-skipping case is
        not taken even if the cursor is on a space. */
-    skipSpaces = control->textBuffer[formerCursorIndex] == ' ';
+    skipSpaces = UiTextEdit_Text(control)[formerCursorIndex] == ' ';
     if (extendSelection && (formerCursorIndex == control->selectionStart)) {
       skipSpaces = false;
     }
-    wordStop = UiRequiredTextEdit_FindNextWordStop(control->textBuffer,formerCursorIndex,skipSpaces);
+    wordStop = UiRequiredTextEdit_FindNextWordStop(UiTextEdit_Text(control).data(),formerCursorIndex,skipSpaces);
   }
   control->cursorIndex = wordStop;
   if (extendSelection) {
@@ -402,7 +402,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
   recomputeLayout = true;
   if ((isAltGrCharacter) || ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0)) {
     /* Insert the character, replacing a selection. */
-    UiTextEdit_InsertCodeUnit(edit,control->textBuffer,control->bufferCapacityCodeUnits,
+    UiTextEdit_InsertCodeUnit(edit,UiTextEdit_Text(control).data(),control->bufferCapacityCodeUnits,
                               control->bufferCapacityCodeUnits - 1,
                               Any(control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE),(uint16_t)keyCode);
   }
@@ -419,13 +419,13 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
     if (!UiTextEdit_IsCursorMovementKey(keyCode)) {
       return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     }
-    recomputeLayout = UiTextEdit_ExtendSelectionByKey(edit,control->textBuffer,keyCode);
+    recomputeLayout = UiTextEdit_ExtendSelectionByKey(edit,UiTextEdit_Text(control).data(),keyCode);
   }
   else {
     switch (keyCode) {
     case KEYBOARD_KEY_CODE_BACKSPACE:
     case KEYBOARD_KEY_CODE_DELETE:
-      recomputeLayout = UiTextEdit_DeleteAtCursor(edit,control->textBuffer,control->bufferCapacityCodeUnits,
+      recomputeLayout = UiTextEdit_DeleteAtCursor(edit,UiTextEdit_Text(control).data(),control->bufferCapacityCodeUnits,
                                                   keyCode == KEYBOARD_KEY_CODE_BACKSPACE);
       break;
     case KEYBOARD_KEY_CODE_INSERT:
@@ -436,7 +436,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
     case KEYBOARD_KEY_CODE_END:
     case KEYBOARD_KEY_CODE_LEFT:
     case KEYBOARD_KEY_CODE_RIGHT:
-      UiTextEdit_MoveCursorAndCollapseSelection(edit,control->textBuffer,keyCode);
+      UiTextEdit_MoveCursorAndCollapseSelection(edit,UiTextEdit_Text(control).data(),keyCode);
       break;
     case KEYBOARD_KEY_CODE_ENTER:
       if (!Any(control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY)) {
@@ -450,7 +450,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
         return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       }
       for (clearIndex = 0; clearIndex != control->bufferCapacityCodeUnits; clearIndex++) {
-        control->textBuffer[clearIndex] = 0;
+        UiTextEdit_Text(control)[clearIndex] = 0;
       }
       control->cursorIndex = 0;
       control->selectionStart = 0;
@@ -618,7 +618,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   }
   if (!Any(control->editStateFlags & UI_TEXT_EDIT_CARET_VISIBLE_PHASE)) {
     RichTextCommandStream_DrawSingleLine
-              (clipBottom,clipRight,clipTop,clipLeft,packedStyle,control->textBuffer,
+              (clipBottom,clipRight,clipTop,clipLeft,packedStyle,UiTextEdit_Text(control).data(),
                textOffsetY + (control->base).top,textOffsetX + (control->base).left);
   }
   else {
@@ -641,7 +641,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
                TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_CARET_INSERT,
                g_UiWindowTextureSource,g_FramebufferAccess);
     RichTextCommandStream_DrawSingleLine
-              (clipBottom,clipRight,clipTop,clipLeft,packedStyle,control->textBuffer,
+              (clipBottom,clipRight,clipTop,clipLeft,packedStyle,UiTextEdit_Text(control).data(),
                textOffsetY + (control->base).top,textOffsetX + (control->base).left);
     g_GraphicsTextureSourceBlitSourceAlpha
               (clipBottom,clipRight,clipTop,clipLeft,textOffsetY + (control->base).top - 1,caretX,
@@ -723,7 +723,7 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
   control->editStateFlags = control->editStateFlags &
        (FromBits<UiRequiredTextEditStateFlags>(UI_STATE_FLAGS_MASK) & ~UI_REQUIRED_TEXT_CARET_VISIBLE_PHASE);
   UiTextControl_UpdateNonEmptyValidity(UiNode_As<UiTextEditControl>(control));
-  textCursor = control->textBuffer;
+  textCursor = UiTextEdit_Text(control).data();
   control->cursorIndex = 0;
   control->selectionStart = 0;
   control->selectionEnd = 0;
@@ -823,11 +823,11 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
   accumulatedWidth = 0;
   if (prefixLength != 0) {
     while (glyphIndex < prefixLength) {
-      if (control->textBuffer[glyphIndex] == 0) {
+      if (UiTextEdit_Text(control)[glyphIndex] == 0) {
         return accumulatedWidth;
       }
       glyphWidth = FontGlyph_GetLogicalSizeForStyle
-                        (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[glyphIndex],nullptr);
+                        (g_UiTextEditActiveTextStyle,(uint32_t)UiTextEdit_Text(control)[glyphIndex],nullptr);
       glyphIndex++;
       accumulatedWidth = accumulatedWidth + glyphWidth;
     }
@@ -859,11 +859,11 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
   nextTextIndex = 0;
   do {
     currentTextIndex = nextTextIndex;
-    if (control->textBuffer[currentTextIndex] == 0) {
+    if (UiTextEdit_Text(control)[currentTextIndex] == 0) {
       return currentTextIndex;
     }
     glyphWidth = FontGlyph_GetLogicalSizeForStyle
-                      (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[currentTextIndex],nullptr);
+                      (g_UiTextEditActiveTextStyle,(uint32_t)UiTextEdit_Text(control)[currentTextIndex],nullptr);
     measuredPrefixWidthPixels = measuredPrefixWidthPixels + glyphWidth;
     nextTextIndex = currentTextIndex + 1;
   } while (measuredPrefixWidthPixels < targetOffsetX);
@@ -875,7 +875,7 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
 void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
 
 {
-  if (control->textBuffer[0] == 0) {
+  if (UiTextEdit_Text(control)[0] == 0) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
   }
   else {
@@ -906,12 +906,12 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
   cursorWidth = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
   maxScrollOffset = cursorWidth;
   if (prefixLength != 0) {
-    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength - 1],nullptr);
+    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)UiTextEdit_Text(control)[prefixLength - 1],nullptr);
     maxScrollOffset = cursorWidth - glyphWidth;
   }
   cursorOverflow = cursorWidth - (control->base).layoutWidth;
-  if (control->textBuffer[prefixLength] != 0) {
-    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength],nullptr);
+  if (UiTextEdit_Text(control)[prefixLength] != 0) {
+    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)UiTextEdit_Text(control)[prefixLength],nullptr);
     cursorOverflow = cursorOverflow + glyphWidth;
   }
   /* NOTE: as in the original (a fixed count of 16, the buffer size of its numeric text edit), only the first

@@ -450,11 +450,21 @@ bool ArmyRuntimeSpawner_CreateLinkedChildInstance
   ModelRuntimeNode *modelNode;
 
   /* the pad's slots hold one 32-bit asset id each, from completedSecondaryArmyAssetIds on (this view's
-     movementTarget0Q12; classParameterC4 slots). Original quirk: slot 0
-     is tested even with 0 slots, and the count then runs below 0 instead of stopping. */
+     movementTarget0Q12; classParameterC4 slots). */
   slotBit = 1;
   remainingSlots = static_cast<ModelDefinition *>(armyRuntime->definitionOrAsset.get())->classParameterC4;
   slotAssetId = &armyRuntime->movementTarget0Q12;
+  /* The original tested slot 0 even with a classParameterC4 of 0 (or below) and then counted below 0 instead
+     of stopping, reading far past the slots until the counter wrapped; bounded here because a malformed model
+     definition would crash. Valid pad definitions all have linked slots and take the old path. */
+  if (remainingSlots <= 0) {
+    static bool s_loggedPadWithoutSlots;
+    if (!s_loggedPadWithoutSlots) {
+      s_loggedPadWithoutSlots = true;
+      Thandor_Log("factory: pad definition without linked slots (classParameterC4 %d), no launch",remainingSlots);
+    }
+    return true;
+  }
   while ((linkedArmyAssetId != *slotAssetId ||
          (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit)
           != 0))) {

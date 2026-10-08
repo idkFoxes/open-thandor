@@ -14,9 +14,6 @@
      codec          round-trips synthetic save-sized data through the PCK encoder/decoder, checks guard bytes
      path           WidePath_SplitParentAndLeaf on a few fixed paths
      stretch        a 4x2 -> 8x4 SoftwareTextureSource_StretchDirectColorBilinear32, logs the rows
-     scanaddr       decodes the packages next to the executable and writes original-range dwords to
-                    scanaddr.txt (OPEN_THANDOR_SCANFILES=a;b;... scans those files instead,
-                    OPEN_THANDOR_DUMPTEXT=<dir> also writes the decoded *.str / *.txt entries there)
      pcx            decodes pcxtest.pcx next to the executable, logs size and hash (tools/test/pcx_check.py)
      settings       thandor.ini parser/writer on a fixed text; thandor.dat of the current directory -> ini ->
                     image must be identical (migration), and a thandor.ini there must match that thandor.dat

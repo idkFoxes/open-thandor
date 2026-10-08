@@ -35,7 +35,7 @@ struct TerrainProjectedVertexWorkRecord {
     struct GraphicsFixedVec3 sourcePoint; // Mutable source point temporarily offset before second projection
     Q12 secondaryProjectionDepthQ12; // Q12 depth/extent added to sourcePoint.z for the secondary projection
     uint32_t projectionFlags; // Projection/clip and shading flags
-    Ptr32<struct GraphicsFixedVec3> secondaryOffset; // Three-component offset added to sourcePoint for second projection
+    uint32_t secondaryOffset; // FieldGridCell.persistedAux54: index 0..255 of the terrain direction record whose first three dwords are the offset added to sourcePoint for the second projection (the original held the record's address)
     PackedArgb32 packedColorA; // Packed color input A
     PackedArgb32 packedColorB; // Packed color input B
     PackedArgb32 shadedColorA; // Computed packed shaded color A

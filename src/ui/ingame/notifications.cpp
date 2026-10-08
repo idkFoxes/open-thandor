@@ -40,6 +40,10 @@ static void InGameNotification_StartQueueHeadMovie(InGameRuntimeRoot *inGameRoot
     Movie_SetAudioGainQ15(g_MovieAlternateAudioGainQ15);
   }
   if (!Movie_AdvanceFrame(&notificationMovie,nullptr)) {
+    /* The original returned with the movie still open, and the next tick opened the next queue head on top of
+       it; bounded here because Movie_Open replaced it and the movie leaked: it is closed. Nothing
+       uses it yet: notificationButtonTextureSource still holds the panel texture source. */
+    Movie_Close();
     return;
   }
   inGameRoot->notificationButtonTextureSource = (uintptr_t)notificationMovie;
