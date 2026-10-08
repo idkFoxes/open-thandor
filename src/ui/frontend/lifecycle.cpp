@@ -359,11 +359,11 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
                       (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_PLAYER_NAME));
   /* the name fields' UTF-16 text buffers, copied as dwords */
   FrontendInit_CopyNameDwords
-            (reinterpret_cast<uint32_t *>(FrontendUi_Image(frontendUiState)->playerNameEdit.textBuffer),
+            (reinterpret_cast<uint32_t *>(UiTextEdit_Text(&FrontendUi_Image(frontendUiState)->playerNameEdit).data()),
              savedPlayerName);
   FrontendInit_CopyNameDwords(reinterpret_cast<uint32_t *>(g_FrontendLocalPlayerNameUtf16),savedPlayerName);
   FrontendInit_CopyNameDwords
-            (reinterpret_cast<uint32_t *>(FrontendUi_Image(frontendUiState)->gameNameEdit.textBuffer),
+            (reinterpret_cast<uint32_t *>(UiTextEdit_Text(&FrontendUi_Image(frontendUiState)->gameNameEdit).data()),
              static_cast<const uint32_t *>(PersistentSettings_GetRegionOrFallback
                        (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_GAME_NAME)));
   settingValue = PersistentSettings_Read(4,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);

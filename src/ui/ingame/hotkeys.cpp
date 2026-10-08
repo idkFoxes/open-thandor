@@ -105,8 +105,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
       UiNodeBase *recipientTab;
       int i;
       for (i = 0; i < 24; i++) {
-        reinterpret_cast<uint32_t *>(
-            reinterpret_cast<InGameCommandTextEditControlCC *>(&image->chatInputTextEdit)->textBuffer)[i] = 0;
+        reinterpret_cast<uint32_t *>(UiTextEdit_Text(&image->chatInputTextEdit).data())[i] = 0;
       }
       /* Original quirk: the result is not tested; with no tab selected this is the last tab */
       UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,&image->messageRecipientAllTab.selectable.base,
@@ -171,8 +170,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     image->messageTextEdit.selectionStart = 0;
     image->messageTextEdit.selectionEnd = 0;
     for (i = 0; i < 24; i++) {
-      reinterpret_cast<uint32_t *>(
-          reinterpret_cast<InGameCommandTextEditControlCC *>(&image->messageTextEdit)->textBuffer)[i] = 0;
+      reinterpret_cast<uint32_t *>(UiTextEdit_Text(&image->messageTextEdit).data())[i] = 0;
     }
     /* Original quirk: the result is not tested; with no tab selected this is the last tab */
     UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,&image->messageRecipientAllTab.selectable.base,
