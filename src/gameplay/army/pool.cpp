@@ -218,11 +218,12 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   }
   WorldRuntime_ForEachOwnerListNode
             (entityRuntime,WorldRuntimeNode_ClearOwnedModelReferencesCallback,worldRuntime);
-  /* drop it as each player's primary selection (the loop body runs at least once, as in the original) */
+  /* drop it as each player's primary selection */
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while; bounded here because a player block count of 0 (every block dropped by
+     player-removal packets) ran it 2^32 times. */
+  while (remainingBlocks != 0) {
     playerSelectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId];
     /* Original quirk: compares the entity address with the token, which is an offset (not a pointer) */
     if (reinterpret_cast<uintptr_t>(entityRuntime) == (uintptr_t)playerSelectionBlock->placedArmyToken) {
@@ -230,7 +231,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
     }
     playerBlockCursor++;
     remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
   GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(entityRuntime);
   (entityRuntime->common).ownership.modelNode = nullptr; /* marks the army slot free */
   InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
