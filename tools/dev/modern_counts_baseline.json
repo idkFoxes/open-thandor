@@ -1,5 +1,5 @@
 {
- "revision": "d8e8187c",
+ "revision": "2f22ea5c",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -219,7 +219,7 @@
    "network": 7,
    "platform": 15,
    "ui": 49,
-   "world": 48
+   "world": 46
   },
   "while_tail": {
    "assets": 11,
@@ -231,7 +231,7 @@
    "network": 7,
    "platform": 11,
    "ui": 48,
-   "world": 47
+   "world": 45
   }
  }
 }
