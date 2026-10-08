@@ -275,21 +275,19 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmy);
   /* downsample in place: each output pixel averages a 2x2 block of the double-size image */
   destinationPixels = sourcePixels;
-  remainingRows = previewHeight;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
-    remainingColumns = previewWidth;
-    do {
+  /* The original's do-while loops ran 2^32 times for a size of 0 (the panel texture sizes come from the UI
+     assets; the pool's second preview is a third of a width); bounded here because they would write far past
+     the texture: a size of 0 downsamples nothing. */
+  for (remainingRows = previewHeight; remainingRows != 0; remainingRows--) {
+    for (remainingColumns = previewWidth; remainingColumns != 0; remainingColumns--) {
       *destinationPixels = ArmyPreview_AverageAlphaWeighted2x2
                              (sourcePixels[0],sourcePixels[1],sourcePixels[previewWidth * 2],
                               sourcePixels[previewWidth * 2 + 1]);
       sourcePixels = sourcePixels + 2;
       destinationPixels = destinationPixels + 1;
-      remainingColumns = remainingColumns - 1;
-    } while (remainingColumns != 0);
+    }
     sourcePixels = sourcePixels + previewWidth * 2; /* skip the second source row of the pair */
-    remainingRows = remainingRows - 1;
-  } while (remainingRows != 0);
+  }
   /* halve the stored sizes and shrink the allocation to the 0x220-byte header plus 32-bit pixels */
   halvedWidth = (int)previewTexture[1].common.commandFlags >> 1;
   halvedHeight = (int)previewTexture[1].common.commandTarget.targetEntity >> 1; /* 32-bit format field: GraphicsTextureSourceAsset header +0x204 (GameEntityRuntime view) */
@@ -309,15 +307,15 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
    table g_InGameKeyboardDispatchRecords (commands 0x10012 / 0x1001A) after
    g_UiCommandModeGOwnerFactionIndex was cycled.
 */
-void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress)
+void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uintptr_t uiRootAddress)
 
 {
   uintptr_t resolvedTexture;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
   ArmyAssetRecord *registeredRecord;
-  /* the in-game UI image at the 32-bit root address (zero-extended, as the address was taken) */
-  InGameUiImage *image = reinterpret_cast<InGameUiImage *>(static_cast<uintptr_t>(uiRootAddress));
+  /* the in-game UI image at the root address (passed whole; it was a 32-bit value) */
+  InGameUiImage *image = reinterpret_cast<InGameUiImage *>(uiRootAddress);
 
   registryCursor = g_ArmyAssetRecordRegistry;
   for (registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
