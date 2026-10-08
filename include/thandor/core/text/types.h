@@ -43,7 +43,9 @@ struct WideNumberFormatState {
     uint16_t hexSuffix[16]; 
     uint16_t spacePadding[16]; 
     uint16_t zeroPadding[16]; 
-    uint16_t reservedZero[16]; 
+    /* zero in the image; WideNumber_FormatUtf16 builds the integer digits here, filled downward from the end
+       (a 32-bit value has at most 10 digits) */
+    uint16_t integerDigitScratch[16]; 
     uint16_t digitAlphabet[16]; 
 };
 using WideNumberFormatUtf16Proc = uint32_t (WideNumberFormatFlags flags, uint32_t fractionalDigits, uint32_t integerDigitLimit, uint32_t denominator, int32_t value, uint16_t * destination);
