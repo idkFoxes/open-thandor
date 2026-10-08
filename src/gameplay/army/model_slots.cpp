@@ -411,7 +411,8 @@ void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntim
          reinterpret_cast<ModelRuntimeSlot *>(reinterpret_cast<uint8_t *>(linkedModelRuntime) + g_ModelRuntimeRebaseDelta);
     /* The original rebases the saved offset unchecked; bounded here because the aircraft follows the link to its
        home pad: one that does not land on a model runtime slot is cleared (NULL, no home pad, which the aircraft
-       handles). The game links only pads of the pool, so every save it writes passes. */
+       handles). The game links only pads of the pool, so every save it writes passes. A link to a free pad slot
+       is cleared after every slot has been rebased (ModelRuntimePool_RebaseAfterLoad). */
     if (!ModelRuntimeSlot_PointsToPoolRecord(modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime.get(),
                                              g_ModelRuntimeSlots,sizeof(ModelRuntimeSlot),
                                              MODEL_RUNTIME_SLOT_COUNT)) {
