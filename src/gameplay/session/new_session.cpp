@@ -147,15 +147,13 @@ static void InGameNewSession_BuildSessionName(UiTextResourceId titleTextIndex)
   uint16_t titleChar;
   int remainingCount;
 
-  sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
-                        (&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
+  sessionNameCursor = UiTextEdit_Text(&g_InGameRuntimeDefaultImageTemplate.saveNameEdit).data();
   for (remainingCount = 32; remainingCount != 0; remainingCount--) {
     *sessionNameCursor = 0;
     sessionNameCursor++;
   }
   titleSource = TextResource_Resolve(titleTextIndex + TEXT_ID_LEVEL_TITLE_BASE);
-  sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
-                        (&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
+  sessionNameCursor = UiTextEdit_Text(&g_InGameRuntimeDefaultImageTemplate.saveNameEdit).data();
   for (remainingCount = 31; remainingCount != 0; remainingCount--) {
     titleSource++;
     titleChar = *titleSource;

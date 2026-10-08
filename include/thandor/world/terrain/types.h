@@ -104,7 +104,7 @@ struct FieldGridCell {
     Q12 terrainHeight; // Terrain height.
     Q12 waterSurfaceDelta; // Water-surface delta.
     FieldCellPackedFlagsAndMaterial flagsAndMaterial; // [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] FLD +0x50 namespace: low byte material; 0x700 runtime-random variant; 0x0800 Xenite support; 0x1000 Tritium support; 0x88006000 hard edges; 0x10000 transient region-visited; 0x20000000 fluid receiver exclusion; 0x40000000 fluid source exclusion; 0x10000000 terrain-visual-clearable but semantic unresolved; 0x8000 init-cleared unresolved. Numeric GridScratch class bits are a different allocation and must not be written here.
-    FieldCellPersistedAux persistedAux54; // Persisted field-cell auxiliary value.
+    FieldCellPersistedAux persistedAux54; // Runtime: index 0..255 of the cell's record in g_TerrainDirectionRecordTable256 (FieldGrid_InitializeRuntimeCellsAndBoundaryFlags; the original stored its address). 0 in stock FLD files, 0 in the editor's FLD save; the .sve field.hex segment carries the runtime value, rebuilt on load.
     PackedArgb32 groundDirectionalLightColor; // Packed ground directional-light color written by FieldGridCell_ComputeDirectionalLightColor and consumed by terrain shading.
     PackedArgb32 secondarySurfaceDirectionalLightColor; // Packed secondary-surface directional-light color written beside the ground color and consumed by the secondary terrain shading path.
     PackedArgb32 shadedGroundColor; // +0x60 ground vertex color after shading (projection pass; shadedColorA).
