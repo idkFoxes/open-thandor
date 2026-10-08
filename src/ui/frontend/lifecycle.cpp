@@ -235,6 +235,7 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   uint32_t error;
   void *centralRomAsset;
   uint32_t romLoadErrorCode;
+  uint32_t romByteCount;
   void *allocPayload;
   uint32_t *zeroCursor;
   uint32_t *templateDwords;
@@ -294,13 +295,14 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     *outError = error;
     return false;
   }
-  centralRomAsset = Package_LoadEntry(g_EngineZentraleRomPathUtf16,&romLoadErrorCode);
+  /* the byte count bounds RomAsset_PrepareRecords' record walk */
+  centralRomAsset = Package_LoadEntryWithSize(g_EngineZentraleRomPathUtf16,&romByteCount,&romLoadErrorCode);
   if (centralRomAsset == nullptr) {
     *outError = romLoadErrorCode;
     return false;
   }
   g_FrontendCentralRomAsset = centralRomAsset;
-  error = RomAsset_PrepareRecords(static_cast<RomAssetHeader *>(centralRomAsset));
+  error = RomAsset_PrepareRecords(static_cast<RomAssetHeader *>(centralRomAsset),romByteCount);
   if (error != 0) {
     *outError = error;
     return false;

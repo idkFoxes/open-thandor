@@ -49,17 +49,21 @@ static void SoftwareTexture_BuildIntensityLut()
 }
 
 /* Bilinear sample of an 8-bit image at column xFixed (8.8 fixed point) between `row` and the row
-   below it. Horizontal: the two neighbours, widened like SoftwareTexture_CrossFadeByte, weighted by
-   g_SoftwareBilinearPackedInterpolationWeights256[fraction] (PMADDWD, high half kept). Vertical:
-   the two results times the first lane of the row weights (PMULHW), summed, >> 2, clamped to 255. */
-static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sourceWidth, uint32_t xFixed,
-                                                short upperWeight, short lowerWeight)
+   lowerRowOffset bytes below it. Horizontal: the two neighbours, widened like SoftwareTexture_CrossFadeByte,
+   weighted by g_SoftwareBilinearPackedInterpolationWeights256[fraction] (PMADDWD, high half kept). Vertical:
+   the two results times the first lane of the row weights (PMULHW), summed, >> 2, clamped to 255.
+   The original read the right neighbour one texel past the last column; bounded here because at the last row
+   that is past the image: the last column is its own right neighbour. Its weight is 0 there (the source
+   position is then exactly the last texel), so the sample is unchanged. */
+static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sourceWidth, uint32_t lowerRowOffset,
+                                                uint32_t xFixed, short upperWeight, short lowerWeight)
 {
     const short *weights = g_SoftwareBilinearPackedInterpolationWeights256[xFixed & 0xff];
     const uint8_t *upper = row + (xFixed >> 8);
-    const uint8_t *lower = upper + sourceWidth;
-    uint32_t upperSum = (uint32_t)(((upper[0] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[0] + ((upper[1] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[1]);
-    uint32_t lowerSum = (uint32_t)(((lower[0] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[0] + ((lower[1] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[1]);
+    const uint8_t *lower = upper + lowerRowOffset;
+    const uint32_t right = ((xFixed >> 8) + 1 < sourceWidth) ? 1u : 0u;
+    uint32_t upperSum = (uint32_t)(((upper[0] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[0] + ((upper[right] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[1]);
+    uint32_t lowerSum = (uint32_t)(((lower[0] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[0] + ((lower[right] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[1]);
     uint16_t sum = (uint16_t)(Raster_MulHigh((short)(upperSum >> 16), upperWeight) +
                       Raster_MulHigh((short)(lowerSum >> 16), lowerWeight));
     uint32_t intensity = (uint32_t)(sum >> 2);
@@ -69,8 +73,9 @@ static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sou
 /* Step 1 of SoftwareTexture_BilinearBlendScaleSubresources, on its own for the GPU draw list (graphics/core/draw2d.cpp
    draws the scale on the GPU): blendedSourcePixels = per-pixel cross-fade of subresource B to A through the factor
    image blendFactorPixels, eight pixels per step (SoftwareTexture_CrossFadeByte), over B's pixel count rounded down
-   to a multiple of 8 (do-while: fewer than 8 pixels run 2^32 times, as in the original). The caller checks the
-   asset and that both entries are paletted. */
+   to a multiple of 8. The caller checks the asset and that both entries are paletted.
+   The original's do-while ran 2^32 times for fewer than 8 pixels; bounded here because that writes far past
+   both buffers: nothing is cross-faded then (logged once). */
 void SoftwareTexture_CrossFadeSubresources
           (uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
           GraphicsSubresourceIndex sourceSubresourceIndexA,GraphicsSubresourceIndex sourceSubresourceIndexB,
@@ -87,8 +92,16 @@ void SoftwareTexture_CrossFadeSubresources
   uint8_t *blended = reinterpret_cast<uint8_t *>(blendedSourcePixels);
   uint32_t blocks = (entryB->pixelHeight * entryB->pixelWidth) >> 3;
   int lane;
+  static bool loggedTooSmall;
 
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  if (blocks == 0) {
+    if (!loggedTooSmall) {
+      loggedTooSmall = true;
+      Thandor_Log("SoftwareTexture: skipped the cross-fade of a %ux%u subresource (fewer than 8 pixels)",
+                  entryB->pixelWidth, entryB->pixelHeight);
+    }
+    return;
+  }
   do {
     for (lane = 0; lane < 8; lane++) {
       blended[lane] = SoftwareTexture_CrossFadeByte(sourceA[lane], sourceB[lane], factor[lane], unity[lane & 3]);
@@ -110,10 +123,14 @@ void SoftwareTexture_CrossFadeSubresources
    3. Each destination pixel is a bilinear sample of the blended image (8.8 fixed-point steps
       (size - 1) * 256 / (destinationSize - 1)), looked up in that table.
    Nothing is drawn unless the asset is a texture source, both indices are valid and both entries
-   are paletted (paletteIndex >= 0). Original quirks kept: B's size is compared with itself, so A
-   is assumed to be as large as B; the loops are do-while, so fewer than 8 source pixels or a zero
-   destination size run 2^32 times, and a destination size of 1 divides by zero; the scale reads
-   one row below the blended image.
+   are paletted (paletteIndex >= 0). Original quirk kept: B's size is compared with itself, so A
+   is assumed to be as large as B.
+   The original's do-while loops ran 2^32 times for a destination or source size of 0, a size of 1
+   divided by zero (destination) or underflowed the step (source 0), and the scale read the row below
+   the last source row. Bounded here because those were crashes and reads past the blended image: a
+   destination or source size of 0 draws nothing (logged once), a destination size of 1 uses step 0,
+   and the row below the last row is the row itself. That row's weight is always 0 there (the source
+   position is then exactly the last row), so every pixel is unchanged.
 */
 void SoftwareTexture_BilinearBlendScaleSubresources
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
@@ -135,6 +152,7 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   uint32_t stepY;
   uint32_t yFixed;
   uint32_t rowsLeft;
+  static bool loggedEmptySize;
 
   if (asset == nullptr || asset->common.magic != ASSET_MAGIC_GFX ||
       sourceSubresourceIndexB >= asset->tableDescriptor.subresourceCount ||
@@ -149,6 +167,14 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   }
   sourceWidth = entryB->pixelWidth;
   sourceHeight = entryB->pixelHeight;
+  if (destinationWidth == 0 || destinationHeight == 0 || sourceWidth == 0 || sourceHeight == 0) {
+    if (!loggedEmptySize) {
+      loggedEmptySize = true;
+      Thandor_Log("SoftwareTexture: skipped a grey-scale scale of %ux%u to %ux%u (empty size)", sourceWidth,
+                  sourceHeight, (uint32_t)destinationWidth, (uint32_t)destinationHeight);
+    }
+    return;
+  }
 
   /* 1. cross-fade B -> A */
   SoftwareTexture_CrossFadeSubresources(blendedSourcePixels, blendFactorPixels, sourceSubresourceIndexA,
@@ -158,22 +184,30 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   SoftwareTexture_BuildIntensityLut();
 
   /* 3. bilinear scale into the framebuffer */
-  stepX = (uint32_t)(((unsigned long long)(sourceWidth - 1) << 8) / (uint32_t)(destinationWidth - 1));
-  stepY = (uint32_t)(((unsigned long long)(sourceHeight - 1) << 8) / (uint32_t)(destinationHeight - 1));
+  stepX = 0;
+  if (destinationWidth > 1) {
+    stepX = (uint32_t)(((unsigned long long)(sourceWidth - 1) << 8) / (uint32_t)(destinationWidth - 1));
+  }
+  stepY = 0;
+  if (destinationHeight > 1) {
+    stepY = (uint32_t)(((unsigned long long)(sourceHeight - 1) << 8) / (uint32_t)(destinationHeight - 1));
+  }
   /* framebuffer->width is the row pitch in pixels; 4 bytes per pixel (the original also drew 2-byte pixels) */
   destinationRow = framebuffer->pixels + (destinationTop * (int)framebuffer->width + destinationLeft) * 4;
   yFixed = 0;
   rowsLeft = destinationHeight;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* destinationHeight and destinationWidth are >= 1 (checked above), so both do-while loops run their count */
   do {
     const uint8_t *row = reinterpret_cast<const uint8_t *>(blendedSourcePixels) + (yFixed >> 8) * sourceWidth;
+    /* byte offset of the lower neighbour row (the row itself at the last row) */
+    uint32_t lowerRowOffset = ((yFixed >> 8) + 1 < sourceHeight) ? sourceWidth : 0;
     short upperWeight = (short)g_SoftwareBilinearInverseFactors[yFixed & 0xff].blue;
     short lowerWeight = (short)g_SoftwareBilinearForwardFactors[yFixed & 0xff].blue;
     uint32_t xFixed = 0;
     uint32_t column = 0;
     do {
       uint32_t color = g_SoftwarePixelIntensityToNativeColorLut256[
-          SoftwareTexture_SampleIntensity(row, sourceWidth, xFixed, upperWeight, lowerWeight)];
+          SoftwareTexture_SampleIntensity(row, sourceWidth, lowerRowOffset, xFixed, upperWeight, lowerWeight)];
       Thandor_StoreU32(destinationRow + static_cast<size_t>(column) * 4u, color);
       xFixed += stepX;
     } while (++column != destinationWidth);
@@ -380,7 +414,8 @@ void SoftwareTexture_DrawMinimapBilinear32
   destRowStart = destPixel;
   remainingRows = height;
   remainingColumns = width;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* width and height are >= 1: the only caller, UiSelectionGeometryControl_DrawClipped (ui/controls/minimap.cpp),
+     returns for an empty or inverted clip rectangle */
   do {
     do {
       Thandor_StoreU32(destPixel,

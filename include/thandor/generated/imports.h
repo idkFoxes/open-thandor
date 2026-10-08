@@ -49,6 +49,7 @@ __declspec(dllimport) HANDLE __stdcall HeapCreate(DWORD flOptions, SIZE_T dwInit
 __declspec(dllimport) BOOL __stdcall HeapDestroy(HANDLE hHeap);
 __declspec(dllimport) BOOL __stdcall HeapFree(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem);
 __declspec(dllimport) BOOL __stdcall MoveFileA(LPCSTR lpExistingFileName, LPCSTR lpNewFileName);
+__declspec(dllimport) BOOL __stdcall MoveFileExA(LPCSTR lpExistingFileName, LPCSTR lpNewFileName, DWORD dwFlags);
 __declspec(dllimport) BOOL __stdcall ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped);
 __declspec(dllimport) BOOL __stdcall ReleaseSemaphore(HANDLE hSemaphore, LONG lReleaseCount, LPLONG lpPreviousCount);
 __declspec(dllimport) BOOL __stdcall RemoveDirectoryA(LPCSTR lpPathName);
