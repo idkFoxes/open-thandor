@@ -864,7 +864,9 @@ static_assert(sizeof(TextResourcePageBinding) == 0x8 &&
               offsetof(TextResourcePageBinding, selectedLocaleBlock) == 0x0 &&
               offsetof(TextResourcePageBinding, asset) == 0x4,
               "TextResourcePageBinding keeps its 32-bit layout");
-static_assert(sizeof(WideNumberFormatState) == 0x158,
+static_assert(sizeof(WideNumberFormatState) == 0x158 &&
+              offsetof(WideNumberFormatState, integerDigitScratch) == 0x118 &&
+              offsetof(WideNumberFormatState, digitAlphabet) == 0x138,
               "WideNumberFormatState keeps its 32-bit layout");
 static_assert(sizeof(TextResourceOverrideTable) == 0x8000 &&
               offsetof(TextResourceOverrideTable, textPointers) == 0x4000,

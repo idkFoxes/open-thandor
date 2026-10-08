@@ -155,6 +155,7 @@ bool SoftwareRenderer_SetDisplayMode
   int32_t *previousDepthBuffer;
   uint32_t depthAllocationError;
   void *depthAllocationPayload;
+  uint32_t depthRowStrideBytes;
 
   if (!g_SoftwareChainedSetDisplayMode(adapterIndex,bitsPerPixel,height,width,errorCode)) {
     return false;
@@ -164,15 +165,21 @@ bool SoftwareRenderer_SetDisplayMode
   (void)height;
   (void)width;
   {
-    g_SoftwareDepthRowStrideBytes = g_FramebufferWidth * 4; /* one int32 depth value per pixel */
-    depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight,
+    depthRowStrideBytes = g_FramebufferWidth * 4; /* one int32 depth value per pixel */
+    depthAllocationError = g_MemoryApi.alloc(depthRowStrideBytes * g_FramebufferHeight,
                                              &depthAllocationPayload);
     previousDepthBuffer = g_SoftwareDepthBuffer;
     if (depthAllocationError != 0) {
+      /* The original stored the new stride before the allocation, so a failed allocation left the old (smaller)
+         depth buffer with the new stride; the stride is stored only with the new buffer here because the next
+         frame would otherwise write past the old one. */
+      Thandor_Log("SoftwareRenderer: depth buffer allocation failed (error %u), keeping the old one",
+                  depthAllocationError);
       *errorCode = depthAllocationError;
       return false;
     }
     {
+      g_SoftwareDepthRowStrideBytes = depthRowStrideBytes;
       g_SoftwareDepthBuffer = static_cast<int32_t *>(depthAllocationPayload);
       g_MemoryApi.free(previousDepthBuffer);
       g_SoftwareDepthEpoch = 0;
@@ -191,13 +198,17 @@ uint32_t SoftwareRenderer_InstallDisplayModeHook()
 {
   void *allocatedDepthBuffer;
   uint32_t depthAllocationError;
+  uint32_t depthRowStrideBytes;
 
   g_SoftwareChainedSetDisplayMode = g_GraphicsSetDisplayMode;
-  g_SoftwareDepthRowStrideBytes = g_FramebufferWidth * 4;
+  depthRowStrideBytes = g_FramebufferWidth * 4;
   g_GraphicsSetDisplayMode = SoftwareRenderer_SetDisplayMode;
-  depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight,
+  depthAllocationError = g_MemoryApi.alloc(depthRowStrideBytes * g_FramebufferHeight,
                                            &allocatedDepthBuffer);
+  /* the stride is stored only with the buffer (the original stored it before the allocation, leaving a stride
+     for a missing buffer when it failed) */
   if (depthAllocationError == 0) {
+    g_SoftwareDepthRowStrideBytes = depthRowStrideBytes;
     g_SoftwareDepthBuffer = static_cast<int32_t *>(allocatedDepthBuffer);
     g_SoftwareDepthEpoch = 0;
     return 0;
