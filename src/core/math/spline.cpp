@@ -82,7 +82,8 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
 
   /* The original requires 2 <= keyframeCount <= 9 unchecked (1 or 0 makes the do-while loops below run ~2^32
      times, 10 or more needs more than the 32 rows); clamped here because both write outside the 32x32
-     workspace. The only caller (world/camera/motion_spline.cpp) passes 2. */
+     workspace. The only caller (WorldMotionSpline_BuildSixChannelCurves) passes 2 for the menu-room focus
+     flight and a ROM action entry's keyframe count otherwise, which RomAsset_PrepareRecords limits to 2..9. */
   if (keyframeCount < 2 || keyframeCount > (CUBIC_SPLINE_MATRIX_ORDER + 4) / 4) {
     static bool s_KeyframeCountLogged = false;
     if (!s_KeyframeCountLogged) {
