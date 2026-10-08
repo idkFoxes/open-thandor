@@ -67,7 +67,7 @@ fieldFlags **[likely]**.
 | 0x48 | terrainHeight (Q12) | **file data** | kept |
 | 0x4C | waterSurfaceDelta (Q12) | **file data**: water surface - ground; > 0 under water, <= 0 dry | kept |
 | 0x50 | flagsAndMaterial | **file data**, see below | variant bits 8-10 randomized, edge bits rebuilt, 0x8000 cleared |
-| 0x54 | persistedAux54 | 0 in all stock files | overwritten with a pointer into g_TerrainDirectionRecordTable256 chosen by worldX/worldY low nibbles |
+| 0x54 | persistedAux54 | 0 in all stock files | overwritten with an index 0..255 into g_TerrainDirectionRecordTable256 chosen by worldX/worldY low nibbles (a pointer before step 11) |
 | 0x58-0x67 | directional light / shaded colors | 0 | lighting pass |
 | 0x68 | visibilityLightingIndex (+3 bytes) | 0 | fog of war |
 | 0x6C | armyRuntimeSavedOffset | 0 | 0 (Init) |

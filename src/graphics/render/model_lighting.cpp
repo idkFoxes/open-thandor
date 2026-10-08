@@ -1159,8 +1159,8 @@ static uint64_t ModelLighting_ReadOriginalImageQword(uint32_t originalAddress)
 static uint64_t ModelLighting_ReadMultiplierQword(int32_t byteOffset)
 {
   if (byteOffset >= 0 && byteOffset <= (int32_t)sizeof g_ModelLightingMmxMultiplierRows - 8) {
-    /* the PMULHW operand: a qword read at a byte offset into the table */
-    return *reinterpret_cast<const uint64_t *>(reinterpret_cast<const uint8_t *>(g_ModelLightingMmxMultiplierRows) + byteOffset);
+    /* the PMULHW operand: a qword read at a byte offset into the table (not necessarily 8-byte aligned) */
+    return Thandor_LoadU64(reinterpret_cast<const uint8_t *>(g_ModelLightingMmxMultiplierRows) + byteOffset);
   }
   return ModelLighting_ReadOriginalImageQword(MODEL_LIGHTING_MMX_ROWS_ORIGINAL_ADDRESS + (uint32_t)byteOffset);
 }
@@ -1403,11 +1403,11 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
 
 {
   /* The MMX lanes in plain C: color is the running accumulator every light is added to. */
-  const short *lightingTable = reinterpret_cast<const short *>(&g_PackedLightingLookupTable); /* the qwords as word lanes */
   const GraphicsShadingRuntimeRecord *record = g_GraphicsShadingNearbyRecords;
   GraphicsShadingRecordCount remaining;
   short color[4];
   short lanes[4];
+  short factors[4];
 
   scenePackedColor0 = scenePackedColor0 | ARGB8888_ALPHA_MASK;
   FixedTransform_ApplyDirection
@@ -1462,7 +1462,11 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
     quotient = static_cast<int64_t>(numerator) / static_cast<int64_t>(divisor);
     tableIndex = ModelLighting_ClampLookupIndex(static_cast<uint32_t>((quotient * facing) >> 28));
     ModelLighting_UnpackBytes(record->packedColorRgbActive,2,lanes);
-    ModelLighting_MulHigh(lanes,lightingTable + tableIndex * 4);
+    /* the table qword as its four little-endian word lanes (the original read it through a short pointer) */
+    for (int lane = 0; lane < 4; lane++) {
+      factors[lane] = static_cast<short>(static_cast<uint16_t>(g_PackedLightingLookupTable[tableIndex] >> (16 * lane)));
+    }
+    ModelLighting_MulHigh(lanes,factors);
     ModelLighting_AddSaturate(color,lanes);
   }
   ModelLighting_UnpackBytes(vertexPackedColor,2,lanes);
