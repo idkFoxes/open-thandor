@@ -54,7 +54,8 @@ static uint32_t Pcx_ReadDword(const uint8_t *bytes)
    Original quirk: the size is computed by subtracting the packed corner dwords (Xmin | Ymin << 16 from
    Xmax | Ymax << 16), so an Xmax below Xmin borrows one from the height.
    Each decoded scanline contributes its first width bytes; padding beyond width (bytes-per-line > width) is
-   dropped. */
+   dropped. Not in the original (each with one log line): bytes-per-line below width is rejected, and so is a
+   size the RLE data cannot fill (height * ceil(bytes-per-line / 63) encoded bytes at least). */
 bool Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxIndexedImage *outImage)
 
 {
@@ -109,11 +110,23 @@ bool Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxIndex
   /* The original decoded into a line buffer of bytes-per-line bytes. With 0 bytes per line the scanline
      never completes (the counter wraps) and decoding fails once the data runs out (after writing past the
      empty buffer). With fewer bytes per line than width it copied width bytes, the excess being whatever
-     followed the line buffer in the heap; here the buffer covers width and the excess reads as 0. */
-  if (bytesPerLine == 0) {
+     followed the line buffer in the heap; bounded here because that read past the buffer: such a header
+     (the format requires bytes-per-line >= width) is rejected. */
+  if (bytesPerLine < outImage->width) {
+    Thandor_Log("Pcx_DecodeIndexed8: rejected %ux%u picture with %u bytes per line",outImage->width,
+                outImage->height,bytesPerLine);
     return false;
   }
-  lineBufferBytes = bytesPerLine < outImage->width ? outImage->width : bytesPerLine;
+  /* One encoded byte decodes to at most 63 bytes (a 2-byte run of 63), so every scanline needs at least
+     ceil(bytesPerLine / 63) encoded bytes. A header whose size the data cannot fill would fail during
+     decoding anyway; it is rejected before allocating its (up to 4 GB) pixel buffer. */
+  if ((uint64_t)outImage->height * ((bytesPerLine + PCX_RLE_RUN_LENGTH_MASK - 1) / PCX_RLE_RUN_LENGTH_MASK) >
+      fileByteCount - (uint32_t)(PCX_HEADER_BYTES + PCX_PALETTE_TRAILER_BYTES)) {
+    Thandor_Log("Pcx_DecodeIndexed8: rejected %ux%u picture, %u data bytes cannot fill it",outImage->width,
+                outImage->height,fileByteCount - (uint32_t)(PCX_HEADER_BYTES + PCX_PALETTE_TRAILER_BYTES));
+    return false;
+  }
+  lineBufferBytes = bytesPerLine;
   if (g_MemoryApi.alloc((uint32_t)pixelCount,&block) != 0) {
     outImage->pixels = nullptr;
     return false;
