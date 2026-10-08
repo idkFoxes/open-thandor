@@ -215,8 +215,7 @@ GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pat
 
 /* Makes a private heap copy of a 'gfx' texture source with its palettes converted to the current framebuffer
    format, so it can be modified independently (g_GraphicsTextureSourceLifecycleCallbacks3.clone). Returns the
-   copy; on failure it returns the allocation error cast to a pointer, or after a failed conversion the
-   result of freeing the copy again (as the original, which also flagged the failure separately).
+   copy, or NULL when the allocation fails (one log line) or the conversion fails (the copy is freed again).
 */
 GraphicsTextureSourceAsset *
 GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
@@ -233,8 +232,11 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
   allocationSizeBytes = (sourceAsset->common).allocationSizeBytes;
   cloneAllocationError = g_MemoryApi.alloc(allocationSizeBytes,&cloneBlock);
   if (cloneAllocationError != 0) {
-    /* Original quirk: a failed allocation returns its error code as the asset pointer */
-    return reinterpret_cast<GraphicsTextureSourceAsset *>(static_cast<uintptr_t>(cloneAllocationError));
+    /* The original returned the allocation error code as the asset pointer; bounded here because a caller
+       would use that code as an address. */
+    Thandor_Log("GraphicsTextureSource_CloneAsset: allocation of %u bytes failed (error %u)",allocationSizeBytes,
+                cloneAllocationError);
+    return nullptr;
   }
   clonedAsset = static_cast<GraphicsPaletteTextureSourceAsset *>(cloneBlock);
   /* copy the whole allocation dword by dword (a trailing partial dword is not copied) */
@@ -248,8 +250,10 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
   if (g_GraphicsTextureSourceConvertPaletteEntries(clonedAsset) == 0) {
     return static_cast<GraphicsTextureSourceAsset *>(cloneBlock);
   }
-  /* Original quirk: the clone's result after a failed conversion is the free's status (0 = NULL) */
-  return reinterpret_cast<GraphicsTextureSourceAsset *>(static_cast<uintptr_t>(g_MemoryApi.free(clonedAsset)));
+  /* The original returned the free's status here (0 = NULL, otherwise an error code used as a pointer);
+     bounded here because a failed free would hand out that code as an address. */
+  g_MemoryApi.free(clonedAsset);
+  return nullptr;
 }
 
 
