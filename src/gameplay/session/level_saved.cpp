@@ -133,6 +133,7 @@ static bool SavedLevel_LoadSpatialSounds
   uint32_t soundIndex;
   bool sampleLoaded;
   void *loadedSample;
+  uint32_t loadedSampleBytes;
   uint32_t loadErrorCode;
   SpatialSoundSlot *soundSlot;
 
@@ -180,20 +181,21 @@ static bool SavedLevel_LoadSpatialSounds
     soundIndex = WidePath_ParseTrailingNumberBeforeExtension(listedSoundPath);
     if (soundIndex < worldRuntime->dwordArrayCount) {
       if (soundsInPackage) {
-        sampleLoaded = Resource_Load(listedSoundPath,&loadedSample,nullptr,&loadErrorCode);
+        sampleLoaded = Resource_Load(listedSoundPath,&loadedSample,&loadedSampleBytes,&loadErrorCode);
       }
       else {
         WidePath_CombineDirectoryAndLeaf
                   (g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,listedSoundPath,
                    g_InGameLevelSoundParentDirectoryScratchUtf16);
         sampleLoaded = Resource_Load(g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-                                     &loadedSample,nullptr,&loadErrorCode);
+                                     &loadedSample,&loadedSampleBytes,&loadErrorCode);
       }
       if (!sampleLoaded) {
         g_MemoryApi.free(directoryListing);
         return NewLevel_Fail(outError,loadErrorCode);
       }
-      soundSlot = SpatialSoundSlot_CreateFromSampleAsset(static_cast<SoundSampleAsset *>(loadedSample));
+      soundSlot = SpatialSoundSlot_CreateFromSampleAsset(static_cast<SoundSampleAsset *>(loadedSample),
+                                                         loadedSampleBytes);
       if (soundSlot != nullptr) {
         soundSlotCursor[soundIndex] = reinterpret_cast<uintptr_t>(soundSlot); /* kept as an integer slot */
       }

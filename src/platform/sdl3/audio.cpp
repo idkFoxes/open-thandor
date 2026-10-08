@@ -39,6 +39,9 @@ constexpr int kSampleRate = 22050;
 constexpr int kChannels = 2;
 constexpr std::size_t kSamplesPerDecodedBlock = SOUND_SAMPLE_DECODED_BLOCK_BYTES / sizeof(int16_t);
 constexpr std::size_t kVoicesPerSet = SOUND_VOICES_PER_SET;
+/* The smallest packed block: 256 one-bit zero codes, which SoundSample_DecodePackedCoefficientBlock reports
+   as 32 consumed bytes (it consumes at least 256 bits and rounds down to 4). */
+constexpr std::size_t kMinEncodedBlockBytes = 32;
 
 /* One decoded sample: interleaved 16-bit stereo PCM. */
 struct Sample {
@@ -282,8 +285,16 @@ void SdlAudio_Shutdown()
   g_SoundSetVoiceGains = SoundBackendDisabled_SetVoiceGains;
 }
 
-uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet)
+uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,uint32_t sampleByteCount,
+                                       SoundVoiceSet **outVoiceSet)
 {
+  /* The original trusted the header: it read it without a size and decoded decodedBlockCount blocks however
+     few bytes followed; bounded here because a short or forged asset made it read (and size the PCM buffer)
+     past the asset. */
+  if (sampleByteCount < sizeof(SoundSampleAsset)) {
+    Thandor_Log("SDL audio: sample rejected: %u bytes, shorter than the header", (unsigned)sampleByteCount);
+    return FailVoiceSet(SOUND_VOICE_STAGE_CREATE_BUFFER, FATAL_ERROR_SOUND_SAMPLE_INVALID);
+  }
   if ((sampleAsset->magic != ASSET_MAGIC_SAM) || (sampleAsset->formatVersion != SOUND_SAMPLE_FORMAT_VERSION)) {
     return FailVoiceSet(SOUND_VOICE_STAGE_CREATE_BUFFER, FATAL_ERROR_SOUND_SAMPLE_INVALID);
   }
@@ -291,13 +302,26 @@ uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceS
   if (blockCount == 0) {
     return FailVoiceSet(SOUND_VOICE_STAGE_CREATE_BUFFER, FATAL_ERROR_AUDIO_SETUP); /* empty buffer */
   }
+  const std::size_t encodedBytes = sampleByteCount - sizeof(SoundSampleAsset);
+  if (blockCount > encodedBytes / kMinEncodedBlockBytes) {
+    Thandor_Log("SDL audio: sample rejected: %u blocks do not fit its %u encoded bytes", (unsigned)blockCount,
+                (unsigned)encodedBytes);
+    return FailVoiceSet(SOUND_VOICE_STAGE_CREATE_BUFFER, FATAL_ERROR_SOUND_SAMPLE_INVALID);
+  }
   /* decode every packed block (they follow the 0x200-byte header) */
   auto sample = std::make_shared<Sample>();
   sample->pcm.resize(blockCount * kSamplesPerDecodedBlock);
   std::array<short, 256> coefficients{};
   auto *encodedBlock = reinterpret_cast<uint8_t *>(sampleAsset + 1);
+  const uint8_t *const encodedEnd = encodedBlock + encodedBytes;
   for (std::size_t block = 0; block < blockCount; block++) {
-    const uint32_t encodedBlockSize = SoundSample_DecodePackedCoefficientBlock(coefficients.data(), encodedBlock);
+    const uint32_t encodedBlockSize =
+         SoundSample_DecodePackedCoefficientBlock(coefficients.data(), encodedBlock, encodedEnd);
+    if (encodedBlockSize > static_cast<std::size_t>(encodedEnd - encodedBlock)) {
+      Thandor_Log("SDL audio: sample rejected: block %u of %u runs past its %u encoded bytes", (unsigned)block,
+                  (unsigned)blockCount, (unsigned)encodedBytes);
+      return FailVoiceSet(SOUND_VOICE_STAGE_CREATE_BUFFER, FATAL_ERROR_SOUND_SAMPLE_INVALID);
+    }
     SoundSample_DecodeCoefficientBlockToPcmMmx(sample->pcm.data() + block * kSamplesPerDecodedBlock,
                                                coefficients.data());
     encodedBlock += encodedBlockSize;
