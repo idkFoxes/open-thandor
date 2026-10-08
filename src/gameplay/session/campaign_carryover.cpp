@@ -49,8 +49,10 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
   if ((g_InGameRuntimeRoot != nullptr) && (g_FrontendLoadedCampaignAsset != nullptr)) {
     levelRecordsRemaining = g_FrontendLoadedCampaignAsset->levelRecordCount;
     scenarioRecord = g_FrontendLoadedCampaignAsset;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original tested the count only after the first record (a do-while), so a campaign asset with no level
+       records (the CGN file or the campagne.hex save entry is not checked) walked on far past the asset;
+       bounded here because that reads outside it. Such a campaign finds no scenario. */
+    while (levelRecordsRemaining > 0) {
       if (g_FrontendLoadedCampaignAsset->currentLevelId ==
           scenarioRecord->levels[0].levelId) {
         scenarioFound = true;
@@ -58,7 +60,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables()
       }
       scenarioRecord = Asset_RecordAt<CampaignAsset>(scenarioRecord,sizeof(CampaignLevelRecord));
       levelRecordsRemaining--;
-    } while (levelRecordsRemaining != 0);
+    }
   }
   if (!scenarioFound) {
     OldUnitRuntime_ResetPendingTables();
@@ -239,7 +241,8 @@ bool InGameSaveGame_OldUnitTablesAreEmpty()
 }
 
 /* Writes the oldunit entry: the record count followed by the primary and the secondary table, packed into a
-   temporary allocation. Returns false only when that allocation fails. */
+   temporary allocation. Returns false when that allocation or the write fails (the original ignored the
+   write's result and reported the entry as written). */
 bool InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
 
 {
@@ -262,8 +265,7 @@ bool InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
     *destinationCursor = g_OldUnitSecondaryTable[index];
     destinationCursor++;
   }
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
-                      (PckDecodedByteCount)Asset_ByteDistance(destinationCursor,oldUnitImage),oldUnitImage,
-                      g_OldunitHexPathUtf16,packageHandle);
-  return true;
+  return Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
+                             (PckDecodedByteCount)Asset_ByteDistance(destinationCursor,oldUnitImage),oldUnitImage,
+                             g_OldunitHexPathUtf16,packageHandle);
 }

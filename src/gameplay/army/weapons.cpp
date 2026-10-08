@@ -9,6 +9,36 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#include <cstddef>
+#include <span>
+
+namespace {
+
+/* One destruction effect channel of a ModelDefinition: {effect, initial timer} at +0x80 + 8 * i. */
+struct ModelDestructionEffectChannel {
+  union EffectDefinitionReferenceOrSavedId effect;
+  uint32_t delayTicks;
+};
+static_assert(sizeof(ModelDestructionEffectChannel) == 8);
+static_assert(offsetof(ModelDefinition, destructionEffect0) == 0x80 &&
+              offsetof(ModelDefinition, destructionEffectDelayTicks0) == 0x84 &&
+              offsetof(ModelDefinition, destructionEffect7) == 0x80 + (7 * sizeof(ModelDestructionEffectChannel)) &&
+              offsetof(ModelDefinition, destructionEffectDelayTicks7) + sizeof(uint32_t) ==
+                   0x80 + (8 * sizeof(ModelDestructionEffectChannel)),
+              "the eight destruction effect channels are 8 contiguous {effect, delay} pairs at +0x80..+0xBF");
+
+/* The eight destruction effect channels of a model definition as an 8-element view of exactly +0x80..+0xBF.
+   Original quirk: the original indexes (&destructionEffect0)[2 * i], i.e. runs a pointer from destructionEffect0
+   past its end into the following named fields (destructionEffectDelayTicks0, destructionEffect1, ...); this view
+   reads exactly the same memory (channel i's effect at +0x80 + 8 * i), same values, same order. */
+std::span<const ModelDestructionEffectChannel, 8> ModelDefinition_DestructionEffectChannels(const ModelDefinition *definition)
+{
+  return std::span<const ModelDestructionEffectChannel, 8>(
+       reinterpret_cast<const ModelDestructionEffectChannel *>(&definition->destructionEffect0),8);
+}
+
+} // namespace
+
 /* Called by the weapon code (combat/movement) after a shot has been fired: stores the launch heading and the
    weapon definition's two post-launch values as the army's action vector, but only when both of those values
    are nonzero; otherwise the previous vector is kept.
@@ -442,10 +472,10 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
 
 /* One tick of a model whose health is gone (called directly by
    ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, which then counts the eight channel timers
-   destructionEffectTimers down). For every channel i whose timer is 0 it spawns the channel's
-   effect (definition (&destructionEffect0)[2 * i]) at every model point with packed key i << 4 | 3 of the root
-   model, using the root's orientation, and, when the definition has a child model, at those of child node 0 with
-   a fixed orientation. Also sets its own health to 0 and clears health and link (linkedModelRuntimeOrSavedOffset)
+   destructionEffectTimers down). For every channel i whose timer is 0 it spawns the channel's effect
+   (ModelDefinition_DestructionEffectChannels(definition)[i].effect) at every model point with packed key
+   i << 4 | 3 of the root model, using the root's orientation, and, when the definition has a child model, at
+   those of child node 0 with a fixed orientation. Also sets its own health to 0 and clears health and link (linkedModelRuntimeOrSavedOffset)
    of every attached child model.
 */
 void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
@@ -487,9 +517,10 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
                    (modelNode->modelPayload).worldRotationAngle2,
                    (modelNode->modelPayload).worldRotationAngle1,
                    (modelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
-                   /* the definition's eight {effect, value} pairs from destructionEffect0 */
-                   (&(modelRuntime->definitionOrSavedId).runtimeDefinition->destructionEffect0)
-                   [channelIndex * 2].definition,worldRuntime);
+                   /* channel channelIndex of the definition's eight {effect, delay} pairs */
+                   ModelDefinition_DestructionEffectChannels
+                        ((modelRuntime->definitionOrSavedId).runtimeDefinition)[channelIndex].effect.definition,
+                   worldRuntime);
       }
       pointRecord = pointRecord + 1;
     }
@@ -518,8 +549,9 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
                          *(EffectRuntimeOwnerReference *)
                           &modelRuntime->linkedModelRuntimeOrSavedOffset,0,FIXED_ANGLE16_QUARTER_TURN,0,localPoint.zQ12,
                          localPoint.yQ12,localPoint.xQ12,
-                         (&(modelRuntime->definitionOrSavedId).runtimeDefinition->destructionEffect0)
-                         [channelIndex * 2].definition,worldRuntime);
+                         ModelDefinition_DestructionEffectChannels
+                              ((modelRuntime->definitionOrSavedId).runtimeDefinition)[channelIndex].effect.definition,
+                         worldRuntime);
             }
           }
           pointRecord = pointRecord + 1;
