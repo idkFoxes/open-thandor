@@ -523,7 +523,12 @@ bool SdlInput_Init(uint32_t *outError)
 
 void SdlInput_Shutdown()
 {
-  g_TimerUnregisterPeriodic(GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
+  /* The original called the unregister hook unconditionally; checked here because the hook is only installed
+     by SdlPlatform_InstallTimersAndPump, so a fatal error before it (file system, locale, error system,
+     DynAPI bootstrap) reached Runtime_Shutdown with a null pointer and crashed. */
+  if (g_TimerUnregisterPeriodic != nullptr) {
+    g_TimerUnregisterPeriodic(GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
+  }
   if (MainWindow() != nullptr) {
     SDL_SetWindowRelativeMouseMode(MainWindow(), false);
   }
