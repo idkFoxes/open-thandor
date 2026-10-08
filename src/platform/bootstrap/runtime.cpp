@@ -378,7 +378,7 @@ uint32_t GameData_ResetDefaults()
   statTableCursor = static_cast<uint32_t *>(allocPayload);
   statTableCursor = std::fill_n(statTableCursor,GAME_STAT_TABLE_BYTES / 4,0);
   statTableCursor[-1] = UINT32_MAX; /* end marker */
-  g_GameFactionRuntimeImage.tail.periodicClockTick = 0;
+  InGameTick_PeriodicClockTick().store(0,std::memory_order_relaxed);
   return 0;
 }
 

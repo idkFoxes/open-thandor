@@ -5,6 +5,7 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <cstdio>
 #include <thandor/ui/controls/input.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -24,8 +25,11 @@ static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,U
   }
   if (logged < 20) {
     logged++;
+    /* Thandor_SymbolName returns one per-thread buffer, so the holder's name is copied before the second call. */
+    char holderName[128];
+    snprintf(holderName,sizeof(holderName),"%s",Thandor_SymbolName(holder->vtable));
     Thandor_Log("ui focus walk: node %p (vtable %s flags %08x) has bad %s link %p; focus %p (vtable %s)",
-                THANDOR_PTR(holder),Thandor_SymbolName(holder->vtable),holder->nodeFlags,field,THANDOR_PTR(link),
+                THANDOR_PTR(holder),holderName,holder->nodeFlags,field,THANDOR_PTR(link),
                 THANDOR_PTR(g_UiKeyboardFocusNode),
                 g_UiKeyboardFocusNode != UI_NODE_NONE ?
                 Thandor_SymbolName(g_UiKeyboardFocusNode->vtable) : "-");

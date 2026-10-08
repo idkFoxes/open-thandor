@@ -312,6 +312,44 @@ static bool ModelRuntimePool_RebasedSlotInPools(const ModelRuntimeSlot *modelRun
   return true;
 }
 
+/* Not in the original: true when a restored model node record (already known to lie in the world object pool) is
+   allocated and has at most six children. ModelNodeRuntime_CreateHierarchyRecursive is the only creator of the
+   nodes of a model runtime and bounds childCount to the six child offsets of an MDL node, so every save written
+   by the game passes; a free record's childCount is neither checked nor rebased by the widget.hex load. */
+static bool ModelRuntimePool_RestoredNodeValid(const ModelRuntimeNode *modelNode)
+{
+  constexpr uint32_t childCapacity = sizeof(MdlSerializedNodeHeader::childSerializedOffsets) /
+                                     sizeof(MdlSerializedNodeHeader::childSerializedOffsets[0]);
+
+  return Any(modelNode->runtimeFlags & WORLD_OBJECT_RECORD_ALLOCATED) && modelNode->childCount <= childCapacity;
+}
+
+/* Not in the original: true when the root node and the saved attachment parent nodes of a slot that passed
+   ModelRuntimePool_RebasedSlotInPools are valid restored nodes (ModelRuntimePool_RestoredNodeValid) and every
+   attachment's childNodeIndex names one of its parent node's children (ModelNodeRuntime_CreateHierarchyRecursive
+   records the index of a child of that parent). The parent nodes are still saved offsets here. */
+static bool ModelRuntimePool_RestoredNodesValid(const ModelRuntimeSlot *modelRuntime)
+{
+  uint32_t attachmentIndex;
+  const ModelRuntimeAttachmentDescriptor *attachment;
+  const ModelRuntimeNode *parentNode;
+
+  if (!ModelRuntimePool_RestoredNodeValid(modelRuntime->rootModelNodeOrSavedOffset.modelNode.get())) {
+    return false;
+  }
+  for (attachmentIndex = 0; attachmentIndex < modelRuntime->attachmentCount; attachmentIndex++) {
+    attachment = &modelRuntime->attachments[attachmentIndex];
+    if (attachment->parentModelNodeOrSavedOffset != nullptr) {
+      parentNode = reinterpret_cast<const ModelRuntimeNode *>
+                   (g_RuntimeObjectRebaseBaseMinusOne + Thandor_PointerToI32(attachment->parentModelNodeOrSavedOffset));
+      if (!ModelRuntimePool_RestoredNodeValid(parentNode) || attachment->childNodeIndex >= parentNode->childCount) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 /* Turns the saved offsets of the used attachment descriptors back into pointers: children get
    g_ModelRuntimeRebaseDelta, parent nodes g_RuntimeObjectRebaseBaseMinusOne; zero offsets stay NULL. */
 static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRuntime)
@@ -357,8 +395,14 @@ void ModelRuntimePool_RebaseAfterLoad()
   ArmyRuntimeSlot *rebasedLinkedArmy;
   ModelRuntimeSlot *rebasedLinkedRuntime;
   ModelDefinitionRecordPrefix *registeredDefinition;
+  uint32_t savedAttachmentCount;
+  uint32_t attachmentIndex;
+  ModelRuntimeSlot *childRuntime;
   int droppedOutOfPoolCount = 0;
   int clearedClassLinkCount = 0;
+  int droppedInvalidNodeCount = 0;
+  int droppedAttachmentCount = 0;
+  int clearedAttachmentLinkCount = 0;
 
   for (slotIndex = 0; slotIndex < MODEL_RUNTIME_SLOT_COUNT; slotIndex++) {
     modelRuntime = &g_ModelRuntimeSlots[slotIndex];
@@ -406,6 +450,15 @@ void ModelRuntimePool_RebaseAfterLoad()
       modelRuntime->rootModelNodeOrSavedOffset.modelNode = nullptr;
       continue;
     }
+    if (!ModelRuntimePool_RestoredNodesValid(modelRuntime)) {
+      /* The original walks childCount children of the restored nodes unchecked (release, tint and render
+         walks) and the deferred child repair writes childNodes[childNodeIndex]; bounded here because a free
+         record, more children than an MDL node has or an index past them would walk or write outside the node
+         record: dropped like an unregistered definition. */
+      droppedInvalidNodeCount++;
+      modelRuntime->rootModelNodeOrSavedOffset.modelNode = nullptr;
+      continue;
+    }
 
     registeredDefinition = ModelDefinitionRegistry_FindById
                              ((PckModelDefinitionIdCatalog)modelRuntime->definitionOrSavedId.savedIdOrOffset);
@@ -427,6 +480,7 @@ void ModelRuntimePool_RebaseAfterLoad()
     g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair
       [ModelView_Cast<ModelDefinition>(registeredDefinition)->runtimeClassId](modelRuntime);
     if (modelRuntime->attachmentCount != 0) {
+      savedAttachmentCount = modelRuntime->attachmentCount;
       ModelRuntime_RebaseAttachmentsAfterLoad(modelRuntime);
       modelRuntime->attachmentCount = 0;
       /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
@@ -434,11 +488,41 @@ void ModelRuntimePool_RebaseAfterLoad()
                 (modelRuntime,
                  Thandor_U32ToPointer<MdlSerializedNodeHeader>(
                  modelRuntime->definitionOrSavedId.runtimeDefinition->rootNodeOffsetOrPointer));
+      if (modelRuntime->attachmentCount > savedAttachmentCount) {
+        /* The original keeps the rebuilt count unchecked; bounded here because the descriptors past the saved
+           count were neither checked nor rebased and hold raw file values that are later followed as pointers.
+           The rebuild walks a prefix of the attachment points the instance was created with, so a save written
+           by the game never has more. Dropped like an unregistered definition. */
+        droppedAttachmentCount++;
+        modelRuntime->rootModelNodeOrSavedOffset.modelNode = nullptr;
+      }
     }
   }
-  if (droppedOutOfPoolCount != 0 || clearedClassLinkCount != 0) {
-    Thandor_Log("model: savegame offsets outside their pools: %d instances dropped, %d class links cleared",
-                droppedOutOfPoolCount,clearedClassLinkCount);
+  /* Not in the original: a free slot (dropped above, or free in the file) has no root node but may keep a saved
+     definition id and unrebased attachments, and the update, AI and panel code follows every non-NULL attachment
+     child into its definition and attachments. Attachment links to a free slot are cleared (NULL is an empty
+     attachment point, as after ModelRuntimePool_DestroyHierarchyAndDetach, which clears the parent's link of
+     every child it frees, so a save written by the game has none). The children of kept slots were checked to
+     land on a model runtime slot (ModelRuntimePool_RebasedSlotInPools). */
+  for (slotIndex = 0; slotIndex < MODEL_RUNTIME_SLOT_COUNT; slotIndex++) {
+    modelRuntime = &g_ModelRuntimeSlots[slotIndex];
+    if (modelRuntime->rootModelNodeOrSavedOffset.modelNode == nullptr) {
+      continue;
+    }
+    for (attachmentIndex = 0; attachmentIndex < modelRuntime->attachmentCount; attachmentIndex++) {
+      childRuntime = modelRuntime->attachments[attachmentIndex].childModelRuntimeOrSavedOffset;
+      if (childRuntime != nullptr && childRuntime->rootModelNodeOrSavedOffset.modelNode == nullptr) {
+        clearedAttachmentLinkCount++;
+        modelRuntime->attachments[attachmentIndex].childModelRuntimeOrSavedOffset = nullptr;
+      }
+    }
+  }
+  if (droppedOutOfPoolCount != 0 || clearedClassLinkCount != 0 || droppedInvalidNodeCount != 0 ||
+      droppedAttachmentCount != 0 || clearedAttachmentLinkCount != 0) {
+    Thandor_Log("model: invalid savegame instances: %d with offsets outside their pools, %d with invalid nodes and"
+                " %d with extra attachments dropped, %d class links and %d attachment links cleared",
+                droppedOutOfPoolCount,droppedInvalidNodeCount,droppedAttachmentCount,clearedClassLinkCount,
+                clearedAttachmentLinkCount);
   }
 }
 

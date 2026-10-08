@@ -1082,6 +1082,38 @@ static_assert(sizeof(InGamePlayerStatusTextSlot) == 0x80,
 static_assert(sizeof(UiRequiredTextEditControl) == 0x80 &&
               offsetof(UiRequiredTextEditControl, activationSound) == 0x68,
               "UiRequiredTextEditControl keeps its 32-bit layout");
+/* UiTextEdit_Text: the edit text starts at +0x6C in every text edit view, and each embedded text edit plus its
+   trailing template dwords spans exactly +0x6C + bufferCapacityCodeUnits * 2 bytes (the capacities of the
+   ui_template.cpp entries: 0x30 chat lines, 0x40 host address, 0x14 player/game name, 0x20 save name). */
+static_assert(offsetof(UiTextEditControl, textBuffer) == 0x6C &&
+              offsetof(UiRequiredTextEditControl, textBuffer) == 0x6C &&
+              offsetof(InGameCommandTextEditControlCC, textBuffer) == 0x6C &&
+              offsetof(UiTextEditControl, bufferCapacityCodeUnits) == 0x58 &&
+              offsetof(UiRequiredTextEditControl, bufferCapacityCodeUnits) == 0x58 &&
+              offsetof(InGameCommandTextEditControlCC, bufferCapacityCodeUnits) == 0x58 &&
+              sizeof(InGameCommandTextEditControlCC) == 0x6C + 0x30 * 2,
+              "the text edit text starts at +0x6C and its capacity at +0x58");
+static_assert(offsetof(FrontendUiImage, chatInputEdit_trailing) + sizeof(FrontendUiImage::chatInputEdit_trailing)
+              - offsetof(FrontendUiImage, chatInputEdit) == 0x6C + 0x30 * 2,
+              "FrontendUiImage.chatInputEdit: its 0x30-unit text runs on into the trailing template dwords");
+static_assert(offsetof(FrontendUiImage, hostAddressEdit_trailing) + sizeof(FrontendUiImage::hostAddressEdit_trailing)
+              - offsetof(FrontendUiImage, hostAddressEdit) == 0x6C + 0x40 * 2,
+              "FrontendUiImage.hostAddressEdit: its 0x40-unit text runs on into the trailing template dwords");
+static_assert(offsetof(FrontendUiImage, playerNameEdit_trailing) + sizeof(FrontendUiImage::playerNameEdit_trailing)
+              - offsetof(FrontendUiImage, playerNameEdit) == 0x6C + 0x14 * 2,
+              "FrontendUiImage.playerNameEdit: its 0x14-unit text runs on into the trailing template dwords");
+static_assert(offsetof(FrontendUiImage, gameNameEdit_trailing) + sizeof(FrontendUiImage::gameNameEdit_trailing)
+              - offsetof(FrontendUiImage, gameNameEdit) == 0x6C + 0x14 * 2,
+              "FrontendUiImage.gameNameEdit: its 0x14-unit text runs on into the trailing template dwords");
+static_assert(offsetof(InGameUiImage, chatInputTextEdit_trailing) + sizeof(InGameUiImage::chatInputTextEdit_trailing)
+              - offsetof(InGameUiImage, chatInputTextEdit) == 0x6C + 0x30 * 2,
+              "InGameUiImage.chatInputTextEdit: its 0x30-unit text runs on into the trailing template dwords");
+static_assert(offsetof(InGameUiImage, messageTextEdit_trailing) + sizeof(InGameUiImage::messageTextEdit_trailing)
+              - offsetof(InGameUiImage, messageTextEdit) == 0x6C + 0x30 * 2,
+              "InGameUiImage.messageTextEdit: its 0x30-unit text runs on into the trailing template dwords");
+static_assert(offsetof(InGameUiImage, saveNameEdit_trailing) + sizeof(InGameUiImage::saveNameEdit_trailing)
+              - offsetof(InGameUiImage, saveNameEdit) == 0x6C + 0x20 * 2,
+              "InGameUiImage.saveNameEdit: its 0x20-unit text runs on into the trailing template dwords");
 static_assert(sizeof(UiDisplayModeSelectionActionHandlerTable) == 0x50 &&
               offsetof(UiDisplayModeSelectionActionHandlerTable, handlers) == 0x0,
               "UiDisplayModeSelectionActionHandlerTable keeps its 32-bit layout");

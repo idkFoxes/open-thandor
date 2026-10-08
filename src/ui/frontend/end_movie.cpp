@@ -105,7 +105,7 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
   InGameUi_Image(runtimeRoot)->resultsChart2.rowCount = activeFactionCount;
   InGameUi_Image(runtimeRoot)->resultsChart3.rowCount = activeFactionCount;
   /* elapsed minutes of the 80 Hz clock, rounded up, shown as hours and minutes */
-  elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 4799) / 4800;
+  elapsedTimeUnits = (uint64_t)(InGameTick_PeriodicClockTick().load(std::memory_order_relaxed) + 4799) / 4800;
   g_LocaleFormatTimeFieldsUtf16
             ((uint32_t)(elapsedTimeUnits / 60),(uint32_t)(elapsedTimeUnits % 60),
              g_EndGameElapsedTimeScratchUtf16);

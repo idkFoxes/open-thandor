@@ -301,7 +301,7 @@ uint32_t InGameSaveGame_WritePackage(void *worldView,void *savePath)
   FrontendPlayerRuntimeRecord *playerBlock;
   uint32_t errorCode;
 
-  g_InGameResourceRegistrationBusyCount++;
+  InGameTick_ResourceRegistrationBusyCount().fetch_add(1,std::memory_order_relaxed);
   /* first hand every player's pending army asset back to its faction */
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   for (remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount; remainingPlayerBlocks != 0;
@@ -311,7 +311,7 @@ uint32_t InGameSaveGame_WritePackage(void *worldView,void *savePath)
     playerBlock++;
   }
   errorCode = InGameSaveGame_WritePackageContents(worldView,savePath);
-  g_InGameResourceRegistrationBusyCount--;
+  InGameTick_ResourceRegistrationBusyCount().fetch_sub(1,std::memory_order_relaxed);
   if (errorCode != 0) {
     /* the error message names the save file, not the last path a file-system call left there */
     Package_SetLastErrorPath(static_cast<uint16_t *>(savePath));
