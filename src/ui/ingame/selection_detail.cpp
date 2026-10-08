@@ -48,15 +48,54 @@ int g_InGameSelectionDetailGridCellOffsets[12] = {
     static_cast<int>(offsetof(InGameUiImage,multiSelectionCell10)),
     static_cast<int>(offsetof(InGameUiImage,multiSelectionCell11))};
 
-/* Copies a 64-character name text into one of the selection detail text slots. */
+/* Code units of one rich-text record that starts with commandCodeUnit (the lengths of TextResourcePage_Load). */
+static int InGameSelectionDetailPanel_RecordUnits(uint16_t commandCodeUnit)
+{
+  if ((commandCodeUnit & RICHTEXT_COMMAND_FLAG) == 0) {
+    return 1;
+  }
+  switch (commandCodeUnit & RICHTEXT_OPCODE_MASK) {
+  case RICHTEXT_OP_LITERAL_COLOR:
+    return RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
+  case RICHTEXT_OP_INLINE_VALUE_0:
+  case RICHTEXT_OP_INLINE_VALUE_1:
+  case RICHTEXT_OP_INLINE_VALUE_2:
+    return RICHTEXT_RECORD_UNITS_INLINE_VALUE;
+  case RICHTEXT_OP_CALL_NESTED:
+  case RICHTEXT_OP_JUMP_NESTED:
+    return RICHTEXT_RECORD_UNITS_NESTED;
+  case RICHTEXT_OP_INLINE_IMAGE:
+    return RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
+  default:
+    return 1;
+  }
+}
+
+/* Copies a name text (a rich-text command stream) into one of the 64-unit selection detail text slots.
+   The original copies a fixed 64 code units, reading past the end of a shorter source (past the text asset for
+   its last string); bounded here because that read can leave the allocation: the stream is copied up to its
+   terminator (walking whole records, whose payloads may hold zero units) and the rest of the slot is
+   zero-filled. The terminator and everything behind it is what readers never look at, so the text drawn is the
+   same. Original quirk: a name of 64 units or more is copied as its first 64 units without a terminator, as
+   before. */
 static void InGameSelectionDetailPanel_CopyName(uint16_t *destination,const uint16_t *source)
 {
-  int remaining;
+  constexpr int slotUnits = static_cast<int>(sizeof(UiSelectionDetailTextBuffer64Utf16) / sizeof(uint16_t));
+  int streamUnits;
+  int unitIndex;
 
-  for (remaining = 64; remaining != 0; remaining--) {
-    *destination = *source;
-    source++;
-    destination++;
+  streamUnits = 0;
+  while ((streamUnits < slotUnits) && (source[streamUnits] != 0)) {
+    streamUnits += InGameSelectionDetailPanel_RecordUnits(source[streamUnits]);
+  }
+  if (streamUnits > slotUnits) {
+    streamUnits = slotUnits;
+  }
+  for (unitIndex = 0; unitIndex < streamUnits; unitIndex++) {
+    destination[unitIndex] = source[unitIndex];
+  }
+  for (; unitIndex < slotUnits; unitIndex++) {
+    destination[unitIndex] = 0;
   }
 }
 
