@@ -104,8 +104,11 @@ static int Shading_GeneratedTextureScale(uint32_t projectedExtent)
    GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy. Measures the model's projected bounds in light
    space, centres the shadow origin on them, sets up the generated texture basis and places the twelve sample
    points (corners and edge midpoints of the bounds plus four inner points) with their texture coordinate
-   offsets. */
-static void GraphicsShadingGeneratedTexture_PlaceSamplePoints
+   offsets. Returns false (nothing placed) when the bounds have no extent along one of the axes.
+   The original divided by that extent unchecked (divide error for a mesh whose projected vertices share one
+   coordinate, and an int overflow for empty bounds of a mesh with no vertices); bounded here because both crash
+   or corrupt the basis: such a model casts no shadow (logged once). */
+static bool GraphicsShadingGeneratedTexture_PlaceSamplePoints
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext)
 {
   struct GeneratedTextureSampleWorkRecord *samples;
@@ -120,6 +123,15 @@ static void GraphicsShadingGeneratedTexture_PlaceSamplePoints
   g_GeneratedTextureScratchRuntime.projectedMaxX = -INT32_MAX;
   g_GeneratedTextureScratchRuntime.projectedMaxY = -INT32_MAX;
   GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds(modelNode);
+  if (g_GeneratedTextureScratchRuntime.projectedMaxX <= g_GeneratedTextureScratchRuntime.projectedMinX ||
+      g_GeneratedTextureScratchRuntime.projectedMaxY <= g_GeneratedTextureScratchRuntime.projectedMinY) {
+    static bool s_EmptyExtentLogged = false;
+    if (!s_EmptyExtentLogged) {
+      s_EmptyExtentLogged = true;
+      Thandor_Log("shadow texture: model with a shadow extent of 0, shadow skipped");
+    }
+    return false;
+  }
   /* move the origin to the centre of the bounds along both light-space axes */
   direction = FixedMath_DirectionFromAnglesScaled
                      (0,(renderContext->lightAzimuthAngle + FIXED_ANGLE16_QUARTER_TURN) & FIXED_ANGLE16_MASK,
@@ -210,6 +222,7 @@ static void GraphicsShadingGeneratedTexture_PlaceSamplePoints
   samples[7].textureCoordinateOffsetQ20 = samples[1].textureCoordinateOffsetQ20;
   samples[10].textureCoordinateOffsetQ20 = samples[8].textureCoordinateOffsetQ20;
   samples[11].textureCoordinateOffsetQ20 = samples[9].textureCoordinateOffsetQ20;
+  return true;
 }
 
 /* Not in the original as a separate function (the original repeats it inline for each of the twelve sample
@@ -390,7 +403,7 @@ static uint32_t Shading_ShadowVertexColour(Q12 terrainRayDistanceQ12,uint64_t ti
     intensity = GRAPHICS_SHADING_INTENSITY_MAX;
   }
   return ColorLanes_PackWordsUnsignedSaturate
-                   (pmulhw(*reinterpret_cast<const uint64_t *>(&g_ShadingIntensityScaleMmx[intensity]) /* the four word lanes as one MMX qword */,
+                   (pmulhw(g_ShadingIntensityScaleMmx[intensity] /* the four word lanes as one MMX qword */,
                            tintLanes));
 }
 
@@ -547,7 +560,9 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
       ((modelNode->modelPayload).modelResource)->boundingRadiusQ12) {
     return;
   }
-  GraphicsShadingGeneratedTexture_PlaceSamplePoints(modelNode,renderContext);
+  if (!GraphicsShadingGeneratedTexture_PlaceSamplePoints(modelNode,renderContext)) {
+    return;
+  }
   for (orderIndex = 0; orderIndex < 12; orderIndex++) {
     if (!GraphicsShadingGeneratedTexture_DropSampleOntoTerrain
                    (&g_GeneratedTextureScratchRuntime.samples[sampleDropOrder[orderIndex]],modelNode,
@@ -663,9 +678,9 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   /* source entry table at 0xA00 */
   sourceEntry = Asset_RecordAt<GraphicsTextureSourceEntry>(asset,GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
   pixelDataOffset = subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE + GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
-  /* Original quirk: the count is tested at the end, so subresourceCount 0 would wrap around */
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original tested the count at the end, so subresourceCount 0 (shading_depth 0 in the settings file) wrote
+     source entries 2^32 times; bounded here because that runs far past the asset: 0 entries are written. */
+  while (subresourceCount != 0) {
     sourceEntry->logicalWidth = textureDimension;
     sourceEntry->logicalHeight = textureDimension;
     sourceEntry->paletteIndex = 0;
@@ -677,7 +692,7 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
     pixelDataOffset = pixelDataOffset + textureDimension * textureDimension;
     sourceEntry++;
     subresourceCount--;
-  } while (subresourceCount != 0);
+  }
   g_GraphicsShadingTextureDimension = textureDimension;
   g_GraphicsShadingGridHalfSize = gridHalfSize;
   /* grid cells per texture pixel in Q20, and the grid origin (gridHalfSize / 2 - 1 cells) in Q12 */
@@ -1224,10 +1239,10 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
   /* pass 1: tile -> scratch, each texel reduced to 3 bits (the original's PSRLQ 5 and PAND per quad) */
   textureCursor = tileTopLeft;
   scratchCursor = static_cast<uint8_t *>(g_GraphicsShadingGridScratchInterior);
-  /* Original quirk: both passes test the row count at the end, so gridHalfSize 0 would wrap around */
+  /* The original tested the row count of both passes at the end, so gridHalfSize 0 (shading_grid_half_size 0 in
+     the settings file) ran 2^32 rows; bounded here because that writes far past the tile: 0 rows are done. */
   rowsRemaining = g_GraphicsShadingGridHalfSize;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  while (rowsRemaining != 0) {
     for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
       for (halfIndex = 0; halfIndex < 2; halfIndex++) {
         /* unaligned SSE load and store of 16 texels */
@@ -1241,14 +1256,13 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
     scratchCursor = scratchCursor + g_GraphicsShadingGridHalfSize;
     textureCursor = textureCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize);
     rowsRemaining--;
-  } while (rowsRemaining != 0);
+  }
   /* pass 2: weighted neighbourhood sums from the scratch grid back into the tile */
   tapRowStride = (int)(g_GraphicsShadingGridHalfSize * 2 * (uint32_t)tapStep);
   textureCursor = tileTopLeft;
   scratchCursor = static_cast<uint8_t *>(g_GraphicsShadingGridScratchInterior);
   rowsRemaining = g_GraphicsShadingGridHalfSize;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  while (rowsRemaining != 0) {
     for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
       for (halfIndex = 0; halfIndex < 2; halfIndex++) {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(textureCursor + halfIndex * 16), /* unaligned SSE store */
@@ -1261,7 +1275,7 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
     scratchCursor = scratchCursor + g_GraphicsShadingGridHalfSize;
     textureCursor = textureCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize);
     rowsRemaining--;
-  } while (rowsRemaining != 0);
+  }
 }
 
 

@@ -40,7 +40,7 @@ extern const uint32_t g_InGamePointerModePreviewArmyIds[8]; /* uint32_t[8]: prev
 /* Army ids from 400 up are rendered in their preview with faction 0 (ArmyAssetRegistry_ResolveOrCreatePreviewTexture). */
 inline constexpr int ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID = 400;
 
-void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress);
+void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uintptr_t uiRootAddress);
 
 uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId);
 

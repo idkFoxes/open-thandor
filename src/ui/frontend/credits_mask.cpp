@@ -104,9 +104,9 @@ void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
   maskQwordWriteCursor = reinterpret_cast<uint64_t *>(maskControl->maskPixels.get());
   if (maskQwordWriteCursor != nullptr) {
     logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskControl->textureSource);
-    /* 64-byte blocks; a mask of fewer than 64 pixels would wrap the count, as in the original */
+    /* 64-byte blocks. The original is a do-while (a mask of fewer than 64 pixels wraps the count to 2^32); bounded here because the count comes from the credits texture's size. */
     blocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 6;
-    do {
+    while (blocksRemaining != 0) {
       *maskQwordWriteCursor = 0;
       maskQwordWriteCursor[1] = 0;
       maskQwordWriteCursor[2] = 0;
@@ -117,15 +117,15 @@ void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
       maskQwordWriteCursor[7] = 0;
       maskQwordWriteCursor = maskQwordWriteCursor + 8;
       blocksRemaining = blocksRemaining - 1;
-    } while (blocksRemaining != 0);
+    }
   }
 }
 
 /* Called by SoftwareMaskBuffer_AdvancePatternByPercentTick once per tick: adds 0x1F to every nonzero byte of
    the software mask, saturating at 0xFF (PCMPEQB / PAND / PXOR / PADDUSB); zero bytes stay zero. The mask size
    is taken from g_GraphicsTextureSourceGetLogicalSize, and the buffer is processed in 32-byte blocks,
-   width * height >> 5 of them (the remainder is left alone). Quirk kept:
-   the block counter is a do-while loop, so fewer than 32 pixels means 2^32 blocks. Nothing happens when
+   width * height >> 5 of them (the remainder is left alone). The original's
+   block counter is a do-while loop (fewer than 32 pixels mean 2^32 blocks); here they mean none. Nothing happens when
    maskPixels is NULL.
 */
 void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime)
@@ -142,15 +142,15 @@ void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView
   }
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   blocksLeft = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 5;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the count comes from the credits texture's size. */
+  for (; blocksLeft != 0; blocksLeft--) {
     for (i = 0; i < 32; i++) {
       if (mask[i] != 0) {
         mask[i] = (uint8_t)(mask[i] < ARGB8888_CHANNEL_MAX - SOFTWARE_MASK_BRIGHTEN_STEP ? mask[i] + SOFTWARE_MASK_BRIGHTEN_STEP : ARGB8888_CHANNEL_MAX);
       }
     }
     mask += 32;
-  } while (--blocksLeft != 0);
+  }
 }
 
 /* Reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: sets bit 0 of every mask pixel inside the circle
@@ -189,12 +189,12 @@ void SoftwareMaskBuffer_ApplyCircularRegionBit(UiBooleanState32 invertSelection,
     radiusPixels = radiusStep * 28;
   }
   radiusSquared = (uint32_t)(radiusPixels * radiusPixels);
-  /* do-whiles kept: a zero width still visits one pixel per row, a zero height wraps the row counter */
+  /* The original has do-whiles here (a zero width still visits one pixel per row, a zero height wraps the row counter); bounded here because the size comes from the credits texture. */
   rowY = 0;
-  do {
+  while (rowsRemaining != 0) {
     rowDistanceSquared = (rowY - centerY) * (rowY - centerY);
     columnX = 0;
-    do {
+    while (columnX < maskWidth) {
       distanceSquared = (columnX - centerX) * (columnX - centerX) + rowDistanceSquared;
       /* both tests include the circle's edge */
       if (invertSelection == 0) {
@@ -208,10 +208,10 @@ void SoftwareMaskBuffer_ApplyCircularRegionBit(UiBooleanState32 invertSelection,
       }
       columnX++;
       maskCursor++;
-    } while (columnX < maskWidth);
+    }
     rowY++;
     rowsRemaining--;
-  } while (rowsRemaining != 0);
+  }
 }
 
 /* Reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: a diagonal wipe. Sets bit 0 of every mask pixel
@@ -245,43 +245,43 @@ void SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
   columnsRemaining = maskWidth;
   diagonalSum = 0;
   if (invertSelection == 0) {
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
-      do {
+    /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the count comes from the credits texture's size. */
+    while (rowsRemaining != 0) {
+      while (columnsRemaining != 0) {
         if (diagonalSum < thresholdSum) {
           *maskCursor = *maskCursor | 1;
         }
         maskCursor++;
         columnsRemaining--;
         diagonalSum++;
-      } while (columnsRemaining != 0);
+      }
       rowY++;
       rowsRemaining--;
       columnsRemaining = maskWidth;
       diagonalSum = rowY;
-    } while (rowsRemaining != 0);
+    }
     return;
   }
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
-    do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the count comes from the credits texture's size. */
+  while (rowsRemaining != 0) {
+    while (columnsRemaining != 0) {
       if (thresholdSum < diagonalSum) {
         *maskCursor = *maskCursor | 1;
       }
       maskCursor++;
       columnsRemaining--;
       diagonalSum++;
-    } while (columnsRemaining != 0);
+    }
     rowY++;
     rowsRemaining--;
     columnsRemaining = maskWidth;
     diagonalSum = rowY;
-  } while (rowsRemaining != 0);
+  }
 }
 
 /* Last reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: sets bit 0 of every mask pixel, 16 bytes
-   per step (width * height >> 4 steps; the remainder is left alone). Quirk kept: a mask of fewer than 16 pixels
-   makes the do-while counter wrap to 2^32 steps.
+   per step (width * height >> 4 steps; the remainder is left alone). The original's do-while wraps to 2^32 steps for
+   a mask of fewer than 16 pixels; here such a mask gets no steps.
 */
 void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
 
@@ -294,15 +294,15 @@ void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
   /* the byte mask, four mask bytes per dword */
   maskWordCursor = reinterpret_cast<uint32_t *>(maskControl->maskPixels.get());
   maskBlocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 4;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the count comes from the credits texture's size. */
+  while (maskBlocksRemaining != 0) {
     *maskWordCursor = *maskWordCursor | ARGB8888_CHANNEL_ONES;
     maskWordCursor[1] = maskWordCursor[1] | ARGB8888_CHANNEL_ONES;
     maskWordCursor[2] = maskWordCursor[2] | ARGB8888_CHANNEL_ONES;
     maskWordCursor[3] = maskWordCursor[3] | ARGB8888_CHANNEL_ONES;
     maskWordCursor = maskWordCursor + 4;
     maskBlocksRemaining--;
-  } while (maskBlocksRemaining != 0);
+  }
 }
 
 /* Reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: sets bit 0 of one horizontal band of 15 rows,
@@ -336,14 +336,14 @@ void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,Terr
   }
   /* the band's mask bytes, four per dword */
   maskWordCursor = reinterpret_cast<uint32_t *>(maskRuntime->maskPixels + (int32_t)(bandRow * bandBytes));
-  /* Original quirk: a do-while, so a band of fewer than 16 bytes wraps the counter to 2^32 steps */
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the count comes from the credits texture's size. */
   blocksLeft = bandBytes >> 4;
-  do {
+  while (blocksLeft != 0) {
     *maskWordCursor = *maskWordCursor | ARGB8888_CHANNEL_ONES;
     maskWordCursor[1] = maskWordCursor[1] | ARGB8888_CHANNEL_ONES;
     maskWordCursor[2] = maskWordCursor[2] | ARGB8888_CHANNEL_ONES;
     maskWordCursor[3] = maskWordCursor[3] | ARGB8888_CHANNEL_ONES;
     maskWordCursor = maskWordCursor + 4;
     blocksLeft--;
-  } while (blocksLeft != 0);
+  }
 }
