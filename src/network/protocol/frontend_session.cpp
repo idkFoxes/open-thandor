@@ -436,8 +436,10 @@ bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
       sessionContext->ipv4AddressNetworkOrder)) {
     remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original is a do-while that compares the first (unset) record and, with a count of 0, walks
+       2^32 records; bounded here because a peer makes the count 0 (players leaving, malformed lobby
+       packets). For a count >= 1 the loop runs exactly as before. */
+    while (remainingPlayers != 0) {
       if (packet->playerRemoval10007.removedPlayerToken == playerRecord->playerRuntimeId) {
         resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
         RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText);
@@ -458,7 +460,7 @@ bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
       }
       playerRecord++;
       remainingPlayers--;
-    } while (remainingPlayers != 0);
+    }
     return false;
   }
   return false;
