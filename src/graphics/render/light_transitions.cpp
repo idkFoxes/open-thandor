@@ -48,9 +48,8 @@ void InterpolationState_SetNegatedTargetAndRescaleProgress
     switchOffValue = 0;
   }
   /* switch-off path */
-  /* the original's two dword stores into the qword, high half first */
-  reinterpret_cast<PackedRgb24 *>(&shadingRecord->squaredRadiusQ24)[1] = switchOffValue; /* high dword */
-  reinterpret_cast<PackedRgb24 *>(&shadingRecord->squaredRadiusQ24)[0] = switchOffValue;
+  /* the original's two dword stores into the qword (high and low half both switchOffValue), as one store */
+  shadingRecord->squaredRadiusQ24 = static_cast<uint64_t>(switchOffValue) << 32 | switchOffValue;
   shadingRecord->packedColorRgbActive = switchOffValue;
   shadingRecord->targetRadiusQ12 = switchOffValue;
 }

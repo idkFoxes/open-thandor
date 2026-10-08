@@ -5,6 +5,7 @@
  * Project code (not in the original game)
  */
 
+#include <atomic>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,10 +38,16 @@ void DebugMovieDecoder_DumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
   for (i = 0; i < width * height; i += 7) {
     sum = sum * 31 + movie->argbPixels[i];
   }
+  /* the refill worker writes these four fields; read them as atomics like movie/runtime/playback.cpp does */
+  uint8_t *loadedEnd = std::atomic_ref<Ptr32<uint8_t>>(movie->loadedVideoEnd).load(std::memory_order_acquire).get();
+  MovieStreamByteCount remaining =
+      std::atomic_ref<MovieStreamByteCount>(movie->remainingVideoBytes).load(std::memory_order_acquire);
+  MovieStreamState state = std::atomic_ref<MovieStreamState>(movie->streamState).load();
+  MovieWorkerActiveFlag worker = std::atomic_ref<MovieWorkerActiveFlag>(movie->workerActive).load();
   Thandor_Log("movie frame %u/%u: consumed=%x offset=%x loadedEnd-header=%x remaining=%x state=%d worker=%d sum=%08x",
               movie->currentFrameIndex, movie->fileHeader->frameCount, consumedBytes,
-              movie->videoStreamOffset, (uint32_t)Asset_ByteDistance(movie->loadedVideoEnd.get(), movie->fileHeader.get()),
-              movie->remainingVideoBytes, (int)movie->streamState, (int)movie->workerActive, sum);
+              movie->videoStreamOffset, (uint32_t)Asset_ByteDistance(loadedEnd, movie->fileHeader.get()),
+              remaining, (int)state, (int)worker, sum);
   if ((movie->currentFrameIndex % 10) == 1) {
     char name[64];
     FILE *file;
