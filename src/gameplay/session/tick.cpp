@@ -12,15 +12,23 @@
 
 /* Periodic timer callback of the in-game session: counts the network tick countdown down to zero and advances the
    periodic clock while no resource registration is in progress.
+   It runs on the timer thread, the counters are read and written by the main loop as well. The original accesses
+   them plainly; here they are accessed through std::atomic_ref (layout unchanged) because the plain
+   read-modify-write raced with the main loop's reload of the countdown (a reload between the read and the write
+   was overwritten by the decremented old value). The countdown is decremented only while it is non-zero, by a
+   compare-exchange that retries with the reloaded value; the arithmetic is the original's.
 */
 void InGameRuntime_PeriodicCountdownAndClockTick()
 
 {
-  if (g_InGameNetworkTickCountdown != 0) {
-    g_InGameNetworkTickCountdown--;
+  std::atomic_ref<uint32_t> countdown = InGameTick_NetworkTickCountdown();
+  uint32_t remaining = countdown.load(std::memory_order_relaxed);
+
+  while ((remaining != 0) && !countdown.compare_exchange_weak(remaining,remaining - 1,std::memory_order_relaxed)) {
   }
-  if (g_InGameResourceRegistrationBusyCount == 0) {
-    g_GameFactionRuntimeImage.tail.periodicClockTick++;
+  if (std::atomic_ref<uint8_t>(g_InGameResourceRegistrationBusyCount).load(std::memory_order_relaxed) == 0) {
+    std::atomic_ref<InGamePeriodicClockTick>(g_GameFactionRuntimeImage.tail.periodicClockTick)
+              .fetch_add(1,std::memory_order_relaxed);
   }
 }
 
@@ -48,10 +56,10 @@ static bool InGameTick_RunHostOrLocalLockstep()
   void *packet;
   void *packetEndpoint;
 
-  if (g_InGameNetworkTickCountdown != 0) {
+  if (InGameTick_NetworkTickCountdown().load(std::memory_order_relaxed) != 0) {
     return false;
   }
-  g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
+  InGameTick_NetworkTickCountdown().store(INGAME_TIMER_TICKS_PER_SIMULATION_STEP,std::memory_order_relaxed);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
     return true;
   }
@@ -108,10 +116,10 @@ static bool InGameTick_RunClientLockstep()
       return false;
     }
   }
-  else if (g_InGameNetworkTickCountdown != 0) {
+  else if (InGameTick_NetworkTickCountdown().load(std::memory_order_relaxed) != 0) {
     return false;
   }
-  g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
+  InGameTick_NetworkTickCountdown().store(INGAME_TIMER_TICKS_PER_SIMULATION_STEP,std::memory_order_relaxed);
   return true;
 }
 

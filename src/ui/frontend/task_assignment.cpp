@@ -252,8 +252,8 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   localPlayerRow = 0;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   remainingPlayerRecords = g_FrontendPlayerRuntimeBlockCount;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingPlayerRecords != 0) {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[assignmentIndex - 1];
     playerRecord->factionAssignment.factionAssignmentIndex = assignmentIndex;
     rowTextId = &FrontendUi_Image(frontendRootPage)->NodeAt<UiFramedTextButtonControl>(rowControlOffset)->textResourceId;
@@ -269,7 +269,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
       assignmentIndex = assignmentIndex - assignableFactionCount;
     }
     remainingPlayerRecords--;
-  } while (remainingPlayerRecords != 0);
+  }
   /* tick and show the local player's play checkbox */
   FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[localPlayerRow])
        ->selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -477,14 +477,14 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   }
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingPlayers != 0) {
     if (FrontendTaskAssignmentPage_IsValidFactionIndex(playerRecord->factionAssignment.factionAssignmentIndex)) {
       FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiFramedTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[playerRecord->factionAssignment.factionAssignmentIndex - 1])->textResourceId = TEXT_ID_FACTION_MODE_PLAYER;
     }
     remainingPlayers--;
     playerRecord++;
-  } while (remainingPlayers != 0);
+  }
   /* Not a client: update the mode buttons, then hide those of factions taken by players. The original ORs
      the last player's faction index and ANDs the (low 32 bits of the) address of g_FrontendLoadedLevelAsset
      here (both left over in registers from the loop above) where the page's set/clear masks were meant (as
@@ -503,15 +503,15 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     }
     remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+    while (remainingPlayers != 0) {
       if (FrontendTaskAssignmentPage_IsValidFactionIndex(playerRecord->factionAssignment.factionAssignmentIndex)) {
         controlFlags = &FrontendUi_Image(taskAssignmentRoot)->NodeAt<UiNodeBase>(g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[playerRecord->factionAssignment.factionAssignmentIndex - 1])->nodeFlags;
         *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       }
       remainingPlayers--;
       playerRecord++;
-    } while (remainingPlayers != 0);
+    }
   }
   /* clear the roster texts (0x8C dwords = seven 0x50-byte rows) */
   textRowCursor = g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows + 1;
@@ -540,8 +540,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
      units. Bounded here because the names come from peers: the copied units are cut so that the closing
      codes stay in the row, and a name without room for one unit is left out (without ", "). Rows that fit
      get the same text as in the original. */
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingPlayers != 0) {
     rosterFactionIndex = FRONTEND_PLAYER_RECORD_OF_NAME(playerName)->factionAssignment.factionAssignmentIndex;
     if (FrontendTaskAssignmentPage_IsValidFactionIndex(rosterFactionIndex)) {
       rosterRowStart = g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows
@@ -594,7 +594,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     remainingPlayers--;
     /* next player record */
     playerName = playerName + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16);
-  } while (remainingPlayers != 0);
+  }
   /* once the local player has pressed Finish, the faction rows are hidden */
   if (!Any(FrontendUi_Image(taskAssignmentRoot)->factionSetupFinishButton.selectable.stateFlags &
        UI_SELECTABLE_SELECTED_OR_CHECKED)) {
@@ -619,8 +619,8 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
      Original quirk: the search for that player keeps counting down remainingPlayers of the outer loop. */
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingPlayers != 0) {
     if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
       localPlayerFaction = playerRecord->factionAssignment.factionAssignmentIndex;
       if (!FrontendTaskAssignmentPage_IsValidFactionIndex(localPlayerFaction)) {
@@ -642,5 +642,5 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     }
     remainingPlayers--;
     playerRecord++;
-  } while (remainingPlayers != 0);
+  }
 }

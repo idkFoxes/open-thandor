@@ -5,6 +5,8 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <span>
+
 #include <thandor/gameplay/army/model_slots.h>
 #include <thandor/thandor.h>
 
@@ -412,8 +414,6 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  int stateDwordsRemaining;
-  uint32_t *stateClearCursor;
   ModelRuntimeNode *rootModelNode;
   AssetRecordByteCount primaryAnimatedSubresourceIndex;
 
@@ -432,9 +432,12 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
   rootModelNode->primaryAnimatedSubresourceIndex = primaryAnimatedSubresourceIndex;
   rootModelNode->primaryTextureOffsetU = 0;
   rootModelNode->primaryTextureOffsetV = 0;
-  stateClearCursor = &modelRuntimeSlot->classLinkState.classState78;
-  for (stateDwordsRemaining = 13; stateDwordsRemaining != 0; stateDwordsRemaining--) {
-    *stateClearCursor++ = 0;
+  /* the pad's 13 asset-id slots: ModelRuntimeSlot +0x78..+0xAB, from classLinkState.classState78 up to
+     classState.classStateA8 (layout_checks.cpp) */
+  const std::span<PckArmyAssetIdCatalog,13> slotAssetIds(
+      ModelView_Cast<ModelRuntimeLinkedChildSpawnAndBuildView>(modelRuntimeSlot)->completedSecondaryArmyAssetIds);
+  for (PckArmyAssetIdCatalog &slotAssetId : slotAssetIds) {
+    slotAssetId = 0;
   }
 }
 

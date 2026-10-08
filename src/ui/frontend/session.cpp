@@ -288,11 +288,11 @@ void FrontendSession_PeriodicTick()
     return;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    if (g_InGameNetworkTickCountdown != 0) {
+    if (InGameTick_NetworkTickCountdown().load(std::memory_order_relaxed) != 0) {
       g_SpinLockRelease(&g_InGameStateTickSpinLock);
       return;
     }
-    g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
+    InGameTick_NetworkTickCountdown().store(INGAME_TIMER_TICKS_PER_SIMULATION_STEP,std::memory_order_relaxed);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       if (g_SessionNetworkTickCounter % networkTickInterval == 0) {
         FrontendTransfer_DispatchStagedCommandRecords();
@@ -306,7 +306,7 @@ void FrontendSession_PeriodicTick()
         callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
         if (callResult) {
           /* not every peer has synced yet: retry on the next timer tick */
-          g_InGameNetworkTickCountdown = 1;
+          InGameTick_NetworkTickCountdown().store(1,std::memory_order_relaxed);
           g_SpinLockRelease(&g_InGameStateTickSpinLock);
           return;
         }
@@ -332,11 +332,11 @@ void FrontendSession_PeriodicTick()
         return;
       }
     }
-    else if (g_InGameNetworkTickCountdown != 0) {
+    else if (InGameTick_NetworkTickCountdown().load(std::memory_order_relaxed) != 0) {
       g_SpinLockRelease(&g_InGameStateTickSpinLock);
       return;
     }
-    g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
+    InGameTick_NetworkTickCountdown().store(INGAME_TIMER_TICKS_PER_SIMULATION_STEP,std::memory_order_relaxed);
   }
   g_SessionNetworkTickCounter++;
   if ((Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) &&

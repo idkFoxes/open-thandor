@@ -480,9 +480,9 @@ void HandleMouseEvent(const SDL_Event &event)
 
 void HandleFocusGained()
 {
-  /* MainWindowProc on WM_ACTIVATEAPP: back to real-time priority, lock keys reseeded (modifiers released),
-     queued keys dropped */
-  SetPriorityClass(GetCurrentProcess(), DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
+  /* MainWindowProc on WM_ACTIVATEAPP: back to the game's priority, lock keys reseeded (modifiers released),
+     queued keys dropped. The original restored real-time priority; high here (see ProcessEntry). */
+  SetPriorityClass(GetCurrentProcess(), DebugHook_ProcessPriorityClass(HIGH_PRIORITY_CLASS));
   g_KeyboardStateMask = LockKeyBits();
   g_KeyboardFlushEvents();
 }
