@@ -42,6 +42,8 @@ void TerrainVisualResources_Shutdown();
 extern GraphicsTextureSet *g_TerrainPrimaryTextureSet;
 extern void *g_TerrainSoilPacketTablePayload;
 extern void *g_TerrainSurfacePacketTablePayload;
+extern uint32_t g_TerrainSoilPacketTablePayloadBytes; /* payload bytes past the header, recorded at load */
+extern uint32_t g_TerrainSurfacePacketTablePayloadBytes;
 extern GraphicsPaletteAsset *g_TerrainPrimaryPalette;
 
 extern GraphicsTextureSet *g_TerrainMaterialTextureSets[38]; /* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the remaining 12 entries are NULL. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */

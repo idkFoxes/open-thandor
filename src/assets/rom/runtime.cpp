@@ -16,27 +16,43 @@ RomRegistrySlot *g_RomRegistrySlots = nullptr;
 
 uint16_t g_EngineZentraleRomPathUtf16[20] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'z', 'e', 'n', 't', 'r', 'a', 'l', 'e', '.', 'r', 'o', 'm', 0}; /* L"engine\\zentrale.rom" */
 
-/* Checks that the asset is a 'rom' of converter version 0x10005 and registers each of its variable-size
-   records (from +0x200, each advanced by its leading byteSize) with RomAssetRecord_RegisterAndRelocate. An
-   invalid header leaves "engine\zentrale.rom" in g_PackageLastErrorPath and fails with
+/* Checks that the asset (assetByteCount bytes) is a 'rom' of converter version 0x10005 and registers each of
+   its variable-size records (from +0x200, each advanced by its leading byteSize) with
+   RomAssetRecord_RegisterAndRelocate. An invalid header, or a record that is shorter than its prefix or does
+   not fit into the asset, leaves "engine\zentrale.rom" in g_PackageLastErrorPath and fails with
    FATAL_ERROR_ROM_REGISTRY_FULL. Returns 0 on success, otherwise the error code (the original's success return
    value was never used by its caller).
 */
-uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
+uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset,uint32_t assetByteCount)
 
 {
   uint32_t registrationError;
   AssetRecordCount recordsRemaining;
   RomAssetRecordPrefix *record;
+  uint32_t bytesLeft;
 
-  if (asset->recordCountHeader.common.magic == ASSET_MAGIC_ROM &&
+  /* The original trusts the asset size and every record's byteSize; bounded here because the walk follows file
+     data (a byteSize of 0 loops on one record, a large one walks past the asset). The stock records are 0x1080
+     bytes. */
+  if (assetByteCount >= sizeof(RomAssetHeader) &&
+      asset->recordCountHeader.common.magic == ASSET_MAGIC_ROM &&
       asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_ROM_00010005) {
     record = Asset_RecordAfter<RomAssetRecordPrefix>(asset);
+    bytesLeft = assetByteCount - (uint32_t)sizeof(RomAssetHeader);
     for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
-      registrationError = RomAssetRecord_RegisterAndRelocate(record,asset);
+      if (bytesLeft < sizeof(RomAssetRecordPrefix) || record->byteSize < sizeof(RomAssetRecordPrefix) ||
+          record->byteSize > bytesLeft) {
+        Thandor_Log("RomAsset_PrepareRecords: record at offset 0x%X (byteSize 0x%X) does not fit the asset of "
+                    "0x%X bytes, rejected",(uint32_t)Asset_ByteDistance(record,asset),
+                    bytesLeft < sizeof(RomRecordByteSize) ? 0u : record->byteSize,assetByteCount);
+        Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
+        return FATAL_ERROR_ROM_REGISTRY_FULL;
+      }
+      registrationError = RomAssetRecord_RegisterAndRelocate(record,asset,assetByteCount);
       if (registrationError != 0) {
         return registrationError;
       }
+      bytesLeft = bytesLeft - record->byteSize;
       /* advance by the record's leading byte size */
       record = Asset_RecordAt<RomAssetRecordPrefix>(record,record->byteSize);
     }
@@ -176,6 +192,14 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
   return UINT32_MAX;
 }
 
+/* True when a node header at the asset-relative offset lies inside the asset of assetByteCount bytes (behind the
+   0x200-byte asset header). */
+static bool RomSerializedNode_FitsAsset(uint32_t nodeOffset,uint32_t assetByteCount)
+{
+  return nodeOffset >= sizeof(RomAssetHeader) && assetByteCount >= sizeof(RomSerializedNodeHeader) &&
+         nodeOffset <= assetByteCount - sizeof(RomSerializedNodeHeader);
+}
+
 /* Loads the ".spr" sprite named after a serialized node header (UTF-16 file name) into the node, or reuses an
    already registered sprite with the same registry id. Returns true with the error in *outError when loading
    or registering fails. */
@@ -217,10 +241,11 @@ static bool RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t 
    (RomSerializedNode_LoadSprite) and relocates the child offsets (relative to assetBase) to pointers in place
    while walking, with an explicit stack of {node, nextChild, remaining} frames. Returns 0, or the first loader
    error (a node with more than ROM_NODE_MAX_CHILDREN children or a tree deeper than ROM_NODE_TREE_MAX_DEPTH fails
-   with FATAL_ERROR_ROM_REGISTRY_FULL, the code of an invalid ROM header). The same tree is walked by
-   RomSerializedNodeTree_ReleaseSprites. */
+   with FATAL_ERROR_ROM_REGISTRY_FULL, the code of an invalid ROM header; so does a node whose child offsets do
+   not all point at a node header inside the asset of assetByteCount bytes, checked before any of them is
+   relocated). The same tree is walked by RomSerializedNodeTree_ReleaseSprites. */
 static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
-          (RomSerializedNodeHeader *node,RomAssetHeader *assetBase)
+          (RomSerializedNodeHeader *node,RomAssetHeader *assetBase,uint32_t assetByteCount)
 {
   struct { RomSerializedNodeHeader *node; uint32_t nextChild; uint32_t remaining; } frames[ROM_NODE_TREE_MAX_DEPTH];
   int depth = 0;
@@ -242,6 +267,15 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
       Thandor_Log("RomAssetRecord_RegisterAndRelocate: node with %u children, rejected",node->childCount);
       Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
       return FATAL_ERROR_ROM_REGISTRY_FULL;
+    }
+    /* The original follows every child offset; bounded here because a malformed ROM would read past the asset. */
+    for (uint32_t childIndex = 0; childIndex < node->childCount; childIndex++) {
+      if (!RomSerializedNode_FitsAsset(node->childReferences[childIndex].savedOffset,assetByteCount)) {
+        Thandor_Log("RomAssetRecord_RegisterAndRelocate: child node offset 0x%X outside the asset of 0x%X bytes, "
+                    "rejected",node->childReferences[childIndex].savedOffset,assetByteCount);
+        Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
+        return FATAL_ERROR_ROM_REGISTRY_FULL;
+      }
     }
     frames[depth].node = node;
     frames[depth].nextChild = 0;
@@ -265,15 +299,26 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
 /* Registers a ROM record in the first free slot of g_RomRegistrySlots and relocates its serialized node tree:
    child offsets become pointers, and every node's ".spr" sprite is loaded, or an already registered sprite with
    the same registry id is reused. Returns 0 on success, otherwise FATAL_ERROR_ROM_REGISTRY_FULL or the
-   loader's error (the original's success return value, assetBase, was never used by its caller).
+   loader's error (the original's success return value, assetBase, was never used by its caller). A record
+   without a node tree (root offset 0) is registered as it is. A root offset outside the asset (assetByteCount
+   bytes) fails with FATAL_ERROR_ROM_REGISTRY_FULL before the record is registered.
 */
-uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase)
+uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase,
+                                            uint32_t assetByteCount)
 
 {
   uint32_t rootNodeOffset;
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
 
+  /* The original follows the root offset; bounded here because a malformed ROM would read past the asset. */
+  if (record->rootNodeOffsetOrPointer != 0 &&
+      !RomSerializedNode_FitsAsset(record->rootNodeOffsetOrPointer,assetByteCount)) {
+    Thandor_Log("RomAssetRecord_RegisterAndRelocate: record %u has root node offset 0x%X outside the asset of 0x%X "
+                "bytes, rejected",record->recordId,record->rootNodeOffsetOrPointer,assetByteCount);
+    Package_SetLastErrorPath(g_EngineZentraleRomPathUtf16);
+    return FATAL_ERROR_ROM_REGISTRY_FULL;
+  }
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->record == nullptr) {
@@ -285,7 +330,7 @@ uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAsse
       /* asset start + serialized offset */
       record->rootNodeOffsetOrPointer = Thandor_PointerToU32(Asset_RecordAt(assetBase,record->rootNodeOffsetOrPointer)); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
       return RomSerializedNodeTree_LoadSpritesAndRelocate
-                       (Asset_RecordAt<RomSerializedNodeHeader>(assetBase,rootNodeOffset),assetBase);
+                       (Asset_RecordAt<RomSerializedNodeHeader>(assetBase,rootNodeOffset),assetBase,assetByteCount);
     }
     slotCursor++;
   }
