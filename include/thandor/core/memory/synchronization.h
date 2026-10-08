@@ -22,6 +22,13 @@ void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpin
 
 void Runtime_Shutdown();
 
+/* Runtime_Shutdown, SdlPlatform_Quit, the message box (if messageBoxText is not null), then the process
+   exits; the one exit of a running game (quit request and fatal error). */
+[[noreturn]] void Runtime_ShutdownAndExit(const char *messageBoxText);
+
+/* Ends the process (exit code 0) at once, without any shutdown. */
+[[noreturn]] void Runtime_ExitProcess();
+
 extern SpinLockAcquireProc *g_SpinLockAcquire;
 extern SpinLockTryAcquireFlagsProc *g_SpinLockTryAcquire;
 extern SpinLockReleaseProc *g_SpinLockRelease;
