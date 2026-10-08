@@ -1,5 +1,5 @@
 {
- "revision": "c822e2e2",
+ "revision": "8eeab7a4",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -152,14 +152,14 @@
    "world": 51
   },
   "constexpr": {
-   "assets": 99,
+   "assets": 100,
    "audio": 15,
    "core": 209,
    "gameplay": 174,
    "graphics": 138,
    "movie": 28,
    "network": 129,
-   "platform": 149,
+   "platform": 151,
    "ui": 578,
    "world": 95
   },
