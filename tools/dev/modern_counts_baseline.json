@@ -1,5 +1,5 @@
 {
- "revision": "4abd7332",
+ "revision": "fabab548",
  "worktree": true,
  "files": 694,
  "metrics": {
@@ -154,7 +154,7 @@
   "constexpr": {
    "assets": 99,
    "audio": 15,
-   "core": 206,
+   "core": 209,
    "gameplay": 173,
    "graphics": 137,
    "movie": 28,
