@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/core/color_lanes.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -122,10 +123,21 @@ ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog defini
   return registryDefinition;
 }
 
+/* True when the 1-based saved byte offset savedOffset (1 = pool start) names a whole record of recordBytes
+   inside a pool of poolBytes. */
+static bool ShotRuntime_SavedOffsetInPool(uint32_t savedOffset,size_t poolBytes,size_t recordBytes)
+
+{
+  return static_cast<uint32_t>(savedOffset - 1U) <= poolBytes - recordBytes;
+}
+
 /* Turns the saved form of the shot slots back into pointers after a savegame load (and after writing one):
    for every live shot (non-zero model node) the 1-based model node, runtime state and owner army offsets are
    rebased and the saved definition id is replaced by the registered ShotDefinition. A shot whose id is no
    longer registered is dropped (model node cleared).
+   The original adds the saved offsets to the pool bases unchecked; bounded here because a savegame is a user
+   file: a shot whose model node offset lies outside the world object pool is dropped (model node cleared), a
+   target model runtime or owner army offset outside its pool is cleared to none (0), one log line each.
 */
 void ShotRuntime_RebaseSlotsAfterLoad()
 
@@ -148,15 +160,39 @@ void ShotRuntime_RebaseSlotsAfterLoad()
   for (shotSlotsRemaining = SHOT_RUNTIME_SLOT_COUNT; shotSlotsRemaining != 0; shotSlotsRemaining--) {
     rebasedRuntimeState = shotSlot->runtimeStateOrSavedOffset.runtimeStatePointer;
     savedOwnerArmy = shotSlot->ownerAndTrajectory.ownerArmyRuntime;
+    if (shotSlot->modelNodeOrSavedOffset.modelNode != nullptr &&
+        !ShotRuntime_SavedOffsetInPool(shotSlot->modelNodeOrSavedOffset.raw,
+                                       INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),
+                                       sizeof(WorldObjectRecord))) {
+      Thandor_Log("shot: saved slot %d has model node offset 0x%08X outside the world object pool, dropped",
+                  SHOT_RUNTIME_SLOT_COUNT - shotSlotsRemaining,shotSlot->modelNodeOrSavedOffset.raw);
+      shotSlot->modelNodeOrSavedOffset.modelNode = nullptr;
+    }
     if (shotSlot->modelNodeOrSavedOffset.modelNode != nullptr) {
       if (rebasedRuntimeState != nullptr) {
-        /* 5f-format: ShotRuntimeSlot.runtimeStateOrSavedOffset */
-        rebasedRuntimeState = reinterpret_cast<void *>(Thandor_PointerToI32(rebasedRuntimeState) + g_ModelRuntimeRebaseDelta);
+        if (!ShotRuntime_SavedOffsetInPool(shotSlot->runtimeStateOrSavedOffset.raw,MODEL_RUNTIME_POOL_BYTES,
+                                           sizeof(ModelRuntimeSlot))) {
+          Thandor_Log("shot: saved slot %d has target offset 0x%08X outside the model runtime pool, cleared",
+                      SHOT_RUNTIME_SLOT_COUNT - shotSlotsRemaining,shotSlot->runtimeStateOrSavedOffset.raw);
+          rebasedRuntimeState = nullptr;
+        }
+        else {
+          /* 5f-format: ShotRuntimeSlot.runtimeStateOrSavedOffset */
+          rebasedRuntimeState = reinterpret_cast<void *>(Thandor_PointerToI32(rebasedRuntimeState) + g_ModelRuntimeRebaseDelta);
+        }
       }
       rebasedOwnerArmy = nullptr;
       if (savedOwnerArmy != nullptr) {
-        /* 5f-format: ShotRuntimeSlot.ownerAndTrajectory.ownerArmyRuntime (saved offset) */
-        rebasedOwnerArmy = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedOwnerArmy) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
+        if (!ShotRuntime_SavedOffsetInPool(static_cast<uint32_t>(shotSlot->ownerAndTrajectory.ownerArmyRuntime),
+                                           ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),sizeof(ArmyRuntimeSlot))) {
+          Thandor_Log("shot: saved slot %d has owner army offset 0x%08X outside the army pool, cleared",
+                      SHOT_RUNTIME_SLOT_COUNT - shotSlotsRemaining,
+                      static_cast<uint32_t>(shotSlot->ownerAndTrajectory.ownerArmyRuntime));
+        }
+        else {
+          /* 5f-format: ShotRuntimeSlot.ownerAndTrajectory.ownerArmyRuntime (saved offset) */
+          rebasedOwnerArmy = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedOwnerArmy) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
+        }
       }
       /* saved model node offset + g_RuntimeObjectRebaseBaseMinusOne */
       /* 5f-format: ShotRuntimeSlot.modelNodeOrSavedOffset */
