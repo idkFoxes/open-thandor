@@ -1,6 +1,9 @@
-# Step 11 (later): security and crash fixes (local input)
+# Step 11: security and crash fixes (local input)
 
-Status: planned, not started. The step 8 code review found more security and crash bugs than step 8 fixed. The owner
+Status: done (2026-10-09; final check: all eight run_checks pass, also with all 56 maps and the full campaign
+chain; gpu_compare Vulkan and D3D12 23/23; GCC and MSVC 0 warnings; goldens identical; old savegames (end of
+step 13, pre-step-13 and the three stock saves) load; none of the new rejection log lines appears on stock data or
+valid saves). See "Result" at the end. The step 8 code review found more security and crash bugs than step 8 fixed. The owner
 decided (2026-10-04) to move every open one out of step 8: the multiplayer/network ones go to
 [step 12](step12_multiplayer_security.md), everything else is this step: file, asset, savegame and level input, local
 crashes, thread races, undefined behaviour, developer-tool hardening, and the non-network owner decisions of the
@@ -117,3 +120,26 @@ P12 before P45; P52/P53 need the step 8 typed-slot (`UI_SLOT`) packages merged. 
 transfer thread package (P48).
 
 Total: 47 packages (41 review packages + 6 owner-decision packages; the PCK magic check is part of P13).
+
+## Result (2026-10-09)
+
+All 47 packages above were done, plus 7 packages for the count-0 do-while loops step 13 had marked
+"D8: kept for step 11" (none is left) and 28 follow-up packages (F1-F28) for problems the packages found on the
+way. Highlights beyond the plan:
+
+- Savegame input is checked on load: pool offsets (shots, effects, models, army slots, class links), the world
+  record graph (allocated targets, no child cycles), the owner list chain, the field-grid edge ring, saved counts
+  (army lists, waypoints, AI workspace), the campaign entry, and a raw shot-definition pointer of terrain-impact
+  effects.
+- Asset input: model/ROM record walkers and sprite paths, ROM action tables (keyframes, lights), PCK magic,
+  terrain packet tables, select/info.gfx, PCX player pictures, SAM block counts, credits texture, mouse.dat
+  frames, local campaign (.cgn) files, level images (prefix, path offsets, script operands).
+- A missing text resolves to an empty string instead of the pointer value 0x33 (95 call sites dereferenced it).
+- The pathing flood fills keep an explicit heap stack instead of recursing (up to 28 MiB of stack on the largest
+  stock maps in the original); the main thread reserves 8 MiB, our own threads 1 MiB.
+- Saving is transactional (temporary file, then replace); a locked .sve shows the error dialog.
+- One saved-value change: field cell +0x54 (persistedAux54) holds a table index instead of an address; nothing
+  reads the saved value.
+
+Kept as marked original quirks (owner decision open): a shot reuses a world record without resetting its child
+links (F22). Network findings are collected for step 12. clang-tidy: 889 -> 791 diagnostics; do_while 297 -> 209.
