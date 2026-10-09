@@ -19,13 +19,13 @@ No file comment; function families: `SoundBackendDisabled_*` (8).
 **Functions** (8 public):
 
 - [`SoundBackendDisabled_CreateSampleVoiceSet`](../../src/audio/backend/null_backend.cpp#L16) - Silent-backend stub in slot g_SoundCreateSampleVoiceSet (until SdlAudio_Init switches the slots to the SDL3 audio backend, and for good when there is no audio device).
-- [`SoundBackendDisabled_ReleaseSampleVoiceSet`](../../src/audio/backend/null_backend.cpp#L25) - Silent-backend stub in slot g_SoundReleaseSampleVoiceSet: nothing to release.
-- [`SoundBackendDisabled_PlayOneShot`](../../src/audio/backend/null_backend.cpp#L35) - Silent-backend stub in slot g_SoundPlayOneShot: plays nothing and reports success (returns true) with a NULL voice in *outVoice; the original never writes the voice, so its callers store an unrelated ...
-- [`SoundBackendDisabled_PlayLooping`](../../src/audio/backend/null_backend.cpp#L52) - Silent-backend stub in slot g_SoundPlayLooping: plays nothing and reports success (returns true) with a NULL voice in *outVoice; the original never writes the voice (callers store an unrelated ...
-- [`SoundBackendDisabled_StopVoice`](../../src/audio/backend/null_backend.cpp#L65) - Silent-backend stub in slot g_SoundStopVoice: nothing plays, so nothing to stop.
-- [`SoundBackendDisabled_IsVoiceFinished`](../../src/audio/backend/null_backend.cpp#L73) - Silent-backend stub in slot g_SoundIsVoiceFinished: always returns true, meaning the voice is not playing.
-- [`SoundBackendDisabled_SetVoiceGains`](../../src/audio/backend/null_backend.cpp#L81) - Silent-backend stub in slot g_SoundSetVoiceGains: ignores the new left/right gains.
-- [`SoundBackendDisabled_StopAllVoices`](../../src/audio/backend/null_backend.cpp#L90) - Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until SdlAudio_Init installs SdlAudio_StopAllVoices): there are no voices, so it does nothing.
+- [`SoundBackendDisabled_ReleaseSampleVoiceSet`](../../src/audio/backend/null_backend.cpp#L26) - Silent-backend stub in slot g_SoundReleaseSampleVoiceSet: nothing to release.
+- [`SoundBackendDisabled_PlayOneShot`](../../src/audio/backend/null_backend.cpp#L36) - Silent-backend stub in slot g_SoundPlayOneShot: plays nothing and reports success (returns true) with a NULL voice in *outVoice; the original never writes the voice, so its callers store an unrelated ...
+- [`SoundBackendDisabled_PlayLooping`](../../src/audio/backend/null_backend.cpp#L53) - Silent-backend stub in slot g_SoundPlayLooping: plays nothing and reports success (returns true) with a NULL voice in *outVoice; the original never writes the voice (callers store an unrelated ...
+- [`SoundBackendDisabled_StopVoice`](../../src/audio/backend/null_backend.cpp#L66) - Silent-backend stub in slot g_SoundStopVoice: nothing plays, so nothing to stop.
+- [`SoundBackendDisabled_IsVoiceFinished`](../../src/audio/backend/null_backend.cpp#L74) - Silent-backend stub in slot g_SoundIsVoiceFinished: always returns true, meaning the voice is not playing.
+- [`SoundBackendDisabled_SetVoiceGains`](../../src/audio/backend/null_backend.cpp#L82) - Silent-backend stub in slot g_SoundSetVoiceGains: ignores the new left/right gains.
+- [`SoundBackendDisabled_StopAllVoices`](../../src/audio/backend/null_backend.cpp#L91) - Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until SdlAudio_Init installs SdlAudio_StopAllVoices): there are no voices, so it does nothing.
 
 **Called from** (2 files): [`audio/backend/runtime`](#file-audio-backend-runtime) (`g_SoundCreateSampleVoiceSet`, `g_SoundIsVoiceFinished` +6); [`platform/sdl3/audio`](platform.md#file-platform-sdl3-audio) (`SdlAudio_Shutdown`).
 
@@ -65,22 +65,22 @@ Module header: [`codec.h`](../../include/thandor/audio/codec.h) · Changelog: `s
 
 [Source](../../src/audio/codec/sam.cpp) · [Header](../../include/thandor/audio/codec/sam.h)
 
-No file comment; function families: `SoundSample_*` (2), `SoundCoefficientTransform_*` (1), `CosineDerivedLookupTables_*` (1).
+No file comment; function families: `SoundSample_*` (2), `SamDecode_*` (2), `SoundCoefficientTransform_*` (1), `CosineDerivedLookupTables_*` (1).
 
-**Functions** (4 public):
+**Functions** (4 public, 2 file-local):
 
-- [`SoundCoefficientTransform_ApplyCosineBanksMmx`](../../src/audio/codec/sam.cpp#L32) - Mono variant of SoundSample_DecodeCoefficientBlockToPcmMmx: the same inverse cosine transform of 256 coefficients with g_CosineDerivedLookupSecondTable (each sample is bits 16..31 of the wrapping ...
-- [`SoundSample_DecodeCoefficientBlockToPcmMmx`](../../src/audio/codec/sam.cpp#L971) - Synthesizes one SAM block: transforms 256 decoded coefficients into 256 PCM samples with the MMX cosine tables (each sample is bits 16..31 of the wrapping 256-tap dot product x32, doubled with ...
-- [`SoundSample_DecodePackedCoefficientBlock`](../../src/audio/codec/sam.cpp#L1897) - Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of SoundSample_EncodePackedCoefficientBlock).
-- [`CosineDerivedLookupTables_Init`](../../src/audio/codec/sam.cpp#L1977) - Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by SdlAudio_Init, as by the original's DirectSound_Init).
+- [`SoundCoefficientTransform_ApplyCosineBanksMmx`](../../src/audio/codec/sam.cpp#L34) - Mono variant of SoundSample_DecodeCoefficientBlockToPcmMmx: the same inverse cosine transform of 256 coefficients with g_CosineDerivedLookupSecondTable (each sample is bits 16..31 of the wrapping ...
+- [`SoundSample_DecodeCoefficientBlockToPcmMmx`](../../src/audio/codec/sam.cpp#L973) - Synthesizes one SAM block: transforms 256 decoded coefficients into 256 PCM samples with the MMX cosine tables (each sample is bits 16..31 of the wrapping 256-tap dot product x32, doubled with ...
+- [`SoundSample_DecodePackedCoefficientBlock`](../../src/audio/codec/sam.cpp#L1925) - Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of SoundSample_EncodePackedCoefficientBlock).
+- [`CosineDerivedLookupTables_Init`](../../src/audio/codec/sam.cpp#L2010) - Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by SdlAudio_Init, as by the original's DirectSound_Init).
 
 **Data** (12 shared, 0 file-local): `g_SoundDecodeMmxWordLaneMask0`, `g_SoundDecodeMmxWordLaneMask1`, `g_SoundDecodeMmxWordLaneMask2`, `g_SoundDecodeMmxWordLaneMask3`, `g_CosineDerivedLookupAllocation`, `g_CosineDerivedLookupSecondTable`, `SAM_BLOCK_SAMPLE_COUNT`, `SAM_MMX_OUTPUTS_PER_PASS` and 4 more.
 
 **Called from** (3 files): [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`SelfTest_BuildSamCosineTables`, `SelfTest_FreeSamCosineTables` +2); [`audio/codec/sam_encoder`](#file-audio-codec-sam-encoder) (`SoundSample_EncodePackedCoefficientBlock`, `SoundSample_TransformPcmBlockToCoefficientsMmx`); [`platform/sdl3/audio`](platform.md#file-platform-sdl3-audio) (`SdlAudio_CreateSampleVoiceSet`, `SdlAudio_Init`).
 
-**Depends on** (6 files, names used): [`core/math/fixed_point`](core.md#file-core-math-fixed-point) (2), [`core/x86_emulation`](core.md#file-core-x86-emulation) (2), [`core/bytes`](core.md#file-core-bytes) (1), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
+**Depends on** (5 files, names used): [`core/x86_emulation`](core.md#file-core-x86-emulation) (4), [`core/math/fixed_point`](core.md#file-core-math-fixed-point) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
-**Includes:** `thandor/core/bytes.h`.
+**Includes:** `thandor/core/bytes.h`, `cassert`.
 
 <a id="file-audio-codec-sam-encoder"></a>
 #### `sam_encoder.cpp / sam_encoder.h`
@@ -127,10 +127,10 @@ No file comment; function families: `SpatialSound_*` (4), `SpatialSoundPool_*` (
 - [`SpatialSound_RebuildListenerTransformFromPose`](../../src/audio/spatial/runtime.cpp#L56) - Places the sound listener at the camera: g_SpatialSoundListenerTransform becomes the rotation built from the camera's view angles composed with a translation by -origin, i.e. world space to listener ...
 - [`SpatialSound_PlayPositionedOneShot`](../../src/audio/spatial/runtime.cpp#L164) - Plays a sound effect once at a world position: the gain (scaled by the effects volume) fades out with the listener distance along a quarter cosine up to maximumDistanceQ12 and is panned by the ...
 - [`SpatialSound_UpdateDesiredPositionedGains`](../../src/audio/spatial/runtime.cpp#L189) - Looping counterpart of SpatialSound_PlayPositionedOneShot: computes the same distance attenuation and azimuth panning and stores the result as the slot's desired gains, which ...
-- [`SpatialSoundSlot_CreateFromSampleAsset`](../../src/audio/spatial/runtime.cpp#L218) - Creates a voice set for the 'sam' asset and gives it the first free spatial-sound slot, silent and not playing, so that SpatialSound_UpdateDesiredPositionedGains can drive it as a looping positioned ...
-- [`SpatialSoundSlot_ReleaseSample`](../../src/audio/spatial/runtime.cpp#L248) - Releases the sample voice set of a slot from SpatialSoundSlot_CreateFromSampleAsset and clears the slot (all four fields), which makes it free again.
-- [`SpatialSoundPool_ClearDesiredGains`](../../src/audio/spatial/runtime.cpp#L261) - Start of a frame's positioned-sound pass: sets the desired gains of every used slot to 0, so that only the sounds whose gains are set again this frame keep playing when ...
-- [`SpatialSoundPool_ApplyDesiredGains`](../../src/audio/spatial/runtime.cpp#L282) - End of a frame's positioned-sound pass: for every used slot, starts a looping voice when it has gains but is not playing, stops the voice when both gains are 0, and otherwise updates the voice's ...
+- [`SpatialSoundSlot_CreateFromSampleAsset`](../../src/audio/spatial/runtime.cpp#L219) - Creates a voice set for the 'sam' asset (of sampleByteCount bytes) and gives it the first free spatial-sound slot, silent and not playing, so that SpatialSound_UpdateDesiredPositionedGains can drive ...
+- [`SpatialSoundSlot_ReleaseSample`](../../src/audio/spatial/runtime.cpp#L249) - Releases the sample voice set of a slot from SpatialSoundSlot_CreateFromSampleAsset and clears the slot (all four fields), which makes it free again.
+- [`SpatialSoundPool_ClearDesiredGains`](../../src/audio/spatial/runtime.cpp#L262) - Start of a frame's positioned-sound pass: sets the desired gains of every used slot to 0, so that only the sounds whose gains are set again this frame keep playing when ...
+- [`SpatialSoundPool_ApplyDesiredGains`](../../src/audio/spatial/runtime.cpp#L283) - End of a frame's positioned-sound pass: for every used slot, starts a looping voice when it has gains but is not playing, stops the voice when both gains are 0, and otherwise updates the voice's ...
 
 **Data** (5 shared, 5 file-local): `g_ReverseStereoMask`, `g_SoundEffectsGainQ15`, `SPATIAL_SOUND_SLOT_COUNT`, `SPATIAL_SOUND_GAIN_Q15_FULL`, `SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15`.
 
