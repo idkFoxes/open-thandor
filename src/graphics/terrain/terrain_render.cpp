@@ -108,7 +108,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     rowSpan = g_TerrainProjectedRowSpans;
     gridWidth = fieldGrid->gridWidth;
     rowCount = fieldGrid->gridHeight;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* count = gridHeight >= 2 (the grid check above) */
     do {
       rowSpan->firstColumn = 0;
       rowSpan->endColumnExclusive = gridWidth;
@@ -124,7 +124,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     rowCells = fieldGrid->cells;
     rowsRemaining = rowCount;
     columnsRemaining = gridWidth;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* counts = gridHeight >= 2 and gridWidth >= 1 (the grid check above) */
     do {
       do {
         rowCells->flagsAndMaterial =
@@ -140,7 +140,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     spanPairsLeft = rowCount - 1;
     previousFirstColumn = g_TerrainProjectedRowSpans[0].firstColumn;
     previousEndColumn = g_TerrainProjectedRowSpans[0].endColumnExclusive;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* count = gridHeight - 1 >= 1 (the grid check above) */
     do {
       rowSpan = rowSpan + 1;
       spanFirstColumn = rowSpan->firstColumn;
@@ -179,7 +179,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   if (!Any(fieldGrid->runtimeStateFlags & FIELD_GRID_RUNTIME_SURFACE_DIRTY) &&
      (Any(renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION))) {
     rowCells = fieldGrid->cells;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* count = gridHeight >= 2 (the grid check above) */
     do {
       spanFirstColumn = rowSpan->firstColumn;
       vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
@@ -199,7 +199,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags & ~FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     renderContext->contextFlags = renderContext->contextFlags & ~TERRAIN_RENDER_REUSE_PROJECTION;
     rowCells = fieldGrid->cells;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* count = gridHeight >= 2 (the grid check above) */
     do {
       spanFirstColumn = rowSpan->firstColumn;
       vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
@@ -220,7 +220,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   rowSpan = g_TerrainProjectedRowSpans;
   /* quads: rows 0..height-2, columns firstColumn..endColumnExclusive-2 */
   quadRowsLeft = fieldGrid->gridHeight - 1;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* count = gridHeight - 1 >= 1 (the grid check above) */
   do {
     spanFirstColumn = rowSpan->firstColumn;
     vertexCount = rowSpan->endColumnExclusive - spanFirstColumn;
@@ -309,18 +309,20 @@ static uint32_t TerrainProjectedVertex_TransformAndProjectPointB
           (TerrainProjectedVertexWorkRecord *vertex,uint32_t flagsWithoutPointB)
 
 {
-  GraphicsFixedVec3 *offsetVector;
+  const TerrainDirectionRecord *offsetRecord;
   int offsetX;
   int offsetY;
   int offsetZ;
   uint32_t resultFlags;
   GraphicsProjectedPointPair projectedPoint;
 
-  offsetVector = vertex->secondaryOffset;
+  /* the offset is the first three dwords of the cell's direction record; secondaryOffset is its index, 0..255 by
+     construction (FieldGrid_InitializeRuntimeCellsAndBoundaryFlags), the mask keeps any other value in the table */
+  offsetRecord = &g_TerrainDirectionRecordTable256[vertex->secondaryOffset & 0xffU];
   resultFlags = flagsWithoutPointB | TERRAIN_VERTEX_POINT_B_NOT_PROJECTED;
-  offsetX = offsetVector->x;
-  offsetY = offsetVector->y;
-  offsetZ = offsetVector->z + vertex->secondaryProjectionDepthQ12;
+  offsetX = (int)offsetRecord->angleAComponent0ScaledQ28;
+  offsetY = (int)offsetRecord->angleAComponent1ScaledQ28;
+  offsetZ = (int)offsetRecord->angleBComponent0ScaledQ28 + vertex->secondaryProjectionDepthQ12;
   (vertex->sourcePoint).x = (vertex->sourcePoint).x + offsetX;
   (vertex->sourcePoint).y = (vertex->sourcePoint).y + offsetY;
   (vertex->sourcePoint).z = (vertex->sourcePoint).z + offsetZ;
@@ -493,6 +495,14 @@ static GraphicsPrimitivePacket *TerrainProjectedTriangle_QueueSoilPacket
   return queuedPacket;
 }
 
+/* True when the vertex's material block (TERRAIN_SOIL_PACKET_MATERIAL_BYTES, every packet of its variants and
+   blends) lies inside the loaded soil packet table. */
+static bool TerrainProjectedTriangle_SoilMaterialInTable(const TerrainProjectedVertexWorkRecord *vertex)
+{
+  return ((vertex->projectionFlags & TERRAIN_VERTEX_MATERIAL_MASK) + 1) * TERRAIN_SOIL_PACKET_MATERIAL_BYTES <=
+         g_TerrainSoilPacketTablePayloadBytes;
+}
+
 /* Terrain (point A) part of TerrainProjectedTriangle_ClipInterpolateAndQueueTextured: darkens the shaded vertex
    colours by the water depth and queues the triangle with the soil texture of vertex0's material; when the
    vertices have different materials, one or two blend triangles towards the other materials follow. */
@@ -514,8 +524,21 @@ static void TerrainProjectedTriangle_QueueSoilTriangles
   int packetOffset1;
   int packetOffset2;
   GraphicsPrimitivePacket *queuedPacket;
+  static bool loggedMaterialOutsideTable;
 
   soilPacketTable = g_TerrainSoilPacketTablePayload;
+  /* The original indexed the soil packet table by the vertex materials unchecked; a triangle with a material
+     whose 0x800-byte block lies past the loaded table is skipped here, because the reads ran past the table. */
+  if (!TerrainProjectedTriangle_SoilMaterialInTable(vertex0) ||
+      !TerrainProjectedTriangle_SoilMaterialInTable(vertex1) ||
+      !TerrainProjectedTriangle_SoilMaterialInTable(vertex2)) {
+    if (!loggedMaterialOutsideTable) {
+      loggedMaterialOutsideTable = true;
+      Thandor_Log("TerrainProjectedTriangle_QueueSoilTriangles: skipped triangle, material outside the soil table "
+                  "(%u bytes)",g_TerrainSoilPacketTablePayloadBytes);
+    }
+    return;
+  }
   vertex0Color = vertex0->shadedColorA;
   vertex1Color = vertex1->shadedColorA;
   vertex2Color = vertex2->shadedColorA;
@@ -725,7 +748,7 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
     /* raises every row's first column to the plane's crossing column */
     rowSpan = g_TerrainProjectedRowSpans;
     rowsRemaining = fieldGrid->gridHeight;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* count = gridHeight >= 2: only called from TerrainProjectedGrid_TransformShadeAndQueue after its grid check */
     do {
       columnBound = (int)(columnEdgeQ12 - FIELD_GRID_CELL_Q12) >> Q12_SHIFT;
       columnEdgeQ12 = columnEdgeQ12 + ((FIXED_PRODUCT_SHR(columnStepProduct, Q20_SHIFT)) - FIELD_GRID_CELL_Q12 / 2);
@@ -749,7 +772,7 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
     /* lowers every row's end column to the plane's crossing column */
     rowSpan = g_TerrainProjectedRowSpans;
     rowsRemaining = fieldGrid->gridHeight;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* count = gridHeight >= 2: only called from TerrainProjectedGrid_TransformShadeAndQueue after its grid check */
     do {
       columnBound = (int)(columnEdgeQ12 + (FIELD_GRID_TWO_CELLS_Q12 - 1)) >> Q12_SHIFT;
       columnEdgeQ12 = columnEdgeQ12 + ((FIXED_PRODUCT_SHR(columnStepProduct, Q20_SHIFT)) - FIELD_GRID_CELL_Q12 / 2);

@@ -60,7 +60,8 @@ static uint32_t g_Win32FileBytesTransferred = 0;
 /* WIN32_FIND_DATAA of the directory enumeration */
 static _WIN32_FIND_DATAA g_Win32FindDataScratch = {};
 
-/* two narrow path buffers ([1] held the second path of the original's move/copy, which had no caller); the
+/* two narrow path buffers ([1] held the second path of the original's move/copy, which had no caller; now the
+   destination of Win32File_Replace); the
    directory sort swaps 0x200-byte records through the start of the block. open-thandor: THANDOR_PATH_CAPACITY
    bytes each instead of the original's 0x100, and a path that does not fit fails the operation
    (Win32Path_ToNarrow) instead of going to Windows cut off: with a long game directory the cut-off path named
@@ -362,6 +363,30 @@ uint32_t Win32File_Delete(uint32_t unusedFlags,uint16_t *path)
 {
   Package_SetLastErrorPath(path);
   if (Win32Path_ToNarrow(g_Win32PathScratch[0],path) && DeleteFileA(Win32Path_ScratchText()) != 0) {
+    return 0;
+  }
+  return FATAL_ERROR_FILE_ACCESS_FAILED;
+}
+
+/* open-thandor: replaces destinationPath with the file sourcePath in one step (MoveFileExA with
+   MOVEFILE_REPLACE_EXISTING, written through to disk), the commit of a transactional write. Both files must be
+   closed and on the same volume. Returns 0, or FATAL_ERROR_FILE_ACCESS_FAILED when a path does not fit or the
+   move fails; destinationPath and sourcePath are then unchanged.
+*/
+uint32_t Win32File_Replace(uint16_t *destinationPath,uint16_t *sourcePath)
+
+{
+  /* the MoveFileExA flags MOVEFILE_REPLACE_EXISTING and MOVEFILE_WRITE_THROUGH (Windows SDK values) */
+  constexpr DWORD moveReplaceExisting = 0x00000001;
+  constexpr DWORD moveWriteThrough = 0x00000008;
+
+  Package_SetLastErrorPath(destinationPath);
+  if (!Win32Path_ToNarrow(g_Win32PathScratch[0],sourcePath) ||
+      !Win32Path_ToNarrow(g_Win32PathScratch[1],destinationPath)) {
+    return FATAL_ERROR_FILE_ACCESS_FAILED;
+  }
+  if (MoveFileExA(Win32Path_ScratchText(),reinterpret_cast<char *>(g_Win32PathScratch[1]),
+                  moveReplaceExisting | moveWriteThrough) != 0) {
     return 0;
   }
   return FATAL_ERROR_FILE_ACCESS_FAILED;

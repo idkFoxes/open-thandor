@@ -305,8 +305,10 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
 
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while that compares the first (unset) record and, with a count of 0, walks
+     2^32 records; bounded here because a peer makes the count 0 (players leaving, malformed lobby
+     packets). For a count >= 1 the loop runs exactly as before. */
+  while (playersRemaining != 0) {
     if (playerRuntimeId == playerRecord->playerRuntimeId) {
       playerRecord->snapshotTransferFlags =
            playerRecord->snapshotTransferFlags | FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY;
@@ -315,21 +317,22 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
         return;
       }
-      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-      do {
+      /* The original is a do-while; only reached from the outer loop with the count >= 1 (reloaded
+         above), guarded anyway like the outer loop. For a count >= 1 it runs exactly as before. */
+      while (playersRemaining != 0) {
         if (!Any(playerRecord->snapshotTransferFlags & FrontendSnapshotTransferFlags::FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY)) {
           return;
         }
         playersRemaining--;
         playerRecord = playerRecord + 1;
-      } while (playersRemaining != 0);
+      }
       g_MemoryApi.free(g_UiTransferMailbox.outgoingAllocation);
       UiTransferMailbox_SetOutgoingBuffer(0,nullptr);
       return;
     }
     playerRecord = playerRecord + 1;
     playersRemaining--;
-  } while (playersRemaining != 0);
+  }
 }
 
 /* Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to
@@ -408,7 +411,7 @@ static void FrontendTransfer_SendSessionAdvertisement
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);
   /* the game name typed into gameNameEdit */
   RichTextCommandStream_PatchPayloadBySelector
-            (0,frontendRootNode->gameNameEdit.textBuffer,resolvedText);
+            (0,UiTextEdit_Text(&frontendRootNode->gameNameEdit).data(),resolvedText);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
   RichTextCommandStream_CopyExpanded
             (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText,nullptr);

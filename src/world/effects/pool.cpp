@@ -8,6 +8,7 @@
 #include <thandor/world/effects/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -124,9 +125,53 @@ void EffectRuntime_ShutdownGraphicsResources()
 }
 
 
+/* True when the 1-based saved byte offset savedOffset (1 = pool start) names a whole record of recordBytes
+   inside a pool of poolBytes. */
+static bool EffectRuntime_SavedOffsetInPool(uint32_t savedOffset,size_t poolBytes,size_t recordBytes)
+
+{
+  return static_cast<uint32_t>(savedOffset - 1U) <= poolBytes - recordBytes;
+}
+
+
+/* True when the saved owner of a terrain impact effect (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER, saved
+   as the raw 32-bit pointer &ShotDefinition.terrainImpactHeightDeltasQ12[i], not as an offset) is such an entry
+   of a registered shot definition. Compares addresses as integers, so a foreign value is never dereferenced. */
+static bool EffectRuntime_SavedOwnerIsShotImpactColumn(uint32_t savedOwnerBits)
+
+{
+  uintptr_t ownerAddress;
+  uintptr_t columnStart;
+  int registryIndex;
+  ShotDefinition *shotDefinition;
+
+  ownerAddress = reinterpret_cast<uintptr_t>(Thandor_U32ToPointer<void>(savedOwnerBits));
+  for (registryIndex = 0; registryIndex < SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registryIndex++) {
+    shotDefinition = g_ShotDefinitionRegistry[registryIndex];
+    if (shotDefinition == nullptr) {
+      continue;
+    }
+    columnStart = reinterpret_cast<uintptr_t>(shotDefinition->terrainImpactHeightDeltasQ12);
+    if (ownerAddress >= columnStart && ownerAddress - columnStart < sizeof(shotDefinition->terrainImpactHeightDeltasQ12) &&
+        (ownerAddress - columnStart) % sizeof(shotDefinition->terrainImpactHeightDeltasQ12[0]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 /* After a savegame load: turns the saved offsets of every live effect slot back into pointers (the model node,
    and the owner as a model runtime or an army depending on the completion action) and replaces the saved
    definition id by the registered definition; an effect whose definition is no longer registered is dropped.
+   The original adds the saved offsets to the pool bases unchecked; bounded here because a savegame is a user
+   file: an effect whose model node offset lies outside the world object pool is dropped (model node cleared),
+   an owner offset outside its pool (model runtime or army) is cleared to none (0), one log line each.
+   The owner of a terrain impact effect (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) is saved and loaded
+   as a raw pointer into a ShotDefinition, as in the original; it stays valid because the level's shot
+   definitions are loaded again before the pools and land at the same address. The original took it unchecked;
+   bounded here because a savegame is a user file: a value that is not a terrainImpactHeightDeltasQ12 entry of
+   a registered shot definition is cleared to none (0, no crater on completion), one log line.
 */
 void EffectRuntime_RebaseSlotsAfterLoad()
 
@@ -145,16 +190,46 @@ void EffectRuntime_RebaseSlotsAfterLoad()
     if (effectSlot->modelNodeOrSavedOffset.modelNode == nullptr) {
       continue;
     }
+    if (!EffectRuntime_SavedOffsetInPool(effectSlot->modelNodeOrSavedOffset.raw,
+                                         INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),
+                                         sizeof(WorldObjectRecord))) {
+      Thandor_Log("effect: saved slot %d has model node offset 0x%08X outside the world object pool, dropped",
+                  effectSlotIndex,effectSlot->modelNodeOrSavedOffset.raw);
+      effectSlot->modelNodeOrSavedOffset.modelNode = nullptr;
+      continue;
+    }
     /* saved offset + pool base - 1 */
     slotCompletionAction = effectSlot->completionAction;
     ownerModelNode = effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
     if (ownerModelNode != nullptr) {
       if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
-        ownerModelNode = reinterpret_cast<ModelRuntimeNode *>(reinterpret_cast<uint8_t *>(ownerModelNode) + g_ModelRuntimeRebaseDelta);
+        if (!EffectRuntime_SavedOffsetInPool(effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.serializedOffset,
+                                             MODEL_RUNTIME_POOL_BYTES,sizeof(ModelRuntimeSlot))) {
+          Thandor_Log("effect: saved slot %d has owner offset 0x%08X outside the model runtime pool, cleared",
+                      effectSlotIndex,effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.serializedOffset);
+          ownerModelNode = nullptr;
+        }
+        else {
+          ownerModelNode = reinterpret_cast<ModelRuntimeNode *>(reinterpret_cast<uint8_t *>(ownerModelNode) + g_ModelRuntimeRebaseDelta);
+        }
       }
       else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
-        /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.ownerAndDefinition.owner (saved offset) */
-        ownerModelNode = Thandor_U32ToPointer<ModelRuntimeNode>(Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne) + Thandor_PointerToI32(ownerModelNode));
+        if (!EffectRuntime_SavedOffsetInPool(effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.serializedOffset,
+                                             ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),sizeof(ArmyRuntimeSlot))) {
+          Thandor_Log("effect: saved slot %d has owner offset 0x%08X outside the army pool, cleared",
+                      effectSlotIndex,effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.serializedOffset);
+          ownerModelNode = nullptr;
+        }
+        else {
+          /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.ownerAndDefinition.owner (saved offset) */
+          ownerModelNode = Thandor_U32ToPointer<ModelRuntimeNode>(Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne) + Thandor_PointerToI32(ownerModelNode));
+        }
+      }
+      else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER &&
+               !EffectRuntime_SavedOwnerIsShotImpactColumn(effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.serializedOffset)) {
+        Thandor_Log("effect: saved slot %d has terrain impact owner 0x%08X outside the shot definitions, cleared",
+                    effectSlotIndex,effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.serializedOffset);
+        ownerModelNode = nullptr;
       }
     }
     /* 5f-format: EffectRuntimeSlot.modelNodeOrSavedOffset */

@@ -319,14 +319,14 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
   UiPointerListControl *saveList;
   uint32_t rowOrdinal;
   uint16_t *leaf;
-  bool saveFailed;
+  uint32_t saveError;
 
   InGameUiImage *image = THANDOR_CONTAINER_OF(saveButton, InGameUiImage, saveGameSaveButton);
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   saveList = reinterpret_cast<UiPointerListControl *>(&image->saveGameList); /* the list's prefix view */
   rowOrdinal = UiPointerList_GetSelectedIndexAndConfirmed(saveList,nullptr) + 1;
   /* the typed name of the trailing new-save row, else the selected row's file name */
-  leaf = image->saveNameEdit.textBuffer;
+  leaf = UiTextEdit_Text(&image->saveNameEdit).data();
   if (rowOrdinal != saveList->rowCount) {
     leaf = static_cast<uint16_t *>(saveList->rowSlots[rowOrdinal - 1]);
   }
@@ -337,13 +337,15 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
             (g_ScenarioCatalogPathScratchUtf16,leaf,
              g_ScenarioCatalogPathScratchUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,g_ScenarioCatalogPathScratchUtf16);
-  saveFailed = InGameSaveGame_WritePackage
+  saveError = InGameSaveGame_WritePackage
                     (&image->worldView.base,
                      g_ScenarioCatalogPathScratchUtf16);
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
-  /* Original quirk: the error code reported for a failed save is the selected row ordinal (selected index + 1),
-     not an error from the save routine; the original never replaces that value before the report. */
-  FatalError_ReportIfFailed(rowOrdinal,saveFailed);
+  /* The original reported the selected row ordinal (selected index + 1) as the error of a failed save, which
+     showed an unrelated error text; bounded here because an ordinal of 0x100 or more is no error code and the
+     dialog reads it as a rich-text address. The save's own error code is reported (with the save path in the
+     message, e.g. FATAL_ERROR_FILE_ACCESS_FAILED for a locked or read-only file) and the game carries on. */
+  FatalError_ReportIfFailed(saveError,saveError != 0);
   UiSelectableControl_SetSelected(0,&image->inGameMenuButton.selectable);
   InGameSettingsPage_ToggleAndSynchronizeControls(&image->inGameMenuButton.selectable);
 }
@@ -376,7 +378,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
   }
   nameValid = false;
   if (Any(nameEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
-    name = nameEdit->textBuffer;
+    name = UiTextEdit_Text(nameEdit).data();
     capacity = nameEdit->bufferCapacityCodeUnits;
     nameLength = 0;
     while (nameLength < capacity && name[nameLength] != 0) {

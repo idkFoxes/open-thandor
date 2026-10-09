@@ -17,8 +17,8 @@
 #endif
 
 /* SetPriorityClass / SetThreadPriority */
-#ifndef REALTIME_PRIORITY_CLASS
-#define REALTIME_PRIORITY_CLASS 0x00000100
+#ifndef HIGH_PRIORITY_CLASS
+#define HIGH_PRIORITY_CLASS 0x00000080
 #endif
 #ifndef NORMAL_PRIORITY_CLASS
 #define NORMAL_PRIORITY_CLASS 0x00000020
@@ -395,6 +395,13 @@
 #endif
 #ifndef ERROR_SUCCESS
 #define ERROR_SUCCESS 0L
+#endif
+
+/* CreateThread dwCreationFlags: dwStackSize is the stack reserve (not the initial commit), so a thread does not
+   inherit the executable's 32 MiB reserve (CMakeLists.txt). constexpr, not #define: the guard skips it when
+   <windows.h> came first. */
+#ifndef STACK_SIZE_PARAM_IS_A_RESERVATION
+inline constexpr uint32_t STACK_SIZE_PARAM_IS_A_RESERVATION = 0x00010000;
 #endif
 
 #endif /* THANDOR_PLATFORM_WIN32_CONSTANTS_H */

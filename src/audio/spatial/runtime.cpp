@@ -209,20 +209,21 @@ void SpatialSound_UpdateDesiredPositionedGains
 }
 
 
-/* Creates a voice set for the 'sam' asset and gives it the first free spatial-sound slot, silent and not
-   playing, so that SpatialSound_UpdateDesiredPositionedGains can drive it as a looping positioned sound.
+/* Creates a voice set for the 'sam' asset (of sampleByteCount bytes) and gives it the first free spatial-sound
+   slot, silent and not playing, so that SpatialSound_UpdateDesiredPositionedGains can drive it as a looping
+   positioned sound.
    Returns the slot (never NULL, it lies in the pool); NULL when the voice set cannot be created or the pool
    is full (the new voice set is released again). The original's error value (voice-set error or
    FATAL_ERROR_GENERAL_FAILURE) was never read by a caller.
 */
-SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
+SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset,uint32_t sampleByteCount)
 
 {
   SoundVoiceSet *voiceSet;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
 
-  if (g_SoundCreateSampleVoiceSet(sampleAsset,&voiceSet) != 0) {
+  if (g_SoundCreateSampleVoiceSet(sampleAsset,sampleByteCount,&voiceSet) != 0) {
     return nullptr;
   }
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;

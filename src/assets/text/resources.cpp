@@ -109,8 +109,8 @@ bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t
 
 /* Returns the first locale block of a 'str' asset whose country code is countryCode, or NULL. The blocks follow
    the 0x200-byte asset header; block + blockSizeBytes is the next block.
-   Original quirk: the first block is always checked and the count is only tested after stepping, so a block
-   count of 0 wraps and keeps scanning past the asset (TextResourceAsset_HasValidBlocks rejects that before). */
+   The first block is always checked and the count is only tested after stepping; the count is >= 1 because
+   TextResourceAsset_HasValidBlocks rejects a block count of 0 before. */
 static TextResourceLocaleBlockPrefix *TextResourceAsset_FindLocaleBlock
           (TextResourceAssetHeader *asset,LocaleTelephoneCountryCode countryCode)
 {
@@ -119,7 +119,7 @@ static TextResourceLocaleBlockPrefix *TextResourceAsset_FindLocaleBlock
 
   remainingBlocks = (asset->localeCountHeader).localeBlockCount;
   block = Asset_RecordAfter<TextResourceLocaleBlockPrefix>(asset);
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* a do-while: remainingBlocks >= 1 because TextResourceAsset_HasValidBlocks rejects a count of 0 before */
   do {
     if (block->countryCode == countryCode) {
       return block;
@@ -427,13 +427,18 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   return false;
 }
 
-/* Returns the text of a resource id (see TextResource_TryResolve); a missing text gives
-   TEXT_RESOURCE_MISSING_SENTINEL_0x33, which callers use like any other text pointer. */
+/* Returns the text of a resource id (see TextResource_TryResolve); a missing text gives the shared empty string.
+   The original returns TEXT_RESOURCE_MISSING_SENTINEL_0x33 there, which every caller dereferences like any other
+   text pointer (copy, measure, draw, nested-stream payload); bounded here because ids come from user maps, model
+   files and savegames (e.g. an out-of-range model nameTextIndex), and no caller tests for the sentinel. The miss
+   is logged by TextResource_TryResolve. */
 uint16_t *TextResource_Resolve(TextResourceId resourceId)
 
 {
   uint16_t *text;
 
-  TextResource_TryResolve(resourceId,&text);
+  if (!TextResource_TryResolve(resourceId,&text)) {
+    return g_EmptyTextResourceUtf16;
+  }
   return text;
 }

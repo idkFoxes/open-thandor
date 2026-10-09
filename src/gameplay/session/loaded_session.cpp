@@ -11,6 +11,8 @@
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/assets/record_bytes.h>
 
+#include <iterator>
+
 /* Module data. */
 
 SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks = nullptr;
@@ -30,12 +32,34 @@ static bool InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,Engine
   return false;
 }
 
+/* Tells whether a saved campaign (the save package's campagne entry, campaignBytes bytes) passes CampaignAsset_Fits
+   and also holds a record of its current level. The game writes the entry from a loaded campaign that passed
+   CampaignAsset_Fits (a .cgn or a network campaign), with exactly decodedSizeBytes bytes, and its current level
+   is the first level or a successor whose record was found (a missing successor releases the campaign, and the
+   save then has no campagne entry), so every game-written entry passes. */
+static bool InGameLoadedSession_CampaignFits(const CampaignAsset *campaignAsset,uint32_t campaignBytes)
+
+{
+  int32_t recordIndex;
+
+  if (!CampaignAsset_Fits(campaignAsset,campaignBytes)) {
+    return false;
+  }
+  for (recordIndex = 0; recordIndex < campaignAsset->levelRecordCount; recordIndex++) {
+    if (campaignAsset->levels[recordIndex].levelId == campaignAsset->currentLevelId) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /* Sets the text of the in-game template's save-name edit (saveNameEdit, 32 code units) to the session name of a
    mounted save package: the UTF-16 string at offset 256 of the package header (scanned for at most 36
    characters), without its four-character file extension and cut to 31 characters. Without a terminator the name
-   stays empty.
+   stays empty. Returns 0, or the error of the header seek or read: the original ignores both and then takes the
+   name from whatever the scratch buffer held; rejected here (one log line, the caller's failure exit).
 */
-static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
+static uint32_t InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
 
 {
   uint8_t *headerBuffer;
@@ -46,16 +70,22 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
   uint32_t copyCount;
   int remainingCount;
   bool terminatorFound;
+  uint32_t statusCode;
 
   headerBuffer = g_PackageScratchBuffer;
-  sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
-                        (&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
+  sessionNameCursor = UiTextEdit_Text(&g_InGameRuntimeDefaultImageTemplate.saveNameEdit).data();
   for (remainingCount = 32; remainingCount != 0; remainingCount--) {
     *sessionNameCursor = 0;
     sessionNameCursor++;
   }
-  g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(saveHandle));
-  g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,headerBuffer,THANDOR_PTR(saveHandle));
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(saveHandle));
+  if (statusCode == 0) {
+    statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,headerBuffer,THANDOR_PTR(saveHandle));
+  }
+  if (statusCode != 0) {
+    Thandor_Log("loaded session: save package header not readable (error 0x%X), load rejected",statusCode);
+    return statusCode;
+  }
   nameStart = Asset_RecordAt<uint16_t>(headerBuffer,256);
   terminatorFound = false;
   scanEnd = nameStart;
@@ -64,7 +94,7 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
     scanEnd++;
   }
   if (!terminatorFound) {
-    return;
+    return 0;
   }
   /* scanEnd is just past the terminator: the four characters before the terminator (the file extension) are cut
      off */
@@ -76,14 +106,14 @@ static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
   if (31 < copyCount) {
     copyCount = 31;
   }
-  sessionNameCursor = reinterpret_cast<UiRequiredTextEditControl *>
-                        (&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
+  sessionNameCursor = UiTextEdit_Text(&g_InGameRuntimeDefaultImageTemplate.saveNameEdit).data();
   sourceCursor = nameStart;
   for (; copyCount != 0; copyCount--) {
     *sessionNameCursor = *sourceCursor;
     sourceCursor++;
     sessionNameCursor++;
   }
+  return 0;
 }
 
 /* Resets the session state for a loaded game: clears all selection blocks and sets up only block 0 (local player 0
@@ -208,27 +238,56 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
 {
   uintptr_t mountResult; /* the save package's handle, or the mount error code */
   EngineFileHandle saveHandle;
-  void *campaignAsset;
+  CampaignAsset *campaignAsset;
+  uint32_t campaignByteCount;
   FrontendLoadedLevelAsset *levelImage;
   uint32_t packageLoadErrorCode;
   InGameRuntimeRoot *inGameRoot;
   uint32_t stepError;
+  uint32_t savedFactionIndex;
 
   g_TextureDownsampleShift = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (!Package_Mount(savePackagePath,&mountResult)) {
     return InGameLoadedSession_Fail(nullptr,0,(uint32_t)mountResult,outError);
   }
   saveHandle = mountResult;
-  InGameLoadedSession_ReadSessionName(saveHandle);
-  campaignAsset = Package_LoadEntry(g_CampagneHexPathUtf16,nullptr);
+  stepError = InGameLoadedSession_ReadSessionName(saveHandle);
+  if (stepError != 0) {
+    return InGameLoadedSession_Fail(nullptr,saveHandle,stepError,outError);
+  }
+  /* Package_LoadEntryWithSize is the core of Package_LoadEntry (same allocation, without its failure log line); the
+     byte count bounds the campaign check below. A save outside a campaign has no campagne entry. */
+  campaignAsset = static_cast<CampaignAsset *>(Package_LoadEntryWithSize(g_CampagneHexPathUtf16,&campaignByteCount,
+                                                                          nullptr));
   if (campaignAsset != nullptr) {
-    g_FrontendLoadedCampaignAsset = static_cast<CampaignAsset *>(campaignAsset);
+    /* The original takes the saved campaign as it is; bounded here because the campaign walks (carry-over, end
+       movie, successor level) trust its record count and the next save writes decodedSizeBytes bytes of it, both
+       of which read behind a short entry. Rejected like a failed load. */
+    if (!InGameLoadedSession_CampaignFits(campaignAsset,campaignByteCount)) {
+      Thandor_Log("loaded session: campagne entry of %u bytes, %d level records, no record of level %d or %d, "
+                  "load rejected",campaignByteCount,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->levelRecordCount : 0,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->firstLevelId : 0,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->currentLevelId : 0);
+      Resource_Release(campaignAsset);
+      return InGameLoadedSession_Fail(nullptr,saveHandle,FATAL_ERROR_GENERAL_FAILURE,outError);
+    }
+    g_FrontendLoadedCampaignAsset = campaignAsset;
   }
   levelImage = static_cast<FrontendLoadedLevelAsset *>(Package_LoadEntry(g_LevelHexPathUtf16,&packageLoadErrorCode));
   if (levelImage == nullptr) {
     return InGameLoadedSession_Fail(nullptr,saveHandle,packageLoadErrorCode,outError);
   }
-  InGameLoadedSession_ResetSessionState(levelImage->playerSlots[6].aiClassOrMode);
+  /* The original takes the saved local faction as it is; bounded here because it indexes the 7-faction tables
+     (playerSlotByteOffsets and the faction arrays) before the level image check of
+     InGameLevelRuntime_LoadResourcesAfterExternalTables runs. Same bound as NewLevel_ValidateImage. */
+  savedFactionIndex = levelImage->playerSlots[6].aiClassOrMode;
+  if ((savedFactionIndex < 1) ||
+      (savedFactionIndex > std::size(g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets))) {
+    Thandor_Log("loaded session: saved local faction %u outside 1..7, load rejected",savedFactionIndex);
+    return InGameLoadedSession_Fail(levelImage,saveHandle,FATAL_ERROR_LEVEL_ASSET_INVALID,outError);
+  }
+  InGameLoadedSession_ResetSessionState(savedFactionIndex);
   if (!InGameLoadedSession_CreateRoot(levelImage,&inGameRoot,&stepError) ||
       !InGameLoadedSession_LoadWorld(savePackagePath,levelImage,inGameRoot,&stepError) ||
       !InGameLoadedSession_FinishWorldUnderTickLock(inGameRoot,&stepError)) {

@@ -26,8 +26,10 @@ void InGameCommand_TogglePauseRequest
        g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->sessionFlags ^ PLAYER_SESSION_FLAG_PAUSE_REQUESTED;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-  do {
+  /* The original loops with a do/while, so a player count of 0 walks 2^32 records past the table; bounded here
+     because the count can be 0 (a guarded loop, same body and order for a count >= 1). With no players the
+     pause toggles at once, as every (no) player agrees. */
+  while (remainingPlayers != 0) {
     if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
       if (!Any(g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
            PLAYER_SESSION_FLAG_PAUSE_REQUESTED)) {
@@ -40,7 +42,7 @@ void InGameCommand_TogglePauseRequest
     }
     playerRecord++;
     remainingPlayers--;
-  } while (remainingPlayers != 0);
+  }
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_PAUSED;
 }
 
@@ -251,8 +253,9 @@ void InGameCommand_HandlePlayerDeparture
   }
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-  do {
+  /* The original loops with a do/while, so a player count of 0 walks 2^32 records past the table; bounded here
+     because the count can be 0 (a guarded loop, same body and order for a count >= 1). */
+  while (remainingPlayers != 0) {
     if (playerOrFactionId == playerRecord->playerRuntimeId) {
       playerRecord->heartbeatExpiryTicks = 0;
       if (playerRecord == g_FrontendPlayerRuntimeBlocks) {
@@ -289,7 +292,7 @@ void InGameCommand_HandlePlayerDeparture
     }
     remainingPlayers--;
     playerRecord++;
-  } while (remainingPlayers != 0);
+  }
 }
 
 /* Changes the global g_UiCommandRuntimeFlags: first clears clearMask, then sets setMask, then toggles toggleMask

@@ -58,6 +58,7 @@ static uint32_t FrontendInit_LoadMenuSounds()
 {
   SoundVoiceSet **voiceSetSlot;
   SoundSampleAsset *loadedSample;
+  uint32_t loadedSampleBytes;
   SoundVoiceSet *menuVoiceSet;
   uint32_t voiceSetError;
 
@@ -66,10 +67,11 @@ static uint32_t FrontendInit_LoadMenuSounds()
   voiceSetSlot = &g_FrontendMenuSoundVoiceSets[1];
   while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1) {
     while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] < L'9' + 1) {
-      if (!Resource_Load(g_SoundMenue01SamPathUtf16,reinterpret_cast<void **>(&loadedSample),nullptr,nullptr)) {
+      if (!Resource_Load(g_SoundMenue01SamPathUtf16,reinterpret_cast<void **>(&loadedSample),&loadedSampleBytes,
+                         nullptr)) {
         return 0;
       }
-      voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,&menuVoiceSet);
+      voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,loadedSampleBytes,&menuVoiceSet);
       if (voiceSetError != 0) {
         Resource_Release(loadedSample);
         return voiceSetError;
@@ -94,12 +96,14 @@ void FrontendMusic_StartMenuMusic()
 {
   uint32_t musicGain;
   SoundSampleAsset *loadedSample;
+  uint32_t loadedSampleBytes;
   SoundVoiceSet *musicVoiceSet;
   SoundVoice *musicBuffer;
 
   musicBuffer = g_FrontendMusicActiveBuffer;
-  if (Resource_Load(g_FrontendMusic00SamPathUtf16,reinterpret_cast<void **>(&loadedSample),nullptr,nullptr)) {
-    if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
+  if (Resource_Load(g_FrontendMusic00SamPathUtf16,reinterpret_cast<void **>(&loadedSample),&loadedSampleBytes,
+                    nullptr)) {
+    if (g_SoundCreateSampleVoiceSet(loadedSample,loadedSampleBytes,&musicVoiceSet) != 0) {
       Resource_Release(loadedSample);
     }
     else {
@@ -235,6 +239,7 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   uint32_t error;
   void *centralRomAsset;
   uint32_t romLoadErrorCode;
+  uint32_t romByteCount;
   void *allocPayload;
   uint32_t *zeroCursor;
   uint32_t *templateDwords;
@@ -249,13 +254,13 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+    while (remainingBlockCount != 0) {
       playerBlock->factionAssignment.readyOrWaitState = 0;
       playerBlock->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
       playerBlock++;
       remainingBlockCount--;
-    } while (remainingBlockCount != 0);
+    }
   }
   if (!g_GraphicsFramebufferBeginAccess()) {
     g_GraphicsFramebufferFillRectArgb
@@ -294,13 +299,14 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     *outError = error;
     return false;
   }
-  centralRomAsset = Package_LoadEntry(g_EngineZentraleRomPathUtf16,&romLoadErrorCode);
+  /* the byte count bounds RomAsset_PrepareRecords' record walk */
+  centralRomAsset = Package_LoadEntryWithSize(g_EngineZentraleRomPathUtf16,&romByteCount,&romLoadErrorCode);
   if (centralRomAsset == nullptr) {
     *outError = romLoadErrorCode;
     return false;
   }
   g_FrontendCentralRomAsset = centralRomAsset;
-  error = RomAsset_PrepareRecords(static_cast<RomAssetHeader *>(centralRomAsset));
+  error = RomAsset_PrepareRecords(static_cast<RomAssetHeader *>(centralRomAsset),romByteCount);
   if (error != 0) {
     *outError = error;
     return false;
@@ -357,11 +363,11 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
                       (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_PLAYER_NAME));
   /* the name fields' UTF-16 text buffers, copied as dwords */
   FrontendInit_CopyNameDwords
-            (reinterpret_cast<uint32_t *>(FrontendUi_Image(frontendUiState)->playerNameEdit.textBuffer),
+            (reinterpret_cast<uint32_t *>(UiTextEdit_Text(&FrontendUi_Image(frontendUiState)->playerNameEdit).data()),
              savedPlayerName);
   FrontendInit_CopyNameDwords(reinterpret_cast<uint32_t *>(g_FrontendLocalPlayerNameUtf16),savedPlayerName);
   FrontendInit_CopyNameDwords
-            (reinterpret_cast<uint32_t *>(FrontendUi_Image(frontendUiState)->gameNameEdit.textBuffer),
+            (reinterpret_cast<uint32_t *>(UiTextEdit_Text(&FrontendUi_Image(frontendUiState)->gameNameEdit).data()),
              static_cast<const uint32_t *>(PersistentSettings_GetRegionOrFallback
                        (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_GAME_NAME)));
   settingValue = PersistentSettings_Read(4,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);

@@ -91,7 +91,7 @@ void AiUnitBehavior_SelectBestAnchorAction
   AiCandidateScore32 factionAnchorScore;
   uint32_t selectedAnchorActionKind;
   int currentBestScore;
-  AiScoredSiteWorkspaceEntry *selectedWorkspaceEntry;
+  AiScoredSiteWorkspaceEntry *selectedWorkspaceEntry = nullptr;
   AiGeneralSiteDistanceSelection workspaceSelection;
   AiSecondaryWorkspaceDistanceSelection secondarySelection;
   
@@ -112,9 +112,8 @@ void AiUnitBehavior_SelectBestAnchorAction
   secondarySelection = AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
                     (currentBestScore,modelDefinition,armyRuntimeSlot);
   if (secondarySelection.score != currentBestScore) {
+    /* kind 3 does not use the secondary entry (the unit is collected for the group assignment) */
     selectedAnchorActionKind = 3;
-    /* a target entry (same leading X/Y); only action kind 1 uses selectedWorkspaceEntry */
-    selectedWorkspaceEntry = reinterpret_cast<AiScoredSiteWorkspaceEntry *>(secondarySelection.selectedEntry.get());
   }
   if (selectedAnchorActionKind != 0) {
     if (selectedAnchorActionKind == 1) {

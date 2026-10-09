@@ -46,10 +46,10 @@ Module header: [`model.h`](../include/thandor/assets/model.h) · Changelog: `def
 
 Module header: [`package.h`](../include/thandor/assets/package.h) · Changelog: `codec` [full](../CHANGELOG_FULL.md#module-assets-package-codec); `runtime` [full](../CHANGELOG_FULL.md#module-assets-package-runtime)
 
-- [`archive_write.cpp / archive_write.h`](source_guide/assets.md#file-assets-package-archive-write) - no file comment; main functions `Package_UpsertEntry`, `Package_DeleteEntry`
+- [`archive_write.cpp / archive_write.h`](source_guide/assets.md#file-assets-package-archive-write) - no file comment; main functions `Package_UpsertEntry`, `Package_DeleteEntry`, `Package_MakeTemporaryPath`
 - [`codec.cpp / codec.h`](source_guide/assets.md#file-assets-package-codec) - no file comment; main functions `PckCodec_EncodeHuffmanRle`, `PckCodec_EncodeFieldGrid`, `PckCodec_DecodeHuffmanRle`
 - [`resource_loader.cpp / resource_loader.h`](source_guide/assets.md#file-assets-package-resource-loader) - no file comment; main functions `Resource_Release`, `Resource_Load`
-- [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-package-runtime) - no file comment; main functions `Package_LoadEntry`, `Package_SetLastErrorPath`, `Package_LoadEntryWithSize`
+- [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-package-runtime) - no file comment; main functions `Package_LoadEntry`, `Package_LoadEntryWithSize`, `Package_SetLastErrorPath`
 - [`types.h`](source_guide/assets.md#file-assets-package-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-rom"></a>
@@ -65,7 +65,7 @@ Module header: [`rom.h`](../include/thandor/assets/rom.h) · Changelog: `runtime
 
 Module header: [`scenario.h`](../include/thandor/assets/scenario.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-scenario-catalog)
 
-- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-scenario-catalog) - no file comment; main functions `ScenarioCatalog_RequestRomTransitionStopCallback`, `ScenarioCatalog_Rebuild`, `ScenarioCatalog_MergeRecordsByName`
+- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-scenario-catalog) - no file comment; main functions `CampaignAsset_Fits`, `ScenarioCatalog_RequestRomTransitionStopCallback`, `ScenarioCatalog_Rebuild`
 - [`types.h`](source_guide/assets.md#file-assets-scenario-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-shot"></a>
@@ -169,7 +169,7 @@ Module header: [`math.h`](../include/thandor/core/math.h) · Changelog: `fixed` 
 Module header: [`memory.h`](../include/thandor/core/memory.h) · Changelog: `allocator` [dev](../CHANGELOG.md#module-core-memory-allocator) · [full](../CHANGELOG_FULL.md#module-core-memory-allocator); `synchronization` [full](../CHANGELOG_FULL.md#module-core-memory-synchronization)
 
 - [`allocator.cpp / allocator.h`](source_guide/core.md#file-core-memory-allocator) - no file comment; main functions `ArenaHeap_Alloc`, `ArenaHeap_Init`, `ArenaHeap_Shutdown`
-- [`synchronization.cpp / synchronization.h`](source_guide/core.md#file-core-memory-synchronization) - no file comment; main functions `Runtime_Shutdown`, `SpinLock_Acquire`, `SpinLock_TryAcquireFlags`
+- [`synchronization.cpp / synchronization.h`](source_guide/core.md#file-core-memory-synchronization) - no file comment; main functions `Runtime_ShutdownAndExit`, `Runtime_Shutdown`, `Runtime_ExitProcess`
 - [`types.h`](source_guide/core.md#file-core-memory-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-core-settings"></a>
@@ -226,7 +226,7 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`drive_ground.cpp / drive_ground.h`](source_guide/gameplay.md#file-gameplay-army-drive-ground) - no file comment; main functions `ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement`, `ArmyGroundMovement_ApplyRecoilTilt`, `ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation`
 - [`factory.cpp / factory.h`](source_guide/gameplay.md#file-gameplay-army-factory) - no file comment; main functions `ArmyRuntimeClass_UpdateUnitFactory`, `ArmyRuntimeClass_UpdateStructureFactory`, `ArmyRuntimeSpawner_CreateLinkedChildInstance`
 - [`model_rules.cpp / model_rules.h`](source_guide/gameplay.md#file-gameplay-army-model-rules) - Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking, condition, energy and selection metrics, faction technology variants and the turret yaw/pitch aim.
-- [`model_slots.cpp / model_slots.h`](source_guide/gameplay.md#file-gameplay-army-model-slots) - Per-class model runtime callbacks from g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, indexed by the model definition's class id (runtimeClassId): modelClassInitialize (run by ...
+- [`model_slots.cpp / model_slots.h`](source_guide/gameplay.md#file-gameplay-army-model-slots) - no file comment; main functions `ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices`, `ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`, `ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`
 - [`model_views.h`](source_guide/gameplay.md#file-gameplay-army-model-views) - The class-specific views of the model runtime, model definition and model node as overlays of the memory they view (core/slot.h THANDOR_SLOT_OVERLAY), so the class dispatch tables ...
 - [`move_orders.cpp / move_orders.h`](source_guide/gameplay.md#file-gameplay-army-move-orders) - The movementStateFlags bits ARMY_MOVEMENT_* are ArmyMovementStateFlags (gameplay/army/types.h).
 - [`placement.cpp / placement.h`](source_guide/gameplay.md#file-gameplay-army-placement) - no file comment; main functions `ArmyPlacement_ValidateAssetAtPointAndCellCorners`, `ArmyPlacement_CanPlaceAssetAtFieldPoint`, `PlayerRuntime_CreatePlacementArmy`
@@ -267,18 +267,18 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 
 - [`campaign_carryover.cpp / campaign_carryover.h`](source_guide/gameplay.md#file-gameplay-session-campaign-carryover) - no file comment; main functions `OldUnitRuntime_ResetPendingTables`, `OldUnitRuntime_RebuildScenarioReplayTables`, `OldUnitRuntime_MergeMasksAndReplayRecords`
 - [`level.cpp / level.h`](source_guide/gameplay.md#file-gameplay-session-level) - no file comment; main functions `LevelAsset_PrepareEndingMoviePath`, `InGameLevelRuntime_ShutdownLoadedAssetResources`, `InGameLevelRuntime_SaveLevelAssetImageFromWorldState`
-- [`level_new.cpp / level_new.h`](source_guide/gameplay.md#file-gameplay-session-level-new) - no file comment; main functions `NewLevel_Fail`, `NewLevel_CopyRuntimePrefix`, `NewLevel_LoadTechnology`
+- [`level_new.cpp / level_new.h`](source_guide/gameplay.md#file-gameplay-session-level-new) - no file comment; main functions `NewLevel_Fail`, `NewLevel_ValidateImage`, `NewLevel_CopyRuntimePrefix`
 - [`level_saved.cpp / level_saved.h`](source_guide/gameplay.md#file-gameplay-session-level-saved) - no file comment; main functions `InGameLevelRuntime_LoadResourcesAfterExternalTables`
-- [`level_script.cpp / level_script.h`](source_guide/gameplay.md#file-gameplay-session-level-script) - no file comment; main functions `InGameScheduledCondition_EvaluatePostfixExpression`, `InGameConditionRuntime_UpdateScheduledRecords`
+- [`level_script.cpp / level_script.h`](source_guide/gameplay.md#file-gameplay-session-level-script) - no file comment; main functions `InGameScheduledCondition_EvaluatePostfixExpression`, `InGameLevelScript_Validate`, `InGameConditionRuntime_UpdateScheduledRecords`
 - [`loaded_session.cpp / loaded_session.h`](source_guide/gameplay.md#file-gameplay-session-loaded-session) - no file comment; main functions `InGameRuntime_InitializeLoadedSession`
 - [`loading_movie.cpp / loading_movie.h`](source_guide/gameplay.md#file-gameplay-session-loading-movie) - no file comment; main functions `MoviePlayback_AdvanceScheduledFrameAndTick`, `MoviePlayback_AdvanceToFrameAndPresent`
 - [`new_session.cpp / new_session.h`](source_guide/gameplay.md#file-gameplay-session-new-session) - no file comment; main functions `InGameRuntime_InitializeNewSession`
 - [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-session-runtime)
 - [`savegame.cpp / savegame.h`](source_guide/gameplay.md#file-gameplay-session-savegame) - no file comment; main functions `InGameSaveGame_WritePackage`, `RuntimeHexSegment_ToggleLightImageFlag`, `InGameSaveGame_CreatePackage`
 - [`savegame_load.cpp / savegame_load.h`](source_guide/gameplay.md#file-gameplay-session-savegame-load) - no file comment; main functions `GameFactionRuntime_RebaseLoadedArmyReferences`, `ResourceRegistrationRuntime_RebaseLoadedRecords`, `SavedLevel_LoadRuntimePools`
-- [`scenario_load.cpp / scenario_load.h`](source_guide/gameplay.md#file-gameplay-session-scenario-load) - no file comment; main functions `FrontendScenarioSession_LoadOrRequestCampaignBundle`, `FrontendScenarioSession_LoadOrRequestLevelAsset`, `FrontendScenarioAction_StartFieldGridLoad`
+- [`scenario_load.cpp / scenario_load.h`](source_guide/gameplay.md#file-gameplay-session-scenario-load) - no file comment; main functions `FrontendScenarioSession_LoadOrRequestCampaignBundle`, `FrontendScenarioSession_LoadOrRequestLevelAsset`, `FrontendLevelAsset_LoadedImageFits`
 - [`startup.cpp / startup.h`](source_guide/gameplay.md#file-gameplay-session-startup) - no file comment; main functions `InGameSession_ResetTickState`, `InGameSession_InstallStepTimerAndHooks`, `InGameSession_CreateRoot`
-- [`tick.cpp / tick.h`](source_guide/gameplay.md#file-gameplay-session-tick) - no file comment; main functions `InGameRuntime_UpdateSimulationAndNetworkTick`, `InGameRuntime_PeriodicCountdownAndClockTick`
+- [`tick.cpp / tick.h`](source_guide/gameplay.md#file-gameplay-session-tick) - no file comment; main functions `InGameTick_PeriodicClockTick`, `InGameRuntime_UpdateSimulationAndNetworkTick`, `InGameRuntime_PeriodicCountdownAndClockTick`
 - [`types.h`](source_guide/gameplay.md#file-gameplay-session-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-gameplay-technology"></a>
@@ -348,7 +348,7 @@ Module header: [`resources.h`](../include/thandor/graphics/resources.h) · Chang
 - [`pcx_read.cpp`](source_guide/graphics.md#file-graphics-resources-pcx-read) - Replaces export 2 of engine\pcx.fnc (module offset 0x3B0, header check at 0x320).
 - [`pcx_write.cpp`](source_guide/graphics.md#file-graphics-resources-pcx-write) - PCX encoder, replacing export 3 (module offset 0x980) of engine\pcx.fnc together with its helper at module offset 0x850 (canvas build).
 - [`texture.h`](source_guide/graphics.md#file-graphics-resources-texture) - Subresource table of a 'gfx' texture source: one 32-byte record per subresource at asset + subresourceTableOffset (+ index * GFX_SUBRESOURCE_RECORD_SIZE).
-- [`texture_decompose.cpp / texture_decompose.h`](source_guide/graphics.md#file-graphics-resources-texture-decompose) - Subresource decomposition of a texture source: cuts the ARGB or indexed pixels of every subresource into rectangular regions (asset conversion).
+- [`texture_decompose.cpp / texture_decompose.h`](source_guide/graphics.md#file-graphics-resources-texture-decompose) - Subresource decomposition of a texture source (converter code, no caller in the game, only its hook slot; kept like the palette optimiser): cuts the ARGB or indexed pixels of a subresource into ...
 - [`texture_set.cpp / texture_set.h`](source_guide/graphics.md#file-graphics-resources-texture-set) - Texture sets: creation and destruction through the device slots, package load/release, the set metadata and the texture slot registry.
 - [`texture_source.cpp`](source_guide/graphics.md#file-graphics-resources-texture-source) - no file comment; main functions `GraphicsTextureSource_ValidateAsset`, `GraphicsTextureSource_ConvertPaletteEntries`, `GraphicsTextureSource_GetLogicalSize`
 - [`tiled_blit.cpp / tiled_blit.h`](source_guide/graphics.md#file-graphics-resources-tiled-blit) - Tiled texture source blits: a texture source repeated over a rectangle with one of the blit slots (source alpha, half source RGB, saturated add, half RGB saturated add).
@@ -373,7 +373,7 @@ FLM movie playback and encoding.
 Module header: [`runtime.h`](../include/thandor/movie/runtime.h) · Changelog: `playback` [dev](../CHANGELOG.md#module-movie-runtime-playback) · [full](../CHANGELOG_FULL.md#module-movie-runtime-playback)
 
 - [`flm_decoder.cpp / flm_decoder.h`](source_guide/movie.md#file-movie-runtime-flm-decoder) - no file comment; main functions `Movie_DecodeFrame4x4Delta`, `Movie_BuildChromaLumaTable`
-- [`flm_encoder.cpp / flm_encoder.h`](source_guide/movie.md#file-movie-runtime-flm-encoder) - Encoder-only constants (the decoder does not need them).
+- [`flm_encoder.cpp / flm_encoder.h`](source_guide/movie.md#file-movie-runtime-flm-encoder) - FLM movie encoder (converter code, no caller in the game; kept with its movieenc self-test): encodes the frames of a frame provider into an FLM buffer, a 4x4 block keyframe followed by delta frames ...
 - [`playback.cpp / playback.h`](source_guide/movie.md#file-movie-runtime-playback) - Movie_Open flags: MovieOpenFlags (movie/runtime/types.h).
 - [`types.h`](source_guide/movie.md#file-movie-runtime-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 

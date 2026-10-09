@@ -37,8 +37,10 @@ static void FrontendEndMovie_SelectCampaignMoviePath(CampaignAsset *campaign)
 
   remainingRecords = campaign->levelRecordCount;
   levelRecord = campaign->levels;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because a campaign file can hold 0
+     (or, from a savegame's campagne entry, a negative number of) level records. A loaded .cgn and a network
+     campaign passed CampaignAsset_Fits. */
+  while (remainingRecords > 0) {
     if (campaign->currentLevelId == levelRecord->levelId) {
       if (g_EndMovieVariantIndex == 0) {
         endMovieNumber = levelRecord->endMovieNumbers[g_EndMovieSelectionIndex];
@@ -54,7 +56,7 @@ static void FrontendEndMovie_SelectCampaignMoviePath(CampaignAsset *campaign)
     }
     levelRecord++;
     remainingRecords--;
-  } while (remainingRecords != 0);
+  }
 }
 
 /* Fills the whole framebuffer with opaque black and presents it (skipped when the buffer cannot be
@@ -105,7 +107,7 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
   InGameUi_Image(runtimeRoot)->resultsChart2.rowCount = activeFactionCount;
   InGameUi_Image(runtimeRoot)->resultsChart3.rowCount = activeFactionCount;
   /* elapsed minutes of the 80 Hz clock, rounded up, shown as hours and minutes */
-  elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 4799) / 4800;
+  elapsedTimeUnits = (uint64_t)(InGameTick_PeriodicClockTick().load(std::memory_order_relaxed) + 4799) / 4800;
   g_LocaleFormatTimeFieldsUtf16
             ((uint32_t)(elapsedTimeUnits / 60),(uint32_t)(elapsedTimeUnits % 60),
              g_EndGameElapsedTimeScratchUtf16);
@@ -125,12 +127,12 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
   }
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingPlayerBlocks != 0) {
     playerBlock->factionAssignment.readyOrWaitState = 0;
     remainingPlayerBlocks--;
     playerBlock++;
-  } while (remainingPlayerBlocks != 0);
+  }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
     /* local game: remove column 2 (the third) of resultsChart1; the shift copies the count - 3 later ones */
     previousColumnCount = firstChart->columnTypeCount;

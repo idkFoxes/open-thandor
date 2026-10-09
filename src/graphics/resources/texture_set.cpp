@@ -177,7 +177,7 @@ static bool GraphicsTextureSet_FillEntries
   uint32_t widthLog2;
   int heightLog2;
 
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* do-while: entryCount >= 1, the only caller (GraphicsTextureSet_AllocateMetadata) rejects a gfx asset without images */
   do {
     /* index of the highest set bit of pixelWidth; the original leaves the register undefined for 0 */
     widthLog2 = 31;

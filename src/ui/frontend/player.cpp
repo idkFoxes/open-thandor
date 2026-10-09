@@ -41,7 +41,7 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
   UiTextControl_UpdateNonEmptyValidity(textEditControl);
   if (Any(textEditControl->editStateFlags & UI_TEXT_EDIT_VALUE_VALID)) {
     RichTextCommandStream_CopyToNarrow
-              (PLAYER_CHAT_TEXT_BYTES,g_UiSevenSlotCommandPayloadText.textBytes,textEditControl->textBuffer);
+              (PLAYER_CHAT_TEXT_BYTES,g_UiSevenSlotCommandPayloadText.textBytes,UiTextEdit_Text(textEditControl).data());
     /* the in-game "all recipients" mask; the lobby handler ignores it */
     FrontendCommand_Issue<FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById>(0,0,PLAYER_CHAT_RECIPIENTS_ALL);
     FrontendCommand_Issue<FrontendPlayerMessageBuffer_AppendTripleById>
@@ -65,7 +65,7 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
     textEditControl->selectionStart = 0;
     textEditControl->selectionEnd = 0;
     /* clear the 48 UTF-16 units of the text, two per step */
-    textCursor = textEditControl->textBuffer;
+    textCursor = UiTextEdit_Text(textEditControl).data();
     for (remainingPairs = 24; remainingPairs != 0; remainingPairs--) {
       textCursor[0] = 0;
       textCursor[1] = 0;
@@ -273,8 +273,8 @@ void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(uintptr_t assignmentToken
 
   playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (playerBlocksRemaining != 0) {
     if (assignmentToken ==
         g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId]->
         technologyPageBuilding) {
@@ -283,7 +283,7 @@ void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(uintptr_t assignmentToken
     }
     playerBlockCursor++;
     playerBlocksRemaining--;
-  } while (playerBlocksRemaining != 0);
+  }
 }
 
 
@@ -358,15 +358,15 @@ void FrontendPlayerRuntime_MarkLevelReceivedById
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingBlocks != 0) {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.roleStateFlags |= FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
       return;
     }
     playerBlock++;
     remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
 }
 
 
@@ -382,15 +382,15 @@ void FrontendPlayerRuntime_XorStateMaskByPlayerId
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingBlocks != 0) {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->colourCycleFlags = playerBlock->colourCycleFlags ^ stateMask;
       return;
     }
     playerBlock++;
     remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
 }
 
 
@@ -407,15 +407,15 @@ void FrontendPlayerRuntime_MarkLevelLoadedById
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingBlocks != 0) {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.roleStateFlags |= FRONTEND_PLAYER_STATE_LEVEL_LOADED;
       return;
     }
     playerBlock++;
     remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
 }
 
 
@@ -432,15 +432,15 @@ void FrontendPlayerRuntime_MarkTaskAssignmentReadyById
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingBlocks != 0) {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.roleStateFlags |= FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT;
       return;
     }
     playerBlock++;
     remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
 }
 
 
@@ -462,8 +462,8 @@ void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingBlocks != 0) {
     if (playerId == playerBlock->playerRuntimeId) {
       roleFlags = &playerBlock->factionAssignment.roleStateFlags;
       *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_SCENARIO_CATALOG;
@@ -474,7 +474,7 @@ void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
     }
     playerBlock++;
     remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
 }
 
 
@@ -509,7 +509,7 @@ void FrontendPlayerRuntime_InitializeFactionAssignments()
   activeRemaining = g_FrontendLoadedLevelAsset->worldSettings.activeFactionCount;
   assignableRemaining = g_FrontendLoadedLevelAsset->worldSettings.assignableFactionCount;
   /* the assignable factions come first, the remaining active (computer-only) ones follow */
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* do-while kept: assignableFactionCount >= 1, checked above */
   do {
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     activeRemaining--;
@@ -530,8 +530,8 @@ void FrontendPlayerRuntime_InitializeFactionAssignments()
   assignedFaction = 1;
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingBlocks != 0) {
     playerBlock->factionAssignment.factionAssignmentIndex = assignedFaction;
     playerBlock->factionAssignment.readyOrWaitState = 0;
     playerBlock->factionAssignment.consensusValue = 0;
@@ -541,7 +541,7 @@ void FrontendPlayerRuntime_InitializeFactionAssignments()
       assignedFaction = assignedFaction - loadedLevel->worldSettings.assignableFactionCount;
     }
     remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
 }
 
 
@@ -616,14 +616,14 @@ void FrontendPlayerRuntime_UpdateStartButtonByCdShare()
   cdPlayerCount = 0;
   remainingBlocks = g_FrontendPlayerRuntimeCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingBlocks != 0) {
     if (Any(playerBlock->capabilityFlags & FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD)) {
       cdPlayerCount++;
     }
     playerBlock++;
     remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
   if ((uint32_t)(cdPlayerCount * 3) < g_FrontendPlayerRuntimeCount) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_START_NETWORK_GAME,&g_FrontendRootNode->frontendRoot.root.base);
   }
@@ -673,15 +673,15 @@ void FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(PlayerRuntime
   /* an unknown id (the per-frame re-check) marks nobody */
   searchRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (searchRemaining != 0) {
     if (playerRuntimeId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.readyOrWaitState = 1;
       break;
     }
     searchRemaining--;
     playerBlock++;
-  } while (searchRemaining != 0);
+  }
   if (FrontendPlayerRuntime_AreAllClientsReady()) {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,&g_InGameRuntimeRoot->rootUi.base);
   }
@@ -698,14 +698,14 @@ static bool FrontendPlayerRuntime_HaveAllPlayersReported()
 
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingBlocks != 0) {
     if (playerBlock->factionAssignment.readyOrWaitState == 0) {
       return false;
     }
     remainingBlocks--;
     playerBlock++;
-  } while (remainingBlocks != 0);
+  }
   return true;
 }
 
@@ -739,12 +739,12 @@ void FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
       SESSION_NETWORK_ROLE_LOCAL) {
     searchRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerBlock = g_FrontendPlayerRuntimeBlocks;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+    while (searchRemaining != 0) {
       if (playerRuntimeId == playerBlock->playerRuntimeId) break;
       searchRemaining--;
       playerBlock++;
-    } while (searchRemaining != 0);
+    }
     /* an unknown id counts nothing but still runs the host's check below, on a client too */
     if (searchRemaining != 0) {
       playerBlock->factionAssignment.readyOrWaitState++;
@@ -1146,12 +1146,12 @@ void FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
       SESSION_NETWORK_ROLE_LOCAL) {
     searchRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerBlock = g_FrontendPlayerRuntimeBlocks;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+    while (searchRemaining != 0) {
       if (playerId == playerBlock->playerRuntimeId) break;
       searchRemaining--;
       playerBlock++;
-    } while (searchRemaining != 0);
+    }
     /* an unknown id (the expiry pass reports -1) counts nothing but still runs the host's check below, on a
        client too */
     if (searchRemaining != 0) {
@@ -1196,15 +1196,15 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
   
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while (a count of 0 runs it 2^32 times); bounded here because the player count drops to 0 on a lobby reset or when players leave. */
+  while (remainingBlocks != 0) {
     if (playerId == playerBlock->playerRuntimeId) {
       playerBlock->factionAssignment.consensusValue = consensusValue;
       taskAssignmentRoot = &g_FrontendRootNode->frontendRoot.root;
       combinedConsensus = 0xffffffff;
       remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
       playerBlock = g_FrontendPlayerRuntimeBlocks;
-      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+      /* do-while kept: the count is >= 1, the outer walk has just found this player's block */
       do {
         combinedConsensus = combinedConsensus & playerBlock->factionAssignment.consensusValue;
         playerBlock++;
@@ -1224,7 +1224,7 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
     }
     playerBlock++;
     remainingBlocks--;
-  } while (remainingBlocks != 0);
+  }
 }
 
 

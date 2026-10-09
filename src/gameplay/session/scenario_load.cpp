@@ -26,6 +26,70 @@ FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = nullptr;
 
 uint16_t g_FrontendScenarioPathScratchUtf16[256] = {};
 
+/* Code units WidePath_SetExtensionCode writes from the path's terminator on when the path has no extension
+   ('.', three characters, terminator); a path with an extension is rewritten within its old length. */
+static constexpr uint32_t LEVEL_PATH_EXTENSION_UNITS = 5;
+
+/* The original trusts a loaded level: it takes the header's allocationSizeBytes as the image size (a host encodes
+   that many bytes for the clients, NewLevel_ValidateImage bounds the level by it) and the level's own path
+   (header pathState.levelPathOffsetOrLoadedFieldGrid, an offset up to 0xFFFF until the field grid replaces it) as
+   terminated inside the level; bounded here because a level shorter than its header or than the size its header
+   claims was read past its allocation, and a path offset or terminator outside it made the ".fld" rewrite (and
+   the field grid path reads) run past it. The 55 stock levels have allocationSizeBytes equal to their decoded
+   size and keep 298 or more code units after their path's terminator. */
+bool FrontendLevelAsset_LoadedImageFits(const FrontendLoadedLevelAsset *level,uint32_t loadedByteCount,
+                                        const char *context)
+{
+  uint32_t allocationSizeBytes = 0;
+  uint32_t pathOffset = 0;
+  uint32_t pathUnitsAvailable = 0;
+  uint32_t terminatorIndex = 0;
+
+  if (loadedByteCount >= sizeof(FrontendLoadedLevelAsset)) {
+    allocationSizeBytes = level->header.common.allocationSizeBytes;
+    pathOffset = level->header.pathState.levelPathOffsetOrLoadedFieldGrid;
+    /* an offset above 0xFFFF would read as an attached grid pointer (every release of the level frees it) */
+    if ((allocationSizeBytes <= loadedByteCount) && (pathOffset <= 0xffff) && (pathOffset < loadedByteCount)) {
+      pathUnitsAvailable = (loadedByteCount - pathOffset) / sizeof(uint16_t);
+      const uint16_t *path = Asset_RecordAt<uint16_t>(level,pathOffset);
+      while ((terminatorIndex < pathUnitsAvailable) && (path[terminatorIndex] != 0)) {
+        terminatorIndex++;
+      }
+    }
+  }
+  if (pathUnitsAvailable - terminatorIndex < LEVEL_PATH_EXTENSION_UNITS) {
+    Thandor_Log("%s: level \"%ls\" rejected, decoded 0x%X bytes, header size 0x%X, its path at 0x%X is not "
+                "terminated %u units before the end",context,
+                reinterpret_cast<wchar_t *>(g_FrontendScenarioPathScratchUtf16),loadedByteCount,allocationSizeBytes,
+                pathOffset,LEVEL_PATH_EXTENSION_UNITS);
+    return false;
+  }
+  return true;
+}
+
+/* Package_LoadEntry of the level at g_FrontendScenarioPathScratchUtf16, then FrontendLevelAsset_LoadedImageFits:
+   a level that does not fit is released and fails like a failed load (FATAL_ERROR_LEVEL_ASSET_INVALID).
+   Package_LoadEntryWithSize is the core of Package_LoadEntry (same allocation); the original used Package_LoadEntry
+   and trusted the level. */
+static FrontendLoadedLevelAsset *FrontendScenarioSession_LoadCheckedLevel(const char *context,uint32_t *outErrorCode)
+{
+  uint32_t loadedByteCount = 0;
+  void *loadedEntry = Package_LoadEntryWithSize(g_FrontendScenarioPathScratchUtf16,&loadedByteCount,outErrorCode);
+
+  if (loadedEntry == nullptr) {
+    Thandor_Log("%s: loading \"%ls\" failed (error 0x%08X)",context,
+                reinterpret_cast<wchar_t *>(g_FrontendScenarioPathScratchUtf16),*outErrorCode);
+    return nullptr;
+  }
+  if (!FrontendLevelAsset_LoadedImageFits(static_cast<FrontendLoadedLevelAsset *>(loadedEntry),loadedByteCount,
+                                          context)) {
+    Resource_Release(loadedEntry);
+    *outErrorCode = FATAL_ERROR_LEVEL_ASSET_INVALID;
+    return nullptr;
+  }
+  return static_cast<FrontendLoadedLevelAsset *>(loadedEntry);
+}
+
 /* Handler of action 0x2041 (slot 65 of g_FrontendUiActionHandlersPage20.handlers00_54): loads the selected
    level's field grid (FrontendScenarioSession_LoadOrRequestFieldGrid), directly in a local game or on every
    peer through the frontend command queue.
@@ -71,10 +135,34 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   uint32_t allocationError;
   void *allocationPayload;
 
+  /* The original reads the level unchecked; bounded here because no level at all was a null read. Fails like a
+     failed grid load. */
+  if (levelAsset == nullptr) {
+    Thandor_Log("FrontendScenarioSession_LoadFieldGridOfLevel: no level loaded");
+    FatalError_ExitIfFailed(FATAL_ERROR_LEVEL_ASSET_INVALID,true); /* does not return */
+    return;
+  }
   levelPathOffset = (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
   /* original quirk: the flag goes to the first player record, not to the one found (see the caller) */
   roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
   *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
+  /* The original runs again when the grid is already attached (a second run of this command, see the caller's
+     quirk): the offset then holds the grid pointer (above 0xFFFF, the rule of every release of the level), and
+     the ".fld" write and the path reads land at level + pointer, outside the level. Bounded here because that
+     corrupts memory: the attached grid is kept, nothing is rewritten, reloaded or republished. */
+  if (0xffff < levelPathOffset) {
+    Thandor_Log("FrontendScenarioSession_LoadFieldGridOfLevel: field grid already attached, kept");
+    return;
+  }
+  /* Every producer of the level checked its path against the loaded or received bytes (and allocationSizeBytes
+     against the loaded bytes); the original rewrites the path at the offset unchecked. Bounded here once more
+     against allocationSizeBytes because a path outside the level made the ".fld" write land outside it. Fails
+     like a failed grid load. */
+  if (!FrontendLevelAsset_LoadedImageFits(levelAsset,levelAsset->header.common.allocationSizeBytes,
+                                          "FrontendScenarioSession_LoadFieldGridOfLevel")) {
+    FatalError_ExitIfFailed(FATAL_ERROR_LEVEL_ASSET_INVALID,true); /* does not return */
+    return;
+  }
   /* the level's own path (an offset into the asset) with the extension changed to .fld; the loaded grid
      later replaces that offset */
   fieldGridPath = Asset_RecordAt<uint16_t>(levelAsset,levelPathOffset);
@@ -161,15 +249,16 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
   /* load the grid once if any player still lacks it */
   playersToCheck = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while; bounded here because a player block count of 0 (every block dropped by
+     player-removal packets) ran it 2^32 times. */
+  while (playersToCheck != 0) {
     if (!Any((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_LEVEL_RECEIVED)) {
       FrontendScenarioSession_LoadFieldGridOfLevel(levelAsset);
       break;
     }
     playerRecord++;
     playersToCheck--;
-  } while (playersToCheck != 0);
+  }
   /* Every other player that has the level locally counts as having received it. */
   playerScanBase = g_FrontendPlayerRuntimeBlocks;
   for (playersRemaining = g_FrontendPlayerRuntimeBlockCount - 1; playersRemaining != 0;
@@ -220,6 +309,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   uint32_t allocationError;
   void *allocationPayload;
   PckDecodedByteCount campaignDecodedSizeBytes;
+  uint32_t campaignByteCount;
   
   frontendRoot = g_FrontendRootNode;
   roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
@@ -232,33 +322,46 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
                      [selectedRecordIndex]),
                g_CampaignLevelDirectoryUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_CGN,g_FrontendScenarioPathScratchUtf16);
-    loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
+    /* Package_LoadEntryWithSize is the core of Package_LoadEntry (same allocation); the byte count bounds the
+       campaign check below. */
+    loadedEntry = Package_LoadEntryWithSize(g_FrontendScenarioPathScratchUtf16,&campaignByteCount,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
                         (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
     campaignAsset = reinterpret_cast<CampaignAsset *>(checkedValue); /* the loaded entry, passed through as an integer */
+    /* The original takes a local .cgn as it is (only a network campaign is checked); bounded here because a
+       campaign with no, too many or no matching level records makes the search below and every later campaign
+       walk read behind the asset. Fails like a failed load. */
+    if (!CampaignAsset_Fits(campaignAsset,campaignByteCount)) {
+      Thandor_Log("campaign \"%ls\": %u bytes, %d level records or no record of level %d, load rejected",
+                  reinterpret_cast<wchar_t *>(g_FrontendScenarioPathScratchUtf16),campaignByteCount,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->levelRecordCount : 0,
+                  campaignByteCount >= offsetof(CampaignAsset,levels) ? campaignAsset->firstLevelId : 0);
+      FatalError_ExitIfFailed(FATAL_ERROR_GENERAL_FAILURE,true); /* exits, as a failed load does */
+      return;
+    }
     DebugHook_CampaignLoaded(campaignAsset);
     /* CampaignAsset: the first level becomes the current one; find its record. */
     levelRecord = campaignAsset->levels;
     campaignRecordsRemaining = campaignAsset->levelRecordCount;
     g_FrontendLoadedCampaignAsset = campaignAsset;
     campaignAsset->currentLevelId = campaignAsset->firstLevelId;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original is a do-while; bounded here because a .cgn with a level record count of 0 (or a negative
+       one) ran it 2^32 times over the records. */
+    while (campaignRecordsRemaining > 0) {
       if (campaignAsset->firstLevelId == levelRecord->levelId) break;
       levelRecord++;
       campaignRecordsRemaining--;
-    } while (campaignRecordsRemaining != 0);
-    if (campaignRecordsRemaining == 0) {
-      /* No record for the current level. As in the original this check never fails (it passes a cleared
-         failure flag); the cursor then points behind the last record. */
-      FatalError_ExitIfFailed(0,false);
     }
+    /* The original then checks for "no record of the current level" with a cleared failure flag (a no-op) and
+       goes on with the cursor behind the last record; CampaignAsset_Fits above rejected such a campaign, so the
+       search always ends on the first level's record. */
     FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
     WidePath_CombineDirectoryAndLeaf
               (g_FrontendScenarioPathScratchUtf16,levelRecord->levelFileName,
                g_ScenarioLevelDirectoryUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
-    loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
+    loadedEntry = FrontendScenarioSession_LoadCheckedLevel("FrontendScenarioSession_LoadOrRequestCampaignBundle",
+                                                           &loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
                         (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
     g_FrontendLoadedLevelAsset = reinterpret_cast<FrontendLoadedLevelAsset *>(checkedValue); /* the loaded entry, passed through as an integer */
@@ -302,9 +405,20 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
       checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
       encodedCampaignBytes = (uint32_t)checkedValue;
       reinterpret_cast<ScenarioCampaignBundleHeader *>(transferBundleBytes)->campaignEncodedBytes = encodedCampaignBytes;
-      encodeOk = PckCodec_EncodeFieldGrid
-                         ((PACKAGE_SCRATCH_BUFFER_BYTES - 24 - encodedLevelBytes) - encodedCampaignBytes,encodeCursor + encodedCampaignBytes,
-                          (sourceGrid->common).allocationSizeBytes,sourceGrid,&encodedByteCount,&encodeErrorCode);
+      /* The original subtracts the encoded sizes from the capacity unchecked; bounded here because sizes beyond
+         the buffer would wrap it to a huge capacity. Fails like a failed encode. */
+      if ((uint64_t)encodedLevelBytes + encodedCampaignBytes > (uint64_t)(PACKAGE_SCRATCH_BUFFER_BYTES - 24)) {
+        Thandor_Log("campaign bundle: encoded level %u + campaign %u bytes exceed the transfer buffer",
+                    encodedLevelBytes,encodedCampaignBytes);
+        encodeOk = false;
+        encodeErrorCode = FATAL_ERROR_GENERAL_FAILURE;
+      }
+      else {
+        encodeOk = PckCodec_EncodeFieldGrid
+                           ((PACKAGE_SCRATCH_BUFFER_BYTES - 24 - encodedLevelBytes) - encodedCampaignBytes,
+                            encodeCursor + encodedCampaignBytes,(sourceGrid->common).allocationSizeBytes,sourceGrid,
+                            &encodedByteCount,&encodeErrorCode);
+      }
       checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
       encodedFieldGridBytes = (uint32_t)checkedValue;
       reinterpret_cast<ScenarioCampaignBundleHeader *>(transferBundleBytes)->fieldGridEncodedBytes = encodedFieldGridBytes;
@@ -389,7 +503,8 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   roleFlags = &g_FrontendPlayerRuntimeBlocks->factionAssignment.roleStateFlags;
   *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
+    loadedEntry = FrontendScenarioSession_LoadCheckedLevel("FrontendScenarioSession_LoadOrRequestLevelAsset",
+                                                           &loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
                         (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
     packedSourceDwords = reinterpret_cast<uint32_t *>(g_PackageScratchBuffer); /* dword copy of the transfer image */
@@ -430,20 +545,22 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
       /* find the local player among the other players (block 1..) */
       otherPlayersRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
       playerRecord = g_FrontendPlayerRuntimeBlocks + 1;
-      /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-      do {
+      /* The original is a do-while; bounded here because a single player block (the others dropped by
+         player-removal packets) left a count of 0 that ran it 2^32 times. */
+      while (otherPlayersRemaining != 0) {
         if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
           if (((&playerRecord->scenarioAvailabilityMask0)[maskWordIndex] &
               1 << ((uint8_t)(levelRecordOffset >> 8) & 31)) != 0) {
-            /* on failure levelAsset is replaced below */
-            levelAsset = static_cast<FrontendLoadedLevelAsset *>(Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,nullptr));
+            /* on failure (a malformed level included) levelAsset is replaced below and the level is requested */
+            levelAsset = FrontendScenarioSession_LoadCheckedLevel("FrontendScenarioSession_LoadOrRequestLevelAsset",
+                                                                  &loadErrorCode);
             levelLoadedLocally = levelAsset != nullptr;
           }
           break;
         }
         otherPlayersRemaining--;
         playerRecord++;
-      } while (otherPlayersRemaining != 0);
+      }
     }
     if (!levelLoadedLocally) {
       UiTransferMailbox_MarkUnavailable();

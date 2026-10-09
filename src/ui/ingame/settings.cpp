@@ -73,8 +73,10 @@ void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
     g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->simulationStepTicks = stepTicks;
     remainingCount = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-    do {
+    /* The original loops with a do/while, so a player count of 0 walks 2^32 records past the table; bounded here
+       because the count can be 0 (a guarded loop, same body and order for a count >= 1). With no players
+       g_InGameSimulationStepTicks keeps its value. */
+    while (remainingCount != 0) {
       if (g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->simulationStepTicks <
           stepTicks) {
         stepTicks = g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->simulationStepTicks;
@@ -82,7 +84,7 @@ void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
       playerRecord++;
       remainingCount--;
       g_InGameSimulationStepTicks = stepTicks;
-    } while (remainingCount != 0);
+    }
   }
 }
 

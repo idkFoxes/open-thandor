@@ -10,6 +10,17 @@
 
 #include <thandor/world/pathing/scratch_grid.h>
 #include <thandor/thandor.h>
+#include <cassert>
+#include <vector>
+
+/* One span of GridScratch_FloodFillConnectedCells that still has neighbour-row cells to test: its two stop cells,
+   the next neighbour cell to test and whether that cell is in the row below (else the row above). */
+struct GridScratchFloodFillFrame {
+  GridScratchCell *leftStopCell;
+  GridScratchCell *rightStopCell;
+  GridScratchCell *rowCursor;
+  bool inRowBelow;
+};
 
 /* Module data. */
 
@@ -20,6 +31,9 @@ GridScratchCell *g_GridScratchPrimary = nullptr;
 uint32_t g_GridScratchWidth = 0;
 
 int32_t g_GridScratchHeight = 0;
+
+/* The explicit call stack of GridScratch_FloodFillConnectedCells (CRT heap, see there). */
+static std::vector<GridScratchFloodFillFrame> s_GridScratchFloodFillFrames;
 
 /* int32_t[17] terrain-class thresholds, one table in the original
    (indexed by GRID_TERRAIN_THRESHOLD_*). GridScratch classification reads each entry by name;
@@ -160,7 +174,8 @@ static void GridScratch_FloodFillFromPlacedRuntimeModels(WorldOwnerListNode *own
    Then every class-24 area is grown by one field cell, and each runtime model flood-fills the region it stands
    in; cells no model can reach get classes 28..30 resp. 25..27 so they count as unreachable. The class
    bits are a scratch-only namespace and never written back to FieldGridCell.flagsAndMaterial.
-   The dilation pass reads four scratch rows before the first and after the last row, as in the original.
+   The dilation pass reads four scratch rows above and below each open cell; the blocked map-edge ring keeps
+   those reads inside the grid.
 */
 void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime)
 
@@ -176,6 +191,10 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   FieldGridDimension columnsRemaining;
   FieldGridCell *fieldCell;
   GridScratchCell *promoteCursor;
+  GridScratchCell *scratchGrid;
+  GridScratchCell *centerCell;
+  int cellIndex;
+  int fieldRowCells;
   GridScratchCell *scratchCursor;
   WorldOwnerListNode *ownerNode;
   FieldGridDimension rowsRemaining;
@@ -187,7 +206,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   /* one 16-cell block per field cell */
   blocksToClear = fieldGridWidth * rowsRemaining;
   scratchCursor = g_GridScratchPrimary;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* blocksToClear >= 16: the world's field grid passed FieldGrid_ValidateLoadedImage (sides >= 4 cells) */
   do {
     scratchCursor->stateMask = scratchCursor->stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
     scratchCursor[1].stateMask = scratchCursor[1].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
@@ -212,11 +231,17 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   fieldCell = fieldGridAsset->cells;
   columnsRemaining = fieldGridWidth;
   scratchCursor = g_GridScratchPrimary;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* rows and columns >= FIELD_GRID_MIN_SIDE_CELLS: the world's field grid passed FieldGrid_ValidateLoadedImage */
   do {
     do {
       cellClassMask = GridScratch_ClassifyFieldCell(fieldCell);
       cellFlags = fieldCell->flagsAndMaterial;
+      /* The writes into the neighbouring blocks stay inside the grid only because the outermost ring of field
+         cells carries its boundary flags (as in the original). */
+      assert(rowsRemaining != fieldGridAsset->gridHeight || Any(cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY));
+      assert(rowsRemaining != 1 || Any(cellFlags & FIELD_CELL_LAST_ROW_BOUNDARY));
+      assert(columnsRemaining != fieldGridWidth || Any(cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY));
+      assert(columnsRemaining != 1 || Any(cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY));
       if (!Any(cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY)) {
         scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask | cellClassMask;
         scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask | cellClassMask;
@@ -285,25 +310,30 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   /* grow class 24 by one field cell: mark (visited) every open cell with a class-24 cell four scratch cells
      away in one of the six hex directions, then promote the marks */
   cellsToPromote = g_GridScratchHeight * g_GridScratchWidth;
-  scratchCursor = g_GridScratchPrimary + (int32_t)(g_GridScratchWidth * -4);
-  cellsRemaining = cellsToPromote;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
-  do {
-    scratchCursor[scratchStride * 4].stateMask =
-         scratchCursor[scratchStride * 4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    if (((scratchCursor[scratchStride * 4].stateMask & GRID_SCRATCH_BLOCKED) == 0) &&
-       (((scratchCursor[scratchStride * 4].stateMask | scratchCursor->stateMask | scratchCursor[4].stateMask |
-          scratchCursor[scratchStride * 4 - 4].stateMask | scratchCursor[scratchStride * 4 + 4].stateMask |
-          scratchCursor[scratchStride * 8 - 4].stateMask | scratchCursor[scratchStride * 8].stateMask) &
-        GRID_SCRATCH_TERRAIN_CLASS_BIT24) != 0)) {
-      scratchCursor[scratchStride * 4].stateMask =
-           scratchCursor[scratchStride * 4].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+  /* The original walks a cursor that starts four scratch rows before the grid (the centre cell is cursor[4 *
+     width]); index loop here, so no pointer outside the grid is formed. The neighbour reads four rows above
+     and below are only made for an open centre cell: the first and last four scratch rows and columns belong to
+     the map-edge field cells and are GRID_SCRATCH_BLOCKED, so they never leave the grid (the original relies on
+     the same invariant). cellsToPromote >= 256: 4x4 scratch cells per field cell of a grid validated by
+     FieldGrid_ValidateLoadedImage. */
+  scratchGrid = g_GridScratchPrimary;
+  fieldRowCells = (int)(scratchStride * 4);
+  for (cellIndex = 0; cellIndex < cellsToPromote; cellIndex++) {
+    centerCell = scratchGrid + cellIndex;
+    centerCell->stateMask = centerCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    if ((centerCell->stateMask & GRID_SCRATCH_BLOCKED) == 0) {
+      assert(cellIndex >= fieldRowCells + 4 && cellIndex + fieldRowCells < cellsToPromote);
+      if (((centerCell->stateMask | scratchGrid[cellIndex - fieldRowCells].stateMask |
+            scratchGrid[cellIndex - fieldRowCells + 4].stateMask | centerCell[-4].stateMask |
+            centerCell[4].stateMask | scratchGrid[cellIndex + fieldRowCells - 4].stateMask |
+            scratchGrid[cellIndex + fieldRowCells].stateMask) &
+           GRID_SCRATCH_TERRAIN_CLASS_BIT24) != 0) {
+        centerCell->stateMask = centerCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+      }
     }
-    scratchCursor++;
-    cellsRemaining--;
-  } while (cellsRemaining != 0);
+  }
   promoteCursor = g_GridScratchPrimary;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* cellsToPromote >= 256: 4x4 scratch cells per field cell of a grid validated by FieldGrid_ValidateLoadedImage */
   do {
     if ((promoteCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) {
       promoteCursor->stateMask = promoteCursor->stateMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
@@ -321,7 +351,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                GRID_SCRATCH_TERRAIN_CLASS_BIT28 | GRID_SCRATCH_TRAVERSAL_VISITED);
     cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+    /* >= 256 scratch cells: 4x4 per field cell of a grid validated by FieldGrid_ValidateLoadedImage */
     do {
       if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT30|GRID_SCRATCH_TERRAIN_CLASS_BIT29|
@@ -341,7 +371,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                GRID_SCRATCH_TERRAIN_CLASS_BIT26 | GRID_SCRATCH_TERRAIN_CLASS_BIT25 | GRID_SCRATCH_TRAVERSAL_VISITED);
     cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
-    /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+    /* >= 256 scratch cells: 4x4 per field cell of a grid validated by FieldGrid_ValidateLoadedImage */
     do {
       if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT27|GRID_SCRATCH_TERRAIN_CLASS_BIT26|
@@ -418,6 +448,9 @@ void GridScratch_ReleaseBuffers()
 /* Tail of tick-wheel case 7: after the occupancy rebuild, turns each non-edge field cell's occupancy bytes
    of faction slots 1..7 into scratch bits 1..7 and ORs them into the cell's 4x4 scratch block and a ring of
    surrounding scratch cells, so faction presence is dilated into the scratch grid used by pathing.
+   Original quirk (as decompiled; there is no original binary left to check it against): the presence bits are
+   only ever OR-ed in here; only GridScratch_RebuildTerrainAndRuntimeClassificationMasks clears them, so between
+   two rebuilds a faction's presence stays on cells its units have already left.
 */
 void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
 
@@ -439,11 +472,16 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
   columnsRemaining = gridWidth;
   currentFieldCell = fieldGrid->cells;
   scratchCellCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* rows and columns >= FIELD_GRID_MIN_SIDE_CELLS: the world's field grid passed FieldGrid_ValidateLoadedImage */
   do {
     do {
       /* the original advances first and then tests the flags of the current cell */
       nextScratchCellCursor = scratchCellCursor + 8;
+      /* The writes reach up to six scratch rows around the block; they stay inside the grid only because the
+         outermost ring of field cells is flagged FIELD_CELL_GRID_EDGE_MASK and skipped (as in the original). */
+      assert(Any(currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) ||
+             (rowsRemaining != fieldGrid->gridHeight && rowsRemaining != 1 && columnsRemaining != gridWidth &&
+              columnsRemaining != 1));
       if (!Any(currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK)) {
         factionPresenceMask =
              ((uint32_t)((currentFieldCell->occupancyMask &
@@ -604,23 +642,17 @@ void GridScratch_SwapPrimarySecondary()
   g_GridScratchPrimary = previousSecondaryBuffer;
 }
 
-/* Scanline flood fill over the scratch grid: marks the horizontal run of cells around currentCell that have no
-   traversalMask bit as visited, then recurses into every such cell of the row above and the row below that span.
-   A blocked or already visited start cell does nothing.
-*/
-void GridScratch_FloodFillConnectedCells
-          (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell)
-
+/* One span of GridScratch_FloodFillConnectedCells: marks the horizontal run of cells around currentCell that
+   have no traversalMask bit as visited and returns its two stop cells. False (nothing marked) for a blocked or
+   already visited currentCell. */
+static bool GridScratch_FloodFillSpan(GridScratchStateMask traversalMask,GridScratchCell *currentCell,
+          GridScratchCell **outLeftStopCell,GridScratchCell **outRightStopCell)
 {
   GridScratchCell *leftStopCell;
   GridScratchCell *rightStopCell;
-  GridScratchCell *rowAboveCell;
-  GridScratchCell *rowAboveLastCell;
-  GridScratchCell *rowBelowCell;
-  GridScratchCell *rowBelowEndCell;
 
   if ((currentCell->stateMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TRAVERSAL_VISITED)) != 0) {
-    return;
+    return false;
   }
   currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   for (leftStopCell = currentCell - 1; (leftStopCell->stateMask & traversalMask) == 0; leftStopCell--) {
@@ -629,21 +661,54 @@ void GridScratch_FloodFillConnectedCells
   for (rightStopCell = currentCell + 1; (rightStopCell->stateMask & traversalMask) == 0; rightStopCell++) {
     rightStopCell->stateMask = rightStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   }
-  /* the row above is scanned from the span's first cell up to the column of the right stopping cell, the row
-     below from the column of the left stopping cell up to the span's last cell (addresses as in the original).
-     Both ranges are never empty, so testing before the first cell is the same as the original's do-while. */
-  rowAboveLastCell = GridScratchCell_RowAbove(rightStopCell,rowStrideBytes);
-  for (rowAboveCell = GridScratchCell_RowAbove(leftStopCell + 1,rowStrideBytes);
-       rowAboveCell <= rowAboveLastCell; rowAboveCell++) {
-    if ((rowAboveCell->stateMask & traversalMask) == 0) {
-      GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowAboveCell);
-    }
+  *outLeftStopCell = leftStopCell;
+  *outRightStopCell = rightStopCell;
+  return true;
+}
+
+/* Scanline flood fill over the scratch grid: marks the horizontal run of cells around currentCell that have no
+   traversalMask bit as visited (GridScratch_FloodFillSpan), then continues from every such cell of the row above
+   and the row below that span. A blocked or already visited start cell does nothing.
+   The row above is scanned from the span's first cell up to the column of the right stopping cell, the row below
+   from the column of the left stopping cell up to the span's last cell (addresses as in the original). Both ranges
+   are never empty, so testing before the first cell is the same as the original's do-while.
+   The original recursed into each such cell before testing the next one (up to one level per scratch cell, so a
+   large field grid overflowed the stack). Here an explicit stack of frames (one per span whose neighbour rows are
+   not done yet) replays that call/return order exactly, so the cells are marked in the same order. The frames live
+   on the CRT heap (std::vector), not in the g_MemoryApi arena, so the arena's allocation order and sizes stay as
+   they were; the vector keeps its capacity between fills (main thread only, never nested).
+*/
+void GridScratch_FloodFillConnectedCells
+          (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell)
+
+{
+  GridScratchFloodFillFrame frame;
+  GridScratchCell *cell;
+
+  if (!GridScratch_FloodFillSpan(traversalMask,currentCell,&frame.leftStopCell,&frame.rightStopCell)) {
+    return;
   }
-  rowBelowEndCell = GridScratchCell_RowBelow(rightStopCell,rowStrideBytes);
-  for (rowBelowCell = GridScratchCell_RowBelow(leftStopCell,rowStrideBytes);
-       rowBelowCell < rowBelowEndCell; rowBelowCell++) {
-    if ((rowBelowCell->stateMask & traversalMask) == 0) {
-      GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowBelowCell);
+  frame.inRowBelow = false;
+  frame.rowCursor = GridScratchCell_RowAbove(frame.leftStopCell + 1,rowStrideBytes);
+  s_GridScratchFloodFillFrames.push_back(frame);
+  while (!s_GridScratchFloodFillFrames.empty()) {
+    GridScratchFloodFillFrame &top = s_GridScratchFloodFillFrames.back();
+    if (!top.inRowBelow && GridScratchCell_RowAbove(top.rightStopCell,rowStrideBytes) < top.rowCursor) {
+      top.inRowBelow = true;
+      top.rowCursor = GridScratchCell_RowBelow(top.leftStopCell,rowStrideBytes);
+    }
+    if (top.inRowBelow && GridScratchCell_RowBelow(top.rightStopCell,rowStrideBytes) <= top.rowCursor) {
+      s_GridScratchFloodFillFrames.pop_back();
+      continue;
+    }
+    cell = top.rowCursor;
+    top.rowCursor++;
+    /* the original's recursive call (with its own blocked / visited test); top is not used again before the
+       next iteration re-reads the back frame */
+    if ((cell->stateMask & traversalMask) == 0 &&
+        GridScratch_FloodFillSpan(traversalMask,cell,&frame.leftStopCell,&frame.rightStopCell)) {
+      frame.rowCursor = GridScratchCell_RowAbove(frame.leftStopCell + 1,rowStrideBytes);
+      s_GridScratchFloodFillFrames.push_back(frame);
     }
   }
 }

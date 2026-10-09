@@ -9,6 +9,8 @@
 #include <thandor/thandor.h>
 #include <thandor/assets/record_bytes.h>
 
+#include <iterator>
+
 /* Module data. */
 
 uint32_t g_InGameLevelTitleTextResourceIndex = 0;
@@ -85,6 +87,59 @@ bool NewLevel_Fail(uint32_t *outError,uint32_t error)
   return false;
 }
 
+/* Checks the level image fields the loaders use as sizes, offsets and indexes before anything is copied or
+   written: the runtime prefix must hold the whole InGameLevelConditionStorage (0x800 bytes, which the level script
+   reads and writes) and lie inside the image (header allocationSizeBytes); every path of pathOffsets except
+   levelPathOffset (by now the loaded FieldGridAsset pointer) must start inside the first pathAreaByteSize bytes with
+   its terminator at least LEVEL_IMAGE_PATH_SUFFIX_UNITS code units before that end; the local faction must be
+   1..7, one of the playerSlotByteOffsets selectors.
+   The original checks none of this; bounded here because a malformed level (or level.hex of a save) made the
+   prefix copy and the level script run past the condition storage, the extension and terrain material suffix
+   writes write in place past the image, and the start camera read playerSlotByteOffsets past its end. Returns
+   true when valid, else false with FATAL_ERROR_LEVEL_ASSET_INVALID in *outError (one log line). */
+bool NewLevel_ValidateImage(LevelAssetRuntimePrefix *levelImage,uint32_t pathAreaByteSize,
+                            FactionRuntimeIndex localFactionIndex,uint32_t *outError)
+
+{
+  const LevelAssetPathOffsets &pathOffsets = (levelImage->header).pathOffsets;
+  const AssetRelativeOffset checkedPathOffsets[] = {
+      pathOffsets.groundTextureBasePathOffset, pathOffsets.surfaceTextureBasePathOffset,
+      pathOffsets.skyTextureBasePathOffset,    pathOffsets.armyTextureBasePathOffset,
+      pathOffsets.shotTextureBasePathOffset,   pathOffsets.effectTextureBasePathOffset,
+      pathOffsets.endingMovieBasePathOffset,   pathOffsets.soundBasePathOffset,
+      pathOffsets.technologyPathOffset};
+  const uint32_t prefixByteSize = (levelImage->header).resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset;
+  const uint32_t imageByteSize = (levelImage->header).common.allocationSizeBytes;
+
+  if ((prefixByteSize < sizeof(InGameLevelConditionStorage)) || (prefixByteSize > imageByteSize)) {
+    Thandor_Log("level: runtime prefix size 0x%X invalid (image 0x%X bytes), level rejected",prefixByteSize,
+                imageByteSize);
+    return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
+  }
+  for (size_t pathIndex = 0; pathIndex < std::size(checkedPathOffsets); pathIndex++) {
+    const AssetRelativeOffset pathOffset = checkedPathOffsets[pathIndex];
+    const uint32_t pathUnitsAvailable = (pathOffset < pathAreaByteSize) ?
+                                        (pathAreaByteSize - pathOffset) / sizeof(uint16_t) : 0;
+    const uint16_t *path = Asset_RecordAt<uint16_t>(levelImage,(pathUnitsAvailable != 0) ? pathOffset : 0);
+    uint32_t terminatorIndex = 0;
+
+    while ((terminatorIndex < pathUnitsAvailable) && (path[terminatorIndex] != 0)) {
+      terminatorIndex++;
+    }
+    if (pathUnitsAvailable - terminatorIndex < LEVEL_IMAGE_PATH_SUFFIX_UNITS) {
+      Thandor_Log("level: path %u at 0x%X not terminated %u units before the image end (0x%X), level rejected",
+                  (unsigned)pathIndex + 1,pathOffset,LEVEL_IMAGE_PATH_SUFFIX_UNITS,pathAreaByteSize);
+      return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
+    }
+  }
+  if ((localFactionIndex < 1) ||
+      (static_cast<size_t>(localFactionIndex) > std::size(g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets))) {
+    Thandor_Log("level: local faction %d outside 1..7, level rejected",localFactionIndex);
+    return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
+  }
+  return true;
+}
+
 /* Allocates g_InGameLevelRuntimeGlobalBlock.conditionStorage and copies the level prefix (header
    resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset bytes) into it dword by dword. */
 bool NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *outError)
@@ -109,6 +164,10 @@ bool NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *ou
     *copyTargetCursor = *copySourceCursor;
     copySourceCursor++;
     copyTargetCursor++;
+  }
+  /* the copied level script (P20 checks): out-of-range factions, condition indexes or postfix operands */
+  if (!InGameLevelScript_Validate(&g_InGameLevelRuntimeGlobalBlock.conditionStorage->schedule)) {
+    return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
   }
   return true;
 }
@@ -218,8 +277,7 @@ bool NewLevel_PrepareShotAsset(void *asset,uint32_t assetByteCount,uint32_t *out
 bool NewLevel_PrepareModelAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
-  (void)assetByteCount;
-  return ModelAsset_PrepareRecords(static_cast<ModelAssetHeader *>(asset),outError);
+  return ModelAsset_PrepareRecords(static_cast<ModelAssetHeader *>(asset),assetByteCount,outError);
 }
 
 bool NewLevel_PrepareArmyAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
@@ -425,6 +483,7 @@ static bool NewLevel_LoadSpatialSounds
   uint32_t soundIndex;
   bool sampleLoaded;
   void *loadedSample;
+  uint32_t loadedSampleBytes;
   uint32_t loadErrorCode;
   SpatialSoundSlot *soundSlot;
 
@@ -471,20 +530,21 @@ static bool NewLevel_LoadSpatialSounds
     soundIndex = WidePath_ParseTrailingNumberBeforeExtension(listedSoundPath);
     if (soundIndex < worldRuntime->dwordArrayCount) {
       if (soundsInPackage) {
-        sampleLoaded = Resource_Load(listedSoundPath,&loadedSample,nullptr,&loadErrorCode);
+        sampleLoaded = Resource_Load(listedSoundPath,&loadedSample,&loadedSampleBytes,&loadErrorCode);
       }
       else {
         WidePath_CombineDirectoryAndLeaf
                   (g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,listedSoundPath,
                    g_InGameLevelSoundParentDirectoryScratchUtf16);
         sampleLoaded = Resource_Load(g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-                                     &loadedSample,nullptr,&loadErrorCode);
+                                     &loadedSample,&loadedSampleBytes,&loadErrorCode);
       }
       if (!sampleLoaded) {
         g_MemoryApi.free(directoryListing);
         return NewLevel_Fail(outError,loadErrorCode);
       }
-      soundSlot = SpatialSoundSlot_CreateFromSampleAsset(static_cast<SoundSampleAsset *>(loadedSample));
+      soundSlot = SpatialSoundSlot_CreateFromSampleAsset(static_cast<SoundSampleAsset *>(loadedSample),
+                                                         loadedSampleBytes);
       if (soundSlot != nullptr) {
         soundSlotCursor[soundIndex] = reinterpret_cast<uintptr_t>(soundSlot); /* kept as an integer slot */
       }
@@ -505,14 +565,16 @@ static void NewLevel_LoadLevelSample(uint32_t sampleNumber,uint16_t *pathTemplat
 
 {
   void *loadedSampleBuffer;
+  uint32_t loadedSampleBytes;
   SoundVoiceSet *createdVoiceSet;
 
   if (sampleNumber == 0) {
     return;
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,sampleNumber,pathTemplate + 11);
-  if (Resource_Load(pathTemplate,&loadedSampleBuffer,nullptr,nullptr)) {
-    if (g_SoundCreateSampleVoiceSet(static_cast<SoundSampleAsset *>(loadedSampleBuffer),&createdVoiceSet) == 0) {
+  if (Resource_Load(pathTemplate,&loadedSampleBuffer,&loadedSampleBytes,nullptr)) {
+    if (g_SoundCreateSampleVoiceSet(static_cast<SoundSampleAsset *>(loadedSampleBuffer),loadedSampleBytes,
+                                    &createdVoiceSet) == 0) {
       *outVoiceSet = createdVoiceSet;
     }
     Resource_Release(loadedSampleBuffer);
@@ -617,9 +679,8 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
       (worldRuntime->ownerListHead == nullptr)) {
     return;
   }
-  /* factions 1..activeFactionCount; faction 1 is checked even when the count is 0 */
+  /* factions 1..activeFactionCount; the count is >= 1 (the loader rejects a level with 0 active factions) */
   factionIndex = 1;
-  /* Original quirk: a do-while, faction 1 is checked even with an active faction count of 0 (D8: kept for step 11) */
   do {
     factionModelFlags = 0;
     for (ownerListNode = worldRuntime->ownerListHead; ownerListNode != nullptr;
@@ -722,6 +783,19 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
   Package_SetLastErrorPath(g_LevelEndingMovieSourcePath);
   if (((levelImage->header).common.magic != ASSET_MAGIC_LEV) ||
       ((levelImage->header).common.converterVersion != PCK_CONVERTER_LEV_00070001)) {
+    return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
+  }
+  /* a LEV file: its paths may lie anywhere in the image */
+  if (!NewLevel_ValidateImage(levelImage,(levelImage->header).common.allocationSizeBytes,
+                              worldRuntime->activeFactionRuntimeIndex,outError)) {
+    return false;
+  }
+  /* The original trusts the active faction count; bounded here because the default build lists walk
+     records[1..count] (a count of 0 still visited faction 1, above 7 ran past records[8]). */
+  if (((levelImage->worldSettings).activeFactionCount < 1) ||
+      ((levelImage->worldSettings).activeFactionCount >= std::size(g_GameFactionRuntimeImage.records))) {
+    Thandor_Log("level: active faction count %u outside 1..7, level rejected",
+                (unsigned)(levelImage->worldSettings).activeFactionCount);
     return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
   }
   if (!NewLevel_CopyRuntimePrefix(levelImage,outError)) {

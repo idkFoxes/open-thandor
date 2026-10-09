@@ -5,6 +5,7 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <atomic>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -147,6 +148,14 @@ UPtr32 g_FrontendPlayerListRows[8] = {
 
 uint32_t g_IntroMoviePendingTicks = 0;
 
+/* Not in the original: g_IntroMoviePendingTicks is counted up by IntroMovie_TimerTick on the timer thread and
+   down here on the main thread, so both sides access it as an atomic (std::atomic_ref keeps the plain uint32_t
+   global). The original used plain reads and writes, a data race. */
+static std::atomic_ref<uint32_t> IntroMovie_PendingTicks()
+{
+  return std::atomic_ref<uint32_t>(g_IntroMoviePendingTicks);
+}
+
 /* "screen00.pcx" with its two-digit counter at code units 6 and 7 */
 uint16_t g_ScreenshotFileNameUtf16[13] = {'s', 'c', 'r', 'e', 'e', 'n', '0', '0', '.', 'p', 'c', 'x', 0}; /* L"screen00.pcx" */
 
@@ -274,8 +283,12 @@ static void ProcessEntry_RunGame()
 }
 
 
-/* Process entry: raises the process to real-time priority, creates the full-screen main window (only
+/* Process entry: raises the process to high priority, creates the full-screen main window (only
    one instance may run), runs the game (ProcessEntry_RunGame) and ends the process.
+   The original used REALTIME_PRIORITY_CLASS; high priority here because a real-time process can starve the
+   system's own input and audio threads (a busy game loop then freezes mouse, keyboard and sound system-wide).
+   The same class is used when the window regains focus (HandleFocusGained) and after a movie (Movie_Close);
+   Runtime_Shutdown and focus loss return to NORMAL_PRIORITY_CLASS.
 */
 void ProcessEntry()
 
@@ -284,7 +297,7 @@ void ProcessEntry()
   HANDLE threadHandle;
 
   processHandle = GetCurrentProcess();
-  SetPriorityClass(processHandle,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
+  SetPriorityClass(processHandle,DebugHook_ProcessPriorityClass(HIGH_PRIORITY_CLASS));
   threadHandle = GetCurrentThread();
   SetThreadPriority(threadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
@@ -365,7 +378,7 @@ uint32_t GameData_ResetDefaults()
   statTableCursor = static_cast<uint32_t *>(allocPayload);
   statTableCursor = std::fill_n(statTableCursor,GAME_STAT_TABLE_BYTES / 4,0);
   statTableCursor[-1] = UINT32_MAX; /* end marker */
-  g_GameFactionRuntimeImage.tail.periodicClockTick = 0;
+  InGameTick_PeriodicClockTick().store(0,std::memory_order_relaxed);
   return 0;
 }
 
@@ -708,13 +721,14 @@ static bool CoreAssets_LoadButtonSound(uint16_t *samplePath,SoundVoiceSet **voic
 
 {
   SoundSampleAsset *sample;
+  uint32_t sampleBytes;
   SoundVoiceSet *voiceSet;
   uint32_t voiceSetError;
 
-  if (!Resource_Load(samplePath,PointerSlot_AsVoid(&sample),nullptr,error)) {
+  if (!Resource_Load(samplePath,PointerSlot_AsVoid(&sample),&sampleBytes,error)) {
     return false;
   }
-  voiceSetError = g_SoundCreateSampleVoiceSet(sample,&voiceSet);
+  voiceSetError = g_SoundCreateSampleVoiceSet(sample,sampleBytes,&voiceSet);
   Resource_Release(sample);
   if (voiceSetError != 0) {
     *error = voiceSetError;
@@ -1165,8 +1179,7 @@ static bool IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
       return false;
     }
     frameHeightSnapshot = g_FramebufferHeight;
-    g_IntroMoviePendingTicks--;
-    if (g_IntroMoviePendingTicks == 0) break;
+    if (--IntroMovie_PendingTicks() == 0) break;
   }
   quarterFrameHeight = g_FramebufferHeight >> 2;
   if (g_GraphicsFramebufferBeginAccess()) {
@@ -1224,11 +1237,11 @@ bool Game_PlayIntroMovies()
         Movie_Close();
         return true;
       }
-      g_IntroMoviePendingTicks = 0;
+      IntroMovie_PendingTicks().store(0);
       UiFrame_FlushInputAndResetPendingTicks();
       g_TimerRegisterPeriodic(playbackRateHz,IntroMovie_TimerTick);
       while (!IntroMovie_PollSkipRequest()) {
-        if ((g_IntroMoviePendingTicks != 0) && !IntroMovie_PresentPendingFrames(introMovie)) break;
+        if ((IntroMovie_PendingTicks().load() != 0) && !IntroMovie_PresentPendingFrames(introMovie)) break;
       }
       /* stop playback: key, mouse button release, movie end or framebuffer loss */
       g_TimerUnregisterPeriodic(IntroMovie_TimerTick);

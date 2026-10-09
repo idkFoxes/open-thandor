@@ -62,7 +62,7 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text);
 
 bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText);
 
-/* TextResource_TryResolve without the found flag (a missing text gives TEXT_RESOURCE_MISSING_SENTINEL_0x33) */
+/* TextResource_TryResolve without the found flag (a missing text gives an empty string, not the sentinel) */
 uint16_t *TextResource_Resolve(TextResourceId resourceId);
 
 extern TextResourceOverrideTable *g_TextResourceOverrides;

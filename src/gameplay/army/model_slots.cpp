@@ -5,8 +5,19 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <span>
+
 #include <thandor/gameplay/army/model_slots.h>
 #include <thandor/thandor.h>
+
+/* Not in the original: true when pointer is the start of one of the recordCount records of recordSize bytes
+   at poolBase (a rebased savegame offset that lands in its pool). */
+static bool ModelRuntimeSlot_PointsToPoolRecord(const void *pointer,const void *poolBase,size_t recordSize,
+                                                size_t recordCount)
+{
+  const uintptr_t distance = reinterpret_cast<uintptr_t>(pointer) - reinterpret_cast<uintptr_t>(poolBase);
+  return distance % recordSize == 0 && distance / recordSize < recordCount;
+}
 
 /* Per-class model runtime callbacks from g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, indexed
    by the model definition's class id (runtimeClassId): modelClassInitialize (run by
@@ -218,6 +229,22 @@ void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime
     /* 32-bit format field: ModelRuntimeSlot.classLinkState.armyLinkOrState (saved offset) */
     modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime =
          Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(linkedArmyRuntime) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
+    /* The original rebases the saved offset unchecked; bounded here because the factory follows the link into
+       the army pool: one that does not land on an army runtime slot is cleared (NULL, no linked army). The game
+       links only armies of the pool, so every save it writes passes. */
+    if (!ModelRuntimeSlot_PointsToPoolRecord(modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime.get(),
+                                             static_cast<const uint8_t *>(g_ArmyRuntimeRebaseBaseMinusOne) + 1,
+                                             sizeof(ArmyRuntimeSlot),ARMY_RUNTIME_SLOT_COUNT)) {
+      Thandor_Log("model: savegame factory army link outside the army pool, cleared");
+      modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime = nullptr;
+    }
+  }
+  /* Not in the original: an opening factory follows its linked army without a NULL check; one without a link
+     (only possible from a malformed save, the game links the army before it opens) is set to closing. */
+  if (modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime == nullptr &&
+      modelRuntimeSlot->classState.behaviorState == ARMY_FACTORY_STATE_OPENING) {
+    Thandor_Log("model: savegame opening factory without a linked army, set to closing");
+    modelRuntimeSlot->classState.behaviorState = ARMY_FACTORY_STATE_CLOSING;
   }
 }
 
@@ -382,6 +409,16 @@ void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntim
     modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime =
          /* saved offset + rebase delta: the pointer moves by the delta in bytes */
          reinterpret_cast<ModelRuntimeSlot *>(reinterpret_cast<uint8_t *>(linkedModelRuntime) + g_ModelRuntimeRebaseDelta);
+    /* The original rebases the saved offset unchecked; bounded here because the aircraft follows the link to its
+       home pad: one that does not land on a model runtime slot is cleared (NULL, no home pad, which the aircraft
+       handles). The game links only pads of the pool, so every save it writes passes. A link to a free pad slot
+       is cleared after every slot has been rebased (ModelRuntimePool_RebaseAfterLoad). */
+    if (!ModelRuntimeSlot_PointsToPoolRecord(modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime.get(),
+                                             g_ModelRuntimeSlots,sizeof(ModelRuntimeSlot),
+                                             MODEL_RUNTIME_SLOT_COUNT)) {
+      Thandor_Log("model: savegame aircraft home pad link outside the model pool, cleared");
+      modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime = nullptr;
+    }
   }
 }
 
@@ -412,8 +449,6 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  int stateDwordsRemaining;
-  uint32_t *stateClearCursor;
   ModelRuntimeNode *rootModelNode;
   AssetRecordByteCount primaryAnimatedSubresourceIndex;
 
@@ -432,9 +467,12 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
   rootModelNode->primaryAnimatedSubresourceIndex = primaryAnimatedSubresourceIndex;
   rootModelNode->primaryTextureOffsetU = 0;
   rootModelNode->primaryTextureOffsetV = 0;
-  stateClearCursor = &modelRuntimeSlot->classLinkState.classState78;
-  for (stateDwordsRemaining = 13; stateDwordsRemaining != 0; stateDwordsRemaining--) {
-    *stateClearCursor++ = 0;
+  /* the pad's 13 asset-id slots: ModelRuntimeSlot +0x78..+0xAB, from classLinkState.classState78 up to
+     classState.classStateA8 (layout_checks.cpp) */
+  const std::span<PckArmyAssetIdCatalog,13> slotAssetIds(
+      ModelView_Cast<ModelRuntimeLinkedChildSpawnAndBuildView>(modelRuntimeSlot)->completedSecondaryArmyAssetIds);
+  for (PckArmyAssetIdCatalog &slotAssetId : slotAssetIds) {
+    slotAssetId = 0;
   }
 }
 

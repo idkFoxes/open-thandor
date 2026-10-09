@@ -345,7 +345,7 @@ void FieldGrid_RebuildLocalInfluenceState
   rowStrideBytes = rowLength * sizeof(FieldGridCell);
   scanCell = fieldGrid->cells;
   /* neighbour refresh as in FieldGrid_ApplyPositiveCellDeltas */
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* count >= 16: the world field grid passed FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) on load */
   do {
     if ((*scratchHeightCursor != scanCell->terrainHeight) && (!Any(scanCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK))) {
       FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
@@ -567,7 +567,7 @@ void FieldGrid_ResetLocalInfluenceState
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* count >= 16: the world field grid passed FieldGrid_ValidateLoadedImage (sides >= FIELD_GRID_MIN_SIDE_CELLS) on load */
   do {
     *scratchHeightCursor = currentCell->terrainHeight;
     currentCell++;

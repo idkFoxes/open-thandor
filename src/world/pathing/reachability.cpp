@@ -11,11 +11,69 @@
 #include <thandor/world/pathing/reachability.h>
 #include <thandor/thandor.h>
 
+#include <vector>
+
+/* One span of a scanline flood fill below that still has neighbour-row cells to test: its two stop cells, the
+   next neighbour cell to test and whether that cell is in the row below (else the row above). */
+struct GridScanlineFrame {
+  GridScratchCell *leftStopCell;
+  GridScratchCell *rightStopCell;
+  GridScratchCell *rowCursor;
+  bool inRowBelow;
+};
+
 /* Module data. */
 
 static uint32_t g_GridPathUnreachableRegionReferenceColumn = 0;
 
 static uint32_t g_GridPathUnreachableRegionReferenceRow = 0;
+
+/* The explicit call stack of GridScanline_Fill: one frame per span whose neighbour rows are not done yet. It lives
+   on the CRT heap, not in the g_MemoryApi arena, so the arena's allocation order and sizes stay as they were; it
+   keeps its capacity between fills (the fills run on the main thread only and never nest). */
+static std::vector<GridScanlineFrame> s_GridScanlineFrames;
+
+/* Scanline flood fill without recursion. markSpan(cell, &leftStopCell, &rightStopCell) handles one span: it marks
+   the cells around cell and returns the first stop cell on either side. isOpen(cell) selects the cells of the
+   neighbour rows the fill continues from: the row above from the span's first cell up to the column of the right
+   stop cell (inclusive), then the row below from the column of the left stop cell up to the span's last cell.
+   The original recursed into each selected cell before testing the next one (up to one level per scratch cell, so
+   a large field grid overflowed the stack); the frames here replay that call/return order exactly (a selected
+   cell's whole span tree is done before its row's next cell is tested), so every cell write, the order of the
+   writes and markSpan's side effects are unchanged. Neither row range is ever empty (the stop cells are at
+   least one cell left and right of the start cell), so testing the bound before the first cell matches the
+   original's do-while loops. */
+template <class MarkSpan,class IsOpen>
+static void GridScanline_Fill(uint32_t rowStrideBytes,GridScratchCell *startCell,MarkSpan markSpan,IsOpen isOpen)
+
+{
+  GridScanlineFrame frame;
+  GridScratchCell *cell;
+
+  frame.inRowBelow = false;
+  markSpan(startCell,&frame.leftStopCell,&frame.rightStopCell);
+  frame.rowCursor = GridScratchCell_RowAbove(frame.leftStopCell + 1,rowStrideBytes);
+  s_GridScanlineFrames.push_back(frame);
+  while (!s_GridScanlineFrames.empty()) {
+    GridScanlineFrame &top = s_GridScanlineFrames.back();
+    if (!top.inRowBelow && GridScratchCell_RowAbove(top.rightStopCell,rowStrideBytes) < top.rowCursor) {
+      top.inRowBelow = true;
+      top.rowCursor = GridScratchCell_RowBelow(top.leftStopCell,rowStrideBytes);
+    }
+    if (top.inRowBelow && GridScratchCell_RowBelow(top.rightStopCell,rowStrideBytes) <= top.rowCursor) {
+      s_GridScanlineFrames.pop_back();
+      continue;
+    }
+    cell = top.rowCursor;
+    top.rowCursor++;
+    if (isOpen(cell)) {
+      /* the "recursive call": top is not used again before the next iteration re-reads the back frame */
+      markSpan(cell,&frame.leftStopCell,&frame.rightStopCell);
+      frame.rowCursor = GridScratchCell_RowAbove(frame.leftStopCell + 1,rowStrideBytes);
+      s_GridScanlineFrames.push_back(frame);
+    }
+  }
+}
 
 /* True when the cell below rowAboveCell (rowAboveCell[scratchWidth]) is open, counted (inside the outer
    footprint) and marked visited, and at least one of its six hex neighbours has count 0 (outside the footprint). */
@@ -113,6 +171,12 @@ bool GridReachability_RebuildConnectedRegionAroundWorldPoint
      tested cell is scratchCursor[scratchWidth], the cursor sits on the row above it */
   scratchCursor = g_GridScratchPrimary + scratchWidth * 3;
   cellsToScan = (g_GridScratchHeight - 8) * g_GridScratchWidth;
+  /* The original scans ~2^32 cells here and below when the scratch grid has no row inside the 4-row border
+     (a field grid of height <= 2 or width 0); bounded here because the scan runs far past the scratch grid:
+     such a grid has no ring to split. */
+  if (cellsToScan <= 0) {
+    return false;
+  }
   while (!GridReachability_IsMarkedRingEdgeCell(scratchCursor,scratchWidth)) {
     scratchCursor = scratchCursor + 1;
     cellsToScan--;
@@ -124,7 +188,7 @@ bool GridReachability_RebuildConnectedRegionAroundWorldPoint
   /* any other marked edge cell belongs to a separate piece of the ring */
   scratchCursor = g_GridScratchPrimary + scratchWidth * 3;
   cellsToScan = (g_GridScratchHeight - 8) * g_GridScratchWidth;
-  /* Original quirk: a do/while, so a count of 0 runs it 2^32 times (kept as in the original; step 11). */
+  /* count >= 1: the same count as the first scan, which returned for a count <= 0. */
   do {
     if (GridReachability_IsMarkedRingEdgeCell(scratchCursor,scratchWidth)) {
       return true;
@@ -199,15 +263,12 @@ static bool GridPathRegion_IsUnvisitedUnreachedOpenCell(GridScratchCell *cell)
          ((g_GridPathEntityClassMask & cellState) == 0 || (g_GridPathBlockingMask & cellState) == 0);
 }
 
-/* Scanline flood fill for GridPathRegion_MarkUnreachableFromCell: marks the horizontal run of unreached cells
-   around currentCell as visited (stopping at reached, blocked or faction-blocked cells), keeps the run cell
-   nearest (hex distance) to g_GridPathUnreachableRegionReference{Row,Column} as the best cell if it beats
-   bestCost, and recurses into the unvisited open cells of the rows above and below. Returns the best distance
-   and the best cell's byte offset in the scratch grid.
-*/
-GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
-          (uint32_t rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
-          uint32_t bestCellByteOffset)
+/* One span of GridPathRegion_MarkUnreachableRecursive: marks the horizontal run of unreached cells around
+   currentCell as visited (stopping at reached, blocked or faction-blocked cells), returns its two end cells and
+   keeps the run cell nearest (hex distance) to g_GridPathUnreachableRegionReference{Row,Column} as the best cell
+   in *bestResult if it beats the best distance so far. */
+static void GridPathRegion_MarkUnreachedSpan(GridScratchCell *currentCell,GridScratchCell **outLeftEndCell,
+          GridScratchCell **outRightEndCell,GridPathBestUnreachableCell *bestResult)
 
 {
   uint32_t spanByteOffset;
@@ -218,9 +279,6 @@ GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
   int columnDelta;
   GridPathCost columnDistance;
   GridScratchCell *leftEndCell;
-  GridScratchCell *rowCursor;
-  GridPathBestUnreachableCell bestResult;
-  GridPathCost updatedBestCost;
 
   currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   leftEndCell = GridPathRegion_ScanUnreachedSpanEnd(currentCell,-1);
@@ -265,117 +323,107 @@ GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
       referenceDistance = referenceDistance + columnDelta;
     }
   }
-  updatedBestCost = bestCost;
-  if ((int)referenceDistance < (int)bestCost) {
-    updatedBestCost = referenceDistance;
-    bestCellByteOffset = spanByteOffset;
+  if ((int)referenceDistance < (int)bestResult->bestCost) {
+    bestResult->bestCost = referenceDistance;
+    bestResult->bestCellByteOffset = spanByteOffset;
   }
-  bestResult.bestCost = updatedBestCost;
+  *outLeftEndCell = leftEndCell;
+  *outRightEndCell = rightEndCell;
+}
+
+/* Scanline flood fill for GridPathRegion_MarkUnreachableFromCell: marks the horizontal runs of unreached cells
+   connected to currentCell as visited (GridPathRegion_MarkUnreachedSpan) and continues from the unreached,
+   unvisited, open cells of the rows above and below each run. Returns the best distance and the best cell's byte
+   offset in the scratch grid. The best cell is the first run (in the original's recursion order, which
+   GridScanline_Fill keeps) with the smallest distance. The name stays from the original; it no longer recurses.
+*/
+GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
+          (uint32_t rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
+          uint32_t bestCellByteOffset)
+
+{
+  GridPathBestUnreachableCell bestResult;
+
+  bestResult.bestCost = bestCost;
   bestResult.bestCellByteOffset = bestCellByteOffset;
-  /* recurse into the unreached, unvisited, open cells of the rows above and below the span */
-  rowCursor = GridScratchCell_RowAbove(leftEndCell + 1,rowStrideBytes);
-  do {
-    if (GridPathRegion_IsUnvisitedUnreachedOpenCell(rowCursor)) {
-      bestResult = GridPathRegion_MarkUnreachableRecursive
-                         (rowStrideBytes,rowCursor,bestResult.bestCost,bestResult.bestCellByteOffset);
-    }
-    rowCursor++;
-  } while (rowCursor <= GridScratchCell_RowAbove(rightEndCell,rowStrideBytes));
-  rowCursor = GridScratchCell_RowBelow(leftEndCell,rowStrideBytes);
-  do {
-    if (GridPathRegion_IsUnvisitedUnreachedOpenCell(rowCursor)) {
-      bestResult = GridPathRegion_MarkUnreachableRecursive
-                         (rowStrideBytes,rowCursor,bestResult.bestCost,bestResult.bestCellByteOffset);
-    }
-    rowCursor++;
-  } while (rowCursor < GridScratchCell_RowBelow(rightEndCell,rowStrideBytes));
+  GridScanline_Fill(rowStrideBytes,currentCell,
+                    [&bestResult](GridScratchCell *spanCell,GridScratchCell **leftEndCell,
+                                  GridScratchCell **rightEndCell) {
+                      GridPathRegion_MarkUnreachedSpan(spanCell,leftEndCell,rightEndCell,&bestResult);
+                    },
+                    GridPathRegion_IsUnvisitedUnreachedOpenCell);
   return bestResult;
 }
 
+/* True for a cell GridReachability_MarkOpenRegionRecursive continues into: none of
+   GRID_REACHABILITY_OPEN_STOP_MASK is set (blocked, terrain classes 28..30, low bands 0..6, already visited). */
+static bool GridReachability_IsOpenCell(GridScratchCell *cell)
+{
+  return (cell->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0;
+}
+
 /* Scanline flood fill for GridReachability_RebuildConnectedRegionAroundWorldPoint: marks the horizontal run of
-   open cells around currentCell as visited, then recurses into the open cells of the hex-adjacent spans in the
-   rows above and below. A cell is open when none of GRID_REACHABILITY_OPEN_STOP_MASK is set (blocked, terrain
-   classes 28..30, low bands 0..6, already visited).
+   open cells (GridReachability_IsOpenCell) around currentCell as visited, then continues from the open cells of
+   the hex-adjacent spans in the rows above and below. The name stays from the original; it no longer recurses
+   (GridScanline_Fill).
 */
 void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
-  GridScratchCell *leftStopCell;
-  GridScratchCell *rightStopCell;
-  GridScratchCell *prevRowCursor;
-  GridScratchCell *prevRowEnd;
-  GridScratchCell *nextRowCursor;
-  GridScratchCell *nextRowEnd;
+  GridScanline_Fill(rowStrideBytes,currentCell,
+                    [](GridScratchCell *spanCell,GridScratchCell **outLeftStopCell,
+                       GridScratchCell **outRightStopCell) {
+                      GridScratchCell *leftStopCell;
+                      GridScratchCell *rightStopCell;
 
-  currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-  for (leftStopCell = currentCell - 1; (leftStopCell->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0;
-       leftStopCell--) {
-    leftStopCell->stateMask = leftStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-  }
-  for (rightStopCell = currentCell + 1; (rightStopCell->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0;
-       rightStopCell++) {
-    rightStopCell->stateMask = rightStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-  }
-  /* row above: from the span's first cell up to the column of the right stop cell (inclusive); row below: from
-     the column of the left stop cell up to the span's last cell. Neither range is ever empty, so testing before
-     the first cell matches the original's do-while. */
-  prevRowEnd = GridScratchCell_RowAbove(rightStopCell,rowStrideBytes);
-  for (prevRowCursor = GridScratchCell_RowAbove(leftStopCell + 1,rowStrideBytes);
-       prevRowCursor <= prevRowEnd; prevRowCursor++) {
-    if ((prevRowCursor->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0) {
-      GridReachability_MarkOpenRegionRecursive(rowStrideBytes,prevRowCursor);
-    }
-  }
-  nextRowEnd = GridScratchCell_RowBelow(rightStopCell,rowStrideBytes);
-  for (nextRowCursor = GridScratchCell_RowBelow(leftStopCell,rowStrideBytes);
-       nextRowCursor < nextRowEnd; nextRowCursor++) {
-    if ((nextRowCursor->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0) {
-      GridReachability_MarkOpenRegionRecursive(rowStrideBytes,nextRowCursor);
-    }
-  }
+                      spanCell->stateMask = spanCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+                      for (leftStopCell = spanCell - 1; GridReachability_IsOpenCell(leftStopCell); leftStopCell--) {
+                        leftStopCell->stateMask = leftStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+                      }
+                      for (rightStopCell = spanCell + 1; GridReachability_IsOpenCell(rightStopCell);
+                           rightStopCell++) {
+                        rightStopCell->stateMask = rightStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+                      }
+                      *outLeftStopCell = leftStopCell;
+                      *outRightStopCell = rightStopCell;
+                    },
+                    GridReachability_IsOpenCell);
+}
+
+/* True for a cell GridReachability_ClearCostedRegionRecursive continues into: visited and inside the footprint
+   (pathCost counter non-zero). */
+static bool GridReachability_IsVisitedCostedCell(GridScratchCell *cell)
+{
+  return (cell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && cell->pathCost != 0;
 }
 
 /* Scanline flood fill that undoes GridReachability_MarkOpenRegionRecursive for one connected piece: clears the
-   visited bit across the connected cells that are visited and inside the footprint (pathCost counter non-zero),
-   with the same hex-adjacent recursion into the rows above and below.
+   visited bit across the connected cells that are visited and inside the footprint
+   (GridReachability_IsVisitedCostedCell), with the same hex-adjacent continuation into the rows above and below.
+   The name stays from the original; it no longer recurses (GridScanline_Fill).
 */
 void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
-  GridScratchCell *leftStopCell;
-  GridScratchCell *rightStopCell;
-  GridScratchCell *prevRowCursor;
-  GridScratchCell *prevRowEnd;
-  GridScratchCell *nextRowCursor;
-  GridScratchCell *nextRowEnd;
+  GridScanline_Fill(rowStrideBytes,currentCell,
+                    [](GridScratchCell *spanCell,GridScratchCell **outLeftStopCell,
+                       GridScratchCell **outRightStopCell) {
+                      GridScratchCell *leftStopCell;
+                      GridScratchCell *rightStopCell;
 
-  currentCell->stateMask = currentCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-  for (leftStopCell = currentCell - 1;
-       (leftStopCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && leftStopCell->pathCost != 0;
-       leftStopCell--) {
-    leftStopCell->stateMask = leftStopCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-  }
-  for (rightStopCell = currentCell + 1;
-       (rightStopCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && rightStopCell->pathCost != 0;
-       rightStopCell++) {
-    rightStopCell->stateMask = rightStopCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-  }
-  /* same row ranges as GridReachability_MarkOpenRegionRecursive; neither is ever empty, so testing before the
-     first cell matches the original's do-while */
-  prevRowEnd = GridScratchCell_RowAbove(rightStopCell,rowStrideBytes);
-  for (prevRowCursor = GridScratchCell_RowAbove(leftStopCell + 1,rowStrideBytes);
-       prevRowCursor <= prevRowEnd; prevRowCursor++) {
-    if ((prevRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && prevRowCursor->pathCost != 0) {
-      GridReachability_ClearCostedRegionRecursive(rowStrideBytes,prevRowCursor);
-    }
-  }
-  nextRowEnd = GridScratchCell_RowBelow(rightStopCell,rowStrideBytes);
-  for (nextRowCursor = GridScratchCell_RowBelow(leftStopCell,rowStrideBytes);
-       nextRowCursor < nextRowEnd; nextRowCursor++) {
-    if ((nextRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && nextRowCursor->pathCost != 0) {
-      GridReachability_ClearCostedRegionRecursive(rowStrideBytes,nextRowCursor);
-    }
-  }
+                      spanCell->stateMask = spanCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+                      for (leftStopCell = spanCell - 1; GridReachability_IsVisitedCostedCell(leftStopCell);
+                           leftStopCell--) {
+                        leftStopCell->stateMask = leftStopCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+                      }
+                      for (rightStopCell = spanCell + 1; GridReachability_IsVisitedCostedCell(rightStopCell);
+                           rightStopCell++) {
+                        rightStopCell->stateMask = rightStopCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+                      }
+                      *outLeftStopCell = leftStopCell;
+                      *outRightStopCell = rightStopCell;
+                    },
+                    GridReachability_IsVisitedCostedCell);
 }
 
 /* True when a cell blocks a line segment: blocked (bit 31), lacking the mover's faction presence bit, or having

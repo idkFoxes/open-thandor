@@ -623,7 +623,10 @@ bool GameFactionRuntime_IsRecentTimedRelationState
 }
 
 /* Appends an absorbed faction's army-asset list to the survivor's list of the same kind, stopping when the
-   survivor's 64 entries are full. */
+   survivor's 64 entries are full. The bound is the original's (slotIndex < 64), so a merge never writes past
+   the list: a survivor count >= 64 appends nothing, and every read index stays below 64 - survivor count.
+   Original quirk: when both lists hold more than 64 entries together (reachable in valid play, e.g. 40 + 40),
+   the absorbed faction's entries beyond the 64th are dropped without notice. */
 static void GameFactionRuntime_AppendArmyAssetList(FactionArmyAssetCount *survivorCount,uint32_t *survivorList,
           FactionArmyAssetCount absorbedCount,const uint32_t *absorbedList)
 {
@@ -700,8 +703,9 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   /* the player blocks are read after the repaint walk */
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
   playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  /* The original is a do-while; bounded here because a player block count of 0 (every block dropped by
+     player-removal packets) ran it 2^32 times. */
+  while (playerBlocksRemaining != 0) {
     if (absorbedFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
       playerRuntimeId = playerBlockCursor->playerRuntimeId;
       (playerBlockCursor->factionAssignment).factionAssignmentIndex = survivingFactionIndex;
@@ -709,12 +713,12 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
     }
     playerBlockCursor++;
     playerBlocksRemaining--;
-  } while (playerBlocksRemaining != 0);
+  }
   /* the survivor also gets the absorbed faction's per-faction cell byte (its byte of the cell's occupancyMask) */
   terrainGrid = runtimeRoot->worldRuntime.fieldGrid;
   cellsRemaining = terrainGrid->gridWidth * terrainGrid->gridHeight;
   gridCell = terrainGrid->cells;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* cellsRemaining >= 16: FieldGrid_ValidateLoadedImage rejects sides below FIELD_GRID_MIN_SIDE_CELLS */
   do {
     /* byte view of the 64-bit mask: one byte per faction */
     FieldGridCell_OccupancyByte(gridCell,survivingFactionIndex) =
@@ -854,8 +858,9 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
     firstFactionPlayerCount = 0;
     playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-    do {
+    /* The original is a do-while; bounded here because a player block count of 0 (every block dropped by
+       player-removal packets) ran it 2^32 times. */
+    while (playerBlocksRemaining != 0) {
       if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
         secondFactionPlayerCount++;
       }
@@ -864,7 +869,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
       }
       playerBlockCursor++;
       playerBlocksRemaining--;
-    } while (playerBlocksRemaining != 0);
+    }
     /* State 11 merges the two factions. The second faction survives when it has players and the (bitwise) counts
        do not overlap; with no players on either side, or overlapping counts, a random bit decides. */
     if (((secondFactionPlayerCount & firstFactionPlayerCount) == 0) &&

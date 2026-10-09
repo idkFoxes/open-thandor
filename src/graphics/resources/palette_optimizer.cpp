@@ -122,9 +122,10 @@ static void GraphicsPaletteTextureSource_CountUsedColorsPerBank(GraphicsTextureS
 }
 
 /* Returns the first bank whose g_GraphicsPaletteBankSlots count is 0 among the first bankCount slots, or -1.
-   Original quirk: the scan always checks the first slot, also when bankCount is 0 (it then keeps scanning
-   until it finds a zero slot), and it reads past the GRAPHICS_PALETTE_BANK_SLOT_CAPACITY counted slots for
-   larger bank counts. */
+   Original quirk: it reads past the GRAPHICS_PALETTE_BANK_SLOT_CAPACITY counted slots for larger bank counts.
+   The original always checked the first slot, also when bankCount was 0 (a do-while that then kept scanning
+   until it found a zero slot), so once every bank was removed (all subresources bank-less) the optimiser
+   removed a bank from a count of 0 and crashed; bounded here because a bank count of 0 now returns -1. */
 static GraphicsPaletteIndex GraphicsPaletteTextureSource_FindEmptyBank(uint32_t bankCount)
 {
   const uint32_t *slot;
@@ -133,16 +134,13 @@ static GraphicsPaletteIndex GraphicsPaletteTextureSource_FindEmptyBank(uint32_t 
 
   slot = g_GraphicsPaletteBankSlots;
   bankIndex = 0;
-  remainingBanks = bankCount;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  for (remainingBanks = bankCount; remainingBanks != 0; remainingBanks--) {
     if (*slot == 0) {
       return bankIndex;
     }
     slot++;
     bankIndex++;
-    remainingBanks--;
-  } while (remainingBanks != 0);
+  }
   return -1;
 }
 
@@ -250,7 +248,8 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(intptr_t t
   }
   GraphicsPaletteTextureSource_ClearMarkOnReferencedEntries(textureSource);
   GraphicsPaletteTextureSource_CountUsedColorsPerBank(textureSource);
-  /* Remove every bank without a used color, rescanning from the first bank after each removal. */
+  /* Remove every bank without a used color, rescanning from the first bank after each removal; this stops when
+     no bank is left (see GraphicsPaletteTextureSource_FindEmptyBank). */
   emptyBank = GraphicsPaletteTextureSource_FindEmptyBank(textureSource->tableDescriptor.paletteBankCount);
   while (emptyBank != -1) {
     GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources(emptyBank,textureSource);
@@ -348,12 +347,12 @@ GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAn
                                (destinationDword,appendedAsset->paletteEntries,
                                 appendedAsset->paletteBankCount * (GRAPHICS_PALETTE_BANK_BYTES / 4));
   /* base subresource entries: their pixels move behind the appended banks and entries.
-     Original quirk: do-while, so an asset without subresources would loop 2^32 times (same for appended). */
+     The original copied both entry tables in do-whiles, so an asset without subresources looped 2^32 times;
+     bounded here because the subresource counts of the inputs are not checked (0 copies no entry). */
   baseAllocationSize = baseAsset->allocationSizeBytes;
   remainingSubresources = baseAsset->subresourceCount;
   sourceRecord = GraphicsPaletteTextureSource_Bytes(baseAsset) + baseAsset->subresourceTableOffset;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  for (; remainingSubresources != 0; remainingSubresources--) {
     /* the record about to be copied to destinationDword */
     destinationEntry = reinterpret_cast<GraphicsTextureSourceEntry *>(destinationDword);
     destinationDword = GraphicsPaletteTextureSource_CopyDwords
@@ -361,13 +360,11 @@ GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAn
     sourceRecord = sourceRecord + GFX_SUBRESOURCE_RECORD_SIZE;
     destinationEntry->dataOffset = destinationEntry->dataOffset + appendedPaletteBytes +
                                    appendedSubresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
-    remainingSubresources--;
-  } while (remainingSubresources != 0);
+  }
   /* appended subresource entries: their pixels move behind the base pixels, their banks behind the base banks */
   sourceRecord = GraphicsPaletteTextureSource_Bytes(appendedAsset) + appendedAsset->subresourceTableOffset;
-  remainingSubresources = appendedAsset->subresourceCount;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
-  do {
+  for (remainingSubresources = appendedAsset->subresourceCount; remainingSubresources != 0;
+       remainingSubresources--) {
     /* the record about to be copied to destinationDword */
     destinationEntry = reinterpret_cast<GraphicsTextureSourceEntry *>(destinationDword);
     destinationDword = GraphicsPaletteTextureSource_CopyDwords
@@ -377,8 +374,7 @@ GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAn
     if (-1 < destinationEntry->paletteIndex) { /* entries without a bank keep -1 */
       destinationEntry->paletteIndex = destinationEntry->paletteIndex + baseBankCount;
     }
-    remainingSubresources--;
-  } while (remainingSubresources != 0);
+  }
   /* the pixel data behind each entry table */
   destinationDword = GraphicsPaletteTextureSource_CopyDwords
                                (destinationDword,
@@ -454,7 +450,7 @@ void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
   /* the subresource table */
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
   subresourceEntry = GraphicsPaletteTextureSource_Entries(textureSource);
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* at least one subresource: the optimiser, the only caller, returns early when there is none */
   do {
     if (sourcePaletteBank == subresourceEntry->paletteIndex) {
       subresourceEntry->paletteIndex = destinationPaletteBank;
@@ -489,7 +485,7 @@ void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
   subresourceEntry = GraphicsPaletteTextureSource_Entries(textureSource);
   if (newColorIndex != oldColorIndex) {
-    /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+    /* at least one subresource: the optimiser, the only caller, returns early when there is none */
     do {
       if (paletteBank == subresourceEntry->paletteIndex) {
         pixelCursor = GraphicsPaletteTextureSource_Bytes(textureSource) + subresourceEntry->dataOffset;

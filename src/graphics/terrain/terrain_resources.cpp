@@ -25,6 +25,11 @@ void *g_TerrainSoilPacketTablePayload = nullptr;
 
 void *g_TerrainSurfacePacketTablePayload = nullptr;
 
+/* payload bytes (past the header) of the two packet tables, recorded at load for the bounds checks */
+uint32_t g_TerrainSoilPacketTablePayloadBytes = 0;
+
+uint32_t g_TerrainSurfacePacketTablePayloadBytes = 0;
+
 GraphicsPaletteAsset *g_TerrainPrimaryPalette = nullptr;
 
 GraphicsPaletteAsset *g_TerrainSecondaryPalette = nullptr;
@@ -89,6 +94,47 @@ static bool TerrainVisualResources_LoadMaterialTextureSets
   return true;
 }
 
+/* Loads a <primary>.dat / <secondary>.dat packet table and stores its payload size (past the header) in
+   *outPayloadBytes. The original took the table unchecked; a table shorter than its header, or a surface table
+   (isSurfaceTable) with fewer than 2^(header phase seed bit width) packets, is rejected here (freed, one log
+   line, FATAL_ERROR_FIELD_ASSET_INVALID) because FieldGrid_InitializeRuntimeCellsAndBoundaryFlags reads the
+   header and draws cell packet indices up to that count. Returns the loaded table, or NULL with the error in
+   *outError. Valid tables load exactly as with Package_LoadEntry. */
+static void *TerrainVisualResources_LoadPacketTable
+          (uint16_t *resourcePath,bool isSurfaceTable,uint32_t *outPayloadBytes,uint32_t *outError)
+
+{
+  void *packetTable;
+  uint32_t loadedByteCount;
+  uint32_t loadErrorCode;
+  uint32_t phaseSeedBitWidth;
+
+  packetTable = Package_LoadEntryWithSize(resourcePath,&loadedByteCount,&loadErrorCode);
+  if (packetTable == nullptr) {
+    Thandor_Log("TerrainVisualResources: loading \"%ls\" failed (error 0x%08X)",
+                reinterpret_cast<wchar_t *>(resourcePath),loadErrorCode); /* UTF-16 path for %ls (Windows wchar_t) */
+    *outError = loadErrorCode;
+    return nullptr;
+  }
+  if (loadedByteCount >= TERRAIN_PACKET_TABLE_HEADER_BYTES) {
+    if (!isSurfaceTable) {
+      *outPayloadBytes = loadedByteCount - TERRAIN_PACKET_TABLE_HEADER_BYTES;
+      return packetTable;
+    }
+    phaseSeedBitWidth = Thandor_LoadU32(packetTable);
+    if ((uint64_t)(loadedByteCount - TERRAIN_PACKET_TABLE_HEADER_BYTES) >=
+        ((uint64_t)1 << (phaseSeedBitWidth & 31)) * TERRAIN_SURFACE_PACKET_BYTES) {
+      *outPayloadBytes = loadedByteCount - TERRAIN_PACKET_TABLE_HEADER_BYTES;
+      return packetTable;
+    }
+  }
+  Thandor_Log("TerrainVisualResources: rejected packet table \"%ls\" of %u bytes",
+              reinterpret_cast<wchar_t *>(resourcePath),loadedByteCount);
+  Resource_Release(packetTable);
+  *outError = (uint32_t)FATAL_ERROR_FIELD_ASSET_INVALID;
+  return nullptr;
+}
+
 /* Loads <primary>.dat, <primary>.gfx, <primary>.pal, <secondary>.pal and <secondary>.dat (the secondary path
    without its material letter) into the terrain globals, advancing the loading movie after each. Returns true
    on success; false with the load error in *outError at the first failure. */
@@ -103,9 +149,9 @@ static bool TerrainVisualResources_LoadTablesAndPalettes
   uint32_t loadErrorCode;
 
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,primaryResourcePath); /* ".dat" */
-  packetTable = Package_LoadEntry(primaryResourcePath,&loadErrorCode);
+  packetTable = TerrainVisualResources_LoadPacketTable(primaryResourcePath,true,
+                                                       &g_TerrainSurfacePacketTablePayloadBytes,outError);
   if (packetTable == nullptr) {
-    *outError = loadErrorCode;
     return false;
   }
   MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -139,9 +185,9 @@ static bool TerrainVisualResources_LoadTablesAndPalettes
   pathSuffixEntry->lowercaseLetterUtf16 = 0;
   pathSuffixEntry->terminator = 0;
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,secondaryResourcePath); /* ".dat" */
-  packetTable = Package_LoadEntry(secondaryResourcePath,&loadErrorCode);
+  packetTable = TerrainVisualResources_LoadPacketTable(secondaryResourcePath,false,
+                                                       &g_TerrainSoilPacketTablePayloadBytes,outError);
   if (packetTable == nullptr) {
-    *outError = loadErrorCode;
     return false;
   }
   MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -227,9 +273,53 @@ bool TerrainVisualResources_LoadPrimary
 }
 
 
+/* Savegame load check of the map-edge ring: true when every cell carries exactly the FIELD_CELL_GRID_EDGE_MASK
+   bits FieldGrid_InitializeRuntimeCellsAndBoundaryFlags gives it (first/last row, first/last column on the
+   outermost ring, none inside). The original kept the saved flags unchecked; a save is rejected here because the
+   neighbour loops (scratch grid classification and occupancy, hex scans) stop only at these bits and would walk
+   off the grid. Valid saves always pass: the bits are set once at level start and every later writer of
+   flagsAndMaterial keeps them (terrain edits mask them out of the change, the projection pass keeps them). */
+static bool TerrainVisualResources_SavedEdgeRingIsValid(const FieldGridAsset *field)
+
+{
+  const FieldGridCell *fieldCell;
+  FieldGridDimension row;
+  FieldGridDimension column;
+  FieldCellPackedFlagsAndMaterial expectedEdgeBits;
+
+  fieldCell = field->cells;
+  for (row = 0; row < field->gridHeight; row++) {
+    for (column = 0; column < field->gridWidth; column++) {
+      expectedEdgeBits = FieldCellPackedFlagsAndMaterial{};
+      if (row == 0) {
+        expectedEdgeBits = expectedEdgeBits | FIELD_CELL_FIRST_ROW_BOUNDARY;
+      }
+      if (row == field->gridHeight - 1) {
+        expectedEdgeBits = expectedEdgeBits | FIELD_CELL_LAST_ROW_BOUNDARY;
+      }
+      if (column == 0) {
+        expectedEdgeBits = expectedEdgeBits | FIELD_CELL_FIRST_COLUMN_BOUNDARY;
+      }
+      if (column == field->gridWidth - 1) {
+        expectedEdgeBits = expectedEdgeBits | FIELD_CELL_LAST_COLUMN_BOUNDARY;
+      }
+      if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != expectedEdgeBits) {
+        Thandor_Log("TerrainVisualResources: rejected saved field, cell (%u,%u) has edge bits 0x%08X instead of 0x%08X",
+                    column,row,FieldCell_RawBits(fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK),
+                    FieldCell_RawBits(expectedEdgeBits));
+        return false;
+      }
+      fieldCell++;
+    }
+  }
+  return true;
+}
+
 /* Variant of TerrainVisualResources_LoadPrimary for a field whose runtime cells already exist (loading a
    savegame): the same resources are loaded, but the cells only get their lookup pointers rebuilt, and
-   flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell. Returns true on success; on failure
+   flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell. A saved field whose map-edge ring
+   differs from the one a new level gets is rejected (FATAL_ERROR_FIELD_ASSET_INVALID), and a surface packet
+   index outside the loaded surface table is bounded. Returns true on success; on failure
    returns false and stores the error in *outError (untouched on success).
 */
 bool TerrainVisualResources_LoadAndClearCellOverlayFlags
@@ -240,12 +330,16 @@ bool TerrainVisualResources_LoadAndClearCellOverlayFlags
   TerrainMaterialSuffixEntry *pathSuffixEntry;
   FieldGridCell *fieldCell;
   int cellsRemaining;
+  uint32_t surfacePacketCount;
+  uint32_t surfacePacketMask;
+  uint32_t clampedCellCount;
 
   pathSuffixEntry = TerrainVisualResources_FindPathSuffixEntry(secondaryResourcePath);
   /* The original checks only magic and converter; the dimensions bounded here as well (level data) */
   if (((field->common).magic != ASSET_MAGIC_FLD) ||
       ((field->common).converterVersion != PCK_CONVERTER_FLD_SHT_00060006) ||
-      !FieldGrid_ValidateLoadedImage(field,(field->common).allocationSizeBytes)) {
+      !FieldGrid_ValidateLoadedImage(field,(field->common).allocationSizeBytes) ||
+      !TerrainVisualResources_SavedEdgeRingIsValid(field)) {
     *outError = (uint32_t)FATAL_ERROR_FIELD_ASSET_INVALID;
     return false;
   }
@@ -261,15 +355,32 @@ bool TerrainVisualResources_LoadAndClearCellOverlayFlags
   MoviePlayback_AdvanceScheduledFrameAndTick();
   TerrainDirectionTable_RandomizeRecords();
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  /* runs at least once (as in the original), so a field without cells would run away */
   cellsRemaining = field->gridWidth * field->gridHeight;
   fieldCell = field->cells;
-  /* Original quirk: a do-while, a count of 0 runs it 2^32 times (D8: kept for step 11) */
+  /* The original took the saved surface packet indices as they are; a save paired with a smaller surface table
+     indexes past it in TerrainProjectedTriangle_ClipInterpolateAndQueueTextured, so an index outside the table
+     is bounded here with the phase mask of FieldGrid_InitializeRuntimeCellsAndBoundaryFlags. A valid save is
+     unchanged: its indices were drawn with that mask from the same table, which
+     TerrainVisualResources_LoadPacketTable only accepts with at least 2^(phase seed bit width) packets. */
+  surfacePacketCount = g_TerrainSurfacePacketTablePayloadBytes / TERRAIN_SURFACE_PACKET_BYTES;
+  surfacePacketMask =
+       (uint32_t)(((uint64_t)1 << (Thandor_LoadU32(static_cast<uint8_t *>(g_TerrainSurfacePacketTablePayload) -
+                                                    TERRAIN_PACKET_TABLE_HEADER_BYTES) & 31)) - 1);
+  clampedCellCount = 0;
+  /* count >= 16: FieldGrid_ValidateLoadedImage above rejects grids with a side below FIELD_GRID_MIN_SIDE_CELLS */
   do {
     fieldCell->flagsAndMaterial = fieldCell->flagsAndMaterial & ~FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28;
+    if (fieldCell->surfacePacketIndex >= surfacePacketCount) {
+      fieldCell->surfacePacketIndex = fieldCell->surfacePacketIndex & surfacePacketMask;
+      clampedCellCount++;
+    }
     fieldCell++;
     cellsRemaining--;
   } while (cellsRemaining != 0);
+  if (clampedCellCount != 0) {
+    Thandor_Log("TerrainVisualResources: %u saved cells had a surface packet index outside the %u-packet table",
+                clampedCellCount,surfacePacketCount);
+  }
   TerrainDirectionTable_AdvanceAndRebuildVectors();
   return true;
 }
@@ -310,4 +421,6 @@ void TerrainVisualResources_Shutdown()
   g_TerrainPrimaryPalette = nullptr;
   g_TerrainSoilPacketTablePayload = nullptr;
   g_TerrainSurfacePacketTablePayload = nullptr;
+  g_TerrainSoilPacketTablePayloadBytes = 0;
+  g_TerrainSurfacePacketTablePayloadBytes = 0;
 }
