@@ -10,4 +10,4 @@ existing full Thandor installation (the folder with `DATEN.PCK`; patch 5 is not 
 uninstalling puts it back. Saves, `thandor.ini` and the game data are not touched. The setup is not signed, so
 SmartScreen may warn. The game data is not included.
 
-Changes: [CHANGELOG.md](https://github.com/idkFoxes/open-thandor/blob/v@VERSION@/CHANGELOG.md)
+Patch notes / Änderungen: [docs/PATCH_NOTES.md](https://github.com/idkFoxes/open-thandor/blob/v@VERSION@/docs/PATCH_NOTES.md)
