@@ -24,8 +24,9 @@ inline constexpr int TEXT_ID_LEVEL_PAGE_TITLE = 0x3000;
 inline constexpr int TEXT_ID_LEVEL_PAGE_DESCRIPTION = 0x3001;
 inline constexpr int TEXT_ID_LEVEL_PAGE_EXTRA_LINES = 0x3002;
 inline constexpr int TEXT_LEVEL_EXTRA_LINE_COUNT = 14;
-/* Not in the original: texts of open-thandor's own controls (literal German, no locale data), resolved by
-   TextResource_TryResolve before the override table. Page 0x7F (extended ids) is not used by the game data. */
+/* Not in the original: texts of open-thandor's own controls (literal German, and English for every other language:
+   project_texts_en.cpp, TextResource_ProjectTextsAreGerman), resolved by TextResource_TryResolve before the override
+   table. Page 0x7F (extended ids) is not used by the game data. */
 inline constexpr int TEXT_ID_PROJECT_BASE = 0x7F0000;
 #define TEXT_ID_DISPLAY_MODE_KIND_TITLE (TEXT_ID_PROJECT_BASE + 0) /* "Anzeigemodus:" */
 #define TEXT_ID_DISPLAY_MODE_KIND_WINDOW (TEXT_ID_PROJECT_BASE + 1) /* "Fenster" */
@@ -77,6 +78,7 @@ inline constexpr int TEXT_ID_PROJECT_BASE = 0x7F0000;
 inline constexpr int TEXT_ID_CAMPAIGN_BUTTON_LABEL_COUNT = 6;
 inline constexpr int TEXT_ID_CAMPAIGN_BUTTON_LABEL_UNITS = 64; /* code units of each label buffer, terminator included */
 inline constexpr int TEXT_ID_PROJECT_COUNT = 46;
+/* TEXT_ID_PROJECT_BASE + 46..49 are reserved for the language choice of the advanced settings page. */
 
 /* Not in the original: sets the text of TEXT_ID_ADVANCED_NOTE_UI_SCALE (Latin-1, cut to its buffer). */
 void TextResource_SetUiScaleNote(const char *text);
@@ -170,6 +172,46 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText);
 
 /* TextResource_TryResolve without the found flag (a missing text gives an empty string, not the sentinel) */
 uint16_t *TextResource_Resolve(TextResourceId resourceId);
+
+/* Not in the original: the text language (docs: options, language switch). Every loaded 'str' page keeps all its
+   usable locale blocks prepared (TextResourcePage_Load), so the language can change at run time without loading or
+   freeing anything: TextResource_SelectLanguage rebinds every loaded page.
+   Country codes are telephone country codes (LocaleTelephoneCountryCode); 0 means "from Windows". */
+inline constexpr int TEXT_RESOURCE_LANGUAGE_AUTO = 0;
+inline constexpr int TEXT_RESOURCE_LANGUAGE_MAX = 5; /* de, en, fr, it, es */
+
+/* Rebinds every loaded text page to the locale block of countryCode (0: the Windows default country), else the
+   Great Britain block, else the page's first usable block, and uses countryCode for pages loaded later. Allocates
+   nothing. Bindings that point into a text page (nested-stream patches, the mouse-help icons) must be applied
+   again afterwards (CoreAssets_BindLanguageTexts; Game_ApplyLanguage does all of it). */
+void TextResource_SelectLanguage(uint32_t countryCode);
+
+/* The country code last passed to TextResource_SelectLanguage, else the thandor.ini setting
+   (g_LocaleCountryCodeOverride); 0 = auto. */
+uint32_t TextResource_SelectedLanguage();
+
+/* The country code of the block bound for the menu texts (menue.str); before that page is loaded the country code
+   a page would get (the selected one, or the Windows default for auto). */
+uint32_t TextResource_ActiveLanguage();
+
+/* Fills outCodes (capacity entries) with the languages menue.str has a usable block for, in the order German,
+   English, French, Italian, Spanish (49, 44, 33, 39, 34); other country codes are not listed. Returns the count
+   (0 before menue.str is loaded). */
+int TextResource_AvailableLanguages(uint32_t *outCodes,int capacity);
+
+/* True when the project texts (TEXT_ID_PROJECT_BASE..) are shown in German: the active language is German.
+   Every other language shows them in English. */
+bool TextResource_ProjectTextsAreGerman();
+
+/* The English text of project text index (0..TEXT_ID_PROJECT_COUNT - 1), or nullptr where there is none (the
+   texts filled in at run time; the German text is used). project_texts_en.cpp. */
+uint16_t *TextResource_ProjectTextEnglish(uint32_t index);
+
+/* Not in the original: binds an already loaded 'str' asset (allocated through g_MemoryApi, byteCount bytes) as page
+   pageIndex like TextResourcePage_Load (which loads it from the packages and then calls this; path is only used in
+   log lines). On failure the asset is released and the binding stays unchanged. */
+bool TextResourcePage_BindAsset(TextResourcePageIndex pageIndex,uint16_t *path,TextResourceAssetHeader *allocation,
+                                uint32_t byteCount,uintptr_t *outLocaleBlockOrError);
 
 extern TextResourceOverrideTable *g_TextResourceOverrides;
 

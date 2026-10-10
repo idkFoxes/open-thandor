@@ -62,6 +62,7 @@ add_executable(thandor WIN32
     src/assets/scenario/catalog.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
+    src/assets/text/project_texts_en.cpp
     src/assets/text/resources.cpp
     src/assets/text/richtext.cpp
     src/assets/text/richtext_markup.cpp
@@ -554,6 +555,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/selftest/hexscan_selftest.cpp
         src/platform/selftest/keybindings_selftest.cpp
         src/platform/selftest/keymatch_selftest.cpp
+        src/platform/selftest/language_selftest.cpp
         src/platform/selftest/nativefile_selftest.cpp
         src/platform/selftest/raster_selftest.cpp
         src/platform/selftest/selftests.cpp

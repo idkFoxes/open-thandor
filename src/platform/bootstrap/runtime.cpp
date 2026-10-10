@@ -808,9 +808,28 @@ void Screenshot_SaveFramebufferAsPcx()
 }
 
 
-/* Binds placeholders 0..13 of the world view info texts to the debug-overlay text slots and installs the
-   in-game and frontend UI action handler pages. */
-static void CoreAssets_BindDebugOverlayTextsAndUiPages()
+/* Installs the in-game and frontend UI action handler pages. (The original did this together with the world view
+   info text bindings, which are in CoreAssets_BindLanguageTexts now.) */
+static void CoreAssets_BindUiActionPages()
+
+{
+  UiActionHandlers_SetPage
+            (UI_ACTION_PAGE_INGAME,UiActionHandlerPage_FromPrefix(&g_InGameUiActionHandlersPage10));
+  UiActionHandlers_SetPage
+            (UI_ACTION_PAGE_INGAME_COMMAND_MODE,
+             UiActionHandlerPage_FromPrefix(&g_InGameUiActionHandlersPage11));
+  UiActionHandlers_SetPage
+            (UI_ACTION_PAGE_INGAME_MENU,UiActionHandlerPage_FromPrefix(&g_InGameUiActionHandlersPage12));
+  UiActionHandlers_SetPage
+            (UI_ACTION_PAGE_FRONTEND,UiActionHandlerPage_FromPrefix(&g_FrontendUiActionHandlersPage20));
+}
+
+
+/* Not in the original as one function: the bindings into the text pages that are made once at startup, made again
+   after a language switch (the new locale blocks have the unbound placeholders of TextResourcePage_Load):
+   placeholders 0..13 of the world view info texts point at the debug-overlay text slots, and the mouse-help text's
+   icons at the cursor texture. Allocates nothing. */
+void CoreAssets_BindLanguageTexts()
 
 {
   TextResourceId resourceId;
@@ -834,15 +853,25 @@ static void CoreAssets_BindDebugOverlayTextsAndUiPages()
     RichTextCommandStream_PatchPayloadBySelector(12,g_FrontendDebugOverlayTextSlot12Utf16,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(13,g_FrontendDebugOverlayTextSlot13Utf16,resolvedText);
   }
-  UiActionHandlers_SetPage
-            (UI_ACTION_PAGE_INGAME,UiActionHandlerPage_FromPrefix(&g_InGameUiActionHandlersPage10));
-  UiActionHandlers_SetPage
-            (UI_ACTION_PAGE_INGAME_COMMAND_MODE,
-             UiActionHandlerPage_FromPrefix(&g_InGameUiActionHandlersPage11));
-  UiActionHandlers_SetPage
-            (UI_ACTION_PAGE_INGAME_MENU,UiActionHandlerPage_FromPrefix(&g_InGameUiActionHandlersPage12));
-  UiActionHandlers_SetPage
-            (UI_ACTION_PAGE_FRONTEND,UiActionHandlerPage_FromPrefix(&g_FrontendUiActionHandlersPage20));
+  RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,TextResource_Resolve(TEXT_ID_MOUSE_HELP));
+}
+
+
+/* Not in the original: switches the text language at run time (countryCode a telephone country code, 0 = from
+   Windows): saves it (PersistentSettings_WriteLanguage; written by the next flush), rebinds every loaded text page
+   (TextResource_SelectLanguage), makes the startup bindings again (CoreAssets_BindLanguageTexts) and the frontend's
+   network address line binding (Frontend_Init), and redraws the frontend when it is up. Loads and frees nothing. */
+void Game_ApplyLanguage(uint32_t countryCode)
+
+{
+  PersistentSettings_WriteLanguage(countryCode);
+  TextResource_SelectLanguage(countryCode);
+  CoreAssets_BindLanguageTexts();
+  RichTextCommandStream_PatchPayloadBySelector
+            (0,g_FrontendNetworkEndpointTextUtf16,TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE));
+  if (g_FrontendRootNode != nullptr) {
+    UiNode_InvalidateRoot(&g_FrontendRootNode->frontendRoot.root.base);
+  }
 }
 
 
@@ -1116,11 +1145,13 @@ uint32_t Game_LoadCoreAssets()
     return buttonSoundError;
   }
   CoreAssets_AdvanceScreenshotName();
-  CoreAssets_BindDebugOverlayTextsAndUiPages();
+  CoreAssets_BindUiActionPages();
   if (!CoreAssets_LoadTextPages(&textPageError)) {
     return (uint32_t)textPageError;
   }
-  RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,TextResource_Resolve(TEXT_ID_MOUSE_HELP));
+  /* the original bound the world view info texts (page 1, loaded before) ahead of the eight pages; the order does
+     not matter (no allocation, page 1 untouched by the loads) */
+  CoreAssets_BindLanguageTexts();
   CoreAssets_ApplySoundSettings();
   if (!AiRuntime_InitWorkspace(&aiInitError)) {
     return aiInitError;

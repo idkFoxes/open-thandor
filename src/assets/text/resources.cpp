@@ -336,79 +336,69 @@ static uint32_t RichTextRecord_ParseDecimalDigits(const uint16_t *recordStart)
          (highDigits & 0xf) * 1000;
 }
 
-/* Loads a 'str' text asset as page pageIndex: picks the locale block of the configured (or system) country,
-   else the Great Britain block, else the first one, binds it, and prepares every string's command records for
-   run time (see the switch). Returns true on success and stores the selected block's address in
-   *outLocaleBlockOrError; returns false and stores the package error there, or
-   TEXT_RESOURCE_MISSING_SENTINEL_0x33 for a non-'str' or malformed asset (which is released; the page binding
-   stays unchanged). outLocaleBlockOrError may be NULL.
-*/
-bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintptr_t *outLocaleBlockOrError)
+/* Not in the original: the prepared (usable) locale blocks of each loaded page in asset order, so that
+   TextResource_SelectLanguage can rebind a page without reading its asset again. Filled by
+   TextResourcePage_BindAsset together with the page binding. */
+inline constexpr int TEXT_RESOURCE_PAGE_LOCALE_BLOCKS_MAX = 8;
+struct TextResourcePageLocaleBlocks {
+  TextResourceLocaleBlockPrefix *blocks[TEXT_RESOURCE_PAGE_LOCALE_BLOCKS_MAX];
+  LocaleTelephoneCountryCode countryCodes[TEXT_RESOURCE_PAGE_LOCALE_BLOCKS_MAX];
+  int count;
+};
+static TextResourcePageLocaleBlocks s_TextResourcePageLocaleBlocks[256];
 
+/* the language of TextResource_SelectLanguage; until its first call the thandor.ini setting applies */
+static bool s_TextResourceLanguageSelected = false;
+static uint32_t s_TextResourceLanguage = TEXT_RESOURCE_LANGUAGE_AUTO;
+
+uint32_t TextResource_SelectedLanguage()
+{
+  return s_TextResourceLanguageSelected ? s_TextResourceLanguage : g_LocaleCountryCodeOverride;
+}
+
+/* The country code a page is bound to: the selected one, for auto the Windows default. */
+static LocaleTelephoneCountryCode TextResource_RequestedCountryCode()
+{
+  const uint32_t selected = TextResource_SelectedLanguage();
+
+  if (selected != TEXT_RESOURCE_LANGUAGE_AUTO) {
+    return static_cast<LocaleTelephoneCountryCode>(selected);
+  }
+  /* the self-tests run before Locale_Init set the function pointer */
+  return (g_LocaleGetDefaultTelephoneCountryCode != nullptr) ? g_LocaleGetDefaultTelephoneCountryCode()
+                                                             : Locale_GetDefaultTelephoneCountryCode();
+}
+
+/* Prepares every string of a locale block for run time: the nested-stream and image records' decimal digits become
+   a binary number and the pointer slot (see the switch). walkEnd bounds the walk (one past the last code unit a
+   string may use). Returns nullptr on success, else the reason the block is malformed (the block may then be
+   partly prepared). On success *outReached is one past the last code unit read (string table and strings). */
+static const char *TextResourceLocaleBlock_Prepare(TextResourceLocaleBlockPrefix *localeBlock,uint16_t *walkEnd,
+                                                   uint16_t **outReached)
 {
   uint16_t codeUnit;
   uint32_t decimalValue;
-  TextResourceAssetHeader *allocation;
-  TextResourceLocaleBlockPrefix *localeBlock;
   uint32_t *stringOffsets;
-  LocaleTelephoneCountryCode countryCode;
   TextResourceStringCount remainingStrings;
   uint16_t *recordStart;
   uint16_t *textCursor;
   int stringIndex;
-  uint32_t loadErrorCode;
-  uint32_t byteCount;
-  uint16_t *assetEnd;
+  uint16_t *reached;
 
-  allocation = static_cast<TextResourceAssetHeader *>(Package_LoadEntryWithSize(path,&byteCount,&loadErrorCode));
-  if (allocation == nullptr) {
-    Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, reinterpret_cast<wchar_t *>(path), /* UTF-16 for %ls */
-                loadErrorCode);
-    if (outLocaleBlockOrError != nullptr) {
-      *outLocaleBlockOrError = loadErrorCode;
-    }
-    return false;
-  }
-  /* not in the original: an asset shorter than the header is treated as a non-'str' asset */
-  if ((byteCount < sizeof(TextResourceAssetHeader)) ||
-      ((allocation->localeCountHeader).common.magic != ASSET_MAGIC_STR)) {
-    Resource_Release(allocation);
-    if (outLocaleBlockOrError != nullptr) {
-      *outLocaleBlockOrError = TEXT_RESOURCE_MISSING_SENTINEL_0x33;
-    }
-    return false;
-  }
-  if (!TextResourceAsset_HasValidBlocks(allocation,byteCount)) {
-    return TextResourcePage_RejectAsset(pageIndex,path,allocation,"locale blocks",outLocaleBlockOrError);
-  }
-  countryCode = static_cast<LocaleTelephoneCountryCode>(g_LocaleCountryCodeOverride);
-  if (g_LocaleCountryCodeOverride == 0) {
-    countryCode = g_LocaleGetDefaultTelephoneCountryCode();
-  }
-  /* the block for the country code, else the Great Britain block, else the first block */
-  localeBlock = TextResourceAsset_FindLocaleBlock(allocation,countryCode);
-  if (localeBlock == nullptr) {
-    localeBlock = TextResourceAsset_FindLocaleBlock(allocation,LocaleTelephoneCountryCode::LOCALE_COUNTRY_GREAT_BRITAIN);
-    if (localeBlock == nullptr) {
-      localeBlock = Asset_RecordAfter<TextResourceLocaleBlockPrefix>(allocation);
-    }
-  }
-  /* The original binds the page here, before the walk; bound after the walk here so that a rejected asset leaves
-     the binding unchanged (nothing reads it during the walk). */
-  assetEnd = Asset_RecordAt<uint16_t>(allocation,byteCount & ~1u);
-  if (!TextResourceLocaleBlock_HasValidStrings(localeBlock,assetEnd)) {
-    return TextResourcePage_RejectAsset(pageIndex,path,allocation,"string table",outLocaleBlockOrError);
+  if (!TextResourceLocaleBlock_HasValidStrings(localeBlock,walkEnd)) {
+    return "string table";
   }
   /* the string offsets (relative to the block) follow the 16-byte block prefix */
   stringOffsets = Asset_RecordAfter<uint32_t>(localeBlock);
+  reached = reinterpret_cast<uint16_t *>(stringOffsets + localeBlock->stringCount);
   stringIndex = 0;
   for (remainingStrings = localeBlock->stringCount; remainingStrings != 0; remainingStrings--) {
     textCursor = Asset_RecordAt<uint16_t>(localeBlock,stringOffsets[stringIndex]);
     /* The original walks to the terminator; bounded here because a string without one, or a record cut off by
        the asset end, would be read and rewritten past the asset. */
     for (;;) {
-      if (textCursor >= assetEnd) {
-        return TextResourcePage_RejectAsset(pageIndex,path,allocation,"unterminated string",outLocaleBlockOrError);
+      if (textCursor >= walkEnd) {
+        return "unterminated string";
       }
       if (*textCursor == 0) {
         break;
@@ -416,13 +406,13 @@ bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintpt
       recordStart = textCursor;
       codeUnit = *recordStart;
       textCursor = recordStart + 1;
-      if (((short)codeUnit < 0) && (assetEnd - recordStart < RICHTEXT_RECORD_UNITS_NESTED)) {
+      if (((short)codeUnit < 0) && (walkEnd - recordStart < RICHTEXT_RECORD_UNITS_NESTED)) {
         /* the nested-stream and image records read and rewrite their whole payload */
         switch(codeUnit & RICHTEXT_OPCODE_MASK) {
         case RICHTEXT_OP_CALL_NESTED:
         case RICHTEXT_OP_JUMP_NESTED:
         case RICHTEXT_OP_INLINE_IMAGE:
-          return TextResourcePage_RejectAsset(pageIndex,path,allocation,"truncated record",outLocaleBlockOrError);
+          return "truncated record";
         }
       }
       if ((short)codeUnit < 0) {
@@ -456,14 +446,220 @@ bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintpt
         }
       }
     }
+    if (textCursor + 1 > reached) {
+      reached = textCursor + 1; /* the terminator included */
+    }
     stringIndex++;
+  }
+  *outReached = reached;
+  return nullptr;
+}
+
+/* One past the last whole code unit of a locale block (its blockSizeBytes), cut to the asset end. */
+static uint16_t *TextResourceLocaleBlock_End(TextResourceLocaleBlockPrefix *localeBlock,uint16_t *assetEnd)
+{
+  const uint64_t available = (uint64_t)Asset_ByteDistance(assetEnd,localeBlock);
+  const uint64_t blockBytes = (localeBlock->blockSizeBytes < available) ? localeBlock->blockSizeBytes : available;
+
+  return Asset_RecordAt<uint16_t>(localeBlock,(uint32_t)(blockBytes & ~(uint64_t)1));
+}
+
+/* The page's usable block for countryCode, else its Great Britain block, else its first usable block (nullptr for a
+   page without usable blocks): the rule TextResourcePage_BindAsset applies to the asset's blocks. */
+static TextResourceLocaleBlockPrefix *TextResourcePage_ChooseLocaleBlock(const TextResourcePageLocaleBlocks *page,
+                                                                         LocaleTelephoneCountryCode countryCode)
+{
+  int index;
+
+  if (page->count == 0) {
+    return nullptr;
+  }
+  for (index = 0; index < page->count; index++) {
+    if (page->countryCodes[index] == countryCode) {
+      return page->blocks[index];
+    }
+  }
+  for (index = 0; index < page->count; index++) {
+    if (page->countryCodes[index] == LocaleTelephoneCountryCode::LOCALE_COUNTRY_GREAT_BRITAIN) {
+      return page->blocks[index];
+    }
+  }
+  return page->blocks[0];
+}
+
+/* Loads a 'str' text asset as page pageIndex and binds it (TextResourcePage_BindAsset): picks the locale block of
+   the configured (or system) country, else the Great Britain block, else the first one, binds it, and prepares
+   every string's command records for run time (TextResourceLocaleBlock_Prepare). Returns true on success and
+   stores the selected block's address in *outLocaleBlockOrError; returns false and stores the package error there,
+   or TEXT_RESOURCE_MISSING_SENTINEL_0x33 for a non-'str' or malformed asset (which is released; the page binding
+   stays unchanged). outLocaleBlockOrError may be NULL.
+   Not in the original: the other locale blocks are prepared as well, so TextResource_SelectLanguage can switch to
+   them.
+*/
+bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintptr_t *outLocaleBlockOrError)
+
+{
+  TextResourceAssetHeader *allocation;
+  uint32_t loadErrorCode;
+  uint32_t byteCount;
+
+  allocation = static_cast<TextResourceAssetHeader *>(Package_LoadEntryWithSize(path,&byteCount,&loadErrorCode));
+  if (allocation == nullptr) {
+    Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, reinterpret_cast<wchar_t *>(path), /* UTF-16 for %ls */
+                loadErrorCode);
+    if (outLocaleBlockOrError != nullptr) {
+      *outLocaleBlockOrError = loadErrorCode;
+    }
+    return false;
+  }
+  return TextResourcePage_BindAsset(pageIndex,path,allocation,byteCount,outLocaleBlockOrError);
+}
+
+bool TextResourcePage_BindAsset(TextResourcePageIndex pageIndex,uint16_t *path,TextResourceAssetHeader *allocation,
+                                uint32_t byteCount,uintptr_t *outLocaleBlockOrError)
+{
+  TextResourceLocaleBlockPrefix *localeBlock;
+  TextResourceLocaleBlockPrefix *block;
+  LocaleTelephoneCountryCode countryCode;
+  AssetRecordCount remainingBlocks;
+  TextResourcePageLocaleBlocks usable{};
+  uint16_t *assetEnd;
+  uint16_t *reached = nullptr;
+  const char *reason;
+  bool selectedContained;
+  bool selectedListed;
+
+  /* not in the original: an asset shorter than the header is treated as a non-'str' asset */
+  if ((byteCount < sizeof(TextResourceAssetHeader)) ||
+      ((allocation->localeCountHeader).common.magic != ASSET_MAGIC_STR)) {
+    Resource_Release(allocation);
+    if (outLocaleBlockOrError != nullptr) {
+      *outLocaleBlockOrError = TEXT_RESOURCE_MISSING_SENTINEL_0x33;
+    }
+    return false;
+  }
+  if (!TextResourceAsset_HasValidBlocks(allocation,byteCount)) {
+    return TextResourcePage_RejectAsset(pageIndex,path,allocation,"locale blocks",outLocaleBlockOrError);
+  }
+  countryCode = TextResource_RequestedCountryCode();
+  /* the block for the country code, else the Great Britain block, else the first block */
+  localeBlock = TextResourceAsset_FindLocaleBlock(allocation,countryCode);
+  if (localeBlock == nullptr) {
+    localeBlock = TextResourceAsset_FindLocaleBlock(allocation,LocaleTelephoneCountryCode::LOCALE_COUNTRY_GREAT_BRITAIN);
+    if (localeBlock == nullptr) {
+      localeBlock = Asset_RecordAfter<TextResourceLocaleBlockPrefix>(allocation);
+    }
+  }
+  /* The original binds the page here, before the walk; bound after the walk here so that a rejected asset leaves
+     the binding unchanged (nothing reads it during the walk). */
+  assetEnd = Asset_RecordAt<uint16_t>(allocation,byteCount & ~1u);
+  reason = TextResourceLocaleBlock_Prepare(localeBlock,assetEnd,&reached);
+  if (reason != nullptr) {
+    return TextResourcePage_RejectAsset(pageIndex,path,allocation,reason,outLocaleBlockOrError);
+  }
+  /* Not in the original: the other blocks are prepared too, each walked within its own extent (blockSizeBytes),
+     and listed when that succeeds; a malformed one is skipped (logged) and the asset kept. The extents of
+     consecutive blocks are disjoint, so no string is prepared twice; only when the selected block's strings
+     reach beyond its own extent (which the original allows) the others stay unprepared and unlisted. */
+  selectedContained = (reached <= TextResourceLocaleBlock_End(localeBlock,assetEnd));
+  selectedListed = false;
+  block = Asset_RecordAfter<TextResourceLocaleBlockPrefix>(allocation);
+  for (remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
+       (remainingBlocks != 0) && (usable.count < TEXT_RESOURCE_PAGE_LOCALE_BLOCKS_MAX); remainingBlocks--) {
+    if (block == localeBlock) {
+      usable.blocks[usable.count] = block;
+      usable.countryCodes[usable.count++] = block->countryCode;
+      selectedListed = true;
+    }
+    else if (selectedContained) {
+      reason = TextResourceLocaleBlock_Prepare(block,TextResourceLocaleBlock_End(block,assetEnd),&reached);
+      if (reason == nullptr) {
+        usable.blocks[usable.count] = block;
+        usable.countryCodes[usable.count++] = block->countryCode;
+      }
+      else {
+        Thandor_Log("text page 0x%02X \"%ls\": locale block %d skipped (%s)", pageIndex,
+                    reinterpret_cast<wchar_t *>(path), static_cast<int>(block->countryCode), reason); /* UTF-16 for %ls */
+      }
+    }
+    /* TextResourceAsset_HasValidBlocks checked every block prefix */
+    if (remainingBlocks > 1) {
+      block = Asset_RecordAt<TextResourceLocaleBlockPrefix>(block,block->blockSizeBytes);
+    }
+  }
+  if (!selectedListed) {
+    /* the selected block lies beyond the first TEXT_RESOURCE_PAGE_LOCALE_BLOCKS_MAX: it alone is listed */
+    usable = TextResourcePageLocaleBlocks{};
+    usable.blocks[0] = localeBlock;
+    usable.countryCodes[0] = localeBlock->countryCode;
+    usable.count = 1;
   }
   g_TextResourcePageBindings[pageIndex].selectedLocaleBlock = localeBlock;
   g_TextResourcePageBindings[pageIndex].asset = allocation;
+  s_TextResourcePageLocaleBlocks[pageIndex] = usable;
   if (outLocaleBlockOrError != nullptr) {
     *outLocaleBlockOrError = (uintptr_t)localeBlock;
   }
   return true;
+}
+
+void TextResource_SelectLanguage(uint32_t countryCode)
+{
+  LocaleTelephoneCountryCode requested;
+  TextResourceLocaleBlockPrefix *localeBlock;
+  size_t pageIndex;
+
+  s_TextResourceLanguage = countryCode;
+  s_TextResourceLanguageSelected = true;
+  requested = TextResource_RequestedCountryCode();
+  for (pageIndex = 0; pageIndex < sizeof(g_TextResourcePageBindings) / sizeof(g_TextResourcePageBindings[0]);
+       pageIndex++) {
+    if (g_TextResourcePageBindings[pageIndex].asset == nullptr) {
+      continue;
+    }
+    localeBlock = TextResourcePage_ChooseLocaleBlock(&s_TextResourcePageLocaleBlocks[pageIndex],requested);
+    if (localeBlock != nullptr) {
+      g_TextResourcePageBindings[pageIndex].selectedLocaleBlock = localeBlock;
+    }
+  }
+}
+
+uint32_t TextResource_ActiveLanguage()
+{
+  const TextResourceLocaleBlockPrefix *localeBlock = g_TextResourcePageBindings[GAME_TEXT_PAGE_MENUE].selectedLocaleBlock;
+
+  if (localeBlock != nullptr) {
+    return static_cast<uint32_t>(localeBlock->countryCode);
+  }
+  return static_cast<uint32_t>(TextResource_RequestedCountryCode());
+}
+
+int TextResource_AvailableLanguages(uint32_t *outCodes,int capacity)
+{
+  static const LocaleTelephoneCountryCode order[TEXT_RESOURCE_LANGUAGE_MAX] = {
+      LocaleTelephoneCountryCode::LOCALE_COUNTRY_GERMANY, LocaleTelephoneCountryCode::LOCALE_COUNTRY_GREAT_BRITAIN,
+      LocaleTelephoneCountryCode::LOCALE_COUNTRY_FRANCE, LocaleTelephoneCountryCode::LOCALE_COUNTRY_ITALY,
+      LocaleTelephoneCountryCode::LOCALE_COUNTRY_SPAIN};
+  const TextResourcePageLocaleBlocks *page = &s_TextResourcePageLocaleBlocks[GAME_TEXT_PAGE_MENUE];
+  int count = 0;
+  int index;
+
+  for (LocaleTelephoneCountryCode countryCode : order) {
+    for (index = 0; index < page->count; index++) {
+      if (page->countryCodes[index] == countryCode) {
+        if (count < capacity) {
+          outCodes[count++] = static_cast<uint32_t>(countryCode);
+        }
+        break;
+      }
+    }
+  }
+  return count;
+}
+
+bool TextResource_ProjectTextsAreGerman()
+{
+  return TextResource_ActiveLanguage() == static_cast<uint32_t>(LocaleTelephoneCountryCode::LOCALE_COUNTRY_GERMANY);
 }
 
 /* Makes resourceId resolve to text (checked by TextResource_Resolve before the locale blocks) by storing the
@@ -598,7 +794,11 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     return true;
   }
   if ((resourceId >= TEXT_ID_PROJECT_BASE) && (resourceId < TEXT_ID_PROJECT_BASE + TEXT_ID_PROJECT_COUNT)) {
-    *outText = g_ProjectTexts[resourceId - TEXT_ID_PROJECT_BASE];
+    /* not in the original: English for every language but German where there is an English text */
+    *outText = TextResource_ProjectTextsAreGerman() ? nullptr : TextResource_ProjectTextEnglish(resourceId - TEXT_ID_PROJECT_BASE);
+    if (*outText == nullptr) {
+      *outText = g_ProjectTexts[resourceId - TEXT_ID_PROJECT_BASE];
+    }
     return true;
   }
   if ((resourceId >= TEXT_ID_KEY_BINDING_BASE) && (resourceId < TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT)) {
