@@ -24,8 +24,11 @@ void FrontendScenarioAction_StartFieldGridLoad(void *source);
 
 void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId);
 
+/* startLevelId: 0 starts the campaign at its first level (the original); otherwise the campaign map's start level
+   (docs/plans/campaign_map.md 7.3, CampaignStart_Prepare). Issue it as
+   FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestCampaignBundle>(startLevelId,0,selectedRowIndex). */
 void FrontendScenarioSession_LoadOrRequestCampaignBundle
-          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRecordIndex);
+          (uint32_t playerRuntimeId,uint32_t startLevelId,uint32_t unusedArg2,uint32_t selectedRecordIndex);
 
 void FrontendScenarioSession_LoadOrRequestLevelAsset
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRowIndex);

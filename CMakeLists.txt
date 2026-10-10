@@ -124,6 +124,7 @@ add_executable(thandor WIN32
     src/gameplay/session/campaign_carryover.cpp
     src/gameplay/session/campaign_progress.cpp
     src/gameplay/session/campaign_progress_session.cpp
+    src/gameplay/session/campaign_start.cpp
     src/gameplay/session/level.cpp
     src/gameplay/session/level_new.cpp
     src/gameplay/session/level_saved.cpp
