@@ -33,10 +33,10 @@
                     predicates against UiKeyModifiers_Match for every table class and held 0..0x3F, and
                     UiCommandDispatch_Find against the old scan; logs mismatches and one hash line
      campaignprogress
-                    the campaign progress model and file format (campaignprogress_selftest.cpp): round trip,
-                    truncated file, wrong version and magic (.bad rename), garbage lines, more than 0x200
-                    units, bad asset ids, repeated sections, unknown keys; one line per failed check and a
-                    summary line
+                    the campaign progress model and the kampagne.dat package format
+                    (campaignprogress_selftest.cpp): round trip, truncated files, bad magic and version, CRC32
+                    mismatch, oversize counts and ranges, repeated sections, file cases with the .bad rename;
+                    one line per failed check and a summary line
      nativefile     FileSystem_ReadWholeFileNative / FileSystem_WriteFileReplacing on files in a temporary directory
                     (nativefile_selftest.cpp): round trips, replace of an existing file, missing and over-limit
                     files, a failed replace; one line per failed check and a summary line

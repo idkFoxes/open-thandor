@@ -13,20 +13,52 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
 
 /* Campaign progress (docs/plans/campaign_map.md 4.4): the won and unlocked missions of each campaign and the
-   carry-over snapshots for starting a mission that takes over units, kept in the text file
-   save\campaign_progress.txt. Native memory and native file calls only (no arena). The model holds what the file
-   says after the load-time checks of 4.4; the checks that need the loaded campaign (level ids are records of
-   the campaign, a carry target is the successor of its source, unit positions inside the level) are made when a
-   section is applied. Every container is sorted, so formatting the same progress always gives the same text. */
+   carry-over snapshots for starting a mission that takes over units, kept in save\kampagne.dat. The file is a PCK
+   package in the game's own format (archive header, then per entry a 0x200-byte entry header and the payload
+   packed with the Huffman/RLE codec, compression method 0), written and read natively here (no package API, no
+   arena, main thread only: the codec has static workspaces). Its entries:
 
-/* The first line of the file is CAMPAIGN_PROGRESS_MAGIC, one blank and the version. */
-inline constexpr std::string_view CAMPAIGN_PROGRESS_MAGIC = "open-thandor campaign progress";
-inline constexpr int CAMPAIGN_PROGRESS_VERSION = 1;
+     progress.bin                    the sections (names, fingerprints, wins, unlocked levels, snapshot targets)
+     carry_<name>_<target>.hex       one per snapshot: a small header, then the oldunit.hex layout (record count,
+                                     0x200 primary records of 8 dwords, 64 technology dwords)
+
+   Every payload starts with CAMPAIGN_PROGRESS_PAYLOAD_HEADER_BYTES: its type tag (also the entry's typeTag), the
+   version, the byte count of the data and the CRC32 of the data behind that header, so a damaged or hand-edited
+   file is detected. The model holds what the file says after the load-time checks of 4.4; the checks that need
+   the loaded campaign (level ids are records of the campaign, a carry target is the successor of its source, unit
+   positions inside the level) are made when a section is applied. Every container is sorted, so encoding the same
+   progress always gives the same bytes. */
+
+/* Version of every payload of the file */
+inline constexpr uint32_t CAMPAIGN_PROGRESS_VERSION = 1;
+/* Type tags (first payload dword, three lowercase letters like the stock tags): "kpg" progress.bin, "kco" carry */
+inline constexpr uint32_t CAMPAIGN_PROGRESS_TAG = 'k' | 'p' << 8 | 'g' << 16;
+inline constexpr uint32_t CAMPAIGN_PROGRESS_CARRY_TAG = 'k' | 'c' << 8 | 'o' << 16;
+/* Payload header: tag, version, data byte count (header included), CRC32 of the data behind the header. A payload
+   whose data byte count is a multiple of 16 gets CAMPAIGN_PROGRESS_PAYLOAD_PAD_BYTES zero bytes behind it, so its
+   unpacked size never equals the packed size (always a multiple of 16; tools/data/pck.py takes an entry of equal
+   sizes as stored). */
+inline constexpr size_t CAMPAIGN_PROGRESS_PAYLOAD_HEADER_BYTES = 16;
+inline constexpr size_t CAMPAIGN_PROGRESS_PAYLOAD_PAD_BYTES = 4;
+/* progress.bin: the header, the section count, then per section the name (CAMPAIGN_PROGRESS_NAME_FIELD_BYTES, zero
+   padded), flags (bit 0: has a fingerprint), fingerprint CRC32 and record count (both 0 without one), the win count
+   and wins (levelId, selectionMask byte, lastSelection byte, 2 zero bytes), the unlocked count and level ids, the
+   snapshot count and target level ids. Every list is sorted ascending without repeats, the sections by name. */
+inline constexpr std::string_view CAMPAIGN_PROGRESS_MAIN_ENTRY = "progress.bin";
+inline constexpr size_t CAMPAIGN_PROGRESS_NAME_FIELD_BYTES = 32;
+inline constexpr uint32_t CAMPAIGN_PROGRESS_FLAG_FINGERPRINT = 1;
+inline constexpr size_t CAMPAIGN_PROGRESS_WIN_BYTES = 8;
+/* carry_<name>_<target>.hex: the header (tag, version, size, CRC32, target, source, selection, 0), then the
+   oldunit.hex layout: record count, CAMPAIGN_PROGRESS_UNIT_CAPACITY records of 8 dwords (dwords [0..4] as in
+   CampaignProgressUnit, [5..7] and unused records 0), CAMPAIGN_PROGRESS_TECH_WORD_COUNT technology dwords */
+inline constexpr size_t CAMPAIGN_PROGRESS_CARRY_HEADER_BYTES = 0x20;
+inline constexpr size_t CAMPAIGN_PROGRESS_CARRY_RECORD_DWORDS = 8;
 /* Campaign keys (the .cgn base name): 1..31 characters [A-Za-z0-9_] */
 inline constexpr size_t CAMPAIGN_PROGRESS_NAME_MAX_LENGTH = 31;
 /* End selections 0..7 (CampaignLevelRecord.successorLevelIds) and factions 0..7 */
@@ -38,8 +70,12 @@ inline constexpr int CAMPAIGN_PROGRESS_TECH_WORD_COUNT =
           CAMPAIGN_PROGRESS_FACTION_COUNT * CAMPAIGN_PROGRESS_TECH_WORDS_PER_FACTION;
 /* At most this many units per snapshot (OLD_UNIT_PRIMARY_RECORD_CAPACITY) */
 inline constexpr int CAMPAIGN_PROGRESS_UNIT_CAPACITY = 0x200;
-/* The parser logs at most this many ignored items one by one, then one line with the rest */
-inline constexpr uint32_t CAMPAIGN_PROGRESS_LOG_LIMIT = 16;
+/* The whole carry entry payload (0x4124 bytes) */
+inline constexpr size_t CAMPAIGN_PROGRESS_CARRY_BYTES =
+          CAMPAIGN_PROGRESS_CARRY_HEADER_BYTES + 4 +
+          CAMPAIGN_PROGRESS_UNIT_CAPACITY * CAMPAIGN_PROGRESS_CARRY_RECORD_DWORDS * 4 + CAMPAIGN_PROGRESS_TECH_WORD_COUNT * 4;
+/* Largest unpacked payload accepted from a file */
+inline constexpr uint32_t CAMPAIGN_PROGRESS_ENTRY_LIMIT_BYTES = 0x1000000;
 
 /* fingerprint <crc32> <records>: identifies the campaign records the section was recorded with */
 struct CampaignProgressFingerprint {
@@ -101,10 +137,12 @@ struct CampaignProgress {
   bool operator==(const CampaignProgress &) const = default;
 };
 
-/* What a parse did, for the log and the self-test. */
-struct CampaignProgressParseReport {
-  bool headerValid;          /* false: wrong magic or version, nothing was read */
-  uint32_t ignoredItems;     /* malformed or unknown lines, dropped sections and snapshots */
+/* One package entry: its path (lowercase ASCII) and its unpacked payload. */
+struct CampaignProgressEntry {
+  std::string path;
+  std::vector<uint8_t> payload;
+
+  bool operator==(const CampaignProgressEntry &) const = default;
 };
 
 /* true when name is a valid campaign key (1..31 characters [A-Za-z0-9_]) */
@@ -120,27 +158,54 @@ CampaignProgressSection &CampaignProgress_GetOrAddSection(CampaignProgress &prog
    the last one. */
 void CampaignProgressSection_RecordWin(CampaignProgressSection &section,int32_t levelId,int32_t selection);
 
-/* Parses the text of a progress file into *outProgress (emptied first). A wrong header (magic or version)
-   leaves it empty and returns headerValid false. Otherwise every malformed or unknown item is ignored with one
-   log line ("campaign progress: ..."): a bad line, a section with a bad or repeated name or without "end", a
-   snapshot with a bad header, a bad unit or tech line or a wrong number of unit lines. */
-CampaignProgressParseReport CampaignProgress_Parse(std::string_view text,CampaignProgress *outProgress);
+/* CRC32 (IEEE, as zlib) of bytes */
+uint32_t CampaignProgress_Crc32(std::span<const uint8_t> bytes);
 
-/* The file text of progress (version CAMPAIGN_PROGRESS_VERSION). Sections with an invalid name are left out
-   (one log line). */
-std::string CampaignProgress_Format(const CampaignProgress &progress);
+/* Completes a payload whose header tail is still open: stores the data byte count (the payload size) and the CRC32
+   at +8 / +12 and appends CAMPAIGN_PROGRESS_PAYLOAD_PAD_BYTES zero bytes when that count is a multiple of 16. */
+void CampaignProgress_SealPayload(std::vector<uint8_t> *payload);
+
+/* "carry_<name lowercased>_<target>.hex" */
+std::string CampaignProgress_CarryEntryPath(std::string_view name,int32_t targetLevelId);
+
+/* The entries of progress: progress.bin, then the snapshots of each section by target. Sections with an invalid
+   name and items the file cannot hold (a level id < 1, a selection or faction outside 0..7, more than 0x200 units,
+   a win without a selection) are left out with one log line each. */
+std::vector<CampaignProgressEntry> CampaignProgress_EncodeEntries(const CampaignProgress &progress);
+
+/* The progress the entries hold. false with the reason in *outReason (*outProgress emptied) when any check fails:
+   the entry paths, order and count, a payload's tag, version, sizes, padding or CRC32, a count larger than the bytes
+   left, a name, level id, selection or faction outside its range, a list not sorted or repeated (a repeated
+   section), reserved bytes or unused records not 0. outReason may be nullptr. */
+bool CampaignProgress_DecodeEntries(const std::vector<CampaignProgressEntry> &entries,CampaignProgress *outProgress,
+                                    std::string *outReason);
+
+/* The PCK package of entries (Huffman/RLE packed, timestamps 0); nullopt (one log line) when the codec fails. */
+std::optional<std::vector<uint8_t>> CampaignProgress_WritePackage(const std::vector<CampaignProgressEntry> &entries);
+
+/* The entries of a PCK package as CampaignProgress_WritePackage writes it; false with the reason in *outReason when
+   the archive or an entry header is malformed, an entry does not unpack or its type tag is not its first dword.
+   outReason may be nullptr. */
+bool CampaignProgress_ReadPackage(std::span<const uint8_t> bytes,std::vector<CampaignProgressEntry> *outEntries,
+                                  std::string *outReason);
+
+/* The file bytes of progress (EncodeEntries, then WritePackage); nullopt when the codec fails. */
+std::optional<std::vector<uint8_t>> CampaignProgress_Encode(const CampaignProgress &progress);
+
+/* The progress held by file bytes (ReadPackage, then DecodeEntries); false with the reason when anything is wrong. */
+bool CampaignProgress_Decode(std::span<const uint8_t> bytes,CampaignProgress *outProgress,std::string *outReason);
 
 /* Loads the progress file at path. A missing file gives empty progress. A file that cannot be read (over the
-   native read limit) or whose header is wrong is renamed to the same name with the extension ".bad" (replacing
+   native read limit) or that CampaignProgress_Decode rejects is renamed to the same name with the extension ".bad" (replacing
    an older one), with one log line, and gives empty progress, so the next write cannot overwrite it. */
 CampaignProgress CampaignProgress_LoadFile(uint16_t *path);
 
-/* Writes progress to path through FileSystem_WriteFileReplacing. Returns 0 or its error (one log line); the old
-   file stays on failure. */
+/* Writes progress to path through FileSystem_WriteFileReplacing. Returns 0 or its error (one log line; or
+   FATAL_ERROR_GENERAL_FAILURE when it cannot be encoded); the old file stays on failure. */
 uint32_t CampaignProgress_SaveFile(uint16_t *path,const CampaignProgress &progress);
 
 /* The only entry points to the stored progress (the storage may change; callers never build its path). Today the
-   file save\campaign_progress.txt under the executable directory, or OPEN_THANDOR_CAMPAIGN_PROGRESS=<path> in a
+   file save\kampagne.dat under the executable directory, or OPEN_THANDOR_CAMPAIGN_PROGRESS=<path> in a
    dev-tools build. LoadCurrent behaves like CampaignProgress_LoadFile. SaveCurrent writes like
    CampaignProgress_SaveFile and creates the missing directory first when the write fails (one log line on a
    final failure; the game goes on). */

@@ -69,7 +69,8 @@ apply. For this feature they mean:
 - **Formats stay.**
   - Unchanged: PCK, LEV, FLD, CGN, `campagne.dat`, `.sve` (including the `campagne.hex` and `oldunit.hex` entries),
     and every layout asserted in `src/core/layout_checks.cpp`.
-  - The only new file is the progress file. It is our own and versioned.
+  - The only new file is the progress file `save\kampagne.dat`. It is our own and versioned, written in the PCK
+    format with our own entries (4.4).
 - **Network protocol stays.**
   - No new command code and no new packet.
   - A start mission is passed in an argument dword of the existing command `FRONTEND_COMMAND_LOAD_CAMPAIGN`. That
@@ -90,10 +91,10 @@ apply. For this feature they mean:
   - Measured (CM2): `Package_FindEntryAcrossMounts` + `Package_DecodeEntryInto` into a caller buffer make no
     `g_MemoryApi` call for compression methods 0 and 1 (all 55 stock `.lev` entries are method 0); only method 2
     (field grids, `.fld`) allocates. Details in 5.4.
-- **Untrusted input.** The progress file is user-editable.
-  - It is validated on load as in step 11: a malformed item is ignored with one log line (`Thandor_Log`, context
-    `campaign progress: ...`).
-  - An unreadable file is kept as `*.bad` and replaced by empty progress.
+- **Untrusted input.** The progress file can be damaged or edited.
+  - It is validated on load as in step 11 (CRC32 per payload, every count and range): a file that fails any check
+    is rejected as a whole with one log line (`Thandor_Log`, context `campaign progress: ...`).
+  - A rejected or unreadable file is kept as `*.bad` and replaced by empty progress.
   - Nothing from the file reaches the simulation unchecked (section 4.4).
 - **Original quirks stay** (section 7.6). Examples: hansolo mission 15 continues to mission 17 after a loss; the
   in-game restart of the first tutorial mission leaves the campaign. The map makes them recoverable but does not
@@ -250,45 +251,58 @@ The third rule keeps the map consistent with what the original chain lets the pl
 
 ### 4.4 The progress file
 
-**Location.** `save\campaign_progress.txt` under `g_ExecutableDirectoryUtf16`, built like the save paths
+**Location.** `save\kampagne.dat` under `g_ExecutableDirectoryUtf16`, built like the save paths
 (`WidePath_CombineDirectoryAndLeaf` with `g_SaveDirectoryUtf16`). The directory is created when it is missing
 (`g_FileSystemCreateDirectoryRecursive`, as `InGameSaveGame_OpenNewPackage` does). The test aid
-`OPEN_THANDOR_CAMPAIGN_PROGRESS=<path>` overrides the path (CM9).
+`OPEN_THANDOR_CAMPAIGN_PROGRESS=<path>` overrides the path in a dev-tools build (CM9).
 
-**Why text.** Text is readable, easy to repair, and diffable in tests. Its size is small: about 20 KB with three
-full snapshots of 0x200 units (guess). It needs no arena (unlike a PCK package written with `Package_UpsertEntry`,
-whose `ArenaScoped` blocks and mount slots would add arena traffic between sessions). A missing key never breaks a
-reader: unknown lines are ignored.
+**Why a PCK package (CM3b).** The owner's decision: the file looks like an original game file, not like a readable
+text file, and a damaged or hand-edited file is detected. It is a PCK package in the game's own format, so
+`tools/data/pck.py` (and the format of `Package_Mount`) can open it; `tools/data/campaign_progress.py` dumps it. It
+is written and read natively with `std::vector`, `PckCodec_EncodeHuffmanRle` / `PckCodec_DecodeHuffmanRle`,
+`FileSystem_ReadWholeFileNative` and `FileSystem_WriteFileReplacing`, never through the package API
+(`Package_Mount`, `Package_UpsertEntry`, `Package_LoadEntry`): that API allocates from the arena and uses
+`g_PackageScratchBuffer`. Main thread only (the codec has static workspaces). Its size is small: about 1.5 KB packed
+per snapshot.
 
-**Format (version 1).** UTF-8, one item per line, `#` comments. The file name is ASCII. Example:
+**Format (version 1).** Layouts in `include/thandor/gameplay/session/campaign_progress.h`; all values little-endian.
 
-```
-open-thandor campaign progress 1
-[campaign hansolo]
-fingerprint 9f3a12c4 26
-done 2 1
-done 3 1
-done 5 2
-unlocked 2 3 4 5 6 7
-carry 9 from 8 sel 1 units 37
-unit 0x00000041 1 1234567 -234567 512
-...
-tech 1 0 0 0 0 0 0 0 0
-...
-end
-```
+- **Archive.** A 0x200-byte `PckArchiveHeader`: magic `pck\0`, `archiveSize` = file size, version 1, format
+  0x10000, timestamps 0, producer and source name `open-thandor`, `entryCount` at +0xB0. Then per entry a 0x200-byte
+  `PckEntryHeader` (lowercase UTF-16 path, `runtimePayloadOffset` 0, `unpackedSize`, `typeTag` = first payload
+  dword, `packedSize`, compression method 0) directly followed by the `packedSize` bytes of the payload packed with
+  the Huffman/RLE codec.
+- **Entries**, in this order: `progress.bin`, then one `carry_<name>_<target>.hex` per snapshot (sections by name,
+  targets ascending; the name lowercased).
+- **Payload header** (16 bytes, every entry): type tag (`kpg\0` for `progress.bin`, `kco\0` for a snapshot), version
+  1, the data byte count (header included) and the CRC32 (IEEE, as zlib) of the data behind the header. A payload
+  whose data byte count is a multiple of 16 gets 4 zero bytes behind it, so its unpacked size never equals its packed
+  size (`pck.py` takes equal sizes as stored).
+- **`progress.bin`**: the section count, then per section the name (32 bytes, zero padded), flags (bit 0: has a
+  fingerprint), the fingerprint CRC32 and record count, the win count and the wins (8 bytes each: level id,
+  `selectionMask` byte, `lastSelection` byte, 2 zero bytes), the unlocked count and level ids, the snapshot count
+  and target level ids.
+- **`carry_<name>_<target>.hex`** (0x4124 bytes): the header, target, source, selection and a zero dword (0x20 bytes
+  in all), then exactly the `oldunit.hex` layout: the record count, 0x200 primary records of 8 dwords (dwords
+  [0..4] as kept, [5..7] and the unused records 0) and the 64 technology dwords.
 
 | Item | Meaning | Validation on load |
 |---|---|---|
-| header line | magic text plus version | a wrong magic or a newer version means the whole file is ignored: one log line, the file is renamed to `campaign_progress.bad` and progress starts empty. Without the rename, the next win would overwrite it. |
-| `[campaign <name>]` | campaign key: the `.cgn` base name of the base campaign (5.6) | name of 1-31 ASCII characters `[A-Za-z0-9_]`, otherwise the section is skipped (one log line) |
-| `fingerprint <crc32> <records>` | CRC32 over the level records without the header (`levelId`, `successorLevelIds`, masks, `levelFileName`) plus the record count | when the loaded `.cgn` differs (an add-on changed the campaign), the section is kept in the file but not applied, with one log line. Only the matching levels would be valid, so the whole section waits. |
-| `done <levelId> <selection>` | a won mission and the end selection of its **last** win; every selection ever won is also kept (`done 5 1` and `done 5 2` both) so both branches stay unlocked | level id must be a record of the campaign (checked when applied), selection 0..7 |
-| `unlocked <ids...>` | explicitly unlocked levels (rule 3 of 4.3; successors of wins are derived and not stored) | ids must be records of the campaign |
-| `carry <target> from <source> sel <s> units <n>` | the carry-over snapshot for starting `<target>` directly: the old-unit tables as `OldUnitRuntime_RebuildScenarioReplayTables` left them after the last win of `<source>` | target must be `successorLevelIds[s]` of source with `carryOverMask` bit `s` set; `n <= OLD_UNIT_PRIMARY_RECORD_CAPACITY` (0x200); exactly `n` `unit` lines and 8 `tech` lines follow, otherwise the snapshot is dropped (one log line) |
-| `unit <asset> <faction> <x> <y> <rotation>` | primary record dwords [0..4] (`campaign_carryover.cpp`: asset id, faction, X, Y in Q12, rotation) | asset id: any `int32` (decimal or `0x` hex); there is no numeric bound to check (CM2, see "Army asset ids" below); faction 0..7; X and Y inside the level's world bounds (checked when applied, against the loaded level's field size); rotation masked like the engine's angle |
-| `tech <faction> <w0..w7>` | secondary table, 8 dwords per faction | faction 0..7, each faction at most once; missing factions are 0 |
-| `end` | end of the section | a section without `end` (a truncated file) is dropped (one log line) |
+| archive and entry headers | the PCK layout above | magic, version, format, size, entry count, lowercase ASCII paths, method 0, sizes within the file (unpacked at most 16 MiB), the payload unpacks and its first dword is the type tag; nothing behind the last entry |
+| payload header | tag, version, size, CRC32 | the right tag and version 1, the size matches the unpacked size (with its padding, which is 0), the CRC32 matches |
+| section name | campaign key: the `.cgn` base name of the base campaign (5.6) | 1-31 ASCII characters `[A-Za-z0-9_]`, zero padded; sections sorted by name without repeats |
+| fingerprint | CRC32 over the level records without the header (`levelId`, `successorLevelIds`, masks, `levelFileName`) plus the record count | flags bit 0 only, record count 0..INT32_MAX, both 0 without the flag. When the loaded `.cgn` differs (an add-on changed the campaign), the section is not applied; the next write for that campaign resets it (wins, unlocked levels and snapshots dropped, the new fingerprint stored, one log line) |
+| wins | a won mission, every end selection ever won (so both branches stay unlocked) and the selection of its **last** win | level id >= 1 (a record of the campaign, checked when applied), sorted without repeats; last selection 0..7 and set in the mask; reserved bytes 0 |
+| unlocked | explicitly unlocked levels (rule 3 of 4.3; successors of wins are derived and not stored) | ids >= 1, sorted without repeats (records of the campaign, checked when applied) |
+| snapshot targets and entries | the carry-over snapshot for starting `<target>` directly: the old-unit tables as `OldUnitRuntime_RebuildScenarioReplayTables` left them after the last win of `<source>` | targets >= 1, sorted; each has its entry in order, no other entries; the entry's target matches; source >= 1; selection 0..7 (target = `successorLevelIds[s]` of source with `carryOverMask` bit `s` set, checked when applied); record count <= `OLD_UNIT_PRIMARY_RECORD_CAPACITY` (0x200) |
+| unit records | primary record dwords [0..4] (`campaign_carryover.cpp`: asset id, faction, X, Y in Q12, rotation) | asset id: any `int32`; there is no numeric bound to check (CM2, see "Army asset ids" below); faction 0..7; dwords [5..7] and unused records 0; X and Y inside the level's world bounds (checked when applied, against the loaded level's field size) |
+| technology dwords | secondary table, 8 dwords per faction | any value |
+
+Every count is checked against the bytes left before anything is allocated. Any failed check rejects the whole file:
+one log line with the reason, the file is renamed to `kampagne.bad` (replacing an older one) and progress starts
+empty. Without the rename, the next win would overwrite it. The encoder leaves out (one log line each) what the
+format cannot hold, so the game never writes a file it would reject: a section with an invalid name, a level id
+< 1, a win without a selection, a snapshot with a selection or faction outside 0..7 or more than 0x200 units.
 
 **Army asset ids (measured in CM2).** The engine has no numeric range for army asset ids:
 
@@ -317,11 +331,10 @@ end
 
 **Writing.** The whole file is rewritten after every recorded change:
 
-1. format it into a `std::string`;
-2. write `campaign_progress.txt.tmp` (`Package_MakeTemporaryPath` makes the name);
-3. replace the target with `Win32File_Replace` (`MoveFileExA` with REPLACE_EXISTING | WRITE_THROUGH,
-   `src/platform/filesystem/win32.cpp:376`);
-4. on failure, delete the temporary file and write one log line.
+1. encode it into a `std::vector<uint8_t>` (`CampaignProgress_Encode`);
+2. `FileSystem_WriteFileReplacing` writes `kampagne.dat.tmp` and replaces the target with `Win32File_Replace`
+   (`MoveFileExA` with REPLACE_EXISTING | WRITE_THROUGH, `src/platform/filesystem/win32.cpp`);
+3. on failure, the missing directory is created and the write tried once more; a second failure writes one log line.
 
 The game never fails because of the progress file. A failed write only loses that update.
 
@@ -330,7 +343,7 @@ whole-file reader allocates from the arena), so CM4 adds one.
 
 **In memory.** `CampaignProgress` (new, `include/thandor/gameplay/session/campaign_progress.h`) is a native
 `std::vector` of campaign sections. Each section holds `std::map<int32_t, ...>`-style sorted containers. Every
-container is sorted, so the file is written in a stable order and two runs produce identical files. The file is
+container is sorted and the archive timestamps are 0, so two runs produce identical files. The file is
 read once, when the scenario selection page first opens, and on every write.
 
 ### 4.5 What a snapshot holds and how it is taken and restored
@@ -754,7 +767,7 @@ branches record nothing.
 | Test aids | kept | `OPEN_THANDOR_CAMPAIGN` / `_CAMPAIGN_LEVEL` use the hidden list rows and `firstLevelId` as today |
 | `-KARTE=` / `-HOST` / `-CLIENT=` | unchanged | they switch to tab 1 or the network flow before the campaign tab |
 | Settings | none | the progress file is separate; `thandor.ini` is not touched |
-| Installer | uninstall must keep `save\campaign_progress.txt` like the saves | CM16 checks `tools/installer` |
+| Installer | uninstall must keep `save\kampagne.dat` like the saves | CM16 checks `tools/installer` |
 
 ## 9. Work packages
 
@@ -776,6 +789,7 @@ warnings, self-tests, golden). Within a wave, no two packages touch the same fil
 | Id | Title | Files | Change | Size | Verify |
 |---|---|---|---|---|---|
 | CM3 | Progress model and file format | `include/thandor/gameplay/session/campaign_progress.h`, `src/gameplay/session/campaign_progress.cpp` (new), CMake | `CampaignProgress` (4.4): parse, validate, format, `.bad` rename, version 1; no game hooks yet | M | new self-test `campaignprogress`: round trip, truncated file, wrong version, garbage lines, count > 0x200, bad asset id, duplicate sections, unknown keys |
+| CM3b | Progress file as a PCK package | `campaign_progress.h/.cpp`, `campaign_progress_session.cpp` (fingerprint reset), `campaignprogress_selftest.cpp`, `tools/data/campaign_progress.py` (new) | the text file replaced by `save\kampagne.dat` (4.4): PCK archive, Huffman/RLE entries, CRC32 per payload, snapshots in the `oldunit.hex` layout; a section with another fingerprint is reset on the next write | M | self-test `campaignprogress`: round trip, layout, truncated, bad magic and version, CRC32 mismatch, oversize counts and ranges, repeated sections, file cases with the `.bad` rename |
 | CM5 | Campaign graph and layout | `include/thandor/ui/frontend/campaign_map.h`, `src/ui/frontend/campaign_graph.cpp` (new) | `CampaignGraph_Build(asset, levelInfo)` (5.1, 5.2), fingerprint, base-campaign grouping (5.6), `CampaignMap_Layout` (5.3) | M | new self-test `campaignmap`: the four stock graphs (built from embedded record tables, no game data) give the mockup v4 positions and edges |
 | CM6 | Level info reader | `src/ui/frontend/campaign_level_info.cpp` (new) | `CampaignLevelInfo_Read(campaign)`: existence, `titleTextIndex`, win-selection mask, native cache (5.4), per CM2 | S | log dump on stock data equals the CM1 tool output |
 
@@ -815,9 +829,9 @@ Every scripted test uses the dev-tools build (`mingw-test` preset) in a test cop
 
 | Id | Test | How | Pass when |
 |---|---|---|---|
-| CT1 | Campaign chain records progress | empty progress; `OPEN_THANDOR_CAMPAIGN=tutorial`, `OPEN_THANDOR_AUTOWIN=40`, three levels | the file has `done 1 1`, `done 2 1`, `done 3 1` (t02 selection 1 ends the campaign), `carry 2 from 1` and `carry 3 from 2` with the unit counts the chain log reports |
+| CT1 | Campaign chain records progress | empty progress; `OPEN_THANDOR_CAMPAIGN=tutorial`, `OPEN_THANDOR_AUTOWIN=40`, three levels | the file (dumped with `tools/data/campaign_progress.py`) has `done 1 1`, `done 2 1`, `done 3 1` (t02 selection 1 ends the campaign), `carry 2 from 1` and `carry 3 from 2` with the unit counts the chain log reports |
 | CT2 | Start a carry target directly | progress from CT1 (and from a hansolo run of m21 -> m22); `OPEN_THANDOR_CAMPAIGN_MISSION=3` (tutorial t02), `=23` (hansolo m22), no auto-win, 2 minutes | `level start: campaign carries over N units` equals CT1's chain value; the per-faction log line equals the chain's; the level does not end at once (it is in `EXPECTED_ENDED` today when started without units); the state hash at tick 600 equals a chain run's at its tick 600 (statehash test aid, fixed seed) |
-| CT3 | Corrupt progress files | a set of broken files (truncated, wrong magic, version 2, a `carry` with 600 units, a unit with asset id 0xFFFF, faction 9, coordinates outside the map, duplicate sections, binary garbage, empty, 2 MB) | the game reaches the campaign tab with no crash; each case writes its one log line; a wrong-version file is renamed `.bad`; invalid snapshots disable Start on the target |
+| CT3 | Corrupt progress files | a set of broken files (truncated, wrong magic, version 2, a CRC32 mismatch, a snapshot with 600 units, faction 9, duplicate sections, binary garbage, empty, 2 MB; written with a valid CRC32 where the case needs one) and a valid file with a unit with asset id 0xFFFF and coordinates outside the map | the game reaches the campaign tab with no crash; each broken file writes its one log line and is renamed `.bad`; the invalid snapshot of the valid file disables Start on the target |
 | CT4 | Replay keeps progress | progress with hansolo done up to m9; start m4 from the map, auto-win with selection 1 | after the run m5-m9 are still done and their snapshots unchanged (byte compare of the sections) |
 | CT5 | Branch unlock | hansolo progress with m4 won by selection 1 (m6 locked); replay m4 with `OPEN_THANDOR_AUTOWIN_SELECTION=2` | `done 5 2` is added and m6 is unlocked; m5 still unlocked |
 | CT6 | Retry and restart record nothing | start m8 from the map; `OPEN_THANDOR_AUTOLOSE`; then a script click on "Mission neu starten" | the retry level gets the same carried units (log line); the progress file is byte-identical before and after |
