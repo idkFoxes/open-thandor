@@ -49,10 +49,48 @@ inline constexpr int TEXT_ID_PROJECT_BASE = 0x7F0000;
 /* the effective UI scale when it differs from the chosen one, or the one auto chose; written by
    TextResource_SetUiScaleNote */
 #define TEXT_ID_ADVANCED_NOTE_UI_SCALE (TEXT_ID_PROJECT_BASE + 23)
-inline constexpr int TEXT_ID_PROJECT_COUNT = 24;
+/* the campaign map (docs/plans/campaign_map.md 5.5): status line templates of the selected mission. "%u" stands
+   for a mission number, "%s" for a mission title; TextResource_SetCampaignMapLine fills them in. */
+#define TEXT_ID_CAMPAIGN_STATUS_DONE (TEXT_ID_PROJECT_BASE + 24) /* "Abgeschlossen - erneut spielbar." */
+#define TEXT_ID_CAMPAIGN_STATUS_DONE_CARRY (TEXT_ID_PROJECT_BASE + 25) /* the same + " Uebernimmt Einheiten aus Mission %u (%s)." */
+#define TEXT_ID_CAMPAIGN_STATUS_UNLOCKED_FIRST (TEXT_ID_PROJECT_BASE + 26) /* "Freigeschaltet" (the first mission) */
+#define TEXT_ID_CAMPAIGN_STATUS_UNLOCKED (TEXT_ID_PROJECT_BASE + 27) /* "Freigeschaltet - folgt auf Mission %u (%s)" */
+#define TEXT_ID_CAMPAIGN_STATUS_UNLOCKED_BRANCH (TEXT_ID_PROJECT_BASE + 28) /* "Freigeschaltet - alternativer Zweig nach Mission %u (%s)" */
+#define TEXT_ID_CAMPAIGN_STATUS_LOCKED (TEXT_ID_PROJECT_BASE + 29) /* "Gesperrt - folgt auf Mission %u (%s)" */
+/* a carry target without a valid snapshot (Start disabled); both "%u" are the carry source */
+#define TEXT_ID_CAMPAIGN_STATUS_NEEDS_CARRY (TEXT_ID_PROJECT_BASE + 30) /* "Benoetigt die Einheiten aus Mission %u (%s) - Mission %u gewinnen." */
+#define TEXT_ID_CAMPAIGN_STATUS_NETWORK_CARRY (TEXT_ID_PROJECT_BASE + 31) /* "Im Netzwerkspiel nur ueber Mission %u erreichbar." */
+#define TEXT_ID_CAMPAIGN_MISSION_HEADING (TEXT_ID_PROJECT_BASE + 32) /* "Mission %u: %s" (the selected mission's line) */
+/* the map's one legend item, shown only when the campaign has a carry-over edge (plan O2) */
+#define TEXT_ID_CAMPAIGN_LEGEND_CARRY (TEXT_ID_PROJECT_BASE + 33) /* "Einheitenuebernahme" */
+/* short names of the stock campaigns for the button row, see TextResource_CampaignShortName */
+#define TEXT_ID_CAMPAIGN_SHORT_NAME_TUTORIAL (TEXT_ID_PROJECT_BASE + 34) /* "Tutorial" (tutorial.cgn) */
+#define TEXT_ID_CAMPAIGN_SHORT_NAME_HANSOLO (TEXT_ID_PROJECT_BASE + 35) /* "Die Invasion" (hansolo.cgn) */
+#define TEXT_ID_CAMPAIGN_SHORT_NAME_NIMM2 (TEXT_ID_PROJECT_BASE + 36) /* "Kyrrdon" (nimm2.cgn) */
+#define TEXT_ID_CAMPAIGN_SHORT_NAME_LUKE (TEXT_ID_PROJECT_BASE + 37) /* "Piraten" (luke.cgn) */
+/* the two filled-in lines of the campaign map, written by TextResource_SetCampaignMapLine */
+#define TEXT_ID_CAMPAIGN_MAP_HEADING_LINE (TEXT_ID_PROJECT_BASE + 38)
+#define TEXT_ID_CAMPAIGN_MAP_STATUS_LINE (TEXT_ID_PROJECT_BASE + 39)
+inline constexpr int TEXT_ID_PROJECT_COUNT = 40;
 
 /* Not in the original: sets the text of TEXT_ID_ADVANCED_NOTE_UI_SCALE (Latin-1, cut to its buffer). */
 void TextResource_SetUiScaleNote(const char *text);
+
+/* Not in the original: fills in the campaign map template templateId (a TEXT_ID_CAMPAIGN_STATUS_* or
+   TEXT_ID_CAMPAIGN_MISSION_HEADING text) and stores the result as the text of lineId
+   (TEXT_ID_CAMPAIGN_MAP_HEADING_LINE or TEXT_ID_CAMPAIGN_MAP_STATUS_LINE; any other id does nothing). Every "%u"
+   becomes missionNumber in decimal, every "%s" missionTitle as plain text (rich-text commands and code units above
+   0xFF dropped, leading blanks trimmed; nullptr gives an empty title). The result is cut to the line's buffer.
+   Returns lineId. */
+TextResourceId TextResource_SetCampaignMapLine(TextResourceId lineId,TextResourceId templateId,uint32_t missionNumber,
+                                               uint16_t *missionTitle);
+
+/* Not in the original: the short name of a stock campaign for the campaign map's button row by the base name of its
+   .cgn file (no directory, no extension; ASCII case ignored), e.g. "hansolo" -> TEXT_ID_CAMPAIGN_SHORT_NAME_HANSOLO.
+   TEXT_RESOURCE_ID_NONE for any other campaign and when the game texts are not German (the bound campaign title
+   page has no German locale block; the short names exist in German only): the caller then shows the full campaign
+   title (TEXT_ID_CAMPAIGN_TITLE_BASE + index) cut to the button width (plan 5.5, Q8). */
+TextResourceId TextResource_CampaignShortName(uint16_t *cgnBaseName);
 
 bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 
