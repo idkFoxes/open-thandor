@@ -10,6 +10,7 @@
 
 #include <thandor/world/pathing/route.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 #include <cassert>
 
 /* EntityPathing_UpdateRouteSegment reads a GameEntityRuntime through its ownership-prefix view (step 13 X7b:
@@ -116,6 +117,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
     resolvedDestination.fallbackWorldYQ12 = static_cast<Q12>(targetWorldYQ12);
     return resolvedDestination;
   }
+  DebugHook_PathingEvent('R',(routeEntityRuntime->common).ownership.linkedArmyRuntime(),nullptr);
   fallbackWorldPosition.worldYQ12 = targetWorldYQ12;
   fallbackWorldPosition.worldXQ12 = targetWorldXQ12;
   /* start cell from the entity position, clamped to 1..size-2 */
@@ -712,6 +714,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   if ((ModelView_Cast<GameEntityRuntime>(routeEntityRuntime) != sourceRouteEntityRuntime) &&
      ((targetWorldXQ12 != entityMovement->movementWorldXQ12 ||
       (targetWorldYQ12 != entityMovement->movementWorldYQ12)))) {
+    DebugHook_PathingEvent('T',entityMovement,(sourceRouteEntityRuntime->common).ownership.linkedArmyRuntime());
     ArmyRuntime_SetPendingMoveTarget(targetWorldYQ12,targetWorldXQ12,entityMovement);
   }
   resolvedTarget.worldYQ12 = targetWorldYQ12;

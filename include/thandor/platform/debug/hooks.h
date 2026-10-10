@@ -101,6 +101,10 @@ void DebugHook_LevelScriptEndTrigger(const InGameLevelConditionStorage *storage,
 int DebugHook_SuppressTransientMarkers();
 /* Effect creation and session random draws: with the state hash on, logs callers outside a simulation step. */
 void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
+/* Pathing and movement events for the movement trace (OPEN_THANDOR_PATHTRACE, platform/debug/pathtrace.h): kind
+   'R' route planned, 'T' route point changed by another army's planning, 'B' blocked by another model, 'H' stopped
+   to turn on the spot; army and other are ArmyRuntimeSlot pointers (other may be NULL). */
+void DebugHook_PathingEvent(int kind, const void *army, const void *other);
 #ifdef _MSC_VER
 #define DebugHook_NoteOutsideStep(what) DebugHook_NoteOutsideStepFrom((what), _ReturnAddress())
 #else
@@ -141,6 +145,7 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_LevelScriptEndTrigger(storage, triggerIndex, trigger) ((void)0)
 #define DebugHook_SuppressTransientMarkers() 0
 #define DebugHook_NoteOutsideStep(what) ((void)0)
+#define DebugHook_PathingEvent(kind, army, other) ((void)0)
 
 #endif /* THANDOR_DEV_TOOLS */
 

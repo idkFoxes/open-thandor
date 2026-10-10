@@ -538,6 +538,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/level_script.cpp
         src/platform/debug/movie_decoder.cpp
         src/platform/debug/movie_player.cpp
+        src/platform/debug/pathtrace.cpp
         src/platform/debug/script.cpp
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp

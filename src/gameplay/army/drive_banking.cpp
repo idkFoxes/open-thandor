@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/drive_banking.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: drops the linked model
    (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint radius and this unit is
@@ -268,6 +269,8 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
                       ModelView_Cast<RuntimeCollisionQueryView>(modelRuntime),worldRuntime);
   if (blockingModelRuntime != nullptr) {
     collisionRootNode = modelRuntime->rootModelNode;
+    DebugHook_PathingEvent('B',modelRuntime->ownerArmyRuntime,
+                           blockingModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     ArmyRuntime_HandleCollisionPartner
               (ModelView_Cast<ModelRuntimeSlot>(modelRuntime),(collisionRootNode->worldTransform).translation.y,
                (collisionRootNode->worldTransform).translation.x,blockingModelRuntime,

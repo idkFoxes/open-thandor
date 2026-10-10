@@ -19,6 +19,7 @@
 #include <thandor/platform/debug/campaign.h>
 #include <thandor/platform/debug/movie_decoder.h>
 #include <thandor/platform/debug/movie_player.h>
+#include <thandor/platform/debug/pathtrace.h>
 #include <thandor/platform/debug/script.h>
 #include <thandor/platform/debug/statehash.h>
 #include <thandor/platform/debug/test_aids.h>
@@ -173,7 +174,13 @@ void DebugHook_SimulationStepBegin()
 void DebugHook_SimulationStepEnd()
 {
   g_TestAidInSimulationStep = 0;
+  DebugPathTrace_AfterStep();
   DebugStateHash_AfterStep();
+}
+
+void DebugHook_PathingEvent(int kind, const void *army, const void *other)
+{
+  DebugPathTrace_Event(kind, army, other);
 }
 
 int DebugHook_SuppressTransientMarkers()
