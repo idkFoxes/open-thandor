@@ -1102,6 +1102,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestNativeFile();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "campaignmap") == 0) {
+        Thandor_SelfTestCampaignMap();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "uitemplate") == 0) {
         Thandor_SelfTestUiTemplate();
         return 1;
