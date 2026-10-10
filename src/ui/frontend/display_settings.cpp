@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/core/bytes.h>
+#include <thandor/ui/frontend/language_choice.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -643,9 +644,10 @@ static TextResourceId FrontendAdvancedSettingsPage_UiScaleNote()
 
 /* Shows the current values on the advanced settings page: the selected choices, the VSync checkbox and the note
    (with the software renderer: edges and UI scale need a GPU renderer; with a GPU renderer: the UI scale in use
-   when it is not simply the chosen one, FrontendAdvancedSettingsPage_UiScaleNote). Every choice and the page's
-   opening call it, so the note follows a scale change (which sets the display mode again) at once. */
-static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
+   when it is not simply the chosen one, FrontendAdvancedSettingsPage_UiScaleNote) and the chosen language
+   (FrontendLanguageChoice_Refresh). Every choice and the page's opening call it, so the note follows a scale change
+   (which sets the display mode again) and a language switch at once. */
+void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
 {
   FrontendUiImage *ui = FrontendUi_Image(frontendRoot);
   UiNodeBase *edges[2];
@@ -683,6 +685,7 @@ static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
                                   &ui->advancedVsyncCheckbox.selectable);
   ui->advancedNoteLabel.text =
        THANDOR_PTR32_BITS(gpu ? FrontendAdvancedSettingsPage_UiScaleNote() : TEXT_ID_ADVANCED_NOTE_SOFTWARE);
+  FrontendLanguageChoice_Refresh(ui);
   UiNode_InvalidateRoot(&ui->advancedSettingsPage.base);
 }
 
@@ -694,6 +697,8 @@ void FrontendAdvancedSettingsAction_OpenPage(UiNodeBase *sourceNode)
   FrontendModelPointerContextFlags *menuRoomContextFlags;
 
   frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
+  /* not in the original: the language list starts closed (also one left open with the page) */
+  FrontendLanguageChoice_CloseList(FrontendUi_Image(frontendRoot));
   UiPageStack_SetActiveIndex
             (FRONTEND_PAGE_DISPLAY_SETTINGS,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendPageStack));
   UiPageStack_SetActiveIndex

@@ -28,6 +28,9 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
    page's advancedSettingsButton (FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS); the others are its choices
    (FRONTEND_ACTION_ADVANCED_*): each applies and saves its value at once and refreshes the page. */
 void FrontendAdvancedSettingsAction_OpenPage(UiNodeBase *sourceNode);
+/* Not in the original: shows the current values on the advanced settings page (choices, VSync, note, chosen
+   language); after a language switch also the texts the page copies (the UI scale note, the language button). */
+void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot);
 void FrontendAdvancedSettingsAction_SelectEdges(UiNodeBase *sourceNode);
 void FrontendAdvancedSettingsAction_SelectUiScale(UiNodeBase *sourceNode);
 void FrontendAdvancedSettingsAction_SelectFrameLimit(UiNodeBase *sourceNode);

@@ -82,6 +82,11 @@ inline constexpr int32_t FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON = 0x2060;
 /* Not in the original: the options page's "Tastenbelegung" button (keyBindingsButton, handlers61 of
    g_FrontendUiActionHandlersPage20) */
 inline constexpr int32_t FRONTEND_ACTION_OPEN_KEY_BINDINGS = 0x2061;
+/* Not in the original: the language choice of the advanced settings page (handlers62_63 of
+   g_FrontendUiActionHandlersPage20): the language button and the list layer open / close the list, a list row
+   chooses its language */
+inline constexpr int32_t FRONTEND_ACTION_LANGUAGE_LIST = 0x2062;
+inline constexpr int32_t FRONTEND_ACTION_LANGUAGE_SELECT = 0x2063;
 /* the pages of displayPageStack (frontendPageStack page FRONTEND_PAGE_DISPLAY_SETTINGS) */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_DISPLAY = 0; /* displaySettingsPage ("Anzeige") */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_MORE = 1; /* settingsSubPageStack (the two pages below) */

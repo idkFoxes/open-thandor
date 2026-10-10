@@ -2545,7 +2545,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .textResourceId = TEXT_ID_ADVANCED_VSYNC},
         { /* +788C advancedNoteLabel g_UiFocusProxyControlVtable */
             .base = {
-                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                /* followed by advancedLanguageGroup (+7FD4) */
+                .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                 .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .leftOffset = -288, .topOffset = 68, .rightOffset = 288, .bottomOffset = 92,
@@ -2745,4 +2746,125 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .listStateFlags = FromBits<UiListStateFlags>(0x00000000), .actionId = 0x00000000, .columnCount = 0x00000002,
             .columns = {{.width = 0x000000C8}}},
         {{.width = 0x00000190}},
+        /* not in the original (open-thandor): the language choice of the advanced settings page (frontend only), a
+           drop-down list built from the original controls. The box "Sprache:" in the right column (between VSync
+           and the note) holds one framed button showing the chosen language; the button opens the list: a
+           page-sized layer, the page's last child (so it is drawn over the page and hit first), holding a box on
+           the window background with one radio row per language (as the frame-limit rows). A press on the layer
+           beside the list, or Escape, closes it. The layer is linked after advancedLanguageGroup only while the
+           list is open (ui/frontend/language_choice.cpp); the rows are filled and the list's height set when it
+           opens. The rows are no focus targets: the layer keeps the keyboard focus while the list is open */
+        { /* +7FD4 advancedLanguageGroup g_UiTitledWindowControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_LINK(0x8088), .firstChild = UI_TEMPLATE_LINK(0x8028), .parent = UI_TEMPLATE_LINK(0x7258),
+                .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = 48, .topOffset = 14, .rightOffset = 288, .bottomOffset = 58,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .titleTextResourceId = TEXT_ID_LANGUAGE_TITLE},
+        { /* +8028 advancedLanguageButton g_UiFramedTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7FD4),
+                    .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
+                    .rightAnchorQ31 = 0x80000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = FRONTEND_ACTION_LANGUAGE_LIST},
+            .textResourceId = TEXT_ID_LANGUAGE_BUTTON_LABEL},
+        { /* +8088 advancedLanguageLayer g_FrontendLanguageListLayerVtable */
+            .root = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x80E0), .parent = UI_TEMPLATE_LINK(0x7258),
+                    .vtable = THANDOR_PTR(&g_FrontendLanguageListLayerVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)}}},
+        { /* +80E0 advancedLanguagePanel g_UiPanelControlVtable */
+            .root = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x8138), .parent = UI_TEMPLATE_LINK(0x8088),
+                    .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = 48, .topOffset = 14, .rightOffset = 288, .bottomOffset = 172,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1},
+                .rootFlags = UI_ROOT_TILED_BACKGROUND}},
+        { /* +8138 advancedLanguageBox g_UiTitledWindowControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x818C), .parent = UI_TEMPLATE_LINK(0x80E0),
+                .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .titleTextResourceId = TEXT_ID_LANGUAGE_TITLE},
+        { /* +818C advancedLanguageChoices[6] */
+            { /* +818C advancedLanguageChoices[0] g_UiTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x81EC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x8138),
+                        .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
+                        .rightAnchorQ31 = 0x80000000,
+                        .layoutWidth = -1, .layoutHeight = -1},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_LANGUAGE_SELECT},
+                .textResourceId = TEXT_ID_LANGUAGE_AUTO},
+            { /* +81EC advancedLanguageChoices[1] g_UiTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x824C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x8138),
+                        .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
+                        .rightAnchorQ31 = 0x80000000,
+                        .layoutWidth = -1, .layoutHeight = -1},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_LANGUAGE_SELECT},
+                .textResourceId = TEXT_ID_LANGUAGE_NAME_BASE},
+            { /* +824C advancedLanguageChoices[2] g_UiTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x82AC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x8138),
+                        .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
+                        .rightAnchorQ31 = 0x80000000,
+                        .layoutWidth = -1, .layoutHeight = -1},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_LANGUAGE_SELECT},
+                .textResourceId = TEXT_ID_LANGUAGE_NAME_BASE + 1},
+            { /* +82AC advancedLanguageChoices[3] g_UiTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x830C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x8138),
+                        .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = 3, .topOffset = 75, .rightOffset = -3, .bottomOffset = 99,
+                        .rightAnchorQ31 = 0x80000000,
+                        .layoutWidth = -1, .layoutHeight = -1},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_LANGUAGE_SELECT},
+                .textResourceId = TEXT_ID_LANGUAGE_NAME_BASE + 2},
+            { /* +830C advancedLanguageChoices[4] g_UiTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x836C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x8138),
+                        .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = 3, .topOffset = 99, .rightOffset = -3, .bottomOffset = 123,
+                        .rightAnchorQ31 = 0x80000000,
+                        .layoutWidth = -1, .layoutHeight = -1},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_LANGUAGE_SELECT},
+                .textResourceId = TEXT_ID_LANGUAGE_NAME_BASE + 3},
+            { /* +836C advancedLanguageChoices[5] g_UiTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x8138),
+                        .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = 3, .topOffset = 123, .rightOffset = -3, .bottomOffset = 147,
+                        .rightAnchorQ31 = 0x80000000,
+                        .layoutWidth = -1, .layoutHeight = -1},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_LANGUAGE_SELECT},
+                .textResourceId = TEXT_ID_LANGUAGE_NAME_BASE + 4}},
 };

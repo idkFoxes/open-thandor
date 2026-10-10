@@ -228,6 +228,7 @@ add_executable(thandor WIN32
     src/ui/frontend/end_movie_commands.cpp
     src/ui/frontend/faction_setup.cpp
     src/ui/frontend/key_bindings_page.cpp
+    src/ui/frontend/language_choice.cpp
     src/ui/frontend/lifecycle.cpp
     src/ui/frontend/main_loop.cpp
     src/ui/frontend/menu_room.cpp

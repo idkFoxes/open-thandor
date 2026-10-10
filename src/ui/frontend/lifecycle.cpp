@@ -542,6 +542,12 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
     ui->keyBindingsPage.textureSource = menuTexture;
     ui->keyBindingsButton.activationSound = g_UiButtonSoundVoiceSets7[3];
     ui->keyBindingsBackButton.activationSound = g_UiButtonSoundVoiceSets7[3];
+    /* not in the original: the language choice of the advanced settings page (the button as the page's buttons, the
+       rows as its choices; the list is closed when the page opens, after the tree has been relocated) */
+    ui->advancedLanguageButton.activationSound = g_UiButtonSoundVoiceSets7[3];
+    for (UiTextButtonControl &choice : ui->advancedLanguageChoices) {
+      choice.activationSound = g_UiButtonSoundVoiceSets7[4];
+    }
     /* not in the original: the campaign map of the campaign tab */
     FrontendCampaignTab_BindNodes(ui);
   }

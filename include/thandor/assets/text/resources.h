@@ -77,8 +77,14 @@ inline constexpr int TEXT_ID_PROJECT_BASE = 0x7F0000;
 #define TEXT_ID_CAMPAIGN_BUTTON_LABEL_0 (TEXT_ID_PROJECT_BASE + 40)
 inline constexpr int TEXT_ID_CAMPAIGN_BUTTON_LABEL_COUNT = 6;
 inline constexpr int TEXT_ID_CAMPAIGN_BUTTON_LABEL_UNITS = 64; /* code units of each label buffer, terminator included */
-inline constexpr int TEXT_ID_PROJECT_COUNT = 46;
-/* TEXT_ID_PROJECT_BASE + 46..49 are reserved for the language choice of the advanced settings page. */
+/* the language choice of the advanced settings page: the box title, the "from Windows" choice and the label of the
+   language button (TextResource_SetLanguageButtonLabel); TEXT_ID_PROJECT_BASE + 49 stays reserved. The language
+   names are TEXT_ID_LANGUAGE_NAME_BASE.. (below). */
+#define TEXT_ID_LANGUAGE_TITLE (TEXT_ID_PROJECT_BASE + 46) /* "Sprache:" */
+#define TEXT_ID_LANGUAGE_AUTO (TEXT_ID_PROJECT_BASE + 47) /* "Automatisch" */
+#define TEXT_ID_LANGUAGE_BUTTON_LABEL (TEXT_ID_PROJECT_BASE + 48)
+inline constexpr int TEXT_ID_LANGUAGE_BUTTON_LABEL_UNITS = 64; /* code units of the label buffer, terminator included */
+inline constexpr int TEXT_ID_PROJECT_COUNT = 49;
 
 /* Not in the original: sets the text of TEXT_ID_ADVANCED_NOTE_UI_SCALE (Latin-1, cut to its buffer). */
 void TextResource_SetUiScaleNote(const char *text);
@@ -103,6 +109,10 @@ TextResourceId TextResource_CampaignShortName(uint16_t *cgnBaseName);
    label of campaign button buttonIndex (0..TEXT_ID_CAMPAIGN_BUTTON_LABEL_COUNT - 1) and returns its text id
    TEXT_ID_CAMPAIGN_BUTTON_LABEL_0 + buttonIndex; any other index gives TEXT_RESOURCE_ID_NONE. */
 TextResourceId TextResource_SetCampaignButtonLabel(int buttonIndex,const uint16_t *text);
+
+/* Not in the original: stores text (plain UTF-16, cut to TEXT_ID_LANGUAGE_BUTTON_LABEL_UNITS - 1 code units) as the
+   label of the advanced settings page's language button and returns TEXT_ID_LANGUAGE_BUTTON_LABEL. */
+TextResourceId TextResource_SetLanguageButtonLabel(const uint16_t *text);
 
 /* Not in the original: the key binding list (ui/core/key_bindings.h): the page title, the four section titles and
    one action text per binding row (German; TextResource_SetKeyBindingTextsEnglish switches them to English). Ids
@@ -158,6 +168,16 @@ TextResourceId TextResource_SetCampaignButtonLabel(int buttonIndex,const uint16_
 #define TEXT_ID_KEYS_END_MOVIE_SKIP (TEXT_ID_KEY_BINDING_BASE + 47)
 #define TEXT_ID_KEYS_END_MOVIE_SCREENSHOT (TEXT_ID_KEY_BINDING_BASE + 48)
 inline constexpr int TEXT_ID_KEY_BINDING_COUNT = 49;
+
+/* Not in the original: the language names of the language choice, each in its own language and the same in every
+   language: Deutsch, English, Francais, Italiano, Espanol (with c cedilla and n tilde), the order of
+   TextResource_AvailableLanguages. */
+#define TEXT_ID_LANGUAGE_NAME_BASE (TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT)
+inline constexpr int TEXT_ID_LANGUAGE_NAME_COUNT = 5;
+
+/* Not in the original: the TEXT_ID_LANGUAGE_NAME_BASE.. text of a telephone country code (49, 44, 33, 39, 34), else
+   TEXT_RESOURCE_ID_NONE. */
+TextResourceId TextResource_LanguageNameId(uint32_t countryCode);
 
 /* Not in the original: false (the default) resolves the TEXT_ID_KEYS_* texts in German, true in English. */
 void TextResource_SetKeyBindingTextsEnglish(bool english);
