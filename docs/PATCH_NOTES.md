@@ -5,7 +5,7 @@ code changes is in the [plans](plans) and the [recovery changelog](../CHANGELOG.
 
 Every version lists the changes in English and in German (*Deutsch*).
 
-## 1.0.7 - "Thandor Patch 6"
+## 1.0.7 - "Thandor Patch 7"
 
 ### English
 
@@ -21,6 +21,7 @@ A hotfix for graphics cards with much video memory.
 - If the game crashes while starting the graphics, the next start automatically falls back to the next renderer
   (Vulkan -> DirectX 12 -> Software) and saves that choice.
 - `thandor.log` names the graphics card and its driver version, which helps with bug reports.
+- The installer is now "Thandor Patch 7" (`Thandor-Patch-7.exe`); it installs over Patch 6.
 
 ### Deutsch
 
@@ -36,6 +37,7 @@ Ein Hotfix für Grafikkarten mit viel Grafikspeicher.
 - Stürzt das Spiel beim Start der Grafik ab, nimmt es beim nächsten Start automatisch das nächste Verfahren
   (Vulkan -> DirectX 12 -> Software) und speichert diese Wahl.
 - `thandor.log` nennt die Grafikkarte und ihre Treiberversion, das hilft bei Fehlermeldungen.
+- Das Setup heißt jetzt "Thandor Patch 7" (`Thandor-Patch-7.exe`) und wird über Patch 6 installiert.
 
 ## 1.0.6 - "Thandor Patch 6"
 

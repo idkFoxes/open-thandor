@@ -552,8 +552,8 @@ if(THANDOR_DEV_TOOLS)
 endif()
 
 # ---- Patch installer (step 10) ---------------------------------------------------------------------------------
-# `cmake --build --preset mingw-release --target installer` builds <build>/installer/Thandor-Patch-6.exe ("Thandor
-# Patch 6", version ${PROJECT_VERSION}) with Inno Setup 7: tools/installer/build_installer.py stages thandor.exe,
+# `cmake --build --preset mingw-release --target installer` builds <build>/installer/Thandor-Patch-N.exe ("Thandor
+# Patch N", N = the last part of the version: 1.0.7 -> Patch 7) with Inno Setup 7: tools/installer/build_installer.py stages thandor.exe,
 # SDL3.dll, thandor.sym and the SDL3 licence in <build>/installer/stage (stripping debug sections where a file still
 # has them) and runs ISCC /DAppVersion=${PROJECT_VERSION} on tools/installer/thandor-patch.iss. The wizard images
 # come from tools/installer/images when it holds them, else Inno's placeholders stay. Only defined for a release
@@ -571,6 +571,7 @@ if(NOT THANDOR_DEV_TOOLS)
     endforeach()
     find_program(THANDOR_ISCC ISCC HINTS ${THANDOR_ISCC_HINTS} DOC "ISCC.exe of Inno Setup 7 (installer target)")
     find_package(Python3 COMPONENTS Interpreter QUIET)
+    set(THANDOR_PATCH_NUMBER ${PROJECT_VERSION_PATCH})
     if(THANDOR_ISCC AND Python3_Interpreter_FOUND)
         add_custom_target(installer
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/installer/build_installer.py
@@ -578,7 +579,7 @@ if(NOT THANDOR_DEV_TOOLS)
                     --out ${CMAKE_BINARY_DIR}/installer
             DEPENDS thandor
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Building the patch installer installer/Thandor-Patch-6.exe (version ${PROJECT_VERSION})"
+            COMMENT "Building the patch installer installer/Thandor-Patch-${THANDOR_PATCH_NUMBER}.exe (version ${PROJECT_VERSION})"
             USES_TERMINAL
             VERBATIM)
         message(STATUS "Patch installer: target installer (ISCC ${THANDOR_ISCC})")

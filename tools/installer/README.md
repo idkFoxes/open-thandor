@@ -26,9 +26,12 @@ relative to `images/`).
    (no hover frame), then the shots (`GAME_DIR_wizshots/showcase_NN.bmp`, plus `sheet.png`). `--maps` also takes
    stock maps or `campaign:level` with `--script wizard_shot.txt`.
 3. `make_wizard_images.py GAME_DIR SHOT.bmp --crop X,Y,W,H --out tools/installer/images`: crops the playfield to
-   164:314, adds the logo, the version ("1.0.6") and "OPEN THANDOR", writes all sizes and `wizard-files.txt`.
+   164:314, adds the logo, the version (`--version`, default "1.0.7") and "OPEN THANDOR", writes all sizes and `wizard-files.txt`.
    The small image is the logo's globe on black. `--preview DIR --original PATCH5.png` adds PNG previews and
    `compare.png` (Patch 5's picture beside ours).
 
-The committed set (2026-10-06): `showcase_02.bmp` (5 wheel notches) with `--crop 840,200,460,880`. The shot is not
-bit-reproducible (timing), so a new run gives a slightly different picture.
+The committed set (2026-10-10, version "1.0.7"): a 2560x1440 GPU-native battle frame of the README screenshots
+(`ot-scratch/readme-shots/raw/f_s2_gpunative_0006.bmp`, the frame behind `battle-1`) with
+`--crop 1340,60,580,1110 --version 1.0.7`; the small images came out byte-identical to the earlier set. (The set of
+2026-10-06, version "1.0.6", used `showcase_02.bmp` (5 wheel notches) with `--crop 840,200,460,880`; that shot no
+longer exists.) Shots are not bit-reproducible (timing), so a new run gives a slightly different picture.

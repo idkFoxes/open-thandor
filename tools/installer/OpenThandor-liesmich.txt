@@ -1,5 +1,5 @@
 ﻿THANDOR - DIE INVASION
-Open Thandor 1.0.7 ("Thandor Patch 6")
+Open Thandor 1.0.7 ("Thandor Patch 7")
 =======================================
 
 Was ist das?
@@ -98,7 +98,7 @@ Ordner save des Spiels.
 
 Deinstallation
 --------------
-Über Einstellungen -> Apps -> Installierte Apps -> "Thandor Patch 6" (oder
+Über Einstellungen -> Apps -> Installierte Apps -> "Thandor Patch 7" (oder
 OpenThandor\unins000.exe im Spielordner). Die Deinstallation entfernt
 thandor.exe, SDL3.dll, thandor.sym und diese Datei und stellt die
 gesicherte alte thandor.exe (Version 1.05) wieder her. Spielstände,

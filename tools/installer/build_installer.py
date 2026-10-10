@@ -1,4 +1,4 @@
-"""Builds the patch installer Thandor-Patch-6.exe from a release build (Inno Setup 7, tools/installer/thandor-patch.iss).
+"""Builds the patch installer Thandor-Patch-N.exe (N = the last part of the version, 1.0.7 -> 7) from a release build (Inno Setup 7, tools/installer/thandor-patch.iss).
 
 usage: build_installer.py BUILD_DIR [--out DIR] [--iscc PATH] [--version X.Y.Z]
                           [--wizard-image FILES] [--wizard-small-image FILES] [--icon FILE] [-D NAME[=VALUE] ...]
@@ -72,7 +72,7 @@ def has_debug_sections(objdump, path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Stage a release build and compile Thandor-Patch-6.exe.')
+    parser = argparse.ArgumentParser(description='Stage a release build and compile Thandor-Patch-N.exe.')
     parser.add_argument('build_dir')
     parser.add_argument('--out', help='output folder of the installer (default BUILD_DIR/installer)')
     parser.add_argument('--iscc', help='path of ISCC.exe (default: PATH, then the usual Inno Setup 7 folders)')
@@ -140,7 +140,7 @@ def main():
     result = subprocess.run(command)
     if result.returncode != 0:
         sys.exit('build_installer: ISCC failed (exit code %d)' % result.returncode)
-    print('build_installer: %s' % os.path.join(out_dir, 'Thandor-Patch-6.exe'))
+    print('build_installer: %s' % os.path.join(out_dir, 'Thandor-Patch-%s.exe' % version.split('.')[-1]))
 
 
 if __name__ == '__main__':

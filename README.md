@@ -29,7 +29,7 @@
 > [Discord](https://discord.gg/FEvKJ59).
 
 *Deutsch: Open Thandor ist ein vollständiger Nachbau von "Thandor: Die Invasion" in C++. Der Patch-Installer
-`Thandor-Patch-6.exe` macht eine vorhandene Thandor-Installation zu Open Thandor 1.0.7 - 64 Bit, Vulkan/DirectX 12,
+`Thandor-Patch-7.exe` macht eine vorhandene Thandor-Installation zu Open Thandor 1.0.7 - 64 Bit, Vulkan/DirectX 12,
 Auflösungen bis 4K, UI-Skalierung und viele Absturzkorrekturen. Spielstände und Karten des Originals funktionieren
 weiter. Details: [Patch notes](docs/PATCH_NOTES.md#deutsch).*
 
@@ -37,7 +37,7 @@ weiter. Details: [Patch notes](docs/PATCH_NOTES.md#deutsch).*
 
 You need an **installed full version of Thandor** and **64-bit Windows 10 or 11**.
 
-1. Download **`Thandor-Patch-6.exe`** from the [latest release](https://github.com/idkFoxes/open-thandor/releases/latest).
+1. Download **`Thandor-Patch-7.exe`** from the [latest release](https://github.com/idkFoxes/open-thandor/releases/latest).
 2. Run it. It finds your Thandor folder (the one with `DATEN.PCK`); Patch 5 is not required.
 3. Start the game as before with `thandor.exe` in the game folder.
 
@@ -49,7 +49,7 @@ You need an **installed full version of Thandor** and **64-bit Windows 10 or 11*
 <img src="docs/images/installer-ready.png" width="260" alt="Installer: ready to install">
 
 - The installer keeps your old `thandor.exe` as `thandor-1.05.exe`. Uninstalling ("Apps" in Windows, entry
-  "Thandor Patch 6") puts it back.
+  "Thandor Patch 7") puts it back. Patch 7 installs over Patch 6 (the same entry).
 - Your saves, your settings and the game data (`*.PCK`, movies) are never changed. Saves of the original game load,
   and the game still writes saves in the original format.
 - The installer is not signed, so Windows SmartScreen may warn ("More info" -> "Run anyway").
@@ -146,7 +146,7 @@ cmake --build --preset mingw-release
 
 The result is `build-mingw-release\thandor.exe` (x64) with `SDL3.dll` next to it; copy both into a **copy** of an
 installed Thandor folder and start it there (e.g. `thandor.exe -NOINTRO`). `--target installer` builds
-`Thandor-Patch-6.exe` (needs Inno Setup 7, see [docs/BUILDING.md](docs/BUILDING.md#patch-installer)).
+`Thandor-Patch-7.exe` (needs Inno Setup 7, see [docs/BUILDING.md](docs/BUILDING.md#patch-installer)).
 `mingw-test` (`build-mingw-test`) adds the developer tools: self-tests, windowed mode, several instances, scripted
 input, starting any campaign level, the determinism state hash; the automated checks use this build.
 

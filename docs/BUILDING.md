@@ -269,8 +269,11 @@ table in `persistent.cpp` maps to one offset. The self-test `OPEN_THANDOR_SELFTE
 
 ## Patch installer
 
-`Thandor-Patch-6.exe` ("Thandor Patch 6", version 1.0.7) installs a release build onto an existing Thandor
-installation, like the original `Thandor-Patch-5.exe` (version 1.05) did; plan and design in
+`Thandor-Patch-7.exe` ("Thandor Patch 7", version 1.0.7) installs a release build onto an existing Thandor
+installation, like the original `Thandor-Patch-5.exe` (version 1.05) did. The patch number is the last part of the
+version (Patch 6 was 1.0.6, Patch 7 is 1.0.7; `thandor-patch.iss` derives it from `AppVersion`); every Open Thandor
+patch keeps the same Inno `AppId`, so a newer one installs over an older one (one uninstall entry, renamed; the
+`thandor-1.05.exe` backup of the first install is kept); plan and design in
 [plans/step10_installer.md](plans/step10_installer.md). It is made with **Inno Setup 7** (free for non-commercial
 use, [jrsoftware.org](https://jrsoftware.org/isinfo.php); the per-user install in
 `%LOCALAPPDATA%\Programs\Inno Setup 7` is enough) and **Python 3**:
@@ -280,7 +283,7 @@ cmake --preset mingw-release
 cmake --build --preset mingw-release --target installer
 ```
 
-The result is `build-mingw-release\installer\Thandor-Patch-6.exe`. The `installer` target exists only in a build
+The result is `build-mingw-release\installer\Thandor-Patch-7.exe`. The `installer` target exists only in a build
 without the developer tools (`THANDOR_DEV_TOOLS=OFF`; the test build must never be shipped) and only when CMake finds
 `ISCC.exe` (in `Inno Setup 7` under `%LOCALAPPDATA%\Programs`, `Program Files` or `Program Files (x86)`, on the
 `PATH`, or given as `-DTHANDOR_ISCC=<path to ISCC.exe>`); the configure step prints `Patch installer: ...` either
@@ -310,7 +313,7 @@ placeholder pictures stay. They are made from the game's own art by
 
 **Testing:** only on a copy of the game folder, never on the real installation. `build_installer.py BUILD_DIR -D TestLowPriv
 --out <other folder>` (never for a release) builds a Setup that installs without admin rights, for silent tests:
-`Thandor-Patch-6.exe /VERYSILENT /SUPPRESSMSGBOXES /DIR="<copy>"`, then `<copy>\OpenThandor\unins000.exe
+`Thandor-Patch-7.exe /VERYSILENT /SUPPRESSMSGBOXES /DIR="<copy>"`, then `<copy>\OpenThandor\unins000.exe
 /VERYSILENT /SUPPRESSMSGBOXES`.
 
 ### Releases (GitHub Actions)
@@ -324,13 +327,14 @@ are checked against pinned SHA-256 sums. It configures `cmake --preset mingw-rel
 build), fails unless the configure output shows `DXBC from fxc`, `SPIR-V from dxc` and the `installer` target, and
 runs `cmake --build --preset mingw-release --target installer`.
 
-- **Run workflow** (workflow_dispatch, Actions tab): builds only; `Thandor-Patch-6.exe` and its `.sha256` are a
-  workflow artifact `Thandor-Patch-6-<version>`, the symbols (`thandor.debug`, `thandor.map`, `thandor.sym`) a
+- **Run workflow** (workflow_dispatch, Actions tab): builds only; `Thandor-Patch-Z.exe` (Z = the last part of
+  the version) and its `.sha256` are a workflow artifact `Thandor-Patch-Z-<version>`, the symbols (`thandor.debug`, `thandor.map`, `thandor.sym`) a
   second artifact `symbols-<version>`.
 - **Tag `vX.Y.Z` pushed:** builds, checks that the tag is `v` + the version in `project(open_thandor VERSION ...)`
   of `CMakeLists.txt` (else the run fails before building), then creates the GitHub Release
-  "Thandor Patch 6 - Open Thandor X.Y.Z" with `Thandor-Patch-6.exe` and `Thandor-Patch-6.exe.sha256` attached. Its
-  text is [`tools/installer/release-notes.md`](../tools/installer/release-notes.md) (`@VERSION@` replaced), then
+  "Thandor Patch Z - Open Thandor X.Y.Z" with `Thandor-Patch-Z.exe` and `Thandor-Patch-Z.exe.sha256` attached. Its
+  text is [`tools/installer/release-notes.md`](../tools/installer/release-notes.md) (`@VERSION@` and `@PATCH@`
+  replaced), then
   the version's section of [`PATCH_NOTES.md`](PATCH_NOTES.md) (`## X.Y.Z ...` up to the next `## `; the run fails
   without one) and the SHA-256. Only the release job has `contents: write`.
 
