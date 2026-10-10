@@ -161,7 +161,8 @@ static std::optional<CampaignProgressBase> CampaignProgress_FindBase(const Campa
     }
     CampaignProgressBase base;
     base.firstLevelId = candidates[group.baseIndex].firstLevelId;
-    for (size_t unit = 0; unit < CAMPAIGN_PROGRESS_ROW_NAME_UNITS && rows[group.baseIndex]->identifier[unit] != 0;
+    for (size_t unit = 0; unit < CAMPAIGN_PROGRESS_ROW_NAME_UNITS && rows[group.baseIndex]->identifier[unit] != 0 &&
+                            rows[group.baseIndex]->identifier[unit] != '.';
          unit++) {
       const uint16_t character = rows[group.baseIndex]->identifier[unit];
       base.name.push_back(character < 0x80 ? static_cast<char>(character) : '?');

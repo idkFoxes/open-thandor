@@ -217,7 +217,8 @@ static std::string CampaignTab_RowName(const ScenarioCatalogDisplayRecord *row)
 {
   std::string name;
 
-  for (size_t unit = 0; unit < CAMPAIGN_TAB_ROW_NAME_UNITS && row->identifier[unit] != 0; unit++) {
+  for (size_t unit = 0; unit < CAMPAIGN_TAB_ROW_NAME_UNITS && row->identifier[unit] != 0 && row->identifier[unit] != '.';
+       unit++) {
     name.push_back(row->identifier[unit] < 0x80 ? static_cast<char>(row->identifier[unit]) : '?');
   }
   return name;
@@ -318,6 +319,13 @@ static void CampaignTab_FillButtons(FrontendUiImage *ui)
     TextResourceId shortName;
 
     memcpy(baseName,CampaignTab_ListRow(ui,campaign.baseRow)->identifier,CAMPAIGN_TAB_ROW_NAME_UNITS * sizeof(uint16_t));
+    /* the catalog name keeps the dot of its cut extension ("tutorial."); the short-name table wants the base name */
+    for (size_t unit = 0; unit < CAMPAIGN_TAB_ROW_NAME_UNITS && baseName[unit] != 0; unit++) {
+      if (baseName[unit] == '.') {
+        baseName[unit] = 0;
+        break;
+      }
+    }
     shortName = TextResource_CampaignShortName(baseName);
     name = CampaignTab_PlainText((shortName != TEXT_RESOURCE_ID_NONE) ? shortName
                                                                         : TEXT_ID_CAMPAIGN_TITLE_BASE + campaign.titleIndex);
