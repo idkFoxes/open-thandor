@@ -2384,6 +2384,23 @@ static_assert(offsetof(FrontendUiImage, advancedVsyncCheckbox) == 0x782C && size
               "FrontendUiImage.advancedVsyncCheckbox is a UiTextButtonControl");
 static_assert(offsetof(FrontendUiImage, advancedNoteLabel) == 0x788C && sizeof(UiFocusProxyControl) == 0x5C,
               "FrontendUiImage.advancedNoteLabel is a UiFocusProxyControl");
+/* Not in the original (open-thandor): the campaign map nodes of the campaign tab (campaign_map.md 6.2). */
+static_assert(sizeof(FrontendCampaignMapControl) == 0x60 && offsetof(FrontendCampaignMapControl, mapIndex) == 0x5C &&
+                  offsetof(FrontendCampaignMapControl, panel) == 0x0 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendCampaignMapControl is an image panel followed by the map index");
+static_assert(offsetof(FrontendUiImage, campaignButtons) == 0x78E8 && sizeof(UiFramedTextButtonControl) == 0x60 &&
+                  sizeof(FrontendUiImage::campaignButtons) == 0x60 * FRONTEND_CAMPAIGN_BUTTON_COUNT,
+              "FrontendUiImage.campaignButtons are UiFramedTextButtonControls");
+static_assert(offsetof(FrontendUiImage, campaignMap) == 0x7B28 && sizeof(FrontendCampaignMapControl) == 0x60,
+              "FrontendUiImage.campaignMap is a FrontendCampaignMapControl");
+static_assert(offsetof(FrontendUiImage, campaignMissionTitleText) == 0x7B88 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.campaignMissionTitleText is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, campaignTitleText) == 0x7BE4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.campaignTitleText is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, campaignMissionDescriptionText) == 0x7C40 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.campaignMissionDescriptionText is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, campaignMissionStatusText) == 0x7C9C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.campaignMissionStatusText is a UiFocusProxyControl");
 static_assert(offsetof(FrontendUiImage, chatInputEdit_trailing) == 0x188,
               "FrontendUiImage.chatInputEdit_trailing follows the control");
 static_assert(offsetof(FrontendUiImage, chatMessageHistory_trailing) == 0x358,
@@ -2416,7 +2433,10 @@ static_assert(offsetof(FrontendUiImage, hostLobbyPlayerList_trailing) == 0x5660,
               "FrontendUiImage.hostLobbyPlayerList_trailing follows the control");
 static_assert(offsetof(FrontendUiImage, clientLobbyPlayerList_trailing) == 0x58E8,
               "FrontendUiImage.clientLobbyPlayerList_trailing follows the control");
-static_assert(sizeof(FrontendUiImage) == 0x78E8 && /* 0x5954 + the display mode kind, resolution list and advanced settings nodes of open-thandor */
+static_assert(sizeof(FrontendUiImage) == 0x7CF8 && /* 0x5954 + the display mode kind, resolution list, advanced settings and campaign map nodes of open-thandor */
+              offsetof(FrontendUiImage, campaignButtons) == 0x78E8 &&
+              offsetof(FrontendUiImage, campaignMap) == 0x7B28 &&
+              offsetof(FrontendUiImage, campaignMissionStatusText) == 0x7C9C &&
               offsetof(FrontendUiImage, displayPageStack) == 0x71A0 &&
               offsetof(FrontendUiImage, advancedSettingsButton) == 0x71F8 &&
               offsetof(FrontendUiImage, advancedSettingsPage) == 0x7258 &&
