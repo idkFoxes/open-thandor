@@ -5,6 +5,38 @@ code changes is in the [plans](plans) and the [recovery changelog](../CHANGELOG.
 
 Every version lists the changes in English and in German (*Deutsch*).
 
+## 1.0.7 - "Thandor Patch 6"
+
+### English
+
+A hotfix for graphics cards with much video memory.
+
+#### Fixed
+
+- Crash at start with Vulkan and a black 3D view with DirectX 12 on some graphics cards (seen on NVIDIA RTX cards
+  with 16 GB): the game now leaves the graphics driver more address space.
+
+#### New
+
+- If the game crashes while starting the graphics, the next start automatically falls back to the next renderer
+  (Vulkan -> DirectX 12 -> Software) and saves that choice.
+- `thandor.log` names the graphics card and its driver version, which helps with bug reports.
+
+### Deutsch
+
+Ein Hotfix für Grafikkarten mit viel Grafikspeicher.
+
+#### Behoben
+
+- Absturz beim Start mit Vulkan und schwarze 3D-Ansicht mit DirectX 12 auf manchen Grafikkarten (gesehen bei NVIDIA
+  RTX mit 16 GB): Das Spiel lässt dem Grafiktreiber jetzt mehr Adressraum.
+
+#### Neu
+
+- Stürzt das Spiel beim Start der Grafik ab, nimmt es beim nächsten Start automatisch das nächste Verfahren
+  (Vulkan -> DirectX 12 -> Software) und speichert diese Wahl.
+- `thandor.log` nennt die Grafikkarte und ihre Treiberversion, das hilft bei Fehlermeldungen.
+
 ## 1.0.6 - "Thandor Patch 6"
 
 ### English

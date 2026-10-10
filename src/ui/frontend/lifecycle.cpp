@@ -592,7 +592,7 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   UiFrame_FlushInputAndResetPendingTicks();
 }
 
-/* Not in the original (open-thandor): "Open Thandor 1.0.6" (THANDOR_PRODUCT_VERSION_STRING) at the bottom right of
+/* Not in the original (open-thandor): "Open Thandor 1.0.7" (THANDOR_PRODUCT_VERSION_STRING) at the bottom right of
    the main menu, in the small grey game font with its shadow. Shown while the frontend is the front root and the
    menu room shows the entry hall (ROM record FRONTEND_ROM_RECORD_MAIN_MENU) with no dialog page open: centred in
    the black bar below the room, or just above the bottom edge where the room reaches it. Called by UiFrame_Draw

@@ -4,7 +4,7 @@
 ; tools/installer/build_installer.py, which stages the files and passes the parameters below.
 ;
 ; Parameters (ISCC /D<name>=<value>), all optional:
-;   AppVersion        numeric version, default 1.0.6 (VersionInfoVersion gets ".0" appended)
+;   AppVersion        numeric version, default 1.0.7 (VersionInfoVersion gets ".0" appended)
 ;   PatchName         AppName and wizard name, default "Thandor Patch 6"
 ;   Stage             folder with thandor.exe, SDL3.dll and optionally thandor.sym and LICENSE-SDL3.txt,
 ;                     default <repo>\build-mingw-release\installer\stage
@@ -28,7 +28,7 @@
 ;   - never touches *.PCK, thandor.dat, thandor.ini, save\, flm\, the logs or the registry keys of the game.
 
 #ifndef AppVersion
-  #define AppVersion "1.0.6"
+  #define AppVersion "1.0.7"
 #endif
 #ifndef PatchName
   #define PatchName "Thandor Patch 6"

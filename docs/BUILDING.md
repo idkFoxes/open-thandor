@@ -269,7 +269,7 @@ table in `persistent.cpp` maps to one offset. The self-test `OPEN_THANDOR_SELFTE
 
 ## Patch installer
 
-`Thandor-Patch-6.exe` ("Thandor Patch 6", version 1.0.6) installs a release build onto an existing Thandor
+`Thandor-Patch-6.exe` ("Thandor Patch 6", version 1.0.7) installs a release build onto an existing Thandor
 installation, like the original `Thandor-Patch-5.exe` (version 1.05) did; plan and design in
 [plans/step10_installer.md](plans/step10_installer.md). It is made with **Inno Setup 7** (free for non-commercial
 use, [jrsoftware.org](https://jrsoftware.org/isinfo.php); the per-user install in
@@ -289,7 +289,7 @@ way. The target runs [`tools/installer/build_installer.py`](../tools/installer/b
 sections stripped where a file still has them; the GCC build strips `thandor.exe` itself), then compiles
 [`tools/installer/thandor-patch.iss`](../tools/installer/thandor-patch.iss) with `ISCC /DAppVersion=<project
 version>`. The version comes from `project(... VERSION ...)` in `CMakeLists.txt`, so Setup's version resource is
-1.0.6.0 like the one of `thandor.exe`. The script can also be run by hand: `python
+1.0.7.0 like the one of `thandor.exe`. The script can also be run by hand: `python
 tools/installer/build_installer.py build-mingw-release` (options in the script).
 
 What the installer does: a classic German wizard; it finds the game folder (`Planet4\Thandor\Pfad` of the original

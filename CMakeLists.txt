@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 # The single version source: the generated version header (include/thandor/version.h.in), the version resource of
 # thandor.exe (src/platform/bootstrap/thandor.rc.in) and the installer take it from here.
-project(open_thandor VERSION 1.0.6 LANGUAGES CXX RC)
+project(open_thandor VERSION 1.0.7 LANGUAGES CXX RC)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

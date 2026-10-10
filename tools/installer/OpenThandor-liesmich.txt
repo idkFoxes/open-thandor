@@ -1,5 +1,5 @@
 ﻿THANDOR - DIE INVASION
-Open Thandor 1.0.6 ("Thandor Patch 6")
+Open Thandor 1.0.7 ("Thandor Patch 6")
 =======================================
 
 Was ist das?
@@ -22,7 +22,7 @@ Voraussetzungen
 Was installiert wird
 --------------------
 Im Thandor-Ordner:
-  thandor.exe                 das neue Spielprogramm (Version 1.0.6)
+  thandor.exe                 das neue Spielprogramm (Version 1.0.7)
   SDL3.dll                    Bibliothek für Fenster, Grafik, Ton und Eingabe
   thandor.sym                 Funktionsnamen für Absturzberichte (crash.log)
   OpenThandor-liesmich.txt    diese Datei
@@ -41,7 +41,9 @@ Im Spiel unter Optionen -> Grafik:
 - Darstellung: "Vulkan (GPU)" (Standard), "DirectX 12 (GPU)" oder
   "Software (CPU)". Angeboten werden nur die Verfahren, die Ihr Grafiktreiber
   unterstützt. Startet ein GPU-Verfahren nicht, weicht das Spiel selbst auf
-  DirectX 12 bzw. Software aus.
+  DirectX 12 bzw. Software aus. Stürzt das Spiel beim Start der GPU-Grafik
+  ab, nimmt es beim nächsten Start von selbst das nächste Verfahren (Vulkan
+  -> DirectX 12 -> Software) und speichert diese Wahl.
 - Anzeigemodus: Fenster, Vollbildfenster oder Vollbild.
 - Auflösung: alle Auflösungen Ihres Bildschirms ab 640x480.
 "Anwenden" schaltet sofort um und speichert die Wahl.

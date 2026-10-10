@@ -29,7 +29,7 @@
 > [Discord](https://discord.gg/FEvKJ59).
 
 *Deutsch: Open Thandor ist ein vollständiger Nachbau von "Thandor: Die Invasion" in C++. Der Patch-Installer
-`Thandor-Patch-6.exe` macht eine vorhandene Thandor-Installation zu Open Thandor 1.0.6 - 64 Bit, Vulkan/DirectX 12,
+`Thandor-Patch-6.exe` macht eine vorhandene Thandor-Installation zu Open Thandor 1.0.7 - 64 Bit, Vulkan/DirectX 12,
 Auflösungen bis 4K, UI-Skalierung und viele Absturzkorrekturen. Spielstände und Karten des Originals funktionieren
 weiter. Details: [Patch notes](docs/PATCH_NOTES.md#deutsch).*
 
@@ -59,7 +59,7 @@ You need an **installed full version of Thandor** and **64-bit Windows 10 or 11*
 
 ## What's new compared with Thandor 1.05
 
-| | Thandor 1.05 (original) | Open Thandor 1.0.6 |
+| | Thandor 1.05 (original) | Open Thandor 1.0.7 |
 |---|---|---|
 | Program | 32-bit, 1999 Windows APIs | native 64-bit, C++20 on SDL3 |
 | Graphics | DirectDraw, Glide (3dfx), Direct3D | **Vulkan**, **DirectX 12** or the software renderer, switched in the menu |
