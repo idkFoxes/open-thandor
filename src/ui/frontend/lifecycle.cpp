@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/ui/frontend/campaign_tab.h>
 #include <thandor/version.h>
 
 #include <array>
@@ -537,6 +538,8 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
                                         &ui->advancedVsyncCheckbox}) {
       choice->activationSound = g_UiButtonSoundVoiceSets7[4];
     }
+    /* not in the original: the campaign map of the campaign tab */
+    FrontendCampaignTab_BindNodes(ui);
   }
 }
 

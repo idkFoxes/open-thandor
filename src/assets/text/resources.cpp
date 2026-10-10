@@ -79,6 +79,8 @@ static uint16_t g_CampaignFileNameNimm2[] = {'n','i','m','m','2',0};
 static uint16_t g_CampaignFileNameLuke[] = {'l','u','k','e',0};
 static uint16_t g_ProjectTextCampaignHeadingLine[128] = {};
 static uint16_t g_ProjectTextCampaignStatusLine[160] = {};
+/* the campaign button labels (TextResource_SetCampaignButtonLabel) */
+static uint16_t g_ProjectTextCampaignButtonLabels[TEXT_ID_CAMPAIGN_BUTTON_LABEL_COUNT][TEXT_ID_CAMPAIGN_BUTTON_LABEL_UNITS] = {};
 static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
     g_ProjectTextAnzeigemodus, g_ProjectTextFenster, g_ProjectTextVollbildfenster, g_ProjectTextVollbild,
     g_ProjectTextAnzeige, g_ProjectTextAnzeigeeinstellungen, g_ProjectTextErweitert, g_ProjectTextErweiterteEinstellungen,
@@ -89,7 +91,9 @@ static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
     g_ProjectTextCampaignDone, g_ProjectTextCampaignDoneCarry, g_ProjectTextCampaignUnlockedFirst, g_ProjectTextCampaignUnlocked,
     g_ProjectTextCampaignUnlockedBranch, g_ProjectTextCampaignLocked, g_ProjectTextCampaignNeedsCarry, g_ProjectTextCampaignNetworkCarry,
     g_ProjectTextCampaignMissionHeading, g_ProjectTextCampaignLegendCarry, g_ProjectTextCampaignTutorial, g_ProjectTextCampaignInvasion,
-    g_ProjectTextCampaignKyrrdon, g_ProjectTextCampaignPiraten, g_ProjectTextCampaignHeadingLine, g_ProjectTextCampaignStatusLine};
+    g_ProjectTextCampaignKyrrdon, g_ProjectTextCampaignPiraten, g_ProjectTextCampaignHeadingLine, g_ProjectTextCampaignStatusLine,
+    g_ProjectTextCampaignButtonLabels[0], g_ProjectTextCampaignButtonLabels[1], g_ProjectTextCampaignButtonLabels[2],
+    g_ProjectTextCampaignButtonLabels[3], g_ProjectTextCampaignButtonLabels[4], g_ProjectTextCampaignButtonLabels[5]};
 
 void TextResource_SetUiScaleNote(const char *text)
 {
@@ -144,6 +148,23 @@ TextResourceId TextResource_SetCampaignMapLine(TextResourceId lineId,TextResourc
   }
   line[length] = 0;
   return lineId;
+}
+
+TextResourceId TextResource_SetCampaignButtonLabel(int buttonIndex,const uint16_t *text)
+{
+  size_t length = 0;
+
+  if ((buttonIndex < 0) || (buttonIndex >= TEXT_ID_CAMPAIGN_BUTTON_LABEL_COUNT)) {
+    return TEXT_RESOURCE_ID_NONE;
+  }
+  uint16_t *label = g_ProjectTextCampaignButtonLabels[buttonIndex];
+  if (text != nullptr) {
+    for (; (text[length] != 0) && (length + 1 < TEXT_ID_CAMPAIGN_BUTTON_LABEL_UNITS); length++) {
+      label[length] = text[length];
+    }
+  }
+  label[length] = 0;
+  return TEXT_ID_CAMPAIGN_BUTTON_LABEL_0 + buttonIndex;
 }
 
 /* the German campaign title page is bound (its locale block is the one TextResourcePage_Load chose) */

@@ -466,6 +466,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t)> scenarioCatalogRebuildCallbacks[3]; // Indexed 3-way save/level/campaign record-list rebuild callbacks, picked by a selector 0..2.
     Ptr32<void (void *)> handlers58_5A[3]; // Not in the original: action IDs 0x2058-0x205A (the display mode kind choices).
     Ptr32<void (void *)> handlers5B_5F[5]; // Not in the original: action IDs 0x205B-0x205F (the advanced settings page).
+    Ptr32<void (void *)> handlers60[1]; // Not in the original: action ID 0x2060 (the campaign buttons of the campaign tab).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {

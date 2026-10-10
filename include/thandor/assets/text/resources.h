@@ -71,7 +71,12 @@ inline constexpr int TEXT_ID_PROJECT_BASE = 0x7F0000;
 /* the two filled-in lines of the campaign map, written by TextResource_SetCampaignMapLine */
 #define TEXT_ID_CAMPAIGN_MAP_HEADING_LINE (TEXT_ID_PROJECT_BASE + 38)
 #define TEXT_ID_CAMPAIGN_MAP_STATUS_LINE (TEXT_ID_PROJECT_BASE + 39)
-inline constexpr int TEXT_ID_PROJECT_COUNT = 40;
+/* the labels of the campaign tab's six campaign buttons ("<short name> <done>/<visible>"), written by
+   TextResource_SetCampaignButtonLabel; button i shows TEXT_ID_CAMPAIGN_BUTTON_LABEL_0 + i */
+#define TEXT_ID_CAMPAIGN_BUTTON_LABEL_0 (TEXT_ID_PROJECT_BASE + 40)
+inline constexpr int TEXT_ID_CAMPAIGN_BUTTON_LABEL_COUNT = 6;
+inline constexpr int TEXT_ID_CAMPAIGN_BUTTON_LABEL_UNITS = 64; /* code units of each label buffer, terminator included */
+inline constexpr int TEXT_ID_PROJECT_COUNT = 46;
 
 /* Not in the original: sets the text of TEXT_ID_ADVANCED_NOTE_UI_SCALE (Latin-1, cut to its buffer). */
 void TextResource_SetUiScaleNote(const char *text);
@@ -91,6 +96,11 @@ TextResourceId TextResource_SetCampaignMapLine(TextResourceId lineId,TextResourc
    page has no German locale block; the short names exist in German only): the caller then shows the full campaign
    title (TEXT_ID_CAMPAIGN_TITLE_BASE + index) cut to the button width (plan 5.5, Q8). */
 TextResourceId TextResource_CampaignShortName(uint16_t *cgnBaseName);
+
+/* Not in the original: stores text (plain UTF-16, cut to TEXT_ID_CAMPAIGN_BUTTON_LABEL_UNITS - 1 code units) as the
+   label of campaign button buttonIndex (0..TEXT_ID_CAMPAIGN_BUTTON_LABEL_COUNT - 1) and returns its text id
+   TEXT_ID_CAMPAIGN_BUTTON_LABEL_0 + buttonIndex; any other index gives TEXT_RESOURCE_ID_NONE. */
+TextResourceId TextResource_SetCampaignButtonLabel(int buttonIndex,const uint16_t *text);
 
 bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 

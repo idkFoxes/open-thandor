@@ -1117,10 +1117,11 @@ static_assert(offsetof(InGameUiImage, saveNameEdit_trailing) + sizeof(InGameUiIm
 static_assert(sizeof(UiDisplayModeSelectionActionHandlerTable) == 0x50 &&
               offsetof(UiDisplayModeSelectionActionHandlerTable, handlers) == 0x0,
               "UiDisplayModeSelectionActionHandlerTable keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x180 && /* 0x160 + the 8 handlers of open-thandor */
+static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x184 && /* 0x160 + the 9 handlers of open-thandor */
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers00_54) == 0x0 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, scenarioCatalogRebuildCallbacks) == 0x154 &&
-              offsetof(FrontendUiActionHandlerPage20Prefix, handlers5B_5F) == 0x16C,
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers5B_5F) == 0x16C &&
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers60) == 0x180,
               "FrontendUiActionHandlerPage20Prefix keeps its 32-bit layout");
 static_assert(sizeof(InGameUiActionHandlerPage12Prefix28) == 0x70 &&
               offsetof(InGameUiActionHandlerPage12Prefix28, handlers) == 0x0,
