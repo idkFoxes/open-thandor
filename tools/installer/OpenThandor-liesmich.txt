@@ -11,6 +11,16 @@ Spieldaten, Karten, Filme, Spielstände und Einstellungen bleiben, wie sie sind.
 
 Projekt und Fehlermeldungen: https://github.com/idkFoxes/open-thandor
 
+Neu in Version 1.0.7
+--------------------
+- Behoben: Absturz beim Start mit Vulkan und schwarze 3D-Ansicht mit
+  DirectX 12 auf manchen Grafikkarten (gesehen bei NVIDIA RTX mit 16 GB).
+  Das Spiel lässt dem Grafiktreiber jetzt mehr Adressraum.
+- Neu: Stürzt das Spiel beim Start der Grafik ab, nimmt es beim nächsten
+  Start von selbst das nächste Verfahren (Vulkan -> DirectX 12 -> Software)
+  und speichert diese Wahl.
+- Neu: thandor.log nennt die Grafikkarte und ihre Treiberversion.
+
 Voraussetzungen
 ---------------
 - Windows 10 oder 11, 64 Bit

@@ -173,7 +173,7 @@ change the graphics API, fix sound and so on. I hope some of you want to join th
 ## Contributors
 
 - **idkFoxes** - reverse engineering of the game and the original decompilation this project grew from.
-- **Crankerer** - compilable build, the C/C++ reimplementation and its verification, and Patch 1.0.6
+- **Crankerer** - compilable build, the C/C++ reimplementation and its verification, and the patches 1.0.6 and 1.0.7
   (Open Thandor) including the patch installer.
 
 Contributions are welcome.
