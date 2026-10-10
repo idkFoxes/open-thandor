@@ -1,0 +1,39 @@
+# Visit of the read-only key binding page ("Optionen" -> "Tastenbelegung"). Start with -NOINTRO in the developer
+# tools' window and a saved display mode of 1920x1080 (the main room's 3D view is not centred like the pages: its
+# door is given for 1920x1080; the page coordinates below are for 1280x800 and are moved by the second layout line,
+# the pages stay centred). Shots: shots\script_NNNN.bmp.
+#   main room (1920x1080): the left door (400,500) opens "Optionen"; its buttons sit at page centre + (-200, -36 / -4 / 28 / 60 /
+#   92): "Anzeige" 440,364, "3D" 440,396, "Sound" 440,428, "Erweitert" 440,460, "Tastenbelegung" 440,492;
+#   "Zurueck" / "Ok" at 440,540
+#   key binding page (centre 640,400): the list frame spans x 336..944, y 268..516
+# Steps: options page with the fifth button (shot 0), "Tastenbelegung" (shot 1: the list from the top, section
+# titles highlighted, no row selected), a click on a row and 10 wheel notches down (shot 2: scrolled, still no row
+# selected), 30 notches down (shot 3: the end of the list), back (shot 4: the options page), "Erweitert" (shot 5:
+# the advanced settings page as before), back and "Tastenbelegung" again (shot 6: the list from the top), quit.
+# Lines that do not start with a number are ignored (comments).
+0 layout 1920 1080
+6000 move 400 500
+6500 click 400 500
+7000 layout 1280 800
+9000 shot
+9500 move 440 492
+10000 click 440 492
+12000 shot
+12500 move 640 330
+13000 click 640 330
+13500 wheel 640 400 -10
+15000 shot
+15500 wheel 640 400 -30
+17000 shot
+17500 move 440 540
+18000 click 440 540
+20000 shot
+20500 move 440 460
+21000 click 440 460
+23000 shot
+23500 move 440 540
+24000 click 440 540
+24500 move 440 492
+25000 click 440 492
+27000 shot
+28000 quit

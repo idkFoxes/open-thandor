@@ -24,7 +24,7 @@ void FrontendDisplaySettings_ApplyMode(void *control);
 
 void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot);
 
-/* Not in the original: the advanced settings page ("Erweitert", displayPageStack page 1). OpenPage is the options
+/* Not in the original: the advanced settings page ("Erweitert", settingsSubPageStack page 0 in displayPageStack page 1). OpenPage is the options
    page's advancedSettingsButton (FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS); the others are its choices
    (FRONTEND_ACTION_ADVANCED_*): each applies and saves its value at once and refreshes the page. */
 void FrontendAdvancedSettingsAction_OpenPage(UiNodeBase *sourceNode);

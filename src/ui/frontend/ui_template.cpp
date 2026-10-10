@@ -2353,11 +2353,12 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1},
-            .pageCount = 0x00000002, .pages = {UI_TEMPLATE_LINK_BITS(0x2CB8), UI_TEMPLATE_LINK_BITS(0x7258)}},
+            .pageCount = 0x00000002, .pages = {UI_TEMPLATE_LINK_BITS(0x2CB8), UI_TEMPLATE_LINK_BITS(0x7D58)}},
         { /* +71F8 advancedSettingsButton g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {
-                    .nextSibling = UI_TEMPLATE_LINK(0x2854), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x261C),
+                    /* followed by keyBindingsButton (then hidePanelCheckbox) */
+                    .nextSibling = UI_TEMPLATE_LINK(0x7CF8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x261C),
                     .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = -256, .topOffset = 48, .rightOffset = -144, .bottomOffset = 72,
@@ -2367,7 +2368,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .textResourceId = TEXT_ID_OPTIONS_ADVANCED_BUTTON},
         { /* +7258 advancedSettingsPage g_UiImagePanelControlVtable */
             .base = {
-                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x72B4), .parent = UI_TEMPLATE_LINK(0x71A0),
+                /* page 0 of settingsSubPageStack (+7D58), which is displayPageStack page 1 */
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x72B4), .parent = UI_TEMPLATE_LINK(0x7D58),
                 .vtable = THANDOR_PTR(&g_UiImagePanelControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
@@ -2671,4 +2673,76 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
             .labelFlags = 0x00000040, .text = THANDOR_PTR32_BITS(TEXT_RESOURCE_ID_NONE)},
+        /* not in the original (open-thandor): the read-only key binding page ("Tastenbelegung", frontend only). The
+           options page's fifth button opens it; displayPageStack page 1 is settingsSubPageStack (advanced
+           settings, key bindings), so no earlier node moves. The page has the options page's background; the
+           list is a two-column list in a scroll frame as the saved games list. The list is suppressed (no hit
+           test, no keyboard focus, so no row is ever selected; the scroll frame takes the wheel) and its rows,
+           column widths and row text offsets are set when the page opens (ui/frontend/key_bindings_page.cpp) */
+        { /* +7CF8 keyBindingsButton g_UiFramedTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x2854), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x261C),
+                    .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = -256, .topOffset = 80, .rightOffset = -144, .bottomOffset = 104,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000080), .actionId = FRONTEND_ACTION_OPEN_KEY_BINDINGS},
+            .textResourceId = TEXT_ID_KEYS_TITLE},
+        { /* +7D58 settingsSubPageStack g_UiLayoutContainerControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x71A0),
+                .vtable = THANDOR_PTR(&g_UiLayoutContainerControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .pageCount = 0x00000002, .pages = {UI_TEMPLATE_LINK_BITS(0x7258), UI_TEMPLATE_LINK_BITS(0x7DB0)}},
+        { /* +7DB0 keyBindingsPage g_UiImagePanelControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x7E0C), .parent = UI_TEMPLATE_LINK(0x7D58),
+                .vtable = THANDOR_PTR(&g_UiImagePanelControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .panelFlags = 0x00000045, .subresource = 0x00000003},
+        { /* +7E0C keyBindingsBackButton g_UiFramedTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x7E6C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7DB0),
+                    .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = -256, .topOffset = 128, .rightOffset = -144, .bottomOffset = 152,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x0000008C), .actionId = 0x00002010},
+            .textResourceId = 0x00002129},
+        { /* +7E6C keyBindingsTitle g_UiFocusProxyControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_LINK(0x7EC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7DB0),
+                .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -288, .topOffset = -164, .rightOffset = 288, .bottomOffset = -140,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .labelFlags = 0x00000001, .text = THANDOR_PTR32_BITS(TEXT_ID_KEYS_TITLE)},
+        { /* +7EC8 keyBindingsScroller g_UiScrollableControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x7F58), .parent = UI_TEMPLATE_LINK(0x7DB0),
+                .vtable = THANDOR_PTR(&g_UiScrollableControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -304, .topOffset = -132, .rightOffset = 304, .bottomOffset = 116,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            /* frame style A; a vertical bar at the right and a horizontal bar at the bottom when needed */
+            .scrollStateFlags = FromBits<UiScrollableStateFlags>(0x000004A0), .autoScrollStepX = 0x0000000F, .autoScrollStepY = 0x0000000F},
+        { /* +7F58 keyBindingsList g_UiListControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7EC8),
+                .vtable = THANDOR_PTR(&g_UiListControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+            .listStateFlags = FromBits<UiListStateFlags>(0x00000000), .actionId = 0x00000000, .columnCount = 0x00000002,
+            .columns = {{.width = 0x000000C8}}},
+        {{.width = 0x00000190}},
 };

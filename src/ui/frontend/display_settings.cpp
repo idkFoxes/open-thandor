@@ -576,7 +576,8 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(sourceNode);
 }
 
-/* Not in the original: the advanced settings page ("Erweitert", displayPageStack page 1, opened by the options
+/* Not in the original: the advanced settings page ("Erweitert", page 0 of settingsSubPageStack in displayPageStack
+   page 1, opened by the options
    page's fourth button). Every choice applies and saves its value at once: "3D-Kanten" ([graphics]
    gpu_rasterization, a running GPU renderer draws its next scene with it), "UI-Skalierung" ([graphics] ui_scale;
    with a GPU renderer running the display mode is set again at once, as "Anwenden" does: same window size, UI at the new
@@ -691,7 +692,10 @@ void FrontendAdvancedSettingsAction_OpenPage(UiNodeBase *sourceNode)
   UiPageStack_SetActiveIndex
             (FRONTEND_PAGE_DISPLAY_SETTINGS,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendPageStack));
   UiPageStack_SetActiveIndex
-            (FRONTEND_DISPLAY_SUBPAGE_ADVANCED,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->displayPageStack));
+            (FRONTEND_DISPLAY_SUBPAGE_MORE,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->displayPageStack));
+  UiPageStack_SetActiveIndex
+            (FRONTEND_SETTINGS_SUBPAGE_ADVANCED,
+             UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->settingsSubPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
          &FrontendUi_Image(frontendRoot)->menuRoomModelView.contextFlags;
