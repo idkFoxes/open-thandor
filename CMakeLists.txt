@@ -210,6 +210,7 @@ add_executable(thandor WIN32
     src/ui/core/runtime.cpp
     src/ui/dialogs/display_settings.cpp
     src/ui/dialogs/fatal_error.cpp
+    src/ui/frontend/campaign_level_info.cpp
     src/ui/frontend/chat.cpp
     src/ui/frontend/credits.cpp
     src/ui/frontend/credits_mask.cpp
