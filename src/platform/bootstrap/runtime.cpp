@@ -14,6 +14,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/ui/core/key_bindings.h>
 
 /* Module data. */
 
@@ -854,6 +855,8 @@ void CoreAssets_BindLanguageTexts()
     RichTextCommandStream_PatchPayloadBySelector(13,g_FrontendDebugOverlayTextSlot13Utf16,resolvedText);
   }
   RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,TextResource_Resolve(TEXT_ID_MOUSE_HELP));
+  /* the key binding page's names and action texts follow the project texts (German or English) */
+  KeyBindings_SetEnglish(!TextResource_ProjectTextsAreGerman());
 }
 
 
