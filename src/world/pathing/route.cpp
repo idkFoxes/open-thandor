@@ -107,6 +107,15 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   GameEntityRuntime *overlappedEntity;
   ModelRuntimeNode *entityModelNode;
 
+  /* Not in the original: without scratch grids (released at the end of a session, while the end movie still
+     dispatches input) there is nothing to plan on; the target is returned as both points and no route is built. */
+  if (g_GridScratchPrimary == nullptr) {
+    resolvedDestination.primaryWorldXQ12 = static_cast<Q12>(targetWorldXQ12);
+    resolvedDestination.primaryWorldYQ12 = static_cast<Q12>(targetWorldYQ12);
+    resolvedDestination.fallbackWorldXQ12 = static_cast<Q12>(targetWorldXQ12);
+    resolvedDestination.fallbackWorldYQ12 = static_cast<Q12>(targetWorldYQ12);
+    return resolvedDestination;
+  }
   fallbackWorldPosition.worldYQ12 = targetWorldYQ12;
   fallbackWorldPosition.worldXQ12 = targetWorldXQ12;
   /* start cell from the entity position, clamped to 1..size-2 */
