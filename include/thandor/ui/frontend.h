@@ -10,6 +10,7 @@
 
 #include <thandor/ui/frontend/types.h>
 #include <thandor/ui/frontend/node_views.h>
+#include <thandor/ui/frontend/campaign_map_control.h>
 #include <thandor/ui/frontend/chat.h>
 #include <thandor/ui/frontend/common.h>
 #include <thandor/ui/frontend/credits.h>

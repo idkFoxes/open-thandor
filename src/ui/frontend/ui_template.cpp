@@ -2624,11 +2624,11 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
                     .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON},
                 .textResourceId = TEXT_RESOURCE_ID_NONE}},
-        { /* +7B28 campaignMap g_UiImagePanelControlVtable */
+        { /* +7B28 campaignMap g_FrontendCampaignMapControlVtable */
             .panel = {
                 .base = {
                     .nextSibling = UI_TEMPLATE_LINK(0x7B88), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
-                    .vtable = THANDOR_PTR(&g_UiImagePanelControlVtable),
+                    .vtable = THANDOR_PTR(&g_FrontendCampaignMapControlVtable),
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = -176, .topOffset = -112, .rightOffset = 304, .bottomOffset = 49,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
