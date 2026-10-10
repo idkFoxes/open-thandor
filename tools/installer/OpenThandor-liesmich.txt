@@ -20,6 +20,8 @@ Neu in Version 1.0.7
 - Neu: Stürzt das Spiel beim Start der Grafik ab, nimmt es beim nächsten
   Start von selbst das nächste Verfahren (Vulkan -> DirectX 12 -> Software)
   und speichert diese Wahl.
+- Neu: Größerer Zoombereich - weiter heraus- und näher heranzoomen,
+  passend für 1440p, 4K und breite Bildschirme.
 - Neu: thandor.log nennt die Grafikkarte und ihre Treiberversion.
 
 Voraussetzungen

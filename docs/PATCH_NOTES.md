@@ -9,7 +9,7 @@ Every version lists the changes in English and in German (*Deutsch*).
 
 ### English
 
-A hotfix for graphics cards with much video memory.
+A hotfix for graphics cards with much video memory, and a wider zoom range for large screens.
 
 #### Fixed
 
@@ -18,6 +18,8 @@ A hotfix for graphics cards with much video memory.
 
 #### New
 
+- **Wider zoom range:** you can zoom further out (about 1.7 times the old view width) and further in, which suits
+  1440p, 4K and wide screens.
 - If the game crashes while starting the graphics, the next start automatically falls back to the next renderer
   (Vulkan -> DirectX 12 -> Software) and saves that choice.
 - `thandor.log` names the graphics card and its driver version, which helps with bug reports.
@@ -26,7 +28,7 @@ A hotfix for graphics cards with much video memory.
 
 ### Deutsch
 
-Ein Hotfix für Grafikkarten mit viel Grafikspeicher.
+Ein Hotfix für Grafikkarten mit viel Grafikspeicher und ein größerer Zoombereich für große Bildschirme.
 
 #### Behoben
 
@@ -35,6 +37,8 @@ Ein Hotfix für Grafikkarten mit viel Grafikspeicher.
 
 #### Neu
 
+- **Größerer Zoombereich:** Man kann weiter herauszoomen (etwa 1,7-mal so breite Sicht wie bisher) und näher
+  heranzoomen, passend für 1440p, 4K und breite Bildschirme.
 - Stürzt das Spiel beim Start der Grafik ab, nimmt es beim nächsten Start automatisch das nächste Verfahren
   (Vulkan -> DirectX 12 -> Software) und speichert diese Wahl.
 - `thandor.log` nennt die Grafikkarte und ihre Treiberversion, das hilft bei Fehlermeldungen.
