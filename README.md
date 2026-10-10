@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/idkFoxes/open-thandor/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/idkFoxes/open-thandor?label=release&color=2b7a2b"></a>
   <a href="https://discord.gg/FEvKJ59"><img alt="Discord" src="https://img.shields.io/badge/Discord-thandor.cc-5865F2?logo=discord&logoColor=white"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
