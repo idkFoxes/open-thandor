@@ -104,6 +104,10 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
       UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
+      /* The original pops only the in-game root here (in InGameRuntime_ShutdownAndReleaseResources), so a dialog
+         open above it (display settings) stays unreachable and its heap root is never freed; bounded here
+         because every root is closed as on the other two exits. */
+      UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16[0] = 0;
       return true;
@@ -184,6 +188,10 @@ void InGameRuntime_ShutdownAndReleaseResources()
   GraphicsShadingRuntime_ClearRecordTable();
   SelectionInfoPanel_ShutdownResources();
   SpriteAssetRegistry_Reset();
+  /* The original keeps the hover record, which points into the army asset records released above; without a
+     pointer motion before it, the next session's InGameSelectionDetailPanel_Rebuild read the freed record.
+     Cleared here because it belongs to the ended session. */
+  g_UiHoverSelectionRecord = nullptr;
   UiFrame_FlushInputAndResetPendingTicks();
   g_CursorVisibilityToken--;
 }
@@ -228,6 +236,8 @@ void InGameSession_ResetTickState()
   g_InGameReadyStateToggleFlags = 0;
   g_EndGameResultsCurrentMusicTrackId = 0;
   g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
+  /* not in the original: see InGameCommandQueue_Clear */
+  InGameCommandQueue_Clear();
 }
 
 /* Resets the network tick countdown and the step spin lock, starts the periodic step timer and installs
@@ -316,6 +326,12 @@ bool InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,InG
   localPlayerBlock = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
   inGameRoot->localPlayerMarkedCellCount = 0;
   inGameRoot->localPlayerMarkedCells = localPlayerBlock->markedCells;
+  /* The original pushes the shared callbacks as they are: the map editor replaces the keyboard handler and
+     restores it only when it is left (or by the end movie), so a session closed with the editor open started
+     the next one with the editor's keys (F2 writes the level file); bounded here because every session starts
+     with the in-game defaults (the values these callbacks have after any regular session). */
+  g_InGameUiRootCallbacks.frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame);
+  g_InGameUiRootCallbacks.keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags);
   UiRootStack_Push(&g_InGameUiRootCallbacks,&inGameRoot->rootUi);
   *outRoot = inGameRoot;
   return true;
