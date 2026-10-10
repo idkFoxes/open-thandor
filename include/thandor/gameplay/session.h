@@ -10,6 +10,7 @@
 
 #include <thandor/gameplay/session/types.h>
 #include <thandor/gameplay/session/campaign_carryover.h>
+#include <thandor/gameplay/session/campaign_progress.h>
 #include <thandor/gameplay/session/level.h>
 #include <thandor/gameplay/session/level_new.h>
 #include <thandor/gameplay/session/level_saved.h>
