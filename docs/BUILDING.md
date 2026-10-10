@@ -320,12 +320,14 @@ runs `cmake --build --preset mingw-release --target installer`.
 - **Tag `vX.Y.Z` pushed:** builds, checks that the tag is `v` + the version in `project(open_thandor VERSION ...)`
   of `CMakeLists.txt` (else the run fails before building), then creates the GitHub Release
   "Thandor Patch 6 - Open Thandor X.Y.Z" with `Thandor-Patch-6.exe` and `Thandor-Patch-6.exe.sha256` attached. Its
-  text is [`tools/installer/release-notes.md`](../tools/installer/release-notes.md) (`@VERSION@` replaced) plus the
-  SHA-256. Only the release job has `contents: write`.
+  text is [`tools/installer/release-notes.md`](../tools/installer/release-notes.md) (`@VERSION@` replaced), then
+  the version's section of [`PATCH_NOTES.md`](PATCH_NOTES.md) (`## X.Y.Z ...` up to the next `## `; the run fails
+  without one) and the SHA-256. Only the release job has `contents: write`.
 
 Making a release:
 
-1. Set the version in `CMakeLists.txt` (`project(open_thandor VERSION 1.0.7 ...)`), update `CHANGELOG.md`, build and
+1. Set the version in `CMakeLists.txt` (`project(open_thandor VERSION 1.0.7 ...)`), add a `## 1.0.7` section to
+   `docs/PATCH_NOTES.md`, update `CHANGELOG.md`, build and
    check locally, commit and push the branch.
 2. Tag that commit and push the tag: `git tag v1.0.7` and `git push origin v1.0.7`.
 3. Wait for the "Release" workflow; the release appears under Releases. A failed run creates no release: delete the

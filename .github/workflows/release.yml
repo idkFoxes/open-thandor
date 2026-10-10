@@ -189,7 +189,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          sparse-checkout: tools/installer/release-notes.md
+          sparse-checkout: |
+            tools/installer/release-notes.md
+            docs/PATCH_NOTES.md
           sparse-checkout-cone-mode: false
 
       - uses: actions/download-artifact@v8
@@ -203,6 +205,12 @@ jobs:
           VERSION: ${{ needs.build.outputs.version }}
         run: |
           sed "s/@VERSION@/${VERSION}/g" tools/installer/release-notes.md > notes.md
+          # this version's section of docs/PATCH_NOTES.md ("## X.Y.Z ..." up to the next "## "), or no release
+          awk -v v="$VERSION" '/^## /{inside = (index($0, "## " v " ") == 1 || $0 == "## " v); if (inside) next}
+                               inside' docs/PATCH_NOTES.md > section.md
+          if [ ! -s section.md ]; then echo "::error::no section '## ${VERSION}' in docs/PATCH_NOTES.md"; exit 1; fi
+          printf '\n---\n\n## Patch notes %s\n' "$VERSION" >> notes.md
+          cat section.md >> notes.md
           printf '\nSHA256 (Thandor-Patch-6.exe): `%s`\n' "$(cut -d' ' -f1 dist/Thandor-Patch-6.exe.sha256)" >> notes.md
           gh release create "$GITHUB_REF_NAME" dist/Thandor-Patch-6.exe dist/Thandor-Patch-6.exe.sha256 \
             --repo "$GITHUB_REPOSITORY" --verify-tag \

@@ -3,14 +3,16 @@
 Player-facing changes of Open Thandor compared with the original Thandor 1.05 (Patch 5). The developer view of the
 code changes is in the [plans](plans) and the [recovery changelog](../CHANGELOG.md).
 
-*Deutsch weiter unten.*
+Every version lists the changes in English and in German (*Deutsch*).
 
 ## 1.0.6 - "Thandor Patch 6"
+
+### English
 
 The first release of Open Thandor: the whole game rebuilt in C++ as a 64-bit Windows program. It installs as a
 patch onto an existing Thandor installation and plays the original campaigns, missions, saves and maps.
 
-### New
+#### New
 
 - **Modern graphics:** Vulkan (default) or DirectX 12 on the graphics card, or the software renderer of the
   original. Chosen in *Optionen -> Grafik -> Anzeige*, switched without a restart.
@@ -26,7 +28,7 @@ patch onto an existing Thandor installation and plays the original campaigns, mi
   game data, saves and settings are never touched.
 - The version number (1.0.6) is shown in the main menu and in the multiplayer session title.
 
-### Fixed
+#### Fixed
 
 - Runs as a native 64-bit program on Windows 10 and 11; no DirectDraw, Glide or old DirectX runtime needed.
 - Sound, music and movies play through SDL3 (no DirectSound problems on modern Windows).
@@ -38,22 +40,18 @@ patch onto an existing Thandor installation and plays the original campaigns, mi
   locked save file shows an error instead of ending the game.
 - Rare crashes in the original code (division by zero, reads past tables, timer races) are fixed.
 
-### Kept on purpose
+#### Kept on purpose
 
 - The game rules, the AI and the original quirks of the game stay as they were: savegames, levels and the network
   protocol are compatible with the original game.
 
----
-
-## Deutsch
-
-### 1.0.6 - "Thandor Patch 6"
+### Deutsch
 
 Die erste Version von Open Thandor: das ganze Spiel in C++ neu gebaut, als 64-Bit-Programm für Windows. Es wird als
 Patch in eine vorhandene Thandor-Installation installiert und spielt die Original-Kampagnen, Missionen, Spielstände
 und Karten.
 
-**Neu**
+#### Neu
 
 - **Moderne Grafik:** Vulkan (Standard) oder DirectX 12 auf der Grafikkarte, oder der Software-Renderer des
   Originals. Auswahl unter *Optionen -> Grafik -> Anzeige*, Wechsel ohne Neustart.
@@ -69,7 +67,7 @@ und Karten.
   Deinstallation zurückgelegt; Spieldaten, Spielstände und Einstellungen bleiben unberührt.
 - Die Versionsnummer (1.0.6) steht im Hauptmenü und im Titel einer Mehrspieler-Sitzung.
 
-**Behoben**
+#### Behoben
 
 - Läuft als echtes 64-Bit-Programm unter Windows 10 und 11; kein DirectDraw, Glide oder altes DirectX nötig.
 - Sound, Musik und Filme laufen über SDL3 (keine DirectSound-Probleme unter aktuellem Windows).
@@ -81,7 +79,7 @@ und Karten.
   geschrieben ist; ein gesperrter Spielstand zeigt eine Fehlermeldung, statt das Spiel zu beenden.
 - Seltene Abstürze im Original-Code (Division durch null, Lesen hinter Tabellen, Timer-Races) sind behoben.
 
-**Bewusst beibehalten**
+#### Bewusst beibehalten
 
 - Spielregeln, KI und die Eigenheiten des Originals bleiben, wie sie waren: Spielstände, Level und das
   Netzwerkprotokoll sind mit dem Originalspiel kompatibel.
