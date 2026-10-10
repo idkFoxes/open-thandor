@@ -112,7 +112,7 @@ static void CampaignTab_SetSuppressed(UiNodeBase *node,bool suppressed)
 
 static void CampaignTab_SetText(UiFocusProxyControl *label,TextResourceId textId)
 {
-  label->text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(textId));
+  label->text = THANDOR_PTR32_BITS(textId);
 }
 
 /* The map nodes of the campaign page, in page order after the buttons. */
