@@ -554,6 +554,11 @@ static void PersistentIni_ParseName(const char *begin, const char *end, uint8_t 
 
 /* Parses ini text into image (which the caller zeroed); returns the mask of the dwords the text set. Unknown
    sections and keys and values that do not parse are ignored. */
+const uint16_t *PersistentSettings_IniPathUtf16()
+{
+  return s_PersistentSettingsIniPath;
+}
+
 uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image)
 {
   const char *cursor = text;

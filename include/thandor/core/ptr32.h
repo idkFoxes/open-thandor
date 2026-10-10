@@ -14,9 +14,12 @@ The structs of the type headers (<area>/<module>/types.h) are the original's 32-
 asset images, save-game images (pools written raw), UI templates linked by byte offsets, and runtime records
 that code walks with the original strides and offsets. Their pointer fields are declared Ptr32<T> (data
 pointers) or Ptr32<R(args)> (function pointers). Ptr32<T> is a 4-byte field holding the pointer as a signed
-32-bit value. The exe is linked /LARGEADDRESSAWARE:NO, so every address of the process (image, heap, stacks) is
-below 2 GB and fits; sign extension on reading keeps sentinels like (T *)-1 intact. A pointer that does not fit
-stops the game (Thandor_Ptr32Overflow). Savegames, assets and the UI templates depend on these layouts.
+32-bit value. The exe is large-address-aware (the graphics driver gets the whole address space), but everything the
+game points to lies below 2 GB and fits: the image at its fixed base 0x10000000, the main thread's stack, and the
+game's own memory - the arena, every C++ allocation (operator new/delete) and SDL's allocations come from pools
+reserved below 2 GB (platform/bootstrap/low_memory.h; CMake option THANDOR_LARGE_ADDRESS_AWARE, OFF links
+/LARGEADDRESSAWARE:NO instead). Sign extension on reading keeps sentinels like (T *)-1 intact. A pointer that does
+not fit stops the game (Thandor_Ptr32Overflow). Savegames, assets and the UI templates depend on these layouts.
 UPtr32 is the same for a field the code keeps as uintptr_t (a pointer or a small value).
 The field converts to T * implicitly, so most code reads and writes it like a pointer. What does not work
 (compile errors): taking the field's address as a T **, ?: between the field and a T *, and pointer-typed

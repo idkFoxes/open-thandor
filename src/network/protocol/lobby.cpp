@@ -19,7 +19,7 @@
 THANDOR_ALIGN(16) int32_t g_FrontendPlayerRuntimeCount = 0;
 
 /* The version string in the session title shown to joining players (text 0x211A, selector 0). The original sends
-   its build string "1.5.45"; Open Thandor sends its own version, THANDOR_VERSION_STRING ("1.0.6"). It is display
+   its build string "1.5.45"; Open Thandor sends its own version, THANDOR_VERSION_STRING ("1.0.7"). It is display
    only: no peer compares it (the compatibility checks are FRONTEND_PROTOCOL_MAGIC and the sequence token). */
 static std::array<uint16_t, sizeof THANDOR_VERSION_STRING> g_GameVersionUtf16 = [] {
   std::array<uint16_t, sizeof THANDOR_VERSION_STRING> utf16 = {};

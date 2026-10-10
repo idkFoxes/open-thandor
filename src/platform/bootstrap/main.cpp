@@ -7,6 +7,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/platform/bootstrap/low_memory.h>
 
 /*
 The original image has no C runtime: its PE entry point is ProcessEntry, which
@@ -24,6 +25,11 @@ extern "C" int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance,
     (void)commandLine;
     (void)showCommand;
     Thandor_InstallCrashHandler();
+#ifdef THANDOR_LARGE_ADDRESS_AWARE
+    /* before any other SDL call: SDL's allocations come from the pools below 2 GB as well */
+    LowMemory_InstallSdlAllocator();
+    LowMemory_LogState("at start (large-address-aware build)");
+#endif
     /* tables the original executable carried precomputed */
     FixedMath_BuildSinCosTables();
     Movie_BuildChromaLumaTable();

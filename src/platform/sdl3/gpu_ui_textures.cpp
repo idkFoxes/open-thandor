@@ -14,6 +14,7 @@
    bank * 0x800 (8 bytes per entry, +0 ARGB). */
 
 #include "gpu_ui_textures.h"
+#include "gpu_diagnostics.h"
 
 #include <SDL3/SDL_stdinc.h>
 
@@ -175,7 +176,7 @@ SDL_GPUTexture *CreatePageTexture(uint32_t width, uint32_t height) noexcept
   info.layer_count_or_depth = 1;
   info.num_levels = 1;
   info.sample_count = SDL_GPU_SAMPLECOUNT_1;
-  SDL_GPUTexture *texture = SDL_CreateGPUTexture(s_ui.device, &info);
+  SDL_GPUTexture *texture = thandor::sdl3::CreateGpuTextureLogged(s_ui.device, &info, "UI page");
   if (texture == nullptr) {
     Thandor_Log("GPU UI textures: page %ux%u failed: %s", width, height, SDL_GetError());
   }
@@ -448,7 +449,7 @@ bool EnsureTransferBuffer(uint32_t byteCount) noexcept
   SDL_zero(info);
   info.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
   info.size = size;
-  s_ui.transfer = SDL_CreateGPUTransferBuffer(s_ui.device, &info);
+  s_ui.transfer = thandor::sdl3::CreateGpuTransferBufferLogged(s_ui.device, &info, "UI textures");
   s_ui.transferBytes = (s_ui.transfer != nullptr) ? size : 0;
   return s_ui.transfer != nullptr;
 }
@@ -595,7 +596,7 @@ void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands)
     const uint32_t byteCount = static_cast<uint32_t>(s_ui.staging.size() * sizeof(uint32_t));
     void *mapped = nullptr;
     if (EnsureTransferBuffer(byteCount)) {
-      mapped = SDL_MapGPUTransferBuffer(s_ui.device, s_ui.transfer, true);
+      mapped = thandor::sdl3::MapGpuTransferBufferLogged(s_ui.device, s_ui.transfer, true, "UI textures");
     }
     if (mapped == nullptr) {
       /* the pixels of this frame are lost: make every entry convert again on its next use */

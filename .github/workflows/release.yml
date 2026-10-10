@@ -1,7 +1,8 @@
-# Builds the patch installer Thandor-Patch-6.exe (docs/BUILDING.md, "Patch installer" and "Releases").
+# Builds the patch installer Thandor-Patch-Z.exe (docs/BUILDING.md, "Patch installer" and "Releases"); the patch
+# number Z is the last part of the version (1.0.7 -> Thandor Patch 7).
 #
-#   push of a tag vX.Y.Z  -> build, then a GitHub Release "Thandor Patch 6 - Open Thandor X.Y.Z" with
-#                            Thandor-Patch-6.exe and Thandor-Patch-6.exe.sha256 attached
+#   push of a tag vX.Y.Z  -> build, then a GitHub Release "Thandor Patch Z - Open Thandor X.Y.Z" with
+#                            Thandor-Patch-Z.exe and Thandor-Patch-Z.exe.sha256 attached
 #   workflow_dispatch     -> build only; the installer is a workflow artifact, no release
 #
 # The tag must match project(open_thandor VERSION X.Y.Z) in CMakeLists.txt. The build reproduces the local
@@ -40,10 +41,11 @@ env:
 
 jobs:
   build:
-    name: Build Thandor-Patch-6.exe
+    name: Build the patch installer
     runs-on: windows-2025
     outputs:
       version: ${{ steps.version.outputs.version }}
+      patch: ${{ steps.version.outputs.patch }}
     defaults:
       run:
         shell: pwsh
@@ -62,8 +64,10 @@ jobs:
               exit 1
             }
           }
-          Write-Host "Open Thandor $version"
+          $patch = $version.Split('.')[-1]
+          Write-Host "Open Thandor $version, Thandor Patch $patch"
           "version=$version" >> $env:GITHUB_OUTPUT
+          "patch=$patch" >> $env:GITHUB_OUTPUT
 
       - uses: actions/setup-python@v7
         with:
@@ -152,20 +156,22 @@ jobs:
 
       - name: Checksum
         working-directory: build-mingw-release\installer
+        env:
+          INSTALLER: Thandor-Patch-${{ steps.version.outputs.patch }}.exe
         run: |
-          if (-not (Test-Path Thandor-Patch-6.exe)) { Write-Error 'no Thandor-Patch-6.exe'; exit 1 }
-          $hash = (Get-FileHash Thandor-Patch-6.exe -Algorithm SHA256).Hash.ToLowerInvariant()
-          # sha256sum format: certutil -hashfile Thandor-Patch-6.exe SHA256, or sha256sum -c
-          [IO.File]::WriteAllText("$PWD\Thandor-Patch-6.exe.sha256", "$hash *Thandor-Patch-6.exe`n")
-          Get-Content Thandor-Patch-6.exe.sha256
-          (Get-Item Thandor-Patch-6.exe).VersionInfo | Format-List ProductName, ProductVersion, FileVersion
+          if (-not (Test-Path $env:INSTALLER)) { Write-Error "no $env:INSTALLER"; exit 1 }
+          $hash = (Get-FileHash $env:INSTALLER -Algorithm SHA256).Hash.ToLowerInvariant()
+          # sha256sum format: certutil -hashfile Thandor-Patch-Z.exe SHA256, or sha256sum -c
+          [IO.File]::WriteAllText("$PWD\$env:INSTALLER.sha256", "$hash *$env:INSTALLER`n")
+          Get-Content "$env:INSTALLER.sha256"
+          (Get-Item $env:INSTALLER).VersionInfo | Format-List ProductName, ProductVersion, FileVersion
 
       - uses: actions/upload-artifact@v7
         with:
-          name: Thandor-Patch-6-${{ steps.version.outputs.version }}
+          name: Thandor-Patch-${{ steps.version.outputs.patch }}-${{ steps.version.outputs.version }}
           path: |
-            build-mingw-release/installer/Thandor-Patch-6.exe
-            build-mingw-release/installer/Thandor-Patch-6.exe.sha256
+            build-mingw-release/installer/Thandor-Patch-${{ steps.version.outputs.patch }}.exe
+            build-mingw-release/installer/Thandor-Patch-${{ steps.version.outputs.patch }}.exe.sha256
           if-no-files-found: error
 
       # for symbolizing crash logs of the released build (thandor.debug for gdb/addr2line, thandor.map)
@@ -196,22 +202,24 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: Thandor-Patch-6-${{ needs.build.outputs.version }}
+          name: Thandor-Patch-${{ needs.build.outputs.patch }}-${{ needs.build.outputs.version }}
           path: dist
 
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.build.outputs.version }}
+          PATCH: ${{ needs.build.outputs.patch }}
         run: |
-          sed "s/@VERSION@/${VERSION}/g" tools/installer/release-notes.md > notes.md
+          INSTALLER="Thandor-Patch-${PATCH}.exe"
+          sed -e "s/@VERSION@/${VERSION}/g" -e "s/@PATCH@/${PATCH}/g" tools/installer/release-notes.md > notes.md
           # this version's section of docs/PATCH_NOTES.md ("## X.Y.Z ..." up to the next "## "), or no release
           awk -v v="$VERSION" '/^## /{inside = (index($0, "## " v " ") == 1 || $0 == "## " v); if (inside) next}
                                inside' docs/PATCH_NOTES.md > section.md
           if [ ! -s section.md ]; then echo "::error::no section '## ${VERSION}' in docs/PATCH_NOTES.md"; exit 1; fi
           printf '\n---\n\n## Patch notes %s\n' "$VERSION" >> notes.md
           cat section.md >> notes.md
-          printf '\nSHA256 (Thandor-Patch-6.exe): `%s`\n' "$(cut -d' ' -f1 dist/Thandor-Patch-6.exe.sha256)" >> notes.md
-          gh release create "$GITHUB_REF_NAME" dist/Thandor-Patch-6.exe dist/Thandor-Patch-6.exe.sha256 \
+          printf '\nSHA256 (%s): `%s`\n' "$INSTALLER" "$(cut -d' ' -f1 "dist/${INSTALLER}.sha256")" >> notes.md
+          gh release create "$GITHUB_REF_NAME" "dist/${INSTALLER}" "dist/${INSTALLER}.sha256" \
             --repo "$GITHUB_REPOSITORY" --verify-tag \
-            --title "Thandor Patch 6 - Open Thandor ${VERSION}" --notes-file notes.md
+            --title "Thandor Patch ${PATCH} - Open Thandor ${VERSION}" --notes-file notes.md

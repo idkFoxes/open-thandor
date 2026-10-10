@@ -51,6 +51,9 @@
    previous present's slot. Both are changed at run time by SdlVideo_SetVsync / SdlVideo_SetFrameLimit. */
 
 #include <thandor/platform/sdl3/sdl_objects.h>
+#ifdef THANDOR_RENDERER_SDL_GPU
+#include "gpu_diagnostics.h"
+#endif
 
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_pixels.h>
@@ -69,6 +72,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/system/win32.h>
+#include <thandor/platform/bootstrap/low_memory.h>
 
 namespace {
 
@@ -102,6 +106,7 @@ struct RendererState {
   uint32_t kind = PERSISTENT_DISPLAY_MODE_FULLSCREEN;        /* applied */
   uint32_t pendingKind = PERSISTENT_DISPLAY_MODE_FULLSCREEN; /* applied by the next display mode switch */
   bool kindChosen = false;
+  bool startMarkerChecked = false; /* the GPU start marker of a start that did not finish was looked at */
   uint32_t windowedChosenKind = PERSISTENT_DISPLAY_MODE_COUNT; /* developer window: the last applied choice */
   bool shown = false;
   int windowWidth = 0; /* the size last given to the normal window */
@@ -603,7 +608,11 @@ bool StartRenderer(uint32_t renderer) noexcept
 #ifdef THANDOR_RENDERER_SDL_GPU
   thandor::sdl3::StopGpuDevice();
   if (renderer != PERSISTENT_RENDERER_SOFTWARE) {
+    /* removed after the first presented frame (or when the device stops); found at the next start when this one
+       crashes (FallBackAfterUnfinishedStart) */
+    thandor::sdl3::GpuStartMarker_Write(PersistentSettings_IniPathUtf16(), renderer, RendererName(renderer));
     if (!thandor::sdl3::StartGpuDevice(renderer, thandor::sdl3::MainWindow(), s_renderer.compare)) {
+      thandor::sdl3::GpuStartMarker_Clear();
       return false;
     }
     s_renderer.active = renderer;
@@ -615,6 +624,41 @@ bool StartRenderer(uint32_t renderer) noexcept
   }
   s_renderer.active = PERSISTENT_RENDERER_SOFTWARE;
   return true;
+}
+
+/* The renderer to start first: when the previous start left its GPU start marker (it crashed or hung before its
+   first frame), the next renderer after that one in the order Vulkan -> DirectX 12 -> Software, saved like a menu
+   choice; else requested. Looked at once, at the first display mode switch. */
+uint32_t FallBackAfterUnfinishedStart(uint32_t requested) noexcept
+{
+#ifdef THANDOR_RENDERER_SDL_GPU
+  if (s_renderer.startMarkerChecked) {
+    return requested;
+  }
+  s_renderer.startMarkerChecked = true;
+  uint32_t failed = kNoRenderer;
+  if (!thandor::sdl3::GpuStartMarker_Take(PersistentSettings_IniPathUtf16(), &failed) ||
+      (failed >= PERSISTENT_RENDERER_SOFTWARE)) {
+    return requested;
+  }
+  if ((s_renderer.forced != kNoRenderer) || (requested != failed)) {
+    Thandor_Log("previous start with %s did not finish; %s requested now, no fallback", RendererName(failed),
+                RendererName(requested));
+    return requested;
+  }
+  uint32_t next = PERSISTENT_RENDERER_SOFTWARE;
+  for (uint32_t index = 0; index < s_renderer.adapterCount; index++) {
+    if ((s_renderer.adapters[index] > failed) && (s_renderer.adapters[index] < next)) {
+      next = s_renderer.adapters[index];
+    }
+  }
+  Thandor_Log("previous start with %s did not finish, falling back to %s", RendererName(failed), RendererName(next));
+  PersistentSettings_WriteChosen(next, PERSISTENT_SETTING_RENDERER);
+  PersistentSettings_Flush();
+  return next;
+#else
+  return requested;
+#endif
 }
 
 /* Makes the requested renderer the running one, falling back Vulkan -> DirectX 12 -> Software. Returns the
@@ -793,6 +837,9 @@ uint32_t SdlVideo_Init()
 
 void SdlVideo_Shutdown()
 {
+#ifdef THANDOR_LARGE_ADDRESS_AWARE
+  LowMemory_LogState("at shutdown");
+#endif
   g_GraphicsBackendAccessState = -1; /* nothing presents any more */
   g_DisplayFramebufferAccess.pixels = nullptr;
 #ifdef THANDOR_RENDERER_SDL_GPU
@@ -983,7 +1030,7 @@ bool SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint3
   if (adapterIndex >= s_renderer.adapterCount) {
     adapterIndex = 0;
   }
-  const uint32_t renderer = SwitchRenderer(s_renderer.adapters[adapterIndex]);
+  const uint32_t renderer = SwitchRenderer(FallBackAfterUnfinishedStart(s_renderer.adapters[adapterIndex]));
   if (renderer == kNoRenderer) {
     Thandor_Log("no renderer could start");
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR, 0, 10, 1, 0, g_PackageLastErrorPath);
