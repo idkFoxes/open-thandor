@@ -1,34 +1,52 @@
-# Open Thandor
+<p align="center">
+  <img src="docs/images/logo.png" width="440" alt="Thandor logo">
+</p>
 
-**Thandor: The Invasion (1999), rebuilt in C++ - as a 64-bit game for today's Windows, with modern graphics and the
-original gameplay.**
+<h1 align="center">Open Thandor</h1>
 
-Got this game back then and can't forget it, so this project rebuilds it in C++ to fix things, replace the AI,
-change the graphics API, fix sound and so on. I hope some of you want to join this effort too.
+<p align="center">
+  <b>A complete C++ re-implementation of the 3D real-time strategy game <i>Thandor: The Invasion</i> (2000) -<br>
+  native 64-bit on Windows 10/11, Vulkan or DirectX 12, up to 4K, original gameplay.</b>
+</p>
 
-*Deutsch: Open Thandor ist ein Nachbau von "Thandor: Die Invasion" in C++. Der Patch-Installer
-`Thandor-Patch-6.exe` macht eine vorhandene Thandor-Installation zu Open Thandor 1.0.6 - mit Vulkan/DirectX 12,
-beliebigen Auflösungen bis 4K, UI-Skalierung und vielen Absturzkorrekturen. Spielstände und Karten des Originals
-funktionieren weiter. Details: [Patch notes](docs/PATCH_NOTES.md#deutsch).*
+<p align="center">
+  <a href="https://discord.gg/FEvKJ59"><img alt="Discord" src="https://img.shields.io/badge/Discord-thandor.cc-5865F2?logo=discord&logoColor=white"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
+</p>
+
+<p align="center">
+  <img src="docs/images/hero.jpg" width="900" alt="Open Thandor: a battle in front of a base, Vulkan at 1440p">
+</p>
+
+<p align="center">
+  <img src="docs/images/shot-menu.jpg" width="290" alt="Main menu">
+  <img src="docs/images/shot-battle.jpg" width="290" alt="A battle on a snow map">
+  <img src="docs/images/shot-settings.jpg" width="290" alt="Display settings: Vulkan, DirectX 12, resolutions">
+</p>
+
+> **You need the original game.** Open Thandor contains no game data: it runs on the data of an installed full
+> version of Thandor (the folder with `DATEN.PCK`). Community: [thandor.cc](https://thandor.cc) and its
+> [Discord](https://discord.gg/FEvKJ59).
+
+*Deutsch: Open Thandor ist ein vollständiger Nachbau von "Thandor: Die Invasion" in C++. Der Patch-Installer
+`Thandor-Patch-6.exe` macht eine vorhandene Thandor-Installation zu Open Thandor 1.0.6 - 64 Bit, Vulkan/DirectX 12,
+Auflösungen bis 4K, UI-Skalierung und viele Absturzkorrekturen. Spielstände und Karten des Originals funktionieren
+weiter. Details: [Patch notes](docs/PATCH_NOTES.md#deutsch).*
 
 ## Install and play
 
-You need an **installed full version of Thandor** (the game data is not part of this project) and **64-bit
-Windows 10 or 11**.
+You need an **installed full version of Thandor** and **64-bit Windows 10 or 11**.
 
-1. Download **`Thandor-Patch-6.exe`** from the [Releases](https://github.com/idkFoxes/open-thandor/releases) page.
+1. Download **`Thandor-Patch-6.exe`** from the [latest release](https://github.com/idkFoxes/open-thandor/releases/latest).
 2. Run it. It finds your Thandor folder (the one with `DATEN.PCK`); Patch 5 is not required.
 3. Start the game as before with `thandor.exe` in the game folder.
 
-<table>
-  <tr>
-    <td><img src="docs/images/installer-welcome.png" width="260" alt="Installer: welcome page"></td>
-    <td><img src="docs/images/installer-folder.png" width="260" alt="Installer: choosing the Thandor folder"></td>
-    <td><img src="docs/images/installer-ready.png" width="260" alt="Installer: ready to install"></td>
-  </tr>
-</table>
-
-Good to know:
+<details>
+<summary>Installer screenshots and notes</summary>
+<br>
+<img src="docs/images/installer-welcome.png" width="260" alt="Installer: welcome page">
+<img src="docs/images/installer-folder.png" width="260" alt="Installer: choosing the Thandor folder">
+<img src="docs/images/installer-ready.png" width="260" alt="Installer: ready to install">
 
 - The installer keeps your old `thandor.exe` as `thandor-1.05.exe`. Uninstalling ("Apps" in Windows, entry
   "Thandor Patch 6") puts it back.
@@ -37,18 +55,21 @@ Good to know:
 - The installer is not signed, so Windows SmartScreen may warn ("More info" -> "Run anyway").
 - The settings are in `thandor.ini` next to the game; your old `thandor.dat` settings are taken over once.
 
+</details>
+
 ## What's new compared with Thandor 1.05
 
-- **Vulkan or DirectX 12** on the graphics card, or the original software renderer - switch any time in
-  *Optionen -> Grafik -> Anzeige*.
-- **Every resolution of your display up to 4K**, in a window, a borderless window or exclusive fullscreen.
-- **UI scaling** (Auto, 1x, 2x, 3x) keeps menus readable at 1440p and 4K; **VSync** and an optional **frame limit**.
-- **Native 64-bit** on SDL3: no DirectDraw, Glide or old DirectX needed; sound, music and movies work on current
-  Windows.
-- **Many crash fixes:** damaged or unusual levels, maps, models, sounds, pictures, campaigns and saves are rejected
-  instead of crashing; saving is safe (a half-written save never replaces the old one).
-- **Unchanged on purpose:** the rules, the AI and the quirks of the original. Saves, levels and multiplayer stay
-  compatible with the original game.
+| | Thandor 1.05 (original) | Open Thandor 1.0.6 |
+|---|---|---|
+| Program | 32-bit, 1999 Windows APIs | native 64-bit, C++20 on SDL3 |
+| Graphics | DirectDraw, Glide (3dfx), Direct3D | **Vulkan**, **DirectX 12** or the software renderer, switched in the menu |
+| Resolution | only the ten smallest display modes listed | **every mode of your display up to 4K**, window / borderless / fullscreen |
+| UI on large screens | tiny | **UI scaling** Auto, 1x, 2x, 3x (crisp, 3D view at full resolution) |
+| Frame pacing | - | **VSync** and an optional frame limit (60, 120, 144) |
+| Sound, music, movies | DirectSound, WinMM | SDL3, works on current Windows |
+| Settings | binary `thandor.dat` | readable `thandor.ini` (old settings taken over) |
+| Damaged files, odd maps | crashes | rejected with a message; safe saving |
+| Rules, AI, saves, maps, LAN | - | **unchanged**: saves, levels and multiplayer stay compatible with the original |
 
 Full list: **[Patch notes](docs/PATCH_NOTES.md)**.
 
@@ -143,6 +164,12 @@ Public headers under [`include/thandor`](include/thandor), implementations under
 - Types: each module's structures are in `include/thandor/<area>/<module>/types.h`, the common ones in [core/types.h](include/thandor/core/types.h).
 - File formats: [levels](docs/level_format.md), [field grids](docs/field_grid_format.md).
 
+## About
+
+Got this game back then and can't forget it, so this project rebuilds it in C++ to fix things, replace the AI,
+change the graphics API, fix sound and so on. I hope some of you want to join this effort too - come by on
+[thandor.cc](https://thandor.cc) / [Discord](https://discord.gg/FEvKJ59).
+
 ## Contributors
 
 - **idkFoxes** - reverse engineering of the game and the original decompilation this project grew from.
@@ -150,3 +177,10 @@ Public headers under [`include/thandor`](include/thandor), implementations under
   (Open Thandor) including the patch installer.
 
 Contributions are welcome.
+
+## License
+
+The source code and documentation are under the [MIT License](LICENSE): free to use, change and share, as long as
+the copyright notice is kept. The original game and its data (artwork, texts, sounds, movies) belong to their
+rights holders and are not part of this project; you need an original copy to play. This project is not
+affiliated with the original developers or publishers.
