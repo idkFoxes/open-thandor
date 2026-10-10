@@ -135,11 +135,17 @@ int DebugHook_ScenarioPageOpened()
 void DebugHook_CampaignLoaded(void *campaignAsset)
 {
   DebugCampaign_SelectCampaignLevel(static_cast<uint8_t *>(campaignAsset));
+  DebugCampaign_DumpProgress("campaign loaded");
 }
 
 void DebugHook_CampaignCarryOver(int afterMerge)
 {
   DebugCampaign_LogCarryOver(afterMerge);
+}
+
+void DebugHook_CampaignSessionEnded()
+{
+  DebugCampaign_DumpProgress("session ended");
 }
 
 /* --- in-game session --- */
@@ -153,6 +159,9 @@ void DebugHook_SessionStarted()
 {
   g_TestAidSessionCount = g_TestAidSessionCount + 1;
   DebugStateHash_SessionStart();
+  if (g_FrontendLoadedCampaignAsset != nullptr) {
+    DebugCampaign_DumpProgress("level started");
+  }
 }
 
 void DebugHook_SessionFrameBegin()
@@ -163,6 +172,7 @@ void DebugHook_SessionFrameBegin()
 void DebugHook_SessionFrameEnd()
 {
   DebugCampaign_AutoWinTick();
+  DebugCampaign_AutoLoseTick();
 }
 
 void DebugHook_SimulationStepBegin()

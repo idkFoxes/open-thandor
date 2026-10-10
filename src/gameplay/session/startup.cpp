@@ -89,6 +89,7 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
          just rebuilt as its snapshot (only reads them; native memory and files, no arena) */
       CampaignProgress_RecordSessionEnd(g_FrontendLoadedCampaignAsset,g_EndMovieSelectionIndex,
                                         g_EndMovieVariantIndex);
+      DebugHook_CampaignSessionEnded();
       UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();

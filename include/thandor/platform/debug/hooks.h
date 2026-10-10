@@ -77,6 +77,9 @@ int DebugHook_ScenarioPageOpened();
 void DebugHook_CampaignLoaded(void *campaignAsset);
 /* Level start of a campaign, before (afterMerge 0) and after (1) the carried-over units are merged. */
 void DebugHook_CampaignCarryOver(int afterMerge);
+/* A campaign session ended through its end trigger, after CampaignProgress_RecordSessionEnd
+   (OPEN_THANDOR_CAMPAIGN_PROGRESS_DUMP). */
+void DebugHook_CampaignSessionEnded();
 
 /* --- in-game session --- */
 /* InGameRuntime_RunSessionUntilExit, before the session is initialised (the first simulation steps already run
@@ -84,7 +87,7 @@ void DebugHook_CampaignCarryOver(int afterMerge);
 void DebugHook_SessionInitializing();
 /* After the session is initialised, before its first frame (session counter, state hash start). */
 void DebugHook_SessionStarted();
-/* Start and end of every in-game frame (frame counter for the input script; OPEN_THANDOR_AUTOWIN). */
+/* Start and end of every in-game frame (frame counter for the input script; OPEN_THANDOR_AUTOWIN, _AUTOLOSE). */
 void DebugHook_SessionFrameBegin();
 void DebugHook_SessionFrameEnd();
 /* Around every simulation step (OPEN_THANDOR_STATEHASH). */
@@ -129,6 +132,7 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_ScenarioPageOpened() 0
 #define DebugHook_CampaignLoaded(campaignAsset) ((void)0)
 #define DebugHook_CampaignCarryOver(afterMerge) ((void)0)
+#define DebugHook_CampaignSessionEnded() ((void)0)
 
 #define DebugHook_SessionInitializing() ((void)0)
 #define DebugHook_SessionStarted() ((void)0)
