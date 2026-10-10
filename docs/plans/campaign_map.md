@@ -677,7 +677,10 @@ FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestCampaignBundle>(start
 In `FrontendScenarioSession_LoadOrRequestCampaignBundle` (host or local branch), after `CampaignAsset_Fits`:
 
 - `startLevelId == 0` means today's behaviour.
-- Otherwise the id is checked: it must be a record of this campaign and done or unlocked in the local progress.
+- Otherwise the id is checked (`CampaignStart_Prepare`, CM8): it must be a record of this campaign with a valid
+  level file and done or unlocked in the local progress (the section whose fingerprint matches the loaded
+  campaign, preferring the one named after the list row). A carry target needs a valid snapshot in a local game
+  and is refused in a network game (7.4).
   - Valid: set `campaignAsset->firstLevelId = startLevelId` in the **loaded copy** (never in the file).
   - Invalid: one log line and `firstLevelId` stays.
 - Then, as today: `currentLevelId = firstLevelId`, find the record, load the LEV and FLD, and build the bundle
@@ -781,7 +784,7 @@ warnings, self-tests, golden). Within a wave, no two packages touch the same fil
 | Id | Title | Files | Change | Size | Verify |
 |---|---|---|---|---|---|
 | CM7 | Record wins and starts | `src/gameplay/session/startup.cpp`, `new_session.cpp`, `loaded_session.cpp` (one call each) | `CampaignProgress_RecordSessionEnd` in the END_MOVIE branch (4.3, 4.5 take); `CampaignProgress_NoteLevelStarted` | S | campaign check `quick`: the file holds the expected `done` and `carry` items; determinism unchanged |
-| CM8 | Start level and snapshot restore | `src/gameplay/session/scenario_load.cpp` | `startLevelId` argument, validation, `firstLevelId` patch, restore after `ResetPendingTables`, network rule (7.3, 7.4) | M | CT2, CT4 |
+| CM8 | Start level and snapshot restore | `src/gameplay/session/scenario_load.cpp` | `startLevelId` argument, validation, `firstLevelId` patch, restore after `ResetPendingTables`, network rule (7.3, 7.4). **Done 2026-10-10:** logic in `campaign_start.cpp`/`.h` (new; `CampaignStart_Prepare`, `CampaignStart_RestoreSnapshot`, plus the pure queries CM13 needs); a carry target is also rejected in a local game when the progress has no valid snapshot for it (the UI disables Start then, 5.5); unit positions are checked against the loaded field grid at restore, a bad one drops the whole snapshot | M | CT2, CT4 |
 | CM9 | Test aids | `src/platform/debug/campaign.cpp`, `include/thandor/platform/debug/campaign.h`, `docs/BUILDING.md` | `OPEN_THANDOR_CAMPAIGN_PROGRESS=<path>`; `OPEN_THANDOR_CAMPAIGN_MISSION=<levelId>` (starts through the new CM8 path, not the `firstLevelId` aid); `OPEN_THANDOR_AUTOWIN_SELECTION=<n>` (prefer this end selection); `OPEN_THANDOR_AUTOLOSE=<s>` (fire the local loss trigger); `OPEN_THANDOR_CAMPAIGN_PROGRESS_DUMP=1` (log the parsed progress) | M | used by CT1-CT7 |
 | CM10 | Template nodes | `include/thandor/ui/frontend/types.h`, `src/ui/frontend/ui_template.cpp`, `src/core/layout_checks.cpp`, `src/platform/selftest/uitemplate_selftest.cpp` (reference) | Append `campaignButtons[6]`, `campaignMap`, the four text nodes (6.1, 6.2) as children of the campaign page; asserts; nodes suppressed by default (no visible change yet) | M | `uitemplate` new reference; golden of all other pages identical |
 
@@ -831,7 +834,7 @@ Self-tests (per package): `campaignprogress` (CM3), `campaignmap` (CM5), `uitemp
 | The LEV decode or the progress I/O touches the arena | arena order shifts, so the determinism or campaign chain changes | CM2 measured the decode path (no arena for methods 0/1; CM6 rejects method 2); native-only rule; CT2 compares state hashes |
 | A snapshot restored from a user-edited file places units at bad positions or with bad asset ids | crash in `ArmyRuntime_CreateInstanceFromAsset` or in the occupancy rebuild | validation in 4.4 (faction and the loaded level's bounds); an unknown asset id is a safe no-op in the engine (CM2, 4.4); CT3 |
 | Win rule wrong for a level (variant semantics in coop, tutorial triggers) | a loss marked as a win, or a win not recorded | CM1 measures every stock level; the rule is one function with a self-test table |
-| The network argument dword is not transported as assumed | client starts the wrong mission | CM8 verifies the command path (`FrontendCommand_Issue` packet layout) and CT7; fallback: the host patches only `firstLevelId`, which already suffices for the client; the argument is only needed on the host itself |
+| The network argument dword is not transported as assumed | client starts the wrong mission | **Verified (CM8, code trace):** in a network game `FrontendCommand_Issue` queues `(code << 8 \| player, payload1, payload2, payload3)` as one 16-byte `UiCommandQueueRecord` (`FrontendCommandQueue_EnqueueLocalPlayerCommand`, `src/network/protocol/commands.cpp`); the host takes its own record into slot 0 (`FrontendTransfer_BroadcastAndExecuteLobbyCommands`, `src/network/protocol/lobby.cpp`), sends the batch to the clients and executes it; every peer runs `CommandDispatch_ExecuteRecord`, whose validation table has `COMMAND_CHECK_NONE` for payload1 of `FRONTEND_COMMAND_LOAD_CAMPAIGN`, so the handler gets the dword unchanged on every peer. Only the host (or a local game) reads it; a client takes the mission from the bundle, which already holds the patched `firstLevelId` (`scenario_transfer.cpp` `currentLevelId = firstLevelId`), so an original client starts the same mission. CT7 confirms at run time |
 | Opponent settings appear on a map-started mission (`currentLevelId == firstLevelId`) | a harder or easier campaign mid-way | owner decision Q7; if unwanted, keep a separate "map start" flag and leave the briefing rule on the original first level |
 | Linked worker copies in the chain tests share `save\` | parallel runs race on the progress file | CM15 sets a per-worker progress path |
 | Template growth | `uitemplate` reference, layout asserts | appended members only, as the "Erweitert" page did |
