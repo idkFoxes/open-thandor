@@ -237,6 +237,8 @@ static bool InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameR
     DebugHook_CampaignCarryOver(0);
     OldUnitRuntime_MergeMasksAndReplayRecords();
     DebugHook_CampaignCarryOver(1);
+    /* open-thandor: a started level counts as unlocked in the campaign progress (native file only, no arena) */
+    CampaignProgress_NoteLevelStarted(g_FrontendLoadedCampaignAsset);
   }
   if (!InGameSession_AllocateGridScratchAndRebuildDerived(world,outError)) {
     return false;

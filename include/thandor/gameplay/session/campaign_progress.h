@@ -139,4 +139,43 @@ CampaignProgress CampaignProgress_LoadFile(uint16_t *path);
    file stays on failure. */
 uint32_t CampaignProgress_SaveFile(uint16_t *path,const CampaignProgress &progress);
 
+/* The only entry points to the stored progress (the storage may change; callers never build its path). Today the
+   file save\campaign_progress.txt under the executable directory, or OPEN_THANDOR_CAMPAIGN_PROGRESS=<path> in a
+   dev-tools build. LoadCurrent behaves like CampaignProgress_LoadFile. SaveCurrent writes like
+   CampaignProgress_SaveFile and creates the missing directory first when the write fails (one log line on a
+   final failure; the game goes on). */
+CampaignProgress CampaignProgress_LoadCurrent();
+void CampaignProgress_SaveCurrent(const CampaignProgress &progress);
+
+/* --- Session hooks (src/gameplay/session/campaign_progress_session.cpp, plan 4.3, 4.5, 7.5) --- */
+
+struct CampaignAsset;
+struct CampaignLevelRecord;
+
+/* The win rule of plan 4.3 for a session of level levelId (whose record is levelRecord) that ended through the
+   end trigger with that end selection and movie variant: the success movie (variant != 0), a selection 0..7 and
+   a successor that is not the level itself (a retry). */
+bool CampaignProgress_IsWin(const CampaignLevelRecord &levelRecord,int32_t levelId,uint32_t endMovieSelectionIndex,
+                            uint32_t endMovieVariantIndex);
+
+/* The carry-over snapshot of plan 4.5: recordCount (at most CAMPAIGN_PROGRESS_UNIT_CAPACITY are taken) primary
+   records of 8 dwords, of which dwords [0..4] are kept, and the 8 x 8 dwords of the secondary table. */
+CampaignProgressCarry CampaignProgress_TakeCarry(int32_t sourceLevelId,int32_t selection,const uint32_t *primaryTable,
+                                                 uint32_t recordCount,const uint32_t *secondaryTable);
+
+/* Called once when a session ends through the end trigger (the END_MOVIE branch of
+   InGameRuntime_RunSessionUntilExit), after OldUnitRuntime_RebuildScenarioReplayTables. Outside a campaign it does
+   nothing. For a win (CampaignProgress_IsWin) of the campaign's current level it records the level as done with
+   that selection and, when the selection carries units over (carryOverMask bit set, skipMask bit clear), the
+   old-unit tables as the snapshot for the successor; then it rewrites the progress file. Every peer of a network
+   game records its own result (plan 7.4). Only reads game state; native memory and files only. */
+void CampaignProgress_RecordSessionEnd(const CampaignAsset *campaign,uint32_t endMovieSelectionIndex,
+                                       uint32_t endMovieVariantIndex);
+
+/* Called once when a session of a campaign level has started (new or loaded): unlock rule 3 of plan 4.3. Adds the
+   campaign's current level to the explicitly unlocked levels unless it is already unlocked another way (the base
+   campaign's first level, a done level or the successor of a recorded win); writes the file only on a change.
+   campaign nullptr (not a campaign) does nothing. */
+void CampaignProgress_NoteLevelStarted(const CampaignAsset *campaign);
+
 #endif /* THANDOR_GAMEPLAY_SESSION_CAMPAIGN_PROGRESS_H */

@@ -8,7 +8,8 @@
 /* OPEN_THANDOR_SELFTEST=campaignprogress: the campaign progress model and file format
    (src/gameplay/session/campaign_progress.cpp) on fixed texts: a round trip of a model with every item kind
    (text and file), a truncated file, a wrong version and a wrong magic, garbage lines, a snapshot with more than
-   0x200 units, bad asset ids (non-numeric and outside int32), repeated sections and unknown keys. The file cases
+   0x200 units, bad asset ids (non-numeric and outside int32), repeated sections, unknown keys, the win rule and the
+   carry-over snapshot take of the session hooks. The file cases
    run in a fresh directory under %TEMP% (the current directory without TEMP), which is removed afterwards; a
    rejected file must be renamed to ".bad". No game data is needed. One line per failed check, then
    "campaignprogress: <n> of <m> checks failed". The parser's own log lines for the broken inputs are expected. */
@@ -545,6 +546,46 @@ static void CampaignProgressTest_RemoveAll(const char *directory)
     RemoveDirectoryA(directory);
 }
 
+/* The win rule of plan 4.3 and the snapshot take of 4.5 (the session hooks' pure parts). */
+static void CampaignProgressTest_SessionRules()
+{
+    CampaignLevelRecord record{};
+    record.levelId = 16; /* hansolo m15: loss continues to m17, the win to m16 */
+    record.successorLevelIds[0] = 18;
+    record.successorLevelIds[1] = 17;
+    CampaignProgressTest_Check(CampaignProgress_IsWin(record, 16, 1, 1), "win rule: success movie, next level");
+    CampaignProgressTest_Check(!CampaignProgress_IsWin(record, 16, 0, 0), "win rule: m15 loss going forward");
+    record.successorLevelIds[0] = 16;
+    CampaignProgressTest_Check(!CampaignProgress_IsWin(record, 16, 0, 1), "win rule: successor is the level itself");
+    CampaignProgressTest_Check(!CampaignProgress_IsWin(record, 16, 8, 1), "win rule: selection outside 0..7");
+    record.successorLevelIds[2] = 0;
+    CampaignProgressTest_Check(CampaignProgress_IsWin(record, 16, 2, 1), "win rule: finale (successor 0)");
+
+    std::vector<uint32_t> primary(8 * (CAMPAIGN_PROGRESS_UNIT_CAPACITY + 2), 0);
+    std::vector<uint32_t> secondary(CAMPAIGN_PROGRESS_TECH_WORD_COUNT, 0);
+    for (size_t index = 0; index < primary.size(); index++) {
+        primary[index] = (uint32_t)index * 7u + 0x80000000u;
+    }
+    for (size_t index = 0; index < secondary.size(); index++) {
+        secondary[index] = (uint32_t)index + 1;
+    }
+    CampaignProgressCarry carry = CampaignProgress_TakeCarry(8, 1, primary.data(), 3, secondary.data());
+    CampaignProgressTest_Check(carry.sourceLevelId == 8 && carry.selection == 1 && carry.units.size() == 3,
+                               "snapshot: header and count");
+    CampaignProgressTest_Check(carry.units.size() == 3 && (uint32_t)carry.units[2].assetId == primary[16] &&
+                                   (uint32_t)carry.units[2].faction == primary[17] &&
+                                   (uint32_t)carry.units[2].worldXQ12 == primary[18] &&
+                                   (uint32_t)carry.units[2].worldYQ12 == primary[19] &&
+                                   carry.units[2].rotation == primary[20],
+                               "snapshot: dwords [0..4] of a record");
+    CampaignProgressTest_Check(carry.techMasks[0] == 1 && carry.techMasks[CAMPAIGN_PROGRESS_TECH_WORD_COUNT - 1] ==
+                                   (uint32_t)CAMPAIGN_PROGRESS_TECH_WORD_COUNT,
+                               "snapshot: secondary table");
+    carry = CampaignProgress_TakeCarry(8, 1, primary.data(), CAMPAIGN_PROGRESS_UNIT_CAPACITY + 2, secondary.data());
+    CampaignProgressTest_Check(carry.units.size() == (size_t)CAMPAIGN_PROGRESS_UNIT_CAPACITY,
+                               "snapshot: count clamped to the table capacity");
+}
+
 void Thandor_SelfTestCampaignProgress()
 {
     const char *tempRoot;
@@ -560,6 +601,7 @@ void Thandor_SelfTestCampaignProgress()
     CampaignProgressTest_AssetIds();
     CampaignProgressTest_Sections();
     CampaignProgressTest_UnknownKeys();
+    CampaignProgressTest_SessionRules();
 
     tempRoot = getenv("TEMP");
     if (tempRoot == nullptr || tempRoot[0] == 0) {

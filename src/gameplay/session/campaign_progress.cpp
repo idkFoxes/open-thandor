@@ -8,7 +8,9 @@
 #include <thandor/gameplay/session/campaign_progress.h>
 
 #include <stdarg.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <algorithm>
 #include <span>
 #include <thandor/thandor.h>
@@ -801,4 +803,75 @@ uint32_t CampaignProgress_SaveFile(uint16_t *path,const CampaignProgress &progre
                 reinterpret_cast<wchar_t *>(path),writeError);
   }
   return writeError;
+}
+
+/* "campaign_progress.txt", the leaf of the progress file in the save directory */
+static constexpr uint16_t CAMPAIGN_PROGRESS_FILE_LEAF[] = {'c','a','m','p','a','i','g','n','_','p','r','o','g','r',
+                                                           'e','s','s','.','t','x','t',0};
+
+/* The progress file: save\campaign_progress.txt under the executable directory. A dev-tools build takes
+   OPEN_THANDOR_CAMPAIGN_PROGRESS=<path> instead when it is set. pathCapacity is in code units. */
+static void CampaignProgress_GetFilePath(uint16_t *outPath,size_t pathCapacity)
+
+{
+  uint16_t leaf[THANDOR_PATH_CAPACITY];
+
+#ifdef THANDOR_DEV_TOOLS
+  /* test aid: OPEN_THANDOR_CAMPAIGN_PROGRESS=<path> (plan 4.4, 10) */
+  const char *overridePath = getenv("OPEN_THANDOR_CAMPAIGN_PROGRESS");
+  if (overridePath != nullptr && overridePath[0] != 0 && strlen(overridePath) < pathCapacity) {
+    Text_CopyNarrowToUtf16(static_cast<TextOutputCapacityBytes>(pathCapacity * sizeof(uint16_t)),outPath,
+                           reinterpret_cast<uint8_t *>(const_cast<char *>(overridePath)));
+    return;
+  }
+#endif
+  WidePath_CombineDirectoryAndLeaf(leaf,const_cast<uint16_t *>(CAMPAIGN_PROGRESS_FILE_LEAF),g_SaveDirectoryUtf16);
+  WidePath_CombineDirectoryAndLeafBounded(outPath,pathCapacity,leaf,g_ExecutableDirectoryUtf16);
+}
+
+/* Writes progress to path; when that fails, creates the file's directory (as InGameSaveGame_OpenNewPackage does
+   for the saves) and tries once more through CampaignProgress_SaveFile, which logs a second failure. */
+static void CampaignProgress_WriteCreatingDirectory(uint16_t *path,const CampaignProgress &progress)
+
+{
+  uint16_t directory[THANDOR_PATH_CAPACITY];
+  size_t length = 0;
+  size_t separator = 0;
+  std::string text = CampaignProgress_Format(progress);
+
+  if (FileSystem_WriteFileReplacing
+        (path,std::span<const uint8_t>(reinterpret_cast<const uint8_t *>(text.data()),text.size())) == 0) {
+    return;
+  }
+  while (length + 1 < THANDOR_PATH_CAPACITY && path[length] != 0) {
+    directory[length] = path[length];
+    if (path[length] == '\\' || path[length] == '/') {
+      separator = length;
+    }
+    length++;
+  }
+  if (separator != 0) {
+    directory[separator] = 0;
+    g_FileSystemCreateDirectoryRecursive(FileSystemCreateDirectoryFlags::FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,
+                                         directory);
+  }
+  CampaignProgress_SaveFile(path,progress);
+}
+
+CampaignProgress CampaignProgress_LoadCurrent()
+
+{
+  uint16_t path[THANDOR_PATH_CAPACITY];
+
+  CampaignProgress_GetFilePath(path,THANDOR_PATH_CAPACITY);
+  return CampaignProgress_LoadFile(path);
+}
+
+void CampaignProgress_SaveCurrent(const CampaignProgress &progress)
+
+{
+  uint16_t path[THANDOR_PATH_CAPACITY];
+
+  CampaignProgress_GetFilePath(path,THANDOR_PATH_CAPACITY);
+  CampaignProgress_WriteCreatingDirectory(path,progress);
 }
