@@ -3,7 +3,8 @@
 Status: plan (2026-10-10, branch `experimental/campaign-map` from `dev` 113ce57f). This is a read-only analysis
 with no code changes. Line numbers refer to 113ce57f and will move, so search by function name. Items marked
 **(guess)** are estimates and were not measured. Data facts about the stock campaigns were measured with a dump of
-`LEVEL.PCK` (`level\*.cgn`, `level\campagne.dat`) and with `tools/data/lev.py` on the hansolo and nimm2 levels.
+`LEVEL.PCK` (`level\*.cgn`, `level\campagne.dat`) and with `tools/data/lev.py` on the levels of all four campaigns
+(`tools/data/cgn.py dump <level dir> --triggers`, CM1).
 
 On the campaign tab of the "Spiel auswählen" page, the plain list of campaigns is replaced by:
 
@@ -132,13 +133,14 @@ campaign title index:
 | hansolo | 1-6 | 1 |
 | luke | 2-3 | 12 |
 | nimm2 | 2-3 | 7 |
-| tutorial | 1-1 | 0 |
+| tutorial | 1-2 | 0 |
 
 So **nimm2 and luke are network campaigns**, and hansolo can be played over the network with up to 6 players.
 
 The start-point copies are in `LEVEL.PCK` but **not listed in the stock `campagne.dat`**:
 
-- `hansolo4/8/11/16/21.cgn`: identical records, `firstLevelId` 4/8/11/16/21;
+- `hansolo4/8/11/16/21.cgn`: the same successors, masks, exit zones and level files as `hansolo.cgn`, `firstLevelId`
+  4/8/11/16/21; they differ only in the success movie numbers;
 - `nimm2_2..5.cgn`: `firstLevelId` 2..5.
 
 Their titles exist in `level.str` (campaign title indices 2-6, 8-11, 13-15). They can only appear through an add-on
@@ -149,11 +151,23 @@ The end triggers in the level scripts were measured with `tools/data/lev.py`:
 - **hansolo.** Every level has `(faction 1, selection 0, variant 0)`, which is the loss: the player's faction
   ended with the failure movie. It also has `(faction 1, selection 1[,2], variant 1)` for the wins.
 - **nimm2.** The same pairs for factions 1 and 2.
-- **tutorial and luke.** Not yet measured (CM1).
+- **tutorial.** Every level has `(faction 1, selection 0, variant 0)` and `(faction 1, selection 1, variant 1)`.
+- **luke.** The same pairs for factions 1 and 2, like nimm2.
+
+In all four campaigns selection 0 always comes with variant 0 and every other selection with variant 1. The dump
+flags no exception. The missing hansolo levels m0 and m19 have no triggers to check.
+
+The other record fields, measured with `tools/data/cgn.py`:
+
+- **End movies.** Failure movie 1 on every selection, success movie per level (0 = none). In the tutorial both are
+  1000.
+- **Exit zones.** Only the levels with carry-over have them (t00, t01, m7, m11, m21). Each zone has centre (0, 0),
+  radius 1000000 Q12 (the whole map) and destination (0, 0). There are 5 zones (indices 0-4), and 3 on m7. So the
+  carry-over takes every unit of those factions and keeps its position.
 
 So in the stock data **end selection 0 is the loss outcome**, and its successor is the level itself (retry). The
-exceptions are hansolo m15 (loss continues to m17), m25 (loss goes back to m24) and tutorial t00 (loss ends the
-campaign).
+exceptions are hansolo m15 (loss continues to m17), m25 (loss goes back to m24) and tutorial t00 and t01 (loss ends
+the campaign: both have `successorLevelIds[0] = 0`).
 
 ### 4.2 Outcome 0 and `successorLevelIds[0]`: how retry works today (the step 11 open question)
 
@@ -189,12 +203,14 @@ Missions that receive nothing have skip 0 and carry 0 for selection 0. The table
 So recording carry-over "for outcome 0" on a restart is correct by design. Following `successorLevelIds[0]` is
 correct as well, because it is the retry in the stock data.
 
-The three exceptions are original quirks and stay (section 7.6):
+The four exceptions are original quirks and stay (section 7.6):
 
 - **m15:** restart or loss goes on to m17;
 - **m25:** restart or loss goes back to m24;
 - **t00:** `successorLevelIds[0] = 0` ends the campaign. Because the restart path keeps the scenario path, the
   briefing reloads t00 as a *single* level without the campaign. A win then carries nothing into t01.
+- **t01:** the same as t00 (`successorLevelIds[0] = 0`, measured in CM1); a win after the restart carries nothing
+  into t02.
 
 **Consequences for this plan**
 
