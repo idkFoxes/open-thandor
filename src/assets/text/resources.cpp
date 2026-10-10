@@ -9,6 +9,11 @@
 #include <thandor/thandor.h>
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/assets/scenario/catalog.h>
+#include <thandor/assets/text/richtext.h>
+#include <thandor/core/text/string.h>
+
+#include <cstdio>
 
 /* Module data. */
 
@@ -50,13 +55,41 @@ static uint16_t g_ProjectText144[] = {PROJECT_TEXT_BRIGHT,'1','4','4',' ','B','i
 static uint16_t g_ProjectTextVSync[] = {PROJECT_TEXT_BRIGHT,'V','S','y','n','c',0};
 static uint16_t g_ProjectTextNoteSoftware[] = {'3','D','-','K','a','n','t','e','n',' ','u','n','d',' ','U','I','-','S','k','a','l','i','e','r','u','n','g',' ','w','i','r','k','e','n',' ','n','u','r',' ','m','i','t',' ','V','u','l','k','a','n',' ','o','d','e','r',' ','D','i','r','e','c','t','X',' ','1','2',0};
 static uint16_t g_ProjectTextNoteUiScale[96] = {}; /* TextResource_SetUiScaleNote */
+/* the campaign map: status line templates ("%u" mission number, "%s" mission title), the legend item and the short
+   campaign names (plain: the controls choose the colour), and the two filled-in lines
+   (TextResource_SetCampaignMapLine) */
+static uint16_t g_ProjectTextCampaignDone[] = {'A','b','g','e','s','c','h','l','o','s','s','e','n',' ','-',' ','e','r','n','e','u','t',' ','s','p','i','e','l','b','a','r','.',0};
+static uint16_t g_ProjectTextCampaignDoneCarry[] = {'A','b','g','e','s','c','h','l','o','s','s','e','n',' ','-',' ','e','r','n','e','u','t',' ','s','p','i','e','l','b','a','r','.',' ',0x00DC,'b','e','r','n','i','m','m','t',' ','E','i','n','h','e','i','t','e','n',' ','a','u','s',' ','M','i','s','s','i','o','n',' ','%','u',' ','(','%','s',')','.',0};
+static uint16_t g_ProjectTextCampaignUnlockedFirst[] = {'F','r','e','i','g','e','s','c','h','a','l','t','e','t',0};
+static uint16_t g_ProjectTextCampaignUnlocked[] = {'F','r','e','i','g','e','s','c','h','a','l','t','e','t',' ','-',' ','f','o','l','g','t',' ','a','u','f',' ','M','i','s','s','i','o','n',' ','%','u',' ','(','%','s',')',0};
+static uint16_t g_ProjectTextCampaignUnlockedBranch[] = {'F','r','e','i','g','e','s','c','h','a','l','t','e','t',' ','-',' ','a','l','t','e','r','n','a','t','i','v','e','r',' ','Z','w','e','i','g',' ','n','a','c','h',' ','M','i','s','s','i','o','n',' ','%','u',' ','(','%','s',')',0};
+static uint16_t g_ProjectTextCampaignLocked[] = {'G','e','s','p','e','r','r','t',' ','-',' ','f','o','l','g','t',' ','a','u','f',' ','M','i','s','s','i','o','n',' ','%','u',' ','(','%','s',')',0};
+static uint16_t g_ProjectTextCampaignNeedsCarry[] = {'B','e','n',0x00F6,'t','i','g','t',' ','d','i','e',' ','E','i','n','h','e','i','t','e','n',' ','a','u','s',' ','M','i','s','s','i','o','n',' ','%','u',' ','(','%','s',')',' ','-',' ','M','i','s','s','i','o','n',' ','%','u',' ','g','e','w','i','n','n','e','n','.',0};
+static uint16_t g_ProjectTextCampaignNetworkCarry[] = {'I','m',' ','N','e','t','z','w','e','r','k','s','p','i','e','l',' ','n','u','r',' ',0x00FC,'b','e','r',' ','M','i','s','s','i','o','n',' ','%','u',' ','e','r','r','e','i','c','h','b','a','r','.',0};
+static uint16_t g_ProjectTextCampaignMissionHeading[] = {'M','i','s','s','i','o','n',' ','%','u',':',' ','%','s',0};
+static uint16_t g_ProjectTextCampaignLegendCarry[] = {'E','i','n','h','e','i','t','e','n',0x00FC,'b','e','r','n','a','h','m','e',0};
+static uint16_t g_ProjectTextCampaignTutorial[] = {'T','u','t','o','r','i','a','l',0};
+static uint16_t g_ProjectTextCampaignInvasion[] = {'D','i','e',' ','I','n','v','a','s','i','o','n',0};
+static uint16_t g_ProjectTextCampaignKyrrdon[] = {'K','y','r','r','d','o','n',0};
+static uint16_t g_ProjectTextCampaignPiraten[] = {'P','i','r','a','t','e','n',0};
+/* the .cgn base names of the stock campaigns (TextResource_CampaignShortName) */
+static uint16_t g_CampaignFileNameTutorial[] = {'t','u','t','o','r','i','a','l',0};
+static uint16_t g_CampaignFileNameHansolo[] = {'h','a','n','s','o','l','o',0};
+static uint16_t g_CampaignFileNameNimm2[] = {'n','i','m','m','2',0};
+static uint16_t g_CampaignFileNameLuke[] = {'l','u','k','e',0};
+static uint16_t g_ProjectTextCampaignHeadingLine[128] = {};
+static uint16_t g_ProjectTextCampaignStatusLine[160] = {};
 static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
     g_ProjectTextAnzeigemodus, g_ProjectTextFenster, g_ProjectTextVollbildfenster, g_ProjectTextVollbild,
     g_ProjectTextAnzeige, g_ProjectTextAnzeigeeinstellungen, g_ProjectTextErweitert, g_ProjectTextErweiterteEinstellungen,
     g_ProjectText3DKanten, g_ProjectTextGlatt, g_ProjectTextOriginal, g_ProjectTextUiSkalierung,
     g_ProjectTextAuto, g_ProjectText1x, g_ProjectText2x, g_ProjectText3x,
     g_ProjectTextBildratenbegrenzung, g_ProjectTextAus, g_ProjectText60, g_ProjectText120,
-    g_ProjectText144, g_ProjectTextVSync, g_ProjectTextNoteSoftware, g_ProjectTextNoteUiScale};
+    g_ProjectText144, g_ProjectTextVSync, g_ProjectTextNoteSoftware, g_ProjectTextNoteUiScale,
+    g_ProjectTextCampaignDone, g_ProjectTextCampaignDoneCarry, g_ProjectTextCampaignUnlockedFirst, g_ProjectTextCampaignUnlocked,
+    g_ProjectTextCampaignUnlockedBranch, g_ProjectTextCampaignLocked, g_ProjectTextCampaignNeedsCarry, g_ProjectTextCampaignNetworkCarry,
+    g_ProjectTextCampaignMissionHeading, g_ProjectTextCampaignLegendCarry, g_ProjectTextCampaignTutorial, g_ProjectTextCampaignInvasion,
+    g_ProjectTextCampaignKyrrdon, g_ProjectTextCampaignPiraten, g_ProjectTextCampaignHeadingLine, g_ProjectTextCampaignStatusLine};
 
 void TextResource_SetUiScaleNote(const char *text)
 {
@@ -66,6 +99,82 @@ void TextResource_SetUiScaleNote(const char *text)
     g_ProjectTextNoteUiScale[index] = static_cast<unsigned char>(text[index]);
   }
   g_ProjectTextNoteUiScale[index] = 0;
+}
+
+TextResourceId TextResource_SetCampaignMapLine(TextResourceId lineId,TextResourceId templateId,uint32_t missionNumber,
+                                               uint16_t *missionTitle)
+{
+  uint16_t *line;
+  size_t capacity;
+  size_t length = 0;
+  char title[96];
+  char number[12];
+  const char *titleText = title;
+  const char *insert;
+  const uint16_t *source;
+
+  if (lineId == TEXT_ID_CAMPAIGN_MAP_HEADING_LINE) {
+    line = g_ProjectTextCampaignHeadingLine;
+    capacity = sizeof(g_ProjectTextCampaignHeadingLine) / sizeof(uint16_t);
+  }
+  else if (lineId == TEXT_ID_CAMPAIGN_MAP_STATUS_LINE) {
+    line = g_ProjectTextCampaignStatusLine;
+    capacity = sizeof(g_ProjectTextCampaignStatusLine) / sizeof(uint16_t);
+  }
+  else {
+    return lineId;
+  }
+  title[0] = '\0';
+  if (missionTitle != nullptr) {
+    RichTextCommandStream_CopyToNarrow(sizeof(title),reinterpret_cast<uint8_t *>(title),missionTitle); /* cut on overflow */
+  }
+  while (*titleText == ' ') {
+    titleText++;
+  }
+  snprintf(number,sizeof(number),"%u",missionNumber);
+  for (source = TextResource_Resolve(templateId); (*source != 0) && (length + 1 < capacity); source++) {
+    if ((source[0] == '%') && ((source[1] == 'u') || (source[1] == 's'))) {
+      for (insert = (source[1] == 'u') ? number : titleText; (*insert != '\0') && (length + 1 < capacity); insert++) {
+        line[length++] = static_cast<unsigned char>(*insert);
+      }
+      source++;
+      continue;
+    }
+    line[length++] = *source;
+  }
+  line[length] = 0;
+  return lineId;
+}
+
+/* the German campaign title page is bound (its locale block is the one TextResourcePage_Load chose) */
+static bool TextResource_CampaignTitlesAreGerman()
+{
+  const TextResourceLocaleBlockPrefix *localeBlock =
+      g_TextResourcePageBindings[(TEXT_ID_CAMPAIGN_TITLE_BASE >> 8) & 0xff].selectedLocaleBlock;
+
+  return (localeBlock != nullptr) && (localeBlock->countryCode == LocaleTelephoneCountryCode::LOCALE_COUNTRY_GERMANY);
+}
+
+TextResourceId TextResource_CampaignShortName(uint16_t *cgnBaseName)
+{
+  static const struct {
+    uint16_t *fileName;
+    TextResourceId textId;
+  } shortNames[] = {
+      {g_CampaignFileNameTutorial, TEXT_ID_CAMPAIGN_SHORT_NAME_TUTORIAL},
+      {g_CampaignFileNameHansolo, TEXT_ID_CAMPAIGN_SHORT_NAME_HANSOLO},
+      {g_CampaignFileNameNimm2, TEXT_ID_CAMPAIGN_SHORT_NAME_NIMM2},
+      {g_CampaignFileNameLuke, TEXT_ID_CAMPAIGN_SHORT_NAME_LUKE}};
+
+  if ((cgnBaseName == nullptr) || !TextResource_CampaignTitlesAreGerman()) {
+    return TEXT_RESOURCE_ID_NONE;
+  }
+  for (const auto &shortName : shortNames) {
+    if (Utf16String_CompareAsciiCaseInsensitiveFlags(shortName.fileName,cgnBaseName) == 0) {
+      return shortName.textId;
+    }
+  }
+  return TEXT_RESOURCE_ID_NONE;
 }
 
 /* Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title,
