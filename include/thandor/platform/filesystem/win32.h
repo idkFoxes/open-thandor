@@ -8,6 +8,9 @@
 #ifndef THANDOR_PLATFORM_FILESYSTEM_WIN32_H
 #define THANDOR_PLATFORM_FILESYSTEM_WIN32_H
 
+#include <optional>
+#include <span>
+#include <vector>
 #include <thandor/core/types.h>
 #include <thandor/platform/filesystem/types.h>
 #include <thandor/core/contracts.h>
@@ -24,6 +27,17 @@ uintptr_t FileSystem_Init();
 void Win32FileSystem_RestoreInitialDirectory();
 
 uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path);
+
+/* Size limit of FileSystem_ReadWholeFileNative (1 MiB); a larger file is not read */
+inline constexpr auto FILESYSTEM_NATIVE_READ_LIMIT_BYTES = 0x100000;
+
+/* the whole file in native memory (no arena), or std::nullopt when it cannot be read or is larger than
+   FILESYSTEM_NATIVE_READ_LIMIT_BYTES */
+std::optional<std::vector<uint8_t>> FileSystem_ReadWholeFileNative(uint16_t *path);
+
+/* 0, or FATAL_ERROR_FILE_ACCESS_FAILED / FATAL_ERROR_FILE_WRITE_FAILED / FATAL_ERROR_FILE_WRITE_INCOMPLETE;
+   writes path plus ".tmp" and replaces path with it (no arena), the old file stays on failure */
+uint32_t FileSystem_WriteFileReplacing(uint16_t *path,std::span<const uint8_t> bytes);
 
 /* 0, FATAL_ERROR_FILE_WRITE_FAILED or FATAL_ERROR_FILE_WRITE_INCOMPLETE */
 uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle);
