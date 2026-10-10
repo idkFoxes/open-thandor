@@ -736,6 +736,15 @@ void InGameWorldInput_CommitPointerAction
           WorldOwnerListNode *candidateNode,WorldRuntimeContext *inGameRuntime)
 
 {
+  /* The original also handled a release while the end movie of a finished mission plays: the session loop
+     (InGameRuntime_RunSessionUntilExit) has released the pathing scratch grids by then, but the in-game world
+     still gets the pointer events of the movie's frames, so a click issued a move command whose route search
+     read the released grid. Dropped here because nothing in the world may run any more at that point. */
+  if (g_GridScratchPrimary == nullptr) {
+    g_InGamePointerInteractionStateFlags =
+         g_InGamePointerInteractionStateFlags & ~WORLD_POINTER_STATE_SELECTION_CAPTURE;
+    return;
+  }
   InGameWorldInput_DispatchPointerRelease
             (pickedHeightQ12,pointerWorldXQ12,pointerWorldYQ12,candidateHeightQ12,candidateNode,inGameRuntime);
   g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags & ~WORLD_POINTER_STATE_SELECTION_CAPTURE;
