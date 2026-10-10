@@ -538,6 +538,10 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
                                         &ui->advancedVsyncCheckbox}) {
       choice->activationSound = g_UiButtonSoundVoiceSets7[4];
     }
+    /* not in the original: the key binding page (background, button sounds as the advanced settings page) */
+    ui->keyBindingsPage.textureSource = menuTexture;
+    ui->keyBindingsButton.activationSound = g_UiButtonSoundVoiceSets7[3];
+    ui->keyBindingsBackButton.activationSound = g_UiButtonSoundVoiceSets7[3];
     /* not in the original: the campaign map of the campaign tab */
     FrontendCampaignTab_BindNodes(ui);
   }

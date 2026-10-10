@@ -467,6 +467,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers58_5A[3]; // Not in the original: action IDs 0x2058-0x205A (the display mode kind choices).
     Ptr32<void (void *)> handlers5B_5F[5]; // Not in the original: action IDs 0x205B-0x205F (the advanced settings page).
     Ptr32<void (void *)> handlers60[1]; // Not in the original: action ID 0x2060 (the campaign buttons of the campaign tab).
+    Ptr32<void (void *)> handlers61[1]; // Not in the original: action ID 0x2061 (the options page's "Tastenbelegung" button).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1034,8 +1035,9 @@ struct FrontendCampaignMapControl {
 };
 
 /* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
-   nodes of the advanced settings page, plus the 11 nodes of the campaign map). FrontendUi_Image(root)->node is the
-   node in a copy of it (or a node's <node>_prefix), typed as its control. */
+   nodes of the advanced settings page, plus the 11 nodes of the campaign map, plus the 7 nodes of the key binding
+   page). FrontendUi_Image(root)->node is the node in a copy of it (or a node's <node>_prefix), typed as its
+   control. */
 struct FrontendUiImage {
     UiPanelControl frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
     UiLayoutContainerControl<2> frontendViewModeStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack: page 0 = menu room (3D room view, dialog page stack, top/bottom bars), page 1 = full-screen movie view. */
@@ -1326,6 +1328,18 @@ struct FrontendUiImage {
     UiFocusProxyControl campaignTitleText; /* +7BE4 g_UiFocusProxyControlVtable: Title of the selected campaign, right-aligned. */
     UiFocusProxyControl campaignMissionDescriptionText; /* +7C40 g_UiFocusProxyControlVtable: Description of the selected mission (one line). */
     UiFocusProxyControl campaignMissionStatusText; /* +7C9C g_UiFocusProxyControlVtable: Status line of the selected mission (done / unlocked / locked). */
+    /* Not in the original (open-thandor): the read-only key binding list ("Tastenbelegung", frontend only). The
+       options page gets a fifth button (keyBindingsButton) below "Erweitert". displayPageStack page 1 is
+       settingsSubPageStack, whose page 0 is advancedSettingsPage and page 1 keyBindingsPage, so no earlier node
+       moves. The list rows are built when the page opens (ui/frontend/key_bindings_page.cpp). */
+    UiFramedTextButtonControl keyBindingsButton; /* +7CF8 g_UiFramedTextButtonControlVtable: "Tastenbelegung" button of the options page (action FRONTEND_ACTION_OPEN_KEY_BINDINGS). */
+    UiLayoutContainerControl<2> settingsSubPageStack; /* +7D58 g_UiLayoutContainerControlVtable: Two-page stack in displayPageStack page 1: advanced settings, key bindings. */
+    UiImagePanelControl keyBindingsPage; /* +7DB0 g_UiImagePanelControlVtable: settingsSubPageStack page 1: the key binding list. */
+    UiFramedTextButtonControl keyBindingsBackButton; /* +7E0C g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options page. */
+    UiFocusProxyControl keyBindingsTitle; /* +7E6C g_UiFocusProxyControlVtable: Page title "Tastenbelegung". */
+    UiScrollableControl keyBindingsScroller; /* +7EC8 g_UiScrollableControlVtable: Scroll frame of the key binding list. */
+    UiListControl keyBindingsList; /* +7F58 g_UiListControlVtable: Key binding rows (key | action, section titles highlighted); suppressed: no selection, no focus. */
+    UiListColumn keyBindingsList_column2[1]; /* +7FCC: the list's second column (action) */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is

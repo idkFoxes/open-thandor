@@ -30,7 +30,8 @@ inline constexpr int32_t FRONTEND_PAGE_HOST_LOBBY = 3;
 inline constexpr int32_t FRONTEND_PAGE_CLIENT_LOBBY = 4; /* clientLobbyPlayerList, after the join ack */
 inline constexpr int32_t FRONTEND_PAGE_OPTIONS = 5;
 inline constexpr int32_t FRONTEND_PAGE_DISPLAY_SETTINGS = 6; /* adapter, resolution, colour depth (graphicsSettingsButton, 0x2011); in
-                                            open-thandor displayPageStack: also the advanced settings page */
+                                            open-thandor displayPageStack: also the advanced settings and key
+                                            bindings pages */
 inline constexpr int32_t FRONTEND_PAGE_GRAPHICS_SETTINGS = 7; /* "3D": shading, polygon detail, texture quality (0x2012) */
 inline constexpr int32_t FRONTEND_PAGE_AUDIO_SETTINGS = 8; /* sound toggles and volume sliders (0x2013) */
 inline constexpr int32_t FRONTEND_PAGE_QUIT_CONFIRM = 9;
@@ -78,9 +79,15 @@ inline constexpr int32_t FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS = 0x205F; /* adv
 /* Not in the original: the campaign buttons of the campaign tab (FrontendUiImage campaignButtons); the handler
    follows handlers5B_5F of g_FrontendUiActionHandlersPage20 with the campaign tab logic */
 inline constexpr int32_t FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON = 0x2060;
+/* Not in the original: the options page's "Tastenbelegung" button (keyBindingsButton, handlers61 of
+   g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_OPEN_KEY_BINDINGS = 0x2061;
 /* the pages of displayPageStack (frontendPageStack page FRONTEND_PAGE_DISPLAY_SETTINGS) */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_DISPLAY = 0; /* displaySettingsPage ("Anzeige") */
-inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_ADVANCED = 1; /* advancedSettingsPage ("Erweitert") */
+inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_MORE = 1; /* settingsSubPageStack (the two pages below) */
+/* the pages of settingsSubPageStack (displayPageStack page FRONTEND_DISPLAY_SUBPAGE_MORE) */
+inline constexpr int32_t FRONTEND_SETTINGS_SUBPAGE_ADVANCED = 0; /* advancedSettingsPage ("Erweitert") */
+inline constexpr int32_t FRONTEND_SETTINGS_SUBPAGE_KEY_BINDINGS = 1; /* keyBindingsPage ("Tastenbelegung") */
 inline constexpr int32_t FRONTEND_ACTION_ADAPTER_OPTION1 = 0x202C; /* displayAdapterOption1..5: 0x202C..0x2030 */
 /* byte offset of an adapter choice (displayAdapterOption1..5) from its parent displayAdapterGroup, as
    FrontendDisplaySettingsAction_SelectAdapter identifies the pressed button */
