@@ -901,9 +901,10 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x100)},
             .text = THANDOR_PTR32_BITS(0x0000215C)},
+        /* not in the original: the campaign map nodes (+78E8..+7CF8) follow in the campaign page's sibling chain */
         { /* +2448 campaignDescriptionText g_UiListOffsetControlVtable */
             .base = {
-                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                .nextSibling = UI_TEMPLATE_LINK(0x78E8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
                 .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .leftOffset = -160, .topOffset = 72, .rightOffset = 288, .bottomOffset = 112,
@@ -2549,4 +2550,125 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .text = THANDOR_PTR32_BITS(TEXT_ID_ADVANCED_NOTE_SOFTWARE)},
+        /* not in the original (open-thandor): the campaign map of the campaign tab, appended to gameSelectTabStack
+           page 2 after campaignDescriptionText (campaign_map.md 6.1/6.2, mockup v4 offsets). Every node is
+           suppressed and hidden while suppressed (UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, UI_LABEL_HIDE_WHILE_SUPPRESSED,
+           an image panel without texture), so the tab is unchanged until the campaign tab logic shows them. The
+           campaign buttons are radio buttons like the tab buttons (persistent activation, click sound), split
+           evenly over the row (75 pixels, gap 6); the campaign tab logic sets their labels and widths. The texts
+           are single-line labels without text (TEXT_RESOURCE_ID_NONE) until a mission is selected. */
+        { /* +78E8 campaignButtons[6] */
+            { /* +78E8 campaignButtons[0] g_UiFramedTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x7948), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                        .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = -176, .topOffset = -137, .rightOffset = -101, .bottomOffset = -117,
+                        .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON},
+                .textResourceId = TEXT_RESOURCE_ID_NONE},
+            { /* +7948 campaignButtons[1] g_UiFramedTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x79A8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                        .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = -95, .topOffset = -137, .rightOffset = -20, .bottomOffset = -117,
+                        .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON},
+                .textResourceId = TEXT_RESOURCE_ID_NONE},
+            { /* +79A8 campaignButtons[2] g_UiFramedTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x7A08), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                        .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = -14, .topOffset = -137, .rightOffset = 61, .bottomOffset = -117,
+                        .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON},
+                .textResourceId = TEXT_RESOURCE_ID_NONE},
+            { /* +7A08 campaignButtons[3] g_UiFramedTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x7A68), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                        .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = 67, .topOffset = -137, .rightOffset = 142, .bottomOffset = -117,
+                        .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON},
+                .textResourceId = TEXT_RESOURCE_ID_NONE},
+            { /* +7A68 campaignButtons[4] g_UiFramedTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x7AC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                        .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = 148, .topOffset = -137, .rightOffset = 223, .bottomOffset = -117,
+                        .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON},
+                .textResourceId = TEXT_RESOURCE_ID_NONE},
+            { /* +7AC8 campaignButtons[5] g_UiFramedTextButtonControlVtable */
+                .selectable = {
+                    .base = {
+                        .nextSibling = UI_TEMPLATE_LINK(0x7B28), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                        .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                        .left = -1, .top = -1, .right = -1, .bottom = -1,
+                        .leftOffset = 229, .topOffset = -137, .rightOffset = 304, .bottomOffset = -117,
+                        .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+                    .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON},
+                .textResourceId = TEXT_RESOURCE_ID_NONE}},
+        { /* +7B28 campaignMap g_UiImagePanelControlVtable */
+            .panel = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x7B88), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                    .vtable = THANDOR_PTR(&g_UiImagePanelControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = -176, .topOffset = -112, .rightOffset = 304, .bottomOffset = 49,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+                .panelFlags = 0x00000020},
+            .mapIndex = 0},
+        { /* +7B88 campaignMissionTitleText g_UiFocusProxyControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_LINK(0x7BE4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -172, .topOffset = 60, .rightOffset = 128, .bottomOffset = 74,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+            .labelFlags = 0x00000040, .text = THANDOR_PTR32_BITS(TEXT_RESOURCE_ID_NONE)},
+        { /* +7BE4 campaignTitleText g_UiFocusProxyControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_LINK(0x7C40), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = 0, .topOffset = 60, .rightOffset = 300, .bottomOffset = 74,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+            .labelFlags = 0x00000042, .text = THANDOR_PTR32_BITS(TEXT_RESOURCE_ID_NONE)},
+        { /* +7C40 campaignMissionDescriptionText g_UiFocusProxyControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_LINK(0x7C9C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -172, .topOffset = 75, .rightOffset = 300, .bottomOffset = 89,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+            .labelFlags = 0x00000040, .text = THANDOR_PTR32_BITS(TEXT_RESOURCE_ID_NONE)},
+        { /* +7C9C campaignMissionStatusText g_UiFocusProxyControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1ED0),
+                .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -172, .topOffset = 90, .rightOffset = 300, .bottomOffset = 104,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x8)},
+            .labelFlags = 0x00000040, .text = THANDOR_PTR32_BITS(TEXT_RESOURCE_ID_NONE)},
 };

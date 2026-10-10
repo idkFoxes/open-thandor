@@ -75,6 +75,9 @@ inline constexpr int32_t FRONTEND_ACTION_ADVANCED_UI_SCALE = 0x205C; /* advanced
 inline constexpr int32_t FRONTEND_ACTION_ADVANCED_FRAME_LIMIT = 0x205D; /* advancedFrameLimitOff, 60, 120, 144 */
 inline constexpr int32_t FRONTEND_ACTION_ADVANCED_VSYNC = 0x205E; /* advancedVsyncCheckbox */
 inline constexpr int32_t FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS = 0x205F; /* advancedSettingsButton of the options page */
+/* Not in the original: the campaign buttons of the campaign tab (FrontendUiImage campaignButtons); the handler
+   follows handlers5B_5F of g_FrontendUiActionHandlersPage20 with the campaign tab logic */
+inline constexpr int32_t FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON = 0x2060;
 /* the pages of displayPageStack (frontendPageStack page FRONTEND_PAGE_DISPLAY_SETTINGS) */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_DISPLAY = 0; /* displaySettingsPage ("Anzeige") */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_ADVANCED = 1; /* advancedSettingsPage ("Erweitert") */

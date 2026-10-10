@@ -1018,9 +1018,23 @@ inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS = 54;
 inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT = 24;
 inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_ROW_INSET = 3; /* the rows' left/top/right offsets in the panel */
 
+/* Not in the original (open-thandor): the campaign tab's campaign buttons (FrontendUiImage campaignButtons). Six
+   cover the four stock campaigns plus two add-ons; with more campaigns the tab keeps the old list. */
+inline constexpr int32_t FRONTEND_CAMPAIGN_BUTTON_COUNT = 6;
+
+/* Not in the original (open-thandor): the mission map of the campaign tab (FrontendUiImage campaignMap). The prefix
+   is an image panel, so the slots the map control does not define itself can be the image panel's; mapIndex is an
+   index into a module-level table of the map control (graph and layout live in native memory), not a pointer, so
+   the template holds no pointer. In the template the node uses g_UiImagePanelControlVtable without a texture and
+   is suppressed (drawn and hit by nothing) until the map control gets its own vtable. 0x60 bytes. */
+struct FrontendCampaignMapControl {
+    struct UiImagePanelControl panel;
+    uint32_t mapIndex; /* +0x5C */
+};
+
 /* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
-   nodes of the advanced settings page). FrontendUi_Image(root)->node is the node in a copy of it (or a node's <node>_prefix),
-   typed as its control. */
+   nodes of the advanced settings page, plus the 11 nodes of the campaign map). FrontendUi_Image(root)->node is the
+   node in a copy of it (or a node's <node>_prefix), typed as its control. */
 struct FrontendUiImage {
     UiPanelControl frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
     UiLayoutContainerControl<2> frontendViewModeStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack: page 0 = menu room (3D room view, dialog page stack, top/bottom bars), page 1 = full-screen movie view. */
@@ -1302,6 +1316,15 @@ struct FrontendUiImage {
     UiTextButtonControl advancedFrameLimit144; /* +77CC g_UiTextButtonControlVtable: "144 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
     UiTextButtonControl advancedVsyncCheckbox; /* +782C g_UiTextButtonControlVtable: Checkbox "VSync" (action FRONTEND_ACTION_ADVANCED_VSYNC). */
     UiFocusProxyControl advancedNoteLabel; /* +788C g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
+    /* Not in the original (open-thandor): the campaign map of the campaign tab (gameSelectTabStack page 2). The
+       nodes follow campaignDescriptionText in the page's sibling chain; all are suppressed (and hidden while
+       suppressed) in the template, so the tab looks as before until the campaign tab logic shows them. */
+    UiFramedTextButtonControl campaignButtons[FRONTEND_CAMPAIGN_BUTTON_COUNT]; /* +78E8 g_UiFramedTextButtonControlVtable: Campaign buttons "<name> <done>/<visible>" (radio, action FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON); labels are set at run time. */
+    FrontendCampaignMapControl campaignMap; /* +7B28 g_UiImagePanelControlVtable (the map control's own vtable later): Mission map of the selected campaign. */
+    UiFocusProxyControl campaignMissionTitleText; /* +7B88 g_UiFocusProxyControlVtable: "Mission N: <title>" of the selected mission. */
+    UiFocusProxyControl campaignTitleText; /* +7BE4 g_UiFocusProxyControlVtable: Title of the selected campaign, right-aligned. */
+    UiFocusProxyControl campaignMissionDescriptionText; /* +7C40 g_UiFocusProxyControlVtable: Description of the selected mission (one line). */
+    UiFocusProxyControl campaignMissionStatusText; /* +7C9C g_UiFocusProxyControlVtable: Status line of the selected mission (done / unlocked / locked). */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is
