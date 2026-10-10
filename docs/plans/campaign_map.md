@@ -86,6 +86,9 @@ apply. For this feature they mean:
     arena.
   - `Resource_Load`, `Package_LoadEntry` and `FileSystem_ReadWholeFile`-style helpers (`src/platform/filesystem/win32.cpp:219`)
     allocate from the arena, so the new code must not use them. See CM2 and CM4.
+  - Measured (CM2): `Package_FindEntryAcrossMounts` + `Package_DecodeEntryInto` into a caller buffer make no
+    `g_MemoryApi` call for compression methods 0 and 1 (all 55 stock `.lev` entries are method 0); only method 2
+    (field grids, `.fld`) allocates. Details in 5.4.
 - **Untrusted input.** The progress file is user-editable.
   - It is validated on load as in step 11: a malformed item is ignored with one log line (`Thandor_Log`, context
     `campaign progress: ...`).
@@ -267,9 +270,34 @@ end
 | `done <levelId> <selection>` | a won mission and the end selection of its **last** win; every selection ever won is also kept (`done 5 1` and `done 5 2` both) so both branches stay unlocked | level id must be a record of the campaign (checked when applied), selection 0..7 |
 | `unlocked <ids...>` | explicitly unlocked levels (rule 3 of 4.3; successors of wins are derived and not stored) | ids must be records of the campaign |
 | `carry <target> from <source> sel <s> units <n>` | the carry-over snapshot for starting `<target>` directly: the old-unit tables as `OldUnitRuntime_RebuildScenarioReplayTables` left them after the last win of `<source>` | target must be `successorLevelIds[s]` of source with `carryOverMask` bit `s` set; `n <= OLD_UNIT_PRIMARY_RECORD_CAPACITY` (0x200); exactly `n` `unit` lines and 8 `tech` lines follow, otherwise the snapshot is dropped (one log line) |
-| `unit <asset> <faction> <x> <y> <rotation>` | primary record dwords [0..4] (`campaign_carryover.cpp`: asset id, faction, X, Y in Q12, rotation) | asset id must be a valid army asset (the army catalog bound that `ArmyRuntime_CreateInstanceFromAsset` uses, CM3 finds it); faction 0..7; X and Y inside the level's world bounds (checked when applied, against the loaded level's field size); rotation masked like the engine's angle |
+| `unit <asset> <faction> <x> <y> <rotation>` | primary record dwords [0..4] (`campaign_carryover.cpp`: asset id, faction, X, Y in Q12, rotation) | asset id: any `int32` (decimal or `0x` hex); there is no numeric bound to check (CM2, see "Army asset ids" below); faction 0..7; X and Y inside the level's world bounds (checked when applied, against the loaded level's field size); rotation masked like the engine's angle |
 | `tech <faction> <w0..w7>` | secondary table, 8 dwords per faction | faction 0..7, each faction at most once; missing factions are 0 |
 | `end` | end of the section | a section without `end` (a truncated file) is dropped (one log line) |
+
+**Army asset ids (measured in CM2).** The engine has no numeric range for army asset ids:
+
+- `PckArmyAssetIdCatalog` is a plain `int` (`include/thandor/core/types.h:397`).
+- `ArmyRuntime_CreateInstanceFromAsset` (`src/gameplay/army/pool.cpp:281`) looks the id up with
+  `ArmyAssetRegistry_FindRecordById` (`src/assets/army/catalog.cpp:265`). That function compares `registryId` over
+  the 768 slots of `g_ArmyAssetRecordRegistry` (`ARMY_ASSET_REGISTRY_SLOT_COUNT`,
+  `include/thandor/assets/army/catalog.h:17`).
+- The registry is filled per level from the ARM files in the level's ARM path table:
+  `NewLevel_LoadAssetList` (`src/gameplay/session/level_new.cpp:833`) -> `ArmyAsset_PrepareRecords` ->
+  `ArmyAssetRecord_RegisterAndRelocate` (`catalog.cpp:52`, `:232`). It is cleared when the level is released
+  (`pool.cpp:186-193`). So the valid set exists only while the target level is loaded, and it is not a range.
+- An unknown id is harmless:
+  - `CreateInstanceFromAsset` returns `nullptr` with `FATAL_ERROR_ARMY_ID_NOT_FOUND` before it takes the free
+    slot. `ArmyRuntimePool_FindFreeSlot` (`pool.cpp:243`) only finds the slot and does not mark it.
+  - The only side effect is the id written as text into `g_PackageLastErrorPath`.
+  - `OldUnitRuntime_MergeMasksAndReplayRecords` passes `outError = nullptr` and ignores the result
+    (`src/gameplay/session/campaign_carryover.cpp:188-191`).
+  - The original chain already behaves this way for a carried unit whose ARM is missing in the next level.
+- The faction is clamped to 7 inside `CreateInstanceFromAsset` (`pool.cpp:321`). The pre-clamp value is only
+  compared with the active faction, so the 0..7 check above is enough.
+- Consequence for CM3: the load-time check of `unit` lines is syntactic only (the value fits `int32`). The test
+  "bad asset id" means a non-numeric or out-of-`int32` token, which drops the snapshot. CM8 needs no id check at
+  restore: the registry of the target level does not exist yet at that point (`scenario_load.cpp:449`); it is
+  built before the merge (`new_session.cpp:238`).
 
 **Writing.** The whole file is rewritten after every recorded change:
 
@@ -387,8 +415,72 @@ self-test (`campaignmap`) pins the node positions of the four stock graphs to th
   campaign when the campaign is first shown, and cached in native memory (`CampaignLevelInfo { titleTextIndex,
   winSelectionMask, fileExists }`).
 - **No arena.** The entry is looked up with `Package_FindEntryAcrossMounts` and decoded with
-  `Package_DecodeEntryInto` into a `std::vector`. CM2 measures that this path does not touch the arena; if it does,
-  only the PCK directory bytes are read raw and decoded with the codec into native memory.
+  `Package_DecodeEntryInto` into a `std::vector`. CM2 checked this path (see the next block): it does not touch the
+  arena for LEV entries.
+
+**Measured (CM2, 2026-10-10; code trace plus a directory scan of the stock PCKs).**
+
+- **Lookup.** `Package_FindEntryAcrossMounts` (`src/assets/package/runtime.cpp:680`) scans the in-memory mount
+  slots and has no allocation and no file I/O.
+  - Original quirk: it lowercases the caller's path buffer in place (`runtime.cpp:716-718`), so pass a local copy.
+  - The path is `level\<levelFileName>.lev`, built as `FrontendScenarioSession_LoadOrRequestCampaignBundle` builds
+    it: `WidePath_CombineDirectoryAndLeaf` with `g_ScenarioLevelDirectoryUtf16` (`scenario_load.cpp:19`), then
+    `WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV, ...)` (`scenario_load.cpp:358-362`).
+- **Decode.** `Package_DecodeEntryInto` (`runtime.cpp:535`) does three things:
+  - it seeks and reads the packed bytes with `g_FileSystemSeek` / `g_FileSystemReadExact` (`runtime.cpp:562-564`).
+    These are `Win32File_Seek` / `Win32File_ReadExact` (`src/platform/filesystem/win32.cpp:345`, `:540`), which
+    are plain `SetFilePointer` / `ReadFile` calls;
+  - the read goes into `g_PackageScratchBuffer` (8 MB, allocated once at startup with `ArenaHeap_Alloc`,
+    `win32.cpp:156`). Reusing it is no arena traffic. It is overwritten, which is safe because no frontend caller
+    keeps data in it between handlers;
+  - it decodes through `g_PckDecoderTable` (`src/assets/package/codec.cpp:795`):
+    - method 0 `PckCodec_DecodeHuffmanRle` (`codec.cpp:698`) works in the static workspaces
+      `g_PckHuffmanSymbolWorkspace256` / `g_PckHuffmanNodeWorkspace` (`codec.cpp:19`, `:23`) and is bounded by
+      the output size;
+    - method 1 `PckCodec_DecodeStored` (`codec.cpp:275`) copies dwords;
+    - only method 2 `PckCodec_DecodeFieldGrid` calls `g_MemoryApi.alloc/free` (`codec.cpp:214-238`).
+  - **Result: no `g_MemoryApi` call for methods 0 and 1.**
+- **Stock data.** `LEVEL.PCK` has 55 `.lev` entries, all method 0 (decoded at most 21 536 bytes, packed at most
+  8 128). The 54 `.fld` entries are method 2, the 13 `.cgn` entries method 0. `PATCH00.PCK` has no level entries.
+  - CM6 rejects an entry whose method is not 0 or 1 (one log line). That also keeps an add-on `.lev` stored as
+    method 2 away from the arena.
+- **CM6 caller duties.** These are the guards that `Package_LoadEntryIntoBuffer` (`runtime.cpp:77`) runs before it
+  calls the decoder:
+  - `packedSize <= PACKAGE_SCRATCH_BUFFER_BYTES`;
+  - destination `!= g_PackageScratchBuffer`;
+  - a vector of `(unpackedSize + 3) & ~3` bytes. The stored decoder writes whole dwords; the Huffman decoder writes
+    exactly `unpackedSize`.
+- **Loose files.** `Package_LoadEntryWithSize` falls back to a loose `level\*.lev` next to the game when no
+  package has the entry (`runtime.cpp:86ff`); the test levels in `level\` are loose files.
+  - CM6 does the same with the native whole-file reader of CM4.
+  - A level found in neither place gives `fileExists = false`.
+- **Header checks** (mirror the loaders):
+  - `levelAsset[0] == ASSET_MAGIC_LEV` and `levelAsset[3] == PCK_CONVERTER_LEV_00070001` (`src/gameplay/session/level.cpp:266`);
+  - decoded size `>= sizeof(InGameLevelConditionStorage)` (0x800, `src/core/layout_checks.cpp:1742`);
+  - `resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset >= 0x800` and `<=
+    header.common.allocationSizeBytes <= decoded size`. These are the checks of `NewLevel_ValidateImage`
+    (`level_new.cpp:111-117`) and `FrontendLevelAsset_LoadedImageFits` (`scenario_load.cpp:40`).
+- **`titleTextIndex`** is the dword at LEV +0x170: `LevelAssetHeader.titleTextResourceIndex`,
+  `include/thandor/gameplay/session/types.h:130`. The offset is `GeneratedAssetCommonPrefix` 0xB0
+  (`layout_checks.cpp:161`) + path offsets 0x28 + placement count 4 + resource tables 0x24 + file name 0x70.
+  `LevelPackage_ValidateAndMount` reads the same dword as `levelAsset[92]` (`level.cpp:268`).
+- **End-trigger table.** The level loader copies the first `runtimePrefixByteSizeAndInitialArmyPlacementOffset`
+  bytes of the decoded LEV image unchanged into `InGameLevelConditionStorage` (`NewLevel_CopyRuntimePrefix`,
+  `level_new.cpp:144-172`). `level_script.cpp` then reads `conditionStorage->schedule` (`level_script.cpp:400`).
+  So the file offsets equal the struct offsets (`types.h:410-419`):
+
+  | Item | LEV offset | Layout |
+  |---|---|---|
+  | `LevelAssetRuntimePrefix` | 0x000 | 0x370 bytes (`layout_checks.cpp:429`) |
+  | reserved | 0x370 | 0x10 bytes |
+  | `schedule.conditions[64]` | 0x380 | 0x10 bytes each |
+  | `schedule.triggers[16]` | **0x780** | 8 bytes each (`InGameEndConditionTriggerRecord8`, `types.h:371`): +0 `stateFlags` (0 none, 1 active), +1 `movieVariantSelector`, +2 `skipArmyDisableWhenOne`, +4 `factionRuntimeIndex`, +5 `endMovieSelectionIndex`, +6 `conditionIndex` |
+  | end of `InGameConditionSchedule` | 0x800 | `sizeof(InGameConditionSchedule)` 0x480 (`layout_checks.cpp:851`) |
+
+  - CM6 can run `InGameLevelScript_Validate` (`level_script.cpp:304`; const, no arena) on
+    `reinterpret_cast<const InGameConditionSchedule *>(bytes + 0x380)` to reject a level the game would reject.
+  - The win-selection mask is the OR of `1 << endMovieSelectionIndex` over the triggers with `stateFlags` active
+    and `movieVariantSelector == 1` (rule of 4.3; CM1 confirms it per level).
 - **Cost (guess).** 24 hansolo levels of 30-200 KB each take under 100 ms on first open. They are not re-read later.
 
 ### 5.5 Status line texts (German project texts, `TEXT_ID_PROJECT_BASE` range, `src/assets/text/resources.cpp`)
@@ -636,7 +728,7 @@ branches record nothing.
 | Area | Effect | How it is ensured |
 |---|---|---|
 | Simulation | none | no simulation code changes; the snapshot restore writes the same values the chain writes (4.5, test CT2); determinism and AI hash checks |
-| Arena | none | only native memory and native file calls in the new code; CM2 measures the LEV decode path; the determinism check and the campaign chain stay identical |
+| Arena | none | only native memory and native file calls in the new code; the LEV decode path has no arena calls for methods 0/1 (CM2, 5.4); the determinism check and the campaign chain stay identical |
 | Savegame | format unchanged | `campagne.hex` may hold a patched `firstLevelId` (valid); `oldunit.hex` dwords [5..7] may be 0; old saves load (saveload check plus a stock save) |
 | Network | no new command or packet | start level in an unused argument dword; bundle unchanged; no carry-over restore in network games (7.4); multiplayer check plus a manual host test with the original client if available |
 | Original campaign play | unchanged | continue-after-win, retry and restart code untouched; the campaign check (quick and `--full-campaign`) |
@@ -655,7 +747,7 @@ warnings, self-tests, golden). Within a wave, no two packages touch the same fil
 | Id | Title | Files | Change | Size | Verify |
 |---|---|---|---|---|---|
 | CM1 | Campaign dump tool | `tools/data/cgn.py` (new) | Dumps `.cgn` records (successors, masks, exit zones) and, with `--triggers`, the end triggers of each level through `lev.py`. Measures tutorial and luke: is selection 0 always the variant-0 loss? Result into this plan (4.1). | S | run on `LEVEL.PCK` (extract with `tools/data/pck.py`) |
-| CM2 | Measure the native LEV header read | scratch test only, no commit, or a self-test stub | Checks whether `Package_FindEntryAcrossMounts` + `Package_DecodeEntryInto` into a `std::vector` calls `g_MemoryApi` (breakpoint/log counter); finds the end-trigger table offset in the LEV the way `level_script.cpp` loads it; finds the army asset id bound for 4.4 | S | report in the package notes |
+| CM2 | Measure the native LEV header read | scratch test only, no commit, or a self-test stub | Checks whether `Package_FindEntryAcrossMounts` + `Package_DecodeEntryInto` into a `std::vector` calls `g_MemoryApi` (breakpoint/log counter); finds the end-trigger table offset in the LEV the way `level_script.cpp` loads it; finds the army asset id bound for 4.4. **Done 2026-10-10:** no arena for methods 0/1 (all stock LEVs are method 0), triggers at LEV +0x780, title at +0x170, no numeric army id bound (5.4 "Measured", 4.4 "Army asset ids") | S | report in the package notes |
 | CM4 | Native file helpers | `src/platform/filesystem/win32.cpp`, its header | `FileSystem_ReadWholeFileNative(path) -> std::optional<std::vector<uint8_t>>` (size limit 1 MB) and `FileSystem_WriteFileReplacing(path, bytes)` (tmp + `Win32File_Replace`, delete tmp on failure). No arena. | S | `hexscan`-style self-test on a temp file |
 | CM11 | Frame drawing helper | `src/ui/controls/text_buttons.cpp`, `include/thandor/ui/controls/text_buttons.h` | Move the frame part of `UiFramedTextButtonControl_DrawClipped` into `UiFramedFrame_Draw(...)`; the button calls it | S | golden identical, `gpu_compare` identical |
 | CM14 | Project texts | `src/assets/text/resources.cpp`, `include/thandor/assets/text/resources.h` | Status texts, legend text, short campaign names (5.5) as project texts | S | `uiatlas` self-test unchanged |
@@ -720,8 +812,8 @@ Self-tests (per package): `campaignprogress` (CM3), `campaignmap` (CM5), `uitemp
 
 | Risk | Effect | Mitigation |
 |---|---|---|
-| The LEV decode or the progress I/O touches the arena | arena order shifts, so the determinism or campaign chain changes | CM2 measures first; native-only rule; CT2 compares state hashes |
-| A snapshot restored from a user-edited file places units at bad positions or with bad asset ids | crash in `ArmyRuntime_CreateInstanceFromAsset` or in the occupancy rebuild | validation in 4.4 against the army catalog and the loaded level's bounds; CT3 |
+| The LEV decode or the progress I/O touches the arena | arena order shifts, so the determinism or campaign chain changes | CM2 measured the decode path (no arena for methods 0/1; CM6 rejects method 2); native-only rule; CT2 compares state hashes |
+| A snapshot restored from a user-edited file places units at bad positions or with bad asset ids | crash in `ArmyRuntime_CreateInstanceFromAsset` or in the occupancy rebuild | validation in 4.4 (faction and the loaded level's bounds); an unknown asset id is a safe no-op in the engine (CM2, 4.4); CT3 |
 | Win rule wrong for a level (variant semantics in coop, tutorial triggers) | a loss marked as a win, or a win not recorded | CM1 measures every stock level; the rule is one function with a self-test table |
 | The network argument dword is not transported as assumed | client starts the wrong mission | CM8 verifies the command path (`FrontendCommand_Issue` packet layout) and CT7; fallback: the host patches only `firstLevelId`, which already suffices for the client; the argument is only needed on the host itself |
 | Opponent settings appear on a map-started mission (`currentLevelId == firstLevelId`) | a harder or easier campaign mid-way | owner decision Q7; if unwanted, keep a separate "map start" flag and leave the briefing rule on the original first level |
