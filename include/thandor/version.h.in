@@ -15,9 +15,9 @@
 #define THANDOR_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
 #define THANDOR_VERSION_MINOR @PROJECT_VERSION_MINOR@
 #define THANDOR_VERSION_PATCH @PROJECT_VERSION_PATCH@
-/* "1.0.6": the log, the main menu and the multiplayer session title */
+/* "1.0.7": the log, the main menu and the multiplayer session title */
 #define THANDOR_VERSION_STRING "@PROJECT_VERSION@"
-/* "Open Thandor 1.0.6" */
+/* "Open Thandor 1.0.7" */
 #define THANDOR_PRODUCT_VERSION_STRING "Open Thandor @PROJECT_VERSION@"
 
 #endif

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 # The single version source: the generated version header (include/thandor/version.h.in), the version resource of
 # thandor.exe (src/platform/bootstrap/thandor.rc.in) and the installer take it from here.
-project(open_thandor VERSION 1.0.6 LANGUAGES CXX RC)
+project(open_thandor VERSION 1.0.7 LANGUAGES CXX RC)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -324,12 +324,29 @@ if(MSVC)
 else()
     target_link_options(thandor PRIVATE -Wl,--stack,0x800000)
 endif()
-# The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
-# (/LARGEADDRESSAWARE:NO) so every pointer fits.
-if(MSVC)
-    target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
+# The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h), so everything the game points to
+# from such a field must lie below 2 GB. The exe is large-address-aware (since 1.0.7: with /LARGEADDRESSAWARE:NO the
+# whole process, the graphics driver too, had only 2 GB, and some drivers with much video memory failed - Vulkan
+# crashed at start, DirectX 12 drew no 3D view): the driver gets the whole 64-bit address space, and the game's own
+# memory comes from pools reserved below 2 GB (platform/bootstrap/low_memory.h: the replaced operator new/delete,
+# SDL's allocations through SDL_SetMemoryFunctions, and the arena). The image keeps its fixed base 0x10000000 without
+# ASLR, the main thread's stack is reserved at process start below 2 GB, and a pointer of 2 GB or more that still
+# reaches a 32-bit field stops the game (Thandor_Ptr32Overflow). THANDOR_LARGE_ADDRESS_AWARE=OFF builds the old
+# layout (/LARGEADDRESSAWARE:NO, no pools), only for comparisons.
+option(THANDOR_LARGE_ADDRESS_AWARE "Link large-address-aware and keep the game's memory in pools below 2 GB" ON)
+if(THANDOR_LARGE_ADDRESS_AWARE)
+    target_sources(thandor PRIVATE src/platform/bootstrap/low_memory.cpp)
+    target_compile_definitions(thandor PRIVATE THANDOR_LARGE_ADDRESS_AWARE=1)
+    set(THANDOR_LAA_LINK /LARGEADDRESSAWARE)
+    set(THANDOR_LAA_HELPER_ARGUMENT --large-address-aware)
 else()
-    # GNU ld: the same fixed base, no ASLR, not large-address aware; the C and C++ runtimes linked in statically
+    set(THANDOR_LAA_LINK /LARGEADDRESSAWARE:NO)
+    set(THANDOR_LAA_HELPER_ARGUMENT)
+endif()
+if(MSVC)
+    target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO ${THANDOR_LAA_LINK})
+else()
+    # GNU ld: the same fixed base, no ASLR; the C and C++ runtimes linked in statically
     # (only SDL3.dll ships next to thandor.exe); thandor.map for symbolizing crash logs (docs/BUILDING.md).
     target_link_options(thandor PRIVATE -Wl,--image-base=0x10000000 -Wl,--disable-dynamicbase
                         -Wl,--disable-high-entropy-va -Wl,--tsaware -static -static-libgcc -static-libstdc++
@@ -353,12 +370,12 @@ else()
                 ${CMAKE_OBJCOPY} --add-gnu-debuglink=thandor.debug $<TARGET_FILE:thandor>
         VERBATIM)
     # ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
-    # clears the flag in the final image (after strip and objcopy) and fails the build if the image came out
-    # relocatable.
+    # sets the flag as THANDOR_LARGE_ADDRESS_AWARE wants it (keeps it; clears it for OFF) in the final image (after
+    # strip and objcopy) and fails the build if the image came out relocatable.
     add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
     target_link_options(pe_not_large_address_aware PRIVATE -static)
     add_custom_command(TARGET thandor POST_BUILD
-        COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor>
+        COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor> ${THANDOR_LAA_HELPER_ARGUMENT}
         VERBATIM)
 endif()
 
@@ -501,7 +518,8 @@ if(THANDOR_RENDERER_SDL_GPU)
         set(THANDOR_GPU_SPIRV_FROM "none (dxc not found: vcpkg install directx-dxc, or -DTHANDOR_DXC=<dxc.exe>), the Vulkan renderer is not available")
     endif()
     message(STATUS "SDL_GPU shaders: DXBC from ${THANDOR_GPU_DXBC_FROM}; SPIR-V from ${THANDOR_GPU_SPIRV_FROM}")
-    target_sources(thandor PRIVATE src/platform/sdl3/gpu_renderer.cpp src/platform/sdl3/gpu_ui2d.cpp
+    target_sources(thandor PRIVATE src/platform/sdl3/gpu_renderer.cpp src/platform/sdl3/gpu_diagnostics.cpp
+                                   src/platform/sdl3/gpu_ui2d.cpp
                                    src/platform/sdl3/gpu_ui_textures.cpp ${THANDOR_GPU_SHADER_HEADERS})
     target_include_directories(thandor PRIVATE ${THANDOR_GPU_SHADER_DIR})
     target_compile_definitions(thandor PRIVATE THANDOR_RENDERER_SDL_GPU=1)
@@ -534,8 +552,8 @@ if(THANDOR_DEV_TOOLS)
 endif()
 
 # ---- Patch installer (step 10) ---------------------------------------------------------------------------------
-# `cmake --build --preset mingw-release --target installer` builds <build>/installer/Thandor-Patch-6.exe ("Thandor
-# Patch 6", version ${PROJECT_VERSION}) with Inno Setup 7: tools/installer/build_installer.py stages thandor.exe,
+# `cmake --build --preset mingw-release --target installer` builds <build>/installer/Thandor-Patch-N.exe ("Thandor
+# Patch N", N = the last part of the version: 1.0.7 -> Patch 7) with Inno Setup 7: tools/installer/build_installer.py stages thandor.exe,
 # SDL3.dll, thandor.sym and the SDL3 licence in <build>/installer/stage (stripping debug sections where a file still
 # has them) and runs ISCC /DAppVersion=${PROJECT_VERSION} on tools/installer/thandor-patch.iss. The wizard images
 # come from tools/installer/images when it holds them, else Inno's placeholders stay. Only defined for a release
@@ -553,6 +571,7 @@ if(NOT THANDOR_DEV_TOOLS)
     endforeach()
     find_program(THANDOR_ISCC ISCC HINTS ${THANDOR_ISCC_HINTS} DOC "ISCC.exe of Inno Setup 7 (installer target)")
     find_package(Python3 COMPONENTS Interpreter QUIET)
+    set(THANDOR_PATCH_NUMBER ${PROJECT_VERSION_PATCH})
     if(THANDOR_ISCC AND Python3_Interpreter_FOUND)
         add_custom_target(installer
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/installer/build_installer.py
@@ -560,7 +579,7 @@ if(NOT THANDOR_DEV_TOOLS)
                     --out ${CMAKE_BINARY_DIR}/installer
             DEPENDS thandor
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Building the patch installer installer/Thandor-Patch-6.exe (version ${PROJECT_VERSION})"
+            COMMENT "Building the patch installer installer/Thandor-Patch-${THANDOR_PATCH_NUMBER}.exe (version ${PROJECT_VERSION})"
             USES_TERMINAL
             VERBATIM)
         message(STATUS "Patch installer: target installer (ISCC ${THANDOR_ISCC})")

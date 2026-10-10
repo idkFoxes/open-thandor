@@ -1,11 +1,13 @@
-﻿; Open Thandor patch installer ("Thandor Patch 6"): puts the Open Thandor build onto an existing Thandor
+﻿; Open Thandor patch installer ("Thandor Patch N", N = the last part of the version: 1.0.7 is Patch 7): puts the Open Thandor build onto an existing Thandor
 ; installation, like the original Thandor-Patch-5.exe did (classic Inno Setup wizard, German only).
 ; Plan: docs/plans/step10_installer.md. Compiled with Inno Setup 7 (ISCC), normally through
 ; tools/installer/build_installer.py, which stages the files and passes the parameters below.
 ;
 ; Parameters (ISCC /D<name>=<value>), all optional:
-;   AppVersion        numeric version, default 1.0.6 (VersionInfoVersion gets ".0" appended)
-;   PatchName         AppName and wizard name, default "Thandor Patch 6"
+;   AppVersion        numeric version, default 1.0.7 (VersionInfoVersion gets ".0" appended)
+;   PatchNumber       the patch number, default the last part of AppVersion (1.0.7 -> 7; Patch 5 was 1.05)
+;   PatchName         AppName and wizard name, default "Thandor Patch <PatchNumber>"; the installer file is
+;                     Thandor-Patch-<PatchNumber>.exe
 ;   Stage             folder with thandor.exe, SDL3.dll and optionally thandor.sym and LICENSE-SDL3.txt,
 ;                     default <repo>\build-mingw-release\installer\stage
 ;   OutDir            output folder (ISCC /O wins), default <repo>\build-mingw-release\installer
@@ -28,10 +30,13 @@
 ;   - never touches *.PCK, thandor.dat, thandor.ini, save\, flm\, the logs or the registry keys of the game.
 
 #ifndef AppVersion
-  #define AppVersion "1.0.6"
+  #define AppVersion "1.0.7"
+#endif
+#ifndef PatchNumber
+  #define PatchNumber Copy(AppVersion, RPos(".", AppVersion) + 1)
 #endif
 #ifndef PatchName
-  #define PatchName "Thandor Patch 6"
+  #define PatchName "Thandor Patch " + PatchNumber
 #endif
 #define RepoDir AddBackslash(SourcePath) + "..\.."
 #ifndef Stage
@@ -80,7 +85,9 @@
 #endif
 
 [Setup]
-; a new id (not the "Thandor Patch 5" of the original): uninstall key {EAF5A447-...}_is1
+; a new id (not the "Thandor Patch 5" of the original): uninstall key {EAF5A447-...}_is1. Every Open Thandor patch
+; (Patch 6 = 1.0.6, Patch 7 = 1.0.7, ...) keeps this id, so a newer one installs over the older one (same uninstall
+; entry, renamed; the thandor-1.05.exe backup of the first install is kept)
 AppId={{EAF5A447-044F-40C7-A60B-D9247E851438}
 AppName={#PatchName}
 AppVersion={#AppVersion}
@@ -135,7 +142,7 @@ SetupIconFile={#SetupIcon}
 ShowLanguageDialog=no
 SetupLogging=yes
 OutputDir={#OutDir}
-OutputBaseFilename=Thandor-Patch-6
+OutputBaseFilename=Thandor-Patch-{#PatchNumber}
 Compression=lzma2/max
 SolidCompression=yes
 

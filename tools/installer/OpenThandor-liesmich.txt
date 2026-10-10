@@ -1,15 +1,28 @@
 ﻿THANDOR - DIE INVASION
-Open Thandor 1.0.6 ("Thandor Patch 6")
+Open Thandor 1.0.7 ("Thandor Patch 7")
 =======================================
 
 Was ist das?
 ------------
 Open Thandor ist eine quelloffene Neuumsetzung des Spiels Thandor (Innonics,
 1999) in C++ für 64-Bit-Windows. Dieser Patch ersetzt nur die Programmdatei
-thandor.exe Ihrer vorhandenen Thandor-Installation (Version 1.05 / Patch 5).
+thandor.exe Ihrer vorhandenen Thandor-Installation (Vollversion; Patch 5 wird
+nicht vorausgesetzt).
 Spieldaten, Karten, Filme, Spielstände und Einstellungen bleiben, wie sie sind.
 
 Projekt und Fehlermeldungen: https://github.com/idkFoxes/open-thandor
+
+Neu in Version 1.0.7
+--------------------
+- Behoben: Absturz beim Start mit Vulkan und schwarze 3D-Ansicht mit
+  DirectX 12 auf manchen Grafikkarten (gesehen bei NVIDIA RTX mit 16 GB).
+  Das Spiel lässt dem Grafiktreiber jetzt mehr Adressraum.
+- Neu: Stürzt das Spiel beim Start der Grafik ab, nimmt es beim nächsten
+  Start von selbst das nächste Verfahren (Vulkan -> DirectX 12 -> Software)
+  und speichert diese Wahl.
+- Neu: Größerer Zoombereich - weiter heraus- und näher heranzoomen,
+  passend für 1440p, 4K und breite Bildschirme.
+- Neu: thandor.log nennt die Grafikkarte und ihre Treiberversion.
 
 Voraussetzungen
 ---------------
@@ -22,7 +35,7 @@ Voraussetzungen
 Was installiert wird
 --------------------
 Im Thandor-Ordner:
-  thandor.exe                 das neue Spielprogramm (Version 1.0.6)
+  thandor.exe                 das neue Spielprogramm (Version 1.0.7)
   SDL3.dll                    Bibliothek für Fenster, Grafik, Ton und Eingabe
   thandor.sym                 Funktionsnamen für Absturzberichte (crash.log)
   OpenThandor-liesmich.txt    diese Datei
@@ -41,7 +54,9 @@ Im Spiel unter Optionen -> Grafik:
 - Darstellung: "Vulkan (GPU)" (Standard), "DirectX 12 (GPU)" oder
   "Software (CPU)". Angeboten werden nur die Verfahren, die Ihr Grafiktreiber
   unterstützt. Startet ein GPU-Verfahren nicht, weicht das Spiel selbst auf
-  DirectX 12 bzw. Software aus.
+  DirectX 12 bzw. Software aus. Stürzt das Spiel beim Start der GPU-Grafik
+  ab, nimmt es beim nächsten Start von selbst das nächste Verfahren (Vulkan
+  -> DirectX 12 -> Software) und speichert diese Wahl.
 - Anzeigemodus: Fenster, Vollbildfenster oder Vollbild.
 - Auflösung: alle Auflösungen Ihres Bildschirms ab 640x480.
 "Anwenden" schaltet sofort um und speichert die Wahl.
@@ -86,7 +101,7 @@ Ordner save des Spiels.
 
 Deinstallation
 --------------
-Über Einstellungen -> Apps -> Installierte Apps -> "Thandor Patch 6" (oder
+Über Einstellungen -> Apps -> Installierte Apps -> "Thandor Patch 7" (oder
 OpenThandor\unins000.exe im Spielordner). Die Deinstallation entfernt
 thandor.exe, SDL3.dll, thandor.sym und diese Datei und stellt die
 gesicherte alte thandor.exe (Version 1.05) wieder her. Spielstände,

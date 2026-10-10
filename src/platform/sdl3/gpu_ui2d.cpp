@@ -19,6 +19,7 @@
    Vertices come from the module's vertex buffer, filled once per frame by GpuUi2D_Upload (its own copy pass before
    the render passes); the target scale goes through vertex uniform slot 0. */
 
+#include "gpu_diagnostics.h"
 #include "gpu_ui2d.h"
 
 #include <SDL3/SDL_error.h>
@@ -103,7 +104,7 @@ SDL_GPUShader *CreateShader(SDL_GPUDevice *device, SDL_GPUShaderFormat format, c
   info.stage = stage;
   info.num_samplers = samplerCount;
   info.num_uniform_buffers = uniformBufferCount;
-  return SDL_CreateGPUShader(device, &info);
+  return thandor::sdl3::CreateGpuShaderLogged(device, &info, entryPoint);
 }
 
 /* The shader format the device takes (it is created with exactly one of them, see gpu_renderer.cpp). */
@@ -169,10 +170,10 @@ bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target)
   samplerInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
   samplerInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
   samplerInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-  s_ui2d.sampler = SDL_CreateGPUSampler(device, &samplerInfo);
+  s_ui2d.sampler = thandor::sdl3::CreateGpuSamplerLogged(device, &samplerInfo, "2D nearest");
   samplerInfo.min_filter = SDL_GPU_FILTER_LINEAR;
   samplerInfo.mag_filter = SDL_GPU_FILTER_LINEAR;
-  s_ui2d.linearSampler = SDL_CreateGPUSampler(device, &samplerInfo);
+  s_ui2d.linearSampler = thandor::sdl3::CreateGpuSamplerLogged(device, &samplerInfo, "2D linear");
 
   SDL_GPUVertexBufferDescription bufferDescription;
   SDL_zero(bufferDescription);
@@ -224,7 +225,7 @@ bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target)
     info.target_info.color_target_descriptions = &colorTarget;
     info.target_info.num_color_targets = 1;
     info.target_info.has_depth_stencil_target = false;
-    s_ui2d.pipelines[blend] = SDL_CreateGPUGraphicsPipeline(device, &info);
+    s_ui2d.pipelines[blend] = thandor::sdl3::CreateGpuPipelineLogged(device, &info, fragment.entryPoint);
     SDL_ReleaseGPUShader(device, fragmentShader);
     if (s_ui2d.pipelines[blend] == nullptr) {
       created = false;
@@ -280,12 +281,12 @@ bool GpuUi2D_Upload(SDL_GPUCommandBuffer *commandBuffer, const GpuUiVertex *vert
     SDL_zero(bufferInfo);
     bufferInfo.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
     bufferInfo.size = size;
-    s_ui2d.vertexBuffer = SDL_CreateGPUBuffer(s_ui2d.device, &bufferInfo);
+    s_ui2d.vertexBuffer = thandor::sdl3::CreateGpuBufferLogged(s_ui2d.device, &bufferInfo, "2D vertex buffer");
     SDL_GPUTransferBufferCreateInfo transferInfo;
     SDL_zero(transferInfo);
     transferInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
     transferInfo.size = size;
-    s_ui2d.transfer = SDL_CreateGPUTransferBuffer(s_ui2d.device, &transferInfo);
+    s_ui2d.transfer = thandor::sdl3::CreateGpuTransferBufferLogged(s_ui2d.device, &transferInfo, "2D vertices");
     if ((s_ui2d.vertexBuffer == nullptr) || (s_ui2d.transfer == nullptr)) {
       Thandor_Log("GPU 2D: vertex buffer of %u bytes failed (%s)", size, SDL_GetError());
       return false;
@@ -294,7 +295,7 @@ bool GpuUi2D_Upload(SDL_GPUCommandBuffer *commandBuffer, const GpuUiVertex *vert
     s_ui2d.transferBytes = size;
   }
   /* cycle both: the previous frame may still read them */
-  void *mapped = SDL_MapGPUTransferBuffer(s_ui2d.device, s_ui2d.transfer, true);
+  void *mapped = thandor::sdl3::MapGpuTransferBufferLogged(s_ui2d.device, s_ui2d.transfer, true, "2D vertices");
   if (mapped == nullptr) {
     return false;
   }

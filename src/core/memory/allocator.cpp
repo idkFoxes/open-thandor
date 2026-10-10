@@ -8,6 +8,8 @@
 #include <thandor/core/memory/allocator.h>
 #include <thandor/core/bytes.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
+#include <thandor/platform/bootstrap/low_memory.h>
 
 /* Module data. */
 
@@ -43,8 +45,19 @@ void * ArenaHeap_Init()
     g_MemoryApi.shrinkInPlace = ArenaHeap_ShrinkInPlace;
     g_MemoryApi.queryFreeBytes = ArenaHeap_QueryFreeBytes;
     g_Arena.processHeap = heap;
+#ifdef THANDOR_LARGE_ADDRESS_AWARE
+    /* large-address-aware build: the arena's addresses go into 32-bit fields, so it comes from the pools below
+       2 GB (platform/bootstrap/low_memory.h) */
+    rawArenaAllocation = LowMemory_Alloc(ARENA_HEAP_RESERVE_BYTES,false);
+#else
     rawArenaAllocation = HeapAlloc(heap,0,ARENA_HEAP_RESERVE_BYTES);
+#endif
     if (rawArenaAllocation != nullptr) {
+      Thandor_Log("memory arena at 0x%08llX-0x%08llX (%u MiB)",
+                  static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(rawArenaAllocation)),
+                  static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(rawArenaAllocation) +
+                                                  ARENA_HEAP_RESERVE_BYTES),
+                  static_cast<unsigned>(ARENA_HEAP_RESERVE_BYTES >> 20));
       alignedFirstBlock = reinterpret_cast<ArenaBlockHeader *>
           ((reinterpret_cast<uintptr_t>(rawArenaAllocation) + ARENA_BLOCK_ALIGNMENT_MASK) &
            ~static_cast<uintptr_t>(ARENA_BLOCK_ALIGNMENT_MASK));
@@ -73,7 +86,11 @@ void ArenaHeap_Shutdown()
     return;
   }
   if (g_Arena.rawAllocation != nullptr) {
+#ifdef THANDOR_LARGE_ADDRESS_AWARE
+    LowMemory_Free(g_Arena.rawAllocation);
+#else
     HeapFree(g_Arena.processHeap,0,g_Arena.rawAllocation);
+#endif
   }
   HeapDestroy(g_Arena.processHeap);
   g_Arena = ArenaState{};

@@ -1,7 +1,7 @@
 """Makes the installer's wizard images from an in-game screenshot and the game's own Thandor logo.
 
 usage: make_wizard_images.py GAME_DIR SHOT.bmp [--crop X,Y,W,H] [--out DIR] [--preview DIR]
-                             [--original PATCH5_IMAGE] [--version 1.0.6] [--bottom "OPEN THANDOR"]
+                             [--original PATCH5_IMAGE] [--version 1.0.7] [--bottom "OPEN THANDOR"]
 
 Large image (WizardImageFile, left side of the welcome and finish pages), in the style of Patch 5's picture:
 a portrait 164:314 crop of the playfield of SHOT (take_wizard_shots.py; --crop in shot pixels, W:H is corrected to
@@ -306,7 +306,7 @@ def main():
     parser.add_argument('--preview', help='also write PNG previews and compare.png here')
     parser.add_argument('--original', help="Patch 5's 164x314 image for compare.png")
     parser.add_argument('--original-small', help="Patch 5's 55x55 image for compare.png")
-    parser.add_argument('--version', default='1.0.6')
+    parser.add_argument('--version', default='1.0.7')
     parser.add_argument('--bottom', default='OPEN THANDOR')
     args = parser.parse_args()
 

@@ -5,6 +5,46 @@ code changes is in the [plans](plans) and the [recovery changelog](../CHANGELOG.
 
 Every version lists the changes in English and in German (*Deutsch*).
 
+## 1.0.7 - "Thandor Patch 7"
+
+### English
+
+A hotfix for graphics cards with much video memory, and a wider zoom range for large screens.
+
+#### Fixed
+
+- Crash at start with Vulkan and a black 3D view with DirectX 12 on some graphics cards (seen on NVIDIA RTX cards
+  with 16 GB): the game now leaves the graphics driver more address space.
+
+#### New
+
+- **Wider zoom range:** you can zoom further out (about 1.7 times the old view width) and further in, which suits
+  1440p, 4K and wide screens.
+- If the game crashes while starting the graphics, the next start automatically falls back to the next renderer
+  (Vulkan -> DirectX 12 -> Software) and saves that choice.
+- `thandor.log` names the graphics card and its driver version, which helps with bug reports.
+- The installer is now called "Thandor Patch 7" (`Thandor-Patch-7.exe`). It needs an installed full version of
+  Thandor; Patch 5 is not required.
+
+### Deutsch
+
+Ein Hotfix für Grafikkarten mit viel Grafikspeicher und ein größerer Zoombereich für große Bildschirme.
+
+#### Behoben
+
+- Absturz beim Start mit Vulkan und schwarze 3D-Ansicht mit DirectX 12 auf manchen Grafikkarten (gesehen bei NVIDIA
+  RTX mit 16 GB): Das Spiel lässt dem Grafiktreiber jetzt mehr Adressraum.
+
+#### Neu
+
+- **Größerer Zoombereich:** Man kann weiter herauszoomen (etwa 1,7-mal so breite Sicht wie bisher) und näher
+  heranzoomen, passend für 1440p, 4K und breite Bildschirme.
+- Stürzt das Spiel beim Start der Grafik ab, nimmt es beim nächsten Start automatisch das nächste Verfahren
+  (Vulkan -> DirectX 12 -> Software) und speichert diese Wahl.
+- `thandor.log` nennt die Grafikkarte und ihre Treiberversion, das hilft bei Fehlermeldungen.
+- Das Setup heißt jetzt "Thandor Patch 7" (`Thandor-Patch-7.exe`). Es braucht eine installierte Vollversion von
+  Thandor; Patch 5 wird nicht vorausgesetzt.
+
 ## 1.0.6 - "Thandor Patch 6"
 
 ### English

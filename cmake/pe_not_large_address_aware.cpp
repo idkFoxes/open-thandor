@@ -6,19 +6,24 @@
 
 /*
 Build helper of the MinGW build (CMakeLists.txt, POST_BUILD of thandor): GNU ld always marks a 64-bit executable
-IMAGE_FILE_LARGE_ADDRESS_AWARE (its --disable-large-address-aware exists for 32-bit images only). The game keeps
-pointers in 32-bit fields (core/ptr32.h) and needs the process below 2 GB, like MSVC's /LARGEADDRESSAWARE:NO: this
-clears the flag in the PE file header and checks that the image is not relocatable (no DYNAMIC_BASE or
-HIGH_ENTROPY_VA). usage: pe_not_large_address_aware <exe>
+IMAGE_FILE_LARGE_ADDRESS_AWARE (its --disable-large-address-aware exists for 32-bit images only).
+usage: pe_not_large_address_aware <exe> [--large-address-aware]
+With --large-address-aware (the default build, CMake option THANDOR_LARGE_ADDRESS_AWARE=ON; the game's own memory
+comes from pools below 2 GB, platform/bootstrap/low_memory.h) the flag is kept set; without it (OFF, the old layout
+like MSVC's /LARGEADDRESSAWARE:NO, the whole process below 2 GB) it is cleared. Either way the helper checks that
+the image is not relocatable (no DYNAMIC_BASE or HIGH_ENTROPY_VA): the image's addresses go into the 32-bit pointer
+fields of core/ptr32.h as well.
 */
 
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 
 int main(int argc, char **argv)
 {
-    if (argc != 2) {
-        std::fprintf(stderr, "usage: pe_not_large_address_aware <exe>\n");
+    const bool keepLargeAddressAware = (argc == 3) && (std::strcmp(argv[2], "--large-address-aware") == 0);
+    if ((argc != 2) && !keepLargeAddressAware) {
+        std::fprintf(stderr, "usage: pe_not_large_address_aware <exe> [--large-address-aware]\n");
         return 2;
     }
     std::FILE *file = std::fopen(argv[1], "r+b");
@@ -46,8 +51,10 @@ int main(int argc, char **argv)
     }
     const uint16_t largeAddressAware = 0x0020;   /* IMAGE_FILE_LARGE_ADDRESS_AWARE */
     const uint16_t relocatable = 0x0040 | 0x0020; /* IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE | HIGH_ENTROPY_VA */
-    if ((characteristics & largeAddressAware) != 0) {
-        characteristics = (uint16_t)(characteristics & ~largeAddressAware);
+    const uint16_t wanted = keepLargeAddressAware ? (uint16_t)(characteristics | largeAddressAware)
+                                                  : (uint16_t)(characteristics & ~largeAddressAware);
+    if (characteristics != wanted) {
+        characteristics = wanted;
         if (std::fseek(file, (long)peOffset + 22, SEEK_SET) != 0 || std::fwrite(&characteristics, 1, 2, file) != 2) {
             std::fprintf(stderr, "pe_not_large_address_aware: cannot write %s\n", argv[1]);
             std::fclose(file);
