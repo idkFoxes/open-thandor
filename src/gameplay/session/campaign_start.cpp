@@ -16,24 +16,12 @@
 
 /* Starting a campaign at a mission from the campaign map (docs/plans/campaign_map.md 7.3, 7.4, 4.5). */
 
-/* "campaign_progress.txt", the leaf of the progress file in save\ (4.4) */
-static uint16_t g_CampaignProgressFileLeafUtf16[] = {'c','a','m','p','a','i','g','n','_','p','r','o','g','r','e',
-                                                     's','s','.','t','x','t',0};
-
 /* dwords per g_OldUnitPrimaryTable record (0x20 bytes) */
 static constexpr int CAMPAIGN_START_PRIMARY_RECORD_DWORDS = 8;
 
 static_assert(CAMPAIGN_PROGRESS_UNIT_CAPACITY == OLD_UNIT_PRIMARY_RECORD_CAPACITY);
 static_assert(CAMPAIGN_PROGRESS_TECH_WORD_COUNT * 4 == OLD_UNIT_SECONDARY_TABLE_BYTES);
 static_assert(CAMPAIGN_PROGRESS_SELECTION_COUNT == CAMPAIGN_END_SELECTION_COUNT);
-
-void CampaignStart_ProgressFilePath(uint16_t *outPath)
-
-{
-  WidePath_CombineDirectoryAndLeafBounded(outPath,THANDOR_PATH_CAPACITY,g_SaveDirectoryUtf16,
-                                          g_ExecutableDirectoryUtf16);
-  WidePath_CombineDirectoryAndLeafBounded(outPath,THANDOR_PATH_CAPACITY,g_CampaignProgressFileLeafUtf16,outPath);
-}
 
 const CampaignProgressSection *CampaignProgress_FindSectionOfCampaign(const CampaignProgress &progress,
                                                                       const CampaignAsset *campaign,
@@ -161,7 +149,6 @@ CampaignStartDecision CampaignStart_Prepare(const CampaignAsset *campaign,int32_
 
 {
   CampaignStartDecision decision{0,std::nullopt};
-  uint16_t progressPath[THANDOR_PATH_CAPACITY];
 
   if (startLevelId == 0) {
     return decision;
@@ -183,8 +170,7 @@ CampaignStartDecision CampaignStart_Prepare(const CampaignAsset *campaign,int32_
                 "the first level %d",startLevelId,campaign->firstLevelId);
     return decision;
   }
-  CampaignStart_ProgressFilePath(progressPath);
-  const CampaignProgress progress = CampaignProgress_LoadFile(progressPath);
+  const CampaignProgress progress = CampaignProgress_LoadCurrent();
   const CampaignProgressSection *section = CampaignProgress_FindSectionOfCampaign(progress,campaign,preferredName);
   if (!(section != nullptr && CampaignProgressSection_IsLevelDone(*section,startLevelId)) &&
       !CampaignProgress_IsLevelUnlocked(section,campaign,startLevelId)) {

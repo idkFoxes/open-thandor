@@ -78,7 +78,4 @@ CampaignStartDecision CampaignStart_Prepare(const CampaignAsset *campaign,int32_
    grid, nothing is written (one log line) and false is returned. */
 bool CampaignStart_RestoreSnapshot(const CampaignProgressCarry &carry,FieldGridAsset *fieldGrid);
 
-/* The progress file path, <exe dir>\save\campaign_progress.txt, into a THANDOR_PATH_CAPACITY buffer. */
-void CampaignStart_ProgressFilePath(uint16_t *outPath);
-
 #endif /* THANDOR_GAMEPLAY_SESSION_CAMPAIGN_START_H */
