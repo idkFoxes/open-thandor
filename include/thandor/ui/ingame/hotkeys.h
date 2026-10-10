@@ -16,4 +16,8 @@
 bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           InGameRuntimeRootFrameView *inGameRoot);
 
+/* Not in the original: the action number (InGameHotkeyAction, 1..15) the in-game hotkey table gives keyCode with the
+   held modifiers heldFlags, 0 when no record matches. Read-only, for the key binding list (ui/core/key_bindings.h). */
+uint32_t InGameHotkeys_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags);
+
 #endif /* THANDOR_UI_INGAME_HOTKEYS_H */

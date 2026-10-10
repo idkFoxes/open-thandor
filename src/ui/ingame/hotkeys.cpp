@@ -53,6 +53,14 @@ static const UiKeyCommandRecord<InGameHotkeyAction> g_EndGameResultsCommandDispa
     /* 14 */ {.commandCode = 0x3007A, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatToggleFastBuild},
     /* 15 */ {.commandCode = 0x0}}; /* terminator: commandCode 0 (the original's other two dwords were NOP fill, never read) */
 
+uint32_t InGameHotkeys_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags)
+{
+  const UiKeyCommandRecord<InGameHotkeyAction> *record = UiCommandDispatch_Find(
+      g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30, keyCode, heldFlags,
+      UiKeyModifierRule::ExactShiftIgnored);
+  return (record == nullptr) ? 0 : static_cast<uint32_t>(record->action);
+}
+
 /* Keyboard fallback of the in-game UI root: looks the key up in the hotkey table (key code plus required Ctrl/Alt
    combination) and runs its action: chat, message window, menus, save, pause, game speed, side panel,
    screenshot, leaving the game and the three cheat keys (only while cheats are enabled).

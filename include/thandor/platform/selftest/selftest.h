@@ -32,6 +32,10 @@
      keymatch       the key command modifier matcher (keymatch_selftest.cpp): literal copies of the four old
                     predicates against UiKeyModifiers_Match for every table class and held 0..0x3F, and
                     UiCommandDispatch_Find against the old scan; logs mismatches and one hash line
+     keybindings    the key binding list of the options menu (keybindings_selftest.cpp): every row's keys pressed
+                    through the keyboard layer and looked up in the real dispatch tables, every action of the in-game
+                    tables (without cheats) listed, every key name and text non-empty in German and English; one
+                    line per failed check and a summary line
      campaignprogress
                     the campaign progress model and the kampagne.dat package format
                     (campaignprogress_selftest.cpp): round trip, truncated files, bad magic and version, CRC32
@@ -69,6 +73,9 @@ void Thandor_SelfTestRaster();
 
 /* OPEN_THANDOR_SELFTEST=hexscan (hexscan_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestHexScan(void);
+
+/* OPEN_THANDOR_SELFTEST=keybindings (keybindings_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestKeyBindings();
 
 /* OPEN_THANDOR_SELFTEST=keymatch (keymatch_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestKeyMatch(void);
