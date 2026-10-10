@@ -79,6 +79,14 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
     if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) {
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
+      /* The original keeps a pointer capture the world view took before the end movie, and the buffered pointer
+         events, so the end-movie frames keep sending drag moves and the release into the world after its
+         scratch grids are released below; dropped here because the capture is cleared and the pointer events
+         are flushed, as the fatal-error dialog does before its own frames (keyboard input and frame ticks are
+         left alone). */
+      g_UiPointerCaptureTarget = UI_NODE_NONE;
+      g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
+      g_PointerFlushEvents();
       GridScratch_ReleaseBuffers();
       /* FrontendSession_PeriodicTick keeps running under the in-game tick lock while the end movie plays */
       UiRuntime_SetSynchronizationHooks
@@ -130,6 +138,12 @@ void InGameRuntime_ShutdownAndReleaseResources()
   bool beginAccessFailed;
   
   g_TimerUnregisterPeriodic(InGameRuntime_PeriodicCountdownAndClockTick);
+  /* The original unregisters the notification timer only on the three regular exits of
+     InGameRuntime_RunSessionUntilExit, so InGameRuntime_FailSession (a start that failed after the timer was
+     registered, or an emptied UI root stack) frees the in-game root and closes the movie below while the timer
+     thread may still dereference both; bounded here because it is unregistered here as well (a no-op after the
+     regular exits; the unregister waits for a running callback). */
+  g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
   inGameRoot = g_InGameRuntimeRoot;
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();

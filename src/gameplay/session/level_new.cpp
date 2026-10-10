@@ -546,6 +546,13 @@ static bool NewLevel_LoadSpatialSounds
       soundSlot = SpatialSoundSlot_CreateFromSampleAsset(static_cast<SoundSampleAsset *>(loadedSample),
                                                          loadedSampleBytes);
       if (soundSlot != nullptr) {
+        /* The original overwrites the slot of a sound number listed twice (two listed names whose trailing digits
+           give the same number, e.g. in a loose sound directory), so the first slot and its voice set are never released and stay taken in the
+           spatial sound pool; bounded here because the overwritten slot is released first. The stock levels list
+           sound??.sam from SOUND.PCK, which has no duplicate numbers, so they never get here. */
+        if (soundSlotCursor[soundIndex] != 0) {
+          SpatialSoundSlot_ReleaseSample(reinterpret_cast<SpatialSoundSlot *>(soundSlotCursor[soundIndex]));
+        }
         soundSlotCursor[soundIndex] = reinterpret_cast<uintptr_t>(soundSlot); /* kept as an integer slot */
       }
       Resource_Release(loadedSample);
