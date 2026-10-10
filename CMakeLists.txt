@@ -210,6 +210,7 @@ add_executable(thandor WIN32
     src/ui/core/runtime.cpp
     src/ui/dialogs/display_settings.cpp
     src/ui/dialogs/fatal_error.cpp
+    src/ui/frontend/campaign_graph.cpp
     src/ui/frontend/chat.cpp
     src/ui/frontend/credits.cpp
     src/ui/frontend/credits_mask.cpp
@@ -541,6 +542,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/script.cpp
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp
+        src/platform/selftest/campaignmap_selftest.cpp
         src/platform/selftest/hexscan_selftest.cpp
         src/platform/selftest/keymatch_selftest.cpp
         src/platform/selftest/nativefile_selftest.cpp
