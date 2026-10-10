@@ -216,6 +216,7 @@ add_executable(thandor WIN32
     src/ui/frontend/campaign_graph.cpp
     src/ui/frontend/campaign_level_info.cpp
     src/ui/frontend/campaign_map_control.cpp
+    src/ui/frontend/campaign_tab.cpp
     src/ui/frontend/chat.cpp
     src/ui/frontend/credits.cpp
     src/ui/frontend/credits_mask.cpp

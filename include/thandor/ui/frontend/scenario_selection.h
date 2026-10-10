@@ -63,8 +63,9 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
 void ScenarioCatalog_SelectSavedGameAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
+/* levelId (unused by the original): the mission an open-thandor host selected on its campaign map, 0 none. */
 void ScenarioCatalog_SelectCampaignAndShowDescription
-          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
+          (uint32_t playerRuntimeId,uint32_t levelId,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
 void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl *selectionControl);
 
