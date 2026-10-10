@@ -293,6 +293,9 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
       !InGameLoadedSession_FinishWorldUnderTickLock(inGameRoot,&stepError)) {
     return InGameLoadedSession_Fail(levelImage,saveHandle,stepError,outError);
   }
+  /* open-thandor: the level of a loaded campaign save counts as unlocked in the campaign progress (native file
+     only, no arena; campaignAsset is nullptr for a save outside a campaign) */
+  CampaignProgress_NoteLevelStarted(campaignAsset);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
     inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags | UI_NODE_SUPPRESSED;
   }

@@ -263,3 +263,14 @@ void CampaignLevelInfo_ClearCache()
 {
   s_CampaignLevelCache.clear();
 }
+
+std::optional<std::vector<uint8_t>> CampaignLevelInfo_ReadEntryNative(uint16_t *path)
+{
+  bool foundInPackage = false;
+
+  std::optional<std::vector<uint8_t>> bytes = CampaignLevelInfo_ReadPackageEntry(path,&foundInPackage);
+  if (foundInPackage) {
+    return bytes;
+  }
+  return CampaignLevelInfo_ReadLooseFile(path);
+}

@@ -9,6 +9,7 @@
 #define THANDOR_UI_FRONTEND_CAMPAIGN_LEVEL_INFO_H
 
 #include <cstdint>
+#include <optional>
 #include <vector>
 #include <thandor/assets/scenario/catalog.h>
 #include <thandor/ui/frontend/campaign_map.h>
@@ -37,6 +38,11 @@ std::vector<CampaignLevelFileInfo> CampaignLevelInfo_Read(const CampaignAsset *c
 
 /* Forgets every cached level (e.g. after the mounted packages changed). */
 void CampaignLevelInfo_ClearCache();
+
+/* The decoded bytes of a game file the way the level info reads a level: the entry of a mounted package
+   (compression methods 0 and 1 only), else the loose file next to the executable or as given; std::nullopt when
+   neither can be read. Native memory only, no cache. Used for the .cgn files of the campaign catalog. */
+std::optional<std::vector<uint8_t>> CampaignLevelInfo_ReadEntryNative(uint16_t *path);
 
 /* The graph view of one read result (CampaignGraph_Build input): a level counts as existing only with a valid
    header; an unreadable script gives CAMPAIGN_WIN_SELECTIONS_UNKNOWN (all selections 1..7 win, 5.2). */
