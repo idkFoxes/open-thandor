@@ -737,7 +737,7 @@ branches record nothing.
 - **The chain after a map start** continues as the original does, from the started mission on.
 - **Original quirks kept:**
   - m15 loss -> m17, m25 loss -> m24 (they still mark m17/m24 unlocked by rule 3);
-  - the t00 restart leaves the campaign (4.2). With the map the player can start t00 again from the menu.
+  - the t00 and t01 restart leaves the campaign (4.2, measured by CM1). With the map the player can start the mission again from the menu.
 
 ## 8. Compatibility and determinism
 
@@ -851,5 +851,5 @@ Self-tests (per package): `campaignprogress` (CM3), `campaignmap` (CM5), `uitemp
 | Q7 | Opponent settings in the briefing of a map-started mission. | keep |
 | Q8 | Other game languages. | full title cut to the button width until texts exist |
 | Q9 | Keyboard navigation on the map. | not needed (no keyboard control for the new selection) |
-| Q10 | The t00 restart leaves the campaign (original quirk). | keep |
+| Q10 | The t00 restart leaves the campaign (original quirk; CM1 found t01 does the same). | keep, for t00 and t01 |
 | Q11 | Marker for a finished campaign. | yes: a check mark on the campaign button (5.5, CM12) |
