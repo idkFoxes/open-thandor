@@ -7,8 +7,12 @@
 
 #include <thandor/platform/debug/campaign.h>
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <optional>
+#include <string>
 #include <thandor/thandor.h>
+#include <thandor/gameplay/session/campaign_progress.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/test_aids.h>
 
@@ -20,7 +24,9 @@
    record to the zone centre, and then sets the end movie state exactly as
    InGameConditionRuntime_UpdateScheduledRecords does for that trigger. From there the original code runs:
    the end movie, OldUnitRuntime_RebuildScenarioReplayTables (collects the units in the exit zone), the next
-   level and OldUnitRuntime_MergeMasksAndReplayRecords. Called once per frame by InGameRuntime_RunSessionUntilExit. */
+   level and OldUnitRuntime_MergeMasksAndReplayRecords. Called once per frame by InGameRuntime_RunSessionUntilExit.
+   OPEN_THANDOR_AUTOWIN_SELECTION=<n> prefers the active end trigger with end selection n over the scoring (a
+   branch test; a level without such a trigger falls back to the scoring, with one log line). */
 void DebugCampaign_AutoWinTick()
 {
   static unsigned sessionSeen;
@@ -31,6 +37,9 @@ void DebugCampaign_AutoWinTick()
   CampaignLevelRecord *level = nullptr;
   InGameEndConditionTriggerRecord8ReferenceView *chosen = nullptr;
   int chosenScore = 0;
+  int chosenBaseScore = 0;
+  const char *preferredValue = getenv("OPEN_THANDOR_AUTOWIN_SELECTION");
+  int preferredSelection = (preferredValue != nullptr) ? atoi(preferredValue) : -1;
   InGameEndConditionTriggerRecord8ReferenceView *trigger;
   WorldOwnerListNode *ownerNode;
   uint32_t localFaction;
@@ -91,17 +100,27 @@ void DebugCampaign_AutoWinTick()
     if (successor == 0) {
       score = 2;
     }
+    int baseScore = score;
     score = score * 2 + (trigger->factionRuntimeIndex != localFaction);
+    /* OPEN_THANDOR_AUTOWIN_SELECTION: the preferred end selection beats every scored one */
+    if ((int)selection == preferredSelection) {
+      score += 16;
+    }
     if (chosen == nullptr || score > chosenScore) {
       chosen = trigger;
       chosenScore = score;
+      chosenBaseScore = baseScore;
     }
+  }
+  if (chosen != nullptr && preferredSelection >= 0 && (int)chosen->endMovieSelectionIndex != preferredSelection) {
+    Thandor_Log("test aid: auto-win: level %d has no active end trigger with end selection %d, using the scoring",
+                level->levelId, preferredSelection);
   }
   if (chosen == nullptr) {
     Thandor_Log("test aid: auto-win: level %d has no active end trigger", level->levelId);
     return;
   }
-  if (level->successorLevelIds[chosen->endMovieSelectionIndex] == 0 || chosenScore < 2) {
+  if (level->successorLevelIds[chosen->endMovieSelectionIndex] == 0 || chosenBaseScore == 0) {
     Thandor_Log("test aid: auto-win: level %d has no successor level, firing the campaign end", level->levelId);
   }
   for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != nullptr;
@@ -203,7 +222,9 @@ static const char *DebugCampaign_RowName(const uint16_t *text, char *out, unsign
                                    ends the process;
      OPEN_THANDOR_CAMPAIGN=<name>  starts that campaign (name as in the campaigns list, or its 0-based row)
                                    like its Start button, once per process; OPEN_THANDOR_CAMPAIGN_LEVEL picks
-                                   the level (see DebugCampaign_SelectCampaignLevel).
+                                   the level (see DebugCampaign_SelectCampaignLevel); OPEN_THANDOR_CAMPAIGN_MISSION=
+                                   <levelId> starts it there through the campaign map path (the start level
+                                   argument, checked against the progress; a rejected level starts the first).
    Returns nonzero when a campaign was started. */
 int DebugCampaign_ApplyScenarioOptions()
 {
@@ -212,6 +233,8 @@ int DebugCampaign_ApplyScenarioOptions()
   UiListControl *list;
   char name[64];
   uint32_t row;
+  const char *mission = getenv("OPEN_THANDOR_CAMPAIGN_MISSION");
+  uint32_t startLevelId = 0;
   if (used) {
     return 0;
   }
@@ -243,7 +266,13 @@ int DebugCampaign_ApplyScenarioOptions()
         (wanted[0] >= '0' && wanted[0] <= '9' && (uint32_t)atoi(wanted) == row)) {
       Thandor_Log("test aid: starting campaign %u \"%s\"",row,name);
       ScenarioCatalog_SelectCampaignAndShowDescription(g_LocalPlayerRuntimeId,0,0,row);
-      FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,row);
+      /* OPEN_THANDOR_CAMPAIGN_MISSION=<levelId>: the start level argument of the campaign map's Start
+         (FRONTEND_COMMAND_LOAD_CAMPAIGN, CampaignStart_Prepare checks it against the progress) */
+      if (mission != nullptr) {
+        startLevelId = (uint32_t)atoi(mission);
+        Thandor_Log("test aid: campaign start level %u requested",startLevelId);
+      }
+      FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,startLevelId,0,row);
       return 1;
     }
   }
@@ -270,4 +299,162 @@ void DebugCampaign_SelectCampaignLevel(uint8_t *campaignBytes)
     campaign->firstLevelId = campaign->levels[atoi(wanted) - 1].levelId;
     Thandor_Log("test aid: campaign starts at level %d",atoi(wanted));
   }
+}
+
+/* Port-only test aid for loss and retry tests: OPEN_THANDOR_AUTOLOSE=<seconds> ends the level as lost after that
+   many seconds of the session, in the first session of the process only (OPEN_THANDOR_AUTOLOSE_LEVELS=<k>: the
+   first k sessions), so a retry level started by the loss runs on. It fires the active end trigger that ends the
+   local faction - preferring the failure movie (movie variant 0) and then end selection 0, the loss outcome of the
+   stock campaigns - and sets the end movie state exactly as InGameConditionRuntime_RequestEndMovie does when the
+   ended faction is the local one. From there the original code runs (end movie, carry-over tables, the successor
+   of that selection, in the stock data the level itself). Nothing happens when an end is already pending or the
+   level has no such trigger (one log line). Called once per frame by InGameRuntime_RunSessionUntilExit. */
+void DebugCampaign_AutoLoseTick()
+{
+  static unsigned sessionSeen;
+  static unsigned sessionStart;
+  static int done;
+  const char *value = getenv("OPEN_THANDOR_AUTOLOSE");
+  const char *levelsValue = getenv("OPEN_THANDOR_AUTOLOSE_LEVELS");
+  unsigned sessionLimit = (levelsValue != nullptr) ? (unsigned)atoi(levelsValue) : 1u;
+  InGameLevelConditionStorage *storage;
+  InGameEndConditionTriggerRecord8ReferenceView *chosen = nullptr;
+  InGameEndConditionTriggerRecord8ReferenceView *trigger;
+  int chosenScore = -1;
+  uint32_t localFaction;
+  int index;
+  if (value == nullptr || g_InGameRuntimeRoot == nullptr || g_TestAidSessionCount > sessionLimit) {
+    return;
+  }
+  if (sessionSeen != g_TestAidSessionCount) {
+    sessionSeen = g_TestAidSessionCount;
+    sessionStart = Thandor_TickCount();
+    done = 0;
+  }
+  if (done || Thandor_TickCount() - sessionStart < (unsigned)atoi(value) * 1000u) {
+    return;
+  }
+  done = 1;
+  if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) {
+    Thandor_Log("test aid: auto-lose: the level is already ending");
+    return;
+  }
+  storage = g_InGameLevelRuntimeGlobalBlock.conditionStorage.get();
+  if (storage == nullptr) {
+    Thandor_Log("test aid: auto-lose: the level has no level script");
+    return;
+  }
+  localFaction = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
+  trigger = storage->schedule.triggers;
+  for (index = 0; index < INGAME_END_CONDITION_TRIGGER_COUNT; index++, trigger++) {
+    int score;
+    if (trigger->stateFlags != INGAME_END_CONDITION_TRIGGER_ACTIVE || trigger->endMovieSelectionIndex >= 8 ||
+        trigger->factionRuntimeIndex != localFaction) {
+      continue;
+    }
+    score = (trigger->movieVariantSelector == 0 ? 2 : 0) + (trigger->endMovieSelectionIndex == 0 ? 1 : 0);
+    if (score > chosenScore) {
+      chosen = trigger;
+      chosenScore = score;
+    }
+  }
+  if (chosen == nullptr) {
+    Thandor_Log("test aid: auto-lose: no active end trigger ends the local faction %u", (unsigned)localFaction);
+    return;
+  }
+  /* InGameConditionRuntime_RequestEndMovie with the local faction as the ended one */
+  g_EndMovieVariantIndex = chosen->movieVariantSelector;
+  g_EndMovieSelectionIndex = chosen->endMovieSelectionIndex;
+  g_EndMoviePath = g_SessionEndMoviePathUtf16;
+  if (g_EndMovieVariantIndex == 0) {
+    g_EndMoviePath = g_FlmEnde0001FlmPathUtf16;
+  }
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
+  Thandor_Log("test aid: auto-lose: trigger %d ends the local faction %u, end selection %u, movie variant %u",
+              (int)(chosen - storage->schedule.triggers), (unsigned)localFaction,
+              (unsigned)chosen->endMovieSelectionIndex, (unsigned)chosen->movieVariantSelector);
+}
+
+/* FNV-1a over the four bytes of a 32-bit value, for the progress dump's snapshot hash. */
+static uint32_t DebugCampaign_HashWord(uint32_t hash, uint32_t word)
+{
+  for (int byte = 0; byte < 4; byte++) {
+    hash = (hash ^ ((word >> (byte * 8)) & 0xffu)) * 16777619u;
+  }
+  return hash;
+}
+
+/* Logs a progress model, one line per item ("progress dump: ..."): per campaign its fingerprint, the won levels
+   with their selection mask and last selection, the explicitly unlocked levels and per carry-over snapshot the
+   source, selection, unit count, units per faction, nonzero technology words and an FNV-1a hash over units and
+   technology (to compare snapshots between runs). Reads the model only. */
+static void DebugCampaign_LogProgress(const CampaignProgress &progress)
+{
+  for (const CampaignProgressSection &section : progress.campaigns) {
+    if (section.fingerprint.has_value()) {
+      Thandor_Log("progress dump: campaign \"%s\" fingerprint crc32 %08X records %d", section.name.c_str(),
+                  (unsigned)section.fingerprint->crc32, (int)section.fingerprint->recordCount);
+    }
+    else {
+      Thandor_Log("progress dump: campaign \"%s\" without fingerprint", section.name.c_str());
+    }
+    for (const auto &[levelId, wins] : section.wins) {
+      Thandor_Log("progress dump:   done %d selections %02X last %u", (int)levelId, (unsigned)wins.selectionMask,
+                  (unsigned)wins.lastSelection);
+    }
+    if (!section.unlockedLevelIds.empty()) {
+      std::string list;
+      char number[16];
+      for (int32_t levelId : section.unlockedLevelIds) {
+        snprintf(number, sizeof number, " %d", (int)levelId);
+        list += number;
+      }
+      Thandor_Log("progress dump:   unlocked%s", list.c_str());
+    }
+    for (const auto &[targetLevelId, carry] : section.carries) {
+      unsigned perFaction[CAMPAIGN_PROGRESS_FACTION_COUNT] = {};
+      unsigned techWords = 0;
+      uint32_t hash = 2166136261u;
+      for (const CampaignProgressUnit &unit : carry.units) {
+        if (unit.faction >= 0 && unit.faction < CAMPAIGN_PROGRESS_FACTION_COUNT) {
+          perFaction[unit.faction]++;
+        }
+        hash = DebugCampaign_HashWord(hash, (uint32_t)unit.assetId);
+        hash = DebugCampaign_HashWord(hash, (uint32_t)unit.faction);
+        hash = DebugCampaign_HashWord(hash, (uint32_t)unit.worldXQ12);
+        hash = DebugCampaign_HashWord(hash, (uint32_t)unit.worldYQ12);
+        hash = DebugCampaign_HashWord(hash, unit.rotation);
+      }
+      for (uint32_t word : carry.techMasks) {
+        techWords += (word != 0) ? 1u : 0u;
+        hash = DebugCampaign_HashWord(hash, word);
+      }
+      Thandor_Log("progress dump:   carry %d from %d sel %d units %u (per faction %u %u %u %u %u %u %u %u), "
+                  "tech words %u, hash %08X", (int)targetLevelId, (int)carry.sourceLevelId, (int)carry.selection,
+                  (unsigned)carry.units.size(), perFaction[0], perFaction[1], perFaction[2], perFaction[3],
+                  perFaction[4], perFaction[5], perFaction[6], perFaction[7], techWords, (unsigned)hash);
+    }
+  }
+}
+
+/* Port-only test aid: OPEN_THANDOR_CAMPAIGN_PROGRESS_DUMP=1 logs the stored campaign progress, read through
+   CampaignProgress_LoadCurrent (native memory and files only, no arena; a broken file is handled, and renamed,
+   as the game's own load does). Called when a campaign was loaded (before its start reads the progress), when a
+   campaign level has started (after its unlock note may have saved) and when a campaign session has ended
+   through its end trigger (after a win may have saved); a progress equal to the one dumped last is logged as
+   one "unchanged" line. */
+void DebugCampaign_DumpProgress(const char *when)
+{
+  static std::optional<CampaignProgress> lastDumped;
+  if (getenv("OPEN_THANDOR_CAMPAIGN_PROGRESS_DUMP") == nullptr) {
+    return;
+  }
+  CampaignProgress progress = CampaignProgress_LoadCurrent();
+  if (lastDumped.has_value() && *lastDumped == progress) {
+    Thandor_Log("progress dump (%s): unchanged", when);
+    return;
+  }
+  Thandor_Log("progress dump (%s): %u campaigns", when, (unsigned)progress.campaigns.size());
+  DebugCampaign_LogProgress(progress);
+  lastDumped = std::move(progress);
 }
