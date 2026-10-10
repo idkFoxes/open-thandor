@@ -1090,6 +1090,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestHexScan();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "keybindings") == 0) {
+        Thandor_SelfTestKeyBindings();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "keymatch") == 0) {
         Thandor_SelfTestKeyMatch();
         return 1;

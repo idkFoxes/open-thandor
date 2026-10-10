@@ -490,6 +490,96 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
   }
 }
 
+/* Not in the original: the texts of TEXT_ID_KEY_BINDING_BASE.. (the key binding list, ui/core/key_bindings.h) in
+   German and English, in TEXT_ID_KEYS_* order: X(name, German, English). Umlauts are Latin-1 code units, as in the
+   campaign map texts above (the game fonts have them). */
+#define THANDOR_KEY_BINDING_TEXTS(X) \
+    X(TITLE, u"Tastenbelegung", u"Key bindings") \
+    X(SECTION_GENERAL, u"Allgemein im Spiel", u"In the game") \
+    X(SECTION_UNITS, u"Einheiten und Gruppen", u"Units and groups") \
+    X(SECTION_CAMERA, u"Kamera", u"Camera") \
+    X(SECTION_MENUS, u"Men\u00FCs und Filme", u"Menus and movies") \
+    X(GAME_MENU, u"Spielmen\u00FC \u00F6ffnen", u"Open the game menu") \
+    X(OBJECTIVES, u"Missionsziele ein/aus", u"Mission objectives on/off") \
+    X(SAVE, u"Spiel speichern (nur Einzelspieler)", u"Save the game (single player only)") \
+    X(QUIT_MENU, u"Beenden-Men\u00FC \u00F6ffnen", u"Open the quit menu") \
+    X(LEAVE_GAME, u"Spiel verlassen (nicht als Spielleiter)", u"Leave the game (not as host)") \
+    X(PAUSE, u"Pause ein/aus", u"Pause on/off") \
+    X(FASTER, u"Spielgeschwindigkeit erh\u00F6hen", u"Increase the game speed") \
+    X(SLOWER, u"Spielgeschwindigkeit verringern", u"Decrease the game speed") \
+    X(SIDE_PANEL, u"Seitenleiste aus-/einblenden", u"Hide/show the side panel") \
+    X(CHAT_LINE, u"Nachrichtenzeile \u00F6ffnen", u"Open the message line") \
+    X(MESSAGE_WINDOW, u"Nachrichtenfenster ein/aus (nur Netzwerkspiel)", u"Message window on/off (network games only)") \
+    X(SCORE_OVERVIEW, u"Punkte\u00FCbersicht der Parteien ein/aus", u"Faction score overview on/off") \
+    X(INFO_LINE, u"Infozeile weiterschalten (Bildrate, Kamera, Speicher)", u"Cycle the info line (frame rate, camera, memory)") \
+    X(SCREENSHOT, u"Bildschirmfoto speichern", u"Save a screenshot") \
+    X(NOTIFICATION_GO, u"Zur aktuellen Meldung springen", u"Go to the current message") \
+    X(NOTIFICATION_BACK, u"Von der Meldung zur\u00FCckkehren", u"Return from the message") \
+    X(GROUP_RECALL, u"Gruppe ausw\u00E4hlen", u"Select a group") \
+    X(GROUP_ADD_TO_SELECTION, u"Gruppe zur Auswahl hinzuf\u00FCgen", u"Add a group to the selection") \
+    X(GROUP_STORE, u"Auswahl als Gruppe speichern", u"Store the selection as a group") \
+    X(GROUP_ADD_SELECTION, u"Auswahl zur Gruppe hinzuf\u00FCgen", u"Add the selection to a group") \
+    X(STOP, u"Anhalten", u"Stop") \
+    X(STOP_MOVEMENT, u"Nur Bewegung anhalten", u"Stop moving only") \
+    X(CANCEL_ATTACK, u"Angriff abbrechen", u"Cancel the attack") \
+    X(SELF_DESTRUCT, u"Auswahl selbst zerst\u00F6ren", u"Self-destruct the selection") \
+    X(SELECT_AIRPORTS, u"Alle eigenen Flugh\u00E4fen ausw\u00E4hlen", u"Select all own airports") \
+    X(UPGRADE_PAGE, u"Ausbauseite der Einheit ein/aus", u"Unit upgrade page on/off") \
+    X(CAMERA_SCROLL, u"Kamera verschieben", u"Scroll the camera") \
+    X(CAMERA_TILT, u"Kamera neigen", u"Tilt the camera") \
+    X(CAMERA_ROTATE, u"Kamera drehen", u"Rotate the camera") \
+    X(CAMERA_ZOOM, u"Heranzoomen / Wegzoomen", u"Zoom in / out") \
+    X(CAMERA_SELECTION, u"Kamera auf die Auswahl", u"Camera to the selection") \
+    X(CAMERA_HQ, u"Kamera zum Hauptquartier", u"Camera to the headquarters") \
+    X(CAMERA_NOTIFICATION, u"Kamera zum Ort der letzten Meldung", u"Camera to the last message's location") \
+    X(CAMERA_FREE, u"Freie Kamera ein/aus (ohne Neigungs- und Zoomgrenzen)", u"Free camera on/off (no tilt and zoom limits)") \
+    X(MENU_LEAVE, u"Zur\u00FCck zum Hauptmen\u00FC (Kampagne oder Netzwerkspiel verlassen)", u"Back to the main menu (leave the campaign or network game)") \
+    X(UI_NEXT_CONTROL, u"Zum n\u00E4chsten Bedienelement", u"Move to the next control") \
+    X(UI_PRESS_BUTTON, u"Ausgew\u00E4hlte Schaltfl\u00E4che dr\u00FCcken", u"Press the focused button") \
+    X(UI_CONFIRM_CANCEL, u"Dialog best\u00E4tigen / abbrechen", u"Confirm / cancel a dialog") \
+    X(UI_LIST, u"In Listen bl\u00E4ttern", u"Move through lists") \
+    X(UI_SLIDER, u"Schieberegler verstellen (mit Strg bis zum Anschlag)", u"Adjust a slider (with Ctrl to its end)") \
+    X(INTRO_SKIP_ALL, u"Alle Intro-Filme \u00FCberspringen", u"Skip all intro movies") \
+    X(INTRO_SKIP, u"Intro-Film \u00FCberspringen (auch per Mausklick)", u"Skip the intro movie (also a mouse click)") \
+    X(END_MOVIE_SKIP, u"Endfilm \u00FCberspringen", u"Skip the end movie") \
+    X(END_MOVIE_SCREENSHOT, u"Bildschirmfoto im Endfilm", u"Screenshot during the end movie")
+
+/* a mutable UTF-16 copy of a u"" literal (TextResource_TryResolve hands out uint16_t *) */
+template <size_t N>
+struct KeyBindingTextUtf16 {
+    uint16_t units[N];
+    constexpr KeyBindingTextUtf16(const char16_t (&text)[N]) : units{}
+    {
+        for (size_t i = 0; i < N; i++) {
+            units[i] = static_cast<uint16_t>(text[i]);
+        }
+    }
+};
+enum KeyBindingTextIndex : int {
+#define THANDOR_KEY_BINDING_TEXT_INDEX(name, german, english) KEY_BINDING_TEXT_INDEX_##name,
+    THANDOR_KEY_BINDING_TEXTS(THANDOR_KEY_BINDING_TEXT_INDEX)
+    KEY_BINDING_TEXT_INDEX_COUNT
+};
+#define THANDOR_KEY_BINDING_TEXT_DEFINE(name, german, english) \
+    static KeyBindingTextUtf16 g_KeyBindingTextGerman_##name{german}; \
+    static KeyBindingTextUtf16 g_KeyBindingTextEnglish_##name{english}; \
+    static_assert(TEXT_ID_KEYS_##name - TEXT_ID_KEY_BINDING_BASE == KEY_BINDING_TEXT_INDEX_##name, \
+                  "THANDOR_KEY_BINDING_TEXTS is in TEXT_ID_KEYS_* order");
+THANDOR_KEY_BINDING_TEXTS(THANDOR_KEY_BINDING_TEXT_DEFINE)
+#define THANDOR_KEY_BINDING_TEXT_GERMAN(name, german, english) g_KeyBindingTextGerman_##name.units,
+#define THANDOR_KEY_BINDING_TEXT_ENGLISH(name, german, english) g_KeyBindingTextEnglish_##name.units,
+static uint16_t *const g_KeyBindingTextsGerman[KEY_BINDING_TEXT_INDEX_COUNT] = {
+    THANDOR_KEY_BINDING_TEXTS(THANDOR_KEY_BINDING_TEXT_GERMAN)};
+static uint16_t *const g_KeyBindingTextsEnglish[KEY_BINDING_TEXT_INDEX_COUNT] = {
+    THANDOR_KEY_BINDING_TEXTS(THANDOR_KEY_BINDING_TEXT_ENGLISH)};
+static_assert(KEY_BINDING_TEXT_INDEX_COUNT == TEXT_ID_KEY_BINDING_COUNT, "one text per TEXT_ID_KEYS_* id");
+static bool g_KeyBindingTextsEnglishSelected = false;
+
+void TextResource_SetKeyBindingTextsEnglish(bool english)
+{
+  g_KeyBindingTextsEnglishSelected = english;
+}
+
 /* Looks up the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime
    override table is searched, then the bound locale block of the id's page (compact or extended id, see
    resources.h). Stores the text in *outText and returns true when found; a missing text stores
@@ -509,6 +599,11 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   }
   if ((resourceId >= TEXT_ID_PROJECT_BASE) && (resourceId < TEXT_ID_PROJECT_BASE + TEXT_ID_PROJECT_COUNT)) {
     *outText = g_ProjectTexts[resourceId - TEXT_ID_PROJECT_BASE];
+    return true;
+  }
+  if ((resourceId >= TEXT_ID_KEY_BINDING_BASE) && (resourceId < TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT)) {
+    *outText = (g_KeyBindingTextsEnglishSelected ? g_KeyBindingTextsEnglish
+                                                 : g_KeyBindingTextsGerman)[resourceId - TEXT_ID_KEY_BINDING_BASE];
     return true;
   }
   if (g_TextResourceOverrides != nullptr) {
