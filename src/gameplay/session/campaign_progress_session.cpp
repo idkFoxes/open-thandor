@@ -178,8 +178,9 @@ static std::optional<CampaignProgressBase> CampaignProgress_FindBase(const Campa
   return std::nullopt;
 }
 
-/* The section of the base campaign in progress, with its fingerprint set when it had none; nullptr (one log line)
-   when the section was recorded with other campaign records (it is kept as it is, plan 4.4). */
+/* The section of the base campaign in progress, with its fingerprint set when it had none. A section recorded with
+   other campaign records (the campaign data changed, plan 4.4) is reset first: its wins, unlocked levels and
+   snapshots are dropped and the new fingerprint is stored (one log line). Never nullptr. */
 static CampaignProgressSection *CampaignProgress_SectionForWrite(CampaignProgress &progress,
                                                                  const CampaignProgressBase &base,
                                                                  const CampaignAsset *campaign,bool *outChanged)
@@ -187,15 +188,15 @@ static CampaignProgressSection *CampaignProgress_SectionForWrite(CampaignProgres
 {
   const CampaignFingerprint fingerprint = CampaignAsset_Fingerprint(campaign);
   const CampaignProgressFingerprint expected{fingerprint.crc32,fingerprint.recordCount};
-  const CampaignProgressSection *existing = CampaignProgress_FindSection(progress,base.name);
-
-  if (existing != nullptr && existing->fingerprint.has_value() && !(*existing->fingerprint == expected)) {
-    Thandor_Log("campaign progress: section \"%s\" was recorded with other campaign records (fingerprint %08x %d, "
-                "now %08x %d); kept, nothing recorded",base.name.c_str(),existing->fingerprint->crc32,
-                existing->fingerprint->recordCount,expected.crc32,expected.recordCount);
-    return nullptr;
-  }
   CampaignProgressSection &section = CampaignProgress_GetOrAddSection(progress,base.name);
+
+  if (section.fingerprint.has_value() && !(*section.fingerprint == expected)) {
+    Thandor_Log("campaign progress: section \"%s\" was recorded with other campaign records (fingerprint %08x %d, "
+                "now %08x %d); reset",base.name.c_str(),section.fingerprint->crc32,section.fingerprint->recordCount,
+                expected.crc32,expected.recordCount);
+    section = CampaignProgressSection{};
+    section.name = base.name;
+  }
   if (!section.fingerprint.has_value()) {
     section.fingerprint = expected;
     *outChanged = true;

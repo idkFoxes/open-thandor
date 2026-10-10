@@ -7,259 +7,48 @@
 
 #include <thandor/gameplay/session/campaign_progress.h>
 
-#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
 #include <span>
 #include <thandor/thandor.h>
+#include <thandor/assets/package/codec.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Campaign progress file (docs/plans/campaign_map.md 4.4), version 1. UTF-8 text, one item per line, "#" starts a
-   comment, blanks and tabs separate the tokens, CR LF or LF line ends, an optional UTF-8 byte order mark:
+/* Campaign progress file (docs/plans/campaign_map.md 4.4), save\kampagne.dat: a PCK package in the game's own
+   format, built and read here with native memory only (the package API allocates from the arena and uses
+   g_PackageScratchBuffer). Layout:
 
-     open-thandor campaign progress 1
-     [campaign hansolo]
-     fingerprint 9f3a12c4 26
-     done 5 1
-     done 5 2
-     unlocked 2 3 4
-     carry 9 from 8 sel 1 units 37
-     unit 0x00000041 1 1234567 -234567 512
-     ...
-     tech 0 0 0 0 0 0 0 0 0
-     ...
-     end
+     +0x000  PckArchiveHeader: "pck\0", archiveSize (the file size), version 1, format 0x10000, timestamps 0,
+             producer and source name "open-thandor", entryCount at +0xB0
+     then per entry a PckEntryHeader (lowercase UTF-16 path, runtimePayloadOffset 0, unpackedSize, typeTag = first
+             payload dword, packedSize, compressionMethod 0) directly followed by packedSize bytes of the payload
+             packed with PckCodec_EncodeHuffmanRle
 
-   Numbers are decimal or "0x" plus 1..8 hex digits (a 32-bit pattern); the fingerprint CRC is plain hex. A
-   level id is a positive int32, a selection and a faction 0..7, a unit count 0..0x200. The n unit lines and the
-   tech lines (each faction at most once) of a snapshot follow its carry line directly. Load-time checks only
-   look at the file itself; the checks against the campaign are made when a section is applied. */
+   The entries are progress.bin and one carry_<name>_<target>.hex per snapshot, in the order of the sections and
+   their targets. The payload layouts are in campaign_progress.h. Load-time checks only look at the file itself; the
+   checks against the campaign are made when a section is applied. Any failed check rejects the whole file. */
 
-/* "\xEF\xBB\xBF", skipped at the start of the file */
-static constexpr std::string_view CAMPAIGN_PROGRESS_UTF8_BOM = "\xEF\xBB\xBF";
-/* level ids per unlocked line when formatting */
-static constexpr size_t CAMPAIGN_PROGRESS_UNLOCKED_PER_LINE = 16;
-/* the longest token quoted in a log line */
-static constexpr size_t CAMPAIGN_PROGRESS_LOG_TOKEN_CHARS = 24;
 /* ".bad", the extension of a rejected file */
 static constexpr std::array<uint16_t,4> CAMPAIGN_PROGRESS_BAD_EXTENSION = {'b','a','d',0};
+/* PckArchiveHeader values of every stock archive */
+static constexpr uint32_t CAMPAIGN_PROGRESS_PCK_VERSION = 1;
+static constexpr uint32_t CAMPAIGN_PROGRESS_PCK_FORMAT = 0x10000;
+/* producerName and sourceName of the archive header */
+static constexpr std::string_view CAMPAIGN_PROGRESS_PRODUCER = "open-thandor";
+/* code units of PckEntryHeader.path */
+static constexpr size_t CAMPAIGN_PROGRESS_PATH_UNITS = sizeof(PckEntryHeader::path) / sizeof(PckEntryHeader::path[0]);
+/* encoder output room per payload byte, plus the frequency table and slack (see CampaignProgress_PackPayload) */
+static constexpr size_t CAMPAIGN_PROGRESS_PACK_BYTES_PER_BYTE = 4;
+static constexpr size_t CAMPAIGN_PROGRESS_PACK_SLACK_BYTES = 0x40;
+/* the smallest packed size PckCodec_DecodeHuffmanRle accepts */
+static constexpr uint32_t CAMPAIGN_PROGRESS_MIN_PACKED_BYTES = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 4;
 
-/* Parser state: the open section and the open carry snapshot. */
-struct CampaignProgressParser {
-  CampaignProgress *progress;
-  CampaignProgressParseReport report;
-  uint32_t lineNumber;
-  bool inSection;
-  bool skippingSection;          /* bad or repeated name: lines up to "end" are dropped silently */
-  CampaignProgressSection section;
-  bool inCarry;
-  bool skippingCarry;            /* a dropped snapshot: its remaining unit and tech lines are dropped silently */
-  int32_t carryTarget;
-  uint32_t carryUnitCount;
-  uint32_t carryFactionsSeen;    /* bit f: a tech line of faction f was read */
-  CampaignProgressCarry carry;
-};
+static_assert(sizeof(PckArchiveHeader) == PCK_ENTRY_HEADER_BYTES && sizeof(PckEntryHeader) == PCK_ENTRY_HEADER_BYTES);
+static_assert(CAMPAIGN_PROGRESS_CARRY_BYTES % 16 != 0); /* never padded, never equal to a packed size */
 
-/* Logs one ignored item ("campaign progress: line <n>: ..."); after CAMPAIGN_PROGRESS_LOG_LIMIT items only counts
-   them (CampaignProgress_Parse logs the rest in one line). */
-static void CampaignProgressParser_Ignore(CampaignProgressParser *parser,const char *format,...)
-
-{
-  char message[160];
-  va_list arguments;
-
-  parser->report.ignoredItems++;
-  if (parser->report.ignoredItems > CAMPAIGN_PROGRESS_LOG_LIMIT) {
-    return;
-  }
-  va_start(arguments,format);
-  vsnprintf(message,sizeof message,format,arguments);
-  va_end(arguments);
-  Thandor_Log("campaign progress: line %u: %s",parser->lineNumber,message);
-}
-
-/* A token as printable text for a log line: at most CAMPAIGN_PROGRESS_LOG_TOKEN_CHARS characters, anything
-   outside printable ASCII as '?'. */
-static const char *CampaignProgress_LogToken(std::string_view token,char (&buffer)[CAMPAIGN_PROGRESS_LOG_TOKEN_CHARS + 4])
-
-{
-  size_t length = std::min(token.size(),CAMPAIGN_PROGRESS_LOG_TOKEN_CHARS);
-  size_t index;
-
-  for (index = 0; index < length; index++) {
-    unsigned char character = static_cast<unsigned char>(token[index]);
-    buffer[index] = (character >= 0x20 && character < 0x7F) ? static_cast<char>(character) : '?';
-  }
-  if (token.size() > length) {
-    buffer[length++] = '.';
-    buffer[length++] = '.';
-    buffer[length++] = '.';
-  }
-  buffer[length] = 0;
-  return buffer;
-}
-
-/* Splits a line (comment removed) at blanks and tabs. */
-static std::vector<std::string_view> CampaignProgress_Tokens(std::string_view line)
-
-{
-  std::vector<std::string_view> tokens;
-  size_t position = 0;
-  size_t start;
-
-  line = line.substr(0,line.find('#'));
-  while (position < line.size()) {
-    while (position < line.size() && (line[position] == ' ' || line[position] == '\t')) {
-      position++;
-    }
-    start = position;
-    while (position < line.size() && line[position] != ' ' && line[position] != '\t') {
-      position++;
-    }
-    if (position > start) {
-      tokens.push_back(line.substr(start,position - start));
-    }
-  }
-  return tokens;
-}
-
-static int CampaignProgress_HexDigit(char character)
-
-{
-  if (character >= '0' && character <= '9') {
-    return character - '0';
-  }
-  if (character >= 'a' && character <= 'f') {
-    return character - 'a' + 10;
-  }
-  if (character >= 'A' && character <= 'F') {
-    return character - 'A' + 10;
-  }
-  return -1;
-}
-
-/* 1..8 hex digits without a prefix. */
-static bool CampaignProgress_ParseHexDigits(std::string_view token,uint32_t *outValue)
-
-{
-  uint32_t value = 0;
-
-  if (token.empty() || token.size() > 8) {
-    return false;
-  }
-  for (char character : token) {
-    int digit = CampaignProgress_HexDigit(character);
-    if (digit < 0) {
-      return false;
-    }
-    value = (value << 4) | static_cast<uint32_t>(digit);
-  }
-  *outValue = value;
-  return true;
-}
-
-/* A number token: "0x" plus 1..8 hex digits (*outIsHex true, the 32-bit pattern in *outValue) or decimal with
-   an optional '-' and at most 10 digits. */
-static bool CampaignProgress_ParseNumber(std::string_view token,int64_t *outValue,bool *outIsHex)
-
-{
-  uint32_t hexValue;
-  bool negative = false;
-  int64_t value = 0;
-
-  if (token.size() > 2 && token[0] == '0' && (token[1] == 'x' || token[1] == 'X')) {
-    if (!CampaignProgress_ParseHexDigits(token.substr(2),&hexValue)) {
-      return false;
-    }
-    *outValue = hexValue;
-    *outIsHex = true;
-    return true;
-  }
-  if (!token.empty() && token[0] == '-') {
-    negative = true;
-    token.remove_prefix(1);
-  }
-  if (token.empty() || token.size() > 10) {
-    return false;
-  }
-  for (char character : token) {
-    if (character < '0' || character > '9') {
-      return false;
-    }
-    value = value * 10 + (character - '0');
-  }
-  *outValue = negative ? -value : value;
-  *outIsHex = false;
-  return true;
-}
-
-/* Any int32: decimal in range, or a hex 32-bit pattern. */
-static bool CampaignProgress_ParseInt32(std::string_view token,int32_t *outValue)
-
-{
-  int64_t value;
-  bool isHex;
-
-  if (!CampaignProgress_ParseNumber(token,&value,&isHex)) {
-    return false;
-  }
-  if (isHex) {
-    *outValue = static_cast<int32_t>(static_cast<uint32_t>(value));
-    return true;
-  }
-  if (value < INT32_MIN || value > INT32_MAX) {
-    return false;
-  }
-  *outValue = static_cast<int32_t>(value);
-  return true;
-}
-
-/* Any uint32: decimal 0..0xFFFFFFFF or hex. */
-static bool CampaignProgress_ParseUint32(std::string_view token,uint32_t *outValue)
-
-{
-  int64_t value;
-  bool isHex;
-
-  if (!CampaignProgress_ParseNumber(token,&value,&isHex) || value < 0 || value > UINT32_MAX) {
-    return false;
-  }
-  *outValue = static_cast<uint32_t>(value);
-  return true;
-}
-
-/* An int32 in [minimum, maximum]. */
-static bool CampaignProgress_ParseRange(std::string_view token,int32_t minimum,int32_t maximum,int32_t *outValue)
-
-{
-  int32_t value;
-
-  if (!CampaignProgress_ParseInt32(token,&value) || value < minimum || value > maximum) {
-    return false;
-  }
-  *outValue = value;
-  return true;
-}
-
-static bool CampaignProgress_ParseLevelId(std::string_view token,int32_t *outValue)
-
-{
-  return CampaignProgress_ParseRange(token,1,INT32_MAX,outValue);
-}
-
-static bool CampaignProgress_ParseSelection(std::string_view token,int32_t *outValue)
-
-{
-  return CampaignProgress_ParseRange(token,0,CAMPAIGN_PROGRESS_SELECTION_COUNT - 1,outValue);
-}
-
-static bool CampaignProgress_ParseFaction(std::string_view token,int32_t *outValue)
-
-{
-  return CampaignProgress_ParseRange(token,0,CAMPAIGN_PROGRESS_FACTION_COUNT - 1,outValue);
-}
+/* --- Model --- */
 
 bool CampaignProgress_IsValidName(std::string_view name)
 
@@ -315,417 +104,727 @@ void CampaignProgressSection_RecordWin(CampaignProgressSection &section,int32_t 
   wins->lastSelection = static_cast<uint8_t>(selection);
 }
 
-/* Closes an open snapshot before any line that is not a unit or tech line, and at "end": keeps it when all its
-   unit lines were read, else drops it. Ends a silent skip of a dropped snapshot. */
-static void CampaignProgressParser_FinishCarry(CampaignProgressParser *parser)
+/* --- Payloads --- */
+
+/* CRC32 table (IEEE polynomial, reflected) */
+static constexpr std::array<uint32_t,256> CampaignProgress_MakeCrc32Table()
 
 {
-  if (parser->inCarry) {
-    parser->inCarry = false;
-    if (parser->carry.units.size() != parser->carryUnitCount) {
-      CampaignProgressParser_Ignore(parser,"snapshot for level %d has %u of %u unit lines, dropped",
-                                    parser->carryTarget,static_cast<unsigned>(parser->carry.units.size()),
-                                    parser->carryUnitCount);
+  std::array<uint32_t,256> table{};
+
+  for (uint32_t index = 0; index < 256; index++) {
+    uint32_t value = index;
+    for (int bit = 0; bit < 8; bit++) {
+      value = (value & 1) != 0 ? 0xEDB88320u ^ (value >> 1) : value >> 1;
     }
-    else if (parser->section.carries.contains(parser->carryTarget)) {
-      CampaignProgressParser_Ignore(parser,"second snapshot for level %d, dropped",parser->carryTarget);
-    }
-    else {
-      parser->section.carries[parser->carryTarget] = std::move(parser->carry);
-    }
+    table[index] = value;
   }
-  parser->skippingCarry = false;
+  return table;
 }
 
-/* Drops the open snapshot (one log line); its remaining unit and tech lines are skipped silently. */
-static void CampaignProgressParser_DropCarry(CampaignProgressParser *parser,const char *reason)
+static constexpr std::array<uint32_t,256> CAMPAIGN_PROGRESS_CRC32_TABLE = CampaignProgress_MakeCrc32Table();
+
+uint32_t CampaignProgress_Crc32(std::span<const uint8_t> bytes)
 
 {
-  CampaignProgressParser_Ignore(parser,"snapshot for level %d dropped: %s",parser->carryTarget,reason);
-  parser->inCarry = false;
-  parser->skippingCarry = true;
+  uint32_t state = 0xFFFFFFFFu;
+
+  for (uint8_t value : bytes) {
+    state = CAMPAIGN_PROGRESS_CRC32_TABLE[(state ^ value) & 0xFFu] ^ (state >> 8);
+  }
+  return state ^ 0xFFFFFFFFu;
 }
 
-/* A unit or tech line inside a section. */
-static void CampaignProgressParser_CarryLine(CampaignProgressParser *parser,
-                                             const std::vector<std::string_view> &tokens)
+static void CampaignProgress_PutU32(std::vector<uint8_t> *bytes,uint32_t value)
 
 {
-  CampaignProgressUnit unit;
-  int32_t faction;
-  uint32_t words[CAMPAIGN_PROGRESS_TECH_WORDS_PER_FACTION];
-  int32_t rotation;
-  int index;
-
-  if (!parser->inCarry) {
-    if (!parser->skippingCarry) {
-      CampaignProgressParser_Ignore(parser,"%s line outside a snapshot",tokens[0] == "unit" ? "unit" : "tech");
-    }
-    return;
+  for (int shift = 0; shift < 32; shift += 8) {
+    bytes->push_back(static_cast<uint8_t>(value >> shift));
   }
-  if (tokens[0] == "unit") {
-    if (parser->carryFactionsSeen != 0 || parser->carry.units.size() >= parser->carryUnitCount) {
-      CampaignProgressParser_DropCarry(parser,"more unit lines than its count");
-      return;
-    }
-    /* the rotation is an AngleTurn32: a negative int32 is taken as its 32-bit pattern */
-    if (tokens.size() != 6 || !CampaignProgress_ParseInt32(tokens[1],&unit.assetId) ||
-        !CampaignProgress_ParseFaction(tokens[2],&unit.faction) ||
-        !CampaignProgress_ParseInt32(tokens[3],&unit.worldXQ12) ||
-        !CampaignProgress_ParseInt32(tokens[4],&unit.worldYQ12)) {
-      CampaignProgressParser_DropCarry(parser,"bad unit line");
-      return;
-    }
-    if (!CampaignProgress_ParseUint32(tokens[5],&unit.rotation)) {
-      if (!CampaignProgress_ParseInt32(tokens[5],&rotation)) {
-        CampaignProgressParser_DropCarry(parser,"bad unit line");
-        return;
-      }
-      unit.rotation = static_cast<uint32_t>(rotation);
-    }
-    parser->carry.units.push_back(unit);
-    return;
-  }
-  if (parser->carry.units.size() != parser->carryUnitCount) {
-    CampaignProgressParser_DropCarry(parser,"too few unit lines before its tech lines");
-    return;
-  }
-  if (tokens.size() != 2 + CAMPAIGN_PROGRESS_TECH_WORDS_PER_FACTION ||
-      !CampaignProgress_ParseFaction(tokens[1],&faction)) {
-    CampaignProgressParser_DropCarry(parser,"bad tech line");
-    return;
-  }
-  if ((parser->carryFactionsSeen & (1u << faction)) != 0) {
-    CampaignProgressParser_DropCarry(parser,"faction repeated in its tech lines");
-    return;
-  }
-  for (index = 0; index < CAMPAIGN_PROGRESS_TECH_WORDS_PER_FACTION; index++) {
-    if (!CampaignProgress_ParseUint32(tokens[2 + index],&words[index])) {
-      CampaignProgressParser_DropCarry(parser,"bad tech line");
-      return;
-    }
-  }
-  parser->carryFactionsSeen |= 1u << faction;
-  std::copy(std::begin(words),std::end(words),
-            parser->carry.techMasks.begin() + faction * CAMPAIGN_PROGRESS_TECH_WORDS_PER_FACTION);
 }
 
-/* carry <target> from <source> sel <s> units <n> */
-static void CampaignProgressParser_CarryHeader(CampaignProgressParser *parser,
-                                               const std::vector<std::string_view> &tokens)
+static void CampaignProgress_StoreU32(uint8_t *destination,uint32_t value)
 
 {
-  int32_t target;
-  int32_t source;
-  int32_t selection;
-  int32_t unitCount;
-
-  if (tokens.size() != 8 || tokens[2] != "from" || tokens[4] != "sel" || tokens[6] != "units" ||
-      !CampaignProgress_ParseLevelId(tokens[1],&target) || !CampaignProgress_ParseLevelId(tokens[3],&source) ||
-      !CampaignProgress_ParseSelection(tokens[5],&selection)) {
-    CampaignProgressParser_Ignore(parser,"bad carry line, snapshot dropped");
-    parser->skippingCarry = true;
-    return;
+  for (int index = 0; index < 4; index++) {
+    destination[index] = static_cast<uint8_t>(value >> (index * 8));
   }
-  if (!CampaignProgress_ParseRange(tokens[7],0,CAMPAIGN_PROGRESS_UNIT_CAPACITY,&unitCount)) {
-    CampaignProgressParser_Ignore(parser,"snapshot for level %d: unit count not 0..%d, dropped",target,
-                                  CAMPAIGN_PROGRESS_UNIT_CAPACITY);
-    parser->skippingCarry = true;
-    return;
-  }
-  parser->inCarry = true;
-  parser->carryTarget = target;
-  parser->carryUnitCount = static_cast<uint32_t>(unitCount);
-  parser->carryFactionsSeen = 0;
-  parser->carry = CampaignProgressCarry{};
-  parser->carry.sourceLevelId = source;
-  parser->carry.selection = selection;
-  parser->carry.units.reserve(static_cast<size_t>(unitCount));
 }
 
-/* "[campaign <name>]": closes an open section (dropped: it has no "end") and opens the next one. */
-static void CampaignProgressParser_SectionHeader(CampaignProgressParser *parser,
-                                                 const std::vector<std::string_view> &tokens)
+static uint32_t CampaignProgress_LoadU32(const uint8_t *source)
 
 {
-  char logBuffer[CAMPAIGN_PROGRESS_LOG_TOKEN_CHARS + 4];
-  std::string_view name;
-
-  if (parser->inSection && !parser->skippingSection) {
-    CampaignProgressParser_Ignore(parser,"section \"%s\" has no end, dropped",parser->section.name.c_str());
-  }
-  parser->inSection = true;
-  parser->skippingSection = true;
-  parser->inCarry = false;
-  parser->skippingCarry = false;
-  parser->section = CampaignProgressSection{};
-  if (tokens.size() != 2 || tokens[1].size() < 2 || tokens[1].back() != ']') {
-    CampaignProgressParser_Ignore(parser,"bad section line, section skipped");
-    return;
-  }
-  name = tokens[1].substr(0,tokens[1].size() - 1);
-  if (!CampaignProgress_IsValidName(name)) {
-    CampaignProgressParser_Ignore(parser,"bad campaign name \"%s\", section skipped",
-                                  CampaignProgress_LogToken(name,logBuffer));
-    return;
-  }
-  if (CampaignProgress_FindSection(*parser->progress,name) != nullptr) {
-    CampaignProgressParser_Ignore(parser,"second section \"%s\" skipped",CampaignProgress_LogToken(name,logBuffer));
-    return;
-  }
-  parser->skippingSection = false;
-  parser->section.name = std::string(name);
+  return static_cast<uint32_t>(source[0]) | static_cast<uint32_t>(source[1]) << 8 |
+         static_cast<uint32_t>(source[2]) << 16 | static_cast<uint32_t>(source[3]) << 24;
 }
 
-/* An item inside an open (not skipped) section, other than unit and tech lines. */
-static void CampaignProgressParser_SectionItem(CampaignProgressParser *parser,
-                                               const std::vector<std::string_view> &tokens)
+/* A new payload: the tag, the version and the open size and CRC32 fields (CampaignProgress_SealPayload). */
+static std::vector<uint8_t> CampaignProgress_BeginPayload(uint32_t tag)
 
 {
-  char logBuffer[CAMPAIGN_PROGRESS_LOG_TOKEN_CHARS + 4];
-  std::string_view key = tokens[0];
-  CampaignProgressFingerprint fingerprint;
-  std::vector<int32_t> levelIds;
-  int32_t levelId;
-  int32_t selection;
-  size_t index;
+  std::vector<uint8_t> payload;
 
-  if (key == "end") {
-    if (tokens.size() != 1) {
-      CampaignProgressParser_Ignore(parser,"tokens after end ignored");
-    }
-    CampaignProgress_GetOrAddSection(*parser->progress,parser->section.name) = std::move(parser->section);
-    parser->section = CampaignProgressSection{};
-    parser->inSection = false;
-    return;
-  }
-  if (key == "fingerprint") {
-    if (tokens.size() != 3 || !CampaignProgress_ParseHexDigits(tokens[1],&fingerprint.crc32) ||
-        !CampaignProgress_ParseRange(tokens[2],0,INT32_MAX,&fingerprint.recordCount)) {
-      CampaignProgressParser_Ignore(parser,"bad fingerprint line");
-    }
-    else if (parser->section.fingerprint.has_value()) {
-      CampaignProgressParser_Ignore(parser,"second fingerprint line");
-    }
-    else {
-      parser->section.fingerprint = fingerprint;
-    }
-    return;
-  }
-  if (key == "done") {
-    if (tokens.size() != 3 || !CampaignProgress_ParseLevelId(tokens[1],&levelId) ||
-        !CampaignProgress_ParseSelection(tokens[2],&selection)) {
-      CampaignProgressParser_Ignore(parser,"bad done line");
-      return;
-    }
-    CampaignProgressSection_RecordWin(parser->section,levelId,selection);
-    return;
-  }
-  if (key == "unlocked") {
-    for (index = 1; index < tokens.size(); index++) {
-      if (!CampaignProgress_ParseLevelId(tokens[index],&levelId)) {
-        break;
-      }
-      levelIds.push_back(levelId);
-    }
-    if (tokens.size() < 2 || index != tokens.size()) {
-      CampaignProgressParser_Ignore(parser,"bad unlocked line");
-      return;
-    }
-    parser->section.unlockedLevelIds.insert(levelIds.begin(),levelIds.end());
-    return;
-  }
-  if (key == "carry") {
-    CampaignProgressParser_CarryHeader(parser,tokens);
-    return;
-  }
-  CampaignProgressParser_Ignore(parser,"unknown item \"%s\"",CampaignProgress_LogToken(key,logBuffer));
+  CampaignProgress_PutU32(&payload,tag);
+  CampaignProgress_PutU32(&payload,CAMPAIGN_PROGRESS_VERSION);
+  CampaignProgress_PutU32(&payload,0);
+  CampaignProgress_PutU32(&payload,0);
+  return payload;
 }
 
-static void CampaignProgressParser_Line(CampaignProgressParser *parser,std::string_view line)
+void CampaignProgress_SealPayload(std::vector<uint8_t> *payload)
 
 {
-  char logBuffer[CAMPAIGN_PROGRESS_LOG_TOKEN_CHARS + 4];
-  std::vector<std::string_view> tokens = CampaignProgress_Tokens(line);
+  const size_t dataBytes = payload->size();
 
-  if (tokens.empty()) {
-    return;
+  CampaignProgress_StoreU32(payload->data() + 8,static_cast<uint32_t>(dataBytes));
+  CampaignProgress_StoreU32(payload->data() + 12,CampaignProgress_Crc32(std::span<const uint8_t>(*payload).subspan
+                                                   (CAMPAIGN_PROGRESS_PAYLOAD_HEADER_BYTES)));
+  if (dataBytes % 16 == 0) {
+    payload->insert(payload->end(),CAMPAIGN_PROGRESS_PAYLOAD_PAD_BYTES,0);
   }
-  if (tokens[0] == "[campaign") {
-    CampaignProgressParser_SectionHeader(parser,tokens);
-    return;
-  }
-  if (!parser->inSection) {
-    CampaignProgressParser_Ignore(parser,"\"%s\" outside a campaign section",
-                                  CampaignProgress_LogToken(tokens[0],logBuffer));
-    return;
-  }
-  if (parser->skippingSection) {
-    if (tokens[0] == "end") {
-      parser->inSection = false;
-    }
-    return;
-  }
-  if (tokens[0] == "unit" || tokens[0] == "tech") {
-    CampaignProgressParser_CarryLine(parser,tokens);
-    return;
-  }
-  CampaignProgressParser_FinishCarry(parser);
-  CampaignProgressParser_SectionItem(parser,tokens);
 }
 
-/* The first line: the magic text and version CAMPAIGN_PROGRESS_VERSION. */
-static bool CampaignProgress_HeaderValid(std::string_view line)
+std::string CampaignProgress_CarryEntryPath(std::string_view name,int32_t targetLevelId)
 
 {
-  std::vector<std::string_view> tokens = CampaignProgress_Tokens(line);
-  std::vector<std::string_view> magic = CampaignProgress_Tokens(CAMPAIGN_PROGRESS_MAGIC);
-  int32_t version;
+  std::string path = "carry_";
 
-  if (tokens.size() != magic.size() + 1 || !std::equal(magic.begin(),magic.end(),tokens.begin())) {
+  for (char character : name) {
+    path.push_back((character >= 'A' && character <= 'Z') ? static_cast<char>(character + ('a' - 'A')) : character);
+  }
+  path += '_';
+  path += std::to_string(targetLevelId);
+  path += ".hex";
+  return path;
+}
+
+/* A snapshot the file can hold (CampaignProgress_DecodeCarry accepts it); else one log line. */
+static bool CampaignProgress_CarryWritable(const CampaignProgressSection &section,int32_t targetLevelId,
+                                           const CampaignProgressCarry &carry)
+
+{
+  const char *reason = nullptr;
+
+  if (targetLevelId < 1 || carry.sourceLevelId < 1) {
+    reason = "level id not positive";
+  }
+  else if (carry.selection < 0 || carry.selection >= CAMPAIGN_PROGRESS_SELECTION_COUNT) {
+    reason = "selection not 0..7";
+  }
+  else if (carry.units.size() > static_cast<size_t>(CAMPAIGN_PROGRESS_UNIT_CAPACITY)) {
+    reason = "more than 0x200 units";
+  }
+  else if (std::any_of(carry.units.begin(),carry.units.end(),[](const CampaignProgressUnit &unit) {
+             return unit.faction < 0 || unit.faction >= CAMPAIGN_PROGRESS_FACTION_COUNT; })) {
+    reason = "a unit faction not 0..7";
+  }
+  if (reason != nullptr) {
+    Thandor_Log("campaign progress: %s snapshot for level %d not written: %s",section.name.c_str(),targetLevelId,
+                reason);
     return false;
   }
-  return CampaignProgress_ParseInt32(tokens.back(),&version) && version == CAMPAIGN_PROGRESS_VERSION;
+  return true;
 }
 
-CampaignProgressParseReport CampaignProgress_Parse(std::string_view text,CampaignProgress *outProgress)
+/* carry_<name>_<target>.hex: the header, then the oldunit.hex layout. */
+static std::vector<uint8_t> CampaignProgress_EncodeCarry(int32_t targetLevelId,const CampaignProgressCarry &carry)
 
 {
-  CampaignProgressParser parser{};
-  size_t lineEnd;
-  std::string_view line;
-  bool first = true;
+  std::vector<uint8_t> payload = CampaignProgress_BeginPayload(CAMPAIGN_PROGRESS_CARRY_TAG);
+  size_t record;
+  size_t dword;
 
-  outProgress->campaigns.clear();
-  parser.progress = outProgress;
-  if (text.starts_with(CAMPAIGN_PROGRESS_UTF8_BOM)) {
-    text.remove_prefix(CAMPAIGN_PROGRESS_UTF8_BOM.size());
-  }
-  while (!text.empty()) {
-    lineEnd = text.find('\n');
-    line = text.substr(0,lineEnd);
-    text.remove_prefix(lineEnd == std::string_view::npos ? text.size() : lineEnd + 1);
-    if (!line.empty() && line.back() == '\r') {
-      line.remove_suffix(1);
+  payload.reserve(CAMPAIGN_PROGRESS_CARRY_BYTES);
+  CampaignProgress_PutU32(&payload,static_cast<uint32_t>(targetLevelId));
+  CampaignProgress_PutU32(&payload,static_cast<uint32_t>(carry.sourceLevelId));
+  CampaignProgress_PutU32(&payload,static_cast<uint32_t>(carry.selection));
+  CampaignProgress_PutU32(&payload,0);
+  CampaignProgress_PutU32(&payload,static_cast<uint32_t>(carry.units.size()));
+  for (record = 0; record < static_cast<size_t>(CAMPAIGN_PROGRESS_UNIT_CAPACITY); record++) {
+    if (record < carry.units.size()) {
+      const CampaignProgressUnit &unit = carry.units[record];
+      CampaignProgress_PutU32(&payload,static_cast<uint32_t>(unit.assetId));
+      CampaignProgress_PutU32(&payload,static_cast<uint32_t>(unit.faction));
+      CampaignProgress_PutU32(&payload,static_cast<uint32_t>(unit.worldXQ12));
+      CampaignProgress_PutU32(&payload,static_cast<uint32_t>(unit.worldYQ12));
+      CampaignProgress_PutU32(&payload,unit.rotation);
+      dword = 5;
     }
-    parser.lineNumber++;
-    if (first) {
-      first = false;
-      if (!CampaignProgress_HeaderValid(line)) {
-        return parser.report; /* headerValid false */
-      }
-      parser.report.headerValid = true;
+    else {
+      dword = 0;
+    }
+    for (; dword < CAMPAIGN_PROGRESS_CARRY_RECORD_DWORDS; dword++) {
+      CampaignProgress_PutU32(&payload,0);
+    }
+  }
+  for (uint32_t word : carry.techMasks) {
+    CampaignProgress_PutU32(&payload,word);
+  }
+  CampaignProgress_SealPayload(&payload);
+  return payload;
+}
+
+/* One section of progress.bin; targets are the snapshots written for it. */
+static void CampaignProgress_EncodeSection(std::vector<uint8_t> *payload,const CampaignProgressSection &section,
+                                           const std::vector<int32_t> &targets)
+
+{
+  std::vector<std::pair<int32_t,CampaignProgressWins>> wins;
+  std::vector<int32_t> unlocked;
+  size_t index;
+
+  for (index = 0; index < CAMPAIGN_PROGRESS_NAME_FIELD_BYTES; index++) {
+    payload->push_back(index < section.name.size() ? static_cast<uint8_t>(section.name[index]) : 0);
+  }
+  CampaignProgress_PutU32(payload,section.fingerprint.has_value() ? CAMPAIGN_PROGRESS_FLAG_FINGERPRINT : 0);
+  CampaignProgress_PutU32(payload,section.fingerprint.has_value() ? section.fingerprint->crc32 : 0);
+  CampaignProgress_PutU32(payload,section.fingerprint.has_value() ?
+                                  static_cast<uint32_t>(std::max(section.fingerprint->recordCount,0)) : 0);
+  for (const auto &[levelId,levelWins] : section.wins) {
+    if (levelId < 1 || (levelWins.selectionMask & (1u << (levelWins.lastSelection & 7))) == 0 ||
+        levelWins.lastSelection >= CAMPAIGN_PROGRESS_SELECTION_COUNT) {
+      Thandor_Log("campaign progress: %s win of level %d not written (level id or selections)",
+                  section.name.c_str(),levelId);
       continue;
     }
-    CampaignProgressParser_Line(&parser,line);
+    wins.emplace_back(levelId,levelWins);
   }
-  if (!parser.report.headerValid) {
-    return parser.report; /* empty text */
-  }
-  if (parser.inSection && !parser.skippingSection) {
-    CampaignProgressParser_Ignore(&parser,"section \"%s\" has no end (truncated file), dropped",
-                                  parser.section.name.c_str());
-  }
-  if (parser.report.ignoredItems > CAMPAIGN_PROGRESS_LOG_LIMIT) {
-    Thandor_Log("campaign progress: %u more ignored items not logged",
-                parser.report.ignoredItems - CAMPAIGN_PROGRESS_LOG_LIMIT);
-  }
-  return parser.report;
-}
-
-static void CampaignProgress_Append(std::string *text,const char *format,...)
-
-{
-  char line[160];
-  va_list arguments;
-
-  va_start(arguments,format);
-  vsnprintf(line,sizeof line,format,arguments);
-  va_end(arguments);
-  text->append(line);
-}
-
-/* A tech word: "0" or "0x" and 8 hex digits. */
-static void CampaignProgress_AppendTechWord(std::string *text,uint32_t word)
-
-{
-  if (word == 0) {
-    text->append(" 0");
-  }
-  else {
-    CampaignProgress_Append(text," 0x%08X",word);
-  }
-}
-
-static void CampaignProgress_FormatSection(std::string *text,const CampaignProgressSection &section)
-
-{
-  size_t inLine = 0;
-  int selection;
-  int faction;
-  int word;
-
-  CampaignProgress_Append(text,"[campaign %s]\n",section.name.c_str());
-  if (section.fingerprint.has_value()) {
-    CampaignProgress_Append(text,"fingerprint %08x %d\n",section.fingerprint->crc32,
-                            section.fingerprint->recordCount);
-  }
-  /* the selection of the last win is written last, so the parser takes it as the last one again */
-  for (const auto &[levelId,wins] : section.wins) {
-    for (selection = 0; selection < CAMPAIGN_PROGRESS_SELECTION_COUNT; selection++) {
-      if ((wins.selectionMask & (1u << selection)) != 0 && selection != wins.lastSelection) {
-        CampaignProgress_Append(text,"done %d %d\n",levelId,selection);
-      }
-    }
-    CampaignProgress_Append(text,"done %d %d\n",levelId,static_cast<int>(wins.lastSelection));
+  CampaignProgress_PutU32(payload,static_cast<uint32_t>(wins.size()));
+  for (const auto &[levelId,levelWins] : wins) {
+    CampaignProgress_PutU32(payload,static_cast<uint32_t>(levelId));
+    payload->push_back(levelWins.selectionMask);
+    payload->push_back(levelWins.lastSelection);
+    payload->push_back(0);
+    payload->push_back(0);
   }
   for (int32_t levelId : section.unlockedLevelIds) {
-    text->append(inLine == 0 ? "unlocked" : "");
-    CampaignProgress_Append(text," %d",levelId);
-    if (++inLine == CAMPAIGN_PROGRESS_UNLOCKED_PER_LINE) {
-      text->append("\n");
-      inLine = 0;
-    }
-  }
-  if (inLine != 0) {
-    text->append("\n");
-  }
-  for (const auto &[targetLevelId,carry] : section.carries) {
-    CampaignProgress_Append(text,"carry %d from %d sel %d units %u\n",targetLevelId,carry.sourceLevelId,
-                            carry.selection,static_cast<unsigned>(carry.units.size()));
-    for (const CampaignProgressUnit &unit : carry.units) {
-      CampaignProgress_Append(text,"unit 0x%08X %d %d %d %u\n",static_cast<uint32_t>(unit.assetId),unit.faction,
-                              unit.worldXQ12,unit.worldYQ12,unit.rotation);
-    }
-    for (faction = 0; faction < CAMPAIGN_PROGRESS_FACTION_COUNT; faction++) {
-      CampaignProgress_Append(text,"tech %d",faction);
-      for (word = 0; word < CAMPAIGN_PROGRESS_TECH_WORDS_PER_FACTION; word++) {
-        CampaignProgress_AppendTechWord(text,carry.techMasks[faction * CAMPAIGN_PROGRESS_TECH_WORDS_PER_FACTION + word]);
-      }
-      text->append("\n");
-    }
-  }
-  text->append("end\n");
-}
-
-std::string CampaignProgress_Format(const CampaignProgress &progress)
-
-{
-  char logBuffer[CAMPAIGN_PROGRESS_LOG_TOKEN_CHARS + 4];
-  std::string text;
-
-  CampaignProgress_Append(&text,"%.*s %d\n",static_cast<int>(CAMPAIGN_PROGRESS_MAGIC.size()),
-                          CAMPAIGN_PROGRESS_MAGIC.data(),CAMPAIGN_PROGRESS_VERSION);
-  for (const CampaignProgressSection &section : progress.campaigns) {
-    if (!CampaignProgress_IsValidName(section.name)) {
-      Thandor_Log("campaign progress: section with the invalid name \"%s\" not written",
-                  CampaignProgress_LogToken(section.name,logBuffer));
+    if (levelId < 1) {
+      Thandor_Log("campaign progress: %s unlocked level %d not written",section.name.c_str(),levelId);
       continue;
     }
-    CampaignProgress_FormatSection(&text,section);
+    unlocked.push_back(levelId);
   }
-  return text;
+  CampaignProgress_PutU32(payload,static_cast<uint32_t>(unlocked.size()));
+  for (int32_t levelId : unlocked) {
+    CampaignProgress_PutU32(payload,static_cast<uint32_t>(levelId));
+  }
+  CampaignProgress_PutU32(payload,static_cast<uint32_t>(targets.size()));
+  for (int32_t levelId : targets) {
+    CampaignProgress_PutU32(payload,static_cast<uint32_t>(levelId));
+  }
 }
+
+std::vector<CampaignProgressEntry> CampaignProgress_EncodeEntries(const CampaignProgress &progress)
+
+{
+  std::vector<CampaignProgressEntry> entries(1);
+  std::vector<const CampaignProgressSection *> sections;
+  std::vector<uint8_t> &main = entries[0].payload;
+
+  for (const CampaignProgressSection &section : progress.campaigns) {
+    if (!CampaignProgress_IsValidName(section.name)) {
+      Thandor_Log("campaign progress: a section with an invalid name (%u characters) not written",
+                  static_cast<unsigned>(section.name.size()));
+      continue;
+    }
+    sections.push_back(&section);
+  }
+  /* the model keeps its sections sorted; sorted again so the file is valid whatever the caller did */
+  std::sort(sections.begin(),sections.end(),[](const CampaignProgressSection *left,const CampaignProgressSection *right) {
+    return left->name < right->name;
+  });
+  sections.erase(std::unique(sections.begin(),sections.end(),[](const CampaignProgressSection *left,
+                                                               const CampaignProgressSection *right) {
+    return left->name == right->name;
+  }),sections.end());
+  entries[0].path = std::string(CAMPAIGN_PROGRESS_MAIN_ENTRY);
+  main = CampaignProgress_BeginPayload(CAMPAIGN_PROGRESS_TAG);
+  CampaignProgress_PutU32(&main,static_cast<uint32_t>(sections.size()));
+  for (const CampaignProgressSection *section : sections) {
+    std::vector<int32_t> targets;
+    for (const auto &[targetLevelId,carry] : section->carries) {
+      if (CampaignProgress_CarryWritable(*section,targetLevelId,carry)) {
+        targets.push_back(targetLevelId);
+        entries.push_back(CampaignProgressEntry{CampaignProgress_CarryEntryPath(section->name,targetLevelId),
+                                                CampaignProgress_EncodeCarry(targetLevelId,carry)});
+      }
+    }
+    CampaignProgress_EncodeSection(&entries[0].payload,*section,targets);
+  }
+  CampaignProgress_SealPayload(&entries[0].payload);
+  return entries;
+}
+
+/* Reads a payload front to back; the first failed check keeps its reason. */
+struct CampaignProgressReader {
+  const std::vector<uint8_t> *payload;
+  size_t position;
+  size_t end;               /* the data byte count of the header */
+  const char *error;
+
+  /* the reason of the first failed check */
+  const char *Reason() const { return error != nullptr ? error : "malformed"; }
+
+  bool Fail(const char *reason)
+  {
+    if (error == nullptr) {
+      error = reason;
+    }
+    return false;
+  }
+
+  bool Has(size_t byteCount) const { return error == nullptr && byteCount <= end - position; }
+
+  bool U32(uint32_t *outValue,const char *what)
+  {
+    if (!Has(4)) {
+      return Fail(what);
+    }
+    *outValue = CampaignProgress_LoadU32(payload->data() + position);
+    position += 4;
+    return true;
+  }
+
+  bool Int32(int32_t *outValue,const char *what)
+  {
+    uint32_t value;
+
+    if (!U32(&value,what)) {
+      return false;
+    }
+    *outValue = static_cast<int32_t>(value);
+    return true;
+  }
+
+  /* an int32 in [minimum, maximum] */
+  bool Range(int32_t minimum,int32_t maximum,int32_t *outValue,const char *what)
+  {
+    return Int32(outValue,what) && (*outValue >= minimum && *outValue <= maximum ? true : Fail(what));
+  }
+
+  /* a count of elements of elementBytes each that fit in the bytes left */
+  bool Count(size_t elementBytes,uint32_t *outCount,const char *what)
+  {
+    return U32(outCount,what) && (*outCount <= (end - position) / elementBytes ? true : Fail(what));
+  }
+};
+
+/* Checks the payload header (tag, version, data size, padding, CRC32) and opens a reader behind it. */
+static bool CampaignProgress_OpenPayload(const std::vector<uint8_t> &payload,uint32_t tag,CampaignProgressReader *reader)
+
+{
+  uint32_t dataBytes;
+
+  *reader = CampaignProgressReader{&payload,0,payload.size(),nullptr};
+  if (payload.size() < CAMPAIGN_PROGRESS_PAYLOAD_HEADER_BYTES) {
+    return reader->Fail("payload shorter than its header");
+  }
+  if (CampaignProgress_LoadU32(payload.data()) != tag) {
+    return reader->Fail("payload has the wrong type tag");
+  }
+  if (CampaignProgress_LoadU32(payload.data() + 4) != CAMPAIGN_PROGRESS_VERSION) {
+    return reader->Fail("payload has another version");
+  }
+  dataBytes = CampaignProgress_LoadU32(payload.data() + 8);
+  if (dataBytes < CAMPAIGN_PROGRESS_PAYLOAD_HEADER_BYTES ||
+      payload.size() != dataBytes + (dataBytes % 16 == 0 ? CAMPAIGN_PROGRESS_PAYLOAD_PAD_BYTES : 0) ||
+      std::any_of(payload.begin() + dataBytes,payload.end(),[](uint8_t value) { return value != 0; })) {
+    return reader->Fail("payload size does not match its header");
+  }
+  if (CampaignProgress_LoadU32(payload.data() + 12) !=
+      CampaignProgress_Crc32(std::span<const uint8_t>(payload.data(),dataBytes).subspan
+                             (CAMPAIGN_PROGRESS_PAYLOAD_HEADER_BYTES))) {
+    return reader->Fail("payload CRC32 mismatch (damaged or edited)");
+  }
+  reader->position = CAMPAIGN_PROGRESS_PAYLOAD_HEADER_BYTES;
+  reader->end = dataBytes;
+  return true;
+}
+
+/* A list of positive level ids, ascending without repeats. */
+static bool CampaignProgress_ReadLevelIds(CampaignProgressReader *reader,std::vector<int32_t> *outIds,
+                                          const char *what)
+
+{
+  uint32_t count;
+  int32_t levelId;
+
+  if (!reader->Count(4,&count,what)) {
+    return false;
+  }
+  for (uint32_t index = 0; index < count; index++) {
+    if (!reader->Range(1,INT32_MAX,&levelId,what)) {
+      return false;
+    }
+    if (!outIds->empty() && levelId <= outIds->back()) {
+      return reader->Fail(what);
+    }
+    outIds->push_back(levelId);
+  }
+  return true;
+}
+
+/* One section of progress.bin; the snapshot targets go to *outTargets. */
+static bool CampaignProgress_DecodeSection(CampaignProgressReader *reader,CampaignProgressSection *outSection,
+                                           std::vector<int32_t> *outTargets)
+
+{
+  const uint8_t *nameField;
+  size_t nameLength;
+  uint32_t flags;
+  uint32_t crc32;
+  int32_t recordCount;
+  uint32_t winCount;
+  int32_t levelId;
+  int32_t previousLevelId = 0;
+  std::vector<int32_t> unlocked;
+
+  if (!reader->Has(CAMPAIGN_PROGRESS_NAME_FIELD_BYTES)) {
+    return reader->Fail("section cut short");
+  }
+  nameField = reader->payload->data() + reader->position;
+  nameLength = 0;
+  while (nameLength < CAMPAIGN_PROGRESS_NAME_FIELD_BYTES && nameField[nameLength] != 0) {
+    nameLength++;
+  }
+  outSection->name.assign(reinterpret_cast<const char *>(nameField),nameLength);
+  if (!CampaignProgress_IsValidName(outSection->name) ||
+      std::any_of(nameField + nameLength,nameField + CAMPAIGN_PROGRESS_NAME_FIELD_BYTES,
+                  [](uint8_t value) { return value != 0; })) {
+    return reader->Fail("bad campaign name");
+  }
+  reader->position += CAMPAIGN_PROGRESS_NAME_FIELD_BYTES;
+  if (!reader->U32(&flags,"section cut short") || !reader->U32(&crc32,"section cut short") ||
+      !reader->Range(0,INT32_MAX,&recordCount,"bad fingerprint record count")) {
+    return false;
+  }
+  if ((flags & ~CAMPAIGN_PROGRESS_FLAG_FINGERPRINT) != 0 ||
+      (flags == 0 && (crc32 != 0 || recordCount != 0))) {
+    return reader->Fail("bad section flags");
+  }
+  if (flags != 0) {
+    outSection->fingerprint = CampaignProgressFingerprint{crc32,recordCount};
+  }
+  if (!reader->Count(CAMPAIGN_PROGRESS_WIN_BYTES,&winCount,"bad win count")) {
+    return false;
+  }
+  for (uint32_t index = 0; index < winCount; index++) {
+    if (!reader->Range(1,INT32_MAX,&levelId,"bad win level id")) {
+      return false;
+    }
+    const uint8_t *win = reader->payload->data() + reader->position;
+    if (levelId <= previousLevelId) {
+      return reader->Fail("wins not sorted or repeated");
+    }
+    if (win[1] >= CAMPAIGN_PROGRESS_SELECTION_COUNT || (win[0] & (1u << win[1])) == 0 || win[2] != 0 ||
+        win[3] != 0) {
+      return reader->Fail("bad win selections");
+    }
+    outSection->wins[levelId] = CampaignProgressWins{win[0],win[1]};
+    reader->position += 4;
+    previousLevelId = levelId;
+  }
+  if (!CampaignProgress_ReadLevelIds(reader,&unlocked,"bad unlocked level list") ||
+      !CampaignProgress_ReadLevelIds(reader,outTargets,"bad snapshot target list")) {
+    return false;
+  }
+  outSection->unlockedLevelIds.insert(unlocked.begin(),unlocked.end());
+  return true;
+}
+
+/* A carry entry for targetLevelId into *outCarry. */
+static bool CampaignProgress_DecodeCarry(const std::vector<uint8_t> &payload,int32_t targetLevelId,
+                                         CampaignProgressCarry *outCarry,const char **outError)
+
+{
+  CampaignProgressReader reader;
+  int32_t storedTarget;
+  uint32_t reserved;
+  int32_t unitCount;
+  uint32_t dwords[CAMPAIGN_PROGRESS_CARRY_RECORD_DWORDS];
+
+  if (!CampaignProgress_OpenPayload(payload,CAMPAIGN_PROGRESS_CARRY_TAG,&reader) ||
+      reader.end != CAMPAIGN_PROGRESS_CARRY_BYTES) {
+    *outError = reader.error != nullptr ? reader.error : "snapshot has the wrong size";
+    return false;
+  }
+  if (reader.Int32(&storedTarget,"snapshot cut short") && storedTarget != targetLevelId) {
+    reader.Fail("snapshot target does not match its entry");
+  }
+  reader.Range(1,INT32_MAX,&outCarry->sourceLevelId,"bad snapshot source level");
+  reader.Range(0,CAMPAIGN_PROGRESS_SELECTION_COUNT - 1,&outCarry->selection,"bad snapshot selection");
+  if (reader.U32(&reserved,"snapshot cut short") && reserved != 0) {
+    reader.Fail("snapshot reserved dword not 0");
+  }
+  reader.Range(0,CAMPAIGN_PROGRESS_UNIT_CAPACITY,&unitCount,"snapshot unit count not 0..0x200");
+  for (int32_t record = 0; reader.error == nullptr && record < CAMPAIGN_PROGRESS_UNIT_CAPACITY; record++) {
+    for (uint32_t &dword : dwords) {
+      reader.U32(&dword,"snapshot cut short");
+    }
+    if (record < unitCount) {
+      if (dwords[1] >= static_cast<uint32_t>(CAMPAIGN_PROGRESS_FACTION_COUNT)) {
+        reader.Fail("snapshot unit faction not 0..7");
+      }
+      outCarry->units.push_back(CampaignProgressUnit{static_cast<int32_t>(dwords[0]),static_cast<int32_t>(dwords[1]),
+                                                     static_cast<int32_t>(dwords[2]),static_cast<int32_t>(dwords[3]),
+                                                     dwords[4]});
+    }
+    if (std::any_of(dwords + (record < unitCount ? 5 : 0),std::end(dwords),[](uint32_t value) { return value != 0; })) {
+      reader.Fail("snapshot unused record dwords not 0");
+    }
+  }
+  for (uint32_t &word : outCarry->techMasks) {
+    reader.U32(&word,"snapshot cut short");
+  }
+  if (reader.error == nullptr && reader.position != reader.end) {
+    reader.Fail("snapshot has extra bytes");
+  }
+  *outError = reader.error;
+  return reader.error == nullptr;
+}
+
+static bool CampaignProgress_Reject(CampaignProgress *outProgress,std::string *outReason,const std::string &reason)
+
+{
+  outProgress->campaigns.clear();
+  if (outReason != nullptr) {
+    *outReason = reason;
+  }
+  return false;
+}
+
+bool CampaignProgress_DecodeEntries(const std::vector<CampaignProgressEntry> &entries,CampaignProgress *outProgress,
+                                    std::string *outReason)
+
+{
+  CampaignProgressReader reader;
+  uint32_t sectionCount;
+  size_t nextEntry = 1;
+  const char *error = nullptr;
+
+  outProgress->campaigns.clear();
+  if (entries.empty() || entries[0].path != CAMPAIGN_PROGRESS_MAIN_ENTRY) {
+    return CampaignProgress_Reject(outProgress,outReason,"progress.bin is not the first entry");
+  }
+  if (!CampaignProgress_OpenPayload(entries[0].payload,CAMPAIGN_PROGRESS_TAG,&reader)) {
+    return CampaignProgress_Reject(outProgress,outReason,std::string("progress.bin: ") + reader.Reason());
+  }
+  /* a section takes at least its name and six dwords */
+  if (!reader.Count(CAMPAIGN_PROGRESS_NAME_FIELD_BYTES + 6 * 4,&sectionCount,"bad section count")) {
+    return CampaignProgress_Reject(outProgress,outReason,std::string("progress.bin: ") + reader.Reason());
+  }
+  outProgress->campaigns.reserve(sectionCount);
+  for (uint32_t index = 0; index < sectionCount; index++) {
+    CampaignProgressSection section;
+    std::vector<int32_t> targets;
+    if (!CampaignProgress_DecodeSection(&reader,&section,&targets)) {
+      return CampaignProgress_Reject(outProgress,outReason,std::string("progress.bin: ") + reader.Reason());
+    }
+    if (!outProgress->campaigns.empty() && section.name <= outProgress->campaigns.back().name) {
+      return CampaignProgress_Reject(outProgress,outReason,"progress.bin: sections not sorted or repeated");
+    }
+    for (int32_t targetLevelId : targets) {
+      CampaignProgressCarry carry{};
+      if (nextEntry >= entries.size() ||
+          entries[nextEntry].path != CampaignProgress_CarryEntryPath(section.name,targetLevelId)) {
+        return CampaignProgress_Reject(outProgress,outReason,"a snapshot entry is missing or out of order");
+      }
+      if (!CampaignProgress_DecodeCarry(entries[nextEntry].payload,targetLevelId,&carry,&error)) {
+        return CampaignProgress_Reject(outProgress,outReason,entries[nextEntry].path + ": " + error);
+      }
+      section.carries.emplace(targetLevelId,std::move(carry));
+      nextEntry++;
+    }
+    outProgress->campaigns.push_back(std::move(section));
+  }
+  if (reader.position != reader.end) {
+    return CampaignProgress_Reject(outProgress,outReason,"progress.bin has extra bytes");
+  }
+  if (nextEntry != entries.size()) {
+    return CampaignProgress_Reject(outProgress,outReason,"the package has entries no section names");
+  }
+  return true;
+}
+
+/* --- Package --- */
+
+/* text (ASCII) into a zero-terminated UTF-16 field of capacity units */
+static void CampaignProgress_CopyUtf16(uint16_t *destination,size_t capacity,std::string_view text)
+
+{
+  for (size_t index = 0; index < capacity; index++) {
+    destination[index] = index < text.size() ? static_cast<uint8_t>(text[index]) : 0;
+  }
+  destination[capacity - 1] = 0;
+}
+
+/* payload packed with method 0 into *outPacked. The encoder fills its whole capacity with zeros and may report up
+   to 0x1F bytes past what it wrote (the slack the decoder's dword reads need), so it is given 0x20 bytes less
+   than the buffer. */
+static bool CampaignProgress_PackPayload(const std::vector<uint8_t> &payload,std::vector<uint8_t> *outPacked)
+
+{
+  uint32_t packedBytes = 0;
+  uint32_t errorCode = 0;
+  const size_t capacity = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + CAMPAIGN_PROGRESS_PACK_BYTES_PER_BYTE * payload.size() +
+                          CAMPAIGN_PROGRESS_PACK_SLACK_BYTES;
+  std::vector<uint8_t> source(payload);
+
+  outPacked->assign(capacity,0);
+  if (payload.empty() || payload.size() > CAMPAIGN_PROGRESS_ENTRY_LIMIT_BYTES ||
+      !PckCodec_EncodeHuffmanRle(static_cast<PckOutputCapacityBytes>(capacity - 0x20),outPacked->data(),
+                                 static_cast<PckDecodedByteCount>(source.size()),source.data(),&packedBytes,
+                                 &errorCode) ||
+      packedBytes < CAMPAIGN_PROGRESS_MIN_PACKED_BYTES || packedBytes > capacity) {
+    return false;
+  }
+  outPacked->resize(packedBytes);
+  return true;
+}
+
+std::optional<std::vector<uint8_t>> CampaignProgress_WritePackage(const std::vector<CampaignProgressEntry> &entries)
+
+{
+  std::vector<uint8_t> file(PCK_ENTRY_HEADER_BYTES,0);
+  PckArchiveHeader archive{};
+  std::vector<uint8_t> packed;
+
+  for (const CampaignProgressEntry &entry : entries) {
+    PckEntryHeader header{};
+    if (entry.path.size() >= CAMPAIGN_PROGRESS_PATH_UNITS || !CampaignProgress_PackPayload(entry.payload,&packed)) {
+      Thandor_Log("campaign progress: entry \"%s\" (%u bytes) cannot be packed, nothing written",entry.path.c_str(),
+                  static_cast<unsigned>(entry.payload.size()));
+      return std::nullopt;
+    }
+    CampaignProgress_CopyUtf16(header.path,CAMPAIGN_PROGRESS_PATH_UNITS,entry.path);
+    header.runtimePayloadOffset = 0;
+    header.unpackedSize = static_cast<PckDecodedByteCount>(entry.payload.size());
+    header.typeTag = static_cast<PckAssetTypeTag>(entry.payload.size() >= 4 ? CampaignProgress_LoadU32(entry.payload.data())
+                                                                             : 0);
+    header.packedSize = static_cast<PckStoredByteCount>(packed.size());
+    header.compressionMethod = PCK_COMPRESSION_HUFFMAN_RLE;
+    const uint8_t *headerBytes = reinterpret_cast<const uint8_t *>(&header);
+    file.insert(file.end(),headerBytes,headerBytes + sizeof header);
+    file.insert(file.end(),packed.begin(),packed.end());
+  }
+  archive.magic[0] = 'p';
+  archive.magic[1] = 'c';
+  archive.magic[2] = 'k';
+  archive.magic[3] = 0;
+  archive.archiveSize = static_cast<PckArchiveByteCount>(file.size());
+  archive.version = CAMPAIGN_PROGRESS_PCK_VERSION;
+  archive.format = CAMPAIGN_PROGRESS_PCK_FORMAT;
+  CampaignProgress_CopyUtf16(archive.producerName,std::size(archive.producerName),CAMPAIGN_PROGRESS_PRODUCER);
+  CampaignProgress_CopyUtf16(archive.sourceName,std::size(archive.sourceName),CAMPAIGN_PROGRESS_PRODUCER);
+  archive.entryCount = static_cast<PckEntryCount>(entries.size());
+  memcpy(file.data(),&archive,sizeof archive);
+  return file;
+}
+
+static bool CampaignProgress_PackageError(std::string *outReason,const char *reason,size_t entryIndex)
+
+{
+  char text[96];
+
+  if (outReason != nullptr) {
+    snprintf(text,sizeof text,"package entry %u: %s",static_cast<unsigned>(entryIndex),reason);
+    *outReason = text;
+  }
+  return false;
+}
+
+bool CampaignProgress_ReadPackage(std::span<const uint8_t> bytes,std::vector<CampaignProgressEntry> *outEntries,
+                                  std::string *outReason)
+
+{
+  PckArchiveHeader archive;
+  PckEntryHeader header;
+  size_t offset = PCK_ENTRY_HEADER_BYTES;
+  size_t pathLength;
+  std::vector<uint8_t> packed;
+
+  outEntries->clear();
+  if (bytes.size() < PCK_ENTRY_HEADER_BYTES) {
+    if (outReason != nullptr) {
+      *outReason = "shorter than a package header";
+    }
+    return false;
+  }
+  memcpy(&archive,bytes.data(),sizeof archive);
+  if (memcmp(archive.magic,"pck",4) != 0 || archive.version != CAMPAIGN_PROGRESS_PCK_VERSION ||
+      archive.format != CAMPAIGN_PROGRESS_PCK_FORMAT || archive.archiveSize != bytes.size() ||
+      archive.entryCount == 0 || archive.entryCount > (bytes.size() - offset) / PCK_ENTRY_HEADER_BYTES) {
+    if (outReason != nullptr) {
+      *outReason = "not a progress package (magic, version, format, size or entry count)";
+    }
+    return false;
+  }
+  for (size_t index = 0; index < archive.entryCount; index++) {
+    if (bytes.size() - offset < PCK_ENTRY_HEADER_BYTES) {
+      return CampaignProgress_PackageError(outReason,"header cut short",index);
+    }
+    memcpy(&header,bytes.data() + offset,sizeof header);
+    offset += PCK_ENTRY_HEADER_BYTES;
+    CampaignProgressEntry entry;
+    for (pathLength = 0; pathLength < CAMPAIGN_PROGRESS_PATH_UNITS && header.path[pathLength] != 0; pathLength++) {
+      const uint16_t unit = header.path[pathLength];
+      if (unit < 0x20 || unit >= 0x7F || (unit >= 'A' && unit <= 'Z')) {
+        return CampaignProgress_PackageError(outReason,"path not lowercase ASCII",index);
+      }
+      entry.path.push_back(static_cast<char>(unit));
+    }
+    if (pathLength == 0 || pathLength == CAMPAIGN_PROGRESS_PATH_UNITS) {
+      return CampaignProgress_PackageError(outReason,"bad path",index);
+    }
+    if (header.runtimePayloadOffset != 0 || header.compressionMethod != PCK_COMPRESSION_HUFFMAN_RLE) {
+      return CampaignProgress_PackageError(outReason,"payload offset or compression method not 0",index);
+    }
+    if (header.packedSize < CAMPAIGN_PROGRESS_MIN_PACKED_BYTES || header.packedSize > bytes.size() - offset ||
+        header.unpackedSize < 4 || header.unpackedSize > CAMPAIGN_PROGRESS_ENTRY_LIMIT_BYTES) {
+      return CampaignProgress_PackageError(outReason,"bad packed or unpacked size",index);
+    }
+    /* the decoder takes non-const pointers: a copy of the packed bytes */
+    packed.assign(bytes.begin() + offset,bytes.begin() + offset + header.packedSize);
+    entry.payload.assign(header.unpackedSize,0);
+    if (!PckCodec_DecodeHuffmanRle(header.unpackedSize,entry.payload.data(),header.packedSize,packed.data(),nullptr,
+                                   nullptr)) {
+      return CampaignProgress_PackageError(outReason,"payload does not unpack",index);
+    }
+    if (static_cast<uint32_t>(header.typeTag) != CampaignProgress_LoadU32(entry.payload.data())) {
+      return CampaignProgress_PackageError(outReason,"type tag is not the first payload dword",index);
+    }
+    offset += header.packedSize;
+    outEntries->push_back(std::move(entry));
+  }
+  if (offset != bytes.size()) {
+    if (outReason != nullptr) {
+      *outReason = "bytes behind the last entry";
+    }
+    outEntries->clear();
+    return false;
+  }
+  return true;
+}
+
+std::optional<std::vector<uint8_t>> CampaignProgress_Encode(const CampaignProgress &progress)
+
+{
+  return CampaignProgress_WritePackage(CampaignProgress_EncodeEntries(progress));
+}
+
+bool CampaignProgress_Decode(std::span<const uint8_t> bytes,CampaignProgress *outProgress,std::string *outReason)
+
+{
+  std::vector<CampaignProgressEntry> entries;
+
+  if (!CampaignProgress_ReadPackage(bytes,&entries,outReason)) {
+    outProgress->campaigns.clear();
+    return false;
+  }
+  return CampaignProgress_DecodeEntries(entries,outProgress,outReason);
+}
+
+/* --- File --- */
 
 /* Renames the file at path to the same name with the extension ".bad" (one log line with the reason). */
 static void CampaignProgress_KeepAsBad(uint16_t *path,const char *reason)
@@ -772,6 +871,7 @@ CampaignProgress CampaignProgress_LoadFile(uint16_t *path)
 {
   CampaignProgress progress;
   std::optional<std::vector<uint8_t>> bytes = FileSystem_ReadWholeFileNative(path);
+  std::string reason;
   void *handle;
 
   if (!bytes.has_value()) {
@@ -782,9 +882,9 @@ CampaignProgress CampaignProgress_LoadFile(uint16_t *path)
     }
     return progress;
   }
-  if (!CampaignProgress_Parse(std::string_view(reinterpret_cast<const char *>(bytes->data()),bytes->size()),
-                              &progress).headerValid) {
-    CampaignProgress_KeepAsBad(path,"is not a version 1 progress file");
+  if (!CampaignProgress_Decode(*bytes,&progress,&reason)) {
+    reason = "is not a valid version 1 progress file (" + reason + ")";
+    CampaignProgress_KeepAsBad(path,reason.c_str());
     progress.campaigns.clear();
   }
   return progress;
@@ -793,11 +893,13 @@ CampaignProgress CampaignProgress_LoadFile(uint16_t *path)
 uint32_t CampaignProgress_SaveFile(uint16_t *path,const CampaignProgress &progress)
 
 {
-  std::string text = CampaignProgress_Format(progress);
+  std::optional<std::vector<uint8_t>> bytes = CampaignProgress_Encode(progress);
   uint32_t writeError;
 
-  writeError = FileSystem_WriteFileReplacing
-                 (path,std::span<const uint8_t>(reinterpret_cast<const uint8_t *>(text.data()),text.size()));
+  if (!bytes.has_value()) {
+    return FATAL_ERROR_GENERAL_FAILURE; /* CampaignProgress_WritePackage logged it */
+  }
+  writeError = FileSystem_WriteFileReplacing(path,*bytes);
   if (writeError != 0) {
     Thandor_Log("campaign progress: writing \"%ls\" failed (error 0x%08X), the old file is kept",
                 reinterpret_cast<wchar_t *>(path),writeError);
@@ -805,11 +907,10 @@ uint32_t CampaignProgress_SaveFile(uint16_t *path,const CampaignProgress &progre
   return writeError;
 }
 
-/* "campaign_progress.txt", the leaf of the progress file in the save directory */
-static constexpr uint16_t CAMPAIGN_PROGRESS_FILE_LEAF[] = {'c','a','m','p','a','i','g','n','_','p','r','o','g','r',
-                                                           'e','s','s','.','t','x','t',0};
+/* "kampagne.dat", the leaf of the progress file in the save directory */
+static constexpr uint16_t CAMPAIGN_PROGRESS_FILE_LEAF[] = {'k','a','m','p','a','g','n','e','.','d','a','t',0};
 
-/* The progress file: save\campaign_progress.txt under the executable directory. A dev-tools build takes
+/* The progress file: save\kampagne.dat under the executable directory. A dev-tools build takes
    OPEN_THANDOR_CAMPAIGN_PROGRESS=<path> instead when it is set. pathCapacity is in code units. */
 static void CampaignProgress_GetFilePath(uint16_t *outPath,size_t pathCapacity)
 
@@ -837,10 +938,12 @@ static void CampaignProgress_WriteCreatingDirectory(uint16_t *path,const Campaig
   uint16_t directory[THANDOR_PATH_CAPACITY];
   size_t length = 0;
   size_t separator = 0;
-  std::string text = CampaignProgress_Format(progress);
+  std::optional<std::vector<uint8_t>> bytes = CampaignProgress_Encode(progress);
 
-  if (FileSystem_WriteFileReplacing
-        (path,std::span<const uint8_t>(reinterpret_cast<const uint8_t *>(text.data()),text.size())) == 0) {
+  if (!bytes.has_value()) {
+    return; /* CampaignProgress_WritePackage logged it; the old file stays */
+  }
+  if (FileSystem_WriteFileReplacing(path,*bytes) == 0) {
     return;
   }
   while (length + 1 < THANDOR_PATH_CAPACITY && path[length] != 0) {
@@ -855,7 +958,9 @@ static void CampaignProgress_WriteCreatingDirectory(uint16_t *path,const Campaig
     g_FileSystemCreateDirectoryRecursive(FileSystemCreateDirectoryFlags::FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,
                                          directory);
   }
-  CampaignProgress_SaveFile(path,progress);
+  if (FileSystem_WriteFileReplacing(path,*bytes) != 0) {
+    Thandor_Log("campaign progress: writing \"%ls\" failed, the old file is kept",reinterpret_cast<wchar_t *>(path));
+  }
 }
 
 CampaignProgress CampaignProgress_LoadCurrent()
