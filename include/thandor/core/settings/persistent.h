@@ -135,6 +135,9 @@ void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSett
 uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity);
 
 uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image);
+/* open-thandor: the path of thandor.ini (UTF-16; the bare file name, i.e. the current directory, until a load
+   found it in the executable directory). */
+const uint16_t *PersistentSettings_IniPathUtf16();
 
 extern uint32_t g_LocaleCountryCodeOverride;
 

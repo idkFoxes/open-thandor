@@ -15,7 +15,9 @@ asset images, save-game images (pools written raw), UI templates linked by byte 
 that code walks with the original strides and offsets. Their pointer fields are declared Ptr32<T> (data
 pointers) or Ptr32<R(args)> (function pointers). Ptr32<T> is a 4-byte field holding the pointer as a signed
 32-bit value. The exe is linked /LARGEADDRESSAWARE:NO, so every address of the process (image, heap, stacks) is
-below 2 GB and fits; sign extension on reading keeps sentinels like (T *)-1 intact. A pointer that does not fit
+below 2 GB and fits (the large-address-aware build, CMake option THANDOR_LARGE_ADDRESS_AWARE, keeps the game's
+memory in pools below 2 GB instead: platform/bootstrap/low_memory.h); sign extension on reading keeps sentinels like
+(T *)-1 intact. A pointer that does not fit
 stops the game (Thandor_Ptr32Overflow). Savegames, assets and the UI templates depend on these layouts.
 UPtr32 is the same for a field the code keeps as uintptr_t (a pointer or a small value).
 The field converts to T * implicitly, so most code reads and writes it like a pointer. What does not work

@@ -15,6 +15,7 @@
 
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/core/ptr32.h>
+#include <thandor/platform/bootstrap/low_memory.h>
 
 /* Instruction, frame and stack pointer of a CONTEXT and the StackWalk64 machine type of this (x64) build. */
 #define CRASH_MACHINE_TYPE IMAGE_FILE_MACHINE_AMD64
@@ -483,6 +484,9 @@ void Thandor_LogStack(const char *reason, unsigned value)
 void Thandor_Ptr32Overflow(uintptr_t value)
 {
     Thandor_Log("Ptr32: pointer 0x%llX does not fit a 32-bit field", (unsigned long long)value);
+#ifdef THANDOR_LARGE_ADDRESS_AWARE
+    LowMemory_LogState("at the Ptr32 overflow");
+#endif
     Thandor_LogStack("Ptr32 overflow stack", (unsigned)value);
     ExitProcess(0xF5);
 }
