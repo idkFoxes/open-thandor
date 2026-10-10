@@ -53,8 +53,18 @@ drops the PDB. Set `LINK=/MAP` before building to get `thandor.map` for `tools/d
 (`symbolize.py crash_raw.log <build>\thandor.map`).
 
 The original data layouts keep their pointers in 32-bit fields (`Ptr32<T>`,
-[`include/thandor/core/ptr32.h`](../include/thandor/core/ptr32.h)), so savegames and assets keep their format; the
-executable is linked `/LARGEADDRESSAWARE:NO` (every address below 2 GB) at the fixed base `0x10000000`. Code that
+[`include/thandor/core/ptr32.h`](../include/thandor/core/ptr32.h)), so savegames and assets keep their format, and
+everything the game points to must lie below 2 GB. The executable is linked large-address-aware (`/LARGEADDRESSAWARE`,
+since 1.0.7) at the fixed base `0x10000000` without ASLR (`/DYNAMICBASE:NO`): the graphics driver gets the whole
+64-bit address space (in a process limited to 2 GB some drivers with much video memory crashed at the Vulkan start or
+drew no 3D view with DirectX 12), and the game's own memory comes from pools reserved below 2 GB
+([`include/thandor/platform/bootstrap/low_memory.h`](../include/thandor/platform/bootstrap/low_memory.h): the
+replaced `operator new`/`delete`, SDL's allocations through `SDL_SetMemoryFunctions`, and the arena). `thandor.log`
+shows the pools at start, after the first GPU frame and at shutdown (`low memory ...: large pool ..., small heap
+..., N process heap fallbacks`); a full pool falls back to the process heap and logs `low memory: pools full`, and a
+pointer of 2 GB or more that still reaches a 32-bit field stops the game (`Ptr32: pointer ... does not fit a 32-bit
+field`). The CMake option `THANDOR_LARGE_ADDRESS_AWARE` (default `ON`) set to `OFF` builds the old layout
+(`/LARGEADDRESSAWARE:NO`, the whole process below 2 GB, no pools), only for comparisons. Code that
 keeps a pointer in a plain 32-bit integer (a field holding a pointer or an offset/id, a saved offset) converts with
 `Thandor_PointerToU32`/`Thandor_PointerToI32` (stops the game for a pointer that does not fit) and
 `Thandor_U32ToPointer<T>` (sign-extended like `Ptr32`), never with a plain cast.
@@ -102,10 +112,10 @@ What keeps the two builds identical in behaviour (the self-test hashes and the d
 - Linker: `--image-base=0x10000000 --disable-dynamicbase --disable-high-entropy-va`. GNU ld marks every 64-bit image
   large-address aware (its `--disable-large-address-aware` is for 32-bit images only), so the build runs
   [`cmake/pe_not_large_address_aware.cpp`](../cmake/pe_not_large_address_aware.cpp) on `thandor.exe` after the
-  link (as the last step, after the debug information is split off, see below): it clears
-  `IMAGE_FILE_LARGE_ADDRESS_AWARE` and fails if the image is relocatable. Check with `objdump -p thandor.exe`:
-  `Characteristics` without 0x20, `ImageBase 0000000010000000`, `DllCharacteristics` 0x8100 (`NX_COMPAT` and
-  `TERMINAL_SERVICE_AWARE`, no `DYNAMIC_BASE`).
+  link (as the last step, after the debug information is split off, see below): it keeps
+  `IMAGE_FILE_LARGE_ADDRESS_AWARE` (clears it with `THANDOR_LARGE_ADDRESS_AWARE=OFF`) and fails if the image is
+  relocatable. Check with `objdump -p thandor.exe`: `Characteristics` with 0x20, `ImageBase 0000000010000000`,
+  `DllCharacteristics` 0x8100 (`NX_COMPAT` and `TERMINAL_SERVICE_AWARE`, no `DYNAMIC_BASE`).
 
 Debug information: an MSVC build keeps it in `thandor.pdb` next to `thandor.exe` (dbghelp reads it for the names in
 crash logs). A GCC build compiles with DWARF (`-g`, some 33 MB) and splits it off after the link like a PDB, in every
@@ -384,7 +394,19 @@ a settings file without them starts with Vulkan in exclusive fullscreen. The ori
 Overrides (every build): `OPEN_THANDOR_GPU=0|off|software` or the command-line option `-SOFTWARE` forces the software
 renderer, `OPEN_THANDOR_GPU=vulkan|d3d12` one GPU API, `OPEN_THANDOR_GPU=1` or `-GPU` the first GPU API that runs,
 `OPEN_THANDOR_GPU=auto` the saved choice (as without the variable). A forced renderer is the only one listed and is
-not saved. The developer tools' window (`OPEN_THANDOR_WINDOWED=1`) is always a window. The test tools
+not saved. The developer tools' window (`OPEN_THANDOR_WINDOWED=1`) is always a window.
+
+**GPU start fallback and diagnostics** (every build): before a GPU renderer starts, the game writes
+`thandor-gpu-start.txt` next to `thandor.ini` and removes it after the first presented frame (or when the renderer
+stops or its start fails). A start that finds the file - the previous GPU start crashed or hung - logs `previous
+start with <renderer> did not finish, falling back to <next>` and starts the next renderer in the order Vulkan ->
+DirectX 12 -> Software instead, saved like a menu choice (not when a renderer is forced or another one is chosen).
+`thandor.log` names the SDL version and every display adapter with its driver version (`display adapter N: ...,
+driver ...`), the created device (`SDL_GPU: vulkan device created, driver vulkan`), one address space summary before
+the GPU device and one after the first frame (`address space ...: user limit ..., free ..., below 2 GB free ...`),
+and every failed SDL_GPU creation, map, command buffer, swapchain or submit call with `SDL_GetError()` (`SDL_GPU
+failure N: ...`, the first 40). `OPEN_THANDOR_GPU_DIAG=1` adds the address space after each step of the GPU start
+and before and after every GPU texture or buffer of 4 MiB or more. The test tools
 (`tools/test`, `game_env.py`) start every game with `OPEN_THANDOR_GPU=0` unless the caller sets it, so the pixel
 and hash checks keep comparing the software renderer, and with `OPEN_THANDOR_WINDOW_MINIMIZED=1` (minimized window)
 unless `OPEN_THANDOR_TEST_VISIBLE=1` is set (to watch a test game).

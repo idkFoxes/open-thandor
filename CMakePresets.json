@@ -63,22 +63,6 @@
       "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_DEV_TOOLS": "ON" }
     },
     {
-      "name": "mingw-release-laa",
-      "displayName": "MinGW-w64 GCC x64 RelWithDebInfo, large-address-aware (game memory kept below 2 GB)",
-      "inherits": "mingw-x64",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_LARGE_ADDRESS_AWARE": "ON" }
-    },
-    {
-      "name": "mingw-test-laa",
-      "displayName": "MinGW-w64 GCC x64 RelWithDebInfo with the developer tools, large-address-aware",
-      "inherits": "mingw-x64",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "THANDOR_DEV_TOOLS": "ON",
-        "THANDOR_LARGE_ADDRESS_AWARE": "ON"
-      }
-    },
-    {
       "name": "mingw-gpu-test",
       "displayName": "MinGW-w64 GCC x64 RelWithDebInfo with the developer tools and the SDL_GPU renderer (OPEN_THANDOR_GPU=1)",
       "inherits": "mingw-x64",
@@ -96,8 +80,6 @@
     { "name": "gpu-test", "configurePreset": "gpu-test" },
     { "name": "mingw-release", "configurePreset": "mingw-release" },
     { "name": "mingw-test", "configurePreset": "mingw-test" },
-    { "name": "mingw-gpu-test", "configurePreset": "mingw-gpu-test" },
-    { "name": "mingw-release-laa", "configurePreset": "mingw-release-laa" },
-    { "name": "mingw-test-laa", "configurePreset": "mingw-test-laa" }
+    { "name": "mingw-gpu-test", "configurePreset": "mingw-gpu-test" }
   ]
 }

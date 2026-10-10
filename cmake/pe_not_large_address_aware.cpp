@@ -6,12 +6,13 @@
 
 /*
 Build helper of the MinGW build (CMakeLists.txt, POST_BUILD of thandor): GNU ld always marks a 64-bit executable
-IMAGE_FILE_LARGE_ADDRESS_AWARE (its --disable-large-address-aware exists for 32-bit images only). The game keeps
-pointers in 32-bit fields (core/ptr32.h) and needs the process below 2 GB, like MSVC's /LARGEADDRESSAWARE:NO: this
-clears the flag in the PE file header and checks that the image is not relocatable (no DYNAMIC_BASE or
-HIGH_ENTROPY_VA). usage: pe_not_large_address_aware <exe> [--large-address-aware]
-With --large-address-aware (CMake option THANDOR_LARGE_ADDRESS_AWARE) the flag is set instead of cleared; the image
-must still not be relocatable (the image's addresses go into 32-bit fields as well).
+IMAGE_FILE_LARGE_ADDRESS_AWARE (its --disable-large-address-aware exists for 32-bit images only).
+usage: pe_not_large_address_aware <exe> [--large-address-aware]
+With --large-address-aware (the default build, CMake option THANDOR_LARGE_ADDRESS_AWARE=ON; the game's own memory
+comes from pools below 2 GB, platform/bootstrap/low_memory.h) the flag is kept set; without it (OFF, the old layout
+like MSVC's /LARGEADDRESSAWARE:NO, the whole process below 2 GB) it is cleared. Either way the helper checks that
+the image is not relocatable (no DYNAMIC_BASE or HIGH_ENTROPY_VA): the image's addresses go into the 32-bit pointer
+fields of core/ptr32.h as well.
 */
 
 #include <cstdint>

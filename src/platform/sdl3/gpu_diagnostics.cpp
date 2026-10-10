@@ -19,6 +19,7 @@
 #include <thandor/platform/bootstrap/low_memory.h>
 
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_version.h>
 
 #include <algorithm>
@@ -30,7 +31,8 @@ namespace {
 
 constexpr LONG kAddressSpaceLogBudget = 80;
 constexpr LONG kFailureLogBudget = 40;
-constexpr uint64_t kBigResourceBytes = 4u << 20; /* textures and buffers from 4 MiB on log the address space */
+constexpr uint64_t kBigResourceBytes = 4u << 20; /* OPEN_THANDOR_GPU_DIAG=1: textures and buffers from 4 MiB on log
+                                                    the address space */
 constexpr uint32_t kMarkerFramesWithoutSwapchain = 120;
 
 volatile LONG s_addressSpaceLogs = 0;
@@ -40,6 +42,16 @@ bool s_adaptersLogged = false;
 wchar_t s_markerPath[MAX_PATH] = {};
 bool s_markerPending = false;
 uint32_t s_markerFrames = 0;
+
+/* OPEN_THANDOR_GPU_DIAG=1: the detailed address space lines (LogAddressSpaceDetail), read once */
+bool DetailedDiagnostics()
+{
+  static const bool detailed = []() {
+    const char *value = SDL_getenv("OPEN_THANDOR_GPU_DIAG");
+    return (value != nullptr) && (value[0] != 0) && (value[0] != '0');
+  }();
+  return detailed;
+}
 
 constexpr uint64_t MiB(uint64_t bytes)
 {
@@ -137,6 +149,13 @@ void LogAddressSpace(const char *when) noexcept
               static_cast<unsigned long long>(MiB(reservedBytes)));
 }
 
+void LogAddressSpaceDetail(const char *when) noexcept
+{
+  if (DetailedDiagnostics()) {
+    LogAddressSpace(when);
+  }
+}
+
 void LogGpuAdapters() noexcept
 {
   if (s_adaptersLogged) {
@@ -215,8 +234,9 @@ SDL_GPUTexture *CreateGpuTextureLogged(SDL_GPUDevice *device, const SDL_GPUTextu
 {
   const uint64_t bytes = static_cast<uint64_t>(info->width) * info->height * info->layer_count_or_depth *
                          BytesPerTexel(info->format);
+  const bool logged = (bytes >= kBigResourceBytes) && DetailedDiagnostics();
   char when[160];
-  if (bytes >= kBigResourceBytes) {
+  if (logged) {
     std::snprintf(when, sizeof when, "before texture %s %ux%u", what, info->width, info->height);
     LogAddressSpace(when);
   }
@@ -225,7 +245,7 @@ SDL_GPUTexture *CreateGpuTextureLogged(SDL_GPUDevice *device, const SDL_GPUTextu
     LogGpuFailure("SDL_CreateGPUTexture %s %ux%u format %d usage 0x%X", what, info->width, info->height,
                   static_cast<int>(info->format), static_cast<unsigned>(info->usage));
   }
-  if (bytes >= kBigResourceBytes) {
+  if (logged) {
     std::snprintf(when, sizeof when, "after texture %s %ux%u (%s)", what, info->width, info->height,
                   (texture != nullptr) ? "created" : "failed");
     LogAddressSpace(when);
@@ -236,8 +256,9 @@ SDL_GPUTexture *CreateGpuTextureLogged(SDL_GPUDevice *device, const SDL_GPUTextu
 SDL_GPUBuffer *CreateGpuBufferLogged(SDL_GPUDevice *device, const SDL_GPUBufferCreateInfo *info,
                                      const char *what) noexcept
 {
+  const bool logged = (info->size >= kBigResourceBytes) && DetailedDiagnostics();
   char when[160];
-  if (info->size >= kBigResourceBytes) {
+  if (logged) {
     std::snprintf(when, sizeof when, "before buffer %s of %u bytes", what, info->size);
     LogAddressSpace(when);
   }
@@ -245,7 +266,7 @@ SDL_GPUBuffer *CreateGpuBufferLogged(SDL_GPUDevice *device, const SDL_GPUBufferC
   if (buffer == nullptr) {
     LogGpuFailure("SDL_CreateGPUBuffer %s of %u bytes", what, info->size);
   }
-  if (info->size >= kBigResourceBytes) {
+  if (logged) {
     std::snprintf(when, sizeof when, "after buffer %s of %u bytes (%s)", what, info->size,
                   (buffer != nullptr) ? "created" : "failed");
     LogAddressSpace(when);
@@ -256,8 +277,9 @@ SDL_GPUBuffer *CreateGpuBufferLogged(SDL_GPUDevice *device, const SDL_GPUBufferC
 SDL_GPUTransferBuffer *CreateGpuTransferBufferLogged(SDL_GPUDevice *device, const SDL_GPUTransferBufferCreateInfo *info,
                                                      const char *what) noexcept
 {
+  const bool logged = (info->size >= kBigResourceBytes) && DetailedDiagnostics();
   char when[160];
-  if (info->size >= kBigResourceBytes) {
+  if (logged) {
     std::snprintf(when, sizeof when, "before transfer buffer %s of %u bytes", what, info->size);
     LogAddressSpace(when);
   }
@@ -265,7 +287,7 @@ SDL_GPUTransferBuffer *CreateGpuTransferBufferLogged(SDL_GPUDevice *device, cons
   if (buffer == nullptr) {
     LogGpuFailure("SDL_CreateGPUTransferBuffer %s of %u bytes", what, info->size);
   }
-  if (info->size >= kBigResourceBytes) {
+  if (logged) {
     std::snprintf(when, sizeof when, "after transfer buffer %s of %u bytes (%s)", what, info->size,
                   (buffer != nullptr) ? "created" : "failed");
     LogAddressSpace(when);

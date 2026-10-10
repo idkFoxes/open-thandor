@@ -9,11 +9,13 @@
 #define THANDOR_PLATFORM_BOOTSTRAP_LOW_MEMORY_H
 
 /*
-Memory below 2 GB for a large-address-aware build (CMake option THANDOR_LARGE_ADDRESS_AWARE).
+Memory below 2 GB for the large-address-aware build (CMake option THANDOR_LARGE_ADDRESS_AWARE, ON by default since
+1.0.7).
 
 The original layouts keep pointers in 32-bit fields (core/ptr32.h), so everything the game points to from such a
-field must lie below 2 GB. The default build gets that from /LARGEADDRESSAWARE:NO, which limits the whole process
-(also the graphics driver) to 2 GB. The large-address-aware build gives the driver the full 64-bit address space and
+field must lie below 2 GB. Up to 1.0.6 the exe was linked /LARGEADDRESSAWARE:NO, which limited the whole process
+(also the graphics driver) to 2 GB; some drivers with much video memory failed in it (Vulkan crashed at start,
+DirectX 12 drew no 3D view). The large-address-aware build gives the driver the full 64-bit address space and
 keeps the game's own memory low instead: at the first allocation it reserves two pools below 2 GB, a fixed Win32
 heap for the small blocks and a page pool for the large ones, and every C++ allocation (the replaced operator
 new/delete), every SDL allocation (SDL_SetMemoryFunctions, LowMemory_InstallSdlAllocator) and the arena

@@ -324,12 +324,16 @@ if(MSVC)
 else()
     target_link_options(thandor PRIVATE -Wl,--stack,0x800000)
 endif()
-# The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
-# (/LARGEADDRESSAWARE:NO) so every pointer fits.
-# THANDOR_LARGE_ADDRESS_AWARE: the process gets the whole 64-bit address space (the graphics driver needs it with
-# much video memory), and the game's own memory is kept below 2 GB instead (platform/bootstrap/low_memory.h: the C++
-# allocations, SDL's allocations and the arena come from pools reserved below 2 GB). The image keeps its fixed base.
-option(THANDOR_LARGE_ADDRESS_AWARE "Link large-address-aware and keep the game's memory in pools below 2 GB" OFF)
+# The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h), so everything the game points to
+# from such a field must lie below 2 GB. The exe is large-address-aware (since 1.0.7: with /LARGEADDRESSAWARE:NO the
+# whole process, the graphics driver too, had only 2 GB, and some drivers with much video memory failed - Vulkan
+# crashed at start, DirectX 12 drew no 3D view): the driver gets the whole 64-bit address space, and the game's own
+# memory comes from pools reserved below 2 GB (platform/bootstrap/low_memory.h: the replaced operator new/delete,
+# SDL's allocations through SDL_SetMemoryFunctions, and the arena). The image keeps its fixed base 0x10000000 without
+# ASLR, the main thread's stack is reserved at process start below 2 GB, and a pointer of 2 GB or more that still
+# reaches a 32-bit field stops the game (Thandor_Ptr32Overflow). THANDOR_LARGE_ADDRESS_AWARE=OFF builds the old
+# layout (/LARGEADDRESSAWARE:NO, no pools), only for comparisons.
+option(THANDOR_LARGE_ADDRESS_AWARE "Link large-address-aware and keep the game's memory in pools below 2 GB" ON)
 if(THANDOR_LARGE_ADDRESS_AWARE)
     target_sources(thandor PRIVATE src/platform/bootstrap/low_memory.cpp)
     target_compile_definitions(thandor PRIVATE THANDOR_LARGE_ADDRESS_AWARE=1)
@@ -342,7 +346,7 @@ endif()
 if(MSVC)
     target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO ${THANDOR_LAA_LINK})
 else()
-    # GNU ld: the same fixed base, no ASLR, not large-address aware; the C and C++ runtimes linked in statically
+    # GNU ld: the same fixed base, no ASLR; the C and C++ runtimes linked in statically
     # (only SDL3.dll ships next to thandor.exe); thandor.map for symbolizing crash logs (docs/BUILDING.md).
     target_link_options(thandor PRIVATE -Wl,--image-base=0x10000000 -Wl,--disable-dynamicbase
                         -Wl,--disable-high-entropy-va -Wl,--tsaware -static -static-libgcc -static-libstdc++
@@ -366,8 +370,8 @@ else()
                 ${CMAKE_OBJCOPY} --add-gnu-debuglink=thandor.debug $<TARGET_FILE:thandor>
         VERBATIM)
     # ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
-    # clears the flag in the final image (after strip and objcopy) and fails the build if the image came out
-    # relocatable.
+    # sets the flag as THANDOR_LARGE_ADDRESS_AWARE wants it (keeps it; clears it for OFF) in the final image (after
+    # strip and objcopy) and fails the build if the image came out relocatable.
     add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
     target_link_options(pe_not_large_address_aware PRIVATE -static)
     add_custom_command(TARGET thandor POST_BUILD

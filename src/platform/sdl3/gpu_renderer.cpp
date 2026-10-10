@@ -2023,11 +2023,11 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
   SDL_DestroyProperties(properties);
   if (s_gpu.device == nullptr) {
     Thandor_Log("SDL_GPU: no %s device (%s)", DriverName(renderer), SDL_GetError());
-    thandor::sdl3::LogAddressSpace("after the failed GPU device");
+    thandor::sdl3::LogAddressSpaceDetail("after the failed GPU device");
     return false;
   }
   Thandor_Log("SDL_GPU: %s device created, driver %s", DriverName(renderer), SDL_GetGPUDeviceDriver(s_gpu.device));
-  thandor::sdl3::LogAddressSpace("after the GPU device");
+  thandor::sdl3::LogAddressSpaceDetail("after the GPU device");
   s_gpu.shaderFormat = ShaderFormatOf(renderer);
   s_gpu.window = window;
   if (!ClaimWindow()) {
@@ -2040,7 +2040,7 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
     Thandor_Log("SDL_GPU: %s has no swapchain for the minimized window yet, claimed again when it is restored",
                 DriverName(renderer));
   }
-  thandor::sdl3::LogAddressSpace("after the window claim");
+  thandor::sdl3::LogAddressSpaceDetail("after the window claim");
   SDL_GPUSamplerCreateInfo samplerInfo;
   SDL_zero(samplerInfo);
   samplerInfo.min_filter = SDL_GPU_FILTER_NEAREST;
@@ -2059,7 +2059,7 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
   }
   /* GPU_MODE_ON draws the whole frame on the GPU (the 2D draw list records the UI); compare mode draws it in
      software as well and shows the software picture */
-  thandor::sdl3::LogAddressSpace("after the 3D pipelines");
+  thandor::sdl3::LogAddressSpaceDetail("after the 3D pipelines");
   if (!StartGpuFrame(compare ? DRAW2D_BACKEND_COMPARE : DRAW2D_BACKEND_GPU_RECORD)) {
     Thandor_Log("SDL_GPU: %s 2D setup failed", DriverName(renderer));
     ReleaseDevice();
