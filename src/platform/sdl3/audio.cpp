@@ -23,6 +23,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 #include <mutex>
 #include <span>
@@ -262,6 +263,7 @@ uint32_t SdlAudio_Init()
   g_SoundStopAllVoices = SdlAudio_StopAllVoices;
   g_SoundIsVoiceFinished = SdlAudio_IsVoiceFinished;
   g_SoundSetVoiceGains = SdlAudio_SetVoiceGains;
+  g_SoundRaiseQuietSampleLevel = SdlAudio_RaiseQuietSampleLevel;
   SDL_ResumeAudioStreamDevice(stream);
   return 0;
 }
@@ -283,6 +285,7 @@ void SdlAudio_Shutdown()
   g_SoundStopAllVoices = SoundBackendDisabled_StopAllVoices;
   g_SoundIsVoiceFinished = SoundBackendDisabled_IsVoiceFinished;
   g_SoundSetVoiceGains = SoundBackendDisabled_SetVoiceGains;
+  g_SoundRaiseQuietSampleLevel = SoundBackendDisabled_RaiseQuietSampleLevel;
 }
 
 uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,uint32_t sampleByteCount,
@@ -424,6 +427,133 @@ void SdlAudio_SetVoiceGains(uint32_t leftChannelGainQ15,uint32_t rightChannelGai
   if (Voice *changed = s_mixer->VoiceOf(voice)) {
     ApplyChannelGains(leftChannelGainQ15, rightChannelGainQ15, *changed);
   }
+}
+
+/* Not in the original: the movie soundtrack boost. The original's movie soundtracks were mixed at very different
+   levels: measured over the stock data (gated RMS of the decoded tracks, 400 ms windows above -50 dBFS), the
+   in-game notification movies (movie100..935) and intro0 lie at -13..-21 dBFS, like the music (-12..-22), but
+   the CD movies are quieter: intro2 (the long third intro) at -23, the campaign story movies ende0010..0013 at
+   -23..-26 and ende0000/0002..0004 at -30 dBFS. Movie_Open calls this (slot g_SoundRaiseQuietSampleLevel) for the
+   soundtrack it has just loaded: the whole decoded sample is scanned once and multiplied by
+   gain = min(target / gated RMS, kQuietSampleMaxGain, kQuietSampleMaxPeakOvershoot * ceiling / peak), never
+   below 1. Samples that would then pass the knee (-1.9 dBFS) go through a soft limiter (tanh) towards the
+   ceiling (-0.3 dBFS), so nothing clips; with the stock movies that is at most 0.1 % of the samples (single
+   peaks up to 1.3 dB over full scale), everything else is only scaled. The sample keeps its length (movie
+   timing is unchanged); the decoder output itself and the voice gains (the movie volume settings) are
+   untouched. */
+namespace {
+
+constexpr double kQuietSampleTargetRmsDbfs = -18.0;    /* the level of the louder movies and the music */
+constexpr double kQuietSampleMaxGain = 4.0;            /* at most +12 dB */
+constexpr double kQuietSampleGateDbfs = -50.0;         /* windows below this are silence and not measured */
+constexpr double kQuietSampleCeiling = 32767.0 * 0.97; /* the limiter's output limit, about -0.3 dBFS */
+constexpr double kQuietSampleKnee = 32767.0 * 0.8;     /* the limiter starts here, about -1.9 dBFS */
+constexpr double kQuietSampleMaxPeakOvershoot = 2.0;   /* the raised peak stays within +6 dB of the ceiling */
+constexpr std::size_t kQuietSampleWindowFrames = kSampleRate * 2 / 5; /* 400 ms */
+
+/* One raised sample value: value * gain, above the knee softly limited to the ceiling. */
+int16_t RaiseAndLimit(int16_t value, double gain) noexcept
+{
+  const double raised = value * gain;
+  const double magnitude = std::abs(raised);
+  if (magnitude <= kQuietSampleKnee) {
+    return static_cast<int16_t>(std::lround(raised));
+  }
+  const double limited =
+      kQuietSampleKnee + (kQuietSampleCeiling - kQuietSampleKnee) *
+                             std::tanh((magnitude - kQuietSampleKnee) / (kQuietSampleCeiling - kQuietSampleKnee));
+  return static_cast<int16_t>(std::lround(std::copysign(limited, raised)));
+}
+
+double DbfsToAmplitude(double dbfs) noexcept
+{
+  return 32768.0 * std::pow(10.0, dbfs / 20.0);
+}
+
+double AmplitudeToDbfs(double amplitude) noexcept
+{
+  return (amplitude > 0.0) ? 20.0 * std::log10(amplitude / 32768.0) : -999.0;
+}
+
+/* The RMS of pcm over the kQuietSampleWindowFrames windows that are louder than kQuietSampleGateDbfs (a sample
+   shorter than one window is one window); 0 when every window is silent. */
+double GatedRms(std::span<const int16_t> pcm) noexcept
+{
+  const std::size_t windowSamples = kQuietSampleWindowFrames * kChannels;
+  const double gateEnergy = DbfsToAmplitude(kQuietSampleGateDbfs) * DbfsToAmplitude(kQuietSampleGateDbfs);
+  double gatedEnergySum = 0.0;
+  std::size_t gatedWindowCount = 0;
+  for (std::size_t start = 0; start < pcm.size(); start += windowSamples) {
+    const auto window = pcm.subspan(start, std::min(windowSamples, pcm.size() - start));
+    if ((window.size() < windowSamples) && (start != 0)) {
+      break; /* the short tail of a longer sample is not measured */
+    }
+    double energy = 0.0;
+    for (const int16_t value : window) {
+      energy += static_cast<double>(value) * value;
+    }
+    energy /= static_cast<double>(window.size());
+    if (energy > gateEnergy) {
+      gatedEnergySum += energy;
+      gatedWindowCount++;
+    }
+  }
+  return (gatedWindowCount != 0) ? std::sqrt(gatedEnergySum / static_cast<double>(gatedWindowCount)) : 0.0;
+}
+
+} // namespace
+
+void SdlAudio_RaiseQuietSampleLevel(SoundVoiceSet *handle)
+{
+  if ((handle == nullptr) || !s_mixer) {
+    return;
+  }
+  std::shared_ptr<const Sample> source;
+  {
+    const std::scoped_lock lock(s_mixer->mutex);
+    const VoiceSet *voiceSet = s_mixer->VoiceSetOf(handle);
+    if (voiceSet == nullptr) {
+      return;
+    }
+    source = voiceSet->sample;
+  }
+  /* measured and scaled outside the lock: the mixer only reads the old sample meanwhile */
+  const std::span<const int16_t> pcm(source->pcm);
+  int32_t peak = 0;
+  for (const int16_t value : pcm) {
+    peak = std::max(peak, std::abs(static_cast<int32_t>(value)));
+  }
+  const double rms = GatedRms(pcm);
+  double gain = 1.0;
+  if ((rms > 0.0) && (peak > 0)) {
+    gain = std::min({DbfsToAmplitude(kQuietSampleTargetRmsDbfs) / rms, kQuietSampleMaxGain,
+                     kQuietSampleMaxPeakOvershoot * kQuietSampleCeiling / static_cast<double>(peak)});
+  }
+  if (gain <= 1.0) {
+    Thandor_Log("SDL audio: movie soundtrack at %.1f dBFS (peak %.1f dBFS), not raised", AmplitudeToDbfs(rms),
+                AmplitudeToDbfs(peak));
+    return;
+  }
+  auto raised = std::make_shared<Sample>();
+  raised->pcm.resize(pcm.size());
+  std::transform(pcm.begin(), pcm.end(), raised->pcm.begin(),
+                 [gain](int16_t value) { return RaiseAndLimit(value, gain); });
+  {
+    const std::scoped_lock lock(s_mixer->mutex);
+    VoiceSet *voiceSet = s_mixer->VoiceSetOf(handle);
+    if ((voiceSet == nullptr) || (voiceSet->sample != source)) {
+      return; /* released or replaced meanwhile */
+    }
+    voiceSet->sample = raised;
+    /* same length, so a voice keeps its position */
+    for (auto &voice : voiceSet->voices) {
+      if (voice) {
+        voice->sample = raised;
+      }
+    }
+  }
+  Thandor_Log("SDL audio: movie soundtrack at %.1f dBFS (peak %.1f dBFS) raised by %.1f dB", AmplitudeToDbfs(rms),
+              AmplitudeToDbfs(peak), AmplitudeToDbfs(gain * 32768.0));
 }
 
 void SdlAudio_StopAllVoices()

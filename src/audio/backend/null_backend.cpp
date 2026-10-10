@@ -92,3 +92,12 @@ void SoundBackendDisabled_StopAllVoices()
 
 {
 }
+
+/* Not in the original: level-raise entry of the disabled sound backend (the initial value of
+   g_SoundRaiseQuietSampleLevel until SdlAudio_Init installs SdlAudio_RaiseQuietSampleLevel): there is no sample,
+   so it does nothing.
+*/
+void SoundBackendDisabled_RaiseQuietSampleLevel(SoundVoiceSet *voiceSet)
+
+{
+}

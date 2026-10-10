@@ -164,5 +164,7 @@ void SdlAudio_StopVoice(SoundVoice *voice);
 bool SdlAudio_IsVoiceFinished(SoundVoice *voice);
 void SdlAudio_SetVoiceGains(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoice *voice);
 void SdlAudio_StopAllVoices();
+/* The movie soundtrack boost (not in the original): raises a quiet sample towards a common level, see audio.cpp. */
+void SdlAudio_RaiseQuietSampleLevel(SoundVoiceSet *voiceSet);
 
 #endif /* THANDOR_PLATFORM_SDL3_PLATFORM_H */
