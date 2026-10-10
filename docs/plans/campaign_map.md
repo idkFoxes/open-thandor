@@ -38,8 +38,8 @@ be started directly.
 - No change to the simulation, the savegame format (`.sve`, `campagne.hex`, `oldunit.hex`), the level and campaign
   formats or the network protocol.
 - No new campaign content and no campaign editor.
-- No keyboard navigation on the map in the first version (mouse only; see Q9).
-- No import of progress from existing savegames (see Q5).
+- No keyboard navigation on the map (mouse only; owner decision Q9).
+- No import of progress from existing savegames (owner decision Q5).
 - No cloud or per-user profile folder: the file lives in `save\` next to the executable, like the saves.
 
 ## 2. Owner decisions (approved concept, not changed by this plan)
@@ -401,7 +401,10 @@ self-test (`campaignmap`) pins the node positions of the four stock graphs to th
 | carry target without a valid snapshot | `Benötigt die Einheiten aus Mission N (<title>) - Mission N gewinnen.` (Start disabled) |
 | network game, carry target | `Im Netzwerkspiel nur über Mission N erreichbar.` (Start disabled, 7.4) |
 
-The button row labels are `<short name> <done>/<visible>`. Short names come from a project-text table keyed by the
+The button row labels are `<short name> <done>/<visible>`. A finished campaign (`done == visible`) gets a check
+mark after the count (Q11). The game font has no check glyph, so the control draws it as a small two-stroke
+line sprite in the label colour (selected colour when the button is selected), right of the text; the label is cut
+so the mark always fits. Short names come from a project-text table keyed by the
 `.cgn` base name (`tutorial` Tutorial, `hansolo` Die Invasion, `nimm2` Kyrrdon, `luke` Piraten). Any other campaign
 uses its full title (`TEXT_ID_CAMPAIGN_TITLE_BASE` + index), cut to the button width. Other languages: Q8.
 
@@ -678,7 +681,7 @@ warnings, self-tests, golden). Within a wave, no two packages touch the same fil
 
 | Id | Title | Files | Change | Size | Verify |
 |---|---|---|---|---|---|
-| CM12 | Map control | `src/ui/frontend/campaign_map_control.cpp` (new), vtable registration | Draw (6.3), hit test, select, double-click start | M | golden of the new page (CT8) |
+| CM12 | Map control | `src/ui/frontend/campaign_map_control.cpp` (new), vtable registration | Draw (6.3), hit test, select, double-click start; the check mark of a finished campaign on its button (5.5, Q11) | M | golden of the new page (CT8) |
 | CM13 | Campaign tab logic | `src/ui/frontend/scenario_selection.cpp`, `src/ui/frontend/page_actions.cpp` (button action slots), `src/ui/frontend/lifecycle.cpp` (bind textures/sounds of the new nodes) | `FrontendCampaignTab_Refresh`, button handler, texts, Start state, start-level argument, client view, fallback to the list (> 6 campaigns) | M | CT1-CT8; the `textedit` and `pixels` checks unchanged on the other tabs |
 
 ### Wave E: tests and docs (after D)
@@ -727,18 +730,18 @@ Self-tests (per package): `campaignprogress` (CM3), `campaignmap` (CM5), `uitemp
 | More than 6 campaigns from add-ons | buttons overflow | fallback to the old list view (Q6) |
 | Paths look heavy at UI scale 2+ | 1 logical px = N physical px | accepted (same as every frame); optional thin-line mode later |
 
-## 12. Open questions for the owner
+## 12. Owner decisions on the open questions (answered 2026-10-10)
 
-| # | Question | Recommendation |
+| # | Question | Decision |
 |---|---|---|
-| Q1 | Win rule: variant != 0 and the successor is not the mission itself (4.3). OK? | yes |
-| Q2 | Unlock missions the original chain reaches without a win (hansolo m15 loss -> m17), and missions of loaded campaign saves (rule 3 of 4.3)? | yes: the map should never lock a mission the player is playing |
-| Q3 | Mission numbers: `levelId - firstLevelId + 1` gives hansolo 1-25 (= file names), tutorial/nimm2/luke 1..n. Tutorial as 0..2 (file names t00-t02) instead? | 1..n |
-| Q4 | Network games: carry targets cannot be started from the map (no snapshot on the peers). Alternative: start them without units (the level ends at once). | disable Start, with the status line |
-| Q5 | Import progress once from existing campaign savegames (scan `save\*.sve` headers for campaign title and level title)? | not in v1; rule 3 unlocks a mission as soon as its save is played |
-| Q6 | More than 6 distinct campaigns (add-ons): fall back to the old list, or scroll the button row? | fall back to the list |
-| Q7 | A mission started from the map shows the opponent settings in the briefing (as the first mission does). Keep or hide? | keep (it is how the test aid already behaves; gives a way to adjust difficulty) |
-| Q8 | Short button names (Tutorial, Die Invasion, Kyrrdon, Piraten) are German project texts. Other game languages: full title or own short names? | full title cut to the button width for other languages until texts exist |
-| Q9 | Keyboard navigation on the map (arrows, Enter)? | later |
-| Q10 | The t00 restart leaves the campaign (original quirk, 4.2). Fix it (restart reloads t00 inside the campaign) or keep it? | keep; the map gives a way back |
-| Q11 | Should a finished campaign show a marker (e.g. the button label in the selected colour)? | no, `3/3` says it |
+| Q1 | Win rule: variant != 0 and the successor is not the mission itself (4.3). | yes |
+| Q2 | Unlock missions the original chain reaches without a win (hansolo m15 loss -> m17), and missions of loaded campaign saves (rule 3 of 4.3). | yes |
+| Q3 | Mission numbers `levelId - firstLevelId + 1` (hansolo 1-25, tutorial/nimm2/luke 1..n). | yes, 1..n |
+| Q4 | Network games: carry targets cannot be started from the map. | yes: Start disabled, with the status line |
+| Q5 | Import progress from existing campaign savegames. | no import; rule 3 unlocks a mission as soon as its save is played |
+| Q6 | More than 6 campaigns (add-ons). | fall back to the old list |
+| Q7 | Opponent settings in the briefing of a map-started mission. | keep |
+| Q8 | Other game languages. | full title cut to the button width until texts exist |
+| Q9 | Keyboard navigation on the map. | not needed (no keyboard control for the new selection) |
+| Q10 | The t00 restart leaves the campaign (original quirk). | keep |
+| Q11 | Marker for a finished campaign. | yes: a check mark on the campaign button (5.5, CM12) |
