@@ -1094,6 +1094,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestKeyMatch();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "campaignprogress") == 0) {
+        Thandor_SelfTestCampaignProgress();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "nativefile") == 0) {
         Thandor_SelfTestNativeFile();
         return 1;

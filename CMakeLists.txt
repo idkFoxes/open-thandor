@@ -122,6 +122,7 @@ add_executable(thandor WIN32
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
     src/gameplay/session/campaign_carryover.cpp
+    src/gameplay/session/campaign_progress.cpp
     src/gameplay/session/level.cpp
     src/gameplay/session/level_new.cpp
     src/gameplay/session/level_saved.cpp
@@ -541,6 +542,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/script.cpp
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp
+        src/platform/selftest/campaignprogress_selftest.cpp
         src/platform/selftest/hexscan_selftest.cpp
         src/platform/selftest/keymatch_selftest.cpp
         src/platform/selftest/nativefile_selftest.cpp
