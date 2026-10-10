@@ -49,7 +49,7 @@ static constexpr uint8_t CAMPAIGN_LEVEL_WIN_MOVIE_VARIANT = 1;
 /* One cached level file. triggers keeps (faction, selection, variant) of the active end triggers for the
    dev-tools dump. */
 struct CampaignLevelCacheEntry {
-    CampaignLevelInfo info;
+    CampaignLevelFileInfo info;
     std::vector<InGameEndConditionTriggerRecord8ReferenceView> activeTriggers;
 };
 
@@ -216,9 +216,9 @@ static void CampaignLevelInfo_Dump(const CampaignAsset *campaign,const CampaignL
 }
 #endif
 
-std::vector<CampaignLevelInfo> CampaignLevelInfo_Read(const CampaignAsset *campaign)
+std::vector<CampaignLevelFileInfo> CampaignLevelInfo_Read(const CampaignAsset *campaign)
 {
-  std::vector<CampaignLevelInfo> result;
+  std::vector<CampaignLevelFileInfo> result;
 
   if (campaign == nullptr || campaign->levelRecordCount < 1) {
     return result;
@@ -245,7 +245,7 @@ std::vector<CampaignLevelInfo> CampaignLevelInfo_Read(const CampaignAsset *campa
     if (cached == s_CampaignLevelCache.end()) {
       cached = s_CampaignLevelCache.emplace(key,CampaignLevelInfo_ReadLevel(levelPath)).first;
     }
-    CampaignLevelInfo info = cached->second.info;
+    CampaignLevelFileInfo info = cached->second.info;
     info.levelId = record.levelId; /* the same file may serve records of several campaigns */
     result.push_back(info);
 #ifdef THANDOR_DEV_TOOLS
