@@ -612,21 +612,26 @@ static void FrontendAdvancedSettingsPage_SelectChoice(UiNodeBase *selected,UiNod
 /* Not in the original: the note line with a GPU renderer running: the UI scale in use when auto chose it ("Auto:
    2x aktiv") or when it differs from the chosen one (a fixed scale lowered to keep the UI resolution at least
    640x480: "3x gewaehlt, 2x aktiv (Aufloesung zu klein)"; OPEN_THANDOR_UI_SCALE overriding the choice: without the
-   reason); else no text. */
+   reason); else no text. In English for every language but German, as the other project texts. */
 static TextResourceId FrontendAdvancedSettingsPage_UiScaleNote()
 {
   char note[96];
   const uint32_t chosen = SdlVideo_SavedUiScale();
   const uint32_t active = SdlVideo_AppliedUiScale();
+  const bool german = TextResource_ProjectTextsAreGerman(); /* else English, as the other project texts */
 
   if (chosen == PERSISTENT_UI_SCALE_AUTO) {
-    snprintf(note,sizeof(note),"UI-Skalierung Auto: %ux aktiv",active);
+    snprintf(note,sizeof(note),german ? "UI-Skalierung Auto: %ux aktiv" : "UI scale auto: %ux active",active);
   }
   else if (active < chosen) {
-    snprintf(note,sizeof(note),"UI-Skalierung: %ux gew\xE4hlt, %ux aktiv (Aufl\xF6sung zu klein)",chosen,active);
+    snprintf(note,sizeof(note),
+             german ? "UI-Skalierung: %ux gew\xE4hlt, %ux aktiv (Aufl\xF6sung zu klein)"
+                    : "UI scale: %ux chosen, %ux active (resolution too small)",
+             chosen,active);
   }
   else if (active != chosen) {
-    snprintf(note,sizeof(note),"UI-Skalierung: %ux gew\xE4hlt, %ux aktiv",chosen,active);
+    snprintf(note,sizeof(note),german ? "UI-Skalierung: %ux gew\xE4hlt, %ux aktiv" : "UI scale: %ux chosen, %ux active",
+             chosen,active);
   }
   else {
     return TEXT_RESOURCE_ID_NONE;

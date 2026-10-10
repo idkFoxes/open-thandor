@@ -65,7 +65,8 @@ enum {
   INI_KIND_GAIN,  /* Q15 volume, decimal; the comment also shows the percentage */
   INI_KIND_ENUM,  /* one of names[] (index = value) */
   INI_KIND_NAME,  /* PERSISTENT_SETTINGS_NAME_BYTES of UTF-16, written as quoted UTF-8 */
-  INI_KIND_RAW    /* reserved dword of the original file, written as 0x... and only when nonzero */
+  INI_KIND_RAW,   /* reserved dword of the original file, written as 0x... and only when nonzero */
+  INI_KIND_LANGUAGE /* telephone country code: auto, de, en, fr, it, es (s_IniLanguages) or a number */
 };
 
 struct PersistentIniKey {
@@ -86,6 +87,16 @@ static const char *const s_IniTextureQualityNames[] = {"high", "medium", "low"};
 static const char *const s_IniGpuRasterizationNames[] = {"smooth", "exact"};
 static const char *const s_IniUiScaleNames[] = {"auto", "1", "2", "3"};
 static const char *const s_IniVsyncNames[] = {"on", "off"};
+
+/* the text languages of [game] language (the value is the telephone country code, see LocaleTelephoneCountryCode) */
+struct PersistentIniLanguage {
+  const char *name;
+  uint32_t countryCode;
+};
+static const PersistentIniLanguage s_IniLanguages[] = {
+  {"auto", 0}, {"de", 49}, {"en", 44}, {"fr", 33}, {"it", 39}, {"es", 34}};
+/* the key name of the language until it became readable ([game] language_country_code = 49), still read */
+static const char s_IniLanguageOldKey[] = "language_country_code";
 
 #define INI_ENUM(names) names, (uint32_t)(sizeof names / sizeof names[0])
 
@@ -157,8 +168,9 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "player name, at most 20 characters", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_GAME_NAME, INI_KIND_NAME, "game", "game_name",
    "name of a hosted network game, at most 20 characters", 0, 0, nullptr, 0},
-  {PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, INI_KIND_UINT, "game", "language_country_code",
-   "text language as telephone country code (49 German, 44 English, ...), 0 = from Windows", 0, 0, nullptr, 0},
+  {PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, INI_KIND_LANGUAGE, "game", "language",
+   "text language: auto (default; from Windows), de, en, fr, it or es (another telephone country code as a number); "
+   "the game's own texts are German for de, English otherwise", 0, 0, nullptr, 0},
 
   {PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, INI_KIND_UINT, "network", "players",
    "player count of a hosted network game (default 4)", 0, 0, nullptr, 0},
@@ -355,6 +367,22 @@ uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask
         PersistentIni_Append(&writer, "%u", value);
       }
       break;
+    case INI_KIND_LANGUAGE: {
+      const char *name = nullptr;
+
+      for (const PersistentIniLanguage &language : s_IniLanguages) {
+        if (language.countryCode == value) {
+          name = language.name;
+        }
+      }
+      if (name != nullptr) {
+        PersistentIni_Append(&writer, "%s", name);
+      }
+      else {
+        PersistentIni_Append(&writer, "%u", value);
+      }
+      break;
+    }
     case INI_KIND_NAME:
       PersistentIni_Append(&writer, "\"");
       PersistentIni_AppendName(&writer, image + key->offset);
@@ -618,7 +646,8 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
       bool parsed = false;
 
       if (!PersistentIni_Equals(sectionBegin, sectionEnd, key->section) ||
-          !PersistentIni_Equals(keyBegin, keyEnd, key->key)) {
+          (!PersistentIni_Equals(keyBegin, keyEnd, key->key) &&
+           ((key->kind != INI_KIND_LANGUAGE) || !PersistentIni_Equals(keyBegin, keyEnd, s_IniLanguageOldKey)))) {
         continue;
       }
       if (key->kind == INI_KIND_NAME) {
@@ -665,6 +694,17 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
         }
         break;
       }
+      case INI_KIND_LANGUAGE:
+        for (const PersistentIniLanguage &language : s_IniLanguages) {
+          if (PersistentIni_Equals(valueBegin, valueEnd, language.name)) {
+            value = language.countryCode;
+            parsed = true;
+          }
+        }
+        if (!parsed) {
+          parsed = PersistentIni_ParseNumber(valueBegin, valueEnd, &value);
+        }
+        break;
       default:
         parsed = PersistentIni_ParseNumber(valueBegin, valueEnd, &value);
         break;
@@ -986,4 +1026,14 @@ void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSett
       (settingsOffsetBytes + 4 < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
     s_PersistentSettingsPresentMask |= PersistentSettings_DwordMask(settingsOffsetBytes,4);
   }
+}
+
+/* Not in the original: the text language chosen in the menus (telephone country code, 0 = from Windows): sets
+   g_LocaleCountryCodeOverride, which every text page loaded from now on uses, and the settings dword the next
+   PersistentSettings_Flush saves as [game] language. Does not rebind loaded text pages (TextResource_SelectLanguage,
+   Game_ApplyLanguage). */
+void PersistentSettings_WriteLanguage(uint32_t countryCode)
+{
+  g_LocaleCountryCodeOverride = countryCode;
+  PersistentSettings_WriteChosen(countryCode,PERSISTENT_SETTING_LOCALE_COUNTRY_CODE);
 }

@@ -55,6 +55,11 @@
                     texture cache without a GPU device (uiatlas_selftest.cpp): logs pages, texels, packing fill and
                     a hash of the converted texels, writes uiatlas.txt (one line per asset) and checks per-frame
                     validation, re-conversion of a changed image, streaming regions and release eviction
+     language       the run-time language switch (language_selftest.cpp): binds the startup text pages from the
+                    packages of the current directory, switches through every language of menue.str, auto, a country
+                    without a block and back; checks that every id the German block has resolves (non-empty where the
+                    German text is), the bound block and project text language, no allocation, the same texts after
+                    switching back; one line per failed check, one per language and a summary
      crash          writes to address 0 to exercise the crash handler, then (if it returns) starts the game
    The differential tests that ran the original machine code (stretchcmp, relaxcmp and the movie decoder
    compare) needed the 32-bit original exe and were removed with the 32-bit build; they had confirmed those
@@ -84,6 +89,9 @@ void Thandor_SelfTestCampaignMap();
 
 /* OPEN_THANDOR_SELFTEST=uitemplate (uitemplate_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestUiTemplate();
+
+/* OPEN_THANDOR_SELFTEST=language (language_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestLanguage();
 
 /* OPEN_THANDOR_SELFTEST=uiatlas (uiatlas_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestUiAtlas();

@@ -254,8 +254,8 @@ link_panel_options = 0x2
 player_name = "Spieler"
 ; name of a hosted network game, at most 20 characters
 game_name = "Thandorspiel"
-; text language as telephone country code (49 German, 44 English, ...), 0 = from Windows
-language_country_code = 0
+; text language: auto (default; from Windows), de, en, fr, it or es (another telephone country code as a number); the game's own texts are German for de, English otherwise
+language = auto
 
 [network]
 ; player count of a hosted network game (default 4)

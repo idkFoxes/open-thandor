@@ -794,7 +794,7 @@ static void Thandor_SelfTestSettings()
         "model_detail = -3\r\n[sound]\r\nmusic = false\r\neffects_volume = 50%\r\nmusic_volume = 0x4000\r\n"
         "movie_volume = 37.5 %\r\n[game]\r\nplayer_name = \"Ren\xC3\xA9 \xF0\x9F\x99\x82\"\r\n"
         "game_name = abcdefghijklmnopqrstuvwxyz\r\nmap_mouse_options = 0x5\r\nspeed_percent = oops\r\n"
-        "[nosection]\r\nplayers = 7\r\n";
+        "language_country_code = 39\r\n[nosection]\r\nplayers = 7\r\n";
     uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
     uint8_t expected[PERSISTENT_SETTINGS_IMAGE_BYTES];
     uint8_t parsed[PERSISTENT_SETTINGS_IMAGE_BYTES];
@@ -822,6 +822,7 @@ static void Thandor_SelfTestSettings()
     SELFTEST_SETTING(PERSISTENT_SETTING_MUSIC_GAIN, 0x4000);
     SELFTEST_SETTING(PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN, 0x3000);
     SELFTEST_SETTING(PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS, 5);
+    SELFTEST_SETTING(PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, 39); /* the old key name, still read */
 #undef SELFTEST_SETTING
     memcpy(expected + PERSISTENT_SETTING_PLAYER_NAME, playerName, sizeof playerName);
     memcpy(expected + PERSISTENT_SETTING_GAME_NAME, "a\0b\0c\0d\0e\0f\0g\0h\0i\0j\0k\0l\0m\0n\0o\0p\0q\0r\0s\0t\0", 40);
@@ -838,6 +839,33 @@ static void Thandor_SelfTestSettings()
                                                   PersistentSettings_ParseIni(text, length, parsed));
     Thandor_Log("settings: fixed text %s (present mask %016llX)", differences == 0 ? "ok" : "MISMATCH",
                 (unsigned long long)mask);
+    {
+        /* [game] language: the names, a number, the old key name, and the names written back */
+        static const struct {
+            const char *text;
+            uint32_t countryCode;
+            const char *written;
+        } languages[] = {{"[game]\r\nlanguage = auto\r\n", 0, "language = auto\r\n"},
+                         {"[game]\r\nlanguage = DE\r\n", 49, "language = de\r\n"},
+                         {"[game]\r\nlanguage = en ; comment\r\n", 44, "language = en\r\n"},
+                         {"[game]\r\nlanguage = es\r\n", 34, "language = es\r\n"},
+                         {"[game]\r\nlanguage = 7\r\n", 7, "language = 7\r\n"},
+                         {"[game]\r\nlanguage_country_code = 33\r\n", 33, "language = fr\r\n"}};
+        unsigned languageDifferences = 0;
+        for (const auto &language : languages) {
+            uint32_t value = 0xFFFFFFFF;
+            memset(parsed, 0, sizeof parsed);
+            mask = PersistentSettings_ParseIni(language.text, (uint32_t)strlen(language.text), parsed);
+            memcpy(&value, parsed + PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, 4);
+            length = PersistentSettings_FormatIni(parsed, mask, text, sizeof text);
+            if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_LOCALE_COUNTRY_CODE / 4)) ||
+                (value != language.countryCode) || (strstr(text, language.written) == nullptr)) {
+                Thandor_Log("settings: language %u MISMATCH (value %u)", language.countryCode, value);
+                languageDifferences++;
+            }
+        }
+        Thandor_Log("settings: language key %s", languageDifferences == 0 ? "ok" : "MISMATCH");
+    }
 
     file = fopen("thandor.dat", "rb");
     if (file == nullptr) {
@@ -1128,6 +1156,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != nullptr && strcmp(name, "icon") == 0) {
         Thandor_SelfTestIcon();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "language") == 0) {
+        Thandor_SelfTestLanguage();
         return 1;
     }
     if (name != nullptr && strcmp(name, "uiatlas") == 0) {

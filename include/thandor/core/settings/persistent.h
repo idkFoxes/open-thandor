@@ -139,6 +139,10 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
    found it in the executable directory). */
 const uint16_t *PersistentSettings_IniPathUtf16();
 
+/* Not in the original: stores the text language chosen in the menus (telephone country code, 0 = from Windows) in
+   g_LocaleCountryCodeOverride and the settings ([game] language in thandor.ini, saved by the next Flush). */
+void PersistentSettings_WriteLanguage(uint32_t countryCode);
+
 extern uint32_t g_LocaleCountryCodeOverride;
 
 #endif /* THANDOR_CORE_SETTINGS_PERSISTENT_H */
