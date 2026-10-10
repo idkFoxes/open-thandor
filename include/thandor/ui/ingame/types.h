@@ -220,8 +220,8 @@ struct WorldRuntimeContext {
     Ptr32<struct WorldObjectRecord> objectArray; // Attached world-object array.
     RuntimeToken pendingToken; // Pending world token.
     struct WorldMotionState motion; // Live and target motion state.
-    UQ12 minimumCameraDistanceQ12; // Lower Q12 camera/world-motion distance clamp. Initialized to 0x8000 by both session initializers and used as the lower bound by motion zoom/clamp paths.
-    UQ12 maximumCameraDistanceQ12; // Upper Q12 camera/world-motion distance clamp. Initialized to 0x13000 by both session initializers and used as the upper clamp and terrain/secondary ray-distance limit.
+    UQ12 minimumCameraDistanceQ12; // Lower Q12 camera/world-motion distance clamp. Initialized to INGAME_CAMERA_MINIMUM_DISTANCE_Q12 (6.0; the original 8.0) by both session initializers and used as the lower bound by motion zoom/clamp paths.
+    UQ12 maximumCameraDistanceQ12; // Upper Q12 camera/world-motion distance clamp. Initialized to INGAME_CAMERA_MAXIMUM_DISTANCE_Q12 (32.0; the original 19.0) by both session initializers and used as the upper clamp and terrain/secondary ray-distance limit.
     UiPixelCoordinate pointerCaptureX; // Pointer-capture X anchor. World-camera pointer input subtracts this from pointerX and warps the pointer back here after each handled delta.
     UiPixelCoordinate pointerCaptureY; // Pointer-capture Y anchor. World-camera pointer input subtracts this from pointerY and warps the pointer back here after each handled delta.
     uint32_t reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.
@@ -724,8 +724,8 @@ struct WorldRuntimeExtendedMapControlView {
     Ptr32<struct WorldObjectRecord> objectArray;
     RuntimeToken pendingToken;
     struct WorldMotionState motion;
-    UQ12 minimumCameraDistanceQ12; // Lower Q12 camera/world-motion distance clamp. Initialized to 0x8000 by both session initializers and used as the lower bound by motion zoom/clamp paths.
-    UQ12 maximumCameraDistanceQ12; // Upper Q12 camera/world-motion distance clamp. Initialized to 0x13000 by both session initializers and used as the upper clamp and terrain/secondary ray-distance limit.
+    UQ12 minimumCameraDistanceQ12; // Lower Q12 camera/world-motion distance clamp. Initialized to INGAME_CAMERA_MINIMUM_DISTANCE_Q12 (6.0; the original 8.0) by both session initializers and used as the lower bound by motion zoom/clamp paths.
+    UQ12 maximumCameraDistanceQ12; // Upper Q12 camera/world-motion distance clamp. Initialized to INGAME_CAMERA_MAXIMUM_DISTANCE_Q12 (32.0; the original 19.0) by both session initializers and used as the upper clamp and terrain/secondary ray-distance limit.
     UiPixelCoordinate pointerCaptureX; // Pointer-capture X anchor. World-camera pointer input subtracts this from pointerX and warps the pointer back here after each handled delta.
     UiPixelCoordinate pointerCaptureY; // Pointer-capture Y anchor. World-camera pointer input subtracts this from pointerY and warps the pointer back here after each handled delta.
     uint32_t reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.

@@ -292,8 +292,8 @@ bool InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,InG
        THANDOR_SLOT(InGameUiRuntime_ResetNotificationButtonCursor);
   (inGameRoot->worldRuntime).selection.dispatchWorldContextActionCallback =
        InGameUiRuntime_DispatchWorldContextActionCallback;
-  (inGameRoot->worldRuntime).minimumCameraDistanceQ12 = 8 * Q12_ONE;
-  (inGameRoot->worldRuntime).maximumCameraDistanceQ12 = 19 * Q12_ONE;
+  (inGameRoot->worldRuntime).minimumCameraDistanceQ12 = INGAME_CAMERA_MINIMUM_DISTANCE_Q12;
+  (inGameRoot->worldRuntime).maximumCameraDistanceQ12 = INGAME_CAMERA_MAXIMUM_DISTANCE_Q12;
   (inGameRoot->worldRuntime).motion.minimumPitchAngle = INGAME_CAMERA_MINIMUM_PITCH_ANGLE16;
   (inGameRoot->worldRuntime).motion.maximumPitchAngle = INGAME_CAMERA_MAXIMUM_PITCH_ANGLE16;
   (inGameRoot->worldRuntime).tickSpinLock = &g_InGameStateTickSpinLock;
