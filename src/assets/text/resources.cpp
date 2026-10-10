@@ -81,6 +81,11 @@ static uint16_t g_ProjectTextCampaignHeadingLine[128] = {};
 static uint16_t g_ProjectTextCampaignStatusLine[160] = {};
 /* the campaign button labels (TextResource_SetCampaignButtonLabel) */
 static uint16_t g_ProjectTextCampaignButtonLabels[TEXT_ID_CAMPAIGN_BUTTON_LABEL_COUNT][TEXT_ID_CAMPAIGN_BUTTON_LABEL_UNITS] = {};
+/* the language choice of the advanced settings page: box title, the "from Windows" choice (bright like the other
+   choices) and the language button's label (TextResource_SetLanguageButtonLabel) */
+static uint16_t g_ProjectTextSprache[] = {'S','p','r','a','c','h','e',':',0};
+static uint16_t g_ProjectTextAutomatisch[] = {PROJECT_TEXT_BRIGHT,'A','u','t','o','m','a','t','i','s','c','h',0};
+static uint16_t g_ProjectTextLanguageButtonLabel[TEXT_ID_LANGUAGE_BUTTON_LABEL_UNITS] = {};
 static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
     g_ProjectTextAnzeigemodus, g_ProjectTextFenster, g_ProjectTextVollbildfenster, g_ProjectTextVollbild,
     g_ProjectTextAnzeige, g_ProjectTextAnzeigeeinstellungen, g_ProjectTextErweitert, g_ProjectTextErweiterteEinstellungen,
@@ -93,7 +98,46 @@ static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
     g_ProjectTextCampaignMissionHeading, g_ProjectTextCampaignLegendCarry, g_ProjectTextCampaignTutorial, g_ProjectTextCampaignInvasion,
     g_ProjectTextCampaignKyrrdon, g_ProjectTextCampaignPiraten, g_ProjectTextCampaignHeadingLine, g_ProjectTextCampaignStatusLine,
     g_ProjectTextCampaignButtonLabels[0], g_ProjectTextCampaignButtonLabels[1], g_ProjectTextCampaignButtonLabels[2],
-    g_ProjectTextCampaignButtonLabels[3], g_ProjectTextCampaignButtonLabels[4], g_ProjectTextCampaignButtonLabels[5]};
+    g_ProjectTextCampaignButtonLabels[3], g_ProjectTextCampaignButtonLabels[4], g_ProjectTextCampaignButtonLabels[5],
+    g_ProjectTextSprache, g_ProjectTextAutomatisch, g_ProjectTextLanguageButtonLabel};
+
+/* Not in the original: the language names (TEXT_ID_LANGUAGE_NAME_BASE..), each in its own language, bright like the
+   choices; the same in every language. */
+static uint16_t g_LanguageNameDeutsch[] = {PROJECT_TEXT_BRIGHT,'D','e','u','t','s','c','h',0};
+static uint16_t g_LanguageNameEnglish[] = {PROJECT_TEXT_BRIGHT,'E','n','g','l','i','s','h',0};
+static uint16_t g_LanguageNameFrancais[] = {PROJECT_TEXT_BRIGHT,'F','r','a','n',0x00E7,'a','i','s',0};
+static uint16_t g_LanguageNameItaliano[] = {PROJECT_TEXT_BRIGHT,'I','t','a','l','i','a','n','o',0};
+static uint16_t g_LanguageNameEspanol[] = {PROJECT_TEXT_BRIGHT,'E','s','p','a',0x00F1,'o','l',0};
+static uint16_t *const g_LanguageNames[TEXT_ID_LANGUAGE_NAME_COUNT] = {
+    g_LanguageNameDeutsch, g_LanguageNameEnglish, g_LanguageNameFrancais, g_LanguageNameItaliano, g_LanguageNameEspanol};
+/* the telephone country codes of g_LanguageNames */
+static const LocaleTelephoneCountryCode g_LanguageNameCountryCodes[TEXT_ID_LANGUAGE_NAME_COUNT] = {
+    LocaleTelephoneCountryCode::LOCALE_COUNTRY_GERMANY, LocaleTelephoneCountryCode::LOCALE_COUNTRY_GREAT_BRITAIN,
+    LocaleTelephoneCountryCode::LOCALE_COUNTRY_FRANCE, LocaleTelephoneCountryCode::LOCALE_COUNTRY_ITALY,
+    LocaleTelephoneCountryCode::LOCALE_COUNTRY_SPAIN};
+
+TextResourceId TextResource_LanguageNameId(uint32_t countryCode)
+{
+  for (int index = 0; index < TEXT_ID_LANGUAGE_NAME_COUNT; index++) {
+    if (static_cast<uint32_t>(g_LanguageNameCountryCodes[index]) == countryCode) {
+      return TEXT_ID_LANGUAGE_NAME_BASE + index;
+    }
+  }
+  return TEXT_RESOURCE_ID_NONE;
+}
+
+TextResourceId TextResource_SetLanguageButtonLabel(const uint16_t *text)
+{
+  size_t length = 0;
+
+  if (text != nullptr) {
+    for (; (text[length] != 0) && (length + 1 < TEXT_ID_LANGUAGE_BUTTON_LABEL_UNITS); length++) {
+      g_ProjectTextLanguageButtonLabel[length] = text[length];
+    }
+  }
+  g_ProjectTextLanguageButtonLabel[length] = 0;
+  return TEXT_ID_LANGUAGE_BUTTON_LABEL;
+}
 
 void TextResource_SetUiScaleNote(const char *text)
 {
@@ -799,6 +843,10 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     if (*outText == nullptr) {
       *outText = g_ProjectTexts[resourceId - TEXT_ID_PROJECT_BASE];
     }
+    return true;
+  }
+  if ((resourceId >= TEXT_ID_LANGUAGE_NAME_BASE) && (resourceId < TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT)) {
+    *outText = g_LanguageNames[resourceId - TEXT_ID_LANGUAGE_NAME_BASE]; /* not in the original */
     return true;
   }
   if ((resourceId >= TEXT_ID_KEY_BINDING_BASE) && (resourceId < TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT)) {

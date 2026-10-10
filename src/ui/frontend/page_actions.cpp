@@ -10,6 +10,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/ui/frontend/campaign_tab.h>
 #include <thandor/ui/frontend/key_bindings_page.h>
+#include <thandor/ui/frontend/language_choice.h>
 
 /* Slot adapters for the handlers below whose own signature differs from the handler slot's void (void *)
    (calling through the slot type directly would be undefined behaviour). Each does the conversion the call
@@ -175,6 +176,11 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
     /* not in the original: action 0x2061, the options page's "Tastenbelegung" button */
     .handlers61 = {
         /* 97 */ UI_SLOT(FrontendKeyBindingsAction_OpenPage)
+    },
+    /* not in the original: actions 0x2062-0x2063, the language choice of the advanced settings page */
+    .handlers62_63 = {
+        /* 98 */ UI_SLOT(FrontendLanguageAction_ToggleList),
+        /* 99 */ UI_SLOT(FrontendLanguageAction_Select)
     }};
 
 /* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of

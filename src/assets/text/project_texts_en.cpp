@@ -8,8 +8,8 @@
 /* The English texts of open-thandor's own controls (TEXT_ID_PROJECT_BASE..), shown for every language but German
    (TextResource_TryResolve; the German texts are in resources.cpp). Same order and form as the German ones: the
    choices start with the opcode "colour from palette entry 3", the titles are plain. The texts filled in at run time
-   (UI scale note, campaign map lines, campaign button labels) have no entry here; their buffers serve every
-   language. */
+   (UI scale note, campaign map lines, campaign button labels, language button label) have no entry here; their
+   buffers serve every language. */
 
 #include <thandor/assets/text/resources.h>
 #include <thandor/assets/text/richtext.h>
@@ -81,6 +81,8 @@ auto s_CampaignTutorial = Plain(u"Tutorial");
 auto s_CampaignInvasion = Plain(u"The Invasion");
 auto s_CampaignKyrrdon = Plain(u"Kyrrdon");
 auto s_CampaignPirates = Plain(u"Pirates");
+auto s_LanguageTitle = Plain(u"Language:");
+auto s_LanguageAuto = Bright(u"Automatic");
 
 /* index = resource id - TEXT_ID_PROJECT_BASE; nullptr: no English text (the German text or buffer is used) */
 uint16_t *const s_ProjectTextsEnglish[] = {
@@ -93,8 +95,11 @@ uint16_t *const s_ProjectTextsEnglish[] = {
     s_CampaignDone.data(), s_CampaignDoneCarry.data(), s_CampaignUnlockedFirst.data(), s_CampaignUnlocked.data(),
     s_CampaignUnlockedBranch.data(), s_CampaignLocked.data(), s_CampaignNeedsCarry.data(),
     s_CampaignNetworkCarry.data(), s_CampaignMissionHeading.data(), s_CampaignLegendCarry.data(),
-    s_CampaignTutorial.data(), s_CampaignInvasion.data(), s_CampaignKyrrdon.data(), s_CampaignPirates.data()
-    /* 38..45: the filled-in campaign map lines and button labels */};
+    s_CampaignTutorial.data(), s_CampaignInvasion.data(), s_CampaignKyrrdon.data(), s_CampaignPirates.data(),
+    /* 38..45: the filled-in campaign map lines and button labels */
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+    s_LanguageTitle.data(), s_LanguageAuto.data()
+    /* 48: the language button's label (TextResource_SetLanguageButtonLabel) */};
 
 } // namespace
 

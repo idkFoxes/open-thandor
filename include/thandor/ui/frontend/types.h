@@ -468,6 +468,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers5B_5F[5]; // Not in the original: action IDs 0x205B-0x205F (the advanced settings page).
     Ptr32<void (void *)> handlers60[1]; // Not in the original: action ID 0x2060 (the campaign buttons of the campaign tab).
     Ptr32<void (void *)> handlers61[1]; // Not in the original: action ID 0x2061 (the options page's "Tastenbelegung" button).
+    Ptr32<void (void *)> handlers62_63[2]; // Not in the original: action IDs 0x2062-0x2063 (the language choice of the advanced settings page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1036,8 +1037,8 @@ struct FrontendCampaignMapControl {
 
 /* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
    nodes of the advanced settings page, plus the 11 nodes of the campaign map, plus the 7 nodes of the key binding
-   page). FrontendUi_Image(root)->node is the node in a copy of it (or a node's <node>_prefix), typed as its
-   control. */
+   page, plus the 11 nodes of the language choice). FrontendUi_Image(root)->node is the node in a copy of it (or a
+   node's <node>_prefix), typed as its control. */
 struct FrontendUiImage {
     UiPanelControl frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
     UiLayoutContainerControl<2> frontendViewModeStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack: page 0 = menu room (3D room view, dialog page stack, top/bottom bars), page 1 = full-screen movie view. */
@@ -1340,6 +1341,17 @@ struct FrontendUiImage {
     UiScrollableControl keyBindingsScroller; /* +7EC8 g_UiScrollableControlVtable: Scroll frame of the key binding list. */
     UiListControl keyBindingsList; /* +7F58 g_UiListControlVtable: Key binding rows (key | action, section titles highlighted); suppressed: no selection, no focus. */
     UiListColumn keyBindingsList_column2[1]; /* +7FCC: the list's second column (action) */
+    /* Not in the original (open-thandor): the language choice of the advanced settings page (frontend only, the
+       nodes are appended to advancedSettingsPage after advancedNoteLabel). A titled box "Sprache:" with one button
+       showing the chosen language; the button opens the list: a page-sized layer (the last child of the page, so it
+       is drawn and hit first) holding a window-backed titled box with one radio row per language. The layer is
+       linked into the page only while the list is open (ui/frontend/language_choice.cpp). */
+    UiTitledWindowControl advancedLanguageGroup; /* +7FD4 g_UiTitledWindowControlVtable: Box "Sprache:" in the right column. */
+    UiFramedTextButtonControl advancedLanguageButton; /* +8028 g_UiFramedTextButtonControlVtable: The chosen language; opens the list (action FRONTEND_ACTION_LANGUAGE_LIST). */
+    UiPanelControl advancedLanguageLayer; /* +8088 g_FrontendLanguageListLayerVtable: Page-sized layer of the open list; a press beside the list or Escape closes it. */
+    UiPanelControl advancedLanguagePanel; /* +80E0 g_UiPanelControlVtable: Window background of the list (tiled interior). */
+    UiTitledWindowControl advancedLanguageBox; /* +8138 g_UiTitledWindowControlVtable: Box "Sprache:" of the list. */
+    UiTextButtonControl advancedLanguageChoices[6]; /* +818C g_UiTextButtonControlVtable: Radio rows "Automatisch" and the available languages (action FRONTEND_ACTION_LANGUAGE_SELECT). */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is
