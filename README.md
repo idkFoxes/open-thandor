@@ -49,7 +49,7 @@ You need an **installed full version of Thandor** and **64-bit Windows 10 or 11*
 <img src="docs/images/installer-ready.png" width="260" alt="Installer: ready to install">
 
 - The installer keeps your old `thandor.exe` as `thandor-1.05.exe`. Uninstalling ("Apps" in Windows, entry
-  "Thandor Patch 7") puts it back. Patch 7 installs over Patch 6 (the same entry).
+  "Thandor Patch 7") puts it back.
 - Your saves, your settings and the game data (`*.PCK`, movies) are never changed. Saves of the original game load,
   and the game still writes saves in the original format.
 - The installer is not signed, so Windows SmartScreen may warn ("More info" -> "Run anyway").

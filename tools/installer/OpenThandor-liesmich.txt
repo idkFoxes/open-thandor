@@ -6,7 +6,8 @@ Was ist das?
 ------------
 Open Thandor ist eine quelloffene Neuumsetzung des Spiels Thandor (Innonics,
 1999) in C++ für 64-Bit-Windows. Dieser Patch ersetzt nur die Programmdatei
-thandor.exe Ihrer vorhandenen Thandor-Installation (Version 1.05 / Patch 5).
+thandor.exe Ihrer vorhandenen Thandor-Installation (Vollversion; Patch 5 wird
+nicht vorausgesetzt).
 Spieldaten, Karten, Filme, Spielstände und Einstellungen bleiben, wie sie sind.
 
 Projekt und Fehlermeldungen: https://github.com/idkFoxes/open-thandor

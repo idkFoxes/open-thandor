@@ -270,10 +270,9 @@ table in `persistent.cpp` maps to one offset. The self-test `OPEN_THANDOR_SELFTE
 ## Patch installer
 
 `Thandor-Patch-7.exe` ("Thandor Patch 7", version 1.0.7) installs a release build onto an existing Thandor
-installation, like the original `Thandor-Patch-5.exe` (version 1.05) did. The patch number is the last part of the
-version (Patch 6 was 1.0.6, Patch 7 is 1.0.7; `thandor-patch.iss` derives it from `AppVersion`); every Open Thandor
-patch keeps the same Inno `AppId`, so a newer one installs over an older one (one uninstall entry, renamed; the
-`thandor-1.05.exe` backup of the first install is kept); plan and design in
+installation (a full version of Thandor; Patch 5 is not required), like the original `Thandor-Patch-5.exe`
+(version 1.05) did. The patch number is the last part of the version (`thandor-patch.iss` derives it from
+`AppVersion`: 1.0.7 is Patch 7); plan and design in
 [plans/step10_installer.md](plans/step10_installer.md). It is made with **Inno Setup 7** (free for non-commercial
 use, [jrsoftware.org](https://jrsoftware.org/isinfo.php); the per-user install in
 `%LOCALAPPDATA%\Programs\Inno Setup 7` is enough) and **Python 3**:
