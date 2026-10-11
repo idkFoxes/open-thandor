@@ -8,6 +8,7 @@
 #include <thandor/core/bytes.h>
 #include <thandor/ui/frontend/session.h>
 #include <algorithm>
+#include <atomic>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -339,9 +340,12 @@ void FrontendSession_PeriodicTick()
     InGameTick_NetworkTickCountdown().store(INGAME_TIMER_TICKS_PER_SIMULATION_STEP,std::memory_order_relaxed);
   }
   g_SessionNetworkTickCounter++;
-  if ((Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) &&
+  /* The original reads the in-game root unchecked; bounded here because it is null outside a session (the hook
+     and the timer are only installed while one runs, so this only drops a tick that has no movie to count). The
+     counter goes through std::atomic_ref: Frontend_PlaySelectedEndMovie decrements it on the main thread. */
+  if ((Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING)) && (inGameRoot != nullptr) &&
      (inGameRoot->activeEndMovieRuntime != nullptr)) {
-    g_EndMoviePendingTicks++;
+    std::atomic_ref<uint32_t>(g_EndMoviePendingTicks).fetch_add(1);
   }
   g_SpinLockRelease(&g_InGameStateTickSpinLock);
 }

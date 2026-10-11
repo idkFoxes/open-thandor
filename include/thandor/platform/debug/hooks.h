@@ -10,8 +10,8 @@
 
 /* The one interface between the game and the developer tools (src/platform/debug, src/platform/selftest).
 
-   The tools are compiled in only with the CMake option THANDOR_DEV_TOOLS (default OFF; preset "test",
-   build-test). Then the hooks below are functions in src/platform/debug/hooks.cpp, and the tools are switched on
+   The tools are compiled in only with the CMake option THANDOR_DEV_TOOLS (default OFF; preset "mingw-test",
+   build-mingw-test). Then the hooks below are functions in src/platform/debug/hooks.cpp, and the tools are switched on
    at run time by OPEN_THANDOR_* environment variables (docs/BUILDING.md): self-tests, input scripts, automatic
    screenshots, the determinism state hash, campaign starts and AUTOWIN, the level-script log, movie player,
    dump and compare, windowed mode, a second instance, UDP port and datagram log. Without a variable a hook
@@ -50,10 +50,6 @@ enum DebugProfileSection {
 };
 
 #ifdef THANDOR_DEV_TOOLS
-
-#ifdef _MSC_VER
-#include <intrin.h> /* _ReturnAddress */
-#endif
 
 /* --- process --- */
 /* WinMain, before ProcessEntry: runs the self-test OPEN_THANDOR_SELFTEST names; nonzero when one ran (the
@@ -147,11 +143,7 @@ struct DebugProfileScope {
   DebugProfileScope &operator=(const DebugProfileScope &) = delete;
 };
 #define DebugHook_ProfileScope(section) DebugProfileScope debugProfileScope_(section)
-#ifdef _MSC_VER
-#define DebugHook_NoteOutsideStep(what) DebugHook_NoteOutsideStepFrom((what), _ReturnAddress())
-#else
 #define DebugHook_NoteOutsideStep(what) DebugHook_NoteOutsideStepFrom((what), __builtin_return_address(0))
-#endif
 
 #else /* !THANDOR_DEV_TOOLS: no developer tools, the original behaviour */
 

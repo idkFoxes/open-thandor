@@ -1,9 +1,9 @@
 """Symbolizes the last entry of crash_raw.log (written by the crash handler without the CRT) with the build that
-crashed: its linker map (MSVC: link with /MAP, e.g. set LINK=/MAP before building; GCC: the build writes
-thandor.map, which lists only global symbols) or, better for a GCC build, the executable itself through addr2line
-(MinGW's binutils on the PATH; it reads the DWARF line info and knows static functions too).
+crashed: its linker map (thandor.map, written by the build, lists only global symbols) or, better, the executable
+itself through addr2line (MinGW's binutils on the PATH; it reads the DWARF line info of thandor.debug next to the
+executable and knows static functions too).
 
-usage: symbolize.py crash_raw.log build-rel/thandor.map
+usage: symbolize.py crash_raw.log build-mingw-release/thandor.map
        symbolize.py crash_raw.log build-mingw-test/thandor.exe"""
 import bisect
 import re
@@ -38,13 +38,9 @@ if symbolsource.lower().endswith('.exe'):
 else:
     symbols = []
     for line in open(symbolsource, errors='replace'):
-        m = re.match(r'\s*\d{4}:[0-9a-f]{8}\s+(\S+)\s+([0-9a-f]{8,16})', line)  # MSVC /MAP
-        if not m:
-            m2 = re.match(r'\s+0x([0-9a-f]{16})\s+([A-Za-z_][^\s=]*)\s*$', line)  # GNU ld -Map
-            if m2:
-                symbols.append((int(m2.group(1), 16), m2.group(2)))
-            continue
-        symbols.append((int(m.group(2), 16), m.group(1)))
+        m = re.match(r'\s+0x([0-9a-f]{16})\s+([A-Za-z_][^\s=]*)\s*$', line)  # GNU ld -Map
+        if m:
+            symbols.append((int(m.group(1), 16), m.group(2)))
     symbols.sort()
     addresses = [s[0] for s in symbols]
 

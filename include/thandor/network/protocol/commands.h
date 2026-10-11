@@ -137,6 +137,8 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
 void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandPayload payload1,
           CommandPayload payload2,CommandPayload payload3);
 
+void InGameCommandQueue_Clear();
+
 void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord);
 
 bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,

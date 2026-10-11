@@ -89,7 +89,8 @@ Module header: [`sprite.h`](../include/thandor/assets/sprite.h) · Changelog: `c
 
 Module header: [`text.h`](../include/thandor/assets/text.h) · Changelog: `resources` [full](../CHANGELOG_FULL.md#module-assets-text-resources); `richtext` [dev](../CHANGELOG.md#module-assets-text-richtext) · [full](../CHANGELOG_FULL.md#module-assets-text-richtext)
 
-- [`resources.cpp / resources.h`](source_guide/assets.md#file-assets-text-resources) - no file comment; main functions `TextResource_Resolve`, `TextResourcePage_Load`, `TextResource_SetUiScaleNote`
+- [`project_texts_en.cpp`](source_guide/assets.md#file-assets-text-project-texts-en) - The English texts of open-thandor's own controls (TEXT_ID_PROJECT_BASE..), shown for every language but German (TextResource_TryResolve; the German texts are in resources.cpp).
+- [`resources.cpp / resources.h`](source_guide/assets.md#file-assets-text-resources) - no file comment; main functions `TextResource_Resolve`, `TextResourcePage_Load`, `TextResource_ProjectTextsAreGerman`
 - [`richtext.cpp / richtext.h`](source_guide/assets.md#file-assets-text-richtext) - no file comment; main functions `RichTextCommandStream_PatchPayloadBySelector`, `RichTextCommandStream_CopyExpanded`, `RichTextCommandStream_CopyToNarrow`
 - [`richtext_markup.cpp / richtext_markup.h`](source_guide/assets.md#file-assets-text-richtext-markup) - no file comment; main functions `RichTextMarkup_ParseAndBuildStringAsset`
 - [`types.h`](source_guide/assets.md#file-assets-text-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
@@ -218,12 +219,13 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`audio.cpp / audio.h`](source_guide/gameplay.md#file-gameplay-army-audio) - no file comment; main functions `ArmySound_VoiceSetRef`, `ArmyRuntimeAudio_UpdateTurnAndMoveSounds`, `ArmyRuntimeAudio_UpdateTurretTurnSound`
 - [`class_dispatch.cpp / class_dispatch.h`](source_guide/gameplay.md#file-gameplay-army-class-dispatch) - no file comment; main functions `ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback`, `ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback`, `ArmyRuntimeNode_DispatchTypedCallback`
 - [`class_updates.cpp / class_updates.h`](source_guide/gameplay.md#file-gameplay-army-class-updates) - no file comment; main functions `ArmyRuntime_ClassCommandHandlerGroupA`, `ArmyRuntime_UpdateAnimatedModelSubnodes`, `ArmyRuntime_RebuildDerivedSelectionMetrics`
-- [`collision.cpp / collision.h`](source_guide/gameplay.md#file-gameplay-army-collision) - no file comment; main functions `ArmyCollision_FindBlockingRuntimeForCurrentUnit`, `ArmyCollision_TestPointWithinExpandedRuntimeRadius`, `ArmyPlacementCollision_TestCurrentRuntime`
+- [`collision.cpp / collision.h`](source_guide/gameplay.md#file-gameplay-army-collision) - no file comment; main functions `ArmyCollision_TestPointWithinExpandedRuntimeRadius`, `ArmyCollision_FindBlockingRuntimeForCurrentUnit`, `ArmyPlacementCollision_TestCurrentRuntime`
 - [`combat.cpp / combat.h`](source_guide/gameplay.md#file-gameplay-army-combat) - no file comment; main functions `ArmyWeaponRuntime_TestTargetLineOfFire`, `ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments`, `ARMY_WEAPON_ATTACHMENT_MESH_BIT`
 - [`damage.cpp / damage.h`](source_guide/gameplay.md#file-gameplay-army-damage) - no file comment; main functions `ArmyRuntime_EmitDamageThresholdEffect`, `ArmyRuntime_ApplyDamageAndPropagateToParent`, `ArmyRuntime_ApplyImpactDamageAndFinalizeState`
 - [`drive_banking.cpp / drive_banking.h`](source_guide/gameplay.md#file-gameplay-army-drive-banking) - no file comment; main functions `ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation`
-- [`drive_common.cpp / drive_common.h`](source_guide/gameplay.md#file-gameplay-army-drive-common) - no file comment; main functions `ArmyRuntime_HandleCollisionPartner`, `ArmyRuntime_UpdateActivationMetricAndPlayStartSound`
+- [`drive_common.cpp / drive_common.h`](source_guide/gameplay.md#file-gameplay-army-drive-common) - no file comment; main functions `ArmyRuntime_UpdateActivationMetricAndPlayStartSound`, `ArmyRuntime_HandleCollisionPartner`
 - [`drive_ground.cpp / drive_ground.h`](source_guide/gameplay.md#file-gameplay-army-drive-ground) - no file comment; main functions `ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement`, `ArmyGroundMovement_ApplyRecoilTilt`, `ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation`
+- [`drive_improved.cpp / drive_improved.h`](source_guide/gameplay.md#file-gameplay-army-drive-improved) - open-thandor: movement of the improved pathing mode (docs/plans/pathfinding.md 5, P1 and P6).
 - [`factory.cpp / factory.h`](source_guide/gameplay.md#file-gameplay-army-factory) - no file comment; main functions `ArmyRuntimeClass_UpdateUnitFactory`, `ArmyRuntimeClass_UpdateStructureFactory`, `ArmyRuntimeSpawner_CreateLinkedChildInstance`
 - [`model_rules.cpp / model_rules.h`](source_guide/gameplay.md#file-gameplay-army-model-rules) - Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking, condition, energy and selection metrics, faction technology variants and the turret yaw/pitch aim.
 - [`model_slots.cpp / model_slots.h`](source_guide/gameplay.md#file-gameplay-army-model-slots) - no file comment; main functions `ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices`, `ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`, `ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`
@@ -257,7 +259,7 @@ Module header: [`selection.h`](../include/thandor/gameplay/selection.h) · Chang
 
 - [`commands.cpp / commands.h`](source_guide/gameplay.md#file-gameplay-selection-commands) - no file comment; main functions `InGameSelection_SelectAllOwnAircraftPads`, `InGamePlayerSelection_ReplaceWithArmyRuntimeIndex`, `InGamePlayerSelection_ApplyMoveCommand`
 - [`queries.cpp / queries.h`](source_guide/gameplay.md#file-gameplay-selection-queries) - no file comment; main functions `SelectionInfo_IsEntryAbsent`, `SelectionInfo_AllEntriesEmptyOrMatchOwner`, `SelectionInfo_TestNotOwnAircraftPadsWithAircraft`
-- [`selection_set.cpp / selection_set.h`](source_guide/gameplay.md#file-gameplay-selection-selection-set) - no file comment; main functions `SelectionPlayerRuntime_MovePrimarySelectionBy`, `SelectionPlayerRuntime_RotatePrimarySelectionBy`, `SelectionPlayerRuntime_ClearTerrainEditSelectionState`
+- [`selection_set.cpp / selection_set.h`](source_guide/gameplay.md#file-gameplay-selection-selection-set) - no file comment; main functions `SelectionPointerArray_RecenterOffsetsAroundAveragePosition`, `SelectionPlayerRuntime_MovePrimarySelectionBy`, `SelectionPlayerRuntime_RotatePrimarySelectionBy`
 - [`types.h`](source_guide/gameplay.md#file-gameplay-selection-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-gameplay-session"></a>
@@ -439,6 +441,8 @@ Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Chang
 - [`level_script.cpp`](source_guide/platform.md#file-platform-debug-level-script) - Level-script log (developer tools): hooks of InGameConditionRuntime_UpdateScheduledRecords (gameplay/session/level_script.cpp).
 - [`movie_decoder.cpp / movie_decoder.h`](source_guide/platform.md#file-platform-debug-movie-decoder) - Debug tool for the movie frame decoder, hooked into Movie_AdvanceFrame after Movie_DecodeFrame4x4Delta: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame and writes every tenth frame to ...
 - [`movie_player.cpp / movie_player.h`](source_guide/platform.md#file-platform-debug-movie-player) - Debug tool: movie test player.
+- [`pathtrace.cpp / pathtrace.h`](source_guide/platform.md#file-platform-debug-pathtrace) - Movement trace for the pathing measurements (OPEN_THANDOR_PATHTRACE, see pathtrace.h and tools/test/run_pathing.py).
+- [`profile.cpp / profile.h`](source_guide/platform.md#file-platform-debug-profile) - Step profiler (OPEN_THANDOR_STEP_PROFILE, see profile.h).
 - [`script.cpp / script.h`](source_guide/platform.md#file-platform-debug-script) - Scripted input (test aid).
 - [`statehash.cpp / statehash.h`](source_guide/platform.md#file-platform-debug-statehash) - Determinism test aid (developer tools, THANDOR_DEV_TOOLS).
 - [`test_aids.cpp / test_aids.h`](source_guide/platform.md#file-platform-debug-test-aids) - Test aids (developer tools, THANDOR_DEV_TOOLS; game code reaches them through thandor/platform/debug/hooks.h): scripted-input detection, a local two-instance network test and a windowed mode.
@@ -502,7 +506,9 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 - [`campaignmap_selftest.cpp`](source_guide/platform.md#file-platform-selftest-campaignmap-selftest) - OPEN_THANDOR_SELFTEST=campaignmap: the campaign graph, fingerprint, grouping and map layout (src/ui/frontend/campaign_graph.cpp) on the four stock campaigns, built from embedded copies of their level ...
 - [`campaignprogress_selftest.cpp`](source_guide/platform.md#file-platform-selftest-campaignprogress-selftest) - OPEN_THANDOR_SELFTEST=campaignprogress: the campaign progress model and the kampagne.dat package format (src/gameplay/session/campaign_progress.cpp) on fixed models: a round trip of a model with ...
 - [`hexscan_selftest.cpp`](source_guide/platform.md#file-platform-selftest-hexscan-selftest) - OPEN_THANDOR_SELFTEST=hexscan: golden hashes of the hexagonal radius scans in src/world/terrain (the six sector walkers and six straight legs of overlay marking A and B, occupancy marking, the ...
+- [`keybindings_selftest.cpp`](source_guide/platform.md#file-platform-selftest-keybindings-selftest) - OPEN_THANDOR_SELFTEST=keybindings: the key binding list (ui/core/key_bindings.h) against the game's real key handling.
 - [`keymatch_selftest.cpp`](source_guide/platform.md#file-platform-selftest-keymatch-selftest) - OPEN_THANDOR_SELFTEST=keymatch: the safety net for merging the six key command matchers into UiKeyModifiers_Match / UiCommandDispatch_Find (include/thandor/ui/core/key_dispatch.h).
+- [`language_selftest.cpp`](source_guide/platform.md#file-platform-selftest-language-selftest) - OPEN_THANDOR_SELFTEST=language: the run-time language switch (TextResource_SelectLanguage).
 - [`nativefile_selftest.cpp`](source_guide/platform.md#file-platform-selftest-nativefile-selftest) - OPEN_THANDOR_SELFTEST=nativefile: the native file helpers FileSystem_ReadWholeFileNative and FileSystem_WriteFileReplacing (src/platform/filesystem/win32.cpp) on files in a fresh directory under ...
 - [`raster_selftest.cpp`](source_guide/platform.md#file-platform-selftest-raster-selftest) - OPEN_THANDOR_SELFTEST=raster: golden hashes of the software renderer's output, a safety net for rewrites of the triangle handlers and the 2D blits (docs/software_raster.md).
 - [`selftest.h`](source_guide/platform.md#file-platform-selftest-selftest) - Self-tests and data tools, started from WinMain (after the precomputed tables are built) when the environment variable OPEN_THANDOR_SELFTEST names one; the process then exits without entering ...
@@ -515,7 +521,7 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 
 Module header: [`system.h`](../include/thandor/platform/system.h) · Changelog: `time-locale` [dev](../CHANGELOG.md#module-platform-system-time-locale) · [full](../CHANGELOG_FULL.md#module-platform-system-time-locale); `win32` [full](../CHANGELOG_FULL.md#module-platform-system-win32)
 
-- [`time_locale.cpp / time_locale.h`](source_guide/platform.md#file-platform-system-time-locale) - no file comment; main functions `Locale_Init`, `Locale_FormatDateFieldsUtf16`, `Locale_FormatCurrentDateUtf16`
+- [`time_locale.cpp / time_locale.h`](source_guide/platform.md#file-platform-system-time-locale) - no file comment; main functions `Locale_Init`, `Locale_GetDefaultTelephoneCountryCode`, `Locale_FormatDateFieldsUtf16`
 - [`types.h`](source_guide/platform.md#file-platform-system-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`win32.cpp / win32.h`](source_guide/platform.md#file-platform-system-win32) - The message pump slot the game calls every frame and the close counter.
 
@@ -537,7 +543,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`lists.cpp / lists.h`](source_guide/ui.md#file-ui-controls-lists) - no file comment; main functions `UiPointerList_InitializeColumnLayout`, `UiPointerList_GetSelectedIndexAndConfirmed`, `UiPointerList_RefreshSelectionAndQueueAction`
 - [`minimap.cpp / minimap.h`](source_guide/ui.md#file-ui-controls-minimap) - no file comment; main functions `UiSelectionGeometryControl_DrawClipped`, `UiSelectionGeometryControl_ConvertPointerAndEnqueueAction`
 - [`node_views.h`](source_guide/ui.md#file-ui-controls-node-views) - The UI control types as prefixed views of their base node (core/slot.h THANDOR_SLOT_PREFIX): a vtable slot taking a UiNodeBase * (or UiSelectableControl *, ...) accepts a function taking the control ...
-- [`panels.cpp / panels.h`](source_guide/ui.md#file-ui-controls-panels) - no file comment; main functions `UiImagePanelControl_DrawAlignedTextureAndChildren`, `UiImagePanelControl_HitTestAlignedTextureAndChildren`, `UiFillPanelControl_DrawColorOrTiledTextureAndChildren`
+- [`panels.cpp / panels.h`](source_guide/ui.md#file-ui-controls-panels) - no file comment; main functions `UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren`, `UiImagePanelControl_DrawAlignedTextureAndChildren`, `UiImagePanelControl_HitTestAlignedTextureAndChildren`
 - [`root_stack.cpp / root_stack.h`](source_guide/ui.md#file-ui-controls-root-stack) - no file comment; main functions `UiRootStack_InvalidateAll`, `UiRootStack_Push`, `UiRootStack_Pop`
 - [`scrollable.cpp / scrollable.h`](source_guide/ui.md#file-ui-controls-scrollable) - no file comment; main functions `UiScrollableControl_ClampOffsetsToViewport`, `UiScrollableControl_RebuildViewportAndScrollbars`, `UiScrollableControl_GetViewportSize`
 - [`selectable.cpp / selectable.h`](source_guide/ui.md#file-ui-controls-selectable) - no file comment; main functions `UiSelectableGroup_SelectExclusive`, `UiSelectableControl_SuppressIfActionId`, `UiSelectableControl_UnsuppressIfActionId`
@@ -557,6 +563,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 - [`chat_history.cpp / chat_history.h`](source_guide/ui.md#file-ui-core-chat-history) - no file comment; main functions `RecentTextHistory_SortAndBuildPointerList`, `RecentTextHistory_Insert`, `RecentTextHistory_RemoveOldest`
 - [`frame_loop.cpp / frame_loop.h`](source_guide/ui.md#file-ui-core-frame-loop) - no file comment; main functions `UiFrame_FlushInputAndResetPendingTicks`, `UiFrame_ProcessAndPresent`, `UiFrame_Draw`
+- [`key_bindings.cpp / key_bindings.h`](source_guide/ui.md#file-ui-core-key-bindings) - The key binding list of the options menu ("Tastenbelegung"): one row per action with its key(s) and the text id of its description, grouped in four sections.
 - [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiCommandDispatch_Find`, `UiKeyModifiers_Match`
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
@@ -589,8 +596,10 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`debug_overlay.cpp / debug_overlay.h`](source_guide/ui.md#file-ui-frontend-debug-overlay) - no file comment; main functions `FrontendDebugOverlay_RefreshCountersAndWorldCoordinates`
 - [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-frontend-display-settings) - no file comment; main functions `FrontendDisplaySettingsAction_OpenPageAndListModes`, `FrontendDisplaySettingsAction_SelectAdapter`, `FrontendDisplaySettingsAction_ApplyPendingResolution`
 - [`end_movie.cpp / end_movie.h`](source_guide/ui.md#file-ui-frontend-end-movie) - no file comment; main functions `Frontend_PlaySelectedEndMovie`
-- [`end_movie_commands.cpp / end_movie_commands.h`](source_guide/ui.md#file-ui-frontend-end-movie-commands) - no file comment; main functions `EndMovieUiRuntime_HandleModeTransition`, `EndMovieUiRuntime_DispatchCommandByFlags`
+- [`end_movie_commands.cpp / end_movie_commands.h`](source_guide/ui.md#file-ui-frontend-end-movie-commands) - no file comment; main functions `EndMovieCommands_FindBinding`, `EndMovieUiRuntime_HandleModeTransition`, `EndMovieUiRuntime_DispatchCommandByFlags`
 - [`faction_setup.cpp / faction_setup.h`](source_guide/ui.md#file-ui-frontend-faction-setup) - no file comment; main functions `FrontendFactionSetupAction_CycleFactionColour`, `FrontendFactionSetupAction_ToggleFactionActive`, `FrontendFactionSetupAction_ChooseFaction`
+- [`key_bindings_page.cpp / key_bindings_page.h`](source_guide/ui.md#file-ui-frontend-key-bindings-page) - The read-only key binding page of the options menu ("Tastenbelegung", frontend only): the rows of KeyBindings_Table (ui/core/key_bindings.h) as a scrollable two-column list (keys \| action), each ...
+- [`language_choice.cpp / language_choice.h`](source_guide/ui.md#file-ui-frontend-language-choice) - The language choice of the advanced settings page (include/thandor/ui/frontend/language_choice.h).
 - [`lifecycle.cpp / lifecycle.h`](source_guide/ui.md#file-ui-frontend-lifecycle) - no file comment; main functions `FrontendMusic_StartMenuMusic`, `Frontend_Init`, `FrontendRuntime_ShutdownAndReleaseResources`
 - [`main_loop.cpp / main_loop.h`](source_guide/ui.md#file-ui-frontend-main-loop) - Views this file needs (genuine reinterpretations, in one place).
 - [`menu_room.cpp / menu_room.h`](source_guide/ui.md#file-ui-frontend-menu-room) - no file comment; main functions `FrontendRuntime_UpdatePointerContextAndSceneView`, `FrontendMenuRoom_PressNoOp`, `FrontendMenuRoom_DragNoOp`
@@ -604,7 +613,7 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`scenario_selection.cpp / scenario_selection.h`](source_guide/ui.md#file-ui-frontend-scenario-selection) - no file comment; main functions `ScenarioCatalog_RebuildLevelRecordListPage`, `ScenarioCatalog_RebuildCampaignRecordListPage`, `ScenarioCatalog_SelectCampaignAndShowDescription`
 - [`session.cpp / session.h`](source_guide/ui.md#file-ui-frontend-session) - no file comment; main functions `FrontendSession_ReturnToMainPage`, `FrontendSession_SetGameSpeedPercent`, `FrontendTransferPage_ResetSessionOpenAndRequestMailbox`
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-frontend-settings) - no file comment; main functions `FrontendGameplaySettings_SetGameSpeedPercent`, `FrontendGameplaySettings_SetRightButtonDoesNotScroll`, `FrontendGameplaySettings_SetCameraScrollStep`
-- [`state.cpp / state.h`](source_guide/ui.md#file-ui-frontend-state) - no file comment; main functions `FrontendState_DispatchCode`, `FrontendRuntime_TimerCountdownTick`, `FrontendRomTransition_AdvanceElapsedTicks`
+- [`state.cpp / state.h`](source_guide/ui.md#file-ui-frontend-state) - no file comment; main functions `FrontendState_DispatchCode`, `FrontendHotkeys_FindBinding`, `FrontendRuntime_TimerCountdownTick`
 - [`task_assignment.cpp / task_assignment.h`](source_guide/ui.md#file-ui-frontend-task-assignment) - no file comment; main functions `FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls`, `FrontendTaskAssignmentPage_Initialize`
 - [`types.h`](source_guide/ui.md#file-ui-frontend-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`ui_template.cpp / ui_template.h`](source_guide/ui.md#file-ui-frontend-ui-template)
@@ -625,7 +634,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 - [`editor_keyboard.cpp / editor_keyboard.h`](source_guide/ui.md#file-ui-ingame-editor-keyboard) - no file comment; main functions `InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags`
 - [`editor_tool_selection.cpp / editor_tool_selection.h`](source_guide/ui.md#file-ui-ingame-editor-tool-selection) - no file comment; main functions `InGameCommandModeG_Select0`, `InGameCommandModeG_Select1`, `InGameCommandModeG_Select2`
 - [`editor_tools.cpp / editor_tools.h`](source_guide/ui.md#file-ui-ingame-editor-tools) - no file comment; main functions `InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState`, `InGameUiCommand_SaveFieldAndLevelAssetImages`, `InGameUiCommand_ResolveCursorCodeByMode`
-- [`hotkeys.cpp / hotkeys.h`](source_guide/ui.md#file-ui-ingame-hotkeys) - no file comment; main functions `InGameHotkeys_DispatchCommandByFlags`
+- [`hotkeys.cpp / hotkeys.h`](source_guide/ui.md#file-ui-ingame-hotkeys) - no file comment; main functions `InGameHotkeys_DispatchCommandByFlags`, `InGameHotkeys_FindBinding`
 - [`hud.cpp / hud.h`](source_guide/ui.md#file-ui-ingame-hud) - no file comment; main functions `InGameOtherPlayerCommand_RebuildTargetEntries`, `InGameMapAction_RecenterViewFromGridCoordinates`, `InGameHud_UpdateStatusCountersAndSessionPrompts`
 - [`key_commands.cpp / key_commands.h`](source_guide/ui.md#file-ui-ingame-key-commands) - no file comment; main functions `InGameNotificationQueue_InsertPriorityRecord`, `InGameUiRuntime_DispatchCommandByCodeAndModifierFlags`, `InGameUiRuntime_ResetNotificationButtonCursor`
 - [`layout.cpp / layout.h`](source_guide/ui.md#file-ui-ingame-layout) - no file comment; main functions `InGameUiRuntime_InitializeControlTreeResources`
@@ -699,13 +708,16 @@ Module header: [`model.h`](../include/thandor/world/model.h) · Changelog: `hier
 
 Module header: [`pathing.h`](../include/thandor/world/pathing.h) · Changelog: `grid` [dev](../CHANGELOG.md#module-world-pathing-grid) · [full](../CHANGELOG_FULL.md#module-world-pathing-grid); `influence` [full](../CHANGELOG_FULL.md#module-world-pathing-influence)
 
+- [`arrival.cpp / arrival.h`](source_guide/world.md#file-world-pathing-arrival) - open-thandor (docs/plans/pathfinding.md 3 cause 6, 5 package P3): arrival for groups.
 - [`grid.h`](source_guide/world.md#file-world-pathing-grid)
-- [`influence.cpp / influence.h`](source_guide/world.md#file-world-pathing-influence) - no file comment; main functions `GridInfluence_ClearDistanceBandsAndRefreshEntities`, `GridInfluence_AddLowDistanceBands`, `GridInfluence_RemoveLowDistanceBands`
+- [`influence.cpp / influence.h`](source_guide/world.md#file-world-pathing-influence) - no file comment; main functions `GridInfluence_ClearDistanceBandsAndRefreshEntities`, `GridInfluence_SetLowDistanceBandsAroundWorldPoint`, `GridInfluence_AddLowDistanceBands`
+- [`mode.cpp / mode.h`](source_guide/world.md#file-world-pathing-mode) - no file comment; main functions `Pathing_Improved`, `PathingMode_ApplyForNewSession`, `PathingMode_SetLoaded`
 - [`path_cost.cpp / path_cost.h`](source_guide/world.md#file-world-pathing-path-cost) - Hex path costs on the scratch grid: the weighted neighbour propagation (a FIFO label-correcting queue over the hex lattice, not Dijkstra: a cell is queued again whenever a cheaper cost reaches it), ...
 - [`reachability.cpp / reachability.h`](source_guide/world.md#file-world-pathing-reachability) - Reachability on the scratch grid: connected regions around a world point, unreachable-region marking and the hex line-of-passage test of a segment.
 - [`route.cpp / route.h`](source_guide/world.md#file-world-pathing-route) - Entity routes: destination resolution and route rebuilds for one entity or an overlapping group, route segment updates and the footprint traversal flags around a world point.
 - [`scratch_grid.cpp / scratch_grid.h`](source_guide/world.md#file-world-pathing-scratch-grid) - The pathing scratch grid: allocation for a field grid, terrain and runtime classification of its cells, occupancy propagation, flood fills and the primary/secondary copy and swap.
 - [`types.h`](source_guide/world.md#file-world-pathing-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
+- [`yield.cpp / yield.h`](source_guide/world.md#file-world-pathing-yield) - Improved pathing package P2: yielding to friendly blockers (see world/pathing/yield.h).
 
 <a id="module-world-runtime"></a>
 ### `world/runtime`

@@ -6,17 +6,13 @@ project(open_thandor VERSION 1.0.7 LANGUAGES CXX RC)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# The recovered code stores pointers in 32-bit fields (pointer32, (int)ptr casts).
-# Decompiled code reads Ghidra's placeholders for unknown register halves (extraout_var, ...)
-# before assigning them; the debug runtime checks would stop on each one.
-string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-
 # Developer tools (src/platform/debug, src/platform/selftest): self-tests, input scripts, automatic screenshots,
 # the determinism state hash, campaign starts and AUTOWIN, level-script log, movie player/export/dump, windowed
 # mode, second instance, UDP port and datagram log, watchdog - all switched on at run time by OPEN_THANDOR_*
 # environment variables (docs/BUILDING.md). The game reaches them only through
 # include/thandor/platform/debug/hooks.h. OFF (default): none of it is compiled, the hooks expand to nothing and
-# the game runs the original code paths. ON: the test build (preset "test", build-test) that tools/test drives.
+# the game runs the original code paths. ON: the test build (preset "mingw-test", build-mingw-test) that tools/test
+# drives.
 option(THANDOR_DEV_TOOLS "Build the developer tools (test aids, debug switches, self-tests)" OFF)
 # THANDOR_TEST_AIDS was the old name of this option (ON switches the developer tools on).
 if(DEFINED THANDOR_TEST_AIDS)
@@ -27,27 +23,24 @@ if(DEFINED THANDOR_TEST_AIDS)
     unset(THANDOR_TEST_AIDS CACHE)
 endif()
 
-# Compilers: MSVC (presets release, debug, test, gpu-test; cmake/msvc-x64.cmake finds MSVC x64 without vcvars) or
-# MinGW-w64 GCC (presets mingw-release, mingw-test; cmake/mingw-x64.cmake), both for 64-bit x64 Windows with SDL3.
-# In CLion: Settings > Build > CMake, enable the presets.
-if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8 OR NOT WIN32 OR NOT (MSVC OR (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
-    message(FATAL_ERROR "open-thandor must be built with MSVC or MinGW-w64 GCC for 64-bit x64 Windows (32-bit x86 is "
-                        "no longer supported): use a CMake preset (cmake --preset release, cmake --preset "
-                        "mingw-release) or a vcvars64 prompt. Found: ${CMAKE_CXX_COMPILER_ID}, "
+# Compiler: MinGW-w64 GCC for 64-bit x64 Windows with SDL3, the only supported compiler (presets mingw-release,
+# mingw-test, mingw-gpu-test; cmake/mingw-x64.cmake). In CLion: Settings > Build > CMake, enable the presets.
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8 OR NOT WIN32 OR NOT MINGW OR NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    message(FATAL_ERROR "open-thandor must be built with MinGW-w64 GCC for 64-bit x64 Windows (MSVC, Clang and "
+                        "32-bit x86 are not supported): use a CMake preset (cmake --preset mingw-release, "
+                        "cmake --preset mingw-test). Found: ${CMAKE_CXX_COMPILER_ID}, "
                         "${CMAKE_SIZEOF_VOID_P}-byte pointers.")
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # The same results as MSVC: no type-based alias analysis (the code reinterprets memory freely), signed overflow
-    # wraps, no fused multiply-add (MSVC x64 /fp:precise does not contract), MSVC struct and bit-field layout
-    # (-mms-bitfields, the MinGW default; layout_checks.cpp proves the layouts). char is signed in both.
-    # Pointers kept in 32-bit values of the original layouts go through the checked conversions of
-    # core/ptr32.h (Thandor_PointerToU32, Thandor_U32ToPointer), so no -fpermissive.
-    # -Wall without the style warnings the decompiled code triggers by the hundreds (parentheses, sign compare,
-    # '/*' in comments).
-    add_compile_options(-fno-strict-aliasing -fwrapv -ffp-contract=off -mms-bitfields
-                        -Wall -Wno-unknown-pragmas -Wno-parentheses -Wno-sign-compare -Wno-comment)
-endif()
+# The original's semantics: no type-based alias analysis (the code reinterprets memory freely), signed overflow
+# wraps, no fused multiply-add (deterministic floating point), the Microsoft struct and bit-field layout of the
+# original (-mms-bitfields, the MinGW default; layout_checks.cpp proves the layouts). char is signed.
+# Pointers kept in 32-bit values of the original layouts go through the checked conversions of
+# core/ptr32.h (Thandor_PointerToU32, Thandor_U32ToPointer), so no -fpermissive.
+# -Wall without the style warnings the decompiled code triggers by the hundreds (parentheses, sign compare,
+# '/*' in comments).
+add_compile_options(-fno-strict-aliasing -fwrapv -ffp-contract=off -mms-bitfields
+                    -Wall -Wno-unknown-pragmas -Wno-parentheses -Wno-sign-compare -Wno-comment)
 
 # Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): the crash logs rely on stable code addresses.
 add_executable(thandor WIN32
@@ -328,17 +321,13 @@ set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc APPEND PROP
 target_link_libraries(thandor PRIVATE thandor_resources)
 target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
 target_link_libraries(thandor PRIVATE kernel32 user32 dbghelp)
-# Stack reserve 8 MiB (linker defaults: 1 MiB MSVC, 2 MiB GNU ld). The pathing flood fills recursed once per scratch
+# Stack reserve 8 MiB (GNU ld default: 2 MiB). The pathing flood fills recursed once per scratch
 # cell in the original (up to 28 MiB on the largest stock maps); since step 11 they keep an explicit heap stack
 # (src/world/pathing/reachability.cpp, scratch_grid.cpp). The remaining recursive walks are the model node hierarchies
 # (render, shadow, release; a loaded savegame's record graph is checked for cycles, at most 0x4000 records deep), well
 # inside 8 MiB. Only address space is reserved; the stack is committed as it grows. Threads created with stack size 0
 # (SDL, drivers) get the same reserve; our own threads pass 1 MiB.
-if(MSVC)
-    target_link_options(thandor PRIVATE /STACK:0x800000)
-else()
-    target_link_options(thandor PRIVATE -Wl,--stack,0x800000)
-endif()
+target_link_options(thandor PRIVATE -Wl,--stack,0x800000)
 # The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h), so everything the game points to
 # from such a field must lie below 2 GB. The exe is large-address-aware (since 1.0.7: with /LARGEADDRESSAWARE:NO the
 # whole process, the graphics driver too, had only 2 GB, and some drivers with much video memory failed - Vulkan
@@ -347,62 +336,52 @@ endif()
 # SDL's allocations through SDL_SetMemoryFunctions, and the arena). The image keeps its fixed base 0x10000000 without
 # ASLR, the main thread's stack is reserved at process start below 2 GB, and a pointer of 2 GB or more that still
 # reaches a 32-bit field stops the game (Thandor_Ptr32Overflow). THANDOR_LARGE_ADDRESS_AWARE=OFF builds the old
-# layout (/LARGEADDRESSAWARE:NO, no pools), only for comparisons.
+# layout (not large-address-aware, no pools), only for comparisons.
 option(THANDOR_LARGE_ADDRESS_AWARE "Link large-address-aware and keep the game's memory in pools below 2 GB" ON)
 if(THANDOR_LARGE_ADDRESS_AWARE)
     target_sources(thandor PRIVATE src/platform/bootstrap/low_memory.cpp)
     target_compile_definitions(thandor PRIVATE THANDOR_LARGE_ADDRESS_AWARE=1)
-    set(THANDOR_LAA_LINK /LARGEADDRESSAWARE)
     set(THANDOR_LAA_HELPER_ARGUMENT --large-address-aware)
 else()
-    set(THANDOR_LAA_LINK /LARGEADDRESSAWARE:NO)
     set(THANDOR_LAA_HELPER_ARGUMENT)
 endif()
-if(MSVC)
-    target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO ${THANDOR_LAA_LINK})
-else()
-    # GNU ld: the same fixed base, no ASLR; the C and C++ runtimes linked in statically
-    # (only SDL3.dll ships next to thandor.exe); thandor.map for symbolizing crash logs (docs/BUILDING.md).
-    target_link_options(thandor PRIVATE -Wl,--image-base=0x10000000 -Wl,--disable-dynamicbase
-                        -Wl,--disable-high-entropy-va -Wl,--tsaware -static -static-libgcc -static-libstdc++
-                        -Wl,-Map=$<TARGET_FILE_DIR:thandor>/thandor.map)
-    # thandor.sym next to thandor.exe: the code symbols for the function names in crash.log, hang.log and the
-    # watchdog (src/platform/bootstrap/image.cpp reads it at start; a GCC build has no PDB for dbghelp). Written from
-    # the linked executable before its symbols are stripped below.
-    add_custom_command(TARGET thandor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DEXECUTABLE=$<TARGET_FILE:thandor>
-                -DOUTPUT=$<TARGET_FILE_DIR:thandor>/thandor.sym -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/symbol_table.cmake
-        VERBATIM)
-    # The debug information in a separate thandor.debug, like the PDB of an MSVC build (every GCC configuration):
-    # the linked image carries some 33 MB of DWARF and its COFF symbol table. objcopy --only-keep-debug copies both
-    # into thandor.debug, strip --strip-all removes them from thandor.exe (the loaded sections and their addresses
-    # stay as they are, so thandor.sym still matches), and the .gnu_debuglink section lets gdb and addr2line find
-    # thandor.debug next to the executable.
-    add_custom_command(TARGET thandor POST_BUILD
-        COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:thandor> $<TARGET_FILE_DIR:thandor>/thandor.debug
-        COMMAND ${CMAKE_STRIP} --strip-all $<TARGET_FILE:thandor>
-        COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:thandor>
-                ${CMAKE_OBJCOPY} --add-gnu-debuglink=thandor.debug $<TARGET_FILE:thandor>
-        VERBATIM)
-    # ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
-    # sets the flag as THANDOR_LARGE_ADDRESS_AWARE wants it (keeps it; clears it for OFF) in the final image (after
-    # strip and objcopy) and fails the build if the image came out relocatable.
-    add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
-    target_link_options(pe_not_large_address_aware PRIVATE -static)
-    add_custom_command(TARGET thandor POST_BUILD
-        COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor> ${THANDOR_LAA_HELPER_ARGUMENT}
-        VERBATIM)
-endif()
+# GNU ld: fixed base, no ASLR; the C and C++ runtimes linked in statically
+# (only SDL3.dll ships next to thandor.exe); thandor.map for symbolizing crash logs (docs/BUILDING.md).
+target_link_options(thandor PRIVATE -Wl,--image-base=0x10000000 -Wl,--disable-dynamicbase
+                    -Wl,--disable-high-entropy-va -Wl,--tsaware -static -static-libgcc -static-libstdc++
+                    -Wl,-Map=$<TARGET_FILE_DIR:thandor>/thandor.map)
+# thandor.sym next to thandor.exe: the code symbols for the function names in crash.log, hang.log and the
+# watchdog (src/platform/bootstrap/image.cpp reads it at start; there is no PDB for dbghelp). Written from
+# the linked executable before its symbols are stripped below.
+add_custom_command(TARGET thandor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DEXECUTABLE=$<TARGET_FILE:thandor>
+            -DOUTPUT=$<TARGET_FILE_DIR:thandor>/thandor.sym -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/symbol_table.cmake
+    VERBATIM)
+# The debug information in a separate thandor.debug (every configuration):
+# the linked image carries some 33 MB of DWARF and its COFF symbol table. objcopy --only-keep-debug copies both
+# into thandor.debug, strip --strip-all removes them from thandor.exe (the loaded sections and their addresses
+# stay as they are, so thandor.sym still matches), and the .gnu_debuglink section lets gdb and addr2line find
+# thandor.debug next to the executable.
+add_custom_command(TARGET thandor POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:thandor> $<TARGET_FILE_DIR:thandor>/thandor.debug
+    COMMAND ${CMAKE_STRIP} --strip-all $<TARGET_FILE:thandor>
+    COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:thandor>
+            ${CMAKE_OBJCOPY} --add-gnu-debuglink=thandor.debug $<TARGET_FILE:thandor>
+    VERBATIM)
+# ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
+# sets the flag as THANDOR_LARGE_ADDRESS_AWARE wants it (keeps it; clears it for OFF) in the final image (after
+# strip and objcopy) and fails the build if the image came out relocatable.
+add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
+target_link_options(pe_not_large_address_aware PRIVATE -static)
+add_custom_command(TARGET thandor POST_BUILD
+    COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor> ${THANDOR_LAA_HELPER_ARGUMENT}
+    VERBATIM)
 
 # Platform backend: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the game's software
 # renderer draws the frames). SDL3 comes from find_package(SDL3): pass its install prefix in CMAKE_PREFIX_PATH (vcpkg:
-# -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows, MinGW: .../x64-mingw-dynamic), or set the environment variable
-# VCPKG_ROOT, whose installed/x64-windows (MinGW: installed/x64-mingw-dynamic) is searched as well.
-if(MSVC)
-    set(THANDOR_VCPKG_TRIPLET x64-windows)
-else()
-    set(THANDOR_VCPKG_TRIPLET x64-mingw-dynamic)
-endif()
+# -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-mingw-dynamic), or set the environment variable VCPKG_ROOT, whose
+# installed/x64-mingw-dynamic is searched as well.
+set(THANDOR_VCPKG_TRIPLET x64-mingw-dynamic)
 if(DEFINED ENV{VCPKG_ROOT})
     file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/installed/${THANDOR_VCPKG_TRIPLET}" THANDOR_VCPKG_PREFIX)
     list(APPEND CMAKE_PREFIX_PATH "${THANDOR_VCPKG_PREFIX}")
@@ -430,14 +409,14 @@ add_custom_command(TARGET thandor POST_BUILD
 # the same device (Vulkan by default, else Direct3D 12; the renderer is chosen in the game's display settings, see
 # docs/BUILDING.md). The shaders (src/platform/sdl3/shaders/primitives.hlsl, ui2d.hlsl for the GPU 2D renderer of
 # step 9) are compiled at build time:
-#   - DXBC shader model 5.1 with fxc from the Windows SDK (Direct3D 12); required for MSVC, optional for GCC,
+#   - DXBC shader model 5.1 with fxc from the Windows SDK (Direct3D 12), optional,
 #   - SPIR-V with dxc (Vulkan), optional: vcpkg port directx-dxc (find_package(directx-dxc) sets DIRECTX_DXC_TOOL,
-#     or dxc.exe in $ENV{VCPKG_ROOT}/installed/x64-windows/tools/directx-dxc, also usable from a MinGW build), dxc on
+#     or dxc.exe in $ENV{VCPKG_ROOT}/installed/x64-windows/tools/directx-dxc), dxc on
 #     the PATH, or THANDOR_DXC=<path to dxc.exe>.
 # Each shader becomes a header gpu_shader_<name>.h (DXBC, array g_<entry>) and gpu_shader_<name>_spirv.h (SPIR-V,
 # array g_<entry>Spirv) in <build>/gpu_shaders. A compiler that is not found (or THANDOR_GPU_PRECOMPILED_SHADERS)
 # makes the build use the headers committed in src/platform/sdl3/shaders/compiled/ instead; after a change of
-# a shader source regenerate them from an MSVC build with fxc and dxc (docs/BUILDING.md).
+# a shader source regenerate them from a build that found fxc and dxc (docs/BUILDING.md).
 # A build directory configured before the option became ON by default still has OFF cached under the old help text:
 # switch it on once (a value given on the command line has a different help text and stays).
 get_property(THANDOR_GPU_OPTION_HELP CACHE THANDOR_RENDERER_SDL_GPU PROPERTY HELPSTRING)
@@ -450,16 +429,12 @@ if(THANDOR_RENDERER_SDL_GPU)
     set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/gpu_shaders)
     set(THANDOR_GPU_PRECOMPILED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/compiled)
     if(NOT THANDOR_GPU_PRECOMPILED_SHADERS)
-        # fxc of the Windows SDK: on the PATH of a vcvars prompt, else the newest SDK's x64 tools
+        # fxc of the Windows SDK: on the PATH, else the newest SDK's x64 tools
         set(THANDOR_PROGRAM_FILES_X86 "ProgramFiles(x86)")
         file(GLOB THANDOR_SDK_BIN_DIRS LIST_DIRECTORIES true
              "$ENV{${THANDOR_PROGRAM_FILES_X86}}/Windows Kits/10/bin/10.*/x64")
         list(SORT THANDOR_SDK_BIN_DIRS COMPARE NATURAL ORDER DESCENDING)
-        if(MSVC)
-            find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS} REQUIRED)
-        else()
-            find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS})
-        endif()
+        find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS})
         # dxc for SPIR-V
         if(NOT THANDOR_DXC)
             find_package(directx-dxc CONFIG QUIET)

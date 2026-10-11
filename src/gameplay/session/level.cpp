@@ -114,6 +114,15 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
   g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSets[1]);
   g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSets[2]);
   g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSets[3]);
+  /* Not in the original: the released handles are cleared (NewLevel_LoadLevelSamples sets them again), so a later
+     start that fails before the level samples are loaded does not release them a second time in
+     InGameRuntime_FailSession, where the allocator may have handed the same block to a live voice set. */
+  for (int voiceSetIndex = 0; voiceSetIndex < 4; voiceSetIndex++) {
+    g_InGameLevelEffectVoiceSets[voiceSetIndex] = nullptr;
+    g_InGameLevelMusicVoiceSets[voiceSetIndex] = nullptr;
+  }
+  g_InGameActiveEffectVoice = nullptr;
+  g_InGameActiveMusicVoice = nullptr;
   loadedResourceCursor = g_InGameLoadedResourcePointers;
   remainingResourceCount = g_InGameLoadedResourcePointerCount;
   if (g_InGameLoadedResourcePointers != nullptr) {

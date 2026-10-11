@@ -14,9 +14,9 @@ Module header: [`backend.h`](../../include/thandor/audio/backend.h) · Changelog
 
 [Source](../../src/audio/backend/null_backend.cpp) · [Header](../../include/thandor/audio/backend/null_backend.h)
 
-No file comment; function families: `SoundBackendDisabled_*` (8).
+No file comment; function families: `SoundBackendDisabled_*` (9).
 
-**Functions** (8 public):
+**Functions** (9 public):
 
 - [`SoundBackendDisabled_CreateSampleVoiceSet`](../../src/audio/backend/null_backend.cpp#L16) - Silent-backend stub in slot g_SoundCreateSampleVoiceSet (until SdlAudio_Init switches the slots to the SDL3 audio backend, and for good when there is no audio device).
 - [`SoundBackendDisabled_ReleaseSampleVoiceSet`](../../src/audio/backend/null_backend.cpp#L26) - Silent-backend stub in slot g_SoundReleaseSampleVoiceSet: nothing to release.
@@ -26,8 +26,9 @@ No file comment; function families: `SoundBackendDisabled_*` (8).
 - [`SoundBackendDisabled_IsVoiceFinished`](../../src/audio/backend/null_backend.cpp#L74) - Silent-backend stub in slot g_SoundIsVoiceFinished: always returns true, meaning the voice is not playing.
 - [`SoundBackendDisabled_SetVoiceGains`](../../src/audio/backend/null_backend.cpp#L82) - Silent-backend stub in slot g_SoundSetVoiceGains: ignores the new left/right gains.
 - [`SoundBackendDisabled_StopAllVoices`](../../src/audio/backend/null_backend.cpp#L91) - Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until SdlAudio_Init installs SdlAudio_StopAllVoices): there are no voices, so it does nothing.
+- [`SoundBackendDisabled_RaiseQuietSampleLevel`](../../src/audio/backend/null_backend.cpp#L100) - Not in the original: level-raise entry of the disabled sound backend (the initial value of g_SoundRaiseQuietSampleLevel until SdlAudio_Init installs SdlAudio_RaiseQuietSampleLevel): there is no ...
 
-**Called from** (2 files): [`audio/backend/runtime`](#file-audio-backend-runtime) (`g_SoundCreateSampleVoiceSet`, `g_SoundIsVoiceFinished` +6); [`platform/sdl3/audio`](platform.md#file-platform-sdl3-audio) (`SdlAudio_Shutdown`).
+**Called from** (2 files): [`audio/backend/runtime`](#file-audio-backend-runtime) (`g_SoundCreateSampleVoiceSet`, `g_SoundIsVoiceFinished` +7); [`platform/sdl3/audio`](platform.md#file-platform-sdl3-audio) (`SdlAudio_Shutdown`).
 
 **Includes:** `thandor/platform/bootstrap/image.h`.
 
@@ -38,11 +39,11 @@ No file comment; function families: `SoundBackendDisabled_*` (8).
 
 The sound slots (the g_Sound... pointers) the game plays through, with the silent backend that fills them until SdlAudio_Init installs the SDL3 audio backend. The original's DirectSound backend is replaced by platform/sdl3/audio.cpp.
 
-**Data** (15 shared, 0 file-local): `g_SoundCreateSampleVoiceSet`, `g_SoundReleaseSampleVoiceSet`, `g_SoundStopAllVoices`, `g_SoundGainAttenuation`, `g_SoundPlayLooping`, `g_SoundStopVoice`, `g_SoundIsVoiceFinished`, `g_SoundSetVoiceGains` and 7 more.
+**Data** (16 shared, 0 file-local): `g_SoundCreateSampleVoiceSet`, `g_SoundReleaseSampleVoiceSet`, `g_SoundStopAllVoices`, `g_SoundGainAttenuation`, `g_SoundPlayLooping`, `g_SoundStopVoice`, `g_SoundIsVoiceFinished`, `g_SoundSetVoiceGains` and 8 more.
 
 **Called from** (24 files): [`platform/sdl3/audio`](platform.md#file-platform-sdl3-audio) (`ApplyChannelGains`, `SdlAudio_CreateSampleVoiceSet` +6); [`audio/spatial/runtime`](#file-audio-spatial-runtime) (`SpatialSoundPool_ApplyDesiredGains`, `SpatialSoundSlot_CreateFromSampleAsset` +2); [`movie/runtime/playback`](movie.md#file-movie-runtime-playback) (`Movie_AdvanceFrame`, `Movie_Close` +2); [`ui/controls/lists`](ui.md#file-ui-controls-lists) (`UiListControl_HandleKeyboardNavigation`, `UiListControl_SelectRowFromPointer` +2); [`ui/controls/text_buttons`](ui.md#file-ui-controls-text-buttons) (`UiFramedTextButtonControl_NonRightPress`, `UiFramedTextButtonControl_NonRightRelease` +2); [`ui/ingame/settings`](ui.md#file-ui-ingame-settings) (`InGameAudioSettings_SetEffectsEnabled`, `InGameAudioSettings_SetEffectsGain` +2); [`ui/controls/slider`](ui.md#file-ui-controls-slider) (`UiRangeSliderControl_BeginThumbDrag`, `UiRangeSliderControl_EndThumbDrag` +1); [`ui/controls/text_edit`](ui.md#file-ui-controls-text-edit) (`UiRequiredTextEdit_PlayInteractionSound`, `UiTextEditControl_BeginSelectionAtPointer` +1); [`ui/frontend/lifecycle`](ui.md#file-ui-frontend-lifecycle) (`FrontendInit_LoadMenuSounds`, `FrontendMusic_StartMenuMusic` +1); [`ui/controls/buttons`](ui.md#file-ui-controls-buttons) (`UiSpriteButtonControl_NonRightPress`, `UiSpriteButtonControl_NonRightRelease`); 14 more: [`ui/controls/image`](ui.md#file-ui-controls-image), [`ui/frontend/settings`](ui.md#file-ui-frontend-settings), [`ui/ingame/command_buttons`](ui.md#file-ui-ingame-command-buttons), [`ui/ingame/root_frame`](ui.md#file-ui-ingame-root-frame), [`gameplay/army/audio`](gameplay.md#file-gameplay-army-audio), [`gameplay/session/level`](gameplay.md#file-gameplay-session-level), [`gameplay/session/level_new`](gameplay.md#file-gameplay-session-level-new), [`gameplay/session/startup`](gameplay.md#file-gameplay-session-startup), [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime), [`ui/controls/selectable`](ui.md#file-ui-controls-selectable), [`ui/frontend/menu_room_scene`](ui.md#file-ui-frontend-menu-room-scene), [`ui/ingame/catalog_entry`](ui.md#file-ui-ingame-catalog-entry), [`ui/ingame/hotkeys`](ui.md#file-ui-ingame-hotkeys), [`ui/ingame/key_commands`](ui.md#file-ui-ingame-key-commands).
 
-**Depends on** (1 files, names used): [`audio/backend/null_backend`](#file-audio-backend-null-backend) (8).
+**Depends on** (1 files, names used): [`audio/backend/null_backend`](#file-audio-backend-null-backend) (9).
 
 **Includes:** `thandor/platform/bootstrap/image.h`.
 

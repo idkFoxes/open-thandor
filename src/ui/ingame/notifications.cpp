@@ -95,10 +95,13 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer()
   /* notificationButtonTextureSource holds the playing movie, or the panel texture source when none plays */
   if (panelTextureSource != static_cast<GraphicsTextureSourceAsset *>(inGameRoot->notificationButtonTextureSource)) {
     if (!Movie_AdvanceFrame(nullptr,nullptr)) {
-      Movie_Close();
-      g_InGameSessionNotificationTimeoutTicks = 640;
+      /* The original closes the movie first and switches the button back to the panel afterwards, so a frame
+         drawn on the main thread in between reads the freed movie; reordered here because the button must
+         stop referring to the movie before it is freed (the resulting state is the same). */
       inGameRoot->notificationButtonTextureSource = (uintptr_t)panelTextureSource;
       inGameRoot->notificationButtonSubresource = 37;
+      Movie_Close();
+      g_InGameSessionNotificationTimeoutTicks = 640;
     }
   }
   else if (inGameRoot->notificationQueue[0].priority != 0) {

@@ -108,6 +108,19 @@ void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandP
 }
 
 
+/* Not in the original (open-thandor): empties the in-game command queue at the start of a session
+   (InGameSession_ResetTickState). The original never resets it, so commands still queued when a network session
+   ended (e.g. a results-page command after the last batch) went out first in the next network session, packed
+   with the old session's local player id; dropped here because they belong to the ended session. Local sessions
+   never queue (InGameCommand_Issue calls the handler directly), so they are unaffected.
+*/
+void InGameCommandQueue_Clear()
+
+{
+  g_InGameCommandQueueEnd = g_InGameCommandQueueRecords;
+}
+
+
 /* Takes the oldest queued in-game command into outputRecord->command (offset 0x10 of the packet record)
    and moves the remaining records one slot down. With an empty queue only the packed command dword is
    cleared, which marks "no command" in the batch.

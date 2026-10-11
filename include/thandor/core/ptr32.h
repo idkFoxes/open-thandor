@@ -86,8 +86,8 @@ template <class T> struct Ptr32 {
     Ptr32(ThandorAnyPtr pointer)
         requires(!std::is_function_v<T>)
         : value(thandor_ptr32_pack(pointer.ptr)) {}
-    /* field = THANDOR_SLOT(function), also as an element of an array initialiser (an exact match, so MSVC does not
-       weigh it against Ptr32(T *) over the slot's function-pointer conversion) */
+    /* field = THANDOR_SLOT(function), also as an element of an array initialiser (an exact match, so overload
+       resolution does not weigh it against Ptr32(T *) over the slot's function-pointer conversion) */
     template <auto Fn> Ptr32(ThandorSlot<Fn>) : Ptr32(ThandorSlot<Fn>::template pick<T>()) {}
     Ptr32 &operator=(T *pointer) { value = thandor_ptr32_pack(thandor_ptr32_address(pointer)); return *this; }
     Ptr32 &operator=(ThandorAnyPtr pointer)

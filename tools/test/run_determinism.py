@@ -37,7 +37,7 @@ import time
 from game_env import add_pathing_argument, apply_pathing, game_env
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'thandor.dat', 'thandor.ini', 'thandor.log', 'crash.log',
+PRIVATE = ('thandor.exe', 'thandor.sym', 'thandor.dat', 'thandor.ini', 'thandor.log', 'crash.log',
            'crash_raw.log', 'hang.log',
            'statehash.txt')
 # mission page (1280x800): "Beginnen", then wait until the level runs; the scenarios need no further input
@@ -62,7 +62,7 @@ def make_copy(game, k, tag='d'):
     for name in ('thandor.dat', 'thandor.ini'):
         if os.path.exists(os.path.join(target, name)):
             os.remove(os.path.join(target, name))
-    for name in ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'thandor.dat', 'thandor.ini'):
+    for name in ('thandor.exe', 'thandor.sym', 'thandor.dat', 'thandor.ini'):
         if os.path.exists(os.path.join(game, name)):
             shutil.copy(os.path.join(game, name), os.path.join(target, name))
     return target

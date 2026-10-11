@@ -815,8 +815,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('game_dir')
     default_new = os.path.join(REPO, 'build-mingw-test', 'thandor.exe')
-    if not os.path.exists(default_new):
-        default_new = os.path.join(REPO, 'build-test', 'thandor.exe')
     parser.add_argument('--new', default=default_new, help='test build (default: build-mingw-test/thandor.exe)')
     parser.add_argument('--cases', default=','.join(CASES), help='comma-separated: ' + ','.join(CASES))
     parser.add_argument('--jobs', type=int, default=6, help='cases at once')
