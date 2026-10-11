@@ -10,6 +10,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/world/pathing/mode.h>
 
 /* Module data. */
 
@@ -46,6 +47,9 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
      before the first simulation steps, which already run during the initialisation. */
   DebugHook_SessionInitializing();
   if ((loadExistingSessionFlag & 1U) == 0) {
+    /* open-thandor: the pathing mode is fixed before the session's world is built (docs/plans/pathfinding.md 4) */
+    PathingMode_ApplyForNewSession((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
+                                   SESSION_NETWORK_ROLE_LOCAL);
     started = InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16,&startupError);
   }
   else {

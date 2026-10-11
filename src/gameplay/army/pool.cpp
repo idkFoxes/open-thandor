@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/world/pathing/mode.h>
 
 /* Module data. */
 
@@ -303,6 +304,10 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   armyRuntime = ArmyRuntimePool_FindFreeSlot();
   if (armyRuntime == nullptr) {
     return ArmyRuntime_FailCreateInstance(FATAL_ERROR_GENERAL_FAILURE,outError);
+  }
+  if (Pathing_Improved()) {
+    /* a reused slot starts without the improved pathing state of its former army */
+    PathingUnitState_Clear((int)(armyRuntime - g_ArmyRuntimeSlots));
   }
   armyAssetRecord = ArmyAssetRegistry_FindRecordById(armyAssetId);
   if (armyAssetRecord == nullptr) {
