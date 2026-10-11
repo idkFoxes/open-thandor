@@ -7,6 +7,7 @@
 
 #include <thandor/world/pathing/improved/arrival.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 #include <thandor/world/pathing/mode.h>
 #include <thandor/world/pathing/scratch_grid.h>
 
@@ -98,6 +99,7 @@ static ArrivalNeighbour Arrival_FindArrivedNeighbour(ArmyRuntimeSlot *self,int r
 
 bool PathingArrival_TestArrived(ArmyMovementRuntime *movementRuntime,bool planning)
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_ARRIVAL_TEST);
   ArmyRuntimeSlot *self = ModelView_Cast<ArmyRuntimeSlot>(movementRuntime);
   ptrdiff_t slotIndex = self - g_ArmyRuntimeSlots;
   PathingUnitState *state;
@@ -208,6 +210,7 @@ static void Formation_SlotOffset(int slotIndex,int spacing,int *outDeltaX,int *o
 bool PathingFormation_AssignPointSlots(Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection,
                                        Q12 slotWorldX[32],Q12 slotWorldY[32])
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_FORMATION_SLOTS);
   int order[32];
   int64_t distance[32];
   int mobileCount = 0;

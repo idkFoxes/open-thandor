@@ -18,6 +18,7 @@
 static FILE *s_traceFile;
 static bool s_traceOpened;
 static unsigned s_traceFaction = 1;
+static bool s_traceAllFactions; /* OPEN_THANDOR_PATHTRACE_FACTION=all */
 static bool s_infoWritten[ARMY_RUNTIME_SLOT_COUNT];
 static int s_tracedPathingMode = -1;
 
@@ -30,6 +31,7 @@ static FILE *DebugPathTrace_File()
     if (path != nullptr && path[0] != '\0') {
       s_traceFile = fopen(path, "w");
       if (faction != nullptr) {
+        s_traceAllFactions = _stricmp(faction, "all") == 0;
         s_traceFaction = (unsigned)atoi(faction);
       }
       Thandor_Log("test aid: movement trace of faction %u -> %s", s_traceFaction, path);
@@ -52,7 +54,7 @@ void DebugPathTrace_Event(int kind, const void *army, const void *other)
   if (file == nullptr || army == nullptr) {
     return;
   }
-  if (static_cast<const ArmyRuntimeSlot *>(army)->factionIndex != s_traceFaction) {
+  if (!s_traceAllFactions && static_cast<const ArmyRuntimeSlot *>(army)->factionIndex != s_traceFaction) {
     return;
   }
   fprintf(file, "E %u %c %d %d\n", g_GameFactionRuntimeImage.tail.simulationTick, kind,
@@ -107,7 +109,7 @@ void DebugPathTrace_AfterStep()
       }
       fprintf(file, "\n");
     }
-    if (army->factionIndex != s_traceFaction || definition->accelerationPerTick == 0) {
+    if ((!s_traceAllFactions && army->factionIndex != s_traceFaction) || definition->accelerationPerTick == 0) {
       continue;
     }
     node = army->modelNodeRuntime;

@@ -309,12 +309,14 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     }
     g_InGamePendingSimulationTicks++;
   }
+  DebugHook_ProfileEnter(DEBUG_PROFILE_LOCKSTEP);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     stepDue = InGameTick_RunHostOrLocalLockstep();
   }
   else {
     stepDue = InGameTick_RunClientLockstep();
   }
+  DebugHook_ProfileLeave(DEBUG_PROFILE_LOCKSTEP);
   if (!stepDue) {
     g_SpinLockRelease(&g_InGameStateTickSpinLock);
     return;

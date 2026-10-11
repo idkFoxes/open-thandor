@@ -9,7 +9,7 @@
 #define THANDOR_PLATFORM_DEBUG_PATHTRACE_H
 
 /* Movement trace (developer tools, THANDOR_DEV_TOOLS). OPEN_THANDOR_PATHTRACE=<file> writes, after every simulation
-   step, one line per mobile army of faction OPEN_THANDOR_PATHTRACE_FACTION (default 1):
+   step, one line per mobile army of faction OPEN_THANDOR_PATHTRACE_FACTION (default 1; "all": every faction):
      U <tick> <slot> <x> <y> <heading> <advance> <turnVelocity> <movementFlags> <routeX> <routeY> <fallbackX>
        <fallbackY> <targetX> <targetY> <retryCountdown>
    once per army an info line

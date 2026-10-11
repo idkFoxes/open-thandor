@@ -335,6 +335,7 @@ ModelRuntimeSlot *PathingYield_FindBlockingRuntime
           (Q12 nextWorldYQ12,Q12 nextWorldXQ12,RuntimeCollisionQueryView *currentRuntime,
           WorldRuntimeContext *worldRuntime)
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_FIND_BLOCKING);
   ModelRuntimeNode *currentModelNode;
   ModelRuntimeNode *candidateModelNode;
   ModelRuntimeSlot *candidateModelRuntime;
@@ -390,6 +391,7 @@ ModelRuntimeSlot *PathingYield_FindBlockingRuntime
 bool PathingYield_HandleBlocked
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *moverModel,ModelRuntimeSlot *blocker)
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_HANDLE_BLOCKED);
   ArmyRuntimeSlot *mover;
   ArmyRuntimeSlot *other;
   PathingUnitState *moverState;
@@ -434,6 +436,8 @@ bool PathingYield_HandleBlocked
        the original's 64 steps) */
     PathingYield_HandleFree(mover);
     if (mover->movementRetryCountdown > (uint32_t)PATHING_YIELD_WAIT_STEPS) {
+      DebugHook_ProfileEnter(DEBUG_PROFILE_YIELD_CAP);
+      DebugHook_ProfileLeave(DEBUG_PROFILE_YIELD_CAP);
       mover->movementRetryCountdown = PATHING_YIELD_WAIT_STEPS;
     }
     return false;
@@ -442,6 +446,8 @@ bool PathingYield_HandleBlocked
   moverState->blockerSlot = (uint16_t)(otherSlot + 1);
   if (moverState->waitSteps >= PATHING_YIELD_WAIT_STEPS) {
     /* budget used up: re-plan at once, with the blocker as an obstacle (PathingYield_BeginReplan) */
+    DebugHook_ProfileEnter(DEBUG_PROFILE_YIELD_BUDGET);
+    DebugHook_ProfileLeave(DEBUG_PROFILE_YIELD_BUDGET);
     mover->movementRetryCountdown = 0;
     return false;
   }
@@ -504,6 +510,7 @@ void PathingYield_HandleFree(ArmyRuntimeSlot *moverArmy)
 
 void PathingYield_BeginReplan(ArmyRuntimeSlot *plannerArmy,int startRow,int startColumn)
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_YIELD_REPLAN);
   PathingUnitState *state;
   ArmyRuntimeSlot *blockerArmy;
   ModelRuntimeSlot *blockerModel;
@@ -597,6 +604,7 @@ void PathingYield_BeginReplan(ArmyRuntimeSlot *plannerArmy,int startRow,int star
 
 void PathingYield_EndReplan(ArmyRuntimeSlot *plannerArmy)
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_YIELD_REPLAN);
   PathingUnitState *state;
   GridScratchCell *cell;
   const uint8_t *saved;
@@ -643,6 +651,7 @@ void PathingYield_NoteGroupPlan(GameEntityRuntime *routeEntityRuntime,Q12 target
 bool PathingYield_FindCorridorSideStep
           (EntityPathingRouteEntityRuntimeView *routeEntityRuntime,Q12 *outWorldXQ12,Q12 *outWorldYQ12)
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_CORRIDOR_STEP);
   ArmyRuntimeSlot *army;
   ModelRuntimeSlot *model;
   uint32_t directionLength;

@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/move_orders.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 #include <thandor/core/bytes.h>
 #include <thandor/world/pathing/mode.h>
 #include <thandor/world/pathing/improved/arrival.h>
@@ -350,6 +351,7 @@ void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyM
 void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_PLAN_DIRECT);
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
@@ -651,10 +653,12 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
       movementRuntime->retryCountdown = ARMY_MOVEMENT_RETRY_TICKS;
       movementRuntime->lastCheckedWorldXQ12 = modelWorldX;
       movementRuntime->lastCheckedWorldYQ12 = modelWorldY;
+      DebugHook_ProfileEnter(DEBUG_PROFILE_PLAN_RETRY);
       resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                          ((movementRuntime->fallbackPosition).worldYQ12,
                           (movementRuntime->fallbackPosition).worldXQ12,
                           movementRuntime->entityRuntime,worldRuntime);
+      DebugHook_ProfileLeave(DEBUG_PROFILE_PLAN_RETRY);
       movementRuntime->movementWorldXQ12 = resolvedDestination.primaryWorldXQ12;
       movementRuntime->movementWorldYQ12 = resolvedDestination.primaryWorldYQ12;
       (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;

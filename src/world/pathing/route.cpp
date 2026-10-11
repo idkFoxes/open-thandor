@@ -72,6 +72,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
           WorldRuntimeContext *worldRuntime)
 
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_PLAN_ROUTE);
   GraphicsFixedVec3 *entityTranslation;
   ModelRuntimeClassId runtimeClassId;
   int64_t wideProductX;
@@ -308,6 +309,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
           WorldRuntimeContext *worldRuntime)
 
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_GROUP_ROUTES);
   int32_t swappedPriority;
   int entityWorldY;
   GameEntityRuntime *candidateEntity;

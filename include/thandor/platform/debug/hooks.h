@@ -26,6 +26,29 @@
 #include <thandor/network/backend/types.h>
 #include <thandor/platform/debug/types.h>
 
+/* Sections of the step profiler (OPEN_THANDOR_STEP_PROFILE, platform/debug/profile.h), entered and left through
+   DebugHook_ProfileEnter / DebugHook_ProfileLeave. */
+enum DebugProfileSection {
+  DEBUG_PROFILE_ARMY_UPDATE = 0,     /* per-army primary update (all classes) */
+  DEBUG_PROFILE_PLAN_ROUTE,          /* EntityPathing_ResolveDestinationAndRebuildRoutes */
+  DEBUG_PROFILE_GROUP_ROUTES,        /* EntityPathing_RebuildOverlappingGroupRoutes */
+  DEBUG_PROFILE_YIELD_REPLAN,        /* PathingYield_BeginReplan + EndReplan */
+  DEBUG_PROFILE_FIND_BLOCKING,       /* collision scan of a ground move (original or improved) */
+  DEBUG_PROFILE_HANDLE_BLOCKED,      /* PathingYield_HandleBlocked */
+  DEBUG_PROFILE_ARRIVAL_TEST,        /* PathingArrival_TestArrived */
+  DEBUG_PROFILE_CORRIDOR_STEP,       /* PathingYield_FindCorridorSideStep */
+  DEBUG_PROFILE_DRIVE_IMPROVED,      /* ArmyDriveImproved_UpdateGroundAdvance */
+  DEBUG_PROFILE_FORMATION_SLOTS,     /* PathingFormation_AssignPointSlots */
+  DEBUG_PROFILE_GRID_COPY,           /* GridScratch_CopyPrimaryToSecondary */
+  DEBUG_PROFILE_PLAN_RETRY,          /* re-plan of ArmyRuntime_UpdateMovementAndWaypoints (route point reached) */
+  DEBUG_PROFILE_PLAN_DIRECT,         /* ArmyRuntime_StartDirectMoveCommand (re-approach of the final target) */
+  DEBUG_PROFILE_PROPAGATE,           /* GridPathCost_PropagateWeightedHexNeighbors */
+  DEBUG_PROFILE_YIELD_CAP,           /* count: improved P2 capped a retry wait */
+  DEBUG_PROFILE_YIELD_BUDGET,        /* count: improved P2 wait budget used up (re-plan at once) */
+  DEBUG_PROFILE_LOCKSTEP,            /* lockstep before a step: the players' commands (orders plan routes here) */
+  DEBUG_PROFILE_SECTION_COUNT
+};
+
 #ifdef THANDOR_DEV_TOOLS
 
 #ifdef _MSC_VER
@@ -112,6 +135,18 @@ void DebugHook_PathingEvent(int kind, const void *army, const void *other);
    (PathingMode value) to use instead of mode, the one the settings chose; OPEN_THANDOR_PATHING=improved|original
    wins over [game] pathing (test runs: tools/test force original unless told otherwise). */
 int DebugHook_LocalPathingMode(int mode);
+/* Step profiler sections (OPEN_THANDOR_STEP_PROFILE): section is a DebugProfileSection. */
+void DebugHook_ProfileEnter(int section);
+void DebugHook_ProfileLeave(int section);
+/* Profiles the rest of the enclosing block as section. */
+struct DebugProfileScope {
+  int section;
+  explicit DebugProfileScope(int profiledSection) : section(profiledSection) { DebugHook_ProfileEnter(section); }
+  ~DebugProfileScope() { DebugHook_ProfileLeave(section); }
+  DebugProfileScope(const DebugProfileScope &) = delete;
+  DebugProfileScope &operator=(const DebugProfileScope &) = delete;
+};
+#define DebugHook_ProfileScope(section) DebugProfileScope debugProfileScope_(section)
 #ifdef _MSC_VER
 #define DebugHook_NoteOutsideStep(what) DebugHook_NoteOutsideStepFrom((what), _ReturnAddress())
 #else
@@ -155,6 +190,9 @@ int DebugHook_LocalPathingMode(int mode);
 #define DebugHook_NoteOutsideStep(what) ((void)0)
 #define DebugHook_PathingEvent(kind, army, other) ((void)0)
 #define DebugHook_LocalPathingMode(mode) (mode)
+#define DebugHook_ProfileEnter(section) ((void)0)
+#define DebugHook_ProfileLeave(section) ((void)0)
+#define DebugHook_ProfileScope(section) ((void)0)
 
 #endif /* THANDOR_DEV_TOOLS */
 

@@ -20,6 +20,7 @@
 #include <thandor/platform/debug/movie_decoder.h>
 #include <thandor/platform/debug/movie_player.h>
 #include <thandor/platform/debug/pathtrace.h>
+#include <thandor/platform/debug/profile.h>
 #include <thandor/platform/debug/script.h>
 #include <thandor/platform/debug/statehash.h>
 #include <thandor/platform/debug/test_aids.h>
@@ -161,6 +162,7 @@ void DebugHook_SessionStarted()
 {
   g_TestAidSessionCount = g_TestAidSessionCount + 1;
   DebugStateHash_SessionStart();
+  DebugProfile_SessionStarted();
   if (g_FrontendLoadedCampaignAsset != nullptr) {
     DebugCampaign_DumpProgress("level started");
   }
@@ -169,10 +171,12 @@ void DebugHook_SessionStarted()
 void DebugHook_SessionFrameBegin()
 {
   g_TestAidInGameFrames = g_TestAidInGameFrames + 1;
+  DebugProfile_FrameBegin();
 }
 
 void DebugHook_SessionFrameEnd()
 {
+  DebugProfile_FrameEnd();
   DebugCampaign_AutoWinTick();
   DebugCampaign_AutoLoseTick();
 }
@@ -180,11 +184,13 @@ void DebugHook_SessionFrameEnd()
 void DebugHook_SimulationStepBegin()
 {
   g_TestAidInSimulationStep = 1;
+  DebugProfile_StepBegin();
 }
 
 void DebugHook_SimulationStepEnd()
 {
   g_TestAidInSimulationStep = 0;
+  DebugProfile_StepEnd(g_GameFactionRuntimeImage.tail.simulationTick);
   DebugPathTrace_AfterStep();
   DebugStateHash_AfterStep();
 }
@@ -208,6 +214,16 @@ int DebugHook_LocalPathingMode(int mode)
     return PATHING_MODE_ORIGINAL;
   }
   return mode; /* empty or "setting": the setting's mode */
+}
+
+void DebugHook_ProfileEnter(int section)
+{
+  DebugProfile_Enter(section);
+}
+
+void DebugHook_ProfileLeave(int section)
+{
+  DebugProfile_Leave(section);
 }
 
 int DebugHook_SuppressTransientMarkers()

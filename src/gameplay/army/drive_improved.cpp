@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/drive_improved.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* open-thandor: movement of the improved pathing mode (docs/plans/pathfinding.md 5, P1 and P6). Only reached
    behind Pathing_Improved(); see drive_improved.h. */
@@ -52,6 +53,7 @@ bool ArmyDriveImproved_UpdateGroundAdvance
            bool *coasting)
 
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_DRIVE_IMPROVED);
   ModelDefinitionGroundMovementSteeringView *movementDefinition;
   ModelDefinition *definition;
   uint32_t headingError;
