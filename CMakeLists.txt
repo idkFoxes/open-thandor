@@ -288,6 +288,7 @@ add_executable(thandor WIN32
     src/world/model/picking.cpp
     src/world/model/pool.cpp
     src/world/pathing/influence.cpp
+    src/world/pathing/mode.cpp
     src/world/pathing/path_cost.cpp
     src/world/pathing/reachability.cpp
     src/world/pathing/route.cpp
