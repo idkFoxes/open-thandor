@@ -29,7 +29,7 @@ The value converts to the slot's type it initialises:
 
 UI_SLOT(function) is the same, for UI vtables and handler tables.
 
-Both GCC and MSVC deduce the slot's signature from the field's type (the Ptr32<R(A...)> constructor and
+GCC deduces the slot's signature from the field's type (the Ptr32<R(A...)> constructor and
 assignment from a ThandorSlot in core/ptr32.h, the conversion function template to R (*)(A...)), also for the
 elements of an array: `.pointerMove = THANDOR_SLOT(UiImageControl_PointerMove)`. Where a context gives no target
 type (auto, a template argument, ?:), name it: ThandorSlot<&function>::pick<R(A...)>().

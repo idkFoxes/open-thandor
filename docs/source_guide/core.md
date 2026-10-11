@@ -55,7 +55,7 @@ Core contracts shared by the split submodules. Q12: 0x1000 == 1.0.
 
 **Functions** (1 public):
 
-- [`Thandor_AddressBytes`](../../include/thandor/core/contracts.h#L68) - The byte address base stands for (a pointer, an integer address or a Ptr32/UPtr32 field), as the former C-style cast to a byte pointer did: through its integer value (uintptr_t).
+- [`Thandor_AddressBytes`](../../include/thandor/core/contracts.h#L63) - The byte address base stands for (a pointer, an integer address or a Ptr32/UPtr32 field), as the former C-style cast to a byte pointer did: through its integer value (uintptr_t).
 
 **Called from:** no other file (entry points, slots filled at run time or file-local use).
 

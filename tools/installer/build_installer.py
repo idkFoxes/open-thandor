@@ -3,12 +3,12 @@
 usage: build_installer.py BUILD_DIR [--out DIR] [--iscc PATH] [--version X.Y.Z]
                           [--wizard-image FILES] [--wizard-small-image FILES] [--icon FILE] [-D NAME[=VALUE] ...]
 
-BUILD_DIR is a release build directory (preset mingw-release, or an MSVC release build) with thandor.exe and
+BUILD_DIR is a release build directory (preset mingw-release) with thandor.exe and
 SDL3.dll; a build with the developer tools (THANDOR_DEV_TOOLS=ON in its CMakeCache.txt) is refused. The files are
 staged in BUILD_DIR/installer/stage: thandor.exe, SDL3.dll, thandor.sym (if the build has one) and the SDL3 licence
 (LICENSE-SDL3.txt, from the vcpkg package next to SDL3_DIR, if found). A staged executable or DLL that still carries
 DWARF debug sections is stripped with `strip --strip-debug` (keeps the symbol table and every address, so
-thandor.sym still matches); the GCC build strips thandor.exe itself already. Then ISCC compiles the installer into
+thandor.sym still matches); the build strips thandor.exe itself already. Then ISCC compiles the installer into
 --out (default BUILD_DIR/installer).
 
 --version defaults to CMAKE_PROJECT_VERSION from the CMakeCache.txt, else 1.0.7. The wizard images default to the
@@ -110,7 +110,7 @@ def main():
     if os.path.isfile(sym):
         shutil.copy2(sym, stage)
     else:
-        print('build_installer: no thandor.sym (MSVC build?), shipping without it')
+        print('build_installer: no thandor.sym, shipping without it')
     sdl_dir = cache.get('SDL3_DIR')
     if sdl_dir and os.path.isfile(os.path.join(sdl_dir, 'copyright')):
         shutil.copyfile(os.path.join(sdl_dir, 'copyright'), os.path.join(stage, 'LICENSE-SDL3.txt'))

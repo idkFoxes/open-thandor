@@ -1,61 +1,16 @@
 # Building
 
-The tree builds a 64-bit Windows executable (`thandor.exe`, x64) with SDL3. The main compiler is MinGW-w64 GCC
-([below](#mingw-w64-gcc)): the automated checks run with its build (`mingw-test`, `build-mingw-test`) and the
-reference builds are GCC builds. MSVC is the second compiler: it must keep building without warnings (for the Visual
-Studio debugger and PDB symbols in crash logs), but the checks are not run with it. The 32-bit build and the
-original's Win32/DirectX platform code (DirectDraw, DirectInput, DirectSound, WinMM timers, the Win32 message pump)
-were removed once the x64 build reproduced every determinism hash and pixel of the 32-bit one; they are in the git
-history.
-
-Requirements:
-
-- Visual Studio 2022 or newer with the C++ workload (MSVC x64 tools and a Windows 10/11 SDK)
-- CMake 3.25 or newer and Ninja (both come with Visual Studio)
-- SDL3 for x64 with Vulkan support, e.g. from vcpkg: `vcpkg install sdl3[vulkan]:x64-windows` (plain `sdl3` builds
-  and runs, but its SDL3.dll has no Vulkan, so only DirectX 12 and Software are offered)
-- for the Vulkan shaders: dxc, e.g. from vcpkg: `vcpkg install directx-dxc:x64-windows` (found through
-  `find_package(directx-dxc)`, or pass `-DTHANDOR_DXC=<path to dxc.exe>`); fxc for the Direct3D 12 shaders comes with
-  the Windows SDK; without them the build uses the committed shader headers (see below)
-
-SDL3 is found with `find_package(SDL3)`: pass its install prefix in `CMAKE_PREFIX_PATH`
-(`-DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows`), or set the environment variable `VCPKG_ROOT` to the vcpkg
-directory, whose `installed/x64-windows` CMake then searches as well. The build copies `SDL3.dll` next to
-`thandor.exe`; the game needs it there.
-
-From a vcvars64 prompt:
-
-```bat
-call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
-cmake -S . -B build-rel -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
-      -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows
-cmake --build build-rel
-```
-
-or with a preset, which finds MSVC x64 without a vcvars prompt (`cmake/msvc-x64.cmake`; SDL3 through `VCPKG_ROOT`
-or `-DCMAKE_PREFIX_PATH=...` on the command line):
-
-| Preset | Build |
-|---|---|
-| `release` | RelWithDebInfo (`cmake-build-msvc-release`) |
-| `debug` | Debug (`cmake-build-msvc-debug`) |
-| `test` | RelWithDebInfo with the developer tools, in `build-test` (what `tools/test` runs) |
-| `gpu-test` | as `test` (the SDL_GPU renderers are on by default now, see below) |
-
-```bat
-cmake --preset test
-cmake --build --preset test
-```
-
-CMake stops with an error for anything but MSVC x64 or MinGW-w64 GCC x64. Use `RelWithDebInfo` for testing: it is optimized (`/O2`) and
-keeps the PDB, so `crash.log` shows function names and lines. `Debug` (`/Od`) is much slower in game; `Release`
-drops the PDB. Set `LINK=/MAP` before building to get `thandor.map` for `tools/data/symbolize.py`
-(`symbolize.py crash_raw.log <build>\thandor.map`).
+The tree builds a 64-bit Windows executable (`thandor.exe`, x64) with SDL3. The only supported compiler is
+MinGW-w64 GCC ([below](#mingw-w64-gcc)); CMake stops with an error for anything else (MSVC, Clang, 32-bit). The
+automated checks run with its developer-tools build (`mingw-test`, `build-mingw-test`), releases are built with
+`mingw-release`. The 32-bit build and the original's Win32/DirectX platform code (DirectDraw, DirectInput,
+DirectSound, WinMM timers, the Win32 message pump) were removed once the x64 build reproduced every determinism hash
+and pixel of the 32-bit one; MSVC support was dropped after release 1.0.7. Both are in the git history.
 
 The original data layouts keep their pointers in 32-bit fields (`Ptr32<T>`,
 [`include/thandor/core/ptr32.h`](../include/thandor/core/ptr32.h)), so savegames and assets keep their format, and
-everything the game points to must lie below 2 GB. The executable is linked large-address-aware (`/LARGEADDRESSAWARE`,
-since 1.0.7) at the fixed base `0x10000000` without ASLR (`/DYNAMICBASE:NO`): the graphics driver gets the whole
+everything the game points to must lie below 2 GB. The executable is linked large-address-aware (since 1.0.7) at
+the fixed base `0x10000000` without ASLR (see the linker options below): the graphics driver gets the whole
 64-bit address space (in a process limited to 2 GB some drivers with much video memory crashed at the Vulkan start or
 drew no 3D view with DirectX 12), and the game's own memory comes from pools reserved below 2 GB
 ([`include/thandor/platform/bootstrap/low_memory.h`](../include/thandor/platform/bootstrap/low_memory.h): the
@@ -64,18 +19,30 @@ shows the pools at start, after the first GPU frame and at shutdown (`low memory
 ..., N process heap fallbacks`); a full pool falls back to the process heap and logs `low memory: pools full`, and a
 pointer of 2 GB or more that still reaches a 32-bit field stops the game (`Ptr32: pointer ... does not fit a 32-bit
 field`). The CMake option `THANDOR_LARGE_ADDRESS_AWARE` (default `ON`) set to `OFF` builds the old layout
-(`/LARGEADDRESSAWARE:NO`, the whole process below 2 GB, no pools), only for comparisons. Code that
+(not large-address-aware, the whole process below 2 GB, no pools), only for comparisons. Code that
 keeps a pointer in a plain 32-bit integer (a field holding a pointer or an offset/id, a saved offset) converts with
 `Thandor_PointerToU32`/`Thandor_PointerToI32` (stops the game for a pointer that does not fit) and
 `Thandor_U32ToPointer<T>` (sign-extended like `Ptr32`), never with a plain cast.
 
 ### MinGW-w64 GCC
 
-The same tree builds with MinGW-w64 GCC for x64 (x86_64-w64-mingw32, SEH exceptions; tested with the MinGW-Builds
-GCC 15.2 in `C:\mingw64`). Requirements: the toolchain (`g++`, `ld`, `windres`, `addr2line`) and Ninja (the
-MinGW-Builds distribution has `ninja.exe` in its `bin`), CMake 3.25+, and SDL3 for MinGW:
-`vcpkg install sdl3[vulkan]:x64-mingw-dynamic` (vcpkg's `windres` step fails when the vcpkg path contains a space; build
-with `--x-buildtrees-root=C:/vcbt` or another path without spaces then).
+The compiler is MinGW-w64 GCC for x64 (x86_64-w64-mingw32, SEH exceptions; tested with the MinGW-Builds GCC 15.2 in
+`C:\mingw64`). Requirements:
+
+- the toolchain (`g++`, `ld`, `windres`, `objcopy`, `strip`, `nm`, `addr2line`) and Ninja (the MinGW-Builds
+  distribution has `ninja.exe` in its `bin`), CMake 3.25 or newer
+- SDL3 for MinGW with Vulkan support, e.g. from vcpkg: `vcpkg install sdl3[vulkan]:x64-mingw-dynamic` (plain `sdl3`
+  builds and runs, but its SDL3.dll has no Vulkan, so only DirectX 12 and Software are offered; vcpkg's `windres` step
+  fails when the vcpkg path contains a space, build with `--x-buildtrees-root=C:/vcbt` or another path without spaces
+  then)
+- for the GPU shaders, optional: dxc for Vulkan, e.g. `vcpkg install directx-dxc:x64-windows` (found through
+  `find_package(directx-dxc)`, or pass `-DTHANDOR_DXC=<path to dxc.exe>`), and fxc for Direct3D 12 from the Windows
+  SDK; without them the build uses the committed shader headers (see below)
+
+SDL3 is found with `find_package(SDL3)`: pass its install prefix in `CMAKE_PREFIX_PATH`
+(`-DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-mingw-dynamic`), or set the environment variable `VCPKG_ROOT` to the
+vcpkg directory, whose `installed/x64-mingw-dynamic` CMake then searches as well. The build copies `SDL3.dll` next to
+`thandor.exe`; the game needs it there.
 
 ```bat
 set PATH=C:\mingw64\bin;%PATH%
@@ -94,21 +61,25 @@ cmake --build --preset mingw-test
 variable `MINGW_ROOT` (the directory with `bin\g++.exe`), else the `g++` on the `PATH`, else `C:\mingw64`,
 `C:\msys64\mingw64` or `C:\msys64\ucrt64`. SDL3 comes from `CMAKE_PREFIX_PATH` or
 `%VCPKG_ROOT%\installed\x64-mingw-dynamic`. The C and C++ runtimes are linked statically (`-static`), so only
-`SDL3.dll` goes next to `thandor.exe`; the executable uses the Universal CRT like the MSVC build.
+`SDL3.dll` goes next to `thandor.exe`; the executable uses the Universal CRT.
 
-What keeps the two builds identical in behaviour (the self-test hashes and the determinism references match):
+Use `RelWithDebInfo` for testing (all presets do): it is optimized and keeps the debug information (split off into
+`thandor.debug`, see below); `Debug` is much slower in game.
 
-- GCC flags: `-fno-strict-aliasing` (the recovered code reinterprets memory), `-fwrapv` (signed overflow wraps as
-  on MSVC), `-ffp-contract=off` (no fused multiply-add; MSVC x64 does not contract), `-mms-bitfields` (MSVC struct
-  and bit-field layout; [`src/core/layout_checks.cpp`](../src/core/layout_checks.cpp) checks the sizes and pointer
-  offsets of every layout at compile time). No `-fpermissive`: a pointer kept in a plain 32-bit value goes through
+What keeps the build's behaviour that of the original (the self-test hashes and the determinism references depend
+on it):
+
+- GCC flags: `-fno-strict-aliasing` (the recovered code reinterprets memory), `-fwrapv` (signed overflow wraps),
+  `-ffp-contract=off` (no fused multiply-add, so floating-point results do not depend on the optimizer),
+  `-mms-bitfields` (the Microsoft struct and bit-field layout of the original;
+  [`src/core/layout_checks.cpp`](../src/core/layout_checks.cpp) checks the sizes and pointer offsets of every layout
+  at compile time). No `-fpermissive`: a pointer kept in a plain 32-bit value goes through
   the checked conversions of `core/ptr32.h` (`Thandor_PointerToU32`/`Thandor_PointerToI32`, `Thandor_U32ToPointer`),
   never through a truncating cast; `-Wall` without `-Wparentheses`, `-Wsign-compare` and `-Wcomment`, which the
   decompiled code triggers by the hundreds.
-- Function arguments and operands are evaluated in an unspecified order, and MSVC and GCC differ: an expression with
-  two state-changing calls (two random draws, two reads of a stream) gets explicit temporaries in MSVC's order.
-- `THANDOR_ALIGN(n)` (core/contracts.h) instead of `__declspec(align(n))`; the crash handler's guarded stack walk
-  (`__try`) is MSVC-only; `_ReturnAddress` becomes `__builtin_return_address(0)`.
+- Function arguments and operands are evaluated in an unspecified order: an expression with two state-changing
+  calls (two random draws, two reads of a stream) gets explicit temporaries in the original's order.
+- `THANDOR_ALIGN(n)` (core/contracts.h) for the original's data alignment.
 - Linker: `--image-base=0x10000000 --disable-dynamicbase --disable-high-entropy-va`. GNU ld marks every 64-bit image
   large-address aware (its `--disable-large-address-aware` is for 32-bit images only), so the build runs
   [`cmake/pe_not_large_address_aware.cpp`](../cmake/pe_not_large_address_aware.cpp) on `thandor.exe` after the
@@ -117,15 +88,14 @@ What keeps the two builds identical in behaviour (the self-test hashes and the d
   relocatable. Check with `objdump -p thandor.exe`: `Characteristics` with 0x20, `ImageBase 0000000010000000`,
   `DllCharacteristics` 0x8100 (`NX_COMPAT` and `TERMINAL_SERVICE_AWARE`, no `DYNAMIC_BASE`).
 
-Debug information: an MSVC build keeps it in `thandor.pdb` next to `thandor.exe` (dbghelp reads it for the names in
-crash logs). A GCC build compiles with DWARF (`-g`, some 33 MB) and splits it off after the link like a PDB, in every
-GCC configuration: `objcopy --only-keep-debug` writes `thandor.debug`, `strip --strip-all` removes the DWARF and the
+Debug information: the build compiles with DWARF (`-g`, some 33 MB) and splits it off after the link, in every
+configuration: `objcopy --only-keep-debug` writes `thandor.debug`, `strip --strip-all` removes the DWARF and the
 COFF symbol table from `thandor.exe` (about 1.3 MB then; the loaded sections and their addresses do not change), and
 `objcopy --add-gnu-debuglink=thandor.debug` records the debug file in the executable, so `gdb` and `addr2line` find
 it when it lies next to `thandor.exe` (`gdb -batch -ex "info line WinMain" thandor.exe`). `thandor.debug` is only
 needed for debugging and for source lines; the game does not read it and does not need it.
 
-Crash and hang logs of a GCC build: there is no PDB for dbghelp; instead the build writes `thandor.sym` next to
+Crash and hang logs: there is no PDB for dbghelp; instead the build writes `thandor.sym` next to
 `thandor.exe` (the code symbols from `nm -C` of the linked executable before it is stripped,
 [`cmake/symbol_table.cmake`](../cmake/symbol_table.cmake); about 0.4 MB), which the crash handler reads at start, so
 `crash.log`, `hang.log` and the watchdog give each frame as `Function+0xNN [thandor.exe+0xOFFSET]` (keep
@@ -139,20 +109,20 @@ addr2line -f -C -i -e build-mingw-test\thandor.exe 0x100516AA 0x1000146C
 python tools\data\symbolize.py crash_raw.log build-mingw-test\thandor.exe
 ```
 
-`symbolize.py` calls `addr2line` for an `.exe` and reads a linker map otherwise; the GCC build also writes
+`symbolize.py` calls `addr2line` for an `.exe` and reads a linker map otherwise; the build also writes
 `thandor.map` (`-Wl,-Map`), which lists only global symbols (no `static` functions), so prefer the executable.
 Symbolize against the executable in the build directory (or one with its `thandor.debug` beside it): the test
 scripts copy only `thandor.exe`, `thandor.sym` and `SDL3.dll` into the game copies, not the 35 MB `thandor.debug`;
 since the addresses are fixed, the build directory's files answer for the copies as well.
 
-With `THANDOR_RENDERER_SDL_GPU` (on by default) a GCC build compiles the shaders with `fxc` when it finds the
+With `THANDOR_RENDERER_SDL_GPU` (on by default) the build compiles the shaders with `fxc` when it finds the
 Windows SDK and with the Windows `dxc.exe` when it finds it (`THANDOR_DXC`, the `PATH`, or
 `%VCPKG_ROOT%\installed\x64-windows\tools\directx-dxc` after `vcpkg install directx-dxc:x64-windows`), and
 otherwise uses the headers fxc and dxc made, committed in
 [`src/platform/sdl3/shaders/compiled/`](../src/platform/sdl3/shaders/compiled) (`gpu_shader_<name>.h` DXBC,
 `gpu_shader_<name>_spirv.h` SPIR-V; `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON` forces them). After a change of
-a shader source (`primitives.hlsl`, `ui2d.hlsl`) regenerate them: build the MSVC preset `test` with fxc and dxc
-found and copy `<build dir>\gpu_shaders\gpu_shader_*.h` there.
+a shader source (`primitives.hlsl`, `ui2d.hlsl`) regenerate them: build with fxc and dxc found and copy
+`<build dir>\gpu_shaders\gpu_shader_*.h` there.
 
 ## Running
 
@@ -467,7 +437,7 @@ and the overlays, the UI and the cursor are drawn on it as before. How the GPU d
 
 The software renderer always keeps its own look (it is the pixel reference of the tests). The
 shaders (`src/platform/sdl3/shaders/primitives.hlsl`) are compiled during the build to DXBC with `fxc` (Windows SDK,
-DirectX 12) and to SPIR-V with `dxc -spirv` (Vulkan). When `fxc` or `dxc` is not found (fxc is required for MSVC),
+DirectX 12) and to SPIR-V with `dxc -spirv` (Vulkan). When `fxc` or `dxc` is not found,
 or with `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON`, the build uses the headers committed in
 [`src/platform/sdl3/shaders/compiled/`](../src/platform/sdl3/shaders/compiled) instead (see
 [MinGW-w64 GCC](#mingw-w64-gcc)); a build without SPIR-V headers has no Vulkan renderer. With the option `OFF` only
@@ -498,13 +468,12 @@ a second instance, the UDP port and datagram log, the watchdog - are compiled in
 `THANDOR_DEV_TOOLS` (default `OFF`):
 
 ```bat
-cmake -S . -B build-test -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
-      -DTHANDOR_DEV_TOOLS=ON -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows
-cmake --build build-test
+cmake --preset mingw-test
+cmake --build --preset mingw-test
 ```
 
-or the preset `test` (`cmake --preset test && cmake --build --preset test`). This test build is what
-`tools/test` drives (`run_checks.py` takes `build-test/thandor.exe` and the `SDL3.dll` next to it). The tools live in `src/platform/debug` and
+(the preset sets `-DTHANDOR_DEV_TOOLS=ON`). This test build is what `tools/test` drives (`run_checks.py` takes
+`build-mingw-test/thandor.exe` and the `SDL3.dll` next to it). The tools live in `src/platform/debug` and
 `src/platform/selftest`; the game reaches them only through the hooks in
 [`include/thandor/platform/debug/hooks.h`](../include/thandor/platform/debug/hooks.h). With the option `OFF` those
 sources are not compiled, every hook is a macro that expands to nothing (or passes the original value through),
@@ -516,7 +485,7 @@ the variable it does nothing:
 
 | Variable | Effect |
 |---|---|
-| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|raster\|hexscan\|keymatch\|tables\|sam\|uiatlas\|icon\|path\|stretch\|pcx\|settings\|crash` | run one self-test and exit (results in `thandor.log`; `icon` runs the window icon's `.ico` parser on a synthetic icon file and logs `icon: ok, N checks`; `settings` checks the `thandor.ini` reader and writer and that the `thandor.dat` of the current directory comes back unchanged through it; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `tables` hashes the tables computed at startup (the sine table built with `sin()`, the `.sam` cosine matrices, the lighting/shading/software factor tables) and `sam` the `.sam` decoder on synthetic input and an encoder round trip - both also to compare GCC and MSVC builds; `raster` (`raster_selftest.cpp`) draws seeded random triangles through every entry of the 32-bit and auxiliary raster handler tables and runs every blit, tiled blit, stretch, fill, the bilinear blend scale and the mask step on synthetic textures and framebuffers (no game data, software functions called directly, so independent of the renderer), logging one `raster <group>: <hash>` line per handler entry or blit path - compare all lines between two builds (GCC and MSVC too) before and after touching `src/graphics/backend`; `hexscan` (`hexscan_selftest.cpp`) runs the seven hexagonal radius scans of `src/world/terrain` (overlay A and B, occupancy marking, the flatten brush, the height-band and auxiliary placement tests, line of sight) at 2000 seeded points each on a synthetic 67x53 field grid, logging one `hexscan <driver>: <hash>` line per driver - compare them between two builds (GCC and MSVC too) before and after touching those walkers; `keymatch` (`keymatch_selftest.cpp`) compares literal copies of the four old key command modifier matchers (hotkeys/end movie, in-game key commands, frontend hotkeys, camera/editor keyboard) with `UiKeyModifiers_Match` (`include/thandor/ui/core/key_dispatch.h`) for every modifier class of the six tables and every held combination, checks `UiCommandDispatch_Find` against the old scan and logs mismatch lines and `keymatch: ... hash <hash>` - expect 0 mismatches in table classes (the Shift-only class 0x03 differs for the hotkey and frontend rules, which no table of theirs uses); `uiatlas` (`uiatlas_selftest.cpp`, needs the game packages in the current directory, otherwise it logs `uiatlas: skipped`) packs every image of every `gfx` asset into the step-9 GPU UI texture cache (`src/platform/sdl3/gpu_ui_textures.cpp`) without a GPU device, logs page count, texels, packing fill and a hash of the converted texels, writes `uiatlas.txt` (one line per asset) and ends with `uiatlas: ok`). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
+| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|raster\|hexscan\|keymatch\|tables\|sam\|uiatlas\|icon\|path\|stretch\|pcx\|settings\|crash` | run one self-test and exit (results in `thandor.log`; `icon` runs the window icon's `.ico` parser on a synthetic icon file and logs `icon: ok, N checks`; `settings` checks the `thandor.ini` reader and writer and that the `thandor.dat` of the current directory comes back unchanged through it; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `tables` hashes the tables computed at startup (the sine table built with `sin()`, the `.sam` cosine matrices, the lighting/shading/software factor tables) and `sam` the `.sam` decoder on synthetic input and an encoder round trip - both also to compare two builds; `raster` (`raster_selftest.cpp`) draws seeded random triangles through every entry of the 32-bit and auxiliary raster handler tables and runs every blit, tiled blit, stretch, fill, the bilinear blend scale and the mask step on synthetic textures and framebuffers (no game data, software functions called directly, so independent of the renderer), logging one `raster <group>: <hash>` line per handler entry or blit path - compare all lines between two builds before and after touching `src/graphics/backend`; `hexscan` (`hexscan_selftest.cpp`) runs the seven hexagonal radius scans of `src/world/terrain` (overlay A and B, occupancy marking, the flatten brush, the height-band and auxiliary placement tests, line of sight) at 2000 seeded points each on a synthetic 67x53 field grid, logging one `hexscan <driver>: <hash>` line per driver - compare them between two builds before and after touching those walkers; `keymatch` (`keymatch_selftest.cpp`) compares literal copies of the four old key command modifier matchers (hotkeys/end movie, in-game key commands, frontend hotkeys, camera/editor keyboard) with `UiKeyModifiers_Match` (`include/thandor/ui/core/key_dispatch.h`) for every modifier class of the six tables and every held combination, checks `UiCommandDispatch_Find` against the old scan and logs mismatch lines and `keymatch: ... hash <hash>` - expect 0 mismatches in table classes (the Shift-only class 0x03 differs for the hotkey and frontend rules, which no table of theirs uses); `uiatlas` (`uiatlas_selftest.cpp`, needs the game packages in the current directory, otherwise it logs `uiatlas: skipped`) packs every image of every `gfx` asset into the step-9 GPU UI texture cache (`src/platform/sdl3/gpu_ui_textures.cpp`) without a GPU device, logs page count, texels, packing fill and a hash of the converted texels, writes `uiatlas.txt` (one line per asset) and ends with `uiatlas: ok`). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
 | `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes the frames to `moviedump\`); the player is in [`src/platform/debug/movie_player.cpp`](../src/platform/debug/movie_player.cpp) |
 | `OPEN_THANDOR_MOVIEDUMP=1` | log every decoded movie frame (every tenth also to `moviedump\`) |
 | `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` (a failed capture is logged) |
@@ -566,7 +535,7 @@ The arena scenarios have no computer opponents; `python tools/test/compare_map_h
 directories at once (game speed 5 from the first step, `OPEN_THANDOR_STATEHASH_SPEED`) and reports the first
 differing step - put the previous build into one directory to compare versions.
 All behaviour checks after a build in one command: `python tools/test/run_checks.py <game dir> --old
-<previous build-test/thandor.exe>` runs in parallel, each in its own linked copy `<game dir>_chk_<name>` with its
+<previous build-mingw-test/thandor.exe>` runs in parallel, each in its own linked copy `<game dir>_chk_<name>` with its
 own UDP ports: the determinism references, the AI state hash on stromschnelle (two copies of the new build plus
 the old one), a pixel compare new vs old of the paused in-game frame and the choose-game page (only with
 `--old`), save and load of a skirmish (`skirmish_save.txt`, `choose_load.txt`), the text edit keys in the save
@@ -574,7 +543,7 @@ dialog (`textedit_save.txt` turns the prefilled "Multi Ahaggar" into "Test Edit 
 Ctrl+Left/Right, Delete, Backspace and typing; `save\Test Edit 42.sve` must exist), the two-instance multiplayer
 test, the campaign carry-over pairs (`run_campaign_chain.py pairs`, 5 workers, every
 target level must receive units) and the single maps (`--map-jobs`, `--map-minutes`; ENDED is only a warning, the
-strong computer opponents can win a map in time). `--new` defaults to `build-test/thandor.exe`, `--skip a,b`
+strong computer opponents can win a map in time). `--new` defaults to `build-mingw-test/thandor.exe`, `--skip a,b`
 leaves checks out. It prints one table (check, result, details, duration), writes each check's output to
 `<game dir>/checks/` and exits non-zero when a check failed; it only stops game processes it started.
 `python tools/test/run_campaign_chain.py <game dir> pairs` plays into each level that needs the previous

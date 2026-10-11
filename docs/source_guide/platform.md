@@ -38,12 +38,12 @@ Process support of the rebuilt executable: logging, crash and hang reports and s
 - [`Thandor_SymbolName`](../../src/platform/bootstrap/image.cpp#L453) - The buffer is per thread: the caller reads it after the lock is released (valid until the thread's next call).
 - [`Thandor_LogStack`](../../src/platform/bootstrap/image.cpp#L463)
 - [`Thandor_Ptr32Overflow`](../../src/platform/bootstrap/image.cpp#L484) - core/ptr32.h: a pointer of 2 GB or more was stored in a 32-bit field of an original layout.
-- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L772)
-- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L783)
-- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L798)
-- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L803)
-- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L808)
-- [`Thandor_GetExecutablePathA`](../../src/platform/bootstrap/image.cpp#L814)
+- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L764)
+- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L775)
+- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L790)
+- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L795)
+- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L800)
+- [`Thandor_GetExecutablePathA`](../../src/platform/bootstrap/image.cpp#L806)
 
 **Data** (7 shared, 8 file-local): `DBGHELP_CRASH_WAIT_MS`, `STACK_SNAPSHOT_BYTES`, `CRASH_LOG_REBUILT_IMAGE_SPAN`, `SYMBOL_NAME_CAPACITY`, `DIAGNOSTIC_THREAD_STACK_RESERVE_BYTES`, `g_ThandorFrameHeartbeat`, `HANG_SECONDS`.
 
@@ -80,7 +80,7 @@ Memory below 2 GB for the large-address-aware build, see &lt;thandor/platform/bo
 
 [Source](../../src/platform/bootstrap/main.cpp)
 
-The original image has no C runtime: its PE entry point is ProcessEntry, which ends in ExitProcess. The rebuilt executable links the C/C++ runtime of its compiler (MinGW GCC or MSVC), has the original data compiled in (the "Module data." sections of the module sources) and enters ProcessEntry from WinMain.
+The original image has no C runtime: its PE entry point is ProcessEntry, which ends in ExitProcess. The rebuilt executable links the C/C++ runtime of its compiler (MinGW GCC), has the original data compiled in (the "Module data." sections of the module sources) and enters ProcessEntry from WinMain.
 
 **Functions** (1 public):
 

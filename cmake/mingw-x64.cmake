@@ -1,4 +1,4 @@
-# Toolchain file: MinGW-w64 GCC for 64-bit x64 (x86_64-w64-mingw32, SEH), the second compiler next to MSVC.
+# Toolchain file: MinGW-w64 GCC for 64-bit x64 (x86_64-w64-mingw32, SEH), the only supported compiler.
 #
 # Finds the toolchain in this order: the cache variable MINGW_ROOT, the environment variable MINGW_ROOT, the
 # g++ on the PATH, then the usual install locations (C:/mingw64, C:/msys64/mingw64, C:/msys64/ucrt64). MINGW_ROOT is

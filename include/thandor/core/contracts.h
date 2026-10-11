@@ -38,22 +38,17 @@ using UQ12 = unsigned int;
 
 /* THANDOR_ALLOWS_OVERREAD: on a function that reads past the end of its source on purpose, as the original
    does, where the extra bytes never reach a result (a copy of twice the length into a scratch buffer). The
-   AddressSanitizer build (ot-scratch/build_asan.bat), which looks for accesses into neighbouring objects
-   since the image data is no longer one block, skips such a function. */
-#if defined(__SANITIZE_ADDRESS__) && defined(_MSC_VER)
-#define THANDOR_ALLOWS_OVERREAD __declspec(no_sanitize_address)
+   AddressSanitizer build, which looks for accesses into neighbouring objects since the image data is no longer
+   one block, skips such a function (MinGW-w64 GCC has no AddressSanitizer at present). */
+#if defined(__SANITIZE_ADDRESS__)
+#define THANDOR_ALLOWS_OVERREAD __attribute__((no_sanitize_address))
 #else
 #define THANDOR_ALLOWS_OVERREAD
 #endif
 
-/* THANDOR_ALIGN(n): at least n-byte alignment for a variable (the original's data alignment); like
-   __declspec(align(n)) it never lowers the type's own alignment (alignas(n) below the natural alignment, e.g. 4 for
-   a 64-bit pointer, would be ill-formed). */
-#ifdef _MSC_VER
-#define THANDOR_ALIGN(n) __declspec(align(n))
-#else
+/* THANDOR_ALIGN(n): at least n-byte alignment for a variable (the original's data alignment); it never lowers the
+   type's own alignment (alignas(n) below the natural alignment, e.g. 4 for a 64-bit pointer, would be ill-formed). */
 #define THANDOR_ALIGN(n) __attribute__((aligned(n)))
-#endif
 
 #include <stddef.h>
 #include <thandor/core/x86_emulation.h>

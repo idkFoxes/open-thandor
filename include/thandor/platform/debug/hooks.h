@@ -28,10 +28,6 @@
 
 #ifdef THANDOR_DEV_TOOLS
 
-#ifdef _MSC_VER
-#include <intrin.h> /* _ReturnAddress */
-#endif
-
 /* --- process --- */
 /* WinMain, before ProcessEntry: runs the self-test OPEN_THANDOR_SELFTEST names; nonzero when one ran (the
    process then exits). */
@@ -101,11 +97,7 @@ void DebugHook_LevelScriptEndTrigger(const InGameLevelConditionStorage *storage,
 int DebugHook_SuppressTransientMarkers();
 /* Effect creation and session random draws: with the state hash on, logs callers outside a simulation step. */
 void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
-#ifdef _MSC_VER
-#define DebugHook_NoteOutsideStep(what) DebugHook_NoteOutsideStepFrom((what), _ReturnAddress())
-#else
 #define DebugHook_NoteOutsideStep(what) DebugHook_NoteOutsideStepFrom((what), __builtin_return_address(0))
-#endif
 
 #else /* !THANDOR_DEV_TOOLS: no developer tools, the original behaviour */
 
