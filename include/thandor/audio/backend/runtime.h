@@ -30,6 +30,8 @@ extern SoundPlayVoiceProc *g_SoundPlayLooping;
 extern SoundStopVoiceProc *g_SoundStopVoice;
 extern SoundIsVoiceFinishedProc *g_SoundIsVoiceFinished;
 extern SoundSetVoiceGainsProc *g_SoundSetVoiceGains;
+/* Not in the original: the movie soundtrack boost (a no-op in the silent backend). */
+extern SoundRaiseQuietSampleLevelProc *g_SoundRaiseQuietSampleLevel;
 
 extern SoundReleaseSampleVoiceSetProc *g_SoundReleaseSampleVoiceSet;
 extern SoundStopAllVoicesProc *g_SoundStopAllVoices;

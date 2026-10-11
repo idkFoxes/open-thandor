@@ -142,6 +142,9 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   if (loadError == 0) {
     loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),trackBytes,&voiceSet);
     if (loadError == 0) {
+      /* Not in the original: a quiet soundtrack (intro2, the story movies ende00NN) is raised towards the level of
+         the other movies (see SdlAudio_RaiseQuietSampleLevel); the decoded length and so the timing stay. */
+      g_SoundRaiseQuietSampleLevel(voiceSet);
       *outVoiceSet = voiceSet;
     }
   }
