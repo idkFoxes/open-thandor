@@ -7,9 +7,11 @@
 
 #include <thandor/gameplay/session/savegame.h>
 #include <algorithm>
+#include <string.h>
 #include <thandor/thandor.h>
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/world/pathing/mode.h>
 
 /* Module data. */
 
@@ -18,6 +20,9 @@ static uint16_t g_ResourceRegistrationDirectoryUtf16[256] = {};
 uint16_t g_CampagneHexPathUtf16[13] = {'c', 'a', 'm', 'p', 'a', 'g', 'n', 'e', '.', 'h', 'e', 'x', 0}; /* L"campagne.hex" */
 
 uint16_t g_OldunitHexPathUtf16[12] = {'o', 'l', 'd', 'u', 'n', 'i', 't', '.', 'h', 'e', 'x', 0}; /* L"oldunit.hex" */
+
+/* L"otpath.hex": the Open Thandor pathing extension entry (PathingSaveEntryHeader) */
+THANDOR_ALIGN(4) uint16_t g_OtpathHexPathUtf16[12] = {'o', 't', 'p', 'a', 't', 'h', '.', 'h', 'e', 'x', 0, 0};
 
 uint8_t g_InGameResourceRegistrationBusyCount = 0;
 
@@ -167,6 +172,36 @@ static bool InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle 
                              g_CampagneHexPathUtf16,packageHandle);
 }
 
+/* open-thandor (docs/plans/pathfinding.md 4, D3): the pathing extension entry. With the improved mode it stores
+   the mode and the whole per-unit side table g_PathingUnitState behind a PathingSaveEntryHeader; with the
+   original mode the entry is deleted (the package is built fresh, so it is simply absent and the save is
+   byte-identical to the original format). Returns false when the upsert or the delete failed. */
+static bool InGameSaveGame_WritePathingEntry(EngineFileHandle packageHandle,uint32_t *outErrorCode)
+
+{
+  /* header and table in one dword-aligned image for Package_UpsertEntry */
+  struct PathingSaveImage {
+    PathingSaveEntryHeader header;
+    PathingUnitState records[ARMY_RUNTIME_SLOT_COUNT];
+  };
+  static_assert(sizeof(PathingSaveImage) == sizeof(PathingSaveEntryHeader) + sizeof(g_PathingUnitState));
+  static PathingSaveImage s_image;
+
+  *outErrorCode = FATAL_ERROR_FILE_WRITE_FAILED;
+  if (!Pathing_Improved()) {
+    return Package_DeleteEntry(g_OtpathHexPathUtf16,packageHandle,outErrorCode);
+  }
+  s_image.header.magic = PATHING_SAVE_MAGIC;
+  s_image.header.version = PATHING_SAVE_VERSION;
+  s_image.header.mode = PATHING_MODE_IMPROVED;
+  s_image.header.reserved07 = 0;
+  s_image.header.slotCount = ARMY_RUNTIME_SLOT_COUNT;
+  s_image.header.recordBytes = sizeof(PathingUnitState);
+  memcpy(s_image.records,g_PathingUnitState,sizeof(g_PathingUnitState));
+  return Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)sizeof(s_image),
+                             SaveImage_Dwords(&s_image),g_OtpathHexPathUtf16,packageHandle);
+}
+
 /* Reads the 0x200-byte package header into g_PackageScratchBuffer, fills in the save name (file name of savePath;
    the directory lands behind the header), the packed date and time, the "date, time" text, the level title text
    id and the campaign index, and writes it back. Returns 0 on success, else the file-system error code. */
@@ -272,6 +307,9 @@ static uint32_t InGameSaveGame_WritePackageContents(void *worldView,void *savePa
     return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the oldunit entry",
                                            FATAL_ERROR_FILE_WRITE_FAILED);
   }
+  if (!InGameSaveGame_WritePathingEntry(packageHandle,&errorCode)) {
+    return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the otpath entry",errorCode);
+  }
   errorCode = InGameSaveGame_WritePackageHeader(savePath,packageHandle);
   if (errorCode != 0) {
     return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the package header",errorCode);
@@ -286,7 +324,8 @@ static uint32_t InGameSaveGame_WritePackageContents(void *worldView,void *savePa
 /* Writes a save game (called by InGameSaveGame_SaveSelectedOrTypedName with the world view): opens or creates
    the package at savePath (creating its directory if needed) and stores every runtime segment as a
    Huffman/RLE entry - army, modul, shot, effect, widget, light, field, level, daten, campagne (deleted without
-   a campaign), stat and oldunit (deleted when empty). Pointer-holding images are converted to offsets for
+   a campaign), stat, oldunit (deleted when empty) and the Open Thandor extension otpath (improved pathing mode
+   only, else deleted). Pointer-holding images are converted to offsets for
    writing and rebased afterwards. Finally the 0x200-byte package header gets the save name, date and time
    and the level title and campaign index. The package is built under a temporary name and replaces the old
    save only when complete (InGameSaveGame_WritePackageContents). Returns 0 on success, else the error code of the failed step (for

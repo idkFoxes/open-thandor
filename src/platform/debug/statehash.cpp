@@ -12,6 +12,7 @@
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/statehash.h>
+#include <thandor/world/pathing/mode.h>
 
 /* FNV-1a over 32-bit words; pointers never go in (addresses differ between builds), only pool indices. */
 struct StateHash {
@@ -401,6 +402,17 @@ void DebugStateHash_AfterStep()
     StateHash_Add(&hash, (uint32_t)record->xeniteCurrentQ4);
     StateHash_Add(&hash, (uint32_t)record->tritiumCurrentQ4);
     StateHash_Add(&hash, (uint32_t)record->suppliedEnergyDemandQ4);
+  }
+  /* open-thandor: the improved pathing mode and its per-unit side table (every slot as raw dwords; free slots
+     are zero). Only with the improved mode, so the hashes of the original mode stay as they were. */
+  if (Pathing_Improved()) {
+    static uint32_t s_pathingWords[ARMY_RUNTIME_SLOT_COUNT * sizeof(PathingUnitState) / sizeof(uint32_t)];
+    static_assert(sizeof(s_pathingWords) == sizeof(g_PathingUnitState));
+    StateHash_Add(&hash, (uint32_t)g_PathingMode);
+    memcpy(s_pathingWords, g_PathingUnitState, sizeof(s_pathingWords));
+    for (uint32_t pathingWord : s_pathingWords) {
+      StateHash_Add(&hash, pathingWord);
+    }
   }
   fprintf(s_output, "%u %08x%08x armies %u objects %u seed %08x\n", tick, (unsigned)(hash.value >> 32),
           (unsigned)hash.value, armies, nodes, (unsigned)g_RandomGeneratorState.secondarySeed);
