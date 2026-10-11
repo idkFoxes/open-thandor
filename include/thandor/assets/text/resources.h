@@ -175,6 +175,11 @@ inline constexpr int TEXT_ID_KEY_BINDING_COUNT = 49;
 #define TEXT_ID_LANGUAGE_NAME_BASE (TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT)
 inline constexpr int TEXT_ID_LANGUAGE_NAME_COUNT = 5;
 
+/* Not in the original: the "Verbesserte Wegfindung" / "Improved pathfinding" checkbox of the advanced settings page
+   ([game] pathing), after the language names; German for German, English for every other language, as the project
+   texts. */
+#define TEXT_ID_ADVANCED_PATHING (TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT)
+
 /* Not in the original: the TEXT_ID_LANGUAGE_NAME_BASE.. text of a telephone country code (49, 44, 33, 39, 34), else
    TEXT_RESOURCE_ID_NONE. */
 TextResourceId TextResource_LanguageNameId(uint32_t countryCode);

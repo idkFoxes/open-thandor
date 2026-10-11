@@ -24,6 +24,7 @@
 #include <thandor/platform/debug/statehash.h>
 #include <thandor/platform/debug/test_aids.h>
 #include <thandor/platform/selftest/selftest.h>
+#include <thandor/world/pathing/mode.h>
 
 /* --- process --- */
 
@@ -191,6 +192,22 @@ void DebugHook_SimulationStepEnd()
 void DebugHook_PathingEvent(int kind, const void *army, const void *other)
 {
   DebugPathTrace_Event(kind, army, other);
+}
+
+int DebugHook_LocalPathingMode(int mode)
+{
+  const char *value = getenv("OPEN_THANDOR_PATHING");
+
+  if (value == nullptr) {
+    return mode;
+  }
+  if (_stricmp(value, "improved") == 0) {
+    return PATHING_MODE_IMPROVED;
+  }
+  if (_stricmp(value, "original") == 0) {
+    return PATHING_MODE_ORIGINAL;
+  }
+  return mode; /* empty or "setting": the setting's mode */
 }
 
 int DebugHook_SuppressTransientMarkers()

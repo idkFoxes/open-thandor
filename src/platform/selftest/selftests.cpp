@@ -866,6 +866,39 @@ static void Thandor_SelfTestSettings()
         }
         Thandor_Log("settings: language key %s", languageDifferences == 0 ? "ok" : "MISMATCH");
     }
+    {
+        /* [game] pathing (open-thandor, the reserved dword 0x50): the names, a number, and the names written back;
+           an unknown value is not taken (the dword stays not present: PersistentSettings_Read gives the default,
+           improved) */
+        static const struct {
+            const char *text;
+            uint32_t value;
+            const char *written;
+        } modes[] = {{"[game]\r\npathing = improved\r\n", PERSISTENT_PATHING_IMPROVED, "pathing = improved\r\n"},
+                     {"[game]\r\npathing = Original ; comment\r\n", PERSISTENT_PATHING_ORIGINAL, "pathing = original\r\n"},
+                     {"[game]\r\npathing = 1\r\n", PERSISTENT_PATHING_ORIGINAL, "pathing = original\r\n"},
+                     {"[game]\r\npathing = 0\r\n", PERSISTENT_PATHING_IMPROVED, "pathing = improved\r\n"}};
+        static const char unknownMode[] = "[game]\r\npathing = curvy\r\n";
+        unsigned pathingDifferences = 0;
+        for (const auto &mode : modes) {
+            uint32_t value = 0xFFFFFFFF;
+            memset(parsed, 0, sizeof parsed);
+            mask = PersistentSettings_ParseIni(mode.text, (uint32_t)strlen(mode.text), parsed);
+            memcpy(&value, parsed + PERSISTENT_SETTING_PATHING_MODE, 4);
+            length = PersistentSettings_FormatIni(parsed, mask, text, sizeof text);
+            if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_PATHING_MODE / 4)) || (value != mode.value) ||
+                (strstr(text, mode.written) == nullptr)) {
+                Thandor_Log("settings: pathing %u MISMATCH (value %u)", mode.value, value);
+                pathingDifferences++;
+            }
+        }
+        memset(parsed, 0, sizeof parsed);
+        if (PersistentSettings_ParseIni(unknownMode, (uint32_t)strlen(unknownMode), parsed) != 0) {
+            Thandor_Log("settings: pathing: an unknown value is present");
+            pathingDifferences++;
+        }
+        Thandor_Log("settings: pathing key %s", pathingDifferences == 0 ? "ok" : "MISMATCH");
+    }
 
     file = fopen("thandor.dat", "rb");
     if (file == nullptr) {

@@ -256,6 +256,8 @@ player_name = "Spieler"
 game_name = "Thandorspiel"
 ; text language: auto (default; from Windows), de, en, fr, it or es (another telephone country code as a number); the game's own texts are German for de, English otherwise
 language = auto
+; unit pathfinding and movement in single player: improved (default; units drive curves, wait for and give way to each other) or original (exactly the original game's movement); a network game always agrees on one mode
+pathing = improved
 
 [network]
 ; player count of a hosted network game (default 4)
@@ -537,6 +539,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_CAMPAIGN_PROGRESS=<path>` | use that file as the campaign progress instead of `save\kampagne.dat` (test runs keep their own progress and never touch the player's) |
 | `OPEN_THANDOR_CAMPAIGN_PROGRESS_DUMP=1` | log the stored campaign progress (`progress dump: ...`: per campaign the fingerprint, the won levels with their end selections, the unlocked levels and per carry-over snapshot its source, unit counts and a hash) when a campaign is loaded, when a campaign level starts and when it ends through its end trigger, i.e. after every load and save of the progress; an unchanged progress is one `unchanged` line |
 | `OPEN_THANDOR_WATCHDOG=<s>` | log the main thread's stack to `thandor.log` every <s> seconds |
+| `OPEN_THANDOR_PATHING=improved\|original` | pathing mode of every new local session, wins over `[game] pathing` (default `improved`, the "Verbesserte Wegfindung" checkbox of the "Erweitert" page; plan in [`docs/plans/pathfinding.md`](plans/pathfinding.md)); any other value (`setting`) keeps the setting's mode. A network session agrees on its mode in the lobby and a loaded savegame keeps its own, both unaffected. `thandor.log` names the mode of each new session (`session: pathing mode ...`). The test tools (`tools/test`, `game_env.py`) start every game with `OPEN_THANDOR_PATHING=original` unless the caller sets it, so the determinism references, the AI hash and the other checks keep comparing the original movement; `run_checks.py`, `run_determinism.py`, `compare_map_hash.py`, `run_campaign_chain.py`, `run_all_maps.py`, `run_multiplayer.py` and `run_pathing.py` take `--pathing original\|improved\|setting` for that |
 
 Always on in this build: the level-script log (its conditions and triggers, and which end trigger fired) and how
 many units a campaign carries over into a level. The crash and hang reports (`crash.log`, `hang.log`) are part of

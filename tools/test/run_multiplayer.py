@@ -20,7 +20,7 @@ import os
 import shutil
 import subprocess
 import time
-from game_env import game_env
+from game_env import add_pathing_argument, apply_pathing, game_env
 
 parser = argparse.ArgumentParser()
 parser.add_argument('game_dir')
@@ -29,7 +29,9 @@ parser.add_argument('--host-script')
 parser.add_argument('--client-script')
 parser.add_argument('--shots', default='4000')
 parser.add_argument('--client-delay', type=float, default=6, help='seconds between host and client start')
+add_pathing_argument(parser)
 args = parser.parse_args()
+apply_pathing(args.pathing)
 
 host_dir = os.path.abspath(args.game_dir)
 client_dir = host_dir.rstrip('\\/') + '2'

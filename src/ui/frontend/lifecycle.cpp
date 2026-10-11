@@ -535,7 +535,8 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
                                         &ui->advancedFrameLimit60,
                                         &ui->advancedFrameLimit120,
                                         &ui->advancedFrameLimit144,
-                                        &ui->advancedVsyncCheckbox}) {
+                                        &ui->advancedVsyncCheckbox,
+                                        &ui->advancedPathingCheckbox}) {
       choice->activationSound = g_UiButtonSoundVoiceSets7[4];
     }
     /* not in the original: the key binding page (background, button sounds as the advanced settings page) */
