@@ -92,6 +92,7 @@ bool UiRootStack_Pop(UiRootNode *root)
 
 {
   bool closeCallbackVetoed;
+  bool tooltipOnClosingRoot;
   UiRootNode *belowRoot;
   UiNodeBase *parentCursor;
   
@@ -101,6 +102,13 @@ bool UiRootStack_Pop(UiRootNode *root)
     parentCursor = (root->base).parent;
   }
   belowRoot = root->previousRoot;
+  /* The original keeps g_UiTooltipState.targetNode when the root holding it closes (only UiRootStack_Push clears
+     it), so the next frames read the closed root's node: the tooltip countdown, UiTooltip_Draw and the next
+     pointer motion's UiTooltip_PrepareTargetText. A heap dialog root is freed by its vetoClose callback below
+     and the in-game root right after its pop, so those reads hit freed memory; dropped here because the target
+     is cleared when it belongs to the closing root (decided before vetoClose may free it). */
+  tooltipOnClosingRoot = (g_UiTooltipState.targetNode != nullptr) &&
+                         (UiNode_GetRoot(g_UiTooltipState.targetNode) == &root->base);
   closeCallbackVetoed = false;
   if (root->callbacks->vetoClose != nullptr) {
     closeCallbackVetoed = root->callbacks->vetoClose(root);
@@ -108,6 +116,9 @@ bool UiRootStack_Pop(UiRootNode *root)
   if (closeCallbackVetoed) {
     UiNode_InvalidateRoot(&belowRoot->base);
     return true;
+  }
+  if (tooltipOnClosingRoot) {
+    g_UiTooltipState.targetNode = nullptr;
   }
   g_UiKeyboardFocusNode = UI_NODE_NONE;
   g_UiRootNode = belowRoot;

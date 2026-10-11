@@ -1017,6 +1017,11 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       g_InGameUiRootCallbacks.keyboardFallback = EditorSlot_KeyboardFallback;
       /* InGameCommandModeG_Select0..5, applied to the mode's tab control. */
       g_UiCommandModeGHandlers[editorMode](InGameUi_EditorModeTab(image,editorMode));
+      /* The original zeroes the queue and closes the notification movie below while the 10 Hz notification timer
+         may be inside Movie_AdvanceFrame or Movie_Open on the timer thread; bounded here because the timer is
+         stopped for that (the unregister waits for a running callback) and registered again once the button
+         shows the panel texture source. */
+      g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       /* zeroes the first 32 dwords of the notification queue (dword by dword, not record by record) */
       queueDwords = reinterpret_cast<uint32_t *>(root->notificationQueue);
       for (index = 0; index < 32; index++) {
@@ -1036,6 +1041,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
         swatchTextureSource = materialTextureSet->entries[0].sourceAsset;
       }
       root->notificationButtonSubresource = INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE;
+      g_TimerRegisterPeriodic(10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
       image->materialToolSelectedSwatch.textureSource = swatchTextureSource;
       UiCommandMatrix_SelectIndex(g_UiCommandAbsoluteSelectionIndex,&root->rootUi.base);
       g_UiCommandModeGArmyAssetId = ArmyAssetRegistry_NormalizeIdToPlaceableUnit(g_UiCommandModeGArmyAssetId);

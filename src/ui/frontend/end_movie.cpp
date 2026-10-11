@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/frontend/end_movie.h>
+#include <atomic>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -190,7 +191,7 @@ void Frontend_PlaySelectedEndMovie()
     movieOpened = Movie_Open(MovieOpenFlags::MOVIE_OPEN_STREAM,g_EndMoviePath,&playbackRateHz,nullptr);
     runtimeRoot = g_InGameRuntimeRoot;
     if (movieOpened) {
-      g_EndMoviePendingTicks = 0;
+      std::atomic_ref<uint32_t>(g_EndMoviePendingTicks).store(0);
       g_TimerRegisterPeriodic(playbackRateHz,FrontendSession_PeriodicTick);
       UiPageStack_SetActiveIndex(1,
            UiLayoutContainerControl_AsPageStack(&InGameUi_Image(runtimeRoot)->primaryPageStack));
@@ -199,11 +200,15 @@ void Frontend_PlaySelectedEndMovie()
       runtimeRoot->activeEndMovieRuntime = endMovieRuntime;
       if (endMovieAdvanced) {
         runtimeRoot->endMoviePlaybackState = 0;
-        g_EndMoviePendingTicks = 0;
+        std::atomic_ref<uint32_t>(g_EndMoviePendingTicks).store(0);
         /* one movie frame per timer tick until the movie ends (or the end-movie flag is cleared elsewhere) */
+        /* The original counts g_EndMoviePendingTicks plainly, but FrontendSession_PeriodicTick also increments it
+           on the timer thread (it is the movie-rate timer as well as the UI synchronization hook); accessed
+           through std::atomic_ref here because the plain decrement could drop a concurrent increment. Only
+           this loop decrements, so the counter cannot drop to 0 between the test and the decrement. */
         do {
-          if (g_EndMoviePendingTicks != 0) {
-            g_EndMoviePendingTicks--;
+          if (std::atomic_ref<uint32_t>(g_EndMoviePendingTicks).load() != 0) {
+            std::atomic_ref<uint32_t>(g_EndMoviePendingTicks).fetch_sub(1);
             if (!Movie_AdvanceFrame(nullptr,nullptr)) {
               g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
             }
@@ -225,7 +230,11 @@ void Frontend_PlaySelectedEndMovie()
   else {
     g_CursorVisibilityToken++;
   }
-  rootCallbacks = g_InGameRuntimeRoot->rootUi.callbacks;
-  rootCallbacks->keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags);
-  rootCallbacks->frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame);
+  /* The original restores the callbacks without the null check made on entry; bounded here because without an
+     in-game root there is nothing to restore (InGameRuntime_RunSessionUntilExit only calls this with one). */
+  if (g_InGameRuntimeRoot != nullptr) {
+    rootCallbacks = g_InGameRuntimeRoot->rootUi.callbacks;
+    rootCallbacks->keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags);
+    rootCallbacks->frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame);
+  }
 }

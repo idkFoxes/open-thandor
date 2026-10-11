@@ -590,6 +590,12 @@ bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t 
   uint32_t scaledRowTerm;
   int cellRow;
 
+  /* Not in the original: without scratch grids (released at the end of a session, while the end movie still
+     dispatches pointer moves to the world view and executes network commands) every point is rejected, as one
+     outside the grid. */
+  if (g_GridScratchPrimary == nullptr) {
+    return true;
+  }
   /* 64-bit products shifted back by 21 / 20 bits; column = x term - row term, row = 2 * row term,
      both biased by GRID_SCRATCH_INDEX_BIAS_Q12 and taken in scratch cells */
   scaledRowTerm = FIXED_MUL_SHR(worldYQ12, FIELD_GRID_WORLD_Y_TO_ROW_Q20, Q20_SHIFT + 1);
