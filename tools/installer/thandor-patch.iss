@@ -162,7 +162,8 @@ german.RestoreFailed=Die gesicherte thandor.exe konnte nicht wiederhergestellt w
 
 [Dirs]
 ; users-modify: a 64-bit process gets no UAC file virtualization, and the game writes thandor.ini, its logs and
-; save\*.sve next to itself; uninstall leaves the folders and their ACL
+; save\*.sve and the campaign progress save\kampagne.dat next to itself; uninstall leaves the folders, their
+; content and their ACL
 Name: "{app}"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{app}\save"; Permissions: users-modify; Flags: uninsneveruninstall
 

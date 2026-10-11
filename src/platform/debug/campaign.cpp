@@ -301,6 +301,26 @@ void DebugCampaign_SelectCampaignLevel(uint8_t *campaignBytes)
   }
 }
 
+/* Port-only test aid: logs the campaign level a session starts (id and file name), so a test can tell which
+   mission a campaign start, a retry or a network peer loaded. Called at the session start of a campaign level. */
+void DebugCampaign_LogLevelStart()
+{
+  const CampaignAsset *campaign = g_FrontendLoadedCampaignAsset;
+  char name[64];
+  if (campaign == nullptr) {
+    return;
+  }
+  for (int index = 0; index < campaign->levelRecordCount; index++) {
+    const CampaignLevelRecord *record = &campaign->levels[index];
+    if (record->levelId == campaign->currentLevelId) {
+      Thandor_Log("level start: campaign level id %d \"%s\"",record->levelId,
+                  DebugCampaign_RowName(record->levelFileName,name,sizeof name));
+      return;
+    }
+  }
+  Thandor_Log("level start: campaign level id %d has no record",campaign->currentLevelId);
+}
+
 /* Port-only test aid for loss and retry tests: OPEN_THANDOR_AUTOLOSE=<seconds> ends the level as lost after that
    many seconds of the session, in the first session of the process only (OPEN_THANDOR_AUTOLOSE_LEVELS=<k>: the
    first k sessions), so a retry level started by the loss runs on. It fires the active end trigger that ends the

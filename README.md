@@ -69,6 +69,7 @@ You need an **installed full version of Thandor** and **64-bit Windows 10 or 11*
 | Frame pacing | - | **VSync** and an optional frame limit (60, 120, 144) |
 | Sound, music, movies | DirectSound, WinMM | SDL3, works on current Windows |
 | Settings | binary `thandor.dat` | readable `thandor.ini` (old settings taken over) |
+| Campaigns | a list; earlier missions only through savegames | **campaign map** (upcoming): every mission you reached can be started again, progress kept without savegames |
 | Damaged files, odd maps | crashes | rejected with a message; safe saving |
 | Rules, AI, saves, maps, LAN | - | **unchanged**: saves, levels and multiplayer stay compatible with the original |
 

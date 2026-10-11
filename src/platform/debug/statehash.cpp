@@ -94,6 +94,11 @@ void DebugStateHash_SessionStart()
   s_pauseTick = getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT") != nullptr ?
                 (unsigned)atoi(getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT")) : 0;
   /* the random streams were seeded in DebugStateHash_SessionInitializing */
+  if (s_output != nullptr) {
+    /* a previous session (a campaign level before this one) ended before its last step: close its stream, or its
+       buffered lines are flushed at exit over the new file's start */
+    fclose(s_output);
+  }
   s_output = fopen("statehash.txt", "w");
   Thandor_Log("test aid: state hash for %d simulation steps, seed %s -> statehash.txt", s_stepsWanted,
               seed != nullptr ? seed : "12345");

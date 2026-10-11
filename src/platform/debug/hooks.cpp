@@ -164,6 +164,7 @@ void DebugHook_SessionStarted()
   DebugStateHash_SessionStart();
   DebugProfile_SessionStarted();
   if (g_FrontendLoadedCampaignAsset != nullptr) {
+    DebugCampaign_LogLevelStart();
     DebugCampaign_DumpProgress("level started");
   }
 }

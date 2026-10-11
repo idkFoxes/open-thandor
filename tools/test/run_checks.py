@@ -41,6 +41,10 @@ further copies next to it), windowed, with its own UDP ports:
                original mode must equal tools/test/pathing_baseline.json; then run_determinism.py --pathing
                improved (3 instances of the pathing scenario, identical state hashes, ports 1990-1992); it sets
                the mode of each of its runs itself, whatever --pathing chose for the other checks
+  campaignmap  run_campaign_map.py: the campaign map cases CT1-CT8 and the level info dump against cgn.py
+               (campaign progress, starts from the map, carry-over snapshots, broken progress files, retry, the
+               campaign tab's pixel golden; ports 870+, at most 6 games at once); its network case CT7 uses the
+               fixed ports of the multiplayer check, so it runs after that check has finished
 --new defaults to build-mingw-test/thandor.exe of this repository (CMake preset "mingw-test", the main compiler),
 else build-test/thandor.exe (preset "test", MSVC); each copy gets the SDL3.dll next
 to that exe (else the one in GAME_DIR), the tools started from a copy link it from there. The output of
@@ -77,7 +81,8 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'sdl3.dll', 'thandor.dat', 'thandor.ini', 'thandor.log',
            'crash.log', 'crash_raw.log', 'hang.log', 'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
-CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps', 'pathing']
+CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'campaignmap',
+          'maps', 'pathing']
 OPT_IN = ('pathing',)  # run only when asked for (--pathing-check)
 # timing sensitive: a failure in the parallel run is retried alone (a real regression shows up again in the retry).
 # Saveload: a system-wide stall of several seconds (seen in several instances at once) leaves a hang.log, which the
@@ -85,10 +90,10 @@ OPT_IN = ('pathing',)  # run only when asked for (--pathing-check)
 RETRY_ALONE = ('determinism', 'aihash', 'saveload', 'multiplayer', 'maps')
 GAME_BUDGET = 16  # game instances at once over all checks (the CPU gate may allow fewer)
 # start order: the longest checks first (maps, then campaign and aihash), the quick ones while those run
-START_ORDER = ['maps', 'pathing', 'campaign', 'aihash', 'determinism', 'multiplayer', 'pixels', 'saveload',
-               'textedit']
+START_ORDER = ['maps', 'pathing', 'campaign', 'campaignmap', 'aihash', 'determinism', 'multiplayer', 'pixels',
+               'saveload', 'textedit']
 INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedit': 1, 'multiplayer': 2,
-             'campaign': 12, 'pathing': 12}
+             'campaign': 12, 'campaignmap': 6, 'pathing': 12}
 # missions that end at once when started directly: they need the previous level's units (campaign check)
 EXPECTED_ENDED = ('tutorial 2', 'tutorial 3', 'hansolo 9', 'hansolo 13', 'hansolo 23')
 # missions whose level file is missing from the original game data (hansolo 20 names level\hansolo\s19_forschung.lev)
@@ -100,6 +105,8 @@ QUICK_MAPS = ['tutorial 1', 'hansolo 5', 'hansolo 16', 'nimm2 3', 'luke 2', 'mit
               'hargonatoll', 'tunguska', 'multi1']
 
 args = None
+# set when the multiplayer check (ports 929/930) is done or not selected: the campaign map's network case waits
+network_free = threading.Event()
 game = None
 out_dir = None
 copies = []
@@ -419,6 +426,28 @@ def check_pathing():
                    else 'no result (exit %s)' % det_code)
     ok = code == 0 and det_code == 0 and rows and rows[-1].split()[1] == 'ok:'
     return ('PASS' if ok else 'FAIL'), 'before/after %s; improved determinism %s' % (before_after, determinism)
+def check_campaignmap():
+    folder = make_copy('cmap', args.new)
+    shutil.rmtree(os.path.join(folder, 'campaignmap'), ignore_errors=True)
+    tool = os.path.join(HERE, 'run_campaign_map.py')
+    common = [tool, folder, '--new', args.new, '--games', '6']
+    code, text = run_tool(os.path.join(out_dir, 'campaignmap.txt'),
+                          common + ['--cases', 'CT1,CT2,CT3,CT4,CT5,CT6,CT8,info'], 2400)
+    network_free.wait()
+    code7, text7 = run_tool(os.path.join(out_dir, 'campaignmap_ct7.txt'), common + ['--cases', 'CT7'], 900)
+    # one line per case: '<case> PASS|FAIL <s>s  <details>' (printed when it ends and again in the summary)
+    verdicts = {}
+    for line in (text + text7).splitlines():
+        fields = line.split()
+        if len(fields) > 2 and (fields[0].startswith('CT') or fields[0] == 'info') and fields[1] in ('PASS', 'FAIL'):
+            verdicts[fields[0]] = fields[1]
+    bad = sorted(name for name, verdict in verdicts.items() if verdict != 'PASS')
+    details = '%d/9 cases ok' % (len(verdicts) - len(bad))
+    if bad:
+        details += ', FAILED: ' + ', '.join(bad) + ' (see campaignmap.txt / campaignmap_ct7.txt)'
+    if len(verdicts) != 9 or code not in (0, 1) or code7 not in (0, 1):
+        return 'FAIL', details + ' (%d results, tool exit %s/%s)' % (len(verdicts), code, code7)
+    return ('FAIL' if bad else 'PASS'), details
 
 
 # ------------------------------------------------------------------------------------------------------ main
@@ -492,6 +521,8 @@ def main():
     if not args.old:
         skip.add('pixels')
     selected = [c for c in CHECKS if c not in skip]
+    if 'multiplayer' not in selected:
+        network_free.set()
     results = {}
 
     def other_instances():
@@ -538,6 +569,8 @@ def main():
         with lock:
             results[name] = (status, details, time.time() - start)
             running.discard(name)
+            if name == 'multiplayer':
+                network_free.set()
             done = sum(1 for n in selected if n in results)
             update_map_jobs()
         print('  [%d/%d done, %s] %-12s %-4s %4.0fs  %s' % (done, len(selected), elapsed(), name, status,

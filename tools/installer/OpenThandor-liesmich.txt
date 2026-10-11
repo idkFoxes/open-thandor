@@ -66,6 +66,19 @@ mit dem Parameter -SOFTWARE (z. B. in einer Verknüpfung:
 "...\thandor.exe" -SOFTWARE) oder der Eintrag renderer = software in
 thandor.ini.
 
+Kampagnenkarte
+--------------
+Unter "Spiel auswählen" zeigt die Kampagnen-Registerkarte eine Schaltfläche
+je Kampagne mit dem Fortschritt (z. B. "Die Invasion 7/24") und darunter die
+Missionskarte der gewählten Kampagne: gewonnene Missionen grün, spielbare
+erhaben, gesperrte abgeblendet; eine Doppellinie bedeutet
+Einheitenübernahme. Jede gewonnene oder freigeschaltete Mission lässt sich
+mit "Starten" oder einem Doppelklick (erneut) spielen, ohne Spielstand.
+Jeder Sieg wird von selbst in save\kampagne.dat vermerkt und schaltet die
+nächste Mission frei. Nach einem Sieg geht die Kampagne wie bisher über den
+Besprechungsraum weiter. Eine beschädigte kampagne.dat wird in kampagne.bad
+umbenannt, und der Fortschritt beginnt leer.
+
 Einstellungen: thandor.ini
 --------------------------
 Die Einstellungen stehen jetzt in der Textdatei thandor.ini im Spielordner.
@@ -104,8 +117,9 @@ Deinstallation
 Über Einstellungen -> Apps -> Installierte Apps -> "Thandor Patch 7" (oder
 OpenThandor\unins000.exe im Spielordner). Die Deinstallation entfernt
 thandor.exe, SDL3.dll, thandor.sym und diese Datei und stellt die
-gesicherte alte thandor.exe (Version 1.05) wieder her. Spielstände,
-thandor.ini und die Protokolle bleiben erhalten.
+gesicherte alte thandor.exe (Version 1.05) wieder her. Spielstände, der
+Kampagnenfortschritt (save\kampagne.dat), thandor.ini und die Protokolle
+bleiben erhalten.
 
 Windows SmartScreen und Virenscanner
 ------------------------------------
