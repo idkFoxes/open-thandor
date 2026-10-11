@@ -246,6 +246,51 @@ Ranked by measured weight.
   4. Both directions must be tested by hand against the original 1.05 (OT host + original client, original host +
      OT client): the session must start in `Original` and play as today.
   The title version text can additionally show the mode for humans; it must not be parsed.
+
+  **Implemented (P0b, `src/network/protocol/lobby.cpp`; D2 replaces step 2: no lobby option, automatic):**
+  - Wire: `FRONTEND_CAPABILITY_OT_EXTENDED` = `0x00010000` in the 0x10006 `capabilityFlags` (with `CD` 0x100 as
+    before), and an 8-byte `FrontendOtPathingInfo` (`include/thandor/network/protocol/lobby.h`): dword magic
+    `"OTPM"` (0x4D50544F), u16 `PATHING_PROTOCOL_VERSION` (1), u8 supported modes (bit per `PathingMode`, 0x03),
+    u8 decided mode. It sits in 0x10006 `reserved18_1F` (decided mode 0), in the join ack 0x10003 `reserved18_1F`
+    (host block, decided mode 0: the joiner has not reported yet) and in every 0x40008 session packet
+    `reserved2C_37` bytes 0..7 (host block with the current decision; the start packet with
+    `pendingSessionPlayerCount != 0` carries the session's value). Bytes 8..11 of `reserved2C_37` and
+    `reserved1C` stay zero. The 0x20002 descriptor is unchanged.
+  - Why 1.05 stays compatible: the original host stores the heartbeat dword and tests only 0x100
+    (`FrontendTransfer_StoreCapabilityHeartbeat`, `FrontendPlayerRuntime_UpdateStartButtonByCdShare`); the original
+    client reads only the player id and tick interval of 0x10003, and copies 0x40008 whole into its player-list row,
+    whose columns read only +0x38 (name), +0x14 ("CD" label) and +0x60 (ping text) (`ui_template.cpp`), never +0x2C.
+  - Host: each heartbeat with the bit and a valid block (same protocol version) stores
+    `version | modes << 16` in the player record's `otPathingCapability` (+0x80, never accessed by the original;
+    cleared on admission, moves with the record when players leave). Every lobby tick decides
+    `improved = g_PathingModeSetting == improved && every other player qualifies`; a player that just joined counts
+    as original until its first heartbeat (the next lobby ticks), so a late joiner without the bit resets the
+    agreement. At the start tick the host sets `g_PathingNetworkImprovedAgreed` and logs
+    `network: host pathing mode for the session: improved|original (host setting ..., n of m other players ...)`.
+  - Client: the join ack resets `g_PathingNetworkImprovedAgreed` to false; every 0x40008 sets it to
+    `block valid (magic + same protocol) && decided mode == improved`; the start packet logs
+    `network: client pathing mode for the session: improved|original (host ...)`. A 1.05 host sends zeros: original.
+  - Change log on the host when a player's capability changes: `network: player <id> pathing capability ...`.
+
+  **Hand test against the original 1.05 (owner, two machines or two Windows installs on one LAN; not automatable):**
+  1. Prepare machine A with Open Thandor (this build, `thandor.log` next to the exe) and machine B with the original
+     Thandor 1.05 (same game data, CD or no-CD as usual so the start button is shown).
+  2. OT host + 1.05 client: on A host a network game (TCP/IP); on B join that session from the session list.
+     Wait about 5 s in the lobby (B's heartbeats reach the host), start on A.
+     Expected: both reach the game; A's `thandor.log` has no `pathing capability Open Thandor` line for B's player id
+     and has `network: host pathing mode for the session: original (host setting improved, 0 of 1 other players
+     Open Thandor ...)`. Play 3-5 minutes with units moving through a narrow passage on both sides: no
+     "Synchronisation" / desync message, units on A drive with the original stop-turn-drive rhythm.
+  3. 1.05 host + OT client: on B create the session, on A join it, start on B.
+     Expected: both reach the game; A's `thandor.log` has `network: client pathing mode for the session: original
+     (host original)`. Play 3-5 minutes as in 2, no desync.
+  4. Mixed lobby (needs a third machine C with Open Thandor): OT host A, OT client C and 1.05 client B, start on A.
+     Expected: host log `original (..., 1 of 2 other players ...)`, C's log `client ... original (host Open
+     Thandor, same pathing protocol)`, no desync.
+  5. Control: OT host A + OT client C only (B leaves). Expected: host `improved (..., 1 of 1 ...)`, client
+     `improved (host Open Thandor, same pathing protocol)`. Then let B join the lobby again before starting: the
+     host must log `original` at the start (late joiner without the bit).
+  Report the `network:` lines of every `thandor.log` with the result.
 - **Savegames** must store the mode (and any new per-unit state of the improved mode), so loading restores the
   same behaviour and a multiplayer save stays in sync; the save format is the original's, so this needs an OT
   extension (D3). With the mode off saves stay byte-identical.
