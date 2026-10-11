@@ -5,6 +5,7 @@ Needs the test build: configure with THANDOR_DEV_TOOLS=ON (CMake preset "test", 
 does not contain the test aids used below (they would be ignored and the second instance would not start).
 
 usage: run_multiplayer.py GAME_DIR SECONDS [--host-script FILE] [--client-script FILE] [--shots MS]
+                          [--host-env NAME=VALUE ...] [--client-env NAME=VALUE ...]
 
 Starts a host (-HOST) in GAME_DIR and a client (-CLIENT="127.0.0.1") in GAME_DIR + "2" on the same machine,
 using the test aids OPEN_THANDOR_MULTI_INSTANCE=1 (second instance allowed) and OPEN_THANDOR_NET_PORT=930
@@ -12,7 +13,9 @@ using the test aids OPEN_THANDOR_MULTI_INSTANCE=1 (second instance allowed) and 
 (OPEN_THANDOR_WINDOWED=1, host at x=0, client at x=1290), so both keep drawing and both produce screenshots.
 GAME_DIR + "2" is created on first use with hard links to every file of GAME_DIR (no extra disk space) and
 junctions for its folders.
-After SECONDS both are stopped; the new log lines of both and a contact sheet per instance are printed/saved.
+--host-env / --client-env set further environment variables for one instance only (e.g. its own
+OPEN_THANDOR_CAMPAIGN_PROGRESS). After SECONDS both are stopped; the new log lines of both and a contact sheet
+per instance are printed/saved.
 """
 import argparse
 import glob
@@ -29,6 +32,8 @@ parser.add_argument('--host-script')
 parser.add_argument('--client-script')
 parser.add_argument('--shots', default='4000')
 parser.add_argument('--client-delay', type=float, default=6, help='seconds between host and client start')
+parser.add_argument('--host-env', action='append', default=[], metavar='NAME=VALUE')
+parser.add_argument('--client-env', action='append', default=[], metavar='NAME=VALUE')
 args = parser.parse_args()
 
 host_dir = os.path.abspath(args.game_dir)
@@ -90,8 +95,9 @@ link_tree()
 host_first = log_lines(host_dir)
 client_first = log_lines(client_dir)
 # A negative --client-delay starts the client first.
-HOST_ENV = {'OPEN_THANDOR_WINDOW_X': '0'}
-CLIENT_ENV = {'OPEN_THANDOR_NET_PORT': '930', 'OPEN_THANDOR_WINDOW_X': '1290'}
+HOST_ENV = dict({'OPEN_THANDOR_WINDOW_X': '0'}, **dict(v.split('=', 1) for v in args.host_env))
+CLIENT_ENV = dict({'OPEN_THANDOR_NET_PORT': '930', 'OPEN_THANDOR_WINDOW_X': '1290'},
+                  **dict(v.split('=', 1) for v in args.client_env))
 if args.client_delay >= 0:
     host = start(host_dir, '-NOINTRO -NAME="Host" -HOST', HOST_ENV, args.host_script)
     time.sleep(args.client_delay)

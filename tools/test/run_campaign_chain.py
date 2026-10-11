@@ -12,7 +12,10 @@ usage:
   run_campaign_chain.py GAME_DIR campaigns [--jobs 4]  [--win-after 40] [--only tutorial,luke]
   run_campaign_chain.py GAME_DIR segments  [--jobs 12] [--win-after 120] [--only hansolo]
 
-Worker k plays in its own linked copy GAME_DIR_w<k> with UDP port --port-base + k.
+Worker k plays in its own linked copy GAME_DIR_w<k> with UDP port --port-base + k. Every run starts from an
+empty campaign progress of its own, GAME_DIR_w<k>\\progress\\kampagne.dat (OPEN_THANDOR_CAMPAIGN_PROGRESS), so
+the workers never share a progress file and never touch save\\kampagne.dat; the file a run leaves is kept with
+its log.
 
 pairs:     for each level that needs the previous level's units (tutorial 2/3, hansolo 9/13/23) start early enough
            (tutorial 3 from tutorial 1), win the levels before it, then let the target level run --minutes. OK when the target level received units and
@@ -139,11 +142,14 @@ def run_one(k, folder, number, label, campaign, level, levels, final_seconds):
     last_ms = int(final_seconds * 1000) if final_seconds else (args.win_after + 20) * 1000
     with open(script, 'w') as f:
         f.write(script_for(levels, args.win_after, last_ms))
+    progress = os.path.join(folder, 'progress', 'kampagne.dat')
+    shutil.rmtree(os.path.dirname(progress), ignore_errors=True)
+    os.makedirs(os.path.dirname(progress))
     env = game_env(OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_AUTOSHOT=args.shots, OPEN_THANDOR_WINDOWED='1',
                OPEN_THANDOR_WINDOW_X=str((k % 5) * 250), OPEN_THANDOR_WINDOW_Y=str((k // 5 % 2) * 350),
                OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(args.port_base + k),
                OPEN_THANDOR_CAMPAIGN=campaign, OPEN_THANDOR_CAMPAIGN_LEVEL=str(level),
-               OPEN_THANDOR_AUTOWIN=str(args.win_after))
+               OPEN_THANDOR_AUTOWIN=str(args.win_after), OPEN_THANDOR_CAMPAIGN_PROGRESS=progress)
     if final_seconds:
         env['OPEN_THANDOR_AUTOWIN_LEVELS'] = str(levels - 1)
     skip = sum(1 for _ in open(log, errors='replace')) if os.path.exists(log) else 0
@@ -193,6 +199,8 @@ def run_one(k, folder, number, label, campaign, level, levels, final_seconds):
         os.makedirs(target)
     with open(os.path.join(target, 'thandor.log'), 'w') as f:
         f.writelines(lines)
+    if os.path.exists(progress):
+        shutil.copy(progress, target)
     for name in ('crash.log', 'crash_raw.log', 'hang.log'):
         if status in ('CRASH', 'HANG') and os.path.exists(os.path.join(folder, name)):
             shutil.copy(os.path.join(folder, name), target)
