@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/world/pathing/mode.h>
 
 /* Module data. */
 
@@ -194,6 +195,26 @@ void ArmyRuntime_ShutdownPoolAndGraphics()
   }
 }
 
+/* open-thandor (docs/plans/pathfinding.md 4): clears the improved pathing side table entry of an army slot when
+   the slot is taken or freed, so a new unit never inherits the state of the slot's previous unit. Touches only
+   g_PathingUnitState (unused and all zero with the original mode): no simulation state, random draw or order. An
+   address outside the army pool is ignored. */
+static void ArmyRuntimePool_ClearPathingState(const void *armySlot)
+
+{
+  uintptr_t byteOffset;
+
+  if (g_ArmyRuntimeSlots == nullptr) {
+    return;
+  }
+  byteOffset = reinterpret_cast<uintptr_t>(armySlot) - reinterpret_cast<uintptr_t>(g_ArmyRuntimeSlots);
+  if ((byteOffset % sizeof(ArmyRuntimeSlot)) != 0 ||
+      byteOffset / sizeof(ArmyRuntimeSlot) >= (uintptr_t)ARMY_RUNTIME_SLOT_COUNT) {
+    return;
+  }
+  PathingUnitState_Clear((int)(byteOffset / sizeof(ArmyRuntimeSlot)));
+}
+
 /* Removes an army for good: destroys its model hierarchy, drops every reference to it (player selections, the
    world selection, owned-model links of other nodes, each player's primary selection, the faction group
    tables), frees its runtime slot (model node = NULL) and rebuilds the in-game catalog grids and the
@@ -234,6 +255,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   }
   GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(entityRuntime);
   (entityRuntime->common).ownership.modelNode = nullptr; /* marks the army slot free */
+  ArmyRuntimePool_ClearPathingState(entityRuntime);
   InGameBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
   InGameSpecialBuildCatalog_RebuildGrid(&g_InGameRuntimeRoot->rootUi.base);
   InGameSelectionDetailPanel_Rebuild();
@@ -310,6 +332,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath);
     return ArmyRuntime_FailCreateInstance(FATAL_ERROR_ARMY_ID_NOT_FOUND,outError);
   }
+  ArmyRuntimePool_ClearPathingState(armyRuntime);
   armyRuntime->armyAssetId = armyAssetId;
   if (((creationFlags & ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION) != 0) &&
       (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {

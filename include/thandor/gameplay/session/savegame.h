@@ -69,4 +69,25 @@ extern uint16_t g_ArmyHexPathUtf16[9];
 extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne;
 extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne;
 
+/* open-thandor (docs/plans/pathfinding.md 4, D3): the Open Thandor extension entry "otpath.hex" of a save
+   package. Written only while the session runs the improved pathing mode (a save of the original mode has no
+   such entry and stays byte-identical to the original format); read by InGameRuntime_InitializeLoadedSession
+   (absent or invalid: original mode). Older Open Thandor builds and the original ignore the unknown entry and
+   load the save in the original mode. Layout: this header, then slotCount records of recordBytes bytes
+   (g_PathingUnitState, indexed like g_ArmyRuntimeSlots). Little-endian. */
+struct PathingSaveEntryHeader {
+    uint32_t magic;        /* PATHING_SAVE_MAGIC */
+    uint16_t version;      /* PATHING_SAVE_VERSION */
+    uint8_t mode;          /* PathingMode (PATHING_MODE_IMPROVED; any other value loads as original) */
+    uint8_t reserved07;    /* 0 */
+    uint32_t slotCount;    /* ARMY_RUNTIME_SLOT_COUNT */
+    uint32_t recordBytes;  /* sizeof(PathingUnitState) */
+};
+static_assert(sizeof(PathingSaveEntryHeader) == 16);
+
+inline constexpr uint32_t PATHING_SAVE_MAGIC = 0x4854504FU; /* "OPTH" */
+inline constexpr uint16_t PATHING_SAVE_VERSION = 1;
+
+extern uint16_t g_OtpathHexPathUtf16[12];
+
 #endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_H */
