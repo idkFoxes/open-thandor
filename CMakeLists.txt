@@ -102,6 +102,7 @@ add_executable(thandor WIN32
     src/gameplay/army/damage.cpp
     src/gameplay/army/drive_banking.cpp
     src/gameplay/army/drive_common.cpp
+    src/gameplay/army/drive_improved.cpp
     src/gameplay/army/drive_ground.cpp
     src/gameplay/army/factory.cpp
     src/gameplay/army/model_rules.cpp
