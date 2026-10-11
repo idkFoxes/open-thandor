@@ -12,14 +12,24 @@
    arena order and every later session stay as they were (plan section 3).
 
    The progress section of a campaign is keyed by the .cgn base name of its base campaign (plan 5.6): the
-   catalog row with the loaded campaign's fingerprint that CampaignCatalog_GroupByFingerprint picks as the base.
-   The loaded campaign (a .cgn, a network bundle or the campagne entry of a save) carries no name, so the catalog
-   rows' .cgn files are read natively and fingerprinted (cached per process). */
+   campaign row with the loaded campaign's fingerprint that CampaignCatalog_GroupByFingerprint picks as the base.
+   The loaded campaign (a .cgn, a network bundle or the campagne entry of a save) carries no name, so the campaign
+   rows' .cgn files are read natively and fingerprinted (cached per process).
+
+   The campaign rows are read natively from their source files (level\campagne.dat plus the add-on files
+   level\campagne00..99.dat merged by name, as ScenarioCatalog_Rebuild builds the catalog's campaign section),
+   never from g_ScenarioCatalog: in a session that block is not always a catalog. The in-game save page frees it
+   and puts its own save-row list there (InGameSaveGamePage_RebuildCatalog, original behaviour; the frontend
+   rebuilds the catalog later), so after the player had opened that page a walk of the catalog's campaign rows
+   built .cgn paths from garbage names (rich-text command units among them) and crashed in the path conversion.
+   Row names are also checked (plain file names, CampaignProgress_RowNameIsFileName) before a path is built. */
 
 #include <thandor/gameplay/session/campaign_progress.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 #include <map>
 #include <optional>
 #include <string>
@@ -32,6 +42,9 @@
 /* code units of ScenarioCatalogDisplayRecord.identifier (the .cgn base name of a campaign row) */
 static constexpr size_t CAMPAIGN_PROGRESS_ROW_NAME_UNITS =
     sizeof(ScenarioCatalogDisplayRecord::identifier) / sizeof(ScenarioCatalogDisplayRecord::identifier[0]);
+/* the most campaign rows the catalog could hold (its whole capacity in records) */
+static constexpr size_t CAMPAIGN_PROGRESS_MAX_ROWS = SCENARIO_CATALOG_CAPACITY / SCENARIO_CATALOG_RECORD_STRIDE;
+static_assert(sizeof(ScenarioCatalogDisplayRecord) == SCENARIO_CATALOG_RECORD_SIZE);
 /* dwords per g_OldUnitPrimaryTable record and the ones a snapshot keeps (asset id, faction, X, Y, rotation) */
 static constexpr uint32_t CAMPAIGN_PROGRESS_PRIMARY_RECORD_DWORDS = 8;
 
@@ -39,6 +52,12 @@ static constexpr uint32_t CAMPAIGN_PROGRESS_PRIMARY_RECORD_DWORDS = 8;
 struct CampaignProgressRowInfo {
   CampaignFingerprint fingerprint;
   int32_t firstLevelId;
+};
+
+/* One campaign row of level\campagne.dat (after the add-on merge): its file name and title index (+0x50). */
+struct CampaignProgressCatalogRow {
+  uint16_t identifier[CAMPAIGN_PROGRESS_ROW_NAME_UNITS];
+  int32_t titleIndex;
 };
 
 /* The base campaign of a loaded campaign: its section name and its first level. */
@@ -50,6 +69,8 @@ struct CampaignProgressBase {
 /* Module data: the fingerprint of each catalog .cgn read so far, keyed by its lowercased path. The .cgn files do
    not change while the game runs. */
 static std::map<std::u16string,std::optional<CampaignProgressRowInfo>> s_CampaignProgressRowCache;
+/* Module data: the campaign rows, read once per process (the .dat files do not change while the game runs). */
+static std::optional<std::vector<CampaignProgressCatalogRow>> s_CampaignProgressCatalogRows;
 
 bool CampaignProgress_IsWin(const CampaignLevelRecord &levelRecord,int32_t levelId,uint32_t endMovieSelectionIndex,
                             uint32_t endMovieVariantIndex)
@@ -97,7 +118,113 @@ static const CampaignLevelRecord *CampaignProgress_FindRecord(const CampaignAsse
   return nullptr;
 }
 
-/* The fingerprint and first level of the .cgn of one catalog row (cached), nullopt when it cannot be read. */
+/* Tells whether a campaign row's name (up to CAMPAIGN_PROGRESS_ROW_NAME_UNITS units, zero-terminated or not) is a
+   plain file name that may go into a path: not empty, printable ASCII or Latin-1 letters only (the units the path
+   layer's narrow conversion, RichTextCommandStream_CopyToNarrow, copies as they are: no rich-text command units
+   0x8000.., no control characters), no directory separator, drive colon or wildcard. */
+static bool CampaignProgress_RowNameIsFileName(const uint16_t *rowName)
+
+{
+  size_t unit;
+
+  for (unit = 0; unit < CAMPAIGN_PROGRESS_ROW_NAME_UNITS && rowName[unit] != 0; unit++) {
+    const uint16_t character = rowName[unit];
+    if (character < 0x20 || (character >= 0x7F && character < 0xA0) || character > 0xFF || character == '\\' ||
+        character == '/' || character == ':' || character == '*' || character == '?' || character == '"' ||
+        character == '<' || character == '>' || character == '|') {
+      return false;
+    }
+  }
+  return unit != 0;
+}
+
+/* The campaign row of one 0x100-byte campagne*.dat record at bytes + offset. */
+static CampaignProgressCatalogRow CampaignProgress_RowAt(const std::vector<uint8_t> &bytes,size_t offset)
+
+{
+  ScenarioCatalogDisplayRecord record;
+  CampaignProgressCatalogRow row{};
+
+  memcpy(&record,bytes.data() + offset,sizeof record);
+  memcpy(row.identifier,record.identifier,sizeof row.identifier);
+  row.titleIndex = static_cast<int32_t>(record.titleTextResourceId);
+  return row;
+}
+
+/* Merges the records of one campagne00..99.dat into rows by name the way ScenarioCatalog_MergeRecordsByName does:
+   the whole 0x40-byte identifier compared, a match overwritten, a new name appended; a file without a whole record,
+   or no rows yet, skips the file. */
+static void CampaignProgress_MergeAddOnRows(std::vector<CampaignProgressCatalogRow> &rows,
+                                            const std::vector<uint8_t> &bytes)
+
+{
+  const size_t recordCount = bytes.size() / SCENARIO_CATALOG_RECORD_SIZE;
+
+  if (recordCount == 0 || rows.empty()) {
+    return;
+  }
+  for (size_t recordIndex = 0; recordIndex < recordCount; recordIndex++) {
+    const CampaignProgressCatalogRow row = CampaignProgress_RowAt(bytes,recordIndex * SCENARIO_CATALOG_RECORD_SIZE);
+    auto existing = std::find_if(rows.begin(),rows.end(),[&row](const CampaignProgressCatalogRow &other) {
+      return memcmp(other.identifier,row.identifier,sizeof row.identifier) == 0;
+    });
+    if (existing != rows.end()) {
+      *existing = row;
+    }
+    else if (rows.size() < CAMPAIGN_PROGRESS_MAX_ROWS) {
+      rows.push_back(row);
+    }
+  }
+}
+
+/* Reads a game file named by an ASCII path the native way (CampaignLevelInfo_ReadEntryNative). */
+static std::optional<std::vector<uint8_t>> CampaignProgress_ReadDataFile(const char *asciiPath)
+
+{
+  uint16_t path[THANDOR_PATH_CAPACITY] = {};
+
+  for (size_t unit = 0; asciiPath[unit] != 0 && unit + 1 < THANDOR_PATH_CAPACITY; unit++) {
+    path[unit] = static_cast<uint8_t>(asciiPath[unit]);
+  }
+  return CampaignLevelInfo_ReadEntryNative(path);
+}
+
+/* The campaign rows of the catalog, read natively once per process: level\campagne.dat (package entry or loose
+   file) and the add-on files level\campagne00..99.dat merged by name, in the order ScenarioCatalog_Rebuild gives
+   the catalog's campaign section. */
+static const std::vector<CampaignProgressCatalogRow> &CampaignProgress_CatalogRows()
+
+{
+  if (s_CampaignProgressCatalogRows.has_value()) {
+    return *s_CampaignProgressCatalogRows;
+  }
+  std::vector<CampaignProgressCatalogRow> rows;
+  std::optional<std::vector<uint8_t>> bytes = CampaignProgress_ReadDataFile("level\\campagne.dat");
+  if (bytes.has_value()) {
+    const size_t recordCount = std::min(bytes->size() / SCENARIO_CATALOG_RECORD_SIZE,CAMPAIGN_PROGRESS_MAX_ROWS);
+    for (size_t recordIndex = 0; recordIndex < recordCount; recordIndex++) {
+      rows.push_back(CampaignProgress_RowAt(*bytes,recordIndex * SCENARIO_CATALOG_RECORD_SIZE));
+    }
+  }
+  if (rows.empty()) {
+    Thandor_Log("campaign progress: level\\campagne.dat cannot be read or holds no campaign");
+  }
+  else {
+    for (int addOn = 0; addOn < 100; addOn++) {
+      char addOnPath[32];
+      snprintf(addOnPath,sizeof addOnPath,"level\\campagne%02d.dat",addOn);
+      std::optional<std::vector<uint8_t>> addOnBytes = CampaignProgress_ReadDataFile(addOnPath);
+      if (addOnBytes.has_value()) {
+        CampaignProgress_MergeAddOnRows(rows,*addOnBytes);
+      }
+    }
+  }
+  s_CampaignProgressCatalogRows = std::move(rows);
+  return *s_CampaignProgressCatalogRows;
+}
+
+/* The fingerprint and first level of the .cgn of one catalog row (cached), nullopt when it cannot be read or its
+   name is not a plain file name (CampaignProgress_RowNameIsFileName). */
 static std::optional<CampaignProgressRowInfo> CampaignProgress_ReadRow(const uint16_t *rowName)
 
 {
@@ -105,6 +232,10 @@ static std::optional<CampaignProgressRowInfo> CampaignProgress_ReadRow(const uin
   uint16_t path[THANDOR_PATH_CAPACITY] = {};
   std::u16string key;
 
+  if (!CampaignProgress_RowNameIsFileName(rowName)) {
+    Thandor_Log("campaign progress: a campaign row without a plain file name skipped");
+    return std::nullopt;
+  }
   memcpy(name,rowName,CAMPAIGN_PROGRESS_ROW_NAME_UNITS * sizeof(uint16_t));
   /* level\<name>.cgn as FrontendScenarioSession_LoadOrRequestCampaignBundle builds it */
   WidePath_CombineDirectoryAndLeaf(path,name,g_ScenarioLevelDirectoryUtf16);
@@ -132,27 +263,20 @@ static std::optional<CampaignProgressRowInfo> CampaignProgress_ReadRow(const uin
   return info;
 }
 
-/* The base campaign (plan 5.6) of the loaded campaign among the rows of g_ScenarioCatalog, or nullopt (one log
-   line) when no row has its fingerprint or the base row's name is not a valid section name. */
+/* The base campaign (plan 5.6) of the loaded campaign among the campaign rows (CampaignProgress_CatalogRows), or
+   nullopt (one log line) when no row has its fingerprint or the base row's name is not a valid section name. */
 static std::optional<CampaignProgressBase> CampaignProgress_FindBase(const CampaignAsset *campaign)
 
 {
   const CampaignFingerprint fingerprint = CampaignAsset_Fingerprint(campaign);
   std::vector<CampaignGroupCandidate> candidates;
-  std::vector<const ScenarioCatalogDisplayRecord *> rows;
-  const ScenarioCatalogDisplayRecord *row;
-  uint32_t rowIndex;
+  std::vector<const CampaignProgressCatalogRow *> rows;
 
-  if (g_ScenarioCatalog != nullptr) {
-    row = Thandor_At<ScenarioCatalogDisplayRecord>(g_ScenarioCatalog,g_ScenarioCatalog->campaignRecordsOffset);
-    for (rowIndex = 0; rowIndex < g_ScenarioCatalog->campaignRecordCount; rowIndex++) {
-      std::optional<CampaignProgressRowInfo> info = CampaignProgress_ReadRow(row->identifier);
-      if (info.has_value()) {
-        candidates.push_back(CampaignGroupCandidate{info->fingerprint,info->firstLevelId,
-                                                    static_cast<int32_t>(row->titleTextResourceId)});
-        rows.push_back(row);
-      }
-      row = Thandor_At<ScenarioCatalogDisplayRecord>(row,SCENARIO_CATALOG_RECORD_SIZE);
+  for (const CampaignProgressCatalogRow &row : CampaignProgress_CatalogRows()) {
+    std::optional<CampaignProgressRowInfo> info = CampaignProgress_ReadRow(row.identifier);
+    if (info.has_value()) {
+      candidates.push_back(CampaignGroupCandidate{info->fingerprint,info->firstLevelId,row.titleIndex});
+      rows.push_back(&row);
     }
   }
   for (const CampaignGroup &group : CampaignCatalog_GroupByFingerprint(candidates)) {
