@@ -40,6 +40,16 @@ extern bool g_PathingNetworkImprovedAgreed;
    extension entry afterwards instead (PathingMode_SetLoaded). */
 void PathingMode_ApplyForNewSession(bool networked);
 
+/* Developer tools only (THANDOR_DEV_TOOLS): OPEN_THANDOR_PATHING=original|improved replaces the chosen mode of a
+   new session (the measurement and determinism scripts set it explicitly); otherwise, and in a build without the
+   developer tools, returns mode unchanged. Applied by PathingMode_ApplyForNewSession and, for test runs, by the
+   session-initialising debug hook (src/platform/debug/hooks.cpp) until the session build calls
+   PathingMode_ApplyForNewSession.
+   Merge note (pathing-mode/pm-harness): the settings package adds the same override; keep this one function
+   (name, variable and values as here) and call it once at the end of the new-session mode choice; the call in
+   DebugHook_SessionInitializing can then go. */
+PathingMode PathingMode_DevOverride(PathingMode mode);
+
 /* A loaded savegame's mode (absent extension entry: PATHING_MODE_ORIGINAL). */
 void PathingMode_SetLoaded(PathingMode mode);
 

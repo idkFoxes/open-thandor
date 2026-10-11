@@ -24,6 +24,7 @@
 #include <thandor/platform/debug/statehash.h>
 #include <thandor/platform/debug/test_aids.h>
 #include <thandor/platform/selftest/selftest.h>
+#include <thandor/world/pathing/mode.h>
 
 /* --- process --- */
 
@@ -153,6 +154,8 @@ void DebugHook_CampaignSessionEnded()
 
 void DebugHook_SessionInitializing()
 {
+  /* OPEN_THANDOR_PATHING (see PathingMode_DevOverride): until the session build chooses the mode itself */
+  g_PathingMode = PathingMode_DevOverride(g_PathingMode);
   DebugStateHash_SessionInitializing();
 }
 

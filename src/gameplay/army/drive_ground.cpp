@@ -8,6 +8,8 @@
 #include <thandor/gameplay/army/drive_ground.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/gameplay/army/drive_improved.h>
+#include <thandor/world/pathing/mode.h>
 
 /* Runtime update of model class 18 (runtimeUpdate slot 18 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): runs the AI special
@@ -171,6 +173,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
   uint32_t headingErrorLimit;
   uint32_t headingError;
   uint32_t targetDistance;
+  bool coasting;
   FixedLengthAngle angleAndLength;
   FixedPlanarPointQ12 nextPosition;
   ModelRuntimeSlot *blockingModelRuntime;
@@ -196,29 +199,48 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
     (rootNode->modelPayload).worldRotationAngle2 = facingAngle;
     rootNode->runtimeFlags = rootNode->runtimeFlags | MODEL_NODE_FLAG_TRANSFORM_DIRTY;
   }
-  /* allowed heading error: the far limit, blended towards the near limit inside the interpolation distance */
   targetDistance = angleAndLength.length;
-  headingErrorLimit = movementDefinition->farHeadingErrorLimitAngle;
-  headingError = facingAngle - desiredHeading & FIXED_ANGLE16_MASK;
-  if ((int)targetDistance < movementDefinition->headingErrorInterpolationDistanceQ12) {
-    headingErrorLimit = movementDefinition->nearHeadingErrorLimitAngle +
-             (int)(((int64_t)(int)(headingErrorLimit - movementDefinition->nearHeadingErrorLimitAngle) *
-                   (int64_t)(int)targetDistance) /
-                  (int64_t)movementDefinition->headingErrorInterpolationDistanceQ12);
+  coasting = false;
+  if (Pathing_Improved()) {
+    /* open-thandor, improved pathing (P1, drive_improved.cpp): drive while turning, turn on the spot only beyond a
+       quarter turn, exact alignment only at the final route point, coast instead of stopping at once */
+    if (!ArmyDriveImproved_UpdateGroundAdvance
+               (worldRuntime,modelRuntime,waypointWorldXQ12,waypointWorldYQ12,facingAngle,angleAndLength,&coasting)) {
+      DebugHook_PathingEvent('H',modelRuntime->ownerArmyRuntime,nullptr);
+      (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
+      return ArmyGroundMovement_PlaceStationary(worldRuntime,modelRuntime);
+    }
   }
-  if ((headingErrorLimit < headingError) && (headingError < FIXED_ANGLE16_FULL_TURN - headingErrorLimit)) {
-    DebugHook_PathingEvent('H',modelRuntime->ownerArmyRuntime,nullptr);
-    (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-    return ArmyGroundMovement_PlaceStationary(worldRuntime,modelRuntime);
+  else {
+    /* allowed heading error: the far limit, blended towards the near limit inside the interpolation distance */
+    headingErrorLimit = movementDefinition->farHeadingErrorLimitAngle;
+    headingError = facingAngle - desiredHeading & FIXED_ANGLE16_MASK;
+    if ((int)targetDistance < movementDefinition->headingErrorInterpolationDistanceQ12) {
+      headingErrorLimit = movementDefinition->nearHeadingErrorLimitAngle +
+               (int)(((int64_t)(int)(headingErrorLimit - movementDefinition->nearHeadingErrorLimitAngle) *
+                     (int64_t)(int)targetDistance) /
+                    (int64_t)movementDefinition->headingErrorInterpolationDistanceQ12);
+    }
+    if ((headingErrorLimit < headingError) && (headingError < FIXED_ANGLE16_FULL_TURN - headingErrorLimit)) {
+      DebugHook_PathingEvent('H',modelRuntime->ownerArmyRuntime,nullptr);
+      (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
+      return ArmyGroundMovement_PlaceStationary(worldRuntime,modelRuntime);
+    }
+    ArmyRuntime_UpdateActivationMetricAndPlayStartSound
+              (worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   }
-  ArmyRuntime_UpdateActivationMetricAndPlayStartSound
-            (worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime));
   /* drive forward, or jump onto the route point once it is closer than twice this tick's travel */
   travelDistance = (modelRuntime->movementControl).movementAdvancePerTickQ12 * g_InGameSimulationStepTicks;
   if (travelDistance < (int)targetDistance >> 1) {
     nextPosition = FixedTrig_ProjectPlanarPoint
                        ((rootNode->worldTransform).translation.x,(rootNode->worldTransform).translation.y,
                         travelDistance,(rootNode->modelPayload).worldRotationAngle2);
+  }
+  else if (coasting) {
+    /* improved mode only: a coasting unit never jumps onto a route point it does not face; it stops here */
+    DebugHook_PathingEvent('H',modelRuntime->ownerArmyRuntime,nullptr);
+    (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
+    return ArmyGroundMovement_PlaceStationary(worldRuntime,modelRuntime);
   }
   else {
     ownerArmy = modelRuntime->ownerArmyRuntime;

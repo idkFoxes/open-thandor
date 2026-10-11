@@ -8,6 +8,8 @@
 #include <thandor/gameplay/army/drive_banking.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/gameplay/army/drive_improved.h>
+#include <thandor/world/pathing/mode.h>
 
 /* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: drops the linked model
    (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint radius and this unit is
@@ -222,10 +224,18 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
      point that differs in only one coordinate keeps the current speed and turn velocity. */
   if ((waypointWorldX != (modelRuntime->classLinkState).classState68) &&
      ((uint32_t)waypointWorldY != (modelRuntime->classLinkState).armyLinkOrState.classState)) {
+    if (Pathing_Improved()) {
+      /* open-thandor, improved pathing (P6, drive_improved.cpp): keep the speed along the new direction */
+      ArmyDriveImproved_KeepBankingSpeedOnNewRoutePoint
+                (modelRuntime,rootNode,(Q12)(modelRuntime->classLinkState).classState68,
+                 (Q12)(modelRuntime->classLinkState).armyLinkOrState.classState,(Q12)waypointWorldX,waypointWorldY);
+    }
+    else {
+      (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
+      (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+    }
     (modelRuntime->classLinkState).classState68 = waypointWorldX;
     (modelRuntime->classLinkState).armyLinkOrState.classState = (uint32_t)waypointWorldY;
-    (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-    (modelRuntime->movementControl).turnVelocityAngle16 = 0;
   }
   deltaX = waypointWorldX - (rootNode->worldTransform).translation.x;
   deltaY = waypointWorldY - (rootNode->worldTransform).translation.y;
