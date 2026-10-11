@@ -46,8 +46,8 @@ Module header: [`model.h`](../include/thandor/assets/model.h) · Changelog: `def
 
 Module header: [`package.h`](../include/thandor/assets/package.h) · Changelog: `codec` [full](../CHANGELOG_FULL.md#module-assets-package-codec); `runtime` [full](../CHANGELOG_FULL.md#module-assets-package-runtime)
 
-- [`archive_write.cpp / archive_write.h`](source_guide/assets.md#file-assets-package-archive-write) - no file comment; main functions `Package_UpsertEntry`, `Package_DeleteEntry`, `Package_MakeTemporaryPath`
-- [`codec.cpp / codec.h`](source_guide/assets.md#file-assets-package-codec) - no file comment; main functions `PckCodec_EncodeHuffmanRle`, `PckCodec_EncodeFieldGrid`, `PckCodec_DecodeHuffmanRle`
+- [`archive_write.cpp / archive_write.h`](source_guide/assets.md#file-assets-package-archive-write) - no file comment; main functions `Package_UpsertEntry`, `Package_MakeTemporaryPath`, `Package_DeleteEntry`
+- [`codec.cpp / codec.h`](source_guide/assets.md#file-assets-package-codec) - no file comment; main functions `PckCodec_EncodeHuffmanRle`, `PckCodec_DecodeHuffmanRle`, `PckCodec_EncodeFieldGrid`
 - [`resource_loader.cpp / resource_loader.h`](source_guide/assets.md#file-assets-package-resource-loader) - no file comment; main functions `Resource_Release`, `Resource_Load`
 - [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-package-runtime) - no file comment; main functions `Package_LoadEntry`, `Package_LoadEntryWithSize`, `Package_SetLastErrorPath`
 - [`types.h`](source_guide/assets.md#file-assets-package-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
@@ -266,10 +266,13 @@ Module header: [`selection.h`](../include/thandor/gameplay/selection.h) · Chang
 Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog: `level` [dev](../CHANGELOG.md#module-gameplay-session-level) · [full](../CHANGELOG_FULL.md#module-gameplay-session-level); `runtime` [dev](../CHANGELOG.md#module-gameplay-session-runtime) · [full](../CHANGELOG_FULL.md#module-gameplay-session-runtime); `savegame` [full](../CHANGELOG_FULL.md#module-gameplay-session-savegame)
 
 - [`campaign_carryover.cpp / campaign_carryover.h`](source_guide/gameplay.md#file-gameplay-session-campaign-carryover) - no file comment; main functions `OldUnitRuntime_ResetPendingTables`, `OldUnitRuntime_RebuildScenarioReplayTables`, `OldUnitRuntime_MergeMasksAndReplayRecords`
+- [`campaign_progress.cpp / campaign_progress.h`](source_guide/gameplay.md#file-gameplay-session-campaign-progress) - Campaign progress file (docs/plans/campaign_map.md 4.4), save\kampagne.dat: a PCK package in the game's own format, built and read here with native memory only (the package API allocates from the ...
+- [`campaign_progress_session.cpp`](source_guide/gameplay.md#file-gameplay-session-campaign-progress-session) - The session hooks of the campaign progress (docs/plans/campaign_map.md 4.3, 4.5, 7.5): a win recorded when a session ends through the end trigger, the carry-over snapshot taken from the old-unit ...
+- [`campaign_start.cpp / campaign_start.h`](source_guide/gameplay.md#file-gameplay-session-campaign-start) - Starting a campaign at a mission from the campaign map (docs/plans/campaign_map.md 7.3, 7.4, 4.5).
 - [`level.cpp / level.h`](source_guide/gameplay.md#file-gameplay-session-level) - no file comment; main functions `LevelAsset_PrepareEndingMoviePath`, `InGameLevelRuntime_ShutdownLoadedAssetResources`, `InGameLevelRuntime_SaveLevelAssetImageFromWorldState`
 - [`level_new.cpp / level_new.h`](source_guide/gameplay.md#file-gameplay-session-level-new) - no file comment; main functions `NewLevel_Fail`, `NewLevel_ValidateImage`, `NewLevel_CopyRuntimePrefix`
 - [`level_saved.cpp / level_saved.h`](source_guide/gameplay.md#file-gameplay-session-level-saved) - no file comment; main functions `InGameLevelRuntime_LoadResourcesAfterExternalTables`
-- [`level_script.cpp / level_script.h`](source_guide/gameplay.md#file-gameplay-session-level-script) - no file comment; main functions `InGameScheduledCondition_EvaluatePostfixExpression`, `InGameLevelScript_Validate`, `InGameConditionRuntime_UpdateScheduledRecords`
+- [`level_script.cpp / level_script.h`](source_guide/gameplay.md#file-gameplay-session-level-script) - no file comment; main functions `InGameLevelScript_Validate`, `InGameScheduledCondition_EvaluatePostfixExpression`, `InGameConditionRuntime_UpdateScheduledRecords`
 - [`loaded_session.cpp / loaded_session.h`](source_guide/gameplay.md#file-gameplay-session-loaded-session) - no file comment; main functions `InGameRuntime_InitializeLoadedSession`
 - [`loading_movie.cpp / loading_movie.h`](source_guide/gameplay.md#file-gameplay-session-loading-movie) - no file comment; main functions `MoviePlayback_AdvanceScheduledFrameAndTick`, `MoviePlayback_AdvanceToFrameAndPresent`
 - [`new_session.cpp / new_session.h`](source_guide/gameplay.md#file-gameplay-session-new-session) - no file comment; main functions `InGameRuntime_InitializeNewSession`
@@ -447,7 +450,7 @@ Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Chang
 Module header: [`filesystem.h`](../include/thandor/platform/filesystem.h) · Changelog: `win32` [full](../CHANGELOG_FULL.md#module-platform-filesystem-win32)
 
 - [`types.h`](source_guide/platform.md#file-platform-filesystem-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
-- [`win32.cpp / win32.h`](source_guide/platform.md#file-platform-filesystem-win32) - no file comment; main functions `FileSystem_WriteBufferToPath`, `FileSystem_Init`, `Win32FileSystem_RestoreInitialDirectory`
+- [`win32.cpp / win32.h`](source_guide/platform.md#file-platform-filesystem-win32) - no file comment; main functions `FileSystem_WriteBufferToPath`, `FileSystem_ReadWholeFileNative`, `FileSystem_WriteFileReplacing`
 
 <a id="module-platform-input"></a>
 ### `platform/input`
@@ -496,8 +499,11 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 <a id="module-platform-selftest"></a>
 ### `platform/selftest`
 
+- [`campaignmap_selftest.cpp`](source_guide/platform.md#file-platform-selftest-campaignmap-selftest) - OPEN_THANDOR_SELFTEST=campaignmap: the campaign graph, fingerprint, grouping and map layout (src/ui/frontend/campaign_graph.cpp) on the four stock campaigns, built from embedded copies of their level ...
+- [`campaignprogress_selftest.cpp`](source_guide/platform.md#file-platform-selftest-campaignprogress-selftest) - OPEN_THANDOR_SELFTEST=campaignprogress: the campaign progress model and the kampagne.dat package format (src/gameplay/session/campaign_progress.cpp) on fixed models: a round trip of a model with ...
 - [`hexscan_selftest.cpp`](source_guide/platform.md#file-platform-selftest-hexscan-selftest) - OPEN_THANDOR_SELFTEST=hexscan: golden hashes of the hexagonal radius scans in src/world/terrain (the six sector walkers and six straight legs of overlay marking A and B, occupancy marking, the ...
 - [`keymatch_selftest.cpp`](source_guide/platform.md#file-platform-selftest-keymatch-selftest) - OPEN_THANDOR_SELFTEST=keymatch: the safety net for merging the six key command matchers into UiKeyModifiers_Match / UiCommandDispatch_Find (include/thandor/ui/core/key_dispatch.h).
+- [`nativefile_selftest.cpp`](source_guide/platform.md#file-platform-selftest-nativefile-selftest) - OPEN_THANDOR_SELFTEST=nativefile: the native file helpers FileSystem_ReadWholeFileNative and FileSystem_WriteFileReplacing (src/platform/filesystem/win32.cpp) on files in a fresh directory under ...
 - [`raster_selftest.cpp`](source_guide/platform.md#file-platform-selftest-raster-selftest) - OPEN_THANDOR_SELFTEST=raster: golden hashes of the software renderer's output, a safety net for rewrites of the triangle handlers and the 2D blits (docs/software_raster.md).
 - [`selftest.h`](source_guide/platform.md#file-platform-selftest-selftest) - Self-tests and data tools, started from WinMain (after the precomputed tables are built) when the environment variable OPEN_THANDOR_SELFTEST names one; the process then exits without entering ...
 - [`selftests.cpp`](source_guide/platform.md#file-platform-selftest-selftests) - no file comment; main functions `SelfTest_Run`
@@ -523,12 +529,12 @@ Control framework, dialogs, front end menus and the in-game interface.
 Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `buttons` [full](../CHANGELOG_FULL.md#module-ui-controls-buttons); `input` [full](../CHANGELOG_FULL.md#module-ui-controls-input); `layout` [full](../CHANGELOG_FULL.md#module-ui-controls-layout); `lists` [dev](../CHANGELOG.md#module-ui-controls-lists) · [full](../CHANGELOG_FULL.md#module-ui-controls-lists); `misc` [full](../CHANGELOG_FULL.md#module-ui-controls-misc); `text` [full](../CHANGELOG_FULL.md#module-ui-controls-text)
 
 - [`buttons.cpp / buttons.h`](source_guide/ui.md#file-ui-controls-buttons) - no file comment; main functions `UiSpriteButtonControl_Relocate`, `UiSpriteButtonControl_NonRightDrag`, `UiSpriteButtonControl_HitTestOpaque`
-- [`container.cpp / container.h`](source_guide/ui.md#file-ui-controls-container) - no file comment; main functions `UiPageStack_SetActiveIndex`, `UiContainer_LayoutChildren`, `UiContainer_HitTestChildren`
+- [`container.cpp / container.h`](source_guide/ui.md#file-ui-controls-container) - no file comment; main functions `UiPageStack_SetActiveIndex`, `UiContainer_LayoutChildren`, `UiContainer_RelocateChildren`
 - [`focus_proxy.cpp / focus_proxy.h`](source_guide/ui.md#file-ui-controls-focus-proxy) - no file comment; main functions `UiSingleLineTextControl_RelocateChild`, `UiSingleLineTextControl_ForwardKeyboardEventToChild`, `UiSingleLineTextControl_ForwardPointerWheelToChildOrParent`
 - [`gauge.cpp / gauge.h`](source_guide/ui.md#file-ui-controls-gauge) - no file comment; main functions `UiHorizontalGaugeControl_DrawFrameFillAndLabel`, `UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw`
 - [`image.cpp / image.h`](source_guide/ui.md#file-ui-controls-image) - no file comment; main functions `UiImageControl_HitTestOpaque`, `UiImageControl_LayoutChildrenToParent`, `UiImageControl_NonRightDrag`
 - [`input.cpp / input.h`](source_guide/ui.md#file-ui-controls-input) - no file comment; main functions `UiNode_DefaultKeyboardEventMoveFocusNext`, `UiNode_ForwardPointerWheelToParent`, `UiNode_DefaultPointerMove`
-- [`lists.cpp / lists.h`](source_guide/ui.md#file-ui-controls-lists) - no file comment; main functions `UiPointerList_InitializeColumnLayout`, `UiPointerList_RefreshSelectionAndQueueAction`, `UiPointerList_SelectColumnListIndex`
+- [`lists.cpp / lists.h`](source_guide/ui.md#file-ui-controls-lists) - no file comment; main functions `UiPointerList_InitializeColumnLayout`, `UiPointerList_GetSelectedIndexAndConfirmed`, `UiPointerList_RefreshSelectionAndQueueAction`
 - [`minimap.cpp / minimap.h`](source_guide/ui.md#file-ui-controls-minimap) - no file comment; main functions `UiSelectionGeometryControl_DrawClipped`, `UiSelectionGeometryControl_ConvertPointerAndEnqueueAction`
 - [`node_views.h`](source_guide/ui.md#file-ui-controls-node-views) - The UI control types as prefixed views of their base node (core/slot.h THANDOR_SLOT_PREFIX): a vtable slot taking a UiNodeBase * (or UiSelectableControl *, ...) accepts a function taking the control ...
 - [`panels.cpp / panels.h`](source_guide/ui.md#file-ui-controls-panels) - no file comment; main functions `UiImagePanelControl_DrawAlignedTextureAndChildren`, `UiImagePanelControl_HitTestAlignedTextureAndChildren`, `UiFillPanelControl_DrawColorOrTiledTextureAndChildren`
@@ -554,7 +560,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 - [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiCommandDispatch_Find`, `UiKeyModifiers_Match`
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
-- [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`, `UiNode_InvalidateRoot`
+- [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_InvalidateRoot`, `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`
 - [`types.h`](source_guide/ui.md#file-ui-core-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-ui-dialogs"></a>
@@ -571,6 +577,11 @@ Module header: [`dialogs.h`](../include/thandor/ui/dialogs.h)
 
 Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `network` [full](../CHANGELOG_FULL.md#module-ui-frontend-network); `player` [dev](../CHANGELOG.md#module-ui-frontend-player) · [full](../CHANGELOG_FULL.md#module-ui-frontend-player); `results` [full](../CHANGELOG_FULL.md#module-ui-frontend-results); `runtime` [dev](../CHANGELOG.md#module-ui-frontend-runtime) · [full](../CHANGELOG_FULL.md#module-ui-frontend-runtime); `scenario` [dev](../CHANGELOG.md#module-ui-frontend-scenario) · [full](../CHANGELOG_FULL.md#module-ui-frontend-scenario); `session` [full](../CHANGELOG_FULL.md#module-ui-frontend-session); `settings` [dev](../CHANGELOG.md#module-ui-frontend-settings) · [full](../CHANGELOG_FULL.md#module-ui-frontend-settings)
 
+- [`campaign_graph.cpp`](source_guide/ui.md#file-ui-frontend-campaign-graph) - Campaign graph, fingerprint, base-campaign grouping and map layout of the campaign tab (docs/plans/campaign_map.md 5.1-5.3, 5.6; include/thandor/ui/frontend/campaign_map.h).
+- [`campaign_level_info.cpp / campaign_level_info.h`](source_guide/ui.md#file-ui-frontend-campaign-level-info) - open-thandor (campaign map, docs/plans/campaign_map.md 5.4): reads the title index and the win selections of every level of a campaign for the mission map.
+- [`campaign_map.h`](source_guide/ui.md#file-ui-frontend-campaign-map) - The mission map of the campaign tab (docs/plans/campaign_map.md, section 5): the campaign graph built from a loaded campaign asset (.cgn) and the per-level info, the campaign fingerprint, the ...
+- [`campaign_map_control.cpp / campaign_map_control.h`](source_guide/ui.md#file-ui-frontend-campaign-map-control) - The mission map control of the campaign tab and the check mark of a finished campaign on its button (docs/plans/campaign_map.md 5.5, 6.2-6.4; include/thandor/ui/frontend/campaign_map_control.h).
+- [`campaign_tab.cpp / campaign_tab.h`](source_guide/ui.md#file-ui-frontend-campaign-tab) - The campaign tab with the campaign map (docs/plans/campaign_map.md 5.5, 6.1, 6.2, 7.1-7.4).
 - [`chat.cpp / chat.h`](source_guide/ui.md#file-ui-frontend-chat) - no file comment; main functions `FrontendRecentTextHistory_InsertAndRebuild5`, `FrontendRecentText_TrimAndSortTopFive`
 - [`common.h`](source_guide/ui.md#file-ui-frontend-common) - Frontend pages, page actions, UI actions, player and network states and text ids shared by the frontend files.
 - [`credits.cpp / credits.h`](source_guide/ui.md#file-ui-frontend-credits) - no file comment; main functions `CreditsScreen_Open`
@@ -590,7 +601,7 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`page_actions.cpp / page_actions.h`](source_guide/ui.md#file-ui-frontend-page-actions) - no file comment; main functions `FrontendCallback_NoOpArg1`, `FrontendCallback_ReturnToMainPageOrDispatchState4`, `FrontendQuitDialogAction_ReturnToMainPage`
 - [`player.cpp / player.h`](source_guide/ui.md#file-ui-frontend-player) - no file comment; main functions `FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton`, `FrontendPlayerSelection_ClearAndRefreshLocalPanels`, `FrontendPlayerRuntime_InitializeFactionAssignments`
 - [`results.cpp / results.h`](source_guide/ui.md#file-ui-frontend-results) - no file comment; main functions `FrontendResultsGraph_DrawFactionWeightSumColumn`, `FrontendResultsGraph_DrawFactionWeightLane0Column`, `FrontendResultsGraph_DrawFactionWeightLane1Column`
-- [`scenario_selection.cpp / scenario_selection.h`](source_guide/ui.md#file-ui-frontend-scenario-selection) - no file comment; main functions `ScenarioCatalog_RebuildLevelRecordListPage`, `ScenarioCatalog_RebuildCampaignRecordListPage`, `ScenarioCatalog_RebuildSaveRecordListPage`
+- [`scenario_selection.cpp / scenario_selection.h`](source_guide/ui.md#file-ui-frontend-scenario-selection) - no file comment; main functions `ScenarioCatalog_RebuildLevelRecordListPage`, `ScenarioCatalog_RebuildCampaignRecordListPage`, `ScenarioCatalog_SelectCampaignAndShowDescription`
 - [`session.cpp / session.h`](source_guide/ui.md#file-ui-frontend-session) - no file comment; main functions `FrontendSession_ReturnToMainPage`, `FrontendSession_SetGameSpeedPercent`, `FrontendTransferPage_ResetSessionOpenAndRequestMailbox`
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-frontend-settings) - no file comment; main functions `FrontendGameplaySettings_SetGameSpeedPercent`, `FrontendGameplaySettings_SetRightButtonDoesNotScroll`, `FrontendGameplaySettings_SetCameraScrollStep`
 - [`state.cpp / state.h`](source_guide/ui.md#file-ui-frontend-state) - no file comment; main functions `FrontendState_DispatchCode`, `FrontendRuntime_TimerCountdownTick`, `FrontendRomTransition_AdvanceElapsedTicks`

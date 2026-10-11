@@ -5,6 +5,67 @@ code changes is in the [plans](plans) and the [recovery changelog](../CHANGELOG.
 
 Every version lists the changes in English and in German (*Deutsch*).
 
+## Upcoming (not released yet)
+
+### English
+
+A mission map for the campaigns: replay any mission you have reached, without savegames.
+
+#### New
+
+- **Campaign map:** the campaigns tab of *Spiel auswählen* shows one button per campaign with your progress
+  (for example `Die Invasion 7/24`) and, below it, the map of the selected campaign. Every mission has its original
+  number; won missions are green, missions you may play are raised buttons, locked ones are dimmed. Where the
+  campaign branches, both paths are shown. A double line marks a mission that takes over the units of the mission
+  before it (*Einheitenübernahme*). A finished campaign gets a check mark on its button.
+- Below the map: the mission title, its description and a status line that says why a mission is open or locked.
+- **Start any mission you have reached:** every won or unlocked mission can be started (or replayed) with
+  *Starten* or a double click. Replaying keeps all progress behind it; winning a branching mission with the other
+  ending also opens the other branch. A mission that takes over units gets the units of your last win of the
+  mission before it.
+- **Progress without savegames:** every won mission is recorded automatically and unlocks the next one(s). The
+  progress is kept in `save\kampagne.dat` and survives quitting the game; a damaged file is set aside as
+  `kampagne.bad` and the progress starts empty. Uninstalling keeps the file, like your saves.
+
+#### Kept on purpose
+
+- After a win the campaign goes on to the next mission through the briefing room, exactly as before. Savegames,
+  levels, campaigns and the network protocol are unchanged.
+- In a network game the host can start every unlocked mission except one that takes over units: such a mission is
+  only reached by playing the mission before it.
+- The map is used with the mouse; with more than six campaigns (add-ons) the tab shows the old list.
+
+### Deutsch
+
+Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder spielen, ohne Spielstände.
+
+#### Neu
+
+- **Kampagnenkarte:** Die Kampagnen-Registerkarte unter *Spiel auswählen* zeigt eine Schaltfläche je Kampagne mit
+  dem Fortschritt (zum Beispiel `Die Invasion 7/24`) und darunter die Karte der gewählten Kampagne. Jede Mission
+  trägt ihre Originalnummer; gewonnene Missionen sind grün, spielbare erhaben, gesperrte abgeblendet. Verzweigt
+  sich die Kampagne, sind beide Wege zu sehen. Eine Doppellinie zeigt eine Mission, die die Einheiten der
+  vorherigen übernimmt (*Einheitenübernahme*). Eine fertige Kampagne bekommt ein Häkchen auf ihrer Schaltfläche.
+- Unter der Karte: Titel und Beschreibung der Mission und eine Statuszeile, die sagt, warum eine Mission offen oder
+  gesperrt ist.
+- **Jede erreichte Mission starten:** Jede gewonnene oder freigeschaltete Mission lässt sich mit *Starten* oder
+  einem Doppelklick (erneut) spielen. Dabei bleibt aller Fortschritt erhalten; wer eine verzweigende Mission mit
+  dem anderen Ende gewinnt, schaltet auch den anderen Zweig frei. Eine Mission mit Einheitenübernahme bekommt die
+  Einheiten des letzten Siegs in der Mission davor.
+- **Fortschritt ohne Spielstände:** Jede gewonnene Mission wird von selbst vermerkt und schaltet die nächste(n)
+  frei. Der Fortschritt steht in `save\kampagne.dat` und bleibt nach dem Beenden erhalten; eine beschädigte Datei
+  wird als `kampagne.bad` beiseitegelegt, und der Fortschritt beginnt leer. Die Deinstallation lässt die Datei wie
+  die Spielstände liegen.
+
+#### Bewusst beibehalten
+
+- Nach einem Sieg geht die Kampagne wie bisher über den Besprechungsraum zur nächsten Mission weiter. Spielstände,
+  Level, Kampagnen und das Netzwerkprotokoll bleiben unverändert.
+- Im Netzwerkspiel kann der Host jede freigeschaltete Mission starten, außer einer mit Einheitenübernahme: Sie wird
+  nur über die Mission davor erreicht.
+- Die Karte wird mit der Maus bedient; bei mehr als sechs Kampagnen (Add-ons) zeigt die Registerkarte die alte
+  Liste.
+
 ## 1.0.7 - "Thandor Patch 7"
 
 ### English
