@@ -144,6 +144,78 @@ static void DebugArena_MoveOrders(unsigned tick)
   }
 }
 
+/* "pathing" (scenario tools/test/make_arena.py --scenario pathing, driven by tools/test/run_pathing.py): every mobile
+   army of faction 1 gets one routed move at ARENA_MOVE_OUT_TICK, in slot order as a selection order would issue them.
+   OPEN_THANDOR_ARENA_PATHING picks the order: "formation" (default) sends each army to the group target shifted by its
+   offset from the group centre (SelectionPointerArray_ApplyMoveCommand), "point" sends all to the group target itself,
+   "cross" mirrors each army's row through the centre row (two groups pass through each other). The group target lies
+   OPEN_THANDOR_ARENA_PATHING_ROWS (default 40) grid rows beyond the centre, towards higher rows. */
+static void DebugArena_PathingOrders(unsigned tick)
+{
+  const char *mode = getenv("OPEN_THANDOR_ARENA_PATHING");
+  const char *rowsText = getenv("OPEN_THANDOR_ARENA_PATHING_ROWS");
+  int rows = rowsText != nullptr ? atoi(rowsText) : 40;
+  int64_t sumX = 0;
+  int64_t sumY = 0;
+  int count = 0;
+  Q12 centreX;
+  Q12 centreY;
+  unsigned slotIndex;
+  if (tick != ARENA_MOVE_OUT_TICK) {
+    return;
+  }
+  if (mode == nullptr) {
+    mode = "formation";
+  }
+  for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
+    ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
+    ModelRuntimeSlot *model = army->modelRuntimeOrSavedOffset.modelRuntime;
+    if (army->modelNodeRuntime == nullptr || model == nullptr || army->factionIndex != 1 ||
+        model->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0) {
+      continue;
+    }
+    sumX += army->modelNodeRuntime->worldTransform.translation.x;
+    sumY += army->modelNodeRuntime->worldTransform.translation.y;
+    count++;
+  }
+  if (count == 0) {
+    return;
+  }
+  centreX = (Q12)(sumX / count);
+  centreY = (Q12)(sumY / count);
+  for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
+    ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
+    ModelRuntimeSlot *model = army->modelRuntimeOrSavedOffset.modelRuntime;
+    Q12 x;
+    Q12 y;
+    Q12 targetX;
+    Q12 targetY;
+    if (army->modelNodeRuntime == nullptr || model == nullptr || army->factionIndex != 1 ||
+        model->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0) {
+      continue;
+    }
+    x = army->modelNodeRuntime->worldTransform.translation.x;
+    y = army->modelNodeRuntime->worldTransform.translation.y;
+    if (strcmp(mode, "cross") == 0) {
+      /* same column, row mirrored through the centre row */
+      int rowOffset = (int)((int64_t)(y - centreY) / ARENA_ROW_STEP_Y);
+      targetY = y - 2 * rowOffset * ARENA_ROW_STEP_Y;
+      targetX = x - 2 * rowOffset * ARENA_ROW_STEP_X;
+    }
+    else {
+      targetX = centreX + rows * ARENA_ROW_STEP_X;
+      targetY = centreY + rows * ARENA_ROW_STEP_Y;
+      if (strcmp(mode, "point") != 0) {
+        targetX += x - centreX;
+        targetY += y - centreY;
+      }
+    }
+    Thandor_Log("test aid: arena pathing: army %u from %d %d to %d %d", slotIndex, x, y, targetX, targetY);
+    /* the engine takes Y first */
+    ArmyRuntime_StartRoutedMoveCommand(targetY, targetX, reinterpret_cast<ArmyMovementRuntime *>(army) /* movement view of the slot */);
+  }
+}
+
 /* "production": both factions queue units for every factory (the build menu's call, which checks nothing: the
    factories take what they can afford) and every lab starts the first technology of its range that is available. */
 static void DebugArena_ProductionOrders(unsigned tick)
@@ -232,6 +304,9 @@ static void DebugArena_Orders(int step, unsigned tick)
   }
   if (strcmp(orders, "move") == 0) {
     DebugArena_MoveOrders(tick);
+  }
+  else if (strcmp(orders, "pathing") == 0) {
+    DebugArena_PathingOrders(tick);
   }
   else if (strcmp(orders, "production") == 0) {
     DebugArena_ProductionSummary(step);

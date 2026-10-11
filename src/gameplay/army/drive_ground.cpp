@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/drive_ground.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Runtime update of model class 18 (runtimeUpdate slot 18 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): runs the AI special
@@ -206,6 +207,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
                   (int64_t)movementDefinition->headingErrorInterpolationDistanceQ12);
   }
   if ((headingErrorLimit < headingError) && (headingError < FIXED_ANGLE16_FULL_TURN - headingErrorLimit)) {
+    DebugHook_PathingEvent('H',modelRuntime->ownerArmyRuntime,nullptr);
     (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
     return ArmyGroundMovement_PlaceStationary(worldRuntime,modelRuntime);
   }
@@ -236,6 +238,8 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
   if (blockingModelRuntime != nullptr) {
     /* stay where we are and let the collision partner react (water surface: it is not notified) */
     blockedRootNode = modelRuntime->rootModelNode;
+    DebugHook_PathingEvent('B',modelRuntime->ownerArmyRuntime,
+                           blockingModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     if (notifyBlockingArmy) {
       ArmyRuntime_HandleCollisionPartner
                 (ModelView_Cast<ModelRuntimeSlot>(modelRuntime),(blockedRootNode->worldTransform).translation.y,
