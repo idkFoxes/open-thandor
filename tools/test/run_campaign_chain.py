@@ -39,7 +39,7 @@ import shutil
 import subprocess
 import threading
 import time
-from game_env import game_env
+from game_env import add_pathing_argument, apply_pathing, game_env
 
 # (campaign, first level, levels to play): the target is the last one; tutorial 2 itself needs tutorial 1's units
 PAIRS = [('tutorial', 1, 2), ('tutorial', 1, 3), ('hansolo', 8, 2), ('hansolo', 12, 2), ('hansolo', 22, 2)]
@@ -66,7 +66,9 @@ parser.add_argument('--minutes', type=float, default=1)
 parser.add_argument('--shots', default='5000')
 parser.add_argument('--port-base', type=int, default=940, help='UDP port of worker 0 (worker k: + k)')
 parser.add_argument('--only', help='comma-separated campaign names, e.g. tutorial,luke')
+add_pathing_argument(parser)
 args = parser.parse_args()
+apply_pathing(args.pathing)
 
 game = os.path.abspath(args.game_dir)
 out = os.path.join(game, 'chain')

@@ -755,6 +755,8 @@ static_assert(sizeof(PersistentSettingsRuntime) == 0x20C &&
               "PersistentSettingsRuntime keeps its 32-bit layout");
 static_assert(sizeof(PersistentSettingsImage) == 0xC8,
               "PersistentSettingsImage keeps its 32-bit layout");
+static_assert(offsetof(PersistentSettingsImage, pathingMode) == PERSISTENT_SETTING_PATHING_MODE,
+              "PersistentSettingsImage.pathingMode is [game] pathing (open-thandor)");
 static_assert(sizeof(AiKnowledgeParameters) == 0x200,
               "AiKnowledgeParameters keeps its 32-bit layout");
 static_assert(sizeof(AiKnowledgeDataImage) == 0x200,
@@ -1117,10 +1119,14 @@ static_assert(offsetof(InGameUiImage, saveNameEdit_trailing) + sizeof(InGameUiIm
 static_assert(sizeof(UiDisplayModeSelectionActionHandlerTable) == 0x50 &&
               offsetof(UiDisplayModeSelectionActionHandlerTable, handlers) == 0x0,
               "UiDisplayModeSelectionActionHandlerTable keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x180 && /* 0x160 + the 8 handlers of open-thandor */
+static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x194 && /* 0x160 + the 13 handlers of open-thandor */
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers00_54) == 0x0 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, scenarioCatalogRebuildCallbacks) == 0x154 &&
-              offsetof(FrontendUiActionHandlerPage20Prefix, handlers5B_5F) == 0x16C,
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers5B_5F) == 0x16C &&
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers60) == 0x180 &&
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers61) == 0x184 &&
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers62_63) == 0x188 &&
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers64) == 0x190,
               "FrontendUiActionHandlerPage20Prefix keeps its 32-bit layout");
 static_assert(sizeof(InGameUiActionHandlerPage12Prefix28) == 0x70 &&
               offsetof(InGameUiActionHandlerPage12Prefix28, handlers) == 0x0,
@@ -2384,6 +2390,56 @@ static_assert(offsetof(FrontendUiImage, advancedVsyncCheckbox) == 0x782C && size
               "FrontendUiImage.advancedVsyncCheckbox is a UiTextButtonControl");
 static_assert(offsetof(FrontendUiImage, advancedNoteLabel) == 0x788C && sizeof(UiFocusProxyControl) == 0x5C,
               "FrontendUiImage.advancedNoteLabel is a UiFocusProxyControl");
+/* Not in the original (open-thandor): the campaign map nodes of the campaign tab (campaign_map.md 6.2). */
+static_assert(sizeof(FrontendCampaignMapControl) == 0x60 && offsetof(FrontendCampaignMapControl, mapIndex) == 0x5C &&
+                  offsetof(FrontendCampaignMapControl, panel) == 0x0 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendCampaignMapControl is an image panel followed by the map index");
+static_assert(offsetof(FrontendUiImage, campaignButtons) == 0x78E8 && sizeof(UiFramedTextButtonControl) == 0x60 &&
+                  sizeof(FrontendUiImage::campaignButtons) == 0x60 * FRONTEND_CAMPAIGN_BUTTON_COUNT,
+              "FrontendUiImage.campaignButtons are UiFramedTextButtonControls");
+static_assert(offsetof(FrontendUiImage, campaignMap) == 0x7B28 && sizeof(FrontendCampaignMapControl) == 0x60,
+              "FrontendUiImage.campaignMap is a FrontendCampaignMapControl");
+static_assert(offsetof(FrontendUiImage, campaignMissionTitleText) == 0x7B88 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.campaignMissionTitleText is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, campaignTitleText) == 0x7BE4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.campaignTitleText is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, campaignMissionDescriptionText) == 0x7C40 && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.campaignMissionDescriptionText is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, campaignMissionStatusText) == 0x7C9C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.campaignMissionStatusText is a UiFocusProxyControl");
+/* Not in the original (open-thandor): the key binding page. */
+static_assert(offsetof(FrontendUiImage, keyBindingsButton) == 0x7CF8 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.keyBindingsButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, settingsSubPageStack) == 0x7D58 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "FrontendUiImage.settingsSubPageStack is a UiLayoutContainerControl<2>");
+static_assert(offsetof(FrontendUiImage, keyBindingsPage) == 0x7DB0 && sizeof(UiImagePanelControl) == 0x5C,
+              "FrontendUiImage.keyBindingsPage is a UiImagePanelControl");
+static_assert(offsetof(FrontendUiImage, keyBindingsBackButton) == 0x7E0C && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.keyBindingsBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, keyBindingsTitle) == 0x7E6C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.keyBindingsTitle is a UiFocusProxyControl");
+static_assert(offsetof(FrontendUiImage, keyBindingsScroller) == 0x7EC8 && sizeof(UiScrollableControl) == 0x90,
+              "FrontendUiImage.keyBindingsScroller is a UiScrollableControl");
+static_assert(offsetof(FrontendUiImage, keyBindingsList) == 0x7F58 && sizeof(UiListControl) == 0x74,
+              "FrontendUiImage.keyBindingsList is a UiListControl");
+static_assert(offsetof(FrontendUiImage, keyBindingsList_column2) == 0x7FCC && sizeof(UiListColumn) == 0x8,
+              "FrontendUiImage.keyBindingsList_column2 is the list's second column");
+/* Not in the original (open-thandor): the language choice of the advanced settings page. */
+static_assert(offsetof(FrontendUiImage, advancedLanguageGroup) == 0x7FD4 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.advancedLanguageGroup is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, advancedLanguageButton) == 0x8028 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedLanguageButton is a UiFramedTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedLanguageLayer) == 0x8088 && sizeof(UiPanelControl) == 0x58,
+              "FrontendUiImage.advancedLanguageLayer is a UiPanelControl");
+static_assert(offsetof(FrontendUiImage, advancedLanguagePanel) == 0x80E0 && sizeof(UiPanelControl) == 0x58,
+              "FrontendUiImage.advancedLanguagePanel is a UiPanelControl");
+static_assert(offsetof(FrontendUiImage, advancedLanguageBox) == 0x8138 && sizeof(UiTitledWindowControl) == 0x54,
+              "FrontendUiImage.advancedLanguageBox is a UiTitledWindowControl");
+static_assert(offsetof(FrontendUiImage, advancedLanguageChoices) == 0x818C && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedLanguageChoices are UiTextButtonControls");
+/* Not in the original (open-thandor): the pathing checkbox of the advanced settings page. */
+static_assert(offsetof(FrontendUiImage, advancedPathingCheckbox) == 0x83CC && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedPathingCheckbox is a UiTextButtonControl");
 static_assert(offsetof(FrontendUiImage, chatInputEdit_trailing) == 0x188,
               "FrontendUiImage.chatInputEdit_trailing follows the control");
 static_assert(offsetof(FrontendUiImage, chatMessageHistory_trailing) == 0x358,
@@ -2416,7 +2472,16 @@ static_assert(offsetof(FrontendUiImage, hostLobbyPlayerList_trailing) == 0x5660,
               "FrontendUiImage.hostLobbyPlayerList_trailing follows the control");
 static_assert(offsetof(FrontendUiImage, clientLobbyPlayerList_trailing) == 0x58E8,
               "FrontendUiImage.clientLobbyPlayerList_trailing follows the control");
-static_assert(sizeof(FrontendUiImage) == 0x78E8 && /* 0x5954 + the display mode kind, resolution list and advanced settings nodes of open-thandor */
+static_assert(sizeof(FrontendUiImage) == 0x842C && /* 0x5954 + the display mode kind, resolution list, advanced settings, campaign map, key binding, language choice and pathing checkbox nodes of open-thandor */
+              offsetof(FrontendUiImage, advancedPathingCheckbox) == 0x83CC &&
+              offsetof(FrontendUiImage, advancedLanguageGroup) == 0x7FD4 &&
+              offsetof(FrontendUiImage, advancedLanguageChoices) == 0x818C &&
+              offsetof(FrontendUiImage, keyBindingsButton) == 0x7CF8 &&
+              offsetof(FrontendUiImage, settingsSubPageStack) == 0x7D58 &&
+              offsetof(FrontendUiImage, keyBindingsList) == 0x7F58 &&
+              offsetof(FrontendUiImage, campaignButtons) == 0x78E8 &&
+              offsetof(FrontendUiImage, campaignMap) == 0x7B28 &&
+              offsetof(FrontendUiImage, campaignMissionStatusText) == 0x7C9C &&
               offsetof(FrontendUiImage, displayPageStack) == 0x71A0 &&
               offsetof(FrontendUiImage, advancedSettingsButton) == 0x71F8 &&
               offsetof(FrontendUiImage, advancedSettingsPage) == 0x7258 &&

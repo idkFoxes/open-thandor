@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/walker.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Module data. */
 
@@ -254,6 +255,7 @@ static ArticulatedRouteStep ArticulatedWalker_TryStartRouteStep(WorldRuntimeCont
      ((ARMY_ARTICULATED_TURN_ANGLE16 < steerAngle) &&
       (steerAngle < FIXED_ANGLE16_FULL_TURN - ARMY_ARTICULATED_TURN_ANGLE16))) {
     /* turn on the spot, with the foot on the side of the turn */
+    DebugHook_PathingEvent('H',modelRuntime->ownerArmyRuntime,nullptr);
     ArmyArticulatedRuntime_UpdateSelectedTerrainContact
               ((AngleTurn32)steerAngle,ModelView_Cast<ArmyArticulatedRuntimeSlotView>(modelRuntime),worldRuntime);
     *stepState = *stepState &
@@ -665,6 +667,8 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
       ArticulatedContact_SetLeftStepRate(armyRuntime,sampledFootZ,sampledFootY);
       return;
     }
+    DebugHook_PathingEvent('B',ModelView_Cast<ModelRuntimeSlot>(armyRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
+                           blockingModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     ArmyRuntime_HandleCollisionPartner
               (ModelView_Cast<ModelRuntimeSlot>(armyRuntime),
                (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
@@ -808,6 +812,8 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
       ArticulatedContact_SetRightStepRate(armyRuntime,sampledFootZ,sampledFootY);
       return;
     }
+    DebugHook_PathingEvent('B',ModelView_Cast<ModelRuntimeSlot>(armyRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
+                           blockingModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     ArmyRuntime_HandleCollisionPartner
               (ModelView_Cast<ModelRuntimeSlot>(armyRuntime),
                (armyRuntime->modelNodeRuntime->worldTransform).translation.y,

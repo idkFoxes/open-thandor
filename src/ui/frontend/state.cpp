@@ -45,6 +45,14 @@ static UiKeyCommandRecord<FrontendHotkeyAction> g_FrontendCommandDispatchRecords
     /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_CTRL, .action = FrontendHotkeyAction::ToggleFactionSetupReady},
     /* 3 */ {.commandCode = 0x0}}; /* terminator: commandCode 0 (the original's other two dwords were NOP fill, never read) */
 
+uint32_t FrontendHotkeys_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags)
+{
+  const UiKeyCommandRecord<FrontendHotkeyAction> *record = UiCommandDispatch_Find(
+      g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30, keyCode, heldFlags,
+      UiKeyModifierRule::ExactWithShift);
+  return (record == nullptr) ? 0 : static_cast<uint32_t>(record->action);
+}
+
 /* Periodic timer callback of the frontend (80 Hz): counts g_FrontendTimerCountdownTicks down to zero.
    Frontend_StateTick uses the countdown to pace its network polling.
 */

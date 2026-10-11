@@ -10,8 +10,10 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/assets/record_bytes.h>
+#include <thandor/world/pathing/mode.h>
 
 #include <iterator>
+#include <string.h>
 
 /* Module data. */
 
@@ -114,6 +116,70 @@ static uint32_t InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
     sessionNameCursor++;
   }
   return 0;
+}
+
+/* open-thandor (docs/plans/pathfinding.md 4, D3): sets the pathing mode of the loaded session from the save's
+   extension entry otpath.hex (InGameSaveGame_WritePathingEntry). A valid entry selects the improved mode and
+   restores the per-unit side table g_PathingUnitState; a save without the entry (the original game, older Open
+   Thandor builds, a save of the original mode) loads in the original mode with the table zeroed. An entry that
+   does not validate (size, magic, version, mode, slot count, record size, decode error) is ignored the same way
+   with one log line; it never fails the load. Runs before the step timer is installed, so every simulation step
+   of the session sees the final mode. Loaded sessions are always local: the Load game tab is not offered in a
+   network game (FrontendScenarioSelectionPage_InitializeAndApplyMapOption), and no save is sent to peers. */
+static void InGameLoadedSession_RestorePathingMode(EngineFileHandle saveHandle)
+
+{
+  struct PathingSaveImage {
+    PathingSaveEntryHeader header;
+    PathingUnitState records[ARMY_RUNTIME_SLOT_COUNT];
+  };
+  static PathingSaveImage s_image;
+  PckEntryHeader *entry;
+  uint32_t decodeErrorCode;
+  const char *problem;
+
+  PathingMode_SetLoaded(PATHING_MODE_ORIGINAL);
+  memset(g_PathingUnitState,0,sizeof(g_PathingUnitState));
+  entry = Package_FindEntryInMount(g_OtpathHexPathUtf16,saveHandle);
+  if (entry == nullptr) {
+    return;
+  }
+  /* the decoders fill exactly unpackedSize bytes (their byte count result is not the decoded size for every
+     method), so the exact unpacked size is the size check */
+  problem = nullptr;
+  decodeErrorCode = 0;
+  if (entry->unpackedSize != sizeof(s_image)) {
+    problem = "entry size";
+  }
+  else if (entry->packedSize > (PckStoredByteCount)PACKAGE_SCRATCH_BUFFER_BYTES) {
+    problem = "packed size";
+  }
+  else if (!Package_DecodeEntryInto(reinterpret_cast<uint8_t *>(&s_image),entry,saveHandle,nullptr,
+                                    &decodeErrorCode)) {
+    problem = "decode";
+  }
+  else if (s_image.header.magic != PATHING_SAVE_MAGIC) {
+    problem = "magic";
+  }
+  else if (s_image.header.version != PATHING_SAVE_VERSION) {
+    problem = "version";
+  }
+  else if (s_image.header.mode != PATHING_MODE_IMPROVED) {
+    problem = "mode";
+  }
+  else if (s_image.header.slotCount != ARMY_RUNTIME_SLOT_COUNT) {
+    problem = "slot count";
+  }
+  else if (s_image.header.recordBytes != sizeof(PathingUnitState)) {
+    problem = "record size";
+  }
+  if (problem != nullptr) {
+    Thandor_Log("loaded session: otpath entry (%u bytes, error 0x%X): invalid %s, loaded in the original pathing "
+                "mode",(unsigned)entry->unpackedSize,decodeErrorCode,problem);
+    return;
+  }
+  memcpy(g_PathingUnitState,s_image.records,sizeof(g_PathingUnitState));
+  PathingMode_SetLoaded(PATHING_MODE_IMPROVED);
 }
 
 /* Resets the session state for a loaded game: clears all selection blocks and sets up only block 0 (local player 0
@@ -287,12 +353,16 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
     Thandor_Log("loaded session: saved local faction %u outside 1..7, load rejected",savedFactionIndex);
     return InGameLoadedSession_Fail(levelImage,saveHandle,FATAL_ERROR_LEVEL_ASSET_INVALID,outError);
   }
+  InGameLoadedSession_RestorePathingMode(saveHandle);
   InGameLoadedSession_ResetSessionState(savedFactionIndex);
   if (!InGameLoadedSession_CreateRoot(levelImage,&inGameRoot,&stepError) ||
       !InGameLoadedSession_LoadWorld(savePackagePath,levelImage,inGameRoot,&stepError) ||
       !InGameLoadedSession_FinishWorldUnderTickLock(inGameRoot,&stepError)) {
     return InGameLoadedSession_Fail(levelImage,saveHandle,stepError,outError);
   }
+  /* open-thandor: the level of a loaded campaign save counts as unlocked in the campaign progress (native file
+     only, no arena; campaignAsset is nullptr for a save outside a campaign) */
+  CampaignProgress_NoteLevelStarted(campaignAsset);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
     inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags | UI_NODE_SUPPRESSED;
   }

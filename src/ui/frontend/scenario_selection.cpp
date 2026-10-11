@@ -10,6 +10,7 @@
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/ui/frontend/campaign_tab.h>
 
 /* Module data. */
 
@@ -239,7 +240,10 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   }
   /* Rebuild the tab's list, then refresh the description of its selected entry. */
   g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[activeTabIndex](0,0,0,0);
-  g_FrontendScenarioMapOptionHandlerTable[activeTabIndex](0,0,0,0);
+  /* open-thandor: the campaign tab opens with the campaign last selected in this process (campaign map, plan 7.1;
+     row 0 as the original in a network game, while the map is not shown or without such a campaign) */
+  g_FrontendScenarioMapOptionHandlerTable[activeTabIndex]
+            (0,0,0,(activeTabIndex == SCENARIO_SELECTION_TAB_CAMPAIGNS) ? FrontendCampaignTab_InitialRow() : 0);
   if (DebugHook_ScenarioPageOpened()) {
     return;
   }
@@ -334,7 +338,9 @@ void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
   FrontendUi_Image(sourceNode)->campaignDescriptionText.text =
        reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_SCENARIO_DESCRIPTION_EMPTY));
   FrontendCommand_Issue<ScenarioCatalog_RebuildCampaignRecordListPage>(0,0,0);
-  FrontendCommand_Issue<ScenarioCatalog_SelectCampaignAndShowDescription>(0,0,0);
+  /* open-thandor: in a local game the rebuild above has run, and the campaign map opens with the campaign last
+     selected in this process (plan 7.1); row 0 otherwise, as the original */
+  FrontendCommand_Issue<ScenarioCatalog_SelectCampaignAndShowDescription>(0,0,FrontendCampaignTab_InitialRow());
 }
 
 /* Shows the "Load game" tab: selects its tab button and page and fills the saved-games list with the save
@@ -471,9 +477,22 @@ void ScenarioCatalog_RebuildLevelRecordListPage
    with at least one campaign. Reached as frontend command FRONTEND_COMMAND_SHOW_CAMPAIGNS and through
    scenarioCatalogRebuildCallbacks[SCENARIO_SELECTION_TAB_CAMPAIGNS] of g_FrontendUiActionHandlersPage20; the
    four arguments of the command-handler format are unused.
+   open-thandor: the original list page is put back first and the campaign map is refreshed afterwards
+   (FrontendCampaignTab_Refresh, plan 7.1), which shows the map in place of the list when it can.
 */
+static void ScenarioCatalog_FillCampaignRecordListPage();
+
 void ScenarioCatalog_RebuildCampaignRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
+
+{
+  FrontendCampaignTab_ShowList();
+  ScenarioCatalog_FillCampaignRecordListPage();
+  FrontendCampaignTab_Refresh();
+}
+
+/* The original body of ScenarioCatalog_RebuildCampaignRecordListPage. */
+static void ScenarioCatalog_FillCampaignRecordListPage()
 
 {
   UiPointerListControl *control;
@@ -591,9 +610,21 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
    (TEXT_ID_CAMPAIGN_DESCRIPTION_BASE + the record's title index at +0x50) in the description box, which keeps
    the empty placeholder while the list has no rows. Reached as frontend command FRONTEND_COMMAND_SELECT_CAMPAIGN
    and through g_FrontendScenarioMapOptionHandlerTable[SCENARIO_SELECTION_TAB_CAMPAIGNS].
+   open-thandor: the campaign map follows the selection (FrontendCampaignTab_SelectRow); levelId, unused by the
+   original, is the mission an open-thandor host selected on its map (0 none; an original peer sends 0).
 */
+static void ScenarioCatalog_SelectCampaignRow(UiListRowIndex selectionIndex);
+
 void ScenarioCatalog_SelectCampaignAndShowDescription
-          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex)
+          (uint32_t playerRuntimeId,uint32_t levelId,uint32_t unusedArg2,UiListRowIndex selectionIndex)
+
+{
+  ScenarioCatalog_SelectCampaignRow(selectionIndex);
+  FrontendCampaignTab_SelectRow(selectionIndex,levelId);
+}
+
+/* The original body of ScenarioCatalog_SelectCampaignAndShowDescription. */
+static void ScenarioCatalog_SelectCampaignRow(UiListRowIndex selectionIndex)
 
 {
   UiPointerListControl *control;
@@ -651,12 +682,17 @@ void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl 
       FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestLevelAsset>(0,0,selectedRowIndex);
       return;
     }
+    /* open-thandor: the mission selected on the campaign map (0: the first mission, the original start; plan 7.3) */
+    uint32_t startLevelId;
+    if (!FrontendCampaignTab_StartLevel(&startLevelId)) {
+      return;
+    }
     Resource_Release(g_FrontendLoadedCampaignAsset);
     g_FrontendLoadedCampaignAsset = nullptr;
     selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                       (UiListControl_AsPointerList(&ui->campaignsList),
                        nullptr);
-    FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestCampaignBundle>(0,0,selectedRowIndex);
+    FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestCampaignBundle>(startLevelId,0,selectedRowIndex);
     return;
   }
   scenarioPathPointerTable =

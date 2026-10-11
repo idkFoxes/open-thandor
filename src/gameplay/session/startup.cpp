@@ -85,6 +85,11 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
                 (FrontendSession_PeriodicTick,&g_InGameStateTickSpinLock);
       Frontend_PlaySelectedEndMovie();
       OldUnitRuntime_RebuildScenarioReplayTables();
+      /* open-thandor: a win marks the level done in the campaign progress file and keeps the carry-over tables
+         just rebuilt as its snapshot (only reads them; native memory and files, no arena) */
+      CampaignProgress_RecordSessionEnd(g_FrontendLoadedCampaignAsset,g_EndMovieSelectionIndex,
+                                        g_EndMovieVariantIndex);
+      DebugHook_CampaignSessionEnded();
       UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();

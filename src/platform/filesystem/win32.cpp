@@ -294,6 +294,73 @@ uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uin
   return writeError;
 }
 
+/* open-thandor: reads a whole file into native memory (std::vector, never the arena, so the arena order of a
+   session does not depend on it). The path is used as given. Returns std::nullopt when the file cannot be
+   opened, its size cannot be read, it is larger than FILESYSTEM_NATIVE_READ_LIMIT_BYTES or the read comes up
+   short. Calls the Win32File_* functions directly, so it works before FileSystem_Init installs the
+   g_FileSystem* table. */
+std::optional<std::vector<uint8_t>> FileSystem_ReadWholeFileNative(uint16_t *path)
+
+{
+  void *handle;
+  DWORD fileSizeHigh;
+  DWORD fileSize;
+  std::optional<std::vector<uint8_t>> contents;
+
+  if (Win32File_Open(FileSystemOpenFlags::FILESYSTEM_OPEN_NONE,path,&handle) != 0) {
+    return std::nullopt;
+  }
+  /* the high dword rejects files of 4 GiB and more; INVALID_FILE_SIZE (a failure or a size that happens to
+     be 0xFFFFFFFF) is over the limit either way */
+  fileSizeHigh = 0;
+  fileSize = GetFileSize(handle,&fileSizeHigh);
+  if (fileSize != INVALID_FILE_SIZE && fileSizeHigh == 0 && fileSize <= FILESYSTEM_NATIVE_READ_LIMIT_BYTES) {
+    std::vector<uint8_t> bytes(fileSize);
+    if (bytes.empty() ||
+        Win32File_ReadExact(static_cast<FileIoByteCount>(bytes.size()),bytes.data(),handle) == 0) {
+      contents = std::move(bytes);
+    }
+  }
+  Win32File_Close(handle);
+  return contents;
+}
+
+/* open-thandor: replaces the file at path with bytes in one step: writes path plus ".tmp"
+   (Package_MakeTemporaryPath, same directory and volume) and moves it over the target with Win32File_Replace.
+   On failure the temporary file is deleted and the old target stays intact. No arena; calls the Win32File_*
+   functions directly. Returns 0, or FATAL_ERROR_FILE_ACCESS_FAILED (path too long, open or replace failed),
+   FATAL_ERROR_FILE_WRITE_FAILED or FATAL_ERROR_FILE_WRITE_INCOMPLETE. */
+uint32_t FileSystem_WriteFileReplacing(uint16_t *path,std::span<const uint8_t> bytes)
+
+{
+  uint16_t temporaryPath [THANDOR_PATH_CAPACITY];
+  void *handle;
+  uint32_t writeError;
+
+  if (bytes.size() > UINT32_MAX || !Package_MakeTemporaryPath(temporaryPath,path)) {
+    return FATAL_ERROR_FILE_ACCESS_FAILED;
+  }
+  writeError = Win32File_Open
+                 (FileSystemOpenFlags::FILESYSTEM_OPEN_EXCLUSIVE_SHARE | FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,
+                  temporaryPath,&handle);
+  if (writeError != 0) {
+    return writeError;
+  }
+  if (!bytes.empty()) {
+    /* WriteFile does not modify the source; the interface takes it non-const */
+    writeError = Win32File_WriteExactOrFlush(static_cast<FileIoByteCount>(bytes.size()),
+                                             const_cast<uint8_t *>(bytes.data()),handle);
+  }
+  Win32File_Close(handle);
+  if (writeError == 0) {
+    writeError = Win32File_Replace(path,temporaryPath);
+  }
+  if (writeError != 0) {
+    Win32File_Delete(0,temporaryPath);
+  }
+  return writeError;
+}
+
 
 /* Writes exactly byteCount bytes to a file; byteCount 0 instead truncates the file at the current
    position (SetEndOfFile). Returns 0 on success, FATAL_ERROR_FILE_WRITE_FAILED when WriteFile fails, or

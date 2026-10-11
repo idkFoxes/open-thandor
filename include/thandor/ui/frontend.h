@@ -10,6 +10,7 @@
 
 #include <thandor/ui/frontend/types.h>
 #include <thandor/ui/frontend/node_views.h>
+#include <thandor/ui/frontend/campaign_map_control.h>
 #include <thandor/ui/frontend/chat.h>
 #include <thandor/ui/frontend/common.h>
 #include <thandor/ui/frontend/credits.h>
@@ -17,6 +18,7 @@
 #include <thandor/ui/frontend/debug_overlay.h>
 #include <thandor/ui/frontend/display_settings.h>
 #include <thandor/ui/frontend/end_movie.h>
+#include <thandor/ui/frontend/language_choice.h>
 #include <thandor/ui/frontend/end_movie_commands.h>
 #include <thandor/ui/frontend/faction_setup.h>
 #include <thandor/ui/frontend/lifecycle.h>

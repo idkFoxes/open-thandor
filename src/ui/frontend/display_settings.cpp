@@ -9,6 +9,8 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/core/bytes.h>
+#include <thandor/ui/frontend/language_choice.h>
+#include <thandor/world/pathing/mode.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -576,12 +578,14 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(sourceNode);
 }
 
-/* Not in the original: the advanced settings page ("Erweitert", displayPageStack page 1, opened by the options
+/* Not in the original: the advanced settings page ("Erweitert", page 0 of settingsSubPageStack in displayPageStack
+   page 1, opened by the options
    page's fourth button). Every choice applies and saves its value at once: "3D-Kanten" ([graphics]
    gpu_rasterization, a running GPU renderer draws its next scene with it), "UI-Skalierung" ([graphics] ui_scale;
    with a GPU renderer running the display mode is set again at once, as "Anwenden" does: same window size, UI at the new
    scale, the UI laid out again), "Bildratenbegrenzung"
-   and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync). Edges and UI scale only matter for the GPU renderers:
+   and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync), "Verbesserte Wegfindung" ([game] pathing, the next
+   local session's pathing mode). Edges and UI scale only matter for the GPU renderers:
    with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
    a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. With a GPU renderer the
    choice stays the saved one and the note names the scale in use when it differs (or auto chose it). */
@@ -612,21 +616,26 @@ static void FrontendAdvancedSettingsPage_SelectChoice(UiNodeBase *selected,UiNod
 /* Not in the original: the note line with a GPU renderer running: the UI scale in use when auto chose it ("Auto:
    2x aktiv") or when it differs from the chosen one (a fixed scale lowered to keep the UI resolution at least
    640x480: "3x gewaehlt, 2x aktiv (Aufloesung zu klein)"; OPEN_THANDOR_UI_SCALE overriding the choice: without the
-   reason); else no text. */
+   reason); else no text. In English for every language but German, as the other project texts. */
 static TextResourceId FrontendAdvancedSettingsPage_UiScaleNote()
 {
   char note[96];
   const uint32_t chosen = SdlVideo_SavedUiScale();
   const uint32_t active = SdlVideo_AppliedUiScale();
+  const bool german = TextResource_ProjectTextsAreGerman(); /* else English, as the other project texts */
 
   if (chosen == PERSISTENT_UI_SCALE_AUTO) {
-    snprintf(note,sizeof(note),"UI-Skalierung Auto: %ux aktiv",active);
+    snprintf(note,sizeof(note),german ? "UI-Skalierung Auto: %ux aktiv" : "UI scale auto: %ux active",active);
   }
   else if (active < chosen) {
-    snprintf(note,sizeof(note),"UI-Skalierung: %ux gew\xE4hlt, %ux aktiv (Aufl\xF6sung zu klein)",chosen,active);
+    snprintf(note,sizeof(note),
+             german ? "UI-Skalierung: %ux gew\xE4hlt, %ux aktiv (Aufl\xF6sung zu klein)"
+                    : "UI scale: %ux chosen, %ux active (resolution too small)",
+             chosen,active);
   }
   else if (active != chosen) {
-    snprintf(note,sizeof(note),"UI-Skalierung: %ux gew\xE4hlt, %ux aktiv",chosen,active);
+    snprintf(note,sizeof(note),german ? "UI-Skalierung: %ux gew\xE4hlt, %ux aktiv" : "UI scale: %ux chosen, %ux active",
+             chosen,active);
   }
   else {
     return TEXT_RESOURCE_ID_NONE;
@@ -637,9 +646,10 @@ static TextResourceId FrontendAdvancedSettingsPage_UiScaleNote()
 
 /* Shows the current values on the advanced settings page: the selected choices, the VSync checkbox and the note
    (with the software renderer: edges and UI scale need a GPU renderer; with a GPU renderer: the UI scale in use
-   when it is not simply the chosen one, FrontendAdvancedSettingsPage_UiScaleNote). Every choice and the page's
-   opening call it, so the note follows a scale change (which sets the display mode again) at once. */
-static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
+   when it is not simply the chosen one, FrontendAdvancedSettingsPage_UiScaleNote) and the chosen language
+   (FrontendLanguageChoice_Refresh). Every choice and the page's opening call it, so the note follows a scale change
+   (which sets the display mode again) and a language switch at once. */
+void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
 {
   FrontendUiImage *ui = FrontendUi_Image(frontendRoot);
   UiNodeBase *edges[2];
@@ -675,8 +685,11 @@ static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
   FrontendAdvancedSettingsPage_SelectChoice(selected,frameLimits,ADVANCED_FRAME_LIMIT_CHOICES);
   UiSelectableControl_SetSelected(SdlVideo_GetVsync(),
                                   &ui->advancedVsyncCheckbox.selectable);
+  UiSelectableControl_SetSelected(g_PathingModeSetting == PATHING_MODE_IMPROVED,
+                                  &ui->advancedPathingCheckbox.selectable);
   ui->advancedNoteLabel.text =
        THANDOR_PTR32_BITS(gpu ? FrontendAdvancedSettingsPage_UiScaleNote() : TEXT_ID_ADVANCED_NOTE_SOFTWARE);
+  FrontendLanguageChoice_Refresh(ui);
   UiNode_InvalidateRoot(&ui->advancedSettingsPage.base);
 }
 
@@ -688,10 +701,15 @@ void FrontendAdvancedSettingsAction_OpenPage(UiNodeBase *sourceNode)
   FrontendModelPointerContextFlags *menuRoomContextFlags;
 
   frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
+  /* not in the original: the language list starts closed (also one left open with the page) */
+  FrontendLanguageChoice_CloseList(FrontendUi_Image(frontendRoot));
   UiPageStack_SetActiveIndex
             (FRONTEND_PAGE_DISPLAY_SETTINGS,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->frontendPageStack));
   UiPageStack_SetActiveIndex
-            (FRONTEND_DISPLAY_SUBPAGE_ADVANCED,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->displayPageStack));
+            (FRONTEND_DISPLAY_SUBPAGE_MORE,UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->displayPageStack));
+  UiPageStack_SetActiveIndex
+            (FRONTEND_SETTINGS_SUBPAGE_ADVANCED,
+             UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(frontendRoot)->settingsSubPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
          &FrontendUi_Image(frontendRoot)->menuRoomModelView.contextFlags;
@@ -766,6 +784,16 @@ void FrontendAdvancedSettingsAction_SelectFrameLimit(UiNodeBase *sourceNode)
 void FrontendAdvancedSettingsAction_SetVsync(UiNodeBase *sourceNode)
 {
   SdlVideo_SetVsync(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
+
+  FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_PATHING (the "Verbesserte Wegfindung" checkbox; the click has toggled it):
+   the single-player pathing mode ([game] pathing) of the next local session; a running session keeps its mode
+   and a network session agrees on its own (docs/plans/pathfinding.md D1, D2). */
+void FrontendAdvancedSettingsAction_SetPathing(UiNodeBase *sourceNode)
+{
+  PersistentSettings_WritePathingImproved(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
 
   FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
 }

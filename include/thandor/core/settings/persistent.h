@@ -36,6 +36,12 @@ inline constexpr auto PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS = 0x40; /* autom
 inline constexpr auto PERSISTENT_SETTING_GAME_SPEED_PERCENT = 0x44; /* default 100 */
 inline constexpr auto PERSISTENT_SETTING_CAMERA_SCROLL_STEP = 0x48; /* default 0x20 */
 inline constexpr auto PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN = 0x4C; /* Q15, default 0x8000 */
+/* Not in the original (open-thandor): the first of the original's three unused dwords 0x50..0x58 (the original game
+   never reads them and writes the image back unchanged). A file without it reads 0, the default. */
+inline constexpr auto PERSISTENT_SETTING_PATHING_MODE = 0x50; /* PERSISTENT_PATHING_*: [game] pathing, single-player pathing mode */
+inline constexpr auto PERSISTENT_PATHING_IMPROVED = 0; /* default (docs/plans/pathfinding.md D1) */
+inline constexpr auto PERSISTENT_PATHING_ORIGINAL = 1;
+inline constexpr auto PERSISTENT_PATHING_COUNT = 2;
 inline constexpr auto PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS = 0x5C; /* link rotation zoom/tilt, hide panel */
 inline constexpr auto PERSISTENT_SETTING_PLAYER_NAME = 0x60; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
 inline constexpr auto PERSISTENT_SETTING_GAME_NAME = 0x88; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
@@ -138,6 +144,14 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
 /* open-thandor: the path of thandor.ini (UTF-16; the bare file name, i.e. the current directory, until a load
    found it in the executable directory). */
 const uint16_t *PersistentSettings_IniPathUtf16();
+
+/* Not in the original: stores the text language chosen in the menus (telephone country code, 0 = from Windows) in
+   g_LocaleCountryCodeOverride and the settings ([game] language in thandor.ini, saved by the next Flush). */
+void PersistentSettings_WriteLanguage(uint32_t countryCode);
+
+/* Not in the original: stores the single-player pathing mode chosen in the menus in g_PathingModeSetting (the next
+   local session's mode) and the settings ([game] pathing in thandor.ini, saved by the next Flush). */
+void PersistentSettings_WritePathingImproved(bool improved);
 
 extern uint32_t g_LocaleCountryCodeOverride;
 

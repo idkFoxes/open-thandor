@@ -48,7 +48,9 @@
 #include <thandor/ui/controls/text_buttons.h>
 #include <thandor/ui/dialogs/display_settings.h>
 #include <thandor/ui/dialogs/fatal_error.h>
+#include <thandor/ui/frontend/campaign_map_control.h>
 #include <thandor/ui/frontend/display_settings.h>
+#include <thandor/ui/frontend/language_choice.h>
 #include <thandor/ui/frontend/menu_room.h>
 #include <thandor/ui/frontend/network.h>
 #include <thandor/ui/frontend/player.h>
@@ -79,6 +81,8 @@ struct UiTemplateKnownObject {
    objects bound to template controls, the results chart column callbacks). A pointer to anything else counts as
    unresolved. */
 static const UiTemplateKnownObject g_UiTemplateKnownObjects[] = {
+    UITEMPLATE_OBJECT(g_FrontendCampaignMapControlVtable),
+    UITEMPLATE_OBJECT(g_FrontendLanguageListLayerVtable),
     UITEMPLATE_OBJECT(g_FrontendModelPointerContextVtable),
     UITEMPLATE_OBJECT(g_FrontendResultsTableVtable),
     UITEMPLATE_OBJECT(g_UiArmyMetricsPanelVtable),

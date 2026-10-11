@@ -26,6 +26,29 @@
 #include <thandor/network/backend/types.h>
 #include <thandor/platform/debug/types.h>
 
+/* Sections of the step profiler (OPEN_THANDOR_STEP_PROFILE, platform/debug/profile.h), entered and left through
+   DebugHook_ProfileEnter / DebugHook_ProfileLeave. */
+enum DebugProfileSection {
+  DEBUG_PROFILE_ARMY_UPDATE = 0,     /* per-army primary update (all classes) */
+  DEBUG_PROFILE_PLAN_ROUTE,          /* EntityPathing_ResolveDestinationAndRebuildRoutes */
+  DEBUG_PROFILE_GROUP_ROUTES,        /* EntityPathing_RebuildOverlappingGroupRoutes */
+  DEBUG_PROFILE_YIELD_REPLAN,        /* PathingYield_BeginReplan + EndReplan */
+  DEBUG_PROFILE_FIND_BLOCKING,       /* collision scan of a ground move (original or improved) */
+  DEBUG_PROFILE_HANDLE_BLOCKED,      /* PathingYield_HandleBlocked */
+  DEBUG_PROFILE_ARRIVAL_TEST,        /* PathingArrival_TestArrived */
+  DEBUG_PROFILE_CORRIDOR_STEP,       /* PathingYield_FindCorridorSideStep */
+  DEBUG_PROFILE_DRIVE_IMPROVED,      /* ArmyDriveImproved_UpdateGroundAdvance */
+  DEBUG_PROFILE_FORMATION_SLOTS,     /* PathingFormation_AssignPointSlots */
+  DEBUG_PROFILE_GRID_COPY,           /* GridScratch_CopyPrimaryToSecondary */
+  DEBUG_PROFILE_PLAN_RETRY,          /* re-plan of ArmyRuntime_UpdateMovementAndWaypoints (route point reached) */
+  DEBUG_PROFILE_PLAN_DIRECT,         /* ArmyRuntime_StartDirectMoveCommand (re-approach of the final target) */
+  DEBUG_PROFILE_PROPAGATE,           /* GridPathCost_PropagateWeightedHexNeighbors */
+  DEBUG_PROFILE_YIELD_CAP,           /* count: improved P2 capped a retry wait */
+  DEBUG_PROFILE_YIELD_BUDGET,        /* count: improved P2 wait budget used up (re-plan at once) */
+  DEBUG_PROFILE_LOCKSTEP,            /* lockstep before a step: the players' commands (orders plan routes here) */
+  DEBUG_PROFILE_SECTION_COUNT
+};
+
 #ifdef THANDOR_DEV_TOOLS
 
 #ifdef _MSC_VER
@@ -77,6 +100,9 @@ int DebugHook_ScenarioPageOpened();
 void DebugHook_CampaignLoaded(void *campaignAsset);
 /* Level start of a campaign, before (afterMerge 0) and after (1) the carried-over units are merged. */
 void DebugHook_CampaignCarryOver(int afterMerge);
+/* A campaign session ended through its end trigger, after CampaignProgress_RecordSessionEnd
+   (OPEN_THANDOR_CAMPAIGN_PROGRESS_DUMP). */
+void DebugHook_CampaignSessionEnded();
 
 /* --- in-game session --- */
 /* InGameRuntime_RunSessionUntilExit, before the session is initialised (the first simulation steps already run
@@ -84,7 +110,7 @@ void DebugHook_CampaignCarryOver(int afterMerge);
 void DebugHook_SessionInitializing();
 /* After the session is initialised, before its first frame (session counter, state hash start). */
 void DebugHook_SessionStarted();
-/* Start and end of every in-game frame (frame counter for the input script; OPEN_THANDOR_AUTOWIN). */
+/* Start and end of every in-game frame (frame counter for the input script; OPEN_THANDOR_AUTOWIN, _AUTOLOSE). */
 void DebugHook_SessionFrameBegin();
 void DebugHook_SessionFrameEnd();
 /* Around every simulation step (OPEN_THANDOR_STATEHASH). */
@@ -101,6 +127,26 @@ void DebugHook_LevelScriptEndTrigger(const InGameLevelConditionStorage *storage,
 int DebugHook_SuppressTransientMarkers();
 /* Effect creation and session random draws: with the state hash on, logs callers outside a simulation step. */
 void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
+/* Pathing and movement events for the movement trace (OPEN_THANDOR_PATHTRACE, platform/debug/pathtrace.h): kind
+   'R' route planned, 'T' route point changed by another army's planning, 'B' blocked by another model, 'H' stopped
+   to turn on the spot; army and other are ArmyRuntimeSlot pointers (other may be NULL). */
+void DebugHook_PathingEvent(int kind, const void *army, const void *other);
+/* PathingMode_ApplyForNewSession of a local session (InGameRuntime_InitializeNewSession): the pathing mode
+   (PathingMode value) to use instead of mode, the one the settings chose; OPEN_THANDOR_PATHING=improved|original
+   wins over [game] pathing (test runs: tools/test force original unless told otherwise). */
+int DebugHook_LocalPathingMode(int mode);
+/* Step profiler sections (OPEN_THANDOR_STEP_PROFILE): section is a DebugProfileSection. */
+void DebugHook_ProfileEnter(int section);
+void DebugHook_ProfileLeave(int section);
+/* Profiles the rest of the enclosing block as section. */
+struct DebugProfileScope {
+  int section;
+  explicit DebugProfileScope(int profiledSection) : section(profiledSection) { DebugHook_ProfileEnter(section); }
+  ~DebugProfileScope() { DebugHook_ProfileLeave(section); }
+  DebugProfileScope(const DebugProfileScope &) = delete;
+  DebugProfileScope &operator=(const DebugProfileScope &) = delete;
+};
+#define DebugHook_ProfileScope(section) DebugProfileScope debugProfileScope_(section)
 #ifdef _MSC_VER
 #define DebugHook_NoteOutsideStep(what) DebugHook_NoteOutsideStepFrom((what), _ReturnAddress())
 #else
@@ -129,6 +175,7 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_ScenarioPageOpened() 0
 #define DebugHook_CampaignLoaded(campaignAsset) ((void)0)
 #define DebugHook_CampaignCarryOver(afterMerge) ((void)0)
+#define DebugHook_CampaignSessionEnded() ((void)0)
 
 #define DebugHook_SessionInitializing() ((void)0)
 #define DebugHook_SessionStarted() ((void)0)
@@ -141,6 +188,11 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_LevelScriptEndTrigger(storage, triggerIndex, trigger) ((void)0)
 #define DebugHook_SuppressTransientMarkers() 0
 #define DebugHook_NoteOutsideStep(what) ((void)0)
+#define DebugHook_PathingEvent(kind, army, other) ((void)0)
+#define DebugHook_LocalPathingMode(mode) (mode)
+#define DebugHook_ProfileEnter(section) ((void)0)
+#define DebugHook_ProfileLeave(section) ((void)0)
+#define DebugHook_ProfileScope(section) ((void)0)
 
 #endif /* THANDOR_DEV_TOOLS */
 

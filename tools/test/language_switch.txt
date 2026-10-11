@@ -1,0 +1,53 @@
+# The language choice of the advanced settings page ("Optionen" -> "Erweitert" -> "Sprache:"). Start with -NOINTRO in
+# the developer tools' window and a saved display mode of 1920x1080 (the main room's 3D view is not centred like the
+# pages: its door is given for 1920x1080; the page coordinates below are for 1280x800 and are moved by the second
+# layout line, the pages stay centred) and the language German or auto on a German Windows. Shots:
+# shots\script_NNNN.bmp. The choice is saved as [game] language = en / de by the next settings flush (closing the
+# game); the script's quit ends the process without one, so thandor.ini keeps its language line.
+#   main room (1920x1080): the left door (400,500) opens "Optionen"; its buttons sit at page centre + (-200, -36 / -4 /
+#   28 / 60 / 92): "Erweitert" 440,460; "Zurueck" / "Ok" at 440,540
+#   advanced page (centre 640,400): the language button (box "Sprache:" x 688..928, y 414..458) at 808,438; the list
+#   covers the box and below it, its rows "Automatisch", Deutsch, English, Francais, Italiano, Espanol at y 438 / 462 /
+#   486 / 510 / 534 / 558 (radio circles at x 701, as the frame-limit rows)
+# Steps: advanced page (shot 0: the language box), the language button (shot 1: the list open, the chosen language
+# selected), English (shot 2: the page in English, list closed), back (shot 3: the options page in English),
+# "Advanced" again and the button (shot 4: the list in English), a press beside the list (shot 5: closed), the button
+# and Escape (shot 6: closed, still on the page), the button and Deutsch (shot 7: the page in German again), quit.
+# The key line (Escape, 27) is framed by layout lines: the layout moves the key code like an x coordinate.
+# Lines that do not start with a number are ignored (comments).
+0 layout 1920 1080
+6000 move 400 500
+6500 click 400 500
+7000 layout 1280 800
+8000 move 440 460
+8500 click 440 460
+10500 shot
+11000 move 808 438
+11500 click 808 438
+13000 shot
+13500 move 701 486
+14000 click 701 486
+16000 shot
+16500 move 440 540
+17000 click 440 540
+19000 shot
+19500 move 440 460
+20000 click 440 460
+21000 move 808 438
+21500 click 808 438
+23000 shot
+23500 move 400 250
+24000 click 400 250
+25500 shot
+26000 move 808 438
+26500 click 808 438
+27200 layout 1920 1080
+27500 key 27
+27800 layout 1280 800
+29000 shot
+29500 move 808 438
+30000 click 808 438
+31000 move 701 462
+31500 click 701 462
+33500 shot
+34500 quit

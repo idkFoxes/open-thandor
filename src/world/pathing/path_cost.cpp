@@ -11,24 +11,13 @@
 
 #include <thandor/world/pathing/path_cost.h>
 #include <thandor/thandor.h>
-
-/* State of one GridPathCost_PropagateWeightedHexNeighbors run (the queue storage and the pass boundary are the
-   g_GridPathCostQueue* globals). */
-struct GridPathCostQueueState {
-  GridScratchCell **readCursor;
-  GridScratchCell **writeCursor;
-  GridPathPassCount remainingPasses;
-  GridScratchCell *originCell;
-  uint32_t scratchWidth;
-};
+#include <thandor/platform/debug/hooks.h>
 
 /* Module data. */
 
 GridScratchCell **g_GridPathCostQueueBegin = nullptr;
 
 GridScratchCell **g_GridPathCostQueueEnd = nullptr;
-
-static GridScratchCell **g_GridPathCostQueuePassBoundary = nullptr;
 
 uint32_t g_GridPathEntityClassMask = 0;
 
@@ -131,57 +120,36 @@ static bool GridPathCost_OriginOrNeighborReached(GridScratchCell *originCell,uin
          (originCell[scratchWidth].pathCost < GRID_PATH_COST_UNREACHED);
 }
 
-/* Next queued cell that is not already visited, or NULL when propagation ends: at an empty queue, or at the end
-   of a pass once the origin (or a neighbour of it) has been reached or the passes are used up. */
-static GridScratchCell *GridPathCost_DequeueUnvisitedCell(GridPathCostQueueState *queue)
-{
-  GridScratchCell *cell;
-
-  do {
-    while ((queue->readCursor != queue->writeCursor) && (queue->readCursor >= g_GridPathCostQueuePassBoundary)) {
-      /* end of a pass */
-      g_GridPathCostQueuePassBoundary = g_GridPathCostQueuePassBoundary + GRID_PATH_COST_QUEUE_PASS_ENTRIES;
-      if (GridPathCost_OriginOrNeighborReached(queue->originCell,queue->scratchWidth)) {
-        return nullptr;
-      }
-      queue->remainingPasses--;
-      if (queue->remainingPasses == 0) {
-        return nullptr;
-      }
-    }
-    if (queue->readCursor == queue->writeCursor) {
-      return nullptr;
-    }
-    cell = *queue->readCursor;
-    queue->readCursor++;
-  } while ((cell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0);
-  return cell;
-}
-
 /* One neighbour step from a cell of cost currentCost: skipped when the neighbour is blocked (bit 31) or has the
    mover's faction presence bit and a blocking band; step cost 4, 3 with the faction presence bit, 12 when it
-   also has a high-cost band. A cheaper cost is stored and the neighbour queued while the queue has room. */
-static void GridPathCost_RelaxNeighbor(GridPathCostQueueState *queue,GridScratchCell *neighborCell,
-          GridPathCost currentCost)
+   also has a high-cost band. A cheaper cost is stored and the neighbour queued while the queue has room. The
+   masks and the queue cursor are the caller's locals (g_GridPath*Mask, see GridPathCost_PropagateWeightedHexNeighbors),
+   so the hot loop keeps them in registers. */
+static inline void GridPathCost_RelaxNeighbor(GridScratchCell *neighborCell,GridPathCost currentCost,
+          uint32_t entityClassMask,uint32_t blockingMask,uint32_t highCostMask,GridScratchCell **&writeCursor,
+          GridScratchCell **queueEnd)
 {
-  GridScratchStateMask neighborState;
+  uint32_t neighborState;
   uint32_t neighborCost;
 
-  neighborState = neighborCell->stateMask;
+  neighborState = (uint32_t)neighborCell->stateMask;
+  if ((int)neighborState < 0) {
+    return;
+  }
   neighborCost = currentCost + GRID_PATH_STEP_COST;
-  if ((-1 < (int)neighborState) &&
-     (((g_GridPathEntityClassMask & neighborState) == 0) || ((g_GridPathBlockingMask & neighborState) == 0))) {
-    if ((g_GridPathEntityClassMask & neighborState) != 0) {
-      neighborCost = currentCost + GRID_PATH_STEP_COST_OWN_FACTION;
-      if ((g_GridPathHighCostMask & neighborState) != 0) {
-        neighborCost = currentCost + GRID_PATH_STEP_COST_HIGH;
-      }
+  if ((entityClassMask & neighborState) != 0) {
+    if ((blockingMask & neighborState) != 0) {
+      return;
     }
-    if ((queue->writeCursor < g_GridPathCostQueueEnd) && (neighborCost < neighborCell->pathCost)) {
-      *queue->writeCursor = neighborCell;
-      neighborCell->pathCost = neighborCost;
-      queue->writeCursor++;
+    neighborCost = currentCost + GRID_PATH_STEP_COST_OWN_FACTION;
+    if ((highCostMask & neighborState) != 0) {
+      neighborCost = currentCost + GRID_PATH_STEP_COST_HIGH;
     }
+  }
+  if ((writeCursor < queueEnd) && (neighborCost < neighborCell->pathCost)) {
+    *writeCursor = neighborCell;
+    neighborCell->pathCost = neighborCost;
+    writeCursor++;
   }
 }
 
@@ -189,38 +157,68 @@ static void GridPathCost_RelaxNeighbor(GridPathCostQueueState *queue,GridScratch
    hex neighbours with a FIFO queue (g_GridPathCostQueueBegin..End), lowering a neighbour's cost whenever a
    cheaper step is found. The queue is processed in passes of GRID_PATH_COST_QUEUE_PASS_ENTRIES entries; after a
    pass it stops once originCell (the mover's cell) or one of its neighbours has a cost, or after remainingPasses
-   passes, or when the queue runs empty.
-*/
+   passes, or when the queue runs empty. Queued cells that are already visited (GRID_SCRATCH_TRAVERSAL_VISITED)
+   are skipped.
+   open-thandor: the original's queue state lived in memory (a state record and a global pass boundary); here it
+   is in locals, with the same reads, writes and order, so every plan gives the same costs, faster (route plans
+   are the largest single cost of a simulation step). */
 void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasses,GridScratchCell *originCell,
           FieldGridCellCoordinate startRow,FieldGridCellCoordinate startColumn)
 
 {
-  GridPathCostQueueState queue;
+  DebugHook_ProfileScope(DEBUG_PROFILE_PROPAGATE);
+  const uint32_t scratchWidth = g_GridScratchWidth;
+  const uint32_t entityClassMask = g_GridPathEntityClassMask;
+  const uint32_t blockingMask = g_GridPathBlockingMask;
+  const uint32_t highCostMask = g_GridPathHighCostMask;
+  GridScratchCell **const queueEnd = g_GridPathCostQueueEnd;
+  GridScratchCell **readCursor;
+  GridScratchCell **writeCursor;
+  GridScratchCell **passBoundary;
   GridScratchCell *startCell;
   GridScratchCell *currentCell;
   GridPathCost currentCost;
-  uint32_t scratchWidth;
 
-  scratchWidth = g_GridScratchWidth;
-  queue.scratchWidth = scratchWidth;
-  queue.remainingPasses = remainingPasses;
-  queue.originCell = originCell;
-  queue.readCursor = g_GridPathCostQueueBegin;
-  queue.writeCursor = g_GridPathCostQueueBegin + 1;
+  readCursor = g_GridPathCostQueueBegin;
+  writeCursor = g_GridPathCostQueueBegin + 1;
   startCell = g_GridScratchPrimary + (int32_t)(startRow * g_GridScratchWidth) + startColumn;
   *g_GridPathCostQueueBegin = startCell;
-  g_GridPathCostQueuePassBoundary = queue.readCursor;
   startCell->pathCost = 0;
-  g_GridPathCostQueuePassBoundary = g_GridPathCostQueuePassBoundary + GRID_PATH_COST_QUEUE_PASS_ENTRIES;
-  while ((currentCell = GridPathCost_DequeueUnvisitedCell(&queue)) != nullptr) {
+  passBoundary = readCursor + GRID_PATH_COST_QUEUE_PASS_ENTRIES;
+  for (;;) {
+    /* the next queued cell that is not visited; at the end of a pass stop once the origin (or a neighbour of it)
+       has a cost or the passes are used up */
+    do {
+      while ((readCursor != writeCursor) && (readCursor >= passBoundary)) {
+        passBoundary = passBoundary + GRID_PATH_COST_QUEUE_PASS_ENTRIES;
+        if (GridPathCost_OriginOrNeighborReached(originCell,scratchWidth)) {
+          return;
+        }
+        remainingPasses--;
+        if (remainingPasses == 0) {
+          return;
+        }
+      }
+      if (readCursor == writeCursor) {
+        return;
+      }
+      currentCell = *readCursor;
+      readCursor++;
+    } while (((uint32_t)currentCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0);
     /* the six neighbours: two in the row above, right, left, two in the row below */
     currentCost = currentCell->pathCost;
-    GridPathCost_RelaxNeighbor(&queue,currentCell - scratchWidth,currentCost);
-    GridPathCost_RelaxNeighbor(&queue,currentCell - scratchWidth + 1,currentCost);
-    GridPathCost_RelaxNeighbor(&queue,currentCell + 1,currentCost);
-    GridPathCost_RelaxNeighbor(&queue,currentCell - 1,currentCost);
-    GridPathCost_RelaxNeighbor(&queue,currentCell - 1 + scratchWidth,currentCost);
-    GridPathCost_RelaxNeighbor(&queue,currentCell + scratchWidth,currentCost);
+    GridPathCost_RelaxNeighbor(currentCell - scratchWidth,currentCost,entityClassMask,blockingMask,highCostMask,
+                               writeCursor,queueEnd);
+    GridPathCost_RelaxNeighbor(currentCell - scratchWidth + 1,currentCost,entityClassMask,blockingMask,highCostMask,
+                               writeCursor,queueEnd);
+    GridPathCost_RelaxNeighbor(currentCell + 1,currentCost,entityClassMask,blockingMask,highCostMask,writeCursor,
+                               queueEnd);
+    GridPathCost_RelaxNeighbor(currentCell - 1,currentCost,entityClassMask,blockingMask,highCostMask,writeCursor,
+                               queueEnd);
+    GridPathCost_RelaxNeighbor(currentCell - 1 + scratchWidth,currentCost,entityClassMask,blockingMask,highCostMask,
+                               writeCursor,queueEnd);
+    GridPathCost_RelaxNeighbor(currentCell + scratchWidth,currentCost,entityClassMask,blockingMask,highCostMask,
+                               writeCursor,queueEnd);
   }
 }
 

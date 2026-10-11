@@ -32,6 +32,13 @@ static const UiKeyCommandRecord<EndMovieCommandAction> g_EndMovieCommandDispatch
     /* 1 */ {.commandCode = 0x70, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = EndMovieCommandAction::Screenshot},
     /* 2 */ {.commandCode = 0x0, .modifierClassFlags = FromBits<UiKeyboardStateMask>(0x90909090)}};
 
+uint32_t EndMovieCommands_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags)
+{
+  const UiKeyCommandRecord<EndMovieCommandAction> *record = UiCommandDispatch_Find(
+      g_EndMovieCommandDispatchRecords, keyCode, heldFlags, UiKeyModifierRule::ExactShiftIgnored);
+  return (record == nullptr) ? 0 : static_cast<uint32_t>(record->action);
+}
+
 /* Update callback of the end-movie UI in a network game: keeps the frontend session alive while the end
    movie plays by running the session tick of the local role. Does nothing in a local game. Note that the
    SESSION_NETWORK_ROLE_CLIENT bit selects the host tick and the HOST bit the client tick: either the enum or

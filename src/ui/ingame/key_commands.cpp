@@ -108,6 +108,13 @@ static UiKeyCommandRecord<InGameKeyCommandAction> g_InGameCommandDispatchRecords
 UiCommandRuntimeFlagMask g_UiCommandRuntimeFlags = UiCommandRuntimeFlagMask{};
 
 
+uint32_t InGameKeyCommands_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags)
+{
+  const UiKeyCommandRecord<InGameKeyCommandAction> *record = UiCommandDispatch_Find(
+      g_InGameCommandDispatchRecords, keyCode, heldFlags, UiKeyModifierRule::ExactWithShift);
+  return (record == nullptr) ? 0 : static_cast<uint32_t>(record->action);
+}
+
 /* In-game key commands (the world view's dispatchCommandCallback): the first record of
    g_InGameCommandDispatchRecords whose key code matches and whose modifier class
    (Shift / Ctrl / Alt, left or right) equals the held modifiers selects the command. Selection commands are

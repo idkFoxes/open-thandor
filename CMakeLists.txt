@@ -62,6 +62,7 @@ add_executable(thandor WIN32
     src/assets/scenario/catalog.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
+    src/assets/text/project_texts_en.cpp
     src/assets/text/resources.cpp
     src/assets/text/richtext.cpp
     src/assets/text/richtext_markup.cpp
@@ -101,6 +102,7 @@ add_executable(thandor WIN32
     src/gameplay/army/damage.cpp
     src/gameplay/army/drive_banking.cpp
     src/gameplay/army/drive_common.cpp
+    src/gameplay/army/drive_improved.cpp
     src/gameplay/army/drive_ground.cpp
     src/gameplay/army/factory.cpp
     src/gameplay/army/model_rules.cpp
@@ -122,6 +124,9 @@ add_executable(thandor WIN32
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
     src/gameplay/session/campaign_carryover.cpp
+    src/gameplay/session/campaign_progress.cpp
+    src/gameplay/session/campaign_progress_session.cpp
+    src/gameplay/session/campaign_start.cpp
     src/gameplay/session/level.cpp
     src/gameplay/session/level_new.cpp
     src/gameplay/session/level_saved.cpp
@@ -205,11 +210,16 @@ add_executable(thandor WIN32
     src/ui/controls/window.cpp
     src/ui/core/chat_history.cpp
     src/ui/core/frame_loop.cpp
+    src/ui/core/key_bindings.cpp
     src/ui/core/model_tint.cpp
     src/ui/core/pcx_preview.cpp
     src/ui/core/runtime.cpp
     src/ui/dialogs/display_settings.cpp
     src/ui/dialogs/fatal_error.cpp
+    src/ui/frontend/campaign_graph.cpp
+    src/ui/frontend/campaign_level_info.cpp
+    src/ui/frontend/campaign_map_control.cpp
+    src/ui/frontend/campaign_tab.cpp
     src/ui/frontend/chat.cpp
     src/ui/frontend/credits.cpp
     src/ui/frontend/credits_mask.cpp
@@ -218,6 +228,8 @@ add_executable(thandor WIN32
     src/ui/frontend/end_movie.cpp
     src/ui/frontend/end_movie_commands.cpp
     src/ui/frontend/faction_setup.cpp
+    src/ui/frontend/key_bindings_page.cpp
+    src/ui/frontend/language_choice.cpp
     src/ui/frontend/lifecycle.cpp
     src/ui/frontend/main_loop.cpp
     src/ui/frontend/menu_room.cpp
@@ -276,7 +288,10 @@ add_executable(thandor WIN32
     src/world/model/mesh_raycast.cpp
     src/world/model/picking.cpp
     src/world/model/pool.cpp
+    src/world/pathing/improved/arrival.cpp
+    src/world/pathing/improved/yield.cpp
     src/world/pathing/influence.cpp
+    src/world/pathing/mode.cpp
     src/world/pathing/path_cost.cpp
     src/world/pathing/reachability.cpp
     src/world/pathing/route.cpp
@@ -538,11 +553,18 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/level_script.cpp
         src/platform/debug/movie_decoder.cpp
         src/platform/debug/movie_player.cpp
+        src/platform/debug/pathtrace.cpp
+        src/platform/debug/profile.cpp
         src/platform/debug/script.cpp
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp
+        src/platform/selftest/campaignmap_selftest.cpp
+        src/platform/selftest/campaignprogress_selftest.cpp
         src/platform/selftest/hexscan_selftest.cpp
+        src/platform/selftest/keybindings_selftest.cpp
         src/platform/selftest/keymatch_selftest.cpp
+        src/platform/selftest/language_selftest.cpp
+        src/platform/selftest/nativefile_selftest.cpp
         src/platform/selftest/raster_selftest.cpp
         src/platform/selftest/selftests.cpp
         src/platform/selftest/uiatlas_selftest.cpp

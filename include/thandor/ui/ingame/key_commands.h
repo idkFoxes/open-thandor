@@ -23,6 +23,11 @@ inline constexpr int32_t INGAME_NOTIFICATION_CURSOR_CANCEL = 0x1B;
 bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world);
 
+/* Not in the original: the action number (InGameKeyCommandAction, 1..19) the world view's key command table gives
+   keyCode with the held modifiers heldFlags, 0 when no record matches (the key then goes on to the in-game hotkeys).
+   Read-only, for the key binding list (ui/core/key_bindings.h). */
+uint32_t InGameKeyCommands_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags);
+
 void InGameWorldView_ShowNextInfoText(UiSingleLineTextControl *infoText);
 
 void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView);

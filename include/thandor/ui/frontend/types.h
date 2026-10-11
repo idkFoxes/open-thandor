@@ -466,6 +466,10 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t)> scenarioCatalogRebuildCallbacks[3]; // Indexed 3-way save/level/campaign record-list rebuild callbacks, picked by a selector 0..2.
     Ptr32<void (void *)> handlers58_5A[3]; // Not in the original: action IDs 0x2058-0x205A (the display mode kind choices).
     Ptr32<void (void *)> handlers5B_5F[5]; // Not in the original: action IDs 0x205B-0x205F (the advanced settings page).
+    Ptr32<void (void *)> handlers60[1]; // Not in the original: action ID 0x2060 (the campaign buttons of the campaign tab).
+    Ptr32<void (void *)> handlers61[1]; // Not in the original: action ID 0x2061 (the options page's "Tastenbelegung" button).
+    Ptr32<void (void *)> handlers62_63[2]; // Not in the original: action IDs 0x2062-0x2063 (the language choice of the advanced settings page).
+    Ptr32<void (void *)> handlers64[1]; // Not in the original: action ID 0x2064 (the pathing checkbox of the advanced settings page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -604,7 +608,9 @@ struct FrontendPlayerRuntimeRecord {
     uint32_t transferProgressBytes; /* +0x70 mailbox transfer: end offset of the chunk last requested, 0x7FFFFFFF = done */
     FrontendCapabilityFlags capabilityFlags; // Player capability/selection flags.
     uint8_t capabilityLabelUtf16[8]; /* +0x78 UTF-16 label, L"CD" with FRONTEND_CAPABILITY_CD (written byte by byte) */
-    uint32_t reserved80; // Never accessed.
+    uint32_t otPathingCapability; /* +0x80 open-thandor (host): protocol version | supported modes << 16 from the
+                                     player's 0x10006 heartbeat with FRONTEND_CAPABILITY_OT_EXTENDED, else 0; the
+                                     original never accesses this dword */
     uint32_t scenarioAvailabilityMask0; // Scenario-availability bitmask for catalog group 0; selected level index maps to one bit within this dword.
     uint32_t scenarioAvailabilityMask1; // Scenario-availability bitmask for catalog group 1.
     uint32_t scenarioAvailabilityMask2; // Scenario-availability bitmask for catalog group 2.
@@ -1018,9 +1024,24 @@ inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS = 54;
 inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT = 24;
 inline constexpr int32_t FRONTEND_DISPLAY_RESOLUTION_ROW_INSET = 3; /* the rows' left/top/right offsets in the panel */
 
+/* Not in the original (open-thandor): the campaign tab's campaign buttons (FrontendUiImage campaignButtons). Six
+   cover the four stock campaigns plus two add-ons; with more campaigns the tab keeps the old list. */
+inline constexpr int32_t FRONTEND_CAMPAIGN_BUTTON_COUNT = 6;
+
+/* Not in the original (open-thandor): the mission map of the campaign tab (FrontendUiImage campaignMap). The prefix
+   is an image panel, so the slots the map control does not define itself can be the image panel's; mapIndex is an
+   index into a module-level table of the map control (graph and layout live in native memory), not a pointer, so
+   the template holds no pointer. In the template the node uses g_UiImagePanelControlVtable without a texture and
+   is suppressed (drawn and hit by nothing) until the map control gets its own vtable. 0x60 bytes. */
+struct FrontendCampaignMapControl {
+    struct UiImagePanelControl panel;
+    uint32_t mapIndex; /* +0x5C */
+};
+
 /* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
-   nodes of the advanced settings page). FrontendUi_Image(root)->node is the node in a copy of it (or a node's <node>_prefix),
-   typed as its control. */
+   nodes of the advanced settings page, plus the 11 nodes of the campaign map, plus the 7 nodes of the key binding
+   page, plus the 11 nodes of the language choice). FrontendUi_Image(root)->node is the node in a copy of it (or a
+   node's <node>_prefix), typed as its control. */
 struct FrontendUiImage {
     UiPanelControl frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
     UiLayoutContainerControl<2> frontendViewModeStack; /* +0058 g_UiLayoutContainerControlVtable: Two-page stack: page 0 = menu room (3D room view, dialog page stack, top/bottom bars), page 1 = full-screen movie view. */
@@ -1302,6 +1323,43 @@ struct FrontendUiImage {
     UiTextButtonControl advancedFrameLimit144; /* +77CC g_UiTextButtonControlVtable: "144 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
     UiTextButtonControl advancedVsyncCheckbox; /* +782C g_UiTextButtonControlVtable: Checkbox "VSync" (action FRONTEND_ACTION_ADVANCED_VSYNC). */
     UiFocusProxyControl advancedNoteLabel; /* +788C g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
+    /* Not in the original (open-thandor): the campaign map of the campaign tab (gameSelectTabStack page 2). The
+       nodes follow campaignDescriptionText in the page's sibling chain; all are suppressed (and hidden while
+       suppressed) in the template, so the tab looks as before until the campaign tab logic shows them. */
+    UiFramedTextButtonControl campaignButtons[FRONTEND_CAMPAIGN_BUTTON_COUNT]; /* +78E8 g_UiFramedTextButtonControlVtable: Campaign buttons "<name> <done>/<visible>" (radio, action FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON); labels are set at run time. */
+    FrontendCampaignMapControl campaignMap; /* +7B28 g_UiImagePanelControlVtable (the map control's own vtable later): Mission map of the selected campaign. */
+    UiFocusProxyControl campaignMissionTitleText; /* +7B88 g_UiFocusProxyControlVtable: "Mission N: <title>" of the selected mission. */
+    UiFocusProxyControl campaignTitleText; /* +7BE4 g_UiFocusProxyControlVtable: Title of the selected campaign, right-aligned. */
+    UiFocusProxyControl campaignMissionDescriptionText; /* +7C40 g_UiFocusProxyControlVtable: Description of the selected mission (one line). */
+    UiFocusProxyControl campaignMissionStatusText; /* +7C9C g_UiFocusProxyControlVtable: Status line of the selected mission (done / unlocked / locked). */
+    /* Not in the original (open-thandor): the read-only key binding list ("Tastenbelegung", frontend only). The
+       options page gets a fifth button (keyBindingsButton) below "Erweitert". displayPageStack page 1 is
+       settingsSubPageStack, whose page 0 is advancedSettingsPage and page 1 keyBindingsPage, so no earlier node
+       moves. The list rows are built when the page opens (ui/frontend/key_bindings_page.cpp). */
+    UiFramedTextButtonControl keyBindingsButton; /* +7CF8 g_UiFramedTextButtonControlVtable: "Tastenbelegung" button of the options page (action FRONTEND_ACTION_OPEN_KEY_BINDINGS). */
+    UiLayoutContainerControl<2> settingsSubPageStack; /* +7D58 g_UiLayoutContainerControlVtable: Two-page stack in displayPageStack page 1: advanced settings, key bindings. */
+    UiImagePanelControl keyBindingsPage; /* +7DB0 g_UiImagePanelControlVtable: settingsSubPageStack page 1: the key binding list. */
+    UiFramedTextButtonControl keyBindingsBackButton; /* +7E0C g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options page. */
+    UiFocusProxyControl keyBindingsTitle; /* +7E6C g_UiFocusProxyControlVtable: Page title "Tastenbelegung". */
+    UiScrollableControl keyBindingsScroller; /* +7EC8 g_UiScrollableControlVtable: Scroll frame of the key binding list. */
+    UiListControl keyBindingsList; /* +7F58 g_UiListControlVtable: Key binding rows (key | action, section titles highlighted); suppressed: no selection, no focus. */
+    UiListColumn keyBindingsList_column2[1]; /* +7FCC: the list's second column (action) */
+    /* Not in the original (open-thandor): the language choice of the advanced settings page (frontend only, the
+       nodes are appended to advancedSettingsPage after advancedNoteLabel). A titled box "Sprache:" with one button
+       showing the chosen language; the button opens the list: a page-sized layer (the last child of the page, so it
+       is drawn and hit first) holding a window-backed titled box with one radio row per language. The layer is
+       linked into the page only while the list is open (ui/frontend/language_choice.cpp). */
+    UiTitledWindowControl advancedLanguageGroup; /* +7FD4 g_UiTitledWindowControlVtable: Box "Sprache:" in the right column. */
+    UiFramedTextButtonControl advancedLanguageButton; /* +8028 g_UiFramedTextButtonControlVtable: The chosen language; opens the list (action FRONTEND_ACTION_LANGUAGE_LIST). */
+    UiPanelControl advancedLanguageLayer; /* +8088 g_FrontendLanguageListLayerVtable: Page-sized layer of the open list; a press beside the list or Escape closes it. */
+    UiPanelControl advancedLanguagePanel; /* +80E0 g_UiPanelControlVtable: Window background of the list (tiled interior). */
+    UiTitledWindowControl advancedLanguageBox; /* +8138 g_UiTitledWindowControlVtable: Box "Sprache:" of the list. */
+    UiTextButtonControl advancedLanguageChoices[6]; /* +818C g_UiTextButtonControlVtable: Radio rows "Automatisch" and the available languages (action FRONTEND_ACTION_LANGUAGE_SELECT). */
+    /* Not in the original (open-thandor): the single-player pathing mode of the advanced settings page
+       ([game] pathing, docs/plans/pathfinding.md D1), in the left column under "UI-Skalierung:"; linked between
+       advancedNoteLabel and advancedLanguageGroup in the page's sibling chain (the language list layer stays the
+       last child). */
+    UiTextButtonControl advancedPathingCheckbox; /* +83CC g_UiTextButtonControlVtable: Checkbox "Verbesserte Wegfindung" (action FRONTEND_ACTION_ADVANCED_PATHING). */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is
