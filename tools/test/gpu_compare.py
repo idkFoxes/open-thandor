@@ -4,7 +4,7 @@ usage: gpu_compare.py GAME_DIR [--exe TEST_EXE] [--api vulkan|d3d12] [--script F
                       [--interval MS] [--timeout S] [--out DIR]
 
 Makes a linked copy GAME_DIR_chk_gpucmp_<api> (run_checks.make_copy) of the test build (default:
-build-mingw-test/thandor.exe, else build-test/thandor.exe; the developer tools are needed) and runs the script
+build-mingw-test/thandor.exe; the developer tools are needed) and runs the script
 (default tools/test/skirmish_pause.txt with -NOINTRO -KARTE="mittelpunkt" and the fixed seed and pause tick of the
 pixel check) with OPEN_THANDOR_GPU=compare-<api> and OPEN_THANDOR_GPU_COMPARE_MS=MS (default 2000), minimized
 unless OPEN_THANDOR_TEST_VISIBLE=1. The game then draws every frame both in software and on the GPU and every MS
@@ -45,8 +45,6 @@ def remove_copy(folder):
 
 def main():
     default_exe = os.path.join(REPO, 'build-mingw-test', 'thandor.exe')
-    if not os.path.exists(default_exe):
-        default_exe = os.path.join(REPO, 'build-test', 'thandor.exe')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('game_dir')
     parser.add_argument('--exe', default=default_exe, help='test build (default: %(default)s)')

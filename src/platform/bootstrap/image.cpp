@@ -81,7 +81,7 @@ static int module_offset(char *out, size_t capacity, DWORD64 address)
 }
 
 /*
-Symbol table of a GCC build (no PDB for dbghelp): thandor.sym next to the executable, written after the link by
+Symbol table of the build (no PDB for dbghelp): thandor.sym next to the executable, written after the link by
 cmake/symbol_table.cmake from `nm -C --defined-only -n` - a first line "<address> A __ImageBase" (the link-time
 image base), then the code symbols "<address> <T|t|W|w> <demangled name>" sorted by address.
 Thandor_InstallCrashHandler reads it once into memory allocated then; the lookups of the crash, hang and watchdog
@@ -304,7 +304,7 @@ static void dbghelp_initialize()
     }
 }
 
-/* Name of a code address for the logs: thandor.sym (GCC build), else dbghelp (the PDB of an MSVC build;
+/* Name of a code address for the logs: thandor.sym, else dbghelp (exported names of other modules;
    SymInitialize done and the dbghelp lock held by the caller; skipped when useDbghelp is false), else
    module+offset, else "?". */
 static void code_address_name(char *out, size_t capacity, HANDLE process, DWORD64 address, bool useDbghelp)
@@ -493,7 +493,7 @@ void Thandor_Ptr32Overflow(uintptr_t value)
 
 /* First thing in the crash filter: registers and raw stack words to crash_raw.log using only
    kernel32/user32 calls, so a corrupted CRT heap or stack cannot stop it. Symbolize the code
-   addresses offline with the build's thandor.pdb or a /MAP map file. */
+   addresses offline with the build's thandor.map or thandor.debug (tools/data/symbolize.py). */
 static void raw_crash_dump(EXCEPTION_POINTERS *info)
 {
     char path[MAX_PATH];
@@ -549,8 +549,8 @@ static void raw_crash_dump(EXCEPTION_POINTERS *info)
     CloseHandle(file);
 }
 
-/* The symbolized frames of the crashed thread (names and lines from the PDB of an MSVC build through dbghelp,
-   names from thandor.sym in a GCC build, module+offset otherwise). */
+/* The symbolized frames of the crashed thread (names from thandor.sym, else from dbghelp for other modules,
+   module+offset otherwise). */
 static void walk_crash_stack(FILE *out, HANDLE process, HANDLE thread, CONTEXT *context)
 {
     STACKFRAME64 frame;
@@ -652,17 +652,9 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
         fflush(out);
     }
     if (useDbghelp) {
-#ifdef _MSC_VER
-        __try {
-            walk_crash_stack(out, process, thread, &context);
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
-            fprintf(out, "(stack walk faulted)\n");
-        }
-#else
-        /* GCC has no __try: StackWalk64 reads the stack through ReadProcessMemory, which reports a bad address
+        /* no __try needed: StackWalk64 reads the stack through ReadProcessMemory, which reports a bad address
            instead of faulting. */
         walk_crash_stack(out, process, thread, &context);
-#endif
         dbghelp_unlock();
     } else {
         fprintf(out, "(stack walk skipped: dbghelp in use)\n");
@@ -676,7 +668,7 @@ static HANDLE g_watchedThread;
 /* Stack reserve of the hang detector and the dev watchdog (instead of 0 = the executable's 32 MiB reserve, which
    only the pathing recursion on the main thread needs). Their 64 KiB StackSnapshot is static, not on the stack; what
    remains is a MAX_PATH path, the symbol name buffers (under 1 KiB) and dbghelp (SymInitialize, StackWalk64,
-   SymFromAddr, SymGetLineFromAddr64), which is built for the 1 MiB default reserve of MSVC executables. */
+   SymFromAddr, SymGetLineFromAddr64), which is built for the 1 MiB default reserve of Windows executables. */
 constexpr SIZE_T DIAGNOSTIC_THREAD_STACK_RESERVE_BYTES = 0x100000;
 
 #ifdef THANDOR_DEV_TOOLS

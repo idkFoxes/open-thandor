@@ -58,7 +58,7 @@
 #include <thandor/ui/ingame/root_frame.h>
 #include <thandor/ui/ingame/ui_template.h>
 
-/* The linker-defined start of the executable image (MinGW ld and MSVC link both define it); <windows.h> clashes
+/* The linker-defined start of the executable image (MinGW ld defines it); <windows.h> clashes
    with the project's own Win32 declarations, so the PE header fields are read by their fixed offsets. */
 extern "C" uint8_t __ImageBase[];
 constexpr auto UITEMPLATE_PE_HEADER_OFFSET_FIELD = 0x3C; /* IMAGE_DOS_HEADER.e_lfanew */

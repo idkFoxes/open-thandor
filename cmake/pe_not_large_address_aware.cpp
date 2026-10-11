@@ -10,7 +10,7 @@ IMAGE_FILE_LARGE_ADDRESS_AWARE (its --disable-large-address-aware exists for 32-
 usage: pe_not_large_address_aware <exe> [--large-address-aware]
 With --large-address-aware (the default build, CMake option THANDOR_LARGE_ADDRESS_AWARE=ON; the game's own memory
 comes from pools below 2 GB, platform/bootstrap/low_memory.h) the flag is kept set; without it (OFF, the old layout
-like MSVC's /LARGEADDRESSAWARE:NO, the whole process below 2 GB) it is cleared. Either way the helper checks that
+not large-address-aware, the whole process below 2 GB) it is cleared. Either way the helper checks that
 the image is not relocatable (no DYNAMIC_BASE or HIGH_ENTROPY_VA): the image's addresses go into the 32-bit pointer
 fields of core/ptr32.h as well.
 */

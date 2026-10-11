@@ -133,7 +133,7 @@ The project gave up byte-identical machine code in favour of readable code; beha
 
 ### Building
 
-The main compiler is MinGW-w64 GCC (x86_64, SEH; tested with GCC 15.2): CMake 3.25+, Ninja, `g++` on the `PATH` or
+The compiler is MinGW-w64 GCC (x86_64, SEH; tested with GCC 15.2): CMake 3.25+, Ninja, `g++` on the `PATH` or
 `MINGW_ROOT` set ([`cmake/mingw-x64.cmake`](cmake/mingw-x64.cmake)), SDL3 with Vulkan from
 `vcpkg install sdl3[vulkan]:x64-mingw-dynamic`, and dxc for the Vulkan shaders, `vcpkg install directx-dxc:x64-windows`.
 CMake finds them through the environment variable `VCPKG_ROOT` (the vcpkg directory).
@@ -149,11 +149,8 @@ The result is `build-mingw-release\thandor.exe` (x64) with `SDL3.dll` next to it
 installed Thandor folder and start it there (e.g. `thandor.exe -NOINTRO`). `--target installer` builds
 `Thandor-Patch-7.exe` (needs Inno Setup 7, see [docs/BUILDING.md](docs/BUILDING.md#patch-installer)).
 `mingw-test` (`build-mingw-test`) adds the developer tools: self-tests, windowed mode, several instances, scripted
-input, starting any campaign level, the determinism state hash; the automated checks use this build.
-
-MSVC (Visual Studio 2022 or newer, SDL3 from `vcpkg install sdl3[vulkan]:x64-windows`) is the second compiler, kept
-building for the Visual Studio debugger (presets `release`, `debug`, `test`, `gpu-test` in
-[`CMakePresets.json`](CMakePresets.json)). Details in [docs/BUILDING.md](docs/BUILDING.md).
+input, starting any campaign level, the determinism state hash; the automated checks use this build. Other
+compilers (MSVC, Clang) are not supported. Details in [docs/BUILDING.md](docs/BUILDING.md).
 
 ### Source tree
 

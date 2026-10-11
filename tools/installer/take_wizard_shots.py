@@ -4,7 +4,7 @@ usage: take_wizard_shots.py GAME_DIR [--exe TEST_EXE] [--maps hansolo:12,niflhei
                             [--width 1920] [--height 1080] [--api vulkan|d3d12] [--timeout S]
 
 For every map: makes a linked copy GAME_DIR_chk_wizshot (tools/test/run_checks.make_copy) of the test build
-(default build-mingw-test/thandor.exe, else build-test/thandor.exe; the developer tools are needed for the input
+(default build-mingw-test/thandor.exe; the developer tools are needed for the input
 script), writes its thandor.ini with a WIDTH x HEIGHT window, the GPU renderer (smooth rasterization, UI scale 1,
 high texture quality, sound off) and runs tools/installer/wizard_showcase.txt (default; wizard_shot.txt for stock maps) with -NOINTRO -KARTE="<map>" (a
 skirmish map) or, for <campaign>:<level>, -KARTE="-" with OPEN_THANDOR_CAMPAIGN / _LEVEL (a campaign level), or for "showcase" the
@@ -54,8 +54,6 @@ music = false
 
 def main():
     default_exe = os.path.join(REPO, 'build-mingw-test', 'thandor.exe')
-    if not os.path.exists(default_exe):
-        default_exe = os.path.join(REPO, 'build-test', 'thandor.exe')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('game_dir')
     parser.add_argument('--exe', default=default_exe, help='test build (default: %(default)s)')

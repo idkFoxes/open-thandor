@@ -33,8 +33,8 @@ further copies next to it), windowed, with its own UDP ports:
                path (segments: 12 parts, 33 levels). Every level runs 2 minutes, then the auto-win fires the end
                trigger; every level must be won and units carried over where the campaign does it, without
                crash or hang (ports 910-921)
---new defaults to build-mingw-test/thandor.exe of this repository (CMake preset "mingw-test", the main compiler),
-else build-test/thandor.exe (preset "test", MSVC); each copy gets the SDL3.dll next
+--new defaults to build-mingw-test/thandor.exe of this repository (CMake preset "mingw-test"); each copy gets the
+SDL3.dll next
 to that exe (else the one in GAME_DIR), the tools started from a copy link it from there. The output of
 each check goes to GAME_DIR/checks/<check>.txt (screenshots / diffs of the pixel check to GAME_DIR/checks/
 pixels/). A failed determinism, saveload, multiplayer or maps check is run once more on its own after the others
@@ -63,7 +63,7 @@ from game_env import game_env
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
-PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'sdl3.dll', 'thandor.dat', 'thandor.ini', 'thandor.log',
+PRIVATE = ('thandor.exe', 'thandor.sym', 'sdl3.dll', 'thandor.dat', 'thandor.ini', 'thandor.log',
            'crash.log', 'crash_raw.log', 'hang.log', 'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
 CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps']
@@ -118,11 +118,10 @@ def make_copy(name, exe):
         if os.path.exists(os.path.join(target, entry)):
             os.remove(os.path.join(target, entry))
     shutil.copy(exe, os.path.join(target, 'thandor.exe'))
-    # the build's symbols for the crash and hang logs (MSVC: thandor.pdb, GCC: thandor.sym)
-    for extension in ('.pdb', '.sym'):
-        symbols = os.path.splitext(exe)[0] + extension
-        if os.path.exists(symbols):
-            shutil.copy(symbols, os.path.join(target, 'thandor' + extension))
+    # the build's symbols for the crash and hang logs
+    symbols = os.path.splitext(exe)[0] + '.sym'
+    if os.path.exists(symbols):
+        shutil.copy(symbols, os.path.join(target, 'thandor.sym'))
     # the build's SDL3.dll (next to the exe, the build copies it there), else the game dir's
     for dll in (os.path.join(os.path.dirname(exe), 'SDL3.dll'), os.path.join(game, 'SDL3.dll')):
         if os.path.exists(dll):
@@ -412,10 +411,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('game_dir')
     default_new = os.path.join(REPO, 'build-mingw-test', 'thandor.exe')
-    if not os.path.exists(default_new):
-        default_new = os.path.join(REPO, 'build-test', 'thandor.exe')
     parser.add_argument('--new', default=default_new,
-                        help='test build to check (default: build-mingw-test/thandor.exe, else build-test/thandor.exe)')
+                        help='test build to check (default: build-mingw-test/thandor.exe)')
     parser.add_argument('--old', help='previous test build (comparison for aihash and pixels)')
     parser.add_argument('--map-jobs', type=int, help='parallel missions (default: 16 minus the other instances, '
                                                        'at least 4, growing to 16 as the other checks finish; a '

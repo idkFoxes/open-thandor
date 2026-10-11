@@ -231,5 +231,5 @@ static void UiRootStackAction_Pop(void *source)
   UiRootStack_Pop(static_cast<UiRootNode *>(source));
 }
 
-/* (handlers) without the designator: MSVC rejects UI_SLOT elements of a designated array member (C2440). */
+/* (handlers): the array member initialised without its designator. */
 THANDOR_ALIGN(16) UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage = {{UI_SLOT(UiRootStackAction_Pop), UI_SLOT(FatalErrorDialog_DismissAndPopRoot)}};
