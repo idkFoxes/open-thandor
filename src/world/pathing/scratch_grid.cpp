@@ -9,7 +9,9 @@
    occupancy propagation, flood fills and the primary/secondary copy and swap. */
 
 #include <thandor/world/pathing/scratch_grid.h>
+#include <string.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 #include <cassert>
 #include <vector>
 
@@ -610,23 +612,15 @@ bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t 
   return (GRID_SCRATCH_TERRAIN_CLASS_BIT24 << (highBandIndex & 31) & cellStateMask) != 0;
 }
 
-/* Copies the whole primary scratch grid into the secondary one (two dwords per 8-byte GridScratchCell), so pathing can plan on a copy and swap back afterwards.
+/* Copies the whole primary scratch grid into the secondary one (the original copies two dwords per 8-byte
+   GridScratchCell in a loop; one memcpy of the same bytes), so pathing can plan on a copy and swap back afterwards.
 */
 void GridScratch_CopyPrimaryToSecondary()
 
 {
-  int scratchDwordsRemaining;
-  uint32_t *primaryReadCursor;
-  uint32_t *secondaryWriteCursor;
-
-  scratchDwordsRemaining = g_GridScratchWidth * g_GridScratchHeight * 2;
-  primaryReadCursor = GridScratchCell_StateMaskBits(g_GridScratchPrimary);
-  secondaryWriteCursor = GridScratchCell_StateMaskBits(g_GridScratchSecondary);
-  for (; scratchDwordsRemaining != 0; scratchDwordsRemaining--) {
-    *secondaryWriteCursor = *primaryReadCursor;
-    primaryReadCursor++;
-    secondaryWriteCursor++;
-  }
+  DebugHook_ProfileScope(DEBUG_PROFILE_GRID_COPY);
+  memcpy(GridScratchCell_StateMaskBits(g_GridScratchSecondary),GridScratchCell_StateMaskBits(g_GridScratchPrimary),
+         (size_t)g_GridScratchWidth * g_GridScratchHeight * sizeof(GridScratchCell));
 }
 
 /* Swaps the primary and secondary scratch grid pointers, making the copy made by
