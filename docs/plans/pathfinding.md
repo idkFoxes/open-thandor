@@ -285,20 +285,17 @@ Testing per package:
    hash), plus the hand test against the original 1.05 (mode forced off).
 4. Campaign spot checks with the mode on (`run_all_maps.py`), AI behaviour by eye (it uses the same movement).
 
-## 6. Owner decisions needed
+## 6. Owner decisions (answered 2026-10-11)
 
-- **D1** Default of the improved mode in single player and in the campaign (balance: the campaign was tuned with the
-  original movement) - on, off, or skirmish only?
-- **D2** Multiplayer negotiation as proposed (heartbeat capability bit + reserved bytes, host lobby toggle,
-  forced off with any non-OT peer) - or simpler: automatically on when all peers are OT of the same version?
-- **D3** Savegame extension for the mode and the per-unit state (an OT block after the original data?) and how an
-  old OT build treats such a save.
-- **D4** Visual change: tanks driving curves instead of turning on the spot (P1) - acceptable for the look of the
-  game?
-- **D5** Should the AI use the improved movement too (follows automatically from the mode; changes AI strength)?
-- **D6** Scope order: P0-P3 first as a small release, P4/P5 later, P7 only on demand?
-- **D7** Keep the movement trace (`OPEN_THANDOR_PATHTRACE`), the `pathing` arena and `run_pathing.py` in the
-  repository (they are dev-tools only and committed on this branch)?
+| # | Question | Decision |
+|---|---|---|
+| D1 | Default of the improved mode in single player and in the campaign | **on**, with a switch on the "Erweitert" page and in `thandor.ini` to go back to the original movement |
+| D2 | Multiplayer negotiation | **automatic**: on when every peer runs the same Open Thandor version; any original 1.05 peer forces the original movement; no lobby toggle |
+| D3 | Savegames | **extension entry** in the `.sve` package (an Open Thandor entry next to the original ones) holding the mode and the per-unit state; with the mode off saves stay byte-identical; older OT builds load such a save in the original mode |
+| D4 | Tanks drive curves instead of turning on the spot (P1) | **yes**; exact alignment only at the final target |
+| D5 | AI uses the improved movement | **yes**, the same movement for every unit |
+| D6 | Scope order | **P0-P3 first** as a small measured package; P4/P5 afterwards; P7 (flow fields) only on demand |
+| D7 | Keep the trace, the `pathing` arena and `run_pathing.py` | **yes** (dev-tools only), used as the before/after metric and as a check |
 
 ## Tools added on this branch
 
