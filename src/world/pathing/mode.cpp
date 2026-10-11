@@ -5,6 +5,7 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <thandor/world/pathing/mode.h>
 
@@ -23,6 +24,7 @@ void PathingMode_ApplyForNewSession(bool networked)
   else {
     g_PathingMode = g_PathingModeSetting;
   }
+  g_PathingMode = PathingMode_DevOverride(g_PathingMode);
   memset(g_PathingUnitState,0,sizeof(g_PathingUnitState));
 }
 
@@ -38,4 +40,22 @@ void PathingUnitState_Clear(int slotIndex)
   if ((slotIndex >= 0) && (slotIndex < ARMY_RUNTIME_SLOT_COUNT)) {
     memset(&g_PathingUnitState[slotIndex],0,sizeof(g_PathingUnitState[slotIndex]));
   }
+}
+
+PathingMode PathingMode_DevOverride(PathingMode mode)
+
+{
+#ifdef THANDOR_DEV_TOOLS
+  /* open-thandor test aid: OPEN_THANDOR_PATHING=original|improved (tools/test/run_pathing.py, run_determinism.py) */
+  const char *text = getenv("OPEN_THANDOR_PATHING");
+  if (text != nullptr) {
+    if (strcmp(text,"original") == 0) {
+      return PATHING_MODE_ORIGINAL;
+    }
+    if (strcmp(text,"improved") == 0) {
+      return PATHING_MODE_IMPROVED;
+    }
+  }
+#endif
+  return mode;
 }

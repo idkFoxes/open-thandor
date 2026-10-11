@@ -8,15 +8,23 @@ Scenarios (all run in parallel, each in its own linked copy of the game director
   turrets     every armed static defence of both sides facing each other, with power plants
   production  factories, construction yard, labs and power plants of both sides; at step 20 both queue units
               and every lab starts a technology (OPEN_THANDOR_ARENA_ORDERS=production)
+  pathing     10 tanks of player 1 before a wall with a gap (make_arena.py --scenario pathing, choke layout); at
+              step 102 a formation move order through the gap (OPEN_THANDOR_ARENA_ORDERS=pathing, run_pathing.py)
 
 usage:
   run_determinism.py GAME_DIR [--scenarios battle,turrets,production] [--steps 1200] [--runs 2]
   run_determinism.py GAME_DIR --save-reference DIR     store one run per scenario as DIR/<scenario>.txt
   run_determinism.py GAME_DIR --reference DIR          every scenario must match its stored reference
+  run_determinism.py GAME_DIR --pathing improved       the pathing scenario in the improved pathing mode, 3 runs
+                                                       that must match each other (no reference yet)
 
 Needs the test build (CMake preset "test") as GAME_DIR/thandor.exe with its SDL3.dll. With --runs 2 the runs of a scenario must
 match each other (their frame rates differ, which must not change the result). On a mismatch the first differing
 step is reported; rerun with --detail <tick> to get every army's values at that tick (statehash.txt in each copy).
+--pathing original|improved sets OPEN_THANDOR_PATHING (the session's pathing mode, PathingMode_DevOverride) for every
+run; with --pathing improved the scenarios default to "pathing", the runs to 3 and the steps to 2200 (the order at
+step 102 plus the 2000 steps run_pathing.py evaluates). --copy-tag and --port-base keep parallel users of the same
+GAME_DIR apart (copies GAME_DIR_<tag><k>, default d; UDP port base + k, default 960).
 """
 import argparse
 import os
@@ -33,11 +41,12 @@ PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'thandor.dat', 'thandor.
            'statehash.txt')
 # mission page (1280x800): "Beginnen", then wait until the level runs; the scenarios need no further input
 SCRIPT = "0 layout 1280 800\n6000 clickuntilingame 839 539 3000\n0 ingame\n900000 quit\n"
-ORDERS = {'battle': 'move', 'turrets': '', 'production': 'production'}
+ORDERS = {'battle': 'move', 'turrets': '', 'production': 'production', 'pathing': 'pathing'}
+ARENA_ARGUMENTS = {'pathing': ['--layout', 'choke']}  # extra make_arena.py arguments per scenario
 
 
-def make_copy(game, k):
-    target = '%s_d%d' % (game.rstrip('\\/'), k)
+def make_copy(game, k, tag='d'):
+    target = '%s_%s%d' % (game.rstrip('\\/'), tag, k)
     os.makedirs(os.path.join(target, 'save'), exist_ok=True)
     for name in os.listdir(game):
         source, link = os.path.join(game, name), os.path.join(target, name)
@@ -63,16 +72,19 @@ def run_once(folder, k, scenario, args, results):
     script = os.path.join(folder, 'determinism_script.txt')
     open(script, 'w').write(SCRIPT)
     output = os.path.join(folder, 'statehash.txt')
-    if os.path.exists(output):
-        os.remove(output)
+    for name in ('statehash.txt', 'thandor.log'):  # the log is appended to; this run's lines only
+        if os.path.exists(os.path.join(folder, name)):
+            os.remove(os.path.join(folder, name))
     env = game_env(OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_WINDOWED='1',
                OPEN_THANDOR_WINDOW_X=str((k % 4) * 320), OPEN_THANDOR_WINDOW_Y=str((k // 4) * 260),
-               OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(960 + k),
+               OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(args.port_base + k),
                OPEN_THANDOR_STATEHASH=str(args.steps), OPEN_THANDOR_STATEHASH_SEED=str(args.seed))
     if ORDERS[scenario]:
         env['OPEN_THANDOR_ARENA_ORDERS'] = ORDERS[scenario]
     if args.detail:
         env['OPEN_THANDOR_STATEHASH_DETAIL'] = str(args.detail)
+    if args.pathing:
+        env['OPEN_THANDOR_PATHING'] = args.pathing
     process = subprocess.Popen('"%s" -NOINTRO -KARTE="test%s."' % (exe, scenario), executable=exe, cwd=folder,
                                env=env)
     try:
@@ -81,6 +93,15 @@ def run_once(folder, k, scenario, args, results):
         process.kill()
     lines = open(output).read().splitlines() if os.path.exists(output) else []
     results[k] = [line for line in lines if not line.startswith(' ')]
+    if args.pathing:
+        # the mode the session ran in ("test aid: pathing mode ..." of DebugHook_SessionInitializing)
+        log = os.path.join(folder, 'thandor.log')
+        text = open(log, errors='replace').read() if os.path.exists(log) else ''
+        modes[k] = [line.split('test aid: pathing mode ', 1)[1].strip() for line in text.splitlines()
+                    if 'test aid: pathing mode ' in line]
+
+
+modes = {}  # run index -> pathing modes logged by the session (with --pathing)
 
 
 def hashes(lines):
@@ -90,23 +111,33 @@ def hashes(lines):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('game_dir')
-    parser.add_argument('--scenarios', default='battle,turrets,production')
-    parser.add_argument('--steps', type=int, default=1200)
-    parser.add_argument('--runs', type=int, default=2)
+    parser.add_argument('--scenarios', help='default battle,turrets,production; with --pathing improved: pathing')
+    parser.add_argument('--steps', type=int, help='default 1200; with --pathing improved 2200')
+    parser.add_argument('--runs', type=int, help='default 2; with --pathing improved 3')
+    parser.add_argument('--pathing', choices=('original', 'improved'), help='OPEN_THANDOR_PATHING for every run')
+    parser.add_argument('--copy-tag', default='d', help='linked copies are GAME_DIR_<tag><k> (default d)')
+    parser.add_argument('--port-base', type=int, default=960, help='UDP port of copy k: base + k (default 960)')
     parser.add_argument('--seed', type=int, default=12345)
     parser.add_argument('--detail', type=int, default=0)
     parser.add_argument('--timeout', type=int, default=900)
     parser.add_argument('--reference', help='directory with <scenario>.txt')
     parser.add_argument('--save-reference', help='directory to write <scenario>.txt into')
     args = parser.parse_args()
+    improved = args.pathing == 'improved'
+    if args.scenarios is None:
+        args.scenarios = 'pathing' if improved else 'battle,turrets,production'
+    if args.steps is None:
+        args.steps = 2200 if improved else 1200
+    if args.runs is None:
+        args.runs = 3 if improved else 2
     game = os.path.abspath(args.game_dir)
     scenarios = args.scenarios.split(',')
     for scenario in scenarios:
         subprocess.run([sys.executable, os.path.join(HERE, 'make_arena.py'), game, '--scenario', scenario,
-                        '--name', 'test' + scenario], check=True)
+                        '--name', 'test' + scenario] + ARENA_ARGUMENTS.get(scenario, []), check=True)
     runs = 1 if args.save_reference or args.reference else args.runs
     jobs = [(scenario, r) for scenario in scenarios for r in range(runs)]
-    folders = [make_copy(game, k) for k in range(len(jobs))]
+    folders = [make_copy(game, k, args.copy_tag) for k in range(len(jobs))]
     results = {}
     threads = [threading.Thread(target=run_once, args=(folders[k], k, jobs[k][0], args, results))
                for k in range(len(jobs))]
@@ -123,6 +154,12 @@ def main():
             print('%-11s FAIL: run did not reach %d steps (crash, hang or timeout?): %s'
                   % (scenario, args.steps, ', '.join('%d recorded' % len(results.get(k, []))
                                                       for k in broken)))
+            failed = True
+            continue
+        wrong = [k for k in mine if args.pathing and modes.get(k) != [args.pathing]]
+        if wrong:
+            print('%-11s FAIL: requested pathing %s, the sessions logged %s' % (
+                scenario, args.pathing, ', '.join('/'.join(modes.get(k) or ['nothing']) for k in wrong)))
             failed = True
             continue
         last = results[mine[0]][-1]
@@ -151,8 +188,9 @@ def main():
             print('%-11s MISMATCH at tick %s (rerun with --detail %s)' % (scenario, mismatch, mismatch))
             failed = True
         else:
-            print('%-11s ok: %d steps identical (%s), last %s' % (scenario, args.steps,
-                  'reference' if args.reference else '%d runs' % runs, last))
+            print('%-11s ok: %d steps identical (%s%s), last %s' % (scenario, args.steps,
+                  'reference' if args.reference else '%d runs' % runs,
+                  ', pathing ' + args.pathing if args.pathing else '', last))
     return 1 if failed else 0
 
 

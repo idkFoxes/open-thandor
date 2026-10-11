@@ -13,11 +13,13 @@
 #include <thandor/thandor.h>
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/debug/pathtrace.h>
+#include <thandor/world/pathing/mode.h>
 
 static FILE *s_traceFile;
 static bool s_traceOpened;
 static unsigned s_traceFaction = 1;
 static bool s_infoWritten[ARMY_RUNTIME_SLOT_COUNT];
+static int s_tracedPathingMode = -1;
 
 static FILE *DebugPathTrace_File()
 {
@@ -64,6 +66,11 @@ void DebugPathTrace_AfterStep()
   unsigned slotIndex;
   if (file == nullptr || g_InGameRuntimeRoot == nullptr) {
     return;
+  }
+  if ((int)g_PathingMode != s_tracedPathingMode) {
+    /* the session's pathing mode (run_pathing.py checks that the requested mode ran) */
+    s_tracedPathingMode = (int)g_PathingMode;
+    fprintf(file, "P %u %d\n", tick, s_tracedPathingMode);
   }
   for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
     ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
