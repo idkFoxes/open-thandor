@@ -607,7 +607,9 @@ struct FrontendPlayerRuntimeRecord {
     uint32_t transferProgressBytes; /* +0x70 mailbox transfer: end offset of the chunk last requested, 0x7FFFFFFF = done */
     FrontendCapabilityFlags capabilityFlags; // Player capability/selection flags.
     uint8_t capabilityLabelUtf16[8]; /* +0x78 UTF-16 label, L"CD" with FRONTEND_CAPABILITY_CD (written byte by byte) */
-    uint32_t reserved80; // Never accessed.
+    uint32_t otPathingCapability; /* +0x80 open-thandor (host): protocol version | supported modes << 16 from the
+                                     player's 0x10006 heartbeat with FRONTEND_CAPABILITY_OT_EXTENDED, else 0; the
+                                     original never accesses this dword */
     uint32_t scenarioAvailabilityMask0; // Scenario-availability bitmask for catalog group 0; selected level index maps to one bit within this dword.
     uint32_t scenarioAvailabilityMask1; // Scenario-availability bitmask for catalog group 1.
     uint32_t scenarioAvailabilityMask2; // Scenario-availability bitmask for catalog group 2.

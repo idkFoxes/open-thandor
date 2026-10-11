@@ -11,8 +11,10 @@
 #include <thandor/network/protocol/lockstep.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/version.h>
+#include <thandor/world/pathing/mode.h>
 
 #include <array>
+#include <cstring>
 
 /* Module data. */
 
@@ -48,6 +50,57 @@ FrontendCommandPacketRecord g_FrontendPacket10011Buffer = {};
 static FrontendPacket10032HostValue g_FrontendPacket10032Buffer = {};
 
 static uint32_t g_FrontendHostPublishRoundRobinCounter = 0;
+
+/* open-thandor (client): the join ack of the selected host carried a FrontendOtPathingInfo (the host is Open
+   Thandor); only used for the decision log line. */
+static bool g_FrontendHostIsOpenThandor = false;
+
+/* open-thandor: this build's FrontendOtPathingInfo with decidedMode (host packets; 0 in the heartbeat). */
+static FrontendOtPathingInfo FrontendOtPathing_OwnInfo(uint8_t decidedMode)
+{
+  FrontendOtPathingInfo info = {};
+  info.magic = FRONTEND_OT_PATHING_MAGIC;
+  info.protocolVersion = PATHING_PROTOCOL_VERSION;
+  info.supportedModes = FRONTEND_OT_PATHING_SUPPORTED_MODES;
+  info.decidedMode = decidedMode;
+  return info;
+}
+
+/* open-thandor: reads the Open Thandor block from a packet's reserved bytes; false when it is absent (a 1.05 peer
+   sends zeros) or from another pathing protocol. */
+static bool FrontendOtPathing_ReadInfo(const uint8_t *reservedBytes,FrontendOtPathingInfo *info)
+{
+  std::memcpy(info,reservedBytes,sizeof *info);
+  return info->magic == FRONTEND_OT_PATHING_MAGIC && info->protocolVersion == PATHING_PROTOCOL_VERSION;
+}
+
+/* open-thandor (host, docs/plans/pathfinding.md 4, D2): the improved pathing mode is agreed only when the host's
+   own setting is improved and every other player of the lobby (records 1..rowCount-1) sent
+   FRONTEND_CAPABILITY_OT_EXTENDED with this build's pathing protocol and the improved mode among its supported
+   modes. A player that has just joined has no heartbeat yet and therefore counts as original until it reports. */
+static bool FrontendOtPathing_HostAgreesImproved(uint32_t rowCount,uint32_t *openThandorPeerCount)
+{
+  bool everyPeerQualifies = true;
+
+  *openThandorPeerCount = 0;
+  if (rowCount > 8) {
+    rowCount = 8;
+  }
+  for (uint32_t index = 1; index < rowCount; index++) {
+    const FrontendPlayerRuntimeRecord &record = g_FrontendPlayerRuntimeBlocks[index];
+    const bool qualifies =
+         Any(record.capabilityFlags & FrontendCapabilityFlags::FRONTEND_CAPABILITY_OT_EXTENDED) &&
+         (record.otPathingCapability & 0xffff) == PATHING_PROTOCOL_VERSION &&
+         ((record.otPathingCapability >> 16) & (1u << PATHING_MODE_IMPROVED)) != 0;
+    if (qualifies) {
+      (*openThandorPeerCount)++;
+    }
+    else {
+      everyPeerQualifies = false;
+    }
+  }
+  return everyPeerQualifies && g_PathingModeSetting == PATHING_MODE_IMPROVED;
+}
 
 UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint = {};
 
@@ -241,6 +294,20 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
                  UiListControl_AsPointerList(&frontendRuntime->clientLobbyPlayerList));
     }
     g_SessionTransferTimeoutTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
+    /* open-thandor (docs/plans/pathfinding.md 4, D2): the host's pathing decision; a 1.05 host sends zeros, a host
+       with another pathing protocol does not count (original mode) */
+    {
+      FrontendOtPathingInfo hostInfo;
+      const bool hostBlock =
+           FrontendOtPathing_ReadInfo(packet->packet40008LobbyRosterSnapshot.reserved2C_37,&hostInfo);
+      g_PathingNetworkImprovedAgreed = hostBlock && hostInfo.decidedMode == PATHING_MODE_IMPROVED;
+      if (packet->packet40008LobbyRosterSnapshot.pendingSessionPlayerCount != 0) {
+        Thandor_Log("network: client pathing mode for the session: %s (host %s)",
+                    g_PathingNetworkImprovedAgreed ? "improved" : "original",
+                    hostBlock ? "Open Thandor, same pathing protocol"
+                              : (g_FrontendHostIsOpenThandor ? "Open Thandor, other pathing protocol" : "original"));
+      }
+    }
     /* the host starts the session: this many player snapshots follow */
     if (packet->packet40008LobbyRosterSnapshot.pendingSessionPlayerCount != 0) {
       g_FrontendPlayerRuntimeBlockCount = 0;
@@ -501,12 +568,23 @@ static void FrontendTransfer_AdmitJoiningPlayer
     joiningPlayerRecordDwordCursor[10] = 0x440043; /* L"CD" */
   }
   *Packet_At<uint16_t>(joiningPlayerRecordDwordCursor,-18) = 0;
+  /* open-thandor: record +0x80 (otPathingCapability), not cleared by the original; the joining player counts as
+     original until its first heartbeat reports otherwise */
+  static_assert(offsetof(FrontendPlayerRuntimeRecord,otPathingCapability) ==
+                offsetof(FrontendPlayerRuntimeRecord,endpoint) + sizeof(UiTransferEndpointDescriptor) + 12 * 4);
+  joiningPlayerRecordDwordCursor[12] = 0;
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)hostLobbyPlayerList->rowCount,
              g_FrontendNetworkRuntimeCountTextUtf16);
   g_FrontendPacket10003Buffer.networkTickInterval = g_SessionNetworkTickInterval;
   g_FrontendPacket10003Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10003_JOIN_ACK;
   g_FrontendPacket10003Buffer.assignedPlayerRuntimeId = assignedPlayerRuntimeId;
+  {
+    /* open-thandor: the host's block (the joining player has not reported yet, so nothing is agreed); the
+       original client reads only the player id and the tick interval of the join ack */
+    const FrontendOtPathingInfo hostInfo = FrontendOtPathing_OwnInfo(PATHING_MODE_ORIGINAL);
+    std::memcpy(g_FrontendPacket10003Buffer.reserved18_1F,&hostInfo,sizeof hostInfo);
+  }
   UiTransfer_StagePacketAndSend(senderEndpoint,&g_FrontendPacket10003Buffer.header);
   g_FrontendPlayerRuntimeCount++;
   FrontendPlayerRuntime_UpdateStartButtonByCdShare();
@@ -542,6 +620,23 @@ static void FrontendTransfer_StoreCapabilityHeartbeat
   heartbeatExpiryTicks = packet->packet10006CapabilityHeartbeat.heartbeatExpiryTicks;
   playerRecord->capabilityFlags = capabilityFlags;
   playerRecord->heartbeatExpiryTicks = heartbeatExpiryTicks;
+  /* open-thandor: the Open Thandor pathing block of the heartbeat (none from 1.05: its reserved bytes are zero) */
+  {
+    FrontendOtPathingInfo peerInfo;
+    const bool hasBlock = FrontendOtPathing_ReadInfo(packet->packet10006CapabilityHeartbeat.reserved18_1F,&peerInfo);
+    const uint32_t previousCapability = playerRecord->otPathingCapability;
+    playerRecord->otPathingCapability = 0;
+    if (Any(capabilityFlags & FrontendCapabilityFlags::FRONTEND_CAPABILITY_OT_EXTENDED) && hasBlock) {
+      playerRecord->otPathingCapability = (uint32_t)peerInfo.protocolVersion | (uint32_t)peerInfo.supportedModes << 16;
+    }
+    if (playerRecord->otPathingCapability != previousCapability) {
+      Thandor_Log("network: player %u pathing capability %s (protocol %u, modes 0x%x)",
+                  (unsigned)playerRecord->playerRuntimeId,
+                  playerRecord->otPathingCapability != 0 ? "Open Thandor" : "original",
+                  (unsigned)(playerRecord->otPathingCapability & 0xffff),
+                  (unsigned)(playerRecord->otPathingCapability >> 16));
+    }
+  }
   playerRecord->capabilityLabelUtf16[0] = 0;
   playerRecord->capabilityLabelUtf16[1] = 0;
   playerRecord->capabilityLabelUtf16[2] = 0;
@@ -731,6 +826,25 @@ void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendUiImag
   roundRobinCounter = g_FrontendHostPublishRoundRobinCounter;
   rowCount = frontendRuntime->hostLobbyPlayerList.rowCount;
   peerCount = rowCount - 1;
+  /* open-thandor (docs/plans/pathfinding.md 4, D2): the pathing mode decided from the current lobby, sent in every
+     session packet; the start packet's value is the session's (the host takes it over here, the clients when the
+     packet starts their session). */
+  {
+    uint32_t openThandorPeerCount;
+    const bool improvedAgreed = FrontendOtPathing_HostAgreesImproved(rowCount,&openThandorPeerCount);
+    const FrontendOtPathingInfo hostInfo =
+         FrontendOtPathing_OwnInfo(improvedAgreed ? PATHING_MODE_IMPROVED : PATHING_MODE_ORIGINAL);
+    std::memcpy(g_FrontendPacket40008Buffer.reserved2C_37,&hostInfo,sizeof hostInfo);
+    if (g_FrontendPendingSessionPlayerCount != 0) {
+      g_PathingNetworkImprovedAgreed = improvedAgreed;
+      Thandor_Log("network: host pathing mode for the session: %s (host setting %s, %u of %u other players Open "
+                  "Thandor with pathing protocol %u)",
+                  improvedAgreed ? "improved" : "original",
+                  g_PathingModeSetting == PATHING_MODE_IMPROVED ? "improved" : "original",
+                  (unsigned)openThandorPeerCount,(unsigned)(rowCount > 0 ? rowCount - 1 : 0),
+                  (unsigned)PATHING_PROTOCOL_VERSION);
+    }
+  }
   if (peerCount != 0 && 0 < (int)rowCount) {
     FrontendTransfer_SendSessionPlayerRowToPeers(roundRobinCounter,rowCount,peerCount);
   }
@@ -749,8 +863,14 @@ void FrontendTransfer_SendCapabilityHeartbeat()
 {
   g_FrontendPacket10006Buffer.header.packedTypeAndUnitCount =
        FRONTEND_PACKET_10006_CAPABILITY_HEARTBEAT;
-  g_FrontendPacket10006Buffer.capabilityFlags = FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD;
+  /* open-thandor: plus FRONTEND_CAPABILITY_OT_EXTENDED and the pathing block (docs/plans/pathfinding.md 4) */
+  g_FrontendPacket10006Buffer.capabilityFlags =
+       FrontendCapabilityFlags::FRONTEND_CAPABILITY_CD | FrontendCapabilityFlags::FRONTEND_CAPABILITY_OT_EXTENDED;
   g_FrontendPacket10006Buffer.heartbeatExpiryTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
+  {
+    const FrontendOtPathingInfo ownInfo = FrontendOtPathing_OwnInfo(PATHING_MODE_ORIGINAL);
+    std::memcpy(g_FrontendPacket10006Buffer.reserved18_1F,&ownInfo,sizeof ownInfo);
+  }
   UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10006Buffer.header);
 }
@@ -852,6 +972,13 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
       return;
     }
     g_LocalPlayerRuntimeId = packet->packet10003JoinAck.assignedPlayerRuntimeId;
+    /* open-thandor: a new lobby; nothing is agreed until the host's session packets say so */
+    {
+      FrontendOtPathingInfo hostInfo;
+      std::memcpy(&hostInfo,packet->packet10003JoinAck.reserved18_1F,sizeof hostInfo);
+      g_FrontendHostIsOpenThandor = hostInfo.magic == FRONTEND_OT_PATHING_MAGIC;
+      g_PathingNetworkImprovedAgreed = false;
+    }
     /* The original takes any network tick interval; 0 divides by zero in the lockstep tick. Bounded here
        because the original host sends twice its speed slider value (1..7, also -NETZWERK="1".."7"), i.e. an
        even value 2..14: anything else keeps the previous interval. */
