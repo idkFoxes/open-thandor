@@ -57,7 +57,7 @@ struct PathingUnitState {
   uint8_t reserved0;
   uint32_t reserved[4];    /* later packages (P4); saved and hashed as zero until used */
 };
-static_assert(sizeof(PathingUnitState) == 36);
+static_assert(sizeof(PathingUnitState) == 32);
 
 inline constexpr uint8_t PATHING_UNIT_SIDE_STEP = 0x01;  /* P2: moving to sideStepX/Y, then back to the route */
 inline constexpr uint8_t PATHING_UNIT_WAITING = 0x02;    /* P2: waiting for blockerSlot */
