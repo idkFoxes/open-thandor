@@ -116,6 +116,13 @@ static const LocaleTelephoneCountryCode g_LanguageNameCountryCodes[TEXT_ID_LANGU
     LocaleTelephoneCountryCode::LOCALE_COUNTRY_FRANCE, LocaleTelephoneCountryCode::LOCALE_COUNTRY_ITALY,
     LocaleTelephoneCountryCode::LOCALE_COUNTRY_SPAIN};
 
+/* Not in the original: the pathing checkbox of the advanced settings page (TEXT_ID_ADVANCED_PATHING), bright like
+   the VSync checkbox. */
+static uint16_t g_ProjectTextVerbesserteWegfindung[] = {
+    PROJECT_TEXT_BRIGHT,'V','e','r','b','e','s','s','e','r','t','e',' ','W','e','g','f','i','n','d','u','n','g',0};
+static uint16_t g_ProjectTextImprovedPathfinding[] = {
+    PROJECT_TEXT_BRIGHT,'I','m','p','r','o','v','e','d',' ','p','a','t','h','f','i','n','d','i','n','g',0};
+
 TextResourceId TextResource_LanguageNameId(uint32_t countryCode)
 {
   for (int index = 0; index < TEXT_ID_LANGUAGE_NAME_COUNT; index++) {
@@ -843,6 +850,11 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     if (*outText == nullptr) {
       *outText = g_ProjectTexts[resourceId - TEXT_ID_PROJECT_BASE];
     }
+    return true;
+  }
+  if (resourceId == TEXT_ID_ADVANCED_PATHING) {
+    /* not in the original */
+    *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextVerbesserteWegfindung : g_ProjectTextImprovedPathfinding;
     return true;
   }
   if ((resourceId >= TEXT_ID_LANGUAGE_NAME_BASE) && (resourceId < TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT)) {

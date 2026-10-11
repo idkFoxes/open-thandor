@@ -181,6 +181,10 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
     .handlers62_63 = {
         /* 98 */ UI_SLOT(FrontendLanguageAction_ToggleList),
         /* 99 */ UI_SLOT(FrontendLanguageAction_Select)
+    },
+    /* not in the original: action 0x2064, the pathing checkbox of the advanced settings page */
+    .handlers64 = {
+        /* 100 */ UI_SLOT(FrontendAdvancedSettingsAction_SetPathing)
     }};
 
 /* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of

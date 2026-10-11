@@ -10,6 +10,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/core/bytes.h>
 #include <thandor/ui/frontend/language_choice.h>
+#include <thandor/world/pathing/mode.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -583,7 +584,8 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
    gpu_rasterization, a running GPU renderer draws its next scene with it), "UI-Skalierung" ([graphics] ui_scale;
    with a GPU renderer running the display mode is set again at once, as "Anwenden" does: same window size, UI at the new
    scale, the UI laid out again), "Bildratenbegrenzung"
-   and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync). Edges and UI scale only matter for the GPU renderers:
+   and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync), "Verbesserte Wegfindung" ([game] pathing, the next
+   local session's pathing mode). Edges and UI scale only matter for the GPU renderers:
    with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
    a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. With a GPU renderer the
    choice stays the saved one and the note names the scale in use when it differs (or auto chose it). */
@@ -683,6 +685,8 @@ void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
   FrontendAdvancedSettingsPage_SelectChoice(selected,frameLimits,ADVANCED_FRAME_LIMIT_CHOICES);
   UiSelectableControl_SetSelected(SdlVideo_GetVsync(),
                                   &ui->advancedVsyncCheckbox.selectable);
+  UiSelectableControl_SetSelected(g_PathingModeSetting == PATHING_MODE_IMPROVED,
+                                  &ui->advancedPathingCheckbox.selectable);
   ui->advancedNoteLabel.text =
        THANDOR_PTR32_BITS(gpu ? FrontendAdvancedSettingsPage_UiScaleNote() : TEXT_ID_ADVANCED_NOTE_SOFTWARE);
   FrontendLanguageChoice_Refresh(ui);
@@ -780,6 +784,16 @@ void FrontendAdvancedSettingsAction_SelectFrameLimit(UiNodeBase *sourceNode)
 void FrontendAdvancedSettingsAction_SetVsync(UiNodeBase *sourceNode)
 {
   SdlVideo_SetVsync(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
+
+  FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_PATHING (the "Verbesserte Wegfindung" checkbox; the click has toggled it):
+   the single-player pathing mode ([game] pathing) of the next local session; a running session keeps its mode
+   and a network session agrees on its own (docs/plans/pathfinding.md D1, D2). */
+void FrontendAdvancedSettingsAction_SetPathing(UiNodeBase *sourceNode)
+{
+  PersistentSettings_WritePathingImproved(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
 
   FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
 }

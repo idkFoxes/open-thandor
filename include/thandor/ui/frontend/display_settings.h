@@ -35,6 +35,7 @@ void FrontendAdvancedSettingsAction_SelectEdges(UiNodeBase *sourceNode);
 void FrontendAdvancedSettingsAction_SelectUiScale(UiNodeBase *sourceNode);
 void FrontendAdvancedSettingsAction_SelectFrameLimit(UiNodeBase *sourceNode);
 void FrontendAdvancedSettingsAction_SetVsync(UiNodeBase *sourceNode);
+void FrontendAdvancedSettingsAction_SetPathing(UiNodeBase *sourceNode);
 
 extern FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* followed by 4 bytes 0x90 fill (dropped) */
 

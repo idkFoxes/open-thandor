@@ -2545,11 +2545,12 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .textResourceId = TEXT_ID_ADVANCED_VSYNC},
         { /* +788C advancedNoteLabel g_UiFocusProxyControlVtable */
             .base = {
-                /* followed by advancedLanguageGroup (+7FD4) */
-                .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                /* followed by advancedPathingCheckbox (+83CC), then advancedLanguageGroup (+7FD4); open-thandor moved
+                   the note down from y 68..92 to make room for the checkbox */
+                .nextSibling = UI_TEMPLATE_LINK(0x83CC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                 .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
-                .leftOffset = -288, .topOffset = 68, .rightOffset = 288, .bottomOffset = 92,
+                .leftOffset = -288, .topOffset = 96, .rightOffset = 288, .bottomOffset = 120,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .text = THANDOR_PTR32_BITS(TEXT_ID_ADVANCED_NOTE_SOFTWARE)},
@@ -2867,4 +2868,18 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                         .layoutWidth = -1, .layoutHeight = -1},
                     .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_LANGUAGE_SELECT},
                 .textResourceId = TEXT_ID_LANGUAGE_NAME_BASE + 4}},
+        /* not in the original (open-thandor): the pathing checkbox of the advanced settings page ([game] pathing),
+           in the left column under "UI-Skalierung:" (x -283..32 as the VSync checkbox in the right column, y 60..84),
+           between advancedNoteLabel and advancedLanguageGroup in the page's sibling chain */
+        { /* +83CC advancedPathingCheckbox g_UiTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = -283, .topOffset = 60, .rightOffset = 32, .bottomOffset = 84,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_PATHING},
+            .textResourceId = TEXT_ID_ADVANCED_PATHING},
 };

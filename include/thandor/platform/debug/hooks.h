@@ -108,6 +108,10 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
    'R' route planned, 'T' route point changed by another army's planning, 'B' blocked by another model, 'H' stopped
    to turn on the spot; army and other are ArmyRuntimeSlot pointers (other may be NULL). */
 void DebugHook_PathingEvent(int kind, const void *army, const void *other);
+/* PathingMode_ApplyForNewSession of a local session (InGameRuntime_InitializeNewSession): the pathing mode
+   (PathingMode value) to use instead of mode, the one the settings chose; OPEN_THANDOR_PATHING=improved|original
+   wins over [game] pathing (test runs: tools/test force original unless told otherwise). */
+int DebugHook_LocalPathingMode(int mode);
 #ifdef _MSC_VER
 #define DebugHook_NoteOutsideStep(what) DebugHook_NoteOutsideStepFrom((what), _ReturnAddress())
 #else
@@ -150,6 +154,7 @@ void DebugHook_PathingEvent(int kind, const void *army, const void *other);
 #define DebugHook_SuppressTransientMarkers() 0
 #define DebugHook_NoteOutsideStep(what) ((void)0)
 #define DebugHook_PathingEvent(kind, army, other) ((void)0)
+#define DebugHook_LocalPathingMode(mode) (mode)
 
 #endif /* THANDOR_DEV_TOOLS */
 

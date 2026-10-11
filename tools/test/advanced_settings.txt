@@ -7,7 +7,8 @@
 #   "Anzeige" 440,364, "3D" 440,396, "Sound" 440,428, "Erweitert" 440,460; "Zurueck" / "Ok" at 440,540
 #   advanced page (centre 640,400): "3D-Kanten" rows Glatt/Original at y 282/306, "UI-Skalierung" rows
 #   Auto/1x/2x/3x at y 366/390/414/438 (radio circles at x 365), "Bildratenbegrenzung" rows Aus/60/120/144 at
-#   y 282/306/330/354 (circles at x 701), the "VSync" checkbox at 707,394
+#   y 282/306/330/354 (circles at x 701), the "VSync" checkbox at 707,394, the "Verbesserte Wegfindung" checkbox
+#   ([game] pathing) at 371,472
 # Steps: options page (shot 0), "Anzeige" (shot 1), "3D" (shot 2), "Sound" (shot 3), "Erweitert" (shot 4), choose
 # 60 Bilder/s, toggle VSync (off under the test tools, OPEN_THANDOR_VSYNC=0), choose "Original" and "2x" (shot 5: those selected; a GPU renderer switches to UI scale
 # 2 at once - run without OPEN_THANDOR_UI_SCALE, which wins, i.e. set it empty - and with

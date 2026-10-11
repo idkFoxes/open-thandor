@@ -32,7 +32,7 @@ import threading
 import time
 
 import cpu_load
-from game_env import game_env
+from game_env import add_pathing_argument, apply_pathing, game_env
 
 # hansolo level 1 (hansolo\s00_tut) is listed in the campaign but its level file is not in the game data;
 # the campaign itself starts at level 2.
@@ -71,7 +71,9 @@ parser.add_argument('--minutes', type=float, default=1)
 parser.add_argument('--only', help='fnmatch pattern on the mission label, e.g. "hansolo*"')
 parser.add_argument('--missions', help='comma-separated mission labels, e.g. "tutorial 1,hansolo 5,mittelpunkt"')
 parser.add_argument('--shots', default='5000')
+add_pathing_argument(parser)
 args = parser.parse_args()
+apply_pathing(args.pathing)
 
 game = os.path.abspath(args.game_dir)
 soak = os.path.join(game, 'soak')

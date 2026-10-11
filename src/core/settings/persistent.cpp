@@ -16,6 +16,7 @@
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/world/pathing/mode.h>
 
 /*
 open-thandor: the settings live in a readable thandor.ini instead of the original's 200-byte thandor.dat.
@@ -87,6 +88,7 @@ static const char *const s_IniTextureQualityNames[] = {"high", "medium", "low"};
 static const char *const s_IniGpuRasterizationNames[] = {"smooth", "exact"};
 static const char *const s_IniUiScaleNames[] = {"auto", "1", "2", "3"};
 static const char *const s_IniVsyncNames[] = {"on", "off"};
+static const char *const s_IniPathingNames[] = {"improved", "original"};
 
 /* the text languages of [game] language (the value is the telephone country code, see LocaleTelephoneCountryCode) */
 struct PersistentIniLanguage {
@@ -172,10 +174,14 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "text language: auto (default; from Windows), de, en, fr, it or es (another telephone country code as a number); "
    "the game's own texts are German for de, English otherwise", 0, 0, nullptr, 0},
 
+  {PERSISTENT_SETTING_PATHING_MODE, INI_KIND_ENUM, "game", "pathing",
+   "unit pathfinding and movement in single player: improved (default; units drive curves, wait for and give way to "
+   "each other) or original (exactly the original game's movement); a network game always agrees on one mode",
+   0, 0, INI_ENUM(s_IniPathingNames)},
+
   {PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, INI_KIND_UINT, "network", "players",
    "player count of a hosted network game (default 4)", 0, 0, nullptr, 0},
 
-  {0x50, INI_KIND_RAW, "reserved", "dword_50", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x58, INI_KIND_RAW, "reserved", "dword_58", "unused in the original settings file, kept", 0, 0, nullptr, 0},
 };
@@ -934,11 +940,21 @@ static void PersistentSettings_ValidateShading()
   }
 }
 
+/* open-thandor: [game] pathing -> g_PathingModeSetting (the mode of the next local session,
+   PathingMode_ApplyForNewSession); a missing key or an unknown value is the default, improved (D1). */
+static void PersistentSettings_ApplyPathingMode()
+{
+  g_PathingModeSetting =
+      (PersistentSettings_Read(PERSISTENT_PATHING_IMPROVED, PERSISTENT_SETTING_PATHING_MODE) == PERSISTENT_PATHING_ORIGINAL)
+          ? PATHING_MODE_ORIGINAL : PATHING_MODE_IMPROVED;
+}
+
 void PersistentSettings_Load()
 {
   PersistentSettings_LoadImage();
   PersistentSettings_NormalizeColorDepth();
   PersistentSettings_ValidateShading();
+  PersistentSettings_ApplyPathingMode();
 }
 
 
@@ -1036,4 +1052,14 @@ void PersistentSettings_WriteLanguage(uint32_t countryCode)
 {
   g_LocaleCountryCodeOverride = countryCode;
   PersistentSettings_WriteChosen(countryCode,PERSISTENT_SETTING_LOCALE_COUNTRY_CODE);
+}
+
+/* Not in the original: the single-player pathing mode chosen in the menus (the "Erweitert" page): sets
+   g_PathingModeSetting, which the next local session uses (a running session keeps its mode), and the settings dword
+   the next PersistentSettings_Flush saves as [game] pathing. */
+void PersistentSettings_WritePathingImproved(bool improved)
+{
+  g_PathingModeSetting = improved ? PATHING_MODE_IMPROVED : PATHING_MODE_ORIGINAL;
+  PersistentSettings_WriteChosen(improved ? PERSISTENT_PATHING_IMPROVED : PERSISTENT_PATHING_ORIGINAL,
+                                 PERSISTENT_SETTING_PATHING_MODE);
 }

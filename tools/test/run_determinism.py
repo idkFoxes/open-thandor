@@ -25,7 +25,7 @@ import subprocess
 import sys
 import threading
 import time
-from game_env import game_env
+from game_env import add_pathing_argument, apply_pathing, game_env
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'thandor.dat', 'thandor.ini', 'thandor.log', 'crash.log',
@@ -98,7 +98,9 @@ def main():
     parser.add_argument('--timeout', type=int, default=900)
     parser.add_argument('--reference', help='directory with <scenario>.txt')
     parser.add_argument('--save-reference', help='directory to write <scenario>.txt into')
+    add_pathing_argument(parser)
     args = parser.parse_args()
+    apply_pathing(args.pathing)
     game = os.path.abspath(args.game_dir)
     scenarios = args.scenarios.split(',')
     for scenario in scenarios:

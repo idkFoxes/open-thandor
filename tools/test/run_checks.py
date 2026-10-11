@@ -2,6 +2,7 @@
 
 usage: run_checks.py GAME_DIR [--new TEST_EXE] [--old PREVIOUS_TEST_EXE] [--map-jobs N]
                      [--map-minutes M] [--all-maps] [--full-campaign] [--skip determinism,aihash,...]
+                     [--pathing original|improved|setting]
 
 GAME_DIR is a game directory with the game data. Every check runs in its own linked copy GAME_DIR_chk_<name>
 (hard links to the data files, own executable, settings, log and save folder; the tools started from here make
@@ -45,6 +46,9 @@ line with the checks still running follows every minute. Load: the checks start 
 only while the machine's CPU load is below 80 % (tools/test/cpu_load.py); the maps check starts with few workers
 and takes over the places of finished checks under the same CPU limit.
 
+Every game runs the original pathing (OPEN_THANDOR_PATHING=original, game_env.py) unless --pathing (or the caller's
+OPEN_THANDOR_PATHING) says otherwise: the references (determinism, AI hash) are the original movement's.
+
 The input scripts (tools/test/*.txt, format: src/platform/debug/script.c; lines that do not start with a number are
 comments) use layout 1280x720 in an 800-high window: script y = screen y - 40.
 """
@@ -59,7 +63,7 @@ import threading
 import time
 
 import cpu_load
-from game_env import game_env
+from game_env import add_pathing_argument, apply_pathing, game_env
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
@@ -429,7 +433,9 @@ def main():
     parser.add_argument('--sample', type=int, metavar='N',
                         help='spot check: determinism plus N-1 other checks picked at random, the maps check (if '
                              'picked) with 3 random missions of QUICK_MAPS; the pick is printed')
+    add_pathing_argument(parser)
     args = parser.parse_args()
+    apply_pathing(args.pathing)
     INSTANCES['campaign'] = CAMPAIGN_PARTS['segments' if args.full_campaign else 'quick']
     game = os.path.abspath(args.game_dir)
     args.new = os.path.abspath(args.new)

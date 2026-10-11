@@ -469,6 +469,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers60[1]; // Not in the original: action ID 0x2060 (the campaign buttons of the campaign tab).
     Ptr32<void (void *)> handlers61[1]; // Not in the original: action ID 0x2061 (the options page's "Tastenbelegung" button).
     Ptr32<void (void *)> handlers62_63[2]; // Not in the original: action IDs 0x2062-0x2063 (the language choice of the advanced settings page).
+    Ptr32<void (void *)> handlers64[1]; // Not in the original: action ID 0x2064 (the pathing checkbox of the advanced settings page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1352,6 +1353,11 @@ struct FrontendUiImage {
     UiPanelControl advancedLanguagePanel; /* +80E0 g_UiPanelControlVtable: Window background of the list (tiled interior). */
     UiTitledWindowControl advancedLanguageBox; /* +8138 g_UiTitledWindowControlVtable: Box "Sprache:" of the list. */
     UiTextButtonControl advancedLanguageChoices[6]; /* +818C g_UiTextButtonControlVtable: Radio rows "Automatisch" and the available languages (action FRONTEND_ACTION_LANGUAGE_SELECT). */
+    /* Not in the original (open-thandor): the single-player pathing mode of the advanced settings page
+       ([game] pathing, docs/plans/pathfinding.md D1), in the left column under "UI-Skalierung:"; linked between
+       advancedNoteLabel and advancedLanguageGroup in the page's sibling chain (the language list layer stays the
+       last child). */
+    UiTextButtonControl advancedPathingCheckbox; /* +83CC g_UiTextButtonControlVtable: Checkbox "Verbesserte Wegfindung" (action FRONTEND_ACTION_ADVANCED_PATHING). */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is

@@ -23,7 +23,7 @@ import subprocess
 import sys
 import threading
 import time
-from game_env import game_env
+from game_env import add_pathing_argument, apply_pathing, game_env
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
@@ -269,7 +269,9 @@ def main():
     parser.add_argument('--compare')
     parser.add_argument('--analyse', help='only evaluate an existing trace file')
     parser.add_argument('--units', action='store_true', help='also print the per-unit values')
+    add_pathing_argument(parser)
     args = parser.parse_args()
+    apply_pathing(args.pathing)
     if args.analyse:
         print(json.dumps(analyse(args.analyse), indent=1))
         return 0
