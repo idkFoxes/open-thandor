@@ -288,6 +288,7 @@ add_executable(thandor WIN32
     src/world/model/mesh_raycast.cpp
     src/world/model/picking.cpp
     src/world/model/pool.cpp
+    src/world/pathing/improved/yield.cpp
     src/world/pathing/influence.cpp
     src/world/pathing/mode.cpp
     src/world/pathing/path_cost.cpp

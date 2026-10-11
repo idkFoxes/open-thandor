@@ -11,6 +11,8 @@
 #include <thandor/world/pathing/route.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/world/pathing/mode.h>
+#include <thandor/world/pathing/yield.h>
 #include <cassert>
 
 /* EntityPathing_UpdateRouteSegment reads a GameEntityRuntime through its ownership-prefix view (step 13 X7b:
@@ -185,6 +187,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   g_GridPathBlockingMask =
        GRID_SCRATCH_LOW_BAND0 << (gridClassShift & 31) |
        GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)modelDefinition->terrainTraversalClass & 31);
+  if (Pathing_Improved()) {
+    /* improved pathing (P2): after a used-up wait the blocker is an obstacle for this plan */
+    PathingYield_BeginReplan(armyRuntime,startRow,startColumn);
+  }
   startRelocated = GridPathCost_RelocateFromBlockedCell(startRow,startColumn,&nearestRow,&nearestColumn);
   scratchWidth = g_GridScratchWidth;
   if (startRelocated) {
@@ -269,6 +275,9 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   }
   targetWorldYQ12 = fallbackWorldPosition.worldYQ12;
   targetWorldXQ12 = fallbackWorldPosition.worldXQ12;
+  if (Pathing_Improved()) {
+    PathingYield_EndReplan(armyRuntime);
+  }
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
   runtimeClassId = (routeEntityRuntime->common).ownership.modelDefinition()->runtimeClassId;
@@ -326,6 +335,9 @@ EntityPathing_RebuildOverlappingGroupRoutes
   
   routeTarget.worldYQ12 = targetWorldY;
   routeTarget.worldXQ12 = targetWorldX;
+  if (Pathing_Improved()) {
+    PathingYield_NoteGroupPlan(routeEntityRuntime,(Q12)targetWorldY,(Q12)targetWorldX,worldRuntime);
+  }
   GridScratch_CopyPrimaryToSecondary();
   GridScratch_SwapPrimarySecondary();
   entityModelNode = (routeEntityRuntime->common).ownership.modelNode;
@@ -593,6 +605,10 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   WorldPositionXY resolvedTarget;
   bool startRelocated;
   ModelRuntimeNode *entityModelNode;
+  bool improvedIdle = false;
+  bool sideStep = false;
+  Q12 sideStepXQ12 = 0;
+  Q12 sideStepYQ12 = 0;
 
   entityModelNode = routeEntityRuntime->modelNode;
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
@@ -669,6 +685,23 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
     targetWorldXQ12 = snappedTarget.worldXQ12;
     targetWorldYQ12 = snappedTarget.worldYQ12;
   }
+  if (Pathing_Improved() && (ModelView_Cast<GameEntityRuntime>(routeEntityRuntime) != sourceRouteEntityRuntime) &&
+      !Any(entityMovement->movementStateFlags & (ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_LOCKED))) {
+    /* improved pathing (P2): an idle unit standing in the corridor steps aside, perpendicular to the planner's
+       direction, instead of the snap; one whose stale segment is only crossed stays (and stands for itself) */
+    improvedIdle = true;
+    if (startRelocated) {
+      sideStep = PathingYield_FindCorridorSideStep(routeEntityRuntime,&sideStepXQ12,&sideStepYQ12);
+      if (sideStep) {
+        targetWorldXQ12 = (UQ12)sideStepXQ12;
+        targetWorldYQ12 = (UQ12)sideStepYQ12;
+      }
+    }
+    else {
+      targetWorldXQ12 = (UQ12)(entityModelNode->worldTransform).translation.x;
+      targetWorldYQ12 = (UQ12)(entityModelNode->worldTransform).translation.y;
+    }
+  }
   footprintRadius = routeEntityRuntime->modelDefinition->footprintRadius;
   {
     /* The segment from the entity to the
@@ -714,8 +747,13 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   if ((ModelView_Cast<GameEntityRuntime>(routeEntityRuntime) != sourceRouteEntityRuntime) &&
      ((targetWorldXQ12 != entityMovement->movementWorldXQ12 ||
       (targetWorldYQ12 != entityMovement->movementWorldYQ12)))) {
-    DebugHook_PathingEvent('T',entityMovement,(sourceRouteEntityRuntime->common).ownership.linkedArmyRuntime());
-    ArmyRuntime_SetPendingMoveTarget(targetWorldYQ12,targetWorldXQ12,entityMovement);
+    if (!improvedIdle || (!sideStep && startRelocated)) {
+      DebugHook_PathingEvent('T',entityMovement,(sourceRouteEntityRuntime->common).ownership.linkedArmyRuntime());
+      ArmyRuntime_SetPendingMoveTarget(targetWorldYQ12,targetWorldXQ12,entityMovement);
+    }
+    else if (sideStep) {
+      PathingYield_IssueSideStep(entityMovement,sideStepXQ12,sideStepYQ12);
+    }
   }
   resolvedTarget.worldYQ12 = targetWorldYQ12;
   resolvedTarget.worldXQ12 = targetWorldXQ12;

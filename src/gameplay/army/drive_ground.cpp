@@ -10,6 +10,7 @@
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/gameplay/army/drive_improved.h>
 #include <thandor/world/pathing/mode.h>
+#include <thandor/world/pathing/yield.h>
 
 /* Runtime update of model class 18 (runtimeUpdate slot 18 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): runs the AI special
@@ -254,9 +255,17 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
   placementContactKind = movementDefinition->placementContactKindIndex;
   rootNode = modelRuntime->rootModelNode;
   heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
-  blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
-                     (nextPosition.yQ12,nextPosition.xQ12,
-                      ModelView_Cast<RuntimeCollisionQueryView>(modelRuntime),worldRuntime);
+  if (!Pathing_Improved()) {
+    blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
+                       (nextPosition.yQ12,nextPosition.xQ12,
+                        ModelView_Cast<RuntimeCollisionQueryView>(modelRuntime),worldRuntime);
+  }
+  else {
+    /* improved pathing (P2): overlapping units may move apart */
+    blockingModelRuntime = PathingYield_FindBlockingRuntime
+                       (nextPosition.yQ12,nextPosition.xQ12,
+                        ModelView_Cast<RuntimeCollisionQueryView>(modelRuntime),worldRuntime);
+  }
   if (blockingModelRuntime != nullptr) {
     /* stay where we are and let the collision partner react (water surface: it is not notified) */
     blockedRootNode = modelRuntime->rootModelNode;
@@ -271,8 +280,15 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
     (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
     nextPosition.xQ12 = (blockedRootNode->worldTransform).translation.x;
     nextPosition.yQ12 = (blockedRootNode->worldTransform).translation.y;
-    ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
-    *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
+    /* improved pathing (P2): a moving friendly is waited for, an idle one steps aside, without a re-plan */
+    if (!Pathing_Improved() ||
+        !PathingYield_HandleBlocked(worldRuntime,ModelView_Cast<ModelRuntimeSlot>(modelRuntime),blockingModelRuntime)) {
+      ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
+      *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
+    }
+  }
+  else if (Pathing_Improved()) {
+    PathingYield_HandleFree(modelRuntime->ownerArmyRuntime);
   }
   ownerArmy = modelRuntime->ownerArmyRuntime;
   placedRootNode = modelRuntime->rootModelNode;
