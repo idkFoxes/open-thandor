@@ -25,6 +25,7 @@ extern "C" int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance,
     (void)commandLine;
     (void)showCommand;
     Thandor_InstallCrashHandler();
+    Thandor_KeepTimerResolutionWhenHidden(); /* the 80 Hz clock keeps its rate while minimized and silent */
 #ifdef THANDOR_LARGE_ADDRESS_AWARE
     /* before any other SDL call: SDL's allocations come from the pools below 2 GB as well */
     LowMemory_InstallSdlAllocator();

@@ -42,6 +42,15 @@ const char *Thandor_SymbolName(const void *address);
    hang.log when no frame has been presented for a few seconds (see g_ThandorFrameHeartbeat). */
 void Thandor_InstallCrashHandler();
 
+/* Not in the original: keeps the timer resolution the process asks for (SDL requests 1 ms) while its window is
+   minimized or hidden and it plays no sound. Since Windows 11 a window-owning process that is minimized, occluded
+   or inaudible no longer gets a raised timer resolution: the SDL timers (the 80 Hz clock of
+   TimerSystem_RegisterPeriodic that paces the frontend, the lobby and the session) and short waits then round up to
+   the default 15.6 ms tick, so such a game (minimized without an audio device, or the test tools' minimized games
+   with the dummy audio driver) ran its clock slower than real time. Opts out with
+   PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION; called at program start. */
+void Thandor_KeepTimerResolutionWhenHidden();
+
 /* Incremented on every presented frame; the hang detector watches it. */
 extern volatile long g_ThandorFrameHeartbeat;
 
