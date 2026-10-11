@@ -10,7 +10,7 @@ usage:
                  [--save JSON]
 
 A case is "<layout>:<order>:<unit id>[:<count>]", e.g. "choke:formation:66:10"; layouts open, choke, cross,
-crosschoke (make_arena.py), orders formation, point, cross (statehash.cpp DebugArena_PathingOrders). --cases takes
+crosschoke (make_arena.py), orders formation, point, cross, selection (statehash.cpp DebugArena_PathingOrders). --cases takes
 the short names of CASES or full case strings. Every case runs in its own linked copy GAME_DIR_path<k> (files hard
 linked, flm/setup junctions, own level directory), all in parallel, minimized, with the fixed random seed of the
 determinism test, so a case gives the same numbers every time. Needs the developer-tools build (preset mingw-test).
@@ -56,6 +56,7 @@ CASES = {
     'open': 'open:formation:66:10',
     'choke': 'choke:formation:66:10',
     'chokepoint': 'choke:point:66:10',
+    'chokeselect': 'choke:selection:66:10',
     'cross': 'cross:cross:66:10',
     'jeep': 'choke:formation:1:10',
     'walker': 'choke:formation:110:10',

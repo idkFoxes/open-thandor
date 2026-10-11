@@ -149,7 +149,9 @@ static void DebugArena_MoveOrders(unsigned tick)
    army of faction 1 gets one routed move at ARENA_MOVE_OUT_TICK, in slot order as a selection order would issue them.
    OPEN_THANDOR_ARENA_PATHING picks the order: "formation" (default) sends each army to the group target shifted by its
    offset from the group centre (SelectionPointerArray_ApplyMoveCommand), "point" sends all to the group target itself,
-   "cross" mirrors each army's row through the centre row (two groups pass through each other). The group target lies
+   "cross" mirrors each army's row through the centre row (two groups pass through each other), "selection" gives the
+   group target to a selection of the whole group (SelectionPointerArray_ApplyMoveCommand: a point order with the
+   improved mode's formation slots). The group target lies
    OPEN_THANDOR_ARENA_PATHING_ROWS (default 40) grid rows beyond the centre, towards higher rows. */
 static void DebugArena_PathingOrders(unsigned tick)
 {
@@ -184,6 +186,28 @@ static void DebugArena_PathingOrders(unsigned tick)
   }
   centreX = (Q12)(sumX / count);
   centreY = (Q12)(sumY / count);
+  if (strcmp(mode, "selection") == 0) {
+    /* the player's move command on a selection of the whole group (up to 32 units, slot order): with the group's
+       spread above 5.0 / 7.0 a point order (selection_set.cpp SelectionPointerArray_IsSpatialSpreadTooLarge) */
+    SelectionPointerArray32 selection = {};
+    int entryCount = 0;
+    for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT && entryCount < SELECTION_ENTRY_CAPACITY; slotIndex++) {
+      ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
+      ModelRuntimeSlot *model = army->modelRuntimeOrSavedOffset.modelRuntime;
+      if (army->modelNodeRuntime == nullptr || model == nullptr || army->factionIndex != 1 ||
+          model->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0) {
+        continue;
+      }
+      selection.entries[entryCount++] = ModelView_Cast<GameEntityRuntime>(army);
+    }
+    SelectionPointerArray_RecenterOffsetsAroundAveragePosition(&selection);
+    Thandor_Log("test aid: arena pathing: selection of %d to %d %d (spread too large %d)", entryCount,
+                centreX + rows * ARENA_ROW_STEP_X, centreY + rows * ARENA_ROW_STEP_Y,
+                SelectionPointerArray_IsSpatialSpreadTooLarge(&selection) ? 1 : 0);
+    SelectionPointerArray_ApplyMoveCommand(centreY + rows * ARENA_ROW_STEP_Y, centreX + rows * ARENA_ROW_STEP_X,
+                                           &selection);
+    return;
+  }
   for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
     ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
     ModelRuntimeSlot *model = army->modelRuntimeOrSavedOffset.modelRuntime;
