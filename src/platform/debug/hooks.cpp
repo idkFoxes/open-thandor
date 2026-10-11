@@ -160,6 +160,7 @@ void DebugHook_SessionStarted()
   g_TestAidSessionCount = g_TestAidSessionCount + 1;
   DebugStateHash_SessionStart();
   if (g_FrontendLoadedCampaignAsset != nullptr) {
+    DebugCampaign_LogLevelStart();
     DebugCampaign_DumpProgress("level started");
   }
 }

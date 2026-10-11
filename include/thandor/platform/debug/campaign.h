@@ -37,6 +37,9 @@ void DebugCampaign_LogCarryOver(int afterMerge);
    was started. */
 int DebugCampaign_ApplyScenarioOptions();
 
+/* Session start of a campaign level: logs its level id and file name ("level start: campaign level ..."). */
+void DebugCampaign_LogLevelStart();
+
 /* Just loaded campaign: logs its levels, OPEN_THANDOR_CAMPAIGN_LEVEL picks the first one. */
 void DebugCampaign_SelectCampaignLevel(uint8_t *campaignBytes);
 
