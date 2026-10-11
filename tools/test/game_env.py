@@ -8,7 +8,9 @@ renderers' UI scale is 1 (OPEN_THANDOR_UI_SCALE=1) unless the caller sets it, so
 framebuffer size as the software references do. Frames are not paced (OPEN_THANDOR_VSYNC=0,
 OPEN_THANDOR_FRAME_LIMIT=0) unless the caller sets them, so the tests run as fast as before.
 Every game also starts minimized and without taking the focus (OPEN_THANDOR_WINDOW_MINIMIZED=1, implies the
-developer tools' window; it keeps running and drawing) unless OPEN_THANDOR_TEST_VISIBLE=1 is set, to watch it."""
+developer tools' window; it keeps running and drawing) unless OPEN_THANDOR_TEST_VISIBLE=1 is set, to watch it.
+A minimized game is also muted (SDL_AUDIO_DRIVER=dummy: the audio device opens and mixes as usual, nothing is
+played) unless OPEN_THANDOR_TEST_SOUND=1 or SDL_AUDIO_DRIVER is already set."""
 import os
 
 
@@ -22,5 +24,7 @@ def game_env(**variables):
     env.setdefault('OPEN_THANDOR_FRAME_LIMIT', '0')
     if env.get('OPEN_THANDOR_TEST_VISIBLE') != '1':
         env.setdefault('OPEN_THANDOR_WINDOW_MINIMIZED', '1')
+        if env.get('OPEN_THANDOR_TEST_SOUND') != '1':
+            env.setdefault('SDL_AUDIO_DRIVER', 'dummy')
     env.update(variables)
     return env
