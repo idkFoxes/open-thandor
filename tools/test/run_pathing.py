@@ -10,7 +10,7 @@ usage:
                  [--save JSON]
 
 A case is "<layout>:<order>:<unit id>[:<count>]", e.g. "choke:formation:66:10"; layouts open, choke, cross,
-crosschoke (make_arena.py), orders formation, point, cross (statehash.cpp DebugArena_PathingOrders). --cases takes
+crosschoke (make_arena.py), orders formation, point, cross, selection (statehash.cpp DebugArena_PathingOrders). --cases takes
 the short names of CASES or full case strings. Every case runs in its own linked copy GAME_DIR_path<k> (files hard
 linked, flm/setup junctions, own level directory), all in parallel, minimized, with the fixed random seed of the
 determinism test, so a case gives the same numbers every time. Needs the developer-tools build (preset mingw-test).
@@ -56,6 +56,7 @@ CASES = {
     'open': 'open:formation:66:10',
     'choke': 'choke:formation:66:10',
     'chokepoint': 'choke:point:66:10',
+    'chokeselect': 'choke:selection:66:10',
     'cross': 'cross:cross:66:10',
     'jeep': 'choke:formation:1:10',
     'walker': 'choke:formation:110:10',
@@ -82,7 +83,7 @@ THRESHOLDS = {
     'replans_growth': 0.25,         # re-plans/unit at most 25 % more (halving them is P4's target, not P0-P3's)
     'arrival_slack': 0.05,          # mean and last arrival at most 5 % later than the original
     'choke_mean_max': 60.0,         # choke formation: mean arrival at most 60 s (original 74.6 s)
-    'all_arrive': 'chokepoint',     # cases (comma-separated short names) where every unit must arrive (P3)
+    'all_arrive': 'chokepoint,chokeselect',  # cases (comma-separated short names) where every unit must arrive (P3)
     'growth_tolerance': 0.10,       # allowed growth of the drop metrics below their *_min
 }
 
@@ -378,7 +379,9 @@ def check_improved(name, before, after, t):
         checks.append((a['arrived'] >= b['arrived'], 'arrived %d/%d -> %d/%d, needs no fewer' % (
             b['arrived'], b['units'], a['arrived'], a['units'])))
     for key, label in (('mean_arrival_s', 'mean arrival s'), ('last_arrival_s', 'last arrival s')):
-        if b[key] is not None and a[key] is not None:
+        # only comparable when the original brought every unit in (a point order: the original's times are those of
+        # the few units that fit, the improved mode's include the ones that never arrived before)
+        if b[key] is not None and a[key] is not None and b['arrived'] == b['units']:
             limit = b[key] * (1.0 + t['arrival_slack'])
             checks.append((a[key] <= limit, '%s %.1f -> %.1f (%s), needs <= %.1f' % (
                 label, b[key], a[key], change_text(a[key], b[key]), limit)))

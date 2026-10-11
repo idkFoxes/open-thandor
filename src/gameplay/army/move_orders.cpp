@@ -8,6 +8,8 @@
 #include <thandor/gameplay/army/move_orders.h>
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
+#include <thandor/world/pathing/mode.h>
+#include <thandor/world/pathing/improved/arrival.h>
 
 /* Module data. */
 
@@ -631,6 +633,14 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
     else {
       modelWorldX = (modelNode->worldTransform).translation.x;
       modelWorldY = (modelNode->worldTransform).translation.y;
+      /* open-thandor (pathing P3, improved mode only): next to an occupied group target the unit has arrived */
+      if (Pathing_Improved() &&
+          PathingArrival_TestArrived(movementRuntime,
+                                     !((movementRuntime->retryCountdown != 0) &&
+                                       (modelWorldX == movementRuntime->lastCheckedWorldXQ12) &&
+                                       (modelWorldY == movementRuntime->lastCheckedWorldYQ12)))) {
+        return PathingArrival_Finish(movementRuntime,outWorldXQ12,outWorldYQ12);
+      }
       if ((movementRuntime->retryCountdown != 0) && (modelWorldX == movementRuntime->lastCheckedWorldXQ12) &&
           (modelWorldY == movementRuntime->lastCheckedWorldYQ12)) {
         /* Still waiting at the same spot: keep the stored movement position. */
@@ -686,6 +696,11 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
     exceededDistance = distanceX;
   }
   belowThreshold = exceededDistance < ARMY_MOVEMENT_TARGET_RADIUS_Q12;
+  /* open-thandor (pathing P3, improved mode only): instead of another plan towards a target that arrived friendlies
+     occupy, the unit has arrived next to them */
+  if (Pathing_Improved() && PathingArrival_TestArrived(movementRuntime,true)) {
+    return PathingArrival_Finish(movementRuntime,outWorldXQ12,outWorldYQ12);
+  }
   ArmyRuntime_StartDirectMoveCommand
             (movementRuntime->movementTargetWorldYQ12,movementRuntime->movementTargetWorldXQ12,
              movementRuntime);
