@@ -769,6 +769,30 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
     }
 }
 
+/* Not in the original: see image.h. SetProcessInformation is looked up at run time (Windows 8 and later); a
+   system that does not know ProcessPowerThrottling or the flag keeps its behaviour (the call just fails). */
+void Thandor_KeepTimerResolutionWhenHidden()
+{
+    typedef BOOL(WINAPI *SetProcessInformationProc)(HANDLE, PROCESS_INFORMATION_CLASS, LPVOID, DWORD);
+    HMODULE kernel = GetModuleHandleW(L"kernel32.dll");
+    SetProcessInformationProc setProcessInformation;
+    PROCESS_POWER_THROTTLING_STATE state;
+
+    if (kernel == NULL) {
+        return;
+    }
+    setProcessInformation =
+        reinterpret_cast<SetProcessInformationProc>(reinterpret_cast<void *>(GetProcAddress(kernel, "SetProcessInformation")));
+    if (setProcessInformation == NULL) {
+        return;
+    }
+    ZeroMemory(&state, sizeof state);
+    state.Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION;
+    state.ControlMask = PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION;
+    state.StateMask = 0; /* controlled and off: the process's timer resolution requests are honoured */
+    setProcessInformation(GetCurrentProcess(), ProcessPowerThrottling, &state, sizeof state);
+}
+
 void Thandor_InstallCrashHandler()
 {
     symbol_table_load();
