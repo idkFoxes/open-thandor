@@ -38,8 +38,10 @@
    anyway), and the walker sets its foot down beside the other one. Both still count as friendly blockers.
    Integer arithmetic only, no random numbers. */
 
-/* Steps a unit waits for a moving friendly blocker before it re-plans (1.2 s). */
-inline constexpr int PATHING_YIELD_WAIT_STEPS = 24;
+/* Steps a unit waits for a moving friendly blocker before it re-plans (0.6 s). 24 (P2 alone) was measured too long
+   together with P1: units that drive while turning count as moving blockers far more often, and the waits piled
+   up (pathing arena, open group: last arrival 73 s with 24, 63 s with 12; 8 lost arrivals in the choke). */
+inline constexpr int PATHING_YIELD_WAIT_STEPS = 12;
 
 /* ArmyCollision_FindBlockingRuntimeForCurrentUnit with the move-apart rule: a model the unit already overlaps at
    its current position does not block a next position that lies farther from it. Arguments as there (Y first). */
