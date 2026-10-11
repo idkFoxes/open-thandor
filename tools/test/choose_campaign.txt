@@ -1,0 +1,16 @@
+# Campaign tab of the choose-game page (campaign map test CT8, tools/test/run_campaign_map.py): start with
+# -NOINTRO -KARTE="-" (the choose-game page) in the developer tools' window and a saved display mode of 1280x800
+# (thandor.dat of the stock game); the page is centred, so the layout line moves the clicks for other modes.
+# Run with a fixed progress file (OPEN_THANDOR_CAMPAIGN_PROGRESS): the map shows its done, unlocked and locked
+# missions. Steps: "Kampagnen" (392,364), the campaign button "Die Invasion" (644,272), mission 9 of its map
+# (792,327: the first row's ninth node), shot (shots\script_0000.bmp), quit.
+# Lines that do not start with a number are ignored (comments).
+0 layout 1280 800
+7000 move 392 364
+7500 click 392 364
+9000 move 644 272
+9500 click 644 272
+11000 move 792 327
+11500 click 792 327
+14000 shot
+15000 quit

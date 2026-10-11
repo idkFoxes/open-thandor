@@ -536,10 +536,12 @@ the variable it does nothing:
 | `OPEN_THANDOR_CAMPAIGN_MISSION=<levelId>` | with `OPEN_THANDOR_CAMPAIGN`: start the campaign at the level with that id through the campaign map's start path (the start level argument of `FRONTEND_COMMAND_LOAD_CAMPAIGN`): the level must be done or unlocked in the progress, a carry-over target needs its snapshot, which is then restored; a rejected level is logged (`campaign start: ...`) and the campaign starts at its first level |
 | `OPEN_THANDOR_CAMPAIGN_PROGRESS=<path>` | use that file as the campaign progress instead of `save\kampagne.dat` (test runs keep their own progress and never touch the player's) |
 | `OPEN_THANDOR_CAMPAIGN_PROGRESS_DUMP=1` | log the stored campaign progress (`progress dump: ...`: per campaign the fingerprint, the won levels with their end selections, the unlocked levels and per carry-over snapshot its source, unit counts and a hash) when a campaign is loaded, when a campaign level starts and when it ends through its end trigger, i.e. after every load and save of the progress; an unchanged progress is one `unchanged` line |
+| `OPEN_THANDOR_CAMPAIGN_LEVEL_INFO_DUMP=1` | log what the campaign map reads from every level file of a campaign (`campaign level info: ...`: file found, header and level script valid, title, win selections and the active end triggers as (faction, selection, variant)), laid out like `python tools/data/cgn.py dump <level dir> --triggers` |
 | `OPEN_THANDOR_WATCHDOG=<s>` | log the main thread's stack to `thandor.log` every <s> seconds |
 
-Always on in this build: the level-script log (its conditions and triggers, and which end trigger fired) and how
-many units a campaign carries over into a level. The crash and hang reports (`crash.log`, `hang.log`) are part of
+Always on in this build: the level-script log (its conditions and triggers, and which end trigger fired), which
+campaign level a session starts (`level start: campaign level id <n> "<file>"`) and how many units a campaign
+carries over into it. The crash and hang reports (`crash.log`, `hang.log`) are part of
 every build.
 
 Unattended test: `python tools/test/run_game.py <game dir> 120 --args '-NOINTRO -KARTE="mittelpunkt"' --script tools/test/skirmish_start.txt` starts a skirmish on Ahaggar, plays two minutes, and reports the log, crashes and a contact sheet of snapshots. `tools/test/skirmish_move.txt` also selects the starting vehicle and sends it to two points (left click on the unit, then on the ground), which exercises path finding; its `ingame` line waits until the level has loaded, and the times after it count from that moment. Command-line options need a leading `-` (`-NOINTRO`, `-KARTE="<level>"`).
@@ -578,7 +580,8 @@ the old one), a pixel compare new vs old of the paused in-game frame and the cho
 dialog (`textedit_save.txt` turns the prefilled "Multi Ahaggar" into "Test Edit 42" with Home/End, Shift+Home/End,
 Ctrl+Left/Right, Delete, Backspace and typing; `save\Test Edit 42.sve` must exist), the two-instance multiplayer
 test, the campaign carry-over pairs (`run_campaign_chain.py pairs`, 5 workers, every
-target level must receive units) and the single maps (`--map-jobs`, `--map-minutes`; ENDED is only a warning, the
+target level must receive units), the campaign map test (`run_campaign_map.py`, below; its network case waits for
+the multiplayer check, they share the ports 929/930) and the single maps (`--map-jobs`, `--map-minutes`; ENDED is only a warning, the
 strong computer opponents can win a map in time). `--new` defaults to `build-test/thandor.exe`, `--skip a,b`
 leaves checks out. It prints one table (check, result, details, duration), writes each check's output to
 `<game dir>/checks/` and exits non-zero when a check failed; it only stops game processes it started.
@@ -586,7 +589,19 @@ leaves checks out. It prints one table (check, result, details, duration), write
 level's units (tutorial 2 and 3, Hansolo 9, 13, 23) through the real level change and checks that units
 arrive; `... campaigns [--only tutorial,luke]` wins every level of each campaign in turn up to the campaign
 end. The script command `clickuntilnextlevel x y <ms>` clicks until the next level has loaded, then the times
-restart at 0. Results go to `<game dir>/chain/`; worker k uses UDP port `--port-base` (940) + k.
+restart at 0. Results go to `<game dir>/chain/`; worker k uses UDP port `--port-base` (940) + k. Every run
+keeps its own campaign progress (`<worker copy>\progress\kampagne.dat` through `OPEN_THANDOR_CAMPAIGN_PROGRESS`,
+emptied at the start, copied into the run's result folder), so the workers never share `save\`.
+`python tools/test/run_campaign_map.py <game dir>` runs the campaign map test cases CT1-CT8 of
+[`docs/plans/campaign_map.md`](plans/campaign_map.md) (section 10) in linked copies `<game dir>_cmap_<k>`, each
+with its own progress file: the progress a tutorial chain records, a carry-over target started directly from a
+chain's snapshot (carried units and the state hash of 600 steps equal to the chain's), broken progress files
+(renamed to `.bad`, no crash), replay and branch unlock from the map, loss, retry and "Neustart" (the progress
+file stays byte-identical), the network rule (`mp_host_campaign.txt`: a carry target cannot be started, nimm2
+mission 3 can) and the campaign tab against the pixel golden `tools/test/campaign_map_reference/
+choose_campaign.png` (`choose_campaign.txt`, software renderer; `--save-golden` writes it), plus the level info
+dump against `cgn.py`. It writes the progress files it starts from with `tools/data/campaign_progress.py`
+(`encode_progress`); results go to `<game dir>/campaignmap/`.
 
 ### clang-tidy (`tools/dev/tidy.py`)
 
