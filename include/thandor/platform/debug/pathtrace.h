@@ -14,7 +14,10 @@
        <fallbackY> <targetX> <targetY> <retryCountdown>
    once per army an info line
      I <slot> <asset> <runtimeClass> <footprintRadius> <radiusClass> <movementSpeed> <acceleration> <faction>
-   (for every army, mobile or not, so the layout can be checked), and the pathing/movement events as they happen:
+   (for every army, mobile or not, so the layout can be checked), the session's pathing mode (g_PathingMode, 0
+   original, 1 improved) before the first step's lines and whenever it changes
+     P <tick> <mode>
+   and the pathing/movement events as they happen:
      E <tick> R <slot> -1        route (re)planned (EntityPathing_ResolveDestinationAndRebuildRoutes)
      E <tick> T <slot> <planner> another army's planning changed this army's route point
                                  (EntityPathing_UpdateRouteSegment -> ArmyRuntime_SetPendingMoveTarget)

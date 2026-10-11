@@ -37,7 +37,9 @@ extern bool g_PathingNetworkImprovedAgreed;
 
 /* Chooses g_PathingMode for a new session (local: the setting; networked: the lobby agreement) and clears the
    per-unit side table. Called once before the session's world is built. A loaded savegame sets the mode from its
-   extension entry afterwards instead (PathingMode_SetLoaded). */
+   extension entry afterwards instead (PathingMode_SetLoaded). The developer tools' OPEN_THANDOR_PATHING override
+   applies to local sessions only, after this call (DebugHook_LocalPathingMode, InGameRuntime_InitializeNewSession);
+   a network session always follows the lobby agreement. */
 void PathingMode_ApplyForNewSession(bool networked);
 
 /* A loaded savegame's mode (absent extension entry: PATHING_MODE_ORIGINAL). */

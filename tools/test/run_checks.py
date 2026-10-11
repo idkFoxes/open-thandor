@@ -3,6 +3,7 @@
 usage: run_checks.py GAME_DIR [--new TEST_EXE] [--old PREVIOUS_TEST_EXE] [--map-jobs N]
                      [--map-minutes M] [--all-maps] [--full-campaign] [--skip determinism,aihash,...]
                      [--pathing original|improved|setting]
+                     [--pathing-check [--pathing-threshold NAME=VALUE ...]]
 
 GAME_DIR is a game directory with the game data. Every check runs in its own linked copy GAME_DIR_chk_<name>
 (hard links to the data files, own executable, settings, log and save folder; the tools started from here make
@@ -34,6 +35,12 @@ further copies next to it), windowed, with its own UDP ports:
                path (segments: 12 parts, 33 levels). Every level runs 2 minutes, then the auto-win fires the end
                trigger; every level must be won and units carried over where the campaign does it, without
                crash or hang (ports 910-921)
+  pathing      only with --pathing-check (pathing plan P0, docs/plans/pathfinding.md): run_pathing.py --before-after
+               (6 cases x original/improved mode, 12 instances, ports 1960-1971): the improved mode must meet the
+               thresholds of run_pathing.py THRESHOLDS (override with --pathing-threshold NAME=VALUE) and the
+               original mode must equal tools/test/pathing_baseline.json; then run_determinism.py --pathing
+               improved (3 instances of the pathing scenario, identical state hashes, ports 1990-1992); it sets
+               the mode of each of its runs itself, whatever --pathing chose for the other checks
 --new defaults to build-mingw-test/thandor.exe of this repository (CMake preset "mingw-test", the main compiler),
 else build-test/thandor.exe (preset "test", MSVC); each copy gets the SDL3.dll next
 to that exe (else the one in GAME_DIR), the tools started from a copy link it from there. The output of
@@ -70,17 +77,18 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'sdl3.dll', 'thandor.dat', 'thandor.ini', 'thandor.log',
            'crash.log', 'crash_raw.log', 'hang.log', 'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
-CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps']
+CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps', 'pathing']
+OPT_IN = ('pathing',)  # run only when asked for (--pathing-check)
 # timing sensitive: a failure in the parallel run is retried alone (a real regression shows up again in the retry).
 # Saveload: a system-wide stall of several seconds (seen in several instances at once) leaves a hang.log, which the
 # check counts.
 RETRY_ALONE = ('determinism', 'aihash', 'saveload', 'multiplayer', 'maps')
 GAME_BUDGET = 16  # game instances at once over all checks (the CPU gate may allow fewer)
 # start order: the longest checks first (maps, then campaign and aihash), the quick ones while those run
-START_ORDER = ['maps', 'campaign', 'aihash', 'determinism', 'multiplayer', 'pixels', 'saveload',
+START_ORDER = ['maps', 'pathing', 'campaign', 'aihash', 'determinism', 'multiplayer', 'pixels', 'saveload',
                'textedit']
 INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedit': 1, 'multiplayer': 2,
-             'campaign': 12}
+             'campaign': 12, 'pathing': 12}
 # missions that end at once when started directly: they need the previous level's units (campaign check)
 EXPECTED_ENDED = ('tutorial 2', 'tutorial 3', 'hansolo 9', 'hansolo 13', 'hansolo 23')
 # missions whose level file is missing from the original game data (hansolo 20 names level\hansolo\s19_forschung.lev)
@@ -392,6 +400,27 @@ def check_campaign():
     return ('FAIL' if bad else 'PASS'), details
 
 
+def check_pathing():
+    """Opt-in (--pathing-check): the improved pathing mode against the original one (run_pathing.py --before-after with the
+    committed original-mode baseline), then its determinism (run_determinism.py --pathing improved: 3 runs of the
+    pathing scenario with identical state hashes). Both parts run even when the first fails."""
+    folder = make_copy('pathing', args.new)
+    code, text = run_tool(os.path.join(out_dir, 'pathing.txt'),
+                          [os.path.join(HERE, 'run_pathing.py'), folder, '--before-after', '--exe', args.new,
+                           '--baseline', os.path.join(HERE, 'pathing_baseline.json'), '--port-base', '1960'] +
+                          ['--threshold=' + t for t in args.pathing_threshold], 1800)
+    verdicts = [l.split(': ', 1)[1] for l in text.splitlines() if l.startswith('pathing before/after: ')]
+    before_after = verdicts[-1] if verdicts else 'no result (exit %s)' % code
+    det_code, det_text = run_tool(os.path.join(out_dir, 'pathing_determinism.txt'),
+                                  [os.path.join(HERE, 'run_determinism.py'), folder, '--pathing', 'improved',
+                                   '--port-base', '1990'], 1800)
+    rows = [l for l in det_text.splitlines() if l.startswith('pathing ')]
+    determinism = (rows[-1].split(None, 1)[1].split(', last ')[0].split(' (rerun')[0] if rows
+                   else 'no result (exit %s)' % det_code)
+    ok = code == 0 and det_code == 0 and rows and rows[-1].split()[1] == 'ok:'
+    return ('PASS' if ok else 'FAIL'), 'before/after %s; improved determinism %s' % (before_after, determinism)
+
+
 # ------------------------------------------------------------------------------------------------------ main
 
 def stray_processes():
@@ -430,6 +459,10 @@ def main():
     parser.add_argument('--full-campaign', action='store_true',
                         help='campaign check over all 33 levels (12 parts) instead of the 5-level quick set')
     parser.add_argument('--skip', default='', help='comma-separated: ' + ','.join(CHECKS))
+    parser.add_argument('--pathing-check', action='store_true',
+                        help='also run the opt-in pathing check (improved pathing mode: thresholds, determinism)')
+    parser.add_argument('--pathing-threshold', action='append', default=[], metavar='NAME=VALUE',
+                        help='pathing check: overrides a run_pathing.py threshold (repeatable)')
     parser.add_argument('--sample', type=int, metavar='N',
                         help='spot check: determinism plus N-1 other checks picked at random, the maps check (if '
                              'picked) with 3 random missions of QUICK_MAPS; the pick is printed')
@@ -444,6 +477,8 @@ def main():
     unknown = skip - set(CHECKS)
     if unknown:
         parser.error('unknown check(s): ' + ', '.join(sorted(unknown)))
+    if not args.pathing_check:
+        skip |= set(OPT_IN)
     args.maps_list = QUICK_MAPS
     if args.sample:
         others = [c for c in CHECKS if c != 'determinism' and c not in skip and (c != 'pixels' or args.old)]
@@ -558,7 +593,8 @@ def main():
     stop_heartbeat.set()
     for name in CHECKS:
         if name not in selected:
-            results[name] = ('SKIP', 'no --old' if name == 'pixels' and not args.old else 'skipped', 0)
+            results[name] = ('SKIP', 'no --old' if name == 'pixels' and not args.old else
+                             'opt-in: --pathing-check' if name == 'pathing' and not args.pathing_check else 'skipped', 0)
     print()
     print('%-12s %-6s %7s  %s' % ('check', 'result', 'time', 'details'))
     for name in CHECKS:

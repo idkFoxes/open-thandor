@@ -138,6 +138,12 @@ and the halves swap sides. One move order at simulation tick 102 (statehash test
 selection_set.cpp:314 - a 10-tank group in this layout already exceeds it). Evaluated 2000 steps (100 s) after
 the order. Runs are deterministic (identical numbers on re-run).
 
+Re-measured 2026-10-11 with the committed tool and the current build (`experimental/pathing-mode` + P0 harness,
+`OPEN_THANDOR_PATHING=original`; saved as `tools/test/pathing_baseline.json`): every case gives the same numbers as
+before except the point order, whose first numbers came from an earlier revision of the evaluation (row updated:
+4 instead of 5 of 10 arrive). Measured on the same build, the improved mode (no package in it yet) gives exactly
+the same numbers in every case.
+
 Metrics: arrival = `ARMY_MOVEMENT_ACTIVE` cleared; stop = a stand phase of at least 3 steps after moving, classified
 by the event in it (collision 'B', re-plan or retarget 'R'/'T'); turn s = steps standing while the heading changes;
 speed ratio = path length / (active steps x movementSpeed).
@@ -147,14 +153,14 @@ speed ratio = path length / (active steps x movementSpeed).
 | single tank, open (66) | 1/1 | 48.9 / 48.9 | 0.98 | 0 | 1.05 | 6 | 0 | 0 |
 | open, formation (66) | 10/10 | 55.1 / 65.9 | 0.92 | 3.7 (1.3 / 2.4) | 3.7 | 13.0 | 1.8 | 25 |
 | choke, formation (66) | 10/10 | 74.6 / 99.0 | 0.79 | 12.1 (3.8 / 8.3) | 14.1 | 18.8 | 4.0 | 64 |
-| choke, point (66) | **5/10** | 70.0 / 102.7 | 0.73 | 20.7 (7.0 / 13.7) | 20.9 | 30.6 | 12.3 | 126 |
+| choke, point (66) | **4/10** | 61.8 / 71.7 | 0.74 | 19.2 (6.0 / 13.2) | 19.5 | 29.3 | 10.6 | 110 |
 | cross (66) | 10/10 | 46.7 / 58.3 | 0.92 | 2.3 (0.8 / 1.5) | 3.5 | 5.5 | 1.1 | 11 |
 | choke, jeep (1) | 10/10 | 38.8 / 47.3 | 0.81 | 7.5 (2.4 / 5.1) | 6.7 | 16.8 | 1.8 | 27 |
 | choke, walker Emu (110) | 10/10 | 52.5 / 62.1 | 0.78 | (walker steps, not comparable) | - | 15.0 | 1.8 | 7 |
 | choke, glider Moskito (172) | 10/10 | 29.6 / 36.9 | 0.74 | 0 | 0 | 14.8 | 1.6 | 2 |
 
 The ideal time of a tank is the single-unit run (48.9 s, 6 re-plans only at the edge of the explored area). Ten
-tanks through a gap take on average 53 % longer (last one 2x), and with a point order half of them never arrive:
+tanks through a gap take on average 53 % longer (last one 2x), and with a point order 6 of 10 never arrive:
 they keep re-planning towards a target that their neighbours already occupy.
 
 Further evaluation of the traces (choke, formation, tanks):
@@ -167,8 +173,8 @@ Further evaluation of the traces (choke, formation, tanks):
 - **Long waits are the retry countdown**: 14 stand phases of 0.5 s or more, the longest 3.0 s = 64 steps.
 - **Collisions are a cascade of turning units**: the blocker was turning on the spot in 66 % of the blocked steps
   (open 51 %, cross 90 %, jeep 86 %), standing (itself blocked/waiting) in 27 %, moving in 5 %.
-- **Arrived units are pushed around**: retargets by other units' planning 4 per unit (point order 12.3) and 1.2
-  re-activations per arrived unit (point order).
+- **Arrived units are pushed around**: retargets by other units' planning 4 per unit (point order 10.6) and in the
+  point order 11 re-activations of the 4 arrived units.
 - Glider: 14 speed drops to 0 per unit (one per new route point), speed ratio 0.74.
 - A per-unit trace reads like the complaint: `M35 Mr w T38 M2 T15 M16 Mr w T41 M35 Mr w2 T5 M50` (M = moving,
   r = re-plan, w = standing, T = turning on the spot; number = steps).
@@ -176,7 +182,7 @@ Further evaluation of the traces (choke, formation, tanks):
 Prototype E1 (throwaway, not committed: near heading limit only for the final target, far limit 45 deg for
 intermediate route points) on the same cases: choke formation mean 74.6 -> 68.3 s, last 99.0 -> 85.2 s, turning
 14.1 -> 8.1 s/unit, but collision-blocked steps 64 -> 92, and open/jeep/point got slightly worse (point: 3 instead of
-5 arrived). One knob alone moves the problem into the collisions; the packages below must come together
+5 arrived, measured with the earlier evaluation). One knob alone moves the problem into the collisions; the packages below must come together
 (movement while turning **and** yielding).
 
 ## 3. Causes of the stop - turn - drive rhythm
@@ -204,8 +210,8 @@ Ranked by measured weight.
    short segments.
 6. **No group concept** (commands.cpp:215-256): each selected unit plans independently in selection order; with a
    spread above 5.0 / 7.0 (selection_set.cpp:314) all get the same target point, which only a few can reach inside
-   the 0x1000 arrival box (move_orders.cpp:665). The others never arrive and keep re-planning (point order: 5/10
-   arrive in 100 s, 30 re-plans and 21 s turning per unit).
+   the 0x1000 arrival box (move_orders.cpp:665). The others never arrive and keep re-planning (point order: 4/10
+   arrive in 100 s, 29 re-plans and 20 s turning per unit).
 7. **No hysteresis on re-plans**: a re-plan is triggered by any position change since the last check; there is no
    "my old plan is still fine" test and no minimum time between plans except the 64-step countdown for units that
    did not move.
@@ -320,14 +326,32 @@ Order: P0 -> P1 + P2 + P6 together (E1 showed that P1 alone shifts the stops int
 
 Testing per package:
 
-1. `python tools/test/run_pathing.py <game dir> --cases single,open,choke,chokepoint,cross,jeep,walker,glider
-   --save after.json --compare baseline.json` with the mode on: acceptance e.g. choke formation mean arrival <= 60 s,
-   point order 10/10 arrive, stops/unit and turn s/unit at least halved, no new stuck unit; with the mode off the
-   numbers must equal the baseline exactly.
+1. `python tools/test/run_pathing.py <game dir> --before-after --baseline tools/test/pathing_baseline.json
+   [--save after.json]` (P0 harness, see [Tools](#tools-added-on-this-branch)): cases single, open, choke,
+   chokepoint, jeep, glider, each with the mode off and on in the same run; the original numbers must equal the
+   baseline exactly, the improved ones must meet the thresholds below. Further cases (cross, walker) with
+   `--cases`. Default thresholds (`THRESHOLDS` in run_pathing.py, `--threshold NAME=VALUE`, `--threshold list`):
+
+   | Threshold | Default | Meaning (improved against original, same case) |
+   |---|---|---|
+   | `turn_drop` / `turn_min` | 0.40 / 0.5 s | turn-on-spot s/unit at least 40 % lower where the original turns >= 0.5 s/unit (P1) |
+   | `stops_drop` / `stops_min` | 0.50 / 1.0 | stops/unit at least halved where the original has >= 1 stop/unit |
+   | `collision_stops_drop` / `collision_stops_min` | 0.50 / 0.5 | stops after a collision at least halved (P2) |
+   | `drop_cases` | open, choke, chokepoint, cross, jeep | the group cases where the three drops are demanded; elsewhere (lone tank: its first turn towards the target; gliders) and below the minimums the value may grow by at most `growth_tolerance` 0.10 x max(original, 1) |
+   | `blocked_growth` | 0.25 | collision-blocked steps/unit at most +25 % (E1 moved the stops into the collisions) |
+   | `replans_growth` | 0.25 | re-plans/unit at most +25 % (halving them is P4's target) |
+   | `arrival_slack` | 0.05 | mean and last arrival at most 5 % later; no case may lose arrivals |
+   | `choke_mean_max` | 60 s | choke formation mean arrival (original 74.6 s) |
+   | `all_arrive` | chokepoint | every unit must arrive (P3; original 4/10) |
+
+   Exit status 0 all met, 1 a threshold missed or the original numbers moved, 2 a run broke or ran in the wrong
+   mode. With only some of P1-P3 in place, pass the thresholds of the packages done (e.g.
+   `--threshold all_arrive= --threshold choke_mean_max=75`).
 2. `run_determinism.py --reference` and `run_checks.py` with the mode off: unchanged.
-3. Mode on: two runs must match each other (`run_determinism.py` without reference, new scenario `pathing`), a
-   saved reference for the mode, and `run_multiplayer.py` host + client both OT with the mode on (identical state
-   hash), plus the hand test against the original 1.05 (mode forced off).
+3. Mode on: three runs must match each other (`run_determinism.py --pathing improved`: scenario `pathing`, choke
+   layout, formation order, 2200 steps), later a saved reference for the mode, and `run_multiplayer.py` host +
+   client both OT with the mode on (identical state hash), plus the hand test against the original 1.05 (mode
+   forced off). 1 and the first part of 3 together: `run_checks.py --pathing-check` (check `pathing`, opt-in).
 4. Campaign spot checks with the mode on (`run_all_maps.py`), AI behaviour by eye (it uses the same movement).
 
 ## 6. Owner decisions (answered 2026-10-11)
@@ -357,14 +381,33 @@ Testing per package:
 - `tools/test/run_pathing.py`: runs the cases in parallel linked copies `<game dir>_path<k>` and prints the metrics
   of section 2 (`--save`, `--compare`, `--analyse <trace>`, `--units`, `--env NAME=VALUE`).
 
+P0 harness (branch `pathing-mode/pm-harness`):
+
+- `OPEN_THANDOR_PATHING=original|improved` (developer tools only) replaces a local session's mode through P0a's
+  `DebugHook_LocalPathingMode` (the harness's own override `PathingMode_DevOverride` was dropped in the merge: it
+  also overrode network sessions, which must follow the lobby agreement). The session logs
+  `session: pathing mode <mode> (local|network)`; the movement trace records the mode that ran (`P <tick> <mode>`
+  line).
+- `run_pathing.py --pathing original|improved|setting` (a run in another mode than requested counts as broken),
+  `--before-after` with `--threshold` and `--baseline` (section 5, testing 1), `--copy-tag` / `--port-base` for
+  parallel users of one game dir. `tools/test/pathing_baseline.json`: the original-mode numbers of all eight cases
+  (section 2 table, re-measured 2026-10-11).
+- `run_determinism.py --pathing improved`: scenario `pathing` (make_arena.py choke layout, formation order), 3 runs,
+  2200 steps, identical state hashes required and every session must log the requested mode (`session: pathing
+  mode ...`); also `--copy-tag` /
+  `--port-base`.
+- `run_checks.py --pathing-check`: opt-in check `pathing` (it sets the mode of each of its runs itself, whatever
+  `--pathing original|improved|setting` chose for the other checks) = both of the above (ports 1960-1971 and 1990-1992), details
+  in `checks/pathing.txt` and `checks/pathing_determinism.txt`; `--pathing-threshold NAME=VALUE` passes thresholds on.
+
 ## Pending measurements
 
 Stopped on 2026-10-10 because the PC was needed; to run in a later batch (build with
 `python ot-scratch/build_gate.py <worktree>`, game dir = a linked copy of `ot-soak`, never Program Files):
 
-1. Baseline with the committed tool (the numbers above were taken with an earlier revision of the evaluation; only
-   the evaluation window changed):
-   `python tools/test/run_pathing.py <ot-soak> --cases single,open,choke,chokepoint,cross,jeep,walker,glider --save baseline.json --units`
+1. Done 2026-10-11 (P0 harness): baseline with the committed tool,
+   `python tools/test/run_pathing.py <ot-soak> --cases single,open,choke,chokepoint,cross,jeep,walker,glider --pathing original --save tools/test/pathing_baseline.json --units`;
+   only the point order moved (section 2).
 2. Prototype variants of P1/P2 (E2 = friendly-blocker wait of 30 steps without `ROUTE_POINT_REACHED`, E4 = drive at
    half speed while the heading error is below 90 deg, E7 = E1+E2+E4), to size the packages before P0 is built.
    The prototype was a throwaway patch of `ArmyGroundMovement_SteerAndDrive` read from `OT_PATH_EXP`; redo it on a
