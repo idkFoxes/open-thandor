@@ -32,18 +32,19 @@ Module header: [`bootstrap.h`](../../include/thandor/platform/bootstrap.h) · Ch
 
 Process support of the rebuilt executable: logging, crash and hang reports and small Win32 helpers. thandor.exe keeps code and data in one writable .text section at fixed addresses.
 
-**Functions** (10 public, 23 file-local):
+**Functions** (11 public, 23 file-local):
 
 - [`Thandor_Log`](../../src/platform/bootstrap/image.cpp#L48)
 - [`Thandor_SymbolName`](../../src/platform/bootstrap/image.cpp#L453) - The buffer is per thread: the caller reads it after the lock is released (valid until the thread's next call).
 - [`Thandor_LogStack`](../../src/platform/bootstrap/image.cpp#L463)
 - [`Thandor_Ptr32Overflow`](../../src/platform/bootstrap/image.cpp#L484) - core/ptr32.h: a pointer of 2 GB or more was stored in a 32-bit field of an original layout.
-- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L764)
-- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L775)
-- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L790)
-- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L795)
-- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L800)
-- [`Thandor_GetExecutablePathA`](../../src/platform/bootstrap/image.cpp#L806)
+- [`Thandor_KeepTimerResolutionWhenHidden`](../../src/platform/bootstrap/image.cpp#L766) - Not in the original: see image.h.
+- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L788)
+- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L799)
+- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L814)
+- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L819)
+- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L824)
+- 1 more: `Thandor_GetExecutablePathA`
 
 **Data** (7 shared, 8 file-local): `DBGHELP_CRASH_WAIT_MS`, `STACK_SNAPSHOT_BYTES`, `CRASH_LOG_REBUILT_IMAGE_SPAN`, `SYMBOL_NAME_CAPACITY`, `DIAGNOSTIC_THREAD_STACK_RESERVE_BYTES`, `g_ThandorFrameHeartbeat`, `HANG_SECONDS`.
 
@@ -88,7 +89,7 @@ The original image has no C runtime: its PE entry point is ProcessEntry, which e
 
 **Called from:** no other file (entry points, slots filled at run time or file-local use).
 
-**Depends on** (9 files, names used): [`graphics/render/light_records`](graphics.md#file-graphics-render-light-records) (2), [`platform/bootstrap/low_memory`](#file-platform-bootstrap-low-memory) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`graphics/backend/software`](graphics.md#file-graphics-backend-software) (1), [`graphics/backend/software_texture_scale`](graphics.md#file-graphics-backend-software-texture-scale) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (1), [`platform/debug/hooks`](#file-platform-debug-hooks) (1).
+**Depends on** (9 files, names used): [`graphics/render/light_records`](graphics.md#file-graphics-render-light-records) (2), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (2), [`platform/bootstrap/low_memory`](#file-platform-bootstrap-low-memory) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`graphics/backend/software`](graphics.md#file-graphics-backend-software) (1), [`graphics/backend/software_texture_scale`](graphics.md#file-graphics-backend-software-texture-scale) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (1), [`platform/debug/hooks`](#file-platform-debug-hooks) (1).
 
 **Includes:** `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`, `thandor/platform/bootstrap/low_memory.h`.
 

@@ -20,8 +20,8 @@ No file comment; function families: `AiCombatTarget_*` (2), `AiCombatDecision_*`
 
 - [`AiCombatDecision_UpdateTargetAssignment`](../../src/gameplay/ai/combat.cpp#L57) - Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases).
 - [`AiUnitGroup_AssignCollectedEntitiesToBestTarget`](../../src/gameplay/ai/combat.cpp#L102) - Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until the group is strong enough (sum &gt;= 0x200), then picks the target with the highest class base ...
-- [`AiCombatTarget_SelectBestCandidate`](../../src/gameplay/ai/combat.cpp#L203) - Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's eight class counters (targetClassShotDamage); a positive sum searches armies of other factions, ...
-- [`AiCombatTarget_EvaluateCandidateScore`](../../src/gameplay/ai/combat.cpp#L318) - Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it.
+- [`AiCombatTarget_SelectBestCandidate`](../../src/gameplay/ai/combat.cpp#L216) - Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's eight class counters (targetClassShotDamage); a positive sum searches armies of other factions, ...
+- [`AiCombatTarget_EvaluateCandidateScore`](../../src/gameplay/ai/combat.cpp#L331) - Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it.
 
 **Data** (1 shared, 11 file-local): `AI_UNIT_GROUP_ATTACK_STRENGTH`.
 
