@@ -184,4 +184,6 @@ Contributions are welcome.
 The source code and documentation are under the [MIT License](LICENSE): free to use, change and share, as long as
 the copyright notice is kept. The original game and its data (artwork, texts, sounds, movies) belong to their
 rights holders and are not part of this project; you need an original copy to play. This project is not
-affiliated with the original developers or publishers.
+affiliated with the original developers or publishers. This is an unofficial reverse-engineering and preservation project.
+It is not affiliated with or endorsed by the original copyright holders.
+Original game assets and software remain the property of their respective owners.
