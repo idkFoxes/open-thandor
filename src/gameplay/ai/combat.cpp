@@ -160,6 +160,14 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
     if (candidateTargetModelRuntime == nullptr) {
       continue;
     }
+    /* Not in the original: a stale candidate of the quirk above can name a model slot that was freed and then
+       zeroed (ModelRuntimePool_UnrebaseBeforeSave zeroes free slots at every save) or, after a new or loaded
+       level, an unused slot of the newly zeroed pool (the workspaces outlive the session). Its definition is
+       NULL and the original reads [NULL+0x4C] and crashes. Skipped here; a freed slot that keeps its
+       definition still counts, as before. */
+    if (candidateTargetModelRuntime->definitionOrSavedId.runtimeDefinition == nullptr) {
+      continue;
+    }
     candidateClassScore = g_AiCombatTargetClassBaseScores
                             [candidateTargetModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId];
     /* ties go to the later candidate */
@@ -174,6 +182,11 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
 
   /* send every collected army against the target model's owning army */
   targetRuntime = bestTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
+  /* Not in the original: a slot with a definition always has an owner; checked anyway, as the target is
+     followed below. */
+  if (targetRuntime == nullptr) {
+    return;
+  }
   collectedCount = g_AiCollectedEntityCount;
   collectedArmies = g_AiWorkspace14CollectedArmies;
   for (collectedIndex = 0; collectedIndex < collectedCount; collectedIndex++) {

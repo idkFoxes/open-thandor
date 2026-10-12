@@ -20,8 +20,8 @@ No file comment; function families: `AiCombatTarget_*` (2), `AiCombatDecision_*`
 
 - [`AiCombatDecision_UpdateTargetAssignment`](../../src/gameplay/ai/combat.cpp#L57) - Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases).
 - [`AiUnitGroup_AssignCollectedEntitiesToBestTarget`](../../src/gameplay/ai/combat.cpp#L102) - Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until the group is strong enough (sum &gt;= 0x200), then picks the target with the highest class base ...
-- [`AiCombatTarget_SelectBestCandidate`](../../src/gameplay/ai/combat.cpp#L203) - Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's eight class counters (targetClassShotDamage); a positive sum searches armies of other factions, ...
-- [`AiCombatTarget_EvaluateCandidateScore`](../../src/gameplay/ai/combat.cpp#L318) - Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it.
+- [`AiCombatTarget_SelectBestCandidate`](../../src/gameplay/ai/combat.cpp#L216) - Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's eight class counters (targetClassShotDamage); a positive sum searches armies of other factions, ...
+- [`AiCombatTarget_EvaluateCandidateScore`](../../src/gameplay/ai/combat.cpp#L331) - Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it.
 
 **Data** (1 shared, 11 file-local): `AI_UNIT_GROUP_ATTACK_STRENGTH`.
 
@@ -1066,20 +1066,20 @@ Campaign progress file (docs/plans/campaign_map.md 4.4), save\kampagne.dat: a PC
 
 The session hooks of the campaign progress (docs/plans/campaign_map.md 4.3, 4.5, 7.5): a win recorded when a session ends through the end trigger, the carry-over snapshot taken from the old-unit tables the original carry-over just rebuilt, and the levels unlocked by starting them.
 
-**Functions** (4 public, 5 file-local):
+**Functions** (4 public, 10 file-local):
 
-- [`CampaignProgress_IsWin`](../../src/gameplay/session/campaign_progress_session.cpp#L54)
-- [`CampaignProgress_TakeCarry`](../../src/gameplay/session/campaign_progress_session.cpp#L62)
-- [`CampaignProgress_RecordSessionEnd`](../../src/gameplay/session/campaign_progress_session.cpp#L227)
-- [`CampaignProgress_NoteLevelStarted`](../../src/gameplay/session/campaign_progress_session.cpp#L276)
+- [`CampaignProgress_IsWin`](../../src/gameplay/session/campaign_progress_session.cpp#L75)
+- [`CampaignProgress_TakeCarry`](../../src/gameplay/session/campaign_progress_session.cpp#L83)
+- [`CampaignProgress_RecordSessionEnd`](../../src/gameplay/session/campaign_progress_session.cpp#L351)
+- [`CampaignProgress_NoteLevelStarted`](../../src/gameplay/session/campaign_progress_session.cpp#L400)
 
-**Data** (0 shared, 3 file-local): `CAMPAIGN_PROGRESS_ROW_NAME_UNITS`, `CAMPAIGN_PROGRESS_PRIMARY_RECORD_DWORDS`, `s_CampaignProgressRowCache`.
+**Data** (0 shared, 5 file-local): `CAMPAIGN_PROGRESS_ROW_NAME_UNITS`, `CAMPAIGN_PROGRESS_MAX_ROWS`, `CAMPAIGN_PROGRESS_PRIMARY_RECORD_DWORDS`, `s_CampaignProgressRowCache`, `s_CampaignProgressCatalogRows`.
 
 **Called from** (4 files): [`gameplay/session/loaded_session`](#file-gameplay-session-loaded-session) (`InGameRuntime_InitializeLoadedSession`); [`gameplay/session/new_session`](#file-gameplay-session-new-session) (`InGameNewSession_FinishWorldUnderTickLock`); [`gameplay/session/startup`](#file-gameplay-session-startup) (`InGameRuntime_RunSessionUntilExit`); [`platform/selftest/campaignprogress_selftest`](platform.md#file-platform-selftest-campaignprogress-selftest) (`CampaignProgressTest_SessionRules`).
 
-**Depends on** (10 files, names used): [`gameplay/session/campaign_progress`](#file-gameplay-session-campaign-progress) (7), [`core/text/path`](core.md#file-core-text-path) (4), [`assets/scenario/catalog`](assets.md#file-assets-scenario-catalog) (3), [`gameplay/session/campaign_carryover`](#file-gameplay-session-campaign-carryover) (3), [`ui/frontend/campaign_graph`](ui.md#file-ui-frontend-campaign-graph) (2), [`core/bytes`](core.md#file-core-bytes) (1), [`gameplay/session/scenario_load`](#file-gameplay-session-scenario-load) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1), [`ui/frontend/campaign_level_info`](ui.md#file-ui-frontend-campaign-level-info) (1).
+**Depends on** (9 files, names used): [`gameplay/session/campaign_progress`](#file-gameplay-session-campaign-progress) (7), [`assets/scenario/catalog`](assets.md#file-assets-scenario-catalog) (4), [`core/text/path`](core.md#file-core-text-path) (4), [`gameplay/session/campaign_carryover`](#file-gameplay-session-campaign-carryover) (3), [`ui/frontend/campaign_graph`](ui.md#file-ui-frontend-campaign-graph) (2), [`gameplay/session/scenario_load`](#file-gameplay-session-scenario-load) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1), [`ui/frontend/campaign_level_info`](ui.md#file-ui-frontend-campaign-level-info) (1).
 
-**Includes:** `thandor/gameplay/session/campaign_progress.h`, `stdlib.h`, `string.h`, `map`, `optional`, `string`, `vector`, `thandor/platform/bootstrap/image.h`, `thandor/ui/frontend/campaign_level_info.h`, `thandor/ui/frontend/campaign_map.h`.
+**Includes:** `thandor/gameplay/session/campaign_progress.h`, `stdio.h`, `stdlib.h`, `string.h`, `algorithm`, `map`, `optional`, `string`, `vector`, `thandor/platform/bootstrap/image.h`, `thandor/ui/frontend/campaign_level_info.h`, `thandor/ui/frontend/campaign_map.h`.
 
 <a id="file-gameplay-session-campaign-start"></a>
 #### `campaign_start.cpp / campaign_start.h`

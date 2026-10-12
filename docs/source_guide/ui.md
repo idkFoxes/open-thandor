@@ -798,7 +798,7 @@ open-thandor (campaign map, docs/plans/campaign_map.md 5.4): reads the title ind
 
 **Data** (0 shared, 4 file-local): `CAMPAIGN_LEVEL_SELECTION_COUNT`, `CAMPAIGN_LEVEL_FILE_NAME_UNITS`, `CAMPAIGN_LEVEL_WIN_MOVIE_VARIANT`, `s_CampaignLevelCache`.
 
-**Called from** (3 files): [`ui/frontend/campaign_tab`](#file-ui-frontend-campaign-tab) (`CampaignTab_BuildCampaign`, `CampaignTab_ReadRowCampaign`); [`gameplay/session/campaign_progress_session`](gameplay.md#file-gameplay-session-campaign-progress-session) (`CampaignProgress_ReadRow`); [`gameplay/session/campaign_start`](gameplay.md#file-gameplay-session-campaign-start) (`CampaignStart_LevelFileExists`).
+**Called from** (3 files): [`gameplay/session/campaign_progress_session`](gameplay.md#file-gameplay-session-campaign-progress-session) (`CampaignProgress_ReadDataFile`, `CampaignProgress_ReadRow`); [`ui/frontend/campaign_tab`](#file-ui-frontend-campaign-tab) (`CampaignTab_BuildCampaign`, `CampaignTab_ReadRowCampaign`); [`gameplay/session/campaign_start`](gameplay.md#file-gameplay-session-campaign-start) (`CampaignStart_LevelFileExists`).
 
 **Depends on** (8 files, names used): [`assets/package/runtime`](assets.md#file-assets-package-runtime) (4), [`core/text/path`](core.md#file-core-text-path) (4), [`platform/filesystem/win32`](platform.md#file-platform-filesystem-win32) (2), [`gameplay/session/level_script`](gameplay.md#file-gameplay-session-level-script) (1), [`gameplay/session/scenario_load`](gameplay.md#file-gameplay-session-scenario-load) (1), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1), [`ui/frontend/campaign_map`](#file-ui-frontend-campaign-map) (1).
 
