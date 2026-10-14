@@ -36,6 +36,10 @@
                     through the keyboard layer and looked up in the real dispatch tables, every action of the in-game
                     tables (without cheats) listed, every key name and text non-empty in German and English; one
                     line per failed check and a summary line
+     keybindingspanel
+                    the key binding panel without UI (keybindings_panel_selftest.cpp): the capture logic (taken
+                    on release, peak modifiers, Esc, characters, group rows) and the status texts of set, conflict
+                    and not allowed in German and English; one line per failed check and a summary line
      campaignprogress
                     the campaign progress model and the kampagne.dat package format
                     (campaignprogress_selftest.cpp): round trip, truncated files, bad magic and version, CRC32
@@ -81,6 +85,9 @@ void Thandor_SelfTestHexScan(void);
 
 /* OPEN_THANDOR_SELFTEST=keybindings (keybindings_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestKeyBindings();
+
+/* OPEN_THANDOR_SELFTEST=keybindingspanel (keybindings_panel_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestKeyBindingsPanel();
 
 /* OPEN_THANDOR_SELFTEST=keymatch (keymatch_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestKeyMatch(void);

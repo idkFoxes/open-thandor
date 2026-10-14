@@ -143,7 +143,7 @@ struct KeyBinding {
     uint8_t rangeLength;
     uint8_t flags;    /* KEY_BINDING_FLAG_* */
     uint32_t sourceAction;
-    TextResourceId textId; /* TEXT_ID_KEYS_*: the action description (the camera directions share theirs) */
+    TextResourceId textId; /* TEXT_ID_KEYS_*: the action description (one per action) */
     KeyChord keys[KEY_BINDING_MAX_KEYS];
     KeyChord defaults[KEY_BINDING_MAX_KEYS];
     KeyChord permanent; /* keyCode 0: none; else kept by Set / Clear (Alt+F4 of menu_leave) */

@@ -75,3 +75,17 @@ with MarkDirty and an immediate Flush.
 | P4 | shared panel: static node tree in module storage, own vtables, capture, status line; camera direction texts |
 | P5 | hosts: frontend page and the in-game "Tastatur" tab overlay; scripts |
 | P6 | held state for every key-down code (`devices.cpp`, SDL3 input), cleared on focus loss, for letter camera keys |
+
+## Panel (P4, `include/thandor/ui/core/key_bindings_panel.h`)
+
+- `KeyBindingsPanel_Attach(parent, rect, flags, onClose, context)` links the panel subtree (module storage, own vtables
+  `g_KeyBindingsPanelVtable` / `g_KeyBindingsPanelListVtable`, button actions on its own handler page 0x30) as the
+  parent's last child; flags `KEY_BINDINGS_PANEL_CENTERED` (rect relative to the parent's centre), `_BACKGROUND`
+  (window background and frame, for the in-game overlay), `_TITLE`. "Zurueck" (and Esc outside a capture) calls
+  `onClose(context)` from the action queue; the host detaches (`KeyBindingsPanel_Detach`). `KeyBindingsPanel_Refresh`
+  after a language switch. Minimum size 520 x 240; the frontend page uses 608 x 284.
+- While a capture runs (`KeyBindingsPanel_Capturing`) the list holds the keyboard focus and takes every key, so neither
+  the world view's key commands nor the hotkeys (root keyboard fallback) see it. The held camera keys are polled, not
+  dispatched: the in-game host skips `InGameUiRoot_ApplyCameraKeys` while capturing.
+- Release detection uses the navigation keys' held state until P6 (`Keyboard_KeyHeld`) is merged; other keys are
+  taken when the modifiers are released.

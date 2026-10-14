@@ -1155,6 +1155,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestKeyBindings();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "keybindingspanel") == 0) {
+        Thandor_SelfTestKeyBindingsPanel();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "keymatch") == 0) {
         Thandor_SelfTestKeyMatch();
         return 1;
