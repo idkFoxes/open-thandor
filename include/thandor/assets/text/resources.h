@@ -227,19 +227,19 @@ uint16_t *TextResource_ObjectiveTextEnglish(uint32_t index);
 
 /* Not in the original: the hand-written short objectives of the stock missions (objective overlay, plan 3a).
    Block TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE..+TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED - 1 (0x7F0200..0x7F02FF)
-   is reserved for them; objective_texts.cpp owns the table (until it is filled the stub there has none). */
+   is reserved for them; objective_texts.cpp owns the table (docs/plans/objective_overlay_texts.md). */
 #define TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE (TEXT_ID_PROJECT_BASE + 0x200)
 inline constexpr int TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED = 0x100;
 
-/* Not in the original: the text id of the hand-written short objective of level levelName for faction (1..7), or
-   TEXT_RESOURCE_ID_NONE when there is none. levelName is the level file base name from LevelAssetHeader
-   .levelFileNameUtf16 without its trailing dot, terminated, no directory, case as stored (e.g. "s07_landunt",
-   "t00_tut", "eisigehöhen"). objective_texts.cpp. */
+/* Not in the original: the text id of the hand-written short objective of level levelName (the level file base name
+   as LevelAssetHeader.levelFileNameUtf16 holds it, terminated; a directory before the last '\' or '/' and an
+   extension from the first '.' are ignored, as is ASCII/Latin-1 case) for faction (1..7), or TEXT_RESOURCE_ID_NONE
+   when there is none. objective_texts.cpp. */
 TextResourceId TextResource_MissionObjective(const uint16_t *levelName,uint32_t faction);
 
 /* Not in the original: resolves an id of the short-objective block (TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE..) in the
-   language of the project texts; false for an id it has no text for. Called by TextResource_TryResolve.
-   objective_texts.cpp. */
+   language of the project texts (German for German, English for every other language); false for an id it has no
+   text for. Called by TextResource_TryResolve. objective_texts.cpp. */
 bool TextResource_TryResolveMissionObjective(TextResourceId resourceId,uint16_t **outText);
 
 /* Not in the original: the TEXT_ID_LANGUAGE_NAME_BASE.. text of a telephone country code (49, 44, 33, 39, 34), else
