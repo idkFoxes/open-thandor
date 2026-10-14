@@ -772,10 +772,16 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
     X(SELF_DESTRUCT, u"Auswahl selbst zerst\u00F6ren", u"Self-destruct the selection") \
     X(SELECT_AIRPORTS, u"Alle eigenen Flugh\u00E4fen ausw\u00E4hlen", u"Select all own airports") \
     X(UPGRADE_PAGE, u"Ausbauseite der Einheit ein/aus", u"Unit upgrade page on/off") \
-    X(CAMERA_SCROLL, u"Kamera verschieben", u"Scroll the camera") \
-    X(CAMERA_TILT, u"Kamera neigen", u"Tilt the camera") \
-    X(CAMERA_ROTATE, u"Kamera drehen", u"Rotate the camera") \
-    X(CAMERA_ZOOM, u"Heranzoomen / Wegzoomen", u"Zoom in / out") \
+    X(CAMERA_LEFT, u"Kamera nach links", u"Move the camera left") \
+    X(CAMERA_RIGHT, u"Kamera nach rechts", u"Move the camera right") \
+    X(CAMERA_UP, u"Kamera nach oben", u"Move the camera up") \
+    X(CAMERA_DOWN, u"Kamera nach unten", u"Move the camera down") \
+    X(CAMERA_TILT_MINUS, u"Kamera neigen (-)", u"Tilt the camera (-)") \
+    X(CAMERA_TILT_PLUS, u"Kamera neigen (+)", u"Tilt the camera (+)") \
+    X(CAMERA_ROTATE_MINUS, u"Kamera drehen (-)", u"Rotate the camera (-)") \
+    X(CAMERA_ROTATE_PLUS, u"Kamera drehen (+)", u"Rotate the camera (+)") \
+    X(CAMERA_ZOOM_IN, u"Heranzoomen", u"Zoom in") \
+    X(CAMERA_ZOOM_OUT, u"Wegzoomen", u"Zoom out") \
     X(CAMERA_SELECTION, u"Kamera auf die Auswahl", u"Camera to the selection") \
     X(CAMERA_HQ, u"Kamera zum Hauptquartier", u"Camera to the headquarters") \
     X(CAMERA_NOTIFICATION, u"Kamera zum Ort der letzten Meldung", u"Camera to the last message's location") \
@@ -789,7 +795,16 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
     X(INTRO_SKIP_ALL, u"Alle Intro-Filme \u00FCberspringen", u"Skip all intro movies") \
     X(INTRO_SKIP, u"Intro-Film \u00FCberspringen (auch per Mausklick)", u"Skip the intro movie (also a mouse click)") \
     X(END_MOVIE_SKIP, u"Endfilm \u00FCberspringen", u"Skip the end movie") \
-    X(END_MOVIE_SCREENSHOT, u"Bildschirmfoto im Endfilm", u"Screenshot during the end movie")
+    X(END_MOVIE_SCREENSHOT, u"Bildschirmfoto im Endfilm", u"Screenshot during the end movie") \
+    X(PANEL_CAPTURE, u"Taste dr\u00FCcken... (Esc: abbrechen)", u"Press a key... (Esc: cancel)") \
+    X(PANEL_CONFLICT, u"Taste bereits belegt: ", u"Key already in use: ") \
+    X(PANEL_NOT_ALLOWED, u"Taste nicht erlaubt", u"Key not allowed") \
+    X(PANEL_CLEARED, u"Belegung entfernt: ", u"Key removed: ") \
+    X(PANEL_DEFAULTS_RESTORED, u"Standardbelegung wiederhergestellt", u"Default keys restored") \
+    X(PANEL_HINT, u"Linksklick: Taste \u00E4ndern, Rechtsklick: Belegung entfernen", u"Left click: change the key, right click: remove it") \
+    X(PANEL_UNBOUND, u"(keine)", u"(none)") \
+    X(PANEL_BUTTON_DEFAULTS, u"Standard", u"Defaults") \
+    X(PANEL_BUTTON_BACK, u"Zur\u00FCck", u"Back")
 
 /* a mutable UTF-16 copy of a u"" literal (TextResource_TryResolve hands out uint16_t *) */
 template <size_t N>

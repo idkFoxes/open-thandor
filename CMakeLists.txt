@@ -206,6 +206,7 @@ add_executable(thandor WIN32
     src/ui/core/key_binding_tables.cpp
     src/ui/core/key_bindings.cpp
     src/ui/core/key_bindings_ini.cpp
+    src/ui/core/key_bindings_panel.cpp
     src/ui/core/model_tint.cpp
     src/ui/core/pcx_preview.cpp
     src/ui/core/runtime.cpp
@@ -538,6 +539,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/selftest/campaignmap_selftest.cpp
         src/platform/selftest/campaignprogress_selftest.cpp
         src/platform/selftest/hexscan_selftest.cpp
+        src/platform/selftest/keybindings_panel_selftest.cpp
         src/platform/selftest/keybindings_selftest.cpp
         src/platform/selftest/keymatch_selftest.cpp
         src/platform/selftest/language_selftest.cpp

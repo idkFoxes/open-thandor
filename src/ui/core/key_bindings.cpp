@@ -77,17 +77,17 @@ static KeyBinding g_KeyBindings[KEY_ACTION_COUNT] = {
     /* A: every own model of runtime class 22 (the airport, "Flughafen" 310/1310/2310) */
     KB("select_airports", InGame, UnitsAndGroups, InGameKeyCommands, 1, 0, 14, TEXT_ID_KEYS_SELECT_AIRPORTS, {KeyChar('a'), BIND_NONE}),
     KB("upgrade_page", InGame, UnitsAndGroups, InGameKeyCommands, 1, 0, 13, TEXT_ID_KEYS_UPGRADE_PAGE, {KeyChar('f'), BIND_NONE}),
-    /* Kamera: the held keys share the four texts of the former combined rows */
-    KB("camera_left", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_SCROLL, {KEYBOARD_KEY_CODE_LEFT, BIND_NONE}),
-    KB("camera_right", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_SCROLL, {KEYBOARD_KEY_CODE_RIGHT, BIND_NONE}),
-    KB("camera_up", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_SCROLL, {KEYBOARD_KEY_CODE_UP, BIND_NONE}),
-    KB("camera_down", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_SCROLL, {KEYBOARD_KEY_CODE_DOWN, BIND_NONE}),
-    KB("camera_tilt_minus", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_TILT, {KEYBOARD_KEY_CODE_PAGE_UP, BIND_NONE}),
-    KB("camera_tilt_plus", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_TILT, {KEYBOARD_KEY_CODE_PAGE_DOWN, BIND_NONE}),
-    KB("camera_rotate_minus", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_ROTATE, {KEYBOARD_KEY_CODE_INSERT, BIND_NONE}),
-    KB("camera_rotate_plus", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_ROTATE, {KEYBOARD_KEY_CODE_DELETE, BIND_NONE}),
-    KB("camera_zoom_in", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_ZOOM, {KEYBOARD_KEY_CODE_HOME, BIND_NONE}),
-    KB("camera_zoom_out", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_ZOOM, {KEYBOARD_KEY_CODE_END, BIND_NONE}),
+    /* Kamera: one row per held key (direction, tilt, rotation, zoom) */
+    KB("camera_left", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_LEFT, {KEYBOARD_KEY_CODE_LEFT, BIND_NONE}),
+    KB("camera_right", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_RIGHT, {KEYBOARD_KEY_CODE_RIGHT, BIND_NONE}),
+    KB("camera_up", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_UP, {KEYBOARD_KEY_CODE_UP, BIND_NONE}),
+    KB("camera_down", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_DOWN, {KEYBOARD_KEY_CODE_DOWN, BIND_NONE}),
+    KB("camera_tilt_minus", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_TILT_MINUS, {KEYBOARD_KEY_CODE_PAGE_UP, BIND_NONE}),
+    KB("camera_tilt_plus", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_TILT_PLUS, {KEYBOARD_KEY_CODE_PAGE_DOWN, BIND_NONE}),
+    KB("camera_rotate_minus", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_ROTATE_MINUS, {KEYBOARD_KEY_CODE_INSERT, BIND_NONE}),
+    KB("camera_rotate_plus", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_ROTATE_PLUS, {KEYBOARD_KEY_CODE_DELETE, BIND_NONE}),
+    KB("camera_zoom_in", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_ZOOM_IN, {KEYBOARD_KEY_CODE_HOME, BIND_NONE}),
+    KB("camera_zoom_out", InGame, Camera, CameraHeldKeys, 1, 0, 0, TEXT_ID_KEYS_CAMERA_ZOOM_OUT, {KEYBOARD_KEY_CODE_END, BIND_NONE}),
     KB("camera_selection", InGame, Camera, InGameKeyCommands, 1, 0, 8, TEXT_ID_KEYS_CAMERA_SELECTION, {KEYBOARD_KEY_CODE_NUMPAD_5, BIND_NONE}),
     /* B: the first own model of runtime class 11 (the headquarters, "Hauptquartier" 301/1301/2301) */
     KB("camera_hq", InGame, Camera, InGameKeyCommands, 1, 0, 9, TEXT_ID_KEYS_CAMERA_HQ, {KeyChar('b'), BIND_NONE}),
