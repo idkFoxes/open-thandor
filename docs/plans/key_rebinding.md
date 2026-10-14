@@ -1,6 +1,9 @@
 # Key rebinding
 
-Status: P1 (binding model) done on `experimental/keybinding-edit`; P2..P6 open.
+Status: P1 (binding model) done on `experimental/keybinding-edit`; P3 (ini `[keys]`) done on
+`keybinding-edit/kb-p3`: `PersistentSettings_RegisterSection` / `_MarkDirty` (core/settings/persistent.h),
+`KeyBindingsIni_Register` (ui/core/key_bindings_ini.h, called at the start of `ProcessEntry_RunGame`, before the
+first settings load); P2, P4..P6 open.
 
 ## Goal
 

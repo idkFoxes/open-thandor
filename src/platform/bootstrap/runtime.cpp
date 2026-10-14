@@ -15,6 +15,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/ui/core/key_bindings.h>
+#include <thandor/ui/core/key_bindings_ini.h>
 
 /* Module data. */
 
@@ -240,6 +241,8 @@ static void ProcessEntry_RunGame()
   uint32_t displayWidth;
   uint32_t displayHeight;
 
+  /* thandor.ini's [keys] is parsed by the settings loads below */
+  KeyBindingsIni_Register();
   ArenaHeap_Init();
   FileSystem_Init();
   Locale_Init();
