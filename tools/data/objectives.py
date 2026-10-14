@@ -294,7 +294,7 @@ def short_leaf(c, local):
     if kind == 2:
         return 'Fraktion %d vernichten' % ops[0] if ops[0] != local else 'eigene Einheiten verlieren'
     if kind == 4:
-        return 'Feindliche Hauptstreitmacht vernichten'
+        return 'Alle feindlichen Gebäude zerstören'
     if kind == 6:
         return '%s zerstören' % asset_name(ops[2]) if ops[0] != local else '%s verlieren' % asset_name(ops[2])
     if kind == 8:

@@ -116,7 +116,7 @@ namespace {
 /* the English objective templates (TEXT_ID_OBJECTIVE_BASE.., resources.h), in id order */
 auto s_ObjectiveLabel = Plain(u"Objective:");
 auto s_ObjectiveDestroyAllEnemies = Plain(u"Destroy all enemies");
-auto s_ObjectiveDestroyMainForce = Plain(u"Destroy the enemy main force");
+auto s_ObjectiveDestroyMainForce = Plain(u"Destroy all enemy buildings");
 auto s_ObjectiveDestroyType = Plain(u"Destroy %s");
 auto s_ObjectiveEliminateFaction = Plain(u"Eliminate enemy %s");
 auto s_ObjectiveEliminateAll = Plain(u"Eliminate all enemies");

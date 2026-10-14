@@ -40,7 +40,7 @@ Für Einzelkarten, Multiplayer, Add-ons und fehlende Einträge. Endtrigger mit V
 | Bedingung | Zeile 1 | Zeile 2 |
 |---|---|---|
 | FACTION_HAS_NO_ARMY (Gegner) | Alle Gegner vernichten | Gegnerische Einheiten: 37 |
-| FACTION_HAS_NO_COMMAND_GROUP_A_ARMY | Feindliche Hauptstreitmacht vernichten | – |
+| FACTION_HAS_NO_COMMAND_GROUP_A_ARMY | Alle feindlichen Gebäude zerstören | – |
 | FACTION_HAS_NO_ARMY_OF_ASSET | <Einheitentyp> zerstören | Verbleibend: 2 |
 | FACTION_INACTIVE_OR_RELATION_AT_LEAST_8 | <Fraktion> ausschalten | – |
 | XENITE_AT_LEAST | Xenit sammeln | Xenit 3200 / 5000 |

@@ -207,7 +207,7 @@ inline constexpr int TEXT_ID_LANGUAGE_NAME_COUNT = 5;
 inline constexpr int TEXT_ID_OBJECTIVE_RESERVED = 0x40;
 #define TEXT_ID_OBJECTIVE_LABEL (TEXT_ID_OBJECTIVE_BASE + 0) /* "Ziel:" (the overlay's prefix) */
 #define TEXT_ID_OBJECTIVE_DESTROY_ALL_ENEMIES (TEXT_ID_OBJECTIVE_BASE + 1) /* "Alle Gegner vernichten" */
-#define TEXT_ID_OBJECTIVE_DESTROY_MAIN_FORCE (TEXT_ID_OBJECTIVE_BASE + 2) /* "Feindliche Hauptstreitmacht vernichten" */
+#define TEXT_ID_OBJECTIVE_DESTROY_MAIN_FORCE (TEXT_ID_OBJECTIVE_BASE + 2) /* "Alle feindlichen Gebaeude zerstoeren" (group A = all building classes) */
 #define TEXT_ID_OBJECTIVE_DESTROY_TYPE (TEXT_ID_OBJECTIVE_BASE + 3) /* "%s zerstoeren" */
 #define TEXT_ID_OBJECTIVE_ELIMINATE_FACTION (TEXT_ID_OBJECTIVE_BASE + 4) /* "Gegner %s ausschalten" */
 #define TEXT_ID_OBJECTIVE_ELIMINATE_ALL (TEXT_ID_OBJECTIVE_BASE + 5) /* "Alle Gegner ausschalten" */

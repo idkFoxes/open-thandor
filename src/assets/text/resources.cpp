@@ -853,7 +853,7 @@ void TextResource_SetKeyBindingTextsEnglish(bool english)
    English ones are in project_texts_en.cpp. Plain text, umlauts as Latin-1 code units. */
 static KeyBindingTextUtf16 g_ObjectiveTextLabel{u"Ziel:"};
 static KeyBindingTextUtf16 g_ObjectiveTextDestroyAllEnemies{u"Alle Gegner vernichten"};
-static KeyBindingTextUtf16 g_ObjectiveTextDestroyMainForce{u"Feindliche Hauptstreitmacht vernichten"};
+static KeyBindingTextUtf16 g_ObjectiveTextDestroyMainForce{u"Alle feindlichen Gebäude zerstören"};
 static KeyBindingTextUtf16 g_ObjectiveTextDestroyType{u"%s zerst\u00F6ren"};
 static KeyBindingTextUtf16 g_ObjectiveTextEliminateFaction{u"Gegner %s ausschalten"};
 static KeyBindingTextUtf16 g_ObjectiveTextEliminateAll{u"Alle Gegner ausschalten"};

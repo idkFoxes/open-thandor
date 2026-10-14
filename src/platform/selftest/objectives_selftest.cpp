@@ -176,7 +176,7 @@ void Objectives_UnitCases()
 
   Objectives_SingleCase("no army", INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY, 2, 0, 0, u"Gegner 2 vernichten");
   Objectives_SingleCase("no group A army", INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_COMMAND_GROUP_A_ARMY, 2, 0, 0,
-                        u"Feindliche Hauptstreitmacht vernichten");
+                        u"Alle feindlichen Gebäude zerstören");
   Objectives_SingleCase("no army of asset", INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY_OF_ASSET, 2, 0, 50,
                         u"Einheiten zerstören");
   Objectives_SingleCase("inactive or allied", INGAME_SCHEDULED_CONDITION_FACTION_INACTIVE_OR_RELATION_AT_LEAST_8, 3,
