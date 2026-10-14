@@ -86,6 +86,10 @@ void CoreAssets_BindLanguageTexts();
    texts it has copied or laid out itself (e.g. the advanced settings page's note). */
 void Game_ApplyLanguage(uint32_t countryCode);
 
+/* Not in the original: counts the Game_ApplyLanguage calls (starts at 0), so code that keeps texts it built itself
+   (e.g. the objective overlay's line) can see a language switch and build them again. */
+uint32_t Game_LanguageGeneration();
+
 bool Game_PlayIntroMovies();
 
 /* 0, or a FATAL_ERROR_* code */

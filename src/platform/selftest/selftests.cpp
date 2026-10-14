@@ -1009,6 +1009,39 @@ static void Thandor_SelfTestSettings()
         }
         Thandor_Log("settings: pathing key %s", pathingDifferences == 0 ? "ok" : "MISMATCH");
     }
+    {
+        /* [game] objective_overlay (open-thandor, the reserved dword 0x54): on / off, a number, and the names written
+           back; an unknown value is not taken (the dword stays not present: the default, on) */
+        static const struct {
+            const char *text;
+            uint32_t value;
+            const char *written;
+        } states[] = {{"[game]\r\nobjective_overlay = on\r\n", PERSISTENT_OBJECTIVE_OVERLAY_ON, "objective_overlay = on\r\n"},
+                      {"[game]\r\nobjective_overlay = OFF ; comment\r\n", PERSISTENT_OBJECTIVE_OVERLAY_OFF,
+                       "objective_overlay = off\r\n"},
+                      {"[game]\r\nobjective_overlay = 1\r\n", PERSISTENT_OBJECTIVE_OVERLAY_OFF, "objective_overlay = off\r\n"},
+                      {"[game]\r\nobjective_overlay = 0\r\n", PERSISTENT_OBJECTIVE_OVERLAY_ON, "objective_overlay = on\r\n"}};
+        static const char unknownState[] = "[game]\r\nobjective_overlay = maybe\r\n";
+        unsigned overlayDifferences = 0;
+        for (const auto &state : states) {
+            uint32_t value = 0xFFFFFFFF;
+            memset(parsed, 0, sizeof parsed);
+            mask = PersistentSettings_ParseIni(state.text, (uint32_t)strlen(state.text), parsed);
+            memcpy(&value, parsed + PERSISTENT_SETTING_OBJECTIVE_OVERLAY, 4);
+            length = PersistentSettings_FormatIni(parsed, mask, text, sizeof text);
+            if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_OBJECTIVE_OVERLAY / 4)) || (value != state.value) ||
+                (strstr(text, state.written) == nullptr) || (strstr(text, "dword_54") != nullptr)) {
+                Thandor_Log("settings: objective_overlay %u MISMATCH (value %u)", state.value, value);
+                overlayDifferences++;
+            }
+        }
+        memset(parsed, 0, sizeof parsed);
+        if (PersistentSettings_ParseIni(unknownState, (uint32_t)strlen(unknownState), parsed) != 0) {
+            Thandor_Log("settings: objective_overlay: an unknown value is present");
+            overlayDifferences++;
+        }
+        Thandor_Log("settings: objective_overlay key %s", overlayDifferences == 0 ? "ok" : "MISMATCH");
+    }
     Thandor_Log("settings: keys section %s", SelfTest_SettingsKeys(text, sizeof text) == 0 ? "ok" : "MISMATCH");
 
     file = fopen("thandor.dat", "rb");
@@ -1316,6 +1349,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != nullptr && strcmp(name, "uiatlas") == 0) {
         Thandor_SelfTestUiAtlas();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "objectives") == 0) {
+        Thandor_SelfTestObjectives();
         return 1;
     }
     if (name != nullptr && strcmp(name, "crash") == 0) {

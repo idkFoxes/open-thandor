@@ -869,9 +869,17 @@ void CoreAssets_BindLanguageTexts()
    (TextResource_SelectLanguage), makes the startup bindings again (CoreAssets_BindLanguageTexts) and the frontend's
    network address line binding (Frontend_Init), refreshes the key binding panel and redraws the frontend when it is
    up. Loads and frees nothing. */
+static uint32_t s_GameLanguageGeneration = 0; /* Game_LanguageGeneration */
+
+uint32_t Game_LanguageGeneration()
+{
+  return s_GameLanguageGeneration;
+}
+
 void Game_ApplyLanguage(uint32_t countryCode)
 
 {
+  s_GameLanguageGeneration++;
   PersistentSettings_WriteLanguage(countryCode);
   TextResource_SelectLanguage(countryCode);
   CoreAssets_BindLanguageTexts();

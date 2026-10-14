@@ -228,6 +228,8 @@ game_name = "Thandorspiel"
 language = auto
 ; unit pathfinding and movement in single player: improved (default; units drive curves, wait for and give way to each other) or original (exactly the original game's movement); a network game always agrees on one mode
 pathing = improved
+; objective box at the top left of the game (the mission objective and its progress): on (default) or off
+objective_overlay = on
 
 [network]
 ; player count of a hosted network game (default 4)

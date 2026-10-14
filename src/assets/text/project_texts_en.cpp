@@ -110,3 +110,61 @@ uint16_t *TextResource_ProjectTextEnglish(uint32_t index)
   }
   return s_ProjectTextsEnglish[index];
 }
+
+namespace {
+
+/* the English objective templates (TEXT_ID_OBJECTIVE_BASE.., resources.h), in id order */
+auto s_ObjectiveLabel = Plain(u"Objective:");
+auto s_ObjectiveDestroyAllEnemies = Plain(u"Destroy all enemies");
+auto s_ObjectiveDestroyMainForce = Plain(u"Destroy the enemy main force");
+auto s_ObjectiveDestroyType = Plain(u"Destroy %s");
+auto s_ObjectiveEliminateFaction = Plain(u"Eliminate enemy %s");
+auto s_ObjectiveEliminateAll = Plain(u"Eliminate all enemies");
+auto s_ObjectiveCollectXenite = Plain(u"Collect Xenite");
+auto s_ObjectiveCollectTritium = Plain(u"Collect Tritium");
+auto s_ObjectiveRaiseTritiumRate = Plain(u"Raise the Tritium extraction");
+auto s_ObjectiveBuildType = Plain(u"Build %s");
+auto s_ObjectiveControlTerrain = Plain(u"Control the territory");
+auto s_ObjectiveHoldOut = Plain(u"Hold out");
+auto s_ObjectiveSmallXeniteStorage = Plain(u"Keep the Xenite storage small");
+auto s_ObjectiveKeepUnitsTogether = Plain(u"Keep the units together");
+auto s_ObjectiveMultiple = Plain(u"Several objectives (F1)");
+auto s_ObjectiveSeeBriefing = Plain(u"Objective: see the briefing (F1)");
+auto s_ObjectiveAnd = Plain(u"%s and %s");
+auto s_ObjectiveOr = Plain(u"%s or %s");
+auto s_ObjectiveMore = Plain(u"%s (+%u more)");
+auto s_ObjectiveUnitFallback = Plain(u"Units");
+auto s_ObjectiveProgressEnemyUnits = Plain(u"Enemy units: %u");
+auto s_ObjectiveProgressRemaining = Plain(u"Remaining: %u");
+auto s_ObjectiveProgressXenite = Plain(u"Xenite %u / %u");
+auto s_ObjectiveProgressTritium = Plain(u"Tritium %u / %u");
+auto s_ObjectiveProgressRate = Plain(u"Tritium %u / %u per minute");
+auto s_ObjectiveProgressCount = Plain(u"%u / %u");
+auto s_ObjectiveProgressPercent = Plain(u"%u %% / %u %%");
+auto s_ObjectiveProgressCountdown = Plain(u"%u:%02u left");
+auto s_ObjectiveDestroyFaction = Plain(u"Destroy enemy %s");
+auto s_ObjectiveStopTritium = Plain(u"Stop the Tritium extraction of %s");
+
+uint16_t *const s_ObjectiveTextsEnglish[] = {
+    s_ObjectiveLabel.data(), s_ObjectiveDestroyAllEnemies.data(), s_ObjectiveDestroyMainForce.data(),
+    s_ObjectiveDestroyType.data(), s_ObjectiveEliminateFaction.data(), s_ObjectiveEliminateAll.data(),
+    s_ObjectiveCollectXenite.data(), s_ObjectiveCollectTritium.data(), s_ObjectiveRaiseTritiumRate.data(),
+    s_ObjectiveBuildType.data(), s_ObjectiveControlTerrain.data(), s_ObjectiveHoldOut.data(),
+    s_ObjectiveSmallXeniteStorage.data(), s_ObjectiveKeepUnitsTogether.data(), s_ObjectiveMultiple.data(),
+    s_ObjectiveSeeBriefing.data(), s_ObjectiveAnd.data(), s_ObjectiveOr.data(), s_ObjectiveMore.data(),
+    s_ObjectiveUnitFallback.data(), s_ObjectiveProgressEnemyUnits.data(), s_ObjectiveProgressRemaining.data(),
+    s_ObjectiveProgressXenite.data(), s_ObjectiveProgressTritium.data(), s_ObjectiveProgressRate.data(),
+    s_ObjectiveProgressCount.data(), s_ObjectiveProgressPercent.data(), s_ObjectiveProgressCountdown.data(),
+    s_ObjectiveDestroyFaction.data(), s_ObjectiveStopTritium.data()};
+static_assert(sizeof(s_ObjectiveTextsEnglish) / sizeof(s_ObjectiveTextsEnglish[0]) == TEXT_ID_OBJECTIVE_COUNT,
+              "one English text per TEXT_ID_OBJECTIVE_* id");
+
+} // namespace
+
+uint16_t *TextResource_ObjectiveTextEnglish(uint32_t index)
+{
+  if (index >= sizeof(s_ObjectiveTextsEnglish) / sizeof(s_ObjectiveTextsEnglish[0])) {
+    return nullptr;
+  }
+  return s_ObjectiveTextsEnglish[index];
+}
