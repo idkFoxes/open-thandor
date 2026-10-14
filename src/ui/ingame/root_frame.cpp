@@ -10,6 +10,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/ui/core/key_bindings.h>
+#include <thandor/ui/core/key_bindings_panel.h>
 
 /* Module data. */
 
@@ -412,7 +413,10 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
         InGameTechnologyPanel_Rebuild(&inGameRoot->rootUi);
       }
       InterpolationStateTable_Advance256ByTicks(g_InGameSimulationStepTicks);
-      InGameUiRoot_ApplyCameraKeys(inGameRoot);
+      /* project change: not while the key binding panel captures a key (its keys are polled, not dispatched) */
+      if (!KeyBindingsPanel_Capturing()) {
+        InGameUiRoot_ApplyCameraKeys(inGameRoot);
+      }
       InGameUiRoot_UpdateCountdownText(inGameRoot);
       currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
     }

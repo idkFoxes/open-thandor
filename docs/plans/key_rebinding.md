@@ -1,8 +1,8 @@
 # Key rebinding
 
-Status: P1 (binding model), P2 (dispatch) and P3 (ini `[keys]`: `PersistentSettings_RegisterSection` / `_MarkDirty`,
-`KeyBindingsIni_Register` called at the start of `ProcessEntry_RunGame`) done on `experimental/keybinding-edit`;
-P4..P6 open.
+Status: P1 (binding model), P2 (dispatch), P3 (ini `[keys]`: `PersistentSettings_RegisterSection` / `_MarkDirty`,
+`KeyBindingsIni_Register` called at the start of `ProcessEntry_RunGame`), P4 (shared panel), P5 (hosts) and P6 (held
+state of every key) done on `experimental/keybinding-edit` (P5 on `keybinding-edit/kb-p5`).
 
 ## Goal
 
@@ -92,7 +92,7 @@ with MarkDirty and an immediate Flush.
 | P2 | dispatch: tables non-const; Apply rewrites `commandCode` / `modifierClassFlags` in the original record order, unused records get an unbound sentinel; Shift variant in `key_dispatch.h`; camera polls `KeyBindings_HeldDown` |
 | P3 | ini `[keys]` (tokens, section hook, MarkDirty + Flush) |
 | P4 | shared panel: static node tree in module storage, own vtables, capture, status line; camera direction texts |
-| P5 | hosts: frontend page and the in-game "Tastatur" tab overlay; scripts |
+| P5 | hosts: frontend page and the in-game "Tastatur" tab overlay; scripts (section "Hosts") |
 | P6 | held state for every key-down code (`devices.cpp`, SDL3 input), cleared on focus loss, for letter camera keys |
 
 ## Panel (P4, `include/thandor/ui/core/key_bindings_panel.h`)
@@ -106,5 +106,25 @@ with MarkDirty and an immediate Flush.
 - While a capture runs (`KeyBindingsPanel_Capturing`) the list holds the keyboard focus and takes every key, so neither
   the world view's key commands nor the hotkeys (root keyboard fallback) see it. The held camera keys are polled, not
   dispatched: the in-game host skips `InGameUiRoot_ApplyCameraKeys` while capturing.
-- Release detection uses the navigation keys' held state until P6 (`Keyboard_KeyHeld`) is merged; other keys are
-  taken when the modifiers are released.
+- Release detection: the held state of the captured key (`Keyboard_KeyHeld`, P6), so a letter or F-key is taken
+  when it and every modifier are released. `Game_ApplyLanguage` calls `KeyBindingsPanel_Refresh`.
+
+## Hosts (P5)
+
+- Frontend (`ui/frontend/key_bindings_page.cpp`): "Tastenbelegung" shows the page (title node) and attaches the panel
+  at 608 x 284 (`{-304,-132,304,152}`, centred); the close callback detaches it and enqueues 0x2010 (back to the
+  options page). The former read-only list's back button, scroll frame and list stay in `FrontendUiImage` as unused,
+  unlinked storage, so no later node moves. `FrontendRuntime_ShutdownAndReleaseResources` detaches a panel still in
+  the frontend tree.
+- In-game (`ui/ingame/key_bindings_overlay.cpp`): the help window's tab "Tastatur" (action 0x1022) selects "Auftrag"
+  and opens the overlay: a transparent layer (module node, the whole root, hit where the panel is not, so nothing
+  below takes a press) as the in-game root panel's last child, with the panel (`BACKGROUND | TITLE`, 632 x 334 = the
+  frontend's content plus inset and title, at least 520 x 240) centred over the world view. "Zurueck" / Esc close
+  it; the help window stays open (a local game stays paused). The old texte_tastatur columns (page 1) are unused.
+  While the overlay is open `InGameHotkeys_DispatchCommandByFlags` takes no key and the model view's keyboard
+  fallback (world view key commands) is skipped while any panel is attached; while capturing,
+  `InGameUiRoot_ApplyCameraKeys` is skipped. `InGameRuntime_ShutdownAndReleaseResources` closes the overlay before
+  the root is freed.
+- Scripts: `tools/test/key_bindings_page.txt` (frontend: F5, conflict S, Ctrl+P on release, Esc, not allowed, clear,
+  Alt+F4, Standard, back) and `tools/test/key_bindings_ingame.txt` (skirmish, F1, "Tastatur", F1/F2 ignored, Pause
+  to F6, Esc, "Ok", P no longer pauses, F6 pauses, `[keys] pause = F6`).

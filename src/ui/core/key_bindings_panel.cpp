@@ -23,6 +23,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/ui/ingame/layout.h>
+#include <thandor/platform/input/devices.h>
 
 #include <algorithm>
 #include <cstring>
@@ -181,28 +182,11 @@ KeyChord KeyCapture_Chord(const KeyCapture *capture)
   return KeyChord{capture->keyCode,modifiers};
 }
 
-/* Whether the captured key is still held. Today only the navigation keys have a released held state
-   (g_KeyboardSpecialKeyDown; Esc, Enter, Tab, Backspace, Print and Pause are set but never cleared there, so they
-   count as released); the other keys count as released at once, so their chord is taken when the modifiers are
-   released. With the held state of every key (P6, Keyboard_KeyHeld) this becomes that query. */
+/* Whether the captured key is still held: the generic held state of every key-down code (Keyboard_KeyHeld), so a
+   letter or function key is taken when it is released, together with every modifier held at the peak. */
 static bool KeyBindingsPanel_KeyHeld(uint32_t keyCode)
 {
-  switch (keyCode) {
-  case KEYBOARD_KEY_CODE_DELETE:
-  case KEYBOARD_KEY_CODE_INSERT:
-  case KEYBOARD_KEY_CODE_HOME:
-  case KEYBOARD_KEY_CODE_END:
-  case KEYBOARD_KEY_CODE_PAGE_UP:
-  case KEYBOARD_KEY_CODE_PAGE_DOWN:
-  case KEYBOARD_KEY_CODE_LEFT:
-  case KEYBOARD_KEY_CODE_RIGHT:
-  case KEYBOARD_KEY_CODE_UP:
-  case KEYBOARD_KEY_CODE_DOWN:
-  case KEYBOARD_KEY_CODE_NUMPAD_5:
-    return g_KeyboardSpecialKeyDown[keyCode & KEYBOARD_KEY_CODE_INDEX_MASK] != 0;
-  default:
-    return false;
-  }
+  return Keyboard_KeyHeld(keyCode);
 }
 
 /* ---- texts ---- */

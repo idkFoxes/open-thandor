@@ -254,6 +254,7 @@ add_executable(thandor WIN32
     src/ui/ingame/editor_tools.cpp
     src/ui/ingame/hotkeys.cpp
     src/ui/ingame/hud.cpp
+    src/ui/ingame/key_bindings_overlay.cpp
     src/ui/ingame/key_commands.cpp
     src/ui/ingame/layout.cpp
     src/ui/ingame/minimap_texture.cpp
