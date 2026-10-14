@@ -41,7 +41,8 @@ enum class KeyBindingSource : uint8_t {
     InGameKeyCommands,  /* ui/ingame/key_commands.cpp, InGameKeyCommands_FindBinding (InGameKeyCommandAction);
                            the world view gets a key before the in-game hotkeys */
     CameraHeldKeys,     /* ui/ingame/root_frame.cpp InGameUiRoot_ApplyCameraKeys: polled while held
-                           (g_KeyboardSpecialKeyDown; KeyBindings_HeldDown); the numpad digits map to the same keys */
+                           (g_KeyboardSpecialKeyDown; KeyBindings_HeldDown with Keyboard_KeyHeld for any key);
+                           the numpad digits map to the same keys */
     FrontendHotkeys,    /* ui/frontend/state.cpp, FrontendHotkeys_FindBinding (FrontendHotkeyAction) */
     EndMovieCommands,   /* ui/frontend/end_movie_commands.cpp, EndMovieCommands_FindBinding (EndMovieCommandAction) */
     IntroMovies,        /* platform/bootstrap/runtime.cpp IntroMovie_PollSkipRequest */
@@ -222,9 +223,10 @@ void KeyBindings_RemoveChangeListener(KeyBindingsChangeListener listener);
 uint32_t KeyBindings_ChangeCount();
 void KeyBindings_NotifyChanged();
 
-/* True while a chord of a held-key action (the camera) is held: the key is down and the chord's modifiers are held
-   (a chord without modifiers ignores them). Today only the 0x10000 family keys (g_KeyboardSpecialKeyDown); P6 adds
-   the held state of every key-down code. */
+/* True while a chord of a held-key action (the camera) is held: the key is down (Keyboard_KeyHeld, every key-down
+   code, released on focus loss) and the chord's modifiers are held (a chord without modifiers ignores them). While a
+   text edit has the keyboard focus the keys that type text (letters, digits, Space, numpad operators) do not count;
+   the special keys do (the original moves the camera with the arrow keys while the chat edit has the focus). */
 bool KeyBindings_HeldDown(KeyAction action);
 
 /* ini tokens (English, canonical): "P", "Alt+G", "Ctrl+Shift+F1", "Ctrl+1..8" (range actions), "Left", "PageUp",

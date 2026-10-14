@@ -8,6 +8,7 @@
 #include <thandor/ui/core/key_bindings.h>
 #include <thandor/assets/text/resources.h>
 #include <thandor/platform/input/devices.h>
+#include <thandor/thandor.h>
 
 #include <cstring>
 
@@ -648,6 +649,14 @@ void KeyBindings_NotifyChanged()
   KeyBindings_Changed();
 }
 
+/* A key that types a character into a text edit: the digits and letters (KEYBOARD_KEY_CODE_CHAR), Space and the
+   numpad operators (plain ASCII codes). */
+static bool KeyBindings_TypesText(uint32_t keyCode)
+{
+  return ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == static_cast<uint32_t>(KEYBOARD_KEY_CODE_CHAR(0))) ||
+         (keyCode < static_cast<uint32_t>(KEYBOARD_KEY_CODE_SPECIAL(0)));
+}
+
 bool KeyBindings_HeldDown(KeyAction action)
 {
   if (static_cast<int>(action) >= KEY_ACTION_COUNT) {
@@ -655,13 +664,16 @@ bool KeyBindings_HeldDown(KeyAction action)
   }
   const KeyBinding &binding = KeyBindings_Entry(action);
   UiKeyboardStateMask held = KeyChord_NormalizeModifiers(g_KeyboardStateMask);
+  /* while a text edit (chat, message, save name) has the keyboard focus its typed keys only type; the special keys
+     (arrows etc.) still count, as the original's camera keys move the camera while the chat edit has the focus */
+  const bool textEditFocused = (g_UiKeyboardFocusNode != nullptr) && (g_UiKeyboardFocusNode != UI_NODE_NONE) &&
+                               (g_UiKeyboardFocusNode->vtable == &g_UiRequiredTextEditControlVtable);
   for (int keyIndex = 0; (keyIndex < KEY_BINDING_MAX_KEYS) && (binding.keys[keyIndex].keyCode != 0); keyIndex++) {
     const KeyChord &chord = binding.keys[keyIndex];
-    uint32_t index = chord.keyCode & KEYBOARD_KEY_CODE_INDEX_MASK;
-    /* P6: the held state of every key-down code; today only the 0x10000 family */
-    if (((chord.keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == static_cast<uint32_t>(KEYBOARD_KEY_CODE_SPECIAL(0))) &&
-        (index < sizeof(g_KeyboardSpecialKeyDown)) && (g_KeyboardSpecialKeyDown[index] != 0) &&
-        KeyMatch_Modifiers(KeyMatchRule::Held,chord.modifiers,held)) {
+    if (textEditFocused && KeyBindings_TypesText(chord.keyCode)) {
+      continue;
+    }
+    if (Keyboard_KeyHeld(chord.keyCode) && KeyMatch_Modifiers(KeyMatchRule::Held,chord.modifiers,held)) {
       return true;
     }
   }

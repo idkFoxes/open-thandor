@@ -23,7 +23,7 @@
    2. The model rules: the defaults are conflict-free, names are unique, ini tokens round-trip (every bindable key
       with every modifier combination, every editable action's value), and Set / Clear / Reset follow the conflict
       policy (docs/plans/key_rebinding.md) with change notification. The bindings are back at their defaults
-      afterwards.
+      afterwards. P6: the held state of a letter camera key and of a chord with a modifier (KeyBindingsTest_HeldKeys).
    3. The dispatch tables follow the bindings (ui/core/key_binding_tables.h): a rebound key dispatches and the old
       one no longer does (Pause, Stop, the group modifiers, menu_leave with its permanent Alt+F4), the in-game
       hotkeys need Shift only for a chord with Shift, and KEY_BINDING_MAX_KEYS chords on every editable action fit
@@ -40,6 +40,8 @@
 #include <thandor/platform/input/devices.h>
 #include <thandor/assets/text/resources.h>
 #include <thandor/ui/core/key_bindings.h>
+#include <thandor/ui/controls/focus_proxy.h>
+#include <thandor/ui/controls/text_edit.h>
 #include <thandor/ui/core/key_binding_tables.h>
 #include <thandor/ui/ingame/hotkeys.h>
 #include <thandor/ui/ingame/key_commands.h>
@@ -385,6 +387,59 @@ static uint32_t KeyBindingsTest_TokenRoundTrips()
   return checked;
 }
 
+/* P6: the held state of a letter camera key (CameraLeft = W, set by the caller) and of a chord with a modifier
+   (CameraRight = Ctrl+F5): held while down with any modifiers (W) or with its modifier (Ctrl+F5), released by
+   key-up and by Keyboard_ReleaseHeldKeys (focus loss), and W does not count while a text edit has the focus. */
+static void KeyBindingsTest_HeldKeys()
+{
+  using enum KeyAction;
+  Keyboard_FlushEvents();
+  Keyboard_OnKeyDown('W');
+  if (!KeyBindings_HeldDown(CameraLeft) || KeyBindings_HeldDown(CameraRight)) {
+    KeyBindingsTest_ModelFail("held W is not CameraLeft");
+  }
+  Keyboard_OnKeyDown(VK_LSHIFT);
+  if (!KeyBindings_HeldDown(CameraLeft)) {
+    KeyBindingsTest_ModelFail("held Shift+W is not CameraLeft (no modifiers in the chord = any)");
+  }
+  Keyboard_OnKeyUp(VK_LSHIFT);
+  UiNodeBase *focus = g_UiKeyboardFocusNode;
+  UiNodeBase textEdit = {};
+  textEdit.vtable = &g_UiRequiredTextEditControlVtable;
+  g_UiKeyboardFocusNode = &textEdit;
+  if (KeyBindings_HeldDown(CameraLeft)) {
+    KeyBindingsTest_ModelFail("held W moves the camera while a text edit has the focus");
+  }
+  g_UiKeyboardFocusNode = focus;
+  Keyboard_OnKeyUp('W');
+  if (KeyBindings_HeldDown(CameraLeft)) {
+    KeyBindingsTest_ModelFail("released W still held");
+  }
+  Keyboard_OnKeyDown('W');
+  Keyboard_ReleaseHeldKeys();
+  if (KeyBindings_HeldDown(CameraLeft)) {
+    KeyBindingsTest_ModelFail("Keyboard_ReleaseHeldKeys keeps W held");
+  }
+  Keyboard_OnKeyUp('W');
+  KeyBindingsTest_ExpectSet(CameraRight,KeyBindingsTest_Chord(KEYBOARD_KEY_CODE_FUNCTION(5),KEYBOARD_STATE_CTRL),KeyBindingStatus::Ok,
+                            KeyAction::Count,"CameraRight = Ctrl+F5");
+  Keyboard_OnKeyDown(VK_F5);
+  if (KeyBindings_HeldDown(CameraRight)) {
+    KeyBindingsTest_ModelFail("held F5 without Ctrl is CameraRight = Ctrl+F5");
+  }
+  Keyboard_OnKeyDown(VK_RCONTROL);
+  if (!KeyBindings_HeldDown(CameraRight)) {
+    KeyBindingsTest_ModelFail("held Ctrl+F5 is not CameraRight");
+  }
+  Keyboard_OnKeyUp(VK_F5);
+  if (KeyBindings_HeldDown(CameraRight)) {
+    KeyBindingsTest_ModelFail("released F5 still held");
+  }
+  Keyboard_OnKeyUp(VK_RCONTROL);
+  KeyBindings_ResetDefaults(CameraRight);
+  Keyboard_FlushEvents();
+}
+
 static void KeyBindingsTest_Rules()
 {
   using enum KeyAction;
@@ -472,6 +527,7 @@ static void KeyBindingsTest_Rules()
   KeyBindingsTest_ExpectSet(CameraLeft,KeyBindingsTest_Chord(KeyBindingsTest_Char('w')),OK,NONE,"CameraLeft = W");
   KeyBindingsTest_ExpectSet(Pause,KeyBindingsTest_Chord(KeyBindingsTest_Char('w'),KEYBOARD_STATE_CTRL),CONFLICT,CameraLeft,
                             "Pause = Ctrl+W (held camera key)");
+  KeyBindingsTest_HeldKeys();
   KeyBindingsTest_ExpectSet(MenuLeave,KeyBindingsTest_Chord(KeyBindingsTest_Char('p')),OK,NONE,"MenuLeave = P");
   KeyBindingsTest_ExpectKeys(MenuLeave,{{KeyBindingsTest_Char('p'), KEYBOARD_STATE_NONE},
                                         {KEYBOARD_KEY_CODE_FUNCTION(4), KEYBOARD_STATE_ALT}},"MenuLeave keeps Alt+F4");

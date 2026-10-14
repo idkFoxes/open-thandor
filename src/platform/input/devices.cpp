@@ -9,6 +9,8 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#include <cstring>
+
 /* Module data. */
 
 THANDOR_ALIGN(8) UiPixelCoordinate g_CursorOverrideX = 0;
@@ -42,6 +44,14 @@ static KeyboardEventRingIndex g_KeyboardWriteIndex = 0;
 static KeyboardEventRingIndex g_KeyboardReadIndex = 0;
 
 static UiKeyboardStateMask g_KeyboardToggleLatchMask = KEYBOARD_STATE_NONE;
+
+/* Project code (key rebinding P6): the held state of every key-down code, indexed by the code's family (high word,
+   0..3: the plain ASCII codes such as Space and the numpad operators, the special keys, the F-keys, the digits and
+   letters) and its low word (below KEYBOARD_HELD_KEY_INDEX_COUNT). Unlike g_KeyboardSpecialKeyDown every key is
+   released on key-up, and Keyboard_ReleaseHeldKeys clears it all (focus loss, minimize). */
+inline constexpr uint32_t KEYBOARD_HELD_KEY_FAMILY_COUNT = 4;
+inline constexpr uint32_t KEYBOARD_HELD_KEY_INDEX_COUNT = 128;
+static uint8_t g_KeyboardKeyHeld[KEYBOARD_HELD_KEY_FAMILY_COUNT][KEYBOARD_HELD_KEY_INDEX_COUNT] = {};
 
 uint32_t g_CursorInputWriteIndex = 0;
 
@@ -397,10 +407,22 @@ static bool Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *
 }
 
 
+/* Keyboard_OnKeyDown/OnKeyUp: marks keyCode held (1) or released (0) in g_KeyboardKeyHeld. */
+static void Keyboard_SetKeyHeld(uint32_t keyCode,uint8_t held)
+{
+  const uint32_t family = keyCode >> 16;
+  const uint32_t index = keyCode & KEYBOARD_KEY_CODE_INDEX_MASK;
+  if ((family < KEYBOARD_HELD_KEY_FAMILY_COUNT) && (index < KEYBOARD_HELD_KEY_INDEX_COUNT)) {
+    g_KeyboardKeyHeld[family][index] = held;
+  }
+}
+
+
 /* WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle
    theirs once per press (g_KeyboardToggleLatchMask stops auto-repeat from toggling again), and every other
    mapped key is queued as a KEYBOARD_KEY_CODE_* event with the modifier state of the moment in the 64-entry
-   keyboard ring (0x10000-family keys also mark g_KeyboardSpecialKeyDown).
+   keyboard ring (0x10000-family keys also mark g_KeyboardSpecialKeyDown). Project code: every queued key code is
+   also marked in the generic held state (Keyboard_KeyHeld).
 */
 void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 
@@ -441,6 +463,7 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
   if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == KEYBOARD_KEY_CODE_SPECIAL(0)) {
     g_KeyboardSpecialKeyDown[keyCode & KEYBOARD_KEY_CODE_INDEX_MASK] = 1;
   }
+  Keyboard_SetKeyHeld(keyCode,1);
   /* wrap the ring */
   if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
     g_KeyboardWriteIndex = 0;
@@ -452,6 +475,7 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
    toggle, and releases the g_KeyboardSpecialKeyDown entry of a navigation key (cursor block, VK_SELECT,
    numpad digits and decimal point; the held state the in-game camera keys poll). Original quirk: Escape,
    Enter, Tab, Backspace, Print and Pause also set their entry on key-down but are never released here. Queues no event.
+   Project code: also releases the key's entry of the generic held state (Keyboard_KeyHeld), for every key.
 */
 void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 
@@ -478,6 +502,26 @@ void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
   if (navigationCode != 0) {
     g_KeyboardSpecialKeyDown[navigationCode & KEYBOARD_KEY_CODE_INDEX_MASK] = 0;
   }
+  /* project code (P6): the generic held state releases every key */
+  uint32_t keyCode;
+  if (Keyboard_MapKeyDownCode(virtualKey,&keyCode)) {
+    Keyboard_SetKeyHeld(keyCode,0);
+  }
+}
+
+
+bool Keyboard_KeyHeld(uint32_t keyCode)
+{
+  const uint32_t family = keyCode >> 16;
+  const uint32_t index = keyCode & KEYBOARD_KEY_CODE_INDEX_MASK;
+  return (family < KEYBOARD_HELD_KEY_FAMILY_COUNT) && (index < KEYBOARD_HELD_KEY_INDEX_COUNT) &&
+         (g_KeyboardKeyHeld[family][index] != 0);
+}
+
+
+void Keyboard_ReleaseHeldKeys()
+{
+  std::memset(g_KeyboardKeyHeld,0,sizeof(g_KeyboardKeyHeld));
 }
 
 

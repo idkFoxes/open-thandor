@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <iterator>
 #include <span>
 
 #include <thandor/thandor.h>
@@ -61,6 +62,9 @@ constexpr KeyboardVirtualKeyCode ToCode(VirtualKey key) noexcept
   return static_cast<KeyboardVirtualKeyCode>(key);
 }
 
+/* the virtual key each held physical key gave on its key-down (VirtualKey::None: not held), so its key-up releases
+   the same key even when the layout or Num Lock changed in between */
+KeyboardVirtualKeyCode s_heldVirtualKey[SDL_SCANCODE_COUNT] = {};
 /* the text input of the last key press may become characters (Win32_ShouldTranslateMessageFlags) */
 bool s_translateText = true;
 /* the pending wheel delta of the event being appended (DirectInput's g_MouseWheelDelta) */
@@ -373,6 +377,14 @@ bool ButtonOf(Uint8 button, GraphicsCursorButtonState &mask, GraphicsCursorEvent
 
 SoftwareDisplayModeHookProc *s_chainedSetDisplayMode = nullptr;
 
+/* Focus loss, focus gain, minimize: the generic held state (Keyboard_KeyHeld) and the remembered key-downs are
+   cleared. g_KeyboardSpecialKeyDown and the modifier state keep the original's handling. */
+void ReleaseHeldKeys() noexcept
+{
+  std::fill(std::begin(s_heldVirtualKey), std::end(s_heldVirtualKey), ToCode(VirtualKey::None));
+  Keyboard_ReleaseHeldKeys();
+}
+
 } // namespace
 
 void HandleKeyDown(const SDL_KeyboardEvent &event)
@@ -384,6 +396,9 @@ void HandleKeyDown(const SDL_KeyboardEvent &event)
   }
   if (KeyIsAltGr(event)) {
     Keyboard_OnKeyDown(VK_CONTROL);
+  }
+  if (event.scancode < SDL_SCANCODE_COUNT) {
+    s_heldVirtualKey[event.scancode] = virtualKey;
   }
   Keyboard_OnKeyDown(virtualKey);
   s_translateText = KeyProducesText(virtualKey);
@@ -398,7 +413,14 @@ void HandleKeyDown(const SDL_KeyboardEvent &event)
 
 void HandleKeyUp(const SDL_KeyboardEvent &event)
 {
-  const KeyboardVirtualKeyCode virtualKey = VirtualKeyOf(event);
+  KeyboardVirtualKeyCode virtualKey = VirtualKeyOf(event);
+  /* the key-up of a held key releases what its key-down pressed */
+  if (event.scancode < SDL_SCANCODE_COUNT) {
+    if (s_heldVirtualKey[event.scancode] != ToCode(VirtualKey::None)) {
+      virtualKey = s_heldVirtualKey[event.scancode];
+    }
+    s_heldVirtualKey[event.scancode] = ToCode(VirtualKey::None);
+  }
   if (virtualKey != ToCode(VirtualKey::None)) {
     if (KeyIsAltGr(event)) {
       Keyboard_OnKeyUp(VK_CONTROL);
@@ -485,11 +507,20 @@ void HandleFocusGained()
   SetPriorityClass(GetCurrentProcess(), DebugHook_ProcessPriorityClass(HIGH_PRIORITY_CLASS));
   g_KeyboardStateMask = LockKeyBits();
   g_KeyboardFlushEvents();
+  /* project code: keys held before the focus came back are unknown */
+  ReleaseHeldKeys();
 }
 
 void HandleFocusLost()
 {
   SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+  /* project code: a key released while another window has the focus never sends its key-up here */
+  ReleaseHeldKeys();
+}
+
+void HandleWindowDeactivated()
+{
+  ReleaseHeldKeys();
 }
 
 void UpdateMouseMode() noexcept
