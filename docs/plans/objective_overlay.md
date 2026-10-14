@@ -1,6 +1,6 @@
 # Plan: Ziel-Overlay im Spiel
 
-Branch `experimental/objective-overlay` (von `experimental-dev`). Status: vom Owner freigegeben (2026-10-14).
+Branch `experimental/objective-overlay` (von `experimental-dev`). Status: vom Owner freigegeben (2026-10-14); O1–O5 fertig, mit der änderbaren Tastenbelegung am 2026-10-14 in `experimental-dev` zusammengeführt, Taste `objective_toggle` ergänzt.
 
 ## 1. Ziel
 
@@ -180,5 +180,5 @@ Befunde:
 - Ausblenden: im Karteneditor (`INGAME_WORLD_FLAG_EDITOR` → `ObjectiveOverlay_SetVisible(false)`); die übrigen Regeln (Spielmenü, Missionshilfe, Endfilm, Welttexte aus) prüft das Element selbst. Bei ausgeschalteter Einstellung läuft keine Aktualisierung.
 - Einstellung: thandor.ini `[game] objective_overlay = on|off` (Standard on), Dword 0x54 (`PERSISTENT_SETTING_OBJECTIVE_OVERLAY`, `PersistentSettingsImage.objectiveOverlay`; der Schlüssel `[reserved] dword_54` entfällt, 0x58 bleibt reserviert). `ObjectiveOverlay_Enabled()` liest sie, `PersistentSettings_WriteObjectiveOverlay` speichert eine Wahl. Selbsttest `settings`: Zeile „settings: objective_overlay key ok“.
 - Checkbox „Ziel anzeigen“ / „Show objective“ auf der Seite „Erweitert“: rechte Spalte unter „Sprache:“ (x 53..288, y 60..84, Zeile der Wegfindungs-Checkbox), Knoten `advancedObjectiveOverlayCheckbox` angehängt bei +842C (FrontendUiImage 0x848C), in der Geschwisterkette zwischen Wegfindungs-Checkbox und Sprachbox (die Sprachliste bleibt letzte Ebene und deckt die Checkbox im offenen Zustand ab); Aktion 0x2065 `FRONTEND_ACTION_ADVANCED_OBJECTIVE_OVERLAY` (handlers65); Text `TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY` = letzte Id des Ziel-Blocks (0x7F013F).
-- Taste „Ziel ein/aus“: noch nicht belegt, weil die änderbare Tastenbelegung auf `experimental/keybinding-edit` liegt. Vorbereitet ist `ObjectiveOverlay_ToggleSetting()` (schaltet die Einstellung um, speichert mit dem nächsten Flush, zeichnet neu). Beim Zusammenführen der Branches: Aktion `objective_toggle` in der Tastenbelegung anlegen, die `ObjectiveOverlay_ToggleSetting()` ruft; Standardtaste keine (oder z. B. „Z“, falls dort frei).
+- Taste „Ziel-Anzeige ein/aus“ / „Objective display on/off“: Aktion `objective_toggle` der Tastenbelegung (Abschnitt „Allgemein im Spiel“, letzte Zeile; Kontext InGame), Standard **Z** (im Spielkontext frei, `KeyBindings_FindConflict` → Ok; Strg+Alt+Z bleibt der Cheat). Sie läuft über die In-Game-Hotkey-Tabelle (`InGameHotkeyAction::ToggleObjectiveOverlay` = 16, ohne Originaldatensatz, daher alle Tasten in den Reservedatensätzen) und ruft `ObjectiveOverlay_ToggleSetting()` (schaltet die Einstellung um, speichert mit dem nächsten Flush, zeichnet neu). Text `TEXT_ID_KEYS_OBJECTIVE_TOGGLE` (Schlüsselblock +64). Selbsttest `keybindings` prüft Z, Neubelegung und Entfernen.
 - Der vorläufige Stub `objective_overlay_stub.cpp` aus O4 ist entfernt.

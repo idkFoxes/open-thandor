@@ -625,6 +625,18 @@ static uint32_t KeyBindingsTest_DispatchTables()
   KeyBindings_ResetAllDefaults();
   KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('p'),NONE,pause,"default Pause = P",&checked);
   KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('p'),SHIFT,pause,"default Pause = P ignores Shift",&checked);
+  /* objective_toggle (no original record): its default Z is free in the in-game context and sits in a spare record;
+     Ctrl+Alt+Z stays the fast-build cheat */
+  const uint32_t objectiveToggle = KeyBindings_Get(ObjectiveToggle).sourceAction;
+  checked++;
+  if (KeyBindings_FindConflict(KeyBindingContext::InGame,KeyBindingsTest_Chord(KeyBindingsTest_Char('z')),1,
+                               ObjectiveToggle).status != KeyBindingStatus::Ok) {
+    KeyBindingsTest_ModelFail("default objective_toggle = Z conflicts");
+  }
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('z'),NONE,objectiveToggle,"default objective_toggle = Z",
+                                 &checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('z'),CTRL | ALT,KeyBindings_Get(CheatFastBuild).sourceAction,
+                                 "Ctrl+Alt+Z stays the cheat",&checked);
 
   /* Pause = K: K pauses (Shift ignored), P no longer does */
   KeyBindingsTest_ExpectSet(Pause,KeyBindingsTest_Chord(KeyBindingsTest_Char('k')),KeyBindingStatus::Ok,KeyAction::Count,
@@ -661,6 +673,16 @@ static uint32_t KeyBindingsTest_DispatchTables()
   KeyBindingsTest_ExpectDispatch(FRONTEND,KeyBindingsTest_Char('l'),NONE,leave,"MenuLeave = L: L",&checked);
   KeyBindingsTest_ExpectDispatch(FRONTEND,KEYBOARD_KEY_CODE_FUNCTION(4),ALT,leave,"MenuLeave = L: Alt+F4",&checked);
   KeyBindingsTest_ExpectDispatch(FRONTEND,KeyBindingsTest_Char('q'),ALT,0,"MenuLeave = L: Alt+Q",&checked);
+  /* objective_toggle = Alt+O (all chords in spare records), then unbound: Z no longer dispatches */
+  KeyBindingsTest_ExpectSet(ObjectiveToggle,KeyBindingsTest_Chord(KeyBindingsTest_Char('o'),ALT),KeyBindingStatus::Ok,
+                            KeyAction::Count,"objective_toggle = Alt+O");
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('o'),ALT,objectiveToggle,"objective_toggle = Alt+O: Alt+O",
+                                 &checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('z'),NONE,0,"objective_toggle = Alt+O: Z",&checked);
+  if (!KeyBindings_Clear(ObjectiveToggle)) {
+    KeyBindingsTest_ModelFail("Clear objective_toggle");
+  }
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('o'),ALT,0,"objective_toggle cleared: Alt+O",&checked);
 
   /* back to the defaults: the tables too */
   KeyBindings_ResetAllDefaults();
@@ -669,6 +691,7 @@ static uint32_t KeyBindingsTest_DispatchTables()
   KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char('s'),NONE,stop,"reset: S",&checked);
   KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char('3'),CTRL,groupStore,"reset: Ctrl+3",&checked);
   KeyBindingsTest_ExpectDispatch(FRONTEND,KeyBindingsTest_Char('q'),ALT,leave,"reset: Alt+Q",&checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('z'),NONE,objectiveToggle,"reset: Z",&checked);
 
   /* every editable action at KEY_BINDING_MAX_KEYS chords: unique chords per table (letters without e, v, x, z, which
      the fixed cheats use; the in-game hotkeys without Shift, which they ignore) */
@@ -741,7 +764,7 @@ void Thandor_SelfTestKeyBindings()
   uint32_t count = (uint32_t)KeyBindings_Count();
   uint32_t keysChecked = 0;
   uint32_t row;
-  bool hotkeyListed[16] = {};
+  bool hotkeyListed[17] = {};
   bool keyCommandListed[20] = {};
   bool frontendListed[3] = {};
   bool endMovieListed[3] = {};
@@ -761,7 +784,7 @@ void Thandor_SelfTestKeyBindings()
       KeyBindingsTest_Fail(row,0,0,"entry without keys");
       continue;
     }
-    if ((binding.source == KeyBindingSource::InGameHotkeys) && (binding.sourceAction < 16)) {
+    if ((binding.source == KeyBindingSource::InGameHotkeys) && (binding.sourceAction < 17)) {
       hotkeyListed[binding.sourceAction] = true;
     }
     if ((binding.source == KeyBindingSource::InGameKeyCommands) && (binding.sourceAction < 20)) {
@@ -792,8 +815,9 @@ void Thandor_SelfTestKeyBindings()
     }
   }
   Keyboard_FlushEvents();
-  /* InGameHotkeyAction 1..15, InGameKeyCommandAction 1..19, FrontendHotkeyAction 1..2, EndMovieCommandAction 1..2 */
-  for (uint32_t action = 1; action <= 15; action++) {
+  /* InGameHotkeyAction 1..16 (16: objective_toggle, not in the original), InGameKeyCommandAction 1..19,
+     FrontendHotkeyAction 1..2, EndMovieCommandAction 1..2 */
+  for (uint32_t action = 1; action <= 16; action++) {
     if (!hotkeyListed[action]) {
       Thandor_Log("keybindings FAIL in-game hotkey action %u has no entry", action);
       g_KeyBindingsTestFailures++;

@@ -63,6 +63,9 @@ static KeyBinding g_KeyBindings[KEY_ACTION_COUNT] = {
     KB("screenshot", InGame, InGameGeneral, InGameHotkeys, 1, 0, 12, TEXT_ID_KEYS_SCREENSHOT, {KeyChar('p'), BIND_ALT}),
     KB("notification_go", InGame, InGameGeneral, InGameKeyCommands, 1, 0, 5, TEXT_ID_KEYS_NOTIFICATION_GO, {KEYBOARD_KEY_CODE_SPACE, BIND_NONE}),
     KB("notification_back", InGame, InGameGeneral, InGameKeyCommands, 1, 0, 6, TEXT_ID_KEYS_NOTIFICATION_BACK, {KEYBOARD_KEY_CODE_BACKSPACE, BIND_NONE}),
+    /* not in the original: the objective overlay on/off (docs/plans/objective_overlay.md O5); no original record, so
+       all its chords go into the spare records of the in-game hotkey table. Z is free in the in-game context. */
+    KB("objective_toggle", InGame, InGameGeneral, InGameHotkeys, 1, 0, 16, TEXT_ID_KEYS_OBJECTIVE_TOGGLE, {KeyChar('z'), BIND_NONE}),
     /* Einheiten und Gruppen */
     KB("group_select", InGame, UnitsAndGroups, InGameKeyCommands, 8, 0, 1, TEXT_ID_KEYS_GROUP_RECALL, {KEY_BINDING_GROUP_KEY, BIND_NONE}),
     KB("group_select_add", InGame, UnitsAndGroups, InGameKeyCommands, 8, 0, 2, TEXT_ID_KEYS_GROUP_ADD_TO_SELECTION, {KEY_BINDING_GROUP_KEY, BIND_SHIFT}),

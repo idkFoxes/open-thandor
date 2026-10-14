@@ -69,6 +69,7 @@ enum class KeyAction : uint8_t {
     Screenshot,            /* screenshot: Alt+P */
     NotificationGo,        /* notification_go: Space */
     NotificationBack,      /* notification_back: Backspace */
+    ObjectiveToggle,       /* objective_toggle: Z (the objective overlay, ObjectiveOverlay_ToggleSetting) */
     /* Einheiten und Gruppen (the group actions: range 1..8, only the modifiers are editable) */
     GroupSelect,           /* group_select: 1..8 */
     GroupSelectAdd,        /* group_select_add: Shift+1..8 */

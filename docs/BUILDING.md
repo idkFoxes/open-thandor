@@ -264,6 +264,7 @@ info_line = Ctrl+I
 screenshot = none
 notification_go = Space
 notification_back = Backspace
+objective_toggle = Z
 group_select = 1..8
 group_select_add = Shift+1..8
 group_store = Ctrl+Alt+Shift+1..8

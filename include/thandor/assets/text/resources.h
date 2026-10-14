@@ -183,7 +183,8 @@ TextResourceId TextResource_SetLanguageButtonLabel(const uint16_t *text);
 #define TEXT_ID_KEYS_PANEL_UNBOUND (TEXT_ID_KEY_BINDING_BASE + 61)
 #define TEXT_ID_KEYS_PANEL_BUTTON_DEFAULTS (TEXT_ID_KEY_BINDING_BASE + 62)
 #define TEXT_ID_KEYS_PANEL_BUTTON_BACK (TEXT_ID_KEY_BINDING_BASE + 63)
-inline constexpr int TEXT_ID_KEY_BINDING_COUNT = 64;
+#define TEXT_ID_KEYS_OBJECTIVE_TOGGLE (TEXT_ID_KEY_BINDING_BASE + 64) /* "Ziel-Anzeige ein/aus" (objective_toggle) */
+inline constexpr int TEXT_ID_KEY_BINDING_COUNT = 65;
 
 /* Not in the original: the language names of the language choice, each in its own language and the same in every
    language: Deutsch, English, Francais, Italiano, Espanol (with c cedilla and n tilde), the order of
@@ -235,7 +236,6 @@ inline constexpr int TEXT_ID_OBJECTIVE_RESERVED = 0x40;
 #define TEXT_ID_OBJECTIVE_DESTROY_FACTION (TEXT_ID_OBJECTIVE_BASE + 28) /* "Gegner %s vernichten" */
 #define TEXT_ID_OBJECTIVE_STOP_TRITIUM (TEXT_ID_OBJECTIVE_BASE + 29) /* "Tritium-Foerderung von %s stoppen" */
 inline constexpr int TEXT_ID_OBJECTIVE_COUNT = 30;
-static_assert(TEXT_ID_OBJECTIVE_COUNT <= TEXT_ID_OBJECTIVE_RESERVED);
 /* the "Ziel anzeigen" / "Show objective" checkbox of the advanced settings page ([game] objective_overlay): the last
    id of the reserved block, bright like the other checkboxes, German for German, English for every other language */
 #define TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY (TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED - 1)
@@ -250,6 +250,24 @@ uint16_t *TextResource_ObjectiveTextEnglish(uint32_t index);
    is reserved for them; objective_texts.cpp owns the table (docs/plans/objective_overlay_texts.md). */
 #define TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE (TEXT_ID_PROJECT_BASE + 0x200)
 inline constexpr int TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED = 0x100;
+
+/* The project text id blocks, in id order, must not overlap (TextResource_TryResolve tests them one after the
+   other): the project texts 0..TEXT_ID_PROJECT_COUNT - 1 and the reserved TEXT_ID_PROJECT_BASE + 49; the key binding
+   texts; the language names; the pathing checkbox; the objective templates with the objective overlay checkbox at
+   the end of their reserved block; the short mission objectives. */
+static_assert(TEXT_ID_PROJECT_BASE + TEXT_ID_PROJECT_COUNT + 1 <= TEXT_ID_KEY_BINDING_BASE,
+              "the project texts (and the reserved id 49) end before the key binding texts");
+static_assert(TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT <= TEXT_ID_LANGUAGE_NAME_BASE,
+              "the key binding texts end before the language names");
+static_assert(TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT <= TEXT_ID_ADVANCED_PATHING,
+              "the language names end before the pathing checkbox text");
+static_assert(TEXT_ID_ADVANCED_PATHING < TEXT_ID_OBJECTIVE_BASE,
+              "the pathing checkbox text lies before the objective block");
+static_assert((TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY >= TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_COUNT) &&
+              (TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY < TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED),
+              "the objective overlay checkbox text lies in the objective block, after the templates");
+static_assert(TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED <= TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE,
+              "the objective block ends before the short mission objectives");
 
 /* Not in the original: the text id of the hand-written short objective of level levelName (the level file base name
    as LevelAssetHeader.levelFileNameUtf16 holds it, terminated; a directory before the last '\' or '/' and an

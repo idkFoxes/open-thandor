@@ -2,7 +2,9 @@
 
 Status: P1 (binding model), P2 (dispatch), P3 (ini `[keys]`: `PersistentSettings_RegisterSection` / `_MarkDirty`,
 `KeyBindingsIni_Register` called at the start of `ProcessEntry_RunGame`), P4 (shared panel), P5 (hosts) and P6 (held
-state of every key) done on `experimental/keybinding-edit` (P5 on `keybinding-edit/kb-p5`).
+state of every key) done on `experimental/keybinding-edit` (P5 on `keybinding-edit/kb-p5`); merged into
+`experimental-dev` 2026-10-14 together with the objective overlay, which added the action `objective_toggle`
+("Ziel-Anzeige ein/aus", default Z, section "Allgemein im Spiel"; the first action without an original record).
 
 ## Goal
 
@@ -76,8 +78,10 @@ with MarkDirty and an immediate Flush.
 - Apply: each original record takes the current chord with the index of the default chord it stood for (a group
   record keeps its digit and takes the modifiers, so `groupIndex` stays `commandCode - '1'`); a missing chord gives
   `UI_KEY_COMMAND_CODE_UNBOUND` (0xFFFFFFFF, never a key code, not the terminator). Chords beyond the default count
-  go into the spare records, in action order. Spare records per table cover `KEY_BINDING_MAX_KEYS` chords on every
-  editable action (hotkeys 40, key commands 167, frontend 3); the self-test checks it. Fixed actions' records (Esc,
+  go into the spare records, in action order; an action without an original record (`objective_toggle`,
+  `InGameHotkeyAction::ToggleObjectiveOverlay` 16) has all its chords there. Spare records per table cover
+  `KEY_BINDING_MAX_KEYS` chords on every editable action (hotkeys 45, key commands 167, frontend 3); the self-test
+  checks it. Fixed actions' records (Esc,
   Alt+F4, the cheats, Ctrl+F1) stay as they are; the end-movie table, the editor tables and the intro skip are not
   touched.
 - The in-game hotkeys use `UiKeyModifierRule::ShiftRequiredByClass` (Ctrl/Alt exact, Shift ignored unless the

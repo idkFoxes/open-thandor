@@ -22,7 +22,8 @@
    its action that the record stood for in the defaults (the record's default chord index; a range record keeps
    its offset, so the group rows keep their digit and only take the modifiers); a chord index the action no longer
    has gives UI_KEY_COMMAND_CODE_UNBOUND. Chords beyond the action's default count go into the spare records, in
-   action order. Records of fixed actions (Esc, Alt+F4, the cheats) and records without an entry stay as they are.
+   action order; an action without an original record (a project action such as objective_toggle) has all its
+   chords there. Records of fixed actions (Esc, Alt+F4, the cheats) and records without an entry stay as they are.
    With the default bindings every table equals the original. */
 
 /* The action whose entry has this source and table action number; KeyAction::Count when none has. */
@@ -35,6 +36,19 @@ inline KeyAction KeyBindingTable_FindAction(KeyBindingSource source,uint32_t sou
     }
   }
   return KeyAction::Count;
+}
+
+/* True when one of the original records stands for the table action number sourceAction. */
+template <typename Action, std::size_t OriginalCount>
+constexpr bool KeyBindingTable_HasOriginalRecord(const UiKeyCommandRecord<Action> (&originals)[OriginalCount],
+                                                 uint32_t sourceAction)
+{
+  for (const UiKeyCommandRecord<Action> &record : originals) {
+    if (static_cast<uint32_t>(record.action) == sourceAction) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /* The number of chords of a chord list (keyCode 0 ends it). */
@@ -111,8 +125,9 @@ uint32_t KeyBindingTable_Apply(std::array<UiKeyCommandRecord<Action>, Capacity> 
     if ((binding.source != source) || KeyBinding_IsFixed(binding)) {
       continue;
     }
-    for (int chordIndex = KeyBindingTable_ChordCount(binding.defaults); chordIndex < KeyBindingTable_ChordCount(binding.keys);
-         chordIndex++) {
+    int firstSpareChord = KeyBindingTable_HasOriginalRecord(originals,binding.sourceAction) ?
+                          KeyBindingTable_ChordCount(binding.defaults) : 0;
+    for (int chordIndex = firstSpareChord; chordIndex < KeyBindingTable_ChordCount(binding.keys); chordIndex++) {
       for (uint32_t offset = 0; offset < binding.rangeLength; offset++) {
         if (spare + 1 < Capacity) {
           table[spare++] = UiKeyCommandRecord<Action>{binding.keys[chordIndex].keyCode + offset,

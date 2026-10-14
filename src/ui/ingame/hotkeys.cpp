@@ -12,6 +12,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/ui/ingame/key_bindings_overlay.h>
+#include <thandor/ui/ingame/objective_overlay.h>
 
 /* Module data. */
 
@@ -32,6 +33,7 @@ enum class InGameHotkeyAction : uint32_t {
     CheatAddXenite = 13,          /* Ctrl+Alt+X */
     CheatAddEnergy = 14,          /* Ctrl+Alt+E */
     CheatToggleFastBuild = 15,    /* Ctrl+Alt+Z */
+    ToggleObjectiveOverlay = 16,  /* not in the original: Z (key binding objective_toggle, spare records only) */
 };
 static_assert(sizeof(UiKeyCommandRecord<InGameHotkeyAction>) == 0xC, "a key command record keeps the original 12 bytes");
 
@@ -54,10 +56,11 @@ static constexpr UiKeyCommandRecord<InGameHotkeyAction> g_InGameHotkeyOriginalRe
     /* 13 */ {.commandCode = 0x30065, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatAddEnergy},
     /* 14 */ {.commandCode = 0x3007A, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatToggleFastBuild}};
 
-/* The working table: the 15 records rewritten from the key bindings (InGameHotkeys_ApplyBindings), 40 spare records
-   for further chords (10 editable actions with one default chord: 4 more each) and the terminator record
-   (commandCode 0) that ends the dispatcher's scan (the original's other two dwords were NOP fill, never read). */
-static constexpr std::size_t INGAME_HOTKEY_TABLE_CAPACITY = 15 + 40 + 1;
+/* The working table: the 15 records rewritten from the key bindings (InGameHotkeys_ApplyBindings), 45 spare records
+   for further chords (10 editable actions with one default chord: 4 more each; objective_toggle, which has no
+   original record: all 5) and the terminator record (commandCode 0) that ends the dispatcher's scan (the original's
+   other two dwords were NOP fill, never read). */
+static constexpr std::size_t INGAME_HOTKEY_TABLE_CAPACITY = 15 + 45 + 1;
 static std::array<UiKeyCommandRecord<InGameHotkeyAction>, INGAME_HOTKEY_TABLE_CAPACITY>
     g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30 =
         KeyBindingTable_Make<InGameHotkeyAction, INGAME_HOTKEY_TABLE_CAPACITY>(g_InGameHotkeyOriginalRecords);
@@ -106,6 +109,9 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
   }
   InGameHotkeyAction target = record->action;
   switch (target) {
+  case InGameHotkeyAction::ToggleObjectiveOverlay: /* project change: Z, the objective overlay on/off (display only) */
+    ObjectiveOverlay_ToggleSetting();
+    break;
   case InGameHotkeyAction::CheatToggleFastBuild: /* Ctrl+Alt+Z, cheat: toggle fast build and research */
     if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED)) {
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD;

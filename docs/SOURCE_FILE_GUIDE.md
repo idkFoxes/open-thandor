@@ -22,7 +22,7 @@ Asset loading, catalogs and resource formats.
 
 Module header: [`army.h`](../include/thandor/assets/army.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-army-catalog)
 
-- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-army-catalog) - no file comment; main functions `ArmyAssetRegistry_FindById`, `ArmyAssetRegistry_FindEnabledById`, `ArmyAsset_PrepareRecords`
+- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-army-catalog) - no file comment; main functions `ArmyAssetRegistry_FindById`, `ArmyAssetRegistry_FindEnabledById`, `ArmyAssetRegistry_FindRecordById`
 - [`types.h`](source_guide/assets.md#file-assets-army-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-effect"></a>
@@ -89,8 +89,9 @@ Module header: [`sprite.h`](../include/thandor/assets/sprite.h) · Changelog: `c
 
 Module header: [`text.h`](../include/thandor/assets/text.h) · Changelog: `resources` [full](../CHANGELOG_FULL.md#module-assets-text-resources); `richtext` [dev](../CHANGELOG.md#module-assets-text-richtext) · [full](../CHANGELOG_FULL.md#module-assets-text-richtext)
 
+- [`objective_texts.cpp`](source_guide/assets.md#file-assets-text-objective-texts) - The hand-written short objectives of the stock campaign missions (docs/plans/objective_overlay.md 3a, reviewed table docs/plans/objective_overlay_texts.md): one line per level file and playable ...
 - [`project_texts_en.cpp`](source_guide/assets.md#file-assets-text-project-texts-en) - The English texts of open-thandor's own controls (TEXT_ID_PROJECT_BASE..), shown for every language but German (TextResource_TryResolve; the German texts are in resources.cpp).
-- [`resources.cpp / resources.h`](source_guide/assets.md#file-assets-text-resources) - no file comment; main functions `TextResource_Resolve`, `TextResourcePage_Load`, `TextResource_ProjectTextsAreGerman`
+- [`resources.cpp / resources.h`](source_guide/assets.md#file-assets-text-resources) - no file comment; main functions `TextResource_Resolve`, `TextResource_ProjectTextsAreGerman`, `TextResource_TryResolve`
 - [`richtext.cpp / richtext.h`](source_guide/assets.md#file-assets-text-richtext) - no file comment; main functions `RichTextCommandStream_PatchPayloadBySelector`, `RichTextCommandStream_CopyExpanded`, `RichTextCommandStream_CopyToNarrow`
 - [`richtext_markup.cpp / richtext_markup.h`](source_guide/assets.md#file-assets-text-richtext-markup) - no file comment; main functions `RichTextMarkup_ParseAndBuildStringAsset`
 - [`types.h`](source_guide/assets.md#file-assets-text-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
@@ -277,6 +278,7 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 - [`level_script.cpp / level_script.h`](source_guide/gameplay.md#file-gameplay-session-level-script) - no file comment; main functions `InGameLevelScript_Validate`, `InGameScheduledCondition_EvaluatePostfixExpression`, `InGameConditionRuntime_UpdateScheduledRecords`
 - [`loaded_session.cpp / loaded_session.h`](source_guide/gameplay.md#file-gameplay-session-loaded-session) - no file comment; main functions `InGameRuntime_InitializeLoadedSession`
 - [`loading_movie.cpp / loading_movie.h`](source_guide/gameplay.md#file-gameplay-session-loading-movie) - no file comment; main functions `MoviePlayback_AdvanceScheduledFrameAndTick`, `MoviePlayback_AdvanceToFrameAndPresent`
+- [`mission_objective.cpp / mission_objective.h`](source_guide/gameplay.md#file-gameplay-session-mission-objective) - open-thandor (objective overlay, docs/plans/objective_overlay.md 3): the local faction's objective from the level script.
 - [`new_session.cpp / new_session.h`](source_guide/gameplay.md#file-gameplay-session-new-session) - no file comment; main functions `InGameRuntime_InitializeNewSession`
 - [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-session-runtime)
 - [`savegame.cpp / savegame.h`](source_guide/gameplay.md#file-gameplay-session-savegame) - no file comment; main functions `InGameSaveGame_WritePackage`, `RuntimeHexSegment_ToggleLightImageFlag`, `InGameSaveGame_CreatePackage`
@@ -511,6 +513,7 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 - [`keymatch_selftest.cpp`](source_guide/platform.md#file-platform-selftest-keymatch-selftest) - OPEN_THANDOR_SELFTEST=keymatch: the safety net for merging the six key command matchers into UiKeyModifiers_Match / UiCommandDispatch_Find (include/thandor/ui/core/key_dispatch.h).
 - [`language_selftest.cpp`](source_guide/platform.md#file-platform-selftest-language-selftest) - OPEN_THANDOR_SELFTEST=language: the run-time language switch (TextResource_SelectLanguage).
 - [`nativefile_selftest.cpp`](source_guide/platform.md#file-platform-selftest-nativefile-selftest) - OPEN_THANDOR_SELFTEST=nativefile: the native file helpers FileSystem_ReadWholeFileNative and FileSystem_WriteFileReplacing (src/platform/filesystem/win32.cpp) on files in a fresh directory under ...
+- [`objectives_selftest.cpp`](source_guide/platform.md#file-platform-selftest-objectives-selftest) - OPEN_THANDOR_SELFTEST=objectives: the mission objective model (gameplay/session/mission_objective.h, docs/plans/objective_overlay.md test T1).
 - [`raster_selftest.cpp`](source_guide/platform.md#file-platform-selftest-raster-selftest) - OPEN_THANDOR_SELFTEST=raster: golden hashes of the software renderer's output, a safety net for rewrites of the triangle handlers and the 2D blits (docs/software_raster.md).
 - [`selftest.h`](source_guide/platform.md#file-platform-selftest-selftest) - Self-tests and data tools, started from WinMain (after the precomputed tables are built) when the environment variable OPEN_THANDOR_SELFTEST names one; the process then exits without entering ...
 - [`selftests.cpp`](source_guide/platform.md#file-platform-selftest-selftests) - no file comment; main functions `SelfTest_Run`
@@ -647,6 +650,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 - [`music_choice.cpp / music_choice.h`](source_guide/ui.md#file-ui-ingame-music-choice) - no file comment; main functions `InGameMusic_ComputeTrackSuitabilityScore`
 - [`node_views.h`](source_guide/ui.md#file-ui-ingame-node-views) - The in-game UI node types as prefixed views of their base node (core/slot.h THANDOR_SLOT_PREFIX), for the vtable and callback slots (see ui/controls/node_views.h).
 - [`notifications.cpp / notifications.h`](source_guide/ui.md#file-ui-ingame-notifications) - no file comment; main functions `InGameRuntime_ProcessQueuedSessionNotificationTimer`
+- [`objective_overlay.cpp / objective_overlay.h`](source_guide/ui.md#file-ui-ingame-objective-overlay) - The objective overlay of the in-game UI (include/thandor/ui/ingame/objective_overlay.h, docs/plans/ objective_overlay.md section 4).
 - [`pages.cpp / pages.h`](source_guide/ui.md#file-ui-ingame-pages) - no file comment; main functions `InGameQuitMenu_OpenAndRefreshButtons`, `InGameMissionHelpPage_Toggle`, `InGameTechnologyPanel_ToggleForSelection`
 - [`preview_markers.cpp / preview_markers.h`](source_guide/ui.md#file-ui-ingame-preview-markers) - no file comment; main functions `InGameWorldOverlay_RebuildOrReleaseTransientMarkers`, `InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint`
 - [`root_frame.cpp / root_frame.h`](source_guide/ui.md#file-ui-ingame-root-frame) - no file comment; main functions `InGameUiRoot_UpdateFrame`, `InGameRuntime_SaveWorldViewInfoTextChoice`, `InGameRuntime_UpdateCursorGridAndViewScaleCache`
@@ -668,7 +672,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 
 Module header: [`text.h`](../include/thandor/ui/text.h)
 
-- [`font.cpp / font.h`](source_guide/ui.md#file-ui-text-font) - no file comment; main functions `FontGlyph_GetLogicalSizeActiveFont`, `FontGlyph_GetLogicalSizeForStyle`, `FontRuntime_Init`
+- [`font.cpp / font.h`](source_guide/ui.md#file-ui-text-font) - no file comment; main functions `FontGlyph_GetLogicalSizeForStyle`, `FontGlyph_GetLogicalSizeActiveFont`, `FontRuntime_Init`
 - [`richtext_render.cpp / richtext_render.h`](source_guide/ui.md#file-ui-text-richtext-render) - no file comment; main functions `RichTextCommandStream_DrawSingleLine`, `RichTextCommandStream_MeasureLine`, `RichTextCommandStream_MeasureWrappedBlock`
 - [`types.h`](source_guide/ui.md#file-ui-text-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 

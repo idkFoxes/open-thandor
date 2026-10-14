@@ -810,7 +810,8 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
     X(PANEL_HINT, u"Linksklick: Taste \u00E4ndern, Rechtsklick: Belegung entfernen", u"Left click: change the key, right click: remove it") \
     X(PANEL_UNBOUND, u"(keine)", u"(none)") \
     X(PANEL_BUTTON_DEFAULTS, u"Standard", u"Defaults") \
-    X(PANEL_BUTTON_BACK, u"Zur\u00FCck", u"Back")
+    X(PANEL_BUTTON_BACK, u"Zur\u00FCck", u"Back") \
+    X(OBJECTIVE_TOGGLE, u"Ziel-Anzeige ein/aus", u"Objective display on/off")
 
 /* a mutable UTF-16 copy of a u"" literal (TextResource_TryResolve hands out uint16_t *) */
 template <size_t N>
