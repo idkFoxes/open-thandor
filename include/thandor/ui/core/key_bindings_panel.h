@@ -29,7 +29,7 @@
    clears its binding. Fixed rows are greyed and not editable. The panel follows every binding change
    (KeyBindings_AddChangeListener while attached).
 
-   The held keys the in-game camera polls (g_KeyboardSpecialKeyDown) do not pass through the keyboard focus: a host
+   The held keys the in-game camera polls (Keyboard_KeyHeld) do not pass through the keyboard focus: a host
    that shows the panel over a running game should not apply the camera keys while KeyBindingsPanel_Capturing(). */
 
 /* KeyBindingsPanel_Attach flags. */

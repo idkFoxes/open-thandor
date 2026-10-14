@@ -11,6 +11,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/ui/ingame/key_bindings_overlay.h>
 
 /* Module data. */
 
@@ -88,6 +89,11 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
      of the runtime root. */
   InGameUiImage *image = InGameUi_Image(inGameRoot);
   bool localSession = !Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK);
+
+  /* project change: no hotkey while the key binding overlay is open (keys the panel passes on end here) */
+  if (InGameKeyBindingsOverlay_IsOpen()) {
+    return false;
+  }
 
   /* A record without modifier class matches only without Ctrl and Alt; otherwise exactly the named
      combination (Ctrl, Alt, or both) must be held. Shift is ignored, unless a rebound key's class has Shift: then

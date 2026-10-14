@@ -1,39 +1,71 @@
-# Visit of the read-only key binding page ("Optionen" -> "Tastenbelegung"). Start with -NOINTRO in the developer
-# tools' window and a saved display mode of 1920x1080 (the main room's 3D view is not centred like the pages: its
-# door is given for 1920x1080; the page coordinates below are for 1280x800 and are moved by the second layout line,
-# the pages stay centred). Shots: shots\script_NNNN.bmp.
-#   main room (1920x1080): the left door (400,500) opens "Optionen"; its buttons sit at page centre + (-200, -36 / -4 / 28 / 60 /
-#   92): "Anzeige" 440,364, "3D" 440,396, "Sound" 440,428, "Erweitert" 440,460, "Tastenbelegung" 440,492;
-#   "Zurueck" / "Ok" at 440,540
-#   key binding page (centre 640,400): the list frame spans x 336..944, y 268..516
-# Steps: options page with the fifth button (shot 0), "Tastenbelegung" (shot 1: the list from the top, section
-# titles highlighted, no row selected), a click on a row and 10 wheel notches down (shot 2: scrolled, still no row
-# selected), 30 notches down (shot 3: the end of the list), back (shot 4: the options page), "Erweitert" (shot 5:
-# the advanced settings page as before), back and "Tastenbelegung" again (shot 6: the list from the top), quit.
+# The key binding page "Optionen" -> "Tastenbelegung" with the editable key binding panel (ui/core/key_bindings_panel.h,
+# hosted by ui/frontend/key_bindings_page.cpp). Start with -NOINTRO in the developer tools' window and a saved display
+# mode of 1920x1080 (the main room's door is given for 1920x1080; the page coordinates are for 1280x800 and are moved
+# by the layout lines; the key lines switch to "layout 1920 1080" so their virtual-key code is not moved). Shots:
+# shots\script_NNNN.bmp; the log gets one "key bindings panel:" line per capture and status.
+#   options page buttons: "Tastenbelegung" 440,492
+#   panel (centre 640,400): box 336..944 x 268..552, rows of 22 pixels from y 279 (row 6 "Pause ein/aus" at y 411),
+#   key cells x 633..922; "Standard" 392,540, "Zurueck" 888,540
+# Steps: page open (shot 0), click Pause: prompt (shot 1), F5: "Pause ein/aus: F5" (shot 2), S: "Taste bereits belegt:
+# Anhalten" (shot 3), Ctrl held + P: still capturing (shot 4), Ctrl released: "Strg+P" (shot 5), Esc cancels, '#'
+# (a character without key-down code): "Taste nicht erlaubt" (shot 6), right click: "Belegung entfernt" and
+# "(keine)" (shot 7), Alt+F4: "Taste nicht erlaubt" (shot 8), "Standard": defaults (shot 9), 8 wheel notches
+# (shot 10), Esc outside a capture = "Zurueck": the options page (shot 11), quit.
 # Lines that do not start with a number are ignored (comments).
 0 layout 1920 1080
 6000 move 400 500
 6500 click 400 500
 7000 layout 1280 800
-9000 shot
-9500 move 440 492
-10000 click 440 492
-12000 shot
-12500 move 640 330
-13000 click 640 330
-13500 wheel 640 400 -10
-15000 shot
-15500 wheel 640 400 -30
+11500 move 440 492
+12000 click 440 492
+14000 shot
+14500 move 800 411
+14600 click 800 411
+15500 shot
+15999 layout 1920 1080
+16000 key 116
+16001 layout 1280 800
 17000 shot
-17500 move 440 540
-18000 click 440 540
-20000 shot
-20500 move 440 460
-21000 click 440 460
-23000 shot
-23500 move 440 540
-24000 click 440 540
-24500 move 440 492
-25000 click 440 492
-27000 shot
-28000 quit
+17500 click 800 411
+17999 layout 1920 1080
+18000 key 83
+18001 layout 1280 800
+19000 shot
+19500 click 800 411
+19999 layout 1920 1080
+20000 keydown 17
+20200 key 80
+20201 layout 1280 800
+20700 shot
+20999 layout 1920 1080
+21000 keyup 17
+21001 layout 1280 800
+22000 shot
+22500 click 800 411
+22999 layout 1920 1080
+23000 key 27
+23001 layout 1280 800
+23500 click 800 411
+23999 layout 1920 1080
+24000 type #
+24001 layout 1280 800
+25000 shot
+25500 rclick 800 411
+26500 shot
+27000 click 800 411
+27499 layout 1920 1080
+27500 keydown 18
+27700 key 115
+28000 keyup 18
+28001 layout 1280 800
+28500 shot
+29000 move 392 540
+29200 click 392 540
+30500 shot
+31000 wheel 640 400 -8
+32000 shot
+32499 layout 1920 1080
+32500 key 27
+32501 layout 1280 800
+34500 shot
+35000 quit

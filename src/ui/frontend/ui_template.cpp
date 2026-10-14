@@ -2700,9 +2700,12 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .pageCount = 0x00000002, .pages = {UI_TEMPLATE_LINK_BITS(0x7258), UI_TEMPLATE_LINK_BITS(0x7DB0)}},
+        /* the key binding page holds the title; the editable panel (ui/core/key_bindings_panel.h) is attached after
+           it when the page opens. The former read-only list's back button, scroll frame and list (+7E0C, +7EC8,
+           +7F58) are no longer linked; their storage stays so that the following nodes keep their offsets */
         { /* +7DB0 keyBindingsPage g_UiImagePanelControlVtable */
             .base = {
-                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x7E0C), .parent = UI_TEMPLATE_LINK(0x7D58),
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x7E6C), .parent = UI_TEMPLATE_LINK(0x7D58),
                 .vtable = THANDOR_PTR(&g_UiImagePanelControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
@@ -2721,7 +2724,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .textResourceId = 0x00002129},
         { /* +7E6C keyBindingsTitle g_UiFocusProxyControlVtable */
             .base = {
-                .nextSibling = UI_TEMPLATE_LINK(0x7EC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7DB0),
+                .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7DB0),
                 .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .leftOffset = -288, .topOffset = -164, .rightOffset = 288, .bottomOffset = -140,
