@@ -203,6 +203,7 @@ add_executable(thandor WIN32
     src/ui/controls/window.cpp
     src/ui/core/chat_history.cpp
     src/ui/core/frame_loop.cpp
+    src/ui/core/key_binding_tables.cpp
     src/ui/core/key_bindings.cpp
     src/ui/core/model_tint.cpp
     src/ui/core/pcx_preview.cpp
