@@ -1,7 +1,8 @@
 # Key rebinding
 
-Status: P1 (binding model) done on `experimental/keybinding-edit`; P2 (dispatch) done on `keybinding-edit/kb-p2`;
-P3..P6 open.
+Status: P1 (binding model), P2 (dispatch) and P3 (ini `[keys]`: `PersistentSettings_RegisterSection` / `_MarkDirty`,
+`KeyBindingsIni_Register` called at the start of `ProcessEntry_RunGame`) done on `experimental/keybinding-edit`;
+P4..P6 open.
 
 ## Goal
 
