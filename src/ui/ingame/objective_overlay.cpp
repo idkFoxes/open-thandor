@@ -24,9 +24,11 @@
 #include <thandor/ui/ingame/objective_overlay.h>
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <thandor/thandor.h>
+#include <thandor/gameplay/session/mission_objective.h>
 #include <thandor/platform/bootstrap/image.h>
 
 namespace {
@@ -83,6 +85,22 @@ struct OverlayState {
 };
 
 OverlayState s_Overlay;
+
+/* The objective update (ObjectiveOverlay_Update): what line 1 was built for, and when the progress is due. */
+constexpr std::chrono::milliseconds OVERLAY_REFRESH_INTERVAL{500};
+struct OverlayUpdateState {
+    uint32_t attachGeneration = 0; /* ObjectiveOverlay_AttachToRoot calls */
+    bool built = false;
+    uint32_t builtGeneration = 0;
+    const InGameLevelConditionStorage *builtStorage = nullptr;
+    uint32_t builtFaction = 0;
+    uint32_t builtLanguage = 0;
+    bool enabled = true;
+    bool sample = false; /* OPEN_THANDOR_OBJECTIVE_SAMPLE set the lines: no update */
+    std::chrono::steady_clock::time_point nextRefresh{};
+    MissionObjective objective;
+};
+OverlayUpdateState s_Update;
 
 /* The node: covers the world view area (anchors 0..1); the box is computed at draw and hit-test time. */
 UiNodeBase s_OverlayNode = {
@@ -418,6 +436,9 @@ void ObjectiveOverlay_AttachToRoot(InGameRuntimeRoot *root)
     s_Overlay.visible = true;
     s_Overlay.pressed = false;
     s_Overlay.root = root;
+    s_Update.attachGeneration++;
+    s_Update.built = false;
+    s_Update.sample = false;
     /* sibling right after the world view: drawn above it, below the windows; hit-tested before it */
     s_OverlayNode.parent = worldView.parent;
     s_OverlayNode.nextSibling = worldView.nextSibling;
@@ -441,6 +462,7 @@ void ObjectiveOverlay_AttachToRoot(InGameRuntimeRoot *root)
             u"Halte die Stellung am Pass, bis die Verst\u00E4rkung aus dem Norden eintrifft und die Br\u00FCcke "
             u"gesichert ist";
         auto units = [](const char16_t *text) { return reinterpret_cast<const uint16_t *>(text); };
+        s_Update.sample = sample[0] != 0 && sample[0] != '0';
         if (std::strcmp(sample, "long") == 0) {
             ObjectiveOverlay_SetLines(units(SAMPLE_LONG), units(SAMPLE_LINE2));
         } else if (std::strcmp(sample, "1line") == 0) {
@@ -472,4 +494,61 @@ void ObjectiveOverlay_DetachFromRoot(InGameRuntimeRoot *root)
     s_Overlay.line1.fill(0);
     s_Overlay.line2.fill(0);
     s_Overlay.layout.valid = false;
+    s_Update.built = false;
+    s_Update.objective = MissionObjective{};
+}
+
+bool ObjectiveOverlay_Enabled()
+{
+    return PersistentSettings_Read(PERSISTENT_OBJECTIVE_OVERLAY_ON, PERSISTENT_SETTING_OBJECTIVE_OVERLAY) !=
+           PERSISTENT_OBJECTIVE_OVERLAY_OFF;
+}
+
+bool ObjectiveOverlay_ToggleSetting()
+{
+    bool shown = !ObjectiveOverlay_Enabled();
+    PersistentSettings_WriteObjectiveOverlay(shown);
+    Overlay_Invalidate(); /* ObjectiveOverlay_Update fills the lines with the next frame */
+    return shown;
+}
+
+void ObjectiveOverlay_Update()
+{
+    InGameRuntimeRoot *root = s_Overlay.root;
+    if (root == nullptr || root != g_InGameRuntimeRoot) {
+        return;
+    }
+    bool editor = Any((root->worldRuntime).runtimeFlags & INGAME_WORLD_FLAG_EDITOR);
+    ObjectiveOverlay_SetVisible(!editor);
+    bool enabled = ObjectiveOverlay_Enabled();
+    auto now = std::chrono::steady_clock::now();
+    if (enabled != s_Update.enabled) {
+        s_Update.enabled = enabled;
+        s_Update.nextRefresh = now; /* switched on: fresh values at once */
+        Overlay_Invalidate();
+    }
+    if (!enabled || editor || s_Update.sample) {
+        return;
+    }
+    const InGameLevelConditionStorage *storage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+    uint32_t faction = static_cast<uint32_t>((root->worldRuntime).activeFactionRuntimeIndex);
+    uint32_t language = Game_LanguageGeneration();
+    if (!s_Update.built || s_Update.builtGeneration != s_Update.attachGeneration || s_Update.builtStorage != storage ||
+        s_Update.builtFaction != faction || s_Update.builtLanguage != language) {
+        s_Update.objective = MissionObjective_Build(storage, faction);
+        s_Update.built = true;
+        s_Update.builtGeneration = s_Update.attachGeneration;
+        s_Update.builtStorage = storage;
+        s_Update.builtFaction = faction;
+        s_Update.builtLanguage = language;
+        s_Update.nextRefresh = now;
+    }
+    if (now < s_Update.nextRefresh) {
+        return;
+    }
+    s_Update.nextRefresh = now + OVERLAY_REFRESH_INTERVAL;
+    std::array<uint16_t, MISSION_OBJECTIVE_LINE_UNITS> progress{};
+    bool hasProgress = s_Update.objective.source != MissionObjectiveSource::NONE &&
+                       MissionObjective_FormatProgress(&s_Update.objective, progress.data(), progress.size());
+    ObjectiveOverlay_SetLines(s_Update.objective.line1, hasProgress ? progress.data() : nullptr);
 }

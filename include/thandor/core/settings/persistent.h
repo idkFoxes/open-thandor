@@ -42,6 +42,10 @@ inline constexpr auto PERSISTENT_SETTING_PATHING_MODE = 0x50; /* PERSISTENT_PATH
 inline constexpr auto PERSISTENT_PATHING_IMPROVED = 0; /* default (docs/plans/pathfinding.md D1) */
 inline constexpr auto PERSISTENT_PATHING_ORIGINAL = 1;
 inline constexpr auto PERSISTENT_PATHING_COUNT = 2;
+/* Not in the original (open-thandor): the second unused dword. A file without it reads 0, the default (shown). */
+inline constexpr auto PERSISTENT_SETTING_OBJECTIVE_OVERLAY = 0x54; /* PERSISTENT_OBJECTIVE_OVERLAY_*: [game] objective_overlay */
+inline constexpr auto PERSISTENT_OBJECTIVE_OVERLAY_ON = 0; /* default (docs/plans/objective_overlay.md E4) */
+inline constexpr auto PERSISTENT_OBJECTIVE_OVERLAY_OFF = 1;
 inline constexpr auto PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS = 0x5C; /* link rotation zoom/tilt, hide panel */
 inline constexpr auto PERSISTENT_SETTING_PLAYER_NAME = 0x60; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
 inline constexpr auto PERSISTENT_SETTING_GAME_NAME = 0x88; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
@@ -152,6 +156,10 @@ void PersistentSettings_WriteLanguage(uint32_t countryCode);
 /* Not in the original: stores the single-player pathing mode chosen in the menus in g_PathingModeSetting (the next
    local session's mode) and the settings ([game] pathing in thandor.ini, saved by the next Flush). */
 void PersistentSettings_WritePathingImproved(bool improved);
+
+/* Not in the original: stores the objective overlay setting chosen in the menus ("Ziel anzeigen", [game]
+   objective_overlay in thandor.ini, saved by the next Flush); ObjectiveOverlay_Enabled reads it back at once. */
+void PersistentSettings_WriteObjectiveOverlay(bool shown);
 
 extern uint32_t g_LocaleCountryCodeOverride;
 
