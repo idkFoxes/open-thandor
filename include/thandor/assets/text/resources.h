@@ -180,6 +180,68 @@ inline constexpr int TEXT_ID_LANGUAGE_NAME_COUNT = 5;
    texts. */
 #define TEXT_ID_ADVANCED_PATHING (TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT)
 
+/* Not in the original: the objective overlay (docs/plans/objective_overlay.md 3b): the templates of the generated
+   objective lines (gameplay/session/mission_objective.h), German for German, English for every other language
+   (project_texts_en.cpp). Block TEXT_ID_OBJECTIVE_BASE..TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED - 1
+   (0x7F0100..0x7F013F) is reserved for them; TEXT_ID_OBJECTIVE_COUNT are used. "%s" stands for a name (unit type,
+   faction or a sub-objective), "%u" for a number, "%02u" for two digits, "%%" for a percent sign
+   (MissionObjective_* fills them in). */
+#define TEXT_ID_OBJECTIVE_BASE (TEXT_ID_PROJECT_BASE + 0x100)
+inline constexpr int TEXT_ID_OBJECTIVE_RESERVED = 0x40;
+#define TEXT_ID_OBJECTIVE_LABEL (TEXT_ID_OBJECTIVE_BASE + 0) /* "Ziel:" (the overlay's prefix) */
+#define TEXT_ID_OBJECTIVE_DESTROY_ALL_ENEMIES (TEXT_ID_OBJECTIVE_BASE + 1) /* "Alle Gegner vernichten" */
+#define TEXT_ID_OBJECTIVE_DESTROY_MAIN_FORCE (TEXT_ID_OBJECTIVE_BASE + 2) /* "Feindliche Hauptstreitmacht vernichten" */
+#define TEXT_ID_OBJECTIVE_DESTROY_TYPE (TEXT_ID_OBJECTIVE_BASE + 3) /* "%s zerstoeren" */
+#define TEXT_ID_OBJECTIVE_ELIMINATE_FACTION (TEXT_ID_OBJECTIVE_BASE + 4) /* "Gegner %s ausschalten" */
+#define TEXT_ID_OBJECTIVE_ELIMINATE_ALL (TEXT_ID_OBJECTIVE_BASE + 5) /* "Alle Gegner ausschalten" */
+#define TEXT_ID_OBJECTIVE_COLLECT_XENITE (TEXT_ID_OBJECTIVE_BASE + 6) /* "Xenit sammeln" */
+#define TEXT_ID_OBJECTIVE_COLLECT_TRITIUM (TEXT_ID_OBJECTIVE_BASE + 7) /* "Tritium sammeln" */
+#define TEXT_ID_OBJECTIVE_RAISE_TRITIUM_RATE (TEXT_ID_OBJECTIVE_BASE + 8) /* "Tritium-Foerderung steigern" */
+#define TEXT_ID_OBJECTIVE_BUILD_TYPE (TEXT_ID_OBJECTIVE_BASE + 9) /* "%s bauen" */
+#define TEXT_ID_OBJECTIVE_CONTROL_TERRAIN (TEXT_ID_OBJECTIVE_BASE + 10) /* "Gebiet kontrollieren" */
+#define TEXT_ID_OBJECTIVE_HOLD_OUT (TEXT_ID_OBJECTIVE_BASE + 11) /* "Durchhalten" */
+#define TEXT_ID_OBJECTIVE_SMALL_XENITE_STORAGE (TEXT_ID_OBJECTIVE_BASE + 12) /* "Xenit-Lager klein halten" */
+#define TEXT_ID_OBJECTIVE_KEEP_UNITS_TOGETHER (TEXT_ID_OBJECTIVE_BASE + 13) /* "Einheiten zusammenhalten" */
+#define TEXT_ID_OBJECTIVE_MULTIPLE (TEXT_ID_OBJECTIVE_BASE + 14) /* "Mehrere Ziele (F1)" */
+#define TEXT_ID_OBJECTIVE_SEE_BRIEFING (TEXT_ID_OBJECTIVE_BASE + 15) /* "Ziel siehe Auftrag (F1)" (not describable) */
+#define TEXT_ID_OBJECTIVE_AND (TEXT_ID_OBJECTIVE_BASE + 16) /* "%s und %s" */
+#define TEXT_ID_OBJECTIVE_OR (TEXT_ID_OBJECTIVE_BASE + 17) /* "%s oder %s" */
+#define TEXT_ID_OBJECTIVE_MORE (TEXT_ID_OBJECTIVE_BASE + 18) /* "%s (+%u weitere)" */
+#define TEXT_ID_OBJECTIVE_UNIT_FALLBACK (TEXT_ID_OBJECTIVE_BASE + 19) /* "Einheiten" (unit type without a name) */
+#define TEXT_ID_OBJECTIVE_PROGRESS_ENEMY_UNITS (TEXT_ID_OBJECTIVE_BASE + 20) /* "Gegnerische Einheiten: %u" */
+#define TEXT_ID_OBJECTIVE_PROGRESS_REMAINING (TEXT_ID_OBJECTIVE_BASE + 21) /* "Verbleibend: %u" */
+#define TEXT_ID_OBJECTIVE_PROGRESS_XENITE (TEXT_ID_OBJECTIVE_BASE + 22) /* "Xenit %u / %u" */
+#define TEXT_ID_OBJECTIVE_PROGRESS_TRITIUM (TEXT_ID_OBJECTIVE_BASE + 23) /* "Tritium %u / %u" */
+#define TEXT_ID_OBJECTIVE_PROGRESS_RATE (TEXT_ID_OBJECTIVE_BASE + 24) /* "Tritium %u / %u pro Minute" */
+#define TEXT_ID_OBJECTIVE_PROGRESS_COUNT (TEXT_ID_OBJECTIVE_BASE + 25) /* "%u / %u" */
+#define TEXT_ID_OBJECTIVE_PROGRESS_PERCENT (TEXT_ID_OBJECTIVE_BASE + 26) /* "%u %% / %u %%" */
+#define TEXT_ID_OBJECTIVE_PROGRESS_COUNTDOWN (TEXT_ID_OBJECTIVE_BASE + 27) /* "Noch %u:%02u" */
+#define TEXT_ID_OBJECTIVE_DESTROY_FACTION (TEXT_ID_OBJECTIVE_BASE + 28) /* "Gegner %s vernichten" */
+#define TEXT_ID_OBJECTIVE_STOP_TRITIUM (TEXT_ID_OBJECTIVE_BASE + 29) /* "Tritium-Foerderung von %s stoppen" */
+inline constexpr int TEXT_ID_OBJECTIVE_COUNT = 30;
+static_assert(TEXT_ID_OBJECTIVE_COUNT <= TEXT_ID_OBJECTIVE_RESERVED);
+
+/* Not in the original: the English text of objective template index (0..TEXT_ID_OBJECTIVE_COUNT - 1), else nullptr
+   (project_texts_en.cpp). */
+uint16_t *TextResource_ObjectiveTextEnglish(uint32_t index);
+
+/* Not in the original: the hand-written short objectives of the stock missions (objective overlay, plan 3a).
+   Block TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE..+TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED - 1 (0x7F0200..0x7F02FF)
+   is reserved for them; objective_texts.cpp owns the table (until it is filled the stub there has none). */
+#define TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE (TEXT_ID_PROJECT_BASE + 0x200)
+inline constexpr int TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED = 0x100;
+
+/* Not in the original: the text id of the hand-written short objective of level levelName for faction (1..7), or
+   TEXT_RESOURCE_ID_NONE when there is none. levelName is the level file base name from LevelAssetHeader
+   .levelFileNameUtf16 without its trailing dot, terminated, no directory, case as stored (e.g. "s07_landunt",
+   "t00_tut", "eisigehöhen"). objective_texts.cpp. */
+TextResourceId TextResource_MissionObjective(const uint16_t *levelName,uint32_t faction);
+
+/* Not in the original: resolves an id of the short-objective block (TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE..) in the
+   language of the project texts; false for an id it has no text for. Called by TextResource_TryResolve.
+   objective_texts.cpp. */
+bool TextResource_TryResolveMissionObjective(TextResourceId resourceId,uint16_t **outText);
+
 /* Not in the original: the TEXT_ID_LANGUAGE_NAME_BASE.. text of a telephone country code (49, 44, 33, 39, 34), else
    TEXT_RESOURCE_ID_NONE. */
 TextResourceId TextResource_LanguageNameId(uint32_t countryCode);

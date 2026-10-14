@@ -827,6 +827,53 @@ void TextResource_SetKeyBindingTextsEnglish(bool english)
   g_KeyBindingTextsEnglishSelected = english;
 }
 
+/* Not in the original: the German objective templates (TEXT_ID_OBJECTIVE_BASE.., resources.h), in id order; the
+   English ones are in project_texts_en.cpp. Plain text, umlauts as Latin-1 code units. */
+static KeyBindingTextUtf16 g_ObjectiveTextLabel{u"Ziel:"};
+static KeyBindingTextUtf16 g_ObjectiveTextDestroyAllEnemies{u"Alle Gegner vernichten"};
+static KeyBindingTextUtf16 g_ObjectiveTextDestroyMainForce{u"Feindliche Hauptstreitmacht vernichten"};
+static KeyBindingTextUtf16 g_ObjectiveTextDestroyType{u"%s zerst\u00F6ren"};
+static KeyBindingTextUtf16 g_ObjectiveTextEliminateFaction{u"Gegner %s ausschalten"};
+static KeyBindingTextUtf16 g_ObjectiveTextEliminateAll{u"Alle Gegner ausschalten"};
+static KeyBindingTextUtf16 g_ObjectiveTextCollectXenite{u"Xenit sammeln"};
+static KeyBindingTextUtf16 g_ObjectiveTextCollectTritium{u"Tritium sammeln"};
+static KeyBindingTextUtf16 g_ObjectiveTextRaiseTritiumRate{u"Tritium-F\u00F6rderung steigern"};
+static KeyBindingTextUtf16 g_ObjectiveTextBuildType{u"%s bauen"};
+static KeyBindingTextUtf16 g_ObjectiveTextControlTerrain{u"Gebiet kontrollieren"};
+static KeyBindingTextUtf16 g_ObjectiveTextHoldOut{u"Durchhalten"};
+static KeyBindingTextUtf16 g_ObjectiveTextSmallXeniteStorage{u"Xenit-Lager klein halten"};
+static KeyBindingTextUtf16 g_ObjectiveTextKeepUnitsTogether{u"Einheiten zusammenhalten"};
+static KeyBindingTextUtf16 g_ObjectiveTextMultiple{u"Mehrere Ziele (F1)"};
+static KeyBindingTextUtf16 g_ObjectiveTextSeeBriefing{u"Ziel siehe Auftrag (F1)"};
+static KeyBindingTextUtf16 g_ObjectiveTextAnd{u"%s und %s"};
+static KeyBindingTextUtf16 g_ObjectiveTextOr{u"%s oder %s"};
+static KeyBindingTextUtf16 g_ObjectiveTextMore{u"%s (+%u weitere)"};
+static KeyBindingTextUtf16 g_ObjectiveTextUnitFallback{u"Einheiten"};
+static KeyBindingTextUtf16 g_ObjectiveTextProgressEnemyUnits{u"Gegnerische Einheiten: %u"};
+static KeyBindingTextUtf16 g_ObjectiveTextProgressRemaining{u"Verbleibend: %u"};
+static KeyBindingTextUtf16 g_ObjectiveTextProgressXenite{u"Xenit %u / %u"};
+static KeyBindingTextUtf16 g_ObjectiveTextProgressTritium{u"Tritium %u / %u"};
+static KeyBindingTextUtf16 g_ObjectiveTextProgressRate{u"Tritium %u / %u pro Minute"};
+static KeyBindingTextUtf16 g_ObjectiveTextProgressCount{u"%u / %u"};
+static KeyBindingTextUtf16 g_ObjectiveTextProgressPercent{u"%u %% / %u %%"};
+static KeyBindingTextUtf16 g_ObjectiveTextProgressCountdown{u"Noch %u:%02u"};
+static KeyBindingTextUtf16 g_ObjectiveTextDestroyFaction{u"Gegner %s vernichten"};
+static KeyBindingTextUtf16 g_ObjectiveTextStopTritium{u"Tritium-Förderung von %s stoppen"};
+static uint16_t *const g_ObjectiveTextsGerman[] = {
+    g_ObjectiveTextLabel.units, g_ObjectiveTextDestroyAllEnemies.units, g_ObjectiveTextDestroyMainForce.units,
+    g_ObjectiveTextDestroyType.units, g_ObjectiveTextEliminateFaction.units, g_ObjectiveTextEliminateAll.units,
+    g_ObjectiveTextCollectXenite.units, g_ObjectiveTextCollectTritium.units, g_ObjectiveTextRaiseTritiumRate.units,
+    g_ObjectiveTextBuildType.units, g_ObjectiveTextControlTerrain.units, g_ObjectiveTextHoldOut.units,
+    g_ObjectiveTextSmallXeniteStorage.units, g_ObjectiveTextKeepUnitsTogether.units, g_ObjectiveTextMultiple.units,
+    g_ObjectiveTextSeeBriefing.units, g_ObjectiveTextAnd.units, g_ObjectiveTextOr.units, g_ObjectiveTextMore.units,
+    g_ObjectiveTextUnitFallback.units, g_ObjectiveTextProgressEnemyUnits.units,
+    g_ObjectiveTextProgressRemaining.units, g_ObjectiveTextProgressXenite.units,
+    g_ObjectiveTextProgressTritium.units, g_ObjectiveTextProgressRate.units, g_ObjectiveTextProgressCount.units,
+    g_ObjectiveTextProgressPercent.units, g_ObjectiveTextProgressCountdown.units,
+    g_ObjectiveTextDestroyFaction.units, g_ObjectiveTextStopTritium.units};
+static_assert(sizeof(g_ObjectiveTextsGerman) / sizeof(g_ObjectiveTextsGerman[0]) == TEXT_ID_OBJECTIVE_COUNT,
+              "one German text per TEXT_ID_OBJECTIVE_* id");
+
 /* Looks up the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime
    override table is searched, then the bound locale block of the id's page (compact or extended id, see
    resources.h). Stores the text in *outText and returns true when found; a missing text stores
@@ -865,6 +912,19 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     *outText = (g_KeyBindingTextsEnglishSelected ? g_KeyBindingTextsEnglish
                                                  : g_KeyBindingTextsGerman)[resourceId - TEXT_ID_KEY_BINDING_BASE];
     return true;
+  }
+  if ((resourceId >= TEXT_ID_OBJECTIVE_BASE) && (resourceId < TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_COUNT)) {
+    /* not in the original: the objective templates, English for every language but German */
+    *outText = TextResource_ProjectTextsAreGerman() ? nullptr : TextResource_ObjectiveTextEnglish(resourceId - TEXT_ID_OBJECTIVE_BASE);
+    if (*outText == nullptr) {
+      *outText = g_ObjectiveTextsGerman[resourceId - TEXT_ID_OBJECTIVE_BASE];
+    }
+    return true;
+  }
+  if ((resourceId >= TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE) &&
+      (resourceId < TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE + TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED) &&
+      TextResource_TryResolveMissionObjective(resourceId,outText)) {
+    return true; /* not in the original: the hand-written short objectives (objective_texts.cpp) */
   }
   if (g_TextResourceOverrides != nullptr) {
     /* the first entry with this id; its text is the entry of the same index in textPointers */

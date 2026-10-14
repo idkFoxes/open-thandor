@@ -1203,6 +1203,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestUiAtlas();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "objectives") == 0) {
+        Thandor_SelfTestObjectives();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "crash") == 0) {
         *static_cast<volatile int *>(nullptr) = 1; /* exercises the crash handler */
     }

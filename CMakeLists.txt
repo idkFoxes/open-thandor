@@ -55,6 +55,7 @@ add_executable(thandor WIN32
     src/assets/scenario/catalog.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
+    src/assets/text/objective_texts.cpp
     src/assets/text/project_texts_en.cpp
     src/assets/text/resources.cpp
     src/assets/text/richtext.cpp
@@ -124,6 +125,7 @@ add_executable(thandor WIN32
     src/gameplay/session/level_new.cpp
     src/gameplay/session/level_saved.cpp
     src/gameplay/session/level_script.cpp
+    src/gameplay/session/mission_objective.cpp
     src/gameplay/session/loaded_session.cpp
     src/gameplay/session/loading_movie.cpp
     src/gameplay/session/new_session.cpp
@@ -540,6 +542,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/selftest/keymatch_selftest.cpp
         src/platform/selftest/language_selftest.cpp
         src/platform/selftest/nativefile_selftest.cpp
+        src/platform/selftest/objectives_selftest.cpp
         src/platform/selftest/raster_selftest.cpp
         src/platform/selftest/selftests.cpp
         src/platform/selftest/uiatlas_selftest.cpp

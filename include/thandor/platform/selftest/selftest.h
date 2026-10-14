@@ -64,6 +64,10 @@
                     without a block and back; checks that every id the German block has resolves (non-empty where the
                     German text is), the bound block and project text language, no allocation, the same texts after
                     switching back; one line per failed check, one per language and a summary
+     objectives     the mission objective model of the objective overlay (objectives_selftest.cpp): unit cases for
+                    every condition kind and postfix form against the expected German / English line 1 and line 2,
+                    then every level\*.lev of PATCH01/PATCH00/LEVEL.PCK in the current directory gives each faction
+                    with a victory trigger a non-empty line 1 (one log line each); skips the levels without packages
      crash          writes to address 0 to exercise the crash handler, then (if it returns) starts the game
    The differential tests that ran the original machine code (stretchcmp, relaxcmp and the movie decoder
    compare) needed the 32-bit original exe and were removed with the 32-bit build; they had confirmed those
@@ -102,5 +106,7 @@ void Thandor_SelfTestLanguage();
 
 /* OPEN_THANDOR_SELFTEST=uiatlas (uiatlas_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestUiAtlas();
+/* OPEN_THANDOR_SELFTEST=objectives (objectives_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestObjectives();
 
 #endif /* THANDOR_PLATFORM_SELFTEST_SELFTEST_H */
