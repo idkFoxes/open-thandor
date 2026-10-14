@@ -2407,7 +2407,8 @@ static_assert(offsetof(FrontendUiImage, campaignMissionDescriptionText) == 0x7C4
               "FrontendUiImage.campaignMissionDescriptionText is a UiFocusProxyControl");
 static_assert(offsetof(FrontendUiImage, campaignMissionStatusText) == 0x7C9C && sizeof(UiFocusProxyControl) == 0x5C,
               "FrontendUiImage.campaignMissionStatusText is a UiFocusProxyControl");
-/* Not in the original (open-thandor): the key binding page. */
+/* Not in the original (open-thandor): the key binding page (the back button, scroll frame and list are unused storage
+   since the page hosts the key binding panel; they keep the following nodes' offsets). */
 static_assert(offsetof(FrontendUiImage, keyBindingsButton) == 0x7CF8 && sizeof(UiFramedTextButtonControl) == 0x60,
               "FrontendUiImage.keyBindingsButton is a UiFramedTextButtonControl");
 static_assert(offsetof(FrontendUiImage, settingsSubPageStack) == 0x7D58 && sizeof(UiLayoutContainerControl<2>) == 0x58,

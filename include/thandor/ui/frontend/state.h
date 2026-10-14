@@ -27,6 +27,10 @@ bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
    (ui/core/key_bindings.h). */
 uint32_t FrontendHotkeys_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags);
 
+/* Not in the original: rewrites the frontend hotkey table from the key bindings (ui/core/key_binding_tables.h);
+   returns the number of records that did not fit. */
+uint32_t FrontendHotkeys_ApplyBindings();
+
 void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
 
 void Frontend_StateTick();

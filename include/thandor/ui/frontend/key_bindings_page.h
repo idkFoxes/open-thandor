@@ -10,13 +10,13 @@
 
 #include <thandor/ui/controls/types.h>
 
-/* The read-only key binding page of the options menu ("Tastenbelegung", frontend only): the rows of
-   KeyBindings_Table (ui/core/key_bindings.h) as a scrollable two-column list (keys | action), each section headed by
-   its title in the selected text style. The page is settingsSubPageStack page 1 in displayPageStack page 1
-   (FrontendUiImage keyBindings*); its back button is action 0x2010 as on the other option pages. */
+/* The key binding page of the options menu ("Tastenbelegung", frontend only): the page title and the editable key
+   binding panel (ui/core/key_bindings_panel.h), the frontend host of the panel. The page is settingsSubPageStack
+   page 1 in displayPageStack page 1 (FrontendUiImage keyBindingsPage); the panel's "Zurueck" (or Esc) detaches it
+   and returns to the options page through action 0x2010, as the other option pages' back buttons. */
 
-/* Handler of FRONTEND_ACTION_OPEN_KEY_BINDINGS (the options page's "Tastenbelegung" button): builds the rows in the
-   current language of the key binding texts and shows the page scrolled to the top. */
+/* Handler of FRONTEND_ACTION_OPEN_KEY_BINDINGS (the options page's "Tastenbelegung" button): shows the page and
+   attaches the panel (rows in the current language, scrolled to the top, keyboard focus on its list). */
 void FrontendKeyBindingsAction_OpenPage(UiNodeBase *sourceNode);
 
 #endif /* THANDOR_UI_FRONTEND_KEY_BINDINGS_PAGE_H */

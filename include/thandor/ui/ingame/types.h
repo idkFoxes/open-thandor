@@ -882,7 +882,7 @@ struct InGameUiImage {
     UiFocusProxyControl missionHelpTitle; /* +0EC8 g_UiFocusProxyControlVtable: Title label of the mission help window (text 0x21CC). */
     UiFramedTextButtonControl missionHelpCloseButton; /* +0F24 g_UiFramedTextButtonControlVtable: Close button of the mission help window (action 0x1020, text 0x21CD). */
     UiFramedTextButtonControl missionHelpBriefingTab; /* +0F84 g_UiFramedTextButtonControlVtable: Tab 0 button (action 0x1021, text 0x21CE) showing the mission briefing text. */
-    UiFramedTextButtonControl missionHelpKeyboardTab; /* +0FE4 g_UiFramedTextButtonControlVtable: Tab 1 button (action 0x1022, text 0x21CF) showing the keyboard help (text page texte_tastatur). */
+    UiFramedTextButtonControl missionHelpKeyboardTab; /* +0FE4 g_UiFramedTextButtonControlVtable: Tab 1 button (action 0x1022, text 0x21CF) showing the keyboard help (text page texte_tastatur); project change: opens the key binding overlay (ui/ingame/key_bindings_overlay.h) instead. */
     UiFramedTextButtonControl missionHelpMouseTab; /* +1044 g_UiFramedTextButtonControlVtable: Tab 2 button (action 0x1023, text 0x21D0) showing help text 0x2402 with inline cursor icons (likely mouse controls). */
     UiLayoutContainerControl<3> missionHelpTabPageStack; /* +10A4 g_UiLayoutContainerControlVtable: Page stack holding the three scrollable help text pages. */
     UiScrollableControl missionBriefingScroll; /* +1100 g_UiScrollableControlVtable: Scrollable view of the mission briefing text (InGameMissionHelpRootView.missionBriefingPanel). */

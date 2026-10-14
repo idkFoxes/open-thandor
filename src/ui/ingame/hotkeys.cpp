@@ -7,9 +7,11 @@
 
 #include <thandor/ui/ingame/hotkeys.h>
 #include <thandor/ui/core/key_dispatch.h>
+#include <thandor/ui/core/key_binding_tables.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/ui/ingame/key_bindings_overlay.h>
 
 /* Module data. */
 
@@ -33,9 +35,9 @@ enum class InGameHotkeyAction : uint32_t {
 };
 static_assert(sizeof(UiKeyCommandRecord<InGameHotkeyAction>) == 0xC, "a key command record keeps the original 12 bytes");
 
-/* 15 command records and the terminator
-   record (commandCode 0) that ends the dispatcher's scan */
-static const UiKeyCommandRecord<InGameHotkeyAction> g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[16] = {
+/* The 15 command records of the original (with the default key bindings). The dispatcher scans the working table
+   g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30 built from them (ui/core/key_binding_tables.h). */
+static constexpr UiKeyCommandRecord<InGameHotkeyAction> g_InGameHotkeyOriginalRecords[15] = {
     /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::LeaveGame},
     /*  1 */ {.commandCode = 0x10001, .action = InGameHotkeyAction::OpenChatLine},
     /*  2 */ {.commandCode = 0x30063, .action = InGameHotkeyAction::ToggleMessageWindow},
@@ -50,14 +52,27 @@ static const UiKeyCommandRecord<InGameHotkeyAction> g_EndGameResultsCommandDispa
     /* 11 */ {.commandCode = 0x30070, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::Screenshot},
     /* 12 */ {.commandCode = 0x30078, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatAddXenite},
     /* 13 */ {.commandCode = 0x30065, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatAddEnergy},
-    /* 14 */ {.commandCode = 0x3007A, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatToggleFastBuild},
-    /* 15 */ {.commandCode = 0x0}}; /* terminator: commandCode 0 (the original's other two dwords were NOP fill, never read) */
+    /* 14 */ {.commandCode = 0x3007A, .modifierClassFlags = KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT, .action = InGameHotkeyAction::CheatToggleFastBuild}};
+
+/* The working table: the 15 records rewritten from the key bindings (InGameHotkeys_ApplyBindings), 40 spare records
+   for further chords (10 editable actions with one default chord: 4 more each) and the terminator record
+   (commandCode 0) that ends the dispatcher's scan (the original's other two dwords were NOP fill, never read). */
+static constexpr std::size_t INGAME_HOTKEY_TABLE_CAPACITY = 15 + 40 + 1;
+static std::array<UiKeyCommandRecord<InGameHotkeyAction>, INGAME_HOTKEY_TABLE_CAPACITY>
+    g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30 =
+        KeyBindingTable_Make<InGameHotkeyAction, INGAME_HOTKEY_TABLE_CAPACITY>(g_InGameHotkeyOriginalRecords);
+
+uint32_t InGameHotkeys_ApplyBindings()
+{
+  return KeyBindingTable_Apply(g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30,
+                               g_InGameHotkeyOriginalRecords,KeyBindingSource::InGameHotkeys);
+}
 
 uint32_t InGameHotkeys_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags)
 {
   const UiKeyCommandRecord<InGameHotkeyAction> *record = UiCommandDispatch_Find(
-      g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30, keyCode, heldFlags,
-      UiKeyModifierRule::ExactShiftIgnored);
+      g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30.data(), keyCode, heldFlags,
+      UiKeyModifierRule::ShiftRequiredByClass);
   return (record == nullptr) ? 0 : static_cast<uint32_t>(record->action);
 }
 
@@ -75,11 +90,17 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
   InGameUiImage *image = InGameUi_Image(inGameRoot);
   bool localSession = !Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK);
 
+  /* project change: no hotkey while the key binding overlay is open (keys the panel passes on end here) */
+  if (InGameKeyBindingsOverlay_IsOpen()) {
+    return false;
+  }
+
   /* A record without modifier class matches only without Ctrl and Alt; otherwise exactly the named
-     combination (Ctrl, Alt, or both) must be held. Shift is ignored. */
+     combination (Ctrl, Alt, or both) must be held. Shift is ignored, unless a rebound key's class has Shift: then
+     Shift must be held (no default record has Shift, so the defaults match as in the original). */
   const UiKeyCommandRecord<InGameHotkeyAction> *record = UiCommandDispatch_Find(
-      g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30, (uint32_t)commandCode,
-      modifierFlags, UiKeyModifierRule::ExactShiftIgnored);
+      g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30.data(), (uint32_t)commandCode,
+      modifierFlags, UiKeyModifierRule::ShiftRequiredByClass);
   if (record == nullptr) {
     return false;
   }

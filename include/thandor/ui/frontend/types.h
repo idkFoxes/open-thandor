@@ -1332,18 +1332,20 @@ struct FrontendUiImage {
     UiFocusProxyControl campaignTitleText; /* +7BE4 g_UiFocusProxyControlVtable: Title of the selected campaign, right-aligned. */
     UiFocusProxyControl campaignMissionDescriptionText; /* +7C40 g_UiFocusProxyControlVtable: Description of the selected mission (one line). */
     UiFocusProxyControl campaignMissionStatusText; /* +7C9C g_UiFocusProxyControlVtable: Status line of the selected mission (done / unlocked / locked). */
-    /* Not in the original (open-thandor): the read-only key binding list ("Tastenbelegung", frontend only). The
-       options page gets a fifth button (keyBindingsButton) below "Erweitert". displayPageStack page 1 is
-       settingsSubPageStack, whose page 0 is advancedSettingsPage and page 1 keyBindingsPage, so no earlier node
-       moves. The list rows are built when the page opens (ui/frontend/key_bindings_page.cpp). */
+    /* Not in the original (open-thandor): the key binding page ("Tastenbelegung", frontend only). The options page
+       gets a fifth button (keyBindingsButton) below "Erweitert". displayPageStack page 1 is settingsSubPageStack,
+       whose page 0 is advancedSettingsPage and page 1 keyBindingsPage, so no earlier node moves. The page holds its
+       title; the editable key binding panel (ui/core/key_bindings_panel.h) is attached when the page opens
+       (ui/frontend/key_bindings_page.cpp). The former read-only list's nodes (back button, scroll frame, list) are
+       no longer linked into the tree; their storage stays so that the following nodes keep their offsets. */
     UiFramedTextButtonControl keyBindingsButton; /* +7CF8 g_UiFramedTextButtonControlVtable: "Tastenbelegung" button of the options page (action FRONTEND_ACTION_OPEN_KEY_BINDINGS). */
     UiLayoutContainerControl<2> settingsSubPageStack; /* +7D58 g_UiLayoutContainerControlVtable: Two-page stack in displayPageStack page 1: advanced settings, key bindings. */
-    UiImagePanelControl keyBindingsPage; /* +7DB0 g_UiImagePanelControlVtable: settingsSubPageStack page 1: the key binding list. */
-    UiFramedTextButtonControl keyBindingsBackButton; /* +7E0C g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options page. */
+    UiImagePanelControl keyBindingsPage; /* +7DB0 g_UiImagePanelControlVtable: settingsSubPageStack page 1: the title and the key binding panel. */
+    UiFramedTextButtonControl keyBindingsBackButton; /* +7E0C g_UiFramedTextButtonControlVtable: Unused (not linked; was the read-only list's back button, action 0x2010). */
     UiFocusProxyControl keyBindingsTitle; /* +7E6C g_UiFocusProxyControlVtable: Page title "Tastenbelegung". */
-    UiScrollableControl keyBindingsScroller; /* +7EC8 g_UiScrollableControlVtable: Scroll frame of the key binding list. */
-    UiListControl keyBindingsList; /* +7F58 g_UiListControlVtable: Key binding rows (key | action, section titles highlighted); suppressed: no selection, no focus. */
-    UiListColumn keyBindingsList_column2[1]; /* +7FCC: the list's second column (action) */
+    UiScrollableControl keyBindingsScroller; /* +7EC8 g_UiScrollableControlVtable: Unused (not linked; was the read-only list's scroll frame). */
+    UiListControl keyBindingsList; /* +7F58 g_UiListControlVtable: Unused (not linked; was the read-only key binding list). */
+    UiListColumn keyBindingsList_column2[1]; /* +7FCC: the unused list's second column */
     /* Not in the original (open-thandor): the language choice of the advanced settings page (frontend only, the
        nodes are appended to advancedSettingsPage after advancedNoteLabel). A titled box "Sprache:" with one button
        showing the chosen language; the button opens the list: a page-sized layer (the last child of the page, so it

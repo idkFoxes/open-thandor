@@ -10,6 +10,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/ui/core/key_dispatch.h>
+#include <thandor/ui/core/key_binding_tables.h>
 
 /* Module data. */
 
@@ -19,7 +20,8 @@ std::atomic<uint32_t> g_FrontendTimerCountdownTicks{0};
 
 /* The modifier classes of the frontend hotkey table. The original matcher sends a Shift-only class (0x03) into
    its Ctrl branch (Shift+Ctrl required); UiKeyModifierRule::ExactWithShift wants Shift alone there. No record
-   uses a Shift-only class, so both agree on this table (OPEN_THANDOR_SELFTEST=keymatch, case R2'). */
+   uses a Shift-only class, so both agree on the original records (OPEN_THANDOR_SELFTEST=keymatch, case R2'); a
+   rebound key (ui/core/key_bindings.h) follows ExactWithShift, as the binding model's conflict rules do. */
 static constexpr UiKeyboardStateMask FRONTEND_HOTKEY_CLASS_ALT = KEYBOARD_STATE_ALT;
 static constexpr UiKeyboardStateMask FRONTEND_HOTKEY_CLASS_CTRL = KEYBOARD_STATE_CTRL;
 static constexpr bool FrontendHotkey_ClassIsNotShiftOnly(UiKeyboardStateMask classFlags)
@@ -37,18 +39,32 @@ enum class FrontendHotkeyAction : uint32_t {
 };
 static_assert(sizeof(UiKeyCommandRecord<FrontendHotkeyAction>) == 0xC, "a key command record keeps the original 12 bytes");
 
-/* 3 command records and the terminator record
-   (commandCode 0) that ends the dispatcher's scan */
-static UiKeyCommandRecord<FrontendHotkeyAction> g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[4] = {
+/* The 3 command records of the original (with the default key bindings). The dispatcher scans the working table
+   g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30 built from them (ui/core/key_binding_tables.h). */
+static constexpr UiKeyCommandRecord<FrontendHotkeyAction> g_FrontendHotkeyOriginalRecords[3] = {
     /* 0 */ {.commandCode = 0x30071, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_ALT, .action = FrontendHotkeyAction::Leave},
     /* 1 */ {.commandCode = 0x20004, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_ALT, .action = FrontendHotkeyAction::Leave},
-    /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_CTRL, .action = FrontendHotkeyAction::ToggleFactionSetupReady},
-    /* 3 */ {.commandCode = 0x0}}; /* terminator: commandCode 0 (the original's other two dwords were NOP fill, never read) */
+    /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_CTRL, .action = FrontendHotkeyAction::ToggleFactionSetupReady}};
+
+/* The working table: the 3 records rewritten from the key bindings (FrontendHotkeys_ApplyBindings; Ctrl+F1 is
+   fixed), 3 spare records (menu_leave: two default chords, one of them the permanent Alt+F4) and the terminator
+   record (commandCode 0) that ends the dispatcher's scan (the original's other two dwords were NOP fill, never
+   read). */
+static constexpr std::size_t FRONTEND_HOTKEY_TABLE_CAPACITY = 3 + 3 + 1;
+static std::array<UiKeyCommandRecord<FrontendHotkeyAction>, FRONTEND_HOTKEY_TABLE_CAPACITY>
+    g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30 =
+        KeyBindingTable_Make<FrontendHotkeyAction, FRONTEND_HOTKEY_TABLE_CAPACITY>(g_FrontendHotkeyOriginalRecords);
+
+uint32_t FrontendHotkeys_ApplyBindings()
+{
+  return KeyBindingTable_Apply(g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30,
+                               g_FrontendHotkeyOriginalRecords,KeyBindingSource::FrontendHotkeys);
+}
 
 uint32_t FrontendHotkeys_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags)
 {
   const UiKeyCommandRecord<FrontendHotkeyAction> *record = UiCommandDispatch_Find(
-      g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30, keyCode, heldFlags,
+      g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30.data(), keyCode, heldFlags,
       UiKeyModifierRule::ExactWithShift);
   return (record == nullptr) ? 0 : static_cast<uint32_t>(record->action);
 }
@@ -91,7 +107,7 @@ bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
 {
   /* Each dispatch record names its handler by continuationEntryAddress, which only serves as the case label
      of the switch below. root is g_FrontendRootNode. Returns true = not handled. */
-  UiKeyCommandRecord<FrontendHotkeyAction> *record = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30;
+  UiKeyCommandRecord<FrontendHotkeyAction> *record = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30.data();
   FrontendUiImage *root = g_FrontendRootNode;
   FrontendHotkeyAction target;
 

@@ -234,10 +234,67 @@ pathing = improved
 players = 8
 ```
 
+The key bindings ([plans/key_rebinding.md](plans/key_rebinding.md)) are the section `[keys]`, written by
+[`src/ui/core/key_bindings_ini.cpp`](../src/ui/core/key_bindings_ini.cpp) at once whenever a binding changes (in the
+menus or in a game). It is left out while every key is the default and written in full as soon as one differs:
+every editable action with its keys, English tokens with the modifiers in the order `Ctrl`, `Alt`, `Shift`
+(`Alt+G`, `PageUp`, `Num5`), `1..8` for the group rows (only their modifiers can change), several keys joined
+with `, `, `none` for an unbound action. On loading, unknown names and the fixed keys (Esc, Alt+F4, the dialog
+keys, the cheats) are ignored, an invalid value keeps the action's default, and of two actions with the same key
+the later one in the list is unbound; each of these gets a line in `thandor.log`. The sample has Pause on Ctrl+K,
+Faster on F9, no screenshot key and Ctrl+Alt+Shift+1..8 to store a group:
+
+```ini
+[keys]
+; key bindings: action = keys (Ctrl, Alt, Shift + key; several joined with ", "; none = unbound)
+; written in full once one differs from the defaults; without this section the defaults apply
+objectives = F1
+save = F2
+leave_game = Alt+Q
+pause = Ctrl+K
+faster = F9
+slower = Alt+G
+side_panel = Tab
+chat = Enter
+message_window = C
+score_overview = O
+info_line = Ctrl+I
+screenshot = none
+notification_go = Space
+notification_back = Backspace
+group_select = 1..8
+group_select_add = Shift+1..8
+group_store = Ctrl+Alt+Shift+1..8
+group_store_add = Ctrl+Shift+1..8, Alt+Shift+1..8
+stop = S, Alt+Shift+S
+stop_movement = Shift+S
+cancel_attack = Alt+S
+self_destruct = Alt+D
+select_airports = A
+upgrade_page = F
+camera_left = Left
+camera_right = Right
+camera_up = Up
+camera_down = Down
+camera_tilt_minus = PageUp
+camera_tilt_plus = PageDown
+camera_rotate_minus = Insert
+camera_rotate_plus = Delete
+camera_zoom_in = Home
+camera_zoom_out = End
+camera_selection = Num5
+camera_hq = B
+camera_notification = Alt+Space
+camera_free = Alt+C
+menu_leave = Alt+Q
+```
+
 Internally the game still works on the original 200-byte layout (`PersistentSettings_Read`/`Write` with the
 `PERSISTENT_SETTING_*` offsets of
 [`include/thandor/core/settings/persistent.h`](../include/thandor/core/settings/persistent.h)); each key of the
-table in `persistent.cpp` maps to one offset. The self-test `OPEN_THANDOR_SELFTEST=settings` checks the format.
+table in `persistent.cpp` maps to one offset. Sections owned by other modules (`[keys]`) hook in through
+`PersistentSettings_RegisterSection`. The self-test `OPEN_THANDOR_SELFTEST=settings` checks the format, `[keys]`
+included.
 
 ## Patch installer
 

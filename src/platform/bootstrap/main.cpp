@@ -8,6 +8,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/platform/bootstrap/low_memory.h>
+#include <thandor/ui/core/key_binding_tables.h>
 
 /*
 The original image has no C runtime: its PE entry point is ProcessEntry, which
@@ -16,8 +17,9 @@ has the original data compiled in (the "Module data." sections of the module sou
 */
 
 /* Program start (not part of the original): installs the crash and hang reports, computes the tables
-   the original executable carried precomputed, runs a self-test when OPEN_THANDOR_SELFTEST names one
-   (developer tools only), and otherwise enters the original entry point ProcessEntry. */
+   the original executable carried precomputed, hooks the key command tables to the key bindings, runs a
+   self-test when OPEN_THANDOR_SELFTEST names one (developer tools only), and otherwise enters the original entry
+   point ProcessEntry. */
 extern "C" int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *commandLine, int showCommand)
 {
     (void)instance;
@@ -38,6 +40,8 @@ extern "C" int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance,
     SoftwareMinimap_BuildPixelWeightTables();
     SoftwareRenderer_BuildFactorTables();
     GraphicsShading_BuildIntensityScaleTable();
+    /* the key command tables follow the key bindings from now on (also during the self-tests) */
+    KeyBindingTables_Install();
     if (DebugHook_RunSelfTest()) { /* platform/selftest/selftests.cpp */
         return 0;
     }

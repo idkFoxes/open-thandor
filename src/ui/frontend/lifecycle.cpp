@@ -10,6 +10,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/ui/frontend/campaign_tab.h>
+#include <thandor/ui/core/key_bindings_panel.h>
 #include <thandor/version.h>
 
 #include <array>
@@ -539,10 +540,9 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
                                         &ui->advancedPathingCheckbox}) {
       choice->activationSound = g_UiButtonSoundVoiceSets7[4];
     }
-    /* not in the original: the key binding page (background, button sounds as the advanced settings page) */
+    /* not in the original: the key binding page (background, button sound as the advanced settings page) */
     ui->keyBindingsPage.textureSource = menuTexture;
     ui->keyBindingsButton.activationSound = g_UiButtonSoundVoiceSets7[3];
-    ui->keyBindingsBackButton.activationSound = g_UiButtonSoundVoiceSets7[3];
     /* not in the original: the language choice of the advanced settings page (the button as the page's buttons, the
        rows as its choices; the list is closed when the page opens, after the tree has been relocated) */
     ui->advancedLanguageButton.activationSound = g_UiButtonSoundVoiceSets7[3];
@@ -573,6 +573,10 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   g_CursorVisibilityToken--;
   if (g_FrontendRootNode != nullptr) {
     FrontendTeardown_SaveStatusTextAndHostAddress(&g_FrontendRootNode->frontendRoot.root);
+    /* project code: the key binding panel (module nodes) is unlinked when it is shown on the options page */
+    if (KeyBindingsPanel_IsAttached() && UiNode_GetRoot(KeyBindingsPanel_Root()) == &root->base) {
+      KeyBindingsPanel_Detach();
+    }
     UiRootStack_Pop(root);
     g_MemoryApi.free(root);
     g_FrontendRootNode = nullptr;

@@ -8,6 +8,7 @@
 #include <thandor/ui/frontend/menu_room.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/ui/core/key_bindings_panel.h>
 
 /* Module data. */
 
@@ -741,13 +742,15 @@ void FrontendModelPointerContext_PointerWheel
 
 /* Keyboard handler of the model pointer context (keyboardEvent of g_FrontendModelPointerContextVtable): offers
    the key to the view's keyboardFallback first; when there is none or it returns true, the default handling
-   (UiNode_DefaultKeyboardEventMoveFocusNext) decides and its result is returned.
+   (UiNode_DefaultKeyboardEventMoveFocusNext) decides and its result is returned. Project change: while the key
+   binding panel is shown (ui/core/key_bindings_panel.h) the keyboardFallback (the world view's key commands) is
+   skipped, so keys the panel passes on do not command the world.
 */
 bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerHitContext *control)
 
 {
-  if (control->keyboardFallback != nullptr &&
+  if (control->keyboardFallback != nullptr && !KeyBindingsPanel_IsAttached() &&
       !control->keyboardFallback(keyboardStateMask,keyCode,UiNode_As<UiRootNode>(&control->base))) {
     return false;
   }

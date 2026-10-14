@@ -10,6 +10,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/ui/ingame/key_bindings_overlay.h>
 
 /* Module data. */
 
@@ -166,6 +167,8 @@ void InGameRuntime_ShutdownAndReleaseResources()
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
   GraphicsShadingRuntime_Shutdown();
   if (inGameRoot != nullptr) {
+    /* project code: the key binding overlay's layer and panel are module nodes linked into the root */
+    InGameKeyBindingsOverlay_Close();
     InGameRuntime_SaveWorldViewInfoTextChoice(&inGameRoot->rootUi);
     world = &inGameRoot->worldRuntime;
     WorldRuntime_ForEachOwnerListNode

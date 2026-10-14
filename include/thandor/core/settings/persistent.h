@@ -137,10 +137,33 @@ void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSett
 /* open-thandor: the settings are saved as thandor.ini (thandor.dat is only read, as a migration source).
    FormatIni writes the ini text of the keys whose dwords are in presentMask (bit i = byte offset 4 * i) in a
    fixed key order and returns the text length; ParseIni parses ini text into image (zeroed by the caller) and
-   returns the mask of the dwords it set (unknown keys and values that do not parse are ignored). */
+   returns the mask of the dwords it set (unknown keys and values that do not parse are ignored). Both also handle
+   the registered sections (PersistentSettings_RegisterSection below): FormatIni appends them, ParseIni hands
+   their lines to them. */
 uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity);
 
 uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image);
+/* open-thandor: sections of thandor.ini owned by other modules (the key bindings' [keys], ui/core/key_bindings_ini.h),
+   so core does not depend on them. ParseIni calls every registered section's beginLoad, then parseLine for each
+   "key = value" line of its [name] section (trimmed, a trailing "; comment" removed, NUL terminated), then endLoad;
+   a load without thandor.ini (none, or thandor.dat) calls beginLoad and endLoad alone. FormatIni appends each
+   registered section after the fixed keys, in registration order: format writes the section's lines (without the
+   [name] header) into out (capacity bytes, NUL included) and returns their length; 0 omits the section.
+   beginLoad / endLoad may be nullptr. Registering a name twice replaces its entry. At most
+   PERSISTENT_SETTINGS_MAX_SECTIONS sections; false when full. Register before PersistentSettings_Load. */
+inline constexpr int PERSISTENT_SETTINGS_MAX_SECTIONS = 4;
+using PersistentIniSectionLoadFn = void (*)();
+using PersistentIniSectionLineFn = void (*)(const char *key, const char *value);
+using PersistentIniSectionFormatFn = uint32_t (*)(char *out, uint32_t capacity);
+bool PersistentSettings_RegisterSection(const char *name, PersistentIniSectionLineFn parseLine,
+                                        PersistentIniSectionFormatFn format,
+                                        PersistentIniSectionLoadFn beginLoad = nullptr,
+                                        PersistentIniSectionLoadFn endLoad = nullptr);
+
+/* open-thandor: marks the settings changed, so the next PersistentSettings_Flush writes thandor.ini (for a registered
+   section whose content changed; call Flush right after it to save at once). No effect before the first load. */
+void PersistentSettings_MarkDirty();
+
 /* open-thandor: the path of thandor.ini (UTF-16; the bare file name, i.e. the current directory, until a load
    found it in the executable directory). */
 const uint16_t *PersistentSettings_IniPathUtf16();

@@ -203,7 +203,10 @@ add_executable(thandor WIN32
     src/ui/controls/window.cpp
     src/ui/core/chat_history.cpp
     src/ui/core/frame_loop.cpp
+    src/ui/core/key_binding_tables.cpp
     src/ui/core/key_bindings.cpp
+    src/ui/core/key_bindings_ini.cpp
+    src/ui/core/key_bindings_panel.cpp
     src/ui/core/model_tint.cpp
     src/ui/core/pcx_preview.cpp
     src/ui/core/runtime.cpp
@@ -251,6 +254,7 @@ add_executable(thandor WIN32
     src/ui/ingame/editor_tools.cpp
     src/ui/ingame/hotkeys.cpp
     src/ui/ingame/hud.cpp
+    src/ui/ingame/key_bindings_overlay.cpp
     src/ui/ingame/key_commands.cpp
     src/ui/ingame/layout.cpp
     src/ui/ingame/minimap_texture.cpp
@@ -536,6 +540,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/selftest/campaignmap_selftest.cpp
         src/platform/selftest/campaignprogress_selftest.cpp
         src/platform/selftest/hexscan_selftest.cpp
+        src/platform/selftest/keybindings_panel_selftest.cpp
         src/platform/selftest/keybindings_selftest.cpp
         src/platform/selftest/keymatch_selftest.cpp
         src/platform/selftest/language_selftest.cpp

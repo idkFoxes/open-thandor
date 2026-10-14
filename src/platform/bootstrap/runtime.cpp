@@ -15,6 +15,8 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/ui/core/key_bindings.h>
+#include <thandor/ui/core/key_bindings_ini.h>
+#include <thandor/ui/core/key_bindings_panel.h>
 
 /* Module data. */
 
@@ -240,6 +242,8 @@ static void ProcessEntry_RunGame()
   uint32_t displayWidth;
   uint32_t displayHeight;
 
+  /* thandor.ini's [keys] is parsed by the settings loads below */
+  KeyBindingsIni_Register();
   ArenaHeap_Init();
   FileSystem_Init();
   Locale_Init();
@@ -863,7 +867,8 @@ void CoreAssets_BindLanguageTexts()
 /* Not in the original: switches the text language at run time (countryCode a telephone country code, 0 = from
    Windows): saves it (PersistentSettings_WriteLanguage; written by the next flush), rebinds every loaded text page
    (TextResource_SelectLanguage), makes the startup bindings again (CoreAssets_BindLanguageTexts) and the frontend's
-   network address line binding (Frontend_Init), and redraws the frontend when it is up. Loads and frees nothing. */
+   network address line binding (Frontend_Init), refreshes the key binding panel and redraws the frontend when it is
+   up. Loads and frees nothing. */
 void Game_ApplyLanguage(uint32_t countryCode)
 
 {
@@ -872,6 +877,8 @@ void Game_ApplyLanguage(uint32_t countryCode)
   CoreAssets_BindLanguageTexts();
   RichTextCommandStream_PatchPayloadBySelector
             (0,g_FrontendNetworkEndpointTextUtf16,TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE));
+  /* the key binding panel's rows and column widths follow the new texts (nothing happens when it is not shown) */
+  KeyBindingsPanel_Refresh();
   if (g_FrontendRootNode != nullptr) {
     UiNode_InvalidateRoot(&g_FrontendRootNode->frontendRoot.root.base);
   }

@@ -14,6 +14,9 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
 #include <thandor/platform/sdl3/window_icon.h>
+#include <thandor/platform/input/devices.h>
+#include <thandor/ui/core/key_bindings.h>
+#include <thandor/ui/core/key_bindings_ini.h>
 
 #include <algorithm>
 #include <vector>
@@ -782,10 +785,117 @@ static unsigned SelfTest_CompareSettingsImages(const char *what, const uint8_t *
     return differences;
 }
 
+/* settings: the section [keys] (ui/core/key_bindings_ini.cpp) through PersistentSettings_FormatIni / _ParseIni:
+   omitted with the defaults; custom bindings -> ini -> parsed back equal and written the same; invalid lines keep
+   the default (fixed, hidden and unknown names ignored); a conflict on load unbinds the later action. Leaves the
+   defaults. Returns the number of failed checks (each logged). */
+static unsigned SelfTest_SettingsKeys(char *text, uint32_t capacity)
+{
+    static char again[0x4000];
+    static KeyChord saved[KEY_ACTION_COUNT][KEY_BINDING_MAX_KEYS];
+    uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    unsigned failures = 0;
+    uint32_t length;
+    const auto keysOf = [](KeyAction action) { return KeyBindings_Get(action).keys; };
+    const auto fail = [&failures](const char *what) {
+        Thandor_Log("settings: keys: %s FAILED", what);
+        failures++;
+    };
+    /* sets action to the chord of token through KeyBindings_Set (with its conflict check) */
+    const auto bind = [&fail](KeyAction action, const char *token) {
+        KeyChord chords[KEY_BINDING_MAX_KEYS];
+        if (KeyBindings_ParseTokens(token, KeyBindings_Get(action).rangeLength, chords, KEY_BINDING_MAX_KEYS) != 1 ||
+            KeyBindings_Set(action, chords[0]).status != KeyBindingStatus::Ok) {
+            Thandor_Log("settings: keys: %s = %s not set", KeyBindings_Name(action), token);
+            fail("custom binding");
+        }
+    };
+    const auto parse = [&image](const char *ini) {
+        memset(image, 0, sizeof image);
+        PersistentSettings_ParseIni(ini, (uint32_t)strlen(ini), image);
+    };
+    const auto format = [&image](char *out, uint32_t outCapacity) {
+        memset(image, 0, sizeof image);
+        return PersistentSettings_FormatIni(image, 0, out, outCapacity);
+    };
+
+    KeyBindingsIni_Register();
+    parse("");
+    format(text, capacity);
+    if (!KeyBindings_AllDefault() || strstr(text, "[keys]") != nullptr) {
+        fail("defaults: section omitted");
+    }
+
+    /* custom bindings: a letter with Ctrl, an F key, a cleared action, a range action's modifiers, a letter camera
+       key, the action with a permanent chord (Alt+F4, not written) */
+    bind(KeyAction::Pause, "Ctrl+K");
+    bind(KeyAction::Faster, "F9");
+    KeyBindings_Clear(KeyAction::Screenshot);
+    bind(KeyAction::GroupStore, "Alt+Shift+Ctrl+1..8");
+    bind(KeyAction::CameraLeft, "J");
+    bind(KeyAction::MenuLeave, "Ctrl+Q");
+    for (int action = 0; action < KEY_ACTION_COUNT; action++) {
+        memcpy(saved[action], keysOf(static_cast<KeyAction>(action)), sizeof saved[action]);
+    }
+    length = format(text, capacity);
+    if (strstr(text, "\r\n[keys]\r\n;") == nullptr || strstr(text, "\npause = Ctrl+K\r\n") == nullptr ||
+        strstr(text, "\nscreenshot = none\r\n") == nullptr ||
+        strstr(text, "\ngroup_store = Ctrl+Alt+Shift+1..8\r\n") == nullptr ||
+        strstr(text, "\ncamera_left = J\r\n") == nullptr || strstr(text, "\nmenu_leave = Ctrl+Q\r\n") == nullptr ||
+        strstr(text, "\nstop = S, Alt+Shift+S\r\n") == nullptr || strstr(text, "\ngame_menu =") != nullptr ||
+        strstr(text, "\ncheat_xenite =") != nullptr) {
+        fail("custom bindings written");
+    }
+    KeyBindings_ResetAllDefaults();
+    parse(text);
+    for (int action = 0; action < KEY_ACTION_COUNT; action++) {
+        if (memcmp(saved[action], keysOf(static_cast<KeyAction>(action)), sizeof saved[action]) != 0) {
+            Thandor_Log("settings: keys: %s differs after the round trip",
+                        KeyBindings_Name(static_cast<KeyAction>(action)));
+            failures++;
+        }
+    }
+    if (KeyBindingsIni_LastLoadProblemCount() != 0) {
+        fail("round trip without problems");
+    }
+    if (format(again, sizeof again) != length || strcmp(text, again) != 0) {
+        fail("round trip written the same");
+    }
+
+    /* invalid lines: a broken token, Esc (not allowed) and an invalid second token keep the default; a fixed and
+       a hidden action and an unknown name are ignored; the valid line between them is taken (its trailing comment
+       removed); a key of [keys] in another section is not */
+    parse("[keys]\r\npause = Ctrl+\r\nfaster = F9 ; comment\r\nunknown_action = K\r\ngame_menu = K\r\n"
+          "cheat_xenite = K\r\nstop = Esc\r\nPAUSE = Ctrl+K, oops\r\n[game]\r\nslower = K\r\n");
+    if (!KeyBindings_IsDefault(KeyAction::Pause) || !KeyBindings_IsDefault(KeyAction::Stop) ||
+        !KeyBindings_IsDefault(KeyAction::GameMenu) || !KeyBindings_IsDefault(KeyAction::CheatXenite) ||
+        !KeyBindings_IsDefault(KeyAction::Slower) || KeyBindings_IsDefault(KeyAction::Faster) ||
+        keysOf(KeyAction::Faster)[0].keyCode != KEYBOARD_KEY_CODE_FUNCTION(9) ||
+        KeyBindingsIni_LastLoadProblemCount() != 3) {
+        Thandor_Log("settings: keys: %d load problems, expected 3", KeyBindingsIni_LastLoadProblemCount());
+        fail("invalid lines");
+    }
+
+    /* conflict on load: faster = P collides with pause (earlier, kept); faster is unbound and written as none */
+    parse("[keys]\r\nfaster = P\r\n");
+    format(text, capacity);
+    if (!KeyBindings_IsDefault(KeyAction::Pause) || keysOf(KeyAction::Faster)[0].keyCode != 0 ||
+        KeyBindingsIni_LastLoadProblemCount() != 1 || strstr(text, "\nfaster = none\r\n") == nullptr) {
+        fail("conflict on load");
+    }
+
+    parse("");
+    if (!KeyBindings_AllDefault()) {
+        fail("defaults restored");
+    }
+    return failures;
+}
+
 /* OPEN_THANDOR_SELFTEST=settings: the thandor.ini format. Parses a fixed ini text (all value forms, unknown and
    missing keys) and checks the image; then, when thandor.dat is in the current directory, writes its image as
    ini text, parses that back and compares (the migration), and when thandor.ini is there too, compares it
-   with thandor.dat (an ini the game wrote from that thandor.dat). Logs one line per check. */
+   with thandor.dat (an ini the game wrote from that thandor.dat); the section [keys] in between
+   (SelfTest_SettingsKeys). Logs one line per check. */
 static void Thandor_SelfTestSettings()
 {
     static const char fixedText[] =
@@ -899,6 +1009,7 @@ static void Thandor_SelfTestSettings()
         }
         Thandor_Log("settings: pathing key %s", pathingDifferences == 0 ? "ok" : "MISMATCH");
     }
+    Thandor_Log("settings: keys section %s", SelfTest_SettingsKeys(text, sizeof text) == 0 ? "ok" : "MISMATCH");
 
     file = fopen("thandor.dat", "rb");
     if (file == nullptr) {
@@ -1153,6 +1264,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != nullptr && strcmp(name, "keybindings") == 0) {
         Thandor_SelfTestKeyBindings();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "keybindingspanel") == 0) {
+        Thandor_SelfTestKeyBindingsPanel();
         return 1;
     }
     if (name != nullptr && strcmp(name, "keymatch") == 0) {

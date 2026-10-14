@@ -30,6 +30,8 @@ GetRegionOrFallback; only loading and saving changed:
   written or deleted.
 - Flush writes thandor.ini (when dirty, as before) with every key that is present or was written since the
   load, in the fixed order of the key table below.
+- Sections owned by other modules (the key bindings' [keys]) are registered with PersistentSettings_RegisterSection:
+  the parser hands their lines to the owner, Flush appends the text the owner formats.
 Without either file the original kept no image (all defaults, nothing saved); now an empty image (nothing
 present, so all defaults) is kept, so settings changed in the menus are saved to a new thandor.ini.
 */
@@ -187,6 +189,57 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
 };
 
 #define PERSISTENT_INI_KEY_COUNT (sizeof s_PersistentIniKeys / sizeof s_PersistentIniKeys[0])
+
+/* The sections other modules registered (PersistentSettings_RegisterSection), in registration order. */
+struct PersistentIniSection {
+  const char *name;
+  PersistentIniSectionLineFn parseLine;
+  PersistentIniSectionFormatFn format;
+  PersistentIniSectionLoadFn beginLoad;
+  PersistentIniSectionLoadFn endLoad;
+};
+static PersistentIniSection s_PersistentIniSections[PERSISTENT_SETTINGS_MAX_SECTIONS];
+static int s_PersistentIniSectionCount;
+
+bool PersistentSettings_RegisterSection(const char *name, PersistentIniSectionLineFn parseLine,
+                                        PersistentIniSectionFormatFn format, PersistentIniSectionLoadFn beginLoad,
+                                        PersistentIniSectionLoadFn endLoad)
+{
+  const PersistentIniSection entry = {name, parseLine, format, beginLoad, endLoad};
+
+  if (name == nullptr || parseLine == nullptr || format == nullptr) {
+    return false;
+  }
+  for (int index = 0; index < s_PersistentIniSectionCount; index++) {
+    if (_stricmp(s_PersistentIniSections[index].name, name) == 0) {
+      s_PersistentIniSections[index] = entry;
+      return true;
+    }
+  }
+  if (s_PersistentIniSectionCount >= PERSISTENT_SETTINGS_MAX_SECTIONS) {
+    return false;
+  }
+  s_PersistentIniSections[s_PersistentIniSectionCount++] = entry;
+  return true;
+}
+
+static void PersistentIni_BeginSections()
+{
+  for (int index = 0; index < s_PersistentIniSectionCount; index++) {
+    if (s_PersistentIniSections[index].beginLoad != nullptr) {
+      s_PersistentIniSections[index].beginLoad();
+    }
+  }
+}
+
+static void PersistentIni_EndSections()
+{
+  for (int index = 0; index < s_PersistentIniSectionCount; index++) {
+    if (s_PersistentIniSections[index].endLoad != nullptr) {
+      s_PersistentIniSections[index].endLoad();
+    }
+  }
+}
 
 /* Bits of the dwords [offset, offset + byteCount) in a present/written mask. */
 static uint64_t PersistentSettings_DwordMask(uint32_t offset, uint32_t byteCount)
@@ -400,6 +453,17 @@ uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask
     }
     PersistentIni_Append(&writer, "\r\n");
   }
+  /* the registered sections, each written in full by its owner (or omitted) */
+  for (int sectionIndex = 0; sectionIndex < s_PersistentIniSectionCount; sectionIndex++) {
+    static char sectionText[PERSISTENT_SETTINGS_INI_MAX_BYTES];
+    const PersistentIniSection &registered = s_PersistentIniSections[sectionIndex];
+    uint32_t sectionLength = registered.format(sectionText, sizeof sectionText);
+
+    if (sectionLength != 0 && sectionLength < sizeof sectionText) {
+      sectionText[sectionLength] = 0;
+      PersistentIni_Append(&writer, "\r\n[%s]\r\n%s", registered.name, sectionText);
+    }
+  }
   std::copy(writer.text.begin(), writer.text.end(), out);
   out[writer.text.size()] = 0;
   return (uint32_t)writer.text.size();
@@ -586,13 +650,14 @@ static void PersistentIni_ParseName(const char *begin, const char *end, uint8_t 
   }
 }
 
-/* Parses ini text into image (which the caller zeroed); returns the mask of the dwords the text set. Unknown
-   sections and keys and values that do not parse are ignored. */
 const uint16_t *PersistentSettings_IniPathUtf16()
 {
   return s_PersistentSettingsIniPath;
 }
 
+/* Parses ini text into image (which the caller zeroed); returns the mask of the dwords the text set. The lines of
+   a registered section go to its owner (between its beginLoad and endLoad); other unknown sections and keys and
+   values that do not parse are ignored. */
 uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image)
 {
   const char *cursor = text;
@@ -601,7 +666,9 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
   const char *sectionEnd = nullptr;
   uint64_t presentMask = 0;
   uint64_t bitsGivenMask = 0; /* dwords of INI_KIND_BIT keys that got their default before the first bit */
+  int registeredSection = -1; /* index in s_PersistentIniSections of the current section, -1: none */
 
+  PersistentIni_BeginSections();
   if (length >= 3 && (uint8_t)text[0] == 0xEF && (uint8_t)text[1] == 0xBB && (uint8_t)text[2] == 0xBF) {
     cursor += 3;
   }
@@ -633,6 +700,12 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
         sectionBegin = lineBegin + 1;
         sectionEnd = close;
         PersistentIni_Trim(&sectionBegin, &sectionEnd);
+        registeredSection = -1;
+        for (int sectionIndex = 0; sectionIndex < s_PersistentIniSectionCount; sectionIndex++) {
+          if (PersistentIni_Equals(sectionBegin, sectionEnd, s_PersistentIniSections[sectionIndex].name)) {
+            registeredSection = sectionIndex;
+          }
+        }
       }
       continue;
     }
@@ -646,6 +719,19 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
     valueBegin = equals + 1;
     valueEnd = lineEnd;
     PersistentIni_Trim(&valueBegin, &valueEnd);
+    if (registeredSection >= 0) {
+      /* a registered section's line: to its owner, without a trailing comment */
+      const char *commentBegin = valueBegin;
+      const std::string key(keyBegin, keyEnd);
+
+      while (commentBegin < valueEnd && *commentBegin != ';' && *commentBegin != '#') {
+        commentBegin++;
+      }
+      PersistentIni_Trim(&valueBegin, &commentBegin);
+      const std::string value(valueBegin, commentBegin);
+      s_PersistentIniSections[registeredSection].parseLine(key.c_str(), value.c_str());
+      continue;
+    }
     for (index = 0; index < PERSISTENT_INI_KEY_COUNT; index++) {
       const PersistentIniKey *key = &s_PersistentIniKeys[index];
       uint32_t value = 0;
@@ -737,6 +823,7 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
       break;
     }
   }
+  PersistentIni_EndSections();
   return presentMask;
 }
 
@@ -841,6 +928,9 @@ static void PersistentSettings_LoadImage()
   if (PersistentSettings_LoadIni(image)) {
     return;
   }
+  /* no thandor.ini: the registered sections load nothing (their defaults) */
+  PersistentIni_BeginSections();
+  PersistentIni_EndSections();
   /* no thandor.ini: an empty image (nothing present), unless thandor.dat loads below */
   g_PersistentSettings.image = image;
   g_PersistentSettings.loadedByteCount = 0;
@@ -955,6 +1045,14 @@ void PersistentSettings_Load()
   PersistentSettings_NormalizeColorDepth();
   PersistentSettings_ValidateShading();
   PersistentSettings_ApplyPathingMode();
+}
+
+
+void PersistentSettings_MarkDirty()
+{
+  if (g_PersistentSettings.image != nullptr) {
+    g_PersistentSettings.dirtyWriteCount++;
+  }
 }
 
 

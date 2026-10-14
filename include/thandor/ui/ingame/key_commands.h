@@ -28,6 +28,10 @@ bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
    Read-only, for the key binding list (ui/core/key_bindings.h). */
 uint32_t InGameKeyCommands_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags);
 
+/* Not in the original: rewrites the key command table from the key bindings (ui/core/key_binding_tables.h);
+   returns the number of records that did not fit. */
+uint32_t InGameKeyCommands_ApplyBindings();
+
 void InGameWorldView_ShowNextInfoText(UiSingleLineTextControl *infoText);
 
 void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView);
