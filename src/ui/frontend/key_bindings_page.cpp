@@ -67,20 +67,27 @@ static void FrontendKeyBindingsPage_SetJump(uint16_t (&record)[RICHTEXT_RECORD_U
   record[RICHTEXT_RECORD_UNITS_NESTED] = 0;
 }
 
-/* Builds the rows from KeyBindings_Table; returns their number. */
+/* Builds the rows from the visible key bindings; returns their number. */
 static uint32_t FrontendKeyBindingsPage_BuildRows(int32_t *outKeyWidth,int32_t *outActionWidth)
 {
-  uint32_t bindingCount = 0;
-  const KeyBinding *bindings = KeyBindings_Table(&bindingCount);
   uint32_t rowCount = 0;
   int32_t keyWidth = 0;
   int32_t actionWidth = 0;
   bool haveSection = false;
   KeyBindingSection section = KeyBindingSection::InGameGeneral;
+  KeyBindingsPageRow *row = nullptr;
+  uint32_t length = 0;
+  TextResourceId previousTextId = TEXT_RESOURCE_ID_NONE;
 
-  for (uint32_t index = 0; index < bindingCount; index++) {
-    const KeyBinding &binding = bindings[index];
-    if (!haveSection || binding.section != section) {
+  for (int index = 0; index < KeyBindings_Count(); index++) {
+    const KeyBinding &binding = KeyBindings_Get(static_cast<KeyAction>(index));
+    if (KeyBinding_IsHidden(binding)) {
+      continue;
+    }
+    /* consecutive actions with the same text (the camera directions) share one row */
+    bool merge = row != nullptr && haveSection && binding.section == section && binding.textId == previousTextId;
+    previousTextId = binding.textId;
+    if (!merge && (!haveSection || binding.section != section)) {
       if (haveSection && rowCount < KEY_BINDINGS_PAGE_MAX_ROWS) {
         KeyBindingsPageRow &spacer = s_keyBindingsPageRows[rowCount++];
         spacer.keys[0] = 0;
@@ -101,16 +108,18 @@ static uint32_t FrontendKeyBindingsPage_BuildRows(int32_t *outKeyWidth,int32_t *
         title.action[0] = 0;
       }
     }
-    if (rowCount >= KEY_BINDINGS_PAGE_MAX_ROWS) {
+    if (!merge && rowCount >= KEY_BINDINGS_PAGE_MAX_ROWS) {
       break;
     }
     /* the keys, joined with " / "; a line that would get wider than KEY_BINDINGS_PAGE_KEY_LINE_WIDTH ends after
        the separator and the next key starts a continuation row (without action text) */
-    KeyBindingsPageRow *row = &s_keyBindingsPageRows[rowCount++];
-    uint32_t length = 0;
-    row->keys[0] = 0;
-    FrontendKeyBindingsPage_SetJump(row->action,TextResource_Resolve(binding.textId));
-    actionWidth = std::max(actionWidth,FrontendKeyBindingsPage_TextWidth(row->action));
+    if (!merge) {
+      row = &s_keyBindingsPageRows[rowCount++];
+      length = 0;
+      row->keys[0] = 0;
+      FrontendKeyBindingsPage_SetJump(row->action,TextResource_Resolve(binding.textId));
+      actionWidth = std::max(actionWidth,FrontendKeyBindingsPage_TextWidth(row->action));
+    }
     for (int keyIndex = 0; keyIndex < KEY_BINDING_MAX_KEYS && binding.keys[keyIndex].keyCode != 0; keyIndex++) {
       KeyBinding single = binding;
       uint16_t name[64];

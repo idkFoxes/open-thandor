@@ -11,7 +11,7 @@
 #include <thandor/ui/controls/types.h>
 
 /* The read-only key binding page of the options menu ("Tastenbelegung", frontend only): the rows of
-   KeyBindings_Table (ui/core/key_bindings.h) as a scrollable two-column list (keys | action), each section headed by
+   KeyBindings_Get (ui/core/key_bindings.h) as a scrollable two-column list (keys | action), each section headed by
    its title in the selected text style. The page is settingsSubPageStack page 1 in displayPageStack page 1
    (FrontendUiImage keyBindings*); its back button is action 0x2010 as on the other option pages. */
 
