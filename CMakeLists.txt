@@ -55,6 +55,7 @@ add_executable(thandor WIN32
     src/assets/scenario/catalog.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
+    src/assets/text/objective_texts.cpp
     src/assets/text/project_texts_en.cpp
     src/assets/text/resources.cpp
     src/assets/text/richtext.cpp

@@ -866,6 +866,11 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
                                                  : g_KeyBindingTextsGerman)[resourceId - TEXT_ID_KEY_BINDING_BASE];
     return true;
   }
+  if ((resourceId >= TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE) &&
+      (resourceId < TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE + TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED) &&
+      TextResource_TryResolveMissionObjective(resourceId,outText)) {
+    return true; /* not in the original: the hand-written short objectives (objective_texts.cpp) */
+  }
   if (g_TextResourceOverrides != nullptr) {
     /* the first entry with this id; its text is the entry of the same index in textPointers */
     for (overrideIndex = 0; overrideIndex < TEXT_RESOURCE_OVERRIDE_CAPACITY; overrideIndex++) {
