@@ -128,6 +128,8 @@ void HandleTextInput(const SDL_TextInputEvent &event);
 void HandleMouseEvent(const SDL_Event &event);
 void HandleFocusGained();
 void HandleFocusLost();
+/* the window was minimized or hidden: every held key is released (Keyboard_ReleaseHeldKeys) */
+void HandleWindowDeactivated();
 
 } // namespace thandor::sdl3
 

@@ -174,6 +174,10 @@ void SdlPlatform_PumpEvents()
     case SDL_EVENT_WINDOW_FOCUS_LOST:
       HandleFocusLost();
       break;
+    case SDL_EVENT_WINDOW_MINIMIZED:
+    case SDL_EVENT_WINDOW_HIDDEN:
+      HandleWindowDeactivated();
+      break;
     default:
       break;
     }
