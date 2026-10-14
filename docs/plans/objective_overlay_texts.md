@@ -1,4 +1,4 @@
-# Ziel-Overlay: Kurzziel-Texte der Kampagnen (Entwurf zur Durchsicht)
+# Ziel-Overlay: Kurzziel-Texte der Kampagnen (vom Owner entschieden)
 
 Paket O2 des Plans [objective_overlay.md](objective_overlay.md) (3a). Eine Zeile pro Kampagnen-Mission und spielbarer Fraktion, Deutsch und Englisch (Französisch, Italienisch und Spanisch zeigen Englisch). Grundlage: Sieg-/Niederlage-Bedingungen und Missionshilfe aus [objective_overlay_levels.md](objective_overlay_levels.md). Wo Briefing und Siegbedingung auseinandergehen, folgt der Text der Siegbedingung; die Abweichung steht unter Bemerkung.
 
@@ -12,7 +12,7 @@ Länge: höchstens ~50 Zeichen, Befehlsform. Fortschritt (Rate, Countdown, Anzah
 
 | Level | Fr. | Titel | Ziel DE | Ziel EN | Bemerkung |
 |---|---|---|---|---|---|
-| `tutorial\t00_tut` | 1 | Tutorial I (Basisaufbau) | Basis aufbauen, alle Gegner vernichten | Build a base, destroy all enemies | Sieg = Fraktionen 2–5 ohne Einheiten. Der eigentliche Ablauf folgt den Tutorial-Anweisungen; **Owner**: lieber „Den Anweisungen des Tutorials folgen“? |
+| `tutorial\t00_tut` | 1 | Tutorial I (Basisaufbau) | Basis aufbauen, alle Gegner vernichten | Build a base, destroy all enemies | Sieg = Fraktionen 2–5 ohne Einheiten. Der eigentliche Ablauf folgt den Tutorial-Anweisungen; Entschieden: Text bleibt (Frage 1). |
 | `tutorial\t01_tut` | 1 | Tutorial II (Forschung) | Forschen, angreifen, alle Gegner vernichten | Research, attack and destroy all enemies | wie t00 |
 | `tutorial\t02_tut` | 1 | Tutorial III (Rohstoffe) | Tritium fördern und 2 Xenit-Minen bauen | Extract tritium and build 2 xenite mines | Sieg = Tritium-Förderrate ≥ 6,875 (Q4 110 pro Tick) UND ≥ 2 Xenit-Minen; das Briefing nennt kein Ziel. Rate zeigt Zeile 2. |
 
@@ -23,26 +23,26 @@ Länge: höchstens ~50 Zeichen, Befehlsform. Fortschritt (Rate, Countdown, Anzah
 | `hansolo\s01_insel` | 1 | Inselspringen | Basis ausbauen und alle Gegner vernichten | Expand the base and destroy all enemies | Briefing: Brückenkopf ausbauen, Fahrzeuge bauen; Sieg = alle Gegner ohne Einheiten |
 | `hansolo\s02_schlucht` | 1 | Nachschubwege | Canyon sichern: alle Gegner vernichten | Secure the canyon: destroy all enemies | Sieg = alle Gegner |
 | `hansolo\s03_erobern` | 1 | Eroberung | Bastion vor dem Raumhafen restlos vernichten | Wipe out the bastion before the spaceport | Sieg = alle Gegner ohne Einheiten („restlos“), nicht nur die Basis |
-| `hansolo\s04_konflikt` | 1 | Konflikt | Einen der beiden Gegner vollständig vernichten | Wipe out one of the two enemies | Zwei Sieg-Trigger: Fraktion 2 vernichtet → Endauswahl 1, Fraktion 3 vernichtet → Endauswahl 2 (Verzweigung s05/s06). Niederlage: eigenes Hauptquartier verloren. **Owner**: welche Fraktion Thoraner/Avares ist, ist nicht gemessen, deshalb ohne Namen. |
+| `hansolo\s04_konflikt` | 1 | Konflikt | Einen der beiden Gegner vollständig vernichten | Wipe out one of the two enemies | Zwei Sieg-Trigger: Fraktion 2 vernichtet → Endauswahl 1, Fraktion 3 vernichtet → Endauswahl 2 (Verzweigung s05/s06). Niederlage: eigenes Hauptquartier verloren. Welche Fraktion Thoraner/Avares ist, ist nicht gemessen; entschieden: ohne Namen (Frage 2). |
 | `hansolo\s05_trigelb` | 1 | Tritium Gelb | Tritium-Förderung im Süden wiederherstellen | Restore tritium production in the south | Briefing „300 T/T“, Bedingung Q4 260 pro Tick (16,25) – Zahl weggelassen, Zeile 2 zeigt die Rate. Niederlage: Hauptquartier verloren. |
 | `hansolo\s06_trirot` | 1 | Tritium Rot | Tritium-Förderung im Westen wiederherstellen | Restore tritium production in the west | wie s05 (Briefing 300, Bedingung 260) |
 | `hansolo\s07_landunt` | 1 | Landunter | Staudamm-Gebiet erobern, Gegner dort vernichten | Take the dam area, wipe out its defenders | Sieg = nur Fraktion 2 ohne Einheiten (Fraktion 3 ist aktiv, muss aber nicht besiegt werden). Niederlage: Hauptquartier verloren. |
-| `hansolo\s08_instand` | 1 | Instandsetzung | Bauen: 2 Hauptquartiere, 4 Kraftwerke, 3 Xenitminen | Build 2 HQs, 4 power plants and 3 xenite mines | Bedingung „mindestens“ je Gebäudeart (UND). DE 51 Zeichen; **Owner**: Kurzform „2 HQ“ auch im Deutschen? Briefing-Nebensatz (Angreifer ausschalten) ist keine Siegbedingung. |
+| `hansolo\s08_instand` | 1 | Instandsetzung | Bauen: 2 Hauptquartiere, 4 Kraftwerke, 3 Xenitminen | Build 2 HQs, 4 power plants and 3 xenite mines | Bedingung „mindestens“ je Gebäudeart (UND). DE 51 Zeichen; entschieden: ausgeschrieben (Frage 5). Briefing-Nebensatz (Angreifer ausschalten) ist keine Siegbedingung. |
 | `hansolo\s09_krieg` | 1 | Krieg | Hochebene erobern: alle Gegner vernichten | Take the high plain: destroy all enemies | Sieg = Fraktionen 2, 3, 4 ohne Einheiten; Niederlage: Hauptquartier verloren |
 | `hansolo\s10_flug` | 1 | Flugzeugbergung | Absturzstelle sichern: alle Gegner vernichten | Secure the crash site: destroy all enemies | Sieg = alle Gegner |
 | `hansolo\s11_warn` | 1 | Warnschuß | Alle leichten Geschütztürme des Gegners zerstören | Destroy all enemy light gun turrets | Sieg = Fraktion 2 hat keinen leichten Geschützturm (ARM 370) mehr; das Briefing nennt nur „Lektion erteilen, Xenitproduktion sichern“. |
-| `hansolo\s12_ueber` | 1 | Überraschung | Den neuen Gegner aufspüren und vernichten | Track down and destroy the new enemy | Zwei Sieg-Trigger: Endauswahl 1 = Fraktionen 2 und 3 vernichtet, Endauswahl 2 = nur Fraktion 3. Fraktion 3 ist vermutlich der „neue Gegner“ (Golrathen), Fraktion 2 die Ilurer (Waffenstillstand). **Owner**: Verzweigung beschreiben (z. B. „Golrathen vernichten (Ilurer optional)“)? |
+| `hansolo\s12_ueber` | 1 | Überraschung | Golrathen vernichten (Ilurer optional) | Destroy the Golraths (Ilurens optional) | Zwei Sieg-Trigger: Endauswahl 1 = Fraktionen 2 und 3 vernichtet, Endauswahl 2 = nur Fraktion 3. Gemessen (LEVEL.PCK): Fraktion 3 (KI 5) hat die einzige Basis der Karte (Hauptquartier, leichte Waffenfabrik, Gleiterfabrik, Kraftwerk, Flak-Forschungslabor, Xenit-Mine, 4 Xenit-Silos, Tritium-Pumpe, 2 schwere Geschütztürme, 2 Moskito, 2 Libelle) = der „neue Gegner“, die Golrathen. Fraktion 2 (KI 2, Startgeld 0) hat keine Platzierung; ihre Einheiten kommen aus s11 (dort Fraktion 2 = die angreifenden Ilurer): hansolo.cgn übernimmt nach s11-Endauswahl 1 (carryOverMask 0x2) die Einheiten der Fraktionen 0–4 der ganzen Karte. Fehlen sie (alle in s11 vernichtet), gilt Fraktion 2 sofort als vernichtet. Entschieden (Frage 3): Verzweigung nennen. |
 | `hansolo\s13_kfeuer` | 1 | Kreuzfeuer | Tritium-Förderung von 240 t sichern | Secure tritium production of 240 t | Briefing 240 t = Bedingung Q4 240 pro Tick |
 | `hansolo\s14_feind` | 1 | Der alte Feind | Tritium-Förderung von 300 t sichern | Secure tritium production of 300 t | Briefing 300 t = Bedingung Q4 300 pro Tick |
 | `hansolo\s15_bombe` | 1 | Zeitbombe | Tritium-Pumpen der Golrathen in 30 Min. zerstören | Destroy the Golrath tritium pumps within 30 min | Sieg = Fraktion 2 hat keine Tritium-Pumpe (ARM 332) mehr; Niederlage nach 30:00 (Countdown in Zeile 2) oder ohne Einheiten |
 | `hansolo\s16_trommel` | 1 | Trommelfeuer | Invasionsarmee der Golrathen zerschlagen | Smash the Golrath invasion army | Sieg = nur Fraktion 5 ohne Einheiten (Fraktionen 2–4 müssen nicht besiegt werden; Briefing hofft auf ihren Beistand) |
 | `hansolo\s17_heftig` | 1 | Starkes Trommelfeuer | Invasionsarmee der Golrathen zerschlagen | Smash the Golrath invasion army | wie s16 |
-| `hansolo\s18_flucht` | 1 | Flucht nach vorn | Radaranlage 30 Min. halten oder Gegner vernichten | Hold the radar 30 min or destroy the enemy | Sieg = Fraktion 2 ohne Einheiten ODER Countdown 30:00 abgelaufen. Niederlage: kein Geschützturm (ARM 340) mehr – die „Radaranlage“ des Briefings ist offenbar dieser Typ. **Owner**: Reihenfolge (Halten zuerst) ok? |
+| `hansolo\s18_flucht` | 1 | Flucht nach vorn | Radaranlage 30 Min. halten oder Gegner vernichten | Hold the radar 30 min or destroy the enemy | Sieg = Fraktion 2 ohne Einheiten ODER Countdown 30:00 abgelaufen. Niederlage: kein Geschützturm (ARM 340) mehr – die „Radaranlage“ des Briefings ist offenbar dieser Typ. Entschieden: Reihenfolge bleibt (Frage 6). |
 | `hansolo\s20_posten` | 1 | Der Außenposten | Golrathischen Außenposten ausschalten | Eliminate the Golrath outpost | Sieg = alle Gegner ohne Einheiten (= der Außenposten mit allen Einheiten) |
 | `hansolo\s21_Marsch` | 1 | Auf dem Vormarsch | Marschroute säubern: alle Gegner vernichten | Clear the route: destroy all enemies | Sieg = alle Gegner. Dateiname im .cgn mit großem M, im Level-Kopf `s21_marsch`; Vergleich ohne Groß/klein. |
 | `hansolo\s22_laser` | 1 | Der Gegenangriff | Gelände erkunden und alle Gegner vernichten | Scout the area and destroy all enemies | Sieg = alle Gegner; das Briefing nennt nur Erkunden |
 | `hansolo\s23_tritod` | 1 | Tritiumtod | Tritium-Förderung der Golrathen stoppen | Shut down the Golrath tritium production | Sieg = NICHT (Förderrate Fraktion 2 ≥ Q4 1), also Rate 0 – Pumpen zerstören oder erobern |
-| `hansolo\s24_indust` | 1 | Industriekomplex | Hauptstreitmacht im Industriekomplex vernichten | Destroy the main force at the industrial complex | Sieg = Fraktion 2 hat keine Einheiten der Kommandogruppe A mehr. **Owner**: Welche Einheiten Gruppe A sind, ist nicht gemessen; „Hauptstreitmacht“ ist die Deutung aus Plan 3b. |
+| `hansolo\s24_indust` | 1 | Industriekomplex | Alle Gebäude der Golrathen zerstören, auch Mauern | Destroy every Golrath building, walls included | Sieg = Fraktion 2 hat kein Modell der Kommandogruppe A mehr. „Kommandogruppe A“ ist keine Platzierungs-Markierung, sondern die Laufzeitklasse des Modells (`classCommand[runtimeClassId] == ArmyRuntime_ClassCommandHandlerGroupA`, Klassen 4, 10, 11, 13–16, 20, 22, 23): in den Stammdaten genau die 43 Gebäude von `building.arm`, keine der 131 Einheiten von `unit.arm`. Fraktion 2 (KI 6) platziert in s24 nur Gebäude: 2 Hauptquartiere, leichte Waffenfabrik, je 2 Panzer-, Walker- und Gleiterfabriken, 8 Kraftwerke, Spezial-Forschungslabor, Forschungslabore Ionen-Laser, Flak-Kanonen und Raketen-Artillerie, 2 Xenit-Minen, 2 Tritium-Pumpen, 18 Geschütztürme, 24 hohe Mauern, 15 Panzersperren (90 Gebäude). Ihre gebauten Einheiten zählen nicht, nachgebaute Gebäude schon. Entschieden (Frage 7). |
 | `hansolo\s25_finale` | 1 | Der Todesstoß | Letzte Bastion der Golrathen vernichten | Destroy the last Golrath bastion | Briefing: Hauptquartier „einnehmen“; Sieg = alle Gegner ohne Einheiten |
 
 ## Kyrrdon (nimm2.cgn, zwei Spieler)
@@ -62,16 +62,18 @@ Länge: höchstens ~50 Zeichen, Befehlsform. Fortschritt (Rate, Countdown, Anzah
 | `luke\l00_inselkampf` | 1, 2 | Multi: Inselkampf | Handelswege freikämpfen: alle Piraten vernichten | Free the trade routes: destroy all pirates | Sieg = Fraktion 3 ohne Einheiten |
 | `luke\l01_dejavu` | 1, 2 | Multi: Deja Vu | Piraten stellen und alle vernichten | Hunt down and destroy all pirates | Sieg = Fraktion 3 ohne Einheiten |
 | `luke\l02_gebirgsjäger` | 1, 2 | Multi: Gebirgsjäger | Piratenlager in den Bergen vernichten | Wipe out the pirate camp in the mountains | Sieg = Fraktion 3 ohne Einheiten („keiner darf entkommen“) |
-| `luke\l03_dasnest` | 1, 2 | Multi: Das Nest | Geheime Forschungsanlage (Laserspule) zerstören | Destroy the secret research site (laser coil) | Sieg = Fraktion 3 hat kein ARM 345 mehr. ARM 345 hat keinen Modellnamen, „Laserspule“ stammt aus dem Enum-Kommentar. **Owner**: Klammer streichen oder den Namen aus `help.str` nehmen? |
+| `luke\l03_dasnest` | 1, 2 | Multi: Das Nest | Geheime Forschungsanlage (Laserspule) zerstören | Destroy the secret research site (laser coil) | Sieg = Fraktion 3 hat kein ARM 345 mehr. ARM 345 hat keinen Modellnamen, „Laserspule“ stammt aus dem Enum-Kommentar. Entschieden: Text bleibt (Frage 8). |
 
-## Offene Fragen an den Owner
+## Entscheidungen des Owners (2026-10-14)
 
-1. Tutorials (t00, t01): Siegbedingung „alle Gegner vernichten“ nennen oder „Den Anweisungen des Tutorials folgen“?
-2. s04 Konflikt: Gegner ohne Namen lassen („einen der beiden“) oder Thoraner/Avares nennen (Zuordnung Fraktion 2/3 nicht gemessen)?
-3. s12 Überraschung: die Verzweigung (nur Fraktion 3 vs. 2 und 3) erwähnen?
-4. s05/s06: Briefing 300 T/T, Bedingung 260 – Zahl weglassen (Entwurf) oder „260“ nennen?
-5. s08: „Hauptquartiere“ ausschreiben (51 Zeichen) oder „HQ“?
-6. s18: „halten oder vernichten“ – passt die Reihenfolge?
-7. s24: Kommandogruppe A als „Hauptstreitmacht“?
-8. l03: „Laserspule“ als Name der Anlage behalten?
-9. Schreibweise „Golrathen“ auch in Kyrrdon (dort im Original „Golraten“)?
+Alle Fragen sind entschieden; außer s12 und s24 bleiben die Entwürfe unverändert.
+
+1. Tutorials (t00, t01): Entwurf bleibt („alle Gegner vernichten“).
+2. s04 Konflikt: Entwurf bleibt (Gegner ohne Namen).
+3. s12 Überraschung: Verzweigung nennen – „Golrathen vernichten (Ilurer optional)“; Zuordnung aus den Level-Daten bestätigt (Fraktion 3 = Golrathen, Fraktion 2 = Ilurer aus s11).
+4. s05/s06: Entwurf bleibt (Zahl weggelassen).
+5. s08: Entwurf bleibt („Hauptquartiere“ ausgeschrieben, 51 Zeichen).
+6. s18: Entwurf bleibt (Halten zuerst).
+7. s24: nicht „Hauptstreitmacht“ – Gruppe A sind alle Gebäude der Fraktion 2, Text „Alle Gebäude der Golrathen zerstören, auch Mauern“.
+8. l03: Entwurf bleibt („Laserspule“).
+9. Kyrrdon: einheitlich „Golrathen“.

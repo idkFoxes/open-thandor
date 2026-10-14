@@ -62,8 +62,8 @@ constexpr uint32_t FACTIONS_1_2 = (1u << 1) | (1u << 2); /* the two-player campa
       u"Secure the crash site: destroy all enemies") \
     X(S11, u"s11_warn", FACTION_1, u"Alle leichten Geschütztürme des Gegners zerstören", \
       u"Destroy all enemy light gun turrets") \
-    X(S12, u"s12_ueber", FACTION_1, u"Den neuen Gegner aufspüren und vernichten", \
-      u"Track down and destroy the new enemy") \
+    X(S12, u"s12_ueber", FACTION_1, u"Golrathen vernichten (Ilurer optional)", \
+      u"Destroy the Golraths (Ilurens optional)") \
     X(S13, u"s13_kfeuer", FACTION_1, u"Tritium-Förderung von 240 t sichern", u"Secure tritium production of 240 t") \
     X(S14, u"s14_feind", FACTION_1, u"Tritium-Förderung von 300 t sichern", u"Secure tritium production of 300 t") \
     X(S15, u"s15_bombe", FACTION_1, u"Tritium-Pumpen der Golrathen in 30 Min. zerstören", \
@@ -79,8 +79,8 @@ constexpr uint32_t FACTIONS_1_2 = (1u << 1) | (1u << 2); /* the two-player campa
       u"Scout the area and destroy all enemies") \
     X(S23, u"s23_tritod", FACTION_1, u"Tritium-Förderung der Golrathen stoppen", \
       u"Shut down the Golrath tritium production") \
-    X(S24, u"s24_indust", FACTION_1, u"Hauptstreitmacht im Industriekomplex vernichten", \
-      u"Destroy the main force at the industrial complex") \
+    X(S24, u"s24_indust", FACTION_1, u"Alle Gebäude der Golrathen zerstören, auch Mauern", \
+      u"Destroy every Golrath building, walls included") \
     X(S25, u"s25_finale", FACTION_1, u"Letzte Bastion der Golrathen vernichten", u"Destroy the last Golrath bastion") \
     X(N1, u"ersterkontakt", FACTIONS_1_2, u"Radarstellung der Golrathen im Norden zerstören", \
       u"Destroy the Golrath radar post in the north") \
