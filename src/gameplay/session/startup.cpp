@@ -174,6 +174,7 @@ void InGameRuntime_ShutdownAndReleaseResources()
     if ((inGameRoot->rootUi).previousRoot != nullptr) {
       UiRootStack_Pop(&inGameRoot->rootUi);
     }
+    ObjectiveOverlay_DetachFromRoot(inGameRoot); /* open-thandor: the overlay node is not part of the freed root */
     g_MemoryApi.free(inGameRoot);
     g_InGameRuntimeRoot = nullptr;
   }
@@ -338,6 +339,8 @@ bool InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,InG
   g_InGameUiRootCallbacks.frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame);
   g_InGameUiRootCallbacks.keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags);
   UiRootStack_Push(&g_InGameUiRootCallbacks,&inGameRoot->rootUi);
+  /* open-thandor: the objective overlay node, linked after the push relocated and laid out the tree */
+  ObjectiveOverlay_AttachToRoot(inGameRoot);
   *outRoot = inGameRoot;
   return true;
 }

@@ -27,7 +27,7 @@ Nicht-Ziele: kein Questlog/Teilziel-Häkchen in v1; keine Änderung an Level-Dat
   (`include/thandor/ui/ingame/pages.h`, Basis 0x230017). Ein kurzes Missionsziel gibt es in den Originaldaten nicht.
 - Siegbedingungen im Level-Skript (`InGameLevelConditionStorage`): 64 Bedingungen × 16 Bytes ab LEV +0x380, 16 Endtrigger × 8 Bytes ab +0x780 (Fraktion, Endauswahl, Variante 0 = Niederlage / 1 = Sieg, Bedingungsindex).
 - Bedingungsarten (`include/thandor/gameplay/session/types.h`): 2 FACTION_HAS_NO_ARMY, 4 FACTION_HAS_NO_COMMAND_GROUP_A_ARMY, 6 FACTION_HAS_NO_ARMY_OF_ASSET, 8 FACTION_INACTIVE_OR_RELATION_AT_LEAST_8, 10 XENITE_AT_LEAST, 12 TRITIUM_AT_LEAST, 14 TRITIUM_EXTRACTION_RATE_AT_LEAST, 16 ARMY_OF_ASSET_COUNT_AT_LEAST, 18 FACTION_TERRAIN_OCCUPANCY_MASK_F9_PERCENT_AT_LEAST, 20 COUNTDOWN_ELAPSED, 22 XENITE_STORAGE_LIMIT_AT_MOST_0FA0, 24 NO_ARMY_OF_CLASS_OUTSIDE_COMMAND_GROUP_A, 26 BOOLEAN_POSTFIX_EXPRESSION.
-- `InGameUiImage` hat noch kein Projekt-Element; das Overlay wäre das erste.
+- `InGameUiImage` hat noch kein Projekt-Element. Das Overlay wird keins (O4): ein Knoten im Modulspeicher mit eigener vtable, zur Laufzeit in den In-Game-Root gehängt.
 
 ## 3. Textquelle
 
@@ -76,7 +76,7 @@ Fortschrittswerte kommen aus denselben Zählern wie die Bedingungsprüfung; nur 
 | O1 Messung | `tools/data/objectives.py`: alle Stock-Level mit lev.py/cgn.py auswerten (Sieg-Trigger, Bedingungsarten, Parameter pro Mission+Fraktion), Abdeckung des Rückfalls, Briefing-Texte ausgeben; Tabelle in diesen Plan | `tools/data/objectives.py`, dieser Plan | S |
 | O2 Kurzziel-Texte | Entwürfe DE/EN aus den Briefings, Owner-Review, Tabelle + `TextResource_MissionObjective(levelName, faction)` | `src/assets/text/objective_texts.cpp`, `resources.h` | M |
 | O3 Ziel-Modell | `MissionObjective_Build(levelImage, localFaction)` (Kurztext, sonst 3b), `MissionObjective_Progress()` nur lesend; Selbsttest `objectives` | `src/gameplay/session/mission_objective.{h,cpp}` | M |
-| O4 Overlay-Element | erstes Projekt-Element in `InGameUiImage` (nur anhängen), Zeichnen, Klick → Missionshilfe, UI-Skalierung, Layout-Asserts, uitemplate-Golden neu | `ui/ingame/types.h`, `ui_template.cpp`, `layout.cpp`, `objective_overlay.cpp`, `layout_checks.cpp`, `uitemplate_selftest.cpp` | M |
+| O4 Overlay-Element | Projekt-Knoten im Modulspeicher mit eigener vtable, nach `UiRootStack_Push` als Geschwister direkt hinter die Weltansicht gehängt (über der Welt, unter Fenstern/Nachrichten/Seitenleiste; Template, `InGameRuntimeRoot`, Layout-Asserts und uitemplate-Golden unverändert), Zeichnen, Klick → Missionshilfe, UI-Skalierung | `ui/ingame/objective_overlay.{h,cpp}`, `gameplay/session/startup.cpp` | M |
 | O5 Aktualisierung + Einstellungen | 2×/s, Ausblendregeln, Checkbox „Ziel anzeigen“, ini `[game] objective_overlay` (reservierter Platz 0x54), Taste „Ziel ein/aus“ (über die änderbare Tastenbelegung, Branch `experimental/keybinding-edit`; sonst nachreichen) | `display_settings.cpp`, `persistent.cpp`, `key_bindings.cpp` | S–M |
 | O6 Tests + Doku | `tools/test/objective_overlay.txt` mit Screenshots; Determinismus/KI-Hash an+aus identisch; Patch Notes, BUILDING.md, liesmich | `tools/test/…`, Docs | S |
 
@@ -99,7 +99,7 @@ Reihenfolge: O1 → O2, O3, O4 parallel → O5 → O6 (voller run_checks).
 
 | Risiko | Folge | Gegenmaßnahme |
 |---|---|---|
-| erstes Projekt-Element im In-Game-Template | verschobene Offsets | nur anhängen, Layout-Asserts, uitemplate-Golden |
+| Projekt-Knoten im In-Game-Baum | verschobene Offsets, Relokation | kein Template-Knoten: Laufzeit-Verknüpfung nach der Relokation, vor dem Freigeben gelöst; uitemplate/Pixel unverändert |
 | Overlay verdeckt Welt/Menüleiste | störend | max. zwei Zeilen, halbtransparent, abschaltbar |
 | verknüpfte Siegbedingungen | unverständlicher Text | Kurztexte haben Vorrang, „Mehrere Ziele (F1)“ |
 | mehrere Sieg-Trigger | unvollständig | erster + „(+n weitere)“ |

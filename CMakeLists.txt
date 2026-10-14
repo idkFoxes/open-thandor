@@ -256,6 +256,7 @@ add_executable(thandor WIN32
     src/ui/ingame/minimap_texture.cpp
     src/ui/ingame/music_choice.cpp
     src/ui/ingame/notifications.cpp
+    src/ui/ingame/objective_overlay.cpp
     src/ui/ingame/pages.cpp
     src/ui/ingame/preview_markers.cpp
     src/ui/ingame/root_frame.cpp
