@@ -2874,7 +2874,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         { /* +83CC advancedPathingCheckbox g_UiTextButtonControlVtable */
             .selectable = {
                 .base = {
-                    .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    /* followed by advancedObjectiveOverlayCheckbox (+842C), then advancedLanguageGroup (+7FD4) */
+                    .nextSibling = UI_TEMPLATE_LINK(0x842C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                     .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = -283, .topOffset = 60, .rightOffset = 32, .bottomOffset = 84,
@@ -2882,4 +2883,19 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
                 .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_PATHING},
             .textResourceId = TEXT_ID_ADVANCED_PATHING},
+        /* not in the original (open-thandor): the objective overlay checkbox of the advanced settings page ([game]
+           objective_overlay), in the right column under "Sprache:" (x 53..288 as the VSync checkbox, y 60..84: the
+           row of the pathing checkbox), between advancedPathingCheckbox and advancedLanguageGroup in the page's
+           sibling chain; the open language list covers it */
+        { /* +842C advancedObjectiveOverlayCheckbox g_UiTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = 53, .topOffset = 60, .rightOffset = 288, .bottomOffset = 84,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_OBJECTIVE_OVERLAY},
+            .textResourceId = TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY},
 };

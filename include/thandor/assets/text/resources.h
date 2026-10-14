@@ -220,6 +220,10 @@ inline constexpr int TEXT_ID_OBJECTIVE_RESERVED = 0x40;
 #define TEXT_ID_OBJECTIVE_STOP_TRITIUM (TEXT_ID_OBJECTIVE_BASE + 29) /* "Tritium-Foerderung von %s stoppen" */
 inline constexpr int TEXT_ID_OBJECTIVE_COUNT = 30;
 static_assert(TEXT_ID_OBJECTIVE_COUNT <= TEXT_ID_OBJECTIVE_RESERVED);
+/* the "Ziel anzeigen" / "Show objective" checkbox of the advanced settings page ([game] objective_overlay): the last
+   id of the reserved block, bright like the other checkboxes, German for German, English for every other language */
+#define TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY (TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED - 1)
+static_assert(TEXT_ID_OBJECTIVE_COUNT < TEXT_ID_OBJECTIVE_RESERVED);
 
 /* Not in the original: the English text of objective template index (0..TEXT_ID_OBJECTIVE_COUNT - 1), else nullptr
    (project_texts_en.cpp). */

@@ -378,6 +378,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
     worldRuntime = &inGameRoot->worldRuntime;
     InGameHud_UpdateStatusCountersAndSessionPrompts();
+    ObjectiveOverlay_Update(); /* open-thandor: the objective overlay's lines (display only, plan O5) */
     activePageIndex = UiPageStack_ActivePageIndex(&inGameRoot->worldViewAreaPageStack);
     /* edge scrolling only on the plain world view (no drag selection or notification jump, first page, no
        interaction node flag 8) and while cursor button bit 2 is up; its scroll-arrow frame wins over the hovered

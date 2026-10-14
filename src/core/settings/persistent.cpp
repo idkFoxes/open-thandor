@@ -89,6 +89,7 @@ static const char *const s_IniGpuRasterizationNames[] = {"smooth", "exact"};
 static const char *const s_IniUiScaleNames[] = {"auto", "1", "2", "3"};
 static const char *const s_IniVsyncNames[] = {"on", "off"};
 static const char *const s_IniPathingNames[] = {"improved", "original"};
+static const char *const s_IniObjectiveOverlayNames[] = {"on", "off"};
 
 /* the text languages of [game] language (the value is the telephone country code, see LocaleTelephoneCountryCode) */
 struct PersistentIniLanguage {
@@ -178,11 +179,13 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "unit pathfinding and movement in single player: improved (default; units drive curves, wait for and give way to "
    "each other) or original (exactly the original game's movement); a network game always agrees on one mode",
    0, 0, INI_ENUM(s_IniPathingNames)},
+  {PERSISTENT_SETTING_OBJECTIVE_OVERLAY, INI_KIND_ENUM, "game", "objective_overlay",
+   "objective box at the top left of the game (the mission objective and its progress): on (default) or off",
+   0, 0, INI_ENUM(s_IniObjectiveOverlayNames)},
 
   {PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, INI_KIND_UINT, "network", "players",
    "player count of a hosted network game (default 4)", 0, 0, nullptr, 0},
 
-  {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x58, INI_KIND_RAW, "reserved", "dword_58", "unused in the original settings file, kept", 0, 0, nullptr, 0},
 };
 
@@ -1062,4 +1065,13 @@ void PersistentSettings_WritePathingImproved(bool improved)
   g_PathingModeSetting = improved ? PATHING_MODE_IMPROVED : PATHING_MODE_ORIGINAL;
   PersistentSettings_WriteChosen(improved ? PERSISTENT_PATHING_IMPROVED : PERSISTENT_PATHING_ORIGINAL,
                                  PERSISTENT_SETTING_PATHING_MODE);
+}
+
+/* Not in the original: the objective overlay setting chosen in the menus ("Ziel anzeigen" on the "Erweitert" page,
+   ObjectiveOverlay_ToggleSetting): the settings dword the next PersistentSettings_Flush saves as [game]
+   objective_overlay; present at once, so ObjectiveOverlay_Enabled reads the new value. */
+void PersistentSettings_WriteObjectiveOverlay(bool shown)
+{
+  PersistentSettings_WriteChosen(shown ? PERSISTENT_OBJECTIVE_OVERLAY_ON : PERSISTENT_OBJECTIVE_OVERLAY_OFF,
+                                 PERSISTENT_SETTING_OBJECTIVE_OVERLAY);
 }

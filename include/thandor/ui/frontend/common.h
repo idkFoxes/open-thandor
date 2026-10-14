@@ -90,6 +90,9 @@ inline constexpr int32_t FRONTEND_ACTION_LANGUAGE_SELECT = 0x2063;
 /* Not in the original: the "Verbesserte Wegfindung" checkbox of the advanced settings page (advancedPathingCheckbox,
    handlers64 of g_FrontendUiActionHandlersPage20) */
 inline constexpr int32_t FRONTEND_ACTION_ADVANCED_PATHING = 0x2064;
+/* Not in the original: the "Ziel anzeigen" checkbox of the advanced settings page (advancedObjectiveOverlayCheckbox,
+   handlers65 of g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_ADVANCED_OBJECTIVE_OVERLAY = 0x2065;
 /* the pages of displayPageStack (frontendPageStack page FRONTEND_PAGE_DISPLAY_SETTINGS) */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_DISPLAY = 0; /* displaySettingsPage ("Anzeige") */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_MORE = 1; /* settingsSubPageStack (the two pages below) */

@@ -115,7 +115,8 @@ struct PersistentSettingsImage {
     CameraScrollStepPixels cameraScrollStep; 
     MovieAudioGainQ15 movieAlternateAudioGainQ15; 
     uint32_t pathingMode; /* open-thandor: PERSISTENT_SETTING_PATHING_MODE (0 = improved) */
-    uint8_t reserved54_5B[8]; 
+    uint32_t objectiveOverlay; /* open-thandor: PERSISTENT_SETTING_OBJECTIVE_OVERLAY (0 = shown) */
+    uint8_t reserved58_5B[4]; 
     PersistentMouseLinkPanelOptionFlags mouseLinkPanelOptionFlags; 
     uint16_t playerName[20]; 
     uint16_t gameName[20]; 

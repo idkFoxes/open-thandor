@@ -122,6 +122,12 @@ static uint16_t g_ProjectTextVerbesserteWegfindung[] = {
     PROJECT_TEXT_BRIGHT,'V','e','r','b','e','s','s','e','r','t','e',' ','W','e','g','f','i','n','d','u','n','g',0};
 static uint16_t g_ProjectTextImprovedPathfinding[] = {
     PROJECT_TEXT_BRIGHT,'I','m','p','r','o','v','e','d',' ','p','a','t','h','f','i','n','d','i','n','g',0};
+/* Not in the original: the objective overlay checkbox of the advanced settings page
+   (TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY), bright like the VSync checkbox. */
+static uint16_t g_ProjectTextZielAnzeigen[] = {
+    PROJECT_TEXT_BRIGHT,'Z','i','e','l',' ','a','n','z','e','i','g','e','n',0};
+static uint16_t g_ProjectTextShowObjective[] = {
+    PROJECT_TEXT_BRIGHT,'S','h','o','w',' ','o','b','j','e','c','t','i','v','e',0};
 
 TextResourceId TextResource_LanguageNameId(uint32_t countryCode)
 {
@@ -897,6 +903,11 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     if (*outText == nullptr) {
       *outText = g_ProjectTexts[resourceId - TEXT_ID_PROJECT_BASE];
     }
+    return true;
+  }
+  if (resourceId == TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY) {
+    /* not in the original */
+    *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextZielAnzeigen : g_ProjectTextShowObjective;
     return true;
   }
   if (resourceId == TEXT_ID_ADVANCED_PATHING) {

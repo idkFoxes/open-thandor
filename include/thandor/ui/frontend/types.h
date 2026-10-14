@@ -470,6 +470,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers61[1]; // Not in the original: action ID 0x2061 (the options page's "Tastenbelegung" button).
     Ptr32<void (void *)> handlers62_63[2]; // Not in the original: action IDs 0x2062-0x2063 (the language choice of the advanced settings page).
     Ptr32<void (void *)> handlers64[1]; // Not in the original: action ID 0x2064 (the pathing checkbox of the advanced settings page).
+    Ptr32<void (void *)> handlers65[1]; // Not in the original: action ID 0x2065 (the objective overlay checkbox of the advanced settings page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1360,6 +1361,11 @@ struct FrontendUiImage {
        advancedNoteLabel and advancedLanguageGroup in the page's sibling chain (the language list layer stays the
        last child). */
     UiTextButtonControl advancedPathingCheckbox; /* +83CC g_UiTextButtonControlVtable: Checkbox "Verbesserte Wegfindung" (action FRONTEND_ACTION_ADVANCED_PATHING). */
+    /* Not in the original (open-thandor): the objective overlay setting of the advanced settings page ([game]
+       objective_overlay, docs/plans/objective_overlay.md O5), in the right column under "Sprache:" (the row of the
+       pathing checkbox); linked between advancedPathingCheckbox and advancedLanguageGroup in the page's sibling chain
+       (the language list layer stays the last child). */
+    UiTextButtonControl advancedObjectiveOverlayCheckbox; /* +842C g_UiTextButtonControlVtable: Checkbox "Ziel anzeigen" (action FRONTEND_ACTION_ADVANCED_OBJECTIVE_OVERLAY). */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is

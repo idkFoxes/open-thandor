@@ -41,8 +41,24 @@ void ObjectiveOverlay_SetLines(const uint16_t *line1, const uint16_t *line2);
    Every session starts with true; without lines the overlay stays hidden anyway. */
 void ObjectiveOverlay_SetVisible(bool visible);
 
-/* The user setting "Ziel anzeigen" ([game] objective_overlay, package O5): false hides the overlay. */
+/* The user setting "Ziel anzeigen" ([game] objective_overlay in thandor.ini, settings dword
+   PERSISTENT_SETTING_OBJECTIVE_OVERLAY; default on): false hides the overlay. */
 bool ObjectiveOverlay_Enabled();
+
+/* Switches the setting "Ziel anzeigen" (saved with the next settings flush) and redraws a running game's overlay;
+   returns the new state (true: shown). For the key "Ziel ein/aus" (key binding action objective_toggle, added when
+   the changeable key bindings of experimental/keybinding-edit are merged; plan O5). */
+bool ObjectiveOverlay_ToggleSetting();
+
+/* The objective update (plan O5), called once per frame of the in-game UI (InGameUiRoot_UpdateFrame, on the UI
+   thread, outside the simulation step): builds the local faction's objective (MissionObjective_Build) for the
+   running level after a new root was attached (new, loaded, network game, next campaign mission), when the level's
+   condition storage or the local faction changed and after a language switch (Game_LanguageGeneration); about twice
+   a second (wall clock) it formats the progress line (MissionObjective_FormatProgress) and sets both lines
+   (ObjectiveOverlay_SetLines redraws only on a change). Hides the overlay while the map editor is active. Reads game
+   state only: no simulation, random number, arena, network or savegame effect. Does nothing while the setting is
+   off (and with the developer test aid OPEN_THANDOR_OBJECTIVE_SAMPLE). */
+void ObjectiveOverlay_Update();
 
 /* Code units kept per line, terminator included. */
 inline constexpr int OBJECTIVE_OVERLAY_LINE_UNITS = 128;
