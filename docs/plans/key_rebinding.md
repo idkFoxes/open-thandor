@@ -1,6 +1,7 @@
 # Key rebinding
 
-Status: P1 (binding model) done on `experimental/keybinding-edit`; P2..P6 open.
+Status: P1 (binding model) done on `experimental/keybinding-edit`; P2 (dispatch) done on `keybinding-edit/kb-p2`;
+P3..P6 open.
 
 ## Goal
 
@@ -64,6 +65,23 @@ with MarkDirty and an immediate Flush.
   Esc (any modifiers), Alt+F4 and Alt+Tab are never allowed; a hidden fixed action (cheat) answers "not allowed"
   instead of naming it.
 - Changes bump a change counter and call the registered listeners (P2 hooks Apply, P3 hooks save).
+
+## Dispatch (P2, `include/thandor/ui/core/key_binding_tables.h`)
+
+- The in-game hotkeys, the world view's key commands and the frontend hotkeys keep their original records as
+  constants; the working tables (`std::array`, built at compile time, equal to the originals with the defaults) hold
+  them in the original order, then spare records, then the terminator (code 0). `KeyBindingTables_Install` (program
+  start, before the self-tests) registers `KeyBindingTables_Apply` as change listener and applies once.
+- Apply: each original record takes the current chord with the index of the default chord it stood for (a group
+  record keeps its digit and takes the modifiers, so `groupIndex` stays `commandCode - '1'`); a missing chord gives
+  `UI_KEY_COMMAND_CODE_UNBOUND` (0xFFFFFFFF, never a key code, not the terminator). Chords beyond the default count
+  go into the spare records, in action order. Spare records per table cover `KEY_BINDING_MAX_KEYS` chords on every
+  editable action (hotkeys 40, key commands 167, frontend 3); the self-test checks it. Fixed actions' records (Esc,
+  Alt+F4, the cheats, Ctrl+F1) stay as they are; the end-movie table, the editor tables and the intro skip are not
+  touched.
+- The in-game hotkeys use `UiKeyModifierRule::ShiftRequiredByClass` (Ctrl/Alt exact, Shift ignored unless the
+  class has Shift, then required): the same as `ExactShiftIgnored` for every default record.
+- The camera (`InGameUiRoot_ApplyCameraKeys`) polls `KeyBindings_HeldDown(CameraLeft..CameraZoomOut)`.
 
 ## Packages
 

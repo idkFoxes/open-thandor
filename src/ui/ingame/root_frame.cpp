@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/ui/core/key_bindings.h>
 
 /* Module data. */
 
@@ -208,7 +209,8 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
   }
 }
 
-/* Camera keys: arrows scroll by the configured step, Page Up/Down tilt, Insert/Delete rotate, Home/End zoom
+/* Camera keys, polled while held (KeyBindings_HeldDown of the ten camera actions; the defaults: arrows scroll by the
+   configured step, Page Up/Down tilt, Insert/Delete rotate, Home/End zoom, the numpad digits give the same keys)
    (0x400 = 1/64 turn, 0x800 = 0.5 in Q12). */
 static void InGameUiRoot_ApplyCameraKeys(InGameRuntimeRootFrameView *inGameRoot)
 
@@ -221,27 +223,27 @@ static void InGameUiRoot_ApplyCameraKeys(InGameRuntimeRootFrameView *inGameRoot)
 
   worldRuntime = &inGameRoot->worldRuntime;
   cameraMotion = &worldRuntime->motion;
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_LEFT] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraLeft)) {
     scrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
     WorldRuntime_TranslateCameraByScreenDelta(0,-scrollStep,worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
   }
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_RIGHT] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraRight)) {
     scrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
     WorldRuntime_TranslateCameraByScreenDelta(0,scrollStep,worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
   }
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_UP] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraUp)) {
     scrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
     WorldRuntime_TranslateCameraByScreenDelta(-scrollStep,0,worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
   }
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_DOWN] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraDown)) {
     scrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
     WorldRuntime_TranslateCameraByScreenDelta(scrollStep,0,worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
   }
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_PAGE_UP] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraTiltMinus)) {
     clampedPitchAngle = cameraMotion->pitchAngle - INGAME_CAMERA_KEY_ANGLE_STEP;
     if ((int)clampedPitchAngle < (int)cameraMotion->minimumPitchAngle) {
       clampedPitchAngle = cameraMotion->minimumPitchAngle;
@@ -251,7 +253,7 @@ static void InGameUiRoot_ApplyCameraKeys(InGameRuntimeRootFrameView *inGameRoot)
                cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,cameraMotion->targetPositionXQ12,
                worldRuntime);
   }
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_PAGE_DOWN] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraTiltPlus)) {
     clampedPitchAngle = cameraMotion->pitchAngle + INGAME_CAMERA_KEY_ANGLE_STEP;
     if ((int)cameraMotion->maximumPitchAngle < (int)clampedPitchAngle) {
       clampedPitchAngle = cameraMotion->maximumPitchAngle;
@@ -261,21 +263,21 @@ static void InGameUiRoot_ApplyCameraKeys(InGameRuntimeRootFrameView *inGameRoot)
                cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,cameraMotion->targetPositionXQ12,
                worldRuntime);
   }
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_INSERT] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraRotateMinus)) {
     WorldRuntime_PointCameraAtTarget
               (cameraMotion->pitchAngle,
                (cameraMotion->headingAngle - INGAME_CAMERA_KEY_ANGLE_STEP) & FIXED_ANGLE16_MASK,
                cameraMotion->targetDistanceQ12,cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,
                cameraMotion->targetPositionXQ12,worldRuntime);
   }
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_DELETE] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraRotatePlus)) {
     WorldRuntime_PointCameraAtTarget
               (cameraMotion->pitchAngle,
                (cameraMotion->headingAngle + INGAME_CAMERA_KEY_ANGLE_STEP) & FIXED_ANGLE16_MASK,
                cameraMotion->targetDistanceQ12,cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,
                cameraMotion->targetPositionXQ12,worldRuntime);
   }
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_HOME] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraZoomIn)) {
     clampedTargetDistance = cameraMotion->targetDistanceQ12 - INGAME_CAMERA_KEY_DISTANCE_STEP_Q12;
     if ((int)clampedTargetDistance < (int)worldRuntime->minimumCameraDistanceQ12) {
       clampedTargetDistance = worldRuntime->minimumCameraDistanceQ12;
@@ -285,7 +287,7 @@ static void InGameUiRoot_ApplyCameraKeys(InGameRuntimeRootFrameView *inGameRoot)
                cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,cameraMotion->targetPositionXQ12,
                worldRuntime);
   }
-  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_END] != 0) {
+  if (KeyBindings_HeldDown(KeyAction::CameraZoomOut)) {
     clampedTargetDistance = cameraMotion->targetDistanceQ12 + INGAME_CAMERA_KEY_DISTANCE_STEP_Q12;
     if ((int)worldRuntime->maximumCameraDistanceQ12 < (int)clampedTargetDistance) {
       clampedTargetDistance = worldRuntime->maximumCameraDistanceQ12;

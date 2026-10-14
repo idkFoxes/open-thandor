@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/ui/core/key_dispatch.h>
+#include <thandor/ui/core/key_binding_tables.h>
 
 /* Module data. */
 
@@ -36,9 +37,10 @@ enum class InGameKeyCommandAction : uint32_t {
 };
 static_assert(sizeof(UiKeyCommandRecord<InGameKeyCommandAction>) == 0xC, "a key command record keeps the original 12 bytes");
 
-/* 63 key command records of the original, Ctrl+I (added, see InGameKeyCommandAction::InfoTextNext) and the terminator record
-   (commandCode 0) that ends the dispatcher's scan */
-static UiKeyCommandRecord<InGameKeyCommandAction> g_InGameCommandDispatchRecords[65] = {
+/* 63 key command records of the original and Ctrl+I (added, see InGameKeyCommandAction::InfoTextNext), with the
+   default key bindings. The dispatcher scans the working table g_InGameCommandDispatchRecords built from them
+   (ui/core/key_binding_tables.h). */
+static constexpr UiKeyCommandRecord<InGameKeyCommandAction> g_InGameKeyCommandOriginalRecords[64] = {
     /*  0 */ {.commandCode = 0x30073, .modifierClassFlags = KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT, .action = InGameKeyCommandAction::SelectionResetMovement},
     /*  1 */ {.commandCode = 0x30073, .modifierClassFlags = KEYBOARD_STATE_SHIFT, .action = InGameKeyCommandAction::SelectionStopMovement},
     /*  2 */ {.commandCode = 0x30073, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameKeyCommandAction::SelectionCancelTargets},
@@ -102,8 +104,22 @@ static UiKeyCommandRecord<InGameKeyCommandAction> g_InGameCommandDispatchRecords
     /* 60 */ {.commandCode = 0x30063, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameKeyCommandAction::FreeCameraToggle},
     /* 61 */ {.commandCode = 0x10015, .action = InGameKeyCommandAction::CameraToSelection},
     /* 62 */ {.commandCode = 0x30064, .modifierClassFlags = KEYBOARD_STATE_ALT, .action = InGameKeyCommandAction::SelectionSelfDestruct},
-    /* 63 */ {.commandCode = 0x30069, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = InGameKeyCommandAction::InfoTextNext},
-    /* 64 */ {.commandCode = 0x0}}; /* terminator: commandCode 0 (the original's other two dwords were NOP fill, never read) */
+    /* 63 */ {.commandCode = 0x30069, .modifierClassFlags = KEYBOARD_STATE_CTRL, .action = InGameKeyCommandAction::InfoTextNext}};
+
+/* The working table: the 64 records rewritten from the key bindings (InGameKeyCommands_ApplyBindings; the group
+   records keep their digit 1..8 and take the modifiers, so groupIndex stays commandCode - '1'), 167 spare records
+   for further chords (13 editable actions with one default chord: 4 more each, Stop: 3 more; the group actions:
+   4 * 8 more each with one default chord, 3 * 8 with two) and the terminator record (commandCode 0) that ends the
+   dispatcher's scan (the original's other two dwords were NOP fill, never read). */
+static constexpr std::size_t INGAME_KEY_COMMAND_TABLE_CAPACITY = 64 + 167 + 1;
+static std::array<UiKeyCommandRecord<InGameKeyCommandAction>, INGAME_KEY_COMMAND_TABLE_CAPACITY> g_InGameCommandDispatchRecords =
+    KeyBindingTable_Make<InGameKeyCommandAction, INGAME_KEY_COMMAND_TABLE_CAPACITY>(g_InGameKeyCommandOriginalRecords);
+
+uint32_t InGameKeyCommands_ApplyBindings()
+{
+  return KeyBindingTable_Apply(g_InGameCommandDispatchRecords,g_InGameKeyCommandOriginalRecords,
+                               KeyBindingSource::InGameKeyCommands);
+}
 
 UiCommandRuntimeFlagMask g_UiCommandRuntimeFlags = UiCommandRuntimeFlagMask{};
 
@@ -111,7 +127,7 @@ UiCommandRuntimeFlagMask g_UiCommandRuntimeFlags = UiCommandRuntimeFlagMask{};
 uint32_t InGameKeyCommands_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags)
 {
   const UiKeyCommandRecord<InGameKeyCommandAction> *record = UiCommandDispatch_Find(
-      g_InGameCommandDispatchRecords, keyCode, heldFlags, UiKeyModifierRule::ExactWithShift);
+      g_InGameCommandDispatchRecords.data(), keyCode, heldFlags, UiKeyModifierRule::ExactWithShift);
   return (record == nullptr) ? 0 : static_cast<uint32_t>(record->action);
 }
 
@@ -148,14 +164,14 @@ bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
 
 {
   /* Each dispatch record names its action, one case of the switch below. world is the world view (worldRuntime). */
-  UiKeyCommandRecord<InGameKeyCommandAction> *record; /* g_InGameCommandDispatchRecords ends at the terminator record [63] */
+  UiKeyCommandRecord<InGameKeyCommandAction> *record; /* g_InGameCommandDispatchRecords ends at its terminator record */
   InGameKeyCommandAction target;
   bool localSession =
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL;
   bool commandsBlocked =
        Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED));
 
-  record = UiCommandDispatch_Find(g_InGameCommandDispatchRecords,commandCode,modifierFlags,
+  record = UiCommandDispatch_Find(g_InGameCommandDispatchRecords.data(),commandCode,modifierFlags,
                                   UiKeyModifierRule::ExactWithShift);
   if (record == nullptr) {
     return true; /* not a world view key: the pointer context passes it on (Esc reaches the root's hotkeys) */

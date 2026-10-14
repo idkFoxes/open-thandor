@@ -24,6 +24,10 @@
       with every modifier combination, every editable action's value), and Set / Clear / Reset follow the conflict
       policy (docs/plans/key_rebinding.md) with change notification. The bindings are back at their defaults
       afterwards.
+   3. The dispatch tables follow the bindings (ui/core/key_binding_tables.h): a rebound key dispatches and the old
+      one no longer does (Pause, Stop, the group modifiers, menu_leave with its permanent Alt+F4), the in-game
+      hotkeys need Shift only for a chord with Shift, and KEY_BINDING_MAX_KEYS chords on every editable action fit
+      into the spare records and reach their action.
    One line per failed check and a summary line. */
 
 #include <stdint.h>
@@ -36,6 +40,7 @@
 #include <thandor/platform/input/devices.h>
 #include <thandor/assets/text/resources.h>
 #include <thandor/ui/core/key_bindings.h>
+#include <thandor/ui/core/key_binding_tables.h>
 #include <thandor/ui/ingame/hotkeys.h>
 #include <thandor/ui/ingame/key_commands.h>
 #include <thandor/ui/frontend/state.h>
@@ -514,6 +519,167 @@ static void KeyBindingsTest_Rules()
   KeyBindings_ResetAllDefaults();
 }
 
+/* ---- part 3: the dispatch tables follow the bindings ---- */
+
+/* The action number source's table gives a press of keyCode with exactly modifiers. */
+static uint32_t KeyBindingsTest_Dispatch(KeyBindingSource source,uint32_t keyCode,UiKeyboardStateMask modifiers)
+{
+  switch (source) {
+  case KeyBindingSource::InGameHotkeys: return InGameHotkeys_FindBinding(keyCode,modifiers);
+  case KeyBindingSource::InGameKeyCommands: return InGameKeyCommands_FindBinding(keyCode,modifiers);
+  case KeyBindingSource::FrontendHotkeys: return FrontendHotkeys_FindBinding(keyCode,modifiers);
+  default: return 0;
+  }
+}
+
+static void KeyBindingsTest_ExpectDispatch(KeyBindingSource source,uint32_t keyCode,UiKeyboardStateMask modifiers,
+                                           uint32_t expected,const char *what,uint32_t *checked)
+{
+  (*checked)++;
+  uint32_t found = KeyBindingsTest_Dispatch(source,keyCode,modifiers);
+  if (found != expected) {
+    g_KeyBindingsTestFailures++;
+    Thandor_Log("keybindings FAIL dispatch: %s (key 0x%05X mod 0x%02X gives %u, not %u)", what, keyCode,
+                ToBits(modifiers), found, expected);
+  }
+}
+
+/* Rebinding through KeyBindings_Set reaches the tables through the change listener (KeyBindingTables_Install at
+   program start): the new key dispatches, the old one no longer does; the in-game hotkeys require Shift only for a
+   chord with Shift. Then every editable action of the three tables gets KEY_BINDING_MAX_KEYS chords (SetRaw) and
+   every chord must fit into the spare records and reach its action. The bindings are back at their defaults
+   afterwards. Returns the number of checks. */
+static uint32_t KeyBindingsTest_DispatchTables()
+{
+  using enum KeyAction;
+  const UiKeyboardStateMask NONE = KEYBOARD_STATE_NONE;
+  const UiKeyboardStateMask SHIFT = KEYBOARD_STATE_SHIFT;
+  const UiKeyboardStateMask CTRL = KEYBOARD_STATE_CTRL;
+  const UiKeyboardStateMask ALT = KEYBOARD_STATE_ALT;
+  const KeyBindingSource HOTKEYS = KeyBindingSource::InGameHotkeys;
+  const KeyBindingSource COMMANDS = KeyBindingSource::InGameKeyCommands;
+  const KeyBindingSource FRONTEND = KeyBindingSource::FrontendHotkeys;
+  const uint32_t pause = KeyBindings_Get(Pause).sourceAction;
+  const uint32_t stop = KeyBindings_Get(Stop).sourceAction;
+  const uint32_t groupSelect = KeyBindings_Get(GroupSelect).sourceAction;
+  const uint32_t groupStore = KeyBindings_Get(GroupStore).sourceAction;
+  const uint32_t leave = KeyBindings_Get(MenuLeave).sourceAction;
+  uint32_t checked = 0;
+
+  KeyBindings_ResetAllDefaults();
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('p'),NONE,pause,"default Pause = P",&checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('p'),SHIFT,pause,"default Pause = P ignores Shift",&checked);
+
+  /* Pause = K: K pauses (Shift ignored), P no longer does */
+  KeyBindingsTest_ExpectSet(Pause,KeyBindingsTest_Chord(KeyBindingsTest_Char('k')),KeyBindingStatus::Ok,KeyAction::Count,
+                            "Pause = K");
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('k'),NONE,pause,"Pause = K: K",&checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('k'),SHIFT,pause,"Pause = K: Shift+K",&checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('p'),NONE,0,"Pause = K: P",&checked);
+  /* Pause = Shift+K: Shift is now required */
+  KeyBindingsTest_ExpectSet(Pause,KeyBindingsTest_Chord(KeyBindingsTest_Char('k'),SHIFT),KeyBindingStatus::Ok,
+                            KeyAction::Count,"Pause = Shift+K");
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('k'),SHIFT,pause,"Pause = Shift+K: Shift+K",&checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('k'),NONE,0,"Pause = Shift+K: K",&checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('k'),SHIFT | CTRL,0,"Pause = Shift+K: Ctrl+Shift+K",&checked);
+  /* Stop = X: both default records of Stop move (S and Alt+Shift+S free) */
+  KeyBindingsTest_ExpectSet(Stop,KeyBindingsTest_Chord(KeyBindingsTest_Char('x')),KeyBindingStatus::Ok,KeyAction::Count,
+                            "Stop = X");
+  KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char('x'),NONE,stop,"Stop = X: X",&checked);
+  KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char('s'),NONE,0,"Stop = X: S",&checked);
+  KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char('s'),ALT | SHIFT,0,"Stop = X: Alt+Shift+S",&checked);
+  /* group rows: only the modifiers move, the digits stay */
+  if (!KeyBindings_Clear(GroupStore)) {
+    KeyBindingsTest_ModelFail("Clear GroupStore");
+  }
+  KeyBindingsTest_ExpectSet(GroupSelect,KeyBindingsTest_Chord(0,ALT),KeyBindingStatus::Ok,KeyAction::Count,
+                            "GroupSelect = Alt");
+  for (char digit = '1'; digit <= '8'; digit++) {
+    KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char(digit),ALT,groupSelect,"GroupSelect = Alt: Alt+digit",&checked);
+    KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char(digit),NONE,0,"GroupSelect = Alt: digit",&checked);
+    KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char(digit),CTRL,0,"GroupStore cleared: Ctrl+digit",&checked);
+  }
+  /* the frontend: menu_leave = L keeps Alt+F4 */
+  KeyBindingsTest_ExpectSet(MenuLeave,KeyBindingsTest_Chord(KeyBindingsTest_Char('l')),KeyBindingStatus::Ok,
+                            KeyAction::Count,"MenuLeave = L");
+  KeyBindingsTest_ExpectDispatch(FRONTEND,KeyBindingsTest_Char('l'),NONE,leave,"MenuLeave = L: L",&checked);
+  KeyBindingsTest_ExpectDispatch(FRONTEND,KEYBOARD_KEY_CODE_FUNCTION(4),ALT,leave,"MenuLeave = L: Alt+F4",&checked);
+  KeyBindingsTest_ExpectDispatch(FRONTEND,KeyBindingsTest_Char('q'),ALT,0,"MenuLeave = L: Alt+Q",&checked);
+
+  /* back to the defaults: the tables too */
+  KeyBindings_ResetAllDefaults();
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('p'),NONE,pause,"reset: P",&checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('k'),SHIFT,0,"reset: Shift+K",&checked);
+  KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char('s'),NONE,stop,"reset: S",&checked);
+  KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char('3'),CTRL,groupStore,"reset: Ctrl+3",&checked);
+  KeyBindingsTest_ExpectDispatch(FRONTEND,KeyBindingsTest_Char('q'),ALT,leave,"reset: Alt+Q",&checked);
+
+  /* every editable action at KEY_BINDING_MAX_KEYS chords: unique chords per table (letters without e, v, x, z, which
+     the fixed cheats use; the in-game hotkeys without Shift, which they ignore) */
+  static const UiKeyboardStateMask modifierSets[] = {
+      KEYBOARD_STATE_NONE, KEYBOARD_STATE_CTRL, KEYBOARD_STATE_ALT, KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT,
+      KEYBOARD_STATE_SHIFT, KEYBOARD_STATE_CTRL | KEYBOARD_STATE_SHIFT, KEYBOARD_STATE_ALT | KEYBOARD_STATE_SHIFT,
+      KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT | KEYBOARD_STATE_SHIFT};
+  static const char letters[] = "abcdfghijklmnopqrstuwy";
+  const int letterCount = static_cast<int>(sizeof(letters) - 1);
+  int next[3] = {};
+  bool rawOk = true;
+  for (int index = 0; index < KeyBindings_Count(); index++) {
+    KeyAction action = static_cast<KeyAction>(index);
+    const KeyBinding &binding = KeyBindings_Get(action);
+    int table = (binding.source == HOTKEYS) ? 0 : (binding.source == COMMANDS) ? 1 : (binding.source == FRONTEND) ? 2 : -1;
+    if ((table < 0) || KeyBinding_IsFixed(binding)) {
+      continue;
+    }
+    KeyChord chords[KEY_BINDING_MAX_KEYS];
+    int count = (binding.permanent.keyCode != 0) ? KEY_BINDING_MAX_KEYS - 1 : KEY_BINDING_MAX_KEYS;
+    for (int chordIndex = 0; chordIndex < count; chordIndex++) {
+      if (binding.rangeLength > 1) {
+        chords[chordIndex] = KeyBindingsTest_Chord(KeyBindingsTest_Char('1'),modifierSets[chordIndex]);
+        continue;
+      }
+      int modifierCount = (table == 0) ? 4 : 8;
+      int slot = next[table]++;
+      chords[chordIndex] = KeyBindingsTest_Chord(KeyBindingsTest_Char(letters[(slot / modifierCount) % letterCount]),
+                                                 modifierSets[slot % modifierCount]);
+    }
+    rawOk = KeyBindings_SetRaw(action,chords,count) && rawOk;
+  }
+  checked++;
+  if (!rawOk || (next[0] > letterCount * 4) || (next[1] > letterCount * 8)) {
+    KeyBindingsTest_ModelFail("SetRaw with KEY_BINDING_MAX_KEYS chords");
+  }
+  checked++;
+  if (KeyBindingTables_Apply() != 0) {
+    KeyBindingsTest_ModelFail("the spare records of the key command tables are too few");
+  }
+  for (int index = 0; index < KeyBindings_Count(); index++) {
+    const KeyBinding &binding = KeyBindings_Get(static_cast<KeyAction>(index));
+    if (((binding.source != HOTKEYS) && (binding.source != COMMANDS) && (binding.source != FRONTEND)) ||
+        KeyBinding_IsFixed(binding)) {
+      continue;
+    }
+    for (int chordIndex = 0; (chordIndex < KEY_BINDING_MAX_KEYS) && (binding.keys[chordIndex].keyCode != 0); chordIndex++) {
+      for (uint32_t offset = 0; offset < binding.rangeLength; offset++) {
+        /* the group actions share the eight modifier sets: only the first owner of a set is reached */
+        uint32_t found = KeyBindingsTest_Dispatch(binding.source,binding.keys[chordIndex].keyCode + offset,
+                                                  binding.keys[chordIndex].modifiers);
+        checked++;
+        if ((binding.rangeLength > 1) ? (found == 0) : (found != binding.sourceAction)) {
+          g_KeyBindingsTestFailures++;
+          Thandor_Log("keybindings FAIL dispatch: %s chord %d (key 0x%05X mod 0x%02X) gives %u", binding.name, chordIndex,
+                      binding.keys[chordIndex].keyCode + offset, ToBits(binding.keys[chordIndex].modifiers), found);
+        }
+      }
+    }
+  }
+  KeyBindings_ResetAllDefaults();
+  KeyBindingsTest_ExpectDispatch(COMMANDS,KeyBindingsTest_Char('a'),NONE,KeyBindings_Get(SelectAirports).sourceAction,
+                                 "reset after SetRaw: A",&checked);
+  KeyBindingsTest_ExpectDispatch(HOTKEYS,KeyBindingsTest_Char('a'),NONE,0,"reset after SetRaw: hotkey A",&checked);
+  return checked;
+}
+
 void Thandor_SelfTestKeyBindings()
 {
   uint32_t count = (uint32_t)KeyBindings_Count();
@@ -603,6 +769,8 @@ void Thandor_SelfTestKeyBindings()
   }
   uint32_t tokensChecked = KeyBindingsTest_TokenRoundTrips();
   KeyBindingsTest_Rules();
+  uint32_t dispatchChecked = KeyBindingsTest_DispatchTables();
+  Thandor_Log("keybindings dispatch: %u checks", dispatchChecked);
   Thandor_Log("keybindings: %u actions, %u keys pressed, %u tokens, %u failures", count, keysChecked, tokensChecked,
               g_KeyBindingsTestFailures);
 }

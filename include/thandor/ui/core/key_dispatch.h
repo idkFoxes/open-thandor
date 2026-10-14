@@ -19,12 +19,21 @@
      ExactWithShift     in-game key commands, frontend hotkeys: class 0 = no modifier held, otherwise Shift held
                         exactly when the class has Shift and Ctrl/Alt exactly as the class asks
      AnyOfMask          camera and editor keyboard: class 0 = neither Ctrl nor Alt held, otherwise any modifier
-                        bit of the class held */
+                        bit of the class held
+   Not in the original:
+     ShiftRequiredByClass  the in-game hotkeys with rebindable keys (ui/core/key_bindings.h): as ExactShiftIgnored,
+                        but a class with Shift also needs Shift held (a class without Shift still ignores it); the
+                        same as ExactShiftIgnored for every class without Shift, so for all default keys */
 enum class UiKeyModifierRule {
     ExactShiftIgnored,
     ExactWithShift,
-    AnyOfMask
+    AnyOfMask,
+    ShiftRequiredByClass
 };
+
+/* Not in the original: the key code of a record whose rebindable key is unbound or of an unused spare record
+   (ui/core/key_binding_tables.h). No key event carries it, and it is not the terminator code 0. */
+inline constexpr uint32_t UI_KEY_COMMAND_CODE_UNBOUND = 0xFFFFFFFFu;
 
 /* One record of a key command table: key code, modifier class and the action the table's dispatcher runs.
    Action is the table's own enum class over uint32_t (actions 1..N; 0 in the terminator), so a record keeps the
@@ -45,6 +54,12 @@ inline bool UiKeyModifiers_Match(UiKeyboardStateMask classFlags, UiKeyboardState
             return !Any(heldFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT));
         }
         return Any(heldFlags & classFlags);
+    }
+    if (rule == UiKeyModifierRule::ShiftRequiredByClass) {
+        if (Any(classFlags & KEYBOARD_STATE_SHIFT) && !Any(heldFlags & KEYBOARD_STATE_SHIFT)) {
+            return false;
+        }
+        rule = UiKeyModifierRule::ExactShiftIgnored;
     }
     if (rule == UiKeyModifierRule::ExactShiftIgnored) {
         classFlags &= ~KEYBOARD_STATE_SHIFT;
