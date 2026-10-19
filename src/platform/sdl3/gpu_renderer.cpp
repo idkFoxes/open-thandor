@@ -1144,7 +1144,13 @@ void RecordSceneRuns(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *colorTextur
     SDL_GPUBufferBinding binding{s_gpu.vertexBuffer, 0};
     SDL_BindGPUVertexBuffers(renderPass, 0, &binding, 1);
     SDL_GPUTextureSamplerBinding atlasBinding{s_gpu.atlas, s_gpu.sampler};
+    SDL_GPUGraphicsPipeline *const depthPassPipeline = s_gpu.pipelines[GPU_PIPELINE_ALPHA_DEPTH];
     SDL_GPUGraphicsPipeline *boundPipeline = nullptr;
+    /* Every pipeline bind costs descriptors on Direct3D 12: SDL 3.2.16 copies the fragment sampler and texture
+       descriptors into the command buffer's shader-visible heaps on the first draw after it (the sampler binding
+       itself only when its handles change). A sampler heap holds 2048; when it is full SDL creates another one and
+       loses the old (never returned to its pool), so frames with that many binds leak heaps until the driver
+       refuses one and SDL crashes (1.0.7, dense foliage). Hence as few pipeline switches as possible. */
     auto bind = [&](SDL_GPUGraphicsPipeline *pipeline) {
       if (pipeline != boundPipeline) {
         SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
@@ -1154,6 +1160,16 @@ void RecordSceneRuns(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *colorTextur
     };
     for (const GpuRun &run : runs) {
       SDL_SetGPUScissor(renderPass, &run.scissor);
+      /* An alpha-tested run draws its colour pass (alpha pipeline) and its depth pass, in either order: no pixel is
+         covered by two of its packets (AppendPacket), so the depth pass only writes where the same triangle's colour
+         fragment lies, at the same depth (one pass-through vertex shader, the same rasterizer state), and the colour
+         pass's LESS_OR_EQUAL test passes there exactly when it passed against the depth before the run (the depth
+         pass wrote only where that test passed). So the run starts with the pass whose pipeline is still bound:
+         a chain of such runs (foliage, split where packets overlap) costs one switch per run instead of two. */
+      const bool depthFirst = (run.kind == GPU_RUN_ALPHA_WRITES_DEPTH) && (boundPipeline == depthPassPipeline);
+      if (depthFirst) {
+        SDL_DrawGPUPrimitives(renderPass, run.vertexCount, 1, run.firstVertex, 0);
+      }
       switch (run.kind) {
       case GPU_RUN_OPAQUE:
         bind(s_gpu.pipelines[GPU_PIPELINE_OPAQUE]);
@@ -1166,8 +1182,8 @@ void RecordSceneRuns(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *colorTextur
         break;
       }
       SDL_DrawGPUPrimitives(renderPass, run.vertexCount, 1, run.firstVertex, 0);
-      if (run.kind == GPU_RUN_ALPHA_WRITES_DEPTH) {
-        bind(s_gpu.pipelines[GPU_PIPELINE_ALPHA_DEPTH]);
+      if ((run.kind == GPU_RUN_ALPHA_WRITES_DEPTH) && !depthFirst) {
+        bind(depthPassPipeline);
         SDL_DrawGPUPrimitives(renderPass, run.vertexCount, 1, run.firstVertex, 0);
       }
     }
