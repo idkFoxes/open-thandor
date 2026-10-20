@@ -259,8 +259,7 @@ struct GpuState {
   SDL_GPUGraphicsPipeline *pipelines[GPU_PIPELINE_COUNT] = {};
   SDL_GPUSampler *sampler = nullptr;
   SDL_GPUTexture *atlas = nullptr;
-  SDL_GPUTexture *colorTarget = nullptr;
-  SDL_GPUTexture *depthTarget = nullptr;
+  SDL_GPUTexture *depthTarget = nullptr; /* the scenes draw colour straight into the frame target */
   Uint32 targetWidth = 0; /* target pixels: the framebuffer size x targetScale */
   Uint32 targetHeight = 0;
   int targetScale = 1; /* the UI scale the 3D targets were made for (step 9 WP8) */
@@ -269,8 +268,6 @@ struct GpuState {
   SDL_GPUTransferBuffer *uploadBuffer = nullptr;
   Uint32 uploadBufferBytes = 0;
   thandor::sdl3::TransferBufferUse uploadBufferUse; /* trimmed after the frame (TrimTransferBuffer) */
-  SDL_GPUTransferBuffer *downloadBuffer = nullptr;
-  Uint32 downloadBufferBytes = 0;
 
   std::unordered_map<AtlasKey, AtlasSlot, AtlasKeyHash> atlasSlots;
   std::vector<AtlasShelf> shelves;
@@ -999,33 +996,28 @@ SDL_GPUTexture *CreateTexture(SDL_GPUTextureFormat format, SDL_GPUTextureUsageFl
   return thandor::sdl3::CreateGpuTextureLogged(s_gpu.device, &info, what);
 }
 
-/* Colour and depth target in framebuffer size x the UI scale. */
+/* The scenes' depth target in framebuffer size x the UI scale. */
 bool EnsureTargets() noexcept
 {
   const int scale = s_uiScale;
   const Uint32 width = g_FramebufferWidth * static_cast<Uint32>(scale);
   const Uint32 height = g_FramebufferHeight * static_cast<Uint32>(scale);
-  if ((s_gpu.colorTarget != nullptr) && (s_gpu.targetWidth == width) && (s_gpu.targetHeight == height) &&
+  if ((s_gpu.depthTarget != nullptr) && (s_gpu.targetWidth == width) && (s_gpu.targetHeight == height) &&
       (s_gpu.targetScale == scale)) {
     return true;
   }
-  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.colorTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.depthTarget);
-  s_gpu.colorTarget = nullptr;
   s_gpu.depthTarget = nullptr;
   s_gpu.targetWidth = 0;
   s_gpu.targetHeight = 0;
   if ((width == 0) || (height == 0)) {
     return false;
   }
-  s_gpu.colorTarget =
-      CreateTexture(SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET, width, height,
-                    "3D colour target");
   s_gpu.depthTarget =
       CreateTexture(SDL_GPU_TEXTUREFORMAT_D32_FLOAT, SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET, width, height,
                     "3D depth target");
-  if ((s_gpu.colorTarget == nullptr) || (s_gpu.depthTarget == nullptr)) {
-    Thandor_Log("SDL_GPU renderer: render targets %ux%u failed: %s", width, height, SDL_GetError());
+  if (s_gpu.depthTarget == nullptr) {
+    Thandor_Log("SDL_GPU renderer: depth target %ux%u failed: %s", width, height, SDL_GetError());
     return false;
   }
   s_gpu.targetWidth = width;
@@ -1941,12 +1933,10 @@ void ReleaseDevice() noexcept
   }
   SDL_ReleaseGPUSampler(s_gpu.device, s_gpu.sampler);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.atlas);
-  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.colorTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.depthTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.frameTexture);
   SDL_ReleaseGPUBuffer(s_gpu.device, s_gpu.vertexBuffer);
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.uploadBuffer);
-  SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.downloadBuffer);
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.frameUpload);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.frameTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.presentTarget);
