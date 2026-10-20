@@ -128,6 +128,16 @@ static uint16_t g_ProjectTextZielAnzeigen[] = {
     PROJECT_TEXT_BRIGHT,'Z','i','e','l',' ','a','n','z','e','i','g','e','n',0};
 static uint16_t g_ProjectTextShowObjective[] = {
     PROJECT_TEXT_BRIGHT,'S','h','o','w',' ','o','b','j','e','c','t','i','v','e',0};
+/* Not in the original: the autosave checkbox of the advanced settings page (TEXT_ID_ADVANCED_AUTOSAVE), bright like
+   the VSync checkbox, and the in-game message line after an autosave (TEXT_ID_AUTOSAVE_DONE). */
+static uint16_t g_ProjectTextAutomatischSpeichern[] = {
+    PROJECT_TEXT_BRIGHT,'A','u','t','o','m','a','t','i','s','c','h',' ','s','p','e','i','c','h','e','r','n',0};
+static uint16_t g_ProjectTextAutosave[] = {PROJECT_TEXT_BRIGHT,'A','u','t','o','s','a','v','e',0};
+static uint16_t g_ProjectTextSpielAutomatischGespeichert[] = {
+    PROJECT_TEXT_BRIGHT,'S','p','i','e','l',' ','a','u','t','o','m','a','t','i','s','c','h',' ',
+    'g','e','s','p','e','i','c','h','e','r','t',0};
+static uint16_t g_ProjectTextGameSavedAutomatically[] = {
+    PROJECT_TEXT_BRIGHT,'G','a','m','e',' ','s','a','v','e','d',' ','a','u','t','o','m','a','t','i','c','a','l','l','y',0};
 
 TextResourceId TextResource_LanguageNameId(uint32_t countryCode)
 {
@@ -924,6 +934,17 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   if (resourceId == TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY) {
     /* not in the original */
     *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextZielAnzeigen : g_ProjectTextShowObjective;
+    return true;
+  }
+  if (resourceId == TEXT_ID_ADVANCED_AUTOSAVE) {
+    /* not in the original */
+    *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextAutomatischSpeichern : g_ProjectTextAutosave;
+    return true;
+  }
+  if (resourceId == TEXT_ID_AUTOSAVE_DONE) {
+    /* not in the original */
+    *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextSpielAutomatischGespeichert
+                                                    : g_ProjectTextGameSavedAutomatically;
     return true;
   }
   if (resourceId == TEXT_ID_ADVANCED_PATHING) {

@@ -197,6 +197,12 @@ inline constexpr int TEXT_ID_LANGUAGE_NAME_COUNT = 5;
    texts. */
 #define TEXT_ID_ADVANCED_PATHING (TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT)
 
+/* Not in the original: the autosave (gameplay/session/autosave.h) - the "Automatisch speichern" / "Autosave" checkbox
+   of the advanced settings page ([game] autosave) and the in-game message line after an autosave ("Spiel automatisch
+   gespeichert" / "Game saved automatically"); German for German, English for every other language. */
+#define TEXT_ID_ADVANCED_AUTOSAVE (TEXT_ID_ADVANCED_PATHING + 1)
+#define TEXT_ID_AUTOSAVE_DONE (TEXT_ID_ADVANCED_PATHING + 2)
+
 /* Not in the original: the objective overlay (docs/plans/objective_overlay.md 3b): the templates of the generated
    objective lines (gameplay/session/mission_objective.h), German for German, English for every other language
    (project_texts_en.cpp). Block TEXT_ID_OBJECTIVE_BASE..TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED - 1
@@ -261,8 +267,8 @@ static_assert(TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT <= TEXT_ID_LA
               "the key binding texts end before the language names");
 static_assert(TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT <= TEXT_ID_ADVANCED_PATHING,
               "the language names end before the pathing checkbox text");
-static_assert(TEXT_ID_ADVANCED_PATHING < TEXT_ID_OBJECTIVE_BASE,
-              "the pathing checkbox text lies before the objective block");
+static_assert(TEXT_ID_AUTOSAVE_DONE < TEXT_ID_OBJECTIVE_BASE,
+              "the pathing checkbox and the autosave texts lie before the objective block");
 static_assert((TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY >= TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_COUNT) &&
               (TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY < TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED),
               "the objective overlay checkbox text lies in the objective block, after the templates");

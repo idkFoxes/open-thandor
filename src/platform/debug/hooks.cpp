@@ -217,6 +217,25 @@ int DebugHook_LocalPathingMode(int mode)
   return mode; /* empty or "setting": the setting's mode */
 }
 
+int DebugHook_AutosaveIntervalSeconds(int seconds)
+{
+  const char *value = getenv("OPEN_THANDOR_AUTOSAVE");
+  char *end = nullptr;
+  long parsed;
+
+  if (value == nullptr || value[0] == 0) {
+    return seconds;
+  }
+  if (_stricmp(value, "off") == 0) {
+    return 0;
+  }
+  parsed = strtol(value, &end, 10);
+  if (end == value || *end != 0 || parsed < 0) {
+    return seconds; /* not a number: the setting's interval */
+  }
+  return parsed > 0x7FFF ? 0x7FFF : static_cast<int>(parsed); /* 0 switches it off */
+}
+
 void DebugHook_ProfileEnter(int section)
 {
   DebugProfile_Enter(section);

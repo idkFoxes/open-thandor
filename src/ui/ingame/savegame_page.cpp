@@ -161,8 +161,9 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
   selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(saveList,nullptr);
   /* the trailing "new savegame" row has no file */
   if (selectedIndex + 1 != saveList->rowCount) {
-    /* the row record starts with the save's name, used as the file name */
-    leaf = static_cast<uint16_t *>(saveList->rowSlots[selectedIndex]);
+    /* the row record starts with the save's name, used as the file name (open-thandor: an autosave's record keeps
+       it apart from its list text) */
+    leaf = Autosave_SaveRecordFileLeaf(saveList->rowSlots[selectedIndex]);
     WidePath_CombineDirectoryAndLeaf
               (g_ScenarioCatalogPathScratchUtf16,g_SaveDirectoryUtf16,
                g_ExecutableDirectoryUtf16);
@@ -254,6 +255,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
              (int)((uint32_t)saveRecord->levelTitleTextId + TEXT_ID_LEVEL_TITLE_BASE);
         saveRecord->campaignTitleTextId =
              (int)((uint32_t)saveRecord->campaignTitleTextId + TEXT_ID_CAMPAIGN_TITLE_BASE);
+        Autosave_PrepareCatalogRecord(saveRecord); /* open-thandor: the autosave's list text */
       }
       else {
         /* open-thandor: the original ignored a failed read and kept a partly filled record; a truncated save is
@@ -328,7 +330,7 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
   /* the typed name of the trailing new-save row, else the selected row's file name */
   leaf = UiTextEdit_Text(&image->saveNameEdit).data();
   if (rowOrdinal != saveList->rowCount) {
-    leaf = static_cast<uint16_t *>(saveList->rowSlots[rowOrdinal - 1]);
+    leaf = Autosave_SaveRecordFileLeaf(saveList->rowSlots[rowOrdinal - 1]); /* open-thandor: an autosave's file name */
   }
   WidePath_CombineDirectoryAndLeaf
             (g_ScenarioCatalogPathScratchUtf16,g_SaveDirectoryUtf16,

@@ -1580,6 +1580,15 @@ static_assert(sizeof(ScenarioCatalogDisplayRecord) == 0x100 &&
               "ScenarioCatalogDisplayRecord keeps its 32-bit layout");
 static_assert(sizeof(ScenarioCatalogSaveRecord) == 0x100,
               "ScenarioCatalogSaveRecord keeps its 32-bit layout");
+/* open-thandor: the autosave fields of the catalog record are the header's bytes 0x100 further on */
+static_assert(offsetof(ScenarioCatalogSaveRecord, autosaveMarker) == 0x74 &&
+              offsetof(ScenarioCatalogSaveRecord, autosaveFileLeaf) == 0x94 &&
+              offsetof(ScenarioCatalogSaveRecord, timestampText) == 0xC0 &&
+              offsetof(ScenarioCatalogSaveRecord, packedDate) == 0xF0 &&
+              offsetof(ScenarioCatalogSaveRecord, packedTime) == 0xF4 &&
+              offsetof(InGameSavePackageHeader, autosaveMarker) == 0x174 &&
+              offsetof(InGameSavePackageHeader, packedDate) == 0x1F0 && sizeof(InGameSavePackageHeader) == 0x200,
+              "ScenarioCatalogSaveRecord is InGameSavePackageHeader from +0x100");
 static_assert(sizeof(WorldOwnerListNode) == 0x100 &&
               offsetof(WorldOwnerListNode, previousNode) == 0x0 &&
               offsetof(WorldOwnerListNode, nextNode) == 0x4 &&
