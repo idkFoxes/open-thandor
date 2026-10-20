@@ -338,6 +338,9 @@ struct GpuState {
   bool splitCommandBuffers = false;
   uint32_t descriptorWrites = 0; /* counted for the current command buffer */
   bool splitLogged = false;
+  /* the fences of the last kFramesInFlight frames (SubmitFrame), a ring; nullptr where none is held */
+  SDL_GPUFence *frameFences[3] = {};
+  uint32_t nextFrameFence = 0;
 
   /* compare mode */
   std::vector<uint32_t> compareGpu;      /* the downloaded frame target */
@@ -1155,6 +1158,32 @@ SDL_GPUCommandBuffer *SplitCommandBuffer(SDL_GPUCommandBuffer *commands) noexcep
   return thandor::sdl3::AcquireGpuCommandBufferLogged(s_gpu.device, "frame part");
 }
 
+/* Frames in flight. SDL waits for a frame slot only when it hands out a swapchain texture; frames without one (a
+   minimized or unclaimed window, a mailbox frame the non-waiting acquire drops) were submitted without any wait, so
+   a CPU faster than the GPU queued command buffers - each with its descriptor heaps, uniform buffers and cycled
+   transfer buffers and textures - without limit until the driver refused one. SubmitFrame keeps a fence of each
+   frame and waits for the one of kFramesInFlight frames ago: with a swapchain SDL has already waited longer (two
+   frames), so only a GPU that falls behind holds the game up. */
+constexpr uint32_t kFramesInFlight = sizeof(GpuState::frameFences) / sizeof(SDL_GPUFence *);
+
+/* Submits the frame's (last) command buffer, then waits for the frame kFramesInFlight frames ago. False when the
+   submit fails. */
+bool SubmitFrame(SDL_GPUCommandBuffer *commands) noexcept
+{
+  SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireFence(commands);
+  if (fence == nullptr) {
+    return false;
+  }
+  SDL_GPUFence *&oldest = s_gpu.frameFences[s_gpu.nextFrameFence];
+  if (oldest != nullptr) {
+    SDL_WaitForGPUFences(s_gpu.device, true, &oldest, 1);
+    SDL_ReleaseGPUFence(s_gpu.device, oldest);
+  }
+  oldest = fence;
+  s_gpu.nextFrameFence = (s_gpu.nextFrameFence + 1) % kFramesInFlight;
+  return true;
+}
+
 /* Records a render pass drawing a scene's runs (vertices uploaded by RecordSceneUploads) into colorTexture with
    s_gpu.depthTarget (cleared to far). loadColor keeps the colour target's pixels (the GPU frame: the 2D draw
    list cleared the scene's rectangle before), else it is cleared to black. On Direct3D 12 the pass may continue in
@@ -1895,6 +1924,11 @@ void ReleaseDevice() noexcept
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.frameTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.presentTarget);
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.captureDownload);
+  for (SDL_GPUFence *fence : s_gpu.frameFences) {
+    if (fence != nullptr) {
+      SDL_ReleaseGPUFence(s_gpu.device, fence);
+    }
+  }
   if ((s_gpu.window != nullptr) && s_gpu.windowClaimed) {
     SDL_ReleaseWindowFromGPUDevice(s_gpu.device, s_gpu.window);
   }
@@ -2428,7 +2462,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
     blit.filter = SDL_GPU_FILTER_LINEAR;
     SDL_BlitGPUTexture(commands, &blit);
   }
-  const bool submitted = SDL_SubmitGPUCommandBuffer(commands);
+  const bool submitted = SubmitFrame(commands);
   if (!submitted) {
     thandor::sdl3::LogGpuFailure("SDL_SubmitGPUCommandBuffer frame");
   }
@@ -2652,7 +2686,7 @@ bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int heig
     blit.filter = SDL_GPU_FILTER_LINEAR;
     SDL_BlitGPUTexture(commands, &blit);
   }
-  const bool submitted = SDL_SubmitGPUCommandBuffer(commands);
+  const bool submitted = SubmitFrame(commands);
   if (!submitted) {
     thandor::sdl3::LogGpuFailure("SDL_SubmitGPUCommandBuffer software frame");
   }
