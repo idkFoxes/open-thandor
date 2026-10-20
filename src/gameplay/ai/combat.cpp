@@ -94,6 +94,14 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
 }
 
 
+/* Not in the original: true when pointer is the start of a slot of the current model runtime pool. */
+static bool AiCombat_PointsToModelRuntimeSlot(const ModelRuntimeSlot *pointer)
+{
+  const uintptr_t distance = reinterpret_cast<uintptr_t>(pointer) - reinterpret_cast<uintptr_t>(g_ModelRuntimeSlots);
+  return distance % sizeof(ModelRuntimeSlot) == 0 && distance / sizeof(ModelRuntimeSlot) < MODEL_RUNTIME_SLOT_COUNT;
+}
+
+
 /* Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until
    the group is strong enough (sum >= 0x200), then picks the target with the highest class base score from
    workspace 07 (or workspace 03 when 07 is empty) and sends every collected army to attack it. The target
@@ -152,6 +160,12 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
     if (g_AiWorkspace03Count == 0) {
       return;
     }
+    /* Not in the original: candidate 256 reads the block header behind the buffer (its next pointer, i.e. the
+       following block's header, whose payload size becomes the definition pointer), so the original crashes
+       for every count > 256. The walk stops at the end of the buffer instead. */
+    if (targetCandidateCount > AI_WORKSPACE03_CAPACITY / 2) {
+      targetCandidateCount = AI_WORKSPACE03_CAPACITY / 2;
+    }
   }
   bestScore = 0;
   bestTargetModelRuntime = nullptr;
@@ -160,12 +174,27 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
     if (candidateTargetModelRuntime == nullptr) {
       continue;
     }
+    /* Not in the original: the workspaces are never cleared and the model pool is allocated anew for every
+       level, so a stale candidate written before a new or loaded level can point into the freed pool of the
+       earlier one; the original reads freed arena memory there. Only slots of the current pool are scored
+       (every candidate written in this level lies in it). */
+    if (!AiCombat_PointsToModelRuntimeSlot(candidateTargetModelRuntime)) {
+      continue;
+    }
     /* Not in the original: a stale candidate of the quirk above can name a model slot that was freed and then
        zeroed (ModelRuntimePool_UnrebaseBeforeSave zeroes free slots at every save) or, after a new or loaded
        level, an unused slot of the newly zeroed pool (the workspaces outlive the session). Its definition is
        NULL and the original reads [NULL+0x4C] and crashes. Skipped here; a freed slot that keeps its
        definition still counts, as before. */
     if (candidateTargetModelRuntime->definitionOrSavedId.runtimeDefinition == nullptr) {
+      continue;
+    }
+    /* Not in the original: a destroyed model keeps its definition, but its army slot is free (no model node,
+       ArmyRuntime_DestroyInstanceAndRefreshUi). As the best candidate the original follows that node in
+       ArmyRuntime_ResolveCommandTargetAndRoute and crashes; as any other candidate it changes nothing. */
+    if (candidateTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime != nullptr &&
+        candidateTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common.ownership.modelNode ==
+          nullptr) {
       continue;
     }
     candidateClassScore = g_AiCombatTargetClassBaseScores
