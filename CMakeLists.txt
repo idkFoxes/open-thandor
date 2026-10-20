@@ -53,6 +53,7 @@ add_executable(thandor WIN32
     src/assets/package/runtime.cpp
     src/assets/rom/runtime.cpp
     src/assets/scenario/catalog.cpp
+    src/assets/scenario/custom_map_validate.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
     src/assets/text/objective_texts.cpp
@@ -542,6 +543,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/test_aids.cpp
         src/platform/selftest/campaignmap_selftest.cpp
         src/platform/selftest/campaignprogress_selftest.cpp
+        src/platform/selftest/custommaps_selftest.cpp
         src/platform/selftest/hexscan_selftest.cpp
         src/platform/selftest/keybindings_panel_selftest.cpp
         src/platform/selftest/keybindings_selftest.cpp
