@@ -1042,6 +1042,38 @@ static void Thandor_SelfTestSettings()
         }
         Thandor_Log("settings: objective_overlay key %s", overlayDifferences == 0 ? "ok" : "MISMATCH");
     }
+    {
+        /* [game] autosave (open-thandor, the reserved dword 0x58): on / off, a number, and the names written back; an
+           unknown value is not taken (the dword stays not present: the default, on) */
+        static const struct {
+            const char *text;
+            uint32_t value;
+            const char *written;
+        } states[] = {{"[game]\r\nautosave = on\r\n", PERSISTENT_AUTOSAVE_ON, "autosave = on\r\n"},
+                      {"[game]\r\nautosave = OFF ; comment\r\n", PERSISTENT_AUTOSAVE_OFF, "autosave = off\r\n"},
+                      {"[game]\r\nautosave = 1\r\n", PERSISTENT_AUTOSAVE_OFF, "autosave = off\r\n"},
+                      {"[game]\r\nautosave = 0\r\n", PERSISTENT_AUTOSAVE_ON, "autosave = on\r\n"}};
+        static const char unknownState[] = "[game]\r\nautosave = sometimes\r\n";
+        unsigned autosaveDifferences = 0;
+        for (const auto &state : states) {
+            uint32_t value = 0xFFFFFFFF;
+            memset(parsed, 0, sizeof parsed);
+            mask = PersistentSettings_ParseIni(state.text, (uint32_t)strlen(state.text), parsed);
+            memcpy(&value, parsed + PERSISTENT_SETTING_AUTOSAVE, 4);
+            length = PersistentSettings_FormatIni(parsed, mask, text, sizeof text);
+            if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_AUTOSAVE / 4)) || (value != state.value) ||
+                (strstr(text, state.written) == nullptr) || (strstr(text, "dword_58") != nullptr)) {
+                Thandor_Log("settings: autosave %u MISMATCH (value %u)", state.value, value);
+                autosaveDifferences++;
+            }
+        }
+        memset(parsed, 0, sizeof parsed);
+        if (PersistentSettings_ParseIni(unknownState, (uint32_t)strlen(unknownState), parsed) != 0) {
+            Thandor_Log("settings: autosave: an unknown value is present");
+            autosaveDifferences++;
+        }
+        Thandor_Log("settings: autosave key %s", autosaveDifferences == 0 ? "ok" : "MISMATCH");
+    }
     Thandor_Log("settings: keys section %s", SelfTest_SettingsKeys(text, sizeof text) == 0 ? "ok" : "MISMATCH");
 
     file = fopen("thandor.dat", "rb");

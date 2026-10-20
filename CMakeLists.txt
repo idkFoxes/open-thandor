@@ -119,6 +119,7 @@ add_executable(thandor WIN32
     src/gameplay/selection/commands.cpp
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
+    src/gameplay/session/autosave.cpp
     src/gameplay/session/campaign_carryover.cpp
     src/gameplay/session/campaign_progress.cpp
     src/gameplay/session/campaign_progress_session.cpp

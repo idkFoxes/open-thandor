@@ -14,7 +14,9 @@ played) unless OPEN_THANDOR_TEST_SOUND=1 or SDL_AUDIO_DRIVER is already set.
 Local sessions run the original pathing (OPEN_THANDOR_PATHING=original, wins over [game] pathing, whose default is
 improved) unless the caller sets it, so the determinism references, the AI hash and the other checks keep comparing
 the original movement; the scripts' --pathing option (add_pathing_argument / apply_pathing) sets it for every game
-they and the tools they start run: original, improved, or setting (no override: thandor.ini decides)."""
+they and the tools they start run: original, improved, or setting (no override: thandor.ini decides).
+The autosave is off (OPEN_THANDOR_AUTOSAVE=0, wins over [game] autosave) unless the caller sets it, so no test game
+writes save/autosave.sve or a message line of its own; OPEN_THANDOR_AUTOSAVE=<n> saves every n seconds of play."""
 import os
 
 PATHING_CHOICES = ('original', 'improved', 'setting')
@@ -58,7 +60,7 @@ def pathing_from_argv(argv):
 
 
 def game_env(**variables):
-    """os.environ plus OPEN_THANDOR_GPU=0, OPEN_THANDOR_UI_SCALE=1, OPEN_THANDOR_VSYNC=0, OPEN_THANDOR_FRAME_LIMIT=0 and OPEN_THANDOR_PATHING=original (when not set), OPEN_THANDOR_WINDOW_MINIMIZED=1 (unless
+    """os.environ plus OPEN_THANDOR_GPU=0, OPEN_THANDOR_UI_SCALE=1, OPEN_THANDOR_VSYNC=0, OPEN_THANDOR_FRAME_LIMIT=0, OPEN_THANDOR_PATHING=original and OPEN_THANDOR_AUTOSAVE=0 (when not set), OPEN_THANDOR_WINDOW_MINIMIZED=1 (unless
     OPEN_THANDOR_TEST_VISIBLE=1 or already set) plus the given variables."""
     env = dict(os.environ)
     env.setdefault('OPEN_THANDOR_GPU', '0')
@@ -66,6 +68,7 @@ def game_env(**variables):
     env.setdefault('OPEN_THANDOR_VSYNC', '0')
     env.setdefault('OPEN_THANDOR_FRAME_LIMIT', '0')
     env.setdefault('OPEN_THANDOR_PATHING', 'original')
+    env.setdefault('OPEN_THANDOR_AUTOSAVE', '0')
     if env.get('OPEN_THANDOR_TEST_VISIBLE') != '1':
         env.setdefault('OPEN_THANDOR_WINDOW_MINIMIZED', '1')
         if env.get('OPEN_THANDOR_TEST_SOUND') != '1':

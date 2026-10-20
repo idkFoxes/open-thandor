@@ -62,10 +62,14 @@ struct ScenarioCatalogSaveRecord {
     uint16_t identifier[32];
     uint8_t metadata40_6F[48];
     int levelTitleTextId; // Stored as the level title index; ScenarioCatalog_Rebuild adds TEXT_ID_LEVEL_TITLE_BASE.
-    uint8_t metadata74_8F[28];
+    uint32_t autosaveMarker; // +0x74 open-thandor: INGAME_SAVE_AUTOSAVE_MARKER in an autosave (InGameSavePackageHeader.autosaveMarker), else 0.
+    uint8_t metadata78_8F[24];
     int campaignTitleTextId; // Stored as the campaign title index, negative = not a campaign save; ScenarioCatalog_Rebuild adds TEXT_ID_CAMPAIGN_TITLE_BASE.
-    uint8_t metadata94_BF[44];
-    uint16_t timestampText[32];
+    uint16_t autosaveFileLeaf[22]; // +0x94 open-thandor, in the catalog only: an autosave's file name while identifier holds its list text (Autosave_PrepareCatalogRecord); 0 in the file.
+    uint16_t timestampText[24]; // +0xC0 "date, time" (InGameSavePackageHeader.dateTimeTextUtf16)
+    uint32_t packedDate; // +0xF0 (year << 16) | (month << 8) | day; the lists sort by the pair packedDate, packedTime
+    uint32_t packedTime; // +0xF4 (hour << 16) | (minute << 8) | second
+    uint8_t metadataF8_FF[8];
 };
 
 #endif /* THANDOR_ASSETS_SCENARIO_TYPES_H */

@@ -189,6 +189,10 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
     /* not in the original: action 0x2065, the objective overlay checkbox of the advanced settings page */
     .handlers65 = {
         /* 101 */ UI_SLOT(FrontendAdvancedSettingsAction_SetObjectiveOverlay)
+    },
+    /* not in the original: action 0x2066, the autosave checkbox of the advanced settings page */
+    .handlers66 = {
+        /* 102 */ UI_SLOT(FrontendAdvancedSettingsAction_SetAutosave)
     }};
 
 /* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of

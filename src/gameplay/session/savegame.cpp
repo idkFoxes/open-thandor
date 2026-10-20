@@ -204,8 +204,10 @@ static bool InGameSaveGame_WritePathingEntry(EngineFileHandle packageHandle,uint
 
 /* Reads the 0x200-byte package header into g_PackageScratchBuffer, fills in the save name (file name of savePath;
    the directory lands behind the header), the packed date and time, the "date, time" text, the level title text
-   id and the campaign index, and writes it back. Returns 0 on success, else the file-system error code. */
-static uint32_t InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle)
+   id and the campaign index, and writes it back. Returns 0 on success, else the file-system error code.
+   open-thandor: an autosave also gets INGAME_SAVE_AUTOSAVE_MARKER (any other save keeps the zero of the fresh
+   package header there). */
+static uint32_t InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle,bool autosave)
 
 {
   void *handle = reinterpret_cast<void *>(packageHandle); /* the Win32 HANDLE */
@@ -239,6 +241,9 @@ static uint32_t InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandl
   }
   header->levelTitleTextId = g_InGameLevelTitleTextResourceIndex;
   header->campaignIndex = campaignIndex;
+  if (autosave) {
+    header->autosaveMarker = INGAME_SAVE_AUTOSAVE_MARKER;
+  }
   fileError = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle);
   if (fileError == 0) {
     fileError = g_FileSystemWriteExactOrFlush(sizeof(InGameSavePackageHeader),header,handle);
@@ -273,7 +278,7 @@ static uint32_t InGameSaveGame_FailPackageWrite(EngineFileHandle packageHandle,u
    The original wrote the package in place, ignored the results of the package creation write, the stat upsert
    and the entry deletes and reported such a save as written; they fail the save here. It also left the package
    mounted after a failed step, so its open file made every later save to that path fail. */
-static uint32_t InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
+static uint32_t InGameSaveGame_WritePackageContents(void *worldView,void *savePath,bool autosave)
 
 {
   uint16_t temporaryPath[THANDOR_PATH_CAPACITY];
@@ -310,7 +315,7 @@ static uint32_t InGameSaveGame_WritePackageContents(void *worldView,void *savePa
   if (!InGameSaveGame_WritePathingEntry(packageHandle,&errorCode)) {
     return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the otpath entry",errorCode);
   }
-  errorCode = InGameSaveGame_WritePackageHeader(savePath,packageHandle);
+  errorCode = InGameSaveGame_WritePackageHeader(savePath,packageHandle,autosave);
   if (errorCode != 0) {
     return InGameSaveGame_FailPackageWrite(packageHandle,temporaryPath,"the package header",errorCode);
   }
@@ -330,10 +335,11 @@ static uint32_t InGameSaveGame_WritePackageContents(void *worldView,void *savePa
    and the level title and campaign index. The package is built under a temporary name and replaces the old
    save only when complete (InGameSaveGame_WritePackageContents). Returns 0 on success, else the error code of the failed step (for
    FatalError_ReportIfFailed) with savePath in g_PackageLastErrorPath; the package is unmounted either way. The
-   busy count is raised meanwhile.
+   busy count is raised meanwhile. autosave (open-thandor, gameplay/session/autosave.cpp) marks the header as an
+   autosave (INGAME_SAVE_AUTOSAVE_MARKER); the package is the same otherwise.
    The original returned only a failure flag (true on failure) and left a failed package mounted.
 */
-uint32_t InGameSaveGame_WritePackage(void *worldView,void *savePath)
+uint32_t InGameSaveGame_WritePackage(void *worldView,void *savePath,bool autosave)
 
 {
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
@@ -349,7 +355,7 @@ uint32_t InGameSaveGame_WritePackage(void *worldView,void *savePath)
               (playerBlock->playerRuntimeId,0,0,(playerBlock->factionAssignment).factionAssignmentIndex);
     playerBlock++;
   }
-  errorCode = InGameSaveGame_WritePackageContents(worldView,savePath);
+  errorCode = InGameSaveGame_WritePackageContents(worldView,savePath,autosave);
   InGameTick_ResourceRegistrationBusyCount().fetch_sub(1,std::memory_order_relaxed);
   if (errorCode != 0) {
     /* the error message names the save file, not the last path a file-system call left there */

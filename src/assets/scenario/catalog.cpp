@@ -268,6 +268,7 @@ void ScenarioCatalog_Rebuild()
         saveRecord->campaignTitleTextId =
              saveRecord->campaignTitleTextId + TEXT_ID_CAMPAIGN_TITLE_BASE;
       }
+      Autosave_PrepareCatalogRecord(saveRecord); /* open-thandor: the autosave's list text */
       saveRecord++;
       catalog->saveRecordCount++;
       g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + SCENARIO_CATALOG_RECORD_STRIDE;

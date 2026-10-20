@@ -230,6 +230,8 @@ language = auto
 pathing = improved
 ; objective box at the top left of the game (the mission objective and its progress): on (default) or off
 objective_overlay = on
+; save a single player game every minute of play to save\autosave.sve (always the same file): on (default) or off
+autosave = on
 
 [network]
 ; player count of a hosted network game (default 4)
@@ -570,6 +572,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_CAMPAIGN_LEVEL_INFO_DUMP=1` | log what the campaign map reads from every level file of a campaign (`campaign level info: ...`: file found, header and level script valid, title, win selections and the active end triggers as (faction, selection, variant)), laid out like `python tools/data/cgn.py dump <level dir> --triggers` |
 | `OPEN_THANDOR_WATCHDOG=<s>` | log the main thread's stack to `thandor.log` every <s> seconds |
 | `OPEN_THANDOR_PATHING=improved\|original` | pathing mode of every new local session, wins over `[game] pathing` (default `improved`, the "Verbesserte Wegfindung" checkbox of the "Erweitert" page; plan in [`docs/plans/pathfinding.md`](plans/pathfinding.md)); any other value (`setting`) keeps the setting's mode. A network session agrees on its mode in the lobby and a loaded savegame keeps its own, both unaffected. `thandor.log` names the mode of each new session (`session: pathing mode ...`). The test tools (`tools/test`, `game_env.py`) start every game with `OPEN_THANDOR_PATHING=original` unless the caller sets it, so the determinism references, the AI hash and the other checks keep comparing the original movement; `run_checks.py`, `run_determinism.py`, `compare_map_hash.py`, `run_campaign_chain.py`, `run_all_maps.py`, `run_multiplayer.py` and `run_pathing.py` take `--pathing original\|improved\|setting` for that |
+| `OPEN_THANDOR_AUTOSAVE=0\|off\|<n>` | the autosave of local games ([`src/gameplay/session/autosave.cpp`](../src/gameplay/session/autosave.cpp); `[game] autosave`, default on: `save\autosave.sve` after every minute of play, "Automatisch speichern" on the "Erweitert" page): `0` or `off` switches it off, a number n > 0 saves every n seconds of play whatever the setting says; `thandor.log` names each save and its duration (`autosave: ... written in <ms> ms`). The test tools (`game_env.py`) start every game with `OPEN_THANDOR_AUTOSAVE=0` unless the caller sets it |
 
 Always on in this build: the level-script log (its conditions and triggers, and which end trigger fired), which
 campaign level a session starts (`level start: campaign level id <n> "<file>"`) and how many units a campaign

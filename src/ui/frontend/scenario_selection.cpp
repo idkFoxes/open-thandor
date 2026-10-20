@@ -716,7 +716,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl 
   }
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,
-             static_cast<uint16_t *>(scenarioPathPointerTable[selectedRowIndex].get()), /* the record starts with its name */
+             Autosave_SaveRecordFileLeaf(scenarioPathPointerTable[selectedRowIndex].get()), /* the record starts with its name (open-thandor: an autosave's file name is kept apart) */
              g_SaveDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,g_FrontendScenarioPathScratchUtf16);
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,2);

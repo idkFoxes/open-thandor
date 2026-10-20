@@ -56,6 +56,7 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
     return InGameRuntime_FailSession(startupError,outError);
   }
   DebugHook_SessionStarted();
+  Autosave_SessionStarted(); /* open-thandor: the autosave's play time counts from here */
   do {
     DebugHook_SessionFrameBegin();
     /* two pending simulation ticks are consumed per rendered frame, clamped at zero */
@@ -118,6 +119,8 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       g_FrontendScenarioPathScratchUtf16[0] = 0;
       return true;
     }
+    /* open-thandor: between two frames, the autosave of a local game when it is due (gameplay/session/autosave.h) */
+    Autosave_AfterFrame();
   } while (g_UiRootNode != UI_ROOT_STACK_END);
   return InGameRuntime_FailSession(FATAL_ERROR_GENERAL_FAILURE,outError);
 }

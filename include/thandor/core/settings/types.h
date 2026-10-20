@@ -116,7 +116,7 @@ struct PersistentSettingsImage {
     MovieAudioGainQ15 movieAlternateAudioGainQ15; 
     uint32_t pathingMode; /* open-thandor: PERSISTENT_SETTING_PATHING_MODE (0 = improved) */
     uint32_t objectiveOverlay; /* open-thandor: PERSISTENT_SETTING_OBJECTIVE_OVERLAY (0 = shown) */
-    uint8_t reserved58_5B[4]; 
+    uint32_t autosave; /* open-thandor: PERSISTENT_SETTING_AUTOSAVE (0 = on) */
     PersistentMouseLinkPanelOptionFlags mouseLinkPanelOptionFlags; 
     uint16_t playerName[20]; 
     uint16_t gameName[20]; 

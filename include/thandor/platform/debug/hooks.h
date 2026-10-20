@@ -131,6 +131,11 @@ void DebugHook_PathingEvent(int kind, const void *army, const void *other);
    (PathingMode value) to use instead of mode, the one the settings chose; OPEN_THANDOR_PATHING=improved|original
    wins over [game] pathing (test runs: tools/test force original unless told otherwise). */
 int DebugHook_LocalPathingMode(int mode);
+/* The autosave interval of a local game in seconds (gameplay/session/autosave.cpp) instead of seconds, the one the
+   settings chose (0: [game] autosave is off): OPEN_THANDOR_AUTOSAVE=0|off switches the autosave off (the test tools'
+   default, game_env.py), a number n > 0 saves every n seconds whatever the setting says; any other value keeps the
+   setting's interval. */
+int DebugHook_AutosaveIntervalSeconds(int seconds);
 /* Step profiler sections (OPEN_THANDOR_STEP_PROFILE): section is a DebugProfileSection. */
 void DebugHook_ProfileEnter(int section);
 void DebugHook_ProfileLeave(int section);
@@ -182,6 +187,7 @@ struct DebugProfileScope {
 #define DebugHook_NoteOutsideStep(what) ((void)0)
 #define DebugHook_PathingEvent(kind, army, other) ((void)0)
 #define DebugHook_LocalPathingMode(mode) (mode)
+#define DebugHook_AutosaveIntervalSeconds(seconds) (seconds)
 #define DebugHook_ProfileEnter(section) ((void)0)
 #define DebugHook_ProfileLeave(section) ((void)0)
 #define DebugHook_ProfileScope(section) ((void)0)
