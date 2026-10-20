@@ -529,15 +529,21 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   uint32_t allocationError;
   void *allocationPayload;
   bool levelLoadedLocally;
+  bool customMap;
 
   frontendRoot = g_FrontendRootNode;
   pageStack = UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack);
-  WidePath_CombineDirectoryAndLeaf
-            (g_FrontendScenarioPathScratchUtf16,
-             static_cast<uint16_t *>
-                  (g_FrontendRootNode->missionsList.rowSlots
-                   [selectedRowIndex]),
-             g_ScenarioLevelDirectoryUtf16);
+  /* open-thandor: a custom map row (local games only) loads maps\<name>\<name>.lev (custom_maps.h) */
+  customMap = CustomMaps_LevelPathOfRecord(g_FrontendScenarioPathScratchUtf16,
+                                           g_FrontendRootNode->missionsList.rowSlots[selectedRowIndex]);
+  if (!customMap) {
+    WidePath_CombineDirectoryAndLeaf
+              (g_FrontendScenarioPathScratchUtf16,
+               static_cast<uint16_t *>
+                    (g_FrontendRootNode->missionsList.rowSlots
+                     [selectedRowIndex]),
+               g_ScenarioLevelDirectoryUtf16);
+  }
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
   frontendRoot->menuRoomModelView.contextFlags =
@@ -554,6 +560,8 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
                         (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
     packedSourceDwords = reinterpret_cast<uint32_t *>(g_PackageScratchBuffer); /* dword copy of the transfer image */
     levelAsset = reinterpret_cast<FrontendLoadedLevelAsset *>(checkedValue); /* the loaded entry, passed through as an integer */
+    /* open-thandor: a custom map's copy gets its maps\ identifier and custom title index */
+    CustomMaps_PrepareLoadedLevel(levelAsset,g_FrontendScenarioPathScratchUtf16);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       /* host: mailbox packet = unpacked size dword + Huffman/RLE-packed level */
       levelSizeBytes = levelAsset->header.common.allocationSizeBytes;
@@ -614,6 +622,9 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
     }
   }
   g_FrontendLoadedLevelAsset = levelAsset;
+  if (customMap) {
+    return; /* not in the catalog, no level mask bit; only local games list custom maps */
+  }
   levelRecordOffset = (uint32_t)Asset_ByteDistance
                         (static_cast<uint8_t *>
                               (g_FrontendRootNode->missionsList.rowSlots

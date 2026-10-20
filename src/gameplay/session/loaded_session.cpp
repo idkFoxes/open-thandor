@@ -220,9 +220,12 @@ static bool InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage,
   if (!InGameSession_CreateRoot(reinterpret_cast<SelectionInfoEntitySlots *>(g_SelectionPlayerBlocks),outRoot,outError)) {
     return false;
   }
-  WidePath_CombineDirectoryAndLeaf
-            (g_FrontendScenarioPathScratchUtf16,
-             (levelImage->header).levelFileNameUtf16,g_ScenarioLevelDirectoryUtf16);
+  /* open-thandor: a custom map's copy carries "maps\<name>." (custom_maps.h) and gives maps\<name>\<name>.lev */
+  if (!CustomMaps_LevelPathOfIdentifier(g_FrontendScenarioPathScratchUtf16,(levelImage->header).levelFileNameUtf16)) {
+    WidePath_CombineDirectoryAndLeaf
+              (g_FrontendScenarioPathScratchUtf16,
+               (levelImage->header).levelFileNameUtf16,g_ScenarioLevelDirectoryUtf16);
+  }
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   return true;
 }
