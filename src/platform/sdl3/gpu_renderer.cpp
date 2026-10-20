@@ -268,6 +268,7 @@ struct GpuState {
   Uint32 vertexBufferBytes = 0;
   SDL_GPUTransferBuffer *uploadBuffer = nullptr;
   Uint32 uploadBufferBytes = 0;
+  thandor::sdl3::TransferBufferUse uploadBufferUse; /* trimmed after the frame (TrimTransferBuffer) */
   SDL_GPUTransferBuffer *downloadBuffer = nullptr;
   Uint32 downloadBufferBytes = 0;
 
@@ -1060,10 +1061,7 @@ bool EnsureTransferBuffer(SDL_GPUTransferBuffer *&buffer, Uint32 &bufferBytes, S
     return true;
   }
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, buffer);
-  Uint32 size = std::max<Uint32>(bufferBytes * 2, 1u << 20);
-  while (size < byteCount) {
-    size *= 2;
-  }
+  const Uint32 size = thandor::sdl3::TransferBufferSize(byteCount, 1u << 20);
   SDL_GPUTransferBufferCreateInfo info;
   SDL_zero(info);
   info.usage = usage;
@@ -1086,6 +1084,7 @@ bool RecordSceneUploads(SDL_GPUCommandBuffer *commands, const std::vector<GpuVer
   if ((vertexBytes == 0) && uploads.empty()) {
     return true;
   }
+  s_gpu.uploadBufferUse.Need(vertexBytes + textureBytes + 4);
   if (!EnsureTransferBuffer(s_gpu.uploadBuffer, s_gpu.uploadBufferBytes, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                             vertexBytes + textureBytes + 4) ||
       ((vertexBytes != 0) && !EnsureVertexBuffer(vertexBytes))) {
@@ -2507,6 +2506,8 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   times.quads += frameQuads;
   times.batches += frameBatches;
   times.drawCalls += drawCalls;
+  thandor::sdl3::TrimTransferBuffer(s_gpu.device, s_gpu.uploadBuffer, s_gpu.uploadBufferBytes, s_gpu.uploadBufferUse,
+                                    1u << 20);
   EndGpuFrame();
   /* the cache pages given up at the flush were still drawn from above: released now that the frame is submitted */
   GpuUiTextures_ReleaseRetired();

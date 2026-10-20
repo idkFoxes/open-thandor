@@ -35,6 +35,7 @@ constexpr size_t kPlacementPixels = 512 / 4;
 constexpr uint32_t kPitchPixels = 256 / 4;
 constexpr uint32_t kPadding = 1;               /* border texels around every image */
 constexpr uint32_t kStreamIdleFrames = 300;    /* streaming pages unused this long are released (but the first) */
+constexpr uint32_t kTransferMinimumBytes = 4u << 20;
 
 struct Rect {
   uint32_t x, y, w, h;
@@ -114,6 +115,7 @@ struct State {
   std::vector<SDL_GPUTexture *> retired;
   SDL_GPUTransferBuffer *transfer = nullptr;
   uint32_t transferBytes = 0;
+  thandor::sdl3::TransferBufferUse transferUse; /* trimmed at the frame end (TrimTransferBuffer) */
   uint32_t frame = 1;
   bool hardLimitLogged = false;
   GpuUiTexStats stats{};
@@ -426,6 +428,10 @@ void EndFrame() noexcept
   if ((s_ui.device != nullptr) && (s_ui.pages.size() > GPU_UI_SOFT_PAGE_LIMIT)) {
     ResetCache();
   }
+  if (s_ui.device != nullptr) {
+    thandor::sdl3::TrimTransferBuffer(s_ui.device, s_ui.transfer, s_ui.transferBytes, s_ui.transferUse,
+                                      kTransferMinimumBytes);
+  }
   s_ui.frame++;
 }
 
@@ -464,10 +470,7 @@ bool EnsureTransferBuffer(uint32_t byteCount) noexcept
     return true;
   }
   SDL_ReleaseGPUTransferBuffer(s_ui.device, s_ui.transfer);
-  uint32_t size = std::max<uint32_t>(s_ui.transferBytes * 2, 4u << 20);
-  while (size < byteCount) {
-    size *= 2;
-  }
+  const uint32_t size = thandor::sdl3::TransferBufferSize(byteCount, kTransferMinimumBytes);
   SDL_GPUTransferBufferCreateInfo info;
   SDL_zero(info);
   info.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
@@ -527,6 +530,7 @@ void GpuUiTextures_Shutdown(SDL_GPUDevice *device)
   s_ui.pendingFrees.clear();
   s_ui.transfer = nullptr;
   s_ui.transferBytes = 0;
+  s_ui.transferUse = thandor::sdl3::TransferBufferUse{};
   s_ui.device = nullptr;
   s_ui.hardLimitLogged = false;
   s_ui.active = false;
@@ -618,6 +622,7 @@ void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands)
   }
   if (!s_ui.uploads.empty()) {
     const uint32_t byteCount = static_cast<uint32_t>(s_ui.staging.size() * sizeof(uint32_t));
+    s_ui.transferUse.Need(byteCount);
     void *mapped = nullptr;
     if (EnsureTransferBuffer(byteCount)) {
       mapped = thandor::sdl3::MapGpuTransferBufferLogged(s_ui.device, s_ui.transfer, true, "UI textures");
