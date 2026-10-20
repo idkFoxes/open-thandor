@@ -168,6 +168,10 @@ void SdlPlatform_PumpEvents()
       GpuWindowChanged();
       break;
 #endif
+    case SDL_EVENT_RENDER_DEVICE_RESET:
+    case SDL_EVENT_RENDER_DEVICE_LOST:
+      SdlVideo_RenderDeviceReset(event.type == SDL_EVENT_RENDER_DEVICE_LOST);
+      break;
     case SDL_EVENT_WINDOW_FOCUS_GAINED:
       HandleFocusGained();
       break;

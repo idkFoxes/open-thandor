@@ -35,6 +35,7 @@ constexpr size_t kPlacementPixels = 512 / 4;
 constexpr uint32_t kPitchPixels = 256 / 4;
 constexpr uint32_t kPadding = 1;               /* border texels around every image */
 constexpr uint32_t kStreamIdleFrames = 300;    /* streaming pages unused this long are released (but the first) */
+constexpr uint32_t kTransferMinimumBytes = 4u << 20;
 
 struct Rect {
   uint32_t x, y, w, h;
@@ -109,8 +110,12 @@ struct State {
   std::vector<uint32_t> staging;
   std::vector<PendingUpload> uploads;
   std::vector<PendingFree> pendingFrees;
+  /* textures a draw of the current frame may still bind: released by GpuUiTextures_ReleaseRetired once the frame is
+     submitted (SDL frees a texture's handle at once, only the GPU memory waits for the command buffers) */
+  std::vector<SDL_GPUTexture *> retired;
   SDL_GPUTransferBuffer *transfer = nullptr;
   uint32_t transferBytes = 0;
+  thandor::sdl3::TransferBufferUse transferUse; /* trimmed at the frame end (TrimTransferBuffer) */
   uint32_t frame = 1;
   bool hardLimitLogged = false;
   GpuUiTexStats stats{};
@@ -360,16 +365,24 @@ GpuUiTexRegion RegionOf(const Page &page, const Rect &rect, uint32_t width, uint
 
 /* --- frame end ---------------------------------------------------------------------------------------------- */
 
+/* Releases texture after the current frame's submit (GpuUiTextures_ReleaseRetired): a batch of this frame may
+   already hold it. */
+void RetireTexture(SDL_GPUTexture *texture) noexcept
+{
+  if ((s_ui.device != nullptr) && (texture != nullptr)) {
+    s_ui.retired.push_back(texture);
+  }
+}
+
 /* Drops every entry and the packing of all cache pages (pages beyond the soft limit are released). Only called
-   right after a flush, so no staged upload or region of the current frame refers to them any more. */
+   right after a flush, so no staged upload refers to them any more; the frame's batches recorded before the flush
+   still draw from them, so the pages go after the submit (RetireTexture). */
 void ResetCache() noexcept
 {
   s_ui.entries.clear();
   s_ui.pendingFrees.clear();
   while (s_ui.pages.size() > GPU_UI_SOFT_PAGE_LIMIT) {
-    if (s_ui.device != nullptr) {
-      SDL_ReleaseGPUTexture(s_ui.device, s_ui.pages.back().texture);
-    }
+    RetireTexture(s_ui.pages.back().texture);
     s_ui.pages.pop_back();
   }
   for (Page &page : s_ui.pages) {
@@ -415,6 +428,10 @@ void EndFrame() noexcept
   if ((s_ui.device != nullptr) && (s_ui.pages.size() > GPU_UI_SOFT_PAGE_LIMIT)) {
     ResetCache();
   }
+  if (s_ui.device != nullptr) {
+    thandor::sdl3::TrimTransferBuffer(s_ui.device, s_ui.transfer, s_ui.transferBytes, s_ui.transferUse,
+                                      kTransferMinimumBytes);
+  }
   s_ui.frame++;
 }
 
@@ -435,16 +452,25 @@ void HashStagedUploads() noexcept
   }
 }
 
+/* The staged pixels never reach the GPU: every entry converts again on its next use, every dedicated texture is
+   uploaded again. */
+void ForgetStagedUploads() noexcept
+{
+  for (auto &cached : s_ui.entries) {
+    cached.second.hash ^= 0xFFFFFFFFu;
+  }
+  for (Dedicated &dedicated : s_ui.dedicated) {
+    dedicated.generation ^= 0x80000000u;
+  }
+}
+
 bool EnsureTransferBuffer(uint32_t byteCount) noexcept
 {
   if ((s_ui.transfer != nullptr) && (s_ui.transferBytes >= byteCount)) {
     return true;
   }
   SDL_ReleaseGPUTransferBuffer(s_ui.device, s_ui.transfer);
-  uint32_t size = std::max<uint32_t>(s_ui.transferBytes * 2, 4u << 20);
-  while (size < byteCount) {
-    size *= 2;
-  }
+  const uint32_t size = thandor::sdl3::TransferBufferSize(byteCount, kTransferMinimumBytes);
   SDL_GPUTransferBufferCreateInfo info;
   SDL_zero(info);
   info.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
@@ -478,6 +504,7 @@ void GpuUiTextures_Shutdown(SDL_GPUDevice *device)
   if (!s_ui.active) {
     return;
   }
+  GpuUiTextures_ReleaseRetired();
   if (g_GraphicsTextureSourceReleaseObserver == &ReleaseObserver) {
     g_GraphicsTextureSourceReleaseObserver = nullptr;
   }
@@ -503,6 +530,7 @@ void GpuUiTextures_Shutdown(SDL_GPUDevice *device)
   s_ui.pendingFrees.clear();
   s_ui.transfer = nullptr;
   s_ui.transferBytes = 0;
+  s_ui.transferUse = thandor::sdl3::TransferBufferUse{};
   s_ui.device = nullptr;
   s_ui.hardLimitLogged = false;
   s_ui.active = false;
@@ -594,6 +622,7 @@ void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands)
   }
   if (!s_ui.uploads.empty()) {
     const uint32_t byteCount = static_cast<uint32_t>(s_ui.staging.size() * sizeof(uint32_t));
+    s_ui.transferUse.Need(byteCount);
     void *mapped = nullptr;
     if (EnsureTransferBuffer(byteCount)) {
       mapped = thandor::sdl3::MapGpuTransferBufferLogged(s_ui.device, s_ui.transfer, true, "UI textures");
@@ -601,12 +630,7 @@ void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands)
     if (mapped == nullptr) {
       /* the pixels of this frame are lost: make every entry convert again on its next use */
       Thandor_Log("GPU UI textures: upload of %u bytes failed: %s", byteCount, SDL_GetError());
-      for (auto &cached : s_ui.entries) {
-        cached.second.hash ^= 0xFFFFFFFFu;
-      }
-      for (Dedicated &dedicated : s_ui.dedicated) {
-        dedicated.generation ^= 0x80000000u; /* upload again on the next use */
-      }
+      ForgetStagedUploads();
     }
     else {
       std::memcpy(mapped, s_ui.staging.data(), byteCount);
@@ -655,6 +679,21 @@ void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands)
       }
       SDL_EndGPUCopyPass(copyPass);
     }
+  }
+  EndFrame();
+}
+
+void GpuUiTextures_DropUploads()
+{
+  if (!s_ui.active) {
+    return;
+  }
+  if (s_ui.device == nullptr) {
+    GpuUiTextures_FlushUploads(nullptr);
+    return;
+  }
+  if (!s_ui.uploads.empty()) {
+    ForgetStagedUploads();
   }
   EndFrame();
 }
@@ -718,8 +757,10 @@ bool GpuUiTextures_DedicatedImage(const void *key, uint32_t generation, const ui
   Dedicated &dedicated = s_ui.dedicated[index];
   bool stale = (dedicated.generation != generation);
   if ((dedicated.width != width) || (dedicated.height != height)) {
-    if (s_ui.device != nullptr) {
-      SDL_ReleaseGPUTexture(s_ui.device, dedicated.texture); /* lives on until the frames using it are done */
+    RetireTexture(dedicated.texture); /* an earlier draw of this frame may still hold it */
+    /* a staged upload of the old texture (an unflushed frame before) would write into a released texture */
+    if (dedicated.texture != nullptr) {
+      std::erase_if(s_ui.uploads, [&](const PendingUpload &upload) { return upload.dedicated == dedicated.texture; });
     }
     dedicated.texture = nullptr;
     dedicated.width = width;
@@ -757,6 +798,14 @@ bool GpuUiTextures_DedicatedImage(const void *key, uint32_t generation, const ui
   out->w = w;
   out->h = h;
   return true;
+}
+
+void GpuUiTextures_ReleaseRetired()
+{
+  for (SDL_GPUTexture *texture : s_ui.retired) {
+    SDL_ReleaseGPUTexture(s_ui.device, texture);
+  }
+  s_ui.retired.clear();
 }
 
 void GpuUiTextures_Evict(const GraphicsTextureSourceAsset *asset)

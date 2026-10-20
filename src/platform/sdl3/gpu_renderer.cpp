@@ -259,8 +259,7 @@ struct GpuState {
   SDL_GPUGraphicsPipeline *pipelines[GPU_PIPELINE_COUNT] = {};
   SDL_GPUSampler *sampler = nullptr;
   SDL_GPUTexture *atlas = nullptr;
-  SDL_GPUTexture *colorTarget = nullptr;
-  SDL_GPUTexture *depthTarget = nullptr;
+  SDL_GPUTexture *depthTarget = nullptr; /* the scenes draw colour straight into the frame target */
   Uint32 targetWidth = 0; /* target pixels: the framebuffer size x targetScale */
   Uint32 targetHeight = 0;
   int targetScale = 1; /* the UI scale the 3D targets were made for (step 9 WP8) */
@@ -268,8 +267,7 @@ struct GpuState {
   Uint32 vertexBufferBytes = 0;
   SDL_GPUTransferBuffer *uploadBuffer = nullptr;
   Uint32 uploadBufferBytes = 0;
-  SDL_GPUTransferBuffer *downloadBuffer = nullptr;
-  Uint32 downloadBufferBytes = 0;
+  thandor::sdl3::TransferBufferUse uploadBufferUse; /* trimmed after the frame (TrimTransferBuffer) */
 
   std::unordered_map<AtlasKey, AtlasSlot, AtlasKeyHash> atlasSlots;
   std::vector<AtlasShelf> shelves;
@@ -334,6 +332,17 @@ struct GpuState {
   Uint32 captureDownloadBytes = 0;
   FrameTimes frameTimes;
   bool frameFailureLogged = false;
+  /* Direct3D 12: the frame is split into several command buffers by its descriptor writes (kDescriptorWriteBudget) */
+  bool splitCommandBuffers = false;
+  uint32_t descriptorWrites = 0; /* counted for the current command buffer */
+  bool splitLogged = false;
+  /* the fences of the last kFramesInFlight frames (SubmitFrame), a ring; nullptr where none is held */
+  SDL_GPUFence *frameFences[3] = {};
+  uint32_t nextFrameFence = 0;
+  /* frames in a row whose command buffer could not be had or submitted (GpuDeviceFailed); partFailed: a split part
+     of the current frame failed */
+  uint32_t failedFrames = 0;
+  bool partFailed = false;
 
   /* compare mode */
   std::vector<uint32_t> compareGpu;      /* the downloaded frame target */
@@ -413,6 +422,16 @@ void ResetAtlas() noexcept
     Thandor_Log("SDL_GPU renderer: texture atlas (nearly) full, starting over");
     s_gpu.atlasResetLogged = true;
   }
+}
+
+/* Texels staged for the atlas did not reach it (a frame dropped before its scenes were recorded, a failed scene
+   upload): the slots would keep their hashes over stale texels, so every texture is converted again on its next
+   use. */
+void ForgetAtlasContent() noexcept
+{
+  s_gpu.atlasSlots.clear();
+  s_gpu.shelves.clear();
+  s_gpu.shelvesBottom = 0;
 }
 
 /* A free width x height rectangle (powers of two) of the atlas, false when there is none. */
@@ -981,33 +1000,28 @@ SDL_GPUTexture *CreateTexture(SDL_GPUTextureFormat format, SDL_GPUTextureUsageFl
   return thandor::sdl3::CreateGpuTextureLogged(s_gpu.device, &info, what);
 }
 
-/* Colour and depth target in framebuffer size x the UI scale. */
+/* The scenes' depth target in framebuffer size x the UI scale. */
 bool EnsureTargets() noexcept
 {
   const int scale = s_uiScale;
   const Uint32 width = g_FramebufferWidth * static_cast<Uint32>(scale);
   const Uint32 height = g_FramebufferHeight * static_cast<Uint32>(scale);
-  if ((s_gpu.colorTarget != nullptr) && (s_gpu.targetWidth == width) && (s_gpu.targetHeight == height) &&
+  if ((s_gpu.depthTarget != nullptr) && (s_gpu.targetWidth == width) && (s_gpu.targetHeight == height) &&
       (s_gpu.targetScale == scale)) {
     return true;
   }
-  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.colorTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.depthTarget);
-  s_gpu.colorTarget = nullptr;
   s_gpu.depthTarget = nullptr;
   s_gpu.targetWidth = 0;
   s_gpu.targetHeight = 0;
   if ((width == 0) || (height == 0)) {
     return false;
   }
-  s_gpu.colorTarget =
-      CreateTexture(SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET, width, height,
-                    "3D colour target");
   s_gpu.depthTarget =
       CreateTexture(SDL_GPU_TEXTUREFORMAT_D32_FLOAT, SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET, width, height,
                     "3D depth target");
-  if ((s_gpu.colorTarget == nullptr) || (s_gpu.depthTarget == nullptr)) {
-    Thandor_Log("SDL_GPU renderer: render targets %ux%u failed: %s", width, height, SDL_GetError());
+  if (s_gpu.depthTarget == nullptr) {
+    Thandor_Log("SDL_GPU renderer: depth target %ux%u failed: %s", width, height, SDL_GetError());
     return false;
   }
   s_gpu.targetWidth = width;
@@ -1043,10 +1057,7 @@ bool EnsureTransferBuffer(SDL_GPUTransferBuffer *&buffer, Uint32 &bufferBytes, S
     return true;
   }
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, buffer);
-  Uint32 size = std::max<Uint32>(bufferBytes * 2, 1u << 20);
-  while (size < byteCount) {
-    size *= 2;
-  }
+  const Uint32 size = thandor::sdl3::TransferBufferSize(byteCount, 1u << 20);
   SDL_GPUTransferBufferCreateInfo info;
   SDL_zero(info);
   info.usage = usage;
@@ -1069,6 +1080,7 @@ bool RecordSceneUploads(SDL_GPUCommandBuffer *commands, const std::vector<GpuVer
   if ((vertexBytes == 0) && uploads.empty()) {
     return true;
   }
+  s_gpu.uploadBufferUse.Need(vertexBytes + textureBytes + 4);
   if (!EnsureTransferBuffer(s_gpu.uploadBuffer, s_gpu.uploadBufferBytes, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                             vertexBytes + textureBytes + 4) ||
       ((vertexBytes != 0) && !EnsureVertexBuffer(vertexBytes))) {
@@ -1116,27 +1128,104 @@ bool RecordSceneUploads(SDL_GPUCommandBuffer *commands, const std::vector<GpuVer
   return true;
 }
 
+/* Direct3D 12 descriptor budget. SDL 3.2.16's Direct3D 12 backend copies a pipeline's sampler and texture
+   descriptors into its command buffer's shader-visible heaps on the first draw after every pipeline bind (and after
+   a changed sampler binding): one sampler and one view descriptor for each of our pipelines and for a blit. A
+   sampler heap holds 2048, a view heap 65536. When the sampler heap is full, SDL creates another pair and loses the
+   old one (never returned to its pool), so such frames leak heaps until the driver refuses one and SDL dereferences
+   NULL (the 1.0.7 crashes). The heaps a command buffer started with go back to the pool when it completes, so the
+   frame is split into several command buffers instead: before a draw that could pass kDescriptorWriteBudget
+   (pipeline binds of the 3D scenes, 2D batches, the cursor pass and the blit, each counted as one write), the open
+   render pass ends, the command buffer is submitted and a new one continues where it stopped (render passes loading
+   the colour and the depth target). One queue runs them in order, so the picture stays the same. The copy passes
+   use no shader-visible descriptors; the swapchain is acquired on the last command buffer, which presents. */
+constexpr uint32_t kDescriptorWriteBudget = 1900;
+
+/* True when writes more descriptor writes would pass the current command buffer's budget (Direct3D 12 only). */
+bool DescriptorBudgetExceeded(uint32_t writes) noexcept
+{
+  return s_gpu.splitCommandBuffers && (s_gpu.descriptorWrites + writes > kDescriptorWriteBudget);
+}
+
+/* Submits commands (no render or copy pass open) and returns a new command buffer for the rest of the frame,
+   nullptr when none can be had. */
+SDL_GPUCommandBuffer *SplitCommandBuffer(SDL_GPUCommandBuffer *commands) noexcept
+{
+  if (!s_gpu.splitLogged) {
+    Thandor_Log("SDL_GPU: frame split into several command buffers (%u descriptor writes, Direct3D 12 budget)",
+                s_gpu.descriptorWrites);
+    s_gpu.splitLogged = true;
+  }
+  if (!SDL_SubmitGPUCommandBuffer(commands)) {
+    thandor::sdl3::LogGpuFailure("SDL_SubmitGPUCommandBuffer frame part");
+    s_gpu.partFailed = true;
+  }
+  s_gpu.descriptorWrites = 0;
+  return thandor::sdl3::AcquireGpuCommandBufferLogged(s_gpu.device, "frame part");
+}
+
+/* Frames in flight. SDL waits for a frame slot only when it hands out a swapchain texture; frames without one (a
+   minimized or unclaimed window, a mailbox frame the non-waiting acquire drops) were submitted without any wait, so
+   a CPU faster than the GPU queued command buffers - each with its descriptor heaps, uniform buffers and cycled
+   transfer buffers and textures - without limit until the driver refused one. SubmitFrame keeps a fence of each
+   frame and waits for the one of kFramesInFlight frames ago: with a swapchain SDL has already waited longer (two
+   frames), so only a GPU that falls behind holds the game up. */
+constexpr uint32_t kFramesInFlight = sizeof(GpuState::frameFences) / sizeof(SDL_GPUFence *);
+
+/* Counts a frame for GpuDeviceFailed: failed when no command buffer could be had or a submit of it failed. */
+void NoteFrameResult(bool failed) noexcept
+{
+  failed = failed || s_gpu.partFailed;
+  s_gpu.partFailed = false;
+  s_gpu.failedFrames = failed ? s_gpu.failedFrames + 1 : 0;
+}
+
+/* Submits the frame's (last) command buffer, then waits for the frame kFramesInFlight frames ago. False when the
+   submit fails. */
+bool SubmitFrame(SDL_GPUCommandBuffer *commands) noexcept
+{
+  SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireFence(commands);
+  NoteFrameResult(fence == nullptr);
+  if (fence == nullptr) {
+    return false;
+  }
+  SDL_GPUFence *&oldest = s_gpu.frameFences[s_gpu.nextFrameFence];
+  if (oldest != nullptr) {
+    SDL_WaitForGPUFences(s_gpu.device, true, &oldest, 1);
+    SDL_ReleaseGPUFence(s_gpu.device, oldest);
+  }
+  oldest = fence;
+  s_gpu.nextFrameFence = (s_gpu.nextFrameFence + 1) % kFramesInFlight;
+  return true;
+}
+
 /* Records a render pass drawing a scene's runs (vertices uploaded by RecordSceneUploads) into colorTexture with
    s_gpu.depthTarget (cleared to far). loadColor keeps the colour target's pixels (the GPU frame: the 2D draw
-   list cleared the scene's rectangle before), else it is cleared to black. */
-void RecordSceneRuns(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *colorTexture, bool loadColor,
+   list cleared the scene's rectangle before), else it is cleared to black. On Direct3D 12 the pass may continue in
+   a new command buffer (SplitCommandBuffer): commands is then the new one, nullptr when none could be had. */
+void RecordSceneRuns(SDL_GPUCommandBuffer *&commands, SDL_GPUTexture *colorTexture, bool loadColor,
                      const std::vector<GpuRun> &runs, bool haveVertices) noexcept
 {
-  SDL_GPUColorTargetInfo colorTarget;
-  SDL_zero(colorTarget);
-  colorTarget.texture = colorTexture;
-  colorTarget.clear_color = SDL_FColor{0.0f, 0.0f, 0.0f, 1.0f};
-  colorTarget.load_op = loadColor ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_CLEAR;
-  colorTarget.store_op = SDL_GPU_STOREOP_STORE;
-  SDL_GPUDepthStencilTargetInfo depthTarget;
-  SDL_zero(depthTarget);
-  depthTarget.texture = s_gpu.depthTarget;
-  depthTarget.clear_depth = 1.0f;
-  depthTarget.load_op = SDL_GPU_LOADOP_CLEAR;
-  depthTarget.store_op = SDL_GPU_STOREOP_DONT_CARE;
-  depthTarget.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
-  depthTarget.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
-  SDL_GPURenderPass *renderPass = SDL_BeginGPURenderPass(commands, &colorTarget, 1, &depthTarget);
+  /* resume: the continuation of the scene's pass in a new command buffer, loading both targets */
+  auto beginPass = [&](bool resume) {
+    SDL_GPUColorTargetInfo colorTarget;
+    SDL_zero(colorTarget);
+    colorTarget.texture = colorTexture;
+    colorTarget.clear_color = SDL_FColor{0.0f, 0.0f, 0.0f, 1.0f};
+    colorTarget.load_op = (loadColor || resume) ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_CLEAR;
+    colorTarget.store_op = SDL_GPU_STOREOP_STORE;
+    SDL_GPUDepthStencilTargetInfo depthTarget;
+    SDL_zero(depthTarget);
+    depthTarget.texture = s_gpu.depthTarget;
+    depthTarget.clear_depth = 1.0f;
+    depthTarget.load_op = resume ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_CLEAR;
+    /* kept where a split may continue the pass */
+    depthTarget.store_op = s_gpu.splitCommandBuffers ? SDL_GPU_STOREOP_STORE : SDL_GPU_STOREOP_DONT_CARE;
+    depthTarget.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
+    depthTarget.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
+    return SDL_BeginGPURenderPass(commands, &colorTarget, 1, &depthTarget);
+  };
+  SDL_GPURenderPass *renderPass = beginPass(false);
   if (renderPass == nullptr) {
     return;
   }
@@ -1144,16 +1233,41 @@ void RecordSceneRuns(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *colorTextur
     SDL_GPUBufferBinding binding{s_gpu.vertexBuffer, 0};
     SDL_BindGPUVertexBuffers(renderPass, 0, &binding, 1);
     SDL_GPUTextureSamplerBinding atlasBinding{s_gpu.atlas, s_gpu.sampler};
+    SDL_GPUGraphicsPipeline *const depthPassPipeline = s_gpu.pipelines[GPU_PIPELINE_ALPHA_DEPTH];
     SDL_GPUGraphicsPipeline *boundPipeline = nullptr;
+    /* Every pipeline bind costs a sampler descriptor on Direct3D 12 (see kDescriptorWriteBudget), so as few
+       pipeline switches as possible. */
     auto bind = [&](SDL_GPUGraphicsPipeline *pipeline) {
       if (pipeline != boundPipeline) {
         SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
         SDL_BindGPUFragmentSamplers(renderPass, 0, &atlasBinding, 1);
         boundPipeline = pipeline;
+        s_gpu.descriptorWrites++;
       }
     };
     for (const GpuRun &run : runs) {
+      /* a run binds at most two pipelines */
+      if (DescriptorBudgetExceeded(2)) {
+        SDL_EndGPURenderPass(renderPass);
+        commands = SplitCommandBuffer(commands);
+        renderPass = (commands != nullptr) ? beginPass(true) : nullptr;
+        if (renderPass == nullptr) {
+          return;
+        }
+        SDL_BindGPUVertexBuffers(renderPass, 0, &binding, 1);
+        boundPipeline = nullptr;
+      }
       SDL_SetGPUScissor(renderPass, &run.scissor);
+      /* An alpha-tested run draws its colour pass (alpha pipeline) and its depth pass, in either order: no pixel is
+         covered by two of its packets (AppendPacket), so the depth pass only writes where the same triangle's colour
+         fragment lies, at the same depth (one pass-through vertex shader, the same rasterizer state), and the colour
+         pass's LESS_OR_EQUAL test passes there exactly when it passed against the depth before the run (the depth
+         pass wrote only where that test passed). So the run starts with the pass whose pipeline is still bound:
+         a chain of such runs (foliage, split where packets overlap) costs one switch per run instead of two. */
+      const bool depthFirst = (run.kind == GPU_RUN_ALPHA_WRITES_DEPTH) && (boundPipeline == depthPassPipeline);
+      if (depthFirst) {
+        SDL_DrawGPUPrimitives(renderPass, run.vertexCount, 1, run.firstVertex, 0);
+      }
       switch (run.kind) {
       case GPU_RUN_OPAQUE:
         bind(s_gpu.pipelines[GPU_PIPELINE_OPAQUE]);
@@ -1166,8 +1280,8 @@ void RecordSceneRuns(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *colorTextur
         break;
       }
       SDL_DrawGPUPrimitives(renderPass, run.vertexCount, 1, run.firstVertex, 0);
-      if (run.kind == GPU_RUN_ALPHA_WRITES_DEPTH) {
-        bind(s_gpu.pipelines[GPU_PIPELINE_ALPHA_DEPTH]);
+      if ((run.kind == GPU_RUN_ALPHA_WRITES_DEPTH) && !depthFirst) {
+        bind(depthPassPipeline);
         SDL_DrawGPUPrimitives(renderPass, run.vertexCount, 1, run.firstVertex, 0);
       }
     }
@@ -1686,13 +1800,17 @@ void BuildUiBatches(const Draw2DItem *items, uint32_t count) noexcept
 }
 
 /* Records a scene into the frame target: its uploads, then its runs over the 2D content drawn so far. A scene
-   whose depth target does not fit the frame target (a display mode switch in between) only uploads. */
-void RecordPendingScene(SDL_GPUCommandBuffer *commands, const PendingScene &scene, bool draw) noexcept
+   whose depth target does not fit the frame target (a display mode switch in between) only uploads. commands may
+   be replaced (see RecordSceneRuns). */
+void RecordPendingScene(SDL_GPUCommandBuffer *&commands, const PendingScene &scene, bool draw) noexcept
 {
   if (!RecordSceneUploads(commands, scene.vertices, scene.staging, scene.uploads)) {
     if (!s_gpu.renderFailureLogged) {
       Thandor_Log("SDL_GPU renderer: drawing a scene failed (%s)", SDL_GetError());
       s_gpu.renderFailureLogged = true;
+    }
+    if (!scene.uploads.empty()) {
+      ForgetAtlasContent();
     }
     return;
   }
@@ -1741,6 +1859,21 @@ void EndGpuFrame() noexcept
   s_gpu.pendingScenes.clear();
   s_gpu.spriteRegions.clear();
   Draw2D_BeginFrame();
+}
+
+/* Ends a frame that is not drawn (no frame target, no command buffer): the UI cache and the 3D atlas drop what was
+   staged for them (converted again on the next use). */
+void DropGpuFrame() noexcept
+{
+  GpuUiTextures_DropUploads();
+  for (const PendingScene &scene : s_gpu.pendingScenes) {
+    if (!scene.uploads.empty()) {
+      ForgetAtlasContent();
+      break;
+    }
+  }
+  EndGpuFrame();
+  GpuUiTextures_ReleaseRetired();
 }
 
 /* Starts the 2D drawing of the GPU frame: the UI texture cache and the 2D pipelines on the device, the draw list
@@ -1814,16 +1947,19 @@ void ReleaseDevice() noexcept
   }
   SDL_ReleaseGPUSampler(s_gpu.device, s_gpu.sampler);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.atlas);
-  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.colorTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.depthTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.frameTexture);
   SDL_ReleaseGPUBuffer(s_gpu.device, s_gpu.vertexBuffer);
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.uploadBuffer);
-  SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.downloadBuffer);
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.frameUpload);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.frameTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.presentTarget);
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.captureDownload);
+  for (SDL_GPUFence *fence : s_gpu.frameFences) {
+    if (fence != nullptr) {
+      SDL_ReleaseGPUFence(s_gpu.device, fence);
+    }
+  }
   if ((s_gpu.window != nullptr) && s_gpu.windowClaimed) {
     SDL_ReleaseWindowFromGPUDevice(s_gpu.device, s_gpu.window);
   }
@@ -2027,6 +2163,7 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
     return false;
   }
   Thandor_Log("SDL_GPU: %s device created, driver %s", DriverName(renderer), SDL_GetGPUDeviceDriver(s_gpu.device));
+  s_gpu.splitCommandBuffers = (SDL_strcmp(SDL_GetGPUDeviceDriver(s_gpu.device), "direct3d12") == 0);
   thandor::sdl3::LogAddressSpaceDetail("after the GPU device");
   s_gpu.shaderFormat = ShaderFormatOf(renderer);
   s_gpu.window = window;
@@ -2108,6 +2245,13 @@ bool GpuDeviceRunning() noexcept
   return s_gpu.device != nullptr;
 }
 
+bool GpuDeviceFailed() noexcept
+{
+  /* a few frames in a row: one failed submit (a driver hiccup) is no reason to restart */
+  constexpr uint32_t kDeviceFailureFrames = 10;
+  return (s_gpu.device != nullptr) && (s_gpu.failedFrames >= kDeviceFailureFrames);
+}
+
 bool GpuFrameActive() noexcept
 {
   return (s_gpu.device != nullptr) && (s_gpu.mode == GPU_MODE_ON);
@@ -2153,7 +2297,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   uint32_t itemCount = 0;
   const Draw2DItem *items = Draw2D_FrameItems(&itemCount);
   if (!EnsureFrameTargets()) {
-    EndGpuFrame();
+    DropGpuFrame();
     return false;
   }
   BuildUiBatches(items, itemCount);
@@ -2191,9 +2335,11 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
       Thandor_Log("SDL_GPU: no command buffer for the frame (%s)", SDL_GetError());
       s_gpu.frameFailureLogged = true;
     }
-    EndGpuFrame();
+    NoteFrameResult(true);
+    DropGpuFrame();
     return false;
   }
+  s_gpu.descriptorWrites = 0;
   /* copy passes first: the UI images converted since the last frame, the streamed image regions, the quads */
   GpuUiTextures_FlushUploads(commands);
   const bool uploaded =
@@ -2209,7 +2355,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   const SDL_Rect wholeTarget{0, 0, targetWidth, targetHeight};
   SDL_GPURenderPass *renderPass = nullptr;
   auto openPass = [&]() {
-    if (renderPass != nullptr) {
+    if ((renderPass != nullptr) || (commands == nullptr)) {
       return;
     }
     SDL_GPUColorTargetInfo colorTarget;
@@ -2247,13 +2393,24 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
         openPass(); /* clears the new target first */
         closePass();
       }
-      for (; nextScene <= match; nextScene++) {
+      for (; (nextScene <= match) && (commands != nullptr); nextScene++) {
         RecordPendingScene(commands, s_gpu.pendingScenes[nextScene], nextScene == match);
+      }
+      if (commands == nullptr) {
+        break;
       }
       continue;
     }
     if (batch.vertexCount == 0) {
       continue;
+    }
+    /* a batch binds a pipeline and its page: one descriptor write (kDescriptorWriteBudget) */
+    if (DescriptorBudgetExceeded(1)) {
+      closePass();
+      commands = SplitCommandBuffer(commands);
+      if (commands == nullptr) {
+        break;
+      }
     }
     openPass();
     if (renderPass == nullptr) {
@@ -2261,14 +2418,30 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
     }
     GpuUi2D_Draw(renderPass, commands, batch.page, batch.firstVertex, batch.vertexCount, wholeTarget, batch.blend,
                  targetWidth, targetHeight);
+    s_gpu.descriptorWrites++;
     drawCalls++;
   }
   if (s_gpu.frameTargetFresh) {
     openPass();
   }
   closePass();
-  for (; nextScene < s_gpu.pendingScenes.size(); nextScene++) {
+  for (; (nextScene < s_gpu.pendingScenes.size()) && (commands != nullptr); nextScene++) {
     RecordPendingScene(commands, s_gpu.pendingScenes[nextScene], false);
+  }
+  /* the cursor pass and the blit: two more descriptor writes, on the command buffer that presents */
+  if ((commands != nullptr) && DescriptorBudgetExceeded(2)) {
+    commands = SplitCommandBuffer(commands);
+  }
+  if (commands == nullptr) {
+    /* the frame parts recorded so far are submitted; this frame is not presented */
+    if (!s_gpu.frameFailureLogged) {
+      Thandor_Log("SDL_GPU: no command buffer for the rest of the frame (%s)", SDL_GetError());
+      s_gpu.frameFailureLogged = true;
+    }
+    NoteFrameResult(true);
+    EndGpuFrame();
+    GpuUiTextures_ReleaseRetired();
+    return false;
   }
 
   /* present: the frame target (with the cursor on a copy of it) letterboxed into the swapchain; without a
@@ -2327,7 +2500,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
     blit.filter = SDL_GPU_FILTER_LINEAR;
     SDL_BlitGPUTexture(commands, &blit);
   }
-  const bool submitted = SDL_SubmitGPUCommandBuffer(commands);
+  const bool submitted = SubmitFrame(commands);
   if (!submitted) {
     thandor::sdl3::LogGpuFailure("SDL_SubmitGPUCommandBuffer frame");
   }
@@ -2346,7 +2519,11 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   times.quads += frameQuads;
   times.batches += frameBatches;
   times.drawCalls += drawCalls;
+  thandor::sdl3::TrimTransferBuffer(s_gpu.device, s_gpu.uploadBuffer, s_gpu.uploadBufferBytes, s_gpu.uploadBufferUse,
+                                    1u << 20);
   EndGpuFrame();
+  /* the cache pages given up at the flush were still drawn from above: released now that the frame is submitted */
+  GpuUiTextures_ReleaseRetired();
   times.flush += SDL_GetPerformanceCounter() - start;
   LogFrameStatistics();
   return submitted;
@@ -2509,6 +2686,7 @@ bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int heig
 
   SDL_GPUCommandBuffer *commands = thandor::sdl3::AcquireGpuCommandBufferLogged(s_gpu.device, "frame");
   if (commands == nullptr) {
+    NoteFrameResult(true);
     return false;
   }
   SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(commands);
@@ -2549,7 +2727,7 @@ bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int heig
     blit.filter = SDL_GPU_FILTER_LINEAR;
     SDL_BlitGPUTexture(commands, &blit);
   }
-  const bool submitted = SDL_SubmitGPUCommandBuffer(commands);
+  const bool submitted = SubmitFrame(commands);
   if (!submitted) {
     thandor::sdl3::LogGpuFailure("SDL_SubmitGPUCommandBuffer software frame");
   }

@@ -97,6 +97,9 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
 void StopGpuDevice() noexcept;
 void GpuWindowChanged() noexcept;
 bool GpuDeviceRunning() noexcept;
+/* True when the frames of the running device keep failing (no command buffer, failed submits: a lost or removed
+   device); the present then starts the renderer again (video.cpp). */
+bool GpuDeviceFailed() noexcept;
 bool GpuFrameActive() noexcept;
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept;
 bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexcept;
