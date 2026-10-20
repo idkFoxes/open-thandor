@@ -14,20 +14,20 @@ Module header: [`ai.h`](../../include/thandor/gameplay/ai.h) · Changelog: `comb
 
 [Source](../../src/gameplay/ai/combat.cpp) · [Header](../../include/thandor/gameplay/ai/combat.h)
 
-No file comment; function families: `AiCombatTarget_*` (2), `AiCombatDecision_*` (1), `AiUnitGroup_*` (1).
+No file comment; function families: `AiCombatTarget_*` (2), `AiCombatDecision_*` (1), `AiCombat_*` (1), `AiUnitGroup_*` (1).
 
-**Functions** (4 public):
+**Functions** (4 public, 1 file-local):
 
 - [`AiCombatDecision_UpdateTargetAssignment`](../../src/gameplay/ai/combat.cpp#L57) - Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases).
-- [`AiUnitGroup_AssignCollectedEntitiesToBestTarget`](../../src/gameplay/ai/combat.cpp#L102) - Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until the group is strong enough (sum &gt;= 0x200), then picks the target with the highest class base ...
-- [`AiCombatTarget_SelectBestCandidate`](../../src/gameplay/ai/combat.cpp#L216) - Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's eight class counters (targetClassShotDamage); a positive sum searches armies of other factions, ...
-- [`AiCombatTarget_EvaluateCandidateScore`](../../src/gameplay/ai/combat.cpp#L331) - Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it.
+- [`AiUnitGroup_AssignCollectedEntitiesToBestTarget`](../../src/gameplay/ai/combat.cpp#L110) - Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until the group is strong enough (sum &gt;= 0x200), then picks the target with the highest class base ...
+- [`AiCombatTarget_SelectBestCandidate`](../../src/gameplay/ai/combat.cpp#L245) - Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's eight class counters (targetClassShotDamage); a positive sum searches armies of other factions, ...
+- [`AiCombatTarget_EvaluateCandidateScore`](../../src/gameplay/ai/combat.cpp#L360) - Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it.
 
 **Data** (1 shared, 11 file-local): `AI_UNIT_GROUP_ATTACK_STRENGTH`.
 
 **Called from** (3 files): [`gameplay/ai/planning`](#file-gameplay-ai-planning) (`AiRuntime_DispatchFactionPlanningPhase`); [`gameplay/army/class_dispatch`](#file-gameplay-army-class-dispatch) (`ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers`); [`gameplay/army/weapons`](#file-gameplay-army-weapons) (`ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate`).
 
-**Depends on** (15 files, names used): [`gameplay/ai/workspaces`](#file-gameplay-ai-workspaces) (5), [`assets/army/catalog`](assets.md#file-assets-army-catalog) (2), [`core/ptr32`](core.md#file-core-ptr32) (2), [`gameplay/army/move_orders`](#file-gameplay-army-move-orders) (2), [`graphics/render/primitives`](graphics.md#file-graphics-render-primitives) (2), [`core/flags`](core.md#file-core-flags) (1), [`core/math/fixed_point`](core.md#file-core-math-fixed-point) (1), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (1), [`gameplay/ai/units`](#file-gameplay-ai-units) (1), [`gameplay/army/combat`](#file-gameplay-army-combat) (1), [`gameplay/army/model_rules`](#file-gameplay-army-model-rules) (1), [`gameplay/faction/runtime`](#file-gameplay-faction-runtime) (1), [`gameplay/session/runtime`](#file-gameplay-session-runtime) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1), [`world/model/types`](world.md#file-world-model-types) (1).
+**Depends on** (17 files, names used): [`gameplay/ai/workspaces`](#file-gameplay-ai-workspaces) (6), [`assets/army/catalog`](assets.md#file-assets-army-catalog) (2), [`core/ptr32`](core.md#file-core-ptr32) (2), [`gameplay/army/move_orders`](#file-gameplay-army-move-orders) (2), [`graphics/render/primitives`](graphics.md#file-graphics-render-primitives) (2), [`core/flags`](core.md#file-core-flags) (1), [`core/math/fixed_point`](core.md#file-core-math-fixed-point) (1), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (1), [`gameplay/ai/units`](#file-gameplay-ai-units) (1), [`gameplay/army/combat`](#file-gameplay-army-combat) (1), [`gameplay/army/model_rules`](#file-gameplay-army-model-rules) (1), [`gameplay/faction/runtime`](#file-gameplay-faction-runtime) (1), [`gameplay/session/runtime`](#file-gameplay-session-runtime) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1), [`world/model/pool`](world.md#file-world-model-pool) (1), [`world/model/runtime`](world.md#file-world-model-runtime) (1), [`world/model/types`](world.md#file-world-model-types) (1).
 
 <a id="file-gameplay-ai-construction"></a>
 #### `construction.cpp / construction.h`
