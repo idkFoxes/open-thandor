@@ -334,6 +334,10 @@ struct GpuState {
   Uint32 captureDownloadBytes = 0;
   FrameTimes frameTimes;
   bool frameFailureLogged = false;
+  /* Direct3D 12: the frame is split into several command buffers by its descriptor writes (kDescriptorWriteBudget) */
+  bool splitCommandBuffers = false;
+  uint32_t descriptorWrites = 0; /* counted for the current command buffer */
+  bool splitLogged = false;
 
   /* compare mode */
   std::vector<uint32_t> compareGpu;      /* the downloaded frame target */
@@ -1116,27 +1120,68 @@ bool RecordSceneUploads(SDL_GPUCommandBuffer *commands, const std::vector<GpuVer
   return true;
 }
 
+/* Direct3D 12 descriptor budget. SDL 3.2.16's Direct3D 12 backend copies a pipeline's sampler and texture
+   descriptors into its command buffer's shader-visible heaps on the first draw after every pipeline bind (and after
+   a changed sampler binding): one sampler and one view descriptor for each of our pipelines and for a blit. A
+   sampler heap holds 2048, a view heap 65536. When the sampler heap is full, SDL creates another pair and loses the
+   old one (never returned to its pool), so such frames leak heaps until the driver refuses one and SDL dereferences
+   NULL (the 1.0.7 crashes). The heaps a command buffer started with go back to the pool when it completes, so the
+   frame is split into several command buffers instead: before a draw that could pass kDescriptorWriteBudget
+   (pipeline binds of the 3D scenes, 2D batches, the cursor pass and the blit, each counted as one write), the open
+   render pass ends, the command buffer is submitted and a new one continues where it stopped (render passes loading
+   the colour and the depth target). One queue runs them in order, so the picture stays the same. The copy passes
+   use no shader-visible descriptors; the swapchain is acquired on the last command buffer, which presents. */
+constexpr uint32_t kDescriptorWriteBudget = 1900;
+
+/* True when writes more descriptor writes would pass the current command buffer's budget (Direct3D 12 only). */
+bool DescriptorBudgetExceeded(uint32_t writes) noexcept
+{
+  return s_gpu.splitCommandBuffers && (s_gpu.descriptorWrites + writes > kDescriptorWriteBudget);
+}
+
+/* Submits commands (no render or copy pass open) and returns a new command buffer for the rest of the frame,
+   nullptr when none can be had. */
+SDL_GPUCommandBuffer *SplitCommandBuffer(SDL_GPUCommandBuffer *commands) noexcept
+{
+  if (!s_gpu.splitLogged) {
+    Thandor_Log("SDL_GPU: frame split into several command buffers (%u descriptor writes, Direct3D 12 budget)",
+                s_gpu.descriptorWrites);
+    s_gpu.splitLogged = true;
+  }
+  if (!SDL_SubmitGPUCommandBuffer(commands)) {
+    thandor::sdl3::LogGpuFailure("SDL_SubmitGPUCommandBuffer frame part");
+  }
+  s_gpu.descriptorWrites = 0;
+  return thandor::sdl3::AcquireGpuCommandBufferLogged(s_gpu.device, "frame part");
+}
+
 /* Records a render pass drawing a scene's runs (vertices uploaded by RecordSceneUploads) into colorTexture with
    s_gpu.depthTarget (cleared to far). loadColor keeps the colour target's pixels (the GPU frame: the 2D draw
-   list cleared the scene's rectangle before), else it is cleared to black. */
-void RecordSceneRuns(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *colorTexture, bool loadColor,
+   list cleared the scene's rectangle before), else it is cleared to black. On Direct3D 12 the pass may continue in
+   a new command buffer (SplitCommandBuffer): commands is then the new one, nullptr when none could be had. */
+void RecordSceneRuns(SDL_GPUCommandBuffer *&commands, SDL_GPUTexture *colorTexture, bool loadColor,
                      const std::vector<GpuRun> &runs, bool haveVertices) noexcept
 {
-  SDL_GPUColorTargetInfo colorTarget;
-  SDL_zero(colorTarget);
-  colorTarget.texture = colorTexture;
-  colorTarget.clear_color = SDL_FColor{0.0f, 0.0f, 0.0f, 1.0f};
-  colorTarget.load_op = loadColor ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_CLEAR;
-  colorTarget.store_op = SDL_GPU_STOREOP_STORE;
-  SDL_GPUDepthStencilTargetInfo depthTarget;
-  SDL_zero(depthTarget);
-  depthTarget.texture = s_gpu.depthTarget;
-  depthTarget.clear_depth = 1.0f;
-  depthTarget.load_op = SDL_GPU_LOADOP_CLEAR;
-  depthTarget.store_op = SDL_GPU_STOREOP_DONT_CARE;
-  depthTarget.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
-  depthTarget.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
-  SDL_GPURenderPass *renderPass = SDL_BeginGPURenderPass(commands, &colorTarget, 1, &depthTarget);
+  /* resume: the continuation of the scene's pass in a new command buffer, loading both targets */
+  auto beginPass = [&](bool resume) {
+    SDL_GPUColorTargetInfo colorTarget;
+    SDL_zero(colorTarget);
+    colorTarget.texture = colorTexture;
+    colorTarget.clear_color = SDL_FColor{0.0f, 0.0f, 0.0f, 1.0f};
+    colorTarget.load_op = (loadColor || resume) ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_CLEAR;
+    colorTarget.store_op = SDL_GPU_STOREOP_STORE;
+    SDL_GPUDepthStencilTargetInfo depthTarget;
+    SDL_zero(depthTarget);
+    depthTarget.texture = s_gpu.depthTarget;
+    depthTarget.clear_depth = 1.0f;
+    depthTarget.load_op = resume ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_CLEAR;
+    /* kept where a split may continue the pass */
+    depthTarget.store_op = s_gpu.splitCommandBuffers ? SDL_GPU_STOREOP_STORE : SDL_GPU_STOREOP_DONT_CARE;
+    depthTarget.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
+    depthTarget.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
+    return SDL_BeginGPURenderPass(commands, &colorTarget, 1, &depthTarget);
+  };
+  SDL_GPURenderPass *renderPass = beginPass(false);
   if (renderPass == nullptr) {
     return;
   }
@@ -1146,19 +1191,28 @@ void RecordSceneRuns(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *colorTextur
     SDL_GPUTextureSamplerBinding atlasBinding{s_gpu.atlas, s_gpu.sampler};
     SDL_GPUGraphicsPipeline *const depthPassPipeline = s_gpu.pipelines[GPU_PIPELINE_ALPHA_DEPTH];
     SDL_GPUGraphicsPipeline *boundPipeline = nullptr;
-    /* Every pipeline bind costs descriptors on Direct3D 12: SDL 3.2.16 copies the fragment sampler and texture
-       descriptors into the command buffer's shader-visible heaps on the first draw after it (the sampler binding
-       itself only when its handles change). A sampler heap holds 2048; when it is full SDL creates another one and
-       loses the old (never returned to its pool), so frames with that many binds leak heaps until the driver
-       refuses one and SDL crashes (1.0.7, dense foliage). Hence as few pipeline switches as possible. */
+    /* Every pipeline bind costs a sampler descriptor on Direct3D 12 (see kDescriptorWriteBudget), so as few
+       pipeline switches as possible. */
     auto bind = [&](SDL_GPUGraphicsPipeline *pipeline) {
       if (pipeline != boundPipeline) {
         SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
         SDL_BindGPUFragmentSamplers(renderPass, 0, &atlasBinding, 1);
         boundPipeline = pipeline;
+        s_gpu.descriptorWrites++;
       }
     };
     for (const GpuRun &run : runs) {
+      /* a run binds at most two pipelines */
+      if (DescriptorBudgetExceeded(2)) {
+        SDL_EndGPURenderPass(renderPass);
+        commands = SplitCommandBuffer(commands);
+        renderPass = (commands != nullptr) ? beginPass(true) : nullptr;
+        if (renderPass == nullptr) {
+          return;
+        }
+        SDL_BindGPUVertexBuffers(renderPass, 0, &binding, 1);
+        boundPipeline = nullptr;
+      }
       SDL_SetGPUScissor(renderPass, &run.scissor);
       /* An alpha-tested run draws its colour pass (alpha pipeline) and its depth pass, in either order: no pixel is
          covered by two of its packets (AppendPacket), so the depth pass only writes where the same triangle's colour
@@ -1702,8 +1756,9 @@ void BuildUiBatches(const Draw2DItem *items, uint32_t count) noexcept
 }
 
 /* Records a scene into the frame target: its uploads, then its runs over the 2D content drawn so far. A scene
-   whose depth target does not fit the frame target (a display mode switch in between) only uploads. */
-void RecordPendingScene(SDL_GPUCommandBuffer *commands, const PendingScene &scene, bool draw) noexcept
+   whose depth target does not fit the frame target (a display mode switch in between) only uploads. commands may
+   be replaced (see RecordSceneRuns). */
+void RecordPendingScene(SDL_GPUCommandBuffer *&commands, const PendingScene &scene, bool draw) noexcept
 {
   if (!RecordSceneUploads(commands, scene.vertices, scene.staging, scene.uploads)) {
     if (!s_gpu.renderFailureLogged) {
@@ -2043,6 +2098,7 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
     return false;
   }
   Thandor_Log("SDL_GPU: %s device created, driver %s", DriverName(renderer), SDL_GetGPUDeviceDriver(s_gpu.device));
+  s_gpu.splitCommandBuffers = (SDL_strcmp(SDL_GetGPUDeviceDriver(s_gpu.device), "direct3d12") == 0);
   thandor::sdl3::LogAddressSpaceDetail("after the GPU device");
   s_gpu.shaderFormat = ShaderFormatOf(renderer);
   s_gpu.window = window;
@@ -2210,6 +2266,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
     EndGpuFrame();
     return false;
   }
+  s_gpu.descriptorWrites = 0;
   /* copy passes first: the UI images converted since the last frame, the streamed image regions, the quads */
   GpuUiTextures_FlushUploads(commands);
   const bool uploaded =
@@ -2225,7 +2282,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   const SDL_Rect wholeTarget{0, 0, targetWidth, targetHeight};
   SDL_GPURenderPass *renderPass = nullptr;
   auto openPass = [&]() {
-    if (renderPass != nullptr) {
+    if ((renderPass != nullptr) || (commands == nullptr)) {
       return;
     }
     SDL_GPUColorTargetInfo colorTarget;
@@ -2263,13 +2320,24 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
         openPass(); /* clears the new target first */
         closePass();
       }
-      for (; nextScene <= match; nextScene++) {
+      for (; (nextScene <= match) && (commands != nullptr); nextScene++) {
         RecordPendingScene(commands, s_gpu.pendingScenes[nextScene], nextScene == match);
+      }
+      if (commands == nullptr) {
+        break;
       }
       continue;
     }
     if (batch.vertexCount == 0) {
       continue;
+    }
+    /* a batch binds a pipeline and its page: one descriptor write (kDescriptorWriteBudget) */
+    if (DescriptorBudgetExceeded(1)) {
+      closePass();
+      commands = SplitCommandBuffer(commands);
+      if (commands == nullptr) {
+        break;
+      }
     }
     openPass();
     if (renderPass == nullptr) {
@@ -2277,14 +2345,28 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
     }
     GpuUi2D_Draw(renderPass, commands, batch.page, batch.firstVertex, batch.vertexCount, wholeTarget, batch.blend,
                  targetWidth, targetHeight);
+    s_gpu.descriptorWrites++;
     drawCalls++;
   }
   if (s_gpu.frameTargetFresh) {
     openPass();
   }
   closePass();
-  for (; nextScene < s_gpu.pendingScenes.size(); nextScene++) {
+  for (; (nextScene < s_gpu.pendingScenes.size()) && (commands != nullptr); nextScene++) {
     RecordPendingScene(commands, s_gpu.pendingScenes[nextScene], false);
+  }
+  /* the cursor pass and the blit: two more descriptor writes, on the command buffer that presents */
+  if ((commands != nullptr) && DescriptorBudgetExceeded(2)) {
+    commands = SplitCommandBuffer(commands);
+  }
+  if (commands == nullptr) {
+    /* the frame parts recorded so far are submitted; this frame is not presented */
+    if (!s_gpu.frameFailureLogged) {
+      Thandor_Log("SDL_GPU: no command buffer for the rest of the frame (%s)", SDL_GetError());
+      s_gpu.frameFailureLogged = true;
+    }
+    EndGpuFrame();
+    return false;
   }
 
   /* present: the frame target (with the cursor on a copy of it) letterboxed into the swapchain; without a
