@@ -759,6 +759,8 @@ static_assert(offsetof(PersistentSettingsImage, pathingMode) == PERSISTENT_SETTI
               "PersistentSettingsImage.pathingMode is [game] pathing (open-thandor)");
 static_assert(offsetof(PersistentSettingsImage, objectiveOverlay) == PERSISTENT_SETTING_OBJECTIVE_OVERLAY,
               "PersistentSettingsImage.objectiveOverlay is [game] objective_overlay (open-thandor)");
+static_assert(offsetof(PersistentSettingsImage, autosave) == PERSISTENT_SETTING_AUTOSAVE,
+              "PersistentSettingsImage.autosave is [game] autosave (open-thandor)");
 static_assert(sizeof(AiKnowledgeParameters) == 0x200,
               "AiKnowledgeParameters keeps its 32-bit layout");
 static_assert(sizeof(AiKnowledgeDataImage) == 0x200,

@@ -230,6 +230,8 @@ language = auto
 pathing = improved
 ; objective box at the top left of the game (the mission objective and its progress): on (default) or off
 objective_overlay = on
+; save a single player game every minute of play to save\autosave.sve (always the same file): on (default) or off
+autosave = on
 
 [network]
 ; player count of a hosted network game (default 4)
