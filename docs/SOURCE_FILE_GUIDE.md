@@ -270,6 +270,7 @@ Module header: [`selection.h`](../include/thandor/gameplay/selection.h) · Chang
 
 Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog: `level` [dev](../CHANGELOG.md#module-gameplay-session-level) · [full](../CHANGELOG_FULL.md#module-gameplay-session-level); `runtime` [dev](../CHANGELOG.md#module-gameplay-session-runtime) · [full](../CHANGELOG_FULL.md#module-gameplay-session-runtime); `savegame` [full](../CHANGELOG_FULL.md#module-gameplay-session-savegame)
 
+- [`autosave.cpp / autosave.h`](source_guide/gameplay.md#file-gameplay-session-autosave) - The autosave (include/thandor/gameplay/session/autosave.h).
 - [`campaign_carryover.cpp / campaign_carryover.h`](source_guide/gameplay.md#file-gameplay-session-campaign-carryover) - no file comment; main functions `OldUnitRuntime_ResetPendingTables`, `OldUnitRuntime_RebuildScenarioReplayTables`, `OldUnitRuntime_MergeMasksAndReplayRecords`
 - [`campaign_progress.cpp / campaign_progress.h`](source_guide/gameplay.md#file-gameplay-session-campaign-progress) - Campaign progress file (docs/plans/campaign_map.md 4.4), save\kampagne.dat: a PCK package in the game's own format, built and read here with native memory only (the package API allocates from the ...
 - [`campaign_progress_session.cpp`](source_guide/gameplay.md#file-gameplay-session-campaign-progress-session) - The session hooks of the campaign progress (docs/plans/campaign_map.md 4.3, 4.5, 7.5): a win recorded when a session ends through the end trigger, the carry-over snapshot taken from the old-unit ...
