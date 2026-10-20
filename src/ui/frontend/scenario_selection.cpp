@@ -445,6 +445,11 @@ void ScenarioCatalog_RebuildLevelRecordListPage
       rowPointerCursor++;
       scenarioRecord++;
     }
+    /* open-thandor: the custom maps of maps\ follow in a local game (single player only, custom_maps.h); a native
+       row array then replaces the one behind the records */
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+      rowPointers = CustomMaps_ListRows(rowPointers,rowCount,&rowCount);
+    }
     control = UiListControl_AsPointerList(&FrontendUi_Image(firstNode)->missionsList);
     if (rowCount != 0) {
       UiPointerList_InitializeColumnLayout(rowCount,reinterpret_cast<Ptr32<void> *>(rowPointers),control);

@@ -66,6 +66,8 @@ Module header: [`rom.h`](../include/thandor/assets/rom.h) · Changelog: `runtime
 Module header: [`scenario.h`](../include/thandor/assets/scenario.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-scenario-catalog)
 
 - [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-scenario-catalog) - no file comment; main functions `CampaignAsset_Fits`, `ScenarioCatalog_RequestRomTransitionStopCallback`, `ScenarioCatalog_Rebuild`
+- [`custom_map_validate.cpp / custom_map_validate.h`](source_guide/assets.md#file-assets-scenario-custom-map-validate) - Validation of user-made maps (.lev + expanded .fld) before the level loaders see them.
+- [`custom_maps.cpp / custom_maps.h`](source_guide/assets.md#file-assets-scenario-custom-maps) - Not in the original: custom maps in maps\&lt;name&gt;\ (see custom_maps.h, docs/custom_maps.md).
 - [`types.h`](source_guide/assets.md#file-assets-scenario-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-shot"></a>
@@ -507,6 +509,7 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 
 - [`campaignmap_selftest.cpp`](source_guide/platform.md#file-platform-selftest-campaignmap-selftest) - OPEN_THANDOR_SELFTEST=campaignmap: the campaign graph, fingerprint, grouping and map layout (src/ui/frontend/campaign_graph.cpp) on the four stock campaigns, built from embedded copies of their level ...
 - [`campaignprogress_selftest.cpp`](source_guide/platform.md#file-platform-selftest-campaignprogress-selftest) - OPEN_THANDOR_SELFTEST=campaignprogress: the campaign progress model and the kampagne.dat package format (src/gameplay/session/campaign_progress.cpp) on fixed models: a round trip of a model with ...
+- [`custommaps_selftest.cpp`](source_guide/platform.md#file-platform-selftest-custommaps-selftest) - OPEN_THANDOR_SELFTEST=custommaps: CustomMap_Validate (assets/scenario/custom_map_validate.h).
 - [`hexscan_selftest.cpp`](source_guide/platform.md#file-platform-selftest-hexscan-selftest) - OPEN_THANDOR_SELFTEST=hexscan: golden hashes of the hexagonal radius scans in src/world/terrain (the six sector walkers and six straight legs of overlay marking A and B, occupancy marking, the ...
 - [`keybindings_panel_selftest.cpp`](source_guide/platform.md#file-platform-selftest-keybindings-panel-selftest) - OPEN_THANDOR_SELFTEST=keybindingspanel: the capture logic and the status texts of the key binding panel (ui/core/key_bindings_panel.h), without UI.
 - [`keybindings_selftest.cpp`](source_guide/platform.md#file-platform-selftest-keybindings-selftest) - OPEN_THANDOR_SELFTEST=keybindings: the key bindings (ui/core/key_bindings.h).

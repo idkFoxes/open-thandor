@@ -656,7 +656,10 @@ MissionObjective MissionObjective_Build(const InGameLevelConditionStorage *level
       break;
     }
   }
-  const TextResourceId shortTextId = TextResource_MissionObjective(levelName,localFaction);
+  /* a custom map ("maps\<name>.", custom_maps.h) has no hand-written objective, even when its name or script is a
+     stock level's */
+  const TextResourceId shortTextId =
+      CustomMaps_IsCustomIdentifier(levelName) ? TEXT_RESOURCE_ID_NONE : TextResource_MissionObjective(levelName,localFaction);
   uint16_t shortText[MISSION_OBJECTIVE_LINE_UNITS];
   if ((shortTextId != TEXT_RESOURCE_ID_NONE) &&
       Objective_ResolvePlain(shortTextId,shortText,MISSION_OBJECTIVE_LINE_UNITS)) {

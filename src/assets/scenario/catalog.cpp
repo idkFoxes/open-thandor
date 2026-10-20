@@ -146,7 +146,8 @@ static ScenarioCatalogRecordCount ScenarioCatalog_MergeAddOnFiles
 /* Rebuilds g_ScenarioCatalog, the list behind the "Choose game" tabs: the single missions of level\level.dat
    and the campaigns of level\campagne.dat, each updated by the add-on files level00..99.dat /
    campagne00..99.dat (records merged by name), followed by the header record of every save\*.sve.
-   The catalog is also what a network host sends to its clients.
+   The catalog is also what a network host sends to its clients. open-thandor: afterwards the custom maps of
+   maps\ are scanned (CustomMaps_Rebuild); they stay outside the catalog, so a host never sends them.
 */
 void ScenarioCatalog_Rebuild()
 
@@ -274,6 +275,8 @@ void ScenarioCatalog_Rebuild()
       saveFilesRemaining--;
     } while (saveFilesRemaining != 0);
   }
+  /* open-thandor: the custom maps of maps\ (single player, never part of the catalog; custom_maps.h) */
+  CustomMaps_Rebuild(g_ScenarioCatalog);
 }
 
 /* Handler of FRONTEND_COMMAND_STOP_ROM_TRANSITION (frontend command signature: player id and three arguments,

@@ -72,6 +72,10 @@
                     every condition kind and postfix form against the expected German / English line 1 and line 2,
                     then every level\*.lev of PATCH01/PATCH00/LEVEL.PCK in the current directory gives each faction
                     with a victory trigger a non-empty line 1 (one log line each); skips the levels without packages
+     custommaps     CustomMap_Validate (custommaps_selftest.cpp): every level\*.lev with its .fld of
+                    PATCH01/PATCH00/LEVEL.PCK in the current directory (also in the derived custom map layout) is
+                    accepted, ~60 corrupted variants of one map are rejected with a reason, then a fuzz loop of
+                    random mutations; fails without the packages
      crash          writes to address 0 to exercise the crash handler, then (if it returns) starts the game
    The differential tests that ran the original machine code (stretchcmp, relaxcmp and the movie decoder
    compare) needed the 32-bit original exe and were removed with the 32-bit build; they had confirmed those
@@ -115,5 +119,8 @@ void Thandor_SelfTestLanguage();
 void Thandor_SelfTestUiAtlas();
 /* OPEN_THANDOR_SELFTEST=objectives (objectives_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestObjectives();
+
+/* OPEN_THANDOR_SELFTEST=custommaps (custommaps_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestCustomMaps();
 
 #endif /* THANDOR_PLATFORM_SELFTEST_SELFTEST_H */

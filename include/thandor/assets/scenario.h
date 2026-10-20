@@ -10,5 +10,6 @@
 
 #include <thandor/assets/scenario/types.h>
 #include <thandor/assets/scenario/catalog.h>
+#include <thandor/assets/scenario/custom_maps.h>
 
 #endif /* THANDOR_ASSETS_SCENARIO_H */
