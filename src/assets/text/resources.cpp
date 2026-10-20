@@ -953,6 +953,9 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
       TextResource_TryResolveMissionObjective(resourceId,outText)) {
     return true; /* not in the original: the hand-written short objectives (objective_texts.cpp) */
   }
+  if (CustomMaps_TryResolveText(resourceId,outText)) {
+    return true; /* not in the original: the titles and descriptions of custom maps (custom_maps.h) */
+  }
   if (g_TextResourceOverrides != nullptr) {
     /* the first entry with this id; its text is the entry of the same index in textPointers */
     for (overrideIndex = 0; overrideIndex < TEXT_RESOURCE_OVERRIDE_CAPACITY; overrideIndex++) {

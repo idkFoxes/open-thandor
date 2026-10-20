@@ -887,6 +887,8 @@ void Game_ApplyLanguage(uint32_t countryCode)
             (0,g_FrontendNetworkEndpointTextUtf16,TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE));
   /* the key binding panel's rows and column widths follow the new texts (nothing happens when it is not shown) */
   KeyBindingsPanel_Refresh();
+  /* the list titles of the custom maps (the other custom map texts are chosen when resolved) */
+  CustomMaps_RefreshLanguage();
   if (g_FrontendRootNode != nullptr) {
     UiNode_InvalidateRoot(&g_FrontendRootNode->frontendRoot.root.base);
   }
