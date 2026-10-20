@@ -339,6 +339,10 @@ struct GpuState {
   /* the fences of the last kFramesInFlight frames (SubmitFrame), a ring; nullptr where none is held */
   SDL_GPUFence *frameFences[3] = {};
   uint32_t nextFrameFence = 0;
+  /* frames in a row whose command buffer could not be had or submitted (GpuDeviceFailed); partFailed: a split part
+     of the current frame failed */
+  uint32_t failedFrames = 0;
+  bool partFailed = false;
 
   /* compare mode */
   std::vector<uint32_t> compareGpu;      /* the downloaded frame target */
@@ -1154,6 +1158,7 @@ SDL_GPUCommandBuffer *SplitCommandBuffer(SDL_GPUCommandBuffer *commands) noexcep
   }
   if (!SDL_SubmitGPUCommandBuffer(commands)) {
     thandor::sdl3::LogGpuFailure("SDL_SubmitGPUCommandBuffer frame part");
+    s_gpu.partFailed = true;
   }
   s_gpu.descriptorWrites = 0;
   return thandor::sdl3::AcquireGpuCommandBufferLogged(s_gpu.device, "frame part");
@@ -1167,11 +1172,20 @@ SDL_GPUCommandBuffer *SplitCommandBuffer(SDL_GPUCommandBuffer *commands) noexcep
    frames), so only a GPU that falls behind holds the game up. */
 constexpr uint32_t kFramesInFlight = sizeof(GpuState::frameFences) / sizeof(SDL_GPUFence *);
 
+/* Counts a frame for GpuDeviceFailed: failed when no command buffer could be had or a submit of it failed. */
+void NoteFrameResult(bool failed) noexcept
+{
+  failed = failed || s_gpu.partFailed;
+  s_gpu.partFailed = false;
+  s_gpu.failedFrames = failed ? s_gpu.failedFrames + 1 : 0;
+}
+
 /* Submits the frame's (last) command buffer, then waits for the frame kFramesInFlight frames ago. False when the
    submit fails. */
 bool SubmitFrame(SDL_GPUCommandBuffer *commands) noexcept
 {
   SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireFence(commands);
+  NoteFrameResult(fence == nullptr);
   if (fence == nullptr) {
     return false;
   }
@@ -2231,6 +2245,13 @@ bool GpuDeviceRunning() noexcept
   return s_gpu.device != nullptr;
 }
 
+bool GpuDeviceFailed() noexcept
+{
+  /* a few frames in a row: one failed submit (a driver hiccup) is no reason to restart */
+  constexpr uint32_t kDeviceFailureFrames = 10;
+  return (s_gpu.device != nullptr) && (s_gpu.failedFrames >= kDeviceFailureFrames);
+}
+
 bool GpuFrameActive() noexcept
 {
   return (s_gpu.device != nullptr) && (s_gpu.mode == GPU_MODE_ON);
@@ -2314,6 +2335,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
       Thandor_Log("SDL_GPU: no command buffer for the frame (%s)", SDL_GetError());
       s_gpu.frameFailureLogged = true;
     }
+    NoteFrameResult(true);
     DropGpuFrame();
     return false;
   }
@@ -2416,6 +2438,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
       Thandor_Log("SDL_GPU: no command buffer for the rest of the frame (%s)", SDL_GetError());
       s_gpu.frameFailureLogged = true;
     }
+    NoteFrameResult(true);
     EndGpuFrame();
     GpuUiTextures_ReleaseRetired();
     return false;
@@ -2663,6 +2686,7 @@ bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int heig
 
   SDL_GPUCommandBuffer *commands = thandor::sdl3::AcquireGpuCommandBufferLogged(s_gpu.device, "frame");
   if (commands == nullptr) {
+    NoteFrameResult(true);
     return false;
   }
   SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(commands);

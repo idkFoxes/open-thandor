@@ -92,6 +92,10 @@ struct VideoState {
   int pitchBytes = 0;
   int cursorDrawX = 0;
   int cursorDrawY = 0;
+  /* the software renderer's SDL_Renderer reported a device reset / loss (SdlVideo_RenderDeviceReset); handled by
+     the next present, under the backend lock */
+  bool renderDeviceReset = false;
+  bool renderDeviceLost = false;
 };
 VideoState s_video;
 
@@ -114,6 +118,7 @@ struct RendererState {
   int appliedUiScale = 1; /* the UI scale N of the running display mode (1: software renderer, none yet) */
   int modeWidth = 0;      /* the running display mode (physical size; the framebuffer is it divided by N) */
   int modeHeight = 0;
+  uint32_t deviceRestarts = 0; /* GPU devices started again after they kept failing (RecoverRenderer) */
 };
 RendererState s_renderer;
 
@@ -661,6 +666,78 @@ uint32_t FallBackAfterUnfinishedStart(uint32_t requested) noexcept
 #endif
 }
 
+/* The software renderer's streaming texture for the width x height framebuffer, letterboxed; false (logged) when
+   SDL cannot make it. */
+bool CreateSoftwareTexture(int width, int height) noexcept
+{
+  SDL_Renderer *sdlRenderer = s_renderer.sdlRenderer.get();
+  thandor::sdl3::TexturePtr texture(
+      SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_STREAMING, width, height));
+  if (!texture) {
+    Thandor_Log("SDL_CreateTexture %dx%d failed: %s", width, height, SDL_GetError());
+    return false;
+  }
+  SDL_SetTextureScaleMode(texture.get(), SDL_SCALEMODE_LINEAR);
+  s_video.texture = std::move(texture);
+  SDL_SetRenderLogicalPresentation(sdlRenderer, width, height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+  return true;
+}
+
+/* A GPU device whose frames keep failing (GpuDeviceFailed: lost or removed) is started again, at most
+   kMaxDeviceRestarts times in a session; after that, or when it cannot start, the next renderer runs. The software
+   renderer is only taken at UI scale 1, where the framebuffer keeps its size (else the next display mode switch
+   changes it). Without any, nothing is shown, but the game runs on. Called by the present under the backend lock;
+   the current frame is dropped. */
+#ifdef THANDOR_RENDERER_SDL_GPU
+void RecoverRenderer() noexcept
+{
+  constexpr uint32_t kMaxDeviceRestarts = 3;
+  const uint32_t failed = s_renderer.active;
+  s_renderer.deviceRestarts++;
+  const uint32_t first = (s_renderer.deviceRestarts <= kMaxDeviceRestarts) ? failed : failed + 1;
+  Thandor_Log("renderer %s: the GPU device keeps failing (lost?), starting %s (restart %u)", RendererName(failed),
+              (first == failed) ? "it again" : "the next renderer", s_renderer.deviceRestarts);
+  s_renderer.active = kNoRenderer;
+  for (uint32_t renderer = first; renderer < PERSISTENT_RENDERER_COUNT; renderer++) {
+    if ((renderer == PERSISTENT_RENDERER_SOFTWARE) && (s_renderer.appliedUiScale != 1)) {
+      break;
+    }
+    if (!StartRenderer(renderer)) {
+      continue;
+    }
+    if ((renderer != PERSISTENT_RENDERER_SOFTWARE) || CreateSoftwareTexture(s_video.width, s_video.height)) {
+      Thandor_Log("renderer %s runs after the GPU device failure", RendererName(renderer));
+      return;
+    }
+  }
+  thandor::sdl3::StopGpuDevice();
+  s_video.texture.reset();
+  s_renderer.sdlRenderer.reset();
+  s_renderer.active = kNoRenderer;
+  Thandor_Log("no renderer could start after the GPU device failure: frames are not shown");
+}
+#endif
+
+/* The software renderer's device reset or loss (SdlVideo_RenderDeviceReset), under the backend lock: SDL drops the
+   textures at a reset, and the whole SDL_Renderer is unusable after a loss. */
+void HandleRenderDeviceReset() noexcept
+{
+  const bool lost = s_video.renderDeviceLost;
+  s_video.renderDeviceReset = false;
+  s_video.renderDeviceLost = false;
+  if ((s_renderer.active != PERSISTENT_RENDERER_SOFTWARE) || !s_renderer.sdlRenderer) {
+    return;
+  }
+  Thandor_Log("software renderer: SDL_Renderer device %s, %s made again", lost ? "lost" : "reset",
+              lost ? "renderer and frame texture" : "frame texture");
+  s_video.texture.reset();
+  if (lost && !StartRenderer(PERSISTENT_RENDERER_SOFTWARE)) {
+    s_renderer.active = kNoRenderer;
+    return;
+  }
+  CreateSoftwareTexture(s_video.width, s_video.height);
+}
+
 /* Makes the requested renderer the running one, falling back Vulkan -> DirectX 12 -> Software. Returns the
    running renderer, kNoRenderer when none starts. */
 uint32_t SwitchRenderer(uint32_t requested) noexcept
@@ -1068,19 +1145,12 @@ bool SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint3
   s_renderer.modeWidth = static_cast<int>(modeWidth);
   s_renderer.modeHeight = static_cast<int>(modeHeight);
   if (renderer == PERSISTENT_RENDERER_SOFTWARE) {
-    SDL_Renderer *sdlRenderer = s_renderer.sdlRenderer.get();
-    thandor::sdl3::TexturePtr texture(SDL_CreateTexture(sdlRenderer, pixelFormat, SDL_TEXTUREACCESS_STREAMING,
-                                                        static_cast<int>(width), static_cast<int>(height)));
-    if (!texture) {
-      Thandor_Log("SDL_CreateTexture %ux%u failed: %s", width, height, SDL_GetError());
+    static_assert(pixelFormat == SDL_PIXELFORMAT_XRGB8888, "CreateSoftwareTexture makes XRGB8888");
+    if (!CreateSoftwareTexture(static_cast<int>(width), static_cast<int>(height))) {
       g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR, 0, 10, 1, 0, g_PackageLastErrorPath);
       *errorCode = FATAL_ERROR_DISPLAY_CREATE_SURFACES;
       return false;
     }
-    SDL_SetTextureScaleMode(texture.get(), SDL_SCALEMODE_LINEAR);
-    s_video.texture = std::move(texture);
-    SDL_SetRenderLogicalPresentation(sdlRenderer, static_cast<int>(width), static_cast<int>(height),
-                                     SDL_LOGICAL_PRESENTATION_LETTERBOX);
   }
   else {
     s_video.texture.reset();
@@ -1137,7 +1207,15 @@ void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer)
     return;
   }
   if ((framebuffer == &g_DisplayFramebufferAccess) && !s_video.framebuffer.empty()) {
+    if (s_video.renderDeviceReset) {
+      HandleRenderDeviceReset();
+    }
 #ifdef THANDOR_RENDERER_SDL_GPU
+    if (GpuDeviceRunning() && GpuDeviceFailed()) {
+      RecoverRenderer(); /* drops this frame: the draw list it recorded belongs to the old device */
+      g_GraphicsBackendAccessState--;
+      return;
+    }
     if (GpuFrameActive()) {
       /* the frame was recorded by the 2D draw list: the GPU draws it and the cursor (no CPU framebuffer pixels) */
       GpuCursorSprite cursor{};
@@ -1167,6 +1245,12 @@ void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer)
     RestoreCursor();
   }
   g_GraphicsBackendAccessState--;
+}
+
+void SdlVideo_RenderDeviceReset(bool lost)
+{
+  s_video.renderDeviceReset = true;
+  s_video.renderDeviceLost = s_video.renderDeviceLost || lost;
 }
 
 GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t captureHeight,uint32_t captureWidth,
