@@ -770,5 +770,11 @@ void FrontendCampaignTab_BindNodes(FrontendUiImage *ui)
   /* "Mission N: <title>" in the selected style (plan 6.2) */
   ui->campaignMissionTitleText.labelFlags = ui->campaignMissionTitleText.labelFlags | UI_LABEL_OWN_STYLE_PALETTE;
   ui->campaignMissionTitleText.styleOverride = g_UiTextStyleSelected & UI_TEXT_STYLE_PALETTE_BYTE;
+  /* the map state and the selection live in module data and outlast a frontend rebuild: start the new tree
+     empty instead of showing (and indexing) the previous menu's campaign until the tab is filled again (Reset,
+     not SetGraph: the copied tree is not relocated yet, so nothing may walk its links here) */
+  FrontendCampaignMapControl_Reset(&ui->campaignMap);
+  s_CampaignTabSelected = -1;
+  s_CampaignTabSelectedNode = -1;
   FrontendCampaignMapControl_SetCallback(&ui->campaignMap,CampaignTab_OnMapNode);
 }

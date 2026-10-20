@@ -864,6 +864,15 @@ void KeyBindingsPanel_Detach()
     g_UiPointerCaptureTarget = UI_NODE_NONE;
     g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
   }
+  /* UiRootStack_Pop drops the tooltip target only when its root chain ends at the closing root; a detached
+     subtree ends at the panel root, so a target in here would outlive the host root */
+  if (KeyBindingsPanel_Contains(g_UiTooltipState.targetNode)) {
+    g_UiTooltipState.targetNode = nullptr;
+  }
+  if (g_UiImageControlHoverTarget != nullptr &&
+      KeyBindingsPanel_Contains(&g_UiImageControlHoverTarget->selectable.base)) {
+    g_UiImageControlHoverTarget = nullptr;
+  }
   parent = root->parent;
   if (parent->firstChild == root) {
     parent->firstChild = root->nextSibling;

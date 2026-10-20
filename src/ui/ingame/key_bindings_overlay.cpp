@@ -117,6 +117,17 @@ void InGameKeyBindingsOverlay_Open(UiNodeBase *sourceNode)
   UiNode_InvalidateRoot(root);
 }
 
+/* True when node lies in the layer's subtree. */
+static bool InGameKeyBindingsOverlay_Contains(UiNodeBase *node)
+{
+  for (; node != nullptr && node != UI_NODE_NONE; node = node->parent) {
+    if (node == &s_InGameKeyBindingsLayer.root.base) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void InGameKeyBindingsOverlay_Close()
 {
   UiNodeBase *layer = &s_InGameKeyBindingsLayer.root.base;
@@ -127,6 +138,19 @@ void InGameKeyBindingsOverlay_Close()
   }
   if (KeyBindingsPanel_IsAttached() && KeyBindingsPanel_Root()->parent == layer) {
     KeyBindingsPanel_Detach();
+  }
+  /* pointer capture and tooltip target on the layer itself: once unlinked its root chain ends at the layer,
+     so neither UiRootStack_Pop nor the in-game teardown would recognise them as belonging to the closing root */
+  if (InGameKeyBindingsOverlay_Contains(g_UiPointerCaptureTarget)) {
+    g_UiPointerCaptureTarget = UI_NODE_NONE;
+    g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
+  }
+  if (InGameKeyBindingsOverlay_Contains(g_UiTooltipState.targetNode)) {
+    g_UiTooltipState.targetNode = nullptr;
+  }
+  if (g_UiImageControlHoverTarget != nullptr &&
+      InGameKeyBindingsOverlay_Contains(&g_UiImageControlHoverTarget->selectable.base)) {
+    g_UiImageControlHoverTarget = nullptr;
   }
   root = layer->parent;
   if (root->firstChild == layer) {
