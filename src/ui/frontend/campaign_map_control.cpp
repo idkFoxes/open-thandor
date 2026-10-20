@@ -305,6 +305,14 @@ int FrontendCampaignMapControl_GetSelectedNode(const FrontendCampaignMapControl 
     return state != nullptr ? state->selectedNode : -1;
 }
 
+void FrontendCampaignMapControl_Reset(const FrontendCampaignMapControl *control)
+{
+    CampaignMapState *state = CampaignMap_State(control);
+    if (state != nullptr) {
+        *state = CampaignMapState{};
+    }
+}
+
 void FrontendCampaignMapControl_SetCallback(FrontendCampaignMapControl *control, FrontendCampaignMapCallback callback)
 {
     CampaignMapState *state = CampaignMap_State(control);

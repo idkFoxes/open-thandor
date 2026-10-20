@@ -53,6 +53,10 @@ void FrontendCampaignMapControl_SetSelectedNode(FrontendCampaignMapControl *cont
 /* -1 when no node is selected. */
 int FrontendCampaignMapControl_GetSelectedNode(const FrontendCampaignMapControl *control);
 
+/* Drops the graph, node states, selection and callback of the control's slot (the state outlives the frontend
+   tree). Touches no node: safe on a freshly copied tree whose links are not relocated yet. */
+void FrontendCampaignMapControl_Reset(const FrontendCampaignMapControl *control);
+
 /* nullptr: no callback. */
 void FrontendCampaignMapControl_SetCallback(FrontendCampaignMapControl *control, FrontendCampaignMapCallback callback);
 
