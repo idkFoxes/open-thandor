@@ -73,8 +73,14 @@ bool GpuUiTextures_Lookup(const GraphicsTextureSourceAsset *asset, uint32_t subr
 /* Records a copy pass into commands with every upload staged since the last flush (call before the render pass
    that samples the pages; WP4 calls it at every present site), then ends the frame: the next lookup of each
    entry validates it again, the streaming pages are refilled from scratch, rectangles freed by evictions become
-   reusable. With a device, a NULL commands keeps everything staged (nothing happens). */
+   reusable. With a device, a NULL commands keeps everything staged (nothing happens). Regions looked up before the
+   flush stay valid for the frame's draws after it: pages the frame end gives up (cache restart, a resized dedicated
+   texture) are only released by GpuUiTextures_ReleaseRetired. */
 void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands);
+
+/* Releases the textures given up during the frame; call once the frame's last command buffer is submitted (or
+   the frame is dropped), so no draw recorded later binds them. */
+void GpuUiTextures_ReleaseRetired();
 
 /* Streaming upload of a CPU image (w x h pixels 0xAARRGGBB, rows pitch BYTES apart) for this frame only: the
    region stays valid until the next GpuUiTextures_FlushUploads has been recorded and must not be used after it.

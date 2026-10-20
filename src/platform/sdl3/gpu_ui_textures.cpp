@@ -109,6 +109,9 @@ struct State {
   std::vector<uint32_t> staging;
   std::vector<PendingUpload> uploads;
   std::vector<PendingFree> pendingFrees;
+  /* textures a draw of the current frame may still bind: released by GpuUiTextures_ReleaseRetired once the frame is
+     submitted (SDL frees a texture's handle at once, only the GPU memory waits for the command buffers) */
+  std::vector<SDL_GPUTexture *> retired;
   SDL_GPUTransferBuffer *transfer = nullptr;
   uint32_t transferBytes = 0;
   uint32_t frame = 1;
@@ -360,16 +363,24 @@ GpuUiTexRegion RegionOf(const Page &page, const Rect &rect, uint32_t width, uint
 
 /* --- frame end ---------------------------------------------------------------------------------------------- */
 
+/* Releases texture after the current frame's submit (GpuUiTextures_ReleaseRetired): a batch of this frame may
+   already hold it. */
+void RetireTexture(SDL_GPUTexture *texture) noexcept
+{
+  if ((s_ui.device != nullptr) && (texture != nullptr)) {
+    s_ui.retired.push_back(texture);
+  }
+}
+
 /* Drops every entry and the packing of all cache pages (pages beyond the soft limit are released). Only called
-   right after a flush, so no staged upload or region of the current frame refers to them any more. */
+   right after a flush, so no staged upload refers to them any more; the frame's batches recorded before the flush
+   still draw from them, so the pages go after the submit (RetireTexture). */
 void ResetCache() noexcept
 {
   s_ui.entries.clear();
   s_ui.pendingFrees.clear();
   while (s_ui.pages.size() > GPU_UI_SOFT_PAGE_LIMIT) {
-    if (s_ui.device != nullptr) {
-      SDL_ReleaseGPUTexture(s_ui.device, s_ui.pages.back().texture);
-    }
+    RetireTexture(s_ui.pages.back().texture);
     s_ui.pages.pop_back();
   }
   for (Page &page : s_ui.pages) {
@@ -478,6 +489,7 @@ void GpuUiTextures_Shutdown(SDL_GPUDevice *device)
   if (!s_ui.active) {
     return;
   }
+  GpuUiTextures_ReleaseRetired();
   if (g_GraphicsTextureSourceReleaseObserver == &ReleaseObserver) {
     g_GraphicsTextureSourceReleaseObserver = nullptr;
   }
@@ -718,9 +730,7 @@ bool GpuUiTextures_DedicatedImage(const void *key, uint32_t generation, const ui
   Dedicated &dedicated = s_ui.dedicated[index];
   bool stale = (dedicated.generation != generation);
   if ((dedicated.width != width) || (dedicated.height != height)) {
-    if (s_ui.device != nullptr) {
-      SDL_ReleaseGPUTexture(s_ui.device, dedicated.texture); /* lives on until the frames using it are done */
-    }
+    RetireTexture(dedicated.texture); /* an earlier draw of this frame may still hold it */
     dedicated.texture = nullptr;
     dedicated.width = width;
     dedicated.height = height;
@@ -757,6 +767,14 @@ bool GpuUiTextures_DedicatedImage(const void *key, uint32_t generation, const ui
   out->w = w;
   out->h = h;
   return true;
+}
+
+void GpuUiTextures_ReleaseRetired()
+{
+  for (SDL_GPUTexture *texture : s_ui.retired) {
+    SDL_ReleaseGPUTexture(s_ui.device, texture);
+  }
+  s_ui.retired.clear();
 }
 
 void GpuUiTextures_Evict(const GraphicsTextureSourceAsset *asset)

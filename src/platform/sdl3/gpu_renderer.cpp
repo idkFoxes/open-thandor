@@ -2226,6 +2226,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   const Draw2DItem *items = Draw2D_FrameItems(&itemCount);
   if (!EnsureFrameTargets()) {
     EndGpuFrame();
+    GpuUiTextures_ReleaseRetired();
     return false;
   }
   BuildUiBatches(items, itemCount);
@@ -2264,6 +2265,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
       s_gpu.frameFailureLogged = true;
     }
     EndGpuFrame();
+    GpuUiTextures_ReleaseRetired();
     return false;
   }
   s_gpu.descriptorWrites = 0;
@@ -2366,6 +2368,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
       s_gpu.frameFailureLogged = true;
     }
     EndGpuFrame();
+    GpuUiTextures_ReleaseRetired();
     return false;
   }
 
@@ -2445,6 +2448,8 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   times.batches += frameBatches;
   times.drawCalls += drawCalls;
   EndGpuFrame();
+  /* the cache pages given up at the flush were still drawn from above: released now that the frame is submitted */
+  GpuUiTextures_ReleaseRetired();
   times.flush += SDL_GetPerformanceCounter() - start;
   LogFrameStatistics();
   return submitted;
