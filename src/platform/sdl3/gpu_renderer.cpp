@@ -422,6 +422,16 @@ void ResetAtlas() noexcept
   }
 }
 
+/* Texels staged for the atlas did not reach it (a frame dropped before its scenes were recorded, a failed scene
+   upload): the slots would keep their hashes over stale texels, so every texture is converted again on its next
+   use. */
+void ForgetAtlasContent() noexcept
+{
+  s_gpu.atlasSlots.clear();
+  s_gpu.shelves.clear();
+  s_gpu.shelvesBottom = 0;
+}
+
 /* A free width x height rectangle (powers of two) of the atlas, false when there is none. */
 bool AllocateAtlasRectangle(uint32_t width, uint32_t height, uint32_t &outX, uint32_t &outY) noexcept
 {
@@ -1794,6 +1804,9 @@ void RecordPendingScene(SDL_GPUCommandBuffer *&commands, const PendingScene &sce
       Thandor_Log("SDL_GPU renderer: drawing a scene failed (%s)", SDL_GetError());
       s_gpu.renderFailureLogged = true;
     }
+    if (!scene.uploads.empty()) {
+      ForgetAtlasContent();
+    }
     return;
   }
   if (draw && !scene.vertices.empty() && (s_gpu.depthTarget != nullptr) &&
@@ -1841,6 +1854,21 @@ void EndGpuFrame() noexcept
   s_gpu.pendingScenes.clear();
   s_gpu.spriteRegions.clear();
   Draw2D_BeginFrame();
+}
+
+/* Ends a frame that is not drawn (no frame target, no command buffer): the UI cache and the 3D atlas drop what was
+   staged for them (converted again on the next use). */
+void DropGpuFrame() noexcept
+{
+  GpuUiTextures_DropUploads();
+  for (const PendingScene &scene : s_gpu.pendingScenes) {
+    if (!scene.uploads.empty()) {
+      ForgetAtlasContent();
+      break;
+    }
+  }
+  EndGpuFrame();
+  GpuUiTextures_ReleaseRetired();
 }
 
 /* Starts the 2D drawing of the GPU frame: the UI texture cache and the 2D pipelines on the device, the draw list
@@ -2259,8 +2287,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   uint32_t itemCount = 0;
   const Draw2DItem *items = Draw2D_FrameItems(&itemCount);
   if (!EnsureFrameTargets()) {
-    EndGpuFrame();
-    GpuUiTextures_ReleaseRetired();
+    DropGpuFrame();
     return false;
   }
   BuildUiBatches(items, itemCount);
@@ -2298,8 +2325,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
       Thandor_Log("SDL_GPU: no command buffer for the frame (%s)", SDL_GetError());
       s_gpu.frameFailureLogged = true;
     }
-    EndGpuFrame();
-    GpuUiTextures_ReleaseRetired();
+    DropGpuFrame();
     return false;
   }
   s_gpu.descriptorWrites = 0;

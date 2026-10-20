@@ -78,6 +78,11 @@ bool GpuUiTextures_Lookup(const GraphicsTextureSourceAsset *asset, uint32_t subr
    texture) are only released by GpuUiTextures_ReleaseRetired. */
 void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands);
 
+/* Ends a frame that is not drawn (no command buffer, no frame target) like FlushUploads, but drops what was staged:
+   the affected images are converted and uploaded again on their next use. Without it the staging buffer and the
+   streaming pages would keep growing until a frame is drawn. */
+void GpuUiTextures_DropUploads();
+
 /* Releases the textures given up during the frame; call once the frame's last command buffer is submitted (or
    the frame is dropped), so no draw recorded later binds them. */
 void GpuUiTextures_ReleaseRetired();

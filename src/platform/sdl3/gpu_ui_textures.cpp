@@ -446,6 +446,18 @@ void HashStagedUploads() noexcept
   }
 }
 
+/* The staged pixels never reach the GPU: every entry converts again on its next use, every dedicated texture is
+   uploaded again. */
+void ForgetStagedUploads() noexcept
+{
+  for (auto &cached : s_ui.entries) {
+    cached.second.hash ^= 0xFFFFFFFFu;
+  }
+  for (Dedicated &dedicated : s_ui.dedicated) {
+    dedicated.generation ^= 0x80000000u;
+  }
+}
+
 bool EnsureTransferBuffer(uint32_t byteCount) noexcept
 {
   if ((s_ui.transfer != nullptr) && (s_ui.transferBytes >= byteCount)) {
@@ -613,12 +625,7 @@ void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands)
     if (mapped == nullptr) {
       /* the pixels of this frame are lost: make every entry convert again on its next use */
       Thandor_Log("GPU UI textures: upload of %u bytes failed: %s", byteCount, SDL_GetError());
-      for (auto &cached : s_ui.entries) {
-        cached.second.hash ^= 0xFFFFFFFFu;
-      }
-      for (Dedicated &dedicated : s_ui.dedicated) {
-        dedicated.generation ^= 0x80000000u; /* upload again on the next use */
-      }
+      ForgetStagedUploads();
     }
     else {
       std::memcpy(mapped, s_ui.staging.data(), byteCount);
@@ -667,6 +674,21 @@ void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands)
       }
       SDL_EndGPUCopyPass(copyPass);
     }
+  }
+  EndFrame();
+}
+
+void GpuUiTextures_DropUploads()
+{
+  if (!s_ui.active) {
+    return;
+  }
+  if (s_ui.device == nullptr) {
+    GpuUiTextures_FlushUploads(nullptr);
+    return;
+  }
+  if (!s_ui.uploads.empty()) {
+    ForgetStagedUploads();
   }
   EndFrame();
 }
@@ -731,6 +753,10 @@ bool GpuUiTextures_DedicatedImage(const void *key, uint32_t generation, const ui
   bool stale = (dedicated.generation != generation);
   if ((dedicated.width != width) || (dedicated.height != height)) {
     RetireTexture(dedicated.texture); /* an earlier draw of this frame may still hold it */
+    /* a staged upload of the old texture (an unflushed frame before) would write into a released texture */
+    if (dedicated.texture != nullptr) {
+      std::erase_if(s_ui.uploads, [&](const PendingUpload &upload) { return upload.dedicated == dedicated.texture; });
+    }
     dedicated.texture = nullptr;
     dedicated.width = width;
     dedicated.height = height;
