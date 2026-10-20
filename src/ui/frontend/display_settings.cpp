@@ -585,7 +585,8 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
    with a GPU renderer running the display mode is set again at once, as "Anwenden" does: same window size, UI at the new
    scale, the UI laid out again), "Bildratenbegrenzung"
    and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync), "Verbesserte Wegfindung" ([game] pathing, the next
-   local session's pathing mode), "Ziel anzeigen" ([game] objective_overlay, the in-game objective box). Edges and UI scale only matter for the GPU renderers:
+   local session's pathing mode), "Ziel anzeigen" ([game] objective_overlay, the in-game objective box), "Automatisch
+   speichern" ([game] autosave). Edges and UI scale only matter for the GPU renderers:
    with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
    a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. With a GPU renderer the
    choice stays the saved one and the note names the scale in use when it differs (or auto chose it). */
@@ -688,6 +689,7 @@ void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
   UiSelectableControl_SetSelected(g_PathingModeSetting == PATHING_MODE_IMPROVED,
                                   &ui->advancedPathingCheckbox.selectable);
   UiSelectableControl_SetSelected(ObjectiveOverlay_Enabled(),&ui->advancedObjectiveOverlayCheckbox.selectable);
+  UiSelectableControl_SetSelected(Autosave_Enabled(),&ui->advancedAutosaveCheckbox.selectable);
   ui->advancedNoteLabel.text =
        THANDOR_PTR32_BITS(gpu ? FrontendAdvancedSettingsPage_UiScaleNote() : TEXT_ID_ADVANCED_NOTE_SOFTWARE);
   FrontendLanguageChoice_Refresh(ui);
@@ -805,6 +807,16 @@ void FrontendAdvancedSettingsAction_SetPathing(UiNodeBase *sourceNode)
 void FrontendAdvancedSettingsAction_SetObjectiveOverlay(UiNodeBase *sourceNode)
 {
   PersistentSettings_WriteObjectiveOverlay(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
+
+  FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_AUTOSAVE (the "Automatisch speichern" checkbox; the click has toggled it): the
+   autosave setting ([game] autosave, gameplay/session/autosave.h); a running single player game follows it from its
+   next due autosave on. */
+void FrontendAdvancedSettingsAction_SetAutosave(UiNodeBase *sourceNode)
+{
+  PersistentSettings_WriteAutosave(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
 
   FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
 }

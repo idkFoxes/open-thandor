@@ -471,6 +471,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers62_63[2]; // Not in the original: action IDs 0x2062-0x2063 (the language choice of the advanced settings page).
     Ptr32<void (void *)> handlers64[1]; // Not in the original: action ID 0x2064 (the pathing checkbox of the advanced settings page).
     Ptr32<void (void *)> handlers65[1]; // Not in the original: action ID 0x2065 (the objective overlay checkbox of the advanced settings page).
+    Ptr32<void (void *)> handlers66[1]; // Not in the original: action ID 0x2066 (the autosave checkbox of the advanced settings page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1368,6 +1369,11 @@ struct FrontendUiImage {
        pathing checkbox); linked between advancedPathingCheckbox and advancedLanguageGroup in the page's sibling chain
        (the language list layer stays the last child). */
     UiTextButtonControl advancedObjectiveOverlayCheckbox; /* +842C g_UiTextButtonControlVtable: Checkbox "Ziel anzeigen" (action FRONTEND_ACTION_ADVANCED_OBJECTIVE_OVERLAY). */
+    /* Not in the original (open-thandor): the autosave setting of the advanced settings page ([game] autosave,
+       gameplay/session/autosave.h), in the right column under "Ziel anzeigen"; linked between
+       advancedObjectiveOverlayCheckbox and advancedLanguageGroup in the page's sibling chain (the language list layer
+       stays the last child). */
+    UiTextButtonControl advancedAutosaveCheckbox; /* +848C g_UiTextButtonControlVtable: Checkbox "Automatisch speichern" (action FRONTEND_ACTION_ADVANCED_AUTOSAVE). */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is

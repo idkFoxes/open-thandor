@@ -2546,11 +2546,12 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         { /* +788C advancedNoteLabel g_UiFocusProxyControlVtable */
             .base = {
                 /* followed by advancedPathingCheckbox (+83CC), then advancedLanguageGroup (+7FD4); open-thandor moved
-                   the note down from y 68..92 to make room for the checkbox */
+                   the note down from y 68..92 to make room for the checkboxes (to 96..120 for the pathing row, to
+                   108..132 for the autosave checkbox below "Ziel anzeigen") */
                 .nextSibling = UI_TEMPLATE_LINK(0x83CC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                 .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
-                .leftOffset = -288, .topOffset = 96, .rightOffset = 288, .bottomOffset = 120,
+                .leftOffset = -288, .topOffset = 108, .rightOffset = 288, .bottomOffset = 132,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .text = THANDOR_PTR32_BITS(TEXT_ID_ADVANCED_NOTE_SOFTWARE)},
@@ -2893,7 +2894,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         { /* +842C advancedObjectiveOverlayCheckbox g_UiTextButtonControlVtable */
             .selectable = {
                 .base = {
-                    .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    /* followed by advancedAutosaveCheckbox (+848C), then advancedLanguageGroup (+7FD4) */
+                    .nextSibling = UI_TEMPLATE_LINK(0x848C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                     .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = 53, .topOffset = 60, .rightOffset = 288, .bottomOffset = 84,
@@ -2901,4 +2903,19 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
                 .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_OBJECTIVE_OVERLAY},
             .textResourceId = TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY},
+        /* not in the original (open-thandor): the autosave checkbox of the advanced settings page ([game] autosave),
+           in the right column under "Ziel anzeigen" (x 53..288, y 84..108; the note below moved down to make room),
+           between advancedObjectiveOverlayCheckbox and advancedLanguageGroup in the page's sibling chain; the open
+           language list covers it */
+        { /* +848C advancedAutosaveCheckbox g_UiTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = 53, .topOffset = 84, .rightOffset = 288, .bottomOffset = 108,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_AUTOSAVE},
+            .textResourceId = TEXT_ID_ADVANCED_AUTOSAVE},
 };
