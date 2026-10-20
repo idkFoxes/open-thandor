@@ -26,6 +26,9 @@ A mission map for the campaigns: replay any mission you have reached, without sa
 - **Progress without savegames:** every won mission is recorded automatically and unlocks the next one(s). The
   progress is kept in `save\kampagne.dat` and survives quitting the game; a damaged file is set aside as
   `kampagne.bad` and the progress starts empty. Uninstalling keeps the file, like your saves.
+- **Custom maps (experimental, single player):** every folder `maps\<name>\` next to the game with `<name>.lev`,
+  `<name>.fld` and an optional `map.ini` (title and description, per language) appears in the *Einzelspiel* list,
+  marked *(custom map)*. Network games neither list nor send them. Details: [custom_maps.md](custom_maps.md).
 
 #### Kept on purpose
 
@@ -56,6 +59,10 @@ Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder
   frei. Der Fortschritt steht in `save\kampagne.dat` und bleibt nach dem Beenden erhalten; eine beschädigte Datei
   wird als `kampagne.bad` beiseitegelegt, und der Fortschritt beginnt leer. Die Deinstallation lässt die Datei wie
   die Spielstände liegen.
+- **Eigene Karten (experimentell, nur Einzelspieler):** Jeder Ordner `maps\<Name>\` neben dem Spiel mit
+  `<Name>.lev`, `<Name>.fld` und optional `map.ini` (Titel und Beschreibung, je Sprache) erscheint in der Liste
+  *Einzelspiel*, gekennzeichnet mit *(eigene Karte)*. Netzwerkspiele zeigen und senden sie nicht. Einzelheiten:
+  [custom_maps.md](custom_maps.md).
 
 #### Bewusst beibehalten
 

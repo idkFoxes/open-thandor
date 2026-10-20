@@ -66,6 +66,8 @@ Module header: [`rom.h`](../include/thandor/assets/rom.h) · Changelog: `runtime
 Module header: [`scenario.h`](../include/thandor/assets/scenario.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-scenario-catalog)
 
 - [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-scenario-catalog) - no file comment; main functions `CampaignAsset_Fits`, `ScenarioCatalog_RequestRomTransitionStopCallback`, `ScenarioCatalog_Rebuild`
+- [`custom_map_validate.cpp / custom_map_validate.h`](source_guide/assets.md#file-assets-scenario-custom-map-validate) - STUB (experimental/custom-maps): accepts every map.
+- [`custom_maps.cpp / custom_maps.h`](source_guide/assets.md#file-assets-scenario-custom-maps) - Not in the original: custom maps in maps\&lt;name&gt;\ (see custom_maps.h, docs/custom_maps.md).
 - [`types.h`](source_guide/assets.md#file-assets-scenario-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-shot"></a>
