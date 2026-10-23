@@ -28,6 +28,7 @@ __declspec(dllimport) BOOL __stdcall FileTimeToDosDateTime(FILETIME * lpFileTime
 __declspec(dllimport) BOOL __stdcall FindClose(HANDLE hFindFile);
 __declspec(dllimport) HANDLE __stdcall FindFirstFileA(LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData);
 __declspec(dllimport) BOOL __stdcall FindNextFileA(HANDLE hFindFile, LPWIN32_FIND_DATAA lpFindFileData);
+__declspec(dllimport) BOOL __stdcall FlushFileBuffers(HANDLE hFile);
 __declspec(dllimport) LPSTR __stdcall GetCommandLineA(void);
 __declspec(dllimport) BOOL __stdcall GetComputerNameA(LPSTR lpBuffer, LPDWORD nSize);
 __declspec(dllimport) DWORD __stdcall GetCurrentDirectoryA(DWORD nBufferLength, LPSTR lpBuffer);

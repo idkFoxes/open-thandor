@@ -124,6 +124,7 @@ struct PersistentSettingsImage {
     uint32_t uiScale; /* open-thandor: PERSISTENT_SETTING_UI_SCALE (0 = auto) */
     uint32_t vsync; /* open-thandor: PERSISTENT_SETTING_VSYNC (0 = on) */
     uint32_t frameLimit; /* open-thandor: PERSISTENT_SETTING_FRAME_LIMIT (0 = no limit) */
+    uint32_t freeC8_FF[14]; /* open-thandor: room for further settings (PERSISTENT_SETTINGS_IMAGE_BYTES); never in thandor.dat */
 };
 
 #endif /* THANDOR_CORE_SETTINGS_TYPES_H */

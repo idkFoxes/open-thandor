@@ -1,0 +1,2 @@
+# the settings fixtures are byte-exact files (CRLF, CR-only, UTF-16, binary thandor.dat): no line-end conversion
+tools/test/fixtures/** -text

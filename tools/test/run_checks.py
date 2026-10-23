@@ -6,6 +6,11 @@ usage: run_checks.py GAME_DIR [--new TEST_EXE] [--old PREVIOUS_TEST_EXE] [--map-
 GAME_DIR is a game directory with the game data. Every check runs in its own linked copy GAME_DIR_chk_<name>
 (hard links to the data files, own executable, settings, log and save folder; the tools started from here make
 further copies next to it), windowed, with its own UDP ports:
+  ini          the settings self-tests, no game started: OPEN_THANDOR_SELFTEST=settings with the fixture
+               tools/test/fixtures/ini/old_dat_clean.dat as thandor.dat (fixed text and thandor.dat migration round
+               trip), then OPEN_THANDOR_SELFTEST=inifixtures over tools/test/fixtures/ini (old versions' and broken
+               thandor.ini files through the real load and save; "pending A/B" checks may fail, they are counted
+               as expected-fail; work directories in the copy's ini_work)
   determinism  run_determinism.py --reference tools/test/determinism_reference (3 instances, ports 960-962)
   aihash       compare_map_hash.py stromschnelle 1400: two copies of the new build, plus the --old build if
                given; all must record identical state hashes (ports 980-982)
@@ -66,7 +71,7 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 PRIVATE = ('thandor.exe', 'thandor.sym', 'sdl3.dll', 'thandor.dat', 'thandor.ini', 'thandor.log',
            'crash.log', 'crash_raw.log', 'hang.log', 'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
-CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps']
+CHECKS = ['ini', 'determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps']
 # timing sensitive: a failure in the parallel run is retried alone (a real regression shows up again in the retry).
 # Saveload: a system-wide stall of several seconds (seen in several instances at once) leaves a hang.log, which the
 # check counts.
@@ -74,7 +79,7 @@ RETRY_ALONE = ('determinism', 'aihash', 'saveload', 'multiplayer', 'maps')
 GAME_BUDGET = 16  # game instances at once over all checks (the CPU gate may allow fewer)
 # start order: the longest checks first (maps, then campaign and aihash), the quick ones while those run
 START_ORDER = ['maps', 'campaign', 'aihash', 'determinism', 'multiplayer', 'pixels', 'saveload',
-               'textedit']
+               'textedit', 'ini']
 INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedit': 1, 'multiplayer': 2,
              'campaign': 12}
 # missions that end at once when started directly: they need the previous level's units (campaign check)
@@ -173,6 +178,44 @@ def run_game(folder, arguments, env, timeout, port):
 
 
 # ---------------------------------------------------------------------------------------------------- checks
+
+def check_ini():
+    folder = make_copy('ini', args.new)
+    fixtures = os.path.join(HERE, 'fixtures', 'ini')
+    # the settings self-test migrates the thandor.dat of the current directory: a fixed file in the original layout
+    for entry in ('thandor.ini', 'thandor.dat'):
+        if os.path.exists(os.path.join(folder, entry)):
+            os.remove(os.path.join(folder, entry))
+    shutil.copy(os.path.join(fixtures, 'old_dat_clean.dat'), os.path.join(folder, 'thandor.dat'))
+    log = open(os.path.join(out_dir, 'ini.txt'), 'w', encoding='utf-8', errors='replace')
+    exited, crashed, text = run_game(folder, '', {'OPEN_THANDOR_SELFTEST': 'settings'}, 60, 990)
+    log.write('==== settings: exited %s, crash/hang %s\n%s\n' % (exited, crashed, text))
+    problems = []
+    if crashed or not exited:
+        problems.append('settings: %s' % ('crash/hang' if crashed else 'timeout'))
+    if 'settings: fixed text ok' not in text:
+        problems.append('settings: fixed text not ok')
+    if '-> image: identical' not in text:
+        problems.append('settings: thandor.dat round trip not identical')
+    work = os.path.join(folder, 'ini_work')
+    shutil.rmtree(work, ignore_errors=True)
+    exited, crashed, text = run_game(folder, '', {'OPEN_THANDOR_SELFTEST': 'inifixtures',
+                                                  'OPEN_THANDOR_INI_FIXTURES': fixtures,
+                                                  'OPEN_THANDOR_INI_OUT': work}, 120, 990)
+    log.write('==== inifixtures: exited %s, crash/hang %s\n%s\n' % (exited, crashed, text))
+    log.close()
+    result = [l for l in text.splitlines() if l.startswith('inifixtures: ok') or l.startswith('inifixtures: FAILED')]
+    if crashed or not exited:
+        problems.append('inifixtures: %s' % ('crash/hang' if crashed else 'timeout'))
+    if not result or not result[-1].startswith('inifixtures: ok'):
+        failed = [l.split(': ', 1)[0].split()[-1] for l in text.splitlines()
+                  if l.startswith('inifixtures ') and ': FAILED' in l]
+        problems.append('inifixtures: %s' % (('FAILED: ' + ', '.join(failed)) if failed else 'no result line'))
+    summary = result[-1].split(', ', 1)[1] if result else ''
+    summary = ', '.join(part for part in summary.split(', ') if 'cases' in part or 'checks' in part or 'pending' in part
+                        or 'expected-fail' in part)
+    return ('FAIL' if problems else 'PASS'), '; '.join(problems) or 'settings ok; inifixtures ' + summary
+
 
 def check_determinism():
     folder = make_copy('det', args.new)

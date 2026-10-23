@@ -1,0 +1,2 @@
+# v1_0_7.ini with CR-only line ends: without CR as a line end the whole file is one comment line
+pending A: include: v1_0_7.expect

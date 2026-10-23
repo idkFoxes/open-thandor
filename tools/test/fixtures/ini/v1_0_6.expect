@@ -1,0 +1,14 @@
+# thandor.ini as 1.0.6 writes it on a fresh installation without thandor.dat: only the keys the menus wrote
+display.adapter = 0
+display.width = 2560
+display.height = 1440
+display.bits_per_pixel = 32
+display.renderer = d3d12
+display.display_mode = fullscreen
+graphics.ui_scale = 2
+graphics.vsync = off
+graphics.frame_limit = 144
+sound.effects_volume = 16384
+game.player_name = "Spieler"
+game.language_country_code = 0
+others = <default>

@@ -1,0 +1,2 @@
+# v1_0_7.ini as UTF-16 LE without BOM (detected by the NUL bytes of the ASCII text)
+pending A: include: v1_0_7.expect

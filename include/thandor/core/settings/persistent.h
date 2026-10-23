@@ -8,6 +8,8 @@
 #ifndef THANDOR_CORE_SETTINGS_PERSISTENT_H
 #define THANDOR_CORE_SETTINGS_PERSISTENT_H
 
+#include <string>
+#include <vector>
 #include <thandor/core/settings/types.h>
 #include <thandor/core/contracts.h>
 
@@ -36,6 +38,9 @@ inline constexpr auto PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS = 0x40; /* autom
 inline constexpr auto PERSISTENT_SETTING_GAME_SPEED_PERCENT = 0x44; /* default 100 */
 inline constexpr auto PERSISTENT_SETTING_CAMERA_SCROLL_STEP = 0x48; /* default 0x20 */
 inline constexpr auto PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN = 0x4C; /* Q15, default 0x8000 */
+/* 0x50..0x5B: unused by the original (thandor.ini [reserved] dword_50/54/58); not taken over from thandor.dat */
+inline constexpr auto PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET = 0x50;
+inline constexpr auto PERSISTENT_SETTINGS_DAT_UNUSED_BYTES = 12;
 inline constexpr auto PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS = 0x5C; /* link rotation zoom/tilt, hide panel */
 inline constexpr auto PERSISTENT_SETTING_PLAYER_NAME = 0x60; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
 inline constexpr auto PERSISTENT_SETTING_GAME_NAME = 0x88; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
@@ -68,7 +73,11 @@ inline constexpr auto PERSISTENT_VSYNC_OFF = 1;
 inline constexpr auto PERSISTENT_VSYNC_COUNT = 2;
 inline constexpr auto PERSISTENT_FRAME_LIMIT_OFF = 0; /* default: no frame rate limit */
 inline constexpr auto PERSISTENT_FRAME_LIMIT_MAX = 1000; /* larger saved values are read as no limit; the menu offers 60, 120, 144 */
-inline constexpr auto PERSISTENT_SETTINGS_IMAGE_BYTES = 200; /* size of the settings file and of the in-memory image */
+inline constexpr auto PERSISTENT_SETTINGS_DAT_BYTES = 200; /* size of the original's thandor.dat (read as migration source) */
+/* open-thandor: the in-memory image is larger than thandor.dat (room for further settings past 0xC8); it is only
+   held in memory and saved as thandor.ini keys, never as bytes (not in savegames, network packets or the lobby).
+   Its 64 dwords are the 64 bits of the present/written masks. */
+inline constexpr auto PERSISTENT_SETTINGS_IMAGE_BYTES = 256;
 /* The bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS, _MAP_MOUSE_OPTION_FLAGS and _MOUSE_LINK_PANEL_OPTION_FLAGS are
    the flag enum classes PersistentSoundOptionFlags, PersistentMapMouseOptionFlags and
    PersistentMouseLinkPanelOptionFlags (settings/types.h); the typed accessors below read and write those dwords. */
@@ -128,13 +137,38 @@ inline void PersistentSettings_WriteMouseLinkPanelOptions(PersistentMouseLinkPan
    (Write leaves a dword that was not loaded reading its default). */
 void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
 
+/* open-thandor: what a thandor.ini holds beyond the keys of the key table (keys of a newer version, sections of
+   other tools), kept so that a rewrite by this version does not lose it: per section, in file order, the
+   trimmed lines as they were. A known section (one of the key table's) keeps its unknown key lines, each with
+   the comment lines directly above it; a foreign section keeps all its lines, comments included. Sections that
+   appear twice are merged. Native memory (not the arena), bounded by PersistentSettings_ParseIniWithExtras. */
+struct PersistentSettingsIniExtras {
+  struct Section {
+    std::string name; /* as in the file, trimmed; matched case-insensitively */
+    bool known;       /* a section of the key table */
+    std::vector<std::string> lines;
+  };
+  std::vector<Section> sections;
+  size_t byteCount = 0; /* the lines' total length */
+};
+
 /* open-thandor: the settings are saved as thandor.ini (thandor.dat is only read, as a migration source).
    FormatIni writes the ini text of the keys whose dwords are in presentMask (bit i = byte offset 4 * i) in a
-   fixed key order and returns the text length; ParseIni parses ini text into image (zeroed by the caller) and
-   returns the mask of the dwords it set (unknown keys and values that do not parse are ignored). */
+   fixed key order, followed in each section by its kept unknown keys and at the end by the kept foreign
+   sections of the loaded thandor.ini, and returns the text length; FormatIniWithExtras does the same with the
+   given extras (nullptr: none). ParseIni parses ini text into image (zeroed by the caller) and returns the mask
+   of the dwords it set (values that do not parse or are out of range are ignored); ParseIniWithExtras also
+   collects the unknown keys and sections into extras (cleared first; nullptr: dropped, as ParseIni). */
 uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity);
 
+uint32_t PersistentSettings_FormatIniWithExtras(const uint8_t *image, uint64_t presentMask,
+                                                const PersistentSettingsIniExtras *extras, char *out,
+                                                uint32_t capacity);
+
 uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image);
+
+uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length, uint8_t *image,
+                                               PersistentSettingsIniExtras *extras);
 /* open-thandor: the path of thandor.ini (UTF-16; the bare file name, i.e. the current directory, until a load
    found it in the executable directory). */
 const uint16_t *PersistentSettings_IniPathUtf16();
