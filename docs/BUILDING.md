@@ -150,7 +150,9 @@ directory, then next to `thandor.exe`, and rewrites it when a setting changed in
 hand while the game is not running: a missing key means the game's default, values are
 decimal or `0x` hex, switches `true`/`false`, volumes 0..32768 or a percentage (`effects_volume = 50%`),
 names in quotes (at most 20 characters; after the closing quote a `;` comment may follow). The file may be
-UTF-8 or UTF-16 (it is written back as UTF-8). Keys and sections the game does not know (for example those of a
+UTF-8 or UTF-16 (it is written back as UTF-8). A value outside what the game's menus can set (for example
+`width` below 640 or `speed_percent` outside 80..120) is not used: the game takes its default and notes it in
+`thandor.log`. Keys and sections the game does not know (for example those of a
 newer version) are kept when it rewrites the file: unknown keys at the end of their section, together with the
 comment lines directly above them, other sections with all their lines at the end of the file. Your own comments
 above the game's keys are not kept (the game writes its own comment there).

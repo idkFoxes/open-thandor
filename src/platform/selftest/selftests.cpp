@@ -933,6 +933,125 @@ static void SelfTest_SettingsTextForms()
     Thandor_Log("settings: text forms %s", failures == 0 ? "ok" : "FAILED");
 }
 
+/* settings: the range checks of the key table. Every value the game's menus can write is loaded (the limits of
+   each slider and of the listed values); one past each limit, a negative number for an unsigned key and an
+   enumeration number without a name are not. Logs "settings: ranges ok, N cases" or the failed cases. */
+static void SelfTest_SettingsRanges()
+{
+    struct RangeCase {
+        const char *section;
+        const char *line;
+        uint32_t offset;
+        bool loaded;
+    };
+    static const RangeCase cases[] = {
+        {"display", "width = 640", PERSISTENT_SETTING_DISPLAY_WIDTH, true},
+        {"display", "width = 3840", PERSISTENT_SETTING_DISPLAY_WIDTH, true},
+        {"display", "width = 16384", PERSISTENT_SETTING_DISPLAY_WIDTH, true},
+        {"display", "width = 639", PERSISTENT_SETTING_DISPLAY_WIDTH, false},
+        {"display", "width = 16385", PERSISTENT_SETTING_DISPLAY_WIDTH, false},
+        {"display", "width = -1024", PERSISTENT_SETTING_DISPLAY_WIDTH, false},
+        {"display", "height = 480", PERSISTENT_SETTING_DISPLAY_HEIGHT, true},
+        {"display", "height = 2160", PERSISTENT_SETTING_DISPLAY_HEIGHT, true},
+        {"display", "height = 479", PERSISTENT_SETTING_DISPLAY_HEIGHT, false},
+        {"display", "adapter = 0", PERSISTENT_SETTING_ADAPTER_INDEX, true},
+        {"display", "adapter = 16", PERSISTENT_SETTING_ADAPTER_INDEX, false},
+        {"display", "bits_per_pixel = 16", PERSISTENT_SETTING_BITS_PER_PIXEL, true},
+        {"display", "bits_per_pixel = -32", PERSISTENT_SETTING_BITS_PER_PIXEL, false},
+        {"display", "renderer = software", PERSISTENT_SETTING_RENDERER, true},
+        {"display", "renderer = 2", PERSISTENT_SETTING_RENDERER, true},
+        {"display", "renderer = 3", PERSISTENT_SETTING_RENDERER, false},
+        {"display", "display_mode = window", PERSISTENT_SETTING_DISPLAY_MODE_KIND, true},
+        {"display", "display_mode = 3", PERSISTENT_SETTING_DISPLAY_MODE_KIND, false},
+        {"graphics", "shading = true", PERSISTENT_SETTING_SHADING_ENABLED, true},
+        {"graphics", "shading = 2", PERSISTENT_SETTING_SHADING_ENABLED, false},
+        {"graphics", "texture_quality = high", PERSISTENT_SETTING_TEXTURE_QUALITY, true},
+        {"graphics", "texture_quality = 2", PERSISTENT_SETTING_TEXTURE_QUALITY, true},
+        {"graphics", "texture_quality = 3", PERSISTENT_SETTING_TEXTURE_QUALITY, false},
+        {"graphics", "texture_quality = -1", PERSISTENT_SETTING_TEXTURE_QUALITY, false},
+        {"graphics", "model_detail = 16384", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, true},
+        {"graphics", "model_detail = 65536", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, true},
+        {"graphics", "model_detail = 262144", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, true},
+        {"graphics", "model_detail = 16383", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, false},
+        {"graphics", "model_detail = 262145", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, false},
+        {"graphics", "gpu_rasterization = exact", PERSISTENT_SETTING_GPU_RASTERIZATION, true},
+        {"graphics", "gpu_rasterization = 2", PERSISTENT_SETTING_GPU_RASTERIZATION, false},
+        {"graphics", "ui_scale = auto", PERSISTENT_SETTING_UI_SCALE, true},
+        {"graphics", "ui_scale = 3", PERSISTENT_SETTING_UI_SCALE, true},
+        {"graphics", "ui_scale = 4", PERSISTENT_SETTING_UI_SCALE, false},
+        {"graphics", "vsync = off", PERSISTENT_SETTING_VSYNC, true},
+        {"graphics", "vsync = 2", PERSISTENT_SETTING_VSYNC, false},
+        {"graphics", "frame_limit = 0", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 60", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 120", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 144", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 1000", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 1001", PERSISTENT_SETTING_FRAME_LIMIT, false},
+        {"sound", "effects_volume = 0", PERSISTENT_SETTING_EFFECTS_GAIN, true},
+        {"sound", "effects_volume = 32768", PERSISTENT_SETTING_EFFECTS_GAIN, true},
+        {"sound", "music_volume = 100%", PERSISTENT_SETTING_MUSIC_GAIN, true},
+        {"sound", "movie_volume = 32769", PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN, false},
+        {"sound", "movie_alternate_volume = 101%", PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN, false},
+        {"sound", "music_volume = -1", PERSISTENT_SETTING_MUSIC_GAIN, false},
+        {"game", "speed_percent = 80", PERSISTENT_SETTING_GAME_SPEED_PERCENT, true},
+        {"game", "speed_percent = 120", PERSISTENT_SETTING_GAME_SPEED_PERCENT, true},
+        {"game", "speed_percent = 79", PERSISTENT_SETTING_GAME_SPEED_PERCENT, false},
+        {"game", "speed_percent = 121", PERSISTENT_SETTING_GAME_SPEED_PERCENT, false},
+        {"game", "scroll_step = 8", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, true},
+        {"game", "scroll_step = 128", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, true},
+        {"game", "scroll_step = 7", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, false},
+        {"game", "scroll_step = 129", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, false},
+        {"game", "scroll_step = -32", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, false},
+        {"game", "map_mouse_options = 0x7", PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS, true},
+        {"game", "language_country_code = 49", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, true},
+        {"game", "language_country_code = -49", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, false},
+        {"network", "players = 2", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, true},
+        {"network", "players = 8", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, true},
+        {"network", "players = 1", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, false},
+        {"network", "players = 9", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, false},
+    };
+    uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    unsigned failures = 0;
+    char text[128];
+
+    for (const RangeCase &range : cases) {
+        uint64_t mask;
+        int length = snprintf(text, sizeof text, "[%s]\r\n%s\r\n", range.section, range.line);
+        memset(image, 0, sizeof image);
+        mask = PersistentSettings_ParseIni(text, (uint32_t)length, image);
+        if (((mask >> (range.offset / 4)) & 1) != (range.loaded ? 1u : 0u)) {
+            Thandor_Log("settings: ranges: [%s] %s %s, expected %s", range.section, range.line,
+                        range.loaded ? "not loaded" : "loaded", range.loaded ? "loaded" : "not");
+            failures++;
+        }
+    }
+    /* a width or height out of range drops the whole mode */
+    {
+        static const char modeText[] = "[display]\r\nwidth = 1024\r\nheight = 100\r\n";
+        memset(image, 0, sizeof image);
+        if ((PersistentSettings_ParseIni(modeText, (uint32_t)(sizeof modeText - 1), image) &
+             ((uint64_t)1 << (PERSISTENT_SETTING_DISPLAY_WIDTH / 4))) != 0) {
+            Thandor_Log("settings: ranges: width kept with a height out of range");
+            failures++;
+        }
+    }
+    /* every gain step of the volume sliders (0..0x8000 in steps of 0x800) */
+    for (uint32_t gain = 0; gain <= 0x8000; gain += 0x800) {
+        int length = snprintf(text, sizeof text, "[sound]\r\neffects_volume = %u\r\n", gain);
+        memset(image, 0, sizeof image);
+        if (((PersistentSettings_ParseIni(text, (uint32_t)length, image) >> (PERSISTENT_SETTING_EFFECTS_GAIN / 4)) & 1) == 0) {
+            Thandor_Log("settings: ranges: effects_volume = %u not loaded", gain);
+            failures++;
+        }
+    }
+    if (failures == 0) {
+        Thandor_Log("settings: ranges ok, %u cases", (unsigned)(sizeof cases / sizeof cases[0]));
+    }
+    else {
+        Thandor_Log("settings: ranges FAILED (%u cases)", failures);
+    }
+}
+
 /* OPEN_THANDOR_SELFTEST=settings: the thandor.ini format. Parses a fixed ini text (all value forms, unknown and
    missing keys) and checks the image; then, when thandor.dat is in the current directory, writes its image as
    ini text, parses that back and compares (the migration), and when thandor.ini is there too, compares it
@@ -967,7 +1086,7 @@ static void Thandor_SelfTestSettings()
     SELFTEST_SETTING(PERSISTENT_SETTING_DISPLAY_MODE_KIND, 2);
     SELFTEST_SETTING(PERSISTENT_SETTING_SHADING_ENABLED, 0);
     SELFTEST_SETTING(PERSISTENT_SETTING_TEXTURE_QUALITY, TEXTURE_QUALITY_LOW);
-    SELFTEST_SETTING(PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, -3);
+    /* model_detail = -3 is outside the slider range 0x4000..0x40000: not loaded */
     SELFTEST_SETTING(PERSISTENT_SETTING_SOUND_OPTION_FLAGS, ToBits(PERSISTENT_SOUND_OPTION_EFFECTS)); /* default 3 minus music */
     SELFTEST_SETTING(PERSISTENT_SETTING_EFFECTS_GAIN, 0x4000);
     SELFTEST_SETTING(PERSISTENT_SETTING_MUSIC_GAIN, 0x4000);
@@ -991,6 +1110,7 @@ static void Thandor_SelfTestSettings()
                 (unsigned long long)mask);
     SelfTest_SettingsExtras();
     SelfTest_SettingsTextForms();
+    SelfTest_SettingsRanges();
 
     file = fopen("thandor.dat", "rb");
     if (file == nullptr) {

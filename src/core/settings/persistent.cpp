@@ -80,7 +80,33 @@ struct PersistentIniKey {
   uint32_t defaultValue; /* INI_KIND_BIT */
   const char *const *names;
   uint32_t nameCount;
+  const struct PersistentIniRange *range; /* the accepted values; nullptr: those of the kind (see below) */
 };
+
+/* open-thandor: a value outside this range is not loaded (the game's default is used, one log line), see
+   PersistentIni_ValueAllowed. The limits are those the readers can work with and include every value the
+   game's own menus write (the slider ranges of the settings pages, the listed display modes). */
+struct PersistentIniRange {
+  int64_t minimum;
+  int64_t maximum;
+};
+
+/* the display modes start at 640x480 (ListDisplayModes); 16384 is far beyond any display */
+static const PersistentIniRange s_IniRangeDisplayWidth = {640, 16384};
+static const PersistentIniRange s_IniRangeDisplayHeight = {480, 16384};
+/* nothing reads the adapter index any more (SdlVideo_SaveAdapterIndex writes 0); the original's DirectDraw
+   adapter list was short */
+static const PersistentIniRange s_IniRangeAdapter = {0, 15};
+/* polygonDetailSlider / modelDetailSlider 0x4000..0x40000 */
+static const PersistentIniRange s_IniRangeModelDetail = {0x4000, 0x40000};
+/* larger values were read as no limit by LoadFramePacing; the menu offers 0, 60, 120 and 144 */
+static const PersistentIniRange s_IniRangeFrameLimit = {0, PERSISTENT_FRAME_LIMIT_MAX};
+/* gameSpeedSlider 80..120 */
+static const PersistentIniRange s_IniRangeGameSpeed = {80, 120};
+/* scrollSpeedSlider 8..128 (options page and in-game) */
+static const PersistentIniRange s_IniRangeScrollStep = {8, 128};
+/* maxPlayersSlider 2..8 */
+static const PersistentIniRange s_IniRangePlayers = {2, 8};
 
 static const char *const s_IniRendererNames[] = {"vulkan", "d3d12", "software"};
 static const char *const s_IniDisplayModeNames[] = {"fullscreen", "borderless", "window"};
@@ -90,14 +116,15 @@ static const char *const s_IniUiScaleNames[] = {"auto", "1", "2", "3"};
 static const char *const s_IniVsyncNames[] = {"on", "off"};
 
 #define INI_ENUM(names) names, (uint32_t)(sizeof names / sizeof names[0])
+#define INI_RANGE(range) nullptr, 0, &range
 
 static const PersistentIniKey s_PersistentIniKeys[] = {
   {PERSISTENT_SETTING_ADAPTER_INDEX, INI_KIND_UINT, "display", "adapter",
-   "graphics adapter, 0 = the first (default 0)", 0, 0, nullptr, 0},
+   "graphics adapter, 0 = the first (default 0)", 0, 0, INI_RANGE(s_IniRangeAdapter)},
   {PERSISTENT_SETTING_DISPLAY_WIDTH, INI_KIND_UINT, "display", "width",
-   "screen width in pixels (default 640)", 0, 0, nullptr, 0},
+   "screen width in pixels (default 640)", 0, 0, INI_RANGE(s_IniRangeDisplayWidth)},
   {PERSISTENT_SETTING_DISPLAY_HEIGHT, INI_KIND_UINT, "display", "height",
-   "screen height in pixels (default 480)", 0, 0, nullptr, 0},
+   "screen height in pixels (default 480)", 0, 0, INI_RANGE(s_IniRangeDisplayHeight)},
   {PERSISTENT_SETTING_BITS_PER_PIXEL, INI_KIND_UINT, "display", "bits_per_pixel",
    "colour depth in bits, always 32 (an older 16 is read as 32)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_RENDERER, INI_KIND_ENUM, "display", "renderer",
@@ -116,7 +143,7 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {PERSISTENT_SETTING_TEXTURE_QUALITY, INI_KIND_ENUM, "graphics", "texture_quality",
    "texture quality: high, medium or low", 0, 0, INI_ENUM(s_IniTextureQualityNames)},
   {PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, INI_KIND_INT, "graphics", "model_detail",
-   "model detail distance, 8.8 fixed point (default 65536)", 0, 0, nullptr, 0},
+   "model detail distance, 8.8 fixed point (default 65536)", 0, 0, INI_RANGE(s_IniRangeModelDetail)},
   {PERSISTENT_SETTING_GPU_RASTERIZATION, INI_KIND_ENUM, "graphics", "gpu_rasterization",
    "Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) "
    "or exact (the software renderer's look)", 0, 0, INI_ENUM(s_IniGpuRasterizationNames)},
@@ -128,7 +155,7 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "vsync: on (default; frames wait for the display's refresh, no tearing) or off", 0, 0, INI_ENUM(s_IniVsyncNames)},
   {PERSISTENT_SETTING_FRAME_LIMIT, INI_KIND_UINT, "graphics", "frame_limit",
    "frame rate limit in frames per second: 0 (default, no limit), 60, 120, 144; at least 60 recommended (below 60 "
-   "the game runs slower, its steps wait for drawn frames)", 0, 0, nullptr, 0},
+   "the game runs slower, its steps wait for drawn frames)", 0, 0, INI_RANGE(s_IniRangeFrameLimit)},
 
   {PERSISTENT_SETTING_SOUND_OPTION_FLAGS, INI_KIND_BIT, "sound", "effects",
    "sound effects (default true)", ToBits(PERSISTENT_SOUND_OPTION_EFFECTS), ToBits(PERSISTENT_SOUND_OPTION_DEFAULT), nullptr, 0},
@@ -147,9 +174,9 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "second movie volume", 0, 0, nullptr, 0},
 
   {PERSISTENT_SETTING_GAME_SPEED_PERCENT, INI_KIND_UINT, "game", "speed_percent",
-   "game speed in percent (default 100)", 0, 0, nullptr, 0},
+   "game speed in percent (default 100)", 0, 0, INI_RANGE(s_IniRangeGameSpeed)},
   {PERSISTENT_SETTING_CAMERA_SCROLL_STEP, INI_KIND_INT, "game", "scroll_step",
-   "map scroll speed (default 32)", 0, 0, nullptr, 0},
+   "map scroll speed (default 32)", 0, 0, INI_RANGE(s_IniRangeScrollStep)},
   {PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS, INI_KIND_HEX, "game", "map_mouse_options",
    "bits: 0x1 automatic zoom off, 0x2 automatic rotation off, 0x4 right button does not scroll / side panel "
    "hidden (default 0x0)", 0, 0, nullptr, 0},
@@ -163,7 +190,7 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "text language as telephone country code (49 German, 44 English, ...), 0 = from Windows", 0, 0, nullptr, 0},
 
   {PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, INI_KIND_UINT, "network", "players",
-   "player count of a hosted network game (default 4)", 0, 0, nullptr, 0},
+   "player count of a hosted network game (default 4)", 0, 0, INI_RANGE(s_IniRangePlayers)},
 
   {0x50, INI_KIND_RAW, "reserved", "dword_50", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, nullptr, 0},
@@ -171,6 +198,81 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
 };
 
 #define PERSISTENT_INI_KEY_COUNT (sizeof s_PersistentIniKeys / sizeof s_PersistentIniKeys[0])
+
+/* Whether value may be loaded for key; logs why not. Without a range of its own a key accepts what its kind can
+   hold: a switch 0/1, a gain 0..0x8000 (the volume sliders' range; more would amplify past full scale), an
+   enumeration only its names (index 0..nameCount - 1, also given as number), the others any 32-bit value. Not
+   checked here: names, the option bits and the reserved dwords (any value is harmless), the shading values
+   (they must match each other, PersistentSettings_ValidateShading) and the colour depth (normalized). */
+static bool PersistentIni_ValueAllowed(const PersistentIniKey *key, uint32_t value)
+{
+  int64_t number = key->kind == INI_KIND_INT ? (int64_t)(int32_t)value : (int64_t)value;
+  int64_t minimum = key->kind == INI_KIND_INT ? INT32_MIN : 0;
+  int64_t maximum = key->kind == INI_KIND_INT ? INT32_MAX : UINT32_MAX;
+
+  switch (key->kind) {
+  case INI_KIND_BOOL:
+    maximum = 1;
+    break;
+  case INI_KIND_GAIN:
+    maximum = PERSISTENT_SETTINGS_GAIN_FULL;
+    break;
+  case INI_KIND_ENUM:
+    maximum = (int64_t)key->nameCount - 1;
+    break;
+  default:
+    break;
+  }
+  if (key->range != nullptr) {
+    minimum = key->range->minimum;
+    maximum = key->range->maximum;
+  }
+  if (number < minimum || number > maximum) {
+    Thandor_Log("settings: [%s] %s = %lld not %lld..%lld, default used", key->section, key->key, (long long)number,
+                (long long)minimum, (long long)maximum);
+    return false;
+  }
+  return true;
+}
+
+static uint64_t PersistentSettings_DwordMask(uint32_t offset, uint32_t byteCount);
+static uint32_t PersistentIni_GetDword(const uint8_t *image, uint32_t offset);
+
+/* Width and height form one display mode: when one of them is not allowed, the other is dropped too, so the
+   default mode is used and not a mix of the default and the saved one. Returns the reduced presentMask. */
+static uint64_t PersistentIni_DropIncompleteMode(uint64_t presentMask, uint64_t rejectedMask)
+{
+  uint64_t modeMask = PersistentSettings_DwordMask(PERSISTENT_SETTING_DISPLAY_WIDTH, 4) |
+                      PersistentSettings_DwordMask(PERSISTENT_SETTING_DISPLAY_HEIGHT, 4);
+
+  if ((rejectedMask & modeMask) != 0) {
+    presentMask &= ~modeMask;
+  }
+  return presentMask;
+}
+
+/* Drops the loaded values the key table does not allow from presentMask (thandor.dat, whose bytes are not
+   parsed); returns the reduced mask. */
+static uint64_t PersistentSettings_DropDisallowed(const uint8_t *image, uint64_t presentMask)
+{
+  uint64_t rejectedMask = 0;
+  uint32_t index;
+
+  for (index = 0; index < PERSISTENT_INI_KEY_COUNT; index++) {
+    const PersistentIniKey *key = &s_PersistentIniKeys[index];
+    uint64_t mask = PersistentSettings_DwordMask(key->offset, 4);
+
+    if (key->kind == INI_KIND_NAME || key->kind == INI_KIND_BIT || key->kind == INI_KIND_HEX ||
+        key->kind == INI_KIND_RAW || (presentMask & mask) != mask) {
+      continue;
+    }
+    if (!PersistentIni_ValueAllowed(key, PersistentIni_GetDword(image, key->offset))) {
+      presentMask &= ~mask;
+      rejectedMask |= mask;
+    }
+  }
+  return PersistentIni_DropIncompleteMode(presentMask, rejectedMask);
+}
 
 /* Bits of the dwords [offset, offset + byteCount) in a present/written mask. */
 static uint64_t PersistentSettings_DwordMask(uint32_t offset, uint32_t byteCount)
@@ -769,6 +871,7 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
   std::vector<std::pair<const char *, const char *>> pendingComments; /* above the next key of a known section */
   bool overflowLogged = false;
   uint64_t presentMask = 0;
+  uint64_t rejectedMask = 0; /* dwords whose value was out of range */
   uint64_t bitsGivenMask = 0; /* dwords of INI_KIND_BIT keys that got their default before the first bit */
 
   std::string converted;
@@ -937,6 +1040,19 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
         parsed = PersistentIni_ParseNumber(valueBegin, valueEnd, &value);
         break;
       }
+      /* only the signed keys take a negative number (it used to wrap, -5 became 0xFFFFFFFB) */
+      if (parsed && valueBegin < valueEnd && *valueBegin == '-' && key->kind != INI_KIND_INT &&
+          key->kind != INI_KIND_RAW) {
+        Thandor_Log("settings: [%s] %s = %.*s is negative, default used", key->section, key->key,
+                    (int)(valueEnd - valueBegin), valueBegin);
+        rejectedMask |= PersistentSettings_DwordMask(key->offset, 4);
+        parsed = false;
+      }
+      if (parsed && key->kind != INI_KIND_BIT && key->kind != INI_KIND_HEX && key->kind != INI_KIND_RAW &&
+          !PersistentIni_ValueAllowed(key, value)) {
+        rejectedMask |= PersistentSettings_DwordMask(key->offset, 4);
+        parsed = false;
+      }
       if (parsed) {
         uint64_t mask = PersistentSettings_DwordMask(key->offset, 4);
 
@@ -968,7 +1084,7 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
     }
     pendingComments.clear();
   }
-  return presentMask;
+  return PersistentIni_DropIncompleteMode(presentMask, rejectedMask);
 }
 
 uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image)
@@ -1115,6 +1231,8 @@ static void PersistentSettings_LoadImage()
       for (dword = 0; (dword + 1) * 4 <= byteCount; dword++) {
         s_PersistentSettingsPresentMask |= (uint64_t)1 << dword;
       }
+      s_PersistentSettingsPresentMask =
+          PersistentSettings_DropDisallowed(Thandor_Bytes(image), s_PersistentSettingsPresentMask);
       g_PersistentSettings.loadedByteCount = byteCount;
       g_PersistentSettings.dirtyWriteCount = 1; /* the next Flush writes thandor.ini */
       Thandor_Log("settings: migrated %u bytes of thandor.dat, thandor.ini follows on the next save", byteCount);
