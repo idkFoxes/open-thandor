@@ -1,0 +1,5 @@
+# a 1.0.7 file cut off in the middle of "width = 1920" (no line end): the keys before the cut load; the cut value
+# 12 parses, a range check may reject it
+display.adapter = 0
+display.width = 12 | <default>
+others = <default>

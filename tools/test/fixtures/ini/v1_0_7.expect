@@ -1,0 +1,5 @@
+# thandor.ini as 1.0.7 writes it (FormatIni of v1.0.7, the same text as v1.0.6 and dev): an installation migrated
+# from the original thandor.dat, every key present
+include: v1_0_7_values.include
+game.language_country_code = 49
+others = <default>

@@ -1106,6 +1106,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestSettings();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "inifixtures") == 0) {
+        Thandor_SelfTestIniFixtures();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "path") == 0) {
         Thandor_SelfTestPathSplit();
         return 1;

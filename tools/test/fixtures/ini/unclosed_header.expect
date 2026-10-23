@@ -1,0 +1,9 @@
+# "[graphics" and "[sound" without "]": until the next valid header no key is taken (today the keys go to the
+# previous section)
+display.width = 1600
+pending A: display.height = <default>
+graphics.vsync = <default>
+graphics.texture_quality = low
+pending A: graphics.shading = <default>
+game.speed_percent = 80
+others = <default>
