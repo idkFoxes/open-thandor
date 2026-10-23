@@ -4,5 +4,6 @@ display.width = 1920
 display.height = 1080
 game.player_name = "AAAAAAAAAAAAAAAAAAAA" | <default>
 graphics.model_detail = <default>
-game.speed_percent = 150
+# 150 is outside the game speed slider (80..120): the range check drops it
+game.speed_percent = <default>
 others = <default>
