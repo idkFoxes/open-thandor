@@ -753,8 +753,9 @@ static_assert(sizeof(NetworkBackendInstanceDescriptorPrefix) == 0x38,
 static_assert(sizeof(PersistentSettingsRuntime) == 0x20C &&
               offsetof(PersistentSettingsRuntime, image) == 0x0,
               "PersistentSettingsRuntime keeps its 32-bit layout");
-static_assert(sizeof(PersistentSettingsImage) == 0xC8,
-              "PersistentSettingsImage keeps its 32-bit layout");
+static_assert(sizeof(PersistentSettingsImage) == PERSISTENT_SETTINGS_IMAGE_BYTES &&
+                  offsetof(PersistentSettingsImage, freeC8_FF) == PERSISTENT_SETTINGS_DAT_BYTES,
+              "PersistentSettingsImage keeps the 32-bit layout of thandor.dat, followed by open-thandor's free dwords");
 static_assert(sizeof(AiKnowledgeParameters) == 0x200,
               "AiKnowledgeParameters keeps its 32-bit layout");
 static_assert(sizeof(AiKnowledgeDataImage) == 0x200,
@@ -3552,7 +3553,7 @@ static_assert(std::is_same_v<std::underlying_type_t<WideNumberFormatFlags>, int3
 
 /* Step 13 settings option flags (flag enum classes): the three option dwords of the settings image keep their
    4 bytes at the PERSISTENT_SETTING_* offsets. */
-static_assert(sizeof(PersistentSettingsImage) == 0xC8 && offsetof(PersistentSettingsImage, soundOptionFlags) == 0x20 &&
+static_assert(sizeof(PersistentSettingsImage) == 0x100 && offsetof(PersistentSettingsImage, soundOptionFlags) == 0x20 &&
                   offsetof(PersistentSettingsImage, mapMouseOptionFlags) == 0x40 &&
                   offsetof(PersistentSettingsImage, mouseLinkPanelOptionFlags) == 0x5C &&
                   sizeof(PersistentSettingsImage::soundOptionFlags) == 4 &&

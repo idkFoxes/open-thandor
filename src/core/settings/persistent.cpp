@@ -19,7 +19,8 @@
 
 /*
 open-thandor: the settings live in a readable thandor.ini instead of the original's 200-byte thandor.dat.
-The game code still works on the 200-byte image through PersistentSettings_Read/Write/WriteBlock/
+The game code still works on the settings image (the 200 bytes of thandor.dat, now followed by free dwords for
+open-thandor's settings, PERSISTENT_SETTINGS_IMAGE_BYTES) through PersistentSettings_Read/Write/WriteBlock/
 GetRegionOrFallback; only loading and saving changed:
 - Load builds the image from thandor.ini (current directory, then the executable directory). Each dword the
   ini sets is marked present; Read and GetRegionOrFallback return the caller's default for dwords that are not
@@ -882,7 +883,7 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
     extras->byteCount = 0;
   }
   if (PersistentIni_DecodeUtf16(text, length, &converted)) {
-    Thandor_Log("settings: thandor.ini is UTF-16, read as text (written back as UTF-8)");
+    Thandor_Log("settings: ini text is UTF-16, converted (written back as UTF-8)");
     text = converted.data();
     length = (uint32_t)converted.size();
     cursor = text;
@@ -1164,7 +1165,7 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
 }
 
 
-/* Loads the settings into a fresh zeroed 200-byte image. open-thandor: from thandor.ini when there is one
+/* Loads the settings into a fresh zeroed image (PERSISTENT_SETTINGS_IMAGE_BYTES). open-thandor: from thandor.ini when there is one
    (see the top of this file); otherwise from the original thandor.dat as before, marking the image dirty so
    that the next Flush writes thandor.ini. A shorter thandor.dat leaves the rest zero and not present, so
    every PersistentSettings_Read beyond the loaded bytes falls back to its default. When the file is not found
@@ -1219,8 +1220,8 @@ static void PersistentSettings_LoadImage()
             g_FileSystemCombinedPathScratchUtf16,&pathByteCount);
   }
   if (g_FileSystemGetSize(fileHandle,&fileSize)) {
-    byteCount = PERSISTENT_SETTINGS_IMAGE_BYTES;
-    if (fileSize < PERSISTENT_SETTINGS_IMAGE_BYTES) {
+    byteCount = PERSISTENT_SETTINGS_DAT_BYTES; /* the image's tail past thandor.dat stays zero, not present */
+    if (fileSize < PERSISTENT_SETTINGS_DAT_BYTES) {
       byteCount = fileSize;
     }
     if (g_FileSystemReadExact(byteCount,image,fileHandle) == 0) {

@@ -73,7 +73,11 @@ inline constexpr auto PERSISTENT_VSYNC_OFF = 1;
 inline constexpr auto PERSISTENT_VSYNC_COUNT = 2;
 inline constexpr auto PERSISTENT_FRAME_LIMIT_OFF = 0; /* default: no frame rate limit */
 inline constexpr auto PERSISTENT_FRAME_LIMIT_MAX = 1000; /* larger saved values are read as no limit; the menu offers 60, 120, 144 */
-inline constexpr auto PERSISTENT_SETTINGS_IMAGE_BYTES = 200; /* size of the settings file and of the in-memory image */
+inline constexpr auto PERSISTENT_SETTINGS_DAT_BYTES = 200; /* size of the original's thandor.dat (read as migration source) */
+/* open-thandor: the in-memory image is larger than thandor.dat (room for further settings past 0xC8); it is only
+   held in memory and saved as thandor.ini keys, never as bytes (not in savegames, network packets or the lobby).
+   Its 64 dwords are the 64 bits of the present/written masks. */
+inline constexpr auto PERSISTENT_SETTINGS_IMAGE_BYTES = 256;
 /* The bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS, _MAP_MOUSE_OPTION_FLAGS and _MOUSE_LINK_PANEL_OPTION_FLAGS are
    the flag enum classes PersistentSoundOptionFlags, PersistentMapMouseOptionFlags and
    PersistentMouseLinkPanelOptionFlags (settings/types.h); the typed accessors below read and write those dwords. */

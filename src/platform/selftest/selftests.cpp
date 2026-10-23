@@ -1123,7 +1123,7 @@ static void Thandor_SelfTestSettings()
         uint64_t datMask = 0;
         unsigned dword;
         memset(datImage, 0, sizeof datImage);
-        datBytes = fread(datImage, 1, sizeof datImage, file);
+        datBytes = fread(datImage, 1, PERSISTENT_SETTINGS_DAT_BYTES, file);
         fclose(file);
         for (dword = 0; (dword + 1) * 4 <= datBytes; dword++) {
             datMask |= (uint64_t)1 << dword;
