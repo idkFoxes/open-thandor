@@ -871,6 +871,68 @@ static void SelfTest_SettingsExtras()
     Thandor_Log("settings: extras %s", failures == 0 ? "ok" : "FAILED");
 }
 
+/* settings: the same ini text as UTF-8 with CR LF, with lone CRs, and as UTF-16 (little endian with and without a
+   byte order mark, big endian with one) parses to the same image; a section header without ']' takes no keys
+   (also not into the section before it); a quoted name drops a trailing comment, an unquoted one keeps ';'.
+   Logs "settings: text forms ok" or the failed checks. */
+static void SelfTest_SettingsTextForms()
+{
+    static const char baseText[] =
+        "[display]\r\nwidth = 1024\r\n[game]\r\nplayer_name = \"B\\\"ob\" ; comment\r\ngame_name = a;b # c\r\n"
+        "[sound\r\nspeed_percent = 90\r\nmusic_volume = 100\r\n[network]\r\nplayers = 6\r\n";
+    static const uint16_t playerName[] = {'B', '\\', '"', 'o', 'b'};
+    static const uint16_t gameName[] = {'a', ';', 'b', ' ', '#', ' ', 'c'};
+    uint8_t expected[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    uint64_t expectedMask = 0;
+    unsigned failures = 0;
+    uint32_t value;
+
+    memset(expected, 0, sizeof expected);
+    value = 1024;
+    memcpy(expected + PERSISTENT_SETTING_DISPLAY_WIDTH, &value, 4);
+    value = 6;
+    memcpy(expected + PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, &value, 4);
+    memcpy(expected + PERSISTENT_SETTING_PLAYER_NAME, playerName, sizeof playerName);
+    memcpy(expected + PERSISTENT_SETTING_GAME_NAME, gameName, sizeof gameName);
+    expectedMask = ((uint64_t)1 << (PERSISTENT_SETTING_DISPLAY_WIDTH / 4)) |
+                   ((uint64_t)1 << (PERSISTENT_SETTING_NETWORK_PLAYER_COUNT / 4)) |
+                   ((((uint64_t)1 << 20) - 1) << (PERSISTENT_SETTING_PLAYER_NAME / 4));
+
+    std::string utf8(baseText, sizeof baseText - 1);
+    std::string loneCr;
+    for (size_t index = 0; index < utf8.size(); index++) {
+        if (utf8[index] != '\n') {
+            loneCr += utf8[index];
+        }
+    }
+    std::string littleBom("\xFF\xFE", 2);
+    std::string little;
+    std::string bigBom("\xFE\xFF", 2);
+    for (char c : utf8) {
+        little += c;
+        little += '\0';
+        bigBom += '\0';
+        bigBom += c;
+    }
+    littleBom += little;
+    const std::pair<const char *, const std::string *> forms[] = {
+        {"UTF-8 CR LF", &utf8}, {"lone CR", &loneCr}, {"UTF-16 LE BOM", &littleBom},
+        {"UTF-16 LE", &little}, {"UTF-16 BE BOM", &bigBom},
+    };
+    for (const auto &form : forms) {
+        uint64_t mask;
+        memset(image, 0, sizeof image);
+        mask = PersistentSettings_ParseIni(form.second->data(), (uint32_t)form.second->size(), image);
+        if (SelfTest_CompareSettingsImages(form.first, expected, expectedMask, image, mask) != 0 || mask != expectedMask) {
+            Thandor_Log("settings: text forms: %s mask %016llX, expected %016llX", form.first, (unsigned long long)mask,
+                        (unsigned long long)expectedMask);
+            failures++;
+        }
+    }
+    Thandor_Log("settings: text forms %s", failures == 0 ? "ok" : "FAILED");
+}
+
 /* OPEN_THANDOR_SELFTEST=settings: the thandor.ini format. Parses a fixed ini text (all value forms, unknown and
    missing keys) and checks the image; then, when thandor.dat is in the current directory, writes its image as
    ini text, parses that back and compares (the migration), and when thandor.ini is there too, compares it
@@ -928,6 +990,7 @@ static void Thandor_SelfTestSettings()
     Thandor_Log("settings: fixed text %s (present mask %016llX)", differences == 0 ? "ok" : "MISMATCH",
                 (unsigned long long)mask);
     SelfTest_SettingsExtras();
+    SelfTest_SettingsTextForms();
 
     file = fopen("thandor.dat", "rb");
     if (file == nullptr) {

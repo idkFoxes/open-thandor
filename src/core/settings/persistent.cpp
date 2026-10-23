@@ -54,7 +54,6 @@ static uint64_t s_PersistentSettingsWrittenMask;
 #define PERSISTENT_SETTINGS_DWORD_COUNT (PERSISTENT_SETTINGS_IMAGE_BYTES / 4)
 constexpr auto PERSISTENT_SETTINGS_INI_MAX_BYTES = 0x10000; /* written ini text: the full key set needs about 3 KB,
                                                            the kept unknown lines at most 32 KB */
-constexpr auto PERSISTENT_SETTINGS_INI_MAX_LINE = 256;
 constexpr auto PERSISTENT_SETTINGS_GAIN_FULL = 0x8000; /* Q15 gain of 100 % */
 
 /* thandor.ini key table: one entry per key, in the order they are written. */
@@ -239,6 +238,33 @@ static void PersistentIni_Append(PersistentIniWriter *writer, const char *format
   va_end(args);
 }
 
+/* One code point as NUL-terminated UTF-8 into encoded (5 bytes). */
+static void PersistentIni_EncodeUtf8(uint32_t codePoint, char *encoded)
+{
+  if (codePoint < 0x80) {
+    encoded[0] = (char)codePoint;
+    encoded[1] = 0;
+  }
+  else if (codePoint < 0x800) {
+    encoded[0] = (char)(0xC0 | (codePoint >> 6));
+    encoded[1] = (char)(0x80 | (codePoint & 0x3F));
+    encoded[2] = 0;
+  }
+  else if (codePoint < 0x10000) {
+    encoded[0] = (char)(0xE0 | (codePoint >> 12));
+    encoded[1] = (char)(0x80 | ((codePoint >> 6) & 0x3F));
+    encoded[2] = (char)(0x80 | (codePoint & 0x3F));
+    encoded[3] = 0;
+  }
+  else {
+    encoded[0] = (char)(0xF0 | (codePoint >> 18));
+    encoded[1] = (char)(0x80 | ((codePoint >> 12) & 0x3F));
+    encoded[2] = (char)(0x80 | ((codePoint >> 6) & 0x3F));
+    encoded[3] = (char)(0x80 | (codePoint & 0x3F));
+    encoded[4] = 0;
+  }
+}
+
 /* UTF-16 name field -> UTF-8 (up to the first NUL; a lone surrogate is encoded like a code point). */
 static void PersistentIni_AppendName(PersistentIniWriter *writer, const uint8_t *field)
 {
@@ -265,28 +291,7 @@ static void PersistentIni_AppendName(PersistentIniWriter *writer, const uint8_t 
         index++;
       }
     }
-    if (codePoint < 0x80) {
-      encoded[0] = (char)codePoint;
-      encoded[1] = 0;
-    }
-    else if (codePoint < 0x800) {
-      encoded[0] = (char)(0xC0 | (codePoint >> 6));
-      encoded[1] = (char)(0x80 | (codePoint & 0x3F));
-      encoded[2] = 0;
-    }
-    else if (codePoint < 0x10000) {
-      encoded[0] = (char)(0xE0 | (codePoint >> 12));
-      encoded[1] = (char)(0x80 | ((codePoint >> 6) & 0x3F));
-      encoded[2] = (char)(0x80 | (codePoint & 0x3F));
-      encoded[3] = 0;
-    }
-    else {
-      encoded[0] = (char)(0xF0 | (codePoint >> 18));
-      encoded[1] = (char)(0x80 | ((codePoint >> 12) & 0x3F));
-      encoded[2] = (char)(0x80 | ((codePoint >> 6) & 0x3F));
-      encoded[3] = (char)(0x80 | (codePoint & 0x3F));
-      encoded[4] = 0;
-    }
+    PersistentIni_EncodeUtf8(codePoint, encoded);
     PersistentIni_Append(writer, "%s", encoded);
   }
 }
@@ -635,6 +640,68 @@ const uint16_t *PersistentSettings_IniPathUtf16()
    still fits PERSISTENT_SETTINGS_INI_MAX_BYTES with every key of the table. */
 constexpr size_t PERSISTENT_SETTINGS_INI_EXTRAS_MAX_BYTES = 0x8000;
 
+/* open-thandor: an editor may save thandor.ini as UTF-16 (Notepad's Unicode); parsed as bytes every key would be
+   missed and the next rewrite would replace the file with defaults. UTF-16 is recognised by its byte order mark,
+   or without one when every second byte of the start is 0 (the keys are ASCII, and UTF-8 text has no zero
+   bytes); it is converted to UTF-8 into converted (a lone surrogate becomes U+FFFD, a NUL ends the text).
+   False when the text is not UTF-16. */
+static bool PersistentIni_DecodeUtf16(const char *text, uint32_t length, std::string *converted)
+{
+  const uint8_t *bytes = reinterpret_cast<const uint8_t *>(text);
+  uint32_t probe = std::min<uint32_t>(length & ~1u, 64);
+  bool bigEndian;
+  uint32_t offset = 0;
+  uint32_t index;
+  char encoded[5];
+
+  if (length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE) {
+    bigEndian = false;
+    offset = 2;
+  }
+  else if (length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF) {
+    bigEndian = true;
+    offset = 2;
+  }
+  else {
+    bool zeroHigh = probe >= 4; /* little endian: the odd bytes are 0 */
+    bool zeroLow = probe >= 4;  /* big endian: the even bytes are 0 */
+
+    for (index = 0; index < probe; index += 2) {
+      zeroHigh = zeroHigh && bytes[index] != 0 && bytes[index + 1] == 0;
+      zeroLow = zeroLow && bytes[index] == 0 && bytes[index + 1] != 0;
+    }
+    if (!zeroHigh && !zeroLow) {
+      return false;
+    }
+    bigEndian = zeroLow;
+  }
+  converted->clear();
+  for (index = offset; index + 1 < length; index += 2) {
+    uint32_t unit = bigEndian ? ((uint32_t)bytes[index] << 8 | bytes[index + 1])
+                              : ((uint32_t)bytes[index + 1] << 8 | bytes[index]);
+    uint32_t codePoint = unit;
+
+    if (unit == 0) {
+      break;
+    }
+    if (unit >= 0xD800 && unit < 0xE000) {
+      codePoint = 0xFFFD;
+      if (unit < 0xDC00 && index + 3 < length) {
+        uint32_t low = bigEndian ? ((uint32_t)bytes[index + 2] << 8 | bytes[index + 3])
+                                 : ((uint32_t)bytes[index + 3] << 8 | bytes[index + 2]);
+
+        if (low >= 0xDC00 && low < 0xE000) {
+          codePoint = 0x10000 + ((unit - 0xD800) << 10) + (low - 0xDC00);
+          index += 2;
+        }
+      }
+    }
+    PersistentIni_EncodeUtf8(codePoint, encoded);
+    converted->append(encoded);
+  }
+  return true;
+}
+
 /* Whether [begin, end) names a section of the key table. */
 static bool PersistentIni_IsKnownSection(const char *begin, const char *end)
 {
@@ -704,9 +771,18 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
   uint64_t presentMask = 0;
   uint64_t bitsGivenMask = 0; /* dwords of INI_KIND_BIT keys that got their default before the first bit */
 
+  std::string converted;
+
   if (extras != nullptr) {
     extras->sections.clear();
     extras->byteCount = 0;
+  }
+  if (PersistentIni_DecodeUtf16(text, length, &converted)) {
+    Thandor_Log("settings: thandor.ini is UTF-16, read as text (written back as UTF-8)");
+    text = converted.data();
+    length = (uint32_t)converted.size();
+    cursor = text;
+    textEnd = text + length;
   }
   if (length >= 3 && (uint8_t)text[0] == 0xEF && (uint8_t)text[1] == 0xBB && (uint8_t)text[2] == 0xBF) {
     cursor += 3;
@@ -722,7 +798,8 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
     uint32_t index;
     bool keyKnown = false;
 
-    while (cursor < textEnd && *cursor != '\n') {
+    /* a line ends at LF, CR LF or a lone CR (old Mac editors); the empty line between CR and LF is skipped */
+    while (cursor < textEnd && *cursor != '\n' && *cursor != '\r') {
       cursor++;
     }
     lineEnd = cursor;
@@ -747,16 +824,23 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
     if (*lineBegin == '[') {
       const char *close = static_cast<const char *>(memchr(lineBegin, ']', (size_t)(lineEnd - lineBegin)));
 
-      if (close != nullptr) {
-        sectionBegin = lineBegin + 1;
-        sectionEnd = close;
-        PersistentIni_Trim(&sectionBegin, &sectionEnd);
-        sectionKnown = PersistentIni_IsKnownSection(sectionBegin, sectionEnd);
-        pendingComments.clear();
-        if (extras != nullptr && !sectionKnown) {
-          /* created at once, so an empty foreign section is kept too */
-          sectionExtras = PersistentIni_ExtrasSection(extras, sectionBegin, sectionEnd, false);
-        }
+      pendingComments.clear();
+      if (close == nullptr) {
+        /* a header without ']': its keys belong to no known section, so they are neither read (the section
+           before it used to run on and take them) nor kept, up to the next valid header */
+        Thandor_Log("settings: section header %.*s without ']', its keys are ignored", (int)(lineEnd - lineBegin),
+                    lineBegin);
+        sectionBegin = nullptr;
+        sectionEnd = nullptr;
+        continue;
+      }
+      sectionBegin = lineBegin + 1;
+      sectionEnd = close;
+      PersistentIni_Trim(&sectionBegin, &sectionEnd);
+      sectionKnown = PersistentIni_IsKnownSection(sectionBegin, sectionEnd);
+      if (extras != nullptr && !sectionKnown) {
+        /* created at once, so an empty foreign section is kept too */
+        sectionExtras = PersistentIni_ExtrasSection(extras, sectionBegin, sectionEnd, false);
       }
       continue;
     }
@@ -794,9 +878,24 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
         const char *nameBegin = valueBegin;
         const char *nameEnd = valueEnd;
 
-        if (nameEnd - nameBegin >= 2 && *nameBegin == '"' && nameEnd[-1] == '"') {
-          nameBegin++;
-          nameEnd--;
+        /* quoted (as the game writes it): the name is up to the last quote, so a quote inside the name stays,
+           and a comment after the closing quote is cut off. Unquoted names keep the whole value, ';' and '#'
+           included: a hand-written name may contain them, and the game never writes a name unquoted. */
+        if (nameEnd - nameBegin >= 2 && *nameBegin == '"') {
+          const char *closeQuote = nameEnd - 1;
+          const char *rest;
+
+          while (closeQuote > nameBegin && *closeQuote != '"') {
+            closeQuote--;
+          }
+          rest = closeQuote + 1;
+          while (rest < nameEnd && PersistentIni_IsSpace(*rest)) {
+            rest++;
+          }
+          if (closeQuote > nameBegin && (rest == nameEnd || *rest == ';' || *rest == '#')) {
+            nameBegin++;
+            nameEnd = closeQuote;
+          }
         }
         PersistentIni_ParseName(nameBegin, nameEnd, image + key->offset);
         presentMask |= PersistentSettings_DwordMask(key->offset, PERSISTENT_SETTINGS_NAME_BYTES);
