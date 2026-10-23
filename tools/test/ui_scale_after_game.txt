@@ -1,0 +1,55 @@
+# Regression script for the 1.0.7 UI scale crash (UiNode_InvalidateRoot read at 0x8): the display page is opened
+# once (s_resolutionRowCount > 10, its extra rows linked), a skirmish is played and left (a new frontend image with
+# unlinked extra rows), then the advanced page switches the UI scale without opening the display page again.
+# Start with -NOINTRO -KARTE="-" (choose-game page), OPEN_THANDOR_GPU=vulkan, OPEN_THANDOR_UI_SCALE= (empty: the
+# saved setting counts) and a saved display mode of 2560x1440 with ui_scale = auto (UI scale 2, UI 1280x720), on a
+# monitor with more than 10 modes (thandor.log: "display settings: N resolutions listed", N > 10). Example:
+#   run_game.py GAME_DIR 150 --args '-NOINTRO -KARTE="-"' --script tools/test/ui_scale_after_game.txt
+# Steps: "Abbrechen" (main room), Optionen -> Anzeige (shot 0), Zurueck twice, the middle lift (choose game),
+# "Einzelspiel" (shot 1), the first map (shot 2), "Starten" (shot 3), "Beginnen" until in game (shot 4), Esc,
+# leave the game (shot 5: choose-game page), "Abbrechen", Optionen -> Erweitert (shot 6), "1x" (shot 7: the page at
+# UI scale 1, "UI scale 1 (fixed)" in thandor.log), quit. Expected: no crash.log.
+# Lines that do not start with a number are ignored (comments). Layout 1280x800 (moved to the UI size).
+0 layout 1280 800
+9000 move 439 539
+9500 click 439 539
+13000 move 265 380
+13500 click 265 380
+16000 move 440 364
+16500 click 440 364
+19000 shot
+19500 move 440 540
+20000 click 440 540
+21000 move 440 540
+21500 click 440 540
+24000 move 640 380
+24500 click 640 380
+27500 move 391 331
+28000 click 391 331
+29500 shot
+30000 move 520 296
+30500 click 520 296
+31500 shot
+32000 move 839 539
+32500 click 839 539
+35000 shot
+36000 clickuntilingame 840 540 3000
+0 ingame
+4000 shot
+4500 key 27
+6000 move 406 363
+6500 click 406 363
+8500 move 710 539
+9000 click 710 539
+14000 shot
+14500 move 439 539
+15000 click 439 539
+18500 move 265 380
+19000 click 265 380
+21500 move 440 460
+22000 click 440 460
+24000 shot
+24500 move 365 390
+25000 click 365 390
+28000 shot
+30000 quit

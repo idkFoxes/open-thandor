@@ -1,0 +1,2 @@
+# only comments and blank lines (including a commented-out section and key)
+others = <default>

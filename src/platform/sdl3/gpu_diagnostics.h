@@ -50,6 +50,21 @@ void *MapGpuTransferBufferLogged(SDL_GPUDevice *device, SDL_GPUTransferBuffer *b
                                  const char *what) noexcept;
 SDL_GPUCommandBuffer *AcquireGpuCommandBufferLogged(SDL_GPUDevice *device, const char *what) noexcept;
 
+/* Sizes of the transfer buffers that are mapped cycling every frame or scene. SDL keeps every buffer a cycle
+   creates in the transfer buffer's container until the container is released, so after one peak (a texture atlas
+   uploaded again after a reset, a full-screen streamed image) all of its copies stayed for good. A buffer is made
+   for its need plus a quarter (TransferBufferSize, at least minimum, whole MiB) instead of the next power of two,
+   and TrimTransferBuffer, called once per frame, releases it after kTransferTrimFrames frames whose largest need
+   (TransferBufferUse::Need) was under half its size; the next use makes a fitting one. */
+struct TransferBufferUse {
+  uint32_t peak = 0;   /* largest need since the window started */
+  uint32_t frames = 0; /* frames since the window started */
+  void Need(uint32_t byteCount) noexcept { peak = (byteCount > peak) ? byteCount : peak; }
+};
+uint32_t TransferBufferSize(uint32_t byteCount, uint32_t minimum) noexcept;
+void TrimTransferBuffer(SDL_GPUDevice *device, SDL_GPUTransferBuffer *&buffer, uint32_t &bufferBytes,
+                        TransferBufferUse &use, uint32_t minimum) noexcept;
+
 /* Start marker. GpuStartMarker_Take reads and deletes a marker left by a start that did not finish (iniPath: the
    settings file's path, UTF-16); true with the renderer (PERSISTENT_RENDERER_*) it names. GpuStartMarker_Write
    writes it before a GPU renderer starts; GpuStartMarker_Clear deletes it (a failed start, the renderer stopped);

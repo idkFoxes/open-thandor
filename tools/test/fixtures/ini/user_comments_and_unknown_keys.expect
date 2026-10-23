@@ -1,0 +1,14 @@
+# a hand-edited file: own comments, a trailing comment, unknown keys in known sections, an unknown section (another
+# tool's) and a key of a future version. The known keys load; a save must keep the unknown keys and sections.
+display.width = 1280
+display.height = 720
+display.renderer = d3d12
+graphics.vsync = off
+game.speed_percent = 120
+others = <default>
+pending A: preserved: [display] monitor_name = "Beamer links"
+pending A: preserved: [graphics] hdr = false
+pending A: preserved: [mods]
+pending A: preserved: [mods] enabled = true
+pending A: preserved: [mods] list = "a.pck, b.pck"
+pending A: preserved: [game] future_option = 3

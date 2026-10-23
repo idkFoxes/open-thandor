@@ -1,0 +1,87 @@
+# thandor.ini as experimental-dev wrote it before dev's ini robustness was merged (language without
+# language_country_code): every key loads, [keys] goes to the key bindings. A save keeps every line (the [keys]
+# section written once, by its owner, after the game's sections) and also writes language_country_code (the key 1.0.7
+# and dev read) directly before language. The downgrade view (an older build reading this file) is
+# experimental_dev.downgrade (tools/test/ini_downgrade.py).
+include: v1_0_7_values.include
+game.language = de
+game.language_country_code = 49
+game.pathing = original
+game.objective_overlay = off
+game.autosave = on
+others = <default>
+preserved: [game] language_country_code = 49
+order: [game] language_country_code = 49 < [game] language = de
+order: [network] < [keys]
+absent: [reserved]
+absent: dword_5
+preserved: [display]
+preserved: [display] adapter = 0
+preserved: [display] width = 1920
+preserved: [display] height = 1080
+preserved: [display] bits_per_pixel = 32
+preserved: [display] renderer = vulkan
+preserved: [display] display_mode = borderless
+preserved: [graphics]
+preserved: [graphics] shading = true
+preserved: [graphics] shading_grid_half_size = 128
+preserved: [graphics] shading_texture_size = 256
+preserved: [graphics] shading_depth = 32
+preserved: [graphics] texture_quality = high
+preserved: [graphics] model_detail = 262144
+preserved: [graphics] gpu_rasterization = smooth
+preserved: [graphics] ui_scale = auto
+preserved: [graphics] vsync = on
+preserved: [graphics] frame_limit = 0
+preserved: [sound]
+preserved: [sound] effects = true
+preserved: [sound] music = true
+preserved: [sound] reverse_stereo = false
+preserved: [sound] effects_volume = 24576
+preserved: [sound] music_volume = 16384
+preserved: [sound] movie_volume = 32768
+preserved: [sound] movie_alternate_volume = 32768
+preserved: [game]
+preserved: [game] speed_percent = 100
+preserved: [game] scroll_step = 32
+preserved: [game] map_mouse_options = 0x0
+preserved: [game] link_panel_options = 0x2
+preserved: [game] player_name = "Jürgen"
+preserved: [game] game_name = "Thandorspiel"
+preserved: [game] language = de
+preserved: [game] pathing = original
+preserved: [game] objective_overlay = off
+preserved: [game] autosave = on
+preserved: [network]
+preserved: [network] players = 4
+preserved: [keys]
+preserved: [keys] objectives = F1
+preserved: [keys] save = F2
+preserved: [keys] leave_game = Alt+Q
+preserved: [keys] pause = P, Pause
+preserved: [keys] faster = G
+preserved: [keys] slower = Alt+G
+preserved: [keys] side_panel = Tab
+preserved: [keys] chat = Enter
+preserved: [keys] message_window = C
+preserved: [keys] score_overview = O
+preserved: [keys] info_line = Ctrl+I
+preserved: [keys] screenshot = Print
+preserved: [keys] notification_go = Space
+preserved: [keys] notification_back = Backspace
+preserved: [keys] objective_toggle = Z
+preserved: [keys] stop = Alt+Shift+S
+preserved: [keys] stop_movement = Shift+S
+preserved: [keys] cancel_attack = Alt+S
+preserved: [keys] self_destruct = Alt+D
+preserved: [keys] select_airports = A
+preserved: [keys] upgrade_page = F
+preserved: [keys] camera_left = Left
+preserved: [keys] camera_right = Right
+preserved: [keys] camera_up = Up
+preserved: [keys] camera_down = Down
+preserved: [keys] camera_zoom_in = Home
+preserved: [keys] camera_zoom_out = End
+preserved: [keys] camera_selection = Num5
+preserved: [keys] camera_hq = B
+preserved: [keys] camera_free = Alt+C

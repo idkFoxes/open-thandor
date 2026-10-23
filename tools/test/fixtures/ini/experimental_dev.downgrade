@@ -1,0 +1,18 @@
+# experimental_dev.ini (an experimental-dev thandor.ini from before the merge of dev's ini robustness: language
+# without language_country_code) read by an older build, 1.0.7 / dev key names; run by tools/test/ini_downgrade.py
+# --exe <older test build>, not a case of this version's inifixtures. The older build finds no language it knows
+# (default); the new keys and [keys] are unknown there: dev keeps them on its save, 1.0.7 drops them (pending A).
+include: v1_0_7_values.include
+game.language_country_code = <default>
+reserved.dword_50 = <default>
+reserved.dword_54 = <default>
+reserved.dword_58 = <default>
+others = <default>
+pending A: preserved: [game] language = de
+pending A: preserved: [game] pathing = original
+pending A: preserved: [game] objective_overlay = off
+pending A: preserved: [game] autosave = on
+pending A: preserved: [keys]
+pending A: preserved: [keys] pause = P, Pause
+pending A: preserved: [keys] info_line = Ctrl+I
+pending A: preserved: [keys] camera_free = Alt+C

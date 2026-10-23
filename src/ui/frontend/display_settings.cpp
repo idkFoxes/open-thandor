@@ -71,6 +71,21 @@ static UiNumericPairTextButton *FrontendDisplaySettingsPage_ResolutionRow(UiNode
               [rowIndex - FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS];
 }
 
+/* Listed resolution row rowIndex (0 .. s_resolutionRowCount - 1), or nullptr when it is not linked into the
+   row panel. s_resolutionRowCount outlives the frontend image: a new image (copied from the template again,
+   e.g. after a game) has zeroed extra rows (parent nullptr) until its display page is opened, and the advanced
+   page's UI scale refreshes the display page before that (1.0.7 crash in UiNode_InvalidateRoot). */
+static UiNumericPairTextButton *FrontendDisplaySettingsPage_ListedRow(UiNodeBase *frontendRoot,uint32_t rowIndex)
+{
+  UiNumericPairTextButton *row;
+
+  row = FrontendDisplaySettingsPage_ResolutionRow(frontendRoot,rowIndex);
+  if (row->base.selectable.base.parent != &FrontendUi_Image(frontendRoot)->displayResolutionRowPanel.root.base) {
+    return nullptr;
+  }
+  return row;
+}
+
 /* Fills the resolution rows: the distinct resolutions of g_GraphicsDisplayModes (all adapters, 32 bits per
    pixel), ascending by width, then height; with more than FRONTEND_DISPLAY_RESOLUTION_OPTIONS the smallest ones
    are left out. The rows used are linked as the panel's children in this order and the panel gets their height.
@@ -167,8 +182,8 @@ static void FrontendDisplaySettingsPage_LayoutResolutionList(UiNodeBase *fronten
   if (scrollToSelected) {
     scrollBox->scrollOffsetY = 0;
     for (rowIndex = 0; rowIndex < s_resolutionRowCount; rowIndex++) {
-      row = FrontendDisplaySettingsPage_ResolutionRow(frontendRoot,rowIndex);
-      if (Any(row->base.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
+      row = FrontendDisplaySettingsPage_ListedRow(frontendRoot,rowIndex);
+      if ((row != nullptr) && Any(row->base.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED)) {
         scrollBox->scrollOffsetY =
              ((int32_t)scrollBox->viewportHeight - FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT) / 2 -
              row->base.selectable.base.topOffset;
@@ -448,7 +463,10 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   }
   /* the resolution rows: offered when the pending adapter has the mode, selected when it is the pending one */
   for (rowIndex = 0; rowIndex < s_resolutionRowCount; rowIndex++) {
-    row = FrontendDisplaySettingsPage_ResolutionRow(frontendRoot,rowIndex);
+    row = FrontendDisplaySettingsPage_ListedRow(frontendRoot,rowIndex);
+    if (row == nullptr) {
+      continue;
+    }
     modeCheckCarry = DisplayModeTable_ContainsExactMode
                       (bitsPerPixel,(FrontendDisplayDimensionPixels)row->secondValue,
                        (FrontendDisplayDimensionPixels)row->firstValue,adapterIndex);

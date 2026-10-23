@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory>
+#include <string>
 #include <new>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -884,11 +885,331 @@ static unsigned SelfTest_SettingsKeys(char *text, uint32_t capacity)
         fail("conflict on load");
     }
 
+    /* with kept extras: [keys] goes to its owner and is never kept as a foreign section (written once, by the
+       owner), a foreign section stays; order: the game's sections, then [keys], then the foreign ones */
+    {
+        static const char mixed[] = "[network]\r\nplayers = 6\r\n[MyTool]\r\nalpha = 1\r\n[keys]\r\npause = Ctrl+K\r\n"
+                                    "; a comment in [keys]\r\n[Other]\r\nbeta = 2\r\n";
+        PersistentSettingsIniExtras extras;
+        uint64_t mask;
+
+        memset(image, 0, sizeof image);
+        mask = PersistentSettings_ParseIniWithExtras(mixed, (uint32_t)(sizeof mixed - 1), image, &extras);
+        bool keptKeys = false;
+        for (const PersistentSettingsIniExtras::Section &section : extras.sections) {
+            keptKeys = keptKeys || _stricmp(section.name.c_str(), "keys") == 0;
+        }
+        length = PersistentSettings_FormatIniWithExtras(image, mask, &extras, text, capacity);
+        const std::string written(text, length);
+        const size_t network = written.find("\n[network]\r\n");
+        const size_t keys = written.find("\n[keys]\r\n");
+        const size_t myTool = written.find("\n[MyTool]\r\n");
+        const size_t other = written.find("\n[Other]\r\n");
+        if (keptKeys || KeyBindings_IsDefault(KeyAction::Pause) || keys == std::string::npos ||
+            written.find("\n[keys]\r\n", keys + 1) != std::string::npos ||
+            written.find("pause = Ctrl+K") == std::string::npos ||
+            written.find("; a comment in [keys]") != std::string::npos || network == std::string::npos ||
+            myTool == std::string::npos || other == std::string::npos || !(network < keys && keys < myTool &&
+            myTool < other)) {
+            fail("[keys] with extras (not kept, written once, after the game's sections, before foreign ones)");
+        }
+        /* a foreign extras entry named like a registered section (handed in from outside) is not written twice */
+        extras.sections.push_back({"KEYS", false, {"pause = Ctrl+J"}});
+        length = PersistentSettings_FormatIniWithExtras(image, mask, &extras, text, capacity);
+        if (strstr(text, "Ctrl+J") != nullptr) {
+            fail("registered section in extras skipped");
+        }
+    }
+
     parse("");
     if (!KeyBindings_AllDefault()) {
         fail("defaults restored");
     }
     return failures;
+}
+
+/* settings: how often line (a whole line of text, without its line end) occurs in text. */
+static unsigned SelfTest_CountIniLines(const std::string &text, const char *line)
+{
+    unsigned count = 0;
+    size_t begin = 0;
+    while (begin < text.size()) {
+        size_t end = text.find('\n', begin);
+        if (end == std::string::npos) {
+            end = text.size();
+        }
+        size_t lineEnd = (end > begin && text[end - 1] == '\r') ? end - 1 : end;
+        if (text.compare(begin, lineEnd - begin, line) == 0 && strlen(line) == lineEnd - begin) {
+            count++;
+        }
+        begin = end + 1;
+    }
+    return count;
+}
+
+/* settings: unknown keys and sections survive a parse and rewrite (keys of a newer version, e.g. a future
+   [game] key, and another tool's section), a key this version knows is written once, and a second round
+   trip gives the same text. Logs "settings: extras ok" or the failed checks. */
+static void SelfTest_SettingsExtras()
+{
+    static const char extrasText[] =
+        "; the game's own comment\r\n[display]\r\nwidth = 800\r\n; comment of a future key\r\nfuture_key = 1 ; x\r\n"
+        "[MyTool]\r\n; tool comment\r\nalpha=1\r\n\r\nwidth = 5\r\n[game]\r\nnext_key = de\r\nspeed_percent = oops\r\n"
+        "; dropped: above a known key\r\nscroll_step = 40\r\n[display]\r\nwidth = 1024\r\nsecond = 2\r\n"
+        "[network]\r\nonly_unknown = yes\r\n[empty]\r\n";
+    static const char *const expectedOnce[] = {
+        "[display]", "width = 1024", "; comment of a future key", "future_key = 1 ; x", "second = 2",
+        "[MyTool]", "; tool comment", "alpha=1", "width = 5", "[game]", "next_key = de", "[network]",
+        "only_unknown = yes", "[empty]",
+    };
+    static const char *const expectedNever[] = {"speed_percent = oops", "; dropped: above a known key",
+                                                "width = 800", "; the game's own comment"};
+    uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    uint8_t again[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    static char text[0x4000];
+    static char text2[0x4000];
+    PersistentSettingsIniExtras extras;
+    PersistentSettingsIniExtras extras2;
+    unsigned failures = 0;
+    uint64_t mask;
+    uint32_t length;
+    uint32_t length2;
+
+    memset(image, 0, sizeof image);
+    mask = PersistentSettings_ParseIniWithExtras(extrasText, (uint32_t)(sizeof extrasText - 1), image, &extras);
+    length = PersistentSettings_FormatIniWithExtras(image, mask, &extras, text, sizeof text);
+    std::string written(text, length);
+    for (const char *line : expectedOnce) {
+        unsigned count = SelfTest_CountIniLines(written, line);
+        if (count != 1) {
+            Thandor_Log("settings: extras: \"%s\" written %u times, expected once", line, count);
+            failures++;
+        }
+    }
+    for (const char *line : expectedNever) {
+        if (SelfTest_CountIniLines(written, line) != 0) {
+            Thandor_Log("settings: extras: \"%s\" written, expected not", line);
+            failures++;
+        }
+    }
+    /* unknown keys follow the known keys of their section; the foreign sections come after the game's */
+    if (written.find("width = 1024") > written.find("future_key") ||
+        written.find("scroll_step = 40") > written.find("next_key = de") ||
+        written.find("[network]") > written.find("[MyTool]") || written.find("[MyTool]") > written.find("[empty]")) {
+        Thandor_Log("settings: extras: order wrong");
+        failures++;
+    }
+    /* the second round trip is identical */
+    memset(again, 0, sizeof again);
+    mask = PersistentSettings_ParseIniWithExtras(text, length, again, &extras2);
+    length2 = PersistentSettings_FormatIniWithExtras(again, mask, &extras2, text2, sizeof text2);
+    if (length2 != length || memcmp(text, text2, length) != 0 || memcmp(image, again, sizeof image) != 0) {
+        Thandor_Log("settings: extras: second round trip differs (%u vs %u bytes)", length, length2);
+        failures++;
+    }
+    /* without extras nothing unknown is written */
+    length2 = PersistentSettings_FormatIniWithExtras(image, mask, nullptr, text2, sizeof text2);
+    if (SelfTest_CountIniLines(std::string(text2, length2), "next_key = de") != 0) {
+        Thandor_Log("settings: extras: written without extras");
+        failures++;
+    }
+    Thandor_Log("settings: extras %s", failures == 0 ? "ok" : "FAILED");
+}
+
+/* settings: the same ini text as UTF-8 with CR LF, with lone CRs, and as UTF-16 (little endian with and without a
+   byte order mark, big endian with one) parses to the same image; a section header without ']' takes no keys
+   (also not into the section before it); a quoted name drops a trailing comment, an unquoted one keeps ';'.
+   Logs "settings: text forms ok" or the failed checks. */
+static void SelfTest_SettingsTextForms()
+{
+    static const char baseText[] =
+        "[display]\r\nwidth = 1024\r\n[game]\r\nplayer_name = \"B\\\"ob\" ; comment\r\ngame_name = a;b # c\r\n"
+        "[sound\r\nspeed_percent = 90\r\nmusic_volume = 100\r\n[network]\r\nplayers = 6\r\n";
+    static const uint16_t playerName[] = {'B', '\\', '"', 'o', 'b'};
+    static const uint16_t gameName[] = {'a', ';', 'b', ' ', '#', ' ', 'c'};
+    uint8_t expected[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    uint64_t expectedMask = 0;
+    unsigned failures = 0;
+    uint32_t value;
+
+    memset(expected, 0, sizeof expected);
+    value = 1024;
+    memcpy(expected + PERSISTENT_SETTING_DISPLAY_WIDTH, &value, 4);
+    value = 6;
+    memcpy(expected + PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, &value, 4);
+    memcpy(expected + PERSISTENT_SETTING_PLAYER_NAME, playerName, sizeof playerName);
+    memcpy(expected + PERSISTENT_SETTING_GAME_NAME, gameName, sizeof gameName);
+    expectedMask = ((uint64_t)1 << (PERSISTENT_SETTING_DISPLAY_WIDTH / 4)) |
+                   ((uint64_t)1 << (PERSISTENT_SETTING_NETWORK_PLAYER_COUNT / 4)) |
+                   ((((uint64_t)1 << 20) - 1) << (PERSISTENT_SETTING_PLAYER_NAME / 4));
+
+    std::string utf8(baseText, sizeof baseText - 1);
+    std::string loneCr;
+    for (size_t index = 0; index < utf8.size(); index++) {
+        if (utf8[index] != '\n') {
+            loneCr += utf8[index];
+        }
+    }
+    std::string littleBom("\xFF\xFE", 2);
+    std::string little;
+    std::string bigBom("\xFE\xFF", 2);
+    for (char c : utf8) {
+        little += c;
+        little += '\0';
+        bigBom += '\0';
+        bigBom += c;
+    }
+    littleBom += little;
+    const std::pair<const char *, const std::string *> forms[] = {
+        {"UTF-8 CR LF", &utf8}, {"lone CR", &loneCr}, {"UTF-16 LE BOM", &littleBom},
+        {"UTF-16 LE", &little}, {"UTF-16 BE BOM", &bigBom},
+    };
+    for (const auto &form : forms) {
+        uint64_t mask;
+        memset(image, 0, sizeof image);
+        mask = PersistentSettings_ParseIni(form.second->data(), (uint32_t)form.second->size(), image);
+        if (SelfTest_CompareSettingsImages(form.first, expected, expectedMask, image, mask) != 0 || mask != expectedMask) {
+            Thandor_Log("settings: text forms: %s mask %016llX, expected %016llX", form.first, (unsigned long long)mask,
+                        (unsigned long long)expectedMask);
+            failures++;
+        }
+    }
+    Thandor_Log("settings: text forms %s", failures == 0 ? "ok" : "FAILED");
+}
+
+/* settings: the range checks of the key table. Every value the game's menus can write is loaded (the limits of
+   each slider and of the listed values); one past each limit, a negative number for an unsigned key and an
+   enumeration number without a name are not. Logs "settings: ranges ok, N cases" or the failed cases. */
+static void SelfTest_SettingsRanges()
+{
+    struct RangeCase {
+        const char *section;
+        const char *line;
+        uint32_t offset;
+        bool loaded;
+    };
+    static const RangeCase cases[] = {
+        {"display", "width = 640", PERSISTENT_SETTING_DISPLAY_WIDTH, true},
+        {"display", "width = 3840", PERSISTENT_SETTING_DISPLAY_WIDTH, true},
+        {"display", "width = 16384", PERSISTENT_SETTING_DISPLAY_WIDTH, true},
+        {"display", "width = 639", PERSISTENT_SETTING_DISPLAY_WIDTH, false},
+        {"display", "width = 16385", PERSISTENT_SETTING_DISPLAY_WIDTH, false},
+        {"display", "width = -1024", PERSISTENT_SETTING_DISPLAY_WIDTH, false},
+        {"display", "height = 480", PERSISTENT_SETTING_DISPLAY_HEIGHT, true},
+        {"display", "height = 2160", PERSISTENT_SETTING_DISPLAY_HEIGHT, true},
+        {"display", "height = 479", PERSISTENT_SETTING_DISPLAY_HEIGHT, false},
+        {"display", "adapter = 0", PERSISTENT_SETTING_ADAPTER_INDEX, true},
+        {"display", "adapter = 16", PERSISTENT_SETTING_ADAPTER_INDEX, false},
+        {"display", "bits_per_pixel = 16", PERSISTENT_SETTING_BITS_PER_PIXEL, true},
+        {"display", "bits_per_pixel = -32", PERSISTENT_SETTING_BITS_PER_PIXEL, false},
+        {"display", "renderer = software", PERSISTENT_SETTING_RENDERER, true},
+        {"display", "renderer = 2", PERSISTENT_SETTING_RENDERER, true},
+        {"display", "renderer = 3", PERSISTENT_SETTING_RENDERER, false},
+        {"display", "display_mode = window", PERSISTENT_SETTING_DISPLAY_MODE_KIND, true},
+        {"display", "display_mode = 3", PERSISTENT_SETTING_DISPLAY_MODE_KIND, false},
+        {"graphics", "shading = true", PERSISTENT_SETTING_SHADING_ENABLED, true},
+        {"graphics", "shading = 2", PERSISTENT_SETTING_SHADING_ENABLED, false},
+        {"graphics", "texture_quality = high", PERSISTENT_SETTING_TEXTURE_QUALITY, true},
+        {"graphics", "texture_quality = 2", PERSISTENT_SETTING_TEXTURE_QUALITY, true},
+        {"graphics", "texture_quality = 3", PERSISTENT_SETTING_TEXTURE_QUALITY, false},
+        {"graphics", "texture_quality = -1", PERSISTENT_SETTING_TEXTURE_QUALITY, false},
+        {"graphics", "model_detail = 16384", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, true},
+        {"graphics", "model_detail = 65536", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, true},
+        {"graphics", "model_detail = 262144", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, true},
+        {"graphics", "model_detail = 16383", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, false},
+        {"graphics", "model_detail = 262145", PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, false},
+        {"graphics", "gpu_rasterization = exact", PERSISTENT_SETTING_GPU_RASTERIZATION, true},
+        {"graphics", "gpu_rasterization = 2", PERSISTENT_SETTING_GPU_RASTERIZATION, false},
+        {"graphics", "ui_scale = auto", PERSISTENT_SETTING_UI_SCALE, true},
+        {"graphics", "ui_scale = 3", PERSISTENT_SETTING_UI_SCALE, true},
+        {"graphics", "ui_scale = 4", PERSISTENT_SETTING_UI_SCALE, false},
+        {"graphics", "vsync = off", PERSISTENT_SETTING_VSYNC, true},
+        {"graphics", "vsync = 2", PERSISTENT_SETTING_VSYNC, false},
+        {"graphics", "frame_limit = 0", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 60", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 120", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 144", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 1000", PERSISTENT_SETTING_FRAME_LIMIT, true},
+        {"graphics", "frame_limit = 1001", PERSISTENT_SETTING_FRAME_LIMIT, false},
+        {"sound", "effects_volume = 0", PERSISTENT_SETTING_EFFECTS_GAIN, true},
+        {"sound", "effects_volume = 32768", PERSISTENT_SETTING_EFFECTS_GAIN, true},
+        {"sound", "music_volume = 100%", PERSISTENT_SETTING_MUSIC_GAIN, true},
+        {"sound", "movie_volume = 32769", PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN, false},
+        {"sound", "movie_alternate_volume = 101%", PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN, false},
+        {"sound", "music_volume = -1", PERSISTENT_SETTING_MUSIC_GAIN, false},
+        {"game", "speed_percent = 80", PERSISTENT_SETTING_GAME_SPEED_PERCENT, true},
+        {"game", "speed_percent = 120", PERSISTENT_SETTING_GAME_SPEED_PERCENT, true},
+        {"game", "speed_percent = 79", PERSISTENT_SETTING_GAME_SPEED_PERCENT, false},
+        {"game", "speed_percent = 121", PERSISTENT_SETTING_GAME_SPEED_PERCENT, false},
+        {"game", "scroll_step = 8", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, true},
+        {"game", "scroll_step = 128", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, true},
+        {"game", "scroll_step = 7", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, false},
+        {"game", "scroll_step = 129", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, false},
+        {"game", "scroll_step = -32", PERSISTENT_SETTING_CAMERA_SCROLL_STEP, false},
+        {"game", "map_mouse_options = 0x7", PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS, true},
+        {"game", "language_country_code = 49", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, true},
+        {"game", "language_country_code = -49", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, false},
+        {"game", "language_country_code = 999", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, true},
+        {"game", "language_country_code = 1000", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, false},
+        {"game", "language = es", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, true},
+        {"game", "language = 0", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, true},
+        {"game", "language = 1000", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, false},
+        {"game", "language = klingon", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, false},
+        {"game", "pathing = original", PERSISTENT_SETTING_PATHING_MODE, true},
+        {"game", "pathing = 1", PERSISTENT_SETTING_PATHING_MODE, true},
+        {"game", "pathing = 2", PERSISTENT_SETTING_PATHING_MODE, false},
+        {"game", "objective_overlay = off", PERSISTENT_SETTING_OBJECTIVE_OVERLAY, true},
+        {"game", "objective_overlay = 2", PERSISTENT_SETTING_OBJECTIVE_OVERLAY, false},
+        {"game", "autosave = off", PERSISTENT_SETTING_AUTOSAVE, true},
+        {"game", "autosave = 1", PERSISTENT_SETTING_AUTOSAVE, true},
+        {"game", "autosave = 2", PERSISTENT_SETTING_AUTOSAVE, false},
+        {"game", "autosave = -1", PERSISTENT_SETTING_AUTOSAVE, false},
+        {"network", "players = 2", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, true},
+        {"network", "players = 8", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, true},
+        {"network", "players = 1", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, false},
+        {"network", "players = 9", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, false},
+    };
+    uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    unsigned failures = 0;
+    char text[128];
+
+    for (const RangeCase &range : cases) {
+        uint64_t mask;
+        int length = snprintf(text, sizeof text, "[%s]\r\n%s\r\n", range.section, range.line);
+        memset(image, 0, sizeof image);
+        mask = PersistentSettings_ParseIni(text, (uint32_t)length, image);
+        if (((mask >> (range.offset / 4)) & 1) != (range.loaded ? 1u : 0u)) {
+            Thandor_Log("settings: ranges: [%s] %s %s, expected %s", range.section, range.line,
+                        range.loaded ? "not loaded" : "loaded", range.loaded ? "loaded" : "not");
+            failures++;
+        }
+    }
+    /* a width or height out of range drops the whole mode */
+    {
+        static const char modeText[] = "[display]\r\nwidth = 1024\r\nheight = 100\r\n";
+        memset(image, 0, sizeof image);
+        if ((PersistentSettings_ParseIni(modeText, (uint32_t)(sizeof modeText - 1), image) &
+             ((uint64_t)1 << (PERSISTENT_SETTING_DISPLAY_WIDTH / 4))) != 0) {
+            Thandor_Log("settings: ranges: width kept with a height out of range");
+            failures++;
+        }
+    }
+    /* every gain step of the volume sliders (0..0x8000 in steps of 0x800) */
+    for (uint32_t gain = 0; gain <= 0x8000; gain += 0x800) {
+        int length = snprintf(text, sizeof text, "[sound]\r\neffects_volume = %u\r\n", gain);
+        memset(image, 0, sizeof image);
+        if (((PersistentSettings_ParseIni(text, (uint32_t)length, image) >> (PERSISTENT_SETTING_EFFECTS_GAIN / 4)) & 1) == 0) {
+            Thandor_Log("settings: ranges: effects_volume = %u not loaded", gain);
+            failures++;
+        }
+    }
+    if (failures == 0) {
+        Thandor_Log("settings: ranges ok, %u cases", (unsigned)(sizeof cases / sizeof cases[0]));
+    }
+    else {
+        Thandor_Log("settings: ranges FAILED (%u cases)", failures);
+    }
 }
 
 /* OPEN_THANDOR_SELFTEST=settings: the thandor.ini format. Parses a fixed ini text (all value forms, unknown and
@@ -926,7 +1247,7 @@ static void Thandor_SelfTestSettings()
     SELFTEST_SETTING(PERSISTENT_SETTING_DISPLAY_MODE_KIND, 2);
     SELFTEST_SETTING(PERSISTENT_SETTING_SHADING_ENABLED, 0);
     SELFTEST_SETTING(PERSISTENT_SETTING_TEXTURE_QUALITY, TEXTURE_QUALITY_LOW);
-    SELFTEST_SETTING(PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, -3);
+    /* model_detail = -3 is outside the slider range 0x4000..0x40000: not loaded */
     SELFTEST_SETTING(PERSISTENT_SETTING_SOUND_OPTION_FLAGS, ToBits(PERSISTENT_SOUND_OPTION_EFFECTS)); /* default 3 minus music */
     SELFTEST_SETTING(PERSISTENT_SETTING_EFFECTS_GAIN, 0x4000);
     SELFTEST_SETTING(PERSISTENT_SETTING_MUSIC_GAIN, 0x4000);
@@ -960,16 +1281,27 @@ static void Thandor_SelfTestSettings()
                          {"[game]\r\nlanguage = en ; comment\r\n", 44, "language = en\r\n"},
                          {"[game]\r\nlanguage = es\r\n", 34, "language = es\r\n"},
                          {"[game]\r\nlanguage = 7\r\n", 7, "language = 7\r\n"},
-                         {"[game]\r\nlanguage_country_code = 33\r\n", 33, "language = fr\r\n"}};
+                         {"[game]\r\nlanguage_country_code = 33\r\n", 33, "language = fr\r\n"},
+                         /* both keys: language wins, in either order (1.0.7 rewrites only language_country_code) */
+                         {"[game]\r\nlanguage = de\r\nlanguage_country_code = 33\r\n", 49, "language = de\r\n"},
+                         {"[game]\r\nlanguage_country_code = 33\r\nlanguage = it\r\n", 39, "language = it\r\n"},
+                         /* an invalid language leaves the old key's value */
+                         {"[game]\r\nlanguage_country_code = 33\r\nlanguage = 1000\r\n", 33, "language = fr\r\n"}};
         unsigned languageDifferences = 0;
         for (const auto &language : languages) {
             uint32_t value = 0xFFFFFFFF;
             memset(parsed, 0, sizeof parsed);
             mask = PersistentSettings_ParseIni(language.text, (uint32_t)strlen(language.text), parsed);
             memcpy(&value, parsed + PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, 4);
-            length = PersistentSettings_FormatIni(parsed, mask, text, sizeof text);
+            length = PersistentSettings_FormatIniWithExtras(parsed, mask, nullptr, text, sizeof text);
+            /* written for older versions too: language_country_code = <code> directly before language */
+            char oldKey[64];
+            snprintf(oldKey, sizeof oldKey, "\nlanguage_country_code = %u\r\n", language.countryCode);
+            const char *oldAt = strstr(text, oldKey);
+            const char *newAt = strstr(text, language.written);
             if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_LOCALE_COUNTRY_CODE / 4)) ||
-                (value != language.countryCode) || (strstr(text, language.written) == nullptr)) {
+                (value != language.countryCode) || (newAt == nullptr) || (oldAt == nullptr) || (oldAt > newAt) ||
+                (strstr(oldAt + 1, "\nlanguage_country_code") != nullptr)) {
                 Thandor_Log("settings: language %u MISMATCH (value %u)", language.countryCode, value);
                 languageDifferences++;
             }
@@ -1075,6 +1407,9 @@ static void Thandor_SelfTestSettings()
         Thandor_Log("settings: autosave key %s", autosaveDifferences == 0 ? "ok" : "MISMATCH");
     }
     Thandor_Log("settings: keys section %s", SelfTest_SettingsKeys(text, sizeof text) == 0 ? "ok" : "MISMATCH");
+    SelfTest_SettingsExtras();
+    SelfTest_SettingsTextForms();
+    SelfTest_SettingsRanges();
 
     file = fopen("thandor.dat", "rb");
     if (file == nullptr) {
@@ -1087,7 +1422,7 @@ static void Thandor_SelfTestSettings()
         uint64_t datMask = 0;
         unsigned dword;
         memset(datImage, 0, sizeof datImage);
-        datBytes = fread(datImage, 1, sizeof datImage, file);
+        datBytes = fread(datImage, 1, PERSISTENT_SETTINGS_DAT_BYTES, file);
         fclose(file);
         for (dword = 0; (dword + 1) * 4 <= datBytes; dword++) {
             datMask |= (uint64_t)1 << dword;
@@ -1106,6 +1441,9 @@ static void Thandor_SelfTestSettings()
         length = (uint32_t)fread(text, 1, sizeof text, file);
         fclose(file);
         memset(parsed, 0, sizeof parsed);
+        /* the game does not take the unused dwords 0x50..0x5B over from thandor.dat */
+        datMask &= ~((((uint64_t)1 << (PERSISTENT_SETTINGS_DAT_UNUSED_BYTES / 4)) - 1)
+                     << (PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET / 4));
         differences = SelfTest_CompareSettingsImages("thandor.ini vs thandor.dat", datImage, datMask, parsed,
                                                      PersistentSettings_ParseIni(text, length, parsed));
         Thandor_Log("settings: thandor.ini vs thandor.dat: %s", differences == 0 ? "identical" : "DIFFERENT");
@@ -1361,6 +1699,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != nullptr && strcmp(name, "settings") == 0) {
         Thandor_SelfTestSettings();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "inifixtures") == 0) {
+        Thandor_SelfTestIniFixtures();
         return 1;
     }
     if (name != nullptr && strcmp(name, "path") == 0) {

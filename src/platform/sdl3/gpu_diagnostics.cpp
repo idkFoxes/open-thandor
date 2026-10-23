@@ -344,6 +344,29 @@ SDL_GPUCommandBuffer *AcquireGpuCommandBufferLogged(SDL_GPUDevice *device, const
   return commands;
 }
 
+uint32_t TransferBufferSize(uint32_t byteCount, uint32_t minimum) noexcept
+{
+  constexpr uint64_t kMiB = 1u << 20;
+  const uint64_t wanted = (static_cast<uint64_t>(byteCount) + byteCount / 4 + kMiB - 1) / kMiB * kMiB;
+  return static_cast<uint32_t>(std::clamp<uint64_t>(wanted, std::max<uint64_t>(minimum, byteCount), UINT32_MAX));
+}
+
+void TrimTransferBuffer(SDL_GPUDevice *device, SDL_GPUTransferBuffer *&buffer, uint32_t &bufferBytes,
+                        TransferBufferUse &use, uint32_t minimum) noexcept
+{
+  constexpr uint32_t kTransferTrimFrames = 600;
+  if (++use.frames < kTransferTrimFrames) {
+    return;
+  }
+  /* released only, the cycled copies a frame in flight still reads stay until its command buffer completes */
+  if ((buffer != nullptr) && (bufferBytes > minimum) && (use.peak < bufferBytes / 2)) {
+    SDL_ReleaseGPUTransferBuffer(device, buffer);
+    buffer = nullptr;
+    bufferBytes = 0;
+  }
+  use = TransferBufferUse{};
+}
+
 bool GpuStartMarker_Take(const uint16_t *iniPath, uint32_t *renderer) noexcept
 {
   wchar_t path[MAX_PATH];

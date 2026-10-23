@@ -1,0 +1,9 @@
+# [game] language and language_country_code with different values: language wins whatever the order (the
+# language_country_code line of the file is not used), and a save writes both with language's value
+game.language = fr
+game.language_country_code = 33
+others = <default>
+preserved: [game] language_country_code = 33
+preserved: [game] language = fr
+order: [game] language_country_code = 33 < [game] language = fr
+absent: language_country_code = 44

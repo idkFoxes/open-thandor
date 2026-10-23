@@ -1,0 +1,3 @@
+# v1_0_7.ini saved as UTF-16 LE with BOM (an editor's "Unicode"): read like the UTF-8 file once A detects UTF-16;
+# until then nothing loads (the bytes have NULs between the characters), which is still no crash and a stable save
+pending A: include: v1_0_7.expect

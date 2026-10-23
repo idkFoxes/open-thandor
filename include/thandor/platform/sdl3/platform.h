@@ -69,6 +69,9 @@ bool SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint3
    (through the SDL_GPU device, or an SDL_Renderer streaming texture for the software renderer) and removes the
    cursor again. */
 void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer);
+/* The pump's SDL_EVENT_RENDER_DEVICE_RESET (lost = false) and SDL_EVENT_RENDER_DEVICE_LOST (true) of the software
+   renderer's SDL_Renderer: the next present makes the frame texture (lost: the SDL_Renderer too) again. */
+void SdlVideo_RenderDeviceReset(bool lost);
 /* The renderer choice kept in the persistent settings (PERSISTENT_SETTING_RENDERER, not the original's adapter
    index): the adapter index of the saved renderer (or of the one forced by OPEN_THANDOR_GPU / -GPU / -SOFTWARE; an
    unavailable one gives the first adapter), and saving the renderer of an adapter (not while one is forced). The

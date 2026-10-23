@@ -147,9 +147,15 @@ The original had this key only in the hidden map editor; the choice is kept for 
 The settings live in `thandor.ini`, a text file with one commented key per setting
 ([`src/core/settings/persistent.cpp`](../src/core/settings/persistent.cpp)). The game looks for it in the current
 directory, then next to `thandor.exe`, and rewrites it when a setting changed in its menus. It can be edited by
-hand while the game is not running: a missing key means the game's default, unknown keys are ignored, values are
+hand while the game is not running: a missing key means the game's default, values are
 decimal or `0x` hex, switches `true`/`false`, volumes 0..32768 or a percentage (`effects_volume = 50%`),
-names UTF-8 in quotes (at most 20 characters).
+names in quotes (at most 20 characters; after the closing quote a `;` comment may follow). The file may be
+UTF-8 or UTF-16 (it is written back as UTF-8). A value outside what the game's menus can set (for example
+`width` below 640 or `speed_percent` outside 80..120) is not used: the game takes its default and notes it in
+`thandor.log`. Keys and sections the game does not know (for example those of a
+newer version) are kept when it rewrites the file: unknown keys at the end of their section, together with the
+comment lines directly above them, other sections with all their lines at the end of the file. Your own comments
+above the game's keys are not kept (the game writes its own comment there).
 
 Without a `thandor.ini` the game reads the original binary `thandor.dat` (200 bytes) of the installation once and
 writes its settings as `thandor.ini` on the next save; `thandor.dat` itself is never changed or deleted. Delete
@@ -157,7 +163,7 @@ writes its settings as `thandor.ini` on the next save; `thandor.dat` itself is n
 
 ```ini
 ; Open Thandor settings. The game rewrites this file when a setting changes in its menus.
-; A missing key means the game's default; unknown keys are ignored.
+; A missing key means the game's default; unknown keys and sections are kept as they are.
 
 [display]
 ; graphics adapter, 0 = the first (default 0)
@@ -224,6 +230,8 @@ link_panel_options = 0x2
 player_name = "Spieler"
 ; name of a hosted network game, at most 20 characters
 game_name = "Thandorspiel"
+; the text language for Open Thandor 1.0.7 and older, as telephone country code (0 = from Windows); language below takes precedence
+language_country_code = 0
 ; text language: auto (default; from Windows), de, en, fr, it or es (another telephone country code as a number); the game's own texts are German for de, English otherwise
 language = auto
 ; unit pathfinding and movement in single player: improved (default; units drive curves, wait for and give way to each other) or original (exactly the original game's movement); a network game always agrees on one mode
@@ -298,8 +306,51 @@ Internally the game still works on the original 200-byte layout (`PersistentSett
 `PERSISTENT_SETTING_*` offsets of
 [`include/thandor/core/settings/persistent.h`](../include/thandor/core/settings/persistent.h)); each key of the
 table in `persistent.cpp` maps to one offset. Sections owned by other modules (`[keys]`) hook in through
-`PersistentSettings_RegisterSection`. The self-test `OPEN_THANDOR_SELFTEST=settings` checks the format, `[keys]`
-included.
+`PersistentSettings_RegisterSection`: their lines go to the owner (never kept as unknown lines), and a save writes
+them after the game's sections and before kept foreign sections. The self-test `OPEN_THANDOR_SELFTEST=settings`
+checks the format, `[keys]` included,
+`OPEN_THANDOR_SELFTEST=inifixtures` runs the files of [`tools/test/fixtures/ini`](../tools/test/fixtures/ini) (what
+1.0.6, 1.0.7 and experimental-dev wrote, an original `thandor.dat`, and broken files: UTF-16, CR-only line ends, cut
+off, duplicate keys, unparsable or out-of-range values, a 70000-character line, a header without `]`, empty, only
+comments, hand-written comments and unknown keys) through the real load and save; `run_checks.py` runs both as its
+`ini` check.
+
+#### Rules for new and changed keys
+
+The settings file outlives versions: players go back and forth between releases and test builds, and every version
+must read what the others wrote.
+
+- **Never rename a key** (or a section) without reading the old name as well: a renamed key is a lost setting for
+  every existing file. Keep parsing the old name as an alias of the new one. While released versions still read
+  only the old name, write it too, before the new one, and let the new one win when a file has both, in either
+  order: `[game] language` is written as `language_country_code = <telephone country code>` (0 = auto, what 1.0.7
+  reads) directly followed by `language = <name>`. A file a 1.0.7 saved after changing the language there keeps the
+  old `language` line (unknown to 1.0.7), so this version shows the language chosen here before, not the one chosen
+  in 1.0.7.
+- **Missing means default.** A file without the key must behave exactly like the default; the default lives at the
+  `PersistentSettings_Read` call sites, never in the file. Do not write a key just because it exists.
+- **Every key has a range.** A value outside it (or one that does not parse; a negative number for an unsigned
+  key) reads as the default, with one log line - a hand-edited file must not reach the game code unchecked. An
+  enumeration (`pathing`, `objective_overlay`, `autosave`, ...) accepts only its names or their indices, `language`
+  its names or a country code 0..999.
+- **Every new key gets a fixture entry**: the key table copy in
+  [`src/platform/selftest/inifixtures_selftest.cpp`](../src/platform/selftest/inifixtures_selftest.cpp) (it fails on
+  a renamed key), a value in a version fixture (a new `<version>.ini` written by `FormatIni` of that version, with its
+  `.expect`) and, for a range, an out-of-range line in `garbage_values.ini`. The `.expect` format is described at the
+  top of `inifixtures_selftest.cpp`; behaviour a branch still has to deliver is marked `pending A:` / `pending B:`
+  and counts as expected-fail until then (`OPEN_THANDOR_INI_STRICT=1` makes it fail).
+- **Mind the image space.** Each key is a dword of the in-memory settings image (`PERSISTENT_SETTINGS_IMAGE_BYTES`
+  = 256: the 200 bytes of the original `thandor.dat` followed by free dwords; the present/written masks are 64-bit,
+  so it cannot grow further). The original's dwords 0x00-0xAF are its own (0x50-0x58 are unused there and hold
+  `pathing`, `objective_overlay` and `autosave`, so a `thandor.dat` migration must not take them over),
+  open-thandor's additions start at 0xB0, and 0xC8-0xFF (`freeC8_FF`) are free. A new key needs a free dword;
+  reusing one changes what older files mean.
+- **Downgrades keep what they do not know.** An older version reads a newer file, ignores the keys it does not
+  know - and must write them back unchanged on its next save, sections included (`[keys]`), so the newer version
+  finds them again. Releases up to 1.0.7 drop them (`python tools/test/ini_downgrade.py --exe <older test build>`
+  shows what an older build with the developer tools keeps of this version's file; the older build's expectations
+  are the fixtures' `<name>.downgrade` files); this is why new keys must never be required: a file saved by an older
+  version may have lost them.
 
 ## Patch installer
 
@@ -549,7 +600,7 @@ the variable it does nothing:
 
 | Variable | Effect |
 |---|---|
-| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|raster\|hexscan\|keymatch\|tables\|sam\|uiatlas\|icon\|path\|stretch\|pcx\|settings\|crash\|campaignprogress\|campaignmap\|nativefile\|uitemplate` | run one self-test and exit (results in `thandor.log`; `icon` runs the window icon's `.ico` parser on a synthetic icon file and logs `icon: ok, N checks`; `settings` checks the `thandor.ini` reader and writer and that the `thandor.dat` of the current directory comes back unchanged through it; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `tables` hashes the tables computed at startup (the sine table built with `sin()`, the `.sam` cosine matrices, the lighting/shading/software factor tables) and `sam` the `.sam` decoder on synthetic input and an encoder round trip; `raster` (`raster_selftest.cpp`) draws seeded random triangles through every entry of the 32-bit and auxiliary raster handler tables and runs every blit, tiled blit, stretch, fill, the bilinear blend scale and the mask step on synthetic textures and framebuffers (no game data, software functions called directly, so independent of the renderer), logging one `raster <group>: <hash>` line per handler entry or blit path - compare all lines between two builds before and after touching `src/graphics/backend`; `hexscan` (`hexscan_selftest.cpp`) runs the seven hexagonal radius scans of `src/world/terrain` (overlay A and B, occupancy marking, the flatten brush, the height-band and auxiliary placement tests, line of sight) at 2000 seeded points each on a synthetic 67x53 field grid, logging one `hexscan <driver>: <hash>` line per driver - compare them between two builds before and after touching those walkers; `keymatch` (`keymatch_selftest.cpp`) compares literal copies of the four old key command modifier matchers (hotkeys/end movie, in-game key commands, frontend hotkeys, camera/editor keyboard) with `UiKeyModifiers_Match` (`include/thandor/ui/core/key_dispatch.h`) for every modifier class of the six tables and every held combination, checks `UiCommandDispatch_Find` against the old scan and logs mismatch lines and `keymatch: ... hash <hash>` - expect 0 mismatches in table classes (the Shift-only class 0x03 differs for the hotkey and frontend rules, which no table of theirs uses); `uiatlas` (`uiatlas_selftest.cpp`, needs the game packages in the current directory, otherwise it logs `uiatlas: skipped`) packs every image of every `gfx` asset into the step-9 GPU UI texture cache (`src/platform/sdl3/gpu_ui_textures.cpp`) without a GPU device, logs page count, texels, packing fill and a hash of the converted texels, writes `uiatlas.txt` (one line per asset) and ends with `uiatlas: ok`); `campaignprogress` (`campaignprogress_selftest.cpp`) checks the campaign progress model and the `save\kampagne.dat` package format on fixed models (round trip, layout, broken and truncated files with the `.bad` rename, the win rule and the carry-over snapshot take), `campaignmap` (`campaignmap_selftest.cpp`) the campaign graph, fingerprints, grouping and map layout of the four stock campaigns against the approved mockup positions (embedded record tables), `nativefile` the native file helpers `FileSystem_ReadWholeFileNative` / `FileSystem_WriteFileReplacing` - all three need no game data, work in a fresh directory under `%TEMP%` where they write files, and end with `<name>: <n> of <m> checks failed` -, and `uitemplate` hashes the five UI template images and a relocated in-game root (compare the hashes between two builds after touching a template). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
+| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|raster\|hexscan\|keymatch\|tables\|sam\|uiatlas\|icon\|path\|stretch\|pcx\|settings\|inifixtures\|crash\|campaignprogress\|campaignmap\|nativefile\|uitemplate` | run one self-test and exit (results in `thandor.log`; `icon` runs the window icon's `.ico` parser on a synthetic icon file and logs `icon: ok, N checks`; `settings` checks the `thandor.ini` reader and writer and that the `thandor.dat` of the current directory comes back unchanged through it; `inifixtures` loads, saves and reloads every case of `tools/test/fixtures/ini` (`<name>.expect`: expected values, lines a save must keep; `OPEN_THANDOR_INI_FIXTURES` names another directory, `OPEN_THANDOR_INI_FIXTURE=a,b` picks cases, `OPEN_THANDOR_INI_OUT` keeps the work directories, `OPEN_THANDOR_INI_STRICT=1` fails pending checks) in work directories of its own (never the player's `thandor.ini`) and ends with `inifixtures: ok, ...`; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `tables` hashes the tables computed at startup (the sine table built with `sin()`, the `.sam` cosine matrices, the lighting/shading/software factor tables) and `sam` the `.sam` decoder on synthetic input and an encoder round trip - both also to compare two builds; `raster` (`raster_selftest.cpp`) draws seeded random triangles through every entry of the 32-bit and auxiliary raster handler tables and runs every blit, tiled blit, stretch, fill, the bilinear blend scale and the mask step on synthetic textures and framebuffers (no game data, software functions called directly, so independent of the renderer), logging one `raster <group>: <hash>` line per handler entry or blit path - compare all lines between two builds before and after touching `src/graphics/backend`; `hexscan` (`hexscan_selftest.cpp`) runs the seven hexagonal radius scans of `src/world/terrain` (overlay A and B, occupancy marking, the flatten brush, the height-band and auxiliary placement tests, line of sight) at 2000 seeded points each on a synthetic 67x53 field grid, logging one `hexscan <driver>: <hash>` line per driver - compare them between two builds before and after touching those walkers; `keymatch` (`keymatch_selftest.cpp`) compares literal copies of the four old key command modifier matchers (hotkeys/end movie, in-game key commands, frontend hotkeys, camera/editor keyboard) with `UiKeyModifiers_Match` (`include/thandor/ui/core/key_dispatch.h`) for every modifier class of the six tables and every held combination, checks `UiCommandDispatch_Find` against the old scan and logs mismatch lines and `keymatch: ... hash <hash>` - expect 0 mismatches in table classes (the Shift-only class 0x03 differs for the hotkey and frontend rules, which no table of theirs uses); `uiatlas` (`uiatlas_selftest.cpp`, needs the game packages in the current directory, otherwise it logs `uiatlas: skipped`) packs every image of every `gfx` asset into the step-9 GPU UI texture cache (`src/platform/sdl3/gpu_ui_textures.cpp`) without a GPU device, logs page count, texels, packing fill and a hash of the converted texels, writes `uiatlas.txt` (one line per asset) and ends with `uiatlas: ok`); `campaignprogress` (`campaignprogress_selftest.cpp`) checks the campaign progress model and the `save\kampagne.dat` package format on fixed models (round trip, layout, broken and truncated files with the `.bad` rename, the win rule and the carry-over snapshot take), `campaignmap` (`campaignmap_selftest.cpp`) the campaign graph, fingerprints, grouping and map layout of the four stock campaigns against the approved mockup positions (embedded record tables), `nativefile` the native file helpers `FileSystem_ReadWholeFileNative` / `FileSystem_WriteFileReplacing` - all three need no game data, work in a fresh directory under `%TEMP%` where they write files, and end with `<name>: <n> of <m> checks failed` -, and `uitemplate` hashes the five UI template images and a relocated in-game root (compare the hashes between two builds after touching a template). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
 | `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes the frames to `moviedump\`); the player is in [`src/platform/debug/movie_player.cpp`](../src/platform/debug/movie_player.cpp) |
 | `OPEN_THANDOR_MOVIEDUMP=1` | log every decoded movie frame (every tenth also to `moviedump\`) |
 | `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` (a failed capture is logged) |
@@ -613,7 +664,8 @@ own UDP ports: the determinism references, the AI state hash on stromschnelle (t
 the old one), a pixel compare new vs old of the paused in-game frame and the choose-game page (only with
 `--old`), save and load of a skirmish (`skirmish_save.txt`, `choose_load.txt`), the text edit keys in the save
 dialog (`textedit_save.txt` turns the prefilled "Multi Ahaggar" into "Test Edit 42" with Home/End, Shift+Home/End,
-Ctrl+Left/Right, Delete, Backspace and typing; `save\Test Edit 42.sve` must exist), the two-instance multiplayer
+Ctrl+Left/Right, Delete, Backspace and typing; `save\Test Edit 42.sve` must exist), the settings self-tests
+`settings` and `inifixtures` (`ini`, a few seconds, no game started), the two-instance multiplayer
 test, the campaign carry-over pairs (`run_campaign_chain.py pairs`, 5 workers, every
 target level must receive units), the campaign map test (`run_campaign_map.py`, below; its network case waits for
 the multiplayer check, they share the ports 929/930) and the single maps (`--map-jobs`, `--map-minutes`; ENDED is only a warning, the

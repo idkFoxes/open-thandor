@@ -1,0 +1,36 @@
+# the original's 200-byte thandor.dat (version 1.05), the reserved dwords 0x50..0x58 zero: migrated, the next save
+# writes thandor.ini (the colour depth 16 is read as 32). The open-thandor keys at 0xB0.. are zero in such a file:
+# loaded as zero or not loaded, both read as the defaults
+display.adapter = 0
+display.width = 1024
+display.height = 768
+display.bits_per_pixel = 32
+display.renderer = vulkan | <default>
+display.display_mode = fullscreen | <default>
+graphics.shading = true
+graphics.shading_grid_half_size = 64
+graphics.shading_texture_size = 128
+graphics.shading_depth = 16
+graphics.texture_quality = medium
+graphics.model_detail = 131072
+graphics.gpu_rasterization = smooth | <default>
+graphics.ui_scale = auto | <default>
+graphics.vsync = on | <default>
+graphics.frame_limit = 0 | <default>
+sound.effects = true
+sound.music = false
+sound.reverse_stereo = false
+sound.effects_volume = 24576
+sound.music_volume = 16384
+sound.movie_volume = 32768
+sound.movie_alternate_volume = 32768
+game.speed_percent = 110
+game.scroll_step = 40
+game.map_mouse_options = 0x1
+game.link_panel_options = 0x0
+game.player_name = "Klaus"
+game.game_name = "Spiel 1"
+game.language_country_code = 49
+game.language = de
+network.players = 6
+others = <default>

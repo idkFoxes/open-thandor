@@ -1,0 +1,56 @@
+# experimental_dev_v2.ini (the thandor.ini of this version) read by an older build, 1.0.7 / dev key names; run by
+# tools/test/ini_downgrade.py --exe <older test build>, not a case of this version's inifixtures. The older build
+# reads the language from language_country_code (written for exactly this); language, pathing, objective_overlay,
+# autosave and [keys] are unknown there: dev keeps them on its save, 1.0.7 drops them (pending A).
+include: v1_0_7_values.include
+game.language_country_code = 49
+reserved.dword_50 = <default>
+reserved.dword_54 = <default>
+reserved.dword_58 = <default>
+others = <default>
+preserved: [game] language_country_code = 49
+pending A: preserved: [keys]
+pending A: preserved: [game] language = de
+pending A: preserved: [game] pathing = original
+pending A: preserved: [game] objective_overlay = off
+pending A: preserved: [game] autosave = on
+pending A: preserved: [keys] objectives = F1
+pending A: preserved: [keys] save = F2
+pending A: preserved: [keys] leave_game = Alt+Q
+pending A: preserved: [keys] pause = P, Pause
+pending A: preserved: [keys] faster = G
+pending A: preserved: [keys] slower = Alt+G
+pending A: preserved: [keys] side_panel = Tab
+pending A: preserved: [keys] chat = Enter
+pending A: preserved: [keys] message_window = C
+pending A: preserved: [keys] score_overview = O
+pending A: preserved: [keys] info_line = Ctrl+I
+pending A: preserved: [keys] screenshot = Print
+pending A: preserved: [keys] notification_go = Space
+pending A: preserved: [keys] notification_back = Backspace
+pending A: preserved: [keys] objective_toggle = Z
+pending A: preserved: [keys] group_select = 1..8
+pending A: preserved: [keys] group_select_add = Shift+1..8
+pending A: preserved: [keys] group_store = Ctrl+1..8, Alt+1..8
+pending A: preserved: [keys] group_store_add = Ctrl+Shift+1..8, Alt+Shift+1..8
+pending A: preserved: [keys] stop = Alt+Shift+S
+pending A: preserved: [keys] stop_movement = Shift+S
+pending A: preserved: [keys] cancel_attack = Alt+S
+pending A: preserved: [keys] self_destruct = Alt+D
+pending A: preserved: [keys] select_airports = A
+pending A: preserved: [keys] upgrade_page = F
+pending A: preserved: [keys] camera_left = Left
+pending A: preserved: [keys] camera_right = Right
+pending A: preserved: [keys] camera_up = Up
+pending A: preserved: [keys] camera_down = Down
+pending A: preserved: [keys] camera_tilt_minus = PageUp
+pending A: preserved: [keys] camera_tilt_plus = PageDown
+pending A: preserved: [keys] camera_rotate_minus = Insert
+pending A: preserved: [keys] camera_rotate_plus = Delete
+pending A: preserved: [keys] camera_zoom_in = Home
+pending A: preserved: [keys] camera_zoom_out = End
+pending A: preserved: [keys] camera_selection = Num5
+pending A: preserved: [keys] camera_hq = B
+pending A: preserved: [keys] camera_notification = Alt+Space
+pending A: preserved: [keys] camera_free = Alt+C
+pending A: preserved: [keys] menu_leave = Alt+Q
