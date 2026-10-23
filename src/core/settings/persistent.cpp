@@ -1096,13 +1096,18 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
 
 /* Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the
    last load or save, writes thandor.ini (open-thandor; the original wrote the 200-byte image to thandor.dat)
-   with every key that was loaded or written. The save result is not checked.
+   with every key that was loaded or written. open-thandor: the file is replaced atomically
+   (FileSystem_WriteBufferToPath); when formatting or writing fails the settings stay dirty, so the next Flush
+   tries again, and the old thandor.ini is kept. Only the first failure of a session is logged (a disk that
+   stays full fails at every later save).
 */
 void PersistentSettings_Flush()
 
 {
   static char iniText[PERSISTENT_SETTINGS_INI_MAX_BYTES];
+  static bool s_flushFailureLogged = false;
   uint32_t iniLength;
+  uint32_t writeError;
 
   if (g_PersistentSettings.image != nullptr) {
     PersistentSettings_Write(g_LocaleCountryCodeOverride,PERSISTENT_SETTING_LOCALE_COUNTRY_CODE);
@@ -1110,7 +1115,22 @@ void PersistentSettings_Flush()
       iniLength = PersistentSettings_FormatIni
                     (Thandor_Bytes(g_PersistentSettings.image.get()),
                      s_PersistentSettingsPresentMask | s_PersistentSettingsWrittenMask,iniText,sizeof iniText);
-      FileSystem_WriteBufferToPath(iniLength,iniText,s_PersistentSettingsIniPath);
+      /* FormatIni cuts the text at sizeof iniText - 1; a cut file would lose the keys after the cut */
+      if (iniLength + 1 >= sizeof iniText) {
+        if (!s_flushFailureLogged) {
+          Thandor_Log("settings: thandor.ini text does not fit %u bytes, not written", (uint32_t)sizeof iniText);
+          s_flushFailureLogged = true;
+        }
+        return;
+      }
+      writeError = FileSystem_WriteBufferToPath(iniLength,iniText,s_PersistentSettingsIniPath);
+      if (writeError != 0) {
+        if (!s_flushFailureLogged) {
+          Thandor_Log("settings: writing thandor.ini failed (error 0x%08X), the old file is kept", writeError);
+          s_flushFailureLogged = true;
+        }
+        return; /* still dirty: the next Flush tries again */
+      }
       g_PersistentSettings.dirtyWriteCount = 0;
     }
   }
