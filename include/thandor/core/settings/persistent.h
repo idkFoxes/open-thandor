@@ -8,6 +8,8 @@
 #ifndef THANDOR_CORE_SETTINGS_PERSISTENT_H
 #define THANDOR_CORE_SETTINGS_PERSISTENT_H
 
+#include <string>
+#include <vector>
 #include <thandor/core/settings/types.h>
 #include <thandor/core/contracts.h>
 
@@ -128,13 +130,38 @@ inline void PersistentSettings_WriteMouseLinkPanelOptions(PersistentMouseLinkPan
    (Write leaves a dword that was not loaded reading its default). */
 void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
 
+/* open-thandor: what a thandor.ini holds beyond the keys of the key table (keys of a newer version, sections of
+   other tools), kept so that a rewrite by this version does not lose it: per section, in file order, the
+   trimmed lines as they were. A known section (one of the key table's) keeps its unknown key lines, each with
+   the comment lines directly above it; a foreign section keeps all its lines, comments included. Sections that
+   appear twice are merged. Native memory (not the arena), bounded by PersistentSettings_ParseIniWithExtras. */
+struct PersistentSettingsIniExtras {
+  struct Section {
+    std::string name; /* as in the file, trimmed; matched case-insensitively */
+    bool known;       /* a section of the key table */
+    std::vector<std::string> lines;
+  };
+  std::vector<Section> sections;
+  size_t byteCount = 0; /* the lines' total length */
+};
+
 /* open-thandor: the settings are saved as thandor.ini (thandor.dat is only read, as a migration source).
    FormatIni writes the ini text of the keys whose dwords are in presentMask (bit i = byte offset 4 * i) in a
-   fixed key order and returns the text length; ParseIni parses ini text into image (zeroed by the caller) and
-   returns the mask of the dwords it set (unknown keys and values that do not parse are ignored). */
+   fixed key order, followed in each section by its kept unknown keys and at the end by the kept foreign
+   sections of the loaded thandor.ini, and returns the text length; FormatIniWithExtras does the same with the
+   given extras (nullptr: none). ParseIni parses ini text into image (zeroed by the caller) and returns the mask
+   of the dwords it set (values that do not parse or are out of range are ignored); ParseIniWithExtras also
+   collects the unknown keys and sections into extras (cleared first; nullptr: dropped, as ParseIni). */
 uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity);
 
+uint32_t PersistentSettings_FormatIniWithExtras(const uint8_t *image, uint64_t presentMask,
+                                                const PersistentSettingsIniExtras *extras, char *out,
+                                                uint32_t capacity);
+
 uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image);
+
+uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length, uint8_t *image,
+                                               PersistentSettingsIniExtras *extras);
 /* open-thandor: the path of thandor.ini (UTF-16; the bare file name, i.e. the current directory, until a load
    found it in the executable directory). */
 const uint16_t *PersistentSettings_IniPathUtf16();

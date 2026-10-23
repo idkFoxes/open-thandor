@@ -147,9 +147,12 @@ The original had this key only in the hidden map editor; the choice is kept for 
 The settings live in `thandor.ini`, a text file with one commented key per setting
 ([`src/core/settings/persistent.cpp`](../src/core/settings/persistent.cpp)). The game looks for it in the current
 directory, then next to `thandor.exe`, and rewrites it when a setting changed in its menus. It can be edited by
-hand while the game is not running: a missing key means the game's default, unknown keys are ignored, values are
+hand while the game is not running: a missing key means the game's default, values are
 decimal or `0x` hex, switches `true`/`false`, volumes 0..32768 or a percentage (`effects_volume = 50%`),
-names UTF-8 in quotes (at most 20 characters).
+names UTF-8 in quotes (at most 20 characters). Keys and sections the game does not know (for example those of a
+newer version) are kept when it rewrites the file: unknown keys at the end of their section, together with the
+comment lines directly above them, other sections with all their lines at the end of the file. Your own comments
+above the game's keys are not kept (the game writes its own comment there).
 
 Without a `thandor.ini` the game reads the original binary `thandor.dat` (200 bytes) of the installation once and
 writes its settings as `thandor.ini` on the next save; `thandor.dat` itself is never changed or deleted. Delete
@@ -157,7 +160,7 @@ writes its settings as `thandor.ini` on the next save; `thandor.dat` itself is n
 
 ```ini
 ; Open Thandor settings. The game rewrites this file when a setting changes in its menus.
-; A missing key means the game's default; unknown keys are ignored.
+; A missing key means the game's default; unknown keys and sections are kept as they are.
 
 [display]
 ; graphics adapter, 0 = the first (default 0)

@@ -28,7 +28,9 @@ GetRegionOrFallback; only loading and saving changed:
   present ones) and the image is marked dirty, so the next Flush writes thandor.ini. thandor.dat is never
   written or deleted.
 - Flush writes thandor.ini (when dirty, as before) with every key that is present or was written since the
-  load, in the fixed order of the key table below.
+  load, in the fixed order of the key table below, and with what the loaded thandor.ini had beyond the table
+  (unknown keys, foreign sections; PersistentSettingsIniExtras), so keys of a newer version survive a run of an
+  older one.
 Without either file the original kept no image (all defaults, nothing saved); now an empty image (nothing
 present, so all defaults) is kept, so settings changed in the menus are saved to a new thandor.ini.
 */
@@ -50,7 +52,8 @@ static uint64_t s_PersistentSettingsPresentMask;
 static uint64_t s_PersistentSettingsWrittenMask;
 
 #define PERSISTENT_SETTINGS_DWORD_COUNT (PERSISTENT_SETTINGS_IMAGE_BYTES / 4)
-constexpr auto PERSISTENT_SETTINGS_INI_MAX_BYTES = 0x4000; /* written ini text; the full key set needs about 3 KB */
+constexpr auto PERSISTENT_SETTINGS_INI_MAX_BYTES = 0x10000; /* written ini text: the full key set needs about 3 KB,
+                                                           the kept unknown lines at most 32 KB */
 constexpr auto PERSISTENT_SETTINGS_INI_MAX_LINE = 256;
 constexpr auto PERSISTENT_SETTINGS_GAIN_FULL = 0x8000; /* Q15 gain of 100 % */
 
@@ -288,11 +291,94 @@ static void PersistentIni_AppendName(PersistentIniWriter *writer, const uint8_t 
   }
 }
 
-/* Writes the ini text of every key whose dword is in presentMask; returns the text length (no NUL counted). */
-uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity)
+static bool PersistentIni_Equals(const char *begin, const char *end, const char *name);
+
+/* The kept extras entry of section [begin, end) (known or foreign), or nullptr. */
+static const PersistentSettingsIniExtras::Section *PersistentIni_FindExtras(const PersistentSettingsIniExtras *extras,
+                                                                           const char *begin, const char *end)
+{
+  if (extras == nullptr) {
+    return nullptr;
+  }
+  for (const PersistentSettingsIniExtras::Section &section : extras->sections) {
+    if (PersistentIni_Equals(begin, end, section.name.c_str())) {
+      return &section;
+    }
+  }
+  return nullptr;
+}
+
+/* Writes one key of the table (its comment and its line). */
+static void PersistentIni_AppendKey(PersistentIniWriter *writer, const uint8_t *image, const PersistentIniKey *key,
+                                    uint32_t value)
+{
+  if (key->kind == INI_KIND_GAIN) {
+    uint32_t tenths = (uint32_t)(((uint64_t)value * 1000 + PERSISTENT_SETTINGS_GAIN_FULL / 2) /
+                                 PERSISTENT_SETTINGS_GAIN_FULL);
+    PersistentIni_Append(writer, "; %s, 0..32768 = 0..100 %% (default 32768); here %u.%u %%\r\n",
+                         key->comment, tenths / 10, tenths % 10);
+  }
+  else {
+    PersistentIni_Append(writer, "; %s\r\n", key->comment);
+  }
+  PersistentIni_Append(writer, "%s = ", key->key);
+  switch (key->kind) {
+  case INI_KIND_INT:
+    PersistentIni_Append(writer, "%d", (int32_t)value);
+    break;
+  case INI_KIND_HEX:
+  case INI_KIND_RAW:
+    PersistentIni_Append(writer, "0x%X", value);
+    break;
+  case INI_KIND_BOOL:
+    if (value <= 1) {
+      PersistentIni_Append(writer, "%s", value != 0 ? "true" : "false");
+    }
+    else {
+      PersistentIni_Append(writer, "%u", value);
+    }
+    break;
+  case INI_KIND_BIT:
+    PersistentIni_Append(writer, "%s", (value & key->mask) != 0 ? "true" : "false");
+    break;
+  case INI_KIND_ENUM:
+    if (value < key->nameCount) {
+      PersistentIni_Append(writer, "%s", key->names[value]);
+    }
+    else {
+      PersistentIni_Append(writer, "%u", value);
+    }
+    break;
+  case INI_KIND_NAME:
+    PersistentIni_Append(writer, "\"");
+    PersistentIni_AppendName(writer, image + key->offset);
+    PersistentIni_Append(writer, "\"");
+    break;
+  default: /* INI_KIND_UINT, INI_KIND_GAIN */
+    PersistentIni_Append(writer, "%u", value);
+    break;
+  }
+  PersistentIni_Append(writer, "\r\n");
+}
+
+/* Writes the kept lines of an extras section. */
+static void PersistentIni_AppendExtraLines(PersistentIniWriter *writer, const PersistentSettingsIniExtras::Section *section)
+{
+  for (const std::string &line : section->lines) {
+    PersistentIni_Append(writer, "%s\r\n", line.c_str());
+  }
+}
+
+/* Writes the ini text of every key whose dword is in presentMask, section by section in the order the sections
+   first appear in the key table; after the keys of a section its kept unknown keys, and after the last section
+   the kept foreign sections (in file order, so a rewrite keeps them where they were relative to each other; the
+   game's own sections come first). Returns the text length (no NUL counted). */
+uint32_t PersistentSettings_FormatIniWithExtras(const uint8_t *image, uint64_t presentMask,
+                                                const PersistentSettingsIniExtras *extras, char *out,
+                                                uint32_t capacity)
 {
   PersistentIniWriter writer = {std::string(), capacity};
-  const char *section = nullptr;
+  uint32_t sectionIndex;
   uint32_t index;
 
   if (capacity == 0) {
@@ -300,75 +386,63 @@ uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask
   }
   PersistentIni_Append(&writer,
       "; Open Thandor settings. The game rewrites this file when a setting changes in its menus.\r\n"
-      "; A missing key means the game's default; unknown keys are ignored.\r\n");
-  for (index = 0; index < PERSISTENT_INI_KEY_COUNT; index++) {
-    const PersistentIniKey *key = &s_PersistentIniKeys[index];
-    uint32_t byteCount = key->kind == INI_KIND_NAME ? PERSISTENT_SETTINGS_NAME_BYTES : 4;
-    uint64_t mask = PersistentSettings_DwordMask(key->offset, byteCount);
-    uint32_t value;
+      "; A missing key means the game's default; unknown keys and sections are kept as they are.\r\n");
+  for (sectionIndex = 0; sectionIndex < PERSISTENT_INI_KEY_COUNT; sectionIndex++) {
+    const char *section = s_PersistentIniKeys[sectionIndex].section;
+    const PersistentSettingsIniExtras::Section *kept;
+    bool headerWritten = false;
 
-    if ((presentMask & mask) != mask) {
-      continue;
+    for (index = 0; index < sectionIndex && strcmp(s_PersistentIniKeys[index].section, section) != 0; index++) {
     }
-    value = PersistentIni_GetDword(image, key->offset);
-    if (key->kind == INI_KIND_RAW && value == 0) {
-      continue;
+    if (index < sectionIndex) {
+      continue; /* written with its first key */
     }
-    if (section == nullptr || strcmp(section, key->section) != 0) {
-      section = key->section;
-      PersistentIni_Append(&writer, "\r\n[%s]\r\n", section);
-    }
-    if (key->kind == INI_KIND_GAIN) {
-      uint32_t tenths = (uint32_t)(((uint64_t)value * 1000 + PERSISTENT_SETTINGS_GAIN_FULL / 2) /
-                                   PERSISTENT_SETTINGS_GAIN_FULL);
-      PersistentIni_Append(&writer, "; %s, 0..32768 = 0..100 %% (default 32768); here %u.%u %%\r\n",
-                           key->comment, tenths / 10, tenths % 10);
-    }
-    else {
-      PersistentIni_Append(&writer, "; %s\r\n", key->comment);
-    }
-    PersistentIni_Append(&writer, "%s = ", key->key);
-    switch (key->kind) {
-    case INI_KIND_INT:
-      PersistentIni_Append(&writer, "%d", (int32_t)value);
-      break;
-    case INI_KIND_HEX:
-    case INI_KIND_RAW:
-      PersistentIni_Append(&writer, "0x%X", value);
-      break;
-    case INI_KIND_BOOL:
-      if (value <= 1) {
-        PersistentIni_Append(&writer, "%s", value != 0 ? "true" : "false");
+    for (index = sectionIndex; index < PERSISTENT_INI_KEY_COUNT; index++) {
+      const PersistentIniKey *key = &s_PersistentIniKeys[index];
+      uint32_t byteCount = key->kind == INI_KIND_NAME ? PERSISTENT_SETTINGS_NAME_BYTES : 4;
+      uint64_t mask = PersistentSettings_DwordMask(key->offset, byteCount);
+      uint32_t value;
+
+      if (strcmp(key->section, section) != 0 || (presentMask & mask) != mask) {
+        continue;
       }
-      else {
-        PersistentIni_Append(&writer, "%u", value);
+      value = PersistentIni_GetDword(image, key->offset);
+      if (key->kind == INI_KIND_RAW && value == 0) {
+        continue;
       }
-      break;
-    case INI_KIND_BIT:
-      PersistentIni_Append(&writer, "%s", (value & key->mask) != 0 ? "true" : "false");
-      break;
-    case INI_KIND_ENUM:
-      if (value < key->nameCount) {
-        PersistentIni_Append(&writer, "%s", key->names[value]);
+      if (!headerWritten) {
+        PersistentIni_Append(&writer, "\r\n[%s]\r\n", section);
+        headerWritten = true;
       }
-      else {
-        PersistentIni_Append(&writer, "%u", value);
-      }
-      break;
-    case INI_KIND_NAME:
-      PersistentIni_Append(&writer, "\"");
-      PersistentIni_AppendName(&writer, image + key->offset);
-      PersistentIni_Append(&writer, "\"");
-      break;
-    default: /* INI_KIND_UINT, INI_KIND_GAIN */
-      PersistentIni_Append(&writer, "%u", value);
-      break;
+      PersistentIni_AppendKey(&writer, image, key, value);
     }
-    PersistentIni_Append(&writer, "\r\n");
+    kept = PersistentIni_FindExtras(extras, section, section + strlen(section));
+    if (kept != nullptr && kept->known && !kept->lines.empty()) {
+      if (!headerWritten) {
+        PersistentIni_Append(&writer, "\r\n[%s]\r\n", section);
+      }
+      PersistentIni_AppendExtraLines(&writer, kept);
+    }
+  }
+  if (extras != nullptr) {
+    for (const PersistentSettingsIniExtras::Section &kept : extras->sections) {
+      if (!kept.known) {
+        PersistentIni_Append(&writer, "\r\n[%s]\r\n", kept.name.c_str());
+        PersistentIni_AppendExtraLines(&writer, &kept);
+      }
+    }
   }
   std::copy(writer.text.begin(), writer.text.end(), out);
   out[writer.text.size()] = 0;
   return (uint32_t)writer.text.size();
+}
+
+/* open-thandor: the unknown keys and foreign sections of the loaded thandor.ini (written back by every Flush). */
+static PersistentSettingsIniExtras s_PersistentSettingsIniExtras;
+
+uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity)
+{
+  return PersistentSettings_FormatIniWithExtras(image, presentMask, &s_PersistentSettingsIniExtras, out, capacity);
 }
 
 static bool PersistentIni_IsSpace(char c)
@@ -552,22 +626,88 @@ static void PersistentIni_ParseName(const char *begin, const char *end, uint8_t 
   }
 }
 
-/* Parses ini text into image (which the caller zeroed); returns the mask of the dwords the text set. Unknown
-   sections and keys and values that do not parse are ignored. */
 const uint16_t *PersistentSettings_IniPathUtf16()
 {
   return s_PersistentSettingsIniPath;
 }
 
-uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image)
+/* Upper bound of the kept unknown lines (PersistentSettingsIniExtras::byteCount), so that the rewritten file
+   still fits PERSISTENT_SETTINGS_INI_MAX_BYTES with every key of the table. */
+constexpr size_t PERSISTENT_SETTINGS_INI_EXTRAS_MAX_BYTES = 0x8000;
+
+/* Whether [begin, end) names a section of the key table. */
+static bool PersistentIni_IsKnownSection(const char *begin, const char *end)
+{
+  uint32_t index;
+
+  for (index = 0; index < PERSISTENT_INI_KEY_COUNT; index++) {
+    if (PersistentIni_Equals(begin, end, s_PersistentIniKeys[index].section)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/* The extras entry of section [begin, end), created (at the end, so foreign sections keep their file order)
+   when there is none; sections that appear twice share one entry. Returns its index. */
+static size_t PersistentIni_ExtrasSection(PersistentSettingsIniExtras *extras, const char *begin, const char *end,
+                                          bool known)
+{
+  size_t index;
+
+  for (index = 0; index < extras->sections.size(); index++) {
+    if (PersistentIni_Equals(begin, end, extras->sections[index].name.c_str())) {
+      return index;
+    }
+  }
+  extras->sections.push_back({std::string(begin, end), known, {}});
+  return extras->sections.size() - 1;
+}
+
+/* Keeps one line in an extras section, unless the bound is reached (then the line is dropped, logged once). */
+static void PersistentIni_KeepLine(PersistentSettingsIniExtras *extras, size_t section, const char *begin,
+                                   const char *end, bool *overflowLogged)
+{
+  size_t length = (size_t)(end - begin);
+
+  if (extras->byteCount + length + 2 > PERSISTENT_SETTINGS_INI_EXTRAS_MAX_BYTES) {
+    if (!*overflowLogged) {
+      Thandor_Log("settings: more than %u bytes of unknown keys and sections, the rest is not kept",
+                  (unsigned)PERSISTENT_SETTINGS_INI_EXTRAS_MAX_BYTES);
+      *overflowLogged = true;
+    }
+    return;
+  }
+  extras->sections[section].lines.emplace_back(begin, end);
+  extras->byteCount += length + 2; /* and the line end */
+}
+
+/* Parses ini text into image (which the caller zeroed); returns the mask of the dwords the text set. Values that
+   do not parse are ignored. With extras, the lines this version does not know are collected for the rewrite:
+   - in a section of the key table, every key line whose key is not in the table, together with the comment
+     lines directly above it (the comments above known keys are dropped: the game writes its own there, and a
+     user comment could not be placed again reliably once keys are added or removed);
+   - every line of a foreign section (comments included), with its header.
+   A key the table knows is never kept as an extra, also when its value does not parse, so the rewrite never
+   writes it twice. Lines before the first section header (the game's own file comment) are not kept. */
+uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length, uint8_t *image,
+                                               PersistentSettingsIniExtras *extras)
 {
   const char *cursor = text;
   const char *textEnd = text + length;
   const char *sectionBegin = nullptr;
   const char *sectionEnd = nullptr;
+  bool sectionKnown = false;
+  size_t sectionExtras = 0; /* extras entry of a foreign section */
+  std::vector<std::pair<const char *, const char *>> pendingComments; /* above the next key of a known section */
+  bool overflowLogged = false;
   uint64_t presentMask = 0;
   uint64_t bitsGivenMask = 0; /* dwords of INI_KIND_BIT keys that got their default before the first bit */
 
+  if (extras != nullptr) {
+    extras->sections.clear();
+    extras->byteCount = 0;
+  }
   if (length >= 3 && (uint8_t)text[0] == 0xEF && (uint8_t)text[1] == 0xBB && (uint8_t)text[2] == 0xBF) {
     cursor += 3;
   }
@@ -580,6 +720,7 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
     const char *valueBegin;
     const char *valueEnd;
     uint32_t index;
+    bool keyKnown = false;
 
     while (cursor < textEnd && *cursor != '\n') {
       cursor++;
@@ -589,7 +730,18 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
       cursor++;
     }
     PersistentIni_Trim(&lineBegin, &lineEnd);
-    if (lineBegin == lineEnd || *lineBegin == ';' || *lineBegin == '#') {
+    if (lineBegin == lineEnd) {
+      continue;
+    }
+    if (*lineBegin == ';' || *lineBegin == '#') {
+      if (extras != nullptr && sectionBegin != nullptr) {
+        if (sectionKnown) {
+          pendingComments.emplace_back(lineBegin, lineEnd);
+        }
+        else {
+          PersistentIni_KeepLine(extras, sectionExtras, lineBegin, lineEnd, &overflowLogged);
+        }
+      }
       continue;
     }
     if (*lineBegin == '[') {
@@ -599,11 +751,27 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
         sectionBegin = lineBegin + 1;
         sectionEnd = close;
         PersistentIni_Trim(&sectionBegin, &sectionEnd);
+        sectionKnown = PersistentIni_IsKnownSection(sectionBegin, sectionEnd);
+        pendingComments.clear();
+        if (extras != nullptr && !sectionKnown) {
+          /* created at once, so an empty foreign section is kept too */
+          sectionExtras = PersistentIni_ExtrasSection(extras, sectionBegin, sectionEnd, false);
+        }
+      }
+      continue;
+    }
+    if (sectionBegin == nullptr) {
+      continue;
+    }
+    if (!sectionKnown) {
+      if (extras != nullptr) {
+        PersistentIni_KeepLine(extras, sectionExtras, lineBegin, lineEnd, &overflowLogged);
       }
       continue;
     }
     equals = static_cast<const char *>(memchr(lineBegin, '=', (size_t)(lineEnd - lineBegin)));
-    if (equals == nullptr || sectionBegin == nullptr) {
+    if (equals == nullptr) {
+      pendingComments.clear();
       continue;
     }
     keyBegin = lineBegin;
@@ -621,6 +789,7 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
           !PersistentIni_Equals(keyBegin, keyEnd, key->key)) {
         continue;
       }
+      keyKnown = true;
       if (key->kind == INI_KIND_NAME) {
         const char *nameBegin = valueBegin;
         const char *nameEnd = valueEnd;
@@ -690,8 +859,22 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
       }
       break;
     }
+    if (!keyKnown && extras != nullptr) {
+      size_t section = PersistentIni_ExtrasSection(extras, sectionBegin, sectionEnd, true);
+
+      for (const std::pair<const char *, const char *> &comment : pendingComments) {
+        PersistentIni_KeepLine(extras, section, comment.first, comment.second, &overflowLogged);
+      }
+      PersistentIni_KeepLine(extras, section, lineBegin, lineEnd, &overflowLogged);
+    }
+    pendingComments.clear();
   }
   return presentMask;
+}
+
+uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image)
+{
+  return PersistentSettings_ParseIniWithExtras(text, length, image, nullptr);
 }
 
 /* Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the
@@ -751,7 +934,8 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
     return false;
   }
   g_FileSystemClose(fileHandle);
-  presentMask = PersistentSettings_ParseIni(text.data(),fileSize,Thandor_Bytes(image));
+  presentMask = PersistentSettings_ParseIniWithExtras(text.data(),fileSize,Thandor_Bytes(image),
+                                                     &s_PersistentSettingsIniExtras);
   s_PersistentSettingsPresentMask = presentMask;
   if ((presentMask & PersistentSettings_DwordMask(PERSISTENT_SETTING_LOCALE_COUNTRY_CODE,4)) != 0) {
     g_LocaleCountryCodeOverride = image->localeCountryCodeOverride;
@@ -786,6 +970,7 @@ static void PersistentSettings_LoadImage()
   g_PersistentSettings.image = nullptr;
   s_PersistentSettingsPresentMask = 0;
   s_PersistentSettingsWrittenMask = 0;
+  s_PersistentSettingsIniExtras = PersistentSettingsIniExtras();
   std::copy(std::begin(s_PersistentSettingsIniLeaf),std::end(s_PersistentSettingsIniLeaf),s_PersistentSettingsIniPath);
   if (g_MemoryApi.alloc(PERSISTENT_SETTINGS_IMAGE_BYTES,reinterpret_cast<void **>(&clearCursor)) /* the payload as dwords */ != 0) {
     return;

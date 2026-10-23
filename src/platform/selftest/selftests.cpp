@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory>
+#include <string>
 #include <new>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -782,6 +783,94 @@ static unsigned SelfTest_CompareSettingsImages(const char *what, const uint8_t *
     return differences;
 }
 
+/* settings: how often line (a whole line of text, without its line end) occurs in text. */
+static unsigned SelfTest_CountIniLines(const std::string &text, const char *line)
+{
+    unsigned count = 0;
+    size_t begin = 0;
+    while (begin < text.size()) {
+        size_t end = text.find('\n', begin);
+        if (end == std::string::npos) {
+            end = text.size();
+        }
+        size_t lineEnd = (end > begin && text[end - 1] == '\r') ? end - 1 : end;
+        if (text.compare(begin, lineEnd - begin, line) == 0 && strlen(line) == lineEnd - begin) {
+            count++;
+        }
+        begin = end + 1;
+    }
+    return count;
+}
+
+/* settings: unknown keys and sections survive a parse and rewrite (keys of a newer version, e.g. experimental's
+   [game] language, and another tool's section), a key this version knows is written once, and a second round
+   trip gives the same text. Logs "settings: extras ok" or the failed checks. */
+static void SelfTest_SettingsExtras()
+{
+    static const char extrasText[] =
+        "; the game's own comment\r\n[display]\r\nwidth = 800\r\n; comment of a future key\r\nfuture_key = 1 ; x\r\n"
+        "[MyTool]\r\n; tool comment\r\nalpha=1\r\n\r\nwidth = 5\r\n[game]\r\nlanguage = de\r\nspeed_percent = oops\r\n"
+        "; dropped: above a known key\r\nscroll_step = 40\r\n[display]\r\nwidth = 1024\r\nsecond = 2\r\n"
+        "[network]\r\nonly_unknown = yes\r\n[empty]\r\n";
+    static const char *const expectedOnce[] = {
+        "[display]", "width = 1024", "; comment of a future key", "future_key = 1 ; x", "second = 2",
+        "[MyTool]", "; tool comment", "alpha=1", "width = 5", "[game]", "language = de", "[network]",
+        "only_unknown = yes", "[empty]",
+    };
+    static const char *const expectedNever[] = {"speed_percent = oops", "; dropped: above a known key",
+                                                "width = 800", "; the game's own comment"};
+    uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    uint8_t again[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    static char text[0x4000];
+    static char text2[0x4000];
+    PersistentSettingsIniExtras extras;
+    PersistentSettingsIniExtras extras2;
+    unsigned failures = 0;
+    uint64_t mask;
+    uint32_t length;
+    uint32_t length2;
+
+    memset(image, 0, sizeof image);
+    mask = PersistentSettings_ParseIniWithExtras(extrasText, (uint32_t)(sizeof extrasText - 1), image, &extras);
+    length = PersistentSettings_FormatIniWithExtras(image, mask, &extras, text, sizeof text);
+    std::string written(text, length);
+    for (const char *line : expectedOnce) {
+        unsigned count = SelfTest_CountIniLines(written, line);
+        if (count != 1) {
+            Thandor_Log("settings: extras: \"%s\" written %u times, expected once", line, count);
+            failures++;
+        }
+    }
+    for (const char *line : expectedNever) {
+        if (SelfTest_CountIniLines(written, line) != 0) {
+            Thandor_Log("settings: extras: \"%s\" written, expected not", line);
+            failures++;
+        }
+    }
+    /* unknown keys follow the known keys of their section; the foreign sections come after the game's */
+    if (written.find("width = 1024") > written.find("future_key") ||
+        written.find("scroll_step = 40") > written.find("language = de") ||
+        written.find("[network]") > written.find("[MyTool]") || written.find("[MyTool]") > written.find("[empty]")) {
+        Thandor_Log("settings: extras: order wrong");
+        failures++;
+    }
+    /* the second round trip is identical */
+    memset(again, 0, sizeof again);
+    mask = PersistentSettings_ParseIniWithExtras(text, length, again, &extras2);
+    length2 = PersistentSettings_FormatIniWithExtras(again, mask, &extras2, text2, sizeof text2);
+    if (length2 != length || memcmp(text, text2, length) != 0 || memcmp(image, again, sizeof image) != 0) {
+        Thandor_Log("settings: extras: second round trip differs (%u vs %u bytes)", length, length2);
+        failures++;
+    }
+    /* without extras nothing unknown is written */
+    length2 = PersistentSettings_FormatIniWithExtras(image, mask, nullptr, text2, sizeof text2);
+    if (SelfTest_CountIniLines(std::string(text2, length2), "language = de") != 0) {
+        Thandor_Log("settings: extras: written without extras");
+        failures++;
+    }
+    Thandor_Log("settings: extras %s", failures == 0 ? "ok" : "FAILED");
+}
+
 /* OPEN_THANDOR_SELFTEST=settings: the thandor.ini format. Parses a fixed ini text (all value forms, unknown and
    missing keys) and checks the image; then, when thandor.dat is in the current directory, writes its image as
    ini text, parses that back and compares (the migration), and when thandor.ini is there too, compares it
@@ -838,6 +927,7 @@ static void Thandor_SelfTestSettings()
                                                   PersistentSettings_ParseIni(text, length, parsed));
     Thandor_Log("settings: fixed text %s (present mask %016llX)", differences == 0 ? "ok" : "MISMATCH",
                 (unsigned long long)mask);
+    SelfTest_SettingsExtras();
 
     file = fopen("thandor.dat", "rb");
     if (file == nullptr) {
