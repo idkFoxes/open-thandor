@@ -7,6 +7,7 @@
 
 #include <thandor/platform/filesystem/win32.h>
 #include <algorithm>
+#include <iterator>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -269,28 +270,55 @@ bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer
   return false;
 }
 
-/* Writes a whole buffer to a file, creating or truncating it with exclusive access. A failed write
-   leaves no partial file behind: it is closed and deleted. Returns 0 on success, otherwise the open or
-   write error (FATAL_ERROR_FILE_ACCESS_FAILED, FATAL_ERROR_FILE_WRITE_FAILED or
+/* Writes a whole buffer to a file. open-thandor: the original created or truncated path and wrote into it,
+   so a crash mid-write left an empty or half file (a cut "width = 12" line still parses) and a failed write
+   (disk full) deleted the file. The buffer now goes to path plus ".tmp" (same directory, so same volume),
+   is flushed to disk and only then replaces path in one step (Win32File_Replace). On any failure the
+   temporary file is deleted and path is left as it was. Returns 0 on success, otherwise the open, write or
+   replace error (FATAL_ERROR_FILE_ACCESS_FAILED, FATAL_ERROR_FILE_WRITE_FAILED or
    FATAL_ERROR_FILE_WRITE_INCOMPLETE, never 0).
 */
 uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path)
 
 {
+  static constexpr uint16_t temporarySuffix[] = {'.','t','m','p',0};
+  uint16_t temporaryPath[THANDOR_PATH_CAPACITY];
+  size_t pathLength = 0;
   void *handle;
   uint32_t writeError;
   uint32_t openError;
+
+  while (pathLength < THANDOR_PATH_CAPACITY && path[pathLength] != 0) {
+    temporaryPath[pathLength] = path[pathLength];
+    pathLength++;
+  }
+  if (pathLength + std::size(temporarySuffix) > THANDOR_PATH_CAPACITY) {
+    Package_SetLastErrorPath(path);
+    return FATAL_ERROR_FILE_ACCESS_FAILED;
+  }
+  std::copy(std::begin(temporarySuffix),std::end(temporarySuffix),temporaryPath + pathLength);
+  /* a ".tmp" left behind by an earlier crash is simply truncated */
   openError = g_FileSystemOpen
-                    (FileSystemOpenFlags::FILESYSTEM_OPEN_EXCLUSIVE_SHARE | FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path,&handle);
+                    (FileSystemOpenFlags::FILESYSTEM_OPEN_EXCLUSIVE_SHARE | FileSystemOpenFlags::FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,
+                     temporaryPath,&handle);
   if (openError != 0) {
     return openError;
   }
   writeError = g_FileSystemWriteExactOrFlush(byteCount,source,handle);
+  /* the handle is write-through already; FlushFileBuffers makes sure the data is on disk before the rename
+     can make it visible under path */
+  if (writeError == 0 && FlushFileBuffers(handle) == 0) {
+    writeError = FATAL_ERROR_FILE_WRITE_FAILED;
+  }
   g_FileSystemClose(handle);
   if (writeError == 0) {
-    return 0;
+    writeError = Win32File_Replace(path,temporaryPath);
+    if (writeError == 0) {
+      return 0;
+    }
   }
-  g_FileSystemDelete(1,path); /* the first argument is unused by Win32File_Delete */
+  g_FileSystemDelete(1,temporaryPath); /* the first argument is unused by Win32File_Delete */
+  Package_SetLastErrorPath(path); /* report the target, not the temporary file */
   return writeError;
 }
 
