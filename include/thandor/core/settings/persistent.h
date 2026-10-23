@@ -38,6 +38,9 @@ inline constexpr auto PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS = 0x40; /* autom
 inline constexpr auto PERSISTENT_SETTING_GAME_SPEED_PERCENT = 0x44; /* default 100 */
 inline constexpr auto PERSISTENT_SETTING_CAMERA_SCROLL_STEP = 0x48; /* default 0x20 */
 inline constexpr auto PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN = 0x4C; /* Q15, default 0x8000 */
+/* 0x50..0x5B: unused by the original (thandor.ini [reserved] dword_50/54/58); not taken over from thandor.dat */
+inline constexpr auto PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET = 0x50;
+inline constexpr auto PERSISTENT_SETTINGS_DAT_UNUSED_BYTES = 12;
 inline constexpr auto PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS = 0x5C; /* link rotation zoom/tilt, hide panel */
 inline constexpr auto PERSISTENT_SETTING_PLAYER_NAME = 0x60; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
 inline constexpr auto PERSISTENT_SETTING_GAME_NAME = 0x88; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */

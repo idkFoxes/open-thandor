@@ -25,7 +25,8 @@ GetRegionOrFallback; only loading and saving changed:
   ini sets is marked present; Read and GetRegionOrFallback return the caller's default for dwords that are not
   present, exactly like the original for bytes beyond the end of a short thandor.dat.
 - Without a thandor.ini an existing thandor.dat is loaded as before (migration; its loaded bytes are the
-  present ones) and the image is marked dirty, so the next Flush writes thandor.ini. thandor.dat is never
+  present ones, except the dwords the original never used, 0x50..0x5B, and values outside the key table's
+  ranges) and the image is marked dirty, so the next Flush writes thandor.ini. thandor.dat is never
   written or deleted.
 - Flush writes thandor.ini (when dirty, as before) with every key that is present or was written since the
   load, in the fixed order of the key table below, and with what the loaded thandor.ini had beyond the table
@@ -1231,6 +1232,11 @@ static void PersistentSettings_LoadImage()
       for (dword = 0; (dword + 1) * 4 <= byteCount; dword++) {
         s_PersistentSettingsPresentMask |= (uint64_t)1 << dword;
       }
+      /* the dwords the original never used are not taken over: their bytes are whatever the original left there,
+         and open-thandor may give these offsets a meaning (they would load as garbage settings) */
+      std::fill_n(Thandor_Bytes(image) + PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET,PERSISTENT_SETTINGS_DAT_UNUSED_BYTES,0);
+      s_PersistentSettingsPresentMask &=
+          ~PersistentSettings_DwordMask(PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET,PERSISTENT_SETTINGS_DAT_UNUSED_BYTES);
       s_PersistentSettingsPresentMask =
           PersistentSettings_DropDisallowed(Thandor_Bytes(image), s_PersistentSettingsPresentMask);
       g_PersistentSettings.loadedByteCount = byteCount;

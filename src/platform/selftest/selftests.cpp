@@ -1142,6 +1142,9 @@ static void Thandor_SelfTestSettings()
         length = (uint32_t)fread(text, 1, sizeof text, file);
         fclose(file);
         memset(parsed, 0, sizeof parsed);
+        /* the game does not take the unused dwords 0x50..0x5B over from thandor.dat */
+        datMask &= ~((((uint64_t)1 << (PERSISTENT_SETTINGS_DAT_UNUSED_BYTES / 4)) - 1)
+                     << (PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET / 4));
         differences = SelfTest_CompareSettingsImages("thandor.ini vs thandor.dat", datImage, datMask, parsed,
                                                      PersistentSettings_ParseIni(text, length, parsed));
         Thandor_Log("settings: thandor.ini vs thandor.dat: %s", differences == 0 ? "identical" : "DIFFERENT");
