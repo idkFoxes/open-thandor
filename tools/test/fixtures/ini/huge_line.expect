@@ -1,0 +1,8 @@
+# lines of 70000 characters (a name and a number): no crash, the other keys load; the name is cut to 20 characters
+# or (with a line length limit) ignored
+display.width = 1920
+display.height = 1080
+game.player_name = "AAAAAAAAAAAAAAAAAAAA" | <default>
+graphics.model_detail = <default>
+game.speed_percent = 150
+others = <default>

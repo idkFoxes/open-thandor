@@ -1,0 +1,17 @@
+# thandor.ini as experimental-dev writes it, read by this version (downgrade): [game] language (instead of
+# language_country_code), pathing, objective_overlay and autosave and the [keys] section are unknown here. The known
+# keys load; the unknown ones are not read, but a save must keep them for the newer version.
+include: v1_0_7_values.include
+game.language_country_code = <default>
+reserved.dword_50 = <default>
+reserved.dword_54 = <default>
+reserved.dword_58 = <default>
+others = <default>
+pending A: preserved: [game] language = de
+pending A: preserved: [game] pathing = original
+pending A: preserved: [game] objective_overlay = off
+pending A: preserved: [game] autosave = on
+pending A: preserved: [keys]
+pending A: preserved: [keys] pause = P, Pause
+pending A: preserved: [keys] info_line = Ctrl+I
+pending A: preserved: [keys] camera_free = Alt+C

@@ -1,0 +1,19 @@
+# values that do not parse are ignored (default); values that parse but are out of range need A's range check
+display.width = <default>
+pending A: display.height = <default>
+display.renderer = <default>
+display.adapter = <default>
+pending A: graphics.ui_scale = <default>
+pending A: graphics.texture_quality = <default>
+graphics.vsync = <default>
+graphics.frame_limit = 60
+# "music = 2": a number other than 0/1 for a switch; on and default are the same here
+sound.effects = true | <default>
+sound.music = true | <default>
+sound.reverse_stereo = false | <default>
+pending A: sound.effects_volume = <default>
+sound.music_volume = 12345
+game.speed_percent = <default>
+game.scroll_step = <default>
+game.player_name = "Ok"
+others = <default>

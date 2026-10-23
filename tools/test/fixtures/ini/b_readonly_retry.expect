@@ -1,0 +1,4 @@
+# a save that fails (thandor.ini read-only) leaves the settings dirty, so the next Flush writes them (B)
+source: v1_0_7.ini
+include: v1_0_7.expect
+pending B: check: readonly_retry

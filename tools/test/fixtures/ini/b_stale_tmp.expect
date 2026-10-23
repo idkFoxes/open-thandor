@@ -1,0 +1,6 @@
+# a thandor.ini.tmp left behind by a crash during a save (atomic save, B): it does not disturb the load, and the
+# next save replaces it, so none is left
+source: v1_0_7.ini
+setup: stale_tmp
+include: v1_0_7.expect
+pending B: absent-file: thandor.ini.tmp

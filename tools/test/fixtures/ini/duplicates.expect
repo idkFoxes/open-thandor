@@ -1,0 +1,7 @@
+# a key twice (the last one wins), a section twice (both count), a section name in other case
+display.width = 1024
+display.height = 768
+display.renderer = software
+display.display_mode = window
+sound.music_volume = 1000
+others = <default>

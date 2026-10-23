@@ -17,6 +17,10 @@
      pcx            decodes pcxtest.pcx next to the executable, logs size and hash (tools/test/pcx_check.py)
      settings       thandor.ini parser/writer on a fixed text; thandor.dat of the current directory -> ini ->
                     image must be identical (migration), and a thandor.ini there must match that thandor.dat
+     inifixtures    thandor.ini / thandor.dat files of tools/test/fixtures/ini (old versions, broken files) through the
+                    real PersistentSettings_Load / Read / Flush in temporary work directories: values against
+                    <name>.expect, kept lines, round trip and stable rewrite (inifixtures_selftest.cpp); checks of
+                    behaviour still on its way ("pending A/B") are logged as expected-fail
      icon           the .ico parser of the window icon on a synthetic icon file (pixels of 32/24/4-bit images,
                     masks, PNG and broken entries, choice of the 100% image and of the alternate sizes)
      numberformat, fixedmath, keymap, trianglesetup, movieenc
@@ -67,5 +71,8 @@ void Thandor_SelfTestUiTemplate();
 
 /* OPEN_THANDOR_SELFTEST=uiatlas (uiatlas_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestUiAtlas();
+
+/* OPEN_THANDOR_SELFTEST=inifixtures (inifixtures_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestIniFixtures();
 
 #endif /* THANDOR_PLATFORM_SELFTEST_SELFTEST_H */

@@ -1,0 +1,8 @@
+# thandor.dat with leftovers in the reserved dwords 0x50..0x58 (the original never reads them; experimental-dev
+# keeps pathing, objective_overlay and autosave there): the migration must not take them over
+include: old_dat_clean.expect
+pending A: reserved.dword_50 = <default>
+pending A: reserved.dword_54 = <default>
+pending A: reserved.dword_58 = <default>
+pending A: absent: dword_5
+pending A: absent: 0xDEADBEEF
