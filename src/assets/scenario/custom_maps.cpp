@@ -21,6 +21,7 @@
 #include <thandor/assets/scenario/custom_maps.h>
 #include <thandor/assets/scenario/custom_map_validate.h>
 #include <thandor/thandor.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/assets/package/runtime.h>
 #include <thandor/core/text/path.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -94,6 +95,10 @@ static std::vector<std::unique_ptr<CustomMapEntry>> s_RetiredCustomMaps;
 static std::array<CustomMapEntry *,CUSTOM_MAP_TITLE_INDEX_SLOTS> s_CustomMapBySlot{};
 static std::map<std::string,CustomMapFileCheck> s_CustomMapFileChecks;
 static std::vector<Ptr32<ScenarioCatalogDisplayRecord>> s_CustomMapListRows;
+/* The catalog of the last CustomMaps_Rebuild and whether it skipped the scan for "Original Thandor": the next list
+   build after the switch went off scans then (the frontend rebuilds the catalog only now and then). */
+static const ScenarioCatalogHeader *s_CustomMapsCatalog = nullptr;
+static bool s_CustomMapsScanSkipped = false;
 
 /* the texts of a title index without a listed map (a save of a removed map) */
 static uint16_t g_CustomMapFallbackTitleGerman[] = {RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_1,
@@ -552,6 +557,11 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
   s_CustomMapBySlot.fill(nullptr);
   s_RetiredCustomMaps = std::move(s_CustomMaps);
   s_CustomMaps.clear();
+  s_CustomMapsCatalog = catalog;
+  s_CustomMapsScanSkipped = !OtFeature_Active(OT_FEATURE_CUSTOM_MAPS);
+  if (s_CustomMapsScanSkipped) {
+    return; /* "Original Thandor": the original lists no user maps (a loaded custom map save stays playable) */
+  }
   if (!std::filesystem::is_directory(mapsFolder,error)) {
     return;
   }
@@ -644,6 +654,12 @@ Ptr32<ScenarioCatalogDisplayRecord> *CustomMaps_ListRows(Ptr32<ScenarioCatalogDi
                                                          uint32_t stockCount,uint32_t *outCount)
 {
   *outCount = stockCount;
+  if (!OtFeature_Active(OT_FEATURE_CUSTOM_MAPS)) {
+    return stockRows; /* "Original Thandor" was switched on since the last scan: the original list */
+  }
+  if (s_CustomMapsScanSkipped && (s_CustomMapsCatalog != nullptr)) {
+    CustomMaps_Rebuild(s_CustomMapsCatalog); /* switched off since a skipped scan */
+  }
   if (s_CustomMaps.empty()) {
     return stockRows;
   }
