@@ -58,7 +58,9 @@ constexpr size_t AUTOSAVE_LIST_TEXT_UNITS =
 struct AutosaveState {
     bool timing = false;                  /* lastFrame is valid */
     AutosaveClock::time_point lastFrame{};
-    std::chrono::milliseconds played{0};  /* play time since the session start or the last autosave */
+    /* play time since the session start or the last autosave, in clock ticks: whole milliseconds per frame would
+       drop the rest of every frame (all of it above 1000 frames per second, vsync off) */
+    AutosaveClock::duration played{0};
     bool loggedWaiting = false;           /* a due save that waits was logged once */
 };
 AutosaveState s_Autosave;
@@ -209,7 +211,7 @@ void Autosave_Write()
   const AutosaveClock::time_point start = AutosaveClock::now();
   if (!s_LiveState.Take()) {
     g_SpinLockRelease(&g_InGameStateTickSpinLock);
-    s_Autosave.played = std::chrono::milliseconds(0);
+    s_Autosave.played = AutosaveClock::duration(0);
     Thandor_Log("autosave: no memory for the copy of the game state, skipped");
     return;
   }
@@ -218,7 +220,7 @@ void Autosave_Write()
   const long long elapsedMs =
       std::chrono::duration_cast<std::chrono::milliseconds>(AutosaveClock::now() - start).count();
   g_SpinLockRelease(&g_InGameStateTickSpinLock);
-  s_Autosave.played = std::chrono::milliseconds(0);
+  s_Autosave.played = AutosaveClock::duration(0);
   s_Autosave.loggedWaiting = false;
   if (saveError != 0) {
     /* InGameSaveGame_WritePackage logged the failed step; the old autosave is kept */
@@ -331,8 +333,8 @@ void Autosave_AfterFrame()
   }
   running = Autosave_GameRunning();
   if (s_Autosave.timing && running) {
-    s_Autosave.played += std::min(std::chrono::duration_cast<std::chrono::milliseconds>(now - s_Autosave.lastFrame),
-                                  std::chrono::milliseconds(AUTOSAVE_MAX_FRAME_GAP_MS));
+    s_Autosave.played += std::min<AutosaveClock::duration>(now - s_Autosave.lastFrame,
+                                                           std::chrono::milliseconds(AUTOSAVE_MAX_FRAME_GAP_MS));
   }
   s_Autosave.timing = true;
   s_Autosave.lastFrame = now;
