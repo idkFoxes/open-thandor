@@ -31,6 +31,12 @@ inline bool Pathing_Improved()
 /* The single-player setting (thandor.ini, "Erweitert" page; owner decision D1: default improved). */
 extern PathingMode g_PathingModeSetting;
 
+/* The pathing mode a new local session or this host's lobby uses: g_PathingModeSetting, but original while the
+   "Original Thandor" master switch disables OT_FEATURE_IMPROVED_PATHING (core/settings/original_mode.h); the
+   setting itself keeps its value. Read when a session starts or the lobby decides, so switching only affects the
+   next session; a loaded savegame keeps the mode it was saved with (PathingMode_SetLoaded). */
+PathingMode PathingMode_EffectiveSetting();
+
 /* Set by the lobby negotiation (D2) for a network session: true only when every peer is Open Thandor with a
    matching pathing protocol and the improved mode is agreed; false forces the original mode. */
 extern bool g_PathingNetworkImprovedAgreed;

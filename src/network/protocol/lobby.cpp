@@ -75,9 +75,10 @@ static bool FrontendOtPathing_ReadInfo(const uint8_t *reservedBytes,FrontendOtPa
 }
 
 /* open-thandor (host, docs/plans/pathfinding.md 4, D2): the improved pathing mode is agreed only when the host's
-   own setting is improved and every other player of the lobby (records 1..rowCount-1) sent
-   FRONTEND_CAPABILITY_OT_EXTENDED with this build's pathing protocol and the improved mode among its supported
-   modes. A player that has just joined has no heartbeat yet and therefore counts as original until it reports. */
+   effective setting (PathingMode_EffectiveSetting: original while "Original Thandor" is on) is improved and every
+   other player of the lobby (records 1..rowCount-1) sent FRONTEND_CAPABILITY_OT_EXTENDED with this build's pathing
+   protocol and the improved mode among its supported modes. A player that has just joined has no heartbeat yet and
+   therefore counts as original until it reports. */
 static bool FrontendOtPathing_HostAgreesImproved(uint32_t rowCount,uint32_t *openThandorPeerCount)
 {
   bool everyPeerQualifies = true;
@@ -99,7 +100,8 @@ static bool FrontendOtPathing_HostAgreesImproved(uint32_t rowCount,uint32_t *ope
       everyPeerQualifies = false;
     }
   }
-  return everyPeerQualifies && g_PathingModeSetting == PATHING_MODE_IMPROVED;
+  /* the host's effective wish: "Original Thandor" negotiates like the setting original */
+  return everyPeerQualifies && PathingMode_EffectiveSetting() == PATHING_MODE_IMPROVED;
 }
 
 UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint = {};
@@ -840,7 +842,7 @@ void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendUiImag
       Thandor_Log("network: host pathing mode for the session: %s (host setting %s, %u of %u other players Open "
                   "Thandor with pathing protocol %u)",
                   improvedAgreed ? "improved" : "original",
-                  g_PathingModeSetting == PATHING_MODE_IMPROVED ? "improved" : "original",
+                  PathingMode_EffectiveSetting() == PATHING_MODE_IMPROVED ? "improved" : "original",
                   (unsigned)openThandorPeerCount,(unsigned)(rowCount > 0 ? rowCount - 1 : 0),
                   (unsigned)PATHING_PROTOCOL_VERSION);
     }
