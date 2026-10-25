@@ -181,6 +181,7 @@ Module header: [`memory.h`](../include/thandor/core/memory.h) · Changelog: `all
 
 Module header: [`settings.h`](../include/thandor/core/settings.h) · Changelog: `persistent` [full](../CHANGELOG_FULL.md#module-core-settings-persistent)
 
+- [`original_mode.cpp / original_mode.h`](source_guide/core.md#file-core-settings-original-mode) - Not in the original: the "Original Thandor" master switch, [game] original_thandor (PERSISTENT_SETTING_ORIGINAL_THANDOR, default off).
 - [`persistent.cpp / persistent.h`](source_guide/core.md#file-core-settings-persistent) - open-thandor: the settings live in a readable thandor.ini instead of the original's 200-byte thandor.dat.
 - [`types.h`](source_guide/core.md#file-core-settings-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -725,7 +726,7 @@ Module header: [`pathing.h`](../include/thandor/world/pathing.h) · Changelog: `
 - [`arrival.cpp / arrival.h`](source_guide/world.md#file-world-pathing-arrival) - open-thandor (docs/plans/pathfinding.md 3 cause 6, 5 package P3): arrival for groups.
 - [`grid.h`](source_guide/world.md#file-world-pathing-grid)
 - [`influence.cpp / influence.h`](source_guide/world.md#file-world-pathing-influence) - no file comment; main functions `GridInfluence_ClearDistanceBandsAndRefreshEntities`, `GridInfluence_SetLowDistanceBandsAroundWorldPoint`, `GridInfluence_AddLowDistanceBands`
-- [`mode.cpp / mode.h`](source_guide/world.md#file-world-pathing-mode) - no file comment; main functions `Pathing_Improved`, `PathingMode_ApplyForNewSession`, `PathingMode_SetLoaded`
+- [`mode.cpp / mode.h`](source_guide/world.md#file-world-pathing-mode) - no file comment; main functions `Pathing_Improved`, `PathingMode_EffectiveSetting`, `PathingMode_ApplyForNewSession`
 - [`path_cost.cpp / path_cost.h`](source_guide/world.md#file-world-pathing-path-cost) - Hex path costs on the scratch grid: the weighted neighbour propagation (a FIFO label-correcting queue over the hex lattice, not Dijkstra: a cell is queued again whenever a cheaper cost reaches it), ...
 - [`reachability.cpp / reachability.h`](source_guide/world.md#file-world-pathing-reachability) - Reachability on the scratch grid: connected regions around a world point, unreachable-region marking and the hex line-of-passage test of a segment.
 - [`route.cpp / route.h`](source_guide/world.md#file-world-pathing-route) - Entity routes: destination resolution and route rebuilds for one entity or an overlapping group, route segment updates and the footprint traversal flags around a world point.

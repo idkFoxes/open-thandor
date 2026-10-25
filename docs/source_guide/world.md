@@ -349,22 +349,23 @@ No file comment; function families: `GridInfluence_*` (21).
 
 [Source](../../src/world/pathing/mode.cpp) · [Header](../../include/thandor/world/pathing/mode.h)
 
-No file comment; function families: `PathingMode_*` (2), `PathingUnitState_*` (1), `Pathing_*` (1).
+No file comment; function families: `PathingMode_*` (3), `PathingUnitState_*` (1), `Pathing_*` (1).
 
-**Functions** (4 public):
+**Functions** (5 public):
 
-- [`PathingMode_ApplyForNewSession`](../../src/world/pathing/mode.cpp#L17)
+- [`PathingMode_EffectiveSetting`](../../src/world/pathing/mode.cpp#L18)
+- [`PathingMode_ApplyForNewSession`](../../src/world/pathing/mode.cpp#L24)
 - [`Pathing_Improved`](../../include/thandor/world/pathing/mode.h#L26)
-- [`PathingMode_SetLoaded`](../../src/world/pathing/mode.cpp#L29)
-- [`PathingUnitState_Clear`](../../src/world/pathing/mode.cpp#L35)
+- [`PathingMode_SetLoaded`](../../src/world/pathing/mode.cpp#L36)
+- [`PathingUnitState_Clear`](../../src/world/pathing/mode.cpp#L42)
 
 **Data** (6 shared, 0 file-local): `g_PathingMode`, `g_PathingModeSetting`, `g_PathingNetworkImprovedAgreed`, `g_PathingUnitState`, `PATHING_UNIT_SIDE_STEP`, `PATHING_UNIT_WAITING`.
 
 **Called from** (16 files): [`world/pathing/yield`](#file-world-pathing-yield) (`PathingYield_BeginReplan`, `PathingYield_EndReplan` +4); [`network/protocol/lobby`](network.md#file-network-protocol-lobby) (`FrontendOtPathing_HostAgreesImproved`, `FrontendTransfer_HandleHostSessionAndCommandBatchPackets` +2); [`world/pathing/route`](#file-world-pathing-route) (`EntityPathing_RebuildOverlappingGroupRoutes`, `EntityPathing_ResolveDestinationAndRebuildRoutes` +1); [`core/settings/persistent`](core.md#file-core-settings-persistent) (`PersistentSettings_ApplyPathingMode`, `PersistentSettings_WritePathingImproved`); [`gameplay/selection/commands`](gameplay.md#file-gameplay-selection-commands) (`SelectionPointerArray_ApplyMoveCommand`, `SelectionPointerArray_ApplyPositionCommand`); [`world/pathing/arrival`](#file-world-pathing-arrival) (`PathingArrival_Finish`, `PathingArrival_TestArrived`); [`gameplay/army/drive_banking`](gameplay.md#file-gameplay-army-drive-banking) (`ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint`); [`gameplay/army/drive_ground`](gameplay.md#file-gameplay-army-drive-ground) (`ArmyGroundMovement_SteerAndDrive`); [`gameplay/army/move_orders`](gameplay.md#file-gameplay-army-move-orders) (`ArmyRuntime_UpdateMovementAndWaypoints`); [`gameplay/army/pool`](gameplay.md#file-gameplay-army-pool) (`ArmyRuntimePool_ClearPathingState`); 6 more: [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session), [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session), [`gameplay/session/savegame`](gameplay.md#file-gameplay-session-savegame), [`platform/debug/pathtrace`](platform.md#file-platform-debug-pathtrace), [`platform/debug/statehash`](platform.md#file-platform-debug-statehash), [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings).
 
-**Depends on** (1 files, names used): [`gameplay/army/pool`](gameplay.md#file-gameplay-army-pool) (1).
+**Depends on** (2 files, names used): [`core/settings/original_mode`](core.md#file-core-settings-original-mode) (1), [`gameplay/army/pool`](gameplay.md#file-gameplay-army-pool) (1).
 
-**Includes:** `string.h`.
+**Includes:** `string.h`, `thandor/core/settings/original_mode.h`.
 
 <a id="file-world-pathing-path-cost"></a>
 #### `path_cost.cpp / path_cost.h`
