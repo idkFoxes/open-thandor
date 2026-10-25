@@ -6,6 +6,7 @@
  */
 
 #include <thandor/network/protocol/lobby.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/thandor.h>
 #include <thandor/network/protocol/packet_bytes.h>
 #include <thandor/network/protocol/lockstep.h>
@@ -55,13 +56,16 @@ static uint32_t g_FrontendHostPublishRoundRobinCounter = 0;
    Thandor); only used for the decision log line. */
 static bool g_FrontendHostIsOpenThandor = false;
 
-/* open-thandor: this build's FrontendOtPathingInfo with decidedMode (host packets; 0 in the heartbeat). */
+/* open-thandor: this build's FrontendOtPathingInfo with decidedMode (host packets; 0 in the heartbeat). While
+   "Original Thandor" holds the improved pathing (OT_FEATURE_IMPROVED_PATHING) only the original mode is reported, so
+   a client in that mode never makes a host agree on improved (the host then decides original for everyone). */
 static FrontendOtPathingInfo FrontendOtPathing_OwnInfo(uint8_t decidedMode)
 {
   FrontendOtPathingInfo info = {};
   info.magic = FRONTEND_OT_PATHING_MAGIC;
   info.protocolVersion = PATHING_PROTOCOL_VERSION;
-  info.supportedModes = FRONTEND_OT_PATHING_SUPPORTED_MODES;
+  info.supportedModes = OtFeature_Active(OT_FEATURE_IMPROVED_PATHING) ? FRONTEND_OT_PATHING_SUPPORTED_MODES
+                                                                      : (uint8_t)(1u << PATHING_MODE_ORIGINAL);
   info.decidedMode = decidedMode;
   return info;
 }
