@@ -129,7 +129,7 @@ static uint16_t g_ProjectTextZielAnzeigen[] = {
 static uint16_t g_ProjectTextShowObjective[] = {
     PROJECT_TEXT_BRIGHT,'S','h','o','w',' ','o','b','j','e','c','t','i','v','e',0};
 /* Not in the original: the autosave checkbox of the advanced settings page (TEXT_ID_ADVANCED_AUTOSAVE), bright like
-   the VSync checkbox, and the in-game message line after an autosave (TEXT_ID_AUTOSAVE_DONE). */
+   the VSync checkbox, and the in-game corner notice after an autosave (TEXT_ID_AUTOSAVE_DONE). */
 static uint16_t g_ProjectTextAutomatischSpeichern[] = {
     PROJECT_TEXT_BRIGHT,'A','u','t','o','m','a','t','i','s','c','h',' ','s','p','e','i','c','h','e','r','n',0};
 static uint16_t g_ProjectTextAutosave[] = {PROJECT_TEXT_BRIGHT,'A','u','t','o','s','a','v','e',0};

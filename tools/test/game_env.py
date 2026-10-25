@@ -16,7 +16,7 @@ improved) unless the caller sets it, so the determinism references, the AI hash 
 the original movement; the scripts' --pathing option (add_pathing_argument / apply_pathing) sets it for every game
 they and the tools they start run: original, improved, or setting (no override: thandor.ini decides).
 The autosave is off (OPEN_THANDOR_AUTOSAVE=0, wins over [game] autosave) unless the caller sets it, so no test game
-writes save/autosave.sve or a message line of its own; OPEN_THANDOR_AUTOSAVE=<n> saves every n seconds of play."""
+writes save/autosave.sve or shows its corner notice; OPEN_THANDOR_AUTOSAVE=<n> saves every n seconds of play."""
 import os
 
 PATHING_CHOICES = ('original', 'improved', 'setting')

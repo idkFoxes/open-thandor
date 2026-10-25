@@ -19,7 +19,19 @@
 
    All drawing goes through the framebuffer slots (fill, win.gfx frame blits, the rich-text line) in logical
    pixels, so the GPU renderers record it and scale it with the UI scale like every other control: the box keeps
-   its place and size relative to the UI at UI scale 1, 2 and 3. */
+   its place and size relative to the UI at UI scale 1, 2 and 3.
+
+   Why the box sits in the corner and moves down only while an original text is there: the top left of the world
+   view belongs to original texts that are shown only now and then - the message lines (drawn only while they hold
+   a line), the faction status block (key O), the pause and game speed lines. A box placed below their whole area
+   would float 64 pixels below the corner nearly all the time; placed below what is drawn right now it is in the
+   corner in a normal game and never covers one of them.
+
+   The same node draws the corner notice (ObjectiveOverlay_ShowNotice, the autosave's "Spiel automatisch
+   gespeichert"): a plain text line at the bottom left, no background, gone after a few seconds. Why here and not
+   in the message lines: it is a status hint, not a message - it should not push the player's messages out of the
+   history or stay there - and this node already is the project's layer above the world view. Its hit test covers
+   the objective box only, so the notice never takes a click. */
 
 #include <thandor/ui/ingame/objective_overlay.h>
 #include <algorithm>
@@ -34,9 +46,10 @@
 
 namespace {
 
-/* Placement (logical pixels): left gap to the world view's edge, gap below the message lines / status lines. */
-constexpr int32_t OVERLAY_LEFT_GAP = 8;
-constexpr int32_t OVERLAY_TOP_GAP = 6;
+/* Placement (logical pixels, scaled with the UI): gap to the world view's corner, and gap to an original text that
+   is drawn at the top left right now (message lines, status block, pause line). */
+constexpr int32_t OVERLAY_CORNER_GAP = 6;
+constexpr int32_t OVERLAY_TEXT_GAP = 6;
 /* Room between the frame and the text, and between the two lines. */
 constexpr int32_t OVERLAY_PADDING_X = 6;
 constexpr int32_t OVERLAY_PADDING_Y = 3;
@@ -102,6 +115,22 @@ struct OverlayUpdateState {
     MissionObjective objective;
 };
 OverlayUpdateState s_Update;
+
+/* The corner notice (ObjectiveOverlay_ShowNotice): fully shown for NOTICE_SHOW, then faded out over NOTICE_FADE. */
+constexpr std::chrono::milliseconds NOTICE_SHOW{3000};
+constexpr std::chrono::milliseconds NOTICE_FADE{700};
+constexpr size_t NOTICE_UNITS = 96;
+/* Outline: black at 75 %, one logical pixel around every glyph (the font's own half-transparent shadow alone is
+   too faint on the bright desert ground; the notice has no background). */
+constexpr uint32_t NOTICE_OUTLINE_ALPHA = 0xC0;
+constexpr std::array<std::array<int32_t, 2>, 8> NOTICE_OUTLINE_OFFSETS = {
+    {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}}};
+struct NoticeState {
+    bool active = false;
+    TextResourceId textId{};
+    std::chrono::steady_clock::time_point shownAt{};
+};
+NoticeState s_Notice;
 
 /* The node: covers the world view area (anchors 0..1); the box is computed at draw and hit-test time. */
 UiNodeBase s_OverlayNode = {
@@ -211,30 +240,103 @@ InGameUiImage *Overlay_Image()
     return InGameUi_Image(s_Overlay.root);
 }
 
-/* Bottom of the faction status lines at the top left of the world view (worldViewWrappedStatusText) while they are
-   drawn, else the world view's top. */
-int32_t Overlay_StatusTextBottom(InGameUiImage *image)
+/* The text of a world view text control as its draw takes it: a command stream, else a text resource id; nullptr
+   when there is none or it is empty. */
+uint16_t *Overlay_WorldText(uint32_t labelFlags, uint16_t *text)
+{
+    if ((labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
+        text = TextResource_Resolve(static_cast<TextResourceId>(Thandor_PointerToU32(text)));
+    }
+    return text != nullptr && text[0] != 0 ? text : nullptr;
+}
+
+/* The command visibility rules of the world view texts (UiCommandVisibility*_DrawWhenAllowed). */
+bool Overlay_WorldTextAllowed(uint32_t labelFlags)
+{
+    if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS)) {
+        return false;
+    }
+    if ((labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) != 0 && !Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) {
+        return false;
+    }
+    return (labelFlags & UI_WORLD_TEXT_SHIFT_BY_STEP_TICKS) == 0 || g_InGameSimulationStepTicks > 1;
+}
+
+/* The faction status block at the top left of the world view (worldViewWrappedStatusText, key O) while it is
+   drawn: its node's width, from its top down to the end of its text. */
+bool Overlay_StatusBlockRect(InGameUiImage *image, UiPixelRect *rect)
 {
     UiWrappedTextControl *status = UiNode_As<UiWrappedTextControl>(&image->worldViewWrappedStatusText);
     const UiNodeBase &base = status->base;
-    bool drawn = !Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) &&
-                 ((status->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) == 0 ||
-                  Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED)) &&
-                 !Any(base.nodeFlags & UI_NODE_SUPPRESSED);
-    if (!drawn) {
-        return base.top;
+    if (!Overlay_WorldTextAllowed(status->labelFlags) || Any(base.nodeFlags & UI_NODE_SUPPRESSED)) {
+        return false;
     }
-    /* the text as UiWrappedTextControl_DrawClipped takes it: a command stream, else a text resource id */
-    uint16_t *text = status->text;
-    if ((status->labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
-        text = TextResource_Resolve(static_cast<TextResourceId>(Thandor_PointerToU32(status->text)));
-    }
-    if (text == nullptr || text[0] == 0) {
-        return base.top;
+    uint16_t *text = Overlay_WorldText(status->labelFlags, status->text);
+    if (text == nullptr) {
+        return false;
     }
     RichTextExtent extent =
         RichTextCommandStream_MeasureWrappedBlock(g_UiTextStyleNormal, text, std::max<int32_t>(1, base.layoutWidth));
-    return base.top + static_cast<int32_t>(extent.heightPixels);
+    *rect = UiPixelRect{base.left, base.top, base.right, base.top + static_cast<int32_t>(extent.heightPixels)};
+    return true;
+}
+
+/* A single-line world view text (pause line, game speed line, Ctrl+I info line) while it is drawn: the pixels its
+   line takes, aligned horizontally as UiSingleLineTextControl_DrawClipped aligns it, over the node's height. */
+bool Overlay_WorldLineRect(UiSingleLineTextControl *line, UiPixelRect *rect)
+{
+    const UiNodeBase &base = line->base;
+    if (!Overlay_WorldTextAllowed(line->labelFlags) ||
+        (Any(base.nodeFlags & UI_NODE_SUPPRESSED) && (line->labelFlags & UI_LABEL_HIDE_WHILE_SUPPRESSED) != 0)) {
+        return false;
+    }
+    uint16_t *text = Overlay_WorldText(line->labelFlags, line->text);
+    if (text == nullptr) {
+        return false;
+    }
+    UiPackedTextStyle style =
+        (g_UiTextStyleNormal | line->styleOverride) & (UI_TEXT_STYLE_FONT_BYTE | UI_TEXT_STYLE_PALETTE_BYTE);
+    int32_t width = static_cast<int32_t>(RichTextCommandStream_MeasureLine(style, text).widthPixels);
+    if (width <= 0) {
+        return false;
+    }
+    int32_t left = base.left;
+    if ((line->labelFlags & UI_LABEL_ALIGN_RIGHT) != 0) {
+        left = base.right - width;
+    }
+    if ((line->labelFlags & UI_LABEL_CENTER_X) != 0) {
+        left = base.left + (base.layoutWidth - width) / 2;
+    }
+    *rect = UiPixelRect{left, base.top, left + width, base.bottom};
+    return true;
+}
+
+/* The top of a box from left to right in the world view's top left corner: the corner, or below every original
+   text drawn there right now that it would overlap (message lines, status block, pause and game speed lines). */
+int32_t Overlay_TopLeftFreeTop(InGameUiImage *image, const UiNodeBase &area, int32_t left, int32_t right)
+{
+    int32_t top = area.top + OVERLAY_CORNER_GAP;
+    auto below = [&](const UiPixelRect &rect) {
+        if (rect.left < right && left < rect.right) {
+            top = std::max(top, rect.bottom + OVERLAY_TEXT_GAP);
+        }
+    };
+    /* UiConditionalActionControl_DrawClipped draws nothing (and its hit test takes nothing) without lines */
+    if (image->messageHistoryPanel.lineCount != 0) {
+        const UiNodeBase &messages = image->messageHistoryPanel.base;
+        below(UiPixelRect{messages.left, messages.top, messages.right, messages.bottom});
+    }
+    UiPixelRect rect{};
+    if (Overlay_StatusBlockRect(image, &rect)) {
+        below(rect);
+    }
+    if (Overlay_WorldLineRect(UiNode_As<UiSingleLineTextControl>(&image->worldViewStatusTextA), &rect)) {
+        below(rect);
+    }
+    if (Overlay_WorldLineRect(UiNode_As<UiSingleLineTextControl>(&image->worldViewStatusTextB), &rect)) {
+        below(rect);
+    }
+    return top;
 }
 
 /* The box in logical pixels when the overlay is shown, else false. */
@@ -271,10 +373,9 @@ bool Overlay_Box(UiPixelRect *box, const OverlayLayout **outLayout)
     int32_t width = textWidth + 2 * (OVERLAY_PADDING_X + frameX);
     int32_t height = lineCount * layout.lineHeight + (lineCount - 1) * OVERLAY_LINE_GAP +
                      2 * (OVERLAY_PADDING_Y + frameY);
-    int32_t top = std::max(image->messageHistoryPanel.base.bottom, Overlay_StatusTextBottom(image)) + OVERLAY_TOP_GAP;
-    box->left = area.left + OVERLAY_LEFT_GAP;
-    box->top = std::max(area.top, top);
+    box->left = area.left + OVERLAY_CORNER_GAP;
     box->right = box->left + width;
+    box->top = Overlay_TopLeftFreeTop(image, area, box->left, box->right);
     box->bottom = box->top + height;
     if (box->bottom > area.bottom || box->right > area.right) {
         return false; /* a tiny world view: no room */
@@ -303,13 +404,114 @@ UiPixelRect Overlay_Intersect(UiPixelRect a, UiPixelRect b)
                        std::min(a.bottom, b.bottom)};
 }
 
+/* The notice's opacity now (0..255; 0 once it is over). */
+uint32_t Notice_Alpha(std::chrono::steady_clock::time_point now)
+{
+    if (!s_Notice.active) {
+        return 0;
+    }
+    auto shown = std::chrono::duration_cast<std::chrono::milliseconds>(now - s_Notice.shownAt);
+    if (shown < NOTICE_SHOW) {
+        return 0xFF;
+    }
+    if (shown >= NOTICE_SHOW + NOTICE_FADE) {
+        return 0;
+    }
+    return static_cast<uint32_t>(0xFF * (NOTICE_SHOW + NOTICE_FADE - shown).count() / NOTICE_FADE.count());
+}
+
+/* The baseline of the notice: above the bottom left corner of the world view, and above the chat line (Enter) and
+   the Ctrl+I info line when they are shown there. */
+int32_t Notice_Baseline(InGameUiImage *image, const UiNodeBase &area, int32_t left, int32_t right)
+{
+    int32_t bottom = area.bottom - OVERLAY_CORNER_GAP;
+    auto above = [&](const UiPixelRect &rect) {
+        if (rect.left < right && left < rect.right) {
+            bottom = std::min(bottom, rect.top - OVERLAY_TEXT_GAP);
+        }
+    };
+    if (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&image->chatInputPageStack)) != 0) {
+        const UiNodeBase &chat = image->chatInputTextEdit.base;
+        above(UiPixelRect{chat.left, chat.top, chat.right, chat.bottom});
+    }
+    UiPixelRect rect{};
+    if (Overlay_WorldLineRect(UiNode_As<UiSingleLineTextControl>(&image->worldViewCyclingInfoText), &rect)) {
+        above(rect);
+    }
+    return bottom;
+}
+
+/* Draws the notice line: plain glyphs of the normal UI font and colour (rich-text commands are left out) with a
+   black outline, all at the notice's opacity. Own glyph loop instead of RichTextCommandStream_DrawSingleLine: the
+   rich-text colours have no opacity and its shadow has a fixed one, so the line could not fade out. */
+void Notice_Draw(const UiPixelRect &clipRect)
+{
+    InGameUiImage *image = Overlay_Image();
+    uint32_t alpha = Notice_Alpha(std::chrono::steady_clock::now());
+    if (image == nullptr || alpha == 0 || Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) ||
+        s_Overlay.root->activeEndMovieRuntime != nullptr) {
+        return;
+    }
+    const uint16_t *text = TextResource_Resolve(s_Notice.textId);
+    uint32_t fontIndex = (g_UiTextStyleNormal >> TEXT_STYLE_FONT_SHIFT) & TEXT_STYLE_INDEX_MASK;
+    if (text == nullptr || fontIndex >= FONT_TEXTURE_SOURCE_COUNT || g_FontTextureSources[fontIndex] == nullptr) {
+        return;
+    }
+    GraphicsTextureSourceAsset *font = g_FontTextureSources[fontIndex];
+    std::array<GraphicsSubresourceIndex, NOTICE_UNITS> glyphs{};
+    size_t count = 0;
+    int32_t width = 0;
+    int32_t height = 0; /* the glyphs stand on the baseline (as FontGlyph_DrawBottomAligned draws them) */
+    for (size_t index = 0; text[index] != 0 && count < glyphs.size(); index++) {
+        if ((text[index] & RICHTEXT_COMMAND_FLAG) == 0) {
+            GraphicsTextureLogicalSize size = g_GraphicsTextureSourceGetLogicalSize(text[index], font);
+            glyphs[count++] = text[index];
+            width += static_cast<int32_t>(size.logicalWidthPixels);
+            height = std::max(height, static_cast<int32_t>(size.logicalHeightPixels));
+        }
+    }
+    const UiNodeBase &area = s_OverlayNode;
+    int32_t left = area.left + OVERLAY_CORNER_GAP;
+    int32_t baseline = Notice_Baseline(image, area, left, left + width);
+    UiPixelRect clip =
+        Overlay_Intersect(clipRect, UiPixelRect{left - 1, baseline - height - 1, left + width + 1, baseline + 1});
+    if (count == 0 || clip.left >= clip.right || clip.top >= clip.bottom || g_GraphicsFramebufferBeginAccess()) {
+        return;
+    }
+    PackedArgb32 colour = (g_RichTextColorPaletteArgb[(g_UiTextStyleNormal >> TEXT_STYLE_PALETTE_SHIFT) &
+                                                      TEXT_STYLE_INDEX_MASK] & 0x00FFFFFF) | (alpha << 24);
+    PackedArgb32 outline = (NOTICE_OUTLINE_ALPHA * alpha / 0xFF) << 24;
+    /* all outlines first, so no outline darkens the neighbouring glyph */
+    for (bool glyphPass : {false, true}) {
+        int32_t x = left;
+        for (size_t index = 0; index < count; index++) {
+            GraphicsTextureLogicalSize size = g_GraphicsTextureSourceGetLogicalSize(glyphs[index], font);
+            int32_t y = baseline - static_cast<int32_t>(size.logicalHeightPixels);
+            if (glyphPass) {
+                g_GraphicsTextureSourceBlitModulatedSourceAlpha(clip.bottom, clip.right, clip.top, clip.left, y, x,
+                                                                colour, glyphs[index], font, g_FramebufferAccess);
+            } else {
+                for (const auto &offset : NOTICE_OUTLINE_OFFSETS) {
+                    g_GraphicsTextureSourceBlitModulatedSourceAlpha(clip.bottom, clip.right, clip.top, clip.left,
+                                                                    y + offset[1], x + offset[0], outline,
+                                                                    glyphs[index], font, g_FramebufferAccess);
+                }
+            }
+            x += static_cast<int32_t>(size.logicalWidthPixels);
+        }
+    }
+    g_GraphicsFramebufferEndAccess();
+}
+
 } // namespace
 
-/* drawClipped of g_InGameObjectiveOverlayVtable: the background, the frame, "Ziel:" in the highlight colour, the
-   objective and the progress line below it, aligned with the objective. */
+/* drawClipped of g_InGameObjectiveOverlayVtable: the corner notice, then the box - the background, the frame,
+   "Ziel:" in the highlight colour, the objective and the progress line below it, aligned with the objective. */
 void InGameObjectiveOverlay_DrawClipped(UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,
                                         UiPixelCoordinate clipTop, UiPixelCoordinate clipLeft, UiNodeBase *node)
 {
+    (void)node;
+    Notice_Draw(UiPixelRect{clipLeft, clipTop, clipRight, clipBottom});
     UiPixelRect box{};
     const OverlayLayout *layout = nullptr;
     if (!Overlay_Box(&box, &layout)) {
@@ -341,7 +543,6 @@ void InGameObjectiveOverlay_DrawClipped(UiPixelCoordinate clipBottom, UiPixelCoo
                                              textLeft + layout->labelWidth);
     }
     g_GraphicsFramebufferEndAccess();
-    (void)node;
 }
 
 /* hitTest of g_InGameObjectiveOverlayVtable: the node inside the shown box, nothing elsewhere (the world view below
@@ -444,6 +645,7 @@ void ObjectiveOverlay_AttachToRoot(InGameRuntimeRoot *root)
     s_Overlay.visible = true;
     s_Overlay.pressed = false;
     s_Overlay.root = root;
+    s_Notice.active = false;
     s_Update.attachGeneration++;
     s_Update.built = false;
     s_Update.sample = false;
@@ -499,6 +701,7 @@ void ObjectiveOverlay_DetachFromRoot(InGameRuntimeRoot *root)
     s_OverlayNode.parent = UI_NODE_NONE;
     s_Overlay.root = nullptr;
     s_Overlay.pressed = false;
+    s_Notice.active = false;
     s_Overlay.line1.fill(0);
     s_Overlay.line2.fill(0);
     s_Overlay.layout.valid = false;
@@ -533,6 +736,11 @@ void ObjectiveOverlay_Update()
     ObjectiveOverlay_SetVisible(!editor);
     bool enabled = Overlay_Shown();
     auto now = std::chrono::steady_clock::now();
+    if (s_Notice.active) {
+        /* every frame while it fades, once more when it is over (the software renderer redraws what is invalid) */
+        s_Notice.active = Notice_Alpha(now) != 0;
+        Overlay_Invalidate();
+    }
     if (enabled != s_Update.enabled) {
         s_Update.enabled = enabled;
         s_Update.nextRefresh = now; /* switched on: fresh values at once */
@@ -562,4 +770,15 @@ void ObjectiveOverlay_Update()
     bool hasProgress = s_Update.objective.source != MissionObjectiveSource::NONE &&
                        MissionObjective_FormatProgress(&s_Update.objective, progress.data(), progress.size());
     ObjectiveOverlay_SetLines(s_Update.objective.line1, hasProgress ? progress.data() : nullptr);
+}
+
+void ObjectiveOverlay_ShowNotice(TextResourceId textId)
+{
+    if (s_Overlay.root == nullptr) {
+        return;
+    }
+    s_Notice.active = true;
+    s_Notice.textId = textId;
+    s_Notice.shownAt = std::chrono::steady_clock::now();
+    Overlay_Invalidate();
 }

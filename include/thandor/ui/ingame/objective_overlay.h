@@ -9,11 +9,13 @@
 #define THANDOR_UI_INGAME_OBJECTIVE_OVERLAY_H
 
 #include <stdint.h>
+#include <thandor/assets/text/types.h>
 #include <thandor/ui/controls/types.h>
 #include <thandor/ui/ingame/types.h>
 
-/* The objective overlay of the in-game UI (docs/plans/objective_overlay.md section 4): a small box at the top left
-   of the world view, below the message lines and the faction status lines, with at most two lines - "Ziel:" (in the
+/* The objective overlay of the in-game UI (docs/plans/objective_overlay.md section 4): a small box in the top left
+   corner of the world view - below the message lines, the faction status block and the pause / game speed lines
+   while one of them is drawn there and the box would overlap it - with at most two lines - "Ziel:" (in the
    highlight colour) and the objective, then an optional progress line aligned with the objective text. Dark
    half-transparent background and the thin button frame of win.gfx; a line wider than the box may be is cut with an
    ellipsis. A left click on it opens the mission help like F1; the world view does not get that click.
@@ -73,6 +75,14 @@ void ObjectiveOverlay_AttachToRoot(InGameRuntimeRoot *root);
 /* Unlinks the overlay node from the in-game root before that root is freed
    (InGameRuntime_ShutdownAndReleaseResources) and clears the lines. Does nothing when it is not linked to root. */
 void ObjectiveOverlay_DetachFromRoot(InGameRuntimeRoot *root);
+
+/* Shows the text textId (resolved at every draw, so it follows a language switch; rich-text commands are left
+   out) for three seconds at the bottom left of the world view - above the chat line and the Ctrl+I info line when
+   they are shown - as a plain line with a black outline and no background, then fades it out. Drawn by the overlay
+   node whatever the objective box does, but not while the world view texts are hidden or the end movie plays;
+   takes no clicks and is not added to the message history. A new notice replaces the shown one; a new root starts
+   without. For the autosave ("Spiel automatisch gespeichert", Autosave_AfterFrame). */
+void ObjectiveOverlay_ShowNotice(TextResourceId textId);
 
 /* The overlay node's vtable (drawClipped, hitTest, press/release; the other slots are the plain node defaults). */
 extern UiNodeVtable g_InGameObjectiveOverlayVtable;
