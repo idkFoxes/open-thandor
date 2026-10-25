@@ -138,6 +138,25 @@ static uint16_t g_ProjectTextSpielAutomatischGespeichert[] = {
     'g','e','s','p','e','i','c','h','e','r','t',0};
 static uint16_t g_ProjectTextGameSavedAutomatically[] = {
     PROJECT_TEXT_BRIGHT,'G','a','m','e',' ','s','a','v','e','d',' ','a','u','t','o','m','a','t','i','c','a','l','l','y',0};
+/* Not in the original: the "Original Thandor" checkbox of the advanced settings page (TEXT_ID_ADVANCED_ORIGINAL_THANDOR,
+   bright like the VSync checkbox, the same in every language: it names the game), its note
+   (TEXT_ID_ADVANCED_ORIGINAL_THANDOR_NOTE, plain like the page's other note) and the key binding panel's line while
+   the switch holds the original keys (TEXT_ID_KEYS_PANEL_ORIGINAL_LOCKED). */
+static uint16_t g_ProjectTextOriginalThandor[] = {
+    PROJECT_TEXT_BRIGHT,'O','r','i','g','i','n','a','l',' ','T','h','a','n','d','o','r',0};
+static uint16_t g_ProjectTextOriginalThandorNoteGerman[] = {
+    'W','i','e',' ','d','a','s',' ','O','r','i','g','i','n','a','l',':',' ','N','e','u','e','r','u','n','g','e','n',' ',
+    'a','u','s',',',' ','F','e','h','l','e','r','b','e','h','e','b','u','n','g','e','n',' ','b','l','e','i','b','e','n',0};
+static uint16_t g_ProjectTextOriginalThandorNoteEnglish[] = {
+    'L','i','k','e',' ','t','h','e',' ','o','r','i','g','i','n','a','l',':',' ','a','d','d','i','t','i','o','n','s',' ',
+    'o','f','f',',',' ','b','u','g',' ','f','i','x','e','s',' ','s','t','a','y',0};
+static uint16_t g_ProjectTextKeysOriginalLockedGerman[] = {
+    'O','r','i','g','i','n','a','l',' ','T','h','a','n','d','o','r',':',' ','d','i','e',' ','O','r','i','g','i','n','a','l',
+    't','a','s','t','e','n',' ','g','e','l','t','e','n',';',' ','B','e','a','r','b','e','i','t','e','n',' ','g','e','s',
+    'p','e','r','r','t',0};
+static uint16_t g_ProjectTextKeysOriginalLockedEnglish[] = {
+    'O','r','i','g','i','n','a','l',' ','T','h','a','n','d','o','r',':',' ','t','h','e',' ','o','r','i','g','i','n','a','l',
+    ' ','k','e','y','s',' ','a','p','p','l','y',';',' ','e','d','i','t','i','n','g',' ','l','o','c','k','e','d',0};
 
 TextResourceId TextResource_LanguageNameId(uint32_t countryCode)
 {
@@ -945,6 +964,32 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     /* not in the original */
     *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextSpielAutomatischGespeichert
                                                     : g_ProjectTextGameSavedAutomatically;
+    return true;
+  }
+  if (resourceId == TEXT_ID_ADVANCED_ORIGINAL_THANDOR) {
+    *outText = g_ProjectTextOriginalThandor; /* not in the original */
+    return true;
+  }
+  if (resourceId == TEXT_ID_ADVANCED_ORIGINAL_THANDOR_NOTE) {
+    /* not in the original */
+    *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextOriginalThandorNoteGerman
+                                                    : g_ProjectTextOriginalThandorNoteEnglish;
+    return true;
+  }
+  if ((resourceId == TEXT_ID_ADVANCED_PATHING_GREYED) || (resourceId == TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY_GREYED) ||
+      (resourceId == TEXT_ID_ADVANCED_AUTOSAVE_GREYED)) {
+    /* not in the original: the bright checkbox text without its leading colour code (PROJECT_TEXT_BRIGHT) */
+    TextResource_TryResolve(resourceId == TEXT_ID_ADVANCED_PATHING_GREYED ? TEXT_ID_ADVANCED_PATHING
+                            : resourceId == TEXT_ID_ADVANCED_AUTOSAVE_GREYED ? TEXT_ID_ADVANCED_AUTOSAVE
+                                                                             : TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY,
+                            outText);
+    *outText += 1;
+    return true;
+  }
+  if (resourceId == TEXT_ID_KEYS_PANEL_ORIGINAL_LOCKED) {
+    /* not in the original */
+    *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextKeysOriginalLockedGerman
+                                                    : g_ProjectTextKeysOriginalLockedEnglish;
     return true;
   }
   if (resourceId == TEXT_ID_ADVANCED_PATHING) {
