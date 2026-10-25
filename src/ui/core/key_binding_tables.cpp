@@ -7,6 +7,7 @@
 
 #include <thandor/ui/core/key_binding_tables.h>
 #include <thandor/thandor.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/ui/ingame/hotkeys.h>
 #include <thandor/ui/ingame/key_commands.h>
 #include <thandor/ui/frontend/state.h>
@@ -25,8 +26,16 @@ static void KeyBindingTables_OnBindingsChanged()
   KeyBindingTables_Apply();
 }
 
+/* "Original Thandor" switched: the acting keys (KeyBinding_EffectiveKeys) changed, the bindings did not */
+static void KeyBindingTables_OnOriginalModeChanged(bool originalModeOn)
+{
+  (void)originalModeOn;
+  KeyBindingTables_Apply();
+}
+
 void KeyBindingTables_Install()
 {
   KeyBindings_AddChangeListener(KeyBindingTables_OnBindingsChanged);
+  OriginalMode_AddChangeListener(KeyBindingTables_OnOriginalModeChanged);
   KeyBindingTables_Apply();
 }

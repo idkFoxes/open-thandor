@@ -9,6 +9,7 @@
 #include <thandor/assets/text/resources.h>
 #include <thandor/platform/input/devices.h>
 #include <thandor/thandor.h>
+#include <thandor/core/settings/original_mode.h>
 
 #include <cstring>
 
@@ -65,7 +66,7 @@ static KeyBinding g_KeyBindings[KEY_ACTION_COUNT] = {
     KB("notification_back", InGame, InGameGeneral, InGameKeyCommands, 1, 0, 6, TEXT_ID_KEYS_NOTIFICATION_BACK, {KEYBOARD_KEY_CODE_BACKSPACE, BIND_NONE}),
     /* not in the original: the objective overlay on/off (docs/plans/objective_overlay.md O5); no original record, so
        all its chords go into the spare records of the in-game hotkey table. Z is free in the in-game context. */
-    KB("objective_toggle", InGame, InGameGeneral, InGameHotkeys, 1, 0, 16, TEXT_ID_KEYS_OBJECTIVE_TOGGLE, {KeyChar('z'), BIND_NONE}),
+    KB("objective_toggle", InGame, InGameGeneral, InGameHotkeys, 1, KEY_BINDING_FLAG_PROJECT, 16, TEXT_ID_KEYS_OBJECTIVE_TOGGLE, {KeyChar('z'), BIND_NONE}),
     /* Einheiten und Gruppen */
     KB("group_select", InGame, UnitsAndGroups, InGameKeyCommands, 8, 0, 1, TEXT_ID_KEYS_GROUP_RECALL, {KEY_BINDING_GROUP_KEY, BIND_NONE}),
     KB("group_select_add", InGame, UnitsAndGroups, InGameKeyCommands, 8, 0, 2, TEXT_ID_KEYS_GROUP_ADD_TO_SELECTION, {KEY_BINDING_GROUP_KEY, BIND_SHIFT}),
@@ -660,6 +661,16 @@ static bool KeyBindings_TypesText(uint32_t keyCode)
          (keyCode < static_cast<uint32_t>(KEYBOARD_KEY_CODE_SPECIAL(0)));
 }
 
+const KeyChord *KeyBinding_EffectiveKeys(const KeyBinding &binding)
+{
+  static constexpr KeyChord NO_KEYS[KEY_BINDING_MAX_KEYS] = {};
+  if (OtFeature_Active(OT_FEATURE_KEY_BINDINGS)) {
+    return binding.keys;
+  }
+  /* "Original Thandor": the original tables' keys; an action the original does not have stays unbound */
+  return ((binding.flags & KEY_BINDING_FLAG_PROJECT) != 0) ? NO_KEYS : binding.defaults;
+}
+
 bool KeyBindings_HeldDown(KeyAction action)
 {
   if (static_cast<int>(action) >= KEY_ACTION_COUNT) {
@@ -671,8 +682,9 @@ bool KeyBindings_HeldDown(KeyAction action)
      (arrows etc.) still count, as the original's camera keys move the camera while the chat edit has the focus */
   const bool textEditFocused = (g_UiKeyboardFocusNode != nullptr) && (g_UiKeyboardFocusNode != UI_NODE_NONE) &&
                                (g_UiKeyboardFocusNode->vtable == &g_UiRequiredTextEditControlVtable);
-  for (int keyIndex = 0; (keyIndex < KEY_BINDING_MAX_KEYS) && (binding.keys[keyIndex].keyCode != 0); keyIndex++) {
-    const KeyChord &chord = binding.keys[keyIndex];
+  const KeyChord *keys = KeyBinding_EffectiveKeys(binding);
+  for (int keyIndex = 0; (keyIndex < KEY_BINDING_MAX_KEYS) && (keys[keyIndex].keyCode != 0); keyIndex++) {
+    const KeyChord &chord = keys[keyIndex];
     if (textEditFocused && KeyBindings_TypesText(chord.keyCode)) {
       continue;
     }
@@ -1154,8 +1166,9 @@ uint32_t KeyName_Format(uint32_t keyCode,UiKeyboardStateMask modifiers,uint16_t 
 uint32_t KeyBinding_FormatKeys(const KeyBinding &binding,uint16_t *out,uint32_t capacity)
 {
   KeyNameWriter writer{out, capacity, 0};
-  for (int keyIndex = 0; (keyIndex < KEY_BINDING_MAX_KEYS) && (binding.keys[keyIndex].keyCode != 0); keyIndex++) {
-    const KeyChord &key = binding.keys[keyIndex];
+  const KeyChord *keys = KeyBinding_EffectiveKeys(binding);
+  for (int keyIndex = 0; (keyIndex < KEY_BINDING_MAX_KEYS) && (keys[keyIndex].keyCode != 0); keyIndex++) {
+    const KeyChord &key = keys[keyIndex];
     if (keyIndex > 0) {
       writer.Put(u" / ");
     }

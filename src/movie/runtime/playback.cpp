@@ -13,6 +13,7 @@
 #include <thandor/movie/runtime/playback.h>
 #include <algorithm>
 #include <thandor/thandor.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
@@ -143,8 +144,11 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
     loadError = g_SoundCreateSampleVoiceSet(audioSample.as<SoundSampleAsset>(),trackBytes,&voiceSet);
     if (loadError == 0) {
       /* Not in the original: a quiet soundtrack (intro2, the story movies ende00NN) is raised towards the level of
-         the other movies (see SdlAudio_RaiseQuietSampleLevel); the decoded length and so the timing stay. */
-      g_SoundRaiseQuietSampleLevel(voiceSet);
+         the other movies (see SdlAudio_RaiseQuietSampleLevel); the decoded length and so the timing stay.
+         "Original Thandor" plays the soundtracks at their original level. */
+      if (OtFeature_Active(OT_FEATURE_MOVIE_VOLUME_BOOST)) {
+        g_SoundRaiseQuietSampleLevel(voiceSet);
+      }
       *outVoiceSet = voiceSet;
     }
   }

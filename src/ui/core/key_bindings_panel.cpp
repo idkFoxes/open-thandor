@@ -726,6 +726,13 @@ static void KeyBindingsPanel_OnBindingsChanged()
   KeyBindingsPanel_Refresh();
 }
 
+/* "Original Thandor" switched: the keys shown (KeyBinding_FormatKeys, the acting keys) changed */
+static void KeyBindingsPanel_OnOriginalModeChanged(bool originalModeOn)
+{
+  (void)originalModeOn;
+  KeyBindingsPanel_Refresh(); /* nothing while not attached */
+}
+
 /* Sets a node's links, vtable, anchors and offsets. */
 static void KeyBindingsPanel_InitNode(UiNodeBase *node,UiNodeVtable *vtable,UiNodeBase *parent,UiNodeBase *nextSibling,
                                       UiNodeBase *firstChild,UiAnchorFractionQ31 leftAnchor,int32_t leftOffset,
@@ -842,6 +849,11 @@ void KeyBindingsPanel_Attach(UiNodeBase *parent,UiPixelRect rect,uint32_t flags,
   }
   s_KeyBindingsPanelAttached = true;
   KeyBindings_AddChangeListener(&KeyBindingsPanel_OnBindingsChanged);
+  static bool originalModeListenerAdded = false; /* the master switch has no remove: added once */
+  if (!originalModeListenerAdded) {
+    originalModeListenerAdded = true;
+    OriginalMode_AddChangeListener(&KeyBindingsPanel_OnOriginalModeChanged);
+  }
 
   /* the box from the parent's current box (UiContainer_LayoutChildren's rule), then the subtree */
   const int32_t parentWidth = parent->right - parent->left;
