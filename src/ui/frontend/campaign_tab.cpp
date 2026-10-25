@@ -12,7 +12,9 @@
    campaignMap and the four texts). While the map is shown, the page starts at campaignButtons[0], so the old
    list, its label and its description are neither drawn nor hit; they stay filled and selected as before. The
    list page is restored (page head campaignsScroller, map nodes suppressed and hidden) before every rebuild of
-   the list and whenever the map cannot be shown, so the original code always acts on the original page.
+   the list and whenever the map cannot be shown or "Original Thandor" is on (OT_FEATURE_CAMPAIGN_MAP), so the
+   original code always acts on the original page. While the list is shown, every entry point below leaves the
+   original behaviour alone: row 0 on opening, no map selection, Start with level 0 (the campaign's first level).
 
    Campaigns. The list rows are grouped by the campaign fingerprint (5.6); each group is one button, standing for
    its base row. A group's graph, layout and node states are built from the base row's .cgn (read natively),
@@ -35,6 +37,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/assets/text/richtext.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/gameplay/session/campaign_progress.h>
 #include <thandor/gameplay/session/campaign_start.h>
 #include <thandor/ui/frontend/campaign_level_info.h>
@@ -609,6 +612,12 @@ void FrontendCampaignTab_Refresh()
   }
   list = &ui->campaignsList;
   FrontendCampaignTab_ShowList();
+  /* "Original Thandor" (core/settings/original_mode.h): the original campaigns list stays, filled and selected by
+     the original code alone. Checked at every rebuild, so a switch made while the tab is open takes effect the next
+     time the tab is opened; until then the page keeps what it shows. The progress file is written either way. */
+  if (!OtFeature_Active(OT_FEATURE_CAMPAIGN_MAP)) {
+    return;
+  }
   if ((list->rowSlots.get() == nullptr) || (list->rowCount == 0)) {
     return;
   }
