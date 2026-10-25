@@ -133,6 +133,7 @@ inline constexpr int KEY_BINDING_MAX_KEYS = 5;
 
 inline constexpr uint8_t KEY_BINDING_FLAG_FIXED = 0x01;  /* not editable (shown greyed) */
 inline constexpr uint8_t KEY_BINDING_FLAG_HIDDEN = 0x02; /* not shown (cheats, Ctrl+F1); always fixed */
+inline constexpr uint8_t KEY_BINDING_FLAG_PROJECT = 0x04; /* not in the original game (objective_toggle) */
 
 /* One action. keys holds 0..KEY_BINDING_MAX_KEYS chords (keyCode 0 ends the list; none = unbound), the current
    binding; the permanent chord (if any) is always among them, as the last one. rangeLength > 1: every chord stands
@@ -150,6 +151,12 @@ struct KeyBinding {
     KeyChord defaults[KEY_BINDING_MAX_KEYS];
     KeyChord permanent; /* keyCode 0: none; else kept by Set / Clear (Alt+F4 of menu_leave) */
 };
+
+/* The keys that act (dispatch tables, held keys, the keys shown): binding.keys, or while "Original Thandor"
+   disables OT_FEATURE_KEY_BINDINGS (core/settings/original_mode.h) the game's original keys - binding.defaults, and
+   none for a KEY_BINDING_FLAG_PROJECT action. binding.keys keeps the user's keys (saved in [keys]); they act again
+   when the switch is off. KEY_BINDING_MAX_KEYS chords, keyCode 0 ends the list. */
+const KeyChord *KeyBinding_EffectiveKeys(const KeyBinding &binding);
 
 /* The number of actions (KEY_ACTION_COUNT, hidden ones included) and one action. */
 int KeyBindings_Count();
@@ -260,7 +267,8 @@ TextResourceId KeyBindings_SectionTitle(KeyBindingSection section);
    empty string when capacity > 0). */
 uint32_t KeyName_Format(uint32_t keyCode,UiKeyboardStateMask modifiers,uint16_t *out,uint32_t capacity);
 
-/* Writes all keys of an action ("Strg+1..8 / Alt+1..8"), like KeyName_Format; 0 when unbound. */
+/* Writes all keys that act for an action (KeyBinding_EffectiveKeys: "Strg+1..8 / Alt+1..8"), like KeyName_Format;
+   0 when unbound. */
 uint32_t KeyBinding_FormatKeys(const KeyBinding &binding,uint16_t *out,uint32_t capacity);
 
 /* Language of the key names and of the TEXT_ID_KEYS_* texts: false (the default) German, true English. */
