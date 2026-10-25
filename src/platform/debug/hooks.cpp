@@ -236,6 +236,27 @@ int DebugHook_AutosaveIntervalSeconds(int seconds)
   return parsed > 0x7FFF ? 0x7FFF : static_cast<int>(parsed); /* 0 switches it off */
 }
 
+int DebugHook_OriginalMode(int on)
+{
+  /* -1: not read yet, 2: no override; read once, since every feature asks the switch (some every frame) */
+  static int s_override = -1;
+
+  if (s_override < 0) {
+    const char *value = getenv("OPEN_THANDOR_ORIGINAL");
+    s_override = 2;
+    if (value != nullptr && (strcmp(value, "1") == 0 || _stricmp(value, "on") == 0)) {
+      s_override = 1;
+    }
+    else if (value != nullptr && (strcmp(value, "0") == 0 || _stricmp(value, "off") == 0)) {
+      s_override = 0;
+    }
+    if (s_override != 2) {
+      Thandor_Log("original mode: OPEN_THANDOR_ORIGINAL=%s overrides [game] original_thandor", value);
+    }
+  }
+  return s_override == 2 ? on : s_override;
+}
+
 void DebugHook_ProfileEnter(int section)
 {
   DebugProfile_Enter(section);

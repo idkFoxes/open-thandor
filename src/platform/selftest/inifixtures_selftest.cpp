@@ -136,6 +136,8 @@ const std::vector<IniFixtureKey> &IniFixture_Keys()
         {"game", "objective_overlay", PERSISTENT_SETTING_OBJECTIVE_OVERLAY, K::Enum, PERSISTENT_OBJECTIVE_OVERLAY_ON, 0,
          {"on", "off"}},
         {"game", "autosave", PERSISTENT_SETTING_AUTOSAVE, K::Enum, PERSISTENT_AUTOSAVE_ON, 0, {"on", "off"}},
+        {"game", "original_thandor", PERSISTENT_SETTING_ORIGINAL_THANDOR, K::Enum, PERSISTENT_ORIGINAL_THANDOR_OFF, 0,
+         {"off", "on"}},
         {"network", "players", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, K::Uint, 4, 0, {}},
     };
     return keys;

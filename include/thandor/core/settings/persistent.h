@@ -89,6 +89,11 @@ inline constexpr auto PERSISTENT_VSYNC_COUNT = 2;
 inline constexpr auto PERSISTENT_FRAME_LIMIT_OFF = 0; /* default: no frame rate limit */
 inline constexpr auto PERSISTENT_FRAME_LIMIT_MAX = 1000; /* larger saved values are read as no limit; the menu offers 60, 120, 144 */
 inline constexpr auto PERSISTENT_SETTINGS_DAT_BYTES = 200; /* size of the original's thandor.dat (read as migration source) */
+/* Not in the original (open-thandor): the first dword past thandor.dat, so a thandor.dat migration can never carry a
+   value into it. A file without it reads 0, the default (off: the open-thandor additions apply). */
+inline constexpr auto PERSISTENT_SETTING_ORIGINAL_THANDOR = 0xC8; /* PERSISTENT_ORIGINAL_THANDOR_*: [game] original_thandor */
+inline constexpr auto PERSISTENT_ORIGINAL_THANDOR_OFF = 0; /* default */
+inline constexpr auto PERSISTENT_ORIGINAL_THANDOR_ON = 1;
 /* open-thandor: the in-memory image is larger than thandor.dat (room for further settings past 0xC8); it is only
    held in memory and saved as thandor.ini keys, never as bytes (not in savegames, network packets or the lobby).
    Its 64 dwords are the 64 bits of the present/written masks. */
@@ -226,6 +231,11 @@ void PersistentSettings_WriteObjectiveOverlay(bool shown);
 /* Not in the original: stores the autosave setting chosen in the menus ("Automatisch speichern", [game] autosave in
    thandor.ini, saved by the next Flush); Autosave_Enabled reads it back at once. */
 void PersistentSettings_WriteAutosave(bool enabled);
+
+/* Not in the original: stores the "Original Thandor" master switch chosen in the menus ([game] original_thandor in
+   thandor.ini, saved by the next Flush). Only OriginalMode_Set (core/settings/original_mode.h) calls it, which also
+   notifies the switch's listeners. */
+void PersistentSettings_WriteOriginalThandor(bool on);
 
 extern uint32_t g_LocaleCountryCodeOverride;
 

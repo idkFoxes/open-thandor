@@ -754,7 +754,8 @@ static_assert(sizeof(PersistentSettingsRuntime) == 0x20C &&
               offsetof(PersistentSettingsRuntime, image) == 0x0,
               "PersistentSettingsRuntime keeps its 32-bit layout");
 static_assert(sizeof(PersistentSettingsImage) == PERSISTENT_SETTINGS_IMAGE_BYTES &&
-                  offsetof(PersistentSettingsImage, freeC8_FF) == PERSISTENT_SETTINGS_DAT_BYTES,
+                  offsetof(PersistentSettingsImage, originalThandor) == PERSISTENT_SETTINGS_DAT_BYTES &&
+                  offsetof(PersistentSettingsImage, freeCC_FF) == PERSISTENT_SETTINGS_DAT_BYTES + 4,
               "PersistentSettingsImage keeps the 32-bit layout of thandor.dat, followed by open-thandor's free dwords");
 static_assert(offsetof(PersistentSettingsImage, pathingMode) == PERSISTENT_SETTING_PATHING_MODE,
               "PersistentSettingsImage.pathingMode is [game] pathing (open-thandor)");
@@ -762,6 +763,8 @@ static_assert(offsetof(PersistentSettingsImage, objectiveOverlay) == PERSISTENT_
               "PersistentSettingsImage.objectiveOverlay is [game] objective_overlay (open-thandor)");
 static_assert(offsetof(PersistentSettingsImage, autosave) == PERSISTENT_SETTING_AUTOSAVE,
               "PersistentSettingsImage.autosave is [game] autosave (open-thandor)");
+static_assert(offsetof(PersistentSettingsImage, originalThandor) == PERSISTENT_SETTING_ORIGINAL_THANDOR,
+              "PersistentSettingsImage.originalThandor is [game] original_thandor (open-thandor)");
 static_assert(PERSISTENT_SETTING_PATHING_MODE == PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET &&
                   PERSISTENT_SETTING_AUTOSAVE + 4 ==
                       PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET + PERSISTENT_SETTINGS_DAT_UNUSED_BYTES,

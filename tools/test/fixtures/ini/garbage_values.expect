@@ -16,4 +16,6 @@ sound.music_volume = 12345
 game.speed_percent = <default>
 game.scroll_step = <default>
 game.player_name = "Ok"
+# an enumeration index past its names (off, on)
+game.original_thandor = <default>
 others = <default>
