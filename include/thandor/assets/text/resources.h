@@ -198,7 +198,7 @@ inline constexpr int TEXT_ID_LANGUAGE_NAME_COUNT = 5;
 #define TEXT_ID_ADVANCED_PATHING (TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT)
 
 /* Not in the original: the autosave (gameplay/session/autosave.h) - the "Automatisch speichern" / "Autosave" checkbox
-   of the advanced settings page ([game] autosave) and the in-game message line after an autosave ("Spiel automatisch
+   of the advanced settings page ([game] autosave) and the in-game corner notice after an autosave ("Spiel automatisch
    gespeichert" / "Game saved automatically"); German for German, English for every other language. */
 #define TEXT_ID_ADVANCED_AUTOSAVE (TEXT_ID_ADVANCED_PATHING + 1)
 #define TEXT_ID_AUTOSAVE_DONE (TEXT_ID_ADVANCED_PATHING + 2)

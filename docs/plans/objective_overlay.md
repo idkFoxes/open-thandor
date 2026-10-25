@@ -62,7 +62,7 @@ Fortschrittswerte kommen aus denselben Zählern wie die Bedingungsprüfung; nur 
 
 ## 4. Darstellung
 
-- Oben links unter der Menüleiste, Abstand passt sich der UI-Skalierung an.
+- In der linken oberen Ecke der Weltansicht (6 Pixel Rand, skaliert mit der UI); nur solange dort ein Originaltext gezeichnet wird (Nachrichtenzeilen, Statusblock der Taste O, Pause-/Tempozeile) und die Box ihn überdecken würde, direkt darunter.
 - Spielschrift; „Ziel:“ in Hervorhebungsfarbe, Rest normal; halbtransparenter dunkler Hintergrund mit kleinem Rahmen im Original-Stil (Rahmenzeichnen wie bei der Kampagnenkarte); max. zwei Zeilen, Abschneiden mit „…“.
 - Aktualisierung ~2× pro Sekunde; Zeile nur neu bauen, wenn sich der Wert ändert.
 - Ausblenden: Einstellung aus, kein Ziel, Spielmenü oder Missionshilfe offen, Endfilm.
@@ -112,7 +112,7 @@ Reihenfolge: O1 → O2, O3, O4 parallel → O5 → O6 (voller run_checks).
 |---|---|---|
 | E1 | Textquelle | handgeschriebene Kurzziele + automatischer Rückfall |
 | E2 | Fortschrittsanzeige | ja |
-| E3 | Position | fest oben links unter der Menüleiste |
+| E3 | Position | linke obere Ecke, unter gerade gezeigten Originaltexten |
 | E4 | Standard | an |
 | E5 | Geltungsbereich | Kampagnen, Einzelkarten, Multiplayer (dort nur erzeugter Text) |
 

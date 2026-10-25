@@ -34,6 +34,7 @@
 #include <thandor/core/settings/original_mode.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/ui/ingame/objective_overlay.h>
 
 namespace {
 
@@ -192,7 +193,7 @@ private:
 };
 AutosaveLiveState s_LiveState; /* the copies' memory is kept between autosaves */
 
-/* Writes save\autosave.sve with the tick lock held; logs the result and its duration and shows the message line. */
+/* Writes save\autosave.sve with the tick lock held; logs the result and its duration and shows the corner notice. */
 void Autosave_Write()
 {
   uint16_t savePath[THANDOR_PATH_CAPACITY];
@@ -226,7 +227,8 @@ void Autosave_Write()
   }
   Thandor_Log("autosave: save\\autosave.sve written in %lld ms (step %u)",elapsedMs,
               g_GameFactionRuntimeImage.tail.simulationTick);
-  InGameRecentTextHistory_InsertAndRebuild8(TextResource_Resolve(TEXT_ID_AUTOSAVE_DONE));
+  /* a short notice at the bottom left, not a message line: it would push the player's messages out of the history */
+  ObjectiveOverlay_ShowNotice(TEXT_ID_AUTOSAVE_DONE);
 }
 
 /* Appends text (up to its terminator; a leading command unit, blanks that would follow a blank and everything from a
