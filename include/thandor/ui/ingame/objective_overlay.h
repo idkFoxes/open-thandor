@@ -24,7 +24,8 @@
    windows, the message lines and the side panel, and it is hit-tested before the world view. The node covers the
    world view area; its draw and hit test use the box only.
 
-   Shown only while all of these hold: ObjectiveOverlay_SetVisible(true), ObjectiveOverlay_Enabled(), a non-empty
+   Shown only while all of these hold: "Original Thandor" off (OtFeature_Active(OT_FEATURE_OBJECTIVE_OVERLAY),
+   core/settings/original_mode.h), ObjectiveOverlay_SetVisible(true), ObjectiveOverlay_Enabled(), a non-empty
    line 1, no game menu page (game menu, quit, save, graphics, sound) and no mission help open, no end movie, and the
    world view texts not hidden (UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS). Purely local display: no simulation,
    network or savegame state.
@@ -46,7 +47,7 @@ void ObjectiveOverlay_SetVisible(bool visible);
 bool ObjectiveOverlay_Enabled();
 
 /* Switches the setting "Ziel anzeigen" (saved with the next settings flush) and redraws a running game's overlay;
-   returns the new state (true: shown). For the key "Ziel ein/aus" (key binding action objective_toggle, added when
+   returns the new state (true: shown). While "Original Thandor" is on it does nothing and returns false. For the key "Ziel ein/aus" (key binding action objective_toggle, added when
    the changeable key bindings of experimental/keybinding-edit are merged; plan O5). */
 bool ObjectiveOverlay_ToggleSetting();
 
