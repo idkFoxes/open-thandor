@@ -472,6 +472,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers64[1]; // Not in the original: action ID 0x2064 (the pathing checkbox of the advanced settings page).
     Ptr32<void (void *)> handlers65[1]; // Not in the original: action ID 0x2065 (the objective overlay checkbox of the advanced settings page).
     Ptr32<void (void *)> handlers66[1]; // Not in the original: action ID 0x2066 (the autosave checkbox of the advanced settings page).
+    Ptr32<void (void *)> handlers67[1]; // Not in the original: action ID 0x2067 (the "Original Thandor" checkbox of the advanced settings page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1374,6 +1375,12 @@ struct FrontendUiImage {
        advancedObjectiveOverlayCheckbox and advancedLanguageGroup in the page's sibling chain (the language list layer
        stays the last child). */
     UiTextButtonControl advancedAutosaveCheckbox; /* +848C g_UiTextButtonControlVtable: Checkbox "Automatisch speichern" (action FRONTEND_ACTION_ADVANCED_AUTOSAVE). */
+    /* Not in the original (open-thandor): the "Original Thandor" master switch of the advanced settings page ([game]
+       original_thandor, core/settings/original_mode.h) and its one-line explanation beside it, in a row of their own
+       at the top of the page under the title; linked between advancedAutosaveCheckbox and advancedLanguageGroup in
+       the page's sibling chain (the language list layer stays the last child). */
+    UiTextButtonControl advancedOriginalThandorCheckbox; /* +84EC g_UiTextButtonControlVtable: Checkbox "Original Thandor" (action FRONTEND_ACTION_ADVANCED_ORIGINAL_THANDOR). */
+    UiFocusProxyControl advancedOriginalThandorNote; /* +854C g_UiFocusProxyControlVtable: "Wie das Original: Neuerungen aus, Fehlerbehebungen bleiben". */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is

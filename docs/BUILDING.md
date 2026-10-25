@@ -240,6 +240,8 @@ pathing = improved
 objective_overlay = on
 ; save a single player game every minute of play to save\autosave.sve (always the same file): on (default) or off
 autosave = on
+; "Original Thandor": off (default) or on; on plays like the original game: every open-thandor addition (pathing, objective box, autosave, campaign map, movie loudness, own maps, key bindings) behaves as in the original, their own settings are kept for when it is off again; bug and crash fixes stay
+original_thandor = off
 
 [network]
 ; player count of a hosted network game (default 4)
@@ -331,8 +333,8 @@ must read what the others wrote.
   `PersistentSettings_Read` call sites, never in the file. Do not write a key just because it exists.
 - **Every key has a range.** A value outside it (or one that does not parse; a negative number for an unsigned
   key) reads as the default, with one log line - a hand-edited file must not reach the game code unchecked. An
-  enumeration (`pathing`, `objective_overlay`, `autosave`, ...) accepts only its names or their indices, `language`
-  its names or a country code 0..999.
+  enumeration (`pathing`, `objective_overlay`, `autosave`, `original_thandor`, ...) accepts only its names or their
+  indices, `language` its names or a country code 0..999.
 - **Every new key gets a fixture entry**: the key table copy in
   [`src/platform/selftest/inifixtures_selftest.cpp`](../src/platform/selftest/inifixtures_selftest.cpp) (it fails on
   a renamed key), a value in a version fixture (a new `<version>.ini` written by `FormatIni` of that version, with its
@@ -343,8 +345,8 @@ must read what the others wrote.
   = 256: the 200 bytes of the original `thandor.dat` followed by free dwords; the present/written masks are 64-bit,
   so it cannot grow further). The original's dwords 0x00-0xAF are its own (0x50-0x58 are unused there and hold
   `pathing`, `objective_overlay` and `autosave`, so a `thandor.dat` migration must not take them over),
-  open-thandor's additions start at 0xB0, and 0xC8-0xFF (`freeC8_FF`) are free. A new key needs a free dword;
-  reusing one changes what older files mean.
+  open-thandor's additions start at 0xB0 (0xC8, the first dword past `thandor.dat`, is `original_thandor`), and
+  0xCC-0xFF (`freeCC_FF`) are free. A new key needs a free dword; reusing one changes what older files mean.
 - **Downgrades keep what they do not know.** An older version reads a newer file, ignores the keys it does not
   know - and must write them back unchanged on its next save, sections included (`[keys]`), so the newer version
   finds them again. Releases up to 1.0.7 drop them (`python tools/test/ini_downgrade.py --exe <older test build>`
@@ -624,6 +626,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_WATCHDOG=<s>` | log the main thread's stack to `thandor.log` every <s> seconds |
 | `OPEN_THANDOR_PATHING=improved\|original` | pathing mode of every new local session, wins over `[game] pathing` (default `improved`, the "Verbesserte Wegfindung" checkbox of the "Erweitert" page; plan in [`docs/plans/pathfinding.md`](plans/pathfinding.md)); any other value (`setting`) keeps the setting's mode. A network session agrees on its mode in the lobby and a loaded savegame keeps its own, both unaffected. `thandor.log` names the mode of each new session (`session: pathing mode ...`). The test tools (`tools/test`, `game_env.py`) start every game with `OPEN_THANDOR_PATHING=original` unless the caller sets it, so the determinism references, the AI hash and the other checks keep comparing the original movement; `run_checks.py`, `run_determinism.py`, `compare_map_hash.py`, `run_campaign_chain.py`, `run_all_maps.py`, `run_multiplayer.py` and `run_pathing.py` take `--pathing original\|improved\|setting` for that |
 | `OPEN_THANDOR_AUTOSAVE=0\|off\|<n>` | the autosave of local games ([`src/gameplay/session/autosave.cpp`](../src/gameplay/session/autosave.cpp); `[game] autosave`, default on: `save\autosave.sve` after every minute of play, "Automatisch speichern" on the "Erweitert" page): `0` or `off` switches it off, a number n > 0 saves every n seconds of play whatever the setting says; `thandor.log` names each save and its duration (`autosave: ... written in <ms> ms`). The test tools (`game_env.py`) start every game with `OPEN_THANDOR_AUTOSAVE=0` unless the caller sets it |
+| `OPEN_THANDOR_ORIGINAL=1\|on\|0\|off` | the "Original Thandor" master switch ([`src/core/settings/original_mode.cpp`](../src/core/settings/original_mode.cpp); `[game] original_thandor`, default off, "Original Thandor" at the top of the "Erweitert" page): `1` or `on` plays as the original (every open-thandor addition of `OtFeature` off, their own settings unchanged), `0` or `off` lets the additions' own settings apply, whatever the setting says; the menu checkbox then shows the overridden state. The test tools (`game_env.py`) leave it unset |
 
 Always on in this build: the level-script log (its conditions and triggers, and which end trigger fired), which
 campaign level a session starts (`level start: campaign level id <n> "<file>"`) and how many units a campaign

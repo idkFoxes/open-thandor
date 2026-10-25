@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/ui/ingame/key_bindings_overlay.h>
+#include <thandor/core/settings/original_mode.h>
 
 /* UI action 0x101F (mission help toggle button): opening shows the mission help window (page 8) with the
    active faction's help text for this level, re-measures its three text panels and blocks the world input; a local
@@ -374,13 +375,22 @@ void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode)
    mission help window and shows page 1 (the keyboard help text columns of texte_tastatur) of its page stack.
    Project change (docs/plans/key_rebinding.md P5): the tab opens the key binding panel as a modal overlay
    (ui/ingame/key_bindings_overlay.h) instead; the help window stays on its briefing tab ("Auftrag") below it, so
-   "Zurueck" returns there. Page 1 of the page stack is no longer shown.
+   "Zurueck" returns there. While "Original Thandor" holds the original keys (OT_FEATURE_KEY_BINDINGS), the tab does
+   what the original does: page 1, whose text describes exactly those keys.
 */
 void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpKeyboardTab of the in-game UI template copy */
   InGameUiImage *image = THANDOR_CONTAINER_OF(sourceNode, InGameUiImage, missionHelpKeyboardTab);
+  if (!OtFeature_Active(OT_FEATURE_KEY_BINDINGS)) {
+    UiSelectableGroup_SelectExclusive(3,sourceNode,
+        &image->missionHelpBriefingTab.selectable.base,
+        &image->missionHelpMouseTab.selectable.base,
+        sourceNode);
+    UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&image->missionHelpTabPageStack));
+    return;
+  }
   InGameMissionHelpPage_SelectBriefingTab(&image->missionHelpBriefingTab.selectable.base);
   InGameKeyBindingsOverlay_Open(sourceNode);
 }

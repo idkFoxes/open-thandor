@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <thandor/thandor.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/gameplay/session/mission_objective.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -237,10 +238,17 @@ int32_t Overlay_StatusTextBottom(InGameUiImage *image)
 }
 
 /* The box in logical pixels when the overlay is shown, else false. */
+/* The setting "Ziel anzeigen", unless "Original Thandor" hides the overlay (the original has none); the setting keeps
+   its value. Read every frame, so switching the master switch takes effect at once. */
+bool Overlay_Shown()
+{
+    return OtFeature_Active(OT_FEATURE_OBJECTIVE_OVERLAY) && ObjectiveOverlay_Enabled();
+}
+
 bool Overlay_Box(UiPixelRect *box, const OverlayLayout **outLayout)
 {
     InGameUiImage *image = Overlay_Image();
-    if (image == nullptr || !s_Overlay.visible || s_Overlay.line1[0] == 0 || !ObjectiveOverlay_Enabled()) {
+    if (image == nullptr || !s_Overlay.visible || s_Overlay.line1[0] == 0 || !Overlay_Shown()) {
         return false;
     }
     if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) ||
@@ -506,6 +514,9 @@ bool ObjectiveOverlay_Enabled()
 
 bool ObjectiveOverlay_ToggleSetting()
 {
+    if (!OtFeature_Active(OT_FEATURE_OBJECTIVE_OVERLAY)) {
+        return false; /* "Original Thandor": the key does nothing and the hidden setting stays as it is */
+    }
     bool shown = !ObjectiveOverlay_Enabled();
     PersistentSettings_WriteObjectiveOverlay(shown);
     Overlay_Invalidate(); /* ObjectiveOverlay_Update fills the lines with the next frame */
@@ -520,7 +531,7 @@ void ObjectiveOverlay_Update()
     }
     bool editor = Any((root->worldRuntime).runtimeFlags & INGAME_WORLD_FLAG_EDITOR);
     ObjectiveOverlay_SetVisible(!editor);
-    bool enabled = ObjectiveOverlay_Enabled();
+    bool enabled = Overlay_Shown();
     auto now = std::chrono::steady_clock::now();
     if (enabled != s_Update.enabled) {
         s_Update.enabled = enabled;

@@ -203,6 +203,19 @@ inline constexpr int TEXT_ID_LANGUAGE_NAME_COUNT = 5;
 #define TEXT_ID_ADVANCED_AUTOSAVE (TEXT_ID_ADVANCED_PATHING + 1)
 #define TEXT_ID_AUTOSAVE_DONE (TEXT_ID_ADVANCED_PATHING + 2)
 
+/* Not in the original: the "Original Thandor" master switch (core/settings/original_mode.h) - its checkbox at the top of
+   the advanced settings page ([game] original_thandor), the note beside it, and the line of the key binding panel
+   while the switch holds the original keys (ui/core/key_bindings_panel.cpp); German for German, English for every
+   other language, as the project texts. */
+#define TEXT_ID_ADVANCED_ORIGINAL_THANDOR (TEXT_ID_ADVANCED_PATHING + 3)
+#define TEXT_ID_ADVANCED_ORIGINAL_THANDOR_NOTE (TEXT_ID_ADVANCED_PATHING + 4)
+#define TEXT_ID_KEYS_PANEL_ORIGINAL_LOCKED (TEXT_ID_ADVANCED_PATHING + 5)
+/* the texts of the pathing, objective overlay and autosave checkboxes without their bright colour code, for the
+   checkboxes greyed out by "Original Thandor" (a colour code in the text wins over the disabled text style) */
+#define TEXT_ID_ADVANCED_PATHING_GREYED (TEXT_ID_ADVANCED_PATHING + 6)
+#define TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY_GREYED (TEXT_ID_ADVANCED_PATHING + 7)
+#define TEXT_ID_ADVANCED_AUTOSAVE_GREYED (TEXT_ID_ADVANCED_PATHING + 8)
+
 /* Not in the original: the objective overlay (docs/plans/objective_overlay.md 3b): the templates of the generated
    objective lines (gameplay/session/mission_objective.h), German for German, English for every other language
    (project_texts_en.cpp). Block TEXT_ID_OBJECTIVE_BASE..TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED - 1
@@ -267,8 +280,8 @@ static_assert(TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT <= TEXT_ID_LA
               "the key binding texts end before the language names");
 static_assert(TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT <= TEXT_ID_ADVANCED_PATHING,
               "the language names end before the pathing checkbox text");
-static_assert(TEXT_ID_AUTOSAVE_DONE < TEXT_ID_OBJECTIVE_BASE,
-              "the pathing checkbox and the autosave texts lie before the objective block");
+static_assert(TEXT_ID_ADVANCED_AUTOSAVE_GREYED < TEXT_ID_OBJECTIVE_BASE,
+              "the pathing checkbox, the autosave and the \"Original Thandor\" texts lie before the objective block");
 static_assert((TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY >= TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_COUNT) &&
               (TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY < TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED),
               "the objective overlay checkbox text lies in the objective block, after the templates");

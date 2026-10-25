@@ -6,6 +6,7 @@
  */
 
 #include <thandor/network/protocol/lobby.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/thandor.h>
 #include <thandor/network/protocol/packet_bytes.h>
 #include <thandor/network/protocol/lockstep.h>
@@ -55,13 +56,16 @@ static uint32_t g_FrontendHostPublishRoundRobinCounter = 0;
    Thandor); only used for the decision log line. */
 static bool g_FrontendHostIsOpenThandor = false;
 
-/* open-thandor: this build's FrontendOtPathingInfo with decidedMode (host packets; 0 in the heartbeat). */
+/* open-thandor: this build's FrontendOtPathingInfo with decidedMode (host packets; 0 in the heartbeat). While
+   "Original Thandor" holds the improved pathing (OT_FEATURE_IMPROVED_PATHING) only the original mode is reported, so
+   a client in that mode never makes a host agree on improved (the host then decides original for everyone). */
 static FrontendOtPathingInfo FrontendOtPathing_OwnInfo(uint8_t decidedMode)
 {
   FrontendOtPathingInfo info = {};
   info.magic = FRONTEND_OT_PATHING_MAGIC;
   info.protocolVersion = PATHING_PROTOCOL_VERSION;
-  info.supportedModes = FRONTEND_OT_PATHING_SUPPORTED_MODES;
+  info.supportedModes = OtFeature_Active(OT_FEATURE_IMPROVED_PATHING) ? FRONTEND_OT_PATHING_SUPPORTED_MODES
+                                                                      : (uint8_t)(1u << PATHING_MODE_ORIGINAL);
   info.decidedMode = decidedMode;
   return info;
 }
@@ -75,9 +79,10 @@ static bool FrontendOtPathing_ReadInfo(const uint8_t *reservedBytes,FrontendOtPa
 }
 
 /* open-thandor (host, docs/plans/pathfinding.md 4, D2): the improved pathing mode is agreed only when the host's
-   own setting is improved and every other player of the lobby (records 1..rowCount-1) sent
-   FRONTEND_CAPABILITY_OT_EXTENDED with this build's pathing protocol and the improved mode among its supported
-   modes. A player that has just joined has no heartbeat yet and therefore counts as original until it reports. */
+   effective setting (PathingMode_EffectiveSetting: original while "Original Thandor" is on) is improved and every
+   other player of the lobby (records 1..rowCount-1) sent FRONTEND_CAPABILITY_OT_EXTENDED with this build's pathing
+   protocol and the improved mode among its supported modes. A player that has just joined has no heartbeat yet and
+   therefore counts as original until it reports. */
 static bool FrontendOtPathing_HostAgreesImproved(uint32_t rowCount,uint32_t *openThandorPeerCount)
 {
   bool everyPeerQualifies = true;
@@ -99,7 +104,8 @@ static bool FrontendOtPathing_HostAgreesImproved(uint32_t rowCount,uint32_t *ope
       everyPeerQualifies = false;
     }
   }
-  return everyPeerQualifies && g_PathingModeSetting == PATHING_MODE_IMPROVED;
+  /* the host's effective wish: "Original Thandor" negotiates like the setting original */
+  return everyPeerQualifies && PathingMode_EffectiveSetting() == PATHING_MODE_IMPROVED;
 }
 
 UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint = {};
@@ -840,7 +846,7 @@ void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendUiImag
       Thandor_Log("network: host pathing mode for the session: %s (host setting %s, %u of %u other players Open "
                   "Thandor with pathing protocol %u)",
                   improvedAgreed ? "improved" : "original",
-                  g_PathingModeSetting == PATHING_MODE_IMPROVED ? "improved" : "original",
+                  PathingMode_EffectiveSetting() == PATHING_MODE_IMPROVED ? "improved" : "original",
                   (unsigned)openThandorPeerCount,(unsigned)(rowCount > 0 ? rowCount - 1 : 0),
                   (unsigned)PATHING_PROTOCOL_VERSION);
     }

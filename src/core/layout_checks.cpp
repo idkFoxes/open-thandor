@@ -754,7 +754,8 @@ static_assert(sizeof(PersistentSettingsRuntime) == 0x20C &&
               offsetof(PersistentSettingsRuntime, image) == 0x0,
               "PersistentSettingsRuntime keeps its 32-bit layout");
 static_assert(sizeof(PersistentSettingsImage) == PERSISTENT_SETTINGS_IMAGE_BYTES &&
-                  offsetof(PersistentSettingsImage, freeC8_FF) == PERSISTENT_SETTINGS_DAT_BYTES,
+                  offsetof(PersistentSettingsImage, originalThandor) == PERSISTENT_SETTINGS_DAT_BYTES &&
+                  offsetof(PersistentSettingsImage, freeCC_FF) == PERSISTENT_SETTINGS_DAT_BYTES + 4,
               "PersistentSettingsImage keeps the 32-bit layout of thandor.dat, followed by open-thandor's free dwords");
 static_assert(offsetof(PersistentSettingsImage, pathingMode) == PERSISTENT_SETTING_PATHING_MODE,
               "PersistentSettingsImage.pathingMode is [game] pathing (open-thandor)");
@@ -762,6 +763,8 @@ static_assert(offsetof(PersistentSettingsImage, objectiveOverlay) == PERSISTENT_
               "PersistentSettingsImage.objectiveOverlay is [game] objective_overlay (open-thandor)");
 static_assert(offsetof(PersistentSettingsImage, autosave) == PERSISTENT_SETTING_AUTOSAVE,
               "PersistentSettingsImage.autosave is [game] autosave (open-thandor)");
+static_assert(offsetof(PersistentSettingsImage, originalThandor) == PERSISTENT_SETTING_ORIGINAL_THANDOR,
+              "PersistentSettingsImage.originalThandor is [game] original_thandor (open-thandor)");
 static_assert(PERSISTENT_SETTING_PATHING_MODE == PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET &&
                   PERSISTENT_SETTING_AUTOSAVE + 4 ==
                       PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET + PERSISTENT_SETTINGS_DAT_UNUSED_BYTES,
@@ -1128,7 +1131,7 @@ static_assert(offsetof(InGameUiImage, saveNameEdit_trailing) + sizeof(InGameUiIm
 static_assert(sizeof(UiDisplayModeSelectionActionHandlerTable) == 0x50 &&
               offsetof(UiDisplayModeSelectionActionHandlerTable, handlers) == 0x0,
               "UiDisplayModeSelectionActionHandlerTable keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x19C && /* 0x160 + the 15 handlers of open-thandor */
+static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x1A0 && /* 0x160 + the 16 handlers of open-thandor */
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers00_54) == 0x0 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, scenarioCatalogRebuildCallbacks) == 0x154 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers5B_5F) == 0x16C &&
@@ -1137,7 +1140,8 @@ static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x19C && /* 0x160 +
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers62_63) == 0x188 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers64) == 0x190 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers65) == 0x194 &&
-              offsetof(FrontendUiActionHandlerPage20Prefix, handlers66) == 0x198,
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers66) == 0x198 &&
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers67) == 0x19C,
               "FrontendUiActionHandlerPage20Prefix keeps its 32-bit layout");
 static_assert(sizeof(InGameUiActionHandlerPage12Prefix28) == 0x70 &&
               offsetof(InGameUiActionHandlerPage12Prefix28, handlers) == 0x0,
@@ -2468,6 +2472,11 @@ static_assert(offsetof(FrontendUiImage, advancedObjectiveOverlayCheckbox) == 0x8
 /* Not in the original (open-thandor): the autosave checkbox of the advanced settings page. */
 static_assert(offsetof(FrontendUiImage, advancedAutosaveCheckbox) == 0x848C && sizeof(UiTextButtonControl) == 0x60,
               "FrontendUiImage.advancedAutosaveCheckbox is a UiTextButtonControl");
+/* Not in the original (open-thandor): the "Original Thandor" checkbox and its note on the advanced settings page. */
+static_assert(offsetof(FrontendUiImage, advancedOriginalThandorCheckbox) == 0x84EC && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedOriginalThandorCheckbox is a UiTextButtonControl");
+static_assert(offsetof(FrontendUiImage, advancedOriginalThandorNote) == 0x854C && sizeof(UiFocusProxyControl) == 0x5C,
+              "FrontendUiImage.advancedOriginalThandorNote is a UiFocusProxyControl");
 static_assert(offsetof(FrontendUiImage, chatInputEdit_trailing) == 0x188,
               "FrontendUiImage.chatInputEdit_trailing follows the control");
 static_assert(offsetof(FrontendUiImage, chatMessageHistory_trailing) == 0x358,
@@ -2500,7 +2509,9 @@ static_assert(offsetof(FrontendUiImage, hostLobbyPlayerList_trailing) == 0x5660,
               "FrontendUiImage.hostLobbyPlayerList_trailing follows the control");
 static_assert(offsetof(FrontendUiImage, clientLobbyPlayerList_trailing) == 0x58E8,
               "FrontendUiImage.clientLobbyPlayerList_trailing follows the control");
-static_assert(sizeof(FrontendUiImage) == 0x84EC && /* 0x5954 + the display mode kind, resolution list, advanced settings, campaign map, key binding, language choice, pathing, objective overlay and autosave checkbox nodes of open-thandor */
+static_assert(sizeof(FrontendUiImage) == 0x85A8 && /* 0x5954 + the display mode kind, resolution list, advanced settings, campaign map, key binding, language choice, pathing, objective overlay, autosave and "Original Thandor" nodes of open-thandor */
+              offsetof(FrontendUiImage, advancedOriginalThandorNote) == 0x854C &&
+              offsetof(FrontendUiImage, advancedOriginalThandorCheckbox) == 0x84EC &&
               offsetof(FrontendUiImage, advancedAutosaveCheckbox) == 0x848C &&
               offsetof(FrontendUiImage, advancedObjectiveOverlayCheckbox) == 0x842C &&
               offsetof(FrontendUiImage, advancedPathingCheckbox) == 0x83CC &&

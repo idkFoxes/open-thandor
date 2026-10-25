@@ -1,0 +1,7 @@
+# thandor.ini as this version writes it with the "Original Thandor" master switch on ([game] original_thandor, the
+# dword 0xC8 past thandor.dat): the values and lines of experimental_dev_v2 and the switch; a save writes it unchanged
+# (the switch after autosave). The downgrade view is experimental_dev_v3.downgrade (tools/test/ini_downgrade.py).
+include: experimental_dev.expect
+game.original_thandor = on
+preserved: [game] original_thandor = on
+order: [game] autosave = on < [game] original_thandor = on

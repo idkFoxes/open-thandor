@@ -2391,7 +2391,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .nextSibling = UI_TEMPLATE_LINK(0x7370), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                 .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
-                .leftOffset = -288, .topOffset = -164, .rightOffset = 288, .bottomOffset = -140,
+                /* open-thandor moved the title up from y -164..-140 to make room for the "Original Thandor" row below it */
+                .leftOffset = -288, .topOffset = -172, .rightOffset = 288, .bottomOffset = -148,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .labelFlags = 0x00000001, .text = THANDOR_PTR32_BITS(TEXT_ID_ADVANCED_SETTINGS_TITLE)},
@@ -2400,7 +2401,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .nextSibling = UI_TEMPLATE_LINK(0x7484), .firstChild = UI_TEMPLATE_LINK(0x73C4), .parent = UI_TEMPLATE_LINK(0x7258),
                 .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
-                .leftOffset = -288, .topOffset = -142, .rightOffset = 32, .bottomOffset = -80,
+                /* moved down from y -142..-80 under the "Original Thandor" row */
+                .leftOffset = -288, .topOffset = -122, .rightOffset = 32, .bottomOffset = -60,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .titleTextResourceId = TEXT_ID_ADVANCED_EDGES_TITLE},
@@ -2431,7 +2433,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .nextSibling = UI_TEMPLATE_LINK(0x7658), .firstChild = UI_TEMPLATE_LINK(0x74D8), .parent = UI_TEMPLATE_LINK(0x7258),
                 .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
-                .leftOffset = -288, .topOffset = -58, .rightOffset = 32, .bottomOffset = 52,
+                /* moved down from y -58..52 (the gap to the box above shrank from 22 to 6 pixels) */
+                .leftOffset = -288, .topOffset = -54, .rightOffset = 32, .bottomOffset = 56,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .titleTextResourceId = TEXT_ID_ADVANCED_UI_SCALE_TITLE},
@@ -2484,7 +2487,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                 .nextSibling = UI_TEMPLATE_LINK(0x782C), .firstChild = UI_TEMPLATE_LINK(0x76AC), .parent = UI_TEMPLATE_LINK(0x7258),
                 .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
-                .leftOffset = 48, .topOffset = -142, .rightOffset = 288, .bottomOffset = -32,
+                /* moved down from y -142..-32 under the "Original Thandor" row */
+                .leftOffset = 48, .topOffset = -122, .rightOffset = 288, .bottomOffset = -12,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .titleTextResourceId = TEXT_ID_ADVANCED_FRAME_LIMIT_TITLE},
@@ -2538,7 +2542,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                     .nextSibling = UI_TEMPLATE_LINK(0x788C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                     .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
-                    .leftOffset = 53, .topOffset = -18, .rightOffset = 288, .bottomOffset = 6,
+                    /* moved down from y -18..6 (directly above the box "Sprache:") */
+                    .leftOffset = 53, .topOffset = -10, .rightOffset = 288, .bottomOffset = 14,
                     .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
                 .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_VSYNC},
@@ -2910,7 +2915,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         { /* +848C advancedAutosaveCheckbox g_UiTextButtonControlVtable */
             .selectable = {
                 .base = {
-                    .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    /* followed by advancedOriginalThandorCheckbox (+84EC), its note (+854C), then advancedLanguageGroup (+7FD4) */
+                    .nextSibling = UI_TEMPLATE_LINK(0x84EC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                     .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = 53, .topOffset = 84, .rightOffset = 288, .bottomOffset = 108,
@@ -2918,4 +2924,29 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
                 .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_AUTOSAVE},
             .textResourceId = TEXT_ID_ADVANCED_AUTOSAVE},
+        /* not in the original (open-thandor): the "Original Thandor" master switch of the advanced settings page ([game]
+           original_thandor, core/settings/original_mode.h) at the top of the page, in a row of its own between the
+           title and the boxes (x -283..-125, y -148..-124; the title moved up and the boxes down to make room), with
+           its one-line note to the right (x -116..288). Between advancedAutosaveCheckbox and advancedLanguageGroup in
+           the page's sibling chain */
+        { /* +84EC advancedOriginalThandorCheckbox g_UiTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x854C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = -283, .topOffset = -148, .rightOffset = -125, .bottomOffset = -124,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_ORIGINAL_THANDOR},
+            .textResourceId = TEXT_ID_ADVANCED_ORIGINAL_THANDOR},
+        { /* +854C advancedOriginalThandorNote g_UiFocusProxyControlVtable */
+            .base = {
+                .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+                .left = -1, .top = -1, .right = -1, .bottom = -1,
+                .leftOffset = -116, .topOffset = -148, .rightOffset = 288, .bottomOffset = -124,
+                .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                .layoutWidth = -1, .layoutHeight = -1},
+            .text = THANDOR_PTR32_BITS(TEXT_ID_ADVANCED_ORIGINAL_THANDOR_NOTE)},
 };

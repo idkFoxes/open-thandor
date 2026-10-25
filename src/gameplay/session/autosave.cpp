@@ -31,6 +31,7 @@
 #include <new>
 #include <vector>
 #include <thandor/thandor.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
@@ -61,10 +62,13 @@ struct AutosaveState {
 };
 AutosaveState s_Autosave;
 
-/* The interval in seconds; 0 when the autosave is off (setting or test aid). */
+/* The interval in seconds; 0 when the autosave is off (setting, "Original Thandor" or test aid). The master switch
+   overrides the setting without changing it (the original has no autosave); the developer tools' interval
+   (OPEN_THANDOR_AUTOSAVE) still wins, as for the setting. */
 int Autosave_IntervalSeconds()
 {
-  return DebugHook_AutosaveIntervalSeconds(Autosave_Enabled() ? AUTOSAVE_INTERVAL_SECONDS : 0);
+  const bool enabled = Autosave_Enabled() && OtFeature_Active(OT_FEATURE_AUTOSAVE);
+  return DebugHook_AutosaveIntervalSeconds(enabled ? AUTOSAVE_INTERVAL_SECONDS : 0);
 }
 
 /* A local game whose simulation runs normally: not a network game (the original offers no save there), not the map

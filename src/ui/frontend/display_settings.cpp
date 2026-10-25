@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/core/bytes.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/ui/frontend/language_choice.h>
 #include <thandor/world/pathing/mode.h>
 
@@ -604,7 +605,10 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
    scale, the UI laid out again), "Bildratenbegrenzung"
    and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync), "Verbesserte Wegfindung" ([game] pathing, the next
    local session's pathing mode), "Ziel anzeigen" ([game] objective_overlay, the in-game objective box), "Automatisch
-   speichern" ([game] autosave). Edges and UI scale only matter for the GPU renderers:
+   speichern" ([game] autosave) and, at the top, "Original Thandor" ([game] original_thandor, core/settings/
+   original_mode.h): while it is on, the checkboxes of the open-thandor additions on this page (pathing, objective
+   box, autosave) are greyed out and show their saved values, which apply again when it is off. Edges and UI scale
+   only matter for the GPU renderers:
    with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
    a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. With a GPU renderer the
    choice stays the saved one and the note names the scale in use when it differs (or auto chose it). */
@@ -708,6 +712,29 @@ void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
                                   &ui->advancedPathingCheckbox.selectable);
   UiSelectableControl_SetSelected(ObjectiveOverlay_Enabled(),&ui->advancedObjectiveOverlayCheckbox.selectable);
   UiSelectableControl_SetSelected(Autosave_Enabled(),&ui->advancedAutosaveCheckbox.selectable);
+  /* "Original Thandor" holds the additions as in the original: their own checkboxes keep showing the saved choice
+     (applied again once the switch is off) but are greyed out, so a click cannot suggest it would act now; the
+     greyed texts drop the bright colour code, which would win over the disabled style */
+  const bool originalMode = OriginalMode_IsOn();
+  const struct {
+    UiTextButtonControl *checkbox;
+    TextResourceId text;
+    TextResourceId greyedText;
+  } additions[] = {
+      {&ui->advancedPathingCheckbox,TEXT_ID_ADVANCED_PATHING,TEXT_ID_ADVANCED_PATHING_GREYED},
+      {&ui->advancedObjectiveOverlayCheckbox,TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY,TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY_GREYED},
+      {&ui->advancedAutosaveCheckbox,TEXT_ID_ADVANCED_AUTOSAVE,TEXT_ID_ADVANCED_AUTOSAVE_GREYED}};
+  UiSelectableControl_SetSelected(originalMode,&ui->advancedOriginalThandorCheckbox.selectable);
+  for (const auto &addition : additions) {
+    UiSelectableControl *selectable = &addition.checkbox->selectable;
+    if (originalMode) {
+      UiSelectableControl_SuppressIfActionId(selectable->actionId,selectable);
+    }
+    else {
+      UiSelectableControl_UnsuppressIfActionId(selectable->actionId,selectable);
+    }
+    addition.checkbox->textResourceId = originalMode ? addition.greyedText : addition.text;
+  }
   ui->advancedNoteLabel.text =
        THANDOR_PTR32_BITS(gpu ? FrontendAdvancedSettingsPage_UiScaleNote() : TEXT_ID_ADVANCED_NOTE_SOFTWARE);
   FrontendLanguageChoice_Refresh(ui);
@@ -835,6 +862,16 @@ void FrontendAdvancedSettingsAction_SetObjectiveOverlay(UiNodeBase *sourceNode)
 void FrontendAdvancedSettingsAction_SetAutosave(UiNodeBase *sourceNode)
 {
   PersistentSettings_WriteAutosave(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
+
+  FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_ORIGINAL_THANDOR (the "Original Thandor" checkbox; the click has toggled it): the
+   master switch ([game] original_thandor); OriginalMode_Set tells the additions that react at once (key bindings);
+   the others ask the switch when they act. The refresh greys the additions' checkboxes out or in. */
+void FrontendAdvancedSettingsAction_SetOriginalThandor(UiNodeBase *sourceNode)
+{
+  OriginalMode_Set(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
 
   FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
 }

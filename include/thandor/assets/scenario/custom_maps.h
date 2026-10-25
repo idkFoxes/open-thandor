@@ -20,7 +20,10 @@
    its title.
 
    The loaded .lev copy of a custom map carries the identifier "maps\<name>." instead of its file's "<name>.": the
-   save game stores that copy, so a loaded save (and the restart after it) finds the map folder again. */
+   save game stores that copy, so a loaded save (and the restart after it) finds the map folder again.
+   While "Original Thandor" is on (OT_FEATURE_CUSTOM_MAPS, core/settings/original_mode.h) maps\ is neither scanned
+   nor listed (from the next list build on); a saved game of a custom map still loads and restarts (the paths above
+   do not need the scan), its title then shows the fallback text. */
 
 #include <stdint.h>
 #include <thandor/core/ptr32.h>

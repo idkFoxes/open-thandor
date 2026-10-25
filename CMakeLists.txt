@@ -78,6 +78,7 @@ add_executable(thandor WIN32
     src/core/memory/allocator.cpp
     src/core/memory/synchronization.cpp
     src/core/settings/persistent.cpp
+    src/core/settings/original_mode.cpp
     src/core/text/path.cpp
     src/core/text/string.cpp
     src/gameplay/ai/combat.cpp

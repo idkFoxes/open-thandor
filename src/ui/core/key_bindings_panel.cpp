@@ -21,6 +21,7 @@
 
 #include <thandor/ui/core/key_bindings_panel.h>
 #include <thandor/thandor.h>
+#include <thandor/core/settings/original_mode.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/ui/ingame/layout.h>
 #include <thandor/platform/input/devices.h>
@@ -293,10 +294,30 @@ static int32_t KeyBindingsPanel_TextWidth(UiPackedTextStyle style,const uint16_t
 
 /* ---- rows ---- */
 
+/* "Original Thandor" holds the original keys: the panel shows them but edits nothing (the own bindings stay saved
+   and apply again once the switch is off). */
+static bool KeyBindingsPanel_Locked()
+{
+  return !OtFeature_Active(OT_FEATURE_KEY_BINDINGS);
+}
+
 static bool KeyBindingsPanel_Editable(KeyAction action)
 {
   const KeyBinding &binding = KeyBindings_Get(action);
-  return !KeyBinding_IsFixed(binding) && !KeyBinding_IsHidden(binding);
+  return !KeyBinding_IsFixed(binding) && !KeyBinding_IsHidden(binding) && !KeyBindingsPanel_Locked();
+}
+
+/* The "Standard" button is greyed out while the panel is locked (it would overwrite the own bindings). */
+static void KeyBindingsPanel_ApplyLock()
+{
+  UiSelectableControl *defaults = &s_KeyBindingsPanel.defaultsButton.selectable;
+
+  if (KeyBindingsPanel_Locked()) {
+    UiSelectableControl_SuppressIfActionId(defaults->actionId,defaults);
+  }
+  else {
+    UiSelectableControl_UnsuppressIfActionId(defaults->actionId,defaults);
+  }
 }
 
 /* Builds the rows from the visible actions and measures the key texts. */
@@ -471,7 +492,7 @@ static void KeyBindingsPanelList_Draw
       continue;
     }
     const KeyBinding &binding = KeyBindings_Get(row.action);
-    const bool fixed = KeyBinding_IsFixed(binding);
+    const bool fixed = KeyBinding_IsFixed(binding) || KeyBindingsPanel_Locked(); /* locked rows look fixed */
     const bool capturing = s_KeyBindingsPanelCapture.active && s_KeyBindingsPanelCaptureAction == row.action;
     const UiPackedTextStyle style = fixed ? g_UiTextStyleDisabled : g_UiListTextStyle;
     /* the description, cut at the key cell */
@@ -635,8 +656,10 @@ static void KeyBindingsPanel_Draw
   /* the status line between the list and the buttons */
   const int32_t statusTop = node->bottom - inset - KEY_BINDINGS_PANEL_BUTTON_HEIGHT - KEY_BINDINGS_PANEL_GAP -
                             KEY_BINDINGS_PANEL_STATUS_HEIGHT;
-  uint16_t *status = s_KeyBindingsPanelStatusIsHint ? TextResource_Resolve(TEXT_ID_KEYS_PANEL_HINT)
-                                                    : s_KeyBindingsPanelStatus;
+  uint16_t *status = s_KeyBindingsPanelStatusIsHint
+                         ? TextResource_Resolve(KeyBindingsPanel_Locked() ? TEXT_ID_KEYS_PANEL_ORIGINAL_LOCKED
+                                                                           : TEXT_ID_KEYS_PANEL_HINT)
+                         : s_KeyBindingsPanelStatus;
   RichTextCommandStream_DrawSingleLine(std::min(clipBottom,statusTop + KEY_BINDINGS_PANEL_STATUS_HEIGHT),textClipRight,
                                        std::max(clipTop,statusTop),textClipLeft,
                                        s_KeyBindingsPanelStatusIsWarning ? g_UiTextStyleSelected : g_UiTextStyleNormal,
@@ -677,6 +700,9 @@ static void KeyBindingsPanelAction_Defaults(void *source)
 {
   (void)source;
   KeyBindingsPanel_CancelCapture();
+  if (KeyBindingsPanel_Locked()) {
+    return; /* greyed out; Enter or a queued click must not reset the own bindings either */
+  }
   KeyBindings_ResetAllDefaults();
   KeyBindingsPanel_ShowStatus(TEXT_ID_KEYS_PANEL_DEFAULTS_RESTORED,KeyAction::Count,false);
   KeyBindingsPanel_LogStatus("defaults");
@@ -698,6 +724,13 @@ static void KeyBindingsPanelAction_Back(void *source)
 static void KeyBindingsPanel_OnBindingsChanged()
 {
   KeyBindingsPanel_Refresh();
+}
+
+/* "Original Thandor" switched: the keys shown (KeyBinding_FormatKeys, the acting keys) changed */
+static void KeyBindingsPanel_OnOriginalModeChanged(bool originalModeOn)
+{
+  (void)originalModeOn;
+  KeyBindingsPanel_Refresh(); /* nothing while not attached */
 }
 
 /* Sets a node's links, vtable, anchors and offsets. */
@@ -816,6 +849,11 @@ void KeyBindingsPanel_Attach(UiNodeBase *parent,UiPixelRect rect,uint32_t flags,
   }
   s_KeyBindingsPanelAttached = true;
   KeyBindings_AddChangeListener(&KeyBindingsPanel_OnBindingsChanged);
+  static bool originalModeListenerAdded = false; /* the master switch has no remove: added once */
+  if (!originalModeListenerAdded) {
+    originalModeListenerAdded = true;
+    OriginalMode_AddChangeListener(&KeyBindingsPanel_OnOriginalModeChanged);
+  }
 
   /* the box from the parent's current box (UiContainer_LayoutChildren's rule), then the subtree */
   const int32_t parentWidth = parent->right - parent->left;
@@ -827,6 +865,7 @@ void KeyBindingsPanel_Attach(UiNodeBase *parent,UiPixelRect rect,uint32_t flags,
   root->right = parent->left + anchorX + rect.right;
   root->bottom = parent->top + anchorY + rect.bottom;
   KeyBindingsPanel_BuildRows();
+  KeyBindingsPanel_ApplyLock();
   nodes.scroller.scrollOffsetX = 0;
   nodes.scroller.scrollOffsetY = 0;
   root->vtable->layout(root);
@@ -902,6 +941,7 @@ void KeyBindingsPanel_Refresh()
     return;
   }
   KeyBindingsPanel_BuildRows();
+  KeyBindingsPanel_ApplyLock();
   KeyBindingsPanel_FitList();
   KeyBindingsPanel_Invalidate();
 }

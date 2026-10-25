@@ -24,7 +24,9 @@
    has gives UI_KEY_COMMAND_CODE_UNBOUND. Chords beyond the action's default count go into the spare records, in
    action order; an action without an original record (a project action such as objective_toggle) has all its
    chords there. Records of fixed actions (Esc, Alt+F4, the cheats) and records without an entry stay as they are.
-   With the default bindings every table equals the original. */
+   With the default bindings every table equals the original. The chords are the ones that act
+   (KeyBinding_EffectiveKeys): while "Original Thandor" is on these are the defaults without the project actions, so
+   every table equals the original whatever [keys] holds. */
 
 /* The action whose entry has this source and table action number; KeyAction::Count when none has. */
 inline KeyAction KeyBindingTable_FindAction(KeyBindingSource source,uint32_t sourceAction)
@@ -51,8 +53,8 @@ constexpr bool KeyBindingTable_HasOriginalRecord(const UiKeyCommandRecord<Action
   return false;
 }
 
-/* The number of chords of a chord list (keyCode 0 ends it). */
-inline int KeyBindingTable_ChordCount(const KeyChord (&chords)[KEY_BINDING_MAX_KEYS])
+/* The number of chords of a chord list (KEY_BINDING_MAX_KEYS entries; keyCode 0 ends it). */
+inline int KeyBindingTable_ChordCount(const KeyChord *chords)
 {
   int count = 0;
   while ((count < KEY_BINDING_MAX_KEYS) && (chords[count].keyCode != 0)) {
@@ -106,7 +108,7 @@ uint32_t KeyBindingTable_Apply(std::array<UiKeyCommandRecord<Action>, Capacity> 
       uint32_t offset = 0;
       int chordIndex = KeyBindingTable_DefaultChordOf(binding,record.commandCode,record.modifierClassFlags,&offset);
       if (!KeyBinding_IsFixed(binding) && (chordIndex >= 0)) {
-        const KeyChord &chord = binding.keys[chordIndex];
+        const KeyChord &chord = KeyBinding_EffectiveKeys(binding)[chordIndex];
         if (chord.keyCode != 0) {
           record.commandCode = chord.keyCode + offset;
           record.modifierClassFlags = chord.modifiers;
@@ -125,13 +127,14 @@ uint32_t KeyBindingTable_Apply(std::array<UiKeyCommandRecord<Action>, Capacity> 
     if ((binding.source != source) || KeyBinding_IsFixed(binding)) {
       continue;
     }
+    const KeyChord *keys = KeyBinding_EffectiveKeys(binding);
     int firstSpareChord = KeyBindingTable_HasOriginalRecord(originals,binding.sourceAction) ?
                           KeyBindingTable_ChordCount(binding.defaults) : 0;
-    for (int chordIndex = firstSpareChord; chordIndex < KeyBindingTable_ChordCount(binding.keys); chordIndex++) {
+    for (int chordIndex = firstSpareChord; chordIndex < KeyBindingTable_ChordCount(keys); chordIndex++) {
       for (uint32_t offset = 0; offset < binding.rangeLength; offset++) {
         if (spare + 1 < Capacity) {
-          table[spare++] = UiKeyCommandRecord<Action>{binding.keys[chordIndex].keyCode + offset,
-                                                      binding.keys[chordIndex].modifiers,
+          table[spare++] = UiKeyCommandRecord<Action>{keys[chordIndex].keyCode + offset,
+                                                      keys[chordIndex].modifiers,
                                                       static_cast<Action>(binding.sourceAction)};
         }
         else {
@@ -151,8 +154,8 @@ uint32_t KeyBindingTable_Apply(std::array<UiKeyCommandRecord<Action>, Capacity> 
    FrontendHotkeys_ApplyBindings); logs records that did not fit. Returns their number. */
 uint32_t KeyBindingTables_Apply();
 
-/* Registers KeyBindingTables_Apply as a key binding change listener and applies once (program start, before the
-   self-tests and the ini). */
+/* Registers KeyBindingTables_Apply as a key binding change listener and as an "Original Thandor" change listener
+   (the tables follow the switch at once) and applies once (program start, before the self-tests and the ini). */
 void KeyBindingTables_Install();
 
 #endif /* THANDOR_UI_CORE_KEY_BINDING_TABLES_H */

@@ -126,6 +126,8 @@ static const char *const s_IniVsyncNames[] = {"on", "off"};
 static const char *const s_IniPathingNames[] = {"improved", "original"};
 static const char *const s_IniObjectiveOverlayNames[] = {"on", "off"};
 static const char *const s_IniAutosaveNames[] = {"on", "off"};
+/* off first: index 0 is the default a missing key reads (PERSISTENT_ORIGINAL_THANDOR_OFF) */
+static const char *const s_IniOriginalThandorNames[] = {"off", "on"};
 
 /* the text languages of [game] language (the value is the telephone country code, see LocaleTelephoneCountryCode) */
 struct PersistentIniLanguage {
@@ -224,6 +226,11 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {PERSISTENT_SETTING_AUTOSAVE, INI_KIND_ENUM, "game", "autosave",
    "save a single player game every minute of play to save\\autosave.sve (always the same file): on (default) or off",
    0, 0, INI_ENUM(s_IniAutosaveNames)},
+  {PERSISTENT_SETTING_ORIGINAL_THANDOR, INI_KIND_ENUM, "game", "original_thandor",
+   "\"Original Thandor\": off (default) or on; on plays like the original game: every open-thandor addition (pathing, "
+   "objective box, autosave, campaign map, movie loudness, own maps, key bindings) behaves as in the original, their "
+   "own settings are kept for when it is off again; bug and crash fixes stay",
+   0, 0, INI_ENUM(s_IniOriginalThandorNames)},
 
   {PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, INI_KIND_UINT, "network", "players",
    "player count of a hosted network game (default 4)", 0, 0, INI_RANGE(s_IniRangePlayers)},
@@ -1656,4 +1663,13 @@ void PersistentSettings_WriteObjectiveOverlay(bool shown)
 void PersistentSettings_WriteAutosave(bool enabled)
 {
   PersistentSettings_WriteChosen(enabled ? PERSISTENT_AUTOSAVE_ON : PERSISTENT_AUTOSAVE_OFF,PERSISTENT_SETTING_AUTOSAVE);
+}
+
+/* Not in the original: the "Original Thandor" master switch chosen in the menus (the "Erweitert" page, through
+   OriginalMode_Set): the settings dword the next PersistentSettings_Flush saves as [game] original_thandor; present at
+   once, so OriginalMode_IsOn reads the new value. */
+void PersistentSettings_WriteOriginalThandor(bool on)
+{
+  PersistentSettings_WriteChosen(on ? PERSISTENT_ORIGINAL_THANDOR_ON : PERSISTENT_ORIGINAL_THANDOR_OFF,
+                                 PERSISTENT_SETTING_ORIGINAL_THANDOR);
 }

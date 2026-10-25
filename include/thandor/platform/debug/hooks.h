@@ -136,6 +136,11 @@ int DebugHook_LocalPathingMode(int mode);
    default, game_env.py), a number n > 0 saves every n seconds whatever the setting says; any other value keeps the
    setting's interval. */
 int DebugHook_AutosaveIntervalSeconds(int seconds);
+/* The "Original Thandor" master switch (core/settings/original_mode.cpp) instead of on, the one [game]
+   original_thandor chose: OPEN_THANDOR_ORIGINAL=1|on switches it on, 0|off off, whatever the setting says; any other
+   value (or none) keeps the setting. Read once (the switch is asked every frame). The test tools leave it unset, so
+   the checks run the open-thandor additions as their thandor.ini says. */
+int DebugHook_OriginalMode(int on);
 /* Step profiler sections (OPEN_THANDOR_STEP_PROFILE): section is a DebugProfileSection. */
 void DebugHook_ProfileEnter(int section);
 void DebugHook_ProfileLeave(int section);
@@ -188,6 +193,7 @@ struct DebugProfileScope {
 #define DebugHook_PathingEvent(kind, army, other) ((void)0)
 #define DebugHook_LocalPathingMode(mode) (mode)
 #define DebugHook_AutosaveIntervalSeconds(seconds) (seconds)
+#define DebugHook_OriginalMode(on) (on)
 #define DebugHook_ProfileEnter(section) ((void)0)
 #define DebugHook_ProfileLeave(section) ((void)0)
 #define DebugHook_ProfileScope(section) ((void)0)

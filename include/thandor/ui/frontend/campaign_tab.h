@@ -27,7 +27,8 @@ void FrontendCampaignTab_ShowList();
 /* After the campaigns list was rebuilt (ScenarioCatalog_RebuildCampaignRecordListPage): reads the progress, groups
    the list rows into campaigns, builds every campaign's graph, layout and node states, and shows the button row
    and the map of the campaign of the list's selected row (plan 7.1); falls back to the list (FrontendCampaignTab_
-   ShowList) when the map cannot be shown. */
+   ShowList) when the map cannot be shown or "Original Thandor" is on (OtFeature_Active(OT_FEATURE_CAMPAIGN_MAP)
+   false; checked at every rebuild). */
 void FrontendCampaignTab_Refresh();
 
 /* After the campaigns list selected row selectionIndex (ScenarioCatalog_SelectCampaignAndShowDescription, also

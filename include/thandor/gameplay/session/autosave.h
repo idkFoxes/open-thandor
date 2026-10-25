@@ -29,7 +29,8 @@ inline constexpr int AUTOSAVE_INTERVAL_SECONDS = 60;
 inline constexpr int AUTOSAVE_MAX_FRAME_GAP_MS = 250;
 
 /* The user setting "Automatisch speichern" ([game] autosave in thandor.ini, settings dword PERSISTENT_SETTING_AUTOSAVE;
-   default on). */
+   default on). While "Original Thandor" is on (OT_FEATURE_AUTOSAVE) no autosave is made whatever this says; the
+   setting keeps its value. Existing autosaves stay listed and loadable. */
 bool Autosave_Enabled();
 
 /* A session has started (new level, loaded game, next campaign level): play time counts from zero. */

@@ -4,8 +4,8 @@ usage: ini_downgrade.py --exe OLDER_TEST_EXE [--fixture NAME] [--strict]
 
 Runs OPEN_THANDOR_SELFTEST=inifixtures of OLDER_TEST_EXE (a build of an older version with the developer tools, for
 example a dev test build or one made from the v1.0.7 tag) on one fixture of tools/test/fixtures/ini (default
-experimental_dev_v2: the thandor.ini this version writes, with [game] language and language_country_code, pathing,
-objective_overlay, autosave and a [keys] section), in a temporary directory: the older version loads the file
+experimental_dev_v3: the thandor.ini this version writes, with [game] language and language_country_code, pathing,
+objective_overlay, autosave, original_thandor and a [keys] section), in a temporary directory: the older version loads the file
 through its real loader, saves it (Flush) and loads it again. Then it prints which keys of the newer file the older
 version reads, and which lines of the newer file survive its save and which are lost - what a player keeps after
 starting an older version once and going back.
@@ -17,7 +17,7 @@ Exit status 1 when the case fails; with --strict also while its "pending" checks
 
 What to expect from an older build: dev (and 1.0.8) reads language_country_code (written by this version for
 exactly this reason, so the language survives a downgrade), keeps the keys it does not know (language, pathing,
-objective_overlay, autosave, [keys]) and writes them back; releases up to 1.0.7 read language_country_code but
+objective_overlay, autosave, original_thandor, [keys]) and writes them back; releases up to 1.0.7 read language_country_code but
 drop the unknown keys on their next save (the newer version then reads their defaults).
 
 Why this way and not by re-implementing the old parser in Python: that would test the copy, not the game.
@@ -76,7 +76,7 @@ def downgrade_fixtures(folder, fixture):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--exe', required=True, help='test build (developer tools) of the older version')
-    parser.add_argument('--fixture', default='experimental_dev_v2')
+    parser.add_argument('--fixture', default='experimental_dev_v3')
     parser.add_argument('--strict', action='store_true', help='pending checks must pass')
     args = parser.parse_args()
     exe = os.path.abspath(args.exe)
