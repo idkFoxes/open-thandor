@@ -218,9 +218,7 @@ def check_ini():
     if '-> image: identical' not in text:
         problems.append('settings: thandor.dat round trip not identical')
     exited, crashed, text = run_game(folder, '', {'OPEN_THANDOR_SELFTEST': 'mousering'}, 30, 990)
-    log.write('==== mousering: exited %s, crash/hang %s
-%s
-' % (exited, crashed, text))
+    log.write('==== mousering: exited %s, crash/hang %s\n%s\n' % (exited, crashed, text))
     if crashed or not exited or 'mousering: ok' not in text:
         problems.append('mousering: %s' % ([l for l in text.splitlines() if 'mousering' in l and 'FAILED' in l][:3] or 'no result'))
     work = os.path.join(folder, 'ini_work')
