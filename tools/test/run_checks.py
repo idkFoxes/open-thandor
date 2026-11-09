@@ -12,7 +12,8 @@ further copies next to it), windowed, with its own UDP ports:
                tools/test/fixtures/ini/old_dat_clean.dat as thandor.dat (fixed text and thandor.dat migration round
                trip), then OPEN_THANDOR_SELFTEST=inifixtures over tools/test/fixtures/ini (old versions' and broken
                thandor.ini files through the real load and save; "pending A/B" checks may fail, they are counted
-               as expected-fail; work directories in the copy's ini_work)
+               as expected-fail; work directories in the copy's ini_work), and OPEN_THANDOR_SELFTEST=mousering
+               (full mouse event ring, focus-loss release)
   determinism  run_determinism.py --reference tools/test/determinism_reference (3 instances, ports 960-962)
   aihash       compare_map_hash.py stromschnelle 1400: two copies of the new build, plus the --old build if
                given; all must record identical state hashes (ports 980-982)
@@ -216,6 +217,12 @@ def check_ini():
         problems.append('settings: fixed text not ok')
     if '-> image: identical' not in text:
         problems.append('settings: thandor.dat round trip not identical')
+    exited, crashed, text = run_game(folder, '', {'OPEN_THANDOR_SELFTEST': 'mousering'}, 30, 990)
+    log.write('==== mousering: exited %s, crash/hang %s
+%s
+' % (exited, crashed, text))
+    if crashed or not exited or 'mousering: ok' not in text:
+        problems.append('mousering: %s' % ([l for l in text.splitlines() if 'mousering' in l and 'FAILED' in l][:3] or 'no result'))
     work = os.path.join(folder, 'ini_work')
     shutil.rmtree(work, ignore_errors=True)
     exited, crashed, text = run_game(folder, '', {'OPEN_THANDOR_SELFTEST': 'inifixtures',

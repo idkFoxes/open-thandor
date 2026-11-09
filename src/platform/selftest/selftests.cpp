@@ -1735,6 +1735,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestKeyMatch();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "mousering") == 0) {
+        Thandor_SelfTestMouseRing();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "campaignprogress") == 0) {
         Thandor_SelfTestCampaignProgress();
         return 1;

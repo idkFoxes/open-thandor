@@ -131,8 +131,11 @@ void HandleTextInput(const SDL_TextInputEvent &event);
 void HandleMouseEvent(const SDL_Event &event);
 void HandleFocusGained();
 void HandleFocusLost();
-/* the window was minimized or hidden: every held key is released (Keyboard_ReleaseHeldKeys) */
+/* the window was minimized or hidden: every held key is released (Keyboard_ReleaseHeldKeys), every held mouse
+   button gets a release event */
 void HandleWindowDeactivated();
+/* Once per pump: the thandor.log lines for a button held over 30 s and for a full mouse event ring. */
+void UpdateMouseDiagnostics() noexcept;
 
 } // namespace thandor::sdl3
 
