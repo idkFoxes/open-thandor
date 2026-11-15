@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import archsvg as A  # noqa: E402
 
-W, H = 1280, 740
+W, H = 1280, 770
 d = A.Diagram(W, H, 'platform — start-up, SDL3 layer and services',
               'Modules under src/platform/ (headers in include/thandor/platform/). Arrows are calls or data handed over; '
               'most cross-area calls go through the original function slots (g_PlatformPumpEvents, g_Sound*, ...).')
@@ -42,45 +42,49 @@ mod(40, 180, 560, 220, 'bootstrap',
      'ProcessEntry_RunGame: heap, files, locale, SDL video / input / audio,',
      'network, settings, first display mode 640x480, UiRuntime_Initialize.',
      'Game_Run: Game_LoadCoreAssets, Game_PlayIntroMovies, saved mode,',
-     'Frontend_MainLoop; then Runtime_Shutdown, SdlPlatform_Quit.'],
+     'Frontend_MainLoop; then Runtime_Shutdown, SdlPlatform_Quit.',
+     'Game_ApplyLanguage: run-time language switch (options page).'],
     ['main.cpp', 'runtime.cpp', 'image.cpp', 'low_memory.cpp', 'thandor.rc.in'], '4 files · 3k lines')
 mod(640, 180, 430, 220, 'sdl3',
     ['Window and event pump, periodic timers, audio stream;',
      'video: renderer choice, display modes, present, pacing;',
      'SDL GPU renderer (Vulkan / Direct3D 12): 3D scenes and the',
-     '2D draw list; software frames through an SDL_Renderer.'],
+     '2D draw list (high-resolution font glyphs at UI scale 2 / 3);',
+     'software frames through an SDL_Renderer; mouse ring diagnostics,',
+     'held keys released on focus loss; SDL_OpenURL.'],
     ['platform.cpp', 'video.cpp', 'gpu_renderer.cpp', 'gpu_ui2d.cpp', 'gpu_ui_textures.cpp',
      'input.cpp', 'timer.cpp', 'audio.cpp', 'window_icon.cpp', 'gpu_diagnostics.cpp', 'shaders/'],
-    '10 files · 7k lines')
+    '10 files · 8k lines')
 
-mod(40, 440, 170, 160, 'filesystem',
+mod(40, 440, 170, 190, 'filesystem',
     ['Win32 file slots', '(g_FileSystemOpen, ...),', 'executable directory,',
-     'thandor.cfg, engine.pck.'],
+     'thandor.cfg, engine.pck;', 'native whole-file read', 'and replace.'],
     ['win32.cpp'])
-mod(225, 440, 150, 160, 'system',
+mod(225, 440, 150, 190, 'system',
     ['Locale date / time', 'formatting; the pump', 'and timer slots.'],
     ['time_locale.cpp', 'win32.cpp'])
-mod(390, 440, 210, 160, 'debug',
+mod(390, 440, 210, 190, 'debug',
     ['Developer-tool hooks', '(THANDOR_DEV_TOOLS): input', 'script, autoshot, state hash,',
-     'campaign autowin, movie tools.'],
-    ['hooks', 'statehash', 'script', 'autoshot', 'campaign'])
-mod(640, 440, 200, 160, 'selftest',
-    ['Chosen by the variable', 'OPEN_THANDOR_SELFTEST:', 'codec, raster, hexscan,',
-     'inifixtures, uiatlas, ...'],
-    ['selftests.cpp', '6 more'])
-mod(860, 440, 210, 160, 'input',
-    ['Keyboard ring (64 events),', 'modifier and lock-key mask,', 'held special keys; cursor',
-     'asset loading and buffers.'],
+     'campaign, movement trace,', 'step profiler, movie tools.'],
+    ['hooks', 'statehash', 'pathtrace', 'profile', '8 more'],
+    '12 files · 2.9k')
+mod(640, 440, 200, 190, 'selftest',
+    ['Chosen by the variable', 'OPEN_THANDOR_SELFTEST:', 'codec, raster, inifixtures,',
+     'keybindings, mousering,', 'campaignmap, custommaps, ...'],
+    ['selftests.cpp', '15 more'], '16 files · 9k')
+mod(860, 440, 210, 190, 'input',
+    ['Keyboard ring (64 events),', 'modifier and lock-key mask,', 'held special keys, held',
+     'state of every key (key', 'bindings); cursor buffers.'],
     ['devices.cpp'])
 
 # --- devices, files and the remaining callers (right column, bottom row) -----------------------------------------
 d.ext(1110, 190, 130, 40, 'Keyboard · mouse')
 d.ext(1110, 270, 130, 40, 'Display · GPU')
 d.ext(1110, 350, 130, 40, 'Sound device')
-d.ext(40, 654, 170, 40, 'Files: PCK · cfg · saves')
-d.ext(225, 654, 150, 40, 'Win32 time · locale')
-area(390, 654, 210, 40, 'gameplay', 'gameplay (session hooks)')
-area(860, 654, 210, 40, 'ui', 'ui (keyboard dispatch)')
+d.ext(40, 684, 170, 40, 'Files: PCK · cfg · saves')
+d.ext(225, 684, 150, 40, 'Win32 time · locale')
+area(390, 684, 210, 40, 'gameplay', 'gameplay (session hooks)')
+area(860, 684, 210, 40, 'ui', 'ui (keyboard, key bindings)')
 
 # --- arrows -----------------------------------------------------------------------------------------------------
 # bootstrap -> areas it initialises (up)
@@ -111,16 +115,18 @@ d.line([(670, 400), (670, 420), (575, 420), (575, 440)])
 d.text(678, 416, 'DebugHook_MessagePump', 'l')
 d.line([(965, 400), (965, 440)], 'Keyboard_OnKeyDown / OnChar', 971, 425)
 # debug -> selftest
-d.line([(600, 520), (640, 520)])
-d.text(620, 512, 'run', 'l', 'middle')
+d.line([(600, 535), (640, 535)])
+d.text(620, 527, 'run', 'l', 'middle')
 # bottom row
-d.line([(125, 600), (125, 654)], 'Win32 files', 131, 630, both=True)
-d.line([(300, 600), (300, 654)], 'GetLocalTime', 306, 630)
-d.line([(495, 654), (495, 600)], 'step / session hooks', 501, 630)
-d.line([(965, 600), (965, 654)], 'g_KeyboardReadEvent', 971, 630)
+d.line([(125, 630), (125, 684)], 'Win32 files', 131, 660, both=True)
+d.line([(300, 630), (300, 684)], 'GetLocalTime', 306, 660)
+d.line([(495, 684), (495, 630)], 'step, session, pathing hooks', 501, 660)
+d.line([(965, 630), (965, 684)], 'g_KeyboardReadEvent · Keyboard_KeyHeld', 971, 660)
 
-d.text(40, 722, 'Not drawn: core Runtime_Shutdown calls the Sdl*_Shutdown functions; assets, core and gameplay read and '
-       'write files through the filesystem slots; ui and gameplay register timers.', 'f')
+d.text(40, 742, 'Not drawn: core Runtime_Shutdown calls the Sdl*_Shutdown functions; assets, core and gameplay read and '
+       'write files through the filesystem slots (campaign progress: native read / replace); ui and gameplay register timers;', 'f')
+d.text(40, 758, 'ui calls Game_ApplyLanguage (language page) and SdlPlatform_OpenUrl; gpu_renderer asks ui/text HdFont_GlyphSource; '
+       'world pathing also reports to the pathing and profiler hooks; the game recorder sets the crash.log note.', 'f')
 
 out = 'docs/architecture/platform/platform.svg'
 d.save(out)

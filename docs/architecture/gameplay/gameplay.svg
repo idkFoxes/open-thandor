@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 820" width="1280" height="820" font-family="Segoe UI, Helvetica, Arial, sans-serif">
 <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker><style>.t{font-size:17px;font-weight:700;fill:#1d1d1f}.d{font-size:12px;fill:#333}.m{font-size:11px;fill:#222}.f{font-size:11px;fill:#666}.l{font-size:11.5px;fill:#333;font-style:italic}.h{font-size:11px;font-weight:700;fill:#888;letter-spacing:1.5px}</style></defs>
-<rect width="1280" height="800" fill="#fff"/>
-<text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">gameplay — session, simulation tick, armies, AI, factions</text>
+<rect width="1280" height="820" fill="#fff"/>
+<text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">gameplay — session, simulation tick, armies, AI, factions, recorder</text>
 <text x="20" y="52" class="d">Modules under src/gameplay/ (headers in include/thandor/gameplay/). Arrows are the main calls and data flows read from the code; dashed boxes are other areas. Click a box for its source folder or page.</text>
 <a href="../ui/README.md"><g>
 <rect x="80" y="76" width="480" height="44" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
@@ -28,151 +28,176 @@
 <text x="1070.0" y="280.0" class="d" text-anchor="middle">platform — 80 Hz timer, game data, debug hooks</text>
 </g></a>
 <a href="../../../src/gameplay/session/"><g>
-<rect x="80" y="160" width="800" height="130" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
+<rect x="80" y="160" width="820" height="150" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
 <text x="94" y="185" class="t">session</text>
-<text x="868" y="184" class="f" text-anchor="end">14 files · 5.6k lines</text>
+<text x="888" y="184" class="f" text-anchor="end">19 files · 8.8k lines</text>
 <text x="94" y="204" class="d">Session lifecycle: start a new level or a saved game, run frames until exit, save, campaign carry-over.</text>
 <text x="94" y="219" class="d">tick.cpp: one simulation step = lockstep, per-entity update, level script every 20 steps, 8 world jobs.</text>
-<rect x="94" y="230" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="101" y="244" class="m">startup</text>
-<rect x="158" y="230" width="83" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="165" y="244" class="m">new_session</text>
-<rect x="247" y="230" width="102" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="254" y="244" class="m">loaded_session</text>
-<rect x="356" y="230" width="71" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="363" y="244" class="m">level_new</text>
-<rect x="432" y="230" width="83" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="439" y="244" class="m">level_saved</text>
-<rect x="522" y="230" width="46" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="529" y="244" class="m">level</text>
-<rect x="573" y="230" width="90" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="580" y="244" class="m">level_script</text>
-<rect x="669" y="230" width="39" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="676" y="244" class="m">tick</text>
-<rect x="714" y="230" width="64" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="721" y="244" class="m">savegame</text>
-<rect x="94" y="254" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="101" y="268" class="m">savegame_load</text>
-<rect x="196" y="254" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="203" y="268" class="m">scenario_load</text>
-<rect x="298" y="254" width="127" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="305" y="268" class="m">campaign_carryover</text>
-<rect x="431" y="254" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="438" y="268" class="m">loading_movie</text>
+<text x="94" y="234" class="d">Project additions: autosave, campaign progress (campaign map), mission objective for the HUD overlay.</text>
+<rect x="94" y="245" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="101" y="259" class="m">startup</text>
+<rect x="158" y="245" width="83" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="165" y="259" class="m">new_session</text>
+<rect x="247" y="245" width="102" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="254" y="259" class="m">loaded_session</text>
+<rect x="356" y="245" width="71" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="363" y="259" class="m">level_new</text>
+<rect x="432" y="245" width="83" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="439" y="259" class="m">level_saved</text>
+<rect x="522" y="245" width="46" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="529" y="259" class="m">level</text>
+<rect x="573" y="245" width="90" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="580" y="259" class="m">level_script</text>
+<rect x="669" y="245" width="39" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="676" y="259" class="m">tick</text>
+<rect x="714" y="245" width="64" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="721" y="259" class="m">savegame</text>
+<rect x="784" y="245" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="791" y="259" class="m">savegame_load</text>
+<rect x="94" y="269" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="101" y="283" class="m">scenario_load</text>
+<rect x="196" y="269" width="127" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="203" y="283" class="m">campaign_carryover</text>
+<rect x="329" y="269" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="336" y="283" class="m">loading_movie</text>
+<rect x="431" y="269" width="64" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="438" y="283" class="m">autosave</text>
+<rect x="502" y="269" width="127" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="509" y="283" class="m">campaign_progress*</text>
+<rect x="635" y="269" width="102" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="642" y="283" class="m">campaign_start</text>
+<rect x="743" y="269" width="121" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="750" y="283" class="m">mission_objective</text>
 </g></a>
 <a href="../../../src/gameplay/ai/"><g>
-<rect x="80" y="340" width="300" height="190" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
-<text x="94" y="365" class="t">ai</text>
-<text x="368" y="364" class="f" text-anchor="end">9 files · 5.1k</text>
-<text x="94" y="384" class="d">Computer factions: per-faction planning</text>
-<text x="94" y="399" class="d">every 64 steps (unit or economy phase),</text>
-<text x="94" y="414" class="d">per-army target choice.</text>
-<rect x="94" y="425" width="64" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="101" y="439" class="m">planning</text>
-<rect x="164" y="425" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="171" y="439" class="m">perception</text>
-<rect x="247" y="425" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="254" y="439" class="m">workspaces</text>
-<rect x="94" y="449" width="46" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="101" y="463" class="m">units</text>
-<rect x="146" y="449" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="152" y="463" class="m">combat</text>
-<rect x="203" y="449" width="90" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="210" y="463" class="m">construction</text>
-<rect x="94" y="473" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="101" y="487" class="m">purchasing</text>
-<rect x="177" y="473" width="71" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="184" y="487" class="m">placement</text>
-<rect x="254" y="473" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="261" y="487" class="m">technology</text>
+<rect x="80" y="360" width="300" height="190" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
+<text x="94" y="385" class="t">ai</text>
+<text x="368" y="384" class="f" text-anchor="end">9 files · 5.2k</text>
+<text x="94" y="404" class="d">Computer factions: per-faction planning</text>
+<text x="94" y="419" class="d">every 64 steps (unit or economy phase),</text>
+<text x="94" y="434" class="d">per-army target choice.</text>
+<rect x="94" y="445" width="64" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="101" y="459" class="m">planning</text>
+<rect x="164" y="445" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="171" y="459" class="m">perception</text>
+<rect x="247" y="445" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="254" y="459" class="m">workspaces</text>
+<rect x="94" y="469" width="46" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="101" y="483" class="m">units</text>
+<rect x="146" y="469" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="152" y="483" class="m">combat</text>
+<rect x="203" y="469" width="90" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="210" y="483" class="m">construction</text>
+<rect x="94" y="493" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="101" y="507" class="m">purchasing</text>
+<rect x="177" y="493" width="71" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="184" y="507" class="m">placement</text>
+<rect x="254" y="493" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="261" y="507" class="m">technology</text>
 </g></a>
 <a href="../../../src/gameplay/army/"><g>
-<rect x="450" y="340" width="380" height="190" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
-<text x="464" y="365" class="t">army</text>
-<text x="818" y="364" class="f" text-anchor="end">22 files · 11.6k</text>
-<text x="464" y="384" class="d">Units and buildings: creation and pool, per-class</text>
-<text x="464" y="399" class="d">update tables, movement, weapons and damage,</text>
-<text x="464" y="414" class="d">placement, factories.</text>
-<rect x="464" y="425" width="39" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="471" y="439" class="m">pool</text>
-<rect x="509" y="425" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="516" y="439" class="m">factory</text>
-<rect x="573" y="425" width="102" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="580" y="439" class="m">class_dispatch</text>
-<rect x="682" y="425" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="688" y="439" class="m">class_updates</text>
-<rect x="464" y="449" width="83" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="471" y="463" class="m">move_orders</text>
-<rect x="553" y="449" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="560" y="463" class="m">drive_*</text>
-<rect x="617" y="449" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="624" y="463" class="m">walker</text>
-<rect x="675" y="449" width="64" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="682" y="463" class="m">aircraft</text>
-<rect x="746" y="449" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="753" y="463" class="m">weapons</text>
-<rect x="464" y="473" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="471" y="487" class="m">turrets</text>
-<rect x="528" y="473" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="535" y="487" class="m">combat</text>
-<rect x="586" y="473" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="593" y="487" class="m">damage</text>
-<rect x="644" y="473" width="71" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="651" y="487" class="m">collision</text>
-<rect x="720" y="473" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="727" y="487" class="m">placement*</text>
-<rect x="464" y="497" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="471" y="511" class="m">preview</text>
-<rect x="528" y="497" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="535" y="511" class="m">model_*</text>
-<rect x="592" y="497" width="46" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="599" y="511" class="m">audio</text>
+<rect x="450" y="360" width="380" height="190" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
+<text x="464" y="385" class="t">army</text>
+<text x="818" y="384" class="f" text-anchor="end">23 files · 11.9k</text>
+<text x="464" y="404" class="d">Units and buildings: creation and pool, per-class</text>
+<text x="464" y="419" class="d">update tables, movement (original or improved),</text>
+<text x="464" y="434" class="d">weapons and damage, placement, factories.</text>
+<rect x="464" y="445" width="39" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="471" y="459" class="m">pool</text>
+<rect x="509" y="445" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="516" y="459" class="m">factory</text>
+<rect x="573" y="445" width="102" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="580" y="459" class="m">class_dispatch</text>
+<rect x="682" y="445" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="688" y="459" class="m">class_updates</text>
+<rect x="464" y="469" width="83" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="471" y="483" class="m">move_orders</text>
+<rect x="553" y="469" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="560" y="483" class="m">drive_*</text>
+<rect x="617" y="469" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="624" y="483" class="m">walker</text>
+<rect x="675" y="469" width="64" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="682" y="483" class="m">aircraft</text>
+<rect x="746" y="469" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="753" y="483" class="m">weapons</text>
+<rect x="464" y="493" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="471" y="507" class="m">turrets</text>
+<rect x="528" y="493" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="535" y="507" class="m">combat</text>
+<rect x="586" y="493" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="593" y="507" class="m">damage</text>
+<rect x="644" y="493" width="71" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="651" y="507" class="m">collision</text>
+<rect x="720" y="493" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="727" y="507" class="m">placement*</text>
+<rect x="464" y="517" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="471" y="531" class="m">preview</text>
+<rect x="528" y="517" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="535" y="531" class="m">model_*</text>
+<rect x="592" y="517" width="46" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="599" y="531" class="m">audio</text>
 </g></a>
 <a href="../../../src/gameplay/selection/"><g>
-<rect x="920" y="340" width="300" height="190" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
-<text x="934" y="365" class="t">selection</text>
-<text x="1208" y="364" class="f" text-anchor="end">3 files · 1.4k</text>
-<text x="934" y="384" class="d">Per-player selection sets, selection</text>
-<text x="934" y="399" class="d">queries for the HUD, and the in-game</text>
-<text x="934" y="414" class="d">command handlers (move, stop, target).</text>
-<rect x="934" y="425" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="941" y="439" class="m">selection_set</text>
-<rect x="1036" y="425" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="1043" y="439" class="m">queries</text>
-<rect x="1100" y="425" width="64" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="1107" y="439" class="m">commands</text>
+<rect x="920" y="360" width="300" height="190" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
+<text x="934" y="385" class="t">selection</text>
+<text x="1208" y="384" class="f" text-anchor="end">3 files · 1.5k</text>
+<text x="934" y="404" class="d">Per-player selection sets, selection</text>
+<text x="934" y="419" class="d">queries for the HUD, and the in-game</text>
+<text x="934" y="434" class="d">command handlers (move, stop, target).</text>
+<rect x="934" y="445" width="96" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="941" y="459" class="m">selection_set</text>
+<rect x="1036" y="445" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="1043" y="459" class="m">queries</text>
+<rect x="1100" y="445" width="64" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="1107" y="459" class="m">commands</text>
 </g></a>
 <a href="../../../src/gameplay/faction/"><g>
-<rect x="80" y="580" width="440" height="100" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
-<text x="94" y="605" class="t">faction</text>
-<text x="508" y="604" class="f" text-anchor="end">4 files · 2.0k</text>
-<text x="94" y="624" class="d">Faction records: economy (mining, energy), relations,</text>
-<text x="94" y="639" class="d">army stock and production queues, score metrics.</text>
-<rect x="94" y="650" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="101" y="664" class="m">economy</text>
-<rect x="158" y="650" width="71" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="165" y="664" class="m">relations</text>
-<rect x="235" y="650" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="242" y="664" class="m">army_stock</text>
-<rect x="318" y="650" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="325" y="664" class="m">runtime</text>
+<rect x="80" y="600" width="420" height="110" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
+<text x="94" y="625" class="t">faction</text>
+<text x="488" y="624" class="f" text-anchor="end">4 files · 2.0k</text>
+<text x="94" y="644" class="d">Faction records: economy (mining, energy), relations,</text>
+<text x="94" y="659" class="d">army stock and production queues, score metrics.</text>
+<rect x="94" y="670" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="101" y="684" class="m">economy</text>
+<rect x="158" y="670" width="71" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="165" y="684" class="m">relations</text>
+<rect x="235" y="670" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="242" y="684" class="m">army_stock</text>
+<rect x="318" y="670" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="325" y="684" class="m">runtime</text>
 </g></a>
 <a href="../../../src/gameplay/technology/"><g>
-<rect x="640" y="580" width="260" height="100" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
-<text x="654" y="605" class="t">technology</text>
-<text x="888" y="604" class="f" text-anchor="end">1 file</text>
-<text x="654" y="624" class="d">Research unlocks per faction,</text>
-<text x="654" y="639" class="d">derived limits, availability tests.</text>
-<rect x="654" y="650" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
-<text x="661" y="664" class="m">runtime</text>
+<rect x="560" y="600" width="190" height="110" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
+<text x="574" y="625" class="t">technology</text>
+<text x="738" y="624" class="f" text-anchor="end">1 file</text>
+<text x="574" y="644" class="d">Research unlocks,</text>
+<text x="574" y="659" class="d">derived limits,</text>
+<text x="574" y="674" class="d">availability tests.</text>
+<rect x="574" y="685" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="581" y="699" class="m">runtime</text>
 </g></a>
 <a href="../audio/README.md"><g>
-<rect x="940" y="600" width="280" height="40" rx="8" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="1080.0" y="624.0" class="d" text-anchor="middle">audio — positioned unit sounds</text>
+<rect x="770" y="620" width="120" height="40" rx="8" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="830.0" y="644.0" class="d" text-anchor="middle">audio — sounds</text>
+</g></a>
+<a href="../../../src/gameplay/replay/"><g>
+<rect x="920" y="600" width="300" height="110" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
+<text x="934" y="625" class="t">replay</text>
+<text x="1208" y="624" class="f" text-anchor="end">4 files · 2.0k</text>
+<text x="934" y="644" class="d">Game recorder (.otr, project code): records</text>
+<text x="934" y="659" class="d">commands and steps, plays back from a checkpoint.</text>
+<rect x="934" y="670" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="941" y="684" class="m">runtime</text>
+<rect x="998" y="670" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="1005" y="684" class="m">stream</text>
+<rect x="1056" y="670" width="46" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="1063" y="684" class="m">files</text>
+<rect x="1107" y="670" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="1114" y="684" class="m">state_hash</text>
 </g></a>
 <a href="../world/README.md"><g>
-<rect x="80" y="730" width="1140" height="40" rx="8" fill="#fff6d6" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="650.0" y="754.0" class="d" text-anchor="middle">world — owner list, terrain and field grid, pathing, models, shots, effects, camera</text>
+<rect x="80" y="750" width="1140" height="40" rx="8" fill="#fff6d6" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="650.0" y="774.0" class="d" text-anchor="middle">world — owner list, terrain and field grid, pathing, models, shots, effects, camera</text>
 </g></a>
 <path d="M160,120 L160,160" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="167" y="144" class="l" text-anchor="start">start: RunSessionUntilExit</text>
@@ -186,32 +211,36 @@
 <text x="807" y="144" class="l" text-anchor="start">submit / batch</text>
 <path d="M1220,98 L1252,98 L1252,420 L1220,420" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="1246" y="260" class="l" text-anchor="middle" transform="rotate(-90 1246 260)">execute command batch</text>
-<path d="M880,174 L920,174" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<path d="M880,208 L920,208" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<path d="M880,242 L920,242" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<path d="M880,276 L920,276" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<path d="M230,290 L230,340" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="237" y="320" class="l" text-anchor="start">planning (jobs 2, 6)</text>
-<path d="M640,290 L640,340" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="647" y="320" class="l" text-anchor="start">per-entity update</text>
-<path d="M80,250 L56,250 L56,630 L80,630" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="50" y="440" class="l" text-anchor="middle" transform="rotate(-90 50 440)">economy (job 0)</text>
-<path d="M80,200 L28,200 L28,750 L80,750" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="22" y="475" class="l" text-anchor="middle" transform="rotate(-90 22 475)">level setup, world jobs</text>
-<path d="M380,400 L450,400" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="415" y="393" class="l" text-anchor="middle">create, route</text>
-<path d="M450,470 L380,470" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="415" y="463" class="l" text-anchor="middle">target choice</text>
-<path d="M920,435 L830,435" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="875" y="428" class="l" text-anchor="middle">orders</text>
-<path d="M200,530 L200,580" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="207" y="560" class="l" text-anchor="start">purchases, relations</text>
-<path d="M480,530 L480,580" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="473" y="565" class="l" text-anchor="end">factory queue, Xenite</text>
-<path d="M700,530 L700,580" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="707" y="568" class="l" text-anchor="start">research, unlocks</text>
-<path d="M810,530 L810,545 L1080,545 L1080,600" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="1087" y="578" class="l" text-anchor="start">sounds</text>
-<path d="M580,530 L580,730" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
-<text x="588" y="712" class="l" text-anchor="start">pathing, shots, models · hits</text>
+<path d="M900,174 L920,174" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M900,208 L920,208" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M900,242 L920,242" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M900,276 L920,276" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M230,310 L230,360" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="237" y="340" class="l" text-anchor="start">planning (jobs 2, 6)</text>
+<path d="M640,310 L640,360" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="647" y="340" class="l" text-anchor="start">per-entity update</text>
+<path d="M80,250 L56,250 L56,650 L80,650" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="50" y="450" class="l" text-anchor="middle" transform="rotate(-90 50 450)">economy (job 0)</text>
+<path d="M80,200 L28,200 L28,770 L80,770" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="22" y="485" class="l" text-anchor="middle" transform="rotate(-90 22 485)">level setup, world jobs</text>
+<path d="M890,310 L890,575 L1070,575 L1070,600" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="980" y="568" class="l" text-anchor="middle">before / after each step</text>
+<path d="M380,420 L450,420" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="415" y="413" class="l" text-anchor="middle">create, route</text>
+<path d="M450,490 L380,490" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="415" y="483" class="l" text-anchor="middle">target choice</text>
+<path d="M920,455 L830,455" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="858" y="448" class="l" text-anchor="middle">orders</text>
+<path d="M1252,420 L1252,655 L1220,655" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1246" y="540" class="l" text-anchor="middle" transform="rotate(-90 1246 540)">record commands</text>
+<path d="M200,550 L200,600" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="207" y="580" class="l" text-anchor="start">purchases, relations</text>
+<path d="M470,550 L470,600" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="463" y="585" class="l" text-anchor="end">factory queue, Xenite</text>
+<path d="M700,550 L700,600" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="707" y="588" class="l" text-anchor="start">research</text>
+<path d="M820,550 L820,620" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="827" y="590" class="l" text-anchor="start">sounds</text>
+<path d="M530,550 L530,750" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<text x="538" y="732" class="l" text-anchor="start">pathing, shots, models · hits</text>
 </svg>

@@ -22,7 +22,7 @@ def mod(x, y, w, h, name, desc, chips, meta=''):
 
 
 # --- top: files and platform
-d.ext(60, 80, 560, 40, 'Game files: daten, modelle, graphik, sound, filme, level, patchNN .pck · loose files')
+d.ext(60, 80, 560, 40, 'Game files: PCK archives (daten, modelle, graphik, ..., patchNN) · loose files · maps\\*.thmap')
 d.ext(660, 80, 580, 40, 'platform — CoreAssets_MountPackages at start-up, file I/O (g_FileSystem*)',
       href='../platform/README.md', color='platform')
 
@@ -70,19 +70,22 @@ d.line([(280, 492), (280, 262)], 'saves: Mount · UpsertEntry', 274, 385, both=T
 
 # --- front-end catalogs and texts
 d.band(60, 566, 'FRONT-END CATALOGS AND TEXTS')
-FY, FH = 576, 140
+FY, FH = 576, 160
 mod(60, FY, 360, FH, 'rom', ['Menu rooms of engine\\zentrale.rom: records with', 'camera pose, lights, action tables and',
                              'sprite node trees; registry of 256 slots'], ['runtime.cpp'])
 mod(460, FY, 380, FH, 'scenario', ['"Choose game" list: level.dat, campagne.dat', '(+ add-ons 00..99) and save\\*.sve headers;',
-                                   'ScenarioCatalog_Rebuild via Resource_Load'], ['catalog.cpp'])
-mod(880, FY, 360, FH, 'text', ['STR pages per locale (TextResourcePage_Load),', 'override table, TextResource_Resolve;',
-                               'rich-text command streams'],
-    ['resources.cpp', 'richtext.cpp', 'richtext_markup.cpp'], meta='3 files')
+                                   'custom maps from maps\\*.thmap ("Eigene Karten"),',
+                                   'read with the map editor project format'],
+    ['catalog.cpp', 'custom_maps.cpp', 'custom_map_validate.cpp', 'custom_project.cpp'], meta='4 files')
+mod(880, FY, 360, FH, 'text', ['STR pages per locale, language choice,', 'override table, TextResource_Resolve, rich text;',
+                               'project / objective texts (de/en), HD font data'],
+    ['resources.cpp', 'richtext.cpp', 'richtext_markup.cpp', 'objective_texts.cpp', 'project_texts_en.cpp',
+     'hd_font_data.cpp'], meta='6 files')
 
 # rom registers its node sprites in the sprite registry
 d.line([(380, FY), (380, 552), (760, 552), (760, 468), (1130, 468), (1130, RY + RH)], '.spr', 1010, 464)
 # text pages come from the packages: right margin
-d.line([(1240, 206), (1262, 206), (1262, 646), (1240, 646)], 'Package_LoadEntryWithSize', 1256, 420,
+d.line([(1240, 206), (1262, 206), (1262, 656), (1240, 656)], 'Package_LoadEntryWithSize', 1256, 420,
        anchor='middle', rotate=True)
 
 # --- consumers of the front-end catalogs

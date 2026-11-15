@@ -35,8 +35,10 @@ ext(640, 760, 580, 40, 'ui', 'ui — world input, camera commands, map editor')
 
 # world modules
 mod(60, 170, 280, 320, 'pathing', ['Scratch grid derived from the', 'field grid; influence bands,', 'hex path costs, reachability',
-                                   'and entity routes for move', 'orders.'],
-    ['route.cpp', 'path_cost.cpp', 'reachability.cpp', 'influence.cpp', 'scratch_grid.cpp'], '5 files')
+                                   'and entity routes for move', 'orders. Session pathing mode:',
+                                   'original or improved (yield,', 'side step, arrival, formation).'],
+    ['route.cpp', 'path_cost.cpp', 'reachability.cpp', 'influence.cpp', 'scratch_grid.cpp', 'mode.cpp',
+     'improved/yield.cpp', 'improved/arrival.cpp'], '8 files')
 mod(380, 170, 250, 140, 'model', ['Model runtime pool, node', 'hierarchy, picking, ray hits.'],
     ['pool.cpp', 'hierarchy.cpp', 'picking.cpp', 'mesh_raycast.cpp'], '4 files')
 mod(680, 170, 250, 140, 'shots', ['Projectile pool, flight and', 'hits; launch angles.'],

@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import archsvg as A  # noqa: E402
 
-W, H = 1280, 870
+W, H = 1280, 940
 d = A.Diagram(W, H, 'ui — modules and flows',
               'Modules under src/ui/ (headers in include/thandor/ui/). Solid boxes are ui modules, dashed boxes other '
               'areas. Arrows show the main calls and data, not every include. Click a box.')
@@ -33,69 +33,74 @@ def area(x, y, w, h, key, lines=()):
 
 
 # ---- ui modules -------------------------------------------------------------
-mod(290, 150, 340, 135, 'core', ['Frame loop (events, ticks, actions, draw, present),',
-                                 'action queue and handler pages, frame lock.'],
-    ['frame_loop', 'runtime', 'chat_history', 'model_tint', 'pcx_preview'], '5 files')
-mod(650, 150, 160, 135, 'dialogs', ['Modal roots:', 'display mode,', 'fatal error.'],
+mod(290, 150, 340, 170, 'core', ['Frame loop, action queue, frame lock; key bindings',
+                                 '([keys] in thandor.ini) and the shared bindings panel.'],
+    ['frame_loop', 'runtime', 'key_bindings', 'key_bindings_ini', 'key_bindings_panel', 'key_binding_tables',
+     'chat_history', 'model_tint', 'pcx_preview'], '9 files · 3.3k lines')
+mod(650, 150, 160, 170, 'dialogs', ['Modal roots:', 'display mode,', 'fatal error.'],
     ['display_settings', 'fatal_error'], '2 files')
-mod(830, 150, 160, 135, 'text', ['Fonts, rich-text', 'command streams:', 'measure, wrap, draw.'],
-    ['font', 'richtext_render'], '2 files')
-mod(290, 340, 700, 130, 'controls', ['Control framework: node vtables, root stack, pointer capture and keyboard focus, '
+mod(830, 150, 160, 170, 'text', ['Fonts, rich text;', 'HD font for the', 'GPU renderer.'],
+    ['font', 'richtext_render', 'hd_font'], '3 files')
+mod(290, 360, 700, 130, 'controls', ['Control framework: node vtables, root stack, pointer capture and keyboard focus, '
                                      'input dispatch, widgets.'],
     ['root_stack', 'input', 'container', 'window', 'panels', 'image', 'buttons', 'text_buttons', 'text',
      'text_edit', 'lists', 'scrollable', 'selectable', 'slider', 'gauge', 'tooltip', 'focus_proxy', 'minimap'],
     '18 files · 11k lines')
-mod(290, 530, 340, 218, 'frontend', ['Main-menu state machine and pages; the 3D world', 'view control (menu room, also in-game).'],
+mod(290, 540, 340, 270, 'frontend', ['Main-menu state machine and pages (campaign map,', 'Eigene Karten tab, options); the 3D world view.'],
     ['main_loop', 'lifecycle', 'state', 'menu_room', 'menu_room_scene', 'session', 'network', 'player',
-     'scenario_selection', 'task_assignment', 'mission_briefing', 'results', 'settings', 'end_movie',
-     'credits', 'ui_template'], '23 files · 14k lines')
-mod(650, 530, 340, 218, 'ingame', ['HUD, pages and panels of a running session, world', 'input, hotkeys, map editor tools.'],
+     'scenario_selection', 'campaign_tab', 'campaign_map_control', 'campaign_graph', 'campaign_level_info',
+     'task_assignment', 'mission_briefing', 'results', 'display_settings', 'language_choice',
+     'key_bindings_page', 'end_movie', 'ui_template'], '29 files · 17k lines')
+mod(650, 540, 340, 270, 'ingame', ['HUD, pages and panels of a running session, world', 'input, hotkeys, objective overlay, editor tools.'],
     ['root_frame', 'world_input', 'commands', 'hotkeys', 'key_commands', 'hud', 'layout', 'pages',
      'build_catalog', 'army_stock', 'selection_detail', 'selection_overlay', 'minimap_texture',
-     'savegame_page', 'technology', 'editor_tools', 'ui_template'], '32 files · 19k lines')
+     'savegame_page', 'technology', 'objective_overlay', 'key_bindings_overlay', 'editor_tools',
+     'ui_template'], '34 files · 20k lines')
 
 # ---- other areas ------------------------------------------------------------
-area(40, 150, 160, 300, 'platform', ['SDL3 event pump,', 'keyboard queue,', 'timers, bootstrap'])
-area(90, 545, 110, 40, 'audio')
-area(90, 620, 110, 40, 'movie')
-area(1060, 340, 140, 130, 'graphics', ['framebuffer, 2D blits,', 'cursor event ring,', 'render passes'])
-area(1060, 545, 140, 50, 'gameplay')
-area(1060, 615, 140, 40, 'network')
-area(1060, 680, 140, 40, 'world')
-d.ext(290, 800, 340, 40, 'assets · texts, ROM records, catalogs (used by all)', href='../assets/README.md',
+area(40, 150, 160, 340, 'platform', ['SDL3 event pump,', 'keyboard queue,', 'timers, bootstrap'])
+area(90, 565, 110, 40, 'audio')
+area(90, 640, 110, 40, 'movie')
+area(1060, 360, 140, 130, 'graphics', ['framebuffer, 2D blits,', 'cursor event ring,', 'render passes'])
+area(1060, 565, 140, 50, 'gameplay')
+area(1060, 635, 140, 40, 'network')
+area(1060, 700, 140, 40, 'world')
+d.ext(290, 870, 340, 40, 'assets · texts, ROM records, catalogs (used by all)', href='../assets/README.md',
       color='assets')
-d.ext(650, 800, 340, 40, 'core · settings (thandor.ini), memory (used by all)', href='../core/README.md',
+d.ext(650, 870, 340, 40, 'core · settings (thandor.ini), memory (used by all)', href='../core/README.md',
       color='core')
 
 # ---- arrows -----------------------------------------------------------------
 # platform -> ui
 d.line([(200, 200), (290, 200)], 'pump · ticks', 207, 193)
-d.line([(200, 405), (290, 405)], 'key events', 207, 398)
-d.line([(60, 450), (60, 715), (290, 715)], 'Frontend_MainLoop', 54, 590, anchor='middle', rotate=True)
+d.line([(200, 425), (290, 425)], 'key events', 207, 418)
+d.line([(60, 490), (60, 780), (290, 780)], 'Frontend_MainLoop', 54, 635, anchor='middle', rotate=True)
 # core <-> controls, core -> dialogs/text are drawn by the root walk
-d.line([(460, 285), (460, 340)], 'dispatch input · draw roots', 467, 318)
-d.line([(560, 340), (560, 285)], 'queued actions', 567, 300)
+d.line([(460, 320), (460, 360)], 'dispatch input · draw roots', 467, 345)
+d.line([(560, 360), (560, 320)], 'queued actions', 567, 335)
 # controls <-> graphics, text -> graphics
-d.line([(990, 380), (1060, 380)], 'blits', 997, 373)
-d.line([(1060, 430), (990, 430)], 'pointer ev.', 997, 423)
-d.line([(990, 215), (1130, 215), (1130, 340)], 'glyph blits', 997, 208)
+d.line([(990, 400), (1060, 400)], 'blits', 997, 393)
+d.line([(1060, 450), (990, 450)], 'pointer ev.', 997, 443)
+d.line([(990, 215), (1130, 215), (1130, 360)], 'glyph blits', 997, 208)
 # frontend world view -> graphics (through the gap between controls and the session row)
-d.line([(560, 530), (560, 500), (1100, 500), (1100, 470)], 'world view render passes', 660, 494)
+d.line([(560, 540), (560, 515), (1100, 515), (1100, 490)], 'world view render passes', 660, 509)
+# frontend -> assets: custom maps list, campaign level info from the packages
+d.line([(320, 810), (320, 870)], 'custom maps · level info', 313, 850, anchor='end')
 # frontend -> audio, movie
-d.line([(290, 565), (200, 565)], 'menu music', 207, 558)
-d.line([(290, 640), (200, 640)], 'end movie', 207, 633)
+d.line([(290, 585), (200, 585)], 'menu music', 207, 578)
+d.line([(290, 660), (200, 660)], 'end movie', 207, 653)
 # ingame <-> right column
-d.line([(990, 560), (1060, 560)], 'commands', 995, 553)
-d.line([(1060, 580), (990, 580)], 'builds root', 995, 598)
-d.line([(990, 635), (1060, 635)], 'cmd queue', 995, 628)
-d.line([(990, 700), (1060, 700)], 'camera', 995, 693)
+d.line([(990, 580), (1060, 580)], 'cmds · goals', 995, 573)
+d.line([(1060, 600), (990, 600)], 'builds root', 995, 618)
+d.line([(990, 655), (1060, 655)], 'cmd queue', 995, 648)
+d.line([(990, 720), (1060, 720)], 'camera', 995, 713)
 # core <-> gameplay over the top: the session loop presents frames, the frame lock release runs the sim tick
-d.line([(380, 150), (380, 125), (1220, 125), (1220, 555), (1200, 555)],
+d.line([(380, 150), (380, 125), (1220, 125), (1220, 575), (1200, 575)],
        'session loop: UiFrame_ProcessAndPresent  ·  frame-lock release hook: simulation step', 392, 119, both=True)
 # frontend -> gameplay, frontend <-> network around the bottom
-d.line([(450, 748), (450, 780), (1260, 780), (1260, 585), (1200, 585)],
-       'InGameRuntime_RunSessionUntilExit', 660, 794)
-d.line([(520, 748), (520, 765), (1240, 765), (1240, 645), (1200, 645)], 'lobby · transfers', 660, 760, both=True)
+d.line([(450, 810), (450, 845), (1260, 845), (1260, 605), (1200, 605)],
+       'InGameRuntime_RunSessionUntilExit  ·  campaign progress', 660, 859)
+d.line([(520, 810), (520, 828), (1240, 828), (1240, 665), (1200, 665)], 'lobby · transfers', 660, 823, both=True)
 
 d.save('docs/architecture/ui/ui.svg')
 if failed:

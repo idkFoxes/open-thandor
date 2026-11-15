@@ -29,14 +29,17 @@ d.ext(880, 80, 360, 40, 'assets — text pages, last error path',
       href='../assets/README.md', color='assets')
 
 # --- settings and error
-mod(60, 160, 560, 150, 'settings',
+mod(60, 160, 560, 200, 'settings',
     ['256-byte settings image: the 200 bytes of the original thandor.dat',
      'plus open-thandor dwords; PersistentSettings_Read returns the caller\'s',
      'default for a dword not present. Load parses thandor.ini (current dir,',
      'then exe dir), else migrates thandor.dat. Key table with a range per',
-     'key; unknown keys and sections are kept. Flush writes the ini.'],
-    ['persistent.cpp', 'settings/persistent.h', 'settings/types.h'], meta='1 file')
-mod(660, 160, 580, 150, 'error',
+     'key; other modules register own sections ([keys]); unknown keys and',
+     'sections are kept. Flush writes the ini. original_mode.cpp: the',
+     '"Original Thandor" switch; OtFeature_Active gates the additions.'],
+    ['persistent.cpp', 'original_mode.cpp', 'settings/persistent.h', 'settings/original_mode.h', 'settings/types.h'],
+    meta='2 files')
+mod(660, 160, 580, 200, 'error',
     ['ErrorSystem_Init points both handlers at FatalError_Exit and loads',
      'texte\\error.str as text page 0. FatalError_Exit(value, failed) passes',
      'the value through, or FatalError_ShowAndExit builds the message (error',
@@ -50,7 +53,7 @@ d.line([(760, 120), (760, 160)], 'ErrorSystem_Init', 767, 143)
 d.line([(1060, 160), (1060, 120)], 'error.str · TextResource_Resolve', 1067, 143)
 
 # --- math, memory, text
-RY, RH = 380, 168
+RY, RH = 410, 160
 mod(60, RY, 420, RH, 'math',
     ['Q12 / Q28 fixed point (fixed_point.h); sine table built at',
      'start-up, atan2, vectors, 3x4 transforms, triangle solver,',
@@ -77,9 +80,9 @@ for x, w, key in ((60, 95, 'gameplay'), (165, 95, 'world'), (270, 100, 'graphics
     d.ext(x, CY, w, 40, key, href=f'../{key}/README.md', color=key)
     d.line([(x + w / 2, RY + RH), (x + w / 2, CY)])
 d.text(66, CY + 60, 'math users: fixed-point maths and random draws (audio, movie, platform, ui too)', 'l')
-d.ext(492, CY, 400, 40, 'ui — settings menus, FatalError_* checks', href='../ui/README.md', color='ui')
-d.line([(500, 310), (500, CY)], 'PersistentSettings_Read / Write', 494, 470, anchor='middle', rotate=True)
-d.line([(880, 310), (880, CY)], 'FatalError_*', 874, 470, anchor='middle', rotate=True)
+d.ext(492, CY, 400, 40, 'ui — settings menus, Original Thandor switch, FatalError_*', href='../ui/README.md', color='ui')
+d.line([(500, 360), (500, CY)], 'PersistentSettings_Read / Write', 494, 485, anchor='middle', rotate=True)
+d.line([(880, 360), (880, CY)], 'FatalError_*', 874, 485, anchor='middle', rotate=True)
 
 # --- base headers
 mod(60, 690, 1180, 106, 'core (base headers)',

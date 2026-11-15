@@ -28,29 +28,30 @@
 <a href="../../../src/network/protocol/"><g>
 <rect x="60" y="212" width="1160" height="126" rx="10" fill="#fde8ef" stroke="#c84a76" stroke-width="2"/>
 <text x="74" y="237" class="t">protocol</text>
-<text x="1208" y="236" class="f" text-anchor="end">8 files · 4.0k lines</text>
+<text x="1208" y="236" class="f" text-anchor="end">8 files · 4.1k lines</text>
 <text x="74" y="256" class="d">Lobby (discovery, session list, join), session-start snapshot exchange, in-game lockstep command batches,</text>
 <text x="74" y="271" class="d">command queues and dispatch tables, chunked mailbox transfer (maps, catalog), packet cipher, receive timer.</text>
-<rect x="74" y="282" width="71" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="81" y="296" class="m">lobby.cpp</text>
-<rect x="151" y="282" width="140" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="158" y="296" class="m">frontend_session.cpp</text>
-<rect x="297" y="282" width="140" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="304" y="296" class="m">command_exchange.cpp</text>
-<rect x="443" y="282" width="90" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="450" y="296" class="m">lockstep.cpp</text>
-<rect x="538" y="282" width="90" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="545" y="296" class="m">commands.cpp</text>
-<rect x="634" y="282" width="83" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="641" y="296" class="m">mailbox.cpp</text>
-<rect x="723" y="282" width="77" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="730" y="296" class="m">cipher.cpp</text>
-<rect x="806" y="282" width="146" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="813" y="296" class="m">scenario_transfer.cpp</text>
-<rect x="958" y="282" width="102" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="965" y="296" class="m">packet_bytes.h</text>
-<rect x="1067" y="282" width="58" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
-<text x="1074" y="296" class="m">types.h</text>
+<text x="74" y="286" class="d">Not in the original: pathing-mode negotiation in the lobby; local commands pass the game recorder.</text>
+<rect x="74" y="297" width="71" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="81" y="311" class="m">lobby.cpp</text>
+<rect x="151" y="297" width="140" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="158" y="311" class="m">frontend_session.cpp</text>
+<rect x="297" y="297" width="140" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="304" y="311" class="m">command_exchange.cpp</text>
+<rect x="443" y="297" width="90" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="450" y="311" class="m">lockstep.cpp</text>
+<rect x="538" y="297" width="90" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="545" y="311" class="m">commands.cpp</text>
+<rect x="634" y="297" width="83" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="641" y="311" class="m">mailbox.cpp</text>
+<rect x="723" y="297" width="77" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="730" y="311" class="m">cipher.cpp</text>
+<rect x="806" y="297" width="146" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="813" y="311" class="m">scenario_transfer.cpp</text>
+<rect x="958" y="297" width="102" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="965" y="311" class="m">packet_bytes.h</text>
+<rect x="1067" y="297" width="58" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="1074" y="311" class="m">types.h</text>
 </g></a>
 <a href="../../../src/network/backend/"><g>
 <rect x="60" y="420" width="560" height="110" rx="10" fill="#fde8ef" stroke="#c84a76" stroke-width="2"/>

@@ -2,7 +2,7 @@
 
 [Architecture overview](../README.md)
 
-The assets area reads the game data. The `package` module mounts the PCK archives, finds entries in them and decodes them. It also writes entries, which is how savegames are stored. The catalog modules take a loaded file, check its header and record sizes, and register its records by id so other areas can look them up: armies, models, shots, effects and sprites for a level, then the menu rooms (ROM), the "Choose game" scenario list and the localized text pages.
+The assets area reads the game data. The `package` module mounts the PCK archives, finds entries in them and decodes them. It also writes entries, which is how savegames are stored. The catalog modules take a loaded file, check its header and record sizes, and register its records by id so other areas can look them up: armies, models, shots, effects and sprites for a level, then the menu rooms (ROM), the "Choose game" scenario list and the localized text pages. Two parts are project code that the original does not have: custom maps (map editor projects `maps\*.thmap`, listed in the "Eigene Karten" tab) in `scenario`, and the project texts, objective texts and high-resolution font data in `text`.
 
 ![assets](assets.svg)
 
@@ -19,8 +19,8 @@ The boxes are clickable when you open [assets.svg](assets.svg) on its own. In th
 | effect | Registry of EFF definitions (0xC0-byte records): loads each effect's sprite, later resolves linked effect and shot ids into pointers | [catalog.cpp](../../../src/assets/effect/catalog.cpp) | `assets/effect.h`, `effect/catalog.h`, `effect/types.h` |
 | sprite | Shared registry of `.spr` sprite assets by id; relocates a sprite's internal offsets into pointers when it is registered, and back for saving | [catalog.cpp](../../../src/assets/sprite/catalog.cpp) | `assets/sprite.h`, `sprite/catalog.h`, `sprite/types.h` |
 | rom | Front-end menu rooms from `engine\zentrale.rom`: records with camera pose, lights, action tables (camera flights) and sprite node trees; 256 registry slots | [runtime.cpp](../../../src/assets/rom/runtime.cpp) | `assets/rom.h`, `rom/runtime.h`, `rom/types.h` |
-| scenario | `g_ScenarioCatalog`, the list behind the "Choose game" tabs: single missions, campaigns and savegame headers | [catalog.cpp](../../../src/assets/scenario/catalog.cpp) | `assets/scenario.h`, `scenario/catalog.h`, `scenario/types.h` |
-| text | Localized STR text pages, runtime override table, text lookup by id; rich-text command streams; TXT2STR markup parser | [resources.cpp](../../../src/assets/text/resources.cpp), [richtext.cpp](../../../src/assets/text/richtext.cpp), [richtext_markup.cpp](../../../src/assets/text/richtext_markup.cpp) | `assets/text.h`, `text/resources.h`, `text/richtext.h`, `text/richtext_markup.h`, `text/types.h` |
+| scenario | `g_ScenarioCatalog`, the list behind the "Choose game" tabs: single missions, campaigns and savegame headers. Custom maps (single player only): every `maps\*.thmap` project is read, validated and kept in a list of its own outside the catalog, so a host never sends it | [catalog.cpp](../../../src/assets/scenario/catalog.cpp), [custom_maps.cpp](../../../src/assets/scenario/custom_maps.cpp), [custom_map_validate.cpp](../../../src/assets/scenario/custom_map_validate.cpp), [custom_project.cpp](../../../src/assets/scenario/custom_project.cpp) | `assets/scenario.h`, `scenario/catalog.h`, `scenario/types.h`, `scenario/custom_maps.h`, `scenario/custom_map_validate.h`, `scenario/custom_project.h` |
+| text | Localized STR text pages and the language choice at run time, runtime override table, text lookup by id; rich-text command streams; TXT2STR markup parser. Project additions: the texts of open-thandor's own controls (German in `resources.cpp`, English in `project_texts_en.cpp`), the short mission objectives (`objective_texts.cpp`) and the generated high-resolution font glyphs (`hd_font_data.cpp`, read by `ui/text/hd_font.cpp`) | [resources.cpp](../../../src/assets/text/resources.cpp), [richtext.cpp](../../../src/assets/text/richtext.cpp), [richtext_markup.cpp](../../../src/assets/text/richtext_markup.cpp), [objective_texts.cpp](../../../src/assets/text/objective_texts.cpp), [project_texts_en.cpp](../../../src/assets/text/project_texts_en.cpp), [hd_font_data.cpp](../../../src/assets/text/hd_font_data.cpp) | `assets/text.h`, `text/resources.h`, `text/richtext.h`, `text/richtext_markup.h`, `text/types.h` |
 
 `include/thandor/assets/record_bytes.h` holds the `Asset_RecordAt` / `Asset_RecordAfter` helpers that every catalog uses to walk variable-size records by byte offset.
 
@@ -53,6 +53,15 @@ Every sprite load goes through `SpriteAsset_RegisterAndRelocatePointers`, after 
 - **Scenarios:** ui `main_loop.cpp` calls `ScenarioCatalog_Rebuild`. It loads `level\level.dat` and `level\campagne.dat` with `Resource_Load`, merges the add-ons `level00..99.dat` and `campagne00..99.dat` by name, and appends the header record of every `save\*.sve`. A network host sends this catalog to its clients.
 - **Texts:** `TextResourcePage_Load` loads an STR file as one page and picks the locale block of `g_LocaleCountryCodeOverride` (from the core settings), else the British block, else the first one. Page 0 (`texte\error.str`) comes from core `ErrorSystem_Init`, the other pages from platform bootstrap and ui `window.cpp`. `TextResource_TryResolve` / `TextResource_Resolve` look up an id: first the override table (`TextResourceOverride_Register`, used for level titles by `TextResourcePage_LoadCompatibilityAliases`), then the page. The strings are rich-text command streams, processed by the `RichTextCommandStream_*` functions in `richtext.cpp`.
 
+### Custom maps ("Eigene Karten")
+
+Project code, single player only, behind `OT_FEATURE_CUSTOM_MAPS` (see [docs/custom_maps.md](../../custom_maps.md)).
+
+1. `ScenarioCatalog_Rebuild` calls `CustomMaps_Rebuild` after the stock records. It scans `maps\*.thmap` next to the executable. `CustomProject_Load` (`custom_project.cpp`) reads each project with the map editor's own reader in [third_party/map_editor_project_format](../../../third_party/map_editor_project_format/) (`map_project_archive.hpp`, `text_resource.hpp`), and `CustomMap_Validate` (`custom_map_validate.cpp`) checks the level and field grid (also with `FieldGrid_ValidateLoadedImage`) before anything reaches the game. Rejected projects are counted for the hint row.
+2. The "Eigene Karten" tab in `ui/frontend/scenario_selection.cpp` shows `CustomMaps_ListRows` (the maps plus a hint row, `CustomMaps_IsHintRecord`).
+3. Starting a map: `gameplay/session/scenario_load.cpp` resolves the row (`CustomMaps_LevelPathOfRecord`); it and the frontend main loop (`ui/frontend/main_loop.cpp`) call `CustomMaps_ActivateLevelPath` and, after the level is loaded, `CustomMaps_PrepareLoadedLevel`. A loaded save game re-activates its map with `CustomMaps_ActivateIdentifier` (`loaded_session.cpp`); `startup.cpp` deactivates it when the session ends (`CustomMaps_Deactivate`).
+4. While a map is active, `Package_LoadEntry` and the other package loads ask `CustomMaps_FindServedAsset` first, so the project's level and terrain files are served like loose files, and `TextResource_TryResolve` asks `CustomMaps_TryResolveText` for the map's own title and description.
+
 ### Who uses which catalog
 
 From the call sites outside `src/assets/` (grep for the lookup functions):
@@ -66,15 +75,16 @@ From the call sites outside `src/assets/` (grep for the lookup functions):
 | sprite (`SpriteAssetRegistry_*`) | gameplay (reset at session start, savegame load), ui |
 | rom (`RomRegistry_*`, `RomRecordTable_*`) | ui (front end) |
 | scenario (`g_ScenarioCatalog`, `ScenarioCatalog_*`) | ui, network, gameplay, platform (debug tools) |
+| custom maps (`CustomMaps_*`) | ui ("Eigene Karten" tab, `main_loop.cpp`), gameplay (start, load, end of a session, objective), platform (bootstrap, debug tools, self-test) |
 | text (`TextResource_*`, `RichTextCommandStream_*`) | ui (most), network, gameplay, platform, core |
 
 ## Interfaces to other areas
 
 - [platform](../platform/README.md): mounts the packages at start-up (`CoreAssets_MountPackages`, `Package_MountLowPriority`) and provides the file I/O the package layer calls (`g_FileSystemOpen`, `g_FileSystemSeek`, `g_FileSystemReadExact`, `g_FileSystemWriteExactOrFlush`, `FileSystem_LoadWholeFileNearExecutable`). It also loads text pages, and its self-tests exercise the field-grid codec.
-- [core](../core/README.md): all buffers come from the arena (`g_MemoryApi`), and path edits use `WidePath_SetExtensionCode`. The fatal-error path shows `g_PackageLastErrorPath` and the error texts of page 0. The locale choice reads `g_LocaleCountryCodeOverride`.
-- [gameplay](../gameplay/README.md): builds the level catalogs (`NewLevel_LoadAssetList`), mounts level and save packages, writes savegames with `Package_UpsertEntry`, and encodes the field grid (`PckCodec_EncodeFieldGrid` in `scenario_load.cpp`).
+- [core](../core/README.md): all buffers come from the arena (`g_MemoryApi`), and path edits use `WidePath_SetExtensionCode`. Custom maps test `OtFeature_Active`. The fatal-error path shows `g_PackageLastErrorPath` and the error texts of page 0. The locale choice reads `g_LocaleCountryCodeOverride`.
+- [gameplay](../gameplay/README.md): builds the level catalogs (`NewLevel_LoadAssetList`), mounts level and save packages, writes savegames with `Package_UpsertEntry`, and encodes the field grid (`PckCodec_EncodeFieldGrid` in `scenario_load.cpp`). It activates and prepares custom maps (`CustomMaps_*`), and the mission objective reads `TextResource_MissionObjective`. Campaign progress encodes its files with `PckCodec_EncodeHuffmanRle` / `PckCodec_DecodeHuffmanRle`.
 - [world](../world/README.md): looks up shot, effect and model definitions at run time.
-- [ui](../ui/README.md): loads the ROM menu rooms, rebuilds the scenario catalog, resolves almost every visible text, and uses army, effect and sprite lookups.
+- [ui](../ui/README.md): loads the ROM menu rooms, rebuilds the scenario catalog, lists the custom maps, resolves almost every visible text (the language switch goes through platform `Game_ApplyLanguage`, which calls `TextResource_SelectLanguage`), reads the HD font data, and uses army, effect and sprite lookups.
 - [network](../network/README.md): sends the scenario catalog to clients and decodes transferred field grids (`PckCodec_DecodeFieldGrid` in `scenario_transfer.cpp`).
 - [graphics](../graphics/README.md): `RichTextCommandStream_BindTextureSource` takes a `GraphicsTextureSourceAsset`. The rendering of sprites and texts lives in graphics and ui. (Direct graphics calls into the catalogs not checked in detail.)
 

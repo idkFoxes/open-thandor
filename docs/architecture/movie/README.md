@@ -33,7 +33,7 @@ The boxes are clickable when you open [movie.svg](movie.svg) on its own. In this
 
 - [platform](../platform/README.md): file system (`g_FileSystemOpen`, `g_FileSystemReadExact`, `g_FileSystemSeek`), the periodic timer that drives `IntroMovie_TimerTick`, the intro sequence, the colour table built at start-up, the debug movie player, and the encoder and decoder self-tests (`platform/selftest/selftests.cpp`).
 - [assets](../assets/README.md): `Package_FindEntryAcrossMounts` finds movies inside mounted PCK packages.
-- [audio](../audio/README.md): the soundtrack becomes a voice set and plays through the `g_Sound*` slots.
+- [audio](../audio/README.md): the soundtrack becomes a voice set and plays through the `g_Sound*` slots. Not in the original: a quiet soundtrack (intro2, the story movies `ende00NN`) is raised with `g_SoundRaiseQuietSampleLevel` right after its voice set is created, while `OtFeature_Active(OT_FEATURE_MOVIE_VOLUME_BOOST)` holds (core, "Original Thandor" switch); the decoded length and so the timing stay the same.
 - [graphics](../graphics/README.md): callers draw the frame as a texture source (`g_GraphicsTextureSourceBlitSourceAlpha` for the intro, UI image controls elsewhere).
 - [gameplay](../gameplay/README.md): the level loading movie, advanced by the loading stages; sessions close the movie when they start or end.
 - [ui](../ui/README.md): briefing, campaign end movie, in-game notification movies, and the movie volume sliders.
