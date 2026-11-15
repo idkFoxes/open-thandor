@@ -756,7 +756,8 @@ static_assert(sizeof(PersistentSettingsRuntime) == 0x20C &&
 static_assert(sizeof(PersistentSettingsImage) == PERSISTENT_SETTINGS_IMAGE_BYTES &&
                   offsetof(PersistentSettingsImage, originalThandor) == PERSISTENT_SETTINGS_DAT_BYTES &&
                   offsetof(PersistentSettingsImage, recordGames) == PERSISTENT_SETTINGS_DAT_BYTES + 4 &&
-                  offsetof(PersistentSettingsImage, freeD0_FF) == PERSISTENT_SETTINGS_DAT_BYTES + 8,
+                  offsetof(PersistentSettingsImage, hdFont) == PERSISTENT_SETTINGS_DAT_BYTES + 8 &&
+                  offsetof(PersistentSettingsImage, freeD4_FF) == PERSISTENT_SETTINGS_DAT_BYTES + 12,
               "PersistentSettingsImage keeps the 32-bit layout of thandor.dat, followed by open-thandor's free dwords");
 static_assert(offsetof(PersistentSettingsImage, pathingMode) == PERSISTENT_SETTING_PATHING_MODE,
               "PersistentSettingsImage.pathingMode is [game] pathing (open-thandor)");
@@ -768,6 +769,8 @@ static_assert(offsetof(PersistentSettingsImage, originalThandor) == PERSISTENT_S
               "PersistentSettingsImage.originalThandor is [game] original_thandor (open-thandor)");
 static_assert(offsetof(PersistentSettingsImage, recordGames) == PERSISTENT_SETTING_RECORD_GAMES,
               "PersistentSettingsImage.recordGames is [game] record_games (open-thandor)");
+static_assert(offsetof(PersistentSettingsImage, hdFont) == PERSISTENT_SETTING_HD_FONT,
+              "PersistentSettingsImage.hdFont is [game] hd_font (open-thandor)");
 static_assert(PERSISTENT_SETTING_PATHING_MODE == PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET &&
                   PERSISTENT_SETTING_AUTOSAVE + 4 ==
                       PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET + PERSISTENT_SETTINGS_DAT_UNUSED_BYTES,
@@ -1134,7 +1137,7 @@ static_assert(offsetof(InGameUiImage, saveNameEdit_trailing) + sizeof(InGameUiIm
 static_assert(sizeof(UiDisplayModeSelectionActionHandlerTable) == 0x50 &&
               offsetof(UiDisplayModeSelectionActionHandlerTable, handlers) == 0x0,
               "UiDisplayModeSelectionActionHandlerTable keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x1A4 && /* 0x160 + the 17 handlers of open-thandor */
+static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x1A8 && /* 0x160 + the 18 handlers of open-thandor */
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers00_54) == 0x0 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, scenarioCatalogRebuildCallbacks) == 0x154 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers5B_5F) == 0x16C &&
@@ -1145,7 +1148,8 @@ static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x1A4 && /* 0x160 +
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers65) == 0x194 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers66) == 0x198 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers67) == 0x19C &&
-              offsetof(FrontendUiActionHandlerPage20Prefix, handlers68) == 0x1A0,
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers68) == 0x1A0 &&
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers69) == 0x1A4,
               "FrontendUiActionHandlerPage20Prefix keeps its 32-bit layout");
 static_assert(sizeof(InGameUiActionHandlerPage12Prefix28) == 0x70 &&
               offsetof(InGameUiActionHandlerPage12Prefix28, handlers) == 0x0,
@@ -2484,6 +2488,9 @@ static_assert(offsetof(FrontendUiImage, advancedOriginalThandorNote) == 0x854C &
 /* Not in the original (open-thandor): the game recording checkbox of the advanced settings page. */
 static_assert(offsetof(FrontendUiImage, advancedRecordGamesCheckbox) == 0x85A8 && sizeof(UiTextButtonControl) == 0x60,
               "FrontendUiImage.advancedRecordGamesCheckbox is a UiTextButtonControl");
+/* Not in the original (open-thandor): the high-resolution font checkbox of the advanced settings page. */
+static_assert(offsetof(FrontendUiImage, advancedHdFontCheckbox) == 0x8608 && sizeof(UiTextButtonControl) == 0x60,
+              "FrontendUiImage.advancedHdFontCheckbox is a UiTextButtonControl");
 static_assert(offsetof(FrontendUiImage, chatInputEdit_trailing) == 0x188,
               "FrontendUiImage.chatInputEdit_trailing follows the control");
 static_assert(offsetof(FrontendUiImage, chatMessageHistory_trailing) == 0x358,
@@ -2516,7 +2523,8 @@ static_assert(offsetof(FrontendUiImage, hostLobbyPlayerList_trailing) == 0x5660,
               "FrontendUiImage.hostLobbyPlayerList_trailing follows the control");
 static_assert(offsetof(FrontendUiImage, clientLobbyPlayerList_trailing) == 0x58E8,
               "FrontendUiImage.clientLobbyPlayerList_trailing follows the control");
-static_assert(sizeof(FrontendUiImage) == 0x8608 && /* 0x5954 + the display mode kind, resolution list, advanced settings, campaign map, key binding, language choice, pathing, objective overlay, autosave, "Original Thandor" and game recording nodes of open-thandor */
+static_assert(sizeof(FrontendUiImage) == 0x8668 && /* 0x5954 + the display mode kind, resolution list, advanced settings, campaign map, key binding, language choice, pathing, objective overlay, autosave, "Original Thandor", game recording and high-resolution font nodes of open-thandor */
+              offsetof(FrontendUiImage, advancedHdFontCheckbox) == 0x8608 &&
               offsetof(FrontendUiImage, advancedRecordGamesCheckbox) == 0x85A8 &&
               offsetof(FrontendUiImage, advancedOriginalThandorNote) == 0x854C &&
               offsetof(FrontendUiImage, advancedOriginalThandorCheckbox) == 0x84EC &&

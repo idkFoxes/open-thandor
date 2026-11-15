@@ -606,9 +606,9 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
    and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync), "Verbesserte Wegfindung" ([game] pathing, the next
    local session's pathing mode), "Ziel anzeigen" ([game] objective_overlay, the in-game objective box), "Automatisch
    speichern" ([game] autosave), "Partien fuer Fehlerberichte aufzeichnen" ([game] record_games, the game recorder
-   of gameplay/replay/runtime.h) and, at the top, "Original Thandor" ([game] original_thandor, core/settings/
+   of gameplay/replay/runtime.h), "Hochaufgeloeste Schrift" ([game] hd_font, ui/text/hd_font.h) and, at the top, "Original Thandor" ([game] original_thandor, core/settings/
    original_mode.h): while it is on, the checkboxes of the open-thandor additions on this page (pathing, objective
-   box, autosave, recording) are greyed out and show their saved values, which apply again when it is off. Edges and UI scale
+   box, autosave, recording, font) are greyed out and show their saved values, which apply again when it is off. Edges and UI scale
    only matter for the GPU renderers:
    with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
    a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. With a GPU renderer the
@@ -718,6 +718,10 @@ void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
                                   &ui->advancedRecordGamesCheckbox.selectable);
   /* the game recording checkbox sounds as the page's other checkboxes (bound in FrontendMenu_BindSharedResources) */
   ui->advancedRecordGamesCheckbox.activationSound = ui->advancedAutosaveCheckbox.activationSound;
+  UiSelectableControl_SetSelected(PersistentSettings_Read(PERSISTENT_HD_FONT_OFF,PERSISTENT_SETTING_HD_FONT) ==
+                                      PERSISTENT_HD_FONT_ON,
+                                  &ui->advancedHdFontCheckbox.selectable);
+  ui->advancedHdFontCheckbox.activationSound = ui->advancedAutosaveCheckbox.activationSound;
   /* "Original Thandor" holds the additions as in the original: their own checkboxes keep showing the saved choice
      (applied again once the switch is off) but are greyed out, so a click cannot suggest it would act now; the
      greyed texts drop the bright colour code, which would win over the disabled style */
@@ -730,7 +734,8 @@ void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
       {&ui->advancedPathingCheckbox,TEXT_ID_ADVANCED_PATHING,TEXT_ID_ADVANCED_PATHING_GREYED},
       {&ui->advancedObjectiveOverlayCheckbox,TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY,TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY_GREYED},
       {&ui->advancedAutosaveCheckbox,TEXT_ID_ADVANCED_AUTOSAVE,TEXT_ID_ADVANCED_AUTOSAVE_GREYED},
-      {&ui->advancedRecordGamesCheckbox,TEXT_ID_ADVANCED_RECORD_GAMES,TEXT_ID_ADVANCED_RECORD_GAMES_GREYED}};
+      {&ui->advancedRecordGamesCheckbox,TEXT_ID_ADVANCED_RECORD_GAMES,TEXT_ID_ADVANCED_RECORD_GAMES_GREYED},
+      {&ui->advancedHdFontCheckbox,TEXT_ID_ADVANCED_HD_FONT,TEXT_ID_ADVANCED_HD_FONT_GREYED}};
   UiSelectableControl_SetSelected(originalMode,&ui->advancedOriginalThandorCheckbox.selectable);
   for (const auto &addition : additions) {
     UiSelectableControl *selectable = &addition.checkbox->selectable;
@@ -889,6 +894,15 @@ void FrontendAdvancedSettingsAction_SetOriginalThandor(UiNodeBase *sourceNode)
 void FrontendAdvancedSettingsAction_SetRecordGames(UiNodeBase *sourceNode)
 {
   PersistentSettings_WriteRecordGames(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
+
+  FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_HD_FONT (the "Hochaufgeloeste Schrift" checkbox; the click has toggled it): the
+   high-resolution font setting ([game] hd_font, ui/text/hd_font.h); the GPU renderers draw the next frame with it. */
+void FrontendAdvancedSettingsAction_SetHdFont(UiNodeBase *sourceNode)
+{
+  PersistentSettings_WriteHdFont(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
 
   FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
 }

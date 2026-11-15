@@ -1,0 +1,8 @@
+# thandor.ini as this version writes it with the high-resolution font on ([game] hd_font, the dword 0xD0 past
+# thandor.dat, ui/text/hd_font.h): the values and lines of experimental_dev_v4 and the font switch; a save writes it
+# unchanged (hd_font after record_games). An older build keeps or drops the line as one more unknown key (see
+# experimental_dev_v3.downgrade).
+include: experimental_dev_v4.expect
+game.hd_font = on
+preserved: [game] hd_font = on
+order: [game] record_games = on < [game] hd_font = on

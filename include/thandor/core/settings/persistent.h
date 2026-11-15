@@ -99,6 +99,11 @@ inline constexpr auto PERSISTENT_ORIGINAL_THANDOR_ON = 1;
 inline constexpr auto PERSISTENT_SETTING_RECORD_GAMES = 0xCC; /* PERSISTENT_RECORD_GAMES_*: [game] record_games */
 inline constexpr auto PERSISTENT_RECORD_GAMES_OFF = 0; /* default */
 inline constexpr auto PERSISTENT_RECORD_GAMES_ON = 1;
+/* Not in the original (open-thandor): the high-resolution game font of the GPU renderers at UI scale 2 and 3
+   (ui/text/hd_font.h). A file without it reads 0, the default (off: the 1x glyphs scaled). */
+inline constexpr auto PERSISTENT_SETTING_HD_FONT = 0xD0; /* PERSISTENT_HD_FONT_*: [game] hd_font */
+inline constexpr auto PERSISTENT_HD_FONT_OFF = 0; /* default */
+inline constexpr auto PERSISTENT_HD_FONT_ON = 1;
 /* open-thandor: the in-memory image is larger than thandor.dat (room for further settings past 0xC8); it is only
    held in memory and saved as thandor.ini keys, never as bytes (not in savegames, network packets or the lobby).
    Its 64 dwords are the 64 bits of the present/written masks. */
@@ -245,6 +250,10 @@ void PersistentSettings_WriteOriginalThandor(bool on);
 /* Not in the original: stores the game recorder's option chosen in the menus ("Partien fuer Fehlerberichte
    aufzeichnen", [game] record_games in thandor.ini, saved by the next Flush). */
 void PersistentSettings_WriteRecordGames(bool on);
+
+/* Not in the original: stores the high-resolution font option chosen in the menus ("Hochaufgeloeste Schrift",
+   [game] hd_font in thandor.ini, saved by the next Flush). */
+void PersistentSettings_WriteHdFont(bool on);
 
 extern uint32_t g_LocaleCountryCodeOverride;
 
