@@ -42,3 +42,20 @@ the arrow key for 0.35 s, a shot every 0.75 s; wrapper and script: `ot-scratch/i
 `--crop 1340,60,580,1110`; the set of 2026-10-06, version "1.0.6", used `showcase_02.bmp` (5 wheel notches) with
 `--crop 840,200,460,880`; neither shot exists any more.) Shots are not bit-reproducible (timing), so a new run gives a
 slightly different picture.
+
+## README screenshots of the installer
+
+`docs/images/installer-welcome.png`, `installer-folder.png` and `installer-ready.png` (420x323 PNG, shown in
+`README.md`) come from `capture_wizard_shots.ps1`. It runs a test Setup without admin rights against a throwaway
+folder it creates itself (`<OutDir>\target\Thandor` with dummy `DATEN.PCK`, `thandor.exe` and `thandor.sym`; with
+`-Drive T` it is shown as `T:\Thandor` through a temporary `subst`, so the pictures do not show the temp path). It
+captures only the wizard window (PrintWindow), steps Welcome -> Folder -> Ready, checks on the Folder page that the
+path is the throwaway folder and then cancels. It never clicks "Installieren".
+
+```bat
+python tools\installer\build_installer.py build-mingw-release -D TestLowPriv --out %TEMP%\otshots\setup
+powershell -ExecutionPolicy Bypass -File tools\installer\capture_wizard_shots.ps1 -Setup %TEMP%\otshots\setup\Thandor-Patch-8.exe -OutDir %TEMP%\otshots -Drive T
+```
+
+Look at `%TEMP%\otshots\installer-*.png` first, then copy them to `docs\images`. The set of 2026-11-15 shows
+Thandor Patch 8 (1.0.8).
