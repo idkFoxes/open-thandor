@@ -1,4 +1,4 @@
-"""Builds the patch installer Thandor-Patch-N.exe (N = the last part of the version, 1.0.7 -> 7) from a release build (Inno Setup 7, tools/installer/thandor-patch.iss).
+"""Builds the patch installer Thandor-Patch-N.exe (N = the last part of the version, 1.0.8 -> 8) from a release build (Inno Setup 7, tools/installer/thandor-patch.iss).
 
 usage: build_installer.py BUILD_DIR [--out DIR] [--iscc PATH] [--version X.Y.Z]
                           [--wizard-image FILES] [--wizard-small-image FILES] [--icon FILE] [-D NAME[=VALUE] ...]
@@ -12,7 +12,7 @@ DWARF debug sections is stripped with `strip --strip-debug` (keeps the symbol ta
 thandor.sym still matches); the build strips thandor.exe itself already. Then ISCC compiles the installer into
 --out (default BUILD_DIR/installer).
 
---version defaults to CMAKE_PROJECT_VERSION from the CMakeCache.txt, else 1.0.7. The wizard images default to the
+--version defaults to CMAKE_PROJECT_VERSION from the CMakeCache.txt, else 1.0.8. The wizard images default to the
 BMPs in tools/installer/images (chosen by thandor-patch.iss), else Inno's own placeholders; the icon to
 src/platform/bootstrap/thandor.ico when it exists. The CMake target `installer` (release builds) calls this script.
 -D passes further ISCC defines
@@ -77,7 +77,7 @@ def main():
     parser.add_argument('build_dir')
     parser.add_argument('--out', help='output folder of the installer (default BUILD_DIR/installer)')
     parser.add_argument('--iscc', help='path of ISCC.exe (default: PATH, then the usual Inno Setup 7 folders)')
-    parser.add_argument('--version', help='numeric version X.Y.Z (default: CMAKE_PROJECT_VERSION or 1.0.7)')
+    parser.add_argument('--version', help='numeric version X.Y.Z (default: CMAKE_PROJECT_VERSION or 1.0.8)')
     parser.add_argument('--wizard-image', help='large wizard image file(s), comma separated')
     parser.add_argument('--wizard-small-image', help='small wizard image file(s), comma separated')
     parser.add_argument('--icon', help='Setup icon (.ico)')
@@ -94,7 +94,7 @@ def main():
     for path in (exe, sdl):
         if not os.path.isfile(path):
             sys.exit('build_installer: missing %s' % path)
-    version = args.version or cache.get('CMAKE_PROJECT_VERSION') or '1.0.7'
+    version = args.version or cache.get('CMAKE_PROJECT_VERSION') or '1.0.8'
     if not re.fullmatch(r'\d+\.\d+\.\d+', version):
         sys.exit('build_installer: version %r is not X.Y.Z' % version)
 

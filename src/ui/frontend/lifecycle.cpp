@@ -615,7 +615,7 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   UiFrame_FlushInputAndResetPendingTicks();
 }
 
-/* Not in the original (open-thandor): "Open Thandor 1.0.7" (THANDOR_PRODUCT_VERSION_STRING) at the bottom right of
+/* Not in the original (open-thandor): "Open Thandor 1.0.8" (THANDOR_PRODUCT_VERSION_STRING) at the bottom right of
    the main menu, in the small grey game font with its shadow, and the "GitHub" link (TEXT_ID_FRONTEND_GITHUB_LINK)
    on the same line to its left. Both are shown while the frontend is the front root and the menu room shows the
    entry hall (ROM record FRONTEND_ROM_RECORD_MAIN_MENU) with no dialog page open: centred in the black bar below
