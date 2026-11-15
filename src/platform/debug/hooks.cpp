@@ -90,6 +90,17 @@ int DebugHook_IgnoreRealMouse()
   return Thandor_TestAidScriptActive();
 }
 
+int DebugHook_InterceptOpenUrl(const char *url)
+{
+  const char *mode = getenv("OPEN_THANDOR_OPEN_URL");
+
+  if ((mode == nullptr) || (strcmp(mode,"log") != 0)) {
+    return 0;
+  }
+  Thandor_Log("open url (OPEN_THANDOR_OPEN_URL=log, not opened): %s", url);
+  return 1;
+}
+
 /* --- network --- */
 
 static int s_udpPortOverridden;

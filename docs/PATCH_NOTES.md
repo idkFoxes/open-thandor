@@ -29,6 +29,8 @@ A mission map for the campaigns: replay any mission you have reached, without sa
 - **Custom maps (experimental, single player):** every folder `maps\<name>\` next to the game with `<name>.lev`,
   `<name>.fld` and an optional `map.ini` (title and description, per language) appears in the *Einzelspiel* list,
   marked *(custom map)*. Network games neither list nor send them. Details: [custom_maps.md](custom_maps.md).
+- **GitHub link in the main menu:** a small *GitHub* link next to the version number at the bottom right opens the
+  project page (github.com/idkFoxes/open-thandor) in your browser; it lights up under the mouse pointer.
 
 #### Kept on purpose
 
@@ -63,6 +65,8 @@ Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder
   `<Name>.lev`, `<Name>.fld` und optional `map.ini` (Titel und Beschreibung, je Sprache) erscheint in der Liste
   *Einzelspiel*, gekennzeichnet mit *(eigene Karte)*. Netzwerkspiele zeigen und senden sie nicht. Einzelheiten:
   [custom_maps.md](custom_maps.md).
+- **GitHub-Link im Hauptmenü:** Ein kleiner Link *GitHub* neben der Versionsnummer unten rechts öffnet die
+  Projektseite (github.com/idkFoxes/open-thandor) im Browser; unter dem Mauszeiger leuchtet er auf.
 
 #### Bewusst beibehalten
 

@@ -76,6 +76,9 @@ int DebugHook_WindowMinimized();
 /* --- input --- */
 /* Nonzero while an input script drives the game: the real mouse is then ignored. */
 int DebugHook_IgnoreRealMouse();
+/* SdlPlatform_OpenUrl, before SDL_OpenURL: with OPEN_THANDOR_OPEN_URL=log (the test tools' default, game_env.py) the
+   URL is only logged and nonzero returned, so no browser opens during test runs. */
+int DebugHook_InterceptOpenUrl(const char *url);
 
 /* --- network (OPEN_THANDOR_NET_PORT, OPEN_THANDOR_NETLOG) --- */
 /* Around the bind of the game's UDP socket: binds to another port, then restores the game port in the
@@ -167,6 +170,7 @@ struct DebugProfileScope {
 #define DebugHook_WindowMinimized() 0
 
 #define DebugHook_IgnoreRealMouse() 0
+#define DebugHook_InterceptOpenUrl(url) 0
 
 #define DebugHook_BeforeUdpBind(bindEndpoint, gamePort) ((void)0)
 #define DebugHook_AfterUdpBind(bindEndpoint, gamePort) ((void)0)
