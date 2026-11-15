@@ -11,6 +11,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/ui/frontend/campaign_tab.h>
+#include <thandor/core/settings/original_mode.h>
 
 /* Module data. */
 
@@ -160,39 +161,54 @@ static bool FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelecti
     if (codeUnit == 0) break;
   }
   compareUnitCount = (uint32_t)(levelNameEnd - levelName);
-  rowsRemaining = g_FrontendRootNode->missionsList.rowCount;
-  if (rowsRemaining == 0) {
-    return false;
-  }
-  for (selectionIndex = 0; rowsRemaining != 0; rowsRemaining--) {
-    if (!CustomMaps_IsHintRecord(g_FrontendRootNode->missionsList.rowSlots[selectionIndex].get()) && /* open-thandor */
-        FrontendScenarioSelectionPage_CodeUnitsEqual
-            (levelName,
-             static_cast<const uint16_t *>(g_FrontendRootNode->missionsList.rowSlots[selectionIndex]),
-             compareUnitCount)) {
-      controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
-      *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
-      controlFlags = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
-      *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
-      controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
-      *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
-      controlFlags = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
-      *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
-        *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+  /* open-thandor: a custom map is no row of the single-games list; without a match there, the "Eigene Karten" tab
+     is searched (local games), and the single-games tab comes back when that has no match either */
+  for (int pass = 0; pass < 2; pass++) {
+    if (pass == 1) {
+      if (!FrontendScenarioSelection_CustomMapsTabAvailable()) {
+        return false;
       }
-      Resource_Release(g_FrontendLoadedCampaignAsset);
-      g_FrontendLoadedCampaignAsset = nullptr;
-      /* Select the mission and load it: directly, or in a network session through the command queue. */
-      FrontendCommand_Issue<ScenarioCatalog_SelectLevelAndShowDescription>(0,0,selectionIndex);
-      FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestLevelAsset>(0,0,selectionIndex);
-      return true;
+      ScenarioCatalog_RebuildCustomMapRecordListPage(0,0,0,0);
     }
-    selectionIndex++;
+    rowsRemaining = g_FrontendRootNode->missionsList.rowCount;
+    for (selectionIndex = 0; rowsRemaining != 0; rowsRemaining--) {
+      if (!CustomMaps_IsHintRecord(g_FrontendRootNode->missionsList.rowSlots[selectionIndex].get()) && /* open-thandor */
+          FrontendScenarioSelectionPage_CodeUnitsEqual
+              (levelName,
+               static_cast<const uint16_t *>(g_FrontendRootNode->missionsList.rowSlots[selectionIndex]),
+               compareUnitCount)) {
+        controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
+        *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+        controlFlags = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
+        *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+        controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
+        *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+        controlFlags = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
+        *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) !=
+            SESSION_NETWORK_ROLE_LOCAL) {
+          controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
+          *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+        }
+        Resource_Release(g_FrontendLoadedCampaignAsset);
+        g_FrontendLoadedCampaignAsset = nullptr;
+        /* Select the mission and load it: directly, or in a network session through the command queue. */
+        FrontendCommand_Issue<ScenarioCatalog_SelectLevelAndShowDescription>(0,0,selectionIndex);
+        FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestLevelAsset>(0,0,selectionIndex);
+        return true;
+      }
+      selectionIndex++;
+    }
   }
+  ScenarioCatalog_RebuildLevelRecordListPage(0,0,0,0);
+  ScenarioCatalog_SelectLevelAndShowDescription(0,0,0,0);
   return false;
+}
+
+bool FrontendScenarioSelection_CustomMapsTabAvailable()
+{
+  return ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) &&
+         OtFeature_Active(OT_FEATURE_CUSTOM_MAPS);
 }
 
 /* Opens page 10 "Choose game" (tabs Load game / Single game / Campaigns) and fills the list of the active tab;
@@ -216,35 +232,54 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     controlFlags = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
     *controlFlags = *controlFlags | FromBits<UiNodeFlags>(ToBits(FRONTEND_MENU_ROOM_RENDER_SUPPRESSED));
   }
-  if (!UiSelectableGroup_FindVisibleSelected(nullptr,&activeTabIndex,3,
+  /* open-thandor: the "Eigene Karten" tab button only in a local game with custom maps on (it is hidden while
+     suppressed); a hidden button is never the visible selected tab below */
+  controlFlags = &ui->customMapsTabButton.selectable.base.nodeFlags;
+  if (FrontendScenarioSelection_CustomMapsTabAvailable()) {
+    *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+  }
+  else {
+    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+  }
+  if (!UiSelectableGroup_FindVisibleSelected(nullptr,&activeTabIndex,4,
       &ui->loadGameTabButton.selectable.base,
       &ui->singleGameTabButton.selectable.base,
-      &ui->campaignsTabButton.selectable.base)) {
+      &ui->campaignsTabButton.selectable.base,
+      &ui->customMapsTabButton.selectable.base)) {
     activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiSelectableGroup_SelectExclusive(3,&ui->singleGameTabButton.selectable.base,
+    UiSelectableGroup_SelectExclusive(4,&ui->singleGameTabButton.selectable.base,
       &ui->loadGameTabButton.selectable.base,
       &ui->singleGameTabButton.selectable.base,
-      &ui->campaignsTabButton.selectable.base);
+      &ui->campaignsTabButton.selectable.base,
+      &ui->customMapsTabButton.selectable.base);
     activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
   /* option name "KARTE=\"" (7 characters) */
   mapOption = g_CommandLineFindOption(7,g_NameClientKarteKeywordsAscii + 14);
   if (mapOption != nullptr) {
-    UiSelectableGroup_SelectExclusive(3,&ui->singleGameTabButton.selectable.base,
+    UiSelectableGroup_SelectExclusive(4,&ui->singleGameTabButton.selectable.base,
       &ui->loadGameTabButton.selectable.base,
       &ui->singleGameTabButton.selectable.base,
-      &ui->campaignsTabButton.selectable.base);
+      &ui->campaignsTabButton.selectable.base,
+      &ui->customMapsTabButton.selectable.base);
     activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
-  /* Rebuild the tab's list, then refresh the description of its selected entry. */
-  g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[activeTabIndex](0,0,0,0);
-  /* open-thandor: the campaign tab opens with the campaign last selected in this process (campaign map, plan 7.1;
-     row 0 as the original in a network game, while the map is not shown or without such a campaign) */
-  g_FrontendScenarioMapOptionHandlerTable[activeTabIndex]
-            (0,0,0,(activeTabIndex == SCENARIO_SELECTION_TAB_CAMPAIGNS) ? FrontendCampaignTab_InitialRow() : 0);
+  if (activeTabIndex == SCENARIO_SELECTION_TAB_CUSTOM_MAPS) {
+    /* open-thandor: the "Eigene Karten" tab, the single-games page with the custom maps */
+    ScenarioCatalog_RebuildCustomMapRecordListPage(0,0,0,0);
+    ScenarioCatalog_SelectLevelAndShowDescription(0,0,0,0);
+  }
+  else {
+    /* Rebuild the tab's list, then refresh the description of its selected entry. */
+    g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[activeTabIndex](0,0,0,0);
+    /* open-thandor: the campaign tab opens with the campaign last selected in this process (campaign map, plan 7.1;
+       row 0 as the original in a network game, while the map is not shown or without such a campaign) */
+    g_FrontendScenarioMapOptionHandlerTable[activeTabIndex]
+              (0,0,0,(activeTabIndex == SCENARIO_SELECTION_TAB_CAMPAIGNS) ? FrontendCampaignTab_InitialRow() : 0);
+  }
   if (DebugHook_ScenarioPageOpened()) {
     return;
   }
@@ -344,6 +379,21 @@ void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
   FrontendCommand_Issue<ScenarioCatalog_SelectCampaignAndShowDescription>(0,0,FrontendCampaignTab_InitialRow());
 }
 
+/* Not in the original (open-thandor): handler of FRONTEND_ACTION_OPEN_CUSTOM_MAPS, the "Eigene Karten" tab (slot 106
+   of g_FrontendUiActionHandlersPage20, handlers6A): as the "Single game" tab, with the custom maps in the list. The
+   tab exists only in a local game, so the list is built directly (no frontend command for the peers). */
+void FrontendScenarioPage_OpenCustomMapRecordsAndRefresh(UiNodeBase *sourceNode)
+
+{
+  while (sourceNode->parent != UI_NODE_NONE) {
+    sourceNode = sourceNode->parent;
+  }
+  FrontendUi_Image(sourceNode)->missionDescriptionText.text =
+       reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_SCENARIO_DESCRIPTION_EMPTY));
+  ScenarioCatalog_RebuildCustomMapRecordListPage(0,0,0,0);
+  ScenarioCatalog_SelectLevelAndShowDescription(0,0,0,0);
+}
+
 /* Shows the "Load game" tab: selects its tab button and page and fills the saved-games list with the save
    records of g_ScenarioCatalog, sorted descending by the record's dword pair at +0xF0. The Start button
    is shown only when there is a saved game. Reached as frontend command FRONTEND_COMMAND_SHOW_SAVED_GAMES and
@@ -363,10 +413,11 @@ void ScenarioCatalog_RebuildSaveRecordListPage
   Ptr32<void> *rowPointerCursor;
   
   firstNode = &g_FrontendRootNode->frontendRoot.root.base;
-  UiSelectableGroup_SelectExclusive(3,&g_FrontendRootNode->loadGameTabButton.selectable.base,
+  UiSelectableGroup_SelectExclusive(4,&g_FrontendRootNode->loadGameTabButton.selectable.base,
       &g_FrontendRootNode->campaignsTabButton.selectable.base,
       &g_FrontendRootNode->singleGameTabButton.selectable.base,
-      &g_FrontendRootNode->loadGameTabButton.selectable.base);
+      &g_FrontendRootNode->loadGameTabButton.selectable.base,
+      &g_FrontendRootNode->customMapsTabButton.selectable.base); /* open-thandor: and the "Eigene Karten" tab */
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SAVED_GAMES,
                              UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(firstNode)->gameSelectTabStack));
   if (g_ScenarioCatalog != nullptr) {
@@ -401,8 +452,27 @@ void ScenarioCatalog_RebuildSaveRecordListPage
    FRONTEND_COMMAND_SHOW_SINGLE_GAMES and through scenarioCatalogRebuildCallbacks[SCENARIO_SELECTION_TAB_SINGLE_GAMES]
    of g_FrontendUiActionHandlersPage20; the four arguments of the command-handler format are unused.
 */
+static void ScenarioCatalog_FillLevelRecordListPage(bool customMaps);
+
 void ScenarioCatalog_RebuildLevelRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
+
+{
+  ScenarioCatalog_FillLevelRecordListPage(false);
+}
+
+void ScenarioCatalog_RebuildCustomMapRecordListPage
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
+
+{
+  ScenarioCatalog_FillLevelRecordListPage(true);
+}
+
+/* The original body of ScenarioCatalog_RebuildLevelRecordListPage (customMaps false). open-thandor: with customMaps
+   the same page shows the "Eigene Karten" tab: its tab button, the list label "Eigene Karten:" and only the custom
+   maps of maps\ (CustomMaps_ListRows without stock rows; the hint row while none is listed); the original levels
+   are left out. */
+static void ScenarioCatalog_FillLevelRecordListPage(bool customMaps)
 
 {
   UiPointerListControl *control;
@@ -416,18 +486,27 @@ void ScenarioCatalog_RebuildLevelRecordListPage
   bool hintRow;
   
   firstNode = &g_FrontendRootNode->frontendRoot.root.base;
-  UiSelectableGroup_SelectExclusive(3,&g_FrontendRootNode->singleGameTabButton.selectable.base,
+  UiSelectableGroup_SelectExclusive(4,customMaps ? &g_FrontendRootNode->customMapsTabButton.selectable.base
+                                                 : &g_FrontendRootNode->singleGameTabButton.selectable.base,
       &g_FrontendRootNode->campaignsTabButton.selectable.base,
       &g_FrontendRootNode->singleGameTabButton.selectable.base,
-      &g_FrontendRootNode->loadGameTabButton.selectable.base);
+      &g_FrontendRootNode->loadGameTabButton.selectable.base,
+      &g_FrontendRootNode->customMapsTabButton.selectable.base); /* open-thandor: and the "Eigene Karten" tab */
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SINGLE_GAMES,
                              UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(firstNode)->gameSelectTabStack));
+  /* open-thandor: the list label names the tab */
+  FrontendUi_Image(firstNode)->missionsLabel.text = reinterpret_cast<uint16_t *>(static_cast<uintptr_t>
+       (customMaps ? TEXT_ID_CUSTOM_MAPS_LIST_LABEL : TEXT_ID_SINGLE_GAMES_LIST_LABEL));
   if (g_ScenarioCatalog != nullptr) {
     remainingRows = g_ScenarioCatalog->levelRecordCount;
     scenarioRecord = Thandor_At<ScenarioCatalogDisplayRecord>(g_ScenarioCatalog,g_ScenarioCatalog->levelRecordsOffset);
     rowPointerCursor = reinterpret_cast<Ptr32<ScenarioCatalogDisplayRecord> *>(scenarioRecord + remainingRows);
     rowCount = remainingRows;
     rowPointers = rowPointerCursor;
+    if (customMaps) {
+      remainingRows = 0; /* open-thandor: no original level in the "Eigene Karten" tab */
+      rowCount = 0;
+    }
     for (; remainingRows != 0; remainingRows--) {
       *rowPointerCursor = scenarioRecord;
       resolvedText = TextResource_Resolve(scenarioRecord->titleTextResourceId + TEXT_ID_LEVEL_COLUMN50_BASE);
@@ -447,11 +526,11 @@ void ScenarioCatalog_RebuildLevelRecordListPage
       rowPointerCursor++;
       scenarioRecord++;
     }
-    /* open-thandor: the custom maps of maps\ follow in a local game (single player only, custom_maps.h); a native
-       row array then replaces the one behind the records. Without a listed custom map the hint row follows
-       instead, behind the sorted rows. */
+    /* open-thandor: the "Eigene Karten" tab lists the custom maps of maps\ (local games only, custom_maps.h) in a
+       native row array; without a listed custom map it shows the hint row instead, behind the (no) sorted rows */
     hintRow = false;
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+    if (customMaps &&
+        ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL)) {
       rowPointers = CustomMaps_ListRows(rowPointers,rowCount,&rowCount,&hintRow);
     }
     control = UiListControl_AsPointerList(&FrontendUi_Image(firstNode)->missionsList);
@@ -524,10 +603,11 @@ static void ScenarioCatalog_FillCampaignRecordListPage()
   Ptr32<void> *rowPointers;
   
   firstNode = &g_FrontendRootNode->frontendRoot.root.base;
-  UiSelectableGroup_SelectExclusive(3,&g_FrontendRootNode->campaignsTabButton.selectable.base,
+  UiSelectableGroup_SelectExclusive(4,&g_FrontendRootNode->campaignsTabButton.selectable.base,
       &g_FrontendRootNode->campaignsTabButton.selectable.base,
       &g_FrontendRootNode->singleGameTabButton.selectable.base,
-      &g_FrontendRootNode->loadGameTabButton.selectable.base);
+      &g_FrontendRootNode->loadGameTabButton.selectable.base,
+      &g_FrontendRootNode->customMapsTabButton.selectable.base); /* open-thandor: and the "Eigene Karten" tab */
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_CAMPAIGNS,
                              UiLayoutContainerControl_AsPageStack(&FrontendUi_Image(firstNode)->gameSelectTabStack));
   if (g_ScenarioCatalog != nullptr) {
@@ -685,14 +765,16 @@ void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl 
 
   /* selectionControl is the frontend template's gameSelectStartButton; the other nodes are its siblings. */
   FrontendUiImage *ui = FrontendUi_ImageOfNode(selectionControl,offsetof(FrontendUiImage,gameSelectStartButton));
-  if (!UiSelectableGroup_FindVisibleSelected(nullptr,&selectedTabIndex,3,
+  if (!UiSelectableGroup_FindVisibleSelected(nullptr,&selectedTabIndex,4,
       &ui->loadGameTabButton.selectable.base,
       &ui->singleGameTabButton.selectable.base,
-      &ui->campaignsTabButton.selectable.base)) {
+      &ui->campaignsTabButton.selectable.base,
+      &ui->customMapsTabButton.selectable.base)) {
     return;
   }
   if (selectedTabIndex != 0) {
-    if (selectedTabIndex < 2) {
+    /* open-thandor: the "Eigene Karten" tab starts its row of missionsList like the "Single game" tab */
+    if ((selectedTabIndex < 2) || (selectedTabIndex == SCENARIO_SELECTION_TAB_CUSTOM_MAPS)) {
       selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                         (UiListControl_AsPointerList(&ui->missionsList),
                          nullptr);

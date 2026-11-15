@@ -314,6 +314,11 @@ inline constexpr int TEXT_ID_CUSTOM_MAPS_HINT_RESERVED = 0x10;
 #define TEXT_ID_CUSTOM_MAPS_HINT_TITLE (TEXT_ID_CUSTOM_MAPS_HINT_BASE + 0) /* "Eigene Karten: keine gefunden" */
 #define TEXT_ID_CUSTOM_MAPS_HINT_DESCRIPTION (TEXT_ID_CUSTOM_MAPS_HINT_BASE + 1) /* "Keine eigenen Karten gefunden. ..." */
 #define TEXT_ID_CUSTOM_MAPS_HINT_LINK (TEXT_ID_CUSTOM_MAPS_HINT_BASE + 2) /* "Map Editor auf GitHub" */
+/* the "Eigene Karten" tab button of the "Choose game" page, and the label above its list (in place of the "Single
+   game" tab's list label TEXT_ID_SINGLE_GAMES_LIST_LABEL, whose leading colour code it keeps) */
+#define TEXT_ID_CUSTOM_MAPS_TAB (TEXT_ID_CUSTOM_MAPS_HINT_BASE + 3) /* "Eigene Karten" */
+#define TEXT_ID_CUSTOM_MAPS_LIST_LABEL (TEXT_ID_CUSTOM_MAPS_HINT_BASE + 4) /* "Eigene Karten:" */
+#define TEXT_ID_SINGLE_GAMES_LIST_LABEL 0x215B /* the original's missionsList label ("Einzelmissionen:") */
 static_assert(TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE + TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED <=
               TEXT_ID_CUSTOM_MAPS_HINT_BASE,
               "the short mission objectives end before the custom maps hint texts");

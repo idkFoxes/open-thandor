@@ -554,6 +554,8 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
     }
     /* not in the original: the campaign map of the campaign tab */
     FrontendCampaignTab_BindNodes(ui);
+    /* not in the original: the "Eigene Karten" tab button (the sound of the tab buttons) */
+    ui->customMapsTabButton.activationSound = g_UiButtonSoundVoiceSets7[3];
   }
 }
 

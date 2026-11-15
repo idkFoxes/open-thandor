@@ -9,10 +9,10 @@
 
 /* Not in the original: custom maps (docs/custom_maps.md), single player only. Every map editor project
    maps\<name>.thmap next to the executable (a ZIP with map.ini or a legacy stored PCK with editor/project.txt,
-   custom_project.h) whose level and field grid pass the checks becomes a row of the "Single game" list in a local
-   game. Custom maps never enter g_ScenarioCatalog, so a network host neither lists nor sends them. Everything here
-   is native memory and native file calls (no arena): without a maps folder nothing changes but the hint row of the
-   list (CustomMaps_ListRows).
+   custom_project.h) whose level and field grid pass the checks becomes a row of the "Eigene Karten" list (the
+   "Single game" list of its own tab, ui/frontend/scenario_selection.h) in a local game. Custom maps never enter
+   g_ScenarioCatalog, so a network host neither lists nor sends them. Everything here is native memory and native
+   file calls (no arena): without a maps folder nothing changes but the hint row of the list (CustomMaps_ListRows).
 
    Text ids: a custom map gets the title index CUSTOM_MAP_TITLE_INDEX_BASE + slot (slot = hash of the lowercased name
    modulo CUSTOM_MAP_TITLE_INDEX_SLOTS, probing on), which the loaded .lev copy carries instead of its own; its title
@@ -57,13 +57,13 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog);
 uint32_t CustomMaps_Count();
 const char *CustomMaps_ListedName(uint32_t index);
 
-/* The row pointers of the "Single game" list: stockRows (stockCount rows) followed by one display record per custom
-   map with its column texts resolved. Returns stockRows unchanged when there is no custom map and no hint row;
-   otherwise a native array that stays valid until the next call. *outCount receives the row count.
-   The hint row: while the feature is on and no custom map is listed (no maps folder, no .thmap file, or every file
-   rejected), *outHintRow is set and the array holds one more slot behind the *outCount rows, the hint record (title
-   TEXT_ID_CUSTOM_MAPS_HINT_TITLE). The caller sorts the *outCount rows first and then shows *outCount + 1 rows, so
-   the hint stays the last row and never takes part in the sort. It is no level: CustomMaps_IsHintRecord tells it
+/* The row pointers of the "Eigene Karten" list (the caller passes stockCount 0): stockRows (stockCount rows) followed
+   by one display record per custom map with its column texts resolved. Returns stockRows unchanged when there is no
+   custom map and no hint row; otherwise a native array that stays valid until the next call. *outCount receives the row
+   count. The hint row: while the feature is on and no custom map is listed (no maps folder, no .thmap file, or every
+   file rejected), *outHintRow is set and the array holds one more slot behind the *outCount rows, the hint record
+   (title TEXT_ID_CUSTOM_MAPS_HINT_TITLE). The caller sorts the *outCount rows first and then shows *outCount + 1 rows,
+   so the hint stays the last row and never takes part in the sort. It is no level: CustomMaps_IsHintRecord tells it
    apart, its identifier (unit 0x01) never equals a -KARTE name, and the start of a level refuses it. */
 Ptr32<ScenarioCatalogDisplayRecord> *CustomMaps_ListRows(Ptr32<ScenarioCatalogDisplayRecord> *stockRows,
                                                          uint32_t stockCount,uint32_t *outCount,bool *outHintRow);

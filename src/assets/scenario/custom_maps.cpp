@@ -127,6 +127,9 @@ static ScenarioCatalogDisplayRecord s_CustomMapHintRecord{};
 static std::array<uint16_t,64> s_CustomMapHintTitle{};
 static std::array<uint16_t,320> s_CustomMapHintDescription{};
 static std::array<uint16_t,32> s_CustomMapHintLink{};
+/* The "Eigene Karten" tab button and the label above its list (TEXT_ID_CUSTOM_MAPS_TAB / _LIST_LABEL). */
+static std::array<uint16_t,32> s_CustomMapsTabLabel{};
+static std::array<uint16_t,32> s_CustomMapsListLabel{};
 static uint32_t s_CustomMapsRejected = 0;
 
 /* ---------------------------------------------------------------- small helpers */
@@ -768,15 +771,26 @@ static void CustomMaps_RefreshHintTexts()
   CustomMaps_SetHintText(s_CustomMapHintLink,0,german ? "Map Editor auf GitHub" : "Map Editor on GitHub");
 }
 
+/* The tab button's and the list label's texts in the current language; the list label keeps the leading colour code
+   of the "Single game" tab's label (TEXT_ID_SINGLE_GAMES_LIST_LABEL). Cheap: called whenever they are resolved, so
+   a change of language shows at once. */
+static void CustomMaps_RefreshTabTexts()
+{
+  const bool german = TextResource_ProjectTextsAreGerman();
+  const uint16_t *stockLabel = TextResource_Resolve(TEXT_ID_SINGLE_GAMES_LIST_LABEL);
+  const uint16_t labelCode =
+      ((stockLabel != nullptr) && ((*stockLabel & RICHTEXT_COMMAND_FLAG) != 0)) ? *stockLabel : 0;
+
+  CustomMaps_SetHintText(s_CustomMapsTabLabel,0,german ? "Eigene Karten" : "Custom maps");
+  CustomMaps_SetHintText(s_CustomMapsListLabel,labelCode,german ? "Eigene Karten:" : "Custom maps:");
+}
+
 void CustomMaps_RefreshLanguage()
 {
   CustomMaps_RefreshHintTexts();
 
-  const bool german = TextResource_ProjectTextsAreGerman();
-  static const char markerGerman[] = " (eigene Karte)";
-  static const char markerEnglish[] = " (custom map)";
-  const char *marker = german ? markerGerman : markerEnglish;
-
+  /* No " (eigene Karte)" suffix: the rows have their own tab and list (Eigene Karten), and the suffix ran into the
+     planet column. */
   for (const std::unique_ptr<CustomMapEntry> &entry : s_CustomMaps) {
     std::array<uint16_t,CUSTOM_MAP_LIST_TITLE_UNITS> &listTitle = entry->listTitle;
     const uint16_t *title = CustomMaps_Title(entry.get());
@@ -785,9 +799,6 @@ void CustomMaps_RefreshLanguage()
     listTitle[length++] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
     for (title++; (*title != 0) && (length + 1 < listTitle.size()); title++) {
       listTitle[length++] = *title;
-    }
-    for (const char *markerChar = marker; (*markerChar != '\0') && (length + 1 < listTitle.size()); markerChar++) {
-      listTitle[length++] = (uint8_t)*markerChar;
     }
     listTitle[length] = 0;
   }
@@ -1135,6 +1146,11 @@ bool CustomMaps_TryResolveText(uint32_t resourceId,uint16_t **outText)
 {
   if ((resourceId >= TEXT_ID_CUSTOM_MAPS_HINT_BASE) &&
       (resourceId < TEXT_ID_CUSTOM_MAPS_HINT_BASE + TEXT_ID_CUSTOM_MAPS_HINT_RESERVED)) {
+    if ((resourceId == TEXT_ID_CUSTOM_MAPS_TAB) || (resourceId == TEXT_ID_CUSTOM_MAPS_LIST_LABEL)) {
+      CustomMaps_RefreshTabTexts();
+      *outText = (resourceId == TEXT_ID_CUSTOM_MAPS_TAB) ? s_CustomMapsTabLabel.data() : s_CustomMapsListLabel.data();
+      return true;
+    }
     if (s_CustomMapHintTitle[0] == 0) {
       CustomMaps_RefreshHintTexts(); /* before the first list build */
     }

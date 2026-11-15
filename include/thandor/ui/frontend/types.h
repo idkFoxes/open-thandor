@@ -475,6 +475,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers67[1]; // Not in the original: action ID 0x2067 (the "Original Thandor" checkbox of the advanced settings page).
     Ptr32<void (void *)> handlers68[1]; // Not in the original: action ID 0x2068 (the game recording checkbox of the advanced settings page).
     Ptr32<void (void *)> handlers69[1]; // Not in the original: action ID 0x2069 (the high-resolution font checkbox of the advanced settings page).
+    Ptr32<void (void *)> handlers6A[1]; // Not in the original: action ID 0x206A (the "Eigene Karten" tab button of the "Choose game" page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1393,6 +1394,11 @@ struct FrontendUiImage {
        advancedRecordGamesCheckbox and advancedLanguageGroup in the page's sibling chain (the language list layer
        stays the last child). */
     UiTextButtonControl advancedHdFontCheckbox; /* +8608 g_UiTextButtonControlVtable: Checkbox "Hochaufgeloeste Schrift" (action FRONTEND_ACTION_ADVANCED_HD_FONT). */
+    /* Not in the original (open-thandor): the fourth tab button of the "Choose game" page, below "Kampagnen"; linked
+       between campaignsTabButton and gameSelectTitleLabel in the page's sibling chain. It shows the custom maps
+       (custom_maps.h) in missionsList (gameSelectTabStack page SCENARIO_SELECTION_TAB_SINGLE_GAMES); hidden in a
+       network game and while "Original Thandor" is on. */
+    UiFramedTextButtonControl customMapsTabButton; /* +8668 g_UiFramedTextButtonControlVtable: Tab button "Eigene Karten" (action FRONTEND_ACTION_OPEN_CUSTOM_MAPS). */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is

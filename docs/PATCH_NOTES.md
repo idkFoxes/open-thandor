@@ -27,10 +27,11 @@ A mission map for the campaigns: replay any mission you have reached, without sa
   progress is kept in `save\kampagne.dat` and survives quitting the game; a damaged file is set aside as
   `kampagne.bad` and the progress starts empty. Uninstalling keeps the file, like your saves.
 - **Custom maps (experimental, single player):** every map editor project `maps\<name>.thmap` next to the game
-  (ZIP or the editor's older PCK form) appears in the *Einzelspiel* list, marked *(custom map)*, with the title,
+  (ZIP or the editor's older PCK form) appears in its own *Custom maps* list (a button on the left of *Spiel auswählen*; *Einzelspiel* shows
+  only the original maps), with the title,
   description and author from the project. A project may bring its own ground textures. Every project is checked
   before it is listed; a rejected one gets one line in `thandor.log`. Network games neither list nor send them.
-  The earlier `maps\<name>\` folders are no longer read. Without any custom map the list ends with a hint row
+  The earlier `maps\<name>\` folders are no longer read. Without any custom map the list shows a hint row
   that says where `.thmap` files go (and how many were rejected), with a link to the Thandor Map Editor on GitHub.
   Details: [custom_maps.md](custom_maps.md).
 - **GitHub link in the main menu:** a small *GitHub* link next to the version number at the bottom right opens the
@@ -77,11 +78,11 @@ Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder
   wird als `kampagne.bad` beiseitegelegt, und der Fortschritt beginnt leer. Die Deinstallation lässt die Datei wie
   die Spielstände liegen.
 - **Eigene Karten (experimentell, nur Einzelspieler):** Jedes Karteneditor-Projekt `maps\<Name>.thmap` neben dem
-  Spiel (ZIP oder die ältere PCK-Form des Editors) erscheint in der Liste *Einzelspiel*, gekennzeichnet mit
-  *(eigene Karte)*, mit Titel, Beschreibung und Autor aus dem Projekt. Ein Projekt darf eigene Bodentexturen
+  Spiel (ZIP oder die ältere PCK-Form des Editors) erscheint in der eigenen Liste *Eigene Karten* (eigener
+  Knopf links auf *Spiel auswählen*; *Einzelspiel* zeigt nur die Original-Karten), mit Titel, Beschreibung und Autor aus dem Projekt. Ein Projekt darf eigene Bodentexturen
   mitbringen. Jedes Projekt wird vor dem Anzeigen geprüft; ein abgelehntes erhält eine Zeile in `thandor.log`.
   Netzwerkspiele zeigen und senden sie nicht. Die früheren Ordner `maps\<Name>\` werden nicht mehr gelesen.
-  Ohne eigene Karte endet die Liste mit einer Hinweiszeile, die sagt, wohin `.thmap`-Dateien gehören (und wie viele
+  Ohne eigene Karte zeigt die Liste einer Hinweiszeile, die sagt, wohin `.thmap`-Dateien gehören (und wie viele
   abgelehnt wurden), mit einem Link zum Thandor Map Editor auf GitHub. Einzelheiten: [custom_maps.md](custom_maps.md).
 - **GitHub-Link im Hauptmenü:** Ein kleiner Link *GitHub* neben der Versionsnummer unten rechts öffnet die
   Projektseite (github.com/idkFoxes/open-thandor) im Browser; unter dem Mauszeiger leuchtet er auf.

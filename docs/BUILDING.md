@@ -694,7 +694,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_OPEN_URL=log` | a URL the game would open in the browser (the main menu's *GitHub* link, `SdlPlatform_OpenUrl`) is only logged (`open url (OPEN_THANDOR_OPEN_URL=log, not opened): ...`), no browser starts; the test tools (`game_env.py`) set it for every game unless the caller sets it |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |
-| `OPEN_THANDOR_LIST_SCENARIOS=1` | log the names of all single games and campaigns when the "Choose game" page opens, then quit |
+| `OPEN_THANDOR_LIST_SCENARIOS=1` | log the names of all single games, custom maps and campaigns when the "Choose game" page opens, then quit |
 | `OPEN_THANDOR_CAMPAIGN=<name>` | start that campaign when the "Choose game" page opens (with `-KARTE="-"` to get there); `OPEN_THANDOR_CAMPAIGN_LEVEL=<n>` starts it at its n-th level, without the units the previous level would carry over |
 | `OPEN_THANDOR_AUTOWIN=<s>` | end a campaign level as won after <s> seconds: fires the level's end trigger that moves the campaign forward (a later level, else the campaign end) after moving local mobile units that stand outside the exit zone into it; `OPEN_THANDOR_AUTOWIN_LEVELS=<k>` limits it to the first k levels of the run |
 | `OPEN_THANDOR_AUTOWIN_SELECTION=<n>` | with `OPEN_THANDOR_AUTOWIN`: fire the active end trigger with end selection n instead of the one the scoring picks (a branch, e.g. a win with selection 2); a level without such a trigger falls back to the scoring with one log line |
