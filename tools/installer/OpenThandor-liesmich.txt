@@ -33,6 +33,8 @@ Neu in Version 1.0.8
 - Behoben: Absturz mit DirectX 12 während einer Mission, Absturz beim Ändern
   der UI-Skalierung, seltene Abstürze des Computergegners (alle gesehen mit
   1.0.7), Absturz bei einem Klick im Abschlussfilm.
+- Behoben: schwarzes Bild bei Filmen im exklusiven Vollbild - Filme laufen
+  jetzt immer im randlosen Fenster.
 - Behoben: hängende Maustaste nach Fokuswechsel oder Minimieren (gesehen auf
   dem Steam Deck).
 - Behoben: Vulkan/DirectX 12 starten die Darstellung nach einem Geräteausfall

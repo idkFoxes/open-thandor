@@ -74,12 +74,12 @@ You need an **installed full version of Thandor** and **64-bit Windows 10 or 11*
 | Options | keys fixed, language from Windows | **key bindings** editable (options page and in-game F1 *Tastatur*), **language** chosen in the menu: de, en, fr, it, es |
 | In the game | - | **improved pathfinding**, an **objective box** and an **autosave** every minute of play, each switchable |
 | Text at UI scale 2x/3x | enlarged pixels | optional **high-resolution font** on Vulkan and DirectX 12 |
-| Movies | some soundtracks very quiet | quiet movie soundtracks raised towards the level of the others |
+| Movies | some soundtracks very quiet; black screen in exclusive fullscreen on some systems | quiet movie soundtracks raised towards the level of the others; movies play in a borderless window, so no black screen |
 | Bug reports | - | optional **game recordings** (`recordings\*.otr`) named in `crash.log`, replayable up to a crash |
 | Original feel | - | one **Original Thandor** switch on the *Erweitert* page turns all these additions off; bug and crash fixes stay |
 | Damaged files, odd maps | crashes | rejected with a message; safe saving |
 | Mouse | - | no stuck mouse button after a focus change |
-| Rules, AI, saves, maps, LAN | - | **unchanged**: saves, levels and multiplayer stay compatible with the original |
+| Rules, AI, saves, maps | - | **unchanged**: saves and levels of the original keep working |
 
 Full list: **[Patch notes](docs/PATCH_NOTES.md)**.
 
@@ -89,7 +89,7 @@ Full list: **[Patch notes](docs/PATCH_NOTES.md)**.
 |---|---|
 | Single player: menus, campaigns, skirmish, AI, save/load, movies, sound | playable. An automated run starts all 56 missions: 50 play without problems, 1 level file is missing from the original data, and the 5 levels that need the units carried over from the previous level play when reached through that level. A campaign run wins every level in turn and reaches the end of all four campaigns (tutorial, Luke, Nimm2, Hansolo) |
 | Graphics | Vulkan (default), DirectX 12 or software; window, borderless or exclusive fullscreen ([details](docs/BUILDING.md#renderer-and-display-mode-display-settings)). The original's Glide (3dfx) and Direct3D renderers were removed |
-| Multiplayer (LAN, UDP) | works in a local two-instance test: lobby, map and faction choice, briefing, in-game commands; protocol-compatible with the original game |
+| Multiplayer (LAN, UDP) | works in a local two-instance test: lobby, map and faction choice, briefing, in-game commands |
 | Map editor | own maps are made with the external [Thandor Map Editor](https://github.com/idkFoxes/thandor-map-editor) and played as `.thmap` custom maps |
 
 ## For developers
