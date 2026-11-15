@@ -195,6 +195,7 @@ def ch(c):
 
 
 if __name__ == '__main__':
+    sys.stdout.reconfigure(errors='backslashreplace')  # glyph names are not ASCII; never fail on a cp1252 console
     import upscale as U
     import upscale3 as S
     fname = sys.argv[1] if len(sys.argv) > 1 else 'font.gfx'

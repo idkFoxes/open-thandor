@@ -4,6 +4,7 @@ WDEF = {'font.gfx': {2: 3, 3: 4}, 'fontk.gfx': {2: 2, 3: 3}}
 def model(fn, N):
     return S.FontModel(U.load(fn), N, W=WDEF[fn][N], **FONT_KW[fn])
 if __name__ == '__main__':
+    sys.stdout.reconfigure(errors='backslashreplace')  # glyph names are not ASCII; never fail on a cp1252 console
     M = model(sys.argv[1], int(sys.argv[2]))
     print('W', M.W, 'D', M.D, 'baseline', M.baseline)
     for ch in sys.argv[3]:

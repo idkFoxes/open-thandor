@@ -13,7 +13,7 @@ def render(M, code):
         return None
     import upscale as U, upscale3 as S
     if M.N not in _src:
-        fn = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'font.gfx')
+        fn = 'font.gfx'
         _src[M.N] = S.FontModel(U.load(fn), M.N, W=SRC_W[M.N], r_big_src=3.17)
     src = _src[M.N]
     if src.g[code].shape != M.g[code].shape:

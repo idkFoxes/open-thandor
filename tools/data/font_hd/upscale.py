@@ -9,16 +9,36 @@ import sys
 import math
 import numpy as np
 
-sys.path.insert(0, r"C:\Users\Gerrit Bluemel\Documents\Projekte\open-thandor\tools\data")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))  # tools/data
 import gfx  # noqa: E402
 
 W = os.path.dirname(os.path.abspath(__file__))
 PAD = 3
+# the game's font files: 'font.gfx' / 'fontk.gfx' -> the bytes of the .gfx asset; set by make_hd_font.py before the
+# first load. Some glyphs of one font are built from the other (fontk's Yen and TM use font.gfx), so both are needed.
+FONT_DATA = {}
+
+
+def alpha_of(data, image):
+    """The alpha channel (h, w) of one glyph in [0, 1]: the +0 ARGB alpha of its palette entries (direct colour:
+    the texel alpha), the alpha gfx.to_pil gives, without Pillow."""
+    w, h = image.size
+    if image.palette == -1:
+        raw = np.frombuffer(data, np.uint8, w * h * 4, image.offset).reshape(h, w, 4)
+        return raw[:, :, 3].astype(np.float64) / 255.0
+    base = gfx.HEADER + image.palette * gfx.BANK
+    lut = np.frombuffer(data, np.uint8, 256 * 8, base).reshape(256, 8)[:, 3]
+    idx = np.frombuffer(data, np.uint8, w * h, image.offset).reshape(h, w)
+    return lut[idx].astype(np.float64) / 255.0
 
 
 def load(name):
-    d, imgs = gfx.read(os.path.join(W, name))
-    return [np.asarray(gfx.to_pil(d, im).getchannel('A'), dtype=np.float64) / 255.0 for im in imgs]
+    key = os.path.basename(name)
+    if key in FONT_DATA:
+        d, imgs = gfx.parse(FONT_DATA[key], key)
+    else:
+        d, imgs = gfx.read(os.path.join(W, name))
+    return [alpha_of(d, im) for im in imgs]
 
 
 # ------------------------------------------------------------------ resampling (separable, matrix form)

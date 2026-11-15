@@ -1091,7 +1091,7 @@ def yen_from_font(M):
     if M.N not in YEN_SRC_W:
         return None
     if M.N not in _YEN_SRC:
-        fn = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'font.gfx')
+        fn = 'font.gfx'
         _YEN_SRC[M.N] = FontModel(U.load(fn), M.N, W=YEN_SRC_W[M.N], r_big_src=3.17)
     src = _YEN_SRC[M.N]
     if src.g[YEN].shape != M.g[YEN].shape:
