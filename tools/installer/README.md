@@ -31,12 +31,13 @@ relative to `images/`).
    `compare.png` (Patch 5's picture beside ours).
 
 The committed set (2026-11-15, version "1.0.8"): a 2560x1440 GPU-native frame of the showcase level (`--maps
-showcase`, hansolo level 4 plus the heavy units, the rocket tanks firing) made with `take_wizard_shots.py --width 2560
+showcase`, hansolo level 4 plus the heavy units; a tank firing in the middle, between the version and the strip) made with `take_wizard_shots.py --width 2560
 --height 1440` run through a wrapper that switches it to UI scale 2 with `OPEN_THANDOR_GPU_NATIVE_SHOTS=1` and copies
 `shots\gpunative_NNNN.bmp` out of the copy (the script itself fixes UI scale 1), with an input script for the 1280x720
-UI (4 wheel notches at 495,360, selection cleared at 940,660, pointer parked at 1275,715; wrapper and script:
-`ot-scratch/installer-shots/wiz2x.py`, `showcase_2x.txt`), kept as `ot-scratch/installer-shots/showcase_2x_gpunative_0004.bmp`, with
-`--crop 1100,330,580,1110 --version 1.0.8`; the small images came out byte-identical to the earlier set. (The set of
+UI (4 wheel notches at 495,360, selection cleared at 940,660, pointer parked at 1275,715, camera scrolled down with
+the arrow key for 0.35 s, a shot every 0.75 s; wrapper and script: `ot-scratch/installer-shots/wiz2x.py`,
+`showcase_2x_c.txt`), kept as `ot-scratch/installer-shots/showcase_2x_scrolled_gpunative_0006.bmp`, with
+`--crop 1124,120,580,1110 --version 1.0.8`; the small images came out byte-identical to the earlier set. (The set of
 2026-10-10, version "1.0.7", used a README battle frame, `ot-scratch/readme-shots/raw/f_s2_gpunative_0006.bmp` with
 `--crop 1340,60,580,1110`; the set of 2026-10-06, version "1.0.6", used `showcase_02.bmp` (5 wheel notches) with
 `--crop 840,200,460,880`; neither shot exists any more.) Shots are not bit-reproducible (timing), so a new run gives a
