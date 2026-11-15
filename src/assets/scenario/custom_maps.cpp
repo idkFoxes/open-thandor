@@ -4,15 +4,16 @@
  * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/scenario/custom_maps.cpp
  */
 
-/* Not in the original: custom maps in maps\<name>\ (see custom_maps.h, docs/custom_maps.md). Native memory and
-   std::filesystem only: the arena (g_MemoryApi) must not see the scan, or the arena order of a later session would
-   shift; without a maps folder the scan returns before it allocates anything. */
+/* Not in the original: custom maps, the map editor projects maps\<name>.thmap (see custom_maps.h,
+   docs/custom_maps.md). Native memory and std::filesystem only: the arena (g_MemoryApi) must not see the scan, or the
+   arena order of a later session would shift; without a maps folder the scan returns before it allocates anything.
+   The active project's files reach the game through Package_LoadEntryWithSize / Package_LoadEntryIntoBuffer
+   (CustomMaps_FindServedAsset), which copy them into the arena exactly as they copy a loose file. */
 
 #include <algorithm>
 #include <array>
 #include <cstring>
 #include <filesystem>
-#include <fstream>
 #include <map>
 #include <memory>
 #include <string>
@@ -20,6 +21,7 @@
 #include <vector>
 #include <thandor/assets/scenario/custom_maps.h>
 #include <thandor/assets/scenario/custom_map_validate.h>
+#include <thandor/assets/scenario/custom_project.h>
 #include <thandor/thandor.h>
 #include <thandor/core/settings/original_mode.h>
 #include <thandor/assets/package/runtime.h>
@@ -40,14 +42,15 @@ static constexpr size_t CUSTOM_MAP_LEV_MIN_BYTES = 0x800; /* the fixed prefix ev
 /* Code units WidePath_SetExtensionCode needs from the field grid path's terminator on (".fld" + terminator), as
    FrontendLevelAsset_LoadedImageFits demands. */
 static constexpr size_t CUSTOM_MAP_PATH_EXTENSION_UNITS = 5;
-/* Size limits of the files read (a stock .lev has 6 to 22 KiB, an expanded .fld up to 2.4 MiB). */
-static constexpr uintmax_t CUSTOM_MAP_LEV_LIMIT_BYTES = 0x100000;
-static constexpr uintmax_t CUSTOM_MAP_FLD_LIMIT_BYTES = 0x4000000;
-static constexpr uintmax_t CUSTOM_MAP_INI_LIMIT_BYTES = 0x10000;
-/* Code units of a title (without the leading style unit) and of a description. */
+/* Size limit of the level entry (a stock .lev has 6 to 22 KiB). */
+static constexpr size_t CUSTOM_MAP_LEV_LIMIT_BYTES = 0x100000;
+/* Code units of a title (without the leading style unit), of a description line and of the author. */
 static constexpr size_t CUSTOM_MAP_TITLE_UNITS = 64;
 static constexpr size_t CUSTOM_MAP_DESCRIPTION_UNITS = 1024;
+static constexpr size_t CUSTOM_MAP_AUTHOR_UNITS = 64;
 static constexpr size_t CUSTOM_MAP_LIST_TITLE_UNITS = 1 + CUSTOM_MAP_TITLE_UNITS + 24;
+/* Lines of a level's description block (TEXT_ID_LEVEL_DESCRIPTION_STRIDE). */
+static constexpr size_t CUSTOM_MAP_DESCRIPTION_LINES = TEXT_ID_LEVEL_DESCRIPTION_STRIDE;
 
 /* The title and description ids of the custom title indices (custom_maps.h). */
 static constexpr uint32_t CUSTOM_MAP_TITLE_ID_FIRST = TEXT_ID_LEVEL_TITLE_BASE + CUSTOM_MAP_TITLE_INDEX_BASE;
@@ -57,36 +60,46 @@ static_assert(CUSTOM_MAP_TITLE_ID_FIRST == 0x2500);
 static_assert(CUSTOM_MAP_TITLE_ID_FIRST + CUSTOM_MAP_TITLE_INDEX_SLOTS <= 0x2D00,
               "the custom titles stay on the unused compact text pages 0x25..0x2C");
 
-/* The map.ini languages: the telephone country codes of the language choice and their key suffixes. Index 0 of the
-   text arrays is the plain key (title, description). */
+/* The languages of the language choice: their telephone country codes, which are also the STR locale block keys.
+   Index 0 of the text arrays is the fallback (the STR block the editor prefers, or the display name). */
 static constexpr int CUSTOM_MAP_LANGUAGE_COUNT = 5;
-static const struct {
-  uint32_t countryCode;
-  const char *suffix;
-} g_CustomMapLanguages[CUSTOM_MAP_LANGUAGE_COUNT] = {
-    {49, "de"}, {44, "en"}, {33, "fr"}, {39, "it"}, {34, "es"}};
+static constexpr uint32_t g_CustomMapLanguageCountries[CUSTOM_MAP_LANGUAGE_COUNT] = {49, 44, 33, 39, 34};
+static constexpr int CUSTOM_MAP_LANGUAGE_GERMAN = 1;
+
+/* The display texts of a map, per language (0 = fallback). Empty vectors fall back to index 0. */
+struct CustomMapTexts {
+  /* the title with a leading style unit (the callers overwrite the first unit) */
+  std::vector<uint16_t> titles[1 + CUSTOM_MAP_LANGUAGE_COUNT];
+  /* the lines of the description block (line 0 = description, with the author appended) */
+  std::vector<uint16_t> lines[1 + CUSTOM_MAP_LANGUAGE_COUNT][CUSTOM_MAP_DESCRIPTION_LINES];
+};
 
 struct CustomMapEntry {
-  std::string name;   /* the folder name (ASCII, as found) */
+  std::string name;   /* the file stem (ASCII, as found) */
   std::string lowerName;
   uint32_t titleIndex = 0;
   ScenarioCatalogDisplayRecord record{}; /* the list row: the .lev's catalog record with our identifier and index */
-  /* per language (0 = plain key): the title with a leading style unit (the callers overwrite the first unit), the
-     description; empty vectors fall back to index 0 */
-  std::vector<uint16_t> titles[1 + CUSTOM_MAP_LANGUAGE_COUNT];
-  std::vector<uint16_t> descriptions[1 + CUSTOM_MAP_LANGUAGE_COUNT];
+  CustomMapTexts texts;
   std::array<uint16_t,CUSTOM_MAP_LIST_TITLE_UNITS> listTitle{}; /* the list row's title text, see RefreshLanguage */
 };
 
-/* The result of checking the files of one folder, kept while their sizes and write times stay the same. */
+/* The result of checking one project file, kept while its size and write time stay the same. */
 struct CustomMapFileCheck {
-  uintmax_t levBytes = 0;
-  uintmax_t fldBytes = 0;
-  std::filesystem::file_time_type levTime{};
-  std::filesystem::file_time_type fldTime{};
+  uintmax_t bytes = 0;
+  std::filesystem::file_time_type time{};
   bool valid = false;
   std::string reason;
   std::array<uint8_t,SCENARIO_CATALOG_RECORD_SIZE> record{};
+  CustomMapTexts texts;
+};
+
+/* The project of the custom map that is loaded or running: the files the game may load from it (normalized path:
+   lowercase ASCII with '/'), the level under maps/<name>.lev. */
+struct CustomMapActiveProject {
+  std::string lowerName;
+  uintmax_t bytes = 0;
+  std::filesystem::file_time_type time{};
+  std::map<std::string,std::vector<uint8_t>> served;
 };
 
 /* Module data. The previous scan's entries stay alive one more scan: list rows may still point at them. */
@@ -95,6 +108,7 @@ static std::vector<std::unique_ptr<CustomMapEntry>> s_RetiredCustomMaps;
 static std::array<CustomMapEntry *,CUSTOM_MAP_TITLE_INDEX_SLOTS> s_CustomMapBySlot{};
 static std::map<std::string,CustomMapFileCheck> s_CustomMapFileChecks;
 static std::vector<Ptr32<ScenarioCatalogDisplayRecord>> s_CustomMapListRows;
+static std::unique_ptr<CustomMapActiveProject> s_CustomMapActive;
 /* The catalog of the last CustomMaps_Rebuild and whether it skipped the scan for "Original Thandor": the next list
    build after the switch went off scans then (the frontend rebuilds the catalog only now and then). */
 static const ScenarioCatalogHeader *s_CustomMapsCatalog = nullptr;
@@ -157,135 +171,16 @@ static std::filesystem::path CustomMaps_ExecutableDirectory()
   return std::filesystem::path(reinterpret_cast<const wchar_t *>(g_ExecutableDirectoryUtf16));
 }
 
-static std::filesystem::path CustomMaps_Folder(const std::string &name)
+static std::filesystem::path CustomMaps_ProjectPath(const std::string &name)
 {
-  return CustomMaps_ExecutableDirectory() / L"maps" / std::filesystem::path(name);
+  return CustomMaps_ExecutableDirectory() / L"maps" / std::filesystem::path(name + ".thmap");
 }
 
-/* Reads a whole file of at most limit bytes; false with the reason otherwise. */
-static bool CustomMaps_ReadFile(const std::filesystem::path &path,uintmax_t limit,std::vector<uint8_t> *outBytes,
-                                std::string *outReason)
-{
-  std::error_code error;
-  const uintmax_t size = std::filesystem::file_size(path,error);
-
-  if (error) {
-    *outReason = path.filename().string() + " missing";
-    return false;
-  }
-  if (size > limit) {
-    *outReason = path.filename().string() + " too large (" + std::to_string(size) + " bytes)";
-    return false;
-  }
-  std::ifstream stream(path,std::ios::binary);
-  outBytes->assign((size_t)size,0);
-  if (!stream || !stream.read(reinterpret_cast<char *>(outBytes->data()),(std::streamsize)size)) {
-    *outReason = path.filename().string() + " cannot be read";
-    return false;
-  }
-  return true;
-}
-
-/* ---------------------------------------------------------------- the checks of one folder */
-
-/* The scan's own checks of the .lev (before CustomMap_Validate): the bytes FrontendLevelAsset_LoadedImageFits and the
-   field grid load use, and the field grid path maps\<name>\<name> (no other directory: the map must not reach files
-   outside its folder). */
-static bool CustomMaps_CheckLevel(const std::string &name,const std::vector<uint8_t> &lev,std::string *outReason)
-{
-  if (lev.size() < CUSTOM_MAP_LEV_MIN_BYTES) {
-    *outReason = "level file shorter than 0x800 bytes";
-    return false;
-  }
-  if ((CustomMaps_LoadU32(lev,CUSTOM_MAP_LEV_MAGIC) != ASSET_MAGIC_LEV) ||
-      (CustomMaps_LoadU32(lev,CUSTOM_MAP_LEV_CONVERTER) != PCK_CONVERTER_LEV_00070001)) {
-    *outReason = "not a level file (magic or converter version)";
-    return false;
-  }
-  if (CustomMaps_LoadU32(lev,CUSTOM_MAP_LEV_SIZE) > lev.size()) {
-    *outReason = "level header size larger than the file";
-    return false;
-  }
-  const uint32_t pathOffset = CustomMaps_LoadU32(lev,CUSTOM_MAP_LEV_FIELD_PATH);
-  if ((pathOffset > 0xffff) || (pathOffset % 2 != 0) || (pathOffset >= lev.size())) {
-    *outReason = "field grid path offset outside the level";
-    return false;
-  }
-  const std::string expected = "maps\\" + name + "\\" + name;
-  const size_t unitsAvailable = (lev.size() - pathOffset) / 2;
-  size_t unitIndex = 0;
-  for (; unitIndex < unitsAvailable; unitIndex++) {
-    uint16_t unit;
-    std::memcpy(&unit,lev.data() + pathOffset + 2 * unitIndex,sizeof unit);
-    if (unit == 0) {
-      break;
-    }
-    if ((unitIndex >= expected.size()) ||
-        (CustomMaps_LowerUnit(unit) != (uint16_t)(uint8_t)CustomMaps_LowerAscii(expected[unitIndex]))) {
-      *outReason = "field grid path is not " + expected;
-      return false;
-    }
-  }
-  if ((unitIndex != expected.size()) || (unitsAvailable - unitIndex < CUSTOM_MAP_PATH_EXTENSION_UNITS)) {
-    *outReason = "field grid path is not " + expected + " (terminated, with room for the extension)";
-    return false;
-  }
-  return true;
-}
-
-/* Checks the folder's .lev and .fld, from the cache while their sizes and write times are unchanged. */
-static const CustomMapFileCheck &CustomMaps_CheckFiles(const std::string &name)
-{
-  const std::filesystem::path folder = CustomMaps_Folder(name);
-  const std::filesystem::path levPath = folder / (name + ".lev");
-  const std::filesystem::path fldPath = folder / (name + ".fld");
-  std::error_code error;
-  CustomMapFileCheck check;
-
-  check.levBytes = std::filesystem::file_size(levPath,error);
-  if (!error) {
-    check.levTime = std::filesystem::last_write_time(levPath,error);
-  }
-  std::error_code fldError;
-  check.fldBytes = std::filesystem::file_size(fldPath,fldError);
-  if (!fldError) {
-    check.fldTime = std::filesystem::last_write_time(fldPath,fldError);
-  }
-  auto cached = s_CustomMapFileChecks.find(CustomMaps_Lower(name));
-  if (!error && !fldError && (cached != s_CustomMapFileChecks.end()) &&
-      (cached->second.levBytes == check.levBytes) && (cached->second.fldBytes == check.fldBytes) &&
-      (cached->second.levTime == check.levTime) && (cached->second.fldTime == check.fldTime)) {
-    return cached->second;
-  }
-  std::vector<uint8_t> lev;
-  std::vector<uint8_t> fld;
-  if (CustomMaps_ReadFile(levPath,CUSTOM_MAP_LEV_LIMIT_BYTES,&lev,&check.reason) &&
-      CustomMaps_CheckLevel(name,lev,&check.reason) &&
-      CustomMaps_ReadFile(fldPath,CUSTOM_MAP_FLD_LIMIT_BYTES,&fld,&check.reason)) {
-    char reason[256];
-    reason[0] = '\0';
-    /* the game's own field grid check first (it logs its reason), then the full custom map check */
-    if (!FieldGrid_ValidateLoadedImage(reinterpret_cast<const FieldGridAsset *>(fld.data()),(uint32_t)fld.size())) {
-      check.reason = "field grid rejected (see the line above)";
-    }
-    else if (CustomMap_Validate(lev.data(),lev.size(),fld.data(),fld.size(),reason,sizeof reason)) {
-      check.valid = true;
-      std::memcpy(check.record.data(),lev.data() + CUSTOM_MAP_LEV_RECORD,check.record.size());
-    }
-    else {
-      reason[sizeof reason - 1] = '\0';
-      check.reason = (reason[0] != '\0') ? reason : "rejected by the map check";
-    }
-  }
-  return s_CustomMapFileChecks[CustomMaps_Lower(name)] = check;
-}
-
-/* ---------------------------------------------------------------- map.ini */
+/* ---------------------------------------------------------------- texts */
 
 /* Appends the code points of UTF-8 text as display code units: Latin-1 stays, every other character becomes '?',
-   control characters are dropped; with lineBreaks the two characters \n become a rich-text line break. False for
-   malformed UTF-8. */
-static bool CustomMaps_AppendUtf8(const std::string &text,bool lineBreaks,size_t limit,std::vector<uint16_t> *out)
+   control characters are dropped. False for malformed UTF-8. */
+static bool CustomMaps_AppendUtf8(const std::string &text,size_t limit,std::vector<uint16_t> *out)
 {
   size_t index = 0;
   size_t appended = 0;
@@ -323,11 +218,7 @@ static bool CustomMaps_AppendUtf8(const std::string &text,bool lineBreaks,size_t
       }
       codePoint = codePoint << 6 | (unit & 0x3F);
     }
-    if (lineBreaks && (codePoint == '\\') && (index + 1 < text.size()) && (text[index + 1] == 'n')) {
-      codePoint = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_LINE_BREAK; /* not a character: no Latin-1 filter */
-      length = 2;
-    }
-    else if ((codePoint < 0x20) || ((codePoint >= 0x7F) && (codePoint < 0xA0))) {
+    if ((codePoint < 0x20) || ((codePoint >= 0x7F) && (codePoint < 0xA0))) {
       codePoint = 0; /* dropped */
     }
     else if (codePoint > 0xFF) {
@@ -342,119 +233,158 @@ static bool CustomMaps_AppendUtf8(const std::string &text,bool lineBreaks,size_t
   return true;
 }
 
-static std::string CustomMaps_Trim(const std::string &text)
+/* Appends the units of an STR string (raw UTF-16, up to its terminator) as display code units: Latin-1 characters
+   stay, others become '?', control characters are dropped. Of the rich-text commands only the colour, save/restore,
+   fixed space, soft hyphen and line break commands stay (with formatting; without, a line break becomes a space and
+   the rest is dropped); every command with a payload (a literal colour, an inline value, a nested stream or image
+   pointer) is dropped with its payload, so no pointer of the file reaches the text renderer. */
+static void CustomMaps_AppendStrUnits(const std::vector<uint16_t> &units,bool formatting,size_t limit,
+                                      std::vector<uint16_t> *out)
 {
-  size_t first = 0;
-  size_t last = text.size();
+  size_t appended = 0;
 
-  while ((first < last) && ((text[first] == ' ') || (text[first] == '\t'))) {
-    first++;
+  for (size_t index = 0; (index < units.size()) && (units[index] != 0) && (appended < limit); index++) {
+    uint16_t unit = units[index];
+    if ((unit & RICHTEXT_COMMAND_FLAG) != 0) {
+      const int opcode = unit & RICHTEXT_OPCODE_MASK;
+      if (opcode == RICHTEXT_OP_LITERAL_COLOR) {
+        index += RICHTEXT_RECORD_UNITS_LITERAL_COLOR - 1;
+        continue;
+      }
+      if ((opcode >= RICHTEXT_OP_INLINE_VALUE_0) && (opcode <= RICHTEXT_OP_INLINE_VALUE_2)) {
+        index += RICHTEXT_RECORD_UNITS_INLINE_VALUE - 1;
+        continue;
+      }
+      if ((opcode == RICHTEXT_OP_CALL_NESTED) || (opcode == RICHTEXT_OP_JUMP_NESTED)) {
+        index += RICHTEXT_RECORD_UNITS_NESTED - 1;
+        continue;
+      }
+      if (opcode == RICHTEXT_OP_INLINE_IMAGE) {
+        index += RICHTEXT_RECORD_UNITS_INLINE_IMAGE - 1;
+        continue;
+      }
+      const bool kept = (opcode <= RICHTEXT_OP_RESTORE_COLOR) || (opcode == RICHTEXT_OP_FIXED_SPACE) ||
+                        (opcode == RICHTEXT_OP_SOFT_HYPHEN) || (opcode == RICHTEXT_OP_LINE_BREAK);
+      if (!kept) {
+        continue;
+      }
+      if (!formatting) {
+        if (opcode != RICHTEXT_OP_LINE_BREAK) {
+          continue;
+        }
+        unit = ' ';
+      }
+      else {
+        unit = (uint16_t)(RICHTEXT_COMMAND_FLAG | opcode);
+      }
+    }
+    else if (unit == '\n') {
+      unit = formatting ? (uint16_t)(RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_LINE_BREAK) : (uint16_t)' ';
+    }
+    else if ((unit < 0x20) || ((unit >= 0x7F) && (unit < 0xA0))) {
+      continue;
+    }
+    else if (unit > 0xFF) {
+      unit = '?';
+    }
+    out->push_back(unit);
+    appended++;
   }
-  while ((last > first) && ((text[last - 1] == ' ') || (text[last - 1] == '\t') || (text[last - 1] == '\r'))) {
-    last--;
-  }
-  std::string trimmed = text.substr(first,last - first);
-  if ((trimmed.size() >= 2) && (trimmed.front() == '"') && (trimmed.back() == '"')) {
-    trimmed = trimmed.substr(1,trimmed.size() - 2);
-  }
-  return trimmed;
 }
 
-/* The keys of the [map] section of maps\<name>\map.ini (lowercased keys; empty when the file is missing or not
-   readable, which is logged). */
-static std::map<std::string,std::string> CustomMaps_ReadIni(const std::string &name)
+/* The STR strings of the project in the block for country (0 = the fallback block), or nullptr. */
+static const std::vector<std::vector<uint16_t>> *CustomMaps_ProjectStrings(const CustomProject &project,
+                                                                           uint32_t country)
 {
-  std::map<std::string,std::string> keys;
-  std::vector<uint8_t> bytes;
-  std::string reason;
-
-  if (!CustomMaps_ReadFile(CustomMaps_Folder(name) / L"map.ini",CUSTOM_MAP_INI_LIMIT_BYTES,&bytes,&reason)) {
-    Thandor_Log("custom map \"%s\": %s, the folder name is its title",name.c_str(),reason.c_str());
-    return keys;
+  auto block = project.texts.find(country);
+  if (block == project.texts.end()) {
+    block = project.texts.find(0);
   }
-  std::string text(bytes.begin(),bytes.end());
-  if (text.compare(0,3,"\xEF\xBB\xBF") == 0) {
-    text.erase(0,3);
-  }
-  bool inMapSection = false;
-  bool foundMapSection = false;
-  size_t lineStart = 0;
-  while (lineStart <= text.size()) {
-    size_t lineEnd = text.find('\n',lineStart);
-    if (lineEnd == std::string::npos) {
-      lineEnd = text.size();
-    }
-    const std::string line = CustomMaps_Trim(text.substr(lineStart,lineEnd - lineStart));
-    lineStart = lineEnd + 1;
-    if (line.empty() || (line[0] == ';') || (line[0] == '#')) {
-      continue;
-    }
-    if (line[0] == '[') {
-      inMapSection = CustomMaps_Lower(line) == "[map]";
-      foundMapSection = foundMapSection || inMapSection;
-      continue;
-    }
-    const size_t equals = line.find('=');
-    if (!inMapSection || (equals == std::string::npos)) {
-      continue;
-    }
-    keys[CustomMaps_Lower(CustomMaps_Trim(line.substr(0,equals)))] = CustomMaps_Trim(line.substr(equals + 1));
-  }
-  if (!foundMapSection) {
-    Thandor_Log("custom map \"%s\": map.ini has no [map] section, the folder name is its title",name.c_str());
-  }
-  return keys;
+  return (block == project.texts.end()) ? nullptr : &block->second;
 }
 
-/* Fills the entry's titles and descriptions from map.ini; the plain title falls back to the folder name. */
-static void CustomMaps_ReadTexts(CustomMapEntry *entry)
+/* Builds the display texts of a project: the title from display_name, else STR string 0 (without its leading
+   space), else the file stem; the description block line k from STR string k + 1; the author as a line of the
+   description. */
+static void CustomMaps_BuildTexts(const std::string &name,const CustomProject &project,CustomMapTexts *texts)
 {
-  const std::map<std::string,std::string> keys = CustomMaps_ReadIni(entry->name);
-
+  std::vector<uint16_t> author;
+  if (!project.author.empty() && !CustomMaps_AppendUtf8(project.author,CUSTOM_MAP_AUTHOR_UNITS,&author)) {
+    author.clear();
+  }
+  std::vector<uint16_t> displayName;
+  if (!project.displayName.empty() && !CustomMaps_AppendUtf8(project.displayName,CUSTOM_MAP_TITLE_UNITS,&displayName)) {
+    displayName.clear();
+  }
   for (int language = 0; language <= CUSTOM_MAP_LANGUAGE_COUNT; language++) {
-    const std::string suffix = (language == 0) ? "" : std::string(".") + g_CustomMapLanguages[language - 1].suffix;
-    auto title = keys.find("title" + suffix);
-    std::vector<uint16_t> &titleText = entry->titles[language];
-    if ((title != keys.end()) && !title->second.empty()) {
-      titleText.push_back(RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_1); /* overwritten by the callers */
-      if (!CustomMaps_AppendUtf8(title->second,false,CUSTOM_MAP_TITLE_UNITS,&titleText) || (titleText.size() == 1)) {
-        Thandor_Log("custom map \"%s\": title%s in map.ini is not usable UTF-8 text, ignored",entry->name.c_str(),
-                    suffix.c_str());
-        titleText.clear();
+    const uint32_t country = (language == 0) ? 0 : g_CustomMapLanguageCountries[language - 1];
+    const std::vector<std::vector<uint16_t>> *strings = CustomMaps_ProjectStrings(project,country);
+    std::vector<uint16_t> &title = texts->titles[language];
+    if (language == 0) {
+      title.push_back(RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_1); /* overwritten by the callers */
+      if (!displayName.empty()) {
+        title.insert(title.end(),displayName.begin(),displayName.end());
       }
-      else {
-        titleText.push_back(0);
+      else if (strings != nullptr) {
+        std::vector<uint16_t> text;
+        CustomMaps_AppendStrUnits((*strings)[0],false,CUSTOM_MAP_TITLE_UNITS + 8,&text);
+        size_t first = 0;
+        while ((first < text.size()) && (text[first] == ' ')) {
+          first++;
+        }
+        title.insert(title.end(),text.begin() + first,text.begin() + std::min(text.size(),first + CUSTOM_MAP_TITLE_UNITS));
+      }
+      if (title.size() == 1) {
+        for (char c : name) {
+          title.push_back((uint8_t)c);
+        }
+      }
+      title.push_back(0);
+    }
+    else if (displayName.empty() && (strings != nullptr)) {
+      std::vector<uint16_t> text;
+      CustomMaps_AppendStrUnits((*strings)[0],false,CUSTOM_MAP_TITLE_UNITS + 8,&text);
+      size_t first = 0;
+      while ((first < text.size()) && (text[first] == ' ')) {
+        first++;
+      }
+      if (first < text.size()) {
+        title.push_back(RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_1);
+        title.insert(title.end(),text.begin() + first,text.begin() + std::min(text.size(),first + CUSTOM_MAP_TITLE_UNITS));
+        title.push_back(0);
       }
     }
-    auto description = keys.find("description" + suffix);
-    std::vector<uint16_t> &descriptionText = entry->descriptions[language];
-    if ((description != keys.end()) && !description->second.empty()) {
-      if (!CustomMaps_AppendUtf8(description->second,true,CUSTOM_MAP_DESCRIPTION_UNITS,&descriptionText)) {
-        Thandor_Log("custom map \"%s\": description%s in map.ini is not UTF-8, ignored",entry->name.c_str(),
-                    suffix.c_str());
-        descriptionText.clear();
+    for (size_t line = 0; line < CUSTOM_MAP_DESCRIPTION_LINES; line++) {
+      std::vector<uint16_t> &text = texts->lines[language][line];
+      if ((strings != nullptr) && (line + 1 < strings->size())) {
+        CustomMaps_AppendStrUnits((*strings)[line + 1],true,CUSTOM_MAP_DESCRIPTION_UNITS,&text);
       }
-      else {
-        descriptionText.push_back(0);
+      if ((line == 0) && !author.empty()) {
+        static const char labelGerman[] = "Autor: ";
+        static const char labelEnglish[] = "Author: ";
+        if (!text.empty()) {
+          text.push_back(RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_LINE_BREAK);
+          text.push_back(RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_LINE_BREAK);
+        }
+        for (const char *c = (language == CUSTOM_MAP_LANGUAGE_GERMAN) ? labelGerman : labelEnglish; *c != '\0'; c++) {
+          text.push_back((uint8_t)*c);
+        }
+        text.insert(text.end(),author.begin(),author.end());
+      }
+      if (!text.empty()) {
+        text.push_back(0);
       }
     }
-  }
-  if (entry->titles[0].empty()) {
-    entry->titles[0].push_back(RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_1);
-    for (char c : entry->name) {
-      entry->titles[0].push_back((uint8_t)c);
-    }
-    entry->titles[0].push_back(0);
   }
 }
 
-/* The text array index of the current text language (0 = the plain key). */
+/* The text array index of the current text language (0 = the fallback). */
 static int CustomMaps_LanguageIndex()
 {
   const uint32_t countryCode = TextResource_ActiveLanguage();
 
   for (int language = 0; language < CUSTOM_MAP_LANGUAGE_COUNT; language++) {
-    if (g_CustomMapLanguages[language].countryCode == countryCode) {
+    if (g_CustomMapLanguageCountries[language] == countryCode) {
       return language + 1;
     }
   }
@@ -465,17 +395,149 @@ static uint16_t *CustomMaps_Title(CustomMapEntry *entry)
 {
   const int language = CustomMaps_LanguageIndex();
 
-  return (entry->titles[language].empty() ? entry->titles[0] : entry->titles[language]).data();
+  return (entry->texts.titles[language].empty() ? entry->texts.titles[0] : entry->texts.titles[language]).data();
 }
 
-static uint16_t *CustomMaps_Description(CustomMapEntry *entry)
+/* Line line of the description block: the language's line, else the fallback's, else the description. */
+static uint16_t *CustomMaps_DescriptionLine(CustomMapEntry *entry,size_t line)
 {
   const int language = CustomMaps_LanguageIndex();
 
-  if (!entry->descriptions[language].empty()) {
-    return entry->descriptions[language].data();
+  for (size_t candidate : {line,(size_t)0}) {
+    for (int index : {language,0}) {
+      std::vector<uint16_t> &text = entry->texts.lines[index][candidate];
+      if (!text.empty()) {
+        return text.data();
+      }
+    }
   }
-  return entry->descriptions[0].empty() ? g_CustomMapEmptyText : entry->descriptions[0].data();
+  return g_CustomMapEmptyText;
+}
+
+/* ---------------------------------------------------------------- the checks of one project */
+
+/* The scan's own checks of the level (before CustomMap_Validate): the bytes FrontendLevelAsset_LoadedImageFits and
+   the field grid load use, and the field grid path, which must be the project's field entry without ".fld"
+   (level\<x>: the map can load no field grid but its own). */
+static bool CustomMaps_CheckLevel(const CustomProject &project,std::string *outReason)
+{
+  const std::vector<uint8_t> &lev = project.lev;
+
+  if (lev.size() < CUSTOM_MAP_LEV_MIN_BYTES) {
+    *outReason = "level shorter than 0x800 bytes";
+    return false;
+  }
+  if (lev.size() > CUSTOM_MAP_LEV_LIMIT_BYTES) {
+    *outReason = "level larger than 1 MiB";
+    return false;
+  }
+  if ((CustomMaps_LoadU32(lev,CUSTOM_MAP_LEV_MAGIC) != ASSET_MAGIC_LEV) ||
+      (CustomMaps_LoadU32(lev,CUSTOM_MAP_LEV_CONVERTER) != PCK_CONVERTER_LEV_00070001)) {
+    *outReason = "not a level (magic or converter version)";
+    return false;
+  }
+  if (CustomMaps_LoadU32(lev,CUSTOM_MAP_LEV_SIZE) > lev.size()) {
+    *outReason = "level header size larger than the level";
+    return false;
+  }
+  const uint32_t pathOffset = CustomMaps_LoadU32(lev,CUSTOM_MAP_LEV_FIELD_PATH);
+  if ((pathOffset > 0xffff) || (pathOffset % 2 != 0) || (pathOffset >= lev.size())) {
+    *outReason = "field grid path offset outside the level";
+    return false;
+  }
+  /* "level/<x>.fld" -> "level\<x>" */
+  std::string expected = project.fieldEntry.substr(0,project.fieldEntry.size() - 4);
+  std::replace(expected.begin(),expected.end(),'/','\\');
+  const size_t unitsAvailable = (lev.size() - pathOffset) / 2;
+  size_t unitIndex = 0;
+  for (; unitIndex < unitsAvailable; unitIndex++) {
+    uint16_t unit;
+    std::memcpy(&unit,lev.data() + pathOffset + 2 * unitIndex,sizeof unit);
+    if (unit == 0) {
+      break;
+    }
+    if ((unitIndex >= expected.size()) ||
+        (CustomMaps_LowerUnit(unit) != (uint16_t)(uint8_t)CustomMaps_LowerAscii(expected[unitIndex]))) {
+      *outReason = "field grid path is not " + expected;
+      return false;
+    }
+  }
+  if ((unitIndex != expected.size()) || (unitsAvailable - unitIndex < CUSTOM_MAP_PATH_EXTENSION_UNITS)) {
+    *outReason = "field grid path is not " + expected + " (terminated, with room for the extension)";
+    return false;
+  }
+  return true;
+}
+
+/* Reads and checks the project maps\<name>.thmap into *check (size and write time as given); on success also
+   *outProject when not nullptr. */
+static void CustomMaps_LoadAndCheck(const std::string &name,CustomMapFileCheck *check,CustomProject *outProject)
+{
+  CustomProject project;
+
+  check->valid = false;
+  if (check->bytes > CustomProject_MaxFileBytes()) {
+    check->reason = "file too large (" + std::to_string(check->bytes) + " bytes, at most " +
+                    std::to_string(CustomProject_MaxFileBytes()) + ")";
+    return;
+  }
+  if (!CustomProject_Load(CustomMaps_ProjectPath(name),&project,&check->reason) ||
+      !CustomMaps_CheckLevel(project,&check->reason)) {
+    return;
+  }
+  char reason[256];
+  reason[0] = '\0';
+  /* the game's own field grid check first (it logs its reason), then the full custom map check */
+  if (!FieldGrid_ValidateLoadedImage(reinterpret_cast<const FieldGridAsset *>(project.fld.data()),
+                                     (uint32_t)std::min<size_t>(project.fld.size(),UINT32_MAX))) {
+    check->reason = "field grid rejected (see the line above)";
+    return;
+  }
+  if (!CustomMap_Validate(project.lev.data(),project.lev.size(),project.fld.data(),project.fld.size(),reason,
+                          sizeof reason)) {
+    reason[sizeof reason - 1] = '\0';
+    check->reason = (reason[0] != '\0') ? reason : "rejected by the map check";
+    return;
+  }
+  check->valid = true;
+  check->reason.clear();
+  std::memcpy(check->record.data(),project.lev.data() + CUSTOM_MAP_LEV_RECORD,check->record.size());
+  check->texts = CustomMapTexts{};
+  CustomMaps_BuildTexts(name,project,&check->texts);
+  if (outProject != nullptr) {
+    *outProject = std::move(project);
+  }
+}
+
+/* Size and write time of maps\<name>.thmap; false when it is missing. */
+static bool CustomMaps_StatProject(const std::string &name,uintmax_t *outBytes,std::filesystem::file_time_type *outTime)
+{
+  const std::filesystem::path path = CustomMaps_ProjectPath(name);
+  std::error_code error;
+
+  *outBytes = std::filesystem::file_size(path,error);
+  if (!error) {
+    *outTime = std::filesystem::last_write_time(path,error);
+  }
+  return !error;
+}
+
+/* Checks maps\<name>.thmap, from the cache while its size and write time are unchanged. */
+static const CustomMapFileCheck &CustomMaps_CheckFile(const std::string &name)
+{
+  CustomMapFileCheck check;
+
+  if (!CustomMaps_StatProject(name,&check.bytes,&check.time)) {
+    check.reason = name + ".thmap missing";
+    return s_CustomMapFileChecks[CustomMaps_Lower(name)] = check;
+  }
+  auto cached = s_CustomMapFileChecks.find(CustomMaps_Lower(name));
+  if ((cached != s_CustomMapFileChecks.end()) && (cached->second.bytes == check.bytes) &&
+      (cached->second.time == check.time)) {
+    return cached->second;
+  }
+  CustomMaps_LoadAndCheck(name,&check,nullptr);
+  return s_CustomMapFileChecks[CustomMaps_Lower(name)] = check;
 }
 
 /* ---------------------------------------------------------------- the scan */
@@ -549,11 +611,22 @@ static void CustomMaps_BuildRecord(CustomMapEntry *entry,const CustomMapFileChec
   }
 }
 
+/* Whether path's extension is ".thmap" (case ignored). */
+static bool CustomMaps_IsProjectFile(const std::filesystem::path &path)
+{
+  std::wstring extension = path.extension().wstring();
+  for (wchar_t &c : extension) {
+    c = (wchar_t)CustomMaps_LowerUnit((uint16_t)c);
+  }
+  return extension == L".thmap";
+}
+
 void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
 {
   const std::filesystem::path mapsFolder = CustomMaps_ExecutableDirectory() / L"maps";
   std::error_code error;
 
+  CustomMaps_Deactivate(); /* the scenario selection: no custom map is loaded now */
   s_CustomMapBySlot.fill(nullptr);
   s_RetiredCustomMaps = std::move(s_CustomMaps);
   s_CustomMaps.clear();
@@ -565,29 +638,33 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
   if (!std::filesystem::is_directory(mapsFolder,error)) {
     return;
   }
-  /* the folder names, sorted (case ignored) so that the slot probing does not depend on the directory order */
-  std::vector<std::wstring> folderNames;
+  /* the project names, sorted (case ignored) so that the slot probing does not depend on the directory order */
+  std::vector<std::wstring> projectNames;
   for (std::filesystem::directory_iterator it(mapsFolder,error), end; !error && (it != end); it.increment(error)) {
     std::error_code typeError;
     if (it->is_directory(typeError)) {
-      folderNames.push_back(it->path().filename().wstring());
+      Thandor_Log("custom map folder \"%ls\" ignored: custom maps are map editor projects maps\\<name>.thmap",
+                  it->path().filename().wstring().c_str());
+    }
+    else if (it->is_regular_file(typeError) && CustomMaps_IsProjectFile(it->path())) {
+      projectNames.push_back(it->path().stem().wstring());
     }
   }
   if (error) {
     Thandor_Log("custom maps: reading the maps folder failed (%s)",error.message().c_str());
   }
-  std::sort(folderNames.begin(),folderNames.end(),[](const std::wstring &left,const std::wstring &right) {
+  std::sort(projectNames.begin(),projectNames.end(),[](const std::wstring &left,const std::wstring &right) {
     return std::lexicographical_compare(left.begin(),left.end(),right.begin(),right.end(),
                                         [](wchar_t a,wchar_t b) { return CustomMaps_LowerUnit(a) < CustomMaps_LowerUnit(b); });
   });
   uint32_t skippedForLimit = 0;
-  for (const std::wstring &folderName : folderNames) {
-    if (!CustomMaps_IsValidName(folderName)) {
-      Thandor_Log("custom map folder \"%ls\" skipped: the name must be 1..%d characters A-Z a-z 0-9 _ -",
-                  folderName.c_str(),CUSTOM_MAP_NAME_MAX_UNITS);
+  for (const std::wstring &projectName : projectNames) {
+    if (!CustomMaps_IsValidName(projectName)) {
+      Thandor_Log("custom map \"%ls.thmap\" skipped: the name must be 1..%d characters A-Z a-z 0-9 _ -",
+                  projectName.c_str(),CUSTOM_MAP_NAME_MAX_UNITS);
       continue;
     }
-    std::string name(folderName.begin(),folderName.end()); /* ASCII, checked above */
+    std::string name(projectName.begin(),projectName.end()); /* ASCII, checked above */
     std::string lowerName = CustomMaps_Lower(name);
     if (CustomMaps_CollidesWithStockLevel(catalog,lowerName)) {
       Thandor_Log("custom map \"%s\" skipped: an original level has this name",name.c_str());
@@ -598,7 +675,7 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
       Thandor_Log("custom map \"%s\" skipped: more than %d custom maps",name.c_str(),CUSTOM_MAP_LIMIT);
       continue;
     }
-    const CustomMapFileCheck &check = CustomMaps_CheckFiles(name);
+    const CustomMapFileCheck &check = CustomMaps_CheckFile(name);
     if (!check.valid) {
       Thandor_Log("custom map \"%s\" skipped: %s",name.c_str(),check.reason.c_str());
       continue;
@@ -612,7 +689,7 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
     }
     s_CustomMapBySlot[slot] = entry.get();
     entry->titleIndex = CUSTOM_MAP_TITLE_INDEX_BASE + slot;
-    CustomMaps_ReadTexts(entry.get());
+    entry->texts = check.texts;
     CustomMaps_BuildRecord(entry.get(),check);
     s_CustomMaps.push_back(std::move(entry));
   }
@@ -623,6 +700,11 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
 uint32_t CustomMaps_Count()
 {
   return (uint32_t)s_CustomMaps.size();
+}
+
+const char *CustomMaps_ListedName(uint32_t index)
+{
+  return (index < s_CustomMaps.size()) ? s_CustomMaps[index]->name.c_str() : nullptr;
 }
 
 /* ---------------------------------------------------------------- the list */
@@ -707,10 +789,11 @@ static CustomMapEntry *CustomMaps_FindByName(const std::string &lowerName)
   return nullptr;
 }
 
-/* Writes "maps\<name>\<name>." into destination. */
+/* Writes "maps\<name>." into destination (the level path without its extension; nothing of that name exists on
+   disk: the level is served from the project, CustomMaps_FindServedAsset). */
 static void CustomMaps_WriteLevelPathStem(uint16_t *destination,const std::string &name)
 {
-  const std::string path = "maps\\" + name + "\\" + name + ".";
+  const std::string path = "maps\\" + name + ".";
   size_t unitIndex = 0;
 
   for (; unitIndex < path.size(); unitIndex++) {
@@ -782,26 +865,24 @@ bool CustomMaps_LevelPathOfIdentifier(uint16_t *destination,const uint16_t *iden
   return true;
 }
 
-/* The map name of a level path maps\<name>\<name>.lev (the two names equal, case ignored). */
+/* The map name of a level path maps\<name>.lev. */
 static bool CustomMaps_NameOfLevelPath(const uint16_t *levelPath,std::string *outName)
 {
   const uint16_t *rest;
-  std::string folderName;
-  std::string fileName;
+  std::string name;
+  static const char extension[] = ".lev";
 
   if (!CustomMaps_StartsWithMapsFolder(levelPath,&rest) ||
-      !CustomMaps_NameAt(rest,CUSTOM_MAP_NAME_MAX_UNITS + 1,"\\/",&folderName)) {
+      !CustomMaps_NameAt(rest,CUSTOM_MAP_NAME_MAX_UNITS + 1,".\\/",&name)) {
     return false;
   }
-  rest += folderName.size();
-  if ((*rest != '\\') && (*rest != '/')) {
-    return false;
+  rest += name.size();
+  for (size_t unitIndex = 0; unitIndex < sizeof extension; unitIndex++) {
+    if (CustomMaps_LowerUnit(rest[unitIndex]) != (uint8_t)extension[unitIndex]) {
+      return false;
+    }
   }
-  if (!CustomMaps_NameAt(rest + 1,CUSTOM_MAP_NAME_MAX_UNITS + 1,".",&fileName) ||
-      (CustomMaps_Lower(fileName) != CustomMaps_Lower(folderName))) {
-    return false;
-  }
-  *outName = folderName;
+  *outName = name;
   return true;
 }
 
@@ -830,7 +911,7 @@ bool CustomMaps_LevelPathPlayable(const uint16_t *levelPath)
   std::string name;
 
   if (CustomMaps_NameOfLevelPath(levelPath,&name)) {
-    const CustomMapFileCheck &check = CustomMaps_CheckFiles(name);
+    const CustomMapFileCheck &check = CustomMaps_CheckFile(name);
     if (!check.valid) {
       Thandor_Log("custom map \"%s\" cannot be loaded again: %s",name.c_str(),check.reason.c_str());
     }
@@ -855,6 +936,112 @@ bool CustomMaps_LevelPathPlayable(const uint16_t *levelPath)
   return false;
 }
 
+/* ---------------------------------------------------------------- the active project */
+
+void CustomMaps_Deactivate()
+{
+  if (s_CustomMapActive != nullptr) {
+    Thandor_Log("custom map \"%s\": project files released",s_CustomMapActive->lowerName.c_str());
+    s_CustomMapActive.reset();
+  }
+}
+
+/* Makes maps\<name>.thmap the active project (again read and checked unless it is active and unchanged). */
+static bool CustomMaps_ActivateName(const std::string &name)
+{
+  const std::string lowerName = CustomMaps_Lower(name);
+  uintmax_t bytes = 0;
+  std::filesystem::file_time_type time{};
+
+  if (!CustomMaps_StatProject(name,&bytes,&time)) {
+    CustomMaps_Deactivate();
+    s_CustomMapFileChecks.erase(lowerName);
+    Thandor_Log("custom map \"%s\" cannot be loaded: %s.thmap missing",name.c_str(),name.c_str());
+    return false;
+  }
+  if ((s_CustomMapActive != nullptr) && (s_CustomMapActive->lowerName == lowerName) &&
+      (s_CustomMapActive->bytes == bytes) && (s_CustomMapActive->time == time)) {
+    return true;
+  }
+  CustomMaps_Deactivate();
+  CustomMapFileCheck check;
+  CustomProject project;
+  check.bytes = bytes;
+  check.time = time;
+  CustomMaps_LoadAndCheck(name,&check,&project);
+  s_CustomMapFileChecks[lowerName] = check;
+  if (!check.valid) {
+    Thandor_Log("custom map \"%s\" cannot be loaded: %s",name.c_str(),check.reason.c_str());
+    return false;
+  }
+  auto active = std::make_unique<CustomMapActiveProject>();
+  active->lowerName = lowerName;
+  active->bytes = bytes;
+  active->time = time;
+  active->served = std::move(project.servedAssets);
+  active->served.insert_or_assign("maps/" + lowerName + ".lev",std::move(project.lev));
+  active->served.insert_or_assign(project.fieldEntry,std::move(project.fld));
+  Thandor_Log("custom map \"%s\": %s project, %u files served (field grid %s)",name.c_str(),
+              project.zip ? "ZIP" : "legacy PCK",(unsigned)active->served.size(),project.fieldEntry.c_str());
+  s_CustomMapActive = std::move(active);
+  return true;
+}
+
+bool CustomMaps_ActivateLevelPath(const uint16_t *levelPath)
+{
+  std::string name;
+
+  if ((levelPath == nullptr) || !CustomMaps_NameOfLevelPath(levelPath,&name)) {
+    CustomMaps_Deactivate();
+    return true;
+  }
+  return CustomMaps_ActivateName(name);
+}
+
+bool CustomMaps_ActivateIdentifier(const uint16_t *identifier)
+{
+  const uint16_t *rest;
+  std::string name;
+
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL ||
+      !CustomMaps_StartsWithMapsFolder(identifier,&rest) ||
+      !CustomMaps_NameAt(rest,CUSTOM_MAP_NAME_MAX_UNITS + 1,".",&name)) {
+    CustomMaps_Deactivate();
+    return true;
+  }
+  return CustomMaps_ActivateName(name);
+}
+
+bool CustomMaps_FindServedAsset(const uint16_t *path,const uint8_t **outData,uint32_t *outBytes)
+{
+  if ((s_CustomMapActive == nullptr) || (path == nullptr)) {
+    return false;
+  }
+  std::string key;
+  for (size_t unitIndex = 0; path[unitIndex] != 0; unitIndex++) {
+    const uint16_t unit = path[unitIndex];
+    if ((unit >= 0x80) || (unitIndex >= THANDOR_PATH_CAPACITY)) {
+      return false;
+    }
+    key.push_back((unit == '\\') ? '/' : CustomMaps_LowerAscii((char)unit));
+  }
+  const auto served = s_CustomMapActive->served.find(key);
+  if (served == s_CustomMapActive->served.end()) {
+    return false;
+  }
+  *outData = served->second.data();
+  *outBytes = (uint32_t)served->second.size();
+  return true;
+}
+
+bool CustomMaps_CheckProjectForTest(const std::string &name,std::string *outReason)
+{
+  const CustomMapFileCheck &check = CustomMaps_CheckFile(name);
+
+  *outReason = check.reason;
+  return check.valid;
+}
+
 /* ---------------------------------------------------------------- texts */
 
 bool CustomMaps_TryResolveText(uint32_t resourceId,uint16_t **outText)
@@ -871,10 +1058,10 @@ bool CustomMaps_TryResolveText(uint32_t resourceId,uint16_t **outText)
   }
   if ((resourceId >= CUSTOM_MAP_DESCRIPTION_ID_FIRST) &&
       (resourceId < CUSTOM_MAP_DESCRIPTION_ID_FIRST + TEXT_ID_LEVEL_DESCRIPTION_STRIDE * CUSTOM_MAP_TITLE_INDEX_SLOTS)) {
-    /* every line of the block (description, faction tasks, briefings) shows the description */
-    CustomMapEntry *entry =
-        s_CustomMapBySlot[(resourceId - CUSTOM_MAP_DESCRIPTION_ID_FIRST) / TEXT_ID_LEVEL_DESCRIPTION_STRIDE];
-    *outText = (entry != nullptr) ? CustomMaps_Description(entry) : g_CustomMapEmptyText;
+    const uint32_t offset = resourceId - CUSTOM_MAP_DESCRIPTION_ID_FIRST;
+    CustomMapEntry *entry = s_CustomMapBySlot[offset / TEXT_ID_LEVEL_DESCRIPTION_STRIDE];
+    *outText = (entry != nullptr) ? CustomMaps_DescriptionLine(entry,offset % TEXT_ID_LEVEL_DESCRIPTION_STRIDE)
+                                  : g_CustomMapEmptyText;
     return true;
   }
   return false;

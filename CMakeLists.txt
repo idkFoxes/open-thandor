@@ -55,6 +55,7 @@ add_executable(thandor WIN32
     src/assets/scenario/catalog.cpp
     src/assets/scenario/custom_map_validate.cpp
     src/assets/scenario/custom_maps.cpp
+    src/assets/scenario/custom_project.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
     src/assets/text/objective_texts.cpp

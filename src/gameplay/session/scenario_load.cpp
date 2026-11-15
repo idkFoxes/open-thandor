@@ -533,7 +533,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
 
   frontendRoot = g_FrontendRootNode;
   pageStack = UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack);
-  /* open-thandor: a custom map row (local games only) loads maps\<name>\<name>.lev (custom_maps.h) */
+  /* open-thandor: a custom map row (local games only) loads maps\<name>.lev from its project (custom_maps.h) */
   customMap = CustomMaps_LevelPathOfRecord(g_FrontendScenarioPathScratchUtf16,
                                            g_FrontendRootNode->missionsList.rowSlots[selectedRowIndex]);
   if (!customMap) {
@@ -545,6 +545,8 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
                g_ScenarioLevelDirectoryUtf16);
   }
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
+  /* open-thandor: the project of a custom map becomes active (its files are served), any other level releases it */
+  CustomMaps_ActivateLevelPath(g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
   frontendRoot->menuRoomModelView.contextFlags =
        frontendRoot->menuRoomModelView.contextFlags &
