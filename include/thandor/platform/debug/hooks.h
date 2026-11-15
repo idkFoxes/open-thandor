@@ -141,6 +141,12 @@ int DebugHook_AutosaveIntervalSeconds(int seconds);
    value (or none) keeps the setting. Read once (the switch is asked every frame). The test tools leave it unset, so
    the checks run the open-thandor additions as their thandor.ini says. */
 int DebugHook_OriginalMode(int on);
+/* Ghost-target counter of the AI group target (OPEN_THANDOR_AI_GHOST_COUNT=1,
+   AiUnitGroup_AssignCollectedEntitiesToBestTarget): nonzero when it counts (read once). Counted is called once per
+   group target choice with the candidates the root-node skip dropped and whether the target army differs from the
+   one the choice without that skip (the original) would take; thandor.log gets the session totals. */
+int DebugHook_AiGhostTargetCounting();
+void DebugHook_AiGhostTargetCounted(unsigned rootlessSkips, int decisionChanged);
 /* Step profiler sections (OPEN_THANDOR_STEP_PROFILE): section is a DebugProfileSection. */
 void DebugHook_ProfileEnter(int section);
 void DebugHook_ProfileLeave(int section);
@@ -194,6 +200,9 @@ struct DebugProfileScope {
 #define DebugHook_LocalPathingMode(mode) (mode)
 #define DebugHook_AutosaveIntervalSeconds(seconds) (seconds)
 #define DebugHook_OriginalMode(on) (on)
+#define DebugHook_AiGhostTargetCounting() 0
+/* the arguments are still named, so the counter's locals count as used; the call sits under the 0 above */
+#define DebugHook_AiGhostTargetCounted(rootlessSkips, decisionChanged) ((void)(rootlessSkips), (void)(decisionChanged))
 #define DebugHook_ProfileEnter(section) ((void)0)
 #define DebugHook_ProfileLeave(section) ((void)0)
 #define DebugHook_ProfileScope(section) ((void)0)

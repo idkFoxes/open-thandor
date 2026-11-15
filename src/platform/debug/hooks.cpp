@@ -151,6 +151,91 @@ void DebugHook_CampaignSessionEnded()
   DebugCampaign_DumpProgress("session ended");
 }
 
+/* --- ghost-target counter of the AI group target (OPEN_THANDOR_AI_GHOST_COUNT=1) --- */
+
+namespace {
+
+/* -1: not read yet */
+int s_aiGhostCounting = -1;
+/* totals of the current session: group target choices, root-node skips, changed target armies */
+unsigned s_aiGhostChoices;
+unsigned s_aiGhostSkips;
+unsigned s_aiGhostChanges;
+/* group choices of the last summary line */
+unsigned s_aiGhostLoggedChoices;
+
+/* Summary every this many simulation ticks when a group choice was made since the last one (test games are killed, so
+   the last line of a session is at most this old). */
+constexpr unsigned AI_GHOST_SUMMARY_TICKS = 600;
+
+void AiGhost_LogTotals(const char *when)
+{
+  Thandor_Log("test aid: ai ghost target %s: session %u tick %u: %u group choices, %u skips, %u decision changes",
+              when, g_TestAidSessionCount, g_GameFactionRuntimeImage.tail.simulationTick, s_aiGhostChoices,
+              s_aiGhostSkips, s_aiGhostChanges);
+  s_aiGhostLoggedChoices = s_aiGhostChoices;
+}
+
+void AiGhost_SessionStarted()
+{
+  if (DebugHook_AiGhostTargetCounting() == 0) {
+    return;
+  }
+  if (s_aiGhostChoices != 0) {
+    AiGhost_LogTotals("previous session total");
+  }
+  s_aiGhostChoices = 0;
+  s_aiGhostSkips = 0;
+  s_aiGhostChanges = 0;
+  s_aiGhostLoggedChoices = 0;
+}
+
+void AiGhost_AfterStep()
+{
+  if (s_aiGhostCounting != 1 ||
+      g_GameFactionRuntimeImage.tail.simulationTick % AI_GHOST_SUMMARY_TICKS != 0 ||
+      s_aiGhostChoices == s_aiGhostLoggedChoices) {
+    return;
+  }
+  AiGhost_LogTotals("totals");
+}
+
+/* after the frame that closes the session (the three exits of InGameRuntime_RunSessionUntilExit) */
+void AiGhost_FrameEnd()
+{
+  if (s_aiGhostCounting != 1 ||
+      !Any(g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED | UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING |
+                                      UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT))) {
+    return;
+  }
+  AiGhost_LogTotals("session end total");
+}
+
+}  // namespace
+
+int DebugHook_AiGhostTargetCounting()
+{
+  if (s_aiGhostCounting < 0) {
+    const char *value = getenv("OPEN_THANDOR_AI_GHOST_COUNT");
+    s_aiGhostCounting = value != nullptr && value[0] == '1';
+    if (s_aiGhostCounting != 0) {
+      Thandor_Log("test aid: ai ghost target counter on (OPEN_THANDOR_AI_GHOST_COUNT)");
+    }
+  }
+  return s_aiGhostCounting;
+}
+
+void DebugHook_AiGhostTargetCounted(unsigned rootlessSkips, int decisionChanged)
+{
+  s_aiGhostChoices = s_aiGhostChoices + 1;
+  s_aiGhostSkips = s_aiGhostSkips + rootlessSkips;
+  if (decisionChanged != 0) {
+    s_aiGhostChanges = s_aiGhostChanges + 1;
+    Thandor_Log("test aid: ai ghost target changed a group target: session %u tick %u (%u skipped candidates)",
+                g_TestAidSessionCount, g_GameFactionRuntimeImage.tail.simulationTick, rootlessSkips);
+  }
+}
+
 /* --- in-game session --- */
 
 void DebugHook_SessionInitializing()
@@ -163,6 +248,7 @@ void DebugHook_SessionStarted()
   g_TestAidSessionCount = g_TestAidSessionCount + 1;
   DebugStateHash_SessionStart();
   DebugProfile_SessionStarted();
+  AiGhost_SessionStarted();
   if (g_FrontendLoadedCampaignAsset != nullptr) {
     DebugCampaign_LogLevelStart();
     DebugCampaign_DumpProgress("level started");
@@ -180,6 +266,7 @@ void DebugHook_SessionFrameEnd()
   DebugProfile_FrameEnd();
   DebugCampaign_AutoWinTick();
   DebugCampaign_AutoLoseTick();
+  AiGhost_FrameEnd();
 }
 
 void DebugHook_SimulationStepBegin()
@@ -194,6 +281,7 @@ void DebugHook_SimulationStepEnd()
   DebugProfile_StepEnd(g_GameFactionRuntimeImage.tail.simulationTick);
   DebugPathTrace_AfterStep();
   DebugStateHash_AfterStep();
+  AiGhost_AfterStep();
 }
 
 void DebugHook_PathingEvent(int kind, const void *army, const void *other)
