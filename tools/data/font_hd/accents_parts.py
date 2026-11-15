@@ -183,12 +183,23 @@ def make_tilde(H, Wa):
     return _crop(r)
 
 
+# v9: font.gfx 2x ring (H = 5): a closed round ring - full edges, soft outer corners, an open 3 x 3 hole
+RING_5 = np.array([[.4, 1, 1, 1, .4],
+                   [1, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 1],
+                   [.4, 1, 1, 1, .4]])
+RING_PLUS_HOLE = False   # v8: disc with a plus-shaped opening at H = 5
+
+
 def make_ring(H, Wa, plus_hole=False):
     d = H
     R = d / 2.0
     c = (d / 2.0, d / 2.0)
     n = 64
     outer = [(c[0] + R * math.sin(2 * math.pi * i / n), c[1] + R * math.cos(2 * math.pi * i / n)) for i in range(n)]
+    if plus_hole and d == 5 and not RING_PLUS_HOLE:
+        return RING_5.copy()
     if plus_hole:                                   # H = 5: no room for a round hole (R - Wa = 0.5 is a grey pinhole):
         r = _poly_raster([outer], d, d)             # disc with a crisp plus-shaped opening, same form as the 3x hole
         m = d // 2

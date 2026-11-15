@@ -790,6 +790,11 @@ def render(M, code, return_info=False):
         if r is not None:
             info['conf'].append('Freies Zeichen wie auf den fertigen Buchstaben (gmarks_parts)')
             return (r, info) if return_info else r
+        import kmarks_parts                               # v9: fontk free ` ^ ~ dieresis macron acute cedilla
+        r = kmarks_parts.render(M, code)
+        if r is not None:
+            info['conf'].append('fontk: freies Zeichen wie auf den fertigen Grossbuchstaben (kmarks_parts)')
+            return (r, info) if return_info else r
     if getattr(M, 'dots', True):
         import dots_parts
         r = dots_parts.render(M, code)
