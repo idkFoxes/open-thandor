@@ -119,6 +119,9 @@ struct RendererState {
   int modeWidth = 0;      /* the running display mode (physical size; the framebuffer is it divided by N) */
   int modeHeight = 0;
   uint32_t deviceRestarts = 0; /* GPU devices started again after they kept failing (RecoverRenderer) */
+  /* movies play (SdlVideo_BeginMovieDisplay): exclusive fullscreen is shown as borderless fullscreen */
+  bool movieDisplay = false;
+  bool movieBorderlessApplied = false; /* the window is borderless in place of the exclusive fullscreen kind */
 };
 RendererState s_renderer;
 
@@ -765,6 +768,9 @@ void ApplyDisplayModeKind(uint32_t kind, int width, int height) noexcept
   SDL_Window *window = thandor::sdl3::MainWindow();
   const uint32_t previousKind = s_renderer.kind;
   s_renderer.kind = kind;
+  if (!s_renderer.movieDisplay) {
+    s_renderer.movieBorderlessApplied = false;
+  }
   if (thandor::sdl3::Windowed()) {
     /* the developer tools' window: the mode's size at its fixed position */
     SDL_SetWindowSize(window, width, height);
@@ -785,6 +791,17 @@ void ApplyDisplayModeKind(uint32_t kind, int width, int height) noexcept
     }
     break;
   case PERSISTENT_DISPLAY_MODE_FULLSCREEN: {
+    if (s_renderer.movieDisplay) {
+      /* movies always play in borderless fullscreen: an exclusive mode (the 640x480 start mode above all) stays
+         black on some systems */
+      if (!s_renderer.movieBorderlessApplied) {
+        Thandor_Log("movie playback: exclusive fullscreen shown as borderless fullscreen until the movies end");
+      }
+      s_renderer.movieBorderlessApplied = true;
+      SDL_SetWindowFullscreenMode(window, nullptr);
+      SDL_SetWindowFullscreen(window, true);
+      break;
+    }
     SDL_DisplayMode mode;
     SDL_zero(mode);
     const SDL_DisplayID display = SDL_GetDisplayForWindow(window);
@@ -1049,6 +1066,37 @@ void SdlVideo_SetDisplayModeKind(uint32_t kind)
 {
   s_renderer.pendingKind = (kind < PERSISTENT_DISPLAY_MODE_COUNT) ? kind : PERSISTENT_DISPLAY_MODE_FULLSCREEN;
   s_renderer.kindChosen = true;
+}
+
+void SdlVideo_BeginMovieDisplay()
+{
+  if (s_renderer.movieDisplay) {
+    return;
+  }
+  s_renderer.movieDisplay = true;
+  /* before the first display mode switch (the intro) the switch applies it; a window and borderless fullscreen
+     stay as they are */
+  if (!Windowed() && s_renderer.shown && (s_renderer.kind == PERSISTENT_DISPLAY_MODE_FULLSCREEN)) {
+    ApplyDisplayModeKind(PERSISTENT_DISPLAY_MODE_FULLSCREEN, s_renderer.modeWidth, s_renderer.modeHeight);
+    UpdateMouseMode();
+  }
+}
+
+void SdlVideo_EndMovieDisplay(bool restoreNow)
+{
+  if (!s_renderer.movieDisplay) {
+    return;
+  }
+  s_renderer.movieDisplay = false;
+  if (!s_renderer.movieBorderlessApplied) {
+    return;
+  }
+  if (!restoreNow) {
+    return; /* the next display mode switch applies the exclusive fullscreen kind again */
+  }
+  Thandor_Log("movie playback ended: back to exclusive fullscreen");
+  ApplyDisplayModeKind(s_renderer.kind, s_renderer.modeWidth, s_renderer.modeHeight);
+  UpdateMouseMode();
 }
 
 bool SdlVideo_GetVsync()

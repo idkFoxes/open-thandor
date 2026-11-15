@@ -560,7 +560,14 @@ The display settings page (main room: Optionen -> Grafik) chooses:
   offered: SDL_GPU has no Direct3D 11 backend.
 - **Anzeigemodus**: `Fenster` (a normal, resizable window in the mode's size; the mouse is the system mouse),
   `Vollbildfenster` (a borderless window over the whole display) and `Vollbild` (default: exclusive fullscreen in
-  the chosen mode, or the closest larger one the display has). The frame is letterboxed in all three.
+  the chosen mode, or the closest larger one the display has). The frame is letterboxed in all three. Movies (the
+  intro and a mission's end movie) always play in a borderless window over the whole display, also with `Vollbild`
+  (an exclusive mode stayed black during the intro on some systems): the intro starts borderless and the switch to
+  the saved resolution after it brings back the exclusive mode (no extra switch; with `-NOINTRO` the start is
+  exclusive as before), the end movie switches to borderless and back to the exclusive mode before the results page.
+  `thandor.log` gets the line `movie playback: exclusive fullscreen shown as borderless fullscreen until the movies
+  end` (and `movie playback ended: back to exclusive fullscreen` after an end movie). `Fenster` and
+  `Vollbildfenster` are not touched.
 - **Auflösung**: every resolution of the display from 640x480 up to the desktop size (sorted by width, then height),
   in a scrollable list of the original's round radio buttons (scroll bar in the original style, mouse wheel); the
   original showed only the ten smallest. The page opens with the list scrolled to the chosen resolution. There is

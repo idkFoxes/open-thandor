@@ -191,6 +191,8 @@ void Frontend_PlaySelectedEndMovie()
     movieOpened = Movie_Open(MovieOpenFlags::MOVIE_OPEN_STREAM,g_EndMoviePath,&playbackRateHz,nullptr);
     runtimeRoot = g_InGameRuntimeRoot;
     if (movieOpened) {
+      /* Not in the original: the end movie plays in borderless fullscreen, the results page in the saved kind */
+      SdlVideo_BeginMovieDisplay();
       std::atomic_ref<uint32_t>(g_EndMoviePendingTicks).store(0);
       g_TimerRegisterPeriodic(playbackRateHz,FrontendSession_PeriodicTick);
       UiPageStack_SetActiveIndex(1,
@@ -217,6 +219,7 @@ void Frontend_PlaySelectedEndMovie()
           UiFrame_ProcessAndPresent();
         } while (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING));
       }
+      SdlVideo_EndMovieDisplay(true);
       g_CursorVisibilityToken++;
       UiPageStack_SetActiveIndex(1,&runtimeRoot->endMoviePageStack);
       FrontendEndMovie_ShowResultsPage(runtimeRoot);
