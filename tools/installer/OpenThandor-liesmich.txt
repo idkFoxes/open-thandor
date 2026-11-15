@@ -12,17 +12,34 @@ Spieldaten, Karten, Filme, Spielstände und Einstellungen bleiben, wie sie sind.
 
 Projekt und Fehlermeldungen: https://github.com/idkFoxes/open-thandor
 
-Neu in Version 1.0.7
+Neu in Version 1.0.8
 --------------------
-- Behoben: Absturz beim Start mit Vulkan und schwarze 3D-Ansicht mit
-  DirectX 12 auf manchen Grafikkarten (gesehen bei NVIDIA RTX mit 16 GB).
-  Das Spiel lässt dem Grafiktreiber jetzt mehr Adressraum.
-- Neu: Stürzt das Spiel beim Start der Grafik ab, nimmt es beim nächsten
-  Start von selbst das nächste Verfahren (Vulkan -> DirectX 12 -> Software)
-  und speichert diese Wahl.
-- Neu: Größerer Zoombereich - weiter heraus- und näher heranzoomen,
-  passend für 1440p, 4K und breite Bildschirme.
-- Neu: thandor.log nennt die Grafikkarte und ihre Treiberversion.
+- Neu: Kampagnenkarte unter "Spiel auswählen" - jede gewonnene oder
+  freigeschaltete Mission lässt sich (erneut) starten; der Fortschritt steht
+  in save\kampagne.dat, ganz ohne Spielstände.
+- Neu: Schalter "Original Thandor" auf der Seite "Erweitert" (anfangs aus):
+  schaltet alle Neuerungen ab, Fehler- und Absturzbehebungen bleiben.
+- Neu: Verbesserte Wegfindung (anfangs an): Einheiten fahren Kurven, weichen
+  eigenen Einheiten aus und verteilen sich als Gruppe auf Formationsplätze.
+- Neu: Zielfenster oben links (Taste Z) und automatisches Speichern jede
+  Minute Spielzeit in save\autosave.sve (nur Einzelspieler).
+- Neu: Tastenbelegung frei änderbar (Optionen und F1 "Tastatur") und
+  Sprachauswahl auf der Seite "Erweitert".
+- Neu: Eigene Karten (experimentell): Karteneditor-Projekte maps\<Name>.thmap
+  erscheinen unter der neuen Schaltfläche "Eigene Karten".
+- Neu: Partien für Fehlerberichte aufzeichnen (anfangs aus), hochaufgelöste
+  Schrift bei UI-Skalierung 2x/3x (anfangs aus), lautere leise CD-Filme,
+  GitHub-Link im Hauptmenü.
+- Behoben: Absturz mit DirectX 12 während einer Mission, Absturz beim Ändern
+  der UI-Skalierung, seltene Abstürze des Computergegners (alle gesehen mit
+  1.0.7), Absturz bei einem Klick im Abschlussfilm.
+- Behoben: hängende Maustaste nach Fokuswechsel oder Minimieren (gesehen auf
+  dem Steam Deck).
+- Behoben: Vulkan/DirectX 12 starten die Darstellung nach einem Geräteausfall
+  neu; thandor.ini behält unbekannte Einstellungen und wird sicher
+  geschrieben; minimiert ohne Ton läuft das Spiel unter Windows 11 wieder in
+  Echtzeit.
+Alle Einzelheiten: docs/PATCH_NOTES.md im Projekt auf GitHub.
 
 Voraussetzungen
 ---------------

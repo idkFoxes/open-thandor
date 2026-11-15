@@ -69,16 +69,16 @@ You need an **installed full version of Thandor** and **64-bit Windows 10 or 11*
 | Frame pacing | - | **VSync** and an optional frame limit (60, 120, 144) |
 | Sound, music, movies | DirectSound, WinMM | SDL3, works on current Windows |
 | Settings | binary `thandor.dat` | readable `thandor.ini` (old settings taken over) |
-| Campaigns | a list; earlier missions only through savegames | **campaign map** (upcoming): every mission you reached can be started again, progress kept without savegames |
-| Own maps | - | **custom maps** (upcoming, experimental, single player): map editor projects `maps\<name>.thmap` in their own *Eigene Karten* list ([details](docs/custom_maps.md)) |
-| Options | keys fixed, language from Windows | **key bindings** editable (options page and in-game F1 *Tastatur*), **language** chosen in the menu: de, en, fr, it, es (upcoming) |
-| In the game | - | **improved pathfinding**, an **objective box** and an **autosave** every minute of play, each switchable (upcoming) |
-| Text at UI scale 2x/3x | enlarged pixels | optional **high-resolution font** on Vulkan and DirectX 12 (upcoming) |
-| Movies | some soundtracks very quiet | quiet movie soundtracks raised towards the level of the others (upcoming) |
-| Bug reports | - | optional **game recordings** (`recordings\*.otr`) named in `crash.log`, replayable up to a crash (upcoming) |
-| Original feel | - | one **Original Thandor** switch on the *Erweitert* page turns all these additions off; bug and crash fixes stay (upcoming) |
+| Campaigns | a list; earlier missions only through savegames | **campaign map**: every mission you reached can be started again, progress kept without savegames |
+| Own maps | - | **custom maps** (experimental, single player): map editor projects `maps\<name>.thmap` in their own *Eigene Karten* list ([details](docs/custom_maps.md)) |
+| Options | keys fixed, language from Windows | **key bindings** editable (options page and in-game F1 *Tastatur*), **language** chosen in the menu: de, en, fr, it, es |
+| In the game | - | **improved pathfinding**, an **objective box** and an **autosave** every minute of play, each switchable |
+| Text at UI scale 2x/3x | enlarged pixels | optional **high-resolution font** on Vulkan and DirectX 12 |
+| Movies | some soundtracks very quiet | quiet movie soundtracks raised towards the level of the others |
+| Bug reports | - | optional **game recordings** (`recordings\*.otr`) named in `crash.log`, replayable up to a crash |
+| Original feel | - | one **Original Thandor** switch on the *Erweitert* page turns all these additions off; bug and crash fixes stay |
 | Damaged files, odd maps | crashes | rejected with a message; safe saving |
-| Mouse | - | no stuck mouse button after a focus change (upcoming) |
+| Mouse | - | no stuck mouse button after a focus change |
 | Rules, AI, saves, maps, LAN | - | **unchanged**: saves, levels and multiplayer stay compatible with the original |
 
 Full list: **[Patch notes](docs/PATCH_NOTES.md)**.
