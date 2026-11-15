@@ -92,9 +92,15 @@ void UiPointer_DispatchPendingEvents()
     eventKind = (char)pointerEvent.eventType; /* GraphicsCursorEventType */
     switch (static_cast<GraphicsCursorEventType>(eventKind)) {
     case MOTION_OR_WHEEL:
+      FrontendGithubLink_NotePointer(pointerY,pointerX); /* not in the original: the link's hover state */
       UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
       break;
     case LEFT_PRESS:
+      /* not in the original (open-thandor): a press on the main menu's GitHub link opens the project page and goes
+         to no node; only without a pointer capture, as UiPointer_DispatchLeftPress takes a press */
+      if ((g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) && FrontendGithubLink_HandleLeftPress(pointerY,pointerX)) {
+        break;
+      }
       UiPointer_DispatchLeftPress(buttonMask,wheelDelta,pointerY,pointerX);
       break;
     case MIDDLE_PRESS:

@@ -86,6 +86,8 @@ static uint16_t g_ProjectTextCampaignButtonLabels[TEXT_ID_CAMPAIGN_BUTTON_LABEL_
 static uint16_t g_ProjectTextSprache[] = {'S','p','r','a','c','h','e',':',0};
 static uint16_t g_ProjectTextAutomatisch[] = {PROJECT_TEXT_BRIGHT,'A','u','t','o','m','a','t','i','s','c','h',0};
 static uint16_t g_ProjectTextLanguageButtonLabel[TEXT_ID_LANGUAGE_BUTTON_LABEL_UNITS] = {};
+/* the main menu's GitHub link (plain: FrontendVersionLabel_Draw chooses the colour, brighter under the pointer) */
+static uint16_t g_ProjectTextGithubLink[] = {'G','i','t','H','u','b',0};
 static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
     g_ProjectTextAnzeigemodus, g_ProjectTextFenster, g_ProjectTextVollbildfenster, g_ProjectTextVollbild,
     g_ProjectTextAnzeige, g_ProjectTextAnzeigeeinstellungen, g_ProjectTextErweitert, g_ProjectTextErweiterteEinstellungen,
@@ -99,7 +101,7 @@ static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
     g_ProjectTextCampaignKyrrdon, g_ProjectTextCampaignPiraten, g_ProjectTextCampaignHeadingLine, g_ProjectTextCampaignStatusLine,
     g_ProjectTextCampaignButtonLabels[0], g_ProjectTextCampaignButtonLabels[1], g_ProjectTextCampaignButtonLabels[2],
     g_ProjectTextCampaignButtonLabels[3], g_ProjectTextCampaignButtonLabels[4], g_ProjectTextCampaignButtonLabels[5],
-    g_ProjectTextSprache, g_ProjectTextAutomatisch, g_ProjectTextLanguageButtonLabel};
+    g_ProjectTextSprache, g_ProjectTextAutomatisch, g_ProjectTextLanguageButtonLabel, g_ProjectTextGithubLink};
 
 /* Not in the original: the language names (TEXT_ID_LANGUAGE_NAME_BASE..), each in its own language, bright like the
    choices; the same in every language. */

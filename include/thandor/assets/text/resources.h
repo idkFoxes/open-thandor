@@ -78,13 +78,16 @@ inline constexpr int TEXT_ID_PROJECT_BASE = 0x7F0000;
 inline constexpr int TEXT_ID_CAMPAIGN_BUTTON_LABEL_COUNT = 6;
 inline constexpr int TEXT_ID_CAMPAIGN_BUTTON_LABEL_UNITS = 64; /* code units of each label buffer, terminator included */
 /* the language choice of the advanced settings page: the box title, the "from Windows" choice and the label of the
-   language button (TextResource_SetLanguageButtonLabel); TEXT_ID_PROJECT_BASE + 49 stays reserved. The language
-   names are TEXT_ID_LANGUAGE_NAME_BASE.. (below). */
+   language button (TextResource_SetLanguageButtonLabel). The language names are TEXT_ID_LANGUAGE_NAME_BASE..
+   (below). */
 #define TEXT_ID_LANGUAGE_TITLE (TEXT_ID_PROJECT_BASE + 46) /* "Sprache:" */
 #define TEXT_ID_LANGUAGE_AUTO (TEXT_ID_PROJECT_BASE + 47) /* "Automatisch" */
 #define TEXT_ID_LANGUAGE_BUTTON_LABEL (TEXT_ID_PROJECT_BASE + 48)
 inline constexpr int TEXT_ID_LANGUAGE_BUTTON_LABEL_UNITS = 64; /* code units of the label buffer, terminator included */
-inline constexpr int TEXT_ID_PROJECT_COUNT = 49;
+/* the main menu's link to the project page, left of the version label (FrontendVersionLabel_Draw); the same in every
+   language */
+#define TEXT_ID_FRONTEND_GITHUB_LINK (TEXT_ID_PROJECT_BASE + 49) /* "GitHub" */
+inline constexpr int TEXT_ID_PROJECT_COUNT = 50;
 
 /* Not in the original: sets the text of TEXT_ID_ADVANCED_NOTE_UI_SCALE (Latin-1, cut to its buffer). */
 void TextResource_SetUiScaleNote(const char *text);
@@ -116,7 +119,7 @@ TextResourceId TextResource_SetLanguageButtonLabel(const uint16_t *text);
 
 /* Not in the original: the key binding list (ui/core/key_bindings.h): the page title, the four section titles and
    one action text per binding row (German; TextResource_SetKeyBindingTextsEnglish switches them to English). Ids
-   TEXT_ID_PROJECT_BASE + 46..49 belong to another project text block. */
+   TEXT_ID_PROJECT_BASE + 46..49 belong to other project texts. */
 #define TEXT_ID_KEY_BINDING_BASE (TEXT_ID_PROJECT_BASE + 50)
 #define TEXT_ID_KEYS_TITLE (TEXT_ID_KEY_BINDING_BASE + 0)
 #define TEXT_ID_KEYS_SECTION_GENERAL (TEXT_ID_KEY_BINDING_BASE + 1)
@@ -271,11 +274,11 @@ uint16_t *TextResource_ObjectiveTextEnglish(uint32_t index);
 inline constexpr int TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED = 0x100;
 
 /* The project text id blocks, in id order, must not overlap (TextResource_TryResolve tests them one after the
-   other): the project texts 0..TEXT_ID_PROJECT_COUNT - 1 and the reserved TEXT_ID_PROJECT_BASE + 49; the key binding
+   other): the project texts 0..TEXT_ID_PROJECT_COUNT - 1; the key binding
    texts; the language names; the pathing checkbox; the objective templates with the objective overlay checkbox at
    the end of their reserved block; the short mission objectives. */
-static_assert(TEXT_ID_PROJECT_BASE + TEXT_ID_PROJECT_COUNT + 1 <= TEXT_ID_KEY_BINDING_BASE,
-              "the project texts (and the reserved id 49) end before the key binding texts");
+static_assert(TEXT_ID_PROJECT_BASE + TEXT_ID_PROJECT_COUNT <= TEXT_ID_KEY_BINDING_BASE,
+              "the project texts end before the key binding texts");
 static_assert(TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT <= TEXT_ID_LANGUAGE_NAME_BASE,
               "the key binding texts end before the language names");
 static_assert(TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT <= TEXT_ID_ADVANCED_PATHING,

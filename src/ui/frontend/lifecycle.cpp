@@ -614,14 +614,29 @@ void FrontendRuntime_ShutdownAndReleaseResources()
 }
 
 /* Not in the original (open-thandor): "Open Thandor 1.0.7" (THANDOR_PRODUCT_VERSION_STRING) at the bottom right of
-   the main menu, in the small grey game font with its shadow. Shown while the frontend is the front root and the
-   menu room shows the entry hall (ROM record FRONTEND_ROM_RECORD_MAIN_MENU) with no dialog page open: centred in
-   the black bar below the room, or just above the bottom edge where the room reaches it. Called by UiFrame_Draw
-   after the roots, before the tooltip. */
-void FrontendVersionLabel_Draw()
+   the main menu, in the small grey game font with its shadow, and the "GitHub" link (TEXT_ID_FRONTEND_GITHUB_LINK)
+   on the same line to its left. Both are shown while the frontend is the front root and the menu room shows the
+   entry hall (ROM record FRONTEND_ROM_RECORD_MAIN_MENU) with no dialog page open: centred in the black bar below
+   the room, or just above the bottom edge where the room reaches it. FrontendVersionLabel_Layout places them for
+   the draw (FrontendVersionLabel_Draw) and the link's hit test (FrontendGithubLink_HandleLeftPress) alike. */
+namespace {
+
+constexpr uint32_t kVersionLabelStyle =
+    (0u << TEXT_STYLE_FONT_SHIFT) | (2u << TEXT_STYLE_PALETTE_SHIFT) | TEXT_STYLE_ALIGN_RIGHT;
+/* the link under the pointer: palette 1 (light grey) instead of the label's dark grey */
+constexpr uint32_t kGithubLinkHoverStyle =
+    (0u << TEXT_STYLE_FONT_SHIFT) | (1u << TEXT_STYLE_PALETTE_SHIFT) | TEXT_STYLE_ALIGN_RIGHT;
+constexpr int kVersionLabelMargin = 8;
+constexpr int kGithubLinkGap = 12; /* between the link's right end and the version label */
+constexpr int kGithubLinkHitSlack = 2; /* the hit rectangle reaches this far around the text */
+constexpr const char *kGithubLinkUrl = "https://github.com/idkFoxes/open-thandor";
+
+/* the last pointer position the pointer dispatch saw (FrontendGithubLink_NotePointer), for the hover state */
+int s_githubLinkPointerX = -1;
+int s_githubLinkPointerY = -1;
+
+uint16_t *FrontendVersionLabel_Text()
 {
-  constexpr uint32_t kStyle = (0u << TEXT_STYLE_FONT_SHIFT) | (2u << TEXT_STYLE_PALETTE_SHIFT) | TEXT_STYLE_ALIGN_RIGHT;
-  constexpr int kMargin = 8;
   static std::array<uint16_t, sizeof THANDOR_PRODUCT_VERSION_STRING> s_textUtf16 = [] {
     std::array<uint16_t, sizeof THANDOR_PRODUCT_VERSION_STRING> utf16 = {};
     for (std::size_t index = 0; index < utf16.size(); index++) {
@@ -629,36 +644,101 @@ void FrontendVersionLabel_Draw()
     }
     return utf16;
   }();
+  return s_textUtf16.data();
+}
+
+struct FrontendVersionLabelLayout {
+  int lineTop;
+  int lineHeight;
+  int versionRight; /* the version label ends here (right aligned) */
+  int linkRight; /* the link ends here (right aligned) */
+  int linkLeft;
+  uint16_t *linkText;
+};
+
+/* False when the label is not shown (see above); otherwise fills layout. */
+bool FrontendVersionLabel_Layout(FrontendVersionLabelLayout *layout)
+{
   FrontendUiImage *const frontendRoot = g_FrontendRootNode;
   uint32_t lineHeight;
   int barTop;
-  int lineTop;
 
   if ((frontendRoot == nullptr) || (g_UiRootNode != &frontendRoot->frontendRoot.root) || (g_FrontendActiveRomRecord == nullptr) ||
       (g_FrontendActiveRomRecord->recordId != FRONTEND_ROM_RECORD_MAIN_MENU) ||
       (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendViewModeStack)) != 0) ||
       (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendPageStack)) !=
        FRONTEND_PAGE_MAIN)) {
-    return;
+    return false;
   }
   const FrontendModelPointerContext *room =
        &frontendRoot->menuRoomModelView;
   if (Any(room->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED)) {
-    return;
+    return false;
   }
-  FontGlyph_GetLogicalSizeForStyle(kStyle,0,&lineHeight);
+  FontGlyph_GetLogicalSizeForStyle(kVersionLabelStyle,0,&lineHeight);
   barTop = room->base.bottom;
   if ((barTop < 0) || ((int)g_FramebufferHeight - barTop < (int)lineHeight + 4)) {
-    lineTop = (int)g_FramebufferHeight - (int)lineHeight - kMargin;
+    layout->lineTop = (int)g_FramebufferHeight - (int)lineHeight - kVersionLabelMargin;
   }
   else {
-    lineTop = barTop + ((int)g_FramebufferHeight - barTop - (int)lineHeight) / 2;
+    layout->lineTop = barTop + ((int)g_FramebufferHeight - barTop - (int)lineHeight) / 2;
   }
+  layout->lineHeight = (int)lineHeight;
+  layout->versionRight = (int)g_FramebufferWidth - kVersionLabelMargin;
+  layout->linkRight = layout->versionRight -
+                      (int)RichTextCommandStream_MeasureLine(kVersionLabelStyle,FrontendVersionLabel_Text()).widthPixels -
+                      kGithubLinkGap;
+  layout->linkText = TextResource_Resolve(TEXT_ID_FRONTEND_GITHUB_LINK);
+  layout->linkLeft = layout->linkRight -
+                     (int)RichTextCommandStream_MeasureLine(kVersionLabelStyle,layout->linkText).widthPixels;
+  return true;
+}
+
+bool FrontendGithubLink_Contains(const FrontendVersionLabelLayout &layout,int pointerX,int pointerY)
+{
+  return (pointerX >= layout.linkLeft - kGithubLinkHitSlack) && (pointerX < layout.linkRight + kGithubLinkHitSlack) &&
+         (pointerY >= layout.lineTop - kGithubLinkHitSlack) &&
+         (pointerY < layout.lineTop + layout.lineHeight + kGithubLinkHitSlack);
+}
+
+} // namespace
+
+/* Called by UiFrame_Draw after the roots, before the tooltip. */
+void FrontendVersionLabel_Draw()
+{
+  FrontendVersionLabelLayout layout;
+
+  if (!FrontendVersionLabel_Layout(&layout)) {
+    return;
+  }
+  const bool linkHovered = FrontendGithubLink_Contains(layout,s_githubLinkPointerX,s_githubLinkPointerY);
   if (g_GraphicsFramebufferBeginAccess()) {
     return;
   }
   RichTextCommandStream_DrawSingleLine
-            (g_FramebufferHeight,g_FramebufferWidth,0,0,kStyle,s_textUtf16.data(),lineTop,
-             (int)g_FramebufferWidth - kMargin);
+            (g_FramebufferHeight,g_FramebufferWidth,0,0,kVersionLabelStyle,FrontendVersionLabel_Text(),layout.lineTop,
+             layout.versionRight);
+  RichTextCommandStream_DrawSingleLine
+            (g_FramebufferHeight,g_FramebufferWidth,0,0,linkHovered ? kGithubLinkHoverStyle : kVersionLabelStyle,
+             layout.linkText,layout.lineTop,layout.linkRight);
   g_GraphicsFramebufferEndAccess();
+}
+
+void FrontendGithubLink_NotePointer(int pointerY,int pointerX)
+{
+  s_githubLinkPointerX = pointerX;
+  s_githubLinkPointerY = pointerY;
+}
+
+bool FrontendGithubLink_HandleLeftPress(int pointerY,int pointerX)
+{
+  FrontendVersionLabelLayout layout;
+
+  FrontendGithubLink_NotePointer(pointerY,pointerX);
+  if (!FrontendVersionLabel_Layout(&layout) || !FrontendGithubLink_Contains(layout,pointerX,pointerY)) {
+    return false;
+  }
+  Thandor_Log("main menu: GitHub link clicked, opening %s", kGithubLinkUrl);
+  SdlPlatform_OpenUrl(kGithubLinkUrl);
+  return true;
 }

@@ -99,7 +99,7 @@ uint16_t *const s_ProjectTextsEnglish[] = {
     /* 38..45: the filled-in campaign map lines and button labels */
     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
     s_LanguageTitle.data(), s_LanguageAuto.data()
-    /* 48: the language button's label (TextResource_SetLanguageButtonLabel) */};
+    /* 48: the language button's label (TextResource_SetLanguageButtonLabel); 49: "GitHub", the same in English */};
 
 } // namespace
 

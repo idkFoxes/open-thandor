@@ -33,6 +33,8 @@ A mission map for the campaigns: replay any mission you have reached, without sa
   The earlier `maps\<name>\` folders are no longer read. Without any custom map the list ends with a hint row
   that says where `.thmap` files go (and how many were rejected), with a link to the Thandor Map Editor on GitHub.
   Details: [custom_maps.md](custom_maps.md).
+- **GitHub link in the main menu:** a small *GitHub* link next to the version number at the bottom right opens the
+  project page (github.com/idkFoxes/open-thandor) in your browser; it lights up under the mouse pointer.
 
 #### Kept on purpose
 
@@ -70,6 +72,8 @@ Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder
   Netzwerkspiele zeigen und senden sie nicht. Die früheren Ordner `maps\<Name>\` werden nicht mehr gelesen.
   Ohne eigene Karte endet die Liste mit einer Hinweiszeile, die sagt, wohin `.thmap`-Dateien gehören (und wie viele
   abgelehnt wurden), mit einem Link zum Thandor Map Editor auf GitHub. Einzelheiten: [custom_maps.md](custom_maps.md).
+- **GitHub-Link im Hauptmenü:** Ein kleiner Link *GitHub* neben der Versionsnummer unten rechts öffnet die
+  Projektseite (github.com/idkFoxes/open-thandor) im Browser; unter dem Mauszeiger leuchtet er auf.
 
 #### Bewusst beibehalten
 
