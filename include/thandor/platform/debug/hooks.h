@@ -10,8 +10,8 @@
 
 /* The one interface between the game and the developer tools (src/platform/debug, src/platform/selftest).
 
-   The tools are compiled in only with the CMake option THANDOR_DEV_TOOLS (default OFF; preset "test",
-   build-test). Then the hooks below are functions in src/platform/debug/hooks.cpp, and the tools are switched on
+   The tools are compiled in only with the CMake option THANDOR_DEV_TOOLS (default OFF; preset "mingw-test",
+   build-mingw-test). Then the hooks below are functions in src/platform/debug/hooks.cpp, and the tools are switched on
    at run time by OPEN_THANDOR_* environment variables (docs/BUILDING.md): self-tests, input scripts, automatic
    screenshots, the determinism state hash, campaign starts and AUTOWIN, the level-script log, movie player,
    dump and compare, windowed mode, a second instance, UDP port and datagram log. Without a variable a hook
@@ -25,6 +25,29 @@
 #include <thandor/movie/runtime/types.h>
 #include <thandor/network/backend/types.h>
 #include <thandor/platform/debug/types.h>
+
+/* Sections of the step profiler (OPEN_THANDOR_STEP_PROFILE, platform/debug/profile.h), entered and left through
+   DebugHook_ProfileEnter / DebugHook_ProfileLeave. */
+enum DebugProfileSection {
+  DEBUG_PROFILE_ARMY_UPDATE = 0,     /* per-army primary update (all classes) */
+  DEBUG_PROFILE_PLAN_ROUTE,          /* EntityPathing_ResolveDestinationAndRebuildRoutes */
+  DEBUG_PROFILE_GROUP_ROUTES,        /* EntityPathing_RebuildOverlappingGroupRoutes */
+  DEBUG_PROFILE_YIELD_REPLAN,        /* PathingYield_BeginReplan + EndReplan */
+  DEBUG_PROFILE_FIND_BLOCKING,       /* collision scan of a ground move (original or improved) */
+  DEBUG_PROFILE_HANDLE_BLOCKED,      /* PathingYield_HandleBlocked */
+  DEBUG_PROFILE_ARRIVAL_TEST,        /* PathingArrival_TestArrived */
+  DEBUG_PROFILE_CORRIDOR_STEP,       /* PathingYield_FindCorridorSideStep */
+  DEBUG_PROFILE_DRIVE_IMPROVED,      /* ArmyDriveImproved_UpdateGroundAdvance */
+  DEBUG_PROFILE_FORMATION_SLOTS,     /* PathingFormation_AssignPointSlots */
+  DEBUG_PROFILE_GRID_COPY,           /* GridScratch_CopyPrimaryToSecondary */
+  DEBUG_PROFILE_PLAN_RETRY,          /* re-plan of ArmyRuntime_UpdateMovementAndWaypoints (route point reached) */
+  DEBUG_PROFILE_PLAN_DIRECT,         /* ArmyRuntime_StartDirectMoveCommand (re-approach of the final target) */
+  DEBUG_PROFILE_PROPAGATE,           /* GridPathCost_PropagateWeightedHexNeighbors */
+  DEBUG_PROFILE_YIELD_CAP,           /* count: improved P2 capped a retry wait */
+  DEBUG_PROFILE_YIELD_BUDGET,        /* count: improved P2 wait budget used up (re-plan at once) */
+  DEBUG_PROFILE_LOCKSTEP,            /* lockstep before a step: the players' commands (orders plan routes here) */
+  DEBUG_PROFILE_SECTION_COUNT
+};
 
 #ifdef THANDOR_DEV_TOOLS
 
@@ -53,6 +76,9 @@ int DebugHook_WindowMinimized();
 /* --- input --- */
 /* Nonzero while an input script drives the game: the real mouse is then ignored. */
 int DebugHook_IgnoreRealMouse();
+/* SdlPlatform_OpenUrl, before SDL_OpenURL: with OPEN_THANDOR_OPEN_URL=log (the test tools' default, game_env.py) the
+   URL is only logged and nonzero returned, so no browser opens during test runs. */
+int DebugHook_InterceptOpenUrl(const char *url);
 
 /* --- network (OPEN_THANDOR_NET_PORT, OPEN_THANDOR_NETLOG) --- */
 /* Around the bind of the game's UDP socket: binds to another port, then restores the game port in the
@@ -73,6 +99,9 @@ int DebugHook_ScenarioPageOpened();
 void DebugHook_CampaignLoaded(void *campaignAsset);
 /* Level start of a campaign, before (afterMerge 0) and after (1) the carried-over units are merged. */
 void DebugHook_CampaignCarryOver(int afterMerge);
+/* A campaign session ended through its end trigger, after CampaignProgress_RecordSessionEnd
+   (OPEN_THANDOR_CAMPAIGN_PROGRESS_DUMP). */
+void DebugHook_CampaignSessionEnded();
 
 /* --- in-game session --- */
 /* InGameRuntime_RunSessionUntilExit, before the session is initialised (the first simulation steps already run
@@ -80,7 +109,7 @@ void DebugHook_CampaignCarryOver(int afterMerge);
 void DebugHook_SessionInitializing();
 /* After the session is initialised, before its first frame (session counter, state hash start). */
 void DebugHook_SessionStarted();
-/* Start and end of every in-game frame (frame counter for the input script; OPEN_THANDOR_AUTOWIN). */
+/* Start and end of every in-game frame (frame counter for the input script; OPEN_THANDOR_AUTOWIN, _AUTOLOSE). */
 void DebugHook_SessionFrameBegin();
 void DebugHook_SessionFrameEnd();
 /* Around every simulation step (OPEN_THANDOR_STATEHASH). */
@@ -97,6 +126,42 @@ void DebugHook_LevelScriptEndTrigger(const InGameLevelConditionStorage *storage,
 int DebugHook_SuppressTransientMarkers();
 /* Effect creation and session random draws: with the state hash on, logs callers outside a simulation step. */
 void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
+/* Pathing and movement events for the movement trace (OPEN_THANDOR_PATHTRACE, platform/debug/pathtrace.h): kind
+   'R' route planned, 'T' route point changed by another army's planning, 'B' blocked by another model, 'H' stopped
+   to turn on the spot; army and other are ArmyRuntimeSlot pointers (other may be NULL). */
+void DebugHook_PathingEvent(int kind, const void *army, const void *other);
+/* PathingMode_ApplyForNewSession of a local session (InGameRuntime_InitializeNewSession): the pathing mode
+   (PathingMode value) to use instead of mode, the one the settings chose; OPEN_THANDOR_PATHING=improved|original
+   wins over [game] pathing (test runs: tools/test force original unless told otherwise). */
+int DebugHook_LocalPathingMode(int mode);
+/* The autosave interval of a local game in seconds (gameplay/session/autosave.cpp) instead of seconds, the one the
+   settings chose (0: [game] autosave is off): OPEN_THANDOR_AUTOSAVE=0|off switches the autosave off (the test tools'
+   default, game_env.py), a number n > 0 saves every n seconds whatever the setting says; any other value keeps the
+   setting's interval. */
+int DebugHook_AutosaveIntervalSeconds(int seconds);
+/* The "Original Thandor" master switch (core/settings/original_mode.cpp) instead of on, the one [game]
+   original_thandor chose: OPEN_THANDOR_ORIGINAL=1|on switches it on, 0|off off, whatever the setting says; any other
+   value (or none) keeps the setting. Read once (the switch is asked every frame). The test tools leave it unset, so
+   the checks run the open-thandor additions as their thandor.ini says. */
+int DebugHook_OriginalMode(int on);
+/* Ghost-target counter of the AI group target (OPEN_THANDOR_AI_GHOST_COUNT=1,
+   AiUnitGroup_AssignCollectedEntitiesToBestTarget): nonzero when it counts (read once). Counted is called once per
+   group target choice with the candidates the root-node skip dropped and whether the target army differs from the
+   one the choice without that skip (the original) would take; thandor.log gets the session totals. */
+int DebugHook_AiGhostTargetCounting();
+void DebugHook_AiGhostTargetCounted(unsigned rootlessSkips, int decisionChanged);
+/* Step profiler sections (OPEN_THANDOR_STEP_PROFILE): section is a DebugProfileSection. */
+void DebugHook_ProfileEnter(int section);
+void DebugHook_ProfileLeave(int section);
+/* Profiles the rest of the enclosing block as section. */
+struct DebugProfileScope {
+  int section;
+  explicit DebugProfileScope(int profiledSection) : section(profiledSection) { DebugHook_ProfileEnter(section); }
+  ~DebugProfileScope() { DebugHook_ProfileLeave(section); }
+  DebugProfileScope(const DebugProfileScope &) = delete;
+  DebugProfileScope &operator=(const DebugProfileScope &) = delete;
+};
+#define DebugHook_ProfileScope(section) DebugProfileScope debugProfileScope_(section)
 #define DebugHook_NoteOutsideStep(what) DebugHook_NoteOutsideStepFrom((what), __builtin_return_address(0))
 
 #else /* !THANDOR_DEV_TOOLS: no developer tools, the original behaviour */
@@ -111,6 +176,7 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_WindowMinimized() 0
 
 #define DebugHook_IgnoreRealMouse() 0
+#define DebugHook_InterceptOpenUrl(url) 0
 
 #define DebugHook_BeforeUdpBind(bindEndpoint, gamePort) ((void)0)
 #define DebugHook_AfterUdpBind(bindEndpoint, gamePort) ((void)0)
@@ -121,6 +187,7 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_ScenarioPageOpened() 0
 #define DebugHook_CampaignLoaded(campaignAsset) ((void)0)
 #define DebugHook_CampaignCarryOver(afterMerge) ((void)0)
+#define DebugHook_CampaignSessionEnded() ((void)0)
 
 #define DebugHook_SessionInitializing() ((void)0)
 #define DebugHook_SessionStarted() ((void)0)
@@ -133,6 +200,16 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_LevelScriptEndTrigger(storage, triggerIndex, trigger) ((void)0)
 #define DebugHook_SuppressTransientMarkers() 0
 #define DebugHook_NoteOutsideStep(what) ((void)0)
+#define DebugHook_PathingEvent(kind, army, other) ((void)0)
+#define DebugHook_LocalPathingMode(mode) (mode)
+#define DebugHook_AutosaveIntervalSeconds(seconds) (seconds)
+#define DebugHook_OriginalMode(on) (on)
+#define DebugHook_AiGhostTargetCounting() 0
+/* the arguments are still named, so the counter's locals count as used; the call sits under the 0 above */
+#define DebugHook_AiGhostTargetCounted(rootlessSkips, decisionChanged) ((void)(rootlessSkips), (void)(decisionChanged))
+#define DebugHook_ProfileEnter(section) ((void)0)
+#define DebugHook_ProfileLeave(section) ((void)0)
+#define DebugHook_ProfileScope(section) ((void)0)
 
 #endif /* THANDOR_DEV_TOOLS */
 

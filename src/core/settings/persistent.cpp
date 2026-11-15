@@ -16,6 +16,7 @@
 #include <thandor/thandor.h>
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/world/pathing/mode.h>
 
 /*
 open-thandor: the settings live in a readable thandor.ini instead of the original's 200-byte thandor.dat.
@@ -33,6 +34,9 @@ GetRegionOrFallback; only loading and saving changed:
   load, in the fixed order of the key table below, and with what the loaded thandor.ini had beyond the table
   (unknown keys, foreign sections; PersistentSettingsIniExtras), so keys of a newer version survive a run of an
   older one.
+- Sections owned by other modules (the key bindings' [keys]) are registered with PersistentSettings_RegisterSection:
+  the parser hands their lines to the owner (they are never kept as extras), Flush writes the text the owner
+  formats after the key table's sections and before the kept foreign sections.
 Without either file the original kept no image (all defaults, nothing saved); now an empty image (nothing
 present, so all defaults) is kept, so settings changed in the menus are saved to a new thandor.ini.
 */
@@ -69,7 +73,8 @@ enum {
   INI_KIND_GAIN,  /* Q15 volume, decimal; the comment also shows the percentage */
   INI_KIND_ENUM,  /* one of names[] (index = value) */
   INI_KIND_NAME,  /* PERSISTENT_SETTINGS_NAME_BYTES of UTF-16, written as quoted UTF-8 */
-  INI_KIND_RAW    /* reserved dword of the original file, written as 0x... and only when nonzero */
+  INI_KIND_RAW,   /* reserved dword of the original file, written as 0x... and only when nonzero */
+  INI_KIND_LANGUAGE /* telephone country code: auto, de, en, fr, it, es (s_IniLanguages) or a number */
 };
 
 struct PersistentIniKey {
@@ -109,6 +114,8 @@ static const PersistentIniRange s_IniRangeGameSpeed = {80, 120};
 static const PersistentIniRange s_IniRangeScrollStep = {8, 128};
 /* maxPlayersSlider 2..8 */
 static const PersistentIniRange s_IniRangePlayers = {2, 8};
+/* [game] language as a number: a telephone country code (at most three digits; 0 = auto) */
+static const PersistentIniRange s_IniRangeLanguage = {0, 999};
 
 static const char *const s_IniRendererNames[] = {"vulkan", "d3d12", "software"};
 static const char *const s_IniDisplayModeNames[] = {"fullscreen", "borderless", "window"};
@@ -116,6 +123,27 @@ static const char *const s_IniTextureQualityNames[] = {"high", "medium", "low"};
 static const char *const s_IniGpuRasterizationNames[] = {"smooth", "exact"};
 static const char *const s_IniUiScaleNames[] = {"auto", "1", "2", "3"};
 static const char *const s_IniVsyncNames[] = {"on", "off"};
+static const char *const s_IniPathingNames[] = {"improved", "original"};
+static const char *const s_IniObjectiveOverlayNames[] = {"on", "off"};
+static const char *const s_IniAutosaveNames[] = {"on", "off"};
+/* off first: index 0 is the default a missing key reads (PERSISTENT_ORIGINAL_THANDOR_OFF) */
+static const char *const s_IniOriginalThandorNames[] = {"off", "on"};
+/* off first: index 0 is the default a missing key reads (PERSISTENT_RECORD_GAMES_OFF) */
+static const char *const s_IniRecordGamesNames[] = {"off", "on"};
+/* off first: index 0 is the default a missing key reads (PERSISTENT_HD_FONT_OFF) */
+static const char *const s_IniHdFontNames[] = {"off", "on"};
+
+/* the text languages of [game] language (the value is the telephone country code, see LocaleTelephoneCountryCode) */
+struct PersistentIniLanguage {
+  const char *name;
+  uint32_t countryCode;
+};
+static const PersistentIniLanguage s_IniLanguages[] = {
+  {"auto", 0}, {"de", 49}, {"en", 44}, {"fr", 33}, {"it", 39}, {"es", 34}};
+/* the key name of the language until it became readable ([game] language_country_code = 49). Still read, and
+   still written (the plain country code, 0 = auto) directly before language, so that 1.0.7 and dev builds, which
+   only know this key, keep the language; when a file has both, language wins (in any order). */
+static const char s_IniLanguageOldKey[] = "language_country_code";
 
 #define INI_ENUM(names) names, (uint32_t)(sizeof names / sizeof names[0])
 #define INI_RANGE(range) nullptr, 0, &range
@@ -188,18 +216,90 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "player name, at most 20 characters", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_GAME_NAME, INI_KIND_NAME, "game", "game_name",
    "name of a hosted network game, at most 20 characters", 0, 0, nullptr, 0},
-  {PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, INI_KIND_UINT, "game", "language_country_code",
-   "text language as telephone country code (49 German, 44 English, ...), 0 = from Windows", 0, 0, nullptr, 0},
+  {PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, INI_KIND_LANGUAGE, "game", "language",
+   "text language: auto (default; from Windows), de, en, fr, it or es (another telephone country code as a number); "
+   "the game's own texts are German for de, English otherwise", 0, 0, INI_RANGE(s_IniRangeLanguage)},
+
+  {PERSISTENT_SETTING_PATHING_MODE, INI_KIND_ENUM, "game", "pathing",
+   "unit pathfinding and movement in single player: improved (default; units drive curves, wait for and give way to "
+   "each other) or original (exactly the original game's movement); a network game always agrees on one mode",
+   0, 0, INI_ENUM(s_IniPathingNames)},
+  {PERSISTENT_SETTING_OBJECTIVE_OVERLAY, INI_KIND_ENUM, "game", "objective_overlay",
+   "objective box at the top left of the game (the mission objective and its progress): on (default) or off",
+   0, 0, INI_ENUM(s_IniObjectiveOverlayNames)},
+  {PERSISTENT_SETTING_AUTOSAVE, INI_KIND_ENUM, "game", "autosave",
+   "save a single player game every minute of play to save\\autosave.sve (always the same file): on (default) or off",
+   0, 0, INI_ENUM(s_IniAutosaveNames)},
+  {PERSISTENT_SETTING_ORIGINAL_THANDOR, INI_KIND_ENUM, "game", "original_thandor",
+   "\"Original Thandor\": off (default) or on; on plays like the original game: every open-thandor addition (pathing, "
+   "objective box, autosave, campaign map, movie loudness, own maps, key bindings) behaves as in the original, their "
+   "own settings are kept for when it is off again; bug and crash fixes stay",
+   0, 0, INI_ENUM(s_IniOriginalThandorNames)},
+  {PERSISTENT_SETTING_RECORD_GAMES, INI_KIND_ENUM, "game", "record_games",
+   "record every single player game for bug reports to recordings\\<date>_<time>_<level>.otr (the newest 10, at most "
+   "200 MB together): off (default) or on; off while \"Original Thandor\" is on",
+   0, 0, INI_ENUM(s_IniRecordGamesNames)},
+  {PERSISTENT_SETTING_HD_FONT, INI_KIND_ENUM, "game", "hd_font",
+   "Vulkan / DirectX 12 at UI scale 2 and 3: the game font redrawn in high resolution instead of its pixels scaled up "
+   "(same sizes and line breaks): off (default) or on; off while \"Original Thandor\" is on",
+   0, 0, INI_ENUM(s_IniHdFontNames)},
 
   {PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, INI_KIND_UINT, "network", "players",
    "player count of a hosted network game (default 4)", 0, 0, INI_RANGE(s_IniRangePlayers)},
-
-  {0x50, INI_KIND_RAW, "reserved", "dword_50", "unused in the original settings file, kept", 0, 0, nullptr, 0},
-  {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, nullptr, 0},
-  {0x58, INI_KIND_RAW, "reserved", "dword_58", "unused in the original settings file, kept", 0, 0, nullptr, 0},
 };
 
 #define PERSISTENT_INI_KEY_COUNT (sizeof s_PersistentIniKeys / sizeof s_PersistentIniKeys[0])
+
+/* The sections other modules registered (PersistentSettings_RegisterSection), in registration order. */
+struct PersistentIniSection {
+  const char *name;
+  PersistentIniSectionLineFn parseLine;
+  PersistentIniSectionFormatFn format;
+  PersistentIniSectionLoadFn beginLoad;
+  PersistentIniSectionLoadFn endLoad;
+};
+static PersistentIniSection s_PersistentIniSections[PERSISTENT_SETTINGS_MAX_SECTIONS];
+static int s_PersistentIniSectionCount;
+
+bool PersistentSettings_RegisterSection(const char *name, PersistentIniSectionLineFn parseLine,
+                                        PersistentIniSectionFormatFn format, PersistentIniSectionLoadFn beginLoad,
+                                        PersistentIniSectionLoadFn endLoad)
+{
+  const PersistentIniSection entry = {name, parseLine, format, beginLoad, endLoad};
+
+  if (name == nullptr || parseLine == nullptr || format == nullptr) {
+    return false;
+  }
+  for (int index = 0; index < s_PersistentIniSectionCount; index++) {
+    if (_stricmp(s_PersistentIniSections[index].name, name) == 0) {
+      s_PersistentIniSections[index] = entry;
+      return true;
+    }
+  }
+  if (s_PersistentIniSectionCount >= PERSISTENT_SETTINGS_MAX_SECTIONS) {
+    return false;
+  }
+  s_PersistentIniSections[s_PersistentIniSectionCount++] = entry;
+  return true;
+}
+
+static void PersistentIni_BeginSections()
+{
+  for (int index = 0; index < s_PersistentIniSectionCount; index++) {
+    if (s_PersistentIniSections[index].beginLoad != nullptr) {
+      s_PersistentIniSections[index].beginLoad();
+    }
+  }
+}
+
+static void PersistentIni_EndSections()
+{
+  for (int index = 0; index < s_PersistentIniSectionCount; index++) {
+    if (s_PersistentIniSections[index].endLoad != nullptr) {
+      s_PersistentIniSections[index].endLoad();
+    }
+  }
+}
 
 /* Whether value may be loaded for key; logs why not. Without a range of its own a key accepts what its kind can
    hold: a switch 0/1, a gain 0..0x8000 (the volume sliders' range; more would amplify past full scale), an
@@ -401,6 +501,7 @@ static void PersistentIni_AppendName(PersistentIniWriter *writer, const uint8_t 
 }
 
 static bool PersistentIni_Equals(const char *begin, const char *end, const char *name);
+static int PersistentIni_FindRegisteredSection(const char *begin, const char *end);
 
 /* The kept extras entry of section [begin, end) (known or foreign), or nullptr. */
 static const PersistentSettingsIniExtras::Section *PersistentIni_FindExtras(const PersistentSettingsIniExtras *extras,
@@ -421,6 +522,12 @@ static const PersistentSettingsIniExtras::Section *PersistentIni_FindExtras(cons
 static void PersistentIni_AppendKey(PersistentIniWriter *writer, const uint8_t *image, const PersistentIniKey *key,
                                     uint32_t value)
 {
+  if (key->kind == INI_KIND_LANGUAGE) {
+    /* the old key first, for older versions (the last value wins there); this version prefers language */
+    PersistentIni_Append(writer, "; the text language for Open Thandor 1.0.7 and older, as telephone country code "
+                                 "(0 = from Windows); language below takes precedence\r\n");
+    PersistentIni_Append(writer, "%s = %u\r\n", s_IniLanguageOldKey, value);
+  }
   if (key->kind == INI_KIND_GAIN) {
     uint32_t tenths = (uint32_t)(((uint64_t)value * 1000 + PERSISTENT_SETTINGS_GAIN_FULL / 2) /
                                  PERSISTENT_SETTINGS_GAIN_FULL);
@@ -458,6 +565,22 @@ static void PersistentIni_AppendKey(PersistentIniWriter *writer, const uint8_t *
       PersistentIni_Append(writer, "%u", value);
     }
     break;
+  case INI_KIND_LANGUAGE: {
+    const char *name = nullptr;
+
+    for (const PersistentIniLanguage &language : s_IniLanguages) {
+      if (language.countryCode == value) {
+        name = language.name;
+      }
+    }
+    if (name != nullptr) {
+      PersistentIni_Append(writer, "%s", name);
+    }
+    else {
+      PersistentIni_Append(writer, "%u", value);
+    }
+    break;
+  }
   case INI_KIND_NAME:
     PersistentIni_Append(writer, "\"");
     PersistentIni_AppendName(writer, image + key->offset);
@@ -479,8 +602,8 @@ static void PersistentIni_AppendExtraLines(PersistentIniWriter *writer, const Pe
 }
 
 /* Writes the ini text of every key whose dword is in presentMask, section by section in the order the sections
-   first appear in the key table; after the keys of a section its kept unknown keys, and after the last section
-   the kept foreign sections (in file order, so a rewrite keeps them where they were relative to each other; the
+   first appear in the key table; after the keys of a section its kept unknown keys, after the last section the
+   registered sections (PersistentSettings_RegisterSection) and then the kept foreign sections (in file order, so a rewrite keeps them where they were relative to each other; the
    game's own sections come first). Returns the text length (no NUL counted). */
 uint32_t PersistentSettings_FormatIniWithExtras(const uint8_t *image, uint64_t presentMask,
                                                 const PersistentSettingsIniExtras *extras, char *out,
@@ -533,9 +656,22 @@ uint32_t PersistentSettings_FormatIniWithExtras(const uint8_t *image, uint64_t p
       PersistentIni_AppendExtraLines(&writer, kept);
     }
   }
+  /* the registered sections, each written in full by its owner (or omitted) */
+  for (int sectionIndex = 0; sectionIndex < s_PersistentIniSectionCount; sectionIndex++) {
+    static char sectionText[PERSISTENT_SETTINGS_INI_MAX_BYTES];
+    const PersistentIniSection &registered = s_PersistentIniSections[sectionIndex];
+    uint32_t sectionLength = registered.format(sectionText, sizeof sectionText);
+
+    if (sectionLength != 0 && sectionLength < sizeof sectionText) {
+      sectionText[sectionLength] = 0;
+      PersistentIni_Append(&writer, "\r\n[%s]\r\n%s", registered.name, sectionText);
+    }
+  }
   if (extras != nullptr) {
     for (const PersistentSettingsIniExtras::Section &kept : extras->sections) {
-      if (!kept.known) {
+      /* a registered section is its owner's (the parser never keeps one; skipped here so it is never written twice) */
+      if (!kept.known &&
+          PersistentIni_FindRegisteredSection(kept.name.c_str(), kept.name.c_str() + kept.name.size()) < 0) {
         PersistentIni_Append(&writer, "\r\n[%s]\r\n", kept.name.c_str());
         PersistentIni_AppendExtraLines(&writer, &kept);
       }
@@ -853,6 +989,42 @@ static void PersistentIni_KeepLine(PersistentSettingsIniExtras *extras, size_t s
   extras->byteCount += length + 2; /* and the line end */
 }
 
+/* The index in s_PersistentIniSections of the registered section [begin, end), -1 when it is not registered. */
+static int PersistentIni_FindRegisteredSection(const char *begin, const char *end)
+{
+  for (int sectionIndex = 0; sectionIndex < s_PersistentIniSectionCount; sectionIndex++) {
+    if (PersistentIni_Equals(begin, end, s_PersistentIniSections[sectionIndex].name)) {
+      return sectionIndex;
+    }
+  }
+  return -1;
+}
+
+/* One line [lineBegin, lineEnd) (trimmed, not a comment) of a registered section: a "key = value" line goes to its
+   owner, without a trailing comment; other lines are ignored. */
+static void PersistentIni_ParseRegisteredLine(int registeredSection, const char *lineBegin, const char *lineEnd)
+{
+  const char *equals = static_cast<const char *>(memchr(lineBegin, '=', (size_t)(lineEnd - lineBegin)));
+  const char *keyBegin = lineBegin;
+  const char *keyEnd = equals;
+  const char *valueBegin;
+  const char *valueEnd;
+
+  if (equals == nullptr) {
+    return;
+  }
+  PersistentIni_Trim(&keyBegin, &keyEnd);
+  valueBegin = equals + 1;
+  valueEnd = valueBegin;
+  while (valueEnd < lineEnd && *valueEnd != ';' && *valueEnd != '#') {
+    valueEnd++;
+  }
+  PersistentIni_Trim(&valueBegin, &valueEnd);
+  const std::string key(keyBegin, keyEnd);
+  const std::string value(valueBegin, valueEnd);
+  s_PersistentIniSections[registeredSection].parseLine(key.c_str(), value.c_str());
+}
+
 /* Parses ini text into image (which the caller zeroed); returns the mask of the dwords the text set. Values that
    do not parse are ignored. With extras, the lines this version does not know are collected for the rewrite:
    - in a section of the key table, every key line whose key is not in the table, together with the comment
@@ -860,7 +1032,8 @@ static void PersistentIni_KeepLine(PersistentSettingsIniExtras *extras, size_t s
      user comment could not be placed again reliably once keys are added or removed);
    - every line of a foreign section (comments included), with its header.
    A key the table knows is never kept as an extra, also when its value does not parse, so the rewrite never
-   writes it twice. Lines before the first section header (the game's own file comment) are not kept. */
+   writes it twice. Lines before the first section header (the game's own file comment) are not kept.
+   The lines of a registered section go to its owner (between its beginLoad and endLoad) and are never kept. */
 uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length, uint8_t *image,
                                                PersistentSettingsIniExtras *extras)
 {
@@ -875,6 +1048,8 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
   uint64_t presentMask = 0;
   uint64_t rejectedMask = 0; /* dwords whose value was out of range */
   uint64_t bitsGivenMask = 0; /* dwords of INI_KIND_BIT keys that got their default before the first bit */
+  int registeredSection = -1; /* index in s_PersistentIniSections of the current section, -1: none */
+  bool languageGiven = false; /* [game] language was loaded: the old language_country_code no longer applies */
 
   std::string converted;
 
@@ -889,6 +1064,7 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
     cursor = text;
     textEnd = text + length;
   }
+  PersistentIni_BeginSections();
   if (length >= 3 && (uint8_t)text[0] == 0xEF && (uint8_t)text[1] == 0xBB && (uint8_t)text[2] == 0xBF) {
     cursor += 3;
   }
@@ -916,7 +1092,7 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
       continue;
     }
     if (*lineBegin == ';' || *lineBegin == '#') {
-      if (extras != nullptr && sectionBegin != nullptr) {
+      if (extras != nullptr && sectionBegin != nullptr && registeredSection < 0) {
         if (sectionKnown) {
           pendingComments.emplace_back(lineBegin, lineEnd);
         }
@@ -937,19 +1113,25 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
                     lineBegin);
         sectionBegin = nullptr;
         sectionEnd = nullptr;
+        registeredSection = -1;
         continue;
       }
       sectionBegin = lineBegin + 1;
       sectionEnd = close;
       PersistentIni_Trim(&sectionBegin, &sectionEnd);
       sectionKnown = PersistentIni_IsKnownSection(sectionBegin, sectionEnd);
-      if (extras != nullptr && !sectionKnown) {
+      registeredSection = PersistentIni_FindRegisteredSection(sectionBegin, sectionEnd);
+      if (extras != nullptr && !sectionKnown && registeredSection < 0) {
         /* created at once, so an empty foreign section is kept too */
         sectionExtras = PersistentIni_ExtrasSection(extras, sectionBegin, sectionEnd, false);
       }
       continue;
     }
     if (sectionBegin == nullptr) {
+      continue;
+    }
+    if (registeredSection >= 0) {
+      PersistentIni_ParseRegisteredLine(registeredSection, lineBegin, lineEnd);
       continue;
     }
     if (!sectionKnown) {
@@ -975,10 +1157,15 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
       bool parsed = false;
 
       if (!PersistentIni_Equals(sectionBegin, sectionEnd, key->section) ||
-          !PersistentIni_Equals(keyBegin, keyEnd, key->key)) {
+          (!PersistentIni_Equals(keyBegin, keyEnd, key->key) &&
+           ((key->kind != INI_KIND_LANGUAGE) || !PersistentIni_Equals(keyBegin, keyEnd, s_IniLanguageOldKey)))) {
         continue;
       }
       keyKnown = true;
+      const bool oldLanguageKey = key->kind == INI_KIND_LANGUAGE && !PersistentIni_Equals(keyBegin, keyEnd, key->key);
+      if (oldLanguageKey && languageGiven) {
+        break; /* language has precedence, also when it comes first */
+      }
       if (key->kind == INI_KIND_NAME) {
         const char *nameBegin = valueBegin;
         const char *nameEnd = valueEnd;
@@ -1038,6 +1225,17 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
         }
         break;
       }
+      case INI_KIND_LANGUAGE:
+        for (const PersistentIniLanguage &language : s_IniLanguages) {
+          if (PersistentIni_Equals(valueBegin, valueEnd, language.name)) {
+            value = language.countryCode;
+            parsed = true;
+          }
+        }
+        if (!parsed) {
+          parsed = PersistentIni_ParseNumber(valueBegin, valueEnd, &value);
+        }
+        break;
       default:
         parsed = PersistentIni_ParseNumber(valueBegin, valueEnd, &value);
         break;
@@ -1073,6 +1271,9 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
           PersistentIni_SetDword(image, key->offset, value);
         }
         presentMask |= mask;
+        if (key->kind == INI_KIND_LANGUAGE && !oldLanguageKey) {
+          languageGiven = true;
+        }
       }
       break;
     }
@@ -1086,6 +1287,7 @@ uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length
     }
     pendingComments.clear();
   }
+  PersistentIni_EndSections();
   return PersistentIni_DropIncompleteMode(presentMask, rejectedMask);
 }
 
@@ -1217,6 +1419,9 @@ static void PersistentSettings_LoadImage()
   if (PersistentSettings_LoadIni(image)) {
     return;
   }
+  /* no thandor.ini: the registered sections load nothing (their defaults) */
+  PersistentIni_BeginSections();
+  PersistentIni_EndSections();
   /* no thandor.ini: an empty image (nothing present), unless thandor.dat loads below */
   g_PersistentSettings.image = image;
   g_PersistentSettings.loadedByteCount = 0;
@@ -1323,11 +1528,29 @@ static void PersistentSettings_ValidateShading()
   }
 }
 
+/* open-thandor: [game] pathing -> g_PathingModeSetting (the mode of the next local session,
+   PathingMode_ApplyForNewSession); a missing key or an unknown value is the default, improved (D1). */
+static void PersistentSettings_ApplyPathingMode()
+{
+  g_PathingModeSetting =
+      (PersistentSettings_Read(PERSISTENT_PATHING_IMPROVED, PERSISTENT_SETTING_PATHING_MODE) == PERSISTENT_PATHING_ORIGINAL)
+          ? PATHING_MODE_ORIGINAL : PATHING_MODE_IMPROVED;
+}
+
 void PersistentSettings_Load()
 {
   PersistentSettings_LoadImage();
   PersistentSettings_NormalizeColorDepth();
   PersistentSettings_ValidateShading();
+  PersistentSettings_ApplyPathingMode();
+}
+
+
+void PersistentSettings_MarkDirty()
+{
+  if (g_PersistentSettings.image != nullptr) {
+    g_PersistentSettings.dirtyWriteCount++;
+  }
 }
 
 
@@ -1415,4 +1638,67 @@ void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSett
       (settingsOffsetBytes + 4 < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
     s_PersistentSettingsPresentMask |= PersistentSettings_DwordMask(settingsOffsetBytes,4);
   }
+}
+
+/* Not in the original: the text language chosen in the menus (telephone country code, 0 = from Windows): sets
+   g_LocaleCountryCodeOverride, which every text page loaded from now on uses, and the settings dword the next
+   PersistentSettings_Flush saves as [game] language. Does not rebind loaded text pages (TextResource_SelectLanguage,
+   Game_ApplyLanguage). */
+void PersistentSettings_WriteLanguage(uint32_t countryCode)
+{
+  g_LocaleCountryCodeOverride = countryCode;
+  PersistentSettings_WriteChosen(countryCode,PERSISTENT_SETTING_LOCALE_COUNTRY_CODE);
+}
+
+/* Not in the original: the single-player pathing mode chosen in the menus (the "Erweitert" page): sets
+   g_PathingModeSetting, which the next local session uses (a running session keeps its mode), and the settings dword
+   the next PersistentSettings_Flush saves as [game] pathing. */
+void PersistentSettings_WritePathingImproved(bool improved)
+{
+  g_PathingModeSetting = improved ? PATHING_MODE_IMPROVED : PATHING_MODE_ORIGINAL;
+  PersistentSettings_WriteChosen(improved ? PERSISTENT_PATHING_IMPROVED : PERSISTENT_PATHING_ORIGINAL,
+                                 PERSISTENT_SETTING_PATHING_MODE);
+}
+
+/* Not in the original: the objective overlay setting chosen in the menus ("Ziel anzeigen" on the "Erweitert" page,
+   ObjectiveOverlay_ToggleSetting): the settings dword the next PersistentSettings_Flush saves as [game]
+   objective_overlay; present at once, so ObjectiveOverlay_Enabled reads the new value. */
+void PersistentSettings_WriteObjectiveOverlay(bool shown)
+{
+  PersistentSettings_WriteChosen(shown ? PERSISTENT_OBJECTIVE_OVERLAY_ON : PERSISTENT_OBJECTIVE_OVERLAY_OFF,
+                                 PERSISTENT_SETTING_OBJECTIVE_OVERLAY);
+}
+
+/* Not in the original: the autosave setting chosen in the menus ("Automatisch speichern" on the "Erweitert" page): the
+   settings dword the next PersistentSettings_Flush saves as [game] autosave; present at once, so Autosave_Enabled
+   reads the new value. */
+void PersistentSettings_WriteAutosave(bool enabled)
+{
+  PersistentSettings_WriteChosen(enabled ? PERSISTENT_AUTOSAVE_ON : PERSISTENT_AUTOSAVE_OFF,PERSISTENT_SETTING_AUTOSAVE);
+}
+
+/* Not in the original: the "Original Thandor" master switch chosen in the menus (the "Erweitert" page, through
+   OriginalMode_Set): the settings dword the next PersistentSettings_Flush saves as [game] original_thandor; present at
+   once, so OriginalMode_IsOn reads the new value. */
+void PersistentSettings_WriteOriginalThandor(bool on)
+{
+  PersistentSettings_WriteChosen(on ? PERSISTENT_ORIGINAL_THANDOR_ON : PERSISTENT_ORIGINAL_THANDOR_OFF,
+                                 PERSISTENT_SETTING_ORIGINAL_THANDOR);
+}
+
+/* Not in the original: the game recorder's option chosen in the menus ("Partien fuer Fehlerberichte aufzeichnen" on
+   the "Erweitert" page): the settings dword the next PersistentSettings_Flush saves as [game] record_games; the next
+   single player session follows it. */
+void PersistentSettings_WriteRecordGames(bool on)
+{
+  PersistentSettings_WriteChosen(on ? PERSISTENT_RECORD_GAMES_ON : PERSISTENT_RECORD_GAMES_OFF,
+                                 PERSISTENT_SETTING_RECORD_GAMES);
+}
+
+/* Not in the original: the high-resolution font option chosen in the menus ("Hochaufgeloeste Schrift" on the
+   "Erweitert" page): the settings dword the next PersistentSettings_Flush saves as [game] hd_font; the GPU renderers
+   read it with every frame (ui/text/hd_font.h). */
+void PersistentSettings_WriteHdFont(bool on)
+{
+  PersistentSettings_WriteChosen(on ? PERSISTENT_HD_FONT_ON : PERSISTENT_HD_FONT_OFF, PERSISTENT_SETTING_HD_FONT);
 }

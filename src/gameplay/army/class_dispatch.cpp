@@ -8,6 +8,7 @@
 #include <thandor/gameplay/army/class_dispatch.h>
 #include <thandor/gameplay/army/model_views.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Army entry of the terrainStateRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
@@ -44,6 +45,7 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *ownerNode)
 
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_ARMY_UPDATE);
   ArmyCommandGeneration *commandGenerationField;
   ModelRuntimeSlot *modelRuntime;
   ArmyRuntimeSlot *armyRuntime;

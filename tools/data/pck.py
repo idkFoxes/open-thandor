@@ -4,6 +4,9 @@ usage:
   python tools/data/pck.py list <package.pck>
   python tools/data/pck.py extract <package.pck> <out dir> [substring]
 
+As a module it also writes packages (write_package, encode_huffman_rle): the test tools build campaign progress
+files (save\\kampagne.dat, tools/data/campaign_progress.py) with it.
+
 Layout (include/thandor/gameplay/session/types.h): a 0x200-byte PckArchiveHeader (entry count at +0xB0), then the
 entries one after another: a 0x200-byte PckEntryHeader (UTF-16 path, runtime payload offset, unpacked size,
 type tag, stored size, compression method) followed by the stored bytes. Compression method 0 = the Huffman/RLE
@@ -69,6 +72,87 @@ def decode_huffman_rle(src, outsize):
         pos += bit >> 3
         bit &= 7
     return bytes(out)
+
+
+def huffman_tree(freq):
+    """The code tree PckCodec_DecodeHuffmanRle builds from the 256 byte weights: (zero, one, root) child tables."""
+    nodes = 512
+    weight = [0] * nodes
+    zero = [None] * nodes
+    one = [None] * nodes
+    for i in range(256):
+        weight[i] = freq[i]
+    next_node = 256
+    while True:
+        low = sec = 0xFFFFFFFF
+        low_node = sec_node = None
+        for i in range(nodes):
+            if weight[i] != 0:
+                if weight[i] < low:
+                    if low < sec:
+                        sec, sec_node = low, low_node
+                    low, low_node = weight[i], i
+                elif weight[i] < sec:
+                    sec, sec_node = weight[i], i
+        if sec >= 0x80000000:
+            break
+        weight[next_node] = low + sec
+        zero[next_node], one[next_node] = low_node, sec_node
+        weight[low_node] = weight[sec_node] = 0
+        next_node += 1
+    return zero, one, next_node - 1
+
+
+def encode_huffman_rle(data):
+    """Packs data for compression method 0 (decode_huffman_rle / PckCodec_DecodeHuffmanRle reads it back): every
+    byte weight 1, so every byte has an 8-bit code, and literal tokens only (a 0 bit, then the code, bits from the
+    least significant one on). Not as small as the game's own encoder, but a valid stream; 8 zero bytes follow it
+    for the decoder's dword reads."""
+    zero, one, root = huffman_tree([1] * 256)
+    codes = {}
+    stack = [(root, 0, 0)]
+    while stack:
+        node, bits, length = stack.pop()
+        if zero[node] is None:
+            codes[node] = (bits, length)
+            continue
+        stack.append((zero[node], bits, length + 1))
+        stack.append((one[node], bits | 1 << length, length + 1))
+    accumulator = bit_count = 0
+    out = bytearray(b"\1" * 256)
+    for byte in data:
+        bits, length = codes[byte]
+        accumulator |= (bits << 1) << bit_count  # the 0 flag bit, then the code
+        bit_count += length + 1
+        while bit_count >= 8:
+            out.append(accumulator & 0xFF)
+            accumulator >>= 8
+            bit_count -= 8
+    if bit_count:
+        out.append(accumulator & 0xFF)
+    return bytes(out) + b"\0" * 8
+
+
+def write_package(items, producer="open-thandor"):
+    """A package of (path, payload) items, every payload packed with method 0; the type tag of an entry is the
+    first payload dword (as the game's progress writer sets it)."""
+    def utf16(text, units):
+        raw = text.encode("utf-16-le")[:2 * (units - 1)]
+        return raw + b"\0" * (2 * units - len(raw))
+    body = bytearray()
+    for path, payload in items:
+        packed = encode_huffman_rle(payload)
+        header = bytearray(utf16(path, 246))
+        header += struct.pack("<II4sII", 0, len(payload), payload[:4], len(packed), 0)
+        header += b"\0" * (ENTRY_HEADER - len(header))
+        body += header + packed
+    archive = bytearray(ARCHIVE_HEADER)
+    archive[0:4] = b"pck\0"
+    struct.pack_into("<III", archive, 4, ARCHIVE_HEADER + len(body), 1, 0x10000)
+    archive[0x30:0x70] = utf16(producer, 32)
+    archive[0x70:0xB0] = utf16(producer, 32)
+    struct.pack_into("<I", archive, 0xB0, len(items))
+    return bytes(archive + body)
 
 
 FIELD_GRID_PREFIX = 0x10        # PCK_FIELD_GRID_PREFIX_BYTES: dword 0 = compact image size, rest unused

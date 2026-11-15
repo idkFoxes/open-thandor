@@ -9,7 +9,6 @@
 #define THANDOR_NETWORK_PROTOCOL_COMMANDS_H
 
 #include <thandor/core/types.h>
-#include <thandor/gameplay/replay/runtime.h>
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
 #include <thandor/ui/ingame/types.h>
@@ -17,6 +16,7 @@
 #include <thandor/gameplay/session/runtime.h>
 #include <thandor/ui/ingame/editor_tools.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/gameplay/replay/runtime.h>
 
 /* In-game command codes are handler addresses relative to InGameCommandQueue_AppendLocalPlayerCommand
    (whose original address is INGAME_COMMAND_CODE_BASE); a command is executed by calling
@@ -193,12 +193,17 @@ inline void InGameCommand_Issue(P1 payload1,P2 payload2,P3 payload3)
   uint32_t code;
 
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    if(!GameplayReplay_Active()) {
+    if (!GameRecorder_Active()) {
       Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
-    } else {
-      GameplayReplayCommandGuard replayGuard(CommandDispatch_CachedCodeOf<INGAME_COMMAND_CODE_BASE,Handler>(),
-          g_LocalPlayerRuntimeId,(CommandPayload)payload1,(CommandPayload)payload2,(CommandPayload)payload3);
-      if(replayGuard.execute()) Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    }
+    else {
+      /* open-thandor: the game recorder records the command, or blocks it during a playback */
+      GameRecorderCommandScope recorded(CommandDispatch_CachedCodeOf<INGAME_COMMAND_CODE_BASE,Handler>(),
+                                        g_LocalPlayerRuntimeId,(CommandPayload)payload1,(CommandPayload)payload2,
+                                        (CommandPayload)payload3);
+      if (recorded.Execute()) {
+        Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+      }
     }
   }
   else {

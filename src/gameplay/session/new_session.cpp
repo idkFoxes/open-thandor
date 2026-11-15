@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/world/pathing/mode.h>
 
 /* Module data. */
 
@@ -237,6 +238,8 @@ static bool InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameR
     DebugHook_CampaignCarryOver(0);
     OldUnitRuntime_MergeMasksAndReplayRecords();
     DebugHook_CampaignCarryOver(1);
+    /* open-thandor: a started level counts as unlocked in the campaign progress (native file only, no arena) */
+    CampaignProgress_NoteLevelStarted(g_FrontendLoadedCampaignAsset);
   }
   if (!InGameSession_AllocateGridScratchAndRebuildDerived(world,outError)) {
     return false;
@@ -257,12 +260,20 @@ static bool InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameR
 static void InGameNewSession_QueueIntroNotifications()
 
 {
+  g_TimerRegisterPeriodic(10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
+  InGameNewSession_QueueIntroNotificationRecords();
+}
+
+/* The records part of InGameNewSession_QueueIntroNotifications (split off for the game recorder, which starts a
+   recorded new level again from a save game: a loaded session queues no intro notifications). */
+void InGameNewSession_QueueIntroNotificationRecords()
+
+{
   InGameNotificationMovieId firstMovieId;
   uint32_t introIndex;
 
   /* the first of the five level intro notification movies, from the level image */
   firstMovieId = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.introNotificationMovieId;
-  g_TimerRegisterPeriodic(10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
   if (firstMovieId == 0) {
     return;
   }
@@ -285,7 +296,18 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
 {
   InGameRuntimeRoot *inGameRoot;
   uint32_t stepError;
+  bool networked;
 
+  /* not in the original: the session's pathing mode (docs/plans/pathfinding.md 4), fixed before the world is built:
+     a local session takes the setting ([game] pathing; the developer tools' OPEN_THANDOR_PATHING wins), a network
+     session the lobby agreement. A loaded savegame takes its own mode (InGameRuntime_InitializeLoadedSession). */
+  networked = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL;
+  PathingMode_ApplyForNewSession(networked);
+  if (!networked) {
+    g_PathingMode = static_cast<PathingMode>(DebugHook_LocalPathingMode(g_PathingMode));
+  }
+  Thandor_Log("session: pathing mode %s (%s)", Pathing_Improved() ? "improved" : "original",
+              networked ? "network" : "local");
   InGameNewSession_ResetSessionState();
   InGameNewSession_BuildSessionName((levelAsset->header).titleTextResourceIndex);
   /* the local player's block starts with its selection slots (SelectionPointerArray32): the same 32 entity

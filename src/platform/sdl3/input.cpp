@@ -19,10 +19,12 @@
 
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_timer.h>
 
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <iterator>
 #include <span>
 
 #include <thandor/thandor.h>
@@ -61,6 +63,9 @@ constexpr KeyboardVirtualKeyCode ToCode(VirtualKey key) noexcept
   return static_cast<KeyboardVirtualKeyCode>(key);
 }
 
+/* the virtual key each held physical key gave on its key-down (VirtualKey::None: not held), so its key-up releases
+   the same key even when the layout or Num Lock changed in between */
+KeyboardVirtualKeyCode s_heldVirtualKey[SDL_SCANCODE_COUNT] = {};
 /* the text input of the last key press may become characters (Win32_ShouldTranslateMessageFlags) */
 bool s_translateText = true;
 /* the pending wheel delta of the event being appended (DirectInput's g_MouseWheelDelta) */
@@ -253,11 +258,76 @@ UiKeyboardStateMask LockKeyBits() noexcept
   return bits;
 }
 
+constexpr uint32_t RingAdvance(uint32_t index, uint32_t count) noexcept
+{
+  return (index + count) % CURSOR_INPUT_EVENT_RING_SIZE;
+}
+
+/* What a full ring cost since the last line in thandor.log (UpdateMouseDiagnostics). */
+uint32_t s_ringMergedMotion = 0;
+uint32_t s_ringDroppedMotion = 0;
+uint32_t s_ringDroppedButton = 0;
+
+/* Takes the entry offset places behind the oldest one out of the ring: the older entries move up one slot. */
+void RemoveRingEntry(uint32_t offset) noexcept
+{
+  for (uint32_t index = offset; index > 0; index--) {
+    g_CursorInputEvents[RingAdvance(g_CursorInputReadIndex, index)] =
+        g_CursorInputEvents[RingAdvance(g_CursorInputReadIndex, index - 1)];
+  }
+  g_CursorInputReadIndex = RingAdvance(g_CursorInputReadIndex, 1);
+}
+
+/* The ring is full (the reader only runs between two pumps, a hitch can queue far more than it holds): frees one
+   slot without losing what matters. In order: the oldest two neighbouring motion entries with the same buttons
+   become one (the newer position, the wheel notches added); the oldest motion entry goes; with nothing but button
+   events the oldest event of a type that occurs again later goes, so the last press and release of each button, and
+   with them its final state, stay. 255 entries hold 6 button event types, so such an event always exists. */
+void MakeRoomInFullRing() noexcept
+{
+  constexpr uint32_t kEntries = CURSOR_INPUT_EVENT_RING_SIZE - 1; /* one slot stays free: read == write is empty */
+  const auto entry = [](uint32_t offset) -> GraphicsCursorInputEvent18 & {
+    return g_CursorInputEvents[RingAdvance(g_CursorInputReadIndex, offset)];
+  };
+  for (uint32_t offset = 0; offset + 1 < kEntries; offset++) {
+    GraphicsCursorInputEvent18 &older = entry(offset);
+    GraphicsCursorInputEvent18 &newer = entry(offset + 1);
+    if ((older.eventType == MOTION_OR_WHEEL) && (newer.eventType == MOTION_OR_WHEEL) &&
+        (older.buttonState == newer.buttonState)) {
+      newer.wheelDelta += older.wheelDelta;
+      RemoveRingEntry(offset);
+      s_ringMergedMotion++;
+      return;
+    }
+  }
+  for (uint32_t offset = 0; offset < kEntries; offset++) {
+    if (entry(offset).eventType == MOTION_OR_WHEEL) {
+      RemoveRingEntry(offset);
+      s_ringDroppedMotion++;
+      return;
+    }
+  }
+  for (uint32_t offset = 0; offset < kEntries; offset++) {
+    for (uint32_t later = offset + 1; later < kEntries; later++) {
+      if (entry(later).eventType == entry(offset).eventType) {
+        RemoveRingEntry(offset);
+        s_ringDroppedButton++;
+        return;
+      }
+    }
+  }
+}
+
 /* DirectInputMouse_AppendCursorEvent: appends one eventType entry to the g_CursorInputEvents ring, clamping the
    mouse position to the framebuffer on the way (the distance beyond each edge, plus one, goes to
-   g_CursorOverflow*). The entry records the clamped position, wheel delta, clock and buttons. */
+   g_CursorOverflow*). The entry records the clamped position, wheel delta, clock and buttons.
+   Project code: a full ring frees a slot first. The original overwrote it: write == read then read as an empty
+   ring, losing everything queued, a button release included. */
 void AppendCursorEvent(GraphicsCursorEventType eventType) noexcept
 {
+  if (RingAdvance(g_CursorInputWriteIndex, 1) == g_CursorInputReadIndex) {
+    MakeRoomInFullRing();
+  }
   const uint32_t eventIndex = g_CursorInputWriteIndex;
   uint32_t nextWriteIndex = eventIndex + 1;
   if (CURSOR_INPUT_EVENT_RING_SIZE - 1 < nextWriteIndex) {
@@ -373,6 +443,61 @@ bool ButtonOf(Uint8 button, GraphicsCursorButtonState &mask, GraphicsCursorEvent
 
 SoftwareDisplayModeHookProc *s_chainedSetDisplayMode = nullptr;
 
+/* Focus loss, focus gain, minimize: the generic held state (Keyboard_KeyHeld) and the remembered key-downs are
+   cleared. g_KeyboardSpecialKeyDown and the modifier state keep the original's handling. */
+void ReleaseHeldKeys() noexcept
+{
+  std::fill(std::begin(s_heldVirtualKey), std::end(s_heldVirtualKey), ToCode(VirtualKey::None));
+  Keyboard_ReleaseHeldKeys();
+}
+
+/* One line with the button state of every layer, for telling where a stuck button came from: game (mask from the
+   backend's events), cursor (the last event the UI consumed), capture (the UI node's button, 255 none), sdl (SDL's
+   tracked state), global (what the OS reports, here Wine/Proton fed by Steam Input). */
+void LogMouseState(const char *label) noexcept
+{
+  float x = 0.0f;
+  float y = 0.0f;
+  const SDL_MouseButtonFlags sdlState = SDL_GetMouseState(&x, &y);
+  const SDL_MouseButtonFlags globalState = SDL_GetGlobalMouseState(&x, &y);
+  Thandor_Log("mouse %s: game %x cursor %x capture %d sdl %x global %x relative %d", label,
+              static_cast<unsigned>(g_MouseButtonMask), static_cast<unsigned>(g_CursorButtonState),
+              static_cast<int>(g_UiPointerCaptureButton), static_cast<unsigned>(sdlState),
+              static_cast<unsigned>(globalState), AbsoluteMouse() ? 0 : 1);
+}
+
+/* The focus-change line: the first 200, then every 256th; always when a button is held, so a focus flicker in a long
+   session cannot fill the log but never hides a stuck state. */
+void LogFocusChange(const char *label) noexcept
+{
+  static uint32_t s_lines = 0;
+  s_lines++;
+  if ((s_lines <= 200) || ((s_lines % 256) == 0) || Any(g_MouseButtonMask)) {
+    LogMouseState(label);
+  }
+}
+
+/* Focus loss, minimize, hide: a button held now may be released while another window has the input, and that release
+   never arrives here. Every held button gets its release event now, so the cursor state and the UI's pointer capture
+   end through the normal path. Not while an input script drives the game (the script owns the mask). */
+void ReleaseHeldMouseButtons() noexcept
+{
+  static constexpr struct {
+    GraphicsCursorButtonState mask;
+    GraphicsCursorEventType release;
+  } kButtons[] = {{LEFT, LEFT_RELEASE}, {MIDDLE, MIDDLE_RELEASE}, {RIGHT, RIGHT_RELEASE}};
+  if (DebugHook_IgnoreRealMouse()) {
+    return;
+  }
+  s_mouseWheelDelta = 0;
+  for (const auto &button : kButtons) {
+    if (Any(g_MouseButtonMask & button.mask)) {
+      g_MouseButtonMask = g_MouseButtonMask & ~button.mask;
+      AppendCursorEvent(button.release);
+    }
+  }
+}
+
 } // namespace
 
 void HandleKeyDown(const SDL_KeyboardEvent &event)
@@ -384,6 +509,9 @@ void HandleKeyDown(const SDL_KeyboardEvent &event)
   }
   if (KeyIsAltGr(event)) {
     Keyboard_OnKeyDown(VK_CONTROL);
+  }
+  if (event.scancode < SDL_SCANCODE_COUNT) {
+    s_heldVirtualKey[event.scancode] = virtualKey;
   }
   Keyboard_OnKeyDown(virtualKey);
   s_translateText = KeyProducesText(virtualKey);
@@ -398,7 +526,14 @@ void HandleKeyDown(const SDL_KeyboardEvent &event)
 
 void HandleKeyUp(const SDL_KeyboardEvent &event)
 {
-  const KeyboardVirtualKeyCode virtualKey = VirtualKeyOf(event);
+  KeyboardVirtualKeyCode virtualKey = VirtualKeyOf(event);
+  /* the key-up of a held key releases what its key-down pressed */
+  if (event.scancode < SDL_SCANCODE_COUNT) {
+    if (s_heldVirtualKey[event.scancode] != ToCode(VirtualKey::None)) {
+      virtualKey = s_heldVirtualKey[event.scancode];
+    }
+    s_heldVirtualKey[event.scancode] = ToCode(VirtualKey::None);
+  }
   if (virtualKey != ToCode(VirtualKey::None)) {
     if (KeyIsAltGr(event)) {
       Keyboard_OnKeyUp(VK_CONTROL);
@@ -480,16 +615,80 @@ void HandleMouseEvent(const SDL_Event &event)
 
 void HandleFocusGained()
 {
+  LogFocusChange("focus gained");
   /* MainWindowProc on WM_ACTIVATEAPP: back to the game's priority, lock keys reseeded (modifiers released),
      queued keys dropped. The original restored real-time priority; high here (see ProcessEntry). */
   SetPriorityClass(GetCurrentProcess(), DebugHook_ProcessPriorityClass(HIGH_PRIORITY_CLASS));
   g_KeyboardStateMask = LockKeyBits();
   g_KeyboardFlushEvents();
+  /* project code: keys held before the focus came back are unknown */
+  ReleaseHeldKeys();
 }
 
 void HandleFocusLost()
 {
+  LogFocusChange("focus lost");
   SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+  /* project code: a key released while another window has the focus never sends its key-up here */
+  ReleaseHeldKeys();
+  ReleaseHeldMouseButtons();
+}
+
+void HandleWindowDeactivated()
+{
+  ReleaseHeldKeys();
+  if (Any(g_MouseButtonMask)) {
+    LogMouseState("window minimized or hidden");
+  }
+  ReleaseHeldMouseButtons();
+}
+
+void UpdateMouseDiagnostics() noexcept
+{
+  static constexpr struct {
+    GraphicsCursorButtonState mask;
+    const char *name;
+  } kButtons[] = {{LEFT, "left"}, {MIDDLE, "middle"}, {RIGHT, "right"}};
+  static constexpr Uint64 kHeldLogMs = 30000;
+  static constexpr Uint64 kRingLogIntervalMs = 2000;
+  static Uint64 s_pressedAt[std::size(kButtons)] = {};
+  static bool s_held[std::size(kButtons)] = {};
+  static bool s_reported[std::size(kButtons)] = {};
+  static Uint64 s_lastRingLog = 0;
+
+  if (DebugHook_IgnoreRealMouse()) {
+    return;
+  }
+  const Uint64 now = SDL_GetTicks();
+  for (std::size_t index = 0; index < std::size(kButtons); index++) {
+    const bool down = Any(g_MouseButtonMask & kButtons[index].mask);
+    if (down && !s_held[index]) {
+      s_pressedAt[index] = now;
+      s_reported[index] = false;
+    }
+    else if (!down && s_held[index] && s_reported[index]) {
+      char label[64];
+      SDL_snprintf(label, sizeof(label), "%s released after %u s", kButtons[index].name,
+                   static_cast<unsigned>((now - s_pressedAt[index]) / 1000));
+      LogMouseState(label);
+    }
+    else if (down && !s_reported[index] && (now - s_pressedAt[index] > kHeldLogMs)) {
+      s_reported[index] = true;
+      char label[64];
+      SDL_snprintf(label, sizeof(label), "%s held over 30 s", kButtons[index].name);
+      LogMouseState(label);
+    }
+    s_held[index] = down;
+  }
+  if (((s_ringMergedMotion | s_ringDroppedMotion | s_ringDroppedButton) != 0) &&
+      (now - s_lastRingLog >= kRingLogIntervalMs)) {
+    Thandor_Log("mouse ring full: merged %u motions, dropped %u motions and %u button events", s_ringMergedMotion,
+                s_ringDroppedMotion, s_ringDroppedButton);
+    s_ringMergedMotion = 0;
+    s_ringDroppedMotion = 0;
+    s_ringDroppedButton = 0;
+    s_lastRingLog = now;
+  }
 }
 
 void UpdateMouseMode() noexcept

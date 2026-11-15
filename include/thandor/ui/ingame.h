@@ -28,6 +28,7 @@
 #include <thandor/ui/ingame/minimap_texture.h>
 #include <thandor/ui/ingame/music_choice.h>
 #include <thandor/ui/ingame/notifications.h>
+#include <thandor/ui/ingame/objective_overlay.h>
 #include <thandor/ui/ingame/pages.h>
 #include <thandor/ui/ingame/preview_markers.h>
 #include <thandor/ui/ingame/root_frame.h>

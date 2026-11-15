@@ -24,5 +24,8 @@ using SoundStopVoiceProc = void (SoundVoice * voice);
 using SoundIsVoiceFinishedProc = bool (SoundVoice * voice);
 using SoundStopAllVoicesProc = void ();
 using SoundSetVoiceGainsProc = void (uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, SoundVoice * voice);
+/* Not in the original: raises the level of a quiet voice set's sample (the movie soundtrack boost, see
+   SdlAudio_RaiseQuietSampleLevel). */
+using SoundRaiseQuietSampleLevelProc = void (SoundVoiceSet * voiceSet);
 
 #endif /* THANDOR_AUDIO_BACKEND_TYPES_H */

@@ -12,20 +12,8 @@
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/statehash.h>
-
-/* FNV-1a over 32-bit words; pointers never go in (addresses differ between builds), only pool indices. */
-struct StateHash {
-  uint64_t value;
-};
-
-static void StateHash_Add(StateHash *hash, uint32_t word)
-{
-  int byteIndex;
-  for (byteIndex = 0; byteIndex < 4; byteIndex++) {
-    hash->value ^= (word >> (byteIndex * 8)) & 0xffu;
-    hash->value *= 0x100000001b3ull;
-  }
-}
+#include <thandor/gameplay/replay/state_hash.h>
+#include <thandor/world/pathing/mode.h>
 
 static int s_stepsWanted;       /* OPEN_THANDOR_STATEHASH: steps to record, 0 = off */
 static int s_stepsDone;
@@ -42,14 +30,6 @@ static int s_speedStepTicks;    /* OPEN_THANDOR_STATEHASH_SPEED, 0 = keep the ga
    speed at the session start made the runs diverge (seen as a statehash.txt starting at tick 3 or 4). Tick 2 is
    where the speed took effect in the usual unloaded run, so those runs keep their hashes. */
 constexpr auto STATEHASH_SPEED_AFTER_TICK = 2u;
-
-static int32_t DebugStateHash_ArmyIndex(const void *army)
-{
-  if (army == nullptr) {
-    return -1;
-  }
-  return (int32_t)(Asset_ByteDistance(army, g_ArmyRuntimeSlots) / (int)sizeof(ArmyRuntimeSlot));
-}
 
 void DebugStateHash_SessionInitializing()
 {
@@ -93,6 +73,11 @@ void DebugStateHash_SessionStart()
   s_pauseTick = getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT") != nullptr ?
                 (unsigned)atoi(getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT")) : 0;
   /* the random streams were seeded in DebugStateHash_SessionInitializing */
+  if (s_output != nullptr) {
+    /* a previous session (a campaign level before this one) ended before its last step: close its stream, or its
+       buffered lines are flushed at exit over the new file's start */
+    fclose(s_output);
+  }
   s_output = fopen("statehash.txt", "w");
   Thandor_Log("test aid: state hash for %d simulation steps, seed %s -> statehash.txt", s_stepsWanted,
               seed != nullptr ? seed : "12345");
@@ -141,6 +126,102 @@ static void DebugArena_MoveOrders(unsigned tick)
     else if (s_armyHomeX[slotIndex] != 0 || s_armyHomeY[slotIndex] != 0) {
       ArmyRuntime_StartRoutedMoveCommand(s_armyHomeY[slotIndex], s_armyHomeX[slotIndex], reinterpret_cast<ArmyMovementRuntime *>(army) /* movement view of the slot */);
     }
+  }
+}
+
+/* "pathing" (scenario tools/test/make_arena.py --scenario pathing, driven by tools/test/run_pathing.py): every mobile
+   army of faction 1 gets one routed move at ARENA_MOVE_OUT_TICK, in slot order as a selection order would issue them.
+   OPEN_THANDOR_ARENA_PATHING picks the order: "formation" (default) sends each army to the group target shifted by its
+   offset from the group centre (SelectionPointerArray_ApplyMoveCommand), "point" sends all to the group target itself,
+   "cross" mirrors each army's row through the centre row (two groups pass through each other), "selection" gives the
+   group target to a selection of the whole group (SelectionPointerArray_ApplyMoveCommand: a point order with the
+   improved mode's formation slots). The group target lies
+   OPEN_THANDOR_ARENA_PATHING_ROWS (default 40) grid rows beyond the centre, towards higher rows. */
+static void DebugArena_PathingOrders(unsigned tick)
+{
+  const char *mode = getenv("OPEN_THANDOR_ARENA_PATHING");
+  const char *rowsText = getenv("OPEN_THANDOR_ARENA_PATHING_ROWS");
+  int rows = rowsText != nullptr ? atoi(rowsText) : 40;
+  int64_t sumX = 0;
+  int64_t sumY = 0;
+  int count = 0;
+  Q12 centreX;
+  Q12 centreY;
+  unsigned slotIndex;
+  if (tick != ARENA_MOVE_OUT_TICK) {
+    return;
+  }
+  if (mode == nullptr) {
+    mode = "formation";
+  }
+  for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
+    ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
+    ModelRuntimeSlot *model = army->modelRuntimeOrSavedOffset.modelRuntime;
+    if (army->modelNodeRuntime == nullptr || model == nullptr || army->factionIndex != 1 ||
+        model->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0) {
+      continue;
+    }
+    sumX += army->modelNodeRuntime->worldTransform.translation.x;
+    sumY += army->modelNodeRuntime->worldTransform.translation.y;
+    count++;
+  }
+  if (count == 0) {
+    return;
+  }
+  centreX = (Q12)(sumX / count);
+  centreY = (Q12)(sumY / count);
+  if (strcmp(mode, "selection") == 0) {
+    /* the player's move command on a selection of the whole group (up to 32 units, slot order): with the group's
+       spread above 5.0 / 7.0 a point order (selection_set.cpp SelectionPointerArray_IsSpatialSpreadTooLarge) */
+    SelectionPointerArray32 selection = {};
+    int entryCount = 0;
+    for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT && entryCount < SELECTION_ENTRY_CAPACITY; slotIndex++) {
+      ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
+      ModelRuntimeSlot *model = army->modelRuntimeOrSavedOffset.modelRuntime;
+      if (army->modelNodeRuntime == nullptr || model == nullptr || army->factionIndex != 1 ||
+          model->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0) {
+        continue;
+      }
+      selection.entries[entryCount++] = ModelView_Cast<GameEntityRuntime>(army);
+    }
+    SelectionPointerArray_RecenterOffsetsAroundAveragePosition(&selection);
+    Thandor_Log("test aid: arena pathing: selection of %d to %d %d (spread too large %d)", entryCount,
+                centreX + rows * ARENA_ROW_STEP_X, centreY + rows * ARENA_ROW_STEP_Y,
+                SelectionPointerArray_IsSpatialSpreadTooLarge(&selection) ? 1 : 0);
+    SelectionPointerArray_ApplyMoveCommand(centreY + rows * ARENA_ROW_STEP_Y, centreX + rows * ARENA_ROW_STEP_X,
+                                           &selection);
+    return;
+  }
+  for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
+    ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
+    ModelRuntimeSlot *model = army->modelRuntimeOrSavedOffset.modelRuntime;
+    Q12 x;
+    Q12 y;
+    Q12 targetX;
+    Q12 targetY;
+    if (army->modelNodeRuntime == nullptr || model == nullptr || army->factionIndex != 1 ||
+        model->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0) {
+      continue;
+    }
+    x = army->modelNodeRuntime->worldTransform.translation.x;
+    y = army->modelNodeRuntime->worldTransform.translation.y;
+    if (strcmp(mode, "cross") == 0) {
+      /* same column, row mirrored through the centre row */
+      int rowOffset = (int)((int64_t)(y - centreY) / ARENA_ROW_STEP_Y);
+      targetY = y - 2 * rowOffset * ARENA_ROW_STEP_Y;
+      targetX = x - 2 * rowOffset * ARENA_ROW_STEP_X;
+    }
+    else {
+      targetX = centreX + rows * ARENA_ROW_STEP_X;
+      targetY = centreY + rows * ARENA_ROW_STEP_Y;
+      if (strcmp(mode, "point") != 0) {
+        targetX += x - centreX;
+        targetY += y - centreY;
+      }
+    }
+    Thandor_Log("test aid: arena pathing: army %u from %d %d to %d %d", slotIndex, x, y, targetX, targetY);
+    /* the engine takes Y first */
+    ArmyRuntime_StartRoutedMoveCommand(targetY, targetX, reinterpret_cast<ArmyMovementRuntime *>(army) /* movement view of the slot */);
   }
 }
 
@@ -233,6 +314,9 @@ static void DebugArena_Orders(int step, unsigned tick)
   if (strcmp(orders, "move") == 0) {
     DebugArena_MoveOrders(tick);
   }
+  else if (strcmp(orders, "pathing") == 0) {
+    DebugArena_PathingOrders(tick);
+  }
   else if (strcmp(orders, "production") == 0) {
     DebugArena_ProductionSummary(step);
     DebugArena_ProductionOrders(tick);
@@ -258,77 +342,17 @@ static void DebugStateHash_ApplySpeedAtFixedTick(unsigned tick)
 
 void DebugStateHash_AfterStep()
 {
-  StateHash hash = {0xcbf29ce484222325ull};
-  WorldOwnerListNode *node;
+  GameStateHashCounts counts;
+  uint64_t hashValue;
   unsigned tick = g_GameFactionRuntimeImage.tail.simulationTick;
-  unsigned armies = 0;
-  unsigned nodes = 0;
-  unsigned slotIndex;
-  int faction;
-  int detail;
   DebugStateHash_ApplySpeedAtFixedTick(tick);
   if (s_stepsWanted == 0 || s_output == nullptr || g_InGameRuntimeRoot == nullptr) {
     return;
   }
-  detail = (tick == s_detailTick);
-  StateHash_Add(&hash, tick);
-  StateHash_Add(&hash, g_RandomGeneratorState.secondarySeed);
-  /* every world object in update order: class and world position (models, shots and effects) */
-  for (node = g_InGameRuntimeRoot->worldRuntime.ownerListHead; node != nullptr; node = node->nextNode) {
-    StateHash_Add(&hash, (uint32_t)node->ownerClassId);
-    StateHash_Add(&hash, (uint32_t)node->worldXQ12);
-    StateHash_Add(&hash, (uint32_t)node->worldYQ12);
-    StateHash_Add(&hash, (uint32_t)node->worldZQ12);
-    if (detail) {
-      fprintf(s_output, "  object %u class %u pos %d %d %d\n", nodes, (unsigned)node->ownerClassId,
-              (int)node->worldXQ12, (int)node->worldYQ12, (int)node->worldZQ12);
-    }
-    nodes++;
-  }
-  /* armies by slot: identity, orders, targets (as slot indices), health of the root model */
-  for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
-    ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
-    ModelRuntimeSlot *model;
-    uint32_t health = 0;
-    if (army->modelNodeRuntime == nullptr) {
-      continue;
-    }
-    model = army->modelRuntimeOrSavedOffset.modelRuntime;
-    if (model != nullptr) {
-      health = model->health;
-    }
-    StateHash_Add(&hash, slotIndex);
-    StateHash_Add(&hash, (uint32_t)army->armyAssetId);
-    StateHash_Add(&hash, (uint32_t)army->factionIndex);
-    StateHash_Add(&hash, (uint32_t)army->movementStateFlags);
-    StateHash_Add(&hash, (uint32_t)army->commandModeFlags);
-    StateHash_Add(&hash, (uint32_t)army->commandGeneration);
-    StateHash_Add(&hash, army->aiUnitState);
-    StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex(army->commandTargetArmyRuntime));
-    StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex(reinterpret_cast<const void *>(static_cast<uintptr_t>(army->assignedTargetArmyRuntime))));
-    StateHash_Add(&hash, health);
-    armies++;
-    if (detail) {
-      fprintf(s_output, "  army %u asset %u faction %u flags %08x mode %08x gen %u ai %u target %d assigned %d "
-              "health %u pos %d %d %d\n", slotIndex, (unsigned)army->armyAssetId, (unsigned)army->factionIndex,
-              (unsigned)army->movementStateFlags, (unsigned)army->commandModeFlags,
-              (unsigned)army->commandGeneration, (unsigned)army->aiUnitState,
-              DebugStateHash_ArmyIndex(army->commandTargetArmyRuntime),
-              DebugStateHash_ArmyIndex(reinterpret_cast<const void *>(static_cast<uintptr_t>(army->assignedTargetArmyRuntime))), (unsigned)health,
-              army->modelNodeRuntime->worldTransform.translation.x,
-              army->modelNodeRuntime->worldTransform.translation.y,
-              army->modelNodeRuntime->worldTransform.translation.z);
-    }
-  }
-  /* faction resources */
-  for (faction = 0; faction < 8; faction++) {
-    GameFactionRuntimeRecord *record = &g_GameFactionRuntimeImage.records[faction];
-    StateHash_Add(&hash, (uint32_t)record->xeniteCurrentQ4);
-    StateHash_Add(&hash, (uint32_t)record->tritiumCurrentQ4);
-    StateHash_Add(&hash, (uint32_t)record->suppliedEnergyDemandQ4);
-  }
-  fprintf(s_output, "%u %08x%08x armies %u objects %u seed %08x\n", tick, (unsigned)(hash.value >> 32),
-          (unsigned)hash.value, armies, nodes, (unsigned)g_RandomGeneratorState.secondarySeed);
+  /* the hash itself is shared with the game recorder (gameplay/replay/state_hash.cpp) */
+  hashValue = GameStateHash_Compute(&counts, tick == s_detailTick ? s_output : nullptr);
+  fprintf(s_output, "%u %08x%08x armies %u objects %u seed %08x\n", tick, (unsigned)(hashValue >> 32),
+          (unsigned)hashValue, counts.armies, counts.objects, (unsigned)g_RandomGeneratorState.secondarySeed);
   s_stepsDone++;
   DebugArena_Orders(s_stepsDone, tick);
   if (s_pauseTick != 0 && tick >= s_pauseTick) {

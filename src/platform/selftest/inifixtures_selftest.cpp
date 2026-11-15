@@ -25,6 +25,8 @@
      others = <default>            every key of the table below that the file does not list reads as its default
      preserved: line               after the save, thandor.ini has this line (trimmed); "preserved: [sec] line"
                                    requires it inside section [sec], "preserved: [sec]" the section header
+     order: a < b                  after the save, the first line matching a ("preserved:" form) comes before the
+                                   first one matching b
      absent: text                  after the save, no line of thandor.ini contains text
      absent-file: name             after the save, there is no file name in the work directory
      check: readonly_retry         a change saved while thandor.ini is read-only fails; once it is writable
@@ -32,6 +34,9 @@
      source: file                  the fixture file (default <name>.ini or <name>.dat)
      setup: stale_tmp              a thandor.ini.tmp with junk lies in the work directory before the load
      include: file.expect          the lines of another .expect
+   A <name>.downgrade file next to a fixture holds the same lines for an older build (the key names of 1.0.7 / dev:
+   language_country_code, [reserved] dword_50..58); it is not a case here, tools/test/ini_downgrade.py runs it
+   as <name>.expect with the older build's self-test.
    A line prefixed "pending A:" or "pending B:" (also "pending A+B:") is behaviour that only holds once the
    robustness branch (A: unknown keys kept, UTF-16 / CR-only files, unclosed headers, range checks, no .dat bytes
    0x50..0x58) or the atomic-save branch (B) is merged; a failing pending check is logged as "expected-fail" and does
@@ -55,6 +60,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
+#include <thandor/ui/core/key_bindings_ini.h>
 
 namespace fs = std::filesystem;
 
@@ -62,7 +68,7 @@ namespace {
 
 /* The keys of thandor.ini as this version names them (deliberately a copy of persistent.cpp's key table: a
    renamed key fails here). defaultValue: what the game reads when the key is missing. */
-enum class IniFixtureKind { Uint, Int, Hex, Bool, Bit, Gain, Enum, Name, Raw };
+enum class IniFixtureKind { Uint, Int, Hex, Bool, Bit, Gain, Enum, Name, Raw, Language };
 
 struct IniFixtureKey {
     const char *section;
@@ -121,11 +127,21 @@ const std::vector<IniFixtureKey> &IniFixture_Keys()
         {"game", "link_panel_options", PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS, K::Hex, 0, 0, {}},
         {"game", "player_name", PERSISTENT_SETTING_PLAYER_NAME, K::Name, 0, 0, {}},
         {"game", "game_name", PERSISTENT_SETTING_GAME_NAME, K::Name, 0, 0, {}},
+        /* one dword, two keys: language (the name this version writes) and language_country_code (the number the
+           1.0.7 and dev builds read and write, still read and written here) */
         {"game", "language_country_code", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, K::Uint, 0, 0, {}},
+        {"game", "language", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, K::Language, 0, 0, {}},
+        {"game", "pathing", PERSISTENT_SETTING_PATHING_MODE, K::Enum, PERSISTENT_PATHING_IMPROVED, 0,
+         {"improved", "original"}},
+        {"game", "objective_overlay", PERSISTENT_SETTING_OBJECTIVE_OVERLAY, K::Enum, PERSISTENT_OBJECTIVE_OVERLAY_ON, 0,
+         {"on", "off"}},
+        {"game", "autosave", PERSISTENT_SETTING_AUTOSAVE, K::Enum, PERSISTENT_AUTOSAVE_ON, 0, {"on", "off"}},
+        {"game", "original_thandor", PERSISTENT_SETTING_ORIGINAL_THANDOR, K::Enum, PERSISTENT_ORIGINAL_THANDOR_OFF, 0,
+         {"off", "on"}},
+        {"game", "record_games", PERSISTENT_SETTING_RECORD_GAMES, K::Enum, PERSISTENT_RECORD_GAMES_OFF, 0,
+         {"off", "on"}},
+        {"game", "hd_font", PERSISTENT_SETTING_HD_FONT, K::Enum, PERSISTENT_HD_FONT_OFF, 0, {"off", "on"}},
         {"network", "players", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, K::Uint, 4, 0, {}},
-        {"reserved", "dword_50", 0x50, K::Raw, 0, 0, {}},
-        {"reserved", "dword_54", 0x54, K::Raw, 0, 0, {}},
-        {"reserved", "dword_58", 0x58, K::Raw, 0, 0, {}},
     };
     return keys;
 }
@@ -220,6 +236,17 @@ IniFixtureValue IniFixture_ReadKey(const IniFixtureKey &key)
     case K::Enum:
         result.text = first < key.names.size() ? key.names[first] : IniFixture_Format("%u", first);
         break;
+    case K::Language: {
+        static const std::pair<uint32_t, const char *> languages[] = {{0, "auto"}, {49, "de"}, {44, "en"},
+                                                                       {33, "fr"}, {39, "it"}, {34, "es"}};
+        result.text = IniFixture_Format("%u", first);
+        for (const auto &[countryCode, languageName] : languages) {
+            if (countryCode == first) {
+                result.text = languageName;
+            }
+        }
+        break;
+    }
     default:
         result.text = IniFixture_Format("%u", first);
         break;
@@ -415,8 +442,9 @@ std::vector<std::pair<std::string, std::string>> IniFixture_Lines(const std::str
     return lines;
 }
 
-/* "preserved:" text found in the written ini. */
-bool IniFixture_HasLine(const std::string &text, const std::string &wanted)
+/* The index (in IniFixture_Lines) of the first line of the written ini that matches wanted ("line",
+   "[sec] line" or "[sec]", as for "preserved:"), -1 when there is none. */
+long IniFixture_FindLine(const std::string &text, const std::string &wanted)
 {
     std::string section;
     std::string line = wanted;
@@ -424,17 +452,25 @@ bool IniFixture_HasLine(const std::string &text, const std::string &wanted)
         section = IniFixture_Lower(IniFixture_Trim(line.substr(1, line.find(']') - 1)));
         line = IniFixture_Trim(line.substr(line.find(']') + 1));
     }
+    long index = 0;
     for (const auto &[lineSection, content] : IniFixture_Lines(text)) {
         if (line.empty()) {
             if (!content.empty() && content[0] == '[' && lineSection == section && !section.empty()) {
-                return true;
+                return index;
             }
         }
         else if (content == line && (section.empty() || lineSection == section)) {
-            return true;
+            return index;
         }
+        index++;
     }
-    return false;
+    return -1;
+}
+
+/* "preserved:" text found in the written ini. */
+bool IniFixture_HasLine(const std::string &text, const std::string &wanted)
+{
+    return IniFixture_FindLine(text, wanted) >= 0;
 }
 
 const IniFixtureKey *IniFixture_FindKey(const std::string &name)
@@ -686,6 +722,21 @@ void IniFixture_RunCase(IniFixtureRuntime &runtime, const fs::path &fixtures, co
             }
             test.Check(!found, line.pending, "absent: " + unwanted);
         }
+        else if (line.text.rfind("order:", 0) == 0) {
+            const std::string pair = IniFixture_Trim(line.text.substr(6));
+            const size_t less = pair.find(" < ");
+            if (less == std::string::npos) {
+                test.Check(false, "", line.origin + ": order: needs \"first < second\"");
+                continue;
+            }
+            const std::string before = IniFixture_Trim(pair.substr(0, less));
+            const std::string after = IniFixture_Trim(pair.substr(less + 3));
+            const long beforeAt = IniFixture_FindLine(written, before);
+            const long afterAt = IniFixture_FindLine(written, after);
+            test.Check(beforeAt >= 0 && afterAt >= 0 && beforeAt < afterAt, line.pending,
+                       "order: " + before + " (line " + std::to_string(beforeAt) + ") before " + after + " (line " +
+                           std::to_string(afterAt) + ")");
+        }
         else if (line.text.rfind("absent-file:", 0) == 0) {
             const std::string file = IniFixture_Trim(line.text.substr(12));
             test.Check(!fs::exists(work / file, error), line.pending, "absent-file: " + file);
@@ -752,6 +803,8 @@ void Thandor_SelfTestIniFixtures()
     const char *outVariable = getenv("OPEN_THANDOR_INI_OUT");
     const fs::path fixtures = IniFixture_Directory();
 
+    /* [keys] belongs to the key bindings, as in the game (registered by the runtime start, which has not run) */
+    KeyBindingsIni_Register();
     if (fixtures.empty() || !fs::is_directory(fixtures, error)) {
         Thandor_Log("inifixtures: FAILED, no fixture directory (set OPEN_THANDOR_INI_FIXTURES to "
                     "tools/test/fixtures/ini)");

@@ -405,6 +405,7 @@ void UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandler
 }
 
 /* Returns the root (window) node of the UI tree containing node: the ancestor whose parent is UI_NODE_NONE.
+   A null parent (a zero-initialised module node that was never linked) also ends the walk.
 */
 UiNodeBase * UiNode_GetRoot(UiNodeBase *node)
 
@@ -412,7 +413,7 @@ UiNodeBase * UiNode_GetRoot(UiNodeBase *node)
   UiNodeBase *parentNode;
 
   parentNode = node->parent;
-  while (parentNode != UI_NODE_NONE) {
+  while (parentNode != UI_NODE_NONE && parentNode != nullptr) {
     node = node->parent;
     parentNode = node->parent;
   }
@@ -433,7 +434,8 @@ void UiNode_InvalidateRoot(UiNodeBase *node)
   
   if (g_UiInvalidationSuppressed == 0) {
     parentNode = node->parent;
-    while (parentNode != UI_NODE_NONE) {
+    /* a null parent ends the walk as UiNode_GetRoot does (it only ever crashed before) */
+    while (parentNode != UI_NODE_NONE && parentNode != nullptr) {
       node = (UiNode_As<UiRootNode>(node)->base).parent;
       parentNode = (UiNode_As<UiRootNode>(node)->base).parent;
     }

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 # The single version source: the generated version header (include/thandor/version.h.in), the version resource of
 # thandor.exe (src/platform/bootstrap/thandor.rc.in) and the installer take it from here.
-project(open_thandor VERSION 1.0.7 LANGUAGES C CXX RC)
+project(open_thandor VERSION 1.0.7 LANGUAGES C CXX RC)  # C: third_party/miniz
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -44,13 +44,6 @@ add_compile_options(-fno-strict-aliasing -fwrapv -ffp-contract=off -mms-bitfield
 
 # Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): the crash logs rely on stable code addresses.
 add_executable(thandor WIN32
-    src/assets/scenario/custom_project.cpp
-    src/ui/frontend/custom_maps.cpp
-    mapeditor/project_format/src/binary.cpp
-    mapeditor/project_format/src/pck.cpp
-    mapeditor/project_format/src/text_resource.cpp
-    mapeditor/project_format/src/gfx.cpp
-    mapeditor/project_format/src/map_project_archive.cpp
     src/assets/army/catalog.cpp
     src/assets/effect/catalog.cpp
     src/assets/model/definitions.cpp
@@ -60,8 +53,14 @@ add_executable(thandor WIN32
     src/assets/package/runtime.cpp
     src/assets/rom/runtime.cpp
     src/assets/scenario/catalog.cpp
+    src/assets/scenario/custom_map_validate.cpp
+    src/assets/scenario/custom_maps.cpp
+    src/assets/scenario/custom_project.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
+    src/assets/text/hd_font_data.cpp
+    src/assets/text/objective_texts.cpp
+    src/assets/text/project_texts_en.cpp
     src/assets/text/resources.cpp
     src/assets/text/richtext.cpp
     src/assets/text/richtext_markup.cpp
@@ -81,11 +80,9 @@ add_executable(thandor WIN32
     src/core/memory/allocator.cpp
     src/core/memory/synchronization.cpp
     src/core/settings/persistent.cpp
+    src/core/settings/original_mode.cpp
     src/core/text/path.cpp
     src/core/text/string.cpp
-    src/gameplay/replay/compact_stream.cpp
-    src/gameplay/replay/runtime.cpp
-    src/gameplay/replay/state_hash.cpp
     src/gameplay/ai/combat.cpp
     src/gameplay/ai/construction.cpp
     src/gameplay/ai/perception.cpp
@@ -104,6 +101,7 @@ add_executable(thandor WIN32
     src/gameplay/army/damage.cpp
     src/gameplay/army/drive_banking.cpp
     src/gameplay/army/drive_common.cpp
+    src/gameplay/army/drive_improved.cpp
     src/gameplay/army/drive_ground.cpp
     src/gameplay/army/factory.cpp
     src/gameplay/army/model_rules.cpp
@@ -121,14 +119,23 @@ add_executable(thandor WIN32
     src/gameplay/faction/economy.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
+    src/gameplay/replay/runtime.cpp
+    src/gameplay/replay/state_hash.cpp
+    src/gameplay/replay/files.cpp
+    src/gameplay/replay/stream.cpp
     src/gameplay/selection/commands.cpp
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
+    src/gameplay/session/autosave.cpp
     src/gameplay/session/campaign_carryover.cpp
+    src/gameplay/session/campaign_progress.cpp
+    src/gameplay/session/campaign_progress_session.cpp
+    src/gameplay/session/campaign_start.cpp
     src/gameplay/session/level.cpp
     src/gameplay/session/level_new.cpp
     src/gameplay/session/level_saved.cpp
     src/gameplay/session/level_script.cpp
+    src/gameplay/session/mission_objective.cpp
     src/gameplay/session/loaded_session.cpp
     src/gameplay/session/loading_movie.cpp
     src/gameplay/session/new_session.cpp
@@ -208,11 +215,19 @@ add_executable(thandor WIN32
     src/ui/controls/window.cpp
     src/ui/core/chat_history.cpp
     src/ui/core/frame_loop.cpp
+    src/ui/core/key_binding_tables.cpp
+    src/ui/core/key_bindings.cpp
+    src/ui/core/key_bindings_ini.cpp
+    src/ui/core/key_bindings_panel.cpp
     src/ui/core/model_tint.cpp
     src/ui/core/pcx_preview.cpp
     src/ui/core/runtime.cpp
     src/ui/dialogs/display_settings.cpp
     src/ui/dialogs/fatal_error.cpp
+    src/ui/frontend/campaign_graph.cpp
+    src/ui/frontend/campaign_level_info.cpp
+    src/ui/frontend/campaign_map_control.cpp
+    src/ui/frontend/campaign_tab.cpp
     src/ui/frontend/chat.cpp
     src/ui/frontend/credits.cpp
     src/ui/frontend/credits_mask.cpp
@@ -221,6 +236,8 @@ add_executable(thandor WIN32
     src/ui/frontend/end_movie.cpp
     src/ui/frontend/end_movie_commands.cpp
     src/ui/frontend/faction_setup.cpp
+    src/ui/frontend/key_bindings_page.cpp
+    src/ui/frontend/language_choice.cpp
     src/ui/frontend/lifecycle.cpp
     src/ui/frontend/main_loop.cpp
     src/ui/frontend/menu_room.cpp
@@ -249,11 +266,13 @@ add_executable(thandor WIN32
     src/ui/ingame/editor_tools.cpp
     src/ui/ingame/hotkeys.cpp
     src/ui/ingame/hud.cpp
+    src/ui/ingame/key_bindings_overlay.cpp
     src/ui/ingame/key_commands.cpp
     src/ui/ingame/layout.cpp
     src/ui/ingame/minimap_texture.cpp
     src/ui/ingame/music_choice.cpp
     src/ui/ingame/notifications.cpp
+    src/ui/ingame/objective_overlay.cpp
     src/ui/ingame/pages.cpp
     src/ui/ingame/preview_markers.cpp
     src/ui/ingame/root_frame.cpp
@@ -269,6 +288,7 @@ add_executable(thandor WIN32
     src/ui/ingame/ui_template.cpp
     src/ui/ingame/world_input.cpp
     src/ui/text/font.cpp
+    src/ui/text/hd_font.cpp
     src/ui/text/richtext_render.cpp
     src/world/camera/camera.cpp
     src/world/camera/camera_input.cpp
@@ -279,7 +299,10 @@ add_executable(thandor WIN32
     src/world/model/mesh_raycast.cpp
     src/world/model/picking.cpp
     src/world/model/pool.cpp
+    src/world/pathing/improved/arrival.cpp
+    src/world/pathing/improved/yield.cpp
     src/world/pathing/influence.cpp
+    src/world/pathing/mode.cpp
     src/world/pathing/path_cost.cpp
     src/world/pathing/reachability.cpp
     src/world/pathing/route.cpp
@@ -304,27 +327,39 @@ add_executable(thandor WIN32
     src/world/terrain/sight.cpp
     src/world/terrain/water_relaxation.cpp
 )
-target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/mapeditor/project_format/include)
-add_library(thandor_miniz STATIC mapeditor/project_format/third_party/miniz/miniz.c)
-target_include_directories(thandor_miniz PUBLIC mapeditor/project_format/third_party/miniz)
-target_compile_definitions(thandor_miniz PUBLIC MINIZ_NO_STDIO MINIZ_NO_ZLIB_COMPATIBLE_NAMES)
-target_link_libraries(thandor PRIVATE thandor_miniz)
-# Pin replays to the exact gameplay source. Content changes trigger reconfigure.
-file(GLOB_RECURSE REPLAY_ID_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
-list(SORT REPLAY_ID_SOURCES)
-file(SHA256 "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt" REPLAY_CMAKE_HASH)
-set(REPLAY_SOURCE_HASHES "${REPLAY_CMAKE_HASH}")
-foreach(REPLAY_SOURCE IN LISTS REPLAY_ID_SOURCES)
-    file(SHA256 "${REPLAY_SOURCE}" REPLAY_SOURCE_HASH)
-    string(APPEND REPLAY_SOURCE_HASHES "${REPLAY_SOURCE_HASH}")
-endforeach()
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${REPLAY_ID_SOURCES})
-string(SHA256 REPLAY_BUILD_ID "${REPLAY_SOURCE_HASHES};${CMAKE_CXX_COMPILER_ID};${CMAKE_CXX_COMPILER_VERSION};${CMAKE_BUILD_TYPE};${CMAKE_CXX_FLAGS};${CMAKE_CXX_FLAGS_RELEASE};${CMAKE_CXX_FLAGS_DEBUG};${THANDOR_DEV_TOOLS}")
-target_compile_definitions(thandor PRIVATE OPEN_THANDOR_REPLAY_BUILD_ID="${REPLAY_BUILD_ID}")
-
+target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# Custom maps (docs/custom_maps.md): the map editor's project-format reader for maps\<name>.thmap and miniz for its
+# ZIP form (third_party/, MIT licences: third_party/miniz/LICENSE, third_party/map_editor_project_format/README.txt).
+add_library(thandor_thmap STATIC
+    third_party/map_editor_project_format/src/binary.cpp
+    third_party/map_editor_project_format/src/gfx.cpp
+    third_party/map_editor_project_format/src/map_project_archive.cpp
+    third_party/map_editor_project_format/src/pck.cpp
+    third_party/map_editor_project_format/src/text_resource.cpp
+    third_party/miniz/miniz.c
+)
+# (miniz is public for the custommaps self-test, which writes broken ZIP projects)
+target_include_directories(thandor_thmap PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/map_editor_project_format/include
+                           ${CMAKE_CURRENT_SOURCE_DIR}/third_party/miniz)
+target_compile_definitions(thandor_thmap PUBLIC MINIZ_NO_STDIO MINIZ_NO_ZLIB_COMPATIBLE_NAMES)
+target_link_libraries(thandor PRIVATE thandor_thmap)
 # The version header <thandor/version.h> and the resources (icon, VERSIONINFO), generated from project(VERSION).
 configure_file(include/thandor/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor/version.h @ONLY)
+# The game recorder's build id (src/gameplay/replay/runtime.cpp): version, git commit and a hash of uncommitted source
+# changes, refreshed by cmake/build_id.cmake on every build. Only generated/build_id.cpp depends on it and the script
+# rewrites it only when the id changes, so an edit does not touch the compile definitions of the other sources.
+set(THANDOR_BUILD_ID_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/generated/build_id.cpp)
+set(THANDOR_BUILD_ID_CONFIG "GCC ${CMAKE_CXX_COMPILER_VERSION} ${CMAKE_BUILD_TYPE} dev_tools=${THANDOR_DEV_TOOLS}")
+set(THANDOR_BUILD_ID_ARGUMENTS -DVERSION=${PROJECT_VERSION} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+    "-DCONFIG=${THANDOR_BUILD_ID_CONFIG}" -DOUTPUT=${THANDOR_BUILD_ID_SOURCE})
+execute_process(COMMAND ${CMAKE_COMMAND} ${THANDOR_BUILD_ID_ARGUMENTS} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_id.cmake)
+add_custom_target(thandor_build_id
+    COMMAND ${CMAKE_COMMAND} ${THANDOR_BUILD_ID_ARGUMENTS} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_id.cmake
+    BYPRODUCTS ${THANDOR_BUILD_ID_SOURCE}
+    COMMENT "Game recorder build id"
+    VERBATIM)
+target_sources(thandor PRIVATE ${THANDOR_BUILD_ID_SOURCE})
+add_dependencies(thandor thandor_build_id)
 set(THANDOR_RC_ICON ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/bootstrap/thandor.ico)
 configure_file(src/platform/bootstrap/thandor.rc.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc @ONLY)
 # The resources compile in an object library of their own: it has no include directories, because windres hands
@@ -556,12 +591,23 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/level_script.cpp
         src/platform/debug/movie_decoder.cpp
         src/platform/debug/movie_player.cpp
+        src/platform/debug/pathtrace.cpp
+        src/platform/debug/profile.cpp
         src/platform/debug/script.cpp
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp
+        src/platform/selftest/campaignmap_selftest.cpp
+        src/platform/selftest/campaignprogress_selftest.cpp
+        src/platform/selftest/custommaps_selftest.cpp
         src/platform/selftest/hexscan_selftest.cpp
         src/platform/selftest/inifixtures_selftest.cpp
+        src/platform/selftest/keybindings_panel_selftest.cpp
+        src/platform/selftest/keybindings_selftest.cpp
         src/platform/selftest/keymatch_selftest.cpp
+        src/platform/selftest/language_selftest.cpp
+        src/platform/selftest/mousering_selftest.cpp
+        src/platform/selftest/nativefile_selftest.cpp
+        src/platform/selftest/objectives_selftest.cpp
         src/platform/selftest/raster_selftest.cpp
         src/platform/selftest/selftests.cpp
         src/platform/selftest/uiatlas_selftest.cpp

@@ -3,7 +3,9 @@ tick 3 on via OPEN_THANDOR_STATEHASH_SPEED) in several game dirs at once and com
 the computer opponents, which the arena scenarios of run_determinism.py do not. Each dir needs the test build as
 thandor.exe (with its SDL3.dll); put an older build into one of them to compare two versions (the first dir is the reference).
 
-usage: compare_map_hash.py MAP STEPS DIR [DIR...]    e.g. compare_map_hash.py stromschnelle 1400 ..\\ot-soak ..\\ot-old
+usage: compare_map_hash.py MAP STEPS DIR [DIR...] [--pathing original|improved|setting]
+       e.g. compare_map_hash.py stromschnelle 1400 ..\\ot-soak ..\\ot-old
+--pathing: the pathing mode of the runs (game_env.py; default original).
 A run that ends earlier (a side lost) records fewer steps; the steps all runs recorded are compared, and an
 incomplete last line (the game is stopped while writing) is ignored. A run is stopped once its hash file has not
 grown for a minute (all steps done or the level ended), at the latest after 30 minutes.
@@ -13,9 +15,10 @@ import subprocess
 import sys
 import threading
 import time
-from game_env import game_env
+from game_env import game_env, pathing_from_argv
 
-MAP, STEPS, DIRS = sys.argv[1], int(sys.argv[2]), [os.path.abspath(d) for d in sys.argv[3:]]
+ARGV = pathing_from_argv(sys.argv[1:])
+MAP, STEPS, DIRS = ARGV[0], int(ARGV[1]), [os.path.abspath(d) for d in ARGV[2:]]
 SCRIPT = "0 layout 1280 800\n6000 drag 785 496 900 496\n7000 drag 785 496 900 496\n10000 clickuntilingame 839 539 3000\n0 ingame\n1800000 quit\n"
 results = {}
 

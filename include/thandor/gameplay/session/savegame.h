@@ -15,6 +15,9 @@
 
 /* InGameSavePackageHeader.campaignIndex without a campaign */
 inline constexpr uint32_t INGAME_SAVE_NO_CAMPAIGN = 0xffffffffu;
+/* open-thandor: InGameSavePackageHeader.autosaveMarker of a save written by the autosave ("OTAS"); 0 in every other
+   save (the original leaves the field zero, so the original game ignores it and loads an autosave like any save) */
+inline constexpr uint32_t INGAME_SAVE_AUTOSAVE_MARKER = 0x5341544Fu;
 
 /* The 0x200-byte header at the start of a save-game package, patched by InGameSaveGame_WritePackage
    after the entries are written (the save path's directory is split off behind the header, at +0x200). */
@@ -22,7 +25,8 @@ struct InGameSavePackageHeader {
     uint8_t reserved000_0FF[0x100];
     uint16_t saveNameUtf16[0x38]; /* +0x100 file name of the save path */
     uint32_t levelTitleTextId; /* +0x170 */
-    uint8_t reserved174_18F[0x1C];
+    uint32_t autosaveMarker; /* +0x174 open-thandor: INGAME_SAVE_AUTOSAVE_MARKER in an autosave, else 0 */
+    uint8_t reserved178_18F[0x18];
     uint32_t campaignIndex; /* +0x190 -1 without campaign */
     uint8_t reserved194_1BF[0x2C];
     uint16_t dateTimeTextUtf16[0x18]; /* +0x1C0 "date, time" */
@@ -31,7 +35,8 @@ struct InGameSavePackageHeader {
     uint8_t reserved1F8_1FF[8];
 };
 
-uint32_t InGameSaveGame_WritePackage(void *worldView,void *savePath); /* 0, or the error code of a failed save */
+/* 0, or the error code of a failed save; autosave (open-thandor) marks the header as an autosave */
+uint32_t InGameSaveGame_WritePackage(void *worldView,void *savePath,bool autosave = false);
 
 uint32_t InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle); /* 0 or an error code */
 
@@ -68,5 +73,26 @@ extern uint16_t g_ArmyHexPathUtf16[9];
 
 extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne;
 extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne;
+
+/* open-thandor (docs/plans/pathfinding.md 4, D3): the Open Thandor extension entry "otpath.hex" of a save
+   package. Written only while the session runs the improved pathing mode (a save of the original mode has no
+   such entry and stays byte-identical to the original format); read by InGameRuntime_InitializeLoadedSession
+   (absent or invalid: original mode). Older Open Thandor builds and the original ignore the unknown entry and
+   load the save in the original mode. Layout: this header, then slotCount records of recordBytes bytes
+   (g_PathingUnitState, indexed like g_ArmyRuntimeSlots). Little-endian. */
+struct PathingSaveEntryHeader {
+    uint32_t magic;        /* PATHING_SAVE_MAGIC */
+    uint16_t version;      /* PATHING_SAVE_VERSION */
+    uint8_t mode;          /* PathingMode (PATHING_MODE_IMPROVED; any other value loads as original) */
+    uint8_t reserved07;    /* 0 */
+    uint32_t slotCount;    /* ARMY_RUNTIME_SLOT_COUNT */
+    uint32_t recordBytes;  /* sizeof(PathingUnitState) */
+};
+static_assert(sizeof(PathingSaveEntryHeader) == 16);
+
+inline constexpr uint32_t PATHING_SAVE_MAGIC = 0x4854504FU; /* "OPTH" */
+inline constexpr uint16_t PATHING_SAVE_VERSION = 1;
+
+extern uint16_t g_OtpathHexPathUtf16[12];
 
 #endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_H */

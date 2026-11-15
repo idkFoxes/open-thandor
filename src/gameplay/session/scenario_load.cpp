@@ -7,9 +7,9 @@
 
 #include <thandor/gameplay/session/scenario_load.h>
 #include <thandor/thandor.h>
-#include <thandor/ui/frontend/custom_maps.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/assets/record_bytes.h>
+#include <thandor/gameplay/session/campaign_start.h>
 
 /* Module data. */
 
@@ -274,15 +274,40 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,1);
 }
 
+/* The progress key of a campaigns-list row (docs/plans/campaign_map.md 4.4): its name (the row record starts with
+   the .cgn name, UTF-16) up to an extension, as ASCII; a name with other characters gives an empty key (the
+   progress section is then found by its fingerprint alone). */
+static std::string FrontendScenarioSession_CampaignKeyOfRow(const uint16_t *rowName)
+
+{
+  std::string key;
+
+  for (size_t index = 0; index < CAMPAIGN_PROGRESS_NAME_MAX_LENGTH + 1 && rowName[index] != 0 && rowName[index] != '.';
+       index++) {
+    if (rowName[index] >= 0x80) {
+      return std::string();
+    }
+    key.push_back((char)rowName[index]);
+  }
+  return key;
+}
+
 /* Starts the campaign in row selectedRecordIndex of the campaigns list. The host (or a local game) loads
    level\<name>.cgn as g_FrontendLoadedCampaignAsset, finds the record of the campaign's current level, loads
    that level (replacing g_FrontendLoadedLevelAsset) and its field grid, publishes level, campaign and grid
    as one encoded transfer bundle when hosting, and sets up the faction assignments; a client instead waits
    for that bundle (SCENARIO_TRANSFER_CAMPAIGN_BUNDLE). Then the frontend closes its dialog pages and runs
    ROM action table entry 3. Reached as frontend command FRONTEND_COMMAND_LOAD_CAMPAIGN.
+   open-thandor (campaign map, docs/plans/campaign_map.md 7.3, 7.4): startLevelId, the first argument dword that
+   the original never reads, starts the campaign at that level when it is nonzero and CampaignStart_Prepare
+   accepts it (a record of the campaign, done or unlocked in the local progress; a carry target only in a local
+   game with a valid snapshot): the loaded copy's firstLevelId is set to it before the record search, so a host
+   also sends it in the bundle and every client starts there (scenario_transfer.cpp sets currentLevelId =
+   firstLevelId). A local game then restores the snapshot after the old-unit reset. A client ignores the
+   argument, as the original does. 0 (every original caller) keeps the original behaviour exactly.
 */
 void FrontendScenarioSession_LoadOrRequestCampaignBundle
-          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRecordIndex)
+          (uint32_t playerRuntimeId,uint32_t startLevelId,uint32_t unusedArg2,uint32_t selectedRecordIndex)
 
 {
   FrontendRoleStateFlags *roleFlags;
@@ -311,6 +336,8 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   void *allocationPayload;
   PckDecodedByteCount campaignDecodedSizeBytes;
   uint32_t campaignByteCount;
+  CampaignStartDecision startDecision{0,std::nullopt};
+  FieldGridAsset *loadedFieldGrid = nullptr; /* the grid when its load succeeded (for the snapshot restore) */
   
   frontendRoot = g_FrontendRootNode;
   roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
@@ -341,6 +368,17 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
       return;
     }
     DebugHook_CampaignLoaded(campaignAsset);
+    if (startLevelId != 0) {
+      startDecision = CampaignStart_Prepare
+                        (campaignAsset,(int32_t)startLevelId,
+                         (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL,
+                         FrontendScenarioSession_CampaignKeyOfRow
+                              (static_cast<const uint16_t *>(frontendRoot->campaignsList.rowSlots[selectedRecordIndex])));
+      /* only the loaded copy changes, never the file; the record search below then finds the start level */
+      if (startDecision.levelId != 0) {
+        campaignAsset->firstLevelId = startDecision.levelId;
+      }
+    }
     /* CampaignAsset: the first level becomes the current one; find its record. */
     levelRecord = campaignAsset->levels;
     campaignRecordsRemaining = campaignAsset->levelRecordCount;
@@ -375,6 +413,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
                g_ExecutableDirectoryUtf16);
     /* the original does not check this load for failure */
     sourceGrid = FieldGrid_LoadValidated(fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
+    loadedFieldGrid = sourceGrid;
     if (sourceGrid == nullptr) {
       /* Original quirk: the error code is used as the grid */
       sourceGrid = reinterpret_cast<FieldGridAsset *>(static_cast<uintptr_t>(loadErrorCode));
@@ -448,6 +487,11 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   UiPageStack_SetActiveIndex
             (FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendPageStack));
   OldUnitRuntime_ResetPendingTables();
+  /* campaign map start of a carry target (local game only, CampaignStart_Prepare): the tables the chain's level
+     change leaves behind; InGameNewSession_FinishWorldUnderTickLock merges them as in the chain */
+  if (startDecision.carry.has_value()) {
+    CampaignStart_RestoreSnapshot(*startDecision.carry,loadedFieldGrid);
+  }
   FrontendState_DispatchCode(3); /* ROM action table entry 3 */
 }
 
@@ -485,23 +529,31 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   uint32_t allocationError;
   void *allocationPayload;
   bool levelLoadedLocally;
+  bool customMap;
 
   frontendRoot = g_FrontendRootNode;
-  pageStack = UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack);
-  const bool customProject = CustomMaps_ActiveLevelPath() != nullptr;
-  if (customProject) {
-    const auto* path = CustomMaps_ActiveLevelPath();
-    unsigned i = 0;
-    do { g_FrontendScenarioPathScratchUtf16[i] = path[i]; } while (path[i++] != 0 && i < 255);
-  } else {
-  WidePath_CombineDirectoryAndLeaf
-            (g_FrontendScenarioPathScratchUtf16,
-             static_cast<uint16_t *>
-                  (g_FrontendRootNode->missionsList.rowSlots
-                   [selectedRowIndex]),
-             g_ScenarioLevelDirectoryUtf16);
-  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
+  /* open-thandor: the hint row of an empty custom map list (custom_maps.h) is no level: Start and a double click on
+     it do nothing */
+  if ((selectedRowIndex < g_FrontendRootNode->missionsList.rowCount) &&
+      CustomMaps_IsHintRecord(g_FrontendRootNode->missionsList.rowSlots[selectedRowIndex].get())) {
+    Thandor_Log("custom maps: the hint row is no map, nothing started");
+    return;
   }
+  pageStack = UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack);
+  /* open-thandor: a custom map row (local games only) loads maps\<name>.lev from its project (custom_maps.h) */
+  customMap = CustomMaps_LevelPathOfRecord(g_FrontendScenarioPathScratchUtf16,
+                                           g_FrontendRootNode->missionsList.rowSlots[selectedRowIndex]);
+  if (!customMap) {
+    WidePath_CombineDirectoryAndLeaf
+              (g_FrontendScenarioPathScratchUtf16,
+               static_cast<uint16_t *>
+                    (g_FrontendRootNode->missionsList.rowSlots
+                     [selectedRowIndex]),
+               g_ScenarioLevelDirectoryUtf16);
+  }
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
+  /* open-thandor: the project of a custom map becomes active (its files are served), any other level releases it */
+  CustomMaps_ActivateLevelPath(g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
   frontendRoot->menuRoomModelView.contextFlags =
        frontendRoot->menuRoomModelView.contextFlags &
@@ -517,6 +569,8 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
                         (loadedEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedEntry) : loadErrorCode,loadedEntry == nullptr);
     packedSourceDwords = reinterpret_cast<uint32_t *>(g_PackageScratchBuffer); /* dword copy of the transfer image */
     levelAsset = reinterpret_cast<FrontendLoadedLevelAsset *>(checkedValue); /* the loaded entry, passed through as an integer */
+    /* open-thandor: a custom map's copy gets its maps\ identifier and custom title index */
+    CustomMaps_PrepareLoadedLevel(levelAsset,g_FrontendScenarioPathScratchUtf16);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       /* host: mailbox packet = unpacked size dword + Huffman/RLE-packed level */
       levelSizeBytes = levelAsset->header.common.allocationSizeBytes;
@@ -577,7 +631,9 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
     }
   }
   g_FrontendLoadedLevelAsset = levelAsset;
-  if (customProject) return; // Custom files have no numbered catalog slot or availability mask.
+  if (customMap) {
+    return; /* not in the catalog, no level mask bit; only local games list custom maps */
+  }
   levelRecordOffset = (uint32_t)Asset_ByteDistance
                         (static_cast<uint8_t *>
                               (g_FrontendRootNode->missionsList.rowSlots

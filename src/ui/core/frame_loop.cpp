@@ -66,6 +66,15 @@ void UiFrame_FlushInputAndResetPendingTicks()
 {
   g_KeyboardFlushEvents();
   g_PointerFlushEvents();
+  /* Project code: the flush may have dropped the release that ends the pointer capture (the waiting and loading
+     loops pump the ring without dispatching it). Nothing can end the capture then, so the next press would be
+     ignored; a capture whose button is still down keeps it, its release is yet to come. */
+  if ((g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) &&
+      !Any(g_MouseButtonMask & static_cast<GraphicsCursorButtonState>(1u << g_UiPointerCaptureButton))) {
+    Thandor_Log("ui pointer: capture of button %d cleared by input flush",static_cast<int>(g_UiPointerCaptureButton));
+    g_UiPointerCaptureTarget = UI_NODE_NONE;
+    g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
+  }
   g_UiPendingFrameTicks = 0;
 }
 
@@ -163,5 +172,7 @@ void UiFrame_Draw()
   }
   /* not in the original (open-thandor): the version at the bottom right of the main menu */
   FrontendVersionLabel_Draw();
+  /* not in the original (open-thandor): the map editor link of the custom maps hint row */
+  FrontendCustomMapsHintLink_Draw();
   UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);
 }

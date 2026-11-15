@@ -87,6 +87,14 @@ void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey);
 
 void Keyboard_OnChar(KeyboardCharacterCode character);
 
+/* Project code (key rebinding P6): the held state of every key-down code Keyboard_OnKeyDown queues (letters and
+   digits KEYBOARD_KEY_CODE_CHAR, F-keys, special keys, Space, the numpad operators), set on key-down and cleared on
+   key-up of the key (a numpad digit and its navigation key share one code, as in g_KeyboardSpecialKeyDown). Unlike
+   g_KeyboardSpecialKeyDown (kept as the original has it) every key is released. Keyboard_ReleaseHeldKeys clears it
+   all: the SDL3 backend calls it on focus loss, focus gain and minimize, so a key released elsewhere does not stick. */
+bool Keyboard_KeyHeld(uint32_t keyCode);
+void Keyboard_ReleaseHeldKeys();
+
 uint32_t Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit);
 
 extern uint32_t g_CursorUseOverridePosition;

@@ -5,6 +5,7 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <atomic>
 #include <cstdio>
 #include <thandor/ui/controls/input.h>
 #include <thandor/thandor.h>
@@ -92,9 +93,15 @@ void UiPointer_DispatchPendingEvents()
     eventKind = (char)pointerEvent.eventType; /* GraphicsCursorEventType */
     switch (static_cast<GraphicsCursorEventType>(eventKind)) {
     case MOTION_OR_WHEEL:
+      FrontendGithubLink_NotePointer(pointerY,pointerX); /* not in the original: the link's hover state */
       UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
       break;
     case LEFT_PRESS:
+      /* not in the original (open-thandor): a press on the main menu's GitHub link opens the project page and goes
+         to no node; only without a pointer capture, as UiPointer_DispatchLeftPress takes a press */
+      if ((g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) && FrontendGithubLink_HandleLeftPress(pointerY,pointerX)) {
+        break;
+      }
       UiPointer_DispatchLeftPress(buttonMask,wheelDelta,pointerY,pointerX);
       break;
     case MIDDLE_PRESS:
@@ -408,6 +415,24 @@ static void UiPointer_CaptureAndPress
   }
 }
 
+/* Diagnostics (open-thandor only): a press ignored because a capture is held, at most one line per 5 s. Ordinary
+   when two buttons are used together; every press being ignored for long means a capture that never ended. */
+static void UiPointer_LogPressIgnored(const char *button)
+{
+  static bool logged;
+  static uint32_t lastLine;
+  static unsigned ignored;
+  ignored++;
+  const uint32_t now = g_CursorInputClockValue.load(std::memory_order_relaxed); /* 20 Hz */
+  if (!logged || (now - lastLine >= 100)) {
+    Thandor_Log("ui pointer: %s press ignored (%u since last line), capture button %d node %p",button,ignored,
+                static_cast<int>(g_UiPointerCaptureButton),THANDOR_PTR(g_UiPointerCaptureTarget));
+    logged = true;
+    lastLine = now;
+    ignored = 0;
+  }
+}
+
 /* Left button press: the node under the pointer (a hovered image control on an opaque pixel, else the hit
    test of the topmost root containing the pointer; pressing into a lower root brings it to the front
    first) captures the pointer for the left button, takes the keyboard focus when it is a focus target and
@@ -424,6 +449,12 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
   hoverTarget = g_UiImageControlHoverTarget;
   topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) {
+    UiPointer_LogPressIgnored("left");
+    return;
+  }
+  /* not in the original (open-thandor): a press on the custom maps hint row's map editor link opens its page and
+     goes to no node */
+  if (FrontendCustomMapsHintLink_HandleLeftPress(pointerY,pointerX)) {
     return;
   }
   node = UiPointer_FindNonRightPressTarget(hoverTarget,topRoot,pointerY,pointerX);
@@ -451,6 +482,7 @@ void UiPointer_DispatchMiddlePress
   hoverTarget = g_UiImageControlHoverTarget;
   topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) {
+    UiPointer_LogPressIgnored("middle");
     return;
   }
   node = UiPointer_FindNonRightPressTarget(hoverTarget,topRoot,pointerY,pointerX);
@@ -476,6 +508,7 @@ void UiPointer_DispatchRightPress
 
   topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) {
+    UiPointer_LogPressIgnored("right");
     return;
   }
   if (g_UiImageControlHoverTarget != nullptr) {

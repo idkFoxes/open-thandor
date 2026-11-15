@@ -1,478 +1,999 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/replay/runtime.cpp
+ * Project code (not in the original game)
+ */
+
+#include <thandor/gameplay/replay/runtime.h>
+
 #include <algorithm>
-#include <atomic>
-#include <cctype>
-#include <chrono>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <filesystem>
-#include <fstream>
-#include <mutex>
-#include <set>
-#include <stdexcept>
-#include <thandor/gameplay/replay/compact_stream.h>
-#include <thandor/gameplay/replay/runtime.h>
-#include <thandor/platform/bootstrap/image.h>
+#include <string>
+#include <chrono>
+#include <vector>
+
 #include <thandor/thandor.h>
-#ifndef OPEN_THANDOR_REPLAY_BUILD_ID
-#define OPEN_THANDOR_REPLAY_BUILD_ID "unconfigured-replay-build"
-#endif
-std::uint64_t GameplayReplay_StateHash();
+#include <thandor/core/settings/original_mode.h>
+#include <thandor/core/settings/persistent.h>
+#include <thandor/gameplay/replay/files.h>
+#include <thandor/gameplay/replay/state_hash.h>
+#include <thandor/gameplay/replay/stream.h>
+#include <thandor/gameplay/session/new_session.h>
+#include <thandor/gameplay/session/savegame.h>
+#include <thandor/platform/bootstrap/image.h>
+#include <thandor/world/pathing/mode.h>
+
+/* Not in the original: the game recorder (gameplay/replay/runtime.h). How it works:
+
+   Start. A recorded session is started as the player chose (a new level, a loaded save, a campaign level), then
+   saved through the ordinary save writer into a temporary checkpoint, torn down and loaded again from it with both
+   random streams seeded with one recorded seed and the simulation on the secondary stream (as a network game does;
+   the primary stream is also drawn by the UI per frame). Playback loads the same checkpoint the same way, so both
+   start from one loaded state, whatever ran during the level's own initialisation. No simulation step runs while
+   the checkpoint loads (g_GameRecorderLoading).
+
+   Events. Every local in-game command (InGameCommand_Issue: in a single player game the command handlers are called
+   at once from the UI, between two steps), every manual save and every simulation step is one event, stored with
+   the context it ran in (stream.h: ticks, game speed, UI flags, both random seeds, local player, active faction,
+   camera) and the state hash (state_hash.h) before and after it. Commands issued from inside a step or from inside
+   another command belong to that event and are not recorded on their own. The playback blocks the live commands
+   (leaving the game still works), restores the recorded context before every event, executes the recorded commands
+   through the command table (CommandDispatch_ExecuteRecord, as received network commands) and stops at the first
+   hash that differs ("replay: STOP at event N"); it then pauses the game and hands it to the player.
+
+   Files. The recording is written as it goes (stream.h); a crash or a killed game leaves a file that plays up to its
+   last complete step. While a recording is open its path is named in crash.log (Thandor_SetCrashLogNote).
+
+   Limits. Single player only (a network session is never recorded); one recording per session: loading another save
+   or the next campaign level ends it cleanly and starts the next one. While recording or playing, the transient
+   selection and target preview markers of the world view are not drawn (preview_markers.cpp): they take effect pool
+   slots from the render path, which the simulation shares, so they made the result depend on the frames drawn
+   (the determinism test hides them for the same reason). The hashes cover the main simulation state, not all of
+   it: a change that a hash does not see is found one or more events later, or not at all.
+
+   The idea of the checkpoint start, the command guard and the per-step context follows the compact replay of an
+   open-thandor fork based on 1.0.7 (docs/COMPACT_REPLAY.md there); the file format, the shared state hash, the
+   build id, the save events, the crash recordings and the player option are this version's. */
+
+extern const char g_ThandorBuildId[];     /* generated/build_id.cpp (cmake/build_id.cmake) */
+extern const char g_ThandorBuildConfig[];
+
+bool g_GameRecorderActive = false;
+bool g_GameRecorderLoading = false;
+
 namespace {
-namespace fs = std::filesystem;
+
 using namespace thandor::replay;
-enum class Mode { Off, Record, Play, Failed };
-std::atomic<Mode> mode{Mode::Off};
-std::mutex clockMutex;
-bool clockFrozen = false;
-bool running = false, injecting = false, completed = false, userCancelled = false;
-std::atomic_bool loading{false};
-void freezeClock(bool frozen) {
-  std::lock_guard<std::mutex> lock(clockMutex);
-  clockFrozen = frozen;
+
+constexpr unsigned KEEP_RECORDINGS = 10;                     /* the option keeps the newest 10 recordings */
+constexpr unsigned long long KEEP_RECORDING_BYTES = 200ull << 20; /* and at most 200 MB of them */
+constexpr unsigned MAX_EVENTS_BEFORE_STEP = 65536;
+constexpr std::uint32_t SESSION_FLAG_NEW_LEVEL = 1; /* the session started a new level: its intro notifications */
+
+/* exit codes of OPEN_THANDOR_REPLAY_QUIT=1 */
+constexpr unsigned REPLAY_EXIT_COMPLETE = 0;
+constexpr unsigned REPLAY_EXIT_NO_CLEAN_END = 2;
+constexpr unsigned REPLAY_EXIT_FAILED = 3;
+
+/* the UI flags the playback keeps from the live game when it restores a recorded context: a session that is closing
+   stays closing */
+constexpr UiCommandRuntimeFlagMask LIVE_SESSION_END_FLAGS = UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED |
+                                                            UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT |
+                                                            UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
+
+enum class Mode { Off, Record, Play };
+
+struct RecorderState {
+  Mode mode = Mode::Off;
+  bool running = false;       /* the session started: events are recorded / played */
+  bool inStep = false;        /* between BeforeStep and AfterStep */
+  unsigned commandDepth = 0;  /* nesting of the command scopes that passed */
+  bool sessionWasNew = false; /* recording: the session started a new level */
+  std::wstring outputPath;    /* recording: the file; empty = the option's recordings\ name, chosen at the start */
+  bool optionRecording = false; /* recording by the option (rotation in recordings\) */
+  std::wstring playPath;
+  std::wstring tempDirectory;
+  std::wstring checkpointPath; /* NUL-terminated copy for the loaders in checkpointUtf16 */
+  std::vector<uint16_t> checkpointUtf16;
+  std::uint32_t loadSeed = 0;
+  Ptr32<uint32_t()> previousRandom{};
+  bool randomSaved = false;
+  Header header;
+  std::vector<std::uint8_t> checkpoint;
+  Writer writer;
+  Reader reader;
+  Event pendingStep;
+  Event pendingCommand;
+  std::uint64_t lastHash = 0;
+  std::uint64_t eventNumber = 0; /* events recorded / played so far */
+  bool sessionClosedByReplay = false;
+  std::uint64_t kindCounts[5] = {}; /* events by RecordingEventKind */
+  std::uint64_t recorderNanoseconds = 0; /* recording: time spent in the recorder (hashes, writing) */
+};
+
+RecorderState s_State;
+
+/* Recording: adds the time of its scope to recorderNanoseconds (the overhead line at the end of a recording). */
+class RecorderTimer {
+public:
+  RecorderTimer() : start_(std::chrono::steady_clock::now()) {}
+  ~RecorderTimer()
+  {
+    s_State.recorderNanoseconds += static_cast<std::uint64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - start_).count());
+  }
+  RecorderTimer(const RecorderTimer &) = delete;
+  RecorderTimer &operator=(const RecorderTimer &) = delete;
+
+private:
+  std::chrono::steady_clock::time_point start_;
+};
+
+void CountEvent(RecordingEventKind kind)
+{
+  s_State.eventNumber++;
+  s_State.kindCounts[static_cast<unsigned>(kind) % 5]++;
 }
-unsigned commandDepth = 0;
-fs::path recording, cacheDir, checkpoint;
-bool ownsCache = false;
-std::u16string checkpointUtf16;
-Writer writer;
-Reader reader;
-Header header;
-Event pendingStep, pendingCommand;
-std::uint64_t lastHash = 0, eventNumber = 0;
-constexpr std::uint32_t LoadSeed = 12345;
-void fail(const std::string &why) {
-  Thandor_Log("replay: STOP at event %llu: %s", static_cast<unsigned long long>(eventNumber), why.c_str());
-  mode = Mode::Failed;
-  if (g_InGameRuntimeRoot)
-    g_UiCommandRuntimeFlags |= UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED;
+
+/* "1234 steps, 56 commands, 1 saves" */
+std::string EventCountsText()
+{
+  char text[128];
+  snprintf(text, sizeof text, "%llu steps, %llu commands, %llu saves",
+           static_cast<unsigned long long>(s_State.kindCounts[static_cast<unsigned>(RecordingEventKind::Step)]),
+           static_cast<unsigned long long>(s_State.kindCounts[static_cast<unsigned>(RecordingEventKind::Command)]),
+           static_cast<unsigned long long>(s_State.kindCounts[static_cast<unsigned>(RecordingEventKind::Save)]));
+  return text;
 }
-std::vector<std::uint8_t> fileBytes(const fs::path &p) {
-  std::ifstream f(p, std::ios::binary | std::ios::ate);
-  if (!f)
-    throw std::runtime_error("cannot open checkpoint");
-  auto size = f.tellg();
-  if (size <= 0 || size > 128 * 1024 * 1024)
-    throw std::runtime_error("checkpoint size outside 1..128 MiB");
-  std::vector<std::uint8_t> b(static_cast<std::size_t>(size));
-  f.seekg(0);
-  f.read(reinterpret_cast<char *>(b.data()), size);
-  if (!f)
-    throw std::runtime_error("cannot read checkpoint");
-  return b;
+
+bool s_ReplayConsumed = false;   /* the playback replaces one session per process */
+unsigned s_RecordSessionCount = 0; /* OPEN_THANDOR_RECORD: sessions recorded so far (later ones get -2, -3, ...) */
+
+/* ---- context and state ---- */
+
+static_assert(sizeof(WorldMotionState) == 14 * sizeof(std::uint32_t), "the camera is 14 context words");
+
+bool SecondaryStreamSelected()
+{
+  return g_RandomGeneratorState.next == THANDOR_SLOT(Random_NextSecondary);
 }
-std::uint64_t assetsHash() {
-  std::vector<fs::path> paths;
-  unsigned pckCount = 0;
-  const std::set<std::string> extensions = {".pck", ".arm", ".mdl", ".spr", ".fld", ".lev", ".tec", ".sht",
-                                            ".eff", ".sam", ".gfx", ".pal", ".rom", ".cgn", ".str", ".hex"};
-  for (const auto &e : fs::recursive_directory_iterator(fs::current_path())) {
-    if (!e.is_regular_file())
+
+Context CaptureContext()
+{
+  Context context{};
+  const GameFactionRuntimeImageTail &tail = g_GameFactionRuntimeImage.tail;
+  context[0] = tail.simulationTick;
+  context[1] = g_SessionNetworkTickCounter;
+  context[2] = static_cast<std::uint32_t>(g_InGameSimulationStepTicks);
+  context[3] = tail.presentationTick;
+  context[4] = tail.gameSpeedQ8;
+  context[5] = ToBits(g_UiCommandRuntimeFlags);
+  context[6] = g_RandomGeneratorState.primarySeed;
+  context[7] = g_RandomGeneratorState.secondarySeed;
+  context[8] = SecondaryStreamSelected() ? 1u : 0u;
+  context[9] = g_LocalPlayerRuntimeId;
+  context[10] = static_cast<std::uint32_t>(g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex);
+  /* fourteen Q12 / angle / distance scalars, no pointers */
+  std::memcpy(context.data() + 11, &g_InGameRuntimeRoot->worldRuntime.motion, sizeof(WorldMotionState));
+  return context;
+}
+
+std::uint64_t StateHash()
+{
+  std::uint64_t hash = GameStateHash_Compute(nullptr, nullptr);
+  hash = GameStateHash_AddWord(hash, g_SessionNetworkTickCounter);
+  hash = GameStateHash_AddWord(hash, static_cast<std::uint32_t>(g_InGameSimulationStepTicks));
+  return hash;
+}
+
+std::string HashText(std::uint64_t hash)
+{
+  char text[24];
+  snprintf(text, sizeof text, "%08x%08x", static_cast<unsigned>(hash >> 32), static_cast<unsigned>(hash));
+  return text;
+}
+
+void SetCrashNote()
+{
+  if (s_State.mode == Mode::Record && s_State.writer.IsOpen()) {
+    const std::string note = "recording: " + Narrow(s_State.outputPath) +
+                             " (a recording of this game up to the crash: please attach it to the bug report)";
+    Thandor_SetCrashLogNote(note.c_str());
+  }
+  else if (s_State.mode == Mode::Play) {
+    const std::string note = "replay: playing " + Narrow(s_State.playPath);
+    Thandor_SetCrashLogNote(note.c_str());
+  }
+  else {
+    Thandor_SetCrashLogNote(nullptr);
+  }
+}
+
+void RemoveTemporaryFiles()
+{
+  RemoveTemporaryDirectory(s_State.tempDirectory);
+  s_State.tempDirectory.clear();
+}
+
+bool CreateCheckpointDirectory()
+{
+  s_State.tempDirectory = CreateTemporaryDirectory();
+  if (s_State.tempDirectory.empty()) {
+    return false;
+  }
+  s_State.checkpointPath = s_State.tempDirectory + L"checkpoint.sve";
+  s_State.checkpointUtf16.assign(s_State.checkpointPath.begin(), s_State.checkpointPath.end());
+  s_State.checkpointUtf16.push_back(0);
+  return s_State.checkpointUtf16.size() < THANDOR_PATH_CAPACITY;
+}
+
+/* Recording: the state hash before an event. It equals the previous event's after hash unless something outside
+   the recorded events changed the state in between, which the playback cannot repeat: logged (the first few), so a
+   recording that will diverge says where already while it is made. */
+std::uint64_t BeforeHash()
+{
+  static unsigned s_logged = 0;
+  const std::uint64_t hash = StateHash();
+  if (hash != s_State.lastHash && s_logged < 5) {
+    s_logged++;
+    Thandor_Log("recorder: the state changed outside the recorded events before event %llu (%s -> %s)",
+                static_cast<unsigned long long>(s_State.eventNumber + 1), HashText(s_State.lastHash).c_str(),
+                HashText(hash).c_str());
+  }
+  return hash;
+}
+
+/* The level's file name for the recording's name: its last path component without extension, ASCII letters, digits,
+   '-' and '_' (others become '_'); "level" when there is none. */
+std::string LevelName()
+{
+  std::string name;
+  const InGameLevelConditionStorage *storage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+  if (storage == nullptr) {
+    return "level";
+  }
+  const uint16_t *units = storage->levelImage.header.levelFileNameUtf16;
+  for (std::size_t index = 0; index < std::size(storage->levelImage.header.levelFileNameUtf16) && units[index] != 0;
+       index++) {
+    const uint16_t unit = units[index];
+    if (unit == '\\' || unit == '/') {
+      name.clear(); /* a custom map's level is maps\<name>\<name> */
       continue;
-    auto ext = e.path().extension().string();
-    std::transform(ext.begin(), ext.end(), ext.begin(),
-                   [](unsigned char c) { return char(std::tolower(c)); });
-    if (extensions.contains(ext))
-      paths.push_back(e.path());
-    if (ext == ".pck")
-      ++pckCount;
-  }
-  if (!pckCount)
-    throw std::runtime_error("compact replay requires original PCK assets in the game directory");
-  std::sort(paths.begin(), paths.end());
-  std::uint64_t h = 14695981039346656037ull;
-  char buffer[65536];
-  for (const auto &p : paths) {
-    auto name = fs::relative(p).generic_string();
-    h = hashBytes(h, name.data(), name.size());
-    std::ifstream f(p, std::ios::binary);
-    if (!f)
-      throw std::runtime_error("cannot fingerprint PCK asset");
-    while (f) {
-      f.read(buffer, sizeof buffer);
-      h = hashBytes(h, buffer, static_cast<std::size_t>(f.gcount()));
     }
-    if (!f.eof())
-      throw std::runtime_error("PCK read error");
-  }
-  return h;
-}
-void createCache() {
-  auto token = std::chrono::steady_clock::now().time_since_epoch().count();
-  for (unsigned i = 0; i < 64; ++i) {
-    auto candidate =
-        recording.parent_path() / (".open-thandor-replay-" + std::to_string(token) + "-" + std::to_string(i));
-    if (fs::create_directory(candidate)) {
-      cacheDir = candidate;
-      ownsCache = true;
+    if (unit == '.') {
       break;
     }
-    if (i == 63)
-      throw std::runtime_error("cannot create private checkpoint directory");
+    name.push_back((unit < 0x80 && (isalnum(unit) || unit == '-' || unit == '_')) ? static_cast<char>(unit) : '_');
   }
-  checkpoint = cacheDir / "initial.sve";
-  checkpointUtf16 = checkpoint.u16string();
-  if (checkpointUtf16.size() > 199)
-    throw std::runtime_error("replay path is too long for the game's save loader");
+  return name.empty() ? "level" : name;
 }
-Context context() {
-  Context c{};
-  auto &t = g_GameFactionRuntimeImage.tail;
-  c[0] = t.simulationTick;
-  c[1] = g_SessionNetworkTickCounter;
-  c[2] = g_InGameSimulationStepTicks;
-  c[3] = InGameTick_PeriodicClockTick().load(std::memory_order_relaxed);
-  c[4] = t.presentationTick;
-  c[5] = t.gameSpeedQ8;
-  c[6] = ToBits(g_UiCommandRuntimeFlags);
-  c[7] = g_RandomGeneratorState.primarySeed;
-  c[8] = g_RandomGeneratorState.secondarySeed;
-  c[9] = g_RandomGeneratorState.next == Random_NextSecondary ? 1u : 0u;
-  c[10] = g_LocalPlayerRuntimeId;
-  c[11] = g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex;
-  static_assert(sizeof(WorldMotionState) == 14 * sizeof(std::uint32_t));
-  static_assert(std::is_trivially_copyable_v<WorldMotionState>);
-  // This typed block contains only fourteen Q12/angle/distance scalars, no pointers.
-  std::memcpy(c.data() + 12, &g_InGameRuntimeRoot->worldRuntime.motion, sizeof(WorldMotionState));
-  return c;
+
+/* ---- ending ---- */
+
+void ResetSessionFlags()
+{
+  s_State.running = false;
+  s_State.inStep = false;
+  s_State.commandDepth = 0;
+  g_GameRecorderActive = false;
+  g_GameRecorderLoading = false;
 }
-bool apply(const Context &c) {
-  if (c[0] != g_GameFactionRuntimeImage.tail.simulationTick || c[1] != g_SessionNetworkTickCounter) {
-    fail("simulation/network tick diverged before event");
-    return false;
+
+/* Recording: closes the file with its End event. */
+void FinishRecording(RecordingEndReason reason, const char *why)
+{
+  if (s_State.mode != Mode::Record) {
+    return;
   }
-  if (c[2] < 1 || c[2] > INGAME_SIMULATION_STEP_TICKS_MAX || c[9] > 1 || c[10] >= 8 || c[11] >= 8) {
-    fail("recorded context is invalid");
-    return false;
-  }
-  auto &t = g_GameFactionRuntimeImage.tail;
-  g_InGameSimulationStepTicks = c[2];
-  InGameTick_PeriodicClockTick().store(c[3], std::memory_order_relaxed);
-  t.presentationTick = c[4];
-  t.gameSpeedQ8 = c[5];
-  g_UiCommandRuntimeFlags = static_cast<UiCommandRuntimeFlagMask>(c[6]);
-  g_RandomGeneratorState.primarySeed = c[7];
-  g_RandomGeneratorState.secondarySeed = c[8];
-  if (c[9])
-    Random_SelectSecondaryStream();
-  else
-    Random_SelectPrimaryStream();
-  g_LocalPlayerRuntimeId = c[10];
-  g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex = c[11];
-  std::memcpy(&g_InGameRuntimeRoot->worldRuntime.motion, c.data() + 12, sizeof(WorldMotionState));
-  return true;
-}
-bool append(const Event &e) {
   std::string error;
-  if (!writer.append(e, error)) {
-    fail(error);
+  if (s_State.writer.IsOpen()) {
+    if (s_State.writer.Finish(s_State.lastHash, reason, error)) {
+      const std::uint64_t steps = s_State.kindCounts[static_cast<unsigned>(RecordingEventKind::Step)];
+      Thandor_Log("recorder: %s: %s, %llu events (%s), %llu bytes; recorder time %.1f ms, %.1f us per step",
+                  why, Narrow(s_State.outputPath).c_str(), static_cast<unsigned long long>(s_State.writer.EventCount()),
+                  EventCountsText().c_str(), static_cast<unsigned long long>(s_State.writer.BytesWritten()),
+                  s_State.recorderNanoseconds / 1e6, steps != 0 ? s_State.recorderNanoseconds / 1e3 / steps : 0.0);
+    }
+    else {
+      Thandor_Log("recorder: closing %s failed: %s", Narrow(s_State.outputPath).c_str(), error.c_str());
+    }
+  }
+  s_State.mode = Mode::Off;
+  ResetSessionFlags();
+  SetCrashNote();
+}
+
+/* Playback: ends the playback; the game goes on live and paused (or the process ends, OPEN_THANDOR_REPLAY_QUIT). */
+void FinishPlayback(unsigned exitCode, const std::string &message)
+{
+  if (s_State.mode != Mode::Play) {
+    return;
+  }
+  Thandor_Log("replay: %s", message.c_str());
+  const bool wasRunning = s_State.running;
+  s_State.mode = Mode::Off;
+  ResetSessionFlags();
+  SetCrashNote();
+  if (EnvironmentFlag(L"OPEN_THANDOR_REPLAY_QUIT")) {
+    Thandor_Log("replay: OPEN_THANDOR_REPLAY_QUIT, exit code %u", exitCode);
+    ExitProcessWith(exitCode);
+  }
+  if (wasRunning && g_InGameRuntimeRoot != nullptr && !Any(g_UiCommandRuntimeFlags & LIVE_SESSION_END_FLAGS)) {
+    g_UiCommandRuntimeFlags |= UI_COMMAND_RUNTIME_FLAG_PAUSED;
+    Thandor_Log("replay: the game is paused and yours from here");
+  }
+}
+
+void PlaybackDiverged(const std::string &what)
+{
+  char prefix[64];
+  snprintf(prefix, sizeof prefix, "STOP at event %llu: ", static_cast<unsigned long long>(s_State.eventNumber));
+  FinishPlayback(REPLAY_EXIT_FAILED, prefix + what);
+}
+
+void RecorderFailed(const std::string &what)
+{
+  Thandor_Log("recorder: stopped at event %llu: %s", static_cast<unsigned long long>(s_State.eventNumber),
+              what.c_str());
+  FinishRecording(RecordingEndReason::RecorderError, "recording ended early");
+}
+
+/* ---- playback ---- */
+
+bool ApplyContext(const Context &context)
+{
+  GameFactionRuntimeImageTail &tail = g_GameFactionRuntimeImage.tail;
+  if (context[0] != tail.simulationTick || context[1] != g_SessionNetworkTickCounter) {
+    char text[160];
+    snprintf(text, sizeof text, "the simulation is at tick %u / step %u, the recording at %u / %u",
+             tail.simulationTick, g_SessionNetworkTickCounter, context[0], context[1]);
+    PlaybackDiverged(text);
     return false;
   }
-  lastHash = e.afterHash;
-  ++eventNumber;
+  if (context[2] < 1 || context[2] > INGAME_SIMULATION_STEP_TICKS_MAX || context[8] > 1 || context[9] >= 8 ||
+      context[10] >= 8) {
+    PlaybackDiverged("the recorded context is invalid");
+    return false;
+  }
+  g_InGameSimulationStepTicks = static_cast<InGameSimulationStepBatchTicks>(context[2]);
+  tail.presentationTick = context[3];
+  tail.gameSpeedQ8 = context[4];
+  g_UiCommandRuntimeFlags = (FromBits<UiCommandRuntimeFlagMask>(context[5]) & ~LIVE_SESSION_END_FLAGS) |
+                            (g_UiCommandRuntimeFlags & LIVE_SESSION_END_FLAGS);
+  g_RandomGeneratorState.primarySeed = context[6];
+  g_RandomGeneratorState.secondarySeed = context[7];
+  if (context[8] != 0) {
+    Random_SelectSecondaryStream();
+  }
+  else {
+    Random_SelectPrimaryStream();
+  }
+  g_LocalPlayerRuntimeId = context[9];
+  g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex = static_cast<FactionRuntimeIndex>(context[10]);
+  std::memcpy(&g_InGameRuntimeRoot->worldRuntime.motion, context.data() + 11, sizeof(WorldMotionState));
   return true;
 }
-bool matches(std::uint64_t expected, const char *where) {
-  auto actual = GameplayReplay_StateHash();
+
+bool HashMatches(std::uint64_t expected, const char *where)
+{
+  const std::uint64_t actual = StateHash();
   if (actual != expected) {
-    fail(std::string("state divergence ") + where + " expected=" + std::to_string(expected) +
-         " actual=" + std::to_string(actual));
+    PlaybackDiverged(std::string("the state differs ") + where + " (recorded " + HashText(expected) + ", now " +
+                     HashText(actual) + ")");
     return false;
   }
-  lastHash = actual;
+  s_State.lastHash = actual;
   return true;
 }
-} // namespace
-bool GameplayReplay_PrepareSession() {
-  mode = Mode::Off;
-  running = injecting = completed = userCancelled = false;
-  loading = false;
-  freezeClock(false);
-  commandDepth = 0;
-  eventNumber = 0;
-  header = Header{};
-  const char *rec = std::getenv("OPEN_THANDOR_RECORD");
-  const char *play = std::getenv("OPEN_THANDOR_REPLAY");
-  if ((!rec || !*rec) && (!play || !*play))
-    return true;
-  try {
-    if (rec && *rec && play && *play)
-      throw std::runtime_error("set RECORD or REPLAY, not both");
-    if (Any(g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK))
-      throw std::runtime_error("this compact replay implementation supports local sessions only");
-    if (std::getenv("OPEN_THANDOR_STATEHASH") || std::getenv("OPEN_THANDOR_ARENA_ORDERS") ||
-        std::getenv("OPEN_THANDOR_AUTOWIN"))
-      throw std::runtime_error("disable statehash/arena/autowin mutation aids while recording or replaying");
-    mode = (play && *play) ? Mode::Play : Mode::Record;
-    recording = fs::absolute(fs::path(mode == Mode::Play ? play : rec));
-    if (mode == Mode::Record && fs::exists(recording))
-      throw std::runtime_error("recording already exists; choose another filename");
-    if (!fs::is_directory(recording.parent_path()))
-      throw std::runtime_error("recording directory does not exist");
-    createCache();
-    if (mode == Mode::Play) {
-      std::string error;
-      if (!reader.open(recording, header, error))
-        throw std::runtime_error(error);
-      if (header.build != OPEN_THANDOR_REPLAY_BUILD_ID)
-        throw std::runtime_error("replay requires the identical source build");
-      if (header.assetsHash != assetsHash())
-        throw std::runtime_error("PCK asset fingerprint differs from recording");
-      std::ofstream f(checkpoint, std::ios::binary);
-      f.write(reinterpret_cast<const char *>(header.checkpoint.data()),
-              static_cast<std::streamsize>(header.checkpoint.size()));
-      f.close();
-      if (!f)
-        throw std::runtime_error("cannot materialize replay checkpoint");
-    } else {
-      header.build = OPEN_THANDOR_REPLAY_BUILD_ID;
-      header.assetsHash = assetsHash();
-    }
-    return true;
-  } catch (const std::exception &e) {
-    fail(e.what());
-    GameplayReplay_Close();
-    return false;
+
+const char *EventKindName(RecordingEventKind kind)
+{
+  switch (kind) {
+  case RecordingEventKind::Command: return "command";
+  case RecordingEventKind::Step: return "step";
+  case RecordingEventKind::Save: return "save";
+  default: return "end";
   }
 }
-bool GameplayReplay_Playing() { return mode == Mode::Play; }
-bool GameplayReplay_RecordingRequested() { return mode == Mode::Record; }
-bool GameplayReplay_LoadingCheckpoint() { return loading; }
-bool GameplayReplay_Active() { return mode != Mode::Off; }
-const std::uint16_t *GameplayReplay_CheckpointPath() {
-  return reinterpret_cast<const std::uint16_t *>(checkpointUtf16.c_str());
-}
-bool GameplayReplay_CaptureInitialCheckpoint() {
-  static_assert(offsetof(WorldRuntimeContext, activeFactionRuntimeIndex) ==
-                offsetof(ResourceRegistrationRuntimeImageSavedView, factionAssignmentIndex));
-  static_assert(offsetof(WorldRuntimeContext, fieldGrid) ==
-                offsetof(InGameFieldImageSaveContext58, fieldGridAsset));
-  static_assert(offsetof(WorldRuntimeContext, objectArray) ==
-                offsetof(ResourceRegistrationRuntimeImageSavedView, records));
-  static_assert(offsetof(WorldRuntimeContext, objectCount) ==
-                offsetof(ResourceRegistrationRuntimeImageSavedView, recordCount));
-  freezeClock(true);
-  auto error = InGameSaveGame_WritePackage(&g_InGameRuntimeRoot->worldRuntime,
-                                           const_cast<std::uint16_t *>(GameplayReplay_CheckpointPath()));
-  freezeClock(false);
-  if (error) {
-    fail("cannot create initial save checkpoint");
-    return false;
+
+void PlaybackReachedEnd(const Event &end)
+{
+  if (end.afterHash != s_State.lastHash) {
+    PlaybackDiverged("the final state hash differs (recorded " + HashText(end.afterHash) + ", now " +
+                     HashText(s_State.lastHash) + ")");
+    return;
   }
-  return true;
+  char text[200];
+  snprintf(text, sizeof text, "COMPLETE: all %llu events matched (%s), final state hash %s%s",
+           static_cast<unsigned long long>(s_State.eventNumber), EventCountsText().c_str(), HashText(end.afterHash).c_str(),
+           end.endReason == RecordingEndReason::RecorderError ? " (the recorder had stopped early)" : "");
+  FinishPlayback(REPLAY_EXIT_COMPLETE, text);
 }
-void GameplayReplay_BeginCheckpointLoad() {
-  loading = true;
-  freezeClock(true);
-  Random_SetBothSeeds(LoadSeed);
-  Random_SelectSecondaryStream();
-}
-void GameplayReplay_EndCheckpointLoad() {
-  loading = false;
-  freezeClock(false);
-}
-bool GameplayReplay_SessionStarted() {
-  if (mode == Mode::Off)
-    return true;
-  if (mode == Mode::Failed)
-    return false;
-  Random_SelectSecondaryStream();
-  if (mode == Mode::Play) {
-    // Loader intentionally runs no simulation steps in either mode. Its counters
-    // are identical; presentation/RNG/listener values are restored explicitly.
-    if (!apply(header.initialContext) || !matches(header.initialHash, "at initial checkpoint"))
-      return false;
-  } else {
-    try {
-      header.checkpoint = fileBytes(checkpoint);
-      header.initialContext = context();
-      header.initialHash = GameplayReplay_StateHash();
-      std::string error;
-      if (!writer.open(recording, header, error)) {
-        fail(error);
-        return false;
-      }
-      lastHash = header.initialHash;
-    } catch (const std::exception &e) {
-      fail(e.what());
-      return false;
-    }
-  }
-  header.checkpoint.clear();
-  header.checkpoint.shrink_to_fit();
-  running = true;
-  Thandor_Log(
-      "replay: %s %s; one compressed checkpoint + ordered commands/step contexts, no per-tick actor dumps",
-      mode == Mode::Play ? "playing" : "recording", recording.string().c_str());
-  return true;
-}
-bool GameplayReplay_BeforeStep() {
-  if (loading || commandDepth)
-    return false;
-  if (!running)
-    return mode != Mode::Failed;
-  if (mode == Mode::Record) {
-    freezeClock(true);
-    pendingStep = Event{};
-    pendingStep.context = context();
-    pendingStep.beforeHash = GameplayReplay_StateHash();
-    return true;
-  }
-  if (mode != Mode::Play)
-    return false;
-  for (unsigned count = 0; count < 65536; ++count) {
-    Event e;
+
+/* Executes recorded events up to the next step; true with s_State.pendingStep set when a step is due. */
+bool PlayEventsUntilStep()
+{
+  for (unsigned count = 0; count < MAX_EVENTS_BEFORE_STEP; count++) {
+    Event event;
     std::string error;
-    if (!reader.next(e, error)) {
-      fail(error);
+    switch (s_State.reader.Next(event, error)) {
+    case Reader::NextResult::Event:
+      break;
+    case Reader::NextResult::End:
+      PlaybackReachedEnd(event);
+      return false;
+    case Reader::NextResult::Truncated:
+      FinishPlayback(REPLAY_EXIT_NO_CLEAN_END, error + ": every event up to there matched (" + EventCountsText() + "), final state hash " +
+                                                   HashText(s_State.lastHash));
+      return false;
+    case Reader::NextResult::Damaged:
+      PlaybackDiverged(error);
       return false;
     }
-    ++eventNumber;
-    if (e.kind == Kind::End) {
-      // A frame may advance UI RNG after the last simulated event. The footer
-      // commits the last completed event, whose post-state was already checked.
-      if (e.afterHash != lastHash) {
-        fail("footer differs from last completed event");
-        return false;
-      }
-      completed = true;
-      Thandor_Log("replay: COMPLETE, all %llu event checks matched",
-                  static_cast<unsigned long long>(eventNumber - 1));
-      g_UiCommandRuntimeFlags |= UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED;
+    CountEvent(event.kind);
+    if (!ApplyContext(event.context) || !HashMatches(event.beforeHash, std::string(std::string("before ") +
+                                                                                   EventKindName(event.kind)).c_str())) {
       return false;
     }
-    if (!apply(e.context) || !matches(e.beforeHash, "before event"))
-      return false;
-    if (e.kind == Kind::Step) {
-      pendingStep = e;
+    if (event.kind == RecordingEventKind::Step) {
+      s_State.pendingStep = event;
       return true;
     }
-    UiCommandQueueRecord command{};
-    command.packedCommandAndPlayerId = e.command[0];
-    command.payload1 = e.command[1];
-    command.payload2 = e.command[2];
-    command.payload3 = e.command[3];
-    injecting = true;
-    CommandDispatch_ExecuteRecord(INGAME_COMMAND_CODE_BASE, INGAME_COMMAND_HANDLER_REGION_END, &command);
-    injecting = false;
-    if (!matches(e.afterHash, "after command"))
+    s_State.commandDepth++;
+    if (event.kind == RecordingEventKind::Command) {
+      UiCommandQueueRecord record{};
+      record.packedCommandAndPlayerId = event.command[0];
+      record.payload1 = event.command[1];
+      record.payload2 = event.command[2];
+      record.payload3 = event.command[3];
+      CommandDispatch_ExecuteRecord(INGAME_COMMAND_CODE_BASE, INGAME_COMMAND_HANDLER_REGION_END, &record);
+    }
+    else {
+      /* a manual save: the same save into a temporary file, for the state it changes */
+      std::wstring path = s_State.tempDirectory + L"replayed_save.sve";
+      std::vector<uint16_t> pathUtf16(path.begin(), path.end());
+      pathUtf16.push_back(0);
+      const uint32_t saveError =
+          InGameSaveGame_WritePackage(&InGameUi_Image(g_InGameRuntimeRoot)->worldView.base, pathUtf16.data());
+      if (saveError != 0) {
+        Thandor_Log("replay: the replayed save failed (error 0x%X)", saveError);
+      }
+    }
+    s_State.commandDepth--;
+    if (!HashMatches(event.afterHash, std::string(std::string("after ") + EventKindName(event.kind)).c_str())) {
       return false;
+    }
+    if (Any(g_UiCommandRuntimeFlags & LIVE_SESSION_END_FLAGS)) {
+      s_State.sessionClosedByReplay = true;
+    }
   }
-  fail("too many commands without a simulation step");
+  PlaybackDiverged("too many events without a simulation step");
   return false;
 }
-void GameplayReplay_AfterStep() {
-  if (!running)
-    return;
-  if (mode == Mode::Record) {
-    pendingStep.afterHash = GameplayReplay_StateHash();
-    append(pendingStep);
-    freezeClock(false);
-  } else if (mode == Mode::Play)
-    matches(pendingStep.afterHash, "after step");
+
+/* ---- starting ---- */
+
+bool ConflictingTestAid(const char **name)
+{
+  static const wchar_t *const aids[] = {L"OPEN_THANDOR_ARENA_ORDERS", L"OPEN_THANDOR_AUTOWIN", L"OPEN_THANDOR_AUTOLOSE",
+                                        L"OPEN_THANDOR_STATEHASH_SPEED", L"OPEN_THANDOR_STATEHASH_PAUSE_AT"};
+  static const char *const names[] = {"OPEN_THANDOR_ARENA_ORDERS", "OPEN_THANDOR_AUTOWIN", "OPEN_THANDOR_AUTOLOSE",
+                                      "OPEN_THANDOR_STATEHASH_SPEED", "OPEN_THANDOR_STATEHASH_PAUSE_AT"};
+  for (std::size_t index = 0; index < std::size(aids); index++) {
+    if (!EnvironmentValue(aids[index]).empty()) {
+      *name = names[index];
+      return true;
+    }
+  }
+  return false;
 }
-GameplayReplayCommandGuard::GameplayReplayCommandGuard(std::uint32_t code, std::uint32_t player,
-                                                       std::uint32_t p1, std::uint32_t p2, std::uint32_t p3) {
-  if (!running)
-    return;
-  if (code > 0xffffffu || player > 255u) {
-    fail("command is not represented by the native command table");
-    execute_ = false;
+
+bool PreparePlayback(const std::wstring &path)
+{
+  std::string error;
+  s_State.playPath = AbsolutePath(path);
+  if (!s_State.reader.Open(s_State.playPath, s_State.header, s_State.checkpoint, error)) {
+    Thandor_Log("replay: cannot play %s: %s", Narrow(s_State.playPath).c_str(), error.c_str());
+    return false;
+  }
+  const Header &header = s_State.header;
+  Thandor_Log("replay: %s: level %s, recorded %s by build \"%s\" (%s)", Narrow(s_State.playPath).c_str(),
+              header.levelName.c_str(), header.startedAt.c_str(), header.buildId.c_str(), header.buildConfig.c_str());
+  const bool force = EnvironmentFlag(L"OPEN_THANDOR_REPLAY_FORCE");
+  if (header.buildId != g_ThandorBuildId) {
+    Thandor_Log("replay: the recording was made by build \"%s\", this is \"%s\"%s", header.buildId.c_str(),
+                g_ThandorBuildId, force ? "; played anyway (OPEN_THANDOR_REPLAY_FORCE)" :
+                                          ": not played (build the same commit, or OPEN_THANDOR_REPLAY_FORCE=1)");
+    if (!force) {
+      return false;
+    }
+  }
+  if (header.buildConfig != g_ThandorBuildConfig) {
+    Thandor_Log("replay: note: recorded with \"%s\", this build is \"%s\"", header.buildConfig.c_str(),
+                g_ThandorBuildConfig);
+  }
+  const AssetFingerprint assets = ComputeAssetFingerprint({});
+  if (header.assetsHash != assets.hash) {
+    Thandor_Log("replay: the game files differ from the recording's (%u files, fingerprint %s; here %u files, %s)%s",
+                header.assetFileCount, HashText(header.assetsHash).c_str(), assets.fileCount,
+                HashText(assets.hash).c_str(),
+                force ? "; played anyway (OPEN_THANDOR_REPLAY_FORCE)" : ": not played");
+    if (!force) {
+      return false;
+    }
+  }
+  if (!CreateCheckpointDirectory() || !WriteFileBytes(s_State.checkpointPath, s_State.checkpoint)) {
+    Thandor_Log("replay: cannot write the checkpoint to %s", Narrow(s_State.checkpointPath).c_str());
+    return false;
+  }
+  s_State.checkpoint.clear();
+  s_State.checkpoint.shrink_to_fit();
+  s_State.loadSeed = header.loadSeed;
+  return true;
+}
+
+bool PrepareRecording(const std::wstring &environmentPath)
+{
+  if (!environmentPath.empty()) {
+    /* OPEN_THANDOR_RECORD=<path>: the first session there, later ones (or an existing file) as <stem>-2.otr, ... */
+    std::wstring path = AbsolutePath(environmentPath);
+    const std::size_t dot = path.find_last_of(L'.');
+    const std::size_t slash = path.find_last_of(L"\\/");
+    const std::wstring stem = dot != std::wstring::npos && (slash == std::wstring::npos || dot > slash) ?
+                                  path.substr(0, dot) : path;
+    const std::wstring extension = stem.size() < path.size() ? path.substr(stem.size()) : std::wstring(L".otr");
+    unsigned number = s_RecordSessionCount + 1;
+    while (number > 1 || FileExists(path)) {
+      if (number < 2) {
+        number = 2;
+      }
+      path = stem + L"-" + std::to_wstring(number) + extension;
+      if (!FileExists(path)) {
+        break;
+      }
+      number++;
+    }
+    s_State.outputPath = path;
+    s_State.optionRecording = false;
+  }
+  else {
+    s_State.outputPath.clear(); /* chosen at the start, when the level name is known */
+    s_State.optionRecording = true;
+  }
+  if (!CreateCheckpointDirectory()) {
+    Thandor_Log("recorder: cannot create a temporary directory, this game is not recorded");
+    return false;
+  }
+  /* the seed both streams get for the checkpoint load: the session's current one (any seed works) */
+  s_State.loadSeed = g_RandomGeneratorState.primarySeed ^ 0x5EC0FD00u;
+  return true;
+}
+
+} // namespace
+
+/* ---- session lifecycle ---- */
+
+void GameRecorder_PrepareSession(bool loadExistingSession,const uint16_t *levelPathUtf16)
+{
+  (void)levelPathUtf16;
+  s_State.mode = Mode::Off;
+  ResetSessionFlags();
+  s_State.sessionWasNew = !loadExistingSession;
+  s_State.sessionClosedByReplay = false;
+  std::fill(std::begin(s_State.kindCounts), std::end(s_State.kindCounts), 0);
+  s_State.recorderNanoseconds = 0;
+  s_State.eventNumber = 0;
+  s_State.lastHash = 0;
+  s_State.header = Header{};
+  s_State.checkpoint.clear();
+
+  std::wstring replayPath;
+  if (!s_ReplayConsumed) {
+    replayPath = EnvironmentValue(L"OPEN_THANDOR_REPLAY");
+    if (replayPath.empty()) {
+      replayPath = CommandLineReplayPath();
+    }
+  }
+  const std::wstring recordValue = EnvironmentValue(L"OPEN_THANDOR_RECORD");
+  const bool recordOff = recordValue == L"0" || recordValue == L"off" || recordValue == L"OFF";
+  const bool recordOn = recordValue == L"1" || recordValue == L"on" || recordValue == L"ON";
+  const bool recordPath = !recordValue.empty() && !recordOff && !recordOn;
+  const bool option = PersistentSettings_Read(PERSISTENT_RECORD_GAMES_OFF, PERSISTENT_SETTING_RECORD_GAMES) ==
+                          PERSISTENT_RECORD_GAMES_ON && OtFeature_Active(OT_FEATURE_GAME_RECORDING);
+  const bool wantRecord = !recordOff && (recordPath || recordOn || option);
+
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
+    if (wantRecord || !replayPath.empty()) {
+      Thandor_Log("recorder: network games are not recorded or played back");
+    }
     return;
   }
-  if (mode == Mode::Play && !injecting) {
-    if (code == INGAME_COMMAND_PLAYER_DEPARTURE && (p3 & INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION)) {
-      userCancelled = true;
-      Thandor_Log("replay: cancelled by user");
+  const char *aid = nullptr;
+  if ((wantRecord || !replayPath.empty()) && ConflictingTestAid(&aid)) {
+    Thandor_Log("recorder: %s changes the game outside its commands, this game is not recorded or played back", aid);
+    return;
+  }
+  if (!replayPath.empty()) {
+    s_ReplayConsumed = true;
+    if (PreparePlayback(replayPath)) {
+      s_State.mode = Mode::Play;
       return;
     }
-    execute_ = false;
+    RemoveTemporaryFiles();
+    if (EnvironmentFlag(L"OPEN_THANDOR_REPLAY_QUIT")) {
+      Thandor_Log("replay: OPEN_THANDOR_REPLAY_QUIT, exit code %u", REPLAY_EXIT_FAILED);
+      ExitProcessWith(REPLAY_EXIT_FAILED);
+    }
+    Thandor_Log("replay: the session starts as chosen instead");
     return;
   }
-  if (mode == Mode::Failed) {
-    execute_ = false;
+  if (!wantRecord) {
     return;
   }
-  entered_ = true;
-  if (commandDepth++ == 0 && mode == Mode::Record) {
-    freezeClock(true);
-    pendingCommand = Event{};
-    pendingCommand.kind = Kind::Command;
-    pendingCommand.command = {(code << 8) | (player & 255u), p1, p2, p3};
-    pendingCommand.context = context();
-    pendingCommand.beforeHash = GameplayReplay_StateHash();
+  if (PrepareRecording(recordPath ? recordValue : std::wstring())) {
+    s_State.mode = Mode::Record;
   }
 }
-GameplayReplayCommandGuard::~GameplayReplayCommandGuard() {
-  if (!entered_)
-    return;
-  if (--commandDepth == 0 && mode == Mode::Record) {
-    pendingCommand.afterHash = GameplayReplay_StateHash();
-    append(pendingCommand);
-    freezeClock(false);
+
+bool GameRecorder_LoadsCheckpointInstead()
+{
+  return s_State.mode == Mode::Play;
+}
+
+bool GameRecorder_ReloadsFromCheckpoint()
+{
+  return s_State.mode == Mode::Record;
+}
+
+uint16_t *GameRecorder_CheckpointPath()
+{
+  return s_State.checkpointUtf16.data();
+}
+
+bool GameRecorder_CaptureCheckpoint()
+{
+  if (s_State.mode != Mode::Record) {
+    return false;
+  }
+  const uint32_t error =
+      InGameSaveGame_WritePackage(&InGameUi_Image(g_InGameRuntimeRoot)->worldView.base, GameRecorder_CheckpointPath());
+  if (error != 0 || !ReadFileBytes(s_State.checkpointPath, s_State.checkpoint)) {
+    Thandor_Log("recorder: the checkpoint save failed (error 0x%X), this game is not recorded", error);
+    s_State.mode = Mode::Off;
+    RemoveTemporaryFiles();
+    return false;
+  }
+  return true;
+}
+
+void GameRecorder_BeginCheckpointLoad()
+{
+  if (!s_State.randomSaved) {
+    s_State.previousRandom = g_RandomGeneratorState.next;
+    s_State.randomSaved = true;
+  }
+  g_GameRecorderLoading = true;
+  Random_SetBothSeeds(static_cast<RandomSeed>(s_State.loadSeed));
+  Random_SelectSecondaryStream();
+  if (s_State.mode == Mode::Play) {
+    /* the frontend player records as in the recorded game (the AI planning tells human factions by them) */
+    const std::size_t count = std::min<std::size_t>(s_State.header.frontendPlayers.size(), MAX_FRONTEND_PLAYERS);
+    if (count != 0 && g_FrontendPlayerRuntimeBlocks != nullptr) {
+      g_FrontendPlayerRuntimeBlockCount = static_cast<FrontendPlayerRuntimeBlockCount>(count);
+      for (std::size_t index = 0; index < count; index++) {
+        g_FrontendPlayerRuntimeBlocks[index].playerRuntimeId =
+            static_cast<FrontendPlayerRuntimeId>(s_State.header.frontendPlayers[index].playerRuntimeId);
+        g_FrontendPlayerRuntimeBlocks[index].factionAssignment.factionAssignmentIndex =
+            static_cast<FrontendFactionAssignmentIndex>(s_State.header.frontendPlayers[index].factionAssignmentIndex);
+      }
+    }
   }
 }
-void GameplayReplay_Close() {
-  if (writer.active()) {
+
+void GameRecorder_EndCheckpointLoad()
+{
+  g_GameRecorderLoading = false;
+  /* the loader may have changed the selection; the simulation stays on the seeded secondary stream */
+  Random_SelectSecondaryStream();
+  if ((s_State.mode == Mode::Record ? s_State.sessionWasNew
+                                    : (s_State.header.sessionFlags & SESSION_FLAG_NEW_LEVEL) != 0) &&
+      g_InGameRuntimeRoot != nullptr) {
+    /* a loaded save queues no intro notifications; a new level started them */
+    InGameNewSession_QueueIntroNotificationRecords();
+  }
+}
+
+void GameRecorder_SessionStarted()
+{
+  if (s_State.mode == Mode::Off || g_InGameRuntimeRoot == nullptr) {
+    return;
+  }
+  if (s_State.mode == Mode::Play) {
+    const Context context = s_State.header.initialContext;
+    g_GameRecorderActive = true;
+    s_State.running = true;
+    SetCrashNote();
+    if (!ApplyContext(context) || !HashMatches(s_State.header.initialHash, "after loading the checkpoint")) {
+      return;
+    }
+    Thandor_Log("replay: playing %s (%s)%s", Narrow(s_State.playPath).c_str(), s_State.header.levelName.c_str(),
+                GameRecorder_StepsUnpaced() ? ", steps unpaced (OPEN_THANDOR_REPLAY_FAST)" : "");
+    return;
+  }
+  /* recording */
+  Header &header = s_State.header;
+  header.buildId = g_ThandorBuildId;
+  header.buildConfig = g_ThandorBuildConfig;
+  header.levelName = LevelName();
+  header.startedAt = LocalTimeText(false);
+  /* the packages only: the level itself (also a custom map) is part of the checkpoint save */
+  const AssetFingerprint assets = ComputeAssetFingerprint({});
+  header.assetsHash = assets.hash;
+  header.assetFileCount = assets.fileCount;
+  header.loadSeed = s_State.loadSeed;
+  header.pathingMode = static_cast<std::uint32_t>(g_PathingMode);
+  header.sessionFlags = s_State.sessionWasNew ? SESSION_FLAG_NEW_LEVEL : 0;
+  for (std::uint32_t index = 0; index < g_FrontendPlayerRuntimeBlockCount && index < MAX_FRONTEND_PLAYERS; index++) {
+    header.frontendPlayers.push_back(
+        {static_cast<std::uint32_t>(g_FrontendPlayerRuntimeBlocks[index].playerRuntimeId),
+         static_cast<std::uint32_t>(g_FrontendPlayerRuntimeBlocks[index].factionAssignment.factionAssignmentIndex)});
+  }
+  header.initialContext = CaptureContext();
+  header.initialHash = StateHash();
+  if (s_State.optionRecording) {
+    const std::wstring directory = ExecutableDirectory() + L"recordings\\";
+    CreateDirectoryIfMissing(directory);
+    RotateRecordings(directory, KEEP_RECORDINGS, 1, KEEP_RECORDING_BYTES);
+    std::wstring name = Widen(LocalTimeText(true) + "_" + header.levelName);
+    s_State.outputPath = directory + name + L".otr";
+    for (unsigned number = 2; FileExists(s_State.outputPath); number++) {
+      s_State.outputPath = directory + name + L"-" + std::to_wstring(number) + L".otr";
+    }
+  }
+  std::string error;
+  if (!s_State.writer.Open(s_State.outputPath, header, s_State.checkpoint, error)) {
+    Thandor_Log("recorder: cannot write %s: %s; this game is not recorded", Narrow(s_State.outputPath).c_str(),
+                error.c_str());
+    s_State.mode = Mode::Off;
+    s_State.checkpoint.clear();
+    return;
+  }
+  s_RecordSessionCount++;
+  s_State.lastHash = header.initialHash;
+  Thandor_Log("recorder: recording %s (level %s, checkpoint %zu bytes, %u asset files, build \"%s\")",
+              Narrow(s_State.outputPath).c_str(), header.levelName.c_str(), s_State.checkpoint.size(),
+              assets.fileCount, g_ThandorBuildId);
+  s_State.checkpoint.clear();
+  s_State.checkpoint.shrink_to_fit();
+  s_State.running = true;
+  g_GameRecorderActive = true;
+  SetCrashNote();
+}
+
+void GameRecorder_SessionEnding()
+{
+  if (!s_State.running) {
+    return;
+  }
+  if (s_State.mode == Mode::Record) {
+    FinishRecording(RecordingEndReason::SessionEnded, "recording finished");
+    if (s_State.optionRecording) {
+      RotateRecordings(ExecutableDirectory() + L"recordings\\", KEEP_RECORDINGS, 0, KEEP_RECORDING_BYTES);
+    }
+    return;
+  }
+  if (s_State.mode != Mode::Play) {
+    return;
+  }
+  /* the session ends: the recording should end here as well (steps the recorded game ran after a command closed
+     the session are passed over) */
+  unsigned trailingSteps = 0;
+  for (;;) {
+    Event event;
     std::string error;
-    if (mode == Mode::Record && writer.finish(lastHash, error))
-      Thandor_Log("replay: recording finalized (%llu events)", static_cast<unsigned long long>(eventNumber));
-    else if (!error.empty())
-      Thandor_Log("replay: recording footer FAILED: %s", error.c_str());
-  }
-  if (running && mode == Mode::Play && !completed && !userCancelled)
-    Thandor_Log("replay: stopped before clean completion");
-  running = injecting = false;
-  loading = false;
-  freezeClock(false);
-  mode = Mode::Off;
-  writer = Writer{};
-  reader = Reader{};
-  if (ownsCache) {
-    std::error_code ec;
-    fs::remove(checkpoint, ec);
-    fs::remove(cacheDir, ec);
-    cacheDir.clear();
-    checkpoint.clear();
-    checkpointUtf16.clear();
-    ownsCache = false;
+    const Reader::NextResult result = s_State.reader.Next(event, error);
+    if (result == Reader::NextResult::Event && event.kind == RecordingEventKind::Step &&
+        s_State.sessionClosedByReplay) {
+      trailingSteps++;
+      CountEvent(RecordingEventKind::Step);
+      s_State.lastHash = event.afterHash;
+      continue;
+    }
+    if (result == Reader::NextResult::End) {
+      if (trailingSteps != 0) {
+        Thandor_Log("replay: %u steps the recorded game ran after it was left are not played", trailingSteps);
+        s_State.lastHash = event.afterHash; /* the steps are not played, their hashes cannot be checked */
+      }
+      PlaybackReachedEnd(event);
+    }
+    else if (result == Reader::NextResult::Truncated) {
+      FinishPlayback(REPLAY_EXIT_NO_CLEAN_END, error + "; the session ended there");
+    }
+    else if (result == Reader::NextResult::Damaged) {
+      PlaybackDiverged(error);
+    }
+    else {
+      char text[160];
+      snprintf(text, sizeof text, "the session ended at event %llu, before the end of the recording (left by the "
+               "player?)", static_cast<unsigned long long>(s_State.eventNumber));
+      FinishPlayback(REPLAY_EXIT_FAILED, text);
+    }
+    return;
   }
 }
 
-void GameplayReplay_PeriodicClockTick() {
-  std::lock_guard<std::mutex> lock(clockMutex);
-  if (!clockFrozen && mode != Mode::Play && !loading &&
-      InGameTick_ResourceRegistrationBusyCount().load(std::memory_order_relaxed) == 0)
-    InGameTick_PeriodicClockTick().fetch_add(1, std::memory_order_relaxed);
+void GameRecorder_SessionClosed()
+{
+  if (s_State.mode == Mode::Record) {
+    if (s_State.running) {
+      FinishRecording(RecordingEndReason::SessionEnded, "recording finished");
+    }
+    s_State.writer.Abandon();
+  }
+  else if (s_State.mode == Mode::Play && s_State.running) {
+    FinishPlayback(REPLAY_EXIT_FAILED, "the session ended before the end of the recording");
+  }
+  s_State.mode = Mode::Off;
+  ResetSessionFlags();
+  s_State.reader = Reader{};
+  s_State.checkpoint.clear();
+  RemoveTemporaryFiles();
+  if (s_State.randomSaved) {
+    g_RandomGeneratorState.next = s_State.previousRandom;
+    s_State.randomSaved = false;
+  }
+  SetCrashNote();
 }
 
-void GameplayReplay_ClosingWorld() {
-  if (!running)
+/* ---- steps ---- */
+
+bool GameRecorder_BeforeStep()
+{
+  if (!s_State.running) {
+    return true;
+  }
+  if (s_State.commandDepth != 0 || s_State.inStep) {
+    return false; /* a command handler draws frames: the step waits until it returned */
+  }
+  if (s_State.mode == Mode::Record) {
+    RecorderTimer timer;
+    s_State.pendingStep = Event{};
+    s_State.pendingStep.kind = RecordingEventKind::Step;
+    s_State.pendingStep.context = CaptureContext();
+    s_State.pendingStep.beforeHash = BeforeHash();
+    s_State.inStep = true;
+    return true;
+  }
+  if (!PlayEventsUntilStep()) {
+    return false; /* the playback ended (or diverged): this step is skipped, the next ones run live */
+  }
+  s_State.inStep = true;
+  return true;
+}
+
+void GameRecorder_AfterStep()
+{
+  if (!s_State.running || !s_State.inStep) {
     return;
-  if (mode == Mode::Record || userCancelled)
-    return;
-  if (mode == Mode::Play && !completed) {
-    Event e;
+  }
+  s_State.inStep = false;
+  if (s_State.mode == Mode::Record) {
+    RecorderTimer timer;
     std::string error;
-    if (reader.next(e, error) && e.kind == Kind::End && e.afterHash == lastHash) {
-      completed = true;
-      Thandor_Log("replay: COMPLETE at session end, all event checks matched");
-    } else if (mode == Mode::Play)
-      fail(error.empty() ? "session ended before the recording footer" : error);
+    s_State.pendingStep.afterHash = StateHash();
+    if (!s_State.writer.Append(s_State.pendingStep, error)) {
+      RecorderFailed(error);
+      return;
+    }
+    s_State.lastHash = s_State.pendingStep.afterHash;
+    CountEvent(RecordingEventKind::Step);
+  }
+  else if (s_State.mode == Mode::Play) {
+    HashMatches(s_State.pendingStep.afterHash, "after step");
   }
 }
 
-void GameplayReplay_ConfigureLoadedPlayer(std::uint32_t faction) {
-  if (!loading)
-    return;
-  // AI planning derives human ownership from frontend player records, rather
-  // than the saved selection block. Normalize both record and playback loads.
-  if (!g_FrontendPlayerRuntimeBlocks || faction < 1 || faction > 7) {
-    fail("invalid local checkpoint player");
+bool GameRecorder_StepsUnpaced()
+{
+  static const bool s_fast = EnvironmentFlag(L"OPEN_THANDOR_REPLAY_FAST");
+  return s_State.mode == Mode::Play && s_State.running && s_fast;
+}
+
+/* ---- commands ---- */
+
+GameRecorderCommandScope::GameRecorderCommandScope(uint32_t code,uint32_t player,uint32_t payload1,uint32_t payload2,
+                                                   uint32_t payload3)
+{
+  if (!s_State.running || s_State.inStep) {
+    return; /* not recorded, or part of the step that issues it */
+  }
+  if (s_State.commandDepth != 0) {
+    s_State.commandDepth++; /* part of the command that issues it */
+    recorded_ = true;
     return;
   }
-  g_FrontendPlayerRuntimeBlockCount = 1;
-  auto &player = g_FrontendPlayerRuntimeBlocks[0];
-  player.playerRuntimeId = 0;
-  player.factionAssignment = {};
-  player.factionAssignment.factionAssignmentIndex = faction;
+  if (s_State.mode == Mode::Play) {
+    if (code == INGAME_COMMAND_PLAYER_DEPARTURE && (payload3 & INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION) != 0) {
+      Thandor_Log("replay: left by the player at event %llu", static_cast<unsigned long long>(s_State.eventNumber));
+      FinishPlayback(REPLAY_EXIT_FAILED, "cancelled by the player");
+      return; /* leaving the game is executed */
+    }
+    execute_ = false; /* live input does not reach a played back game */
+    return;
+  }
+  if (code > 0xFFFFFFu || player > 0xFFu) {
+    char text[96];
+    snprintf(text, sizeof text, "a command without a command table entry (code 0x%X) cannot be recorded", code);
+    RecorderFailed(text);
+    return;
+  }
+  RecorderTimer timer;
+  s_State.pendingCommand = Event{};
+  s_State.pendingCommand.kind = RecordingEventKind::Command;
+  s_State.pendingCommand.command = {(code << 8) | (player & 0xFFu), payload1, payload2, payload3};
+  s_State.pendingCommand.context = CaptureContext();
+  s_State.pendingCommand.beforeHash = BeforeHash();
+  s_State.commandDepth = 1;
+  recorded_ = true;
+}
+
+GameRecorderCommandScope::~GameRecorderCommandScope()
+{
+  if (!recorded_ || s_State.commandDepth == 0) {
+    return;
+  }
+  if (--s_State.commandDepth != 0 || s_State.mode != Mode::Record || !s_State.running) {
+    return;
+  }
+  RecorderTimer timer;
+  std::string error;
+  s_State.pendingCommand.afterHash = StateHash();
+  if (!s_State.writer.Append(s_State.pendingCommand, error)) {
+    RecorderFailed(error);
+    return;
+  }
+  s_State.lastHash = s_State.pendingCommand.afterHash;
+  CountEvent(RecordingEventKind::Command);
+}
+
+/* ---- saves ---- */
+
+GameRecorderSaveScope::GameRecorderSaveScope(bool autosave)
+{
+  if (autosave || s_State.mode != Mode::Record || !s_State.running || s_State.inStep || s_State.commandDepth != 0) {
+    return;
+  }
+  s_State.pendingCommand = Event{};
+  s_State.pendingCommand.kind = RecordingEventKind::Save;
+  s_State.pendingCommand.context = CaptureContext();
+  s_State.pendingCommand.beforeHash = BeforeHash();
+  s_State.commandDepth = 1;
+  recorded_ = true;
+}
+
+GameRecorderSaveScope::~GameRecorderSaveScope()
+{
+  if (!recorded_) {
+    return;
+  }
+  s_State.commandDepth = 0;
+  if (s_State.mode != Mode::Record || !s_State.running) {
+    return;
+  }
+  std::string error;
+  s_State.pendingCommand.afterHash = StateHash();
+  if (!s_State.writer.Append(s_State.pendingCommand, error)) {
+    RecorderFailed(error);
+    return;
+  }
+  s_State.lastHash = s_State.pendingCommand.afterHash;
+  CountEvent(RecordingEventKind::Save);
+}
+
+bool GameRecorder_AutosaveAllowed()
+{
+  return s_State.mode != Mode::Play;
 }

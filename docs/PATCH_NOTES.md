@@ -5,6 +5,109 @@ code changes is in the [plans](plans) and the [recovery changelog](../CHANGELOG.
 
 Every version lists the changes in English and in German (*Deutsch*).
 
+## Upcoming (not released yet)
+
+### English
+
+A mission map for the campaigns: replay any mission you have reached, without savegames.
+
+#### New
+
+- **Campaign map:** the campaigns tab of *Spiel auswählen* shows one button per campaign with your progress
+  (for example `Die Invasion 7/24`) and, below it, the map of the selected campaign. Every mission has its original
+  number; won missions are green, missions you may play are raised buttons, locked ones are dimmed. Where the
+  campaign branches, both paths are shown. A double line marks a mission that takes over the units of the mission
+  before it (*Einheitenübernahme*). A finished campaign gets a check mark on its button.
+- Below the map: the mission title, its description and a status line that says why a mission is open or locked.
+- **Start any mission you have reached:** every won or unlocked mission can be started (or replayed) with
+  *Starten* or a double click. Replaying keeps all progress behind it; winning a branching mission with the other
+  ending also opens the other branch. A mission that takes over units gets the units of your last win of the
+  mission before it.
+- **Progress without savegames:** every won mission is recorded automatically and unlocks the next one(s). The
+  progress is kept in `save\kampagne.dat` and survives quitting the game; a damaged file is set aside as
+  `kampagne.bad` and the progress starts empty. Uninstalling keeps the file, like your saves.
+- **Custom maps (experimental, single player):** every map editor project `maps\<name>.thmap` next to the game
+  (ZIP or the editor's older PCK form) appears in its own *Custom maps* list (a button on the left of *Spiel auswählen*; *Einzelspiel* shows
+  only the original maps), with the title,
+  description and author from the project. A project may bring its own ground textures. Every project is checked
+  before it is listed; a rejected one gets one line in `thandor.log`. Network games neither list nor send them.
+  The earlier `maps\<name>\` folders are no longer read. Without any custom map the list shows a hint row
+  that says where `.thmap` files go (and how many were rejected), with a link to the Thandor Map Editor on GitHub.
+  Details: [custom_maps.md](custom_maps.md).
+- **GitHub link in the main menu:** a small *GitHub* link next to the version number at the bottom right opens the
+  project page (github.com/idkFoxes/open-thandor) in your browser; it lights up under the mouse pointer.
+- **Record games for bug reports:** with *Partien für Fehlerberichte aufzeichnen* on the *Erweitert* page (off by
+  default, off while *Original Thandor* is on) every single player game is recorded to
+  `recordings\<date>_<time>_<map>.otr` in the game folder (the newest 10, at most 200 MB together). After a crash,
+  `crash.log` names the recording of that game: attach it to your bug report, and the game can be replayed up to
+  the crash with the same version. Network games are not recorded; loading a savegame or moving on to the next
+  campaign mission starts a new recording. While a game is recorded, the short-lived selection and target markers
+  in the world are not shown.
+- **High resolution font:** with *Hochaufgelöste Schrift* on the *Erweitert* page (off by default, off while
+  *Original Thandor* is on) Vulkan and DirectX 12 draw the game's text at UI scale 2x and 3x with glyphs redrawn in
+  high resolution instead of the original pixels enlarged. Letters keep their exact size and place, so lines,
+  line breaks and the layout stay as before. The software renderer and UI scale 1x are not affected.
+
+#### Kept on purpose
+
+- After a win the campaign goes on to the next mission through the briefing room, exactly as before. Savegames,
+  levels, campaigns and the network protocol are unchanged.
+- In a network game the host can start every unlocked mission except one that takes over units: such a mission is
+  only reached by playing the mission before it.
+- The map is used with the mouse; with more than six campaigns (add-ons) the tab shows the old list.
+
+### Deutsch
+
+Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder spielen, ohne Spielstände.
+
+#### Neu
+
+- **Kampagnenkarte:** Die Kampagnen-Registerkarte unter *Spiel auswählen* zeigt eine Schaltfläche je Kampagne mit
+  dem Fortschritt (zum Beispiel `Die Invasion 7/24`) und darunter die Karte der gewählten Kampagne. Jede Mission
+  trägt ihre Originalnummer; gewonnene Missionen sind grün, spielbare erhaben, gesperrte abgeblendet. Verzweigt
+  sich die Kampagne, sind beide Wege zu sehen. Eine Doppellinie zeigt eine Mission, die die Einheiten der
+  vorherigen übernimmt (*Einheitenübernahme*). Eine fertige Kampagne bekommt ein Häkchen auf ihrer Schaltfläche.
+- Unter der Karte: Titel und Beschreibung der Mission und eine Statuszeile, die sagt, warum eine Mission offen oder
+  gesperrt ist.
+- **Jede erreichte Mission starten:** Jede gewonnene oder freigeschaltete Mission lässt sich mit *Starten* oder
+  einem Doppelklick (erneut) spielen. Dabei bleibt aller Fortschritt erhalten; wer eine verzweigende Mission mit
+  dem anderen Ende gewinnt, schaltet auch den anderen Zweig frei. Eine Mission mit Einheitenübernahme bekommt die
+  Einheiten des letzten Siegs in der Mission davor.
+- **Fortschritt ohne Spielstände:** Jede gewonnene Mission wird von selbst vermerkt und schaltet die nächste(n)
+  frei. Der Fortschritt steht in `save\kampagne.dat` und bleibt nach dem Beenden erhalten; eine beschädigte Datei
+  wird als `kampagne.bad` beiseitegelegt, und der Fortschritt beginnt leer. Die Deinstallation lässt die Datei wie
+  die Spielstände liegen.
+- **Eigene Karten (experimentell, nur Einzelspieler):** Jedes Karteneditor-Projekt `maps\<Name>.thmap` neben dem
+  Spiel (ZIP oder die ältere PCK-Form des Editors) erscheint in der eigenen Liste *Eigene Karten* (eigener
+  Knopf links auf *Spiel auswählen*; *Einzelspiel* zeigt nur die Original-Karten), mit Titel, Beschreibung und Autor aus dem Projekt. Ein Projekt darf eigene Bodentexturen
+  mitbringen. Jedes Projekt wird vor dem Anzeigen geprüft; ein abgelehntes erhält eine Zeile in `thandor.log`.
+  Netzwerkspiele zeigen und senden sie nicht. Die früheren Ordner `maps\<Name>\` werden nicht mehr gelesen.
+  Ohne eigene Karte zeigt die Liste einer Hinweiszeile, die sagt, wohin `.thmap`-Dateien gehören (und wie viele
+  abgelehnt wurden), mit einem Link zum Thandor Map Editor auf GitHub. Einzelheiten: [custom_maps.md](custom_maps.md).
+- **GitHub-Link im Hauptmenü:** Ein kleiner Link *GitHub* neben der Versionsnummer unten rechts öffnet die
+  Projektseite (github.com/idkFoxes/open-thandor) im Browser; unter dem Mauszeiger leuchtet er auf.
+- **Partien für Fehlerberichte aufzeichnen:** Mit *Partien für Fehlerberichte aufzeichnen* auf der Seite
+  *Erweitert* (anfangs aus, aus, solange *Original Thandor* an ist) wird jede Einzelspieler-Partie als
+  `recordings\<Datum>_<Uhrzeit>_<Karte>.otr` im Spielordner aufgezeichnet (die neuesten 10, zusammen höchstens
+  200 MB). Nach einem Absturz nennt `crash.log` die Aufzeichnung dieser Partie: Legen Sie sie Ihrer Fehlermeldung
+  bei, dann lässt sich die Partie mit derselben Version bis zum Absturz nachspielen. Netzwerkspiele werden nicht
+  aufgezeichnet; das Laden eines Spielstands oder die nächste Kampagnenmission beginnt eine neue Aufzeichnung.
+  Während einer Aufzeichnung fehlen die kurzlebigen Auswahl- und Zielmarkierungen in der Welt.
+- **Hochaufgelöste Schrift:** Mit *Hochaufgelöste Schrift* auf der Seite *Erweitert* (anfangs aus, aus, solange
+  *Original Thandor* an ist) zeichnen Vulkan und DirectX 12 die Schrift des Spiels bei UI-Skalierung 2x und 3x mit
+  hochaufgelöst nachgezeichneten Buchstaben statt mit vergrößerten Originalpixeln. Die Buchstaben behalten Größe und
+  Position genau, Zeilen, Zeilenumbrüche und das Layout bleiben wie bisher. Software-Renderer und UI-Skalierung 1x
+  sind nicht betroffen.
+
+#### Bewusst beibehalten
+
+- Nach einem Sieg geht die Kampagne wie bisher über den Besprechungsraum zur nächsten Mission weiter. Spielstände,
+  Level, Kampagnen und das Netzwerkprotokoll bleiben unverändert.
+- Im Netzwerkspiel kann der Host jede freigeschaltete Mission starten, außer einer mit Einheitenübernahme: Sie wird
+  nur über die Mission davor erreicht.
+- Die Karte wird mit der Maus bedient; bei mehr als sechs Kampagnen (Add-ons) zeigt die Registerkarte die alte
+  Liste.
+
 ## 1.0.7 - "Thandor Patch 7"
 
 ### English

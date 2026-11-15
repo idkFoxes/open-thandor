@@ -1,164 +1,177 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/scenario/custom_project.cpp
+ * Project code (not in the original game)
+ */
+
+/* Map editor projects (.thmap, see custom_project.h). Adapted from custom_maps::Project::load of the
+   OpenThandor_ZipMaps fork (src/assets/scenario/custom_project.cpp there): the same archive reader and entry rules,
+   but no faction or text alias rewrites (the game keeps its own faction choice and text ids, custom_maps.cpp) and
+   only the terrain files are kept for serving. */
+
+#include <algorithm>
+#include <cstring>
+#include <exception>
+#include <thandor/assets/scenario/custom_project.h>
+
 #include "thandor/map_project_archive.hpp"
 #include "thandor/text_resource.hpp"
-#include <algorithm>
-#include <charconv>
-#include <stdexcept>
-#include <thandor/assets/scenario/custom_project.h>
-namespace custom_maps {
+
+namespace {
+
 using namespace thandor;
-static void need(bool value, const char *reason) {
-  if (!value)
+
+void CustomProject_Need(bool value,const char *reason)
+{
+  if (!value) {
     throw FormatError(reason);
-}
-std::string normalized_path(std::string path) {
-  return normalize_project_path(path);
+  }
 }
 
-Project Project::load(const std::filesystem::path &file) {
-  auto archive = MapProjectArchive::open(file);
-  const auto meta = archive.manifest();
-  auto edited_terrain = read_edited_terrain_images(archive, meta);
-  Project p;
-  p.file = file;
-  p.level_entry = normalized_path(meta.at("level_entry"));
-  p.field_entry = normalized_path(meta.at("field_entry"));
-  if (meta.contains("string_entry"))
-    p.string_entry = normalized_path(meta.at("string_entry"));
-  need(p.level_entry.starts_with("level/") && p.level_entry.ends_with(".lev") &&
-           p.field_entry.ends_with(".fld") &&
-           (p.string_entry.empty() || p.string_entry.ends_with(".str")),
-       "Invalid project entry types");
-  if (meta.contains("scenario_entry")) {
-    const auto &record = archive.require(meta.at("scenario_entry"));
-    need(record.size() == 256, "Invalid scenario metadata");
-    p.planet = read_u32(record, 0x50);
-    need(p.planet <= 9, "Invalid planet index");
+std::vector<uint8_t> CustomProject_Bytes(const std::vector<std::byte> &bytes)
+{
+  std::vector<uint8_t> copy(bytes.size());
+  if (!bytes.empty()) {
+    std::memcpy(copy.data(),bytes.data(),bytes.size());
   }
-  for (auto &[path, data] : archive.files) {
-    if (path != kZipMapManifest && !path.starts_with("editor/") &&
-        !(archive.zip && path.starts_with(kEditableTerrainDirectory)))
-      p.assets.emplace(path, std::move(data));
+  return copy;
+}
+
+bool CustomProject_EndsWith(const std::string &text,const char *suffix)
+{
+  const size_t length = std::strlen(suffix);
+  return (text.size() >= length) && (text.compare(text.size() - length,length,suffix) == 0);
+}
+
+/* A terrain file the game may load: gfx/boden/<...>.gfx, .pal or .dat; a .gfx or .pal must carry its magic and
+   an allocation size equal to its byte count (the game's checks of these assets trust that size). */
+bool CustomProject_IsServable(const std::string &path,const std::vector<std::byte> &data)
+{
+  if (path.rfind("gfx/boden/",0) != 0) {
+    return false;
   }
-  auto &lev = p.assets.at(p.level_entry);
-  auto &fld = p.assets.at(p.field_entry);
-  need(lev.size() >= 0x340 && read_u32(lev, 0) == fourcc("lev") &&
-           read_u32(lev, 4) == lev.size() && read_u32(lev, 12) == 0x70001,
-       "Invalid project LEV");
-  // Every LEV path table used by runtime must be a terminated in-image UTF-16
-  // string.
-  for (size_t at = 0xb0; at <= 0xd4; at += 4) {
-    auto off = read_u32(lev, at);
-    need(off >= 0x340 && off <= 0xffff && (off & 1) == 0 &&
-             off + 10 < lev.size(),
-         "Invalid LEV path offset");
-    bool end = false;
-    for (size_t i = off; i + 10 < lev.size(); i += 2)
-      if (read_u16(lev, i) == 0) {
-        end = true;
-        break;
-      }
-    need(end, "Unterminated LEV path");
+  const bool gfx = CustomProject_EndsWith(path,".gfx");
+  const bool pal = CustomProject_EndsWith(path,".pal");
+  if (!gfx && !pal) {
+    return CustomProject_EndsWith(path,".dat");
   }
-  const auto fieldbase = read_utf16le_z(lev, read_u32(lev, 0xb0),
-                                        lev.size() - read_u32(lev, 0xb0));
-  need(normalized_path(fieldbase + ".fld") == p.field_entry,
-       "LEV field does not match project field");
-  if (!edited_terrain.empty()) {
-    const auto offset = read_u32(lev, 0xb4);
-    auto base = normalized_path(read_utf16le_z(lev, offset, lev.size() - offset));
-    const auto dot = base.find_last_of('.');
-    const auto slash = base.find_last_of('/');
-    if (dot != std::string::npos && (slash == std::string::npos || dot > slash)) base.resize(dot);
-    for (auto &[slot, gfx] : edited_terrain) {
-      auto path = base + static_cast<char>('a' + slot) + ".gfx";
-      p.assets.insert_or_assign(std::move(path), std::move(gfx));
+  return (data.size() >= 8) && (read_u32(data,0) == fourcc(gfx ? "gfx" : "pal")) && (read_u32(data,4) == data.size());
+}
+
+void CustomProject_Read(MapProjectArchive archive,CustomProject *project)
+{
+  const MapProjectManifest meta = archive.manifest();
+  std::map<uint32_t,std::vector<std::byte>> editedTerrain = read_edited_terrain_images(archive,meta);
+
+  CustomProject_Need(meta.contains("level_entry") && meta.contains("field_entry"),
+                     "manifest lacks level_entry or field_entry");
+  project->zip = archive.zip;
+  project->levelEntry = normalize_project_path(meta.at("level_entry"));
+  project->fieldEntry = normalize_project_path(meta.at("field_entry"));
+  std::string stringEntry;
+  if (meta.contains("string_entry")) {
+    stringEntry = normalize_project_path(meta.at("string_entry"));
+  }
+  CustomProject_Need(project->levelEntry.starts_with("level/") && CustomProject_EndsWith(project->levelEntry,".lev") &&
+                     project->fieldEntry.starts_with("level/") && CustomProject_EndsWith(project->fieldEntry,".fld") &&
+                     (stringEntry.empty() || CustomProject_EndsWith(stringEntry,".str")),
+                     "invalid project entry types");
+  const std::vector<std::byte> &lev = archive.require(project->levelEntry);
+  const std::vector<std::byte> &fld = archive.require(project->fieldEntry);
+
+  /* the level's field grid path (+0xB0) names the project's field entry */
+  CustomProject_Need(lev.size() >= 0x800 && read_u32(lev,0) == fourcc("lev"),"invalid project LEV");
+  const uint32_t fieldPathOffset = read_u32(lev,0xB0);
+  CustomProject_Need(fieldPathOffset < lev.size(),"LEV field grid path outside the level");
+  const std::string fieldBase = read_utf16le_z(lev,fieldPathOffset,(lev.size() - fieldPathOffset) & ~(size_t)1);
+  CustomProject_Need(!fieldBase.empty() && normalize_project_path(fieldBase + ".fld") == project->fieldEntry,
+                     "LEV field grid path does not match the project's field entry");
+
+  for (const auto &[path,data] : archive.files) {
+    if (CustomProject_IsServable(path,data)) {
+      project->servedAssets.emplace(path,CustomProject_Bytes(data));
     }
   }
-  const auto placements = read_u32(lev, 0xd8), offset = read_u32(lev, 0xdc);
-  need(offset <= lev.size() &&
-           uint64_t(offset) + uint64_t(placements) * 32 <= lev.size(),
-       "Invalid LEV placement array");
-  p.total_factions = read_u32(lev, 0x314);
-  p.human_factions = read_u32(lev, 0x310);
-  need(p.total_factions >= 1 && p.total_factions <= 7,
-       "Map needs 1..7 active factions");
-  for (uint32_t f = 1; f <= p.total_factions; ++f) {
-    const uint32_t family = f + read_u32(lev, 0x21c + (f - 1) * 0x20);
-    p.human_allowed[f] = family >= 1 && family <= 7;
-  }
-  p.default_human_faction = std::clamp(p.human_factions, 1U, p.total_factions);
-  if (!p.human_allowed[p.default_human_faction]) {
-    p.default_human_faction = 0;
-    for (uint32_t f = 1; f <= p.total_factions; ++f)
-      if (p.human_allowed[f]) {
-        p.default_human_faction = f;
-        break;
-      }
-  }
-  if (auto it = meta.find("default_human_faction"); it != meta.end()) {
-    uint32_t f = 0;
-    auto parsed = std::from_chars(it->second.data(),
-                                  it->second.data() + it->second.size(), f);
-    need(parsed.ec == std::errc{} &&
-             parsed.ptr == it->second.data() + it->second.size(),
-         "Invalid default human faction");
-    p.default_human_faction = f;
-  }
-  need(p.default_human_faction >= 1 &&
-           p.default_human_faction <= p.total_factions &&
-           p.human_allowed[p.default_human_faction],
-       "Default human faction is not playable");
-  // Custom games expose all active factions for selection; their original
-  // human-prefix count is not a player limit.
-  write_u32(lev, 0x310, p.total_factions);
-  need(fld.size() >= 512 && read_u32(fld, 0) == fourcc("fld") &&
-           read_u32(fld, 4) == fld.size(),
-       "Invalid project FLD");
-  p.width = read_u32(fld, 0xb8);
-  p.height = read_u32(fld, 0xbc);
-  need(p.width >= 4 && p.height >= 4 && p.height <= 257 &&
-           uint64_t(p.width) * p.height <= 65536 &&
-           512ULL + 128ULL * p.width * p.height == fld.size(),
-       "Unsupported terrain dimensions");
-  auto converter = read_u32(fld, 12);
-  need(converter == 0x60006 || converter == 0x70001,
-       "Unsupported FLD converter");
-  write_u32(fld, 12, 0x60006);
-  if (!p.string_entry.empty()) {
-    const auto strings = TextResourceAsset::parse(p.assets.at(p.string_entry));
-    need(strings.string_count() >= 16, "Project needs 16 level text entries");
-    for (unsigned i = 0; i < 16; ++i)
-      p.texts.push_back(strings.string(i));
-  } else
-    p.texts.resize(16); // Original V1 projects did not yet carry a STR entry.
-  p.title = meta.contains("display_name") ? meta.at("display_name")
-                                          : file.stem().string();
-  p.author = meta.contains("author") && !meta.at("author").empty()
-                 ? meta.at("author")
-                 : "Unknown";
-  // Use a private alias; the runtime text provider supplies it without
-  // replacing stock alias pages.
-  write_u32(lev, 0x170, 0x10000);
-  return p;
-}
-std::vector<std::filesystem::path>
-discover(const std::filesystem::path &directory) {
-  std::vector<std::filesystem::path> result;
-  std::error_code ec;
-  if (!std::filesystem::is_directory(directory, ec))
-    return result;
-  for (std::filesystem::directory_iterator i(directory, ec), end;
-       i != end && !ec; i.increment(ec)) {
-    if (i->is_regular_file(ec)) {
-      auto ext = i->path().extension().string();
-      for (auto &c : ext)
-        if (c >= 'A' && c <= 'Z')
-          c += 32;
-      if (ext == ".thmap")
-        result.push_back(i->path());
+  if (!editedTerrain.empty()) {
+    /* ZIP textures/terrain/<letter>.tga replace the ground textures of the level (+0xB4 path + letter) */
+    const uint32_t groundOffset = read_u32(lev,0xB4);
+    CustomProject_Need(groundOffset < lev.size(),"LEV ground texture path outside the level");
+    std::string base = normalize_project_path(read_utf16le_z(lev,groundOffset,(lev.size() - groundOffset) & ~(size_t)1));
+    for (auto &[slot,gfx] : editedTerrain) {
+      const std::string path = base + static_cast<char>('a' + slot) + ".gfx";
+      CustomProject_Need(CustomProject_IsServable(path,gfx),"replaced terrain texture outside gfx/boden/");
+      project->servedAssets.insert_or_assign(path,CustomProject_Bytes(gfx));
     }
   }
-  std::sort(result.begin(), result.end());
-  return result;
+
+  project->lev = CustomProject_Bytes(lev);
+  project->fld = CustomProject_Bytes(fld);
+  /* older editors wrote the LEV converter version into new field grids; the layout is the same */
+  if ((project->fld.size() >= 0x10) && (read_u32(fld,0) == fourcc("fld")) && (read_u32(fld,12) == 0x00070001u)) {
+    const uint32_t converter = 0x00060006u;
+    std::memcpy(project->fld.data() + 12,&converter,sizeof converter);
+  }
+
+  if (!stringEntry.empty()) {
+    const TextResourceAsset strings = TextResourceAsset::parse(archive.require(stringEntry));
+    std::vector<uint32_t> countries = strings.country_codes();
+    countries.push_back(0);
+    for (uint32_t country : countries) {
+      const uint32_t preferred = (country == 0) ? 44u : country;
+      std::vector<std::vector<uint16_t>> &lines = project->texts[country];
+      lines.resize(CUSTOM_PROJECT_TEXT_STRINGS);
+      const uint32_t count = std::min(strings.string_count(preferred),CUSTOM_PROJECT_TEXT_STRINGS);
+      for (uint32_t index = 0; index < count; index++) {
+        lines[index] = strings.string_units(index,preferred);
+      }
+    }
+  }
+  if (meta.contains("display_name")) {
+    project->displayName = meta.at("display_name");
+  }
+  if (meta.contains("author")) {
+    project->author = meta.at("author");
+  }
 }
-} // namespace custom_maps
+
+} // namespace
+
+uint64_t CustomProject_MaxFileBytes()
+{
+  return kMapProjectMaxArchiveBytes;
+}
+
+bool CustomProject_LoadBytes(std::vector<uint8_t> bytes,CustomProject *outProject,std::string *outReason)
+{
+  *outProject = CustomProject{};
+  try {
+    std::vector<std::byte> data(bytes.size());
+    if (!bytes.empty()) {
+      std::memcpy(data.data(),bytes.data(),bytes.size());
+    }
+    bytes.clear();
+    bytes.shrink_to_fit();
+    CustomProject_Read(MapProjectArchive::parse(std::move(data)),outProject);
+    return true;
+  }
+  catch (const std::exception &error) {
+    *outProject = CustomProject{};
+    *outReason = error.what();
+    return false;
+  }
+}
+
+bool CustomProject_Load(const std::filesystem::path &file,CustomProject *outProject,std::string *outReason)
+{
+  *outProject = CustomProject{};
+  try {
+    CustomProject_Read(MapProjectArchive::open(file),outProject);
+    return true;
+  }
+  catch (const std::exception &error) {
+    *outProject = CustomProject{};
+    *outReason = error.what();
+    return false;
+  }
+}

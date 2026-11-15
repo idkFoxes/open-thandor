@@ -7,6 +7,8 @@
 
 #include <thandor/gameplay/selection/commands.h>
 #include <thandor/thandor.h>
+#include <thandor/world/pathing/mode.h>
+#include <thandor/world/pathing/improved/arrival.h>
 
 /* Module data. */
 
@@ -232,10 +234,17 @@ void SelectionPointerArray_ApplyMoveCommand
   GameEntityRuntime *singleClass13Entry;
   bool spreadTooLarge;
   ModelDefinition *entityDefinition;
+  bool useSlots;
+  Q12 slotWorldX[SELECTION_ENTRY_CAPACITY];
+  Q12 slotWorldY[SELECTION_ENTRY_CAPACITY];
 
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
   entryTargetY = targetWorldY;
   entryTargetX = targetWorldX;
+  /* open-thandor (pathing P3, improved mode only): a spread selection gets formation slots around the point
+     instead of all units the same point */
+  useSlots = spreadTooLarge && Pathing_Improved() &&
+             PathingFormation_AssignPointSlots(targetWorldY,targetWorldX,selection,slotWorldX,slotWorldY);
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     movementRuntime = static_cast<ArmyMovementRuntime *>(selection->entries[entryIndex]); /* view of the army */
     if (movementRuntime == nullptr) {
@@ -248,7 +257,12 @@ void SelectionPointerArray_ApplyMoveCommand
       entryTargetX = entryTargetX - movementRuntime->classState60;
       entryTargetY = entryTargetY - movementRuntime->ownerValue64;
     }
-    ArmyRuntime_StartRoutedMoveCommand(entryTargetY,entryTargetX,movementRuntime);
+    if (useSlots) {
+      ArmyRuntime_StartRoutedMoveCommand(slotWorldY[entryIndex],slotWorldX[entryIndex],movementRuntime);
+    }
+    else {
+      ArmyRuntime_StartRoutedMoveCommand(entryTargetY,entryTargetX,movementRuntime);
+    }
     if (!spreadTooLarge) {
       entryTargetX = entryTargetX + movementRuntime->classState60;
       entryTargetY = entryTargetY + movementRuntime->ownerValue64;
@@ -355,10 +369,17 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
   ArmyMovementRuntime *movementRuntime;
   int entriesRemaining;
   bool spreadTooLarge;
+  bool useSlots;
+  Q12 slotWorldX[SELECTION_ENTRY_CAPACITY];
+  Q12 slotWorldY[SELECTION_ENTRY_CAPACITY];
 
   /* selection is advanced as a cursor over its entries; the targets are shifted per entry and restored */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
+  /* open-thandor (pathing P3, improved mode only): formation slots around the point, as in
+     SelectionPointerArray_ApplyMoveCommand */
+  useSlots = spreadTooLarge && Pathing_Improved() &&
+             PathingFormation_AssignPointSlots(targetWorldY,targetWorldX,selection,slotWorldX,slotWorldY);
   for (; entriesRemaining != 0; entriesRemaining--) {
     movementRuntime = THANDOR_PTR32_AT(ArmyMovementRuntime, selection);
     if (movementRuntime != nullptr) {
@@ -366,7 +387,14 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
         targetWorldX = targetWorldX - movementRuntime->classState60;
         targetWorldY = targetWorldY - movementRuntime->ownerValue64;
       }
-      ArmyRuntime_AppendWaypointOrStartMove(targetWorldY,targetWorldX,movementRuntime);
+      if (useSlots) {
+        ArmyRuntime_AppendWaypointOrStartMove(slotWorldY[SELECTION_ENTRY_CAPACITY - entriesRemaining],
+                                              slotWorldX[SELECTION_ENTRY_CAPACITY - entriesRemaining],
+                                              movementRuntime);
+      }
+      else {
+        ArmyRuntime_AppendWaypointOrStartMove(targetWorldY,targetWorldX,movementRuntime);
+      }
       if (!spreadTooLarge) {
         targetWorldX = targetWorldX + movementRuntime->classState60;
         targetWorldY = targetWorldY + movementRuntime->ownerValue64;

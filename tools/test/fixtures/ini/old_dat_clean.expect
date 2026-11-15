@@ -31,5 +31,6 @@ game.link_panel_options = 0x0
 game.player_name = "Klaus"
 game.game_name = "Spiel 1"
 game.language_country_code = 49
+game.language = de
 network.players = 6
 others = <default>

@@ -36,6 +36,25 @@
      keymatch       the key command modifier matcher (keymatch_selftest.cpp): literal copies of the four old
                     predicates against UiKeyModifiers_Match for every table class and held 0..0x3F, and
                     UiCommandDispatch_Find against the old scan; logs mismatches and one hash line
+     keybindings    the key binding list of the options menu (keybindings_selftest.cpp): every row's keys pressed
+                    through the keyboard layer and looked up in the real dispatch tables, every action of the in-game
+                    tables (without cheats) listed, every key name and text non-empty in German and English; one
+                    line per failed check and a summary line
+     keybindingspanel
+                    the key binding panel without UI (keybindings_panel_selftest.cpp): the capture logic (taken
+                    on release, peak modifiers, Esc, characters, group rows) and the status texts of set, conflict
+                    and not allowed in German and English; one line per failed check and a summary line
+     campaignprogress
+                    the campaign progress model and the kampagne.dat package format
+                    (campaignprogress_selftest.cpp): round trip, truncated files, bad magic and version, CRC32
+                    mismatch, oversize counts and ranges, repeated sections, file cases with the .bad rename;
+                    one line per failed check and a summary line
+     nativefile     FileSystem_ReadWholeFileNative / FileSystem_WriteFileReplacing on files in a temporary directory
+                    (nativefile_selftest.cpp): round trips, replace of an existing file, missing and over-limit
+                    files, a failed replace; one line per failed check and a summary line
+     campaignmap    the campaign graph, fingerprint, grouping and map layout (campaignmap_selftest.cpp) on the four
+                    stock campaigns from embedded record tables: node positions and edge polylines of mockup v4,
+                    fingerprints, grouping of start-point copies, a cycle; one line per failed check and a summary
      uitemplate     the bytes of the five UI template images (InGameUiImage, FrontendUiImage,
                     DisplaySettingsUiImage, FourValueDialogUiImage, FatalErrorUiImage) and of an in-game root
                     copied and relocated from its template (uitemplate_selftest.cpp), pointers to module objects
@@ -48,6 +67,19 @@
                     texture cache without a GPU device (uiatlas_selftest.cpp): logs pages, texels, packing fill and
                     a hash of the converted texels, writes uiatlas.txt (one line per asset) and checks per-frame
                     validation, re-conversion of a changed image, streaming regions and release eviction
+     language       the run-time language switch (language_selftest.cpp): binds the startup text pages from the
+                    packages of the current directory, switches through every language of menue.str, auto, a country
+                    without a block and back; checks that every id the German block has resolves (non-empty where the
+                    German text is), the bound block and project text language, no allocation, the same texts after
+                    switching back; one line per failed check, one per language and a summary
+     objectives     the mission objective model of the objective overlay (objectives_selftest.cpp): unit cases for
+                    every condition kind and postfix form against the expected German / English line 1 and line 2,
+                    then every level\*.lev of PATCH01/PATCH00/LEVEL.PCK in the current directory gives each faction
+                    with a victory trigger a non-empty line 1 (one log line each); skips the levels without packages
+     custommaps     CustomMap_Validate (custommaps_selftest.cpp): every level\*.lev with its .fld of
+                    PATCH01/PATCH00/LEVEL.PCK in the current directory (also in the derived custom map layout) is
+                    accepted, ~60 corrupted variants of one map are rejected with a reason, then a fuzz loop of
+                    random mutations; fails without the packages
      crash          writes to address 0 to exercise the crash handler, then (if it returns) starts the game
    The differential tests that ran the original machine code (stretchcmp, relaxcmp and the movie decoder
    compare) needed the 32-bit original exe and were removed with the 32-bit build; they had confirmed those
@@ -63,14 +95,40 @@ void Thandor_SelfTestRaster();
 /* OPEN_THANDOR_SELFTEST=hexscan (hexscan_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestHexScan(void);
 
+/* OPEN_THANDOR_SELFTEST=keybindings (keybindings_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestKeyBindings();
+
+/* OPEN_THANDOR_SELFTEST=keybindingspanel (keybindings_panel_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestKeyBindingsPanel();
+
 /* OPEN_THANDOR_SELFTEST=keymatch (keymatch_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestKeyMatch(void);
+
+/* OPEN_THANDOR_SELFTEST=mousering (mousering_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestMouseRing();
+
+/* OPEN_THANDOR_SELFTEST=campaignprogress (campaignprogress_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestCampaignProgress();
+
+/* OPEN_THANDOR_SELFTEST=nativefile (nativefile_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestNativeFile();
+
+/* OPEN_THANDOR_SELFTEST=campaignmap (campaignmap_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestCampaignMap();
 
 /* OPEN_THANDOR_SELFTEST=uitemplate (uitemplate_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestUiTemplate();
 
+/* OPEN_THANDOR_SELFTEST=language (language_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestLanguage();
+
 /* OPEN_THANDOR_SELFTEST=uiatlas (uiatlas_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestUiAtlas();
+/* OPEN_THANDOR_SELFTEST=objectives (objectives_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestObjectives();
+
+/* OPEN_THANDOR_SELFTEST=custommaps (custommaps_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestCustomMaps();
 
 /* OPEN_THANDOR_SELFTEST=inifixtures (inifixtures_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestIniFixtures();

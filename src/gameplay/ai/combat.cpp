@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/ai/combat.h>
+#include <thandor/platform/debug/hooks.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -102,6 +103,86 @@ static bool AiCombat_PointsToModelRuntimeSlot(const ModelRuntimeSlot *pointer)
 }
 
 
+/* The candidate loop of AiUnitGroup_AssignCollectedEntitiesToBestTarget: the candidate with the highest class base
+   score (ties go to the later one), NULL with *outBestScore 0 when none scores. *outRootlessCount counts the
+   candidates that reached the root-node check without a root node. skipRootless is always true in the game; the
+   ghost-target counter (DebugHook_AiGhostTargetCounting) also evaluates it with false, i.e. as the original. */
+static ModelRuntimeSlot *AiUnitGroup_SelectBestTargetModel(AiTargetWorkspaceEntry *candidateRecords,
+                                                          uint32_t candidateCount,bool skipRootless,
+                                                          uint32_t *outBestScore,uint32_t *outRootlessCount)
+{
+  uint32_t targetCandidateIndex;
+  ModelRuntimeSlot *candidateTargetModelRuntime;
+  uint32_t candidateClassScore;
+  uint32_t bestScore;
+  ModelRuntimeSlot *bestTargetModelRuntime;
+
+  *outRootlessCount = 0;
+  bestScore = 0;
+  bestTargetModelRuntime = nullptr;
+  for (targetCandidateIndex = 0; targetCandidateIndex < candidateCount; targetCandidateIndex++) {
+    candidateTargetModelRuntime = candidateRecords[targetCandidateIndex].modelRuntime;
+    if (candidateTargetModelRuntime == nullptr) {
+      continue;
+    }
+    /* Not in the original: the workspaces are never cleared and the model pool is allocated anew for every
+       level, so a stale candidate written before a new or loaded level can point into the freed pool of the
+       earlier one; the original reads freed arena memory there. Only slots of the current pool are scored
+       (every candidate written in this level lies in it). */
+    if (!AiCombat_PointsToModelRuntimeSlot(candidateTargetModelRuntime)) {
+      continue;
+    }
+    /* Not in the original: a stale candidate of the quirk above can name a model slot that was freed and then
+       zeroed (ModelRuntimePool_UnrebaseBeforeSave zeroes free slots at every save) or, after a new or loaded
+       level, an unused slot of the newly zeroed pool (the workspaces outlive the session). Its definition is
+       NULL and the original reads [NULL+0x4C] and crashes. Skipped here; a freed slot that keeps its
+       definition still counts, as before. */
+    if (candidateTargetModelRuntime->definitionOrSavedId.runtimeDefinition == nullptr) {
+      continue;
+    }
+    /* Not in the original: a slot without a root model node holds no live model. A destroyed model loses its
+       root node (ModelRuntimePool_DestroyHierarchyAndDetach) but keeps its definition and owner pointer (so do
+       slots in the middle of their creation and slots dropped at load); the never-cleared workspace can still
+       list it, and the original then sends the group against that owner army, possibly another army that
+       reused the slot ("ghost target"). Not a crash fix: a deliberate behaviour change. Checked after the pool
+       check, which keeps a stale pointer from being read at all. */
+    if (candidateTargetModelRuntime->rootModelNodeOrSavedOffset.modelNode == nullptr) {
+      *outRootlessCount = *outRootlessCount + 1;
+      if (skipRootless) {
+        continue;
+      }
+    }
+    /* Not in the original: a destroyed model keeps its definition, but its army slot is free (no model node,
+       ArmyRuntime_DestroyInstanceAndRefreshUi). As the best candidate the original follows that node in
+       ArmyRuntime_ResolveCommandTargetAndRoute and crashes; as any other candidate it changes nothing. */
+    if (candidateTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime != nullptr &&
+        candidateTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common.ownership.modelNode ==
+          nullptr) {
+      continue;
+    }
+    candidateClassScore = g_AiCombatTargetClassBaseScores
+                            [candidateTargetModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId];
+    /* ties go to the later candidate */
+    if (bestScore <= candidateClassScore) {
+      bestScore = candidateClassScore;
+      bestTargetModelRuntime = candidateTargetModelRuntime;
+    }
+  }
+  *outBestScore = bestScore;
+  return bestTargetModelRuntime;
+}
+
+
+/* The army a group target model sends the collected armies against (NULL: none, the group stays). */
+static GameEntityRuntime *AiUnitGroup_TargetArmyOf(const ModelRuntimeSlot *targetModelRuntime,uint32_t bestScore)
+{
+  if (bestScore == 0 || targetModelRuntime == nullptr) {
+    return nullptr;
+  }
+  return targetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
+}
+
+
 /* Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until
    the group is strong enough (sum >= 0x200), then picks the target with the highest class base score from
    workspace 07 (or workspace 03 when 07 is empty) and sends every collected army to attack it. The target
@@ -117,11 +198,9 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
   Q12 collectedConditionRatioQ12;
   ArmyCommandGeneration assignedCommandGeneration;
   uint32_t targetCandidateCount;
-  uint32_t targetCandidateIndex;
   AiTargetWorkspaceEntry *targetCandidateRecords;
-  ModelRuntimeSlot *candidateTargetModelRuntime;
-  uint32_t candidateClassScore;
   uint32_t bestScore;
+  uint32_t rootlessCandidateCount;
   ModelRuntimeSlot *bestTargetModelRuntime;
   GameEntityRuntime *targetRuntime;
   ArmyRuntimeSlot *collectedArmy;
@@ -167,50 +246,25 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
       targetCandidateCount = AI_WORKSPACE03_CAPACITY / 2;
     }
   }
-  bestScore = 0;
-  bestTargetModelRuntime = nullptr;
-  for (targetCandidateIndex = 0; targetCandidateIndex < targetCandidateCount; targetCandidateIndex++) {
-    candidateTargetModelRuntime = targetCandidateRecords[targetCandidateIndex].modelRuntime;
-    if (candidateTargetModelRuntime == nullptr) {
-      continue;
-    }
-    /* Not in the original: the workspaces are never cleared and the model pool is allocated anew for every
-       level, so a stale candidate written before a new or loaded level can point into the freed pool of the
-       earlier one; the original reads freed arena memory there. Only slots of the current pool are scored
-       (every candidate written in this level lies in it). */
-    if (!AiCombat_PointsToModelRuntimeSlot(candidateTargetModelRuntime)) {
-      continue;
-    }
-    /* Not in the original: a stale candidate of the quirk above can name a model slot that was freed and then
-       zeroed (ModelRuntimePool_UnrebaseBeforeSave zeroes free slots at every save) or, after a new or loaded
-       level, an unused slot of the newly zeroed pool (the workspaces outlive the session). Its definition is
-       NULL and the original reads [NULL+0x4C] and crashes. Skipped here; a freed slot that keeps its
-       definition still counts, as before. */
-    if (candidateTargetModelRuntime->definitionOrSavedId.runtimeDefinition == nullptr) {
-      continue;
-    }
-    /* Not in the original: a destroyed model keeps its definition, but its army slot is free (no model node,
-       ArmyRuntime_DestroyInstanceAndRefreshUi). As the best candidate the original follows that node in
-       ArmyRuntime_ResolveCommandTargetAndRoute and crashes; as any other candidate it changes nothing. */
-    if (candidateTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime != nullptr &&
-        candidateTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common.ownership.modelNode ==
-          nullptr) {
-      continue;
-    }
-    candidateClassScore = g_AiCombatTargetClassBaseScores
-                            [candidateTargetModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId];
-    /* ties go to the later candidate */
-    if (bestScore <= candidateClassScore) {
-      bestScore = candidateClassScore;
-      bestTargetModelRuntime = candidateTargetModelRuntime;
-    }
+  bestTargetModelRuntime = AiUnitGroup_SelectBestTargetModel(targetCandidateRecords,targetCandidateCount,true,
+                                                             &bestScore,&rootlessCandidateCount);
+  /* test aid (developer tools only): how often the root-node skip fires and whether it changed the target army */
+  if (DebugHook_AiGhostTargetCounting()) {
+    uint32_t originalBestScore;
+    uint32_t originalRootlessCount;
+    const ModelRuntimeSlot *originalBestTargetModelRuntime =
+         AiUnitGroup_SelectBestTargetModel(targetCandidateRecords,targetCandidateCount,false,&originalBestScore,
+                                           &originalRootlessCount);
+    DebugHook_AiGhostTargetCounted(rootlessCandidateCount,
+                                   AiUnitGroup_TargetArmyOf(bestTargetModelRuntime,bestScore) !=
+                                     AiUnitGroup_TargetArmyOf(originalBestTargetModelRuntime,originalBestScore));
   }
   if (bestScore == 0) {
     return;
   }
 
   /* send every collected army against the target model's owning army */
-  targetRuntime = bestTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
+  targetRuntime = AiUnitGroup_TargetArmyOf(bestTargetModelRuntime,bestScore);
   /* Not in the original: a slot with a definition always has an owner; checked anyway, as the target is
      followed below. */
   if (targetRuntime == nullptr) {

@@ -66,6 +66,25 @@ mit dem Parameter -SOFTWARE (z. B. in einer Verknüpfung:
 "...\thandor.exe" -SOFTWARE) oder der Eintrag renderer = software in
 thandor.ini.
 
+Unter Optionen -> Erweitert macht "Hochaufgelöste Schrift" (anfangs aus;
+aus, wenn "Original Thandor" an ist) die Schrift bei UI-Skalierung 2x und 3x
+mit Vulkan oder DirectX 12 schärfer: Die Buchstaben sind hochaufgelöst
+nachgezeichnet statt vergrößert, behalten aber Größe und Position, so dass
+Zeilen und Umbrüche gleich bleiben.
+
+Kampagnenkarte
+--------------
+Unter "Spiel auswählen" zeigt die Kampagnen-Registerkarte eine Schaltfläche
+je Kampagne mit dem Fortschritt (z. B. "Die Invasion 7/24") und darunter die
+Missionskarte der gewählten Kampagne: gewonnene Missionen grün, spielbare
+erhaben, gesperrte abgeblendet; eine Doppellinie bedeutet
+Einheitenübernahme. Jede gewonnene oder freigeschaltete Mission lässt sich
+mit "Starten" oder einem Doppelklick (erneut) spielen, ohne Spielstand.
+Jeder Sieg wird von selbst in save\kampagne.dat vermerkt und schaltet die
+nächste Mission frei. Nach einem Sieg geht die Kampagne wie bisher über den
+Besprechungsraum weiter. Eine beschädigte kampagne.dat wird in kampagne.bad
+umbenannt, und der Fortschritt beginnt leer.
+
 Einstellungen: thandor.ini
 --------------------------
 Die Einstellungen stehen jetzt in der Textdatei thandor.ini im Spielordner.
@@ -82,6 +101,17 @@ Wird thandor.ini gelöscht, gelten wieder die Einstellungen aus thandor.dat.
 Das Spiel schreibt außerdem thandor.log (Protokoll) und bei einem Absturz
 crash.log in den Spielordner. Bitte legen Sie diese Dateien einer
 Fehlermeldung bei.
+
+Für Fehlerberichte kann das Spiel Einzelspieler-Partien aufzeichnen:
+Optionen, "Erweitert", "Partien für Fehlerberichte aufzeichnen" (aus, wenn
+"Original Thandor" an ist). Jede Partie landet dann als
+recordings\<Datum>_<Uhrzeit>_<Karte>.otr im Spielordner (die neuesten 10,
+zusammen höchstens 200 MB; ältere werden gelöscht). Nach einem Absturz nennt
+crash.log die Aufzeichnung dieser Partie; bitte legen Sie sie der
+Fehlermeldung bei. Damit lässt sich die Partie bis zum Absturz nachspielen -
+mit genau derselben Spielversion. Netzwerkspiele werden nicht aufgezeichnet,
+und eine Aufzeichnung endet, wenn Sie einen Spielstand laden oder die
+nächste Kampagnenmission beginnt.
 
 Schreibrechte im Spielordner
 ----------------------------
@@ -104,8 +134,9 @@ Deinstallation
 Über Einstellungen -> Apps -> Installierte Apps -> "Thandor Patch 7" (oder
 OpenThandor\unins000.exe im Spielordner). Die Deinstallation entfernt
 thandor.exe, SDL3.dll, thandor.sym und diese Datei und stellt die
-gesicherte alte thandor.exe (Version 1.05) wieder her. Spielstände,
-thandor.ini und die Protokolle bleiben erhalten.
+gesicherte alte thandor.exe (Version 1.05) wieder her. Spielstände, der
+Kampagnenfortschritt (save\kampagne.dat), thandor.ini und die Protokolle
+bleiben erhalten.
 
 Windows SmartScreen und Virenscanner
 ------------------------------------
@@ -121,4 +152,5 @@ Rechtliches
 Thandor - Die Invasion (c) 1999 Innonics GmbH. Open Thandor ist ein
 unabhängiges Fanprojekt und enthält keine Spieldaten; es benötigt Ihre
 gekaufte Thandor-Installation. SDL3 steht unter der zlib-Lizenz
-(OpenThandor\LICENSE-SDL3.txt).
+(OpenThandor\LICENSE-SDL3.txt), miniz (liest die ZIP-Karten .thmap) unter
+der MIT-Lizenz (OpenThandor\LICENSE-miniz.txt).

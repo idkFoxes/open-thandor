@@ -149,6 +149,53 @@ void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDe
   UiContainer_RelocateChildren(relocationDelta,UiNode_As<UiNodeBase>(control));
 }
 
+/* Draws a win.gfx frame around rect (see text_buttons.h): the corners at the four corners of rect, then the
+   edges tiled between them (top and bottom from the left corner's width to the right corner, left and right from
+   the top corner's height to the bottom corner). All pieces are the size of the frameBase corner.
+*/
+void UiFramedFrame_Draw(UiPixelRect rect,GraphicsSubresourceIndex frameBase,UiPixelRect clip)
+
+{
+  GraphicsTextureLogicalSize cornerTileSize;
+  int cornerWidth;
+  int cornerHeight;
+  int rightCornerX;
+  int bottomCornerY;
+
+  cornerTileSize = g_GraphicsTextureSourceGetLogicalSize(frameBase,g_UiWindowTextureSource);
+  cornerHeight = cornerTileSize.logicalHeightPixels;
+  cornerWidth = cornerTileSize.logicalWidthPixels;
+  rightCornerX = rect.right - cornerWidth;
+  bottomCornerY = rect.bottom - cornerHeight;
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clip.bottom,clip.right,clip.top,clip.left,rect.top,rect.left,frameBase,g_UiWindowTextureSource,
+             g_FramebufferAccess);
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clip.bottom,clip.right,clip.top,clip.left,rect.top,rightCornerX,frameBase + UI_WINDOW_FRAME_TOP_RIGHT,
+             g_UiWindowTextureSource,g_FramebufferAccess);
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clip.bottom,clip.right,clip.top,clip.left,bottomCornerY,rect.left,
+             frameBase + UI_WINDOW_FRAME_BOTTOM_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clip.bottom,clip.right,clip.top,clip.left,bottomCornerY,rightCornerX,
+             frameBase + UI_WINDOW_FRAME_BOTTOM_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
+  /* edges: one piece high (INT32_MIN as bottom) or one piece wide (INT32_MIN as right), as in
+     UiWindow_BlitTiledHorizontalEdge and UiWindow_BlitTiledVerticalEdge */
+  g_GraphicsTextureSourceBlitTiledSourceAlpha
+            (clip.bottom,clip.right,clip.top,clip.left,INT32_MIN,rightCornerX,rect.top,rect.left + cornerWidth,
+             frameBase + UI_WINDOW_FRAME_TOP,g_UiWindowTextureSource,g_FramebufferAccess);
+  g_GraphicsTextureSourceBlitTiledSourceAlpha
+            (clip.bottom,clip.right,clip.top,clip.left,bottomCornerY,INT32_MIN,rect.top + cornerHeight,rect.left,
+             frameBase + UI_WINDOW_FRAME_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
+  g_GraphicsTextureSourceBlitTiledSourceAlpha
+            (clip.bottom,clip.right,clip.top,clip.left,bottomCornerY,INT32_MIN,rect.top + cornerHeight,
+             rightCornerX,frameBase + UI_WINDOW_FRAME_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
+  g_GraphicsTextureSourceBlitTiledSourceAlpha
+            (clip.bottom,clip.right,clip.top,clip.left,INT32_MIN,rightCornerX,bottomCornerY,
+             rect.left + cornerWidth,frameBase + UI_WINDOW_FRAME_BOTTOM,g_UiWindowTextureSource,
+             g_FramebufferAccess);
+}
+
 /* Draws a framed text button (drawClipped slot of g_UiFramedTextButtonControlVtable): the normal, selected or disabled
    win.gfx frame (plain or inset), its text centred in the state's style, with the focus mark and its shadow
    behind the text while it has keyboard focus, then the children unless the button is suppressed.
@@ -158,13 +205,9 @@ void UiFramedTextButtonControl_DrawClipped
           UiPixelCoordinate clipLeft,UiFramedTextButtonControl *control)
 
 {
-  uint32_t cornerWidth;
   uint16_t *commandStream;
   uint32_t framePiece;
   uint32_t textWidth;
-  uint32_t cornerHeight;
-  int rightCornerX;
-  int bottomCornerY;
   int focusMarkTop;
   int focusTileX;
   int focusMarkRightX;
@@ -172,12 +215,13 @@ void UiFramedTextButtonControl_DrawClipped
   bool framebufferUnavailable;
   bool drawFrame;
   RichTextExtent textExtent;
-  GraphicsTextureLogicalSize cornerTileSize;
   GraphicsTextureLogicalSize rightCapSize;
   GraphicsTextureLogicalSize leftCapSize;
   GraphicsTextureLogicalSize middleTileSize;
   int textX;
   int textY;
+  UiPixelRect frameRect;
+  UiPixelRect clipRect;
 
   framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
   if (framebufferUnavailable) {
@@ -206,43 +250,17 @@ void UiFramedTextButtonControl_DrawClipped
     }
   }
   if (drawFrame) {
-    cornerTileSize = g_GraphicsTextureSourceGetLogicalSize(framePiece,g_UiWindowTextureSource);
-    cornerHeight = cornerTileSize.logicalHeightPixels;
-    cornerWidth = cornerTileSize.logicalWidthPixels;
-    rightCornerX = (control->selectable).base.layoutWidth - cornerWidth;
-    bottomCornerY = (control->selectable).base.layoutHeight - cornerHeight;
     if (!Any((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) ||
        (!Any((control->selectable).stateFlags & UI_BUTTON_NO_FRAME_WHILE_SUPPRESSED))) {
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,(control->selectable).base.top,
-                 (control->selectable).base.left,framePiece,g_UiWindowTextureSource,g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,(control->selectable).base.top,
-                 rightCornerX + (control->selectable).base.left,
-                 framePiece + UI_WINDOW_FRAME_TOP_RIGHT,g_UiWindowTextureSource,
-                 g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,bottomCornerY + (control->selectable).base.top,
-                 (control->selectable).base.left,framePiece + UI_WINDOW_FRAME_BOTTOM_LEFT,
-                 g_UiWindowTextureSource,
-                 g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,bottomCornerY + (control->selectable).base.top,
-                 rightCornerX + (control->selectable).base.left,
-                 framePiece + UI_WINDOW_FRAME_BOTTOM_RIGHT,g_UiWindowTextureSource,
-                 g_FramebufferAccess);
-      UiWindow_BlitTiledHorizontalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,framePiece + UI_WINDOW_FRAME_TOP,rightCornerX,
-                 0,cornerWidth,control);
-      UiWindow_BlitTiledVerticalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,framePiece + UI_WINDOW_FRAME_LEFT,
-                 bottomCornerY,cornerHeight,0,control);
-      UiWindow_BlitTiledVerticalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,framePiece + UI_WINDOW_FRAME_RIGHT,
-                 bottomCornerY,cornerHeight,rightCornerX,control);
-      UiWindow_BlitTiledHorizontalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,framePiece + UI_WINDOW_FRAME_BOTTOM,
-                 rightCornerX,bottomCornerY,cornerWidth,control);
+      frameRect.left = (control->selectable).base.left;
+      frameRect.top = (control->selectable).base.top;
+      frameRect.right = (control->selectable).base.left + (control->selectable).base.layoutWidth;
+      frameRect.bottom = (control->selectable).base.top + (control->selectable).base.layoutHeight;
+      clipRect.left = clipLeft;
+      clipRect.top = clipTop;
+      clipRect.right = clipRight;
+      clipRect.bottom = clipBottom;
+      UiFramedFrame_Draw(frameRect,framePiece,clipRect);
     }
     commandStream = TextResource_Resolve(control->textResourceId);
     textExtent = RichTextCommandStream_MeasureLine(control->packedTextStyle,commandStream);

@@ -1,21 +1,26 @@
 """Downgrade check of thandor.ini: what an older version makes of a newer version's settings file.
 
-usage: ini_downgrade.py [--exe TEST_EXE] [--fixture NAME] [--strict]
+usage: ini_downgrade.py --exe OLDER_TEST_EXE [--fixture NAME] [--strict]
 
-Runs OPEN_THANDOR_SELFTEST=inifixtures of TEST_EXE (default: build-mingw-test/thandor.exe of this repository, a
-build with the developer tools) on one case of tools/test/fixtures/ini (default experimental_dev: the thandor.ini
-of the experimental-dev branch with [game] language, pathing, objective_overlay, autosave and a [keys] section),
-in a temporary directory: the older version loads the file through its real loader, saves it (Flush) and loads it
-again. Then it prints which keys of the newer file the older version reads, and which lines of the newer file
-survive its save and which are lost - what a player keeps after starting an older version once and going back.
-Exit status 1 when the case fails; with --strict also while its "pending" checks fail (unknown keys not kept).
+Runs OPEN_THANDOR_SELFTEST=inifixtures of OLDER_TEST_EXE (a build of an older version with the developer tools, for
+example a dev test build or one made from the v1.0.7 tag) on one fixture of tools/test/fixtures/ini (default
+experimental_dev_v3: the thandor.ini this version writes, with [game] language and language_country_code, pathing,
+objective_overlay, autosave, original_thandor and a [keys] section), in a temporary directory: the older version loads the file
+through its real loader, saves it (Flush) and loads it again. Then it prints which keys of the newer file the older
+version reads, and which lines of the newer file survive its save and which are lost - what a player keeps after
+starting an older version once and going back.
 
-Why this way and not with v1.0.7 itself: the parser and writer of v1.0.7 (and v1.0.6) are the ones of dev - between
-v1.0.7 and dev persistent.cpp only gained the accessor PersistentSettings_IniPathUtf16 - so the dev test build
-reads and writes a newer file exactly like 1.0.7. A released 1.0.7 has no developer tools (no self-tests), a 1.0.7
-build with them would have to be made from the tag, and re-implementing the parser in Python would test the copy,
-not the game. The older version is therefore the dev build (before the robustness branch A: unknown keys are
-dropped on its next save - the behaviour of 1.0.7 and earlier) or, with --exe, any other build with developer tools.
+The expectations are the older version's: <NAME>.downgrade (key names of 1.0.7 / dev: language_country_code,
+[reserved] dword_50..58), not <NAME>.expect, which describes this version. The script copies the fixture directory
+(the .ini / .dat / .include files) to a temporary one with <NAME>.downgrade as the only case, <NAME>.expect.
+Exit status 1 when the case fails; with --strict also while its "pending" checks fail.
+
+What to expect from an older build: dev (and 1.0.8) reads language_country_code (written by this version for
+exactly this reason, so the language survives a downgrade), keeps the keys it does not know (language, pathing,
+objective_overlay, autosave, original_thandor, [keys]) and writes them back; releases up to 1.0.7 read language_country_code but
+drop the unknown keys on their next save (the newer version then reads their defaults).
+
+Why this way and not by re-implementing the old parser in Python: that would test the copy, not the game.
 """
 import argparse
 import os
@@ -57,16 +62,29 @@ def ini_lines(path):
     return lines
 
 
+def downgrade_fixtures(folder, fixture):
+    """A fixture directory for the older build: the data files, and <fixture>.downgrade as <fixture>.expect."""
+    target = os.path.join(folder, 'fixtures')
+    os.makedirs(target)
+    for name in os.listdir(FIXTURES):
+        if os.path.splitext(name)[1].lower() in ('.ini', '.dat', '.include'):
+            shutil.copy(os.path.join(FIXTURES, name), os.path.join(target, name))
+    shutil.copy(os.path.join(FIXTURES, fixture + '.downgrade'), os.path.join(target, fixture + '.expect'))
+    return target
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--exe', default=os.path.join(REPO, 'build-mingw-test', 'thandor.exe'))
-    parser.add_argument('--fixture', default='experimental_dev')
-    parser.add_argument('--strict', action='store_true', help='pending checks (unknown keys kept) must pass')
+    parser.add_argument('--exe', required=True, help='test build (developer tools) of the older version')
+    parser.add_argument('--fixture', default='experimental_dev_v3')
+    parser.add_argument('--strict', action='store_true', help='pending checks must pass')
     args = parser.parse_args()
     exe = os.path.abspath(args.exe)
     source = os.path.join(FIXTURES, args.fixture + '.ini')
-    if not os.path.exists(exe) or not os.path.exists(source):
-        parser.error('missing: ' + (exe if not os.path.exists(exe) else source))
+    expectations = os.path.join(FIXTURES, args.fixture + '.downgrade')
+    for path in (exe, source, expectations):
+        if not os.path.exists(path):
+            parser.error('missing: ' + path)
     folder = tempfile.mkdtemp(prefix='ot_ini_downgrade_')
     try:
         # own copy of the exe: its thandor.log lands next to it
@@ -74,8 +92,9 @@ def main():
         dll = os.path.join(os.path.dirname(exe), 'SDL3.dll')
         if os.path.exists(dll):
             shutil.copy(dll, os.path.join(folder, 'SDL3.dll'))
+        fixtures = downgrade_fixtures(folder, args.fixture)
         work = os.path.join(folder, 'work')
-        env = game_env(OPEN_THANDOR_SELFTEST='inifixtures', OPEN_THANDOR_INI_FIXTURES=FIXTURES,
+        env = game_env(OPEN_THANDOR_SELFTEST='inifixtures', OPEN_THANDOR_INI_FIXTURES=fixtures,
                        OPEN_THANDOR_INI_FIXTURE=args.fixture, OPEN_THANDOR_INI_OUT=work,
                        OPEN_THANDOR_INI_STRICT='1' if args.strict else '0')
         subprocess.run([os.path.join(folder, 'thandor.exe')], cwd=folder, env=env, timeout=120)
@@ -84,6 +103,7 @@ def main():
         written_path = os.path.join(work, args.fixture, 'thandor.ini')
         print('older version: %s' % exe)
         print('newer file:    %s' % source)
+        print('expectations:  %s' % expectations)
         print()
         print('self-test (load, values, save, reload):')
         for line in log:
@@ -105,8 +125,8 @@ def main():
             print('  added [%s] %s' % (section, line))
         print()
         if lost:
-            print('downgrade: an older version drops these keys on its next save; the newer version then reads '
-                  'their defaults (see the "pending A" checks: once unknown keys are kept, nothing is lost)')
+            print('downgrade: the older version drops these keys on its next save; the newer version then reads '
+                  'their defaults')
         else:
             print('downgrade: every line of the newer file survives the older version\'s save')
         result = [line for line in log if line.startswith('inifixtures: ')]

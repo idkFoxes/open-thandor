@@ -580,6 +580,25 @@ static void walk_crash_stack(FILE *out, HANDLE process, HANDLE thread, CONTEXT *
     }
 }
 
+/* Thandor_SetCrashLogNote: written by the main thread, read by the crash filter; the length is published last, so a
+   crash during an update reads the old text or none, never a half-written length. */
+static char g_crashLogNote[1024];
+static volatile LONG g_crashLogNoteLength;
+
+void Thandor_SetCrashLogNote(const char *note)
+{
+    size_t length = note != nullptr ? strlen(note) : 0;
+    if (length > sizeof g_crashLogNote - 1) {
+        length = sizeof g_crashLogNote - 1;
+    }
+    InterlockedExchange(&g_crashLogNoteLength, 0);
+    if (length != 0) {
+        memcpy(g_crashLogNote, note, length);
+    }
+    g_crashLogNote[length] = '\0';
+    InterlockedExchange(&g_crashLogNoteLength, static_cast<LONG>(length));
+}
+
 static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
 {
     char path[MAX_PATH];
@@ -612,6 +631,12 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
             context.Rax, context.Rbx, context.Rcx, context.Rdx, context.Rsi, context.Rdi, context.Rbp,
             context.Rsp);
     fprintf(out, "module base 0x%p\n\n", static_cast<void *>(GetModuleHandleA(nullptr)));
+    {
+        const LONG noteLength = g_crashLogNoteLength;
+        if (noteLength > 0) {
+            fprintf(out, "%.*s\n\n", static_cast<int>(noteLength), g_crashLogNote);
+        }
+    }
     fflush(out);
     /* Raw stack qwords first (the same 0x180 bytes as the earlier 96 dwords): the stack walk below can fault
        on a corrupted stack. */

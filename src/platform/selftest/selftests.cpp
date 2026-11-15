@@ -15,6 +15,9 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
 #include <thandor/platform/sdl3/window_icon.h>
+#include <thandor/platform/input/devices.h>
+#include <thandor/ui/core/key_bindings.h>
+#include <thandor/ui/core/key_bindings_ini.h>
 
 #include <algorithm>
 #include <vector>
@@ -783,6 +786,148 @@ static unsigned SelfTest_CompareSettingsImages(const char *what, const uint8_t *
     return differences;
 }
 
+/* settings: the section [keys] (ui/core/key_bindings_ini.cpp) through PersistentSettings_FormatIni / _ParseIni:
+   omitted with the defaults; custom bindings -> ini -> parsed back equal and written the same; invalid lines keep
+   the default (fixed, hidden and unknown names ignored); a conflict on load unbinds the later action. Leaves the
+   defaults. Returns the number of failed checks (each logged). */
+static unsigned SelfTest_SettingsKeys(char *text, uint32_t capacity)
+{
+    static char again[0x4000];
+    static KeyChord saved[KEY_ACTION_COUNT][KEY_BINDING_MAX_KEYS];
+    uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    unsigned failures = 0;
+    uint32_t length;
+    const auto keysOf = [](KeyAction action) { return KeyBindings_Get(action).keys; };
+    const auto fail = [&failures](const char *what) {
+        Thandor_Log("settings: keys: %s FAILED", what);
+        failures++;
+    };
+    /* sets action to the chord of token through KeyBindings_Set (with its conflict check) */
+    const auto bind = [&fail](KeyAction action, const char *token) {
+        KeyChord chords[KEY_BINDING_MAX_KEYS];
+        if (KeyBindings_ParseTokens(token, KeyBindings_Get(action).rangeLength, chords, KEY_BINDING_MAX_KEYS) != 1 ||
+            KeyBindings_Set(action, chords[0]).status != KeyBindingStatus::Ok) {
+            Thandor_Log("settings: keys: %s = %s not set", KeyBindings_Name(action), token);
+            fail("custom binding");
+        }
+    };
+    const auto parse = [&image](const char *ini) {
+        memset(image, 0, sizeof image);
+        PersistentSettings_ParseIni(ini, (uint32_t)strlen(ini), image);
+    };
+    const auto format = [&image](char *out, uint32_t outCapacity) {
+        memset(image, 0, sizeof image);
+        return PersistentSettings_FormatIni(image, 0, out, outCapacity);
+    };
+
+    KeyBindingsIni_Register();
+    parse("");
+    format(text, capacity);
+    if (!KeyBindings_AllDefault() || strstr(text, "[keys]") != nullptr) {
+        fail("defaults: section omitted");
+    }
+
+    /* custom bindings: a letter with Ctrl, an F key, a cleared action, a range action's modifiers, a letter camera
+       key, the action with a permanent chord (Alt+F4, not written) */
+    bind(KeyAction::Pause, "Ctrl+K");
+    bind(KeyAction::Faster, "F9");
+    KeyBindings_Clear(KeyAction::Screenshot);
+    bind(KeyAction::GroupStore, "Alt+Shift+Ctrl+1..8");
+    bind(KeyAction::CameraLeft, "J");
+    bind(KeyAction::MenuLeave, "Ctrl+Q");
+    for (int action = 0; action < KEY_ACTION_COUNT; action++) {
+        memcpy(saved[action], keysOf(static_cast<KeyAction>(action)), sizeof saved[action]);
+    }
+    length = format(text, capacity);
+    if (strstr(text, "\r\n[keys]\r\n;") == nullptr || strstr(text, "\npause = Ctrl+K\r\n") == nullptr ||
+        strstr(text, "\nscreenshot = none\r\n") == nullptr ||
+        strstr(text, "\ngroup_store = Ctrl+Alt+Shift+1..8\r\n") == nullptr ||
+        strstr(text, "\ncamera_left = J\r\n") == nullptr || strstr(text, "\nmenu_leave = Ctrl+Q\r\n") == nullptr ||
+        strstr(text, "\nstop = S, Alt+Shift+S\r\n") == nullptr || strstr(text, "\ngame_menu =") != nullptr ||
+        strstr(text, "\ncheat_xenite =") != nullptr) {
+        fail("custom bindings written");
+    }
+    KeyBindings_ResetAllDefaults();
+    parse(text);
+    for (int action = 0; action < KEY_ACTION_COUNT; action++) {
+        if (memcmp(saved[action], keysOf(static_cast<KeyAction>(action)), sizeof saved[action]) != 0) {
+            Thandor_Log("settings: keys: %s differs after the round trip",
+                        KeyBindings_Name(static_cast<KeyAction>(action)));
+            failures++;
+        }
+    }
+    if (KeyBindingsIni_LastLoadProblemCount() != 0) {
+        fail("round trip without problems");
+    }
+    if (format(again, sizeof again) != length || strcmp(text, again) != 0) {
+        fail("round trip written the same");
+    }
+
+    /* invalid lines: a broken token, Esc (not allowed) and an invalid second token keep the default; a fixed and
+       a hidden action and an unknown name are ignored; the valid line between them is taken (its trailing comment
+       removed); a key of [keys] in another section is not */
+    parse("[keys]\r\npause = Ctrl+\r\nfaster = F9 ; comment\r\nunknown_action = K\r\ngame_menu = K\r\n"
+          "cheat_xenite = K\r\nstop = Esc\r\nPAUSE = Ctrl+K, oops\r\n[game]\r\nslower = K\r\n");
+    if (!KeyBindings_IsDefault(KeyAction::Pause) || !KeyBindings_IsDefault(KeyAction::Stop) ||
+        !KeyBindings_IsDefault(KeyAction::GameMenu) || !KeyBindings_IsDefault(KeyAction::CheatXenite) ||
+        !KeyBindings_IsDefault(KeyAction::Slower) || KeyBindings_IsDefault(KeyAction::Faster) ||
+        keysOf(KeyAction::Faster)[0].keyCode != KEYBOARD_KEY_CODE_FUNCTION(9) ||
+        KeyBindingsIni_LastLoadProblemCount() != 3) {
+        Thandor_Log("settings: keys: %d load problems, expected 3", KeyBindingsIni_LastLoadProblemCount());
+        fail("invalid lines");
+    }
+
+    /* conflict on load: faster = P collides with pause (earlier, kept); faster is unbound and written as none */
+    parse("[keys]\r\nfaster = P\r\n");
+    format(text, capacity);
+    if (!KeyBindings_IsDefault(KeyAction::Pause) || keysOf(KeyAction::Faster)[0].keyCode != 0 ||
+        KeyBindingsIni_LastLoadProblemCount() != 1 || strstr(text, "\nfaster = none\r\n") == nullptr) {
+        fail("conflict on load");
+    }
+
+    /* with kept extras: [keys] goes to its owner and is never kept as a foreign section (written once, by the
+       owner), a foreign section stays; order: the game's sections, then [keys], then the foreign ones */
+    {
+        static const char mixed[] = "[network]\r\nplayers = 6\r\n[MyTool]\r\nalpha = 1\r\n[keys]\r\npause = Ctrl+K\r\n"
+                                    "; a comment in [keys]\r\n[Other]\r\nbeta = 2\r\n";
+        PersistentSettingsIniExtras extras;
+        uint64_t mask;
+
+        memset(image, 0, sizeof image);
+        mask = PersistentSettings_ParseIniWithExtras(mixed, (uint32_t)(sizeof mixed - 1), image, &extras);
+        bool keptKeys = false;
+        for (const PersistentSettingsIniExtras::Section &section : extras.sections) {
+            keptKeys = keptKeys || _stricmp(section.name.c_str(), "keys") == 0;
+        }
+        length = PersistentSettings_FormatIniWithExtras(image, mask, &extras, text, capacity);
+        const std::string written(text, length);
+        const size_t network = written.find("\n[network]\r\n");
+        const size_t keys = written.find("\n[keys]\r\n");
+        const size_t myTool = written.find("\n[MyTool]\r\n");
+        const size_t other = written.find("\n[Other]\r\n");
+        if (keptKeys || KeyBindings_IsDefault(KeyAction::Pause) || keys == std::string::npos ||
+            written.find("\n[keys]\r\n", keys + 1) != std::string::npos ||
+            written.find("pause = Ctrl+K") == std::string::npos ||
+            written.find("; a comment in [keys]") != std::string::npos || network == std::string::npos ||
+            myTool == std::string::npos || other == std::string::npos || !(network < keys && keys < myTool &&
+            myTool < other)) {
+            fail("[keys] with extras (not kept, written once, after the game's sections, before foreign ones)");
+        }
+        /* a foreign extras entry named like a registered section (handed in from outside) is not written twice */
+        extras.sections.push_back({"KEYS", false, {"pause = Ctrl+J"}});
+        length = PersistentSettings_FormatIniWithExtras(image, mask, &extras, text, capacity);
+        if (strstr(text, "Ctrl+J") != nullptr) {
+            fail("registered section in extras skipped");
+        }
+    }
+
+    parse("");
+    if (!KeyBindings_AllDefault()) {
+        fail("defaults restored");
+    }
+    return failures;
+}
+
 /* settings: how often line (a whole line of text, without its line end) occurs in text. */
 static unsigned SelfTest_CountIniLines(const std::string &text, const char *line)
 {
@@ -802,19 +947,19 @@ static unsigned SelfTest_CountIniLines(const std::string &text, const char *line
     return count;
 }
 
-/* settings: unknown keys and sections survive a parse and rewrite (keys of a newer version, e.g. experimental's
-   [game] language, and another tool's section), a key this version knows is written once, and a second round
+/* settings: unknown keys and sections survive a parse and rewrite (keys of a newer version, e.g. a future
+   [game] key, and another tool's section), a key this version knows is written once, and a second round
    trip gives the same text. Logs "settings: extras ok" or the failed checks. */
 static void SelfTest_SettingsExtras()
 {
     static const char extrasText[] =
         "; the game's own comment\r\n[display]\r\nwidth = 800\r\n; comment of a future key\r\nfuture_key = 1 ; x\r\n"
-        "[MyTool]\r\n; tool comment\r\nalpha=1\r\n\r\nwidth = 5\r\n[game]\r\nlanguage = de\r\nspeed_percent = oops\r\n"
+        "[MyTool]\r\n; tool comment\r\nalpha=1\r\n\r\nwidth = 5\r\n[game]\r\nnext_key = de\r\nspeed_percent = oops\r\n"
         "; dropped: above a known key\r\nscroll_step = 40\r\n[display]\r\nwidth = 1024\r\nsecond = 2\r\n"
         "[network]\r\nonly_unknown = yes\r\n[empty]\r\n";
     static const char *const expectedOnce[] = {
         "[display]", "width = 1024", "; comment of a future key", "future_key = 1 ; x", "second = 2",
-        "[MyTool]", "; tool comment", "alpha=1", "width = 5", "[game]", "language = de", "[network]",
+        "[MyTool]", "; tool comment", "alpha=1", "width = 5", "[game]", "next_key = de", "[network]",
         "only_unknown = yes", "[empty]",
     };
     static const char *const expectedNever[] = {"speed_percent = oops", "; dropped: above a known key",
@@ -849,7 +994,7 @@ static void SelfTest_SettingsExtras()
     }
     /* unknown keys follow the known keys of their section; the foreign sections come after the game's */
     if (written.find("width = 1024") > written.find("future_key") ||
-        written.find("scroll_step = 40") > written.find("language = de") ||
+        written.find("scroll_step = 40") > written.find("next_key = de") ||
         written.find("[network]") > written.find("[MyTool]") || written.find("[MyTool]") > written.find("[empty]")) {
         Thandor_Log("settings: extras: order wrong");
         failures++;
@@ -864,7 +1009,7 @@ static void SelfTest_SettingsExtras()
     }
     /* without extras nothing unknown is written */
     length2 = PersistentSettings_FormatIniWithExtras(image, mask, nullptr, text2, sizeof text2);
-    if (SelfTest_CountIniLines(std::string(text2, length2), "language = de") != 0) {
+    if (SelfTest_CountIniLines(std::string(text2, length2), "next_key = de") != 0) {
         Thandor_Log("settings: extras: written without extras");
         failures++;
     }
@@ -1005,6 +1150,27 @@ static void SelfTest_SettingsRanges()
         {"game", "map_mouse_options = 0x7", PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS, true},
         {"game", "language_country_code = 49", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, true},
         {"game", "language_country_code = -49", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, false},
+        {"game", "language_country_code = 999", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, true},
+        {"game", "language_country_code = 1000", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, false},
+        {"game", "language = es", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, true},
+        {"game", "language = 0", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, true},
+        {"game", "language = 1000", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, false},
+        {"game", "language = klingon", PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, false},
+        {"game", "pathing = original", PERSISTENT_SETTING_PATHING_MODE, true},
+        {"game", "pathing = 1", PERSISTENT_SETTING_PATHING_MODE, true},
+        {"game", "pathing = 2", PERSISTENT_SETTING_PATHING_MODE, false},
+        {"game", "objective_overlay = off", PERSISTENT_SETTING_OBJECTIVE_OVERLAY, true},
+        {"game", "objective_overlay = 2", PERSISTENT_SETTING_OBJECTIVE_OVERLAY, false},
+        {"game", "autosave = off", PERSISTENT_SETTING_AUTOSAVE, true},
+        {"game", "autosave = 1", PERSISTENT_SETTING_AUTOSAVE, true},
+        {"game", "autosave = 2", PERSISTENT_SETTING_AUTOSAVE, false},
+        {"game", "autosave = -1", PERSISTENT_SETTING_AUTOSAVE, false},
+        {"game", "original_thandor = on", PERSISTENT_SETTING_ORIGINAL_THANDOR, true},
+        {"game", "original_thandor = 1", PERSISTENT_SETTING_ORIGINAL_THANDOR, true},
+        {"game", "original_thandor = 0", PERSISTENT_SETTING_ORIGINAL_THANDOR, true},
+        {"game", "original_thandor = 2", PERSISTENT_SETTING_ORIGINAL_THANDOR, false},
+        {"game", "original_thandor = -1", PERSISTENT_SETTING_ORIGINAL_THANDOR, false},
+        {"game", "original_thandor = true", PERSISTENT_SETTING_ORIGINAL_THANDOR, false},
         {"network", "players = 2", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, true},
         {"network", "players = 8", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, true},
         {"network", "players = 1", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, false},
@@ -1055,7 +1221,8 @@ static void SelfTest_SettingsRanges()
 /* OPEN_THANDOR_SELFTEST=settings: the thandor.ini format. Parses a fixed ini text (all value forms, unknown and
    missing keys) and checks the image; then, when thandor.dat is in the current directory, writes its image as
    ini text, parses that back and compares (the migration), and when thandor.ini is there too, compares it
-   with thandor.dat (an ini the game wrote from that thandor.dat). Logs one line per check. */
+   with thandor.dat (an ini the game wrote from that thandor.dat); the section [keys] in between
+   (SelfTest_SettingsKeys). Logs one line per check. */
 static void Thandor_SelfTestSettings()
 {
     static const char fixedText[] =
@@ -1064,7 +1231,7 @@ static void Thandor_SelfTestSettings()
         "model_detail = -3\r\n[sound]\r\nmusic = false\r\neffects_volume = 50%\r\nmusic_volume = 0x4000\r\n"
         "movie_volume = 37.5 %\r\n[game]\r\nplayer_name = \"Ren\xC3\xA9 \xF0\x9F\x99\x82\"\r\n"
         "game_name = abcdefghijklmnopqrstuvwxyz\r\nmap_mouse_options = 0x5\r\nspeed_percent = oops\r\n"
-        "[nosection]\r\nplayers = 7\r\n";
+        "language_country_code = 39\r\noriginal_thandor = On\r\n[nosection]\r\nplayers = 7\r\n";
     uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
     uint8_t expected[PERSISTENT_SETTINGS_IMAGE_BYTES];
     uint8_t parsed[PERSISTENT_SETTINGS_IMAGE_BYTES];
@@ -1092,6 +1259,8 @@ static void Thandor_SelfTestSettings()
     SELFTEST_SETTING(PERSISTENT_SETTING_MUSIC_GAIN, 0x4000);
     SELFTEST_SETTING(PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN, 0x3000);
     SELFTEST_SETTING(PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS, 5);
+    SELFTEST_SETTING(PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, 39); /* the old key name, still read */
+    SELFTEST_SETTING(PERSISTENT_SETTING_ORIGINAL_THANDOR, PERSISTENT_ORIGINAL_THANDOR_ON); /* past thandor.dat's 200 bytes */
 #undef SELFTEST_SETTING
     memcpy(expected + PERSISTENT_SETTING_PLAYER_NAME, playerName, sizeof playerName);
     memcpy(expected + PERSISTENT_SETTING_GAME_NAME, "a\0b\0c\0d\0e\0f\0g\0h\0i\0j\0k\0l\0m\0n\0o\0p\0q\0r\0s\0t\0", 40);
@@ -1108,6 +1277,194 @@ static void Thandor_SelfTestSettings()
                                                   PersistentSettings_ParseIni(text, length, parsed));
     Thandor_Log("settings: fixed text %s (present mask %016llX)", differences == 0 ? "ok" : "MISMATCH",
                 (unsigned long long)mask);
+    {
+        /* [game] language: the names, a number, the old key name, and the names written back */
+        static const struct {
+            const char *text;
+            uint32_t countryCode;
+            const char *written;
+        } languages[] = {{"[game]\r\nlanguage = auto\r\n", 0, "language = auto\r\n"},
+                         {"[game]\r\nlanguage = DE\r\n", 49, "language = de\r\n"},
+                         {"[game]\r\nlanguage = en ; comment\r\n", 44, "language = en\r\n"},
+                         {"[game]\r\nlanguage = es\r\n", 34, "language = es\r\n"},
+                         {"[game]\r\nlanguage = 7\r\n", 7, "language = 7\r\n"},
+                         {"[game]\r\nlanguage_country_code = 33\r\n", 33, "language = fr\r\n"},
+                         /* both keys: language wins, in either order (1.0.7 rewrites only language_country_code) */
+                         {"[game]\r\nlanguage = de\r\nlanguage_country_code = 33\r\n", 49, "language = de\r\n"},
+                         {"[game]\r\nlanguage_country_code = 33\r\nlanguage = it\r\n", 39, "language = it\r\n"},
+                         /* an invalid language leaves the old key's value */
+                         {"[game]\r\nlanguage_country_code = 33\r\nlanguage = 1000\r\n", 33, "language = fr\r\n"}};
+        unsigned languageDifferences = 0;
+        for (const auto &language : languages) {
+            uint32_t value = 0xFFFFFFFF;
+            memset(parsed, 0, sizeof parsed);
+            mask = PersistentSettings_ParseIni(language.text, (uint32_t)strlen(language.text), parsed);
+            memcpy(&value, parsed + PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, 4);
+            length = PersistentSettings_FormatIniWithExtras(parsed, mask, nullptr, text, sizeof text);
+            /* written for older versions too: language_country_code = <code> directly before language */
+            char oldKey[64];
+            snprintf(oldKey, sizeof oldKey, "\nlanguage_country_code = %u\r\n", language.countryCode);
+            const char *oldAt = strstr(text, oldKey);
+            const char *newAt = strstr(text, language.written);
+            if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_LOCALE_COUNTRY_CODE / 4)) ||
+                (value != language.countryCode) || (newAt == nullptr) || (oldAt == nullptr) || (oldAt > newAt) ||
+                (strstr(oldAt + 1, "\nlanguage_country_code") != nullptr)) {
+                Thandor_Log("settings: language %u MISMATCH (value %u)", language.countryCode, value);
+                languageDifferences++;
+            }
+        }
+        Thandor_Log("settings: language key %s", languageDifferences == 0 ? "ok" : "MISMATCH");
+    }
+    {
+        /* [game] pathing (open-thandor, the reserved dword 0x50): the names, a number, and the names written back;
+           an unknown value is not taken (the dword stays not present: PersistentSettings_Read gives the default,
+           improved) */
+        static const struct {
+            const char *text;
+            uint32_t value;
+            const char *written;
+        } modes[] = {{"[game]\r\npathing = improved\r\n", PERSISTENT_PATHING_IMPROVED, "pathing = improved\r\n"},
+                     {"[game]\r\npathing = Original ; comment\r\n", PERSISTENT_PATHING_ORIGINAL, "pathing = original\r\n"},
+                     {"[game]\r\npathing = 1\r\n", PERSISTENT_PATHING_ORIGINAL, "pathing = original\r\n"},
+                     {"[game]\r\npathing = 0\r\n", PERSISTENT_PATHING_IMPROVED, "pathing = improved\r\n"}};
+        static const char unknownMode[] = "[game]\r\npathing = curvy\r\n";
+        unsigned pathingDifferences = 0;
+        for (const auto &mode : modes) {
+            uint32_t value = 0xFFFFFFFF;
+            memset(parsed, 0, sizeof parsed);
+            mask = PersistentSettings_ParseIni(mode.text, (uint32_t)strlen(mode.text), parsed);
+            memcpy(&value, parsed + PERSISTENT_SETTING_PATHING_MODE, 4);
+            length = PersistentSettings_FormatIni(parsed, mask, text, sizeof text);
+            if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_PATHING_MODE / 4)) || (value != mode.value) ||
+                (strstr(text, mode.written) == nullptr)) {
+                Thandor_Log("settings: pathing %u MISMATCH (value %u)", mode.value, value);
+                pathingDifferences++;
+            }
+        }
+        memset(parsed, 0, sizeof parsed);
+        if (PersistentSettings_ParseIni(unknownMode, (uint32_t)strlen(unknownMode), parsed) != 0) {
+            Thandor_Log("settings: pathing: an unknown value is present");
+            pathingDifferences++;
+        }
+        Thandor_Log("settings: pathing key %s", pathingDifferences == 0 ? "ok" : "MISMATCH");
+    }
+    {
+        /* [game] objective_overlay (open-thandor, the reserved dword 0x54): on / off, a number, and the names written
+           back; an unknown value is not taken (the dword stays not present: the default, on) */
+        static const struct {
+            const char *text;
+            uint32_t value;
+            const char *written;
+        } states[] = {{"[game]\r\nobjective_overlay = on\r\n", PERSISTENT_OBJECTIVE_OVERLAY_ON, "objective_overlay = on\r\n"},
+                      {"[game]\r\nobjective_overlay = OFF ; comment\r\n", PERSISTENT_OBJECTIVE_OVERLAY_OFF,
+                       "objective_overlay = off\r\n"},
+                      {"[game]\r\nobjective_overlay = 1\r\n", PERSISTENT_OBJECTIVE_OVERLAY_OFF, "objective_overlay = off\r\n"},
+                      {"[game]\r\nobjective_overlay = 0\r\n", PERSISTENT_OBJECTIVE_OVERLAY_ON, "objective_overlay = on\r\n"}};
+        static const char unknownState[] = "[game]\r\nobjective_overlay = maybe\r\n";
+        unsigned overlayDifferences = 0;
+        for (const auto &state : states) {
+            uint32_t value = 0xFFFFFFFF;
+            memset(parsed, 0, sizeof parsed);
+            mask = PersistentSettings_ParseIni(state.text, (uint32_t)strlen(state.text), parsed);
+            memcpy(&value, parsed + PERSISTENT_SETTING_OBJECTIVE_OVERLAY, 4);
+            length = PersistentSettings_FormatIni(parsed, mask, text, sizeof text);
+            if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_OBJECTIVE_OVERLAY / 4)) || (value != state.value) ||
+                (strstr(text, state.written) == nullptr) || (strstr(text, "dword_54") != nullptr)) {
+                Thandor_Log("settings: objective_overlay %u MISMATCH (value %u)", state.value, value);
+                overlayDifferences++;
+            }
+        }
+        memset(parsed, 0, sizeof parsed);
+        if (PersistentSettings_ParseIni(unknownState, (uint32_t)strlen(unknownState), parsed) != 0) {
+            Thandor_Log("settings: objective_overlay: an unknown value is present");
+            overlayDifferences++;
+        }
+        Thandor_Log("settings: objective_overlay key %s", overlayDifferences == 0 ? "ok" : "MISMATCH");
+    }
+    {
+        /* [game] autosave (open-thandor, the reserved dword 0x58): on / off, a number, and the names written back; an
+           unknown value is not taken (the dword stays not present: the default, on) */
+        static const struct {
+            const char *text;
+            uint32_t value;
+            const char *written;
+        } states[] = {{"[game]\r\nautosave = on\r\n", PERSISTENT_AUTOSAVE_ON, "autosave = on\r\n"},
+                      {"[game]\r\nautosave = OFF ; comment\r\n", PERSISTENT_AUTOSAVE_OFF, "autosave = off\r\n"},
+                      {"[game]\r\nautosave = 1\r\n", PERSISTENT_AUTOSAVE_OFF, "autosave = off\r\n"},
+                      {"[game]\r\nautosave = 0\r\n", PERSISTENT_AUTOSAVE_ON, "autosave = on\r\n"}};
+        static const char unknownState[] = "[game]\r\nautosave = sometimes\r\n";
+        unsigned autosaveDifferences = 0;
+        for (const auto &state : states) {
+            uint32_t value = 0xFFFFFFFF;
+            memset(parsed, 0, sizeof parsed);
+            mask = PersistentSettings_ParseIni(state.text, (uint32_t)strlen(state.text), parsed);
+            memcpy(&value, parsed + PERSISTENT_SETTING_AUTOSAVE, 4);
+            length = PersistentSettings_FormatIni(parsed, mask, text, sizeof text);
+            if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_AUTOSAVE / 4)) || (value != state.value) ||
+                (strstr(text, state.written) == nullptr) || (strstr(text, "dword_58") != nullptr)) {
+                Thandor_Log("settings: autosave %u MISMATCH (value %u)", state.value, value);
+                autosaveDifferences++;
+            }
+        }
+        memset(parsed, 0, sizeof parsed);
+        if (PersistentSettings_ParseIni(unknownState, (uint32_t)strlen(unknownState), parsed) != 0) {
+            Thandor_Log("settings: autosave: an unknown value is present");
+            autosaveDifferences++;
+        }
+        Thandor_Log("settings: autosave key %s", autosaveDifferences == 0 ? "ok" : "MISMATCH");
+    }
+    {
+        /* [game] original_thandor (open-thandor, dword 0xC8, the first past thandor.dat): off / on, a number, and the
+           names written back (off is index 0, the default); an unknown value is not taken (the dword stays not
+           present: the default, off) */
+        static const struct {
+            const char *text;
+            uint32_t value;
+            const char *written;
+        } states[] = {{"[game]\r\noriginal_thandor = on\r\n", PERSISTENT_ORIGINAL_THANDOR_ON, "original_thandor = on\r\n"},
+                      {"[game]\r\noriginal_thandor = OFF ; comment\r\n", PERSISTENT_ORIGINAL_THANDOR_OFF,
+                       "original_thandor = off\r\n"},
+                      {"[game]\r\noriginal_thandor = 1\r\n", PERSISTENT_ORIGINAL_THANDOR_ON, "original_thandor = on\r\n"},
+                      {"[game]\r\noriginal_thandor = 0\r\n", PERSISTENT_ORIGINAL_THANDOR_OFF,
+                       "original_thandor = off\r\n"}};
+        static const char unknownState[] = "[game]\r\noriginal_thandor = classic\r\n";
+        unsigned originalDifferences = 0;
+        for (const auto &state : states) {
+            uint32_t value = 0xFFFFFFFF;
+            memset(parsed, 0, sizeof parsed);
+            mask = PersistentSettings_ParseIni(state.text, (uint32_t)strlen(state.text), parsed);
+            memcpy(&value, parsed + PERSISTENT_SETTING_ORIGINAL_THANDOR, 4);
+            length = PersistentSettings_FormatIni(parsed, mask, text, sizeof text);
+            if ((mask != (uint64_t)1 << (PERSISTENT_SETTING_ORIGINAL_THANDOR / 4)) || (value != state.value) ||
+                (strstr(text, state.written) == nullptr)) {
+                Thandor_Log("settings: original_thandor %u MISMATCH (value %u)", state.value, value);
+                originalDifferences++;
+            }
+            /* round trip: the written text parses back to the same dword */
+            uint8_t again[PERSISTENT_SETTINGS_IMAGE_BYTES];
+            uint32_t againValue = 0xFFFFFFFF;
+            memset(again, 0, sizeof again);
+            if (PersistentSettings_ParseIni(text, length, again) != mask ||
+                (memcpy(&againValue, again + PERSISTENT_SETTING_ORIGINAL_THANDOR, 4), againValue != state.value)) {
+                Thandor_Log("settings: original_thandor %u round trip MISMATCH (value %u)", state.value, againValue);
+                originalDifferences++;
+            }
+        }
+        memset(parsed, 0, sizeof parsed);
+        if (PersistentSettings_ParseIni(unknownState, (uint32_t)strlen(unknownState), parsed) != 0) {
+            Thandor_Log("settings: original_thandor: an unknown value is present");
+            originalDifferences++;
+        }
+        /* not present: nothing written (a missing key is the default; the file never gets the key unasked) */
+        memset(parsed, 0, sizeof parsed);
+        length = PersistentSettings_FormatIni(parsed, 0, text, sizeof text);
+        if (strstr(text, "original_thandor") != nullptr) {
+            Thandor_Log("settings: original_thandor written although not present");
+            originalDifferences++;
+        }
+        Thandor_Log("settings: original_thandor key %s", originalDifferences == 0 ? "ok" : "MISMATCH");
+    }
+    Thandor_Log("settings: keys section %s", SelfTest_SettingsKeys(text, sizeof text) == 0 ? "ok" : "MISMATCH");
     SelfTest_SettingsExtras();
     SelfTest_SettingsTextForms();
     SelfTest_SettingsRanges();
@@ -1366,8 +1723,32 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestHexScan();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "keybindings") == 0) {
+        Thandor_SelfTestKeyBindings();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "keybindingspanel") == 0) {
+        Thandor_SelfTestKeyBindingsPanel();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "keymatch") == 0) {
         Thandor_SelfTestKeyMatch();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "mousering") == 0) {
+        Thandor_SelfTestMouseRing();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "campaignprogress") == 0) {
+        Thandor_SelfTestCampaignProgress();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "nativefile") == 0) {
+        Thandor_SelfTestNativeFile();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "campaignmap") == 0) {
+        Thandor_SelfTestCampaignMap();
         return 1;
     }
     if (name != nullptr && strcmp(name, "uitemplate") == 0) {
@@ -1398,8 +1779,20 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestIcon();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "language") == 0) {
+        Thandor_SelfTestLanguage();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "uiatlas") == 0) {
         Thandor_SelfTestUiAtlas();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "objectives") == 0) {
+        Thandor_SelfTestObjectives();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "custommaps") == 0) {
+        Thandor_SelfTestCustomMaps();
         return 1;
     }
     if (name != nullptr && strcmp(name, "crash") == 0) {

@@ -33,6 +33,8 @@ THANDOR_SLOT_PREFIX(FrontendModelPointerContext, base);
 /* The graphics settings page's option boxes (the parent of their choice buttons). */
 THANDOR_SLOT_PREFIX(FrontendShadingLevelGroup, frame);
 THANDOR_SLOT_PREFIX(FrontendTextureQualityGroup, frame);
+/* Not in the original: the campaign tab's mission map (an image panel prefix). */
+THANDOR_SLOT_PREFIX(FrontendCampaignMapControl, panel);
 #endif /* __cplusplus */
 
 #endif /* THANDOR_UI_FRONTEND_NODE_VIEWS_H */

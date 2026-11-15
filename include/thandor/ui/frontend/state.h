@@ -22,6 +22,15 @@ void FrontendRomTransition_AdvanceElapsedTicks();
 bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);
 
+/* Not in the original: the action number (FrontendHotkeyAction, 1..2) the frontend hotkey table gives keyCode with
+   the held modifiers heldFlags, 0 when no record matches. Read-only, for the key binding list
+   (ui/core/key_bindings.h). */
+uint32_t FrontendHotkeys_FindBinding(uint32_t keyCode,UiKeyboardStateMask heldFlags);
+
+/* Not in the original: rewrites the frontend hotkey table from the key bindings (ui/core/key_binding_tables.h);
+   returns the number of records that did not fit. */
+uint32_t FrontendHotkeys_ApplyBindings();
+
 void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
 
 void Frontend_StateTick();

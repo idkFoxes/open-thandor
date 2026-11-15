@@ -35,6 +35,10 @@ inline constexpr int32_t FRONTEND_PAGE_STACK_CHOOSE_GAME = 10;
 inline constexpr int32_t SCENARIO_SELECTION_TAB_SAVED_GAMES = 0;
 inline constexpr int32_t SCENARIO_SELECTION_TAB_SINGLE_GAMES = 1;
 inline constexpr int32_t SCENARIO_SELECTION_TAB_CAMPAIGNS = 2;
+/* Not in the original (open-thandor): the "Eigene Karten" tab (customMapsTabButton), the fourth button of the tab
+   group. It is no index into those tables: it shows gameSelectTabStack page SCENARIO_SELECTION_TAB_SINGLE_GAMES
+   with the custom maps (custom_maps.h) in missionsList, and starts them like the "Single game" tab. */
+inline constexpr int32_t SCENARIO_SELECTION_TAB_CUSTOM_MAPS = 3;
 
 void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *listControl);
 
@@ -51,6 +55,9 @@ void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode);
 
 void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode);
 
+/* Not in the original (open-thandor): handler of FRONTEND_ACTION_OPEN_CUSTOM_MAPS, the "Eigene Karten" tab. */
+void FrontendScenarioPage_OpenCustomMapRecordsAndRefresh(UiNodeBase *sourceNode);
+
 void ScenarioCatalog_RebuildSaveRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
@@ -60,15 +67,34 @@ void ScenarioCatalog_RebuildLevelRecordListPage
 void ScenarioCatalog_RebuildCampaignRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
+/* Not in the original (open-thandor): shows the "Eigene Karten" tab, missionsList with the custom maps of maps\ (or
+   the hint row while none is listed) in place of the original levels. Local games only. */
+void ScenarioCatalog_RebuildCustomMapRecordListPage
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
+
+/* Not in the original (open-thandor): whether the "Eigene Karten" tab is offered (a local game with custom maps on,
+   OT_FEATURE_CUSTOM_MAPS). */
+bool FrontendScenarioSelection_CustomMapsTabAvailable();
+
 void ScenarioCatalog_SelectSavedGameAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
+/* levelId (unused by the original): the mission an open-thandor host selected on its campaign map, 0 none. */
 void ScenarioCatalog_SelectCampaignAndShowDescription
-          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
+          (uint32_t playerRuntimeId,uint32_t levelId,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
 void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl *selectionControl);
 
 void ScenarioCatalog_SelectLevelAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
+
+/* Not in the original (open-thandor): the link "Map Editor auf GitHub" / "Map Editor on GitHub"
+   (TEXT_ID_CUSTOM_MAPS_HINT_LINK) below the description text while the hint row of an empty custom map list
+   (custom_maps.h) is the selected row of the visible "Eigene Karten" tab. Draw is called by UiFrame_Draw after the
+   roots; HandleLeftPress by UiPointer_DispatchLeftPress for a left press while no pointer capture is held: on the
+   link it opens CUSTOM_MAPS_EDITOR_URL (SdlPlatform_OpenUrl) and returns true, and the press goes to no node;
+   elsewhere it returns false. */
+void FrontendCustomMapsHintLink_Draw();
+bool FrontendCustomMapsHintLink_HandleLeftPress(int pointerY,int pointerX);
 
 #endif /* THANDOR_UI_FRONTEND_SCENARIO_SELECTION_H */

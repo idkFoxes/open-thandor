@@ -34,4 +34,6 @@ void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,S
 
 void SoundBackendDisabled_StopAllVoices();
 
+void SoundBackendDisabled_RaiseQuietSampleLevel(SoundVoiceSet *voiceSet);
+
 #endif /* THANDOR_AUDIO_BACKEND_NULL_BACKEND_H */

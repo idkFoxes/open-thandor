@@ -34,5 +34,12 @@ extern uint16_t g_FrontendMusic00SamPathUtf16[18];
 void FrontendMusic_StartMenuMusic();
 
 void FrontendVersionLabel_Draw();
+/* Not in the original: the main menu's "GitHub" link left of the version label (shown exactly when the label is).
+   NotePointer records the pointer position for the link's hover state (UiPointer_DispatchPendingEvents, every
+   motion event). HandleLeftPress is called for a left press while no pointer capture is held: on the link it opens
+   the project page (SdlPlatform_OpenUrl) and returns true, and the press is not dispatched further; elsewhere it
+   returns false. */
+void FrontendGithubLink_NotePointer(int pointerY,int pointerX);
+bool FrontendGithubLink_HandleLeftPress(int pointerY,int pointerX);
 
 #endif /* THANDOR_UI_FRONTEND_LIFECYCLE_H */

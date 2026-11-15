@@ -38,9 +38,24 @@ inline constexpr auto PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS = 0x40; /* autom
 inline constexpr auto PERSISTENT_SETTING_GAME_SPEED_PERCENT = 0x44; /* default 100 */
 inline constexpr auto PERSISTENT_SETTING_CAMERA_SCROLL_STEP = 0x48; /* default 0x20 */
 inline constexpr auto PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN = 0x4C; /* Q15, default 0x8000 */
-/* 0x50..0x5B: unused by the original (thandor.ini [reserved] dword_50/54/58); not taken over from thandor.dat */
+/* 0x50..0x5B: unused by the original (it never reads them and writes the image back unchanged); open-thandor gives
+   them the three settings below. Not taken over from thandor.dat (whatever the original left there would load as
+   garbage settings). */
 inline constexpr auto PERSISTENT_SETTINGS_DAT_UNUSED_OFFSET = 0x50;
 inline constexpr auto PERSISTENT_SETTINGS_DAT_UNUSED_BYTES = 12;
+/* Not in the original (open-thandor): the first of the unused dwords. A file without it reads 0, the default. */
+inline constexpr auto PERSISTENT_SETTING_PATHING_MODE = 0x50; /* PERSISTENT_PATHING_*: [game] pathing, single-player pathing mode */
+inline constexpr auto PERSISTENT_PATHING_IMPROVED = 0; /* default (docs/plans/pathfinding.md D1) */
+inline constexpr auto PERSISTENT_PATHING_ORIGINAL = 1;
+inline constexpr auto PERSISTENT_PATHING_COUNT = 2;
+/* Not in the original (open-thandor): the second unused dword. A file without it reads 0, the default (shown). */
+inline constexpr auto PERSISTENT_SETTING_OBJECTIVE_OVERLAY = 0x54; /* PERSISTENT_OBJECTIVE_OVERLAY_*: [game] objective_overlay */
+inline constexpr auto PERSISTENT_OBJECTIVE_OVERLAY_ON = 0; /* default (docs/plans/objective_overlay.md E4) */
+inline constexpr auto PERSISTENT_OBJECTIVE_OVERLAY_OFF = 1;
+/* Not in the original (open-thandor): the third unused dword. A file without it reads 0, the default (on). */
+inline constexpr auto PERSISTENT_SETTING_AUTOSAVE = 0x58; /* PERSISTENT_AUTOSAVE_*: [game] autosave */
+inline constexpr auto PERSISTENT_AUTOSAVE_ON = 0; /* default */
+inline constexpr auto PERSISTENT_AUTOSAVE_OFF = 1;
 inline constexpr auto PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS = 0x5C; /* link rotation zoom/tilt, hide panel */
 inline constexpr auto PERSISTENT_SETTING_PLAYER_NAME = 0x60; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
 inline constexpr auto PERSISTENT_SETTING_GAME_NAME = 0x88; /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
@@ -74,6 +89,21 @@ inline constexpr auto PERSISTENT_VSYNC_COUNT = 2;
 inline constexpr auto PERSISTENT_FRAME_LIMIT_OFF = 0; /* default: no frame rate limit */
 inline constexpr auto PERSISTENT_FRAME_LIMIT_MAX = 1000; /* larger saved values are read as no limit; the menu offers 60, 120, 144 */
 inline constexpr auto PERSISTENT_SETTINGS_DAT_BYTES = 200; /* size of the original's thandor.dat (read as migration source) */
+/* Not in the original (open-thandor): the first dword past thandor.dat, so a thandor.dat migration can never carry a
+   value into it. A file without it reads 0, the default (off: the open-thandor additions apply). */
+inline constexpr auto PERSISTENT_SETTING_ORIGINAL_THANDOR = 0xC8; /* PERSISTENT_ORIGINAL_THANDOR_*: [game] original_thandor */
+inline constexpr auto PERSISTENT_ORIGINAL_THANDOR_OFF = 0; /* default */
+inline constexpr auto PERSISTENT_ORIGINAL_THANDOR_ON = 1;
+/* Not in the original (open-thandor): the game recorder's option (gameplay/replay/runtime.h). A file without it
+   reads 0, the default (off: no recordings). */
+inline constexpr auto PERSISTENT_SETTING_RECORD_GAMES = 0xCC; /* PERSISTENT_RECORD_GAMES_*: [game] record_games */
+inline constexpr auto PERSISTENT_RECORD_GAMES_OFF = 0; /* default */
+inline constexpr auto PERSISTENT_RECORD_GAMES_ON = 1;
+/* Not in the original (open-thandor): the high-resolution game font of the GPU renderers at UI scale 2 and 3
+   (ui/text/hd_font.h). A file without it reads 0, the default (off: the 1x glyphs scaled). */
+inline constexpr auto PERSISTENT_SETTING_HD_FONT = 0xD0; /* PERSISTENT_HD_FONT_*: [game] hd_font */
+inline constexpr auto PERSISTENT_HD_FONT_OFF = 0; /* default */
+inline constexpr auto PERSISTENT_HD_FONT_ON = 1;
 /* open-thandor: the in-memory image is larger than thandor.dat (room for further settings past 0xC8); it is only
    held in memory and saved as thandor.ini keys, never as bytes (not in savegames, network packets or the lobby).
    Its 64 dwords are the 64 bits of the present/written masks. */
@@ -158,7 +188,9 @@ struct PersistentSettingsIniExtras {
    sections of the loaded thandor.ini, and returns the text length; FormatIniWithExtras does the same with the
    given extras (nullptr: none). ParseIni parses ini text into image (zeroed by the caller) and returns the mask
    of the dwords it set (values that do not parse or are out of range are ignored); ParseIniWithExtras also
-   collects the unknown keys and sections into extras (cleared first; nullptr: dropped, as ParseIni). */
+   collects the unknown keys and sections into extras (cleared first; nullptr: dropped, as ParseIni). All four also
+   handle the registered sections (PersistentSettings_RegisterSection below): Format writes them after the key
+   table's sections and before the kept foreign ones, Parse hands their lines to them (never into extras). */
 uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity);
 
 uint32_t PersistentSettings_FormatIniWithExtras(const uint8_t *image, uint64_t presentMask,
@@ -169,9 +201,59 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
 
 uint64_t PersistentSettings_ParseIniWithExtras(const char *text, uint32_t length, uint8_t *image,
                                                PersistentSettingsIniExtras *extras);
+/* open-thandor: sections of thandor.ini owned by other modules (the key bindings' [keys], ui/core/key_bindings_ini.h),
+   so core does not depend on them. ParseIni calls every registered section's beginLoad, then parseLine for each
+   "key = value" line of its [name] section (trimmed, a trailing "; comment" removed, NUL terminated), then endLoad;
+   a load without thandor.ini (none, or thandor.dat) calls beginLoad and endLoad alone. FormatIni writes each
+   registered section after the key table's sections (and before the kept foreign ones), in registration order: format writes the section's lines (without the
+   [name] header) into out (capacity bytes, NUL included) and returns their length; 0 omits the section.
+   beginLoad / endLoad may be nullptr. Registering a name twice replaces its entry. At most
+   PERSISTENT_SETTINGS_MAX_SECTIONS sections; false when full. Register before PersistentSettings_Load. */
+inline constexpr int PERSISTENT_SETTINGS_MAX_SECTIONS = 4;
+using PersistentIniSectionLoadFn = void (*)();
+using PersistentIniSectionLineFn = void (*)(const char *key, const char *value);
+using PersistentIniSectionFormatFn = uint32_t (*)(char *out, uint32_t capacity);
+bool PersistentSettings_RegisterSection(const char *name, PersistentIniSectionLineFn parseLine,
+                                        PersistentIniSectionFormatFn format,
+                                        PersistentIniSectionLoadFn beginLoad = nullptr,
+                                        PersistentIniSectionLoadFn endLoad = nullptr);
+
+/* open-thandor: marks the settings changed, so the next PersistentSettings_Flush writes thandor.ini (for a registered
+   section whose content changed; call Flush right after it to save at once). No effect before the first load. */
+void PersistentSettings_MarkDirty();
+
 /* open-thandor: the path of thandor.ini (UTF-16; the bare file name, i.e. the current directory, until a load
    found it in the executable directory). */
 const uint16_t *PersistentSettings_IniPathUtf16();
+
+/* Not in the original: stores the text language chosen in the menus (telephone country code, 0 = from Windows) in
+   g_LocaleCountryCodeOverride and the settings ([game] language in thandor.ini, saved by the next Flush). */
+void PersistentSettings_WriteLanguage(uint32_t countryCode);
+
+/* Not in the original: stores the single-player pathing mode chosen in the menus in g_PathingModeSetting (the next
+   local session's mode) and the settings ([game] pathing in thandor.ini, saved by the next Flush). */
+void PersistentSettings_WritePathingImproved(bool improved);
+
+/* Not in the original: stores the objective overlay setting chosen in the menus ("Ziel anzeigen", [game]
+   objective_overlay in thandor.ini, saved by the next Flush); ObjectiveOverlay_Enabled reads it back at once. */
+void PersistentSettings_WriteObjectiveOverlay(bool shown);
+
+/* Not in the original: stores the autosave setting chosen in the menus ("Automatisch speichern", [game] autosave in
+   thandor.ini, saved by the next Flush); Autosave_Enabled reads it back at once. */
+void PersistentSettings_WriteAutosave(bool enabled);
+
+/* Not in the original: stores the "Original Thandor" master switch chosen in the menus ([game] original_thandor in
+   thandor.ini, saved by the next Flush). Only OriginalMode_Set (core/settings/original_mode.h) calls it, which also
+   notifies the switch's listeners. */
+void PersistentSettings_WriteOriginalThandor(bool on);
+
+/* Not in the original: stores the game recorder's option chosen in the menus ("Partien fuer Fehlerberichte
+   aufzeichnen", [game] record_games in thandor.ini, saved by the next Flush). */
+void PersistentSettings_WriteRecordGames(bool on);
+
+/* Not in the original: stores the high-resolution font option chosen in the menus ("Hochaufgeloeste Schrift",
+   [game] hd_font in thandor.ini, saved by the next Flush). */
+void PersistentSettings_WriteHdFont(bool on);
 
 extern uint32_t g_LocaleCountryCodeOverride;
 

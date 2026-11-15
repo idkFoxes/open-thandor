@@ -1,0 +1,7 @@
+# 1.0.7's thandor.ini (language_country_code, no language) loaded by this version: the language reads as its name;
+# a save writes both keys, language_country_code (for 1.0.7 and dev) directly before language
+source: v1_0_7.ini
+include: v1_0_7.expect
+preserved: [game] language_country_code = 49
+preserved: [game] language = de
+order: [game] language_country_code = 49 < [game] language = de

@@ -25,6 +25,29 @@ inline constexpr auto FRONTEND_SEQUENCE_TOKEN_HIGH_WORD = 0x12340000;
    found (UiTransfer_SendPlayerDescriptor). */
 inline constexpr auto FRONTEND_DESCRIPTOR_HAS_PICTURE = 0x1;
 
+/* open-thandor (docs/plans/pathfinding.md 4, owner decision D2): pathing-mode negotiation between Open Thandor peers.
+   Every Open Thandor peer sets FRONTEND_CAPABILITY_OT_EXTENDED in its 0x10006 heartbeat and puts a
+   FrontendOtPathingInfo (protocol version, supported modes) into the packet's reserved bytes; the host puts its own
+   block with the decided mode into the join ack 0x10003 (reserved18_1F) and into every 0x40008 session packet
+   (reserved2C_37, the start packet included). The original game ignores the extra bit (it tests only
+   FRONTEND_CAPABILITY_CD) and the reserved bytes, so the wire format stays valid for 1.05 peers; the host decides
+   "improved" only when every player sent the bit with the same protocol version, so a 1.05 peer always forces the
+   original mode. Bump PATHING_PROTOCOL_VERSION whenever the improved movement changes in a way that would desync
+   two builds. */
+inline constexpr uint16_t PATHING_PROTOCOL_VERSION = 1;
+inline constexpr uint32_t FRONTEND_OT_PATHING_MAGIC = 0x4D50544F; /* "OTPM" */
+/* bit (1 << PathingMode) per mode this build can run */
+inline constexpr uint8_t FRONTEND_OT_PATHING_SUPPORTED_MODES = 0x03;
+
+/* The 8-byte Open Thandor block in the reserved bytes of 0x10006, 0x10003 and 0x40008 (all zero from 1.05). */
+struct FrontendOtPathingInfo {
+  uint32_t magic;            /* FRONTEND_OT_PATHING_MAGIC */
+  uint16_t protocolVersion;  /* PATHING_PROTOCOL_VERSION of the sender */
+  uint8_t supportedModes;    /* FRONTEND_OT_PATHING_SUPPORTED_MODES of the sender */
+  uint8_t decidedMode;       /* host packets: the PathingMode agreed for the session (0 in the heartbeat) */
+};
+static_assert(sizeof(FrontendOtPathingInfo) == 8);
+
 /* Lobby timeout: reload value of g_SessionTransferTimeoutTicks on a client (join ack, host session packet) and
    the heartbeat value of the 0x10006 packet. */
 inline constexpr auto FRONTEND_LOBBY_TIMEOUT_TICKS = 0x40;

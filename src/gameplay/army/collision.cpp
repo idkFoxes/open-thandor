@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/collision.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/debug/hooks.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Tests whether a model of this definition, with its placement radius (footprintRadius), would overlap any
@@ -62,6 +63,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
           WorldRuntimeContext *worldRuntime)
 
 {
+  DebugHook_ProfileScope(DEBUG_PROFILE_FIND_BLOCKING);
   ModelRuntimeNode *currentModelNode;
   uint32_t clearanceRadiusQ12;
   ModelRuntimeSlot *candidateModelRuntime;

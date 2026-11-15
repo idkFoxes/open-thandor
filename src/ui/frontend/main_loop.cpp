@@ -429,6 +429,9 @@ static void FrontendMainLoop_LoadSelectedLevel()
   g_FrontendLoadedLevelAsset = nullptr;
   /* Package_LoadEntryWithSize is the core of Package_LoadEntry (same allocation); the original used
      Package_LoadEntry and trusted the level header's size */
+  /* open-thandor: the project of a custom map becomes active (its files are served), any other level releases it;
+     a project that is gone or fails its checks now leaves maps\<name>.lev unloadable (the failure below) */
+  CustomMaps_ActivateLevelPath(g_FrontendScenarioPathScratchUtf16);
   loadedPackageEntry =
        Package_LoadEntryWithSize(g_FrontendScenarioPathScratchUtf16,&loadedByteCount,&packageLoadErrorCode);
   if (loadedPackageEntry == nullptr) {
@@ -447,6 +450,8 @@ static void FrontendMainLoop_LoadSelectedLevel()
                       (loadedPackageEntry != nullptr ? reinterpret_cast<uintptr_t>(loadedPackageEntry) : packageLoadErrorCode,
                        loadedPackageEntry == nullptr);
   g_FrontendLoadedLevelAsset = reinterpret_cast<FrontendLoadedLevelAsset *>(checkedValue);
+  /* open-thandor: a custom map's copy gets its maps\ identifier and custom title index (custom_maps.h) */
+  CustomMaps_PrepareLoadedLevel(g_FrontendLoadedLevelAsset,g_FrontendScenarioPathScratchUtf16);
   fieldGridPath = Thandor_At<uint16_t>(g_FrontendLoadedLevelAsset,
                                        g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,fieldGridPath);
@@ -504,9 +509,17 @@ static bool FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,FrontendPag
 
 /* Frontend_MainLoop, after a session: a campaign continues with the successor level in the briefing room. Without
    one, a scenario path left from the session is loaded there again; with none the menu goes back to the scenario
-   selection. Returns false with Frontend_Init's error in *outError when building the menu fails. */
+   selection. Returns false with Frontend_Init's error in *outError when building the menu fails.
+   open-thandor: a level path left from the session (the restart of a mission, also of a loaded save) whose level can
+   no longer be loaded (a removed level file, a custom map that is gone or now fails its checks) goes back to the
+   scenario selection; the original loaded it regardless and stopped with a fatal error. */
 static bool FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
 {
+  /* (without a campaign FrontendMainLoop_SelectCampaignSuccessorLevel selects nothing) */
+  if ((g_FrontendLoadedCampaignAsset == nullptr) && (g_FrontendScenarioPathScratchUtf16[0] != 0) &&
+      !CustomMaps_LevelPathPlayable(g_FrontendScenarioPathScratchUtf16)) {
+    g_FrontendScenarioPathScratchUtf16[0] = 0;
+  }
   if (!FrontendMainLoop_SelectCampaignSuccessorLevel() && (g_FrontendScenarioPathScratchUtf16[0] == 0)) {
     return FrontendMainLoop_RebuildMenu
                      (FRONTEND_ROM_RECORD_SCENARIO_SELECTION,FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE,outError);

@@ -76,6 +76,20 @@ uint32_t GameRuntime_InitializeSpatialAudioAndRendering();
 
 uint32_t Game_LoadCoreAssets();
 
+/* Not in the original: the bindings into the text pages made at startup after the text pages are loaded (world view
+   info placeholders -> debug-overlay text slots, mouse-help icons -> cursor texture); again after a language switch. */
+void CoreAssets_BindLanguageTexts();
+
+/* Not in the original: switches the text language at run time (telephone country code: 49 de, 44 en, 33 fr, 39 it,
+   34 es; 0 = from Windows) and saves it to thandor.ini with the next flush: rebinds every loaded text page and the
+   startup bindings and redraws the frontend. Loads and frees nothing (the arena order stays). The caller refreshes
+   texts it has copied or laid out itself (e.g. the advanced settings page's note). */
+void Game_ApplyLanguage(uint32_t countryCode);
+
+/* Not in the original: counts the Game_ApplyLanguage calls (starts at 0), so code that keeps texts it built itself
+   (e.g. the objective overlay's line) can see a language switch and build them again. */
+uint32_t Game_LanguageGeneration();
+
 bool Game_PlayIntroMovies();
 
 /* 0, or a FATAL_ERROR_* code */

@@ -1,0 +1,42 @@
+# The key binding panel in-game (ui/ingame/key_bindings_overlay.h): the help window's tab "Tastatur" opens it as a
+# modal overlay. Start with -NOINTRO -KARTE="mittelpunkt" in the developer tools' window and a saved display mode of
+# 1920x1080 (the coordinates after "ingame" are screen pixels of 1920x1080). Shots: shots\script_NNNN.bmp; the log
+# gets the "key bindings panel:" / "in-game key bindings overlay:" lines and the "status" lines (command flags, bit
+# 0x1 = paused; the help window pauses a local game with 0x4000 as well).
+#   help window (F1): tabs "Auftrag" 1030,551, "Tastatur" 1030,583, "Maus" 1030,615, "Ok" 1030,679
+#   overlay panel: box 575..1207 x 373..707 (632 x 334, centred over the world view), title line, rows of 22 pixels
+#   (row 6 "Pause ein/aus" at y 556), key cells x 885..1173; "Standard" 642,682, "Zurueck" 1138,682
+# Steps: F1 opens the help window (paused), "Tastatur": the overlay (shot 0), F1 and F2 while it is open do nothing
+# (the hotkeys take no key while the overlay is open; shot 1 still shows it), click Pause: prompt, F6: "Pause ein/aus:
+# F6" (shot 2), Esc: the overlay closes, the help window shows "Auftrag" (shot 3), "Ok" closes the help window (the
+# game runs: status), P no longer pauses (status), F6 pauses (status, shot 4 with "Pause" at the top), quit.
+# thandor.ini [keys] holds "pause = F6" afterwards (written when the binding changed; the script's quit skips the
+# settings flush at the end).
+# Keys (decimal VK): 27 Esc, 80 P, 112 F1, 113 F2, 117 F6.
+# Lines that do not start with a number are ignored (comments). Layout 1280x720 until the game runs.
+0 layout 1280 720
+9000 clickuntilingame 840 500 3000
+0 ingame
+0 layout 1920 1080
+5000 key 112
+6000 move 1030 583
+6500 click 1030 583
+7500 shot
+8000 key 112
+8500 key 113
+9500 shot
+10000 move 1030 556
+10500 click 1030 556
+11500 key 117
+12500 shot
+13000 key 27
+14000 shot
+14500 move 1030 679
+15000 click 1030 679
+16500 status
+17000 key 80
+18500 status
+19000 key 117
+20500 status
+21000 shot
+22000 quit

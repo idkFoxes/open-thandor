@@ -2,4 +2,5 @@
 # from the original thandor.dat, every key present
 include: v1_0_7_values.include
 game.language_country_code = 49
+game.language = de
 others = <default>

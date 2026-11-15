@@ -50,6 +50,20 @@ inline constexpr UiSelectableStateFlags UI_BUTTON_NO_FOCUS_MARK = FromBits<UiSel
 inline constexpr uint32_t UI_TEXT_STYLE_FONT_BYTE = 0xff000000u;
 inline constexpr uint32_t UI_TEXT_STYLE_PALETTE_BYTE = 0x00ff0000u;
 
+/* A screen rectangle in pixels; right and bottom are exclusive (width = right - left). */
+struct UiPixelRect {
+    UiPixelCoordinate left;
+    UiPixelCoordinate top;
+    UiPixelCoordinate right;
+    UiPixelCoordinate bottom;
+};
+
+/* Draws a win.gfx frame (the UI_WINDOW_FRAME_PIECE_COUNT pieces starting at frameBase, e.g.
+   UI_WINDOW_SUBRESOURCE_BUTTON_FRAME) around rect: the four corners, then the tiled top, left, right and
+   bottom edge, clipped to clip. Needs open framebuffer access (g_GraphicsFramebufferBeginAccess). The frame
+   part of UiFramedTextButtonControl_DrawClipped. */
+void UiFramedFrame_Draw(UiPixelRect rect,GraphicsSubresourceIndex frameBase,UiPixelRect clip);
+
 void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiTextButtonControl *control);

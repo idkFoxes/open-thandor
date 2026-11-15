@@ -7,10 +7,11 @@
 
 #include <thandor/gameplay/session/startup.h>
 #include <algorithm>
-#include <thandor/gameplay/replay/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/gameplay/replay/runtime.h>
+#include <thandor/ui/ingame/key_bindings_overlay.h>
 
 /* Module data. */
 
@@ -34,7 +35,7 @@ static bool InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
    player left, tears the session down along the matching path and returns true. A failed start or an emptied UI
    root stack returns false with the error code in *outError, which the caller hands to the fatal-error dispatcher.
 */
-bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
+static bool InGameRuntime_RunSession(LevelAssetRuntimePrefix *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError)
 
 {
@@ -45,16 +46,20 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
      in-game UI also advance per drawn frame, so its outcome depends on the frame rate (a network game seeds both
      streams and simulates on the secondary one). The state hash test aid does the same as a network game here,
      before the first simulation steps, which already run during the initialisation. */
-  if(!GameplayReplay_PrepareSession()) { *outError=FATAL_ERROR_GENERAL_FAILURE; return false; }
-  struct ReplayLifetime { ~ReplayLifetime(){ GameplayReplay_Close(); } } replayLifetime;
+  /* open-thandor: the game recorder (gameplay/replay/runtime.h) decides whether this session is recorded or replaced
+     by a playback; it is closed on every way out of here */
+  struct GameRecorderSession {
+    ~GameRecorderSession() { GameRecorder_SessionClosed(); }
+  } gameRecorderSession;
+  GameRecorder_PrepareSession((loadExistingSessionFlag & 1U) != 0,levelPathUtf16);
   DebugHook_SessionInitializing();
-  if(GameplayReplay_Playing()) {
-    GameplayReplay_BeginCheckpointLoad();
-    started=InGameRuntime_InitializeLoadedSession(
-        const_cast<uint16_t*>(GameplayReplay_CheckpointPath()),&startupError);
-    GameplayReplay_EndCheckpointLoad();
-  } else
-  if ((loadExistingSessionFlag & 1U) == 0) {
+  if (GameRecorder_LoadsCheckpointInstead()) {
+    /* playback: the recorded checkpoint instead of what was chosen */
+    GameRecorder_BeginCheckpointLoad();
+    started = InGameRuntime_InitializeLoadedSession(GameRecorder_CheckpointPath(),&startupError);
+    GameRecorder_EndCheckpointLoad();
+  }
+  else if ((loadExistingSessionFlag & 1U) == 0) {
     started = InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16,&startupError);
   }
   else {
@@ -63,26 +68,25 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
   if (!started) {
     return InGameRuntime_FailSession(startupError,outError);
   }
-  if(GameplayReplay_RecordingRequested()) {
-    // Start both recording and playback through the SAME existing save loader.
-    // The one PCK-compressed checkpoint captures terrain, AI and runtime pools.
-    if(!GameplayReplay_CaptureInitialCheckpoint())
-      return InGameRuntime_FailSession(FATAL_ERROR_GENERAL_FAILURE,outError);
+  if (GameRecorder_ReloadsFromCheckpoint() && GameRecorder_CaptureCheckpoint()) {
+    /* recording: the started session is saved, torn down as on leaving it and loaded again from that save, the way
+       the playback will start it */
     g_SoundStopAllVoices();
     g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
     GridScratch_ReleaseBuffers();
     UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
     UiRootStack_PopUntilWindowTextureBoundary();
     InGameRuntime_ShutdownAndReleaseResources();
-    GameplayReplay_BeginCheckpointLoad();
-    started=InGameRuntime_InitializeLoadedSession(
-        const_cast<uint16_t*>(GameplayReplay_CheckpointPath()),&startupError);
-    GameplayReplay_EndCheckpointLoad();
-    if(!started) return InGameRuntime_FailSession(startupError,outError);
+    GameRecorder_BeginCheckpointLoad();
+    started = InGameRuntime_InitializeLoadedSession(GameRecorder_CheckpointPath(),&startupError);
+    GameRecorder_EndCheckpointLoad();
+    if (!started) {
+      return InGameRuntime_FailSession(startupError,outError);
+    }
   }
-  if(!GameplayReplay_SessionStarted())
-    return InGameRuntime_FailSession(FATAL_ERROR_GENERAL_FAILURE,outError);
+  GameRecorder_SessionStarted();
   DebugHook_SessionStarted();
+  Autosave_SessionStarted(); /* open-thandor: the autosave's play time counts from here */
   do {
     DebugHook_SessionFrameBegin();
     /* two pending simulation ticks are consumed per rendered frame, clamped at zero */
@@ -121,6 +125,11 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
                 (FrontendSession_PeriodicTick,&g_InGameStateTickSpinLock);
       Frontend_PlaySelectedEndMovie();
       OldUnitRuntime_RebuildScenarioReplayTables();
+      /* open-thandor: a win marks the level done in the campaign progress file and keeps the carry-over tables
+         just rebuilt as its snapshot (only reads them; native memory and files, no arena) */
+      CampaignProgress_RecordSessionEnd(g_FrontendLoadedCampaignAsset,g_EndMovieSelectionIndex,
+                                        g_EndMovieVariantIndex);
+      DebugHook_CampaignSessionEnded();
       UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
@@ -140,8 +149,26 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       g_FrontendScenarioPathScratchUtf16[0] = 0;
       return true;
     }
+    /* open-thandor: between two frames, the autosave of a local game when it is due (gameplay/session/autosave.h) */
+    Autosave_AfterFrame();
   } while (g_UiRootNode != UI_ROOT_STACK_END);
   return InGameRuntime_FailSession(FATAL_ERROR_GENERAL_FAILURE,outError);
+}
+
+/* InGameRuntime_RunSession between the project switches of the custom maps (open-thandor, custom_maps.h): a new
+   session on a custom map makes its project active (a network session or another level releases it; a loaded
+   save activates in InGameRuntime_InitializeLoadedSession, which knows the level only then), and every session end
+   releases it - a "Neustart" reads and checks the project again. */
+bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
+          FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError)
+
+{
+  if ((loadExistingSessionFlag & 1U) == 0) {
+    CustomMaps_ActivateIdentifier((levelAsset->header).levelFileNameUtf16);
+  }
+  const bool result = InGameRuntime_RunSession(levelAsset,loadExistingSessionFlag,levelPathUtf16,outError);
+  CustomMaps_Deactivate();
+  return result;
 }
 
 /* Sets or clears flag in the world runtime flags. */
@@ -168,8 +195,8 @@ void InGameRuntime_ShutdownAndReleaseResources()
   WorldRuntimeContext *world;
   InGameRuntimeRoot *inGameRoot;
   bool beginAccessFailed;
-  
-  GameplayReplay_ClosingWorld();
+
+  GameRecorder_SessionEnding(); /* open-thandor: a recording ends here, while the world still exists */
   g_TimerUnregisterPeriodic(InGameRuntime_PeriodicCountdownAndClockTick);
   /* The original unregisters the notification timer only on the three regular exits of
      InGameRuntime_RunSessionUntilExit, so InGameRuntime_FailSession (a start that failed after the timer was
@@ -190,6 +217,8 @@ void InGameRuntime_ShutdownAndReleaseResources()
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
   GraphicsShadingRuntime_Shutdown();
   if (inGameRoot != nullptr) {
+    /* project code: the key binding overlay's layer and panel are module nodes linked into the root */
+    InGameKeyBindingsOverlay_Close();
     InGameRuntime_SaveWorldViewInfoTextChoice(&inGameRoot->rootUi);
     world = &inGameRoot->worldRuntime;
     WorldRuntime_ForEachOwnerListNode
@@ -198,6 +227,7 @@ void InGameRuntime_ShutdownAndReleaseResources()
     if ((inGameRoot->rootUi).previousRoot != nullptr) {
       UiRootStack_Pop(&inGameRoot->rootUi);
     }
+    ObjectiveOverlay_DetachFromRoot(inGameRoot); /* open-thandor: the overlay node is not part of the freed root */
     g_MemoryApi.free(inGameRoot);
     g_InGameRuntimeRoot = nullptr;
   }
@@ -362,6 +392,8 @@ bool InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,InG
   g_InGameUiRootCallbacks.frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame);
   g_InGameUiRootCallbacks.keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags);
   UiRootStack_Push(&g_InGameUiRootCallbacks,&inGameRoot->rootUi);
+  /* open-thandor: the objective overlay node, linked after the push relocated and laid out the tree */
+  ObjectiveOverlay_AttachToRoot(inGameRoot);
   *outRoot = inGameRoot;
   return true;
 }

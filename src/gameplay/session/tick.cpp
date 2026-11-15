@@ -6,10 +6,10 @@
  */
 
 #include <thandor/gameplay/session/tick.h>
-#include <thandor/gameplay/replay/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/gameplay/replay/runtime.h>
 
 /* Periodic timer callback of the in-game session: counts the network tick countdown down to zero and advances the
    periodic clock while no resource registration is in progress.
@@ -27,7 +27,9 @@ void InGameRuntime_PeriodicCountdownAndClockTick()
 
   while ((remaining != 0) && !countdown.compare_exchange_weak(remaining,remaining - 1,std::memory_order_relaxed)) {
   }
-  GameplayReplay_PeriodicClockTick();
+  if (InGameTick_ResourceRegistrationBusyCount().load(std::memory_order_relaxed) == 0) {
+    InGameTick_PeriodicClockTick().fetch_add(1,std::memory_order_relaxed);
+  }
 }
 
 /* Whether the current simulation step is a network interval boundary. The original divides by
@@ -295,10 +297,14 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
   bool stepDue;
   InGameRuntimeRoot *inGameRoot;
 
-  if(GameplayReplay_LoadingCheckpoint()) return;
   lockAlreadyHeld = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   if (lockAlreadyHeld) {
+    return;
+  }
+  if (g_GameRecorderLoading) {
+    /* open-thandor: no steps while the game recorder loads its checkpoint (gameplay/replay/runtime.h) */
+    g_SpinLockRelease(&g_InGameStateTickSpinLock);
     return;
   }
   if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS)) {
@@ -309,20 +315,23 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     }
     g_InGamePendingSimulationTicks++;
   }
-  if(GameplayReplay_Playing()) {
-    stepDue=InGameTick_NetworkTickCountdown().load(std::memory_order_relaxed)==0;
-    if(stepDue) InGameTick_NetworkTickCountdown().store(INGAME_TIMER_TICKS_PER_SIMULATION_STEP,std::memory_order_relaxed);
-  } else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
+  DebugHook_ProfileEnter(DEBUG_PROFILE_LOCKSTEP);
+  if (g_GameRecorderActive && GameRecorder_StepsUnpaced()) {
+    stepDue = true; /* open-thandor: a playback with OPEN_THANDOR_REPLAY_FAST=1 does not wait for the timer */
+  }
+  else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     stepDue = InGameTick_RunHostOrLocalLockstep();
   }
   else {
     stepDue = InGameTick_RunClientLockstep();
   }
+  DebugHook_ProfileLeave(DEBUG_PROFILE_LOCKSTEP);
   if (!stepDue) {
     g_SpinLockRelease(&g_InGameStateTickSpinLock);
     return;
   }
-  if(!GameplayReplay_BeforeStep()) {
+  /* open-thandor: the game recorder records the step, or plays the recorded events up to it */
+  if (g_GameRecorderActive && !GameRecorder_BeforeStep()) {
     g_SpinLockRelease(&g_InGameStateTickSpinLock);
     return;
   }
@@ -334,6 +343,8 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
            (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED))) {
     InGameTick_RunSimulationStep(inGameRoot);
   }
-  GameplayReplay_AfterStep();
+  if (g_GameRecorderActive) {
+    GameRecorder_AfterStep();
+  }
   g_SpinLockRelease(&g_InGameStateTickSpinLock);
 }

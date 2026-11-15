@@ -1,0 +1,42 @@
+# Network host of the campaign map test CT7 (tools/test/run_campaign_map.py, with tools/test/run_multiplayer.py and
+# mp_client_join.txt): the flow of mp_host_create.txt (layout 1280x720 lines), but on the choose-game page (from
+# about 44 s on) the campaign tab (layout 1280x800 lines, the page is centred): "Kampagnen" (392,364),
+# "Tutorial" (517,272), mission 2 (702,367; it takes over units, so Start stays disabled in a network game),
+# shot, a click on "Starten" (839,539) that must start nothing, "Kyrrdon" (772,272), mission 3 (702,367: the
+# middle one of five), shot, "Starten". Needs a host progress file where nimm2 missions 1 and 2 are won and the
+# tutorial has a valid snapshot for mission 2 (OPEN_THANDOR_CAMPAIGN_PROGRESS). Then the lobby and the mission
+# page as in mp_host_create.txt. Shots: shots\script_NNNN.bmp.
+# Lines that do not start with a number are ignored (comments).
+0 layout 1280 720
+9000 move 840 500
+9500 click 840 500
+38000 move 840 500
+38500 click 840 500
+38600 layout 1280 800
+47000 move 392 364
+47500 click 392 364
+48500 move 517 272
+49000 click 517 272
+50000 move 702 367
+50500 click 702 367
+51500 shot
+52000 move 839 539
+52500 click 839 539
+54000 move 772 272
+54500 click 772 272
+55500 move 702 367
+56000 click 702 367
+57000 shot
+57500 move 839 539
+58000 click 839 539
+58100 layout 1280 720
+70000 move 712 500
+70500 click 712 500
+88000 move 840 500
+88500 click 840 500
+100000 move 840 500
+100500 click 840 500
+112000 move 840 500
+112500 click 840 500
+115000 ingame
+5000 shot

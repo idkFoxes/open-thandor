@@ -139,7 +139,10 @@ using FrontendStatusCode = uint32_t;
 /* A player's capability bits (player record, packet 0x10006 and the 0x20002 descriptor's status word). */
 enum class FrontendCapabilityFlags : uint32_t {
     FRONTEND_CAPABILITY_NONE=0,
-    FRONTEND_CAPABILITY_CD=0x100 /* runs the game from the CD */
+    FRONTEND_CAPABILITY_CD=0x100, /* runs the game from the CD */
+    /* open-thandor: the sender is Open Thandor and its heartbeat carries a FrontendOtPathingInfo (lobby.h);
+       the original tests only FRONTEND_CAPABILITY_CD */
+    FRONTEND_CAPABILITY_OT_EXTENDED=0x00010000
 };
 THANDOR_FLAG_ENUM(FrontendCapabilityFlags);
 

@@ -51,4 +51,6 @@ SoundIsVoiceFinishedProc *g_SoundIsVoiceFinished = &SoundBackendDisabled_IsVoice
 
 SoundSetVoiceGainsProc *g_SoundSetVoiceGains = &SoundBackendDisabled_SetVoiceGains;
 
+SoundRaiseQuietSampleLevelProc *g_SoundRaiseQuietSampleLevel = &SoundBackendDisabled_RaiseQuietSampleLevel;
+
 SoundPlayVoiceProc *g_SoundPlayOneShot = &SoundBackendDisabled_PlayOneShot;

@@ -8,6 +8,9 @@
 #include <thandor/ui/frontend/page_actions.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/ui/frontend/campaign_tab.h>
+#include <thandor/ui/frontend/key_bindings_page.h>
+#include <thandor/ui/frontend/language_choice.h>
 
 /* Slot adapters for the handlers below whose own signature differs from the handler slot's void (void *)
    (calling through the slot type directly would be undefined behaviour). Each does the conversion the call
@@ -165,6 +168,47 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
         /* 93 */ UI_SLOT(FrontendAdvancedSettingsAction_SelectFrameLimit),
         /* 94 */ UI_SLOT(FrontendAdvancedSettingsAction_SetVsync),
         /* 95 */ UI_SLOT(FrontendAdvancedSettingsAction_OpenPage)
+    },
+    /* not in the original: action 0x2060, the campaign buttons of the campaign tab */
+    .handlers60 = {
+        /* 96 */ UI_SLOT(FrontendCampaignTab_SelectCampaignButton)
+    },
+    /* not in the original: action 0x2061, the options page's "Tastenbelegung" button */
+    .handlers61 = {
+        /* 97 */ UI_SLOT(FrontendKeyBindingsAction_OpenPage)
+    },
+    /* not in the original: actions 0x2062-0x2063, the language choice of the advanced settings page */
+    .handlers62_63 = {
+        /* 98 */ UI_SLOT(FrontendLanguageAction_ToggleList),
+        /* 99 */ UI_SLOT(FrontendLanguageAction_Select)
+    },
+    /* not in the original: action 0x2064, the pathing checkbox of the advanced settings page */
+    .handlers64 = {
+        /* 100 */ UI_SLOT(FrontendAdvancedSettingsAction_SetPathing)
+    },
+    /* not in the original: action 0x2065, the objective overlay checkbox of the advanced settings page */
+    .handlers65 = {
+        /* 101 */ UI_SLOT(FrontendAdvancedSettingsAction_SetObjectiveOverlay)
+    },
+    /* not in the original: action 0x2066, the autosave checkbox of the advanced settings page */
+    .handlers66 = {
+        /* 102 */ UI_SLOT(FrontendAdvancedSettingsAction_SetAutosave)
+    },
+    /* not in the original: action 0x2067, the "Original Thandor" checkbox of the advanced settings page */
+    .handlers67 = {
+        /* 103 */ UI_SLOT(FrontendAdvancedSettingsAction_SetOriginalThandor)
+    },
+    /* not in the original: action 0x2068, the game recording checkbox of the advanced settings page */
+    .handlers68 = {
+        /* 104 */ UI_SLOT(FrontendAdvancedSettingsAction_SetRecordGames)
+    },
+    /* not in the original: action 0x2069, the high-resolution font checkbox of the advanced settings page */
+    .handlers69 = {
+        /* 105 */ UI_SLOT(FrontendAdvancedSettingsAction_SetHdFont)
+    },
+    /* not in the original: action 0x206A, the "Eigene Karten" tab button of the "Choose game" page */
+    .handlers6A = {
+        /* 106 */ UI_SLOT(FrontendScenarioPage_OpenCustomMapRecordsAndRefresh)
     }};
 
 /* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of

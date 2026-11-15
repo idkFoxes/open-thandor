@@ -6,8 +6,9 @@
  */
 
 #include <thandor/assets/package/runtime.h>
+#include <cstring>
+#include <thandor/assets/scenario/custom_maps.h>
 #include <thandor/thandor.h>
-#include <thandor/ui/frontend/custom_maps.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -70,16 +71,22 @@ bool Package_LoadEntryIntoBuffer
 
   const PackageLoadFlags loadFlags = FromBits<PackageLoadFlags>(bufferCapacityAndLoadFlags);
   bufferCapacity = ToBits(loadFlags & PACKAGE_LOAD_CAPACITY_MASK);
-  if (!Any(loadFlags & PACKAGE_LOAD_SKIP_PACKAGES)) {
-    if (const auto* asset = CustomMaps_FindAsset(path)) {
-      if (asset->size() > bufferCapacity) {
-        if (outByteCountOrError) *outByteCountOrError = FATAL_ERROR_OUT_OF_MEMORY;
-        return false;
+  /* open-thandor: the files of the active custom map project come first (none without one, custom_maps.h) */
+  const uint8_t *servedData;
+  uint32_t servedBytes;
+  if (!Any(loadFlags & PACKAGE_LOAD_SKIP_PACKAGES) && CustomMaps_FindServedAsset(path,&servedData,&servedBytes)) {
+    if (servedBytes > bufferCapacity) { /* (no packed data is staged: like a loose file, also into the scratch) */
+      Package_SetLastErrorPath(path);
+      if (outByteCountOrError != nullptr) {
+        *outByteCountOrError = FATAL_ERROR_OUT_OF_MEMORY;
       }
-      std::copy(asset->begin(),asset->end(),reinterpret_cast<std::byte*>(destination));
-      if (outByteCountOrError) *outByteCountOrError = static_cast<uint32_t>(asset->size());
-      return true;
+      return false;
     }
+    std::memcpy(destination,servedData,servedBytes);
+    if (outByteCountOrError != nullptr) {
+      *outByteCountOrError = servedBytes;
+    }
+    return true;
   }
   entry = nullptr;
   if (!Any(loadFlags & PACKAGE_LOAD_SKIP_PACKAGES)) {
@@ -273,12 +280,23 @@ void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *
   uint32_t allocError;
   uint32_t decodeErrorCode;
   uint32_t errorCode;
+  const uint8_t *servedData;
+  uint32_t servedBytes;
 
-  if (const auto* asset = CustomMaps_FindAsset(path)) {
-    const auto error = g_MemoryApi.alloc(static_cast<uint32_t>(std::max<size_t>(asset->size(),1)),&buffer);
-    if (error) { if (outErrorCode) *outErrorCode = error; return nullptr; }
-    std::copy(asset->begin(),asset->end(),static_cast<std::byte*>(buffer));
-    if (outByteCount) *outByteCount = static_cast<uint32_t>(asset->size());
+  /* open-thandor: the files of the active custom map project come first (none without one, custom_maps.h); the
+     copy is allocated like a loose file's */
+  if (CustomMaps_FindServedAsset(path,&servedData,&servedBytes)) {
+    allocError = g_MemoryApi.alloc(servedBytes,&buffer);
+    if (allocError != 0) {
+      if (outErrorCode != nullptr) {
+        *outErrorCode = allocError;
+      }
+      return nullptr;
+    }
+    std::memcpy(buffer,servedData,servedBytes);
+    if (outByteCount != nullptr) {
+      *outByteCount = servedBytes;
+    }
     return buffer;
   }
   entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);

@@ -1,0 +1,4 @@
+# thandor.ini as this version writes it (FormatIni after the merge of dev's ini robustness: language_country_code
+# directly before language, [keys] after the game's sections): the same values and lines as experimental_dev, and a
+# save writes it unchanged. The downgrade view is experimental_dev_v2.downgrade (tools/test/ini_downgrade.py).
+include: experimental_dev.expect

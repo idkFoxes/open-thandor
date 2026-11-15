@@ -110,7 +110,7 @@ using LPSTR = CHAR *;
 using LCID = DWORD;
 
 /* Telephone country code that selects a text resource locale block (TextResourceLocaleBlockPrefix.countryCode,
-   a file dword) and the thandor.ini language_country_code override. Other values are valid (no block matches). */
+   a file dword) and the thandor.ini [game] language override (formerly language_country_code). Other values are valid (no block matches). */
 enum class LocaleTelephoneCountryCode : int {
     LOCALE_COUNTRY_GENERIC=0,
     LOCALE_COUNTRY_USA=1,

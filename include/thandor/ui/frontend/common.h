@@ -30,7 +30,8 @@ inline constexpr int32_t FRONTEND_PAGE_HOST_LOBBY = 3;
 inline constexpr int32_t FRONTEND_PAGE_CLIENT_LOBBY = 4; /* clientLobbyPlayerList, after the join ack */
 inline constexpr int32_t FRONTEND_PAGE_OPTIONS = 5;
 inline constexpr int32_t FRONTEND_PAGE_DISPLAY_SETTINGS = 6; /* adapter, resolution, colour depth (graphicsSettingsButton, 0x2011); in
-                                            open-thandor displayPageStack: also the advanced settings page */
+                                            open-thandor displayPageStack: also the advanced settings and key
+                                            bindings pages */
 inline constexpr int32_t FRONTEND_PAGE_GRAPHICS_SETTINGS = 7; /* "3D": shading, polygon detail, texture quality (0x2012) */
 inline constexpr int32_t FRONTEND_PAGE_AUDIO_SETTINGS = 8; /* sound toggles and volume sliders (0x2013) */
 inline constexpr int32_t FRONTEND_PAGE_QUIT_CONFIRM = 9;
@@ -75,9 +76,44 @@ inline constexpr int32_t FRONTEND_ACTION_ADVANCED_UI_SCALE = 0x205C; /* advanced
 inline constexpr int32_t FRONTEND_ACTION_ADVANCED_FRAME_LIMIT = 0x205D; /* advancedFrameLimitOff, 60, 120, 144 */
 inline constexpr int32_t FRONTEND_ACTION_ADVANCED_VSYNC = 0x205E; /* advancedVsyncCheckbox */
 inline constexpr int32_t FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS = 0x205F; /* advancedSettingsButton of the options page */
+/* Not in the original: the campaign buttons of the campaign tab (FrontendUiImage campaignButtons); the handler
+   follows handlers5B_5F of g_FrontendUiActionHandlersPage20 with the campaign tab logic */
+inline constexpr int32_t FRONTEND_ACTION_SELECT_CAMPAIGN_BUTTON = 0x2060;
+/* Not in the original: the options page's "Tastenbelegung" button (keyBindingsButton, handlers61 of
+   g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_OPEN_KEY_BINDINGS = 0x2061;
+/* Not in the original: the language choice of the advanced settings page (handlers62_63 of
+   g_FrontendUiActionHandlersPage20): the language button and the list layer open / close the list, a list row
+   chooses its language */
+inline constexpr int32_t FRONTEND_ACTION_LANGUAGE_LIST = 0x2062;
+inline constexpr int32_t FRONTEND_ACTION_LANGUAGE_SELECT = 0x2063;
+/* Not in the original: the "Verbesserte Wegfindung" checkbox of the advanced settings page (advancedPathingCheckbox,
+   handlers64 of g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_ADVANCED_PATHING = 0x2064;
+/* Not in the original: the "Ziel anzeigen" checkbox of the advanced settings page (advancedObjectiveOverlayCheckbox,
+   handlers65 of g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_ADVANCED_OBJECTIVE_OVERLAY = 0x2065;
+/* Not in the original: the "Automatisch speichern" checkbox of the advanced settings page (advancedAutosaveCheckbox,
+   handlers66 of g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_ADVANCED_AUTOSAVE = 0x2066;
+/* Not in the original: the "Original Thandor" checkbox of the advanced settings page (advancedOriginalThandorCheckbox,
+   handlers67 of g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_ADVANCED_ORIGINAL_THANDOR = 0x2067;
+/* Not in the original: the game recording checkbox of the advanced settings page (advancedRecordGamesCheckbox,
+   handlers68 of g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_ADVANCED_RECORD_GAMES = 0x2068;
+/* Not in the original: the high-resolution font checkbox of the advanced settings page (advancedHdFontCheckbox,
+   handlers69 of g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_ADVANCED_HD_FONT = 0x2069;
+/* Not in the original: the "Eigene Karten" tab button of the "Choose game" page (customMapsTabButton, handlers6A of
+   g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_OPEN_CUSTOM_MAPS = 0x206A;
 /* the pages of displayPageStack (frontendPageStack page FRONTEND_PAGE_DISPLAY_SETTINGS) */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_DISPLAY = 0; /* displaySettingsPage ("Anzeige") */
-inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_ADVANCED = 1; /* advancedSettingsPage ("Erweitert") */
+inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_MORE = 1; /* settingsSubPageStack (the two pages below) */
+/* the pages of settingsSubPageStack (displayPageStack page FRONTEND_DISPLAY_SUBPAGE_MORE) */
+inline constexpr int32_t FRONTEND_SETTINGS_SUBPAGE_ADVANCED = 0; /* advancedSettingsPage ("Erweitert") */
+inline constexpr int32_t FRONTEND_SETTINGS_SUBPAGE_KEY_BINDINGS = 1; /* keyBindingsPage ("Tastenbelegung") */
 inline constexpr int32_t FRONTEND_ACTION_ADAPTER_OPTION1 = 0x202C; /* displayAdapterOption1..5: 0x202C..0x2030 */
 /* byte offset of an adapter choice (displayAdapterOption1..5) from its parent displayAdapterGroup, as
    FrontendDisplaySettingsAction_SelectAdapter identifies the pressed button */

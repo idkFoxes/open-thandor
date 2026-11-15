@@ -3,6 +3,9 @@ catalog on both sides, the two unit fronts facing each other so the whole armies
 
 usage: python tools/test/make_arena.py <game dir> [--name testarena] [--base asgard] [--size 131]
        [--units N] [--buildings N] [--script]
+       [--scenario battle|turrets|production|pathing]
+       pathing: [--unit-id 66] [--count 10] [--layout open|choke|cross|crosschoke] [--gap 3] [--wall-id 331]
+       [--wall-step 2] (one group of faction 1, optionally a wall of buildings with a gap; see run_pathing.py)
 
 Writes <game dir>/level/<name>.lev, <name>.fld and level00.dat (the catalog record that puts the level into the
 single game list); start it with -KARTE="<name>." (the trailing dot is part of the catalog name). The level's
@@ -29,7 +32,7 @@ PRODUCTION_IDS = [300, 301, 302, 303, 304, 305, 306]
 LAB_IDS = [320, 321, 322, 323]
 POWER_PLANT_ID = 310
 XENITE_SILO_ID, TRITIUM_TANK_ID = 331, 333   # class-15 storage: +24000 Q4 Xenite / Tritium storage limit each
-SCENARIO_CATALOG = {'battle': 0, 'turrets': 1, 'production': 2}  # level<NN>.dat per scenario
+SCENARIO_CATALOG = {'battle': 0, 'turrets': 1, 'production': 2, 'pathing': 3}  # level<NN>.dat per scenario
 
 
 def catalog_ids():
@@ -85,7 +88,14 @@ def main():
     parser.add_argument('--size', type=int, default=131, help='grid width = height (8k+3; stock maps up to 139)')
     parser.add_argument('--units', type=int, default=0, help='limit the unit types per side (0 = all)')
     parser.add_argument('--buildings', type=int, default=0, help='limit the building types per side (0 = all)')
-    parser.add_argument('--scenario', default='battle', choices=('battle', 'turrets', 'production'))
+    parser.add_argument('--scenario', default='battle', choices=('battle', 'turrets', 'production', 'pathing'))
+    parser.add_argument('--unit-id', type=int, default=66, help='pathing: army asset id of the group')
+    parser.add_argument('--count', type=int, default=10, help='pathing: units in the group')
+    parser.add_argument('--layout', default='choke', choices=('open', 'choke', 'cross', 'crosschoke'),
+                        help='pathing: no wall / a wall with a gap; cross: two half groups that swap sides')
+    parser.add_argument('--gap', type=int, default=3, help='pathing: gap in the wall in grid columns')
+    parser.add_argument('--wall-id', type=int, default=331, help='pathing: building of the wall')
+    parser.add_argument('--wall-step', type=int, default=2, help='pathing: grid columns between wall buildings')
     parser.add_argument('--camera-shift', type=int, default=0, help='move the start camera by N cells (test aid)')
     parser.add_argument('--script', action='store_true', help='keep the base level script (win/lose); '
                         'default: no script, the battle never ends by itself')
@@ -141,6 +151,35 @@ def main():
         placements += block(turrets, 2, middle + 5, 6, columns, first_column, step, 0)
         placements += block(plants, 2, middle + 5 + 6 * rows + 6, 8, 6, (size - 5 * 9) // 2, 9, 0)
         low_row, high_row = middle - 5 - 6 * rows - 14, middle + 5 + 6 * rows + 14
+    elif args.scenario == 'pathing':
+        # one group of --count units of --unit-id (faction 1) in rows of 5, 3 cells apart, 17 rows before the
+        # middle row; choke layouts put a wall of --wall-id buildings (faction 1) across the middle row with a gap
+        # of --gap columns in the centre; cross layouts put the second half of the group 17 rows after the middle
+        # (OPEN_THANDOR_ARENA_PATHING=cross swaps the two halves). Faction 2 has one power plant in a far corner.
+        if args.unit_id not in present:
+            raise SystemExit('unit %d is not in the army files of the base level' % args.unit_id)
+        columns, step = 5, 3
+        first_column = middle - (columns - 1) * step // 2
+        placements = []
+        if args.layout in ('cross', 'crosschoke'):
+            half = args.count // 2
+            placements += block([args.unit_id] * half, 1, middle - 17, -2, columns, first_column, step, 0x8000)
+            placements += block([args.unit_id] * (args.count - half), 1, middle + 17, 2, columns, first_column,
+                                step, 0)
+        else:
+            placements += block([args.unit_id] * args.count, 1, middle - 17, -2, columns, first_column, step,
+                                0x8000)
+        if args.layout in ('choke', 'crosschoke'):
+            gap_low = middle - args.gap // 2
+            gap_high = gap_low + args.gap
+            wall_columns = [c for c in range(4, size - 4, args.wall_step) if not gap_low - 1 <= c <= gap_high]
+            for column in wall_columns:
+                x, y = world(column, middle)
+                placements.append({'armyAssetId': args.wall_id, 'faction': 1, 'x08': x, 'y0C': y, 'rotation': 0})
+        if POWER_PLANT_ID in present:
+            x, y = world(6, size - 8)
+            placements.append({'armyAssetId': POWER_PLANT_ID, 'faction': 2, 'x08': x, 'y0C': y, 'rotation': 0})
+        low_row, high_row = middle - 17 - 2 * ((args.count + columns - 1) // columns), size - 8
     else:
         # production: every factory, the construction yard, power plants and labs of both sides, far apart; the
         # test aid (OPEN_THANDOR_ARENA_ORDERS=production) queues units and starts research
@@ -193,6 +232,8 @@ def main():
         # the slot holds the camera EYE; at height 60000 and pitch -45 degrees the view centre lies about 30 rows
         # ahead of it in the heading direction (heading 0x4000 looks towards row 0, 0xC000 away from it)
         view_row = middle if args.scenario != 'production' else (25 if faction == 1 else size - 26)
+        if args.scenario == 'pathing':
+            view_row = middle - 6
         eye_row = view_row + (30 if faction == 1 else -30)
         x, y = world(size // 2 + args.camera_shift, eye_row + args.camera_shift)
         level['playerSlots'][faction - 1].update(
