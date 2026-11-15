@@ -2942,11 +2942,27 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .textResourceId = TEXT_ID_ADVANCED_ORIGINAL_THANDOR},
         { /* +854C advancedOriginalThandorNote g_UiFocusProxyControlVtable */
             .base = {
-                .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                /* followed by advancedRecordGamesCheckbox (+85A8), then advancedLanguageGroup (+7FD4) */
+                .nextSibling = UI_TEMPLATE_LINK(0x85A8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                 .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
                 .left = -1, .top = -1, .right = -1, .bottom = -1,
                 .leftOffset = -116, .topOffset = -148, .rightOffset = 288, .bottomOffset = -124,
                 .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
                 .layoutWidth = -1, .layoutHeight = -1},
             .text = THANDOR_PTR32_BITS(TEXT_ID_ADVANCED_ORIGINAL_THANDOR_NOTE)},
+        /* not in the original (open-thandor): the game recording setting of the advanced settings page ([game]
+           record_games, gameplay/replay/runtime.h) in the left column under "Verbesserte Wegfindung" (x -283..32,
+           y 84..108, the row of "Automatisch speichern"), between advancedOriginalThandorNote and
+           advancedLanguageGroup in the page's sibling chain */
+        { /* +85A8 advancedRecordGamesCheckbox g_UiTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = -283, .topOffset = 84, .rightOffset = 32, .bottomOffset = 108,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_RECORD_GAMES},
+            .textResourceId = TEXT_ID_ADVANCED_RECORD_GAMES},
 };

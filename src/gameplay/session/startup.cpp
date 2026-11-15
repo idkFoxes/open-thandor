@@ -10,6 +10,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/gameplay/replay/runtime.h>
 #include <thandor/ui/ingame/key_bindings_overlay.h>
 
 /* Module data. */
@@ -45,8 +46,20 @@ static bool InGameRuntime_RunSession(LevelAssetRuntimePrefix *levelAsset,
      in-game UI also advance per drawn frame, so its outcome depends on the frame rate (a network game seeds both
      streams and simulates on the secondary one). The state hash test aid does the same as a network game here,
      before the first simulation steps, which already run during the initialisation. */
+  /* open-thandor: the game recorder (gameplay/replay/runtime.h) decides whether this session is recorded or replaced
+     by a playback; it is closed on every way out of here */
+  struct GameRecorderSession {
+    ~GameRecorderSession() { GameRecorder_SessionClosed(); }
+  } gameRecorderSession;
+  GameRecorder_PrepareSession((loadExistingSessionFlag & 1U) != 0,levelPathUtf16);
   DebugHook_SessionInitializing();
-  if ((loadExistingSessionFlag & 1U) == 0) {
+  if (GameRecorder_LoadsCheckpointInstead()) {
+    /* playback: the recorded checkpoint instead of what was chosen */
+    GameRecorder_BeginCheckpointLoad();
+    started = InGameRuntime_InitializeLoadedSession(GameRecorder_CheckpointPath(),&startupError);
+    GameRecorder_EndCheckpointLoad();
+  }
+  else if ((loadExistingSessionFlag & 1U) == 0) {
     started = InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16,&startupError);
   }
   else {
@@ -55,6 +68,23 @@ static bool InGameRuntime_RunSession(LevelAssetRuntimePrefix *levelAsset,
   if (!started) {
     return InGameRuntime_FailSession(startupError,outError);
   }
+  if (GameRecorder_ReloadsFromCheckpoint() && GameRecorder_CaptureCheckpoint()) {
+    /* recording: the started session is saved, torn down as on leaving it and loaded again from that save, the way
+       the playback will start it */
+    g_SoundStopAllVoices();
+    g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
+    GridScratch_ReleaseBuffers();
+    UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
+    UiRootStack_PopUntilWindowTextureBoundary();
+    InGameRuntime_ShutdownAndReleaseResources();
+    GameRecorder_BeginCheckpointLoad();
+    started = InGameRuntime_InitializeLoadedSession(GameRecorder_CheckpointPath(),&startupError);
+    GameRecorder_EndCheckpointLoad();
+    if (!started) {
+      return InGameRuntime_FailSession(startupError,outError);
+    }
+  }
+  GameRecorder_SessionStarted();
   DebugHook_SessionStarted();
   Autosave_SessionStarted(); /* open-thandor: the autosave's play time counts from here */
   do {
@@ -165,7 +195,8 @@ void InGameRuntime_ShutdownAndReleaseResources()
   WorldRuntimeContext *world;
   InGameRuntimeRoot *inGameRoot;
   bool beginAccessFailed;
-  
+
+  GameRecorder_SessionEnding(); /* open-thandor: a recording ends here, while the world still exists */
   g_TimerUnregisterPeriodic(InGameRuntime_PeriodicCountdownAndClockTick);
   /* The original unregisters the notification timer only on the three regular exits of
      InGameRuntime_RunSessionUntilExit, so InGameRuntime_FailSession (a start that failed after the timer was

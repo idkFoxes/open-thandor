@@ -35,6 +35,13 @@ A mission map for the campaigns: replay any mission you have reached, without sa
   Details: [custom_maps.md](custom_maps.md).
 - **GitHub link in the main menu:** a small *GitHub* link next to the version number at the bottom right opens the
   project page (github.com/idkFoxes/open-thandor) in your browser; it lights up under the mouse pointer.
+- **Record games for bug reports:** with *Partien für Fehlerberichte aufzeichnen* on the *Erweitert* page (off by
+  default, off while *Original Thandor* is on) every single player game is recorded to
+  `recordings\<date>_<time>_<map>.otr` in the game folder (the newest 10, at most 200 MB together). After a crash,
+  `crash.log` names the recording of that game: attach it to your bug report, and the game can be replayed up to
+  the crash with the same version. Network games are not recorded; loading a savegame or moving on to the next
+  campaign mission starts a new recording. While a game is recorded, the short-lived selection and target markers
+  in the world are not shown.
 
 #### Kept on purpose
 
@@ -74,6 +81,13 @@ Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder
   abgelehnt wurden), mit einem Link zum Thandor Map Editor auf GitHub. Einzelheiten: [custom_maps.md](custom_maps.md).
 - **GitHub-Link im Hauptmenü:** Ein kleiner Link *GitHub* neben der Versionsnummer unten rechts öffnet die
   Projektseite (github.com/idkFoxes/open-thandor) im Browser; unter dem Mauszeiger leuchtet er auf.
+- **Partien für Fehlerberichte aufzeichnen:** Mit *Partien für Fehlerberichte aufzeichnen* auf der Seite
+  *Erweitert* (anfangs aus, aus, solange *Original Thandor* an ist) wird jede Einzelspieler-Partie als
+  `recordings\<Datum>_<Uhrzeit>_<Karte>.otr` im Spielordner aufgezeichnet (die neuesten 10, zusammen höchstens
+  200 MB). Nach einem Absturz nennt `crash.log` die Aufzeichnung dieser Partie: Legen Sie sie Ihrer Fehlermeldung
+  bei, dann lässt sich die Partie mit derselben Version bis zum Absturz nachspielen. Netzwerkspiele werden nicht
+  aufgezeichnet; das Laden eines Spielstands oder die nächste Kampagnenmission beginnt eine neue Aufzeichnung.
+  Während einer Aufzeichnung fehlen die kurzlebigen Auswahl- und Zielmarkierungen in der Welt.
 
 #### Bewusst beibehalten
 

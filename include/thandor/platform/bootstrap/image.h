@@ -42,6 +42,10 @@ const char *Thandor_SymbolName(const void *address);
    hang.log when no frame has been presented for a few seconds (see g_ThandorFrameHeartbeat). */
 void Thandor_InstallCrashHandler();
 
+/* Not in the original: a line crash.log adds to every report while it is set (nullptr or "" clears it; cut to 1023
+   bytes); the game recorder names the recording being written there (gameplay/replay/runtime.h). */
+void Thandor_SetCrashLogNote(const char *note);
+
 /* Not in the original: keeps the timer resolution the process asks for (SDL requests 1 ms) while its window is
    minimized or hidden and it plays no sound. Since Windows 11 a window-owning process that is minimized, occluded
    or inaudible no longer gets a raised timer resolution: the SDL timers (the 80 Hz clock of

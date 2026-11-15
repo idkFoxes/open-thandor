@@ -197,6 +197,10 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
     /* not in the original: action 0x2067, the "Original Thandor" checkbox of the advanced settings page */
     .handlers67 = {
         /* 103 */ UI_SLOT(FrontendAdvancedSettingsAction_SetOriginalThandor)
+    },
+    /* not in the original: action 0x2068, the game recording checkbox of the advanced settings page */
+    .handlers68 = {
+        /* 104 */ UI_SLOT(FrontendAdvancedSettingsAction_SetRecordGames)
     }};
 
 /* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of

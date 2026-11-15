@@ -118,6 +118,10 @@ add_executable(thandor WIN32
     src/gameplay/faction/economy.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
+    src/gameplay/replay/runtime.cpp
+    src/gameplay/replay/state_hash.cpp
+    src/gameplay/replay/files.cpp
+    src/gameplay/replay/stream.cpp
     src/gameplay/selection/commands.cpp
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
@@ -339,6 +343,21 @@ target_compile_definitions(thandor_thmap PUBLIC MINIZ_NO_STDIO MINIZ_NO_ZLIB_COM
 target_link_libraries(thandor PRIVATE thandor_thmap)
 # The version header <thandor/version.h> and the resources (icon, VERSIONINFO), generated from project(VERSION).
 configure_file(include/thandor/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor/version.h @ONLY)
+# The game recorder's build id (src/gameplay/replay/runtime.cpp): version, git commit and a hash of uncommitted source
+# changes, refreshed by cmake/build_id.cmake on every build. Only generated/build_id.cpp depends on it and the script
+# rewrites it only when the id changes, so an edit does not touch the compile definitions of the other sources.
+set(THANDOR_BUILD_ID_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/generated/build_id.cpp)
+set(THANDOR_BUILD_ID_CONFIG "GCC ${CMAKE_CXX_COMPILER_VERSION} ${CMAKE_BUILD_TYPE} dev_tools=${THANDOR_DEV_TOOLS}")
+set(THANDOR_BUILD_ID_ARGUMENTS -DVERSION=${PROJECT_VERSION} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+    "-DCONFIG=${THANDOR_BUILD_ID_CONFIG}" -DOUTPUT=${THANDOR_BUILD_ID_SOURCE})
+execute_process(COMMAND ${CMAKE_COMMAND} ${THANDOR_BUILD_ID_ARGUMENTS} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_id.cmake)
+add_custom_target(thandor_build_id
+    COMMAND ${CMAKE_COMMAND} ${THANDOR_BUILD_ID_ARGUMENTS} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_id.cmake
+    BYPRODUCTS ${THANDOR_BUILD_ID_SOURCE}
+    COMMENT "Game recorder build id"
+    VERBATIM)
+target_sources(thandor PRIVATE ${THANDOR_BUILD_ID_SOURCE})
+add_dependencies(thandor thandor_build_id)
 set(THANDOR_RC_ICON ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/bootstrap/thandor.ico)
 configure_file(src/platform/bootstrap/thandor.rc.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor.rc @ONLY)
 # The resources compile in an object library of their own: it has no include directories, because windres hands

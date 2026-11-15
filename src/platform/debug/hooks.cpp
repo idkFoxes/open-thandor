@@ -293,6 +293,14 @@ void DebugHook_SimulationStepEnd()
   DebugPathTrace_AfterStep();
   DebugStateHash_AfterStep();
   AiGhost_AfterStep();
+  /* OPEN_THANDOR_CRASH_AT_TICK=<n>: an access violation at the end of the simulation step of tick n or later, to test
+     the crash report and a crash recording of the game recorder (gameplay/replay/runtime.h) */
+  static const long s_crashAtTick = getenv("OPEN_THANDOR_CRASH_AT_TICK") != nullptr
+                                        ? strtol(getenv("OPEN_THANDOR_CRASH_AT_TICK"), nullptr, 10) : 0;
+  if (s_crashAtTick > 0 && g_GameFactionRuntimeImage.tail.simulationTick >= static_cast<uint32_t>(s_crashAtTick)) {
+    Thandor_Log("test aid: OPEN_THANDOR_CRASH_AT_TICK %ld, crashing now", s_crashAtTick);
+    *static_cast<volatile int *>(nullptr) = 0;
+  }
 }
 
 void DebugHook_PathingEvent(int kind, const void *army, const void *other)

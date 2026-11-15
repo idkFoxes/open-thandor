@@ -18,4 +18,6 @@ game.scroll_step = <default>
 game.player_name = "Ok"
 # an enumeration index past its names (off, on)
 game.original_thandor = <default>
+# the same for the game recording switch (off, on)
+game.record_games = <default>
 others = <default>

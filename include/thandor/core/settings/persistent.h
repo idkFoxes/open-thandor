@@ -94,6 +94,11 @@ inline constexpr auto PERSISTENT_SETTINGS_DAT_BYTES = 200; /* size of the origin
 inline constexpr auto PERSISTENT_SETTING_ORIGINAL_THANDOR = 0xC8; /* PERSISTENT_ORIGINAL_THANDOR_*: [game] original_thandor */
 inline constexpr auto PERSISTENT_ORIGINAL_THANDOR_OFF = 0; /* default */
 inline constexpr auto PERSISTENT_ORIGINAL_THANDOR_ON = 1;
+/* Not in the original (open-thandor): the game recorder's option (gameplay/replay/runtime.h). A file without it
+   reads 0, the default (off: no recordings). */
+inline constexpr auto PERSISTENT_SETTING_RECORD_GAMES = 0xCC; /* PERSISTENT_RECORD_GAMES_*: [game] record_games */
+inline constexpr auto PERSISTENT_RECORD_GAMES_OFF = 0; /* default */
+inline constexpr auto PERSISTENT_RECORD_GAMES_ON = 1;
 /* open-thandor: the in-memory image is larger than thandor.dat (room for further settings past 0xC8); it is only
    held in memory and saved as thandor.ini keys, never as bytes (not in savegames, network packets or the lobby).
    Its 64 dwords are the 64 bits of the present/written masks. */
@@ -236,6 +241,10 @@ void PersistentSettings_WriteAutosave(bool enabled);
    thandor.ini, saved by the next Flush). Only OriginalMode_Set (core/settings/original_mode.h) calls it, which also
    notifies the switch's listeners. */
 void PersistentSettings_WriteOriginalThandor(bool on);
+
+/* Not in the original: stores the game recorder's option chosen in the menus ("Partien fuer Fehlerberichte
+   aufzeichnen", [game] record_games in thandor.ini, saved by the next Flush). */
+void PersistentSettings_WriteRecordGames(bool on);
 
 extern uint32_t g_LocaleCountryCodeOverride;
 

@@ -96,6 +96,17 @@ Das Spiel schreibt außerdem thandor.log (Protokoll) und bei einem Absturz
 crash.log in den Spielordner. Bitte legen Sie diese Dateien einer
 Fehlermeldung bei.
 
+Für Fehlerberichte kann das Spiel Einzelspieler-Partien aufzeichnen:
+Optionen, "Erweitert", "Partien für Fehlerberichte aufzeichnen" (aus, wenn
+"Original Thandor" an ist). Jede Partie landet dann als
+recordings\<Datum>_<Uhrzeit>_<Karte>.otr im Spielordner (die neuesten 10,
+zusammen höchstens 200 MB; ältere werden gelöscht). Nach einem Absturz nennt
+crash.log die Aufzeichnung dieser Partie; bitte legen Sie sie der
+Fehlermeldung bei. Damit lässt sich die Partie bis zum Absturz nachspielen -
+mit genau derselben Spielversion. Netzwerkspiele werden nicht aufgezeichnet,
+und eine Aufzeichnung endet, wenn Sie einen Spielstand laden oder die
+nächste Kampagnenmission beginnt.
+
 Schreibrechte im Spielordner
 ----------------------------
 Thandor liegt meist unter C:\Programme (x86)\Thandor. Dort dürfen normale

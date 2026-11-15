@@ -605,9 +605,10 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
    scale, the UI laid out again), "Bildratenbegrenzung"
    and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync), "Verbesserte Wegfindung" ([game] pathing, the next
    local session's pathing mode), "Ziel anzeigen" ([game] objective_overlay, the in-game objective box), "Automatisch
-   speichern" ([game] autosave) and, at the top, "Original Thandor" ([game] original_thandor, core/settings/
+   speichern" ([game] autosave), "Partien fuer Fehlerberichte aufzeichnen" ([game] record_games, the game recorder
+   of gameplay/replay/runtime.h) and, at the top, "Original Thandor" ([game] original_thandor, core/settings/
    original_mode.h): while it is on, the checkboxes of the open-thandor additions on this page (pathing, objective
-   box, autosave) are greyed out and show their saved values, which apply again when it is off. Edges and UI scale
+   box, autosave, recording) are greyed out and show their saved values, which apply again when it is off. Edges and UI scale
    only matter for the GPU renderers:
    with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
    a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. With a GPU renderer the
@@ -712,6 +713,11 @@ void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
                                   &ui->advancedPathingCheckbox.selectable);
   UiSelectableControl_SetSelected(ObjectiveOverlay_Enabled(),&ui->advancedObjectiveOverlayCheckbox.selectable);
   UiSelectableControl_SetSelected(Autosave_Enabled(),&ui->advancedAutosaveCheckbox.selectable);
+  UiSelectableControl_SetSelected(PersistentSettings_Read(PERSISTENT_RECORD_GAMES_OFF,PERSISTENT_SETTING_RECORD_GAMES) ==
+                                      PERSISTENT_RECORD_GAMES_ON,
+                                  &ui->advancedRecordGamesCheckbox.selectable);
+  /* the game recording checkbox sounds as the page's other checkboxes (bound in FrontendMenu_BindSharedResources) */
+  ui->advancedRecordGamesCheckbox.activationSound = ui->advancedAutosaveCheckbox.activationSound;
   /* "Original Thandor" holds the additions as in the original: their own checkboxes keep showing the saved choice
      (applied again once the switch is off) but are greyed out, so a click cannot suggest it would act now; the
      greyed texts drop the bright colour code, which would win over the disabled style */
@@ -723,7 +729,8 @@ void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
   } additions[] = {
       {&ui->advancedPathingCheckbox,TEXT_ID_ADVANCED_PATHING,TEXT_ID_ADVANCED_PATHING_GREYED},
       {&ui->advancedObjectiveOverlayCheckbox,TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY,TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY_GREYED},
-      {&ui->advancedAutosaveCheckbox,TEXT_ID_ADVANCED_AUTOSAVE,TEXT_ID_ADVANCED_AUTOSAVE_GREYED}};
+      {&ui->advancedAutosaveCheckbox,TEXT_ID_ADVANCED_AUTOSAVE,TEXT_ID_ADVANCED_AUTOSAVE_GREYED},
+      {&ui->advancedRecordGamesCheckbox,TEXT_ID_ADVANCED_RECORD_GAMES,TEXT_ID_ADVANCED_RECORD_GAMES_GREYED}};
   UiSelectableControl_SetSelected(originalMode,&ui->advancedOriginalThandorCheckbox.selectable);
   for (const auto &addition : additions) {
     UiSelectableControl *selectable = &addition.checkbox->selectable;
@@ -872,6 +879,16 @@ void FrontendAdvancedSettingsAction_SetAutosave(UiNodeBase *sourceNode)
 void FrontendAdvancedSettingsAction_SetOriginalThandor(UiNodeBase *sourceNode)
 {
   OriginalMode_Set(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
+
+  FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_RECORD_GAMES (the "Partien fuer Fehlerberichte aufzeichnen" checkbox; the click
+   has toggled it): the game recording setting ([game] record_games, gameplay/replay/runtime.h); takes effect with
+   the next single player session. */
+void FrontendAdvancedSettingsAction_SetRecordGames(UiNodeBase *sourceNode)
+{
+  PersistentSettings_WriteRecordGames(UiSelectableControl_IsSelected(UiNode_As<UiSelectableControl>(sourceNode)) != 0);
 
   FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
 }

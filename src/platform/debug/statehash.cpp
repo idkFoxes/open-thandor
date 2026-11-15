@@ -12,21 +12,8 @@
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/statehash.h>
+#include <thandor/gameplay/replay/state_hash.h>
 #include <thandor/world/pathing/mode.h>
-
-/* FNV-1a over 32-bit words; pointers never go in (addresses differ between builds), only pool indices. */
-struct StateHash {
-  uint64_t value;
-};
-
-static void StateHash_Add(StateHash *hash, uint32_t word)
-{
-  int byteIndex;
-  for (byteIndex = 0; byteIndex < 4; byteIndex++) {
-    hash->value ^= (word >> (byteIndex * 8)) & 0xffu;
-    hash->value *= 0x100000001b3ull;
-  }
-}
 
 static int s_stepsWanted;       /* OPEN_THANDOR_STATEHASH: steps to record, 0 = off */
 static int s_stepsDone;
@@ -43,14 +30,6 @@ static int s_speedStepTicks;    /* OPEN_THANDOR_STATEHASH_SPEED, 0 = keep the ga
    speed at the session start made the runs diverge (seen as a statehash.txt starting at tick 3 or 4). Tick 2 is
    where the speed took effect in the usual unloaded run, so those runs keep their hashes. */
 constexpr auto STATEHASH_SPEED_AFTER_TICK = 2u;
-
-static int32_t DebugStateHash_ArmyIndex(const void *army)
-{
-  if (army == nullptr) {
-    return -1;
-  }
-  return (int32_t)(Asset_ByteDistance(army, g_ArmyRuntimeSlots) / (int)sizeof(ArmyRuntimeSlot));
-}
 
 void DebugStateHash_SessionInitializing()
 {
@@ -363,88 +342,17 @@ static void DebugStateHash_ApplySpeedAtFixedTick(unsigned tick)
 
 void DebugStateHash_AfterStep()
 {
-  StateHash hash = {0xcbf29ce484222325ull};
-  WorldOwnerListNode *node;
+  GameStateHashCounts counts;
+  uint64_t hashValue;
   unsigned tick = g_GameFactionRuntimeImage.tail.simulationTick;
-  unsigned armies = 0;
-  unsigned nodes = 0;
-  unsigned slotIndex;
-  int faction;
-  int detail;
   DebugStateHash_ApplySpeedAtFixedTick(tick);
   if (s_stepsWanted == 0 || s_output == nullptr || g_InGameRuntimeRoot == nullptr) {
     return;
   }
-  detail = (tick == s_detailTick);
-  StateHash_Add(&hash, tick);
-  StateHash_Add(&hash, g_RandomGeneratorState.secondarySeed);
-  /* every world object in update order: class and world position (models, shots and effects) */
-  for (node = g_InGameRuntimeRoot->worldRuntime.ownerListHead; node != nullptr; node = node->nextNode) {
-    StateHash_Add(&hash, (uint32_t)node->ownerClassId);
-    StateHash_Add(&hash, (uint32_t)node->worldXQ12);
-    StateHash_Add(&hash, (uint32_t)node->worldYQ12);
-    StateHash_Add(&hash, (uint32_t)node->worldZQ12);
-    if (detail) {
-      fprintf(s_output, "  object %u class %u pos %d %d %d\n", nodes, (unsigned)node->ownerClassId,
-              (int)node->worldXQ12, (int)node->worldYQ12, (int)node->worldZQ12);
-    }
-    nodes++;
-  }
-  /* armies by slot: identity, orders, targets (as slot indices), health of the root model */
-  for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
-    ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
-    ModelRuntimeSlot *model;
-    uint32_t health = 0;
-    if (army->modelNodeRuntime == nullptr) {
-      continue;
-    }
-    model = army->modelRuntimeOrSavedOffset.modelRuntime;
-    if (model != nullptr) {
-      health = model->health;
-    }
-    StateHash_Add(&hash, slotIndex);
-    StateHash_Add(&hash, (uint32_t)army->armyAssetId);
-    StateHash_Add(&hash, (uint32_t)army->factionIndex);
-    StateHash_Add(&hash, (uint32_t)army->movementStateFlags);
-    StateHash_Add(&hash, (uint32_t)army->commandModeFlags);
-    StateHash_Add(&hash, (uint32_t)army->commandGeneration);
-    StateHash_Add(&hash, army->aiUnitState);
-    StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex(army->commandTargetArmyRuntime));
-    StateHash_Add(&hash, (uint32_t)DebugStateHash_ArmyIndex(reinterpret_cast<const void *>(static_cast<uintptr_t>(army->assignedTargetArmyRuntime))));
-    StateHash_Add(&hash, health);
-    armies++;
-    if (detail) {
-      fprintf(s_output, "  army %u asset %u faction %u flags %08x mode %08x gen %u ai %u target %d assigned %d "
-              "health %u pos %d %d %d\n", slotIndex, (unsigned)army->armyAssetId, (unsigned)army->factionIndex,
-              (unsigned)army->movementStateFlags, (unsigned)army->commandModeFlags,
-              (unsigned)army->commandGeneration, (unsigned)army->aiUnitState,
-              DebugStateHash_ArmyIndex(army->commandTargetArmyRuntime),
-              DebugStateHash_ArmyIndex(reinterpret_cast<const void *>(static_cast<uintptr_t>(army->assignedTargetArmyRuntime))), (unsigned)health,
-              army->modelNodeRuntime->worldTransform.translation.x,
-              army->modelNodeRuntime->worldTransform.translation.y,
-              army->modelNodeRuntime->worldTransform.translation.z);
-    }
-  }
-  /* faction resources */
-  for (faction = 0; faction < 8; faction++) {
-    GameFactionRuntimeRecord *record = &g_GameFactionRuntimeImage.records[faction];
-    StateHash_Add(&hash, (uint32_t)record->xeniteCurrentQ4);
-    StateHash_Add(&hash, (uint32_t)record->tritiumCurrentQ4);
-    StateHash_Add(&hash, (uint32_t)record->suppliedEnergyDemandQ4);
-  }
-  /* open-thandor: the improved pathing mode and its per-unit side table (every slot as raw dwords; free slots
-     are zero). Only with the improved mode, so the hashes of the original mode stay as they were. */
-  if (Pathing_Improved()) {
-    static uint32_t s_pathingWords[ARMY_RUNTIME_SLOT_COUNT * sizeof(PathingUnitState) / sizeof(uint32_t)];
-    static_assert(sizeof(s_pathingWords) == sizeof(g_PathingUnitState));
-    StateHash_Add(&hash, (uint32_t)g_PathingMode);
-    memcpy(s_pathingWords, g_PathingUnitState, sizeof(s_pathingWords));
-    for (uint32_t pathingWord : s_pathingWords) {
-      StateHash_Add(&hash, pathingWord);
-    }
-  }
-  fprintf(s_output, "%u %08x%08x armies %u objects %u seed %08x\n", tick, (unsigned)(hash.value >> 32),
-          (unsigned)hash.value, armies, nodes, (unsigned)g_RandomGeneratorState.secondarySeed);
+  /* the hash itself is shared with the game recorder (gameplay/replay/state_hash.cpp) */
+  hashValue = GameStateHash_Compute(&counts, tick == s_detailTick ? s_output : nullptr);
+  fprintf(s_output, "%u %08x%08x armies %u objects %u seed %08x\n", tick, (unsigned)(hashValue >> 32),
+          (unsigned)hashValue, counts.armies, counts.objects, (unsigned)g_RandomGeneratorState.secondarySeed);
   s_stepsDone++;
   DebugArena_Orders(s_stepsDone, tick);
   if (s_pauseTick != 0 && tick >= s_pauseTick) {

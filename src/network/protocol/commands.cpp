@@ -648,7 +648,17 @@ void InGameCommand_IssueHandler(CommandQueueHandlerProc *handler,CommandPayload 
   uint32_t code;
 
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    if (!GameRecorder_Active()) {
+      handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+      return;
+    }
+    /* open-thandor: the game recorder records the command, or blocks it during a playback */
+    GameRecorderCommandScope recorded(CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,
+                                                                    CommandDispatch_HandlerKey(handler)),
+                                      g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    if (recorded.Execute()) {
+      handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    }
     return;
   }
   code = CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,CommandDispatch_HandlerKey(handler));
