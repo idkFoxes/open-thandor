@@ -70,7 +70,15 @@ You need an **installed full version of Thandor** and **64-bit Windows 10 or 11*
 | Sound, music, movies | DirectSound, WinMM | SDL3, works on current Windows |
 | Settings | binary `thandor.dat` | readable `thandor.ini` (old settings taken over) |
 | Campaigns | a list; earlier missions only through savegames | **campaign map** (upcoming): every mission you reached can be started again, progress kept without savegames |
+| Own maps | - | **custom maps** (upcoming, experimental, single player): map editor projects `maps\<name>.thmap` in their own *Eigene Karten* list ([details](docs/custom_maps.md)) |
+| Options | keys fixed, language from Windows | **key bindings** editable (options page and in-game F1 *Tastatur*), **language** chosen in the menu: de, en, fr, it, es (upcoming) |
+| In the game | - | **improved pathfinding**, an **objective box** and an **autosave** every minute of play, each switchable (upcoming) |
+| Text at UI scale 2x/3x | enlarged pixels | optional **high-resolution font** on Vulkan and DirectX 12 (upcoming) |
+| Movies | some soundtracks very quiet | quiet movie soundtracks raised towards the level of the others (upcoming) |
+| Bug reports | - | optional **game recordings** (`recordings\*.otr`) named in `crash.log`, replayable up to a crash (upcoming) |
+| Original feel | - | one **Original Thandor** switch on the *Erweitert* page turns all these additions off; bug and crash fixes stay (upcoming) |
 | Damaged files, odd maps | crashes | rejected with a message; safe saving |
+| Mouse | - | no stuck mouse button after a focus change (upcoming) |
 | Rules, AI, saves, maps, LAN | - | **unchanged**: saves, levels and multiplayer stay compatible with the original |
 
 Full list: **[Patch notes](docs/PATCH_NOTES.md)**.
@@ -82,7 +90,7 @@ Full list: **[Patch notes](docs/PATCH_NOTES.md)**.
 | Single player: menus, campaigns, skirmish, AI, save/load, movies, sound | playable. An automated run starts all 56 missions: 50 play without problems, 1 level file is missing from the original data, and the 5 levels that need the units carried over from the previous level play when reached through that level. A campaign run wins every level in turn and reaches the end of all four campaigns (tutorial, Luke, Nimm2, Hansolo) |
 | Graphics | Vulkan (default), DirectX 12 or software; window, borderless or exclusive fullscreen ([details](docs/BUILDING.md#renderer-and-display-mode-display-settings)). The original's Glide (3dfx) and Direct3D renderers were removed |
 | Multiplayer (LAN, UDP) | works in a local two-instance test: lobby, map and faction choice, briefing, in-game commands; protocol-compatible with the original game |
-| Map editor | hidden in the original; opened by a hotkey on the `experimental/map-editor` branch |
+| Map editor | own maps are made with the external [Thandor Map Editor](https://github.com/idkFoxes/thandor-map-editor) and played as `.thmap` custom maps |
 
 ## For developers
 
@@ -92,7 +100,8 @@ Full list: **[Patch notes](docs/PATCH_NOTES.md)**.
 code is executed and the original executable is not needed. Its data (tables, UI templates, strings) is compiled in
 as ordinary variables of the modules; only the game's data files (`*.PCK`, movies) come from an installation.
 
-- 1,919 original functions in about 160,000 lines (198 source files, 52 modules).
+- 1,919 original functions plus the project's own additions (campaign map, key bindings, custom maps, recordings,
+  ...) in about 200,000 lines (some 320 source files).
 - Every function has a header comment (what it does, who calls it); names, constants and structure types are
   readable throughout, control flow is structured.
 - The code no longer refers to the original binary: the original addresses of all functions and data are kept in
@@ -134,7 +143,7 @@ The project gave up byte-identical machine code in favour of readable code; beha
 
 ### Building
 
-The compiler is MinGW-w64 GCC (x86_64, SEH; tested with GCC 15.2): CMake 3.25+, Ninja, `g++` on the `PATH` or
+The only compiler is MinGW-w64 GCC (x86_64, SEH; tested with GCC 15.2): CMake 3.25+, Ninja, `g++` on the `PATH` or
 `MINGW_ROOT` set ([`cmake/mingw-x64.cmake`](cmake/mingw-x64.cmake)), SDL3 with Vulkan from
 `vcpkg install sdl3[vulkan]:x64-mingw-dynamic`, and dxc for the Vulkan shaders, `vcpkg install directx-dxc:x64-windows`.
 CMake finds them through the environment variable `VCPKG_ROOT` (the vcpkg directory).
@@ -150,8 +159,12 @@ The result is `build-mingw-release\thandor.exe` (x64) with `SDL3.dll` next to it
 installed Thandor folder and start it there (e.g. `thandor.exe -NOINTRO`). `--target installer` builds
 `Thandor-Patch-8.exe` (needs Inno Setup 7, see [docs/BUILDING.md](docs/BUILDING.md#patch-installer)).
 `mingw-test` (`build-mingw-test`) adds the developer tools: self-tests, windowed mode, several instances, scripted
-input, starting any campaign level, the determinism state hash; the automated checks use this build. Other
-compilers (MSVC, Clang) are not supported. Details in [docs/BUILDING.md](docs/BUILDING.md).
+input, starting any campaign level, the determinism state hash; the automated checks use this build. CMake stops
+for any other compiler. Details in [docs/BUILDING.md](docs/BUILDING.md).
+
+On Linux, [`tools/build-linux-mingw.sh`](tools/build-linux-mingw.sh) `[release|test]` cross-builds the same Windows
+`thandor.exe` with the MinGW-w64 GCC cross compiler (CMake, Ninja, `x86_64-w64-mingw32-g++`; it fetches a pinned,
+checksum-checked SDL3) into `build-linux-mingw-<profile>`.
 
 ### Source tree
 
@@ -162,7 +175,10 @@ Public headers under [`include/thandor`](include/thandor), implementations under
 - [Module tree](docs/MODULE_TREE.md) - every module with its `.cpp` and `.h` files.
 - [Source file guide](docs/SOURCE_FILE_GUIDE.md) - what each source/header pair owns, its callers and dependencies.
 - Types: each module's structures are in `include/thandor/<area>/<module>/types.h`, the common ones in [core/types.h](include/thandor/core/types.h).
-- File formats: [levels](docs/level_format.md), [field grids](docs/field_grid_format.md).
+- File formats: [levels](docs/level_format.md), [field grids](docs/field_grid_format.md), [custom maps
+  (`.thmap`)](docs/custom_maps.md).
+- [Building](docs/BUILDING.md) - presets, `thandor.ini` keys, developer tools and test scripts;
+  [plans](docs/plans) - the design notes of the steps and features.
 
 ## About
 
