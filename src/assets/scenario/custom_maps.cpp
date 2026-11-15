@@ -789,11 +789,8 @@ void CustomMaps_RefreshLanguage()
 {
   CustomMaps_RefreshHintTexts();
 
-  const bool german = TextResource_ProjectTextsAreGerman();
-  static const char markerGerman[] = " (eigene Karte)";
-  static const char markerEnglish[] = " (custom map)";
-  const char *marker = german ? markerGerman : markerEnglish;
-
+  /* No " (eigene Karte)" suffix: the rows have their own tab and list (Eigene Karten), and the suffix ran into the
+     planet column. */
   for (const std::unique_ptr<CustomMapEntry> &entry : s_CustomMaps) {
     std::array<uint16_t,CUSTOM_MAP_LIST_TITLE_UNITS> &listTitle = entry->listTitle;
     const uint16_t *title = CustomMaps_Title(entry.get());
@@ -802,9 +799,6 @@ void CustomMaps_RefreshLanguage()
     listTitle[length++] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
     for (title++; (*title != 0) && (length + 1 < listTitle.size()); title++) {
       listTitle[length++] = *title;
-    }
-    for (const char *markerChar = marker; (*markerChar != '\0') && (length + 1 < listTitle.size()); markerChar++) {
-      listTitle[length++] = (uint8_t)*markerChar;
     }
     listTitle[length] = 0;
   }

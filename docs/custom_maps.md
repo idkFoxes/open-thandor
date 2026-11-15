@@ -82,8 +82,7 @@ No other entry of a project is ever served.
   original maps. The button is shown only in a local game with custom maps on: it is hidden in network games (host
   and client) and in "Original Thandor" mode (`OT_FEATURE_CUSTOM_MAPS` off).
 * **List:** custom maps are sorted in the *Eigene Karten* list by title like the original maps in *Einzelspiel*. Their
-  title carries the suffix ` (eigene Karte)` (German texts) or ` (custom map)` (every other language). The suffix
-  shows only in the list, not in the briefing, the in-game title or the save name. The other columns (planet, size,
+  title has no suffix (earlier builds added ` (eigene Karte)` in the mixed list). The other columns (planet, size,
   players) come from the level's catalog record (+0x100..+0x1FF), like an original map's from `level.dat`.
 * **Texts:** the title is `display_name`. Without one, the title is STR string 0 with leading blanks removed, and
   without that, the map name. The description block line *k* is STR string *k + 1*: line 0 is the description, and
