@@ -121,6 +121,14 @@ static uint16_t g_CustomMapFallbackTitleEnglish[] = {RICHTEXT_COMMAND_FLAG | RIC
     'C','u','s','t','o','m',' ','m','a','p',0};
 static uint16_t g_CustomMapEmptyText[] = {0};
 
+/* The hint row (CustomMaps_ListRows): its record and texts. s_CustomMapsRejected counts the .thmap files the last
+   scan skipped (bad name, an original level's name, a failed check). */
+static ScenarioCatalogDisplayRecord s_CustomMapHintRecord{};
+static std::array<uint16_t,64> s_CustomMapHintTitle{};
+static std::array<uint16_t,320> s_CustomMapHintDescription{};
+static std::array<uint16_t,32> s_CustomMapHintLink{};
+static uint32_t s_CustomMapsRejected = 0;
+
 /* ---------------------------------------------------------------- small helpers */
 
 static char CustomMaps_LowerAscii(char c)
@@ -621,6 +629,8 @@ static bool CustomMaps_IsProjectFile(const std::filesystem::path &path)
   return extension == L".thmap";
 }
 
+static void CustomMaps_RefreshHintTexts();
+
 void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
 {
   const std::filesystem::path mapsFolder = CustomMaps_ExecutableDirectory() / L"maps";
@@ -631,6 +641,7 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
   s_RetiredCustomMaps = std::move(s_CustomMaps);
   s_CustomMaps.clear();
   s_CustomMapsCatalog = catalog;
+  s_CustomMapsRejected = 0;
   s_CustomMapsScanSkipped = !OtFeature_Active(OT_FEATURE_CUSTOM_MAPS);
   if (s_CustomMapsScanSkipped) {
     return; /* "Original Thandor": the original lists no user maps (a loaded custom map save stays playable) */
@@ -662,12 +673,14 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
     if (!CustomMaps_IsValidName(projectName)) {
       Thandor_Log("custom map \"%ls.thmap\" skipped: the name must be 1..%d characters A-Z a-z 0-9 _ -",
                   projectName.c_str(),CUSTOM_MAP_NAME_MAX_UNITS);
+      s_CustomMapsRejected++;
       continue;
     }
     std::string name(projectName.begin(),projectName.end()); /* ASCII, checked above */
     std::string lowerName = CustomMaps_Lower(name);
     if (CustomMaps_CollidesWithStockLevel(catalog,lowerName)) {
       Thandor_Log("custom map \"%s\" skipped: an original level has this name",name.c_str());
+      s_CustomMapsRejected++;
       continue;
     }
     if (s_CustomMaps.size() >= (size_t)CUSTOM_MAP_LIMIT) {
@@ -678,6 +691,7 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
     const CustomMapFileCheck &check = CustomMaps_CheckFile(name);
     if (!check.valid) {
       Thandor_Log("custom map \"%s\" skipped: %s",name.c_str(),check.reason.c_str());
+      s_CustomMapsRejected++;
       continue;
     }
     auto entry = std::make_unique<CustomMapEntry>();
@@ -695,6 +709,7 @@ void CustomMaps_Rebuild(const ScenarioCatalogHeader *catalog)
   }
   Thandor_Log("custom maps: %u listed%s",(unsigned)s_CustomMaps.size(),
               (skippedForLimit != 0) ? " (limit reached, see above)" : "");
+  CustomMaps_RefreshHintTexts(); /* the rejected count */
 }
 
 uint32_t CustomMaps_Count()
@@ -709,8 +724,54 @@ const char *CustomMaps_ListedName(uint32_t index)
 
 /* ---------------------------------------------------------------- the list */
 
+/* Writes text (ASCII) behind leadingUnit (0: none) into destination, cut to its size. */
+template <size_t N>
+static void CustomMaps_SetHintText(std::array<uint16_t,N> &destination,uint16_t leadingUnit,const std::string &text)
+{
+  size_t length = 0;
+
+  if (leadingUnit != 0) {
+    destination[length++] = leadingUnit;
+  }
+  for (size_t index = 0; (index < text.size()) && (length + 1 < N); index++) {
+    destination[length++] = (uint8_t)text[index];
+  }
+  destination[length] = 0;
+}
+
+/* The hint row's texts in the current language (German for German, English otherwise, as the list suffix). */
+static void CustomMaps_RefreshHintTexts()
+{
+  const bool german = TextResource_ProjectTextsAreGerman();
+  std::string rejected;
+
+  if (s_CustomMapsRejected == 1) {
+    rejected = german ? " (1 abgelehnt, siehe thandor.log)" : " (1 file rejected, see thandor.log)";
+  }
+  else if (s_CustomMapsRejected > 1) {
+    rejected = " (" + std::to_string(s_CustomMapsRejected) +
+               (german ? " abgelehnt, siehe thandor.log)" : " files rejected, see thandor.log)");
+  }
+  /* palette 2 (dark grey): the row is no map */
+  CustomMaps_SetHintText(s_CustomMapHintTitle,RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_2,
+                         german ? "Eigene Karten: keine gefunden" : "Custom maps: none found");
+  /* with the rejected files the editor's name is left out (the link below names it), so the text keeps to two
+     lines in the description box at 640x480 and the link above the buttons */
+  CustomMaps_SetHintText(s_CustomMapHintDescription,0,
+                         german ? "Keine eigenen Karten gefunden" + rejected +
+                                      (rejected.empty() ? ". Lege .thmap-Dateien des Thandor Map Editors"
+                                                        : ". Lege .thmap-Dateien") +
+                                      " in den Ordner maps neben thandor.exe."
+                                : "No custom maps found" + rejected +
+                                      (rejected.empty() ? ". Put Thandor Map Editor .thmap files" : ". Put .thmap files") +
+                                      " into the maps folder next to thandor.exe.");
+  CustomMaps_SetHintText(s_CustomMapHintLink,0,german ? "Map Editor auf GitHub" : "Map Editor on GitHub");
+}
+
 void CustomMaps_RefreshLanguage()
 {
+  CustomMaps_RefreshHintTexts();
+
   const bool german = TextResource_ProjectTextsAreGerman();
   static const char markerGerman[] = " (eigene Karte)";
   static const char markerEnglish[] = " (custom map)";
@@ -732,20 +793,46 @@ void CustomMaps_RefreshLanguage()
   }
 }
 
+bool CustomMaps_IsHintRecord(const void *record)
+{
+  return record == &s_CustomMapHintRecord;
+}
+
 Ptr32<ScenarioCatalogDisplayRecord> *CustomMaps_ListRows(Ptr32<ScenarioCatalogDisplayRecord> *stockRows,
-                                                         uint32_t stockCount,uint32_t *outCount)
+                                                         uint32_t stockCount,uint32_t *outCount,bool *outHintRow)
 {
   *outCount = stockCount;
+  *outHintRow = false;
   if (!OtFeature_Active(OT_FEATURE_CUSTOM_MAPS)) {
     return stockRows; /* "Original Thandor" was switched on since the last scan: the original list */
   }
   if (s_CustomMapsScanSkipped && (s_CustomMapsCatalog != nullptr)) {
     CustomMaps_Rebuild(s_CustomMapsCatalog); /* switched off since a skipped scan */
   }
-  if (s_CustomMaps.empty()) {
+  if (s_CustomMapsScanSkipped) {
     return stockRows;
   }
   CustomMaps_RefreshLanguage();
+  if (s_CustomMaps.empty()) {
+    /* the hint row behind the stock rows (custom_maps.h); identifier unit 0x01: no -KARTE name (every unit >= ' ')
+       equals it, and no level path is ever built from it */
+    ScenarioCatalogDisplayRecord &record = s_CustomMapHintRecord;
+    std::memset(&record,0,sizeof record);
+    record.identifier[0] = 0x01;
+    record.scenarioTextResourceId = TEXT_ID_CUSTOM_MAPS_HINT_TITLE;
+    record.titleDisplayTag = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_JUMP_NESTED;
+    record.titleResolvedText = g_CustomMapEmptyText;
+    record.subtitleDisplayTag = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_JUMP_NESTED;
+    record.subtitleResolvedText = g_CustomMapEmptyText;
+    record.scenarioDisplayTag = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_JUMP_NESTED;
+    record.scenarioResolvedText = s_CustomMapHintTitle.data();
+    record.modeDisplayTag = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_JUMP_NESTED;
+    record.modeResolvedText = g_CustomMapEmptyText;
+    s_CustomMapListRows.assign(stockRows,stockRows + stockCount);
+    s_CustomMapListRows.push_back(&record);
+    *outHintRow = true;
+    return s_CustomMapListRows.data();
+  }
   s_CustomMapListRows.assign(stockRows,stockRows + stockCount);
   for (const std::unique_ptr<CustomMapEntry> &entry : s_CustomMaps) {
     ScenarioCatalogDisplayRecord &record = entry->record;
@@ -1046,6 +1133,17 @@ bool CustomMaps_CheckProjectForTest(const std::string &name,std::string *outReas
 
 bool CustomMaps_TryResolveText(uint32_t resourceId,uint16_t **outText)
 {
+  if ((resourceId >= TEXT_ID_CUSTOM_MAPS_HINT_BASE) &&
+      (resourceId < TEXT_ID_CUSTOM_MAPS_HINT_BASE + TEXT_ID_CUSTOM_MAPS_HINT_RESERVED)) {
+    if (s_CustomMapHintTitle[0] == 0) {
+      CustomMaps_RefreshHintTexts(); /* before the first list build */
+    }
+    *outText = (resourceId == TEXT_ID_CUSTOM_MAPS_HINT_TITLE)         ? s_CustomMapHintTitle.data()
+               : (resourceId == TEXT_ID_CUSTOM_MAPS_HINT_DESCRIPTION) ? s_CustomMapHintDescription.data()
+               : (resourceId == TEXT_ID_CUSTOM_MAPS_HINT_LINK)        ? s_CustomMapHintLink.data()
+                                                                      : g_CustomMapEmptyText;
+    return true;
+  }
   if ((resourceId >= CUSTOM_MAP_TITLE_ID_FIRST) && (resourceId < CUSTOM_MAP_TITLE_ID_FIRST + CUSTOM_MAP_TITLE_INDEX_SLOTS)) {
     CustomMapEntry *entry = s_CustomMapBySlot[resourceId - CUSTOM_MAP_TITLE_ID_FIRST];
     if (entry != nullptr) {

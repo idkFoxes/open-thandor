@@ -72,4 +72,13 @@ void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl 
 void ScenarioCatalog_SelectLevelAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
+/* Not in the original (open-thandor): the link "Map Editor auf GitHub" / "Map Editor on GitHub"
+   (TEXT_ID_CUSTOM_MAPS_HINT_LINK) below the description text while the hint row of an empty custom map list
+   (custom_maps.h) is the selected row of the visible "Single game" tab. Draw is called by UiFrame_Draw after the
+   roots; HandleLeftPress by UiPointer_DispatchLeftPress for a left press while no pointer capture is held: on the
+   link it opens CUSTOM_MAPS_EDITOR_URL (SdlPlatform_OpenUrl) and returns true, and the press goes to no node;
+   elsewhere it returns false. */
+void FrontendCustomMapsHintLink_Draw();
+bool FrontendCustomMapsHintLink_HandleLeftPress(int pointerY,int pointerX);
+
 #endif /* THANDOR_UI_FRONTEND_SCENARIO_SELECTION_H */

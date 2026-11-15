@@ -26,7 +26,7 @@ gfx/boden/edit_NAME* and points +0xB4 at the copy (in a second appended slot), s
 game serves the project's files.
 
 check verifies .thmap files as far as the file formats go (the LEV identifier +0x100 is not checked: the game
-replaces it by "maps\NAME." with NAME the file stem) (the game's own checks are stricter: CustomMap_Validate
+replaces it by "maps\\NAME." with NAME the file stem) (the game's own checks are stricter: CustomMap_Validate
 and the field grid check); corrupt copies a .thmap to OUT_DIR\\bad_<kind>.thmap broken in one way: KIND is one of
 CORRUPT_KINDS, or "all".
 """

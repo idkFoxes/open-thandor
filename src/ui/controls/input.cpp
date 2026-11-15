@@ -426,6 +426,11 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
   if (g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) {
     return;
   }
+  /* not in the original (open-thandor): a press on the custom maps hint row's map editor link opens its page and
+     goes to no node */
+  if (FrontendCustomMapsHintLink_HandleLeftPress(pointerY,pointerX)) {
+    return;
+  }
   node = UiPointer_FindNonRightPressTarget(hoverTarget,topRoot,pointerY,pointerX);
   if (node == UI_NODE_NONE) {
     return;

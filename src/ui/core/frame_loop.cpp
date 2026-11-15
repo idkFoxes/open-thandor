@@ -163,5 +163,7 @@ void UiFrame_Draw()
   }
   /* not in the original (open-thandor): the version at the bottom right of the main menu */
   FrontendVersionLabel_Draw();
+  /* not in the original (open-thandor): the map editor link of the custom maps hint row */
+  FrontendCustomMapsHintLink_Draw();
   UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);
 }

@@ -165,7 +165,8 @@ static bool FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelecti
     return false;
   }
   for (selectionIndex = 0; rowsRemaining != 0; rowsRemaining--) {
-    if (FrontendScenarioSelectionPage_CodeUnitsEqual
+    if (!CustomMaps_IsHintRecord(g_FrontendRootNode->missionsList.rowSlots[selectionIndex].get()) && /* open-thandor */
+        FrontendScenarioSelectionPage_CodeUnitsEqual
             (levelName,
              static_cast<const uint16_t *>(g_FrontendRootNode->missionsList.rowSlots[selectionIndex]),
              compareUnitCount)) {
@@ -412,6 +413,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
   uint16_t *resolvedText;
   UiListRowCount rowCount;
   Ptr32<ScenarioCatalogDisplayRecord> *rowPointers;
+  bool hintRow;
   
   firstNode = &g_FrontendRootNode->frontendRoot.root.base;
   UiSelectableGroup_SelectExclusive(3,&g_FrontendRootNode->singleGameTabButton.selectable.base,
@@ -446,17 +448,29 @@ void ScenarioCatalog_RebuildLevelRecordListPage
       scenarioRecord++;
     }
     /* open-thandor: the custom maps of maps\ follow in a local game (single player only, custom_maps.h); a native
-       row array then replaces the one behind the records */
+       row array then replaces the one behind the records. Without a listed custom map the hint row follows
+       instead, behind the sorted rows. */
+    hintRow = false;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-      rowPointers = CustomMaps_ListRows(rowPointers,rowCount,&rowCount);
+      rowPointers = CustomMaps_ListRows(rowPointers,rowCount,&rowCount,&hintRow);
     }
     control = UiListControl_AsPointerList(&FrontendUi_Image(firstNode)->missionsList);
-    if (rowCount != 0) {
+    if ((rowCount != 0) || hintRow) {
       UiPointerList_InitializeColumnLayout(rowCount,reinterpret_cast<Ptr32<void> *>(rowPointers),control);
       /* sorted by the jump record of the level title */
       UiPointerList_SortByExpandedTextFieldAscending
                 (offsetof(ScenarioCatalogDisplayRecord,scenarioDisplayTag),control);
+      if (hintRow) {
+        /* the sorted rows plus the hint row in the slot behind them */
+        UiPointerList_InitializeColumnLayout(rowCount + 1,reinterpret_cast<Ptr32<void> *>(rowPointers),control);
+      }
       UiPointerList_SelectColumnListIndex(0,control);
+      if (rowCount == 0) {
+        /* only the hint row: nothing to start */
+        UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
+        UiNodeList_UnsuppressActionId(FRONTEND_ACTION_SELECT_SINGLE_GAME,firstNode);
+        return;
+      }
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_SELECT_SINGLE_GAME,firstNode);
@@ -679,11 +693,17 @@ void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl 
   }
   if (selectedTabIndex != 0) {
     if (selectedTabIndex < 2) {
-      Resource_Release(g_FrontendLoadedCampaignAsset);
-      g_FrontendLoadedCampaignAsset = nullptr;
       selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                         (UiListControl_AsPointerList(&ui->missionsList),
                          nullptr);
+      /* open-thandor: the hint row of an empty custom map list (custom_maps.h) starts nothing (a double click on it;
+         the Start button is greyed out while it is selected) */
+      if ((selectedRowIndex < ui->missionsList.rowCount) &&
+          CustomMaps_IsHintRecord(ui->missionsList.rowSlots[selectedRowIndex].get())) {
+        return;
+      }
+      Resource_Release(g_FrontendLoadedCampaignAsset);
+      g_FrontendLoadedCampaignAsset = nullptr;
       FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestLevelAsset>(0,0,selectedRowIndex);
       return;
     }
@@ -748,9 +768,119 @@ void ScenarioCatalog_SelectLevelAndShowDescription
       FrontendScenarioSelection_LogRejectedRowIndex(selectionIndex);
       return;
     }
+    /* open-thandor: the hint row of an empty custom map list (custom_maps.h) shows its own text, and the Start
+       button is greyed out while it is selected (the link below the text: FrontendCustomMapsHintLink_Draw) */
+    if (CustomMaps_IsHintRecord(rowPointers[selectionIndex])) {
+      frontendRoot->missionDescriptionText.text =
+           reinterpret_cast<uint16_t *>(static_cast<uintptr_t>(TEXT_ID_CUSTOM_MAPS_HINT_DESCRIPTION));
+      UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,&frontendRoot->frontendRoot.root.base);
+      return;
+    }
+    if (CustomMaps_IsHintRecord(rowPointers[listControl->rowCount - 1]) &&
+        ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL)) {
+      UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,&frontendRoot->frontendRoot.root.base);
+    }
     frontendRoot->missionDescriptionText.text =
          reinterpret_cast<uint16_t *>(static_cast<uintptr_t>
               (rowPointers[selectionIndex]->scenarioTextResourceId * TEXT_ID_LEVEL_DESCRIPTION_STRIDE +
                TEXT_ID_LEVEL_DESCRIPTION_BASE));
   }
+}
+
+/* Not in the original (open-thandor): the link of the custom maps hint row (scenario_selection.h). It sits one
+   quarter line below the wrapped description text, at its left edge, in the description's font and light grey
+   (palette 1; the description is grey). FrontendCustomMapsHintLink_Layout places it for the draw and the hit test
+   alike. */
+namespace {
+
+constexpr int kHintLinkHitSlack = 2; /* the hit rectangle reaches this far around the text */
+
+struct FrontendCustomMapsHintLinkLayout {
+  int left;
+  int top;
+  int right;
+  int bottom;
+  uint32_t style;
+  uint16_t *text;
+};
+
+/* False when the link is not shown (see above); otherwise fills layout. */
+bool FrontendCustomMapsHintLink_Layout(FrontendCustomMapsHintLinkLayout *layout)
+{
+  FrontendUiImage *const ui = g_FrontendRootNode;
+
+  if ((ui == nullptr) || (g_UiRootNode != &ui->frontendRoot.root) ||
+      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&ui->frontendViewModeStack)) != 0) ||
+      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&ui->frontendPageStack)) !=
+       (uint32_t)FRONTEND_PAGE_STACK_CHOOSE_GAME) ||
+      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&ui->gameSelectTabStack)) !=
+       (uint32_t)SCENARIO_SELECTION_TAB_SINGLE_GAMES)) {
+    return false;
+  }
+  const UiListControl &list = ui->missionsList;
+  if ((list.rowSlots == nullptr) || (list.selectedRowSlot == nullptr) || (list.rowCount == 0) ||
+      !CustomMaps_IsHintRecord(list.selectedRowSlot->get())) {
+    return false;
+  }
+  UiWrappedTextControl &description = ui->missionDescriptionText;
+  if (((description.labelFlags & UI_LABEL_TEXT_IS_STREAM) != 0) ||
+      ((TextResourceId)(uintptr_t)description.text.get() != TEXT_ID_CUSTOM_MAPS_HINT_DESCRIPTION) ||
+      Any(description.base.nodeFlags & UI_NODE_SUPPRESSED)) {
+    return false;
+  }
+  const uint32_t descriptionStyle =
+      (g_UiTextStyleNormal | description.styleOverride) & (UI_TEXT_STYLE_FONT_BYTE | UI_TEXT_STYLE_PALETTE_BYTE);
+  const UiPixelExtent wrapWidth =
+      ((description.labelFlags & UI_LABEL_KEEP_WRAP_WIDTH) == 0) ? description.base.layoutWidth : description.wrapWidth;
+  const RichTextExtent textExtent = RichTextCommandStream_MeasureWrappedBlock(
+      descriptionStyle,TextResource_Resolve(TEXT_ID_CUSTOM_MAPS_HINT_DESCRIPTION),wrapWidth);
+  uint32_t lineHeight;
+  layout->style = (descriptionStyle & UI_TEXT_STYLE_FONT_BYTE) | (1u << TEXT_STYLE_PALETTE_SHIFT);
+  FontGlyph_GetLogicalSizeForStyle(layout->style,0,&lineHeight);
+  layout->text = TextResource_Resolve(TEXT_ID_CUSTOM_MAPS_HINT_LINK);
+  const int width = (int)RichTextCommandStream_MeasureLine(layout->style,layout->text).widthPixels;
+  layout->left = description.base.left;
+  layout->top = description.base.top + (int)textExtent.heightPixels + (int)lineHeight / 4;
+  /* a description too long for the link above the Cancel / Start buttons (no text of today's languages is): the
+     link moves to the middle of the button row */
+  const UiNodeBase &cancelButton = ui->gameSelectCancelButton.selectable.base;
+  const UiNodeBase &startButton = ui->gameSelectStartButton.selectable.base;
+  if (layout->top + (int)lineHeight + 2 > std::min(cancelButton.top,startButton.top)) {
+    layout->left = (cancelButton.right + startButton.left - width) / 2;
+    layout->top = startButton.top + (startButton.bottom - startButton.top - (int)lineHeight) / 2;
+  }
+  layout->right = layout->left + width;
+  layout->bottom = layout->top + (int)lineHeight;
+  return true;
+}
+
+} // namespace
+
+void FrontendCustomMapsHintLink_Draw()
+{
+  FrontendCustomMapsHintLinkLayout layout;
+
+  if (!FrontendCustomMapsHintLink_Layout(&layout)) {
+    return;
+  }
+  if (g_GraphicsFramebufferBeginAccess()) {
+    return;
+  }
+  RichTextCommandStream_DrawSingleLine
+            (g_FramebufferHeight,g_FramebufferWidth,0,0,layout.style,layout.text,layout.top,layout.left);
+  g_GraphicsFramebufferEndAccess();
+}
+
+bool FrontendCustomMapsHintLink_HandleLeftPress(int pointerY,int pointerX)
+{
+  FrontendCustomMapsHintLinkLayout layout;
+
+  if (!FrontendCustomMapsHintLink_Layout(&layout) || (pointerX < layout.left - kHintLinkHitSlack) ||
+      (pointerX >= layout.right + kHintLinkHitSlack) || (pointerY < layout.top - kHintLinkHitSlack) ||
+      (pointerY >= layout.bottom + kHintLinkHitSlack)) {
+    return false;
+  }
+  Thandor_Log("custom maps: map editor link clicked, opening %s",CUSTOM_MAPS_EDITOR_URL);
+  SdlPlatform_OpenUrl(CUSTOM_MAPS_EDITOR_URL);
+  return true;
 }
