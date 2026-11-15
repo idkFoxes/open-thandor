@@ -9,7 +9,8 @@ Every version lists the changes in English and in German (*Deutsch*).
 
 ### English
 
-A mission map for the campaigns: replay any mission you have reached, without savegames.
+A mission map for the campaigns, an *Original Thandor* switch, improved pathfinding, rebindable keys, an objective
+box, autosave, custom maps from the map editor, and fixes for the crashes reported with 1.0.7.
 
 #### New
 
@@ -26,14 +27,43 @@ A mission map for the campaigns: replay any mission you have reached, without sa
 - **Progress without savegames:** every won mission is recorded automatically and unlocks the next one(s). The
   progress is kept in `save\kampagne.dat` and survives quitting the game; a damaged file is set aside as
   `kampagne.bad` and the progress starts empty. Uninstalling keeps the file, like your saves.
+- **"Original Thandor" switch:** the new checkbox *Original Thandor* at the top of the *Erweitert* page (off by
+  default) makes the game play like the original: the campaigns tab shows the old list, units move exactly as in
+  the original, the objective box, autosave, game recordings, the high resolution font, custom maps and the louder
+  movie sound are off, and the original keys apply (key bindings cannot be edited, the *Tastatur* tab of the
+  in-game help shows the original page). The checkboxes of these additions are greyed out and keep their settings
+  for when the switch is off again. Bug and crash fixes stay.
+- **Improved pathfinding:** with *Verbesserte Wegfindung* on the *Erweitert* page (on by default) units keep
+  driving through curves instead of stopping to turn, wait for or give way to their own units instead of getting
+  stuck behind them, gliders keep their speed at a new route point, and a group sent to one point spreads out to
+  formation places so that all of them arrive. Switched off, units move exactly as in the original. A network game
+  uses it when the host has it on and every other player runs Open Thandor without *Original Thandor*; one player
+  with the original game means the original movement for everybody.
+- **Objective box:** a small box in the top left corner of the game shows the mission objective and its progress;
+  it moves down only while an original text line would be covered. A click on it opens the mission help. It is on
+  by default; *Ziel anzeigen* on the *Erweitert* page or the key `Z` switches it off and on.
+- **Autosave:** with *Automatisch speichern* on the *Erweitert* page (on by default) a single player game (skirmish,
+  campaign, tutorial) is saved after every minute of play to `save\autosave.sve`, always the same file. Pauses, open
+  windows and the briefing do not count. The save lists show it as *Autosave -* and the mission title, and a short
+  notice *Spiel automatisch gespeichert* appears at the bottom left. Network games are never saved automatically.
+- **Key bindings:** the new button *Tastenbelegung* on the options page lists every action with its keys, and the
+  *Tastatur* tab of the in-game help (F1) opens the same list. Click a key to give the action another key or
+  combination with Ctrl, Alt and Shift (the status line names the action a key is already taken by), right click to
+  remove it; *Standard* brings back the original keys. Esc, Alt+F4 and the cheats stay fixed. The bindings are
+  saved in `thandor.ini` (section `[keys]`).
+- **Language choice:** *Sprache:* on the *Erweitert* page switches the game's texts at once between *Automatisch*
+  (the Windows language) and the languages in your game's text files (Deutsch, English, Français, Italiano,
+  Español). Open Thandor's own texts are German for Deutsch and English for every other language.
+- **Louder movies:** the CD movies that were mixed much quieter than the rest (the intro and the campaign story
+  movies) are raised towards the level of the other movies. With *Original Thandor* on they play at their original
+  level.
 - **Custom maps (experimental, single player):** every map editor project `maps\<name>.thmap` next to the game
-  (ZIP or the editor's older PCK form) appears in its own *Custom maps* list (a button on the left of *Spiel auswählen*; *Einzelspiel* shows
-  only the original maps), with the title,
-  description and author from the project. A project may bring its own ground textures. Every project is checked
-  before it is listed; a rejected one gets one line in `thandor.log`. Network games neither list nor send them.
-  The earlier `maps\<name>\` folders are no longer read. Without any custom map the list shows a hint row
-  that says where `.thmap` files go (and how many were rejected), with a link to the Thandor Map Editor on GitHub.
-  Details: [custom_maps.md](custom_maps.md).
+  (ZIP or the editor's older PCK form) appears in the list of the new button *Eigene Karten* below *Kampagnen* on
+  *Spiel auswählen* (*Einzelspiel* shows only the original maps), with the title, description and author from the
+  project. A project may bring its own ground textures. Every project is checked before it is listed; a rejected one
+  gets one line in `thandor.log`. Without any custom map the list shows a hint row that says where `.thmap` files go
+  (and how many were rejected), with a link to the Thandor Map Editor on GitHub. The button is not shown in network
+  games or while *Original Thandor* is on. Details: [custom_maps.md](custom_maps.md).
 - **GitHub link in the main menu:** a small *GitHub* link next to the version number at the bottom right opens the
   project page (github.com/idkFoxes/open-thandor) in your browser; it lights up under the mouse pointer.
 - **Record games for bug reports:** with *Partien für Fehlerberichte aufzeichnen* on the *Erweitert* page (off by
@@ -48,17 +78,42 @@ A mission map for the campaigns: replay any mission you have reached, without sa
   high resolution instead of the original pixels enlarged. Letters keep their exact size and place, so lines,
   line breaks and the layout stay as before. The software renderer and UI scale 1x are not affected.
 
+#### Fixed
+
+- Crash with DirectX 12 during a mission, most likely in scenes with much vegetation (seen with 1.0.7): the game
+  now needs far fewer graphics driver resources per frame.
+- Crash when the UI scale was changed on the *Erweitert* page after a game (1.0.7).
+- Rare crashes of the computer opponent while it chose a target for a group of units (1.0.7). Groups are also no
+  longer sent against a unit that is already destroyed.
+- Crash on a mouse click during the end movie of a mission, and several smaller problems when a game ends or the
+  next one starts (for example commands of an ended network game that reached the next one, or map editor keys
+  that stayed active after a game closed with the editor open).
+- **Stuck mouse button:** a held mouse button is now released when the game window loses the focus or is
+  minimized, and no button press or release is lost when many mouse events arrive at once (seen on a Steam Deck).
+  In window mode the click that activates the window now also reaches the game.
+- Vulkan and DirectX 12: if the graphics device is lost or stops working, the game starts the renderer again and,
+  after repeated failures, switches to the next renderer instead of showing nothing. Fixed a rare crash in the UI
+  graphics cache, and the video memory no longer grows without limit while the window is minimized.
+- **More robust `thandor.ini`:** settings the game does not know (for example of a newer version) are kept when the
+  file is saved; a file saved as UTF-16 or with old Mac line ends is read correctly; a value out of range falls back
+  to its default with a line in `thandor.log`. The file is written to a temporary file first, so a crash or a full
+  disk no longer leaves it empty or half written.
+- A minimized game with the sound off no longer runs slower than real time on Windows 11.
+- Route planning is faster (same routes), which shortens the small hitches with many moving units.
+
 #### Kept on purpose
 
-- After a win the campaign goes on to the next mission through the briefing room, exactly as before. Savegames,
-  levels, campaigns and the network protocol are unchanged.
+- After a win the campaign goes on to the next mission through the briefing room, exactly as before. The campaign
+  map changes neither savegames, levels nor campaigns, and network games with the original game still work.
 - In a network game the host can start every unlocked mission except one that takes over units: such a mission is
   only reached by playing the mission before it.
 - The map is used with the mouse; with more than six campaigns (add-ons) the tab shows the old list.
 
 ### Deutsch
 
-Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder spielen, ohne Spielstände.
+Eine Missionskarte für die Kampagnen, ein Schalter *Original Thandor*, verbesserte Wegfindung, frei belegbare Tasten,
+ein Zielfenster, automatisches Speichern, eigene Karten aus dem Karteneditor und Korrekturen für die mit 1.0.7
+gemeldeten Abstürze.
 
 #### Neu
 
@@ -77,13 +132,45 @@ Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder
   frei. Der Fortschritt steht in `save\kampagne.dat` und bleibt nach dem Beenden erhalten; eine beschädigte Datei
   wird als `kampagne.bad` beiseitegelegt, und der Fortschritt beginnt leer. Die Deinstallation lässt die Datei wie
   die Spielstände liegen.
+- **Schalter "Original Thandor":** Das neue Kästchen *Original Thandor* oben auf der Seite *Erweitert* (anfangs aus)
+  lässt das Spiel wie das Original laufen: Die Kampagnen-Registerkarte zeigt die alte Liste, Einheiten fahren genau
+  wie im Original, Zielfenster, automatisches Speichern, Aufzeichnungen, hochaufgelöste Schrift, eigene Karten und
+  der lautere Filmton sind aus, und es gelten die Original-Tasten (die Tastenbelegung lässt sich nicht ändern, die
+  Registerkarte *Tastatur* der Spielhilfe zeigt die Originalseite). Die Kästchen dieser Neuerungen sind
+  abgeblendet und behalten ihre Einstellung für später. Fehler- und Absturzbehebungen bleiben.
+- **Verbesserte Wegfindung:** Mit *Verbesserte Wegfindung* auf der Seite *Erweitert* (anfangs an) fahren Einheiten
+  Kurven, statt zum Drehen anzuhalten, warten auf eigene Einheiten oder weichen ihnen aus, statt hinter ihnen
+  festzuhängen, Gleiter behalten an einem neuen Wegpunkt ihr Tempo, und eine Gruppe, die zu einem Punkt geschickt
+  wird, verteilt sich auf Formationsplätze, so dass alle ankommen. Ausgeschaltet fahren Einheiten genau wie im
+  Original. Ein Netzwerkspiel nutzt sie, wenn der Host sie eingeschaltet hat und alle anderen Spieler Open Thandor
+  ohne *Original Thandor* spielen; ein Spieler mit dem Originalspiel bedeutet für alle die Original-Bewegung.
+- **Zielfenster:** Ein kleines Fenster oben links im Spiel zeigt das Missionsziel und den Fortschritt; es rückt nur
+  nach unten, solange es eine Textzeile des Originals verdecken würde. Ein Klick darauf öffnet die Missionshilfe.
+  Es ist anfangs an; *Ziel anzeigen* auf der Seite *Erweitert* oder die Taste `Z` schaltet es aus und wieder ein.
+- **Automatisches Speichern:** Mit *Automatisch speichern* auf der Seite *Erweitert* (anfangs an) wird ein
+  Einzelspieler-Spiel (freies Spiel, Kampagne, Tutorial) nach jeder Minute Spielzeit in `save\autosave.sve`
+  gespeichert, immer dieselbe Datei. Pausen, offene Fenster und die Einsatzbesprechung zählen nicht mit. Die
+  Spielstandlisten zeigen den Spielstand als *Autosave -* mit dem Missionstitel, und unten links erscheint kurz der
+  Hinweis *Spiel automatisch gespeichert*. Netzwerkspiele werden nie automatisch gespeichert.
+- **Tastenbelegung:** Die neue Schaltfläche *Tastenbelegung* auf der Optionsseite listet jede Aktion mit ihren
+  Tasten, und die Registerkarte *Tastatur* der Spielhilfe (F1) öffnet dieselbe Liste. Ein Klick auf eine Taste gibt
+  der Aktion eine andere Taste oder Kombination mit Strg, Alt und Umschalt (ist sie schon belegt, nennt die
+  Statuszeile die Aktion), ein Rechtsklick entfernt sie; *Standard* stellt die Original-Tasten wieder her. Esc,
+  Alt+F4 und die Cheats bleiben fest. Die Belegung steht in `thandor.ini` (Abschnitt `[keys]`).
+- **Sprachauswahl:** *Sprache:* auf der Seite *Erweitert* schaltet die Texte des Spiels sofort um, zwischen
+  *Automatisch* (die Sprache von Windows) und den Sprachen in den Textdateien Ihres Spiels (Deutsch, English,
+  Français, Italiano, Español). Die eigenen Texte von Open Thandor sind bei Deutsch deutsch, sonst englisch.
+- **Lautere Filme:** Die CD-Filme, die viel leiser abgemischt sind als der Rest (das Intro und die Filme der
+  Kampagnengeschichte), werden an die Lautstärke der übrigen Filme angehoben. Mit *Original Thandor* laufen sie in
+  ihrer Originallautstärke.
 - **Eigene Karten (experimentell, nur Einzelspieler):** Jedes Karteneditor-Projekt `maps\<Name>.thmap` neben dem
-  Spiel (ZIP oder die ältere PCK-Form des Editors) erscheint in der eigenen Liste *Eigene Karten* (eigener
-  Knopf links auf *Spiel auswählen*; *Einzelspiel* zeigt nur die Original-Karten), mit Titel, Beschreibung und Autor aus dem Projekt. Ein Projekt darf eigene Bodentexturen
-  mitbringen. Jedes Projekt wird vor dem Anzeigen geprüft; ein abgelehntes erhält eine Zeile in `thandor.log`.
-  Netzwerkspiele zeigen und senden sie nicht. Die früheren Ordner `maps\<Name>\` werden nicht mehr gelesen.
-  Ohne eigene Karte zeigt die Liste einer Hinweiszeile, die sagt, wohin `.thmap`-Dateien gehören (und wie viele
-  abgelehnt wurden), mit einem Link zum Thandor Map Editor auf GitHub. Einzelheiten: [custom_maps.md](custom_maps.md).
+  Spiel (ZIP oder die ältere PCK-Form des Editors) erscheint in der Liste der neuen Schaltfläche *Eigene Karten*
+  unter *Kampagnen* auf *Spiel auswählen* (*Einzelspiel* zeigt nur die Original-Karten), mit Titel, Beschreibung und
+  Autor aus dem Projekt. Ein Projekt darf eigene Bodentexturen mitbringen. Jedes Projekt wird vor dem Anzeigen
+  geprüft; ein abgelehntes erhält eine Zeile in `thandor.log`. Ohne eigene Karte zeigt die Liste eine Hinweiszeile,
+  die sagt, wohin `.thmap`-Dateien gehören (und wie viele abgelehnt wurden), mit einem Link zum Thandor Map Editor
+  auf GitHub. In Netzwerkspielen und solange *Original Thandor* an ist, fehlt die Schaltfläche. Einzelheiten:
+  [custom_maps.md](custom_maps.md).
 - **GitHub-Link im Hauptmenü:** Ein kleiner Link *GitHub* neben der Versionsnummer unten rechts öffnet die
   Projektseite (github.com/idkFoxes/open-thandor) im Browser; unter dem Mauszeiger leuchtet er auf.
 - **Partien für Fehlerberichte aufzeichnen:** Mit *Partien für Fehlerberichte aufzeichnen* auf der Seite
@@ -99,10 +186,38 @@ Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder
   Position genau, Zeilen, Zeilenumbrüche und das Layout bleiben wie bisher. Software-Renderer und UI-Skalierung 1x
   sind nicht betroffen.
 
+#### Behoben
+
+- Absturz mit DirectX 12 während einer Mission, am ehesten in Szenen mit viel Bewuchs (gesehen mit 1.0.7): Das
+  Spiel braucht jetzt je Bild weit weniger Ressourcen des Grafiktreibers.
+- Absturz beim Ändern der UI-Skalierung auf der Seite *Erweitert* nach einem Spiel (1.0.7).
+- Seltene Abstürze des Computergegners, während er ein Ziel für eine Einheitengruppe wählte (1.0.7). Außerdem
+  werden Gruppen nicht mehr gegen eine schon zerstörte Einheit geschickt.
+- Absturz bei einem Mausklick während des Abschlussfilms einer Mission und mehrere kleinere Probleme beim Ende eines
+  Spiels oder beim Start des nächsten (zum Beispiel Befehle eines beendeten Netzwerkspiels, die im nächsten ankamen,
+  oder Tasten des Karteneditors, die nach einem mit offenem Editor beendeten Spiel aktiv blieben).
+- **Hängende Maustaste:** Eine gedrückte Maustaste wird jetzt losgelassen, wenn das Spielfenster den Fokus verliert
+  oder minimiert wird, und bei vielen gleichzeitigen Mausereignissen geht kein Drücken oder Loslassen mehr verloren
+  (gesehen auf einem Steam Deck). Im Fenstermodus erreicht jetzt auch der Klick, der das Fenster aktiviert, das
+  Spiel.
+- Vulkan und DirectX 12: Fällt das Grafikgerät aus oder arbeitet es nicht mehr, startet das Spiel die Darstellung
+  neu und wechselt nach wiederholten Fehlern zum nächsten Verfahren, statt nichts mehr zu zeigen. Ein seltener
+  Absturz im Grafikspeicher der Oberfläche ist behoben, und der Grafikspeicher wächst bei minimiertem Fenster nicht
+  mehr unbegrenzt.
+- **Robustere `thandor.ini`:** Einstellungen, die das Spiel nicht kennt (etwa von einer neueren Version), bleiben
+  beim Speichern erhalten; eine als UTF-16 oder mit alten Mac-Zeilenenden gespeicherte Datei wird richtig gelesen;
+  ein Wert außerhalb seines Bereichs gilt als Standardwert, mit einer Zeile in `thandor.log`. Die Datei wird erst in
+  eine temporäre Datei geschrieben, so dass ein Absturz oder eine volle Festplatte sie nicht mehr leer oder halb
+  geschrieben zurücklässt.
+- Ein minimiertes Spiel mit abgeschaltetem Ton läuft unter Windows 11 nicht mehr langsamer als in Echtzeit.
+- Die Wegplanung ist schneller (mit denselben Wegen), das verkürzt die kleinen Ruckler bei vielen fahrenden
+  Einheiten.
+
 #### Bewusst beibehalten
 
-- Nach einem Sieg geht die Kampagne wie bisher über den Besprechungsraum zur nächsten Mission weiter. Spielstände,
-  Level, Kampagnen und das Netzwerkprotokoll bleiben unverändert.
+- Nach einem Sieg geht die Kampagne wie bisher über den Besprechungsraum zur nächsten Mission weiter. Die
+  Kampagnenkarte ändert weder Spielstände noch Level oder Kampagnen, und Netzwerkspiele mit dem Originalspiel
+  funktionieren weiter.
 - Im Netzwerkspiel kann der Host jede freigeschaltete Mission starten, außer einer mit Einheitenübernahme: Sie wird
   nur über die Mission davor erreicht.
 - Die Karte wird mit der Maus bedient; bei mehr als sechs Kampagnen (Add-ons) zeigt die Registerkarte die alte
