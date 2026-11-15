@@ -5,7 +5,7 @@ code changes is in the [plans](plans) and the [recovery changelog](../CHANGELOG.
 
 Every version lists the changes in English and in German (*Deutsch*).
 
-## 1.0.8 - "Thandor Patch 8" (release candidate)
+## 1.0.8 - "Thandor Patch 8"
 
 ### English
 
