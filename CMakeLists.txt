@@ -419,10 +419,25 @@ add_custom_command(TARGET thandor POST_BUILD
 # ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
 # sets the flag as THANDOR_LARGE_ADDRESS_AWARE wants it (keeps it; clears it for OFF) in the final image (after
 # strip and objcopy) and fails the build if the image came out relocatable.
-add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
-target_link_options(pe_not_large_address_aware PRIVATE -static)
+# A cross build on a Unix host (tools/build-linux-mingw.sh) builds the helper with the host compiler instead.
+if(CMAKE_CROSSCOMPILING AND CMAKE_HOST_UNIX)
+    find_program(THANDOR_HOST_CXX NAMES c++ g++ clang++ REQUIRED NO_CMAKE_FIND_ROOT_PATH)
+    set(THANDOR_PE_HELPER "${CMAKE_CURRENT_BINARY_DIR}/host-tools/pe_not_large_address_aware")
+    add_custom_command(OUTPUT "${THANDOR_PE_HELPER}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/host-tools"
+        COMMAND "${THANDOR_HOST_CXX}" -std=c++20 -O2
+                "${CMAKE_CURRENT_SOURCE_DIR}/cmake/pe_not_large_address_aware.cpp"
+                -o "${THANDOR_PE_HELPER}"
+        DEPENDS cmake/pe_not_large_address_aware.cpp VERBATIM)
+    add_custom_target(pe_not_large_address_aware DEPENDS "${THANDOR_PE_HELPER}")
+    add_dependencies(thandor pe_not_large_address_aware)
+else()
+    add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
+    target_link_options(pe_not_large_address_aware PRIVATE -static)
+    set(THANDOR_PE_HELPER "$<TARGET_FILE:pe_not_large_address_aware>")
+endif()
 add_custom_command(TARGET thandor POST_BUILD
-    COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor> ${THANDOR_LAA_HELPER_ARGUMENT}
+    COMMAND "${THANDOR_PE_HELPER}" $<TARGET_FILE:thandor> ${THANDOR_LAA_HELPER_ARGUMENT}
     VERBATIM)
 
 # Platform backend: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the game's software

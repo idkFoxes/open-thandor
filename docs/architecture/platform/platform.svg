@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 740" width="1280" height="740" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker><style>.t{font-size:17px;font-weight:700;fill:#1d1d1f}.d{font-size:12px;fill:#333}.m{font-size:11px;fill:#222}.f{font-size:11px;fill:#666}.l{font-size:11.5px;fill:#333;font-style:italic}.h{font-size:11px;font-weight:700;fill:#888;letter-spacing:1.5px}</style></defs>
+<rect width="1280" height="740" fill="#fff"/>
+<text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">platform — start-up, SDL3 layer and services</text>
+<text x="20" y="52" class="d">Modules under src/platform/ (headers in include/thandor/platform/). Arrows are calls or data handed over; most cross-area calls go through the original function slots (g_PlatformPumpEvents, g_Sound*, ...).</text>
+<text x="40" y="72" class="h" text-anchor="start">CALLED BY BOOTSTRAP</text>
+<text x="640" y="72" class="h" text-anchor="start">CALLERS OF THE SDL3 LAYER</text>
+<text x="1110" y="72" class="h" text-anchor="start">OS · DEVICES</text>
+<a href="../core/README.md"><g>
+<rect x="40" y="80" width="125" height="40" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="102.5" y="104.0" class="d" text-anchor="middle">core</text>
+</g></a>
+<a href="../assets/README.md"><g>
+<rect x="185" y="80" width="125" height="40" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="247.5" y="104.0" class="d" text-anchor="middle">assets</text>
+</g></a>
+<a href="../network/README.md"><g>
+<rect x="330" y="80" width="125" height="40" rx="8" fill="#fde8ef" stroke="#c84a76" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="392.5" y="104.0" class="d" text-anchor="middle">network</text>
+</g></a>
+<a href="../movie/README.md"><g>
+<rect x="475" y="80" width="125" height="40" rx="8" fill="#f3ecfb" stroke="#8a5ac8" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="537.5" y="104.0" class="d" text-anchor="middle">movie</text>
+</g></a>
+<a href="../ui/README.md"><g>
+<rect x="640" y="80" width="130" height="40" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="705.0" y="104.0" class="d" text-anchor="middle">ui</text>
+</g></a>
+<a href="../graphics/README.md"><g>
+<rect x="790" y="80" width="130" height="40" rx="8" fill="#e6f6ec" stroke="#2f9a57" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="855.0" y="104.0" class="d" text-anchor="middle">graphics</text>
+</g></a>
+<a href="../audio/README.md"><g>
+<rect x="940" y="80" width="130" height="40" rx="8" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1005.0" y="104.0" class="d" text-anchor="middle">audio</text>
+</g></a>
+<a href="../../../src/platform/bootstrap/"><g>
+<rect x="40" y="180" width="560" height="220" rx="10" fill="#e9edf2" stroke="#4b5d73" stroke-width="2"/>
+<text x="54" y="205" class="t">bootstrap</text>
+<text x="588" y="204" class="f" text-anchor="end">4 files · 3k lines</text>
+<text x="54" y="224" class="d">WinMain: crash and hang reports, start-up tables, then a self-test</text>
+<text x="54" y="239" class="d">or ProcessEntry: priority, command line, one instance, main window.</text>
+<text x="54" y="254" class="d">ProcessEntry_RunGame: heap, files, locale, SDL video / input / audio,</text>
+<text x="54" y="269" class="d">network, settings, first display mode 640x480, UiRuntime_Initialize.</text>
+<text x="54" y="284" class="d">Game_Run: Game_LoadCoreAssets, Game_PlayIntroMovies, saved mode,</text>
+<text x="54" y="299" class="d">Frontend_MainLoop; then Runtime_Shutdown, SdlPlatform_Quit.</text>
+<rect x="54" y="310" width="64" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="61" y="324" class="m">main.cpp</text>
+<rect x="124" y="310" width="83" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="131" y="324" class="m">runtime.cpp</text>
+<rect x="214" y="310" width="71" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="221" y="324" class="m">image.cpp</text>
+<rect x="290" y="310" width="102" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="297" y="324" class="m">low_memory.cpp</text>
+<rect x="399" y="310" width="96" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="406" y="324" class="m">thandor.rc.in</text>
+</g></a>
+<a href="../../../src/platform/sdl3/"><g>
+<rect x="640" y="180" width="430" height="220" rx="10" fill="#e9edf2" stroke="#4b5d73" stroke-width="2"/>
+<text x="654" y="205" class="t">sdl3</text>
+<text x="1058" y="204" class="f" text-anchor="end">10 files · 7k lines</text>
+<text x="654" y="224" class="d">Window and event pump, periodic timers, audio stream;</text>
+<text x="654" y="239" class="d">video: renderer choice, display modes, present, pacing;</text>
+<text x="654" y="254" class="d">SDL GPU renderer (Vulkan / Direct3D 12): 3D scenes and the</text>
+<text x="654" y="269" class="d">2D draw list; software frames through an SDL_Renderer.</text>
+<rect x="654" y="280" width="90" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="661" y="294" class="m">platform.cpp</text>
+<rect x="750" y="280" width="71" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="757" y="294" class="m">video.cpp</text>
+<rect x="826" y="280" width="115" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="833" y="294" class="m">gpu_renderer.cpp</text>
+<rect x="947" y="280" width="90" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="954" y="294" class="m">gpu_ui2d.cpp</text>
+<rect x="654" y="304" width="134" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="661" y="318" class="m">gpu_ui_textures.cpp</text>
+<rect x="794" y="304" width="71" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="801" y="318" class="m">input.cpp</text>
+<rect x="870" y="304" width="71" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="877" y="318" class="m">timer.cpp</text>
+<rect x="947" y="304" width="71" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="954" y="318" class="m">audio.cpp</text>
+<rect x="654" y="328" width="108" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="661" y="342" class="m">window_icon.cpp</text>
+<rect x="768" y="328" width="134" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="776" y="342" class="m">gpu_diagnostics.cpp</text>
+<rect x="908" y="328" width="64" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="915" y="342" class="m">shaders/</text>
+</g></a>
+<a href="../../../src/platform/filesystem/"><g>
+<rect x="40" y="440" width="170" height="160" rx="10" fill="#e9edf2" stroke="#4b5d73" stroke-width="2"/>
+<text x="54" y="465" class="t">filesystem</text>
+<text x="54" y="484" class="d">Win32 file slots</text>
+<text x="54" y="499" class="d">(g_FileSystemOpen, ...),</text>
+<text x="54" y="514" class="d">executable directory,</text>
+<text x="54" y="529" class="d">thandor.cfg, engine.pck.</text>
+<rect x="54" y="540" width="71" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="61" y="554" class="m">win32.cpp</text>
+</g></a>
+<a href="../../../src/platform/system/"><g>
+<rect x="225" y="440" width="150" height="160" rx="10" fill="#e9edf2" stroke="#4b5d73" stroke-width="2"/>
+<text x="239" y="465" class="t">system</text>
+<text x="239" y="484" class="d">Locale date / time</text>
+<text x="239" y="499" class="d">formatting; the pump</text>
+<text x="239" y="514" class="d">and timer slots.</text>
+<rect x="239" y="525" width="108" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="246" y="539" class="m">time_locale.cpp</text>
+<rect x="239" y="549" width="71" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="246" y="563" class="m">win32.cpp</text>
+</g></a>
+<a href="../../../src/platform/debug/"><g>
+<rect x="390" y="440" width="210" height="160" rx="10" fill="#e9edf2" stroke="#4b5d73" stroke-width="2"/>
+<text x="404" y="465" class="t">debug</text>
+<text x="404" y="484" class="d">Developer-tool hooks</text>
+<text x="404" y="499" class="d">(THANDOR_DEV_TOOLS): input</text>
+<text x="404" y="514" class="d">script, autoshot, state hash,</text>
+<text x="404" y="529" class="d">campaign autowin, movie tools.</text>
+<rect x="404" y="540" width="46" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="411" y="554" class="m">hooks</text>
+<rect x="456" y="540" width="71" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="462" y="554" class="m">statehash</text>
+<rect x="532" y="540" width="52" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="539" y="554" class="m">script</text>
+<rect x="404" y="564" width="64" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="411" y="578" class="m">autoshot</text>
+<rect x="474" y="564" width="64" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="481" y="578" class="m">campaign</text>
+</g></a>
+<a href="../../../src/platform/selftest/"><g>
+<rect x="640" y="440" width="200" height="160" rx="10" fill="#e9edf2" stroke="#4b5d73" stroke-width="2"/>
+<text x="654" y="465" class="t">selftest</text>
+<text x="654" y="484" class="d">Chosen by the variable</text>
+<text x="654" y="499" class="d">OPEN_THANDOR_SELFTEST:</text>
+<text x="654" y="514" class="d">codec, raster, hexscan,</text>
+<text x="654" y="529" class="d">inifixtures, uiatlas, ...</text>
+<rect x="654" y="540" width="96" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="661" y="554" class="m">selftests.cpp</text>
+<rect x="756" y="540" width="52" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="763" y="554" class="m">6 more</text>
+</g></a>
+<a href="../../../src/platform/input/"><g>
+<rect x="860" y="440" width="210" height="160" rx="10" fill="#e9edf2" stroke="#4b5d73" stroke-width="2"/>
+<text x="874" y="465" class="t">input</text>
+<text x="874" y="484" class="d">Keyboard ring (64 events),</text>
+<text x="874" y="499" class="d">modifier and lock-key mask,</text>
+<text x="874" y="514" class="d">held special keys; cursor</text>
+<text x="874" y="529" class="d">asset loading and buffers.</text>
+<rect x="874" y="540" width="83" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
+<text x="881" y="554" class="m">devices.cpp</text>
+</g></a>
+<rect x="1110" y="190" width="130" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1175.0" y="214.0" class="d" text-anchor="middle">Keyboard · mouse</text>
+<rect x="1110" y="270" width="130" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1175.0" y="294.0" class="d" text-anchor="middle">Display · GPU</text>
+<rect x="1110" y="350" width="130" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1175.0" y="374.0" class="d" text-anchor="middle">Sound device</text>
+<rect x="40" y="654" width="170" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="125.0" y="678.0" class="d" text-anchor="middle">Files: PCK · cfg · saves</text>
+<rect x="225" y="654" width="150" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="300.0" y="678.0" class="d" text-anchor="middle">Win32 time · locale</text>
+<a href="../gameplay/README.md"><g>
+<rect x="390" y="654" width="210" height="40" rx="8" fill="#fdeee0" stroke="#d07a2a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="495.0" y="678.0" class="d" text-anchor="middle">gameplay (session hooks)</text>
+</g></a>
+<a href="../ui/README.md"><g>
+<rect x="860" y="654" width="210" height="40" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="965.0" y="678.0" class="d" text-anchor="middle">ui (keyboard dispatch)</text>
+</g></a>
+<path d="M102,180 L102,120" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="108" y="154" class="l" text-anchor="start">heap, settings</text>
+<path d="M247,180 L247,120" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="253" y="154" class="l" text-anchor="start">Package_Mount</text>
+<path d="M392,180 L392,120" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="398" y="154" class="l" text-anchor="start">Network_Init</text>
+<path d="M537,180 L537,120" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="531" y="168" class="l" text-anchor="end">intro movies</text>
+<path d="M600,205 L620,205 L620,100 L640,100" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="614" y="152" class="l" text-anchor="middle" transform="rotate(-90 614 152)">main loop</text>
+<path d="M600,300 L640,300" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="620" y="293" class="l" text-anchor="middle">init</text>
+<path d="M675,120 L675,180" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="681" y="146" class="l" text-anchor="start">pump · present</text>
+<text x="681" y="160" class="l" text-anchor="start">· timers</text>
+<path d="M820,120 L820,180" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="826" y="146" class="l" text-anchor="start">draw list, queues</text>
+<path d="M900,180 L900,120" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="906" y="164" class="l" text-anchor="start">mouse events</text>
+<path d="M1005,120 L1005,180" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1011" y="146" class="l" text-anchor="start">g_Sound* voices</text>
+<path d="M1110,210 L1070,210" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1090" y="203" class="l" text-anchor="middle">events</text>
+<path d="M1070,290 L1110,290" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1090" y="283" class="l" text-anchor="middle">frames</text>
+<path d="M1070,370 L1110,370" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1090" y="363" class="l" text-anchor="middle">mix</text>
+<path d="M125,400 L125,440" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="131" y="425" class="l" text-anchor="start">FileSystem_Init</text>
+<path d="M300,400 L300,440" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="306" y="425" class="l" text-anchor="start">Locale_Init</text>
+<path d="M450,400 L450,440" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="456" y="425" class="l" text-anchor="start">RunSelfTest</text>
+<path d="M670,400 L670,420 L575,420 L575,440" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="678" y="416" class="l" text-anchor="start">DebugHook_MessagePump</text>
+<path d="M965,400 L965,440" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="971" y="425" class="l" text-anchor="start">Keyboard_OnKeyDown / OnChar</text>
+<path d="M600,520 L640,520" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="620" y="512" class="l" text-anchor="middle">run</text>
+<path d="M125,600 L125,654" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<text x="131" y="630" class="l" text-anchor="start">Win32 files</text>
+<path d="M300,600 L300,654" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="306" y="630" class="l" text-anchor="start">GetLocalTime</text>
+<path d="M495,654 L495,600" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="501" y="630" class="l" text-anchor="start">step / session hooks</text>
+<path d="M965,600 L965,654" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="971" y="630" class="l" text-anchor="start">g_KeyboardReadEvent</text>
+<text x="40" y="722" class="f" text-anchor="start">Not drawn: core Runtime_Shutdown calls the Sdl*_Shutdown functions; assets, core and gameplay read and write files through the filesystem slots; ui and gameplay register timers.</text>
+</svg>
