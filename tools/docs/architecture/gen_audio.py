@@ -34,8 +34,9 @@ y = d.box(40, 200, 520, 200, 'spatial',
           href=src + 'spatial/', meta='1 file', color='audio')
 assert y <= 400, y
 y = d.box(620, 200, 330, 200, 'backend',
-          ['The eight g_Sound* slots every caller', 'plays through; silent stubs until',
-           'SdlAudio_Init installs the SDL3 backend.'],
+          ['The nine g_Sound* slots every caller', 'plays through; silent stubs until',
+           'SdlAudio_Init installs the SDL3 backend.',
+           'Not in the original: the movie', 'soundtrack level raise (9th slot).'],
           ['runtime.cpp', 'null_backend.cpp', 'g_SoundPlayOneShot', 'g_SoundPlayLooping', 'attenuation table'],
           href=src + 'backend/', meta='2 files', color='audio')
 assert y <= 400, y

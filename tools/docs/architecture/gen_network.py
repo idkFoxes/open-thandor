@@ -23,10 +23,11 @@ d.ext(1050, 80, 170, 44, 'core (random seeds)', href='../core/README.md', color=
 d.band(1220, 204, 'NETWORK', anchor='end')
 y = d.box(60, 212, 1160, 126, 'protocol',
           ['Lobby (discovery, session list, join), session-start snapshot exchange, in-game lockstep command batches,',
-           'command queues and dispatch tables, chunked mailbox transfer (maps, catalog), packet cipher, receive timer.'],
+           'command queues and dispatch tables, chunked mailbox transfer (maps, catalog), packet cipher, receive timer.',
+           'Not in the original: pathing-mode negotiation in the lobby; local commands pass the game recorder.'],
           ['lobby.cpp', 'frontend_session.cpp', 'command_exchange.cpp', 'lockstep.cpp', 'commands.cpp',
            'mailbox.cpp', 'cipher.cpp', 'scenario_transfer.cpp', 'packet_bytes.h', 'types.h'],
-          href='../../../src/network/protocol/', meta='8 files · 4.0k lines', color='network')
+          href='../../../src/network/protocol/', meta='8 files · 4.1k lines', color='network')
 assert y <= 212 + 126, y
 y = d.box(60, 420, 560, 110, 'backend',
           ['WinSock 1.1 (wsock32.dll) bound at start-up; eight backend slots:',

@@ -4,7 +4,7 @@
 <text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">assets — PCK packages and catalogs</text>
 <text x="20" y="52" class="d">src/assets/: the package layer reads (and for savegames writes) PCK archives; the catalogs register the loaded records by id for lookups. Click a box for its sources.</text>
 <rect x="60" y="80" width="560" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="340.0" y="104.0" class="d" text-anchor="middle">Game files: daten, modelle, graphik, sound, filme, level, patchNN .pck · loose files</text>
+<text x="340.0" y="104.0" class="d" text-anchor="middle">Game files: PCK archives (daten, modelle, graphik, ..., patchNN) · loose files · maps\*.thmap</text>
 <a href="../platform/README.md"><g>
 <rect x="660" y="80" width="580" height="40" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="950.0" y="104.0" class="d" text-anchor="middle">platform — CoreAssets_MountPackages at start-up, file I/O (g_FileSystem*)</text>
@@ -103,7 +103,7 @@
 <text x="274" y="385" class="l" text-anchor="middle" transform="rotate(-90 274 385)">saves: Mount · UpsertEntry</text>
 <text x="60" y="566" class="h" text-anchor="start">FRONT-END CATALOGS AND TEXTS</text>
 <a href="../../../src/assets/rom/"><g>
-<rect x="60" y="576" width="360" height="140" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<rect x="60" y="576" width="360" height="160" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
 <text x="74" y="601" class="t">rom</text>
 <text x="74" y="620" class="d">Menu rooms of engine\zentrale.rom: records with</text>
 <text x="74" y="635" class="d">camera pose, lights, action tables and</text>
@@ -112,31 +112,45 @@
 <text x="81" y="675" class="m">runtime.cpp</text>
 </g></a>
 <a href="../../../src/assets/scenario/"><g>
-<rect x="460" y="576" width="380" height="140" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<rect x="460" y="576" width="380" height="160" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
 <text x="474" y="601" class="t">scenario</text>
+<text x="828" y="600" class="f" text-anchor="end">4 files</text>
 <text x="474" y="620" class="d">"Choose game" list: level.dat, campagne.dat</text>
 <text x="474" y="635" class="d">(+ add-ons 00..99) and save\*.sve headers;</text>
-<text x="474" y="650" class="d">ScenarioCatalog_Rebuild via Resource_Load</text>
-<rect x="474" y="661" width="83" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
-<text x="481" y="675" class="m">catalog.cpp</text>
+<text x="474" y="650" class="d">custom maps from maps\*.thmap ("Eigene Karten"),</text>
+<text x="474" y="665" class="d">read with the map editor project format</text>
+<rect x="474" y="676" width="83" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="481" y="690" class="m">catalog.cpp</text>
+<rect x="563" y="676" width="108" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="570" y="690" class="m">custom_maps.cpp</text>
+<rect x="474" y="700" width="159" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="481" y="714" class="m">custom_map_validate.cpp</text>
+<rect x="639" y="700" width="127" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="646" y="714" class="m">custom_project.cpp</text>
 </g></a>
 <a href="../../../src/assets/text/"><g>
-<rect x="880" y="576" width="360" height="140" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<rect x="880" y="576" width="360" height="160" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
 <text x="894" y="601" class="t">text</text>
-<text x="1228" y="600" class="f" text-anchor="end">3 files</text>
-<text x="894" y="620" class="d">STR pages per locale (TextResourcePage_Load),</text>
-<text x="894" y="635" class="d">override table, TextResource_Resolve;</text>
-<text x="894" y="650" class="d">rich-text command streams</text>
+<text x="1228" y="600" class="f" text-anchor="end">6 files</text>
+<text x="894" y="620" class="d">STR pages per locale, language choice,</text>
+<text x="894" y="635" class="d">override table, TextResource_Resolve, rich text;</text>
+<text x="894" y="650" class="d">project / objective texts (de/en), HD font data</text>
 <rect x="894" y="661" width="96" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
 <text x="901" y="675" class="m">resources.cpp</text>
 <rect x="996" y="661" width="90" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
 <text x="1003" y="675" class="m">richtext.cpp</text>
 <rect x="1092" y="661" width="134" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
 <text x="1098" y="675" class="m">richtext_markup.cpp</text>
+<rect x="894" y="685" width="134" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="901" y="699" class="m">objective_texts.cpp</text>
+<rect x="1034" y="685" width="140" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="1041" y="699" class="m">project_texts_en.cpp</text>
+<rect x="894" y="709" width="115" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="901" y="723" class="m">hd_font_data.cpp</text>
 </g></a>
 <path d="M380,576 L380,552 L760,552 L760,468 L1130,468 L1130,456" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="1010" y="464" class="l" text-anchor="start">.spr</text>
-<path d="M1240,206 L1262,206 L1262,646 L1240,646" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M1240,206 L1262,206 L1262,656 L1240,656" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="1256" y="420" class="l" text-anchor="middle" transform="rotate(-90 1256 420)">Package_LoadEntryWithSize</text>
 <a href="../ui/README.md"><g>
 <rect x="60" y="776" width="560" height="44" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
@@ -150,12 +164,12 @@
 <rect x="880" y="776" width="360" height="44" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="1060.0" y="802.0" class="d" text-anchor="middle">core · platform — load text pages at start-up</text>
 </g></a>
-<path d="M240,776 L240,716" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M240,776 L240,736" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="247" y="752" class="l" text-anchor="start">RomAsset_PrepareRecords</text>
-<path d="M540,776 L540,716" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M540,776 L540,736" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="547" y="752" class="l" text-anchor="start">ScenarioCatalog_Rebuild</text>
-<path d="M750,716 L750,776" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M750,736 L750,776" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="757" y="752" class="l" text-anchor="start">catalog to clients</text>
-<path d="M1060,776 L1060,716" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M1060,776 L1060,736" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="1067" y="752" class="l" text-anchor="start">TextResourcePage_Load</text>
 </svg>

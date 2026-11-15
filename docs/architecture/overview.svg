@@ -12,9 +12,9 @@
 <a href="ui/README.md"><g>
 <rect x="60" y="92" width="940" height="100" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
 <text x="74" y="117" class="t">ui</text>
-<text x="988" y="116" class="f" text-anchor="end">82 files · 46k lines</text>
+<text x="988" y="116" class="f" text-anchor="end">95 files · 53k lines</text>
 <text x="74" y="136" class="d">Front-end menus, in-game HUD and world input, dialogs and the control framework.</text>
-<text x="74" y="151" class="d">Runs the per-frame loop: dispatch input, update, draw.</text>
+<text x="74" y="151" class="d">Campaign map, custom maps tab, options (language, key bindings). Runs the per-frame loop: dispatch input, update, draw.</text>
 <rect x="74" y="162" width="64" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
 <text x="81" y="176" class="m">frontend</text>
 <rect x="144" y="162" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
@@ -31,9 +31,9 @@
 <a href="gameplay/README.md"><g>
 <rect x="60" y="232" width="450" height="118" rx="10" fill="#fdeee0" stroke="#d07a2a" stroke-width="2"/>
 <text x="74" y="257" class="t">gameplay</text>
-<text x="498" y="256" class="f" text-anchor="end">53 files · 26k lines</text>
-<text x="74" y="276" class="d">Session lifecycle (new, load, save, campaign) and the</text>
-<text x="74" y="291" class="d">simulation tick: armies, AI players, factions, research.</text>
+<text x="498" y="256" class="f" text-anchor="end">63 files · 32k lines</text>
+<text x="74" y="276" class="d">Session lifecycle (new, load, save, campaign progress) and the</text>
+<text x="74" y="291" class="d">simulation tick: armies, AI, factions, research; game recorder.</text>
 <rect x="74" y="302" width="58" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
 <text x="81" y="316" class="m">session</text>
 <rect x="138" y="302" width="39" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
@@ -46,13 +46,15 @@
 <text x="287" y="316" class="m">selection</text>
 <rect x="357" y="302" width="77" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
 <text x="364" y="316" class="m">technology</text>
+<rect x="440" y="302" width="52" height="19" rx="9" fill="#fff" stroke="#d07a2a" stroke-opacity="0.6"/>
+<text x="447" y="316" class="m">replay</text>
 </g></a>
 <a href="world/README.md"><g>
 <rect x="550" y="232" width="410" height="118" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>
 <text x="564" y="257" class="t">world</text>
-<text x="948" y="256" class="f" text-anchor="end">33 files · 14k lines</text>
-<text x="564" y="276" class="d">Entities, camera, terrain, pathfinding,</text>
-<text x="564" y="291" class="d">3D models, effects and shots.</text>
+<text x="948" y="256" class="f" text-anchor="end">36 files · 15k lines</text>
+<text x="564" y="276" class="d">Entities, camera, terrain, pathfinding</text>
+<text x="564" y="291" class="d">(original or improved), 3D models, effects, shots.</text>
 <rect x="564" y="302" width="58" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
 <text x="571" y="316" class="m">runtime</text>
 <rect x="628" y="302" width="52" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
@@ -121,12 +123,12 @@
 <a href="assets/README.md"><g>
 <rect x="1030" y="92" width="210" height="230" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
 <text x="1044" y="117" class="t">assets</text>
-<text x="1228" y="116" class="f" text-anchor="end">14 files</text>
+<text x="1228" y="116" class="f" text-anchor="end">20 files</text>
 <text x="1044" y="136" class="d">Game data: PCK packages,</text>
 <text x="1044" y="151" class="d">level catalogs for armies,</text>
 <text x="1044" y="166" class="d">models, shots, effects,</text>
-<text x="1044" y="181" class="d">sprites; menu room, scenarios,</text>
-<text x="1044" y="196" class="d">texts.</text>
+<text x="1044" y="181" class="d">sprites; menu room, scenarios</text>
+<text x="1044" y="196" class="d">and custom maps, texts.</text>
 <rect x="1044" y="207" width="58" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
 <text x="1051" y="221" class="m">package</text>
 <rect x="1108" y="207" width="33" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
@@ -149,27 +151,28 @@
 <a href="core/README.md"><g>
 <rect x="1030" y="342" width="210" height="158" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
 <text x="1044" y="367" class="t">core</text>
-<text x="1228" y="366" class="f" text-anchor="end">13 files</text>
+<text x="1228" y="366" class="f" text-anchor="end">14 files</text>
 <text x="1044" y="386" class="d">Fixed-point maths, memory,</text>
-<text x="1044" y="401" class="d">settings (thandor.ini),</text>
-<text x="1044" y="416" class="d">errors, strings.</text>
-<rect x="1044" y="427" width="39" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
-<text x="1051" y="441" class="m">math</text>
-<rect x="1089" y="427" width="52" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
-<text x="1096" y="441" class="m">memory</text>
-<rect x="1147" y="427" width="64" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
-<text x="1154" y="441" class="m">settings</text>
-<rect x="1044" y="451" width="46" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
-<text x="1051" y="465" class="m">error</text>
-<rect x="1096" y="451" width="39" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
-<text x="1102" y="465" class="m">text</text>
+<text x="1044" y="401" class="d">settings (thandor.ini) and the</text>
+<text x="1044" y="416" class="d">Original Thandor switch,</text>
+<text x="1044" y="431" class="d">errors, strings.</text>
+<rect x="1044" y="442" width="39" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="1051" y="456" class="m">math</text>
+<rect x="1089" y="442" width="52" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="1096" y="456" class="m">memory</text>
+<rect x="1147" y="442" width="64" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="1154" y="456" class="m">settings</text>
+<rect x="1044" y="466" width="46" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="1051" y="480" class="m">error</text>
+<rect x="1096" y="466" width="39" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="1102" y="480" class="m">text</text>
 </g></a>
 <a href="platform/README.md"><g>
 <rect x="60" y="552" width="1180" height="100" rx="10" fill="#e9edf2" stroke="#4b5d73" stroke-width="2"/>
 <text x="74" y="577" class="t">platform</text>
-<text x="1228" y="576" class="f" text-anchor="end">58 files · 23k lines</text>
+<text x="1228" y="576" class="f" text-anchor="end">69 files · 29k lines</text>
 <text x="74" y="596" class="d">Start-up and event pump; SDL3 layer: window, SDL GPU renderer (Vulkan / D3D12), audio device, input, timer;</text>
-<text x="74" y="611" class="d">file system, system services, debug tools and self-tests.</text>
+<text x="74" y="611" class="d">file system, system services, debug tools (state hash, path trace, profiler) and self-tests.</text>
 <rect x="74" y="622" width="71" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
 <text x="81" y="636" class="m">bootstrap</text>
 <rect x="151" y="622" width="39" height="19" rx="9" fill="#fff" stroke="#4b5d73" stroke-opacity="0.6"/>
@@ -194,7 +197,7 @@
 <rect x="700" y="700" width="170" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="785.0" y="724.0" class="d" text-anchor="middle">LAN peers</text>
 <rect x="1000" y="700" width="240" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="1120.0" y="724.0" class="d" text-anchor="middle">Game files: PCK · ini · saves</text>
+<text x="1120.0" y="724.0" class="d" text-anchor="middle">Game files: PCK · ini · saves · maps</text>
 <path d="M160,700 L160,652" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="167" y="680" class="l" text-anchor="start">raw events</text>
 <path d="M385,652 L385,700" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>

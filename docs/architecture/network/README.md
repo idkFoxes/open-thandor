@@ -17,11 +17,11 @@ The boxes are clickable when you open [network.svg](network.svg) on its own. In 
 
 What the protocol files hold:
 
-- `lobby.cpp`: discovery probe and session advertisement, session list and join ack, admitting a joining player, capability heartbeat, lobby command batches.
+- `lobby.cpp`: discovery probe and session advertisement, session list and join ack, admitting a joining player, capability heartbeat, lobby command batches. Not in the original: the pathing-mode negotiation (see Main flows).
 - `frontend_session.cpp`: snapshot exchange at session start, the client side of the in-game command batch, host-loss timeout.
 - `command_exchange.cpp`: client command submit, host collection and broadcast of the in-game batch, roster packets.
 - `lockstep.cpp`: host lockstep helpers (`LockstepHostChannel`) shared by the lobby and the in-game exchange.
-- `commands.cpp`: the local command queues (`FrontendCommandQueue_*`, `InGameCommandQueue_*`) and the command tables that map a protocol code to its handler (`CommandDispatch_ExecuteRecord`).
+- `commands.cpp`: the local command queues (`FrontendCommandQueue_*`, `InGameCommandQueue_*`) and the command tables that map a protocol code to its handler (`CommandDispatch_ExecuteRecord`). In a local game, `InGameCommand_IssueHandler` hands each command to the game recorder first (`GameRecorder_Active`, `GameRecorderCommandScope`, gameplay/replay), which records it or blocks it during a playback.
 - `mailbox.cpp`: receive loop, packet staging and encryption, chunked mailbox transfer, ping.
 - `scenario_transfer.cpp`: decodes a received scenario catalog, level, field grid or bundle.
 - `cipher.cpp`: `UiTransfer_EncryptPacketBlocks` / `UiTransfer_DecryptPacketBlocks`.
@@ -44,6 +44,7 @@ What the protocol files hold:
   - *Client:* at each interval boundary, `InGameTick_RunClientLockstep` waits until a packet with the session token is in the ring. Then `FrontendNetwork_HandleCommandBatchAndPlayerTimeout` runs the host's batch and answers with `FrontendTransfer_SendCommandSubmit`, which sends the client's next queued record.
   - *Host:* `InGameTick_RunHostOrLocalLockstep` feeds submissions to `FrontendTransfer_HostHandleCommandSubmitOrWaitAck`. `FrontendTransfer_BroadcastPendingCommandBatchAndSyncState` uses `Lockstep_AllClientsSubmitted`, `Lockstep_PackBatch` and `Lockstep_SendBatchToClients`. While clients are still missing, `Lockstep_ResendBatchOrWait` resends the batch or sends a wait packet. At the boundary, `FrontendTransfer_DispatchStagedCommandRecords` runs the batch.
   - *Execution:* every record goes through `CommandDispatch_ExecuteRecord` against the in-game table. The handlers live in gameplay (selection, faction, army placement), ui/ingame and world/terrain (editor field edits).
+- **Pathing-mode negotiation (not in the original).** An Open Thandor peer sets `FRONTEND_CAPABILITY_OT_EXTENDED` in its capability heartbeat and puts a `FrontendOtPathingInfo` (magic, pathing protocol version, supported modes, decided mode) into reserved bytes of the lobby packets; a 1.05 peer sends zeros there. The host agrees on the improved mode only when its own `PathingMode_EffectiveSetting()` (world/pathing) is improved and every other lobby player qualifies (`FrontendOtPathing_HostAgreesImproved`). While "Original Thandor" disables `OT_FEATURE_IMPROVED_PATHING` (core), a peer reports only the original mode. Clients read the decision from the roster snapshot. Both sides store it in `g_PathingNetworkImprovedAgreed`, which `PathingMode_ApplyForNewSession` reads when the session starts.
 - **Disconnect handling.**
   - *Client side:* every packet from the host reloads `g_SessionTransferTimeoutTicks` (`FRONTEND_PEER_TIMEOUT_TICKS`). While a client starts a session, `FrontendNetwork_TickDisconnectTimeoutAndResetSession` counts it down. At zero the client clears the mailbox, drops the networked role bits, closes the socket (slots 3, 1), returns to the main page and shows `TEXT_ID_NETWORK_HOST_LOST`.
   - *Host side:* `FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers` (ui/frontend/player.cpp) removes timed-out clients and sends `FRONTEND_PACKET_10007_PLAYER_REMOVAL`. Clients handle it in `FrontendTransfer_HandleGameplayCommandAndRosterPackets` and `FrontendNetwork_HandleCommandBatchAndPlayerTimeout`.
@@ -56,7 +57,9 @@ Calls from network into other areas:
 - [gameplay](../gameplay/README.md): in-game command handlers (gameplay/selection/commands.cpp, gameplay/faction/relations.cpp, army_stock.cpp, gameplay/army/placement.cpp).
 - [world](../world/README.md): editor command handlers in world/terrain (editing.cpp, field_edit_commands.cpp). `FieldGrid_ValidateLoadedImage` for a received field grid.
 - [assets](../assets/README.md): `PckCodec_DecodeHuffmanRle` and `PckCodec_DecodeFieldGrid` (assets/package/codec.cpp) decode received maps and catalogs.
-- [core](../core/README.md): `Random_GetSecondarySeed` (host, into the 0x30005 player snapshot) and `Random_SetBothSeeds` (client), so every peer runs with the same random seeds. Spin locks (`g_SpinLockTryAcquire`), memory and error helpers.
+- [core](../core/README.md): `Random_GetSecondarySeed` (host, into the 0x30005 player snapshot) and `Random_SetBothSeeds` (client), so every peer runs with the same random seeds. Spin locks (`g_SpinLockTryAcquire`), memory and error helpers. `OtFeature_Active(OT_FEATURE_IMPROVED_PATHING)` in the lobby.
+- [world](../world/README.md) (pathing): `PathingMode_EffectiveSetting` and `g_PathingNetworkImprovedAgreed` for the negotiation.
+- [gameplay](../gameplay/README.md) (replay): `GameRecorder_Active` and `GameRecorderCommandScope` around local in-game commands.
 - [platform](../platform/README.md): `DynDLL_Load` / `DynAPI_Resolve` (platform/bootstrap) to bind wsock32.dll. The periodic timer behind `g_TimerRegisterPeriodic` (SDL timer) paces the mailbox.
 
 Calls into network from other areas:
@@ -76,4 +79,4 @@ Calls into network from other areas:
   - `UiRuntimeRecordRing_TakeOldest` hands out copies, so the timer thread cannot overwrite a packet while it is being handled.
 - **Original quirk.** A host chunk request extends a scratch dword instead of the requesting player's `heartbeatExpiryTicks`, so chunk requests do not keep a client alive on the host (see the comment in mailbox.cpp).
 - **Determinism.** Lockstep only stays in sync if every peer runs the same command batch at the same interval boundary (`g_SessionNetworkTickInterval`) with the same random seeds.
-- No `OtFeature` switch was found in src/network.
+- The only `OtFeature` test in src/network is `OT_FEATURE_IMPROVED_PATHING` in `lobby.cpp`. A networked session never uses the game recorder (it records local games only).

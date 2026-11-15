@@ -30,22 +30,30 @@
 <a href="../../../src/world/pathing/"><g>
 <rect x="60" y="170" width="280" height="320" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>
 <text x="74" y="195" class="t">pathing</text>
-<text x="328" y="194" class="f" text-anchor="end">5 files</text>
+<text x="328" y="194" class="f" text-anchor="end">8 files</text>
 <text x="74" y="214" class="d">Scratch grid derived from the</text>
 <text x="74" y="229" class="d">field grid; influence bands,</text>
 <text x="74" y="244" class="d">hex path costs, reachability</text>
 <text x="74" y="259" class="d">and entity routes for move</text>
-<text x="74" y="274" class="d">orders.</text>
-<rect x="74" y="285" width="71" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
-<text x="81" y="299" class="m">route.cpp</text>
-<rect x="151" y="285" width="96" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
-<text x="158" y="299" class="m">path_cost.cpp</text>
-<rect x="74" y="309" width="115" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
-<text x="81" y="323" class="m">reachability.cpp</text>
-<rect x="195" y="309" width="96" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
-<text x="202" y="323" class="m">influence.cpp</text>
-<rect x="74" y="333" width="115" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
-<text x="81" y="347" class="m">scratch_grid.cpp</text>
+<text x="74" y="274" class="d">orders. Session pathing mode:</text>
+<text x="74" y="289" class="d">original or improved (yield,</text>
+<text x="74" y="304" class="d">side step, arrival, formation).</text>
+<rect x="74" y="315" width="71" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="329" class="m">route.cpp</text>
+<rect x="151" y="315" width="96" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="158" y="329" class="m">path_cost.cpp</text>
+<rect x="74" y="339" width="115" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="353" class="m">reachability.cpp</text>
+<rect x="195" y="339" width="96" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="202" y="353" class="m">influence.cpp</text>
+<rect x="74" y="363" width="115" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="377" class="m">scratch_grid.cpp</text>
+<rect x="195" y="363" width="64" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="202" y="377" class="m">mode.cpp</text>
+<rect x="74" y="387" width="127" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="401" class="m">improved/yield.cpp</text>
+<rect x="74" y="411" width="140" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="425" class="m">improved/arrival.cpp</text>
 </g></a>
 <a href="../../../src/world/model/"><g>
 <rect x="380" y="170" width="250" height="140" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>

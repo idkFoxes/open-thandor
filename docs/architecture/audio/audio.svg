@@ -52,19 +52,21 @@
 <rect x="620" y="200" width="330" height="200" rx="10" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="2"/>
 <text x="634" y="225" class="t">backend</text>
 <text x="938" y="224" class="f" text-anchor="end">2 files</text>
-<text x="634" y="244" class="d">The eight g_Sound* slots every caller</text>
+<text x="634" y="244" class="d">The nine g_Sound* slots every caller</text>
 <text x="634" y="259" class="d">plays through; silent stubs until</text>
 <text x="634" y="274" class="d">SdlAudio_Init installs the SDL3 backend.</text>
-<rect x="634" y="285" width="83" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
-<text x="641" y="299" class="m">runtime.cpp</text>
-<rect x="723" y="285" width="115" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
-<text x="730" y="299" class="m">null_backend.cpp</text>
-<rect x="634" y="309" width="127" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
-<text x="641" y="323" class="m">g_SoundPlayOneShot</text>
-<rect x="767" y="309" width="127" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
-<text x="774" y="323" class="m">g_SoundPlayLooping</text>
-<rect x="634" y="333" width="121" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
-<text x="641" y="347" class="m">attenuation table</text>
+<text x="634" y="289" class="d">Not in the original: the movie</text>
+<text x="634" y="304" class="d">soundtrack level raise (9th slot).</text>
+<rect x="634" y="315" width="83" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="641" y="329" class="m">runtime.cpp</text>
+<rect x="723" y="315" width="115" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="730" y="329" class="m">null_backend.cpp</text>
+<rect x="634" y="339" width="127" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="641" y="353" class="m">g_SoundPlayOneShot</text>
+<rect x="767" y="339" width="127" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="774" y="353" class="m">g_SoundPlayLooping</text>
+<rect x="634" y="363" width="121" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="641" y="377" class="m">attenuation table</text>
 </g></a>
 <a href="../../../src/audio/codec/"><g>
 <rect x="1000" y="200" width="240" height="200" rx="10" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="2"/>

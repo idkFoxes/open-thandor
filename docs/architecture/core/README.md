@@ -2,7 +2,7 @@
 
 [Architecture overview](../README.md)
 
-The core area holds the services every other area builds on: the persistent settings (`thandor.ini`), the fatal-error path, the memory arena, fixed-point maths with the two random streams, and UTF-16 path and string helpers. A set of header-only basics (32-bit pointer fields, flag enums, function slots) and the compile-time layout checks also live here. Core has no game logic. Platform bootstrap starts it up, and every area calls into it.
+The core area holds the services every other area builds on: the persistent settings (`thandor.ini`) with the "Original Thandor" master switch, the fatal-error path, the memory arena, fixed-point maths with the two random streams, and UTF-16 path and string helpers. A set of header-only basics (32-bit pointer fields, flag enums, function slots) and the compile-time layout checks also live here. Core has no game logic. Platform bootstrap starts it up, and every area calls into it.
 
 ![core](core.svg)
 
@@ -12,7 +12,7 @@ The boxes are clickable when you open [core.svg](core.svg) on its own. In this p
 
 | Module | Responsibility | Key files | Public headers |
 | --- | --- | --- | --- |
-| settings | Settings image (256 bytes), `thandor.ini` parse and format with key table and value ranges, `thandor.dat` migration, typed option accessors | [persistent.cpp](../../../src/core/settings/persistent.cpp) | `core/settings.h`, `settings/persistent.h`, `settings/types.h` |
+| settings | Settings image (256 bytes), `thandor.ini` parse and format with key table and value ranges, sections registered by other modules (`[keys]`), `thandor.dat` migration, typed option accessors and writers for the open-thandor options; the "Original Thandor" switch and `OtFeature_Active` | [persistent.cpp](../../../src/core/settings/persistent.cpp), [original_mode.cpp](../../../src/core/settings/original_mode.cpp) | `core/settings.h`, `settings/persistent.h`, `settings/original_mode.h`, `settings/types.h` |
 | error | Fatal-error handlers, error message assembly, shutdown and exit | [runtime.cpp](../../../src/core/error/runtime.cpp) | `core/error.h`, `error/runtime.h`, `error/types.h` |
 | memory | 96 MiB arena allocator behind `g_MemoryApi`, spin locks, `Runtime_Shutdown` | [allocator.cpp](../../../src/core/memory/allocator.cpp), [synchronization.cpp](../../../src/core/memory/synchronization.cpp) | `core/memory.h`, `memory/allocator.h`, `memory/synchronization.h`, `memory/types.h` |
 | math | Q12/Q28 fixed point, sine table and atan2, vectors, 3x4 transforms, triangle solver, cubic splines, random streams | [fixed_trig.cpp](../../../src/core/math/fixed_trig.cpp), [fixed_vector.cpp](../../../src/core/math/fixed_vector.cpp), [fixed_transform.cpp](../../../src/core/math/fixed_transform.cpp), [geometry.cpp](../../../src/core/math/geometry.cpp), [spline.cpp](../../../src/core/math/spline.cpp), [random.cpp](../../../src/core/math/random.cpp) | `core/math.h`, `math/fixed_point.h`, `math/fixed_trig.h`, `math/fixed_vector.h`, `math/fixed_transform.h`, `math/geometry.h`, `math/spline.h`, `math/random.h`, `math/types.h` |
@@ -28,11 +28,31 @@ Platform bootstrap (`src/platform/bootstrap/runtime.cpp`) calls `ArenaHeap_Init`
 ### Settings: load, read, write, save
 
 - **Load** (`PersistentSettings_Load`): `PersistentSettings_LoadImage` allocates a zeroed 256-byte image. `PersistentSettings_LoadIni` opens `thandor.ini` in the current directory, else in the executable directory, and parses it with `PersistentSettings_ParseIniWithExtras`. That function also accepts UTF-16 input (`PersistentIni_DecodeUtf16`). If there is no ini, the original 200-byte `thandor.dat` is read as a migration source. Its unused dwords 0x50..0x5B are dropped, its values are filtered by `PersistentSettings_DropDisallowed`, and the image is marked dirty, so the next save writes `thandor.ini`. `thandor.dat` is never written. After loading, `PersistentSettings_NormalizeColorDepth` forces 32 bits and `PersistentSettings_ValidateShading` drops shading values that do not match each other (grid half size 32/64/128 with a texture size twice that, depth 1..32).
-- **Key table and value ranges:** `s_PersistentIniKeys` maps each image offset (`PERSISTENT_SETTING_*` in `settings/persistent.h`) to a section, a key and a kind (uint, int, bool, gain, enum, name, ...). There are 6 keys in `[display]`, 10 in `[graphics]`, 7 in `[sound]`, 7 in `[game]`, 1 in `[network]` and 3 in `[reserved]`. `PersistentIni_ValueAllowed` rejects a value outside its kind (bool 0..1, gain 0..0x8000, enum by name count) or outside the key's own range: width 640..16384, height 480..16384, adapter 0..15, model detail 0x4000..0x40000, frame limit 0..1000, game speed 80..120, scroll step 8..128, players 2..8. A rejected value logs one line and the default is used. `PersistentIni_DropIncompleteMode` drops width and height together.
+- **Key table and value ranges:** `s_PersistentIniKeys` maps each image offset (`PERSISTENT_SETTING_*` in `settings/persistent.h`) to a section, a key and a kind (uint, int, bool, gain, enum, name, ...). There are 6 keys in `[display]`, 10 in `[graphics]`, 7 in `[sound]`, 13 in `[game]` and 1 in `[network]`. The open-thandor keys in `[game]` are `language`, `pathing`, `objective_overlay`, `autosave`, `original_thandor`, `record_games` and `hd_font`; each has a writer (`PersistentSettings_WriteLanguage`, `..._WritePathingImproved`, `..._WriteObjectiveOverlay`, `..._WriteAutosave`, `..._WriteOriginalThandor`, `..._WriteRecordGames`, `..._WriteHdFont`) that the menus call. `PersistentIni_ValueAllowed` rejects a value outside its kind (bool 0..1, gain 0..0x8000, enum by name count) or outside the key's own range: width 640..16384, height 480..16384, adapter 0..15, model detail 0x4000..0x40000, frame limit 0..1000, game speed 80..120, scroll step 8..128, players 2..8. A rejected value logs one line and the default is used. `PersistentIni_DropIncompleteMode` drops width and height together.
 - **Read and write:** game code works on the image by byte offset. `PersistentSettings_Read(default, offset)` returns the default for a dword that was not loaded. `PersistentSettings_Write`, `PersistentSettings_WriteBlock` and `PersistentSettings_WriteChosen` set it and mark it written. Typed accessors such as `PersistentSettings_ReadSoundOptions` wrap the flag dwords. Users are mainly the ui settings pages, platform (video and audio set-up) and gameplay.
+- **Registered sections:** `PersistentSettings_RegisterSection` lets another module own a section without core depending on it (at most 4). The only user is the key bindings' `[keys]` section (`ui/core/key_bindings_ini.cpp`): parse hands it the section's lines, format writes it after the key table's sections. `PersistentSettings_MarkDirty` makes the next flush write it.
 - **Save** (`PersistentSettings_Flush`): called by ui `main_loop.cpp`, platform `video.cpp` and `Runtime_Shutdown`. When the image is dirty, `PersistentSettings_FormatIni` writes every present or written key in table order. It then adds the kept unknown keys of each known section and the foreign sections (`PersistentSettingsIniExtras`), so keys of a newer version survive. The text is written with platform `FileSystem_WriteBufferToPath`, which writes `thandor.ini.tmp`, flushes it and replaces the target. If the write fails, the image stays dirty and the next flush tries again.
 
-An "original mode" or `OtFeature` switch header (`include/thandor/core/settings/original_mode.h`) does not exist in this tree. The settings module has no such switches. Open-thandor's own settings (renderer, display mode, GPU rasterization, UI scale, vsync, frame limit) are extra dwords from offset 0xB0 in the image.
+Open-thandor's own settings (renderer, display mode, GPU rasterization, UI scale, vsync, frame limit and the `[game]` options above) are extra dwords from offset 0xB0 in the image.
+
+### The "Original Thandor" switch (not in the original)
+
+`original_mode.cpp` holds the master switch `[game] original_thandor` (default off). While it is on, every open-thandor addition listed in `OtFeature` (`include/thandor/core/settings/original_mode.h`) behaves as in the original game; the additions' own settings keep their values and apply again when it is turned off. Bug and crash fixes are not features and stay active.
+- `OriginalMode_IsOn` reads the settings image each time (no cache) and passes the value through `DebugHook_OriginalMode` (platform), so `OPEN_THANDOR_ORIGINAL` can override it in developer runs.
+- `OriginalMode_Set` is called from the ui settings page (`ui/frontend/display_settings.cpp`). It writes `PersistentSettings_WriteOriginalThandor` and, when the state changed, calls the change listeners (at most 8). The key bindings register two (`ui/core/key_binding_tables.cpp`, `key_bindings_panel.cpp`) and re-apply their tables at once.
+- `OtFeature_Active(feature)` is true while the switch is off; every feature currently follows the one switch. The owners test it themselves:
+
+| Feature | Tested in |
+| --- | --- |
+| `OT_FEATURE_IMPROVED_PATHING` | `world/pathing/mode.cpp`, `network/protocol/lobby.cpp` (next session only) |
+| `OT_FEATURE_OBJECTIVE_OVERLAY` | `ui/ingame/objective_overlay.cpp` |
+| `OT_FEATURE_AUTOSAVE` | `gameplay/session/autosave.cpp` |
+| `OT_FEATURE_CAMPAIGN_MAP` | `ui/frontend/campaign_tab.cpp` |
+| `OT_FEATURE_MOVIE_VOLUME_BOOST` | `movie/runtime/playback.cpp` |
+| `OT_FEATURE_CUSTOM_MAPS` | `assets/scenario/custom_maps.cpp`, `ui/frontend/scenario_selection.cpp` |
+| `OT_FEATURE_KEY_BINDINGS` | `ui/core/key_bindings.cpp`, `ui/core/key_bindings_panel.cpp`, `ui/ingame/pages.cpp` |
+| `OT_FEATURE_GAME_RECORDING` | `gameplay/replay/runtime.cpp` |
+| `OT_FEATURE_HD_FONT` | `ui/text/hd_font.cpp` |
 
 ### Fixed-point maths and random streams
 
@@ -55,14 +75,15 @@ An atomic guard makes it run at most once. `Runtime_Shutdown` (`synchronization.
 
 ## Interfaces to other areas
 
-- [platform](../platform/README.md): starts core (`ArenaHeap_Init`, `ErrorSystem_Init`, `PersistentSettings_Load`, `FixedMath_BuildSinCosTables`) and provides the file I/O that settings uses (`g_FileSystemOpen`, `g_FileSystemReadExact`, `FileSystem_WriteBufferToPath`). It reads settings for video and audio set-up.
+- [platform](../platform/README.md): starts core (`ArenaHeap_Init`, `ErrorSystem_Init`, `PersistentSettings_Load`, `FixedMath_BuildSinCosTables`) and provides the file I/O that settings uses (`g_FileSystemOpen`, `g_FileSystemReadExact`, `FileSystem_WriteBufferToPath`). It reads settings for video and audio set-up. Core calls back into its developer hooks (`DebugHook_OriginalMode`, `DebugHook_NoteOutsideStep`).
 - [assets](../assets/README.md): error texts come from text page 0, and `g_PackageLastErrorPath` names the file in fatal errors. The text locale follows `g_LocaleCountryCodeOverride` from the settings. Assets allocates through `g_MemoryApi` and edits paths with `WidePath_*`.
-- [ui](../ui/README.md): the settings pages read and write the settings and flush them, the session start selects the random stream, and many `FatalError_*` checks live here.
-- [gameplay](../gameplay/README.md): the heaviest user of fixed-point maths and random draws; it also reads settings such as game speed.
+- [ui](../ui/README.md): the settings pages read and write the settings and flush them and set the "Original Thandor" switch, the key bindings register the `[keys]` section and switch listeners, the session start selects the random stream, and many `FatalError_*` checks live here.
+- [gameplay](../gameplay/README.md): the heaviest user of fixed-point maths and random draws; it also reads settings such as game speed, and autosave and the game recorder test their `OtFeature`.
 - [world](../world/README.md): fixed-point vectors and transforms for entities, camera and pathing; cubic splines for camera flights.
 - [graphics](../graphics/README.md): fixed-point transforms in the render pipeline. The shading settings that `PersistentSettings_ValidateShading` guards end up in `GraphicsShadingRuntime_InitializeGeneratedTexture`; graphics itself does not call `PersistentSettings_Read`.
 - [network](../network/README.md): sends and applies the session random seed.
-- [audio](../audio/README.md) and [movie](../movie/README.md): use fixed-point helpers and the arena.
+- [audio](../audio/README.md) and [movie](../movie/README.md): use fixed-point helpers and the arena; movie tests `OT_FEATURE_MOVIE_VOLUME_BOOST`.
+- [world](../world/README.md), [network](../network/README.md) and [assets](../assets/README.md) test their `OtFeature` (see the table above).
 
 ## Notes
 

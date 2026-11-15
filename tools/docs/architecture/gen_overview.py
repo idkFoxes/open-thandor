@@ -23,13 +23,13 @@ def area(x, y, w, h, key, desc, mods, meta):
 
 
 area(60, 92, 940, 100, 'ui', ['Front-end menus, in-game HUD and world input, dialogs and the control framework.',
-                              'Runs the per-frame loop: dispatch input, update, draw.'],
-     ['frontend', 'ingame', 'dialogs', 'controls', 'core', 'text'], '82 files · 46k lines')
-area(60, 232, 450, 118, 'gameplay', ['Session lifecycle (new, load, save, campaign) and the',
-                                     'simulation tick: armies, AI players, factions, research.'],
-     ['session', 'army', 'ai', 'faction', 'selection', 'technology'], '53 files · 26k lines')
-area(550, 232, 410, 118, 'world', ['Entities, camera, terrain, pathfinding,', '3D models, effects and shots.'],
-     ['runtime', 'camera', 'terrain', 'pathing', 'model', 'effects', 'shots'], '33 files · 14k lines')
+                              'Campaign map, custom maps tab, options (language, key bindings). Runs the per-frame loop: dispatch input, update, draw.'],
+     ['frontend', 'ingame', 'dialogs', 'controls', 'core', 'text'], '95 files · 53k lines')
+area(60, 232, 450, 118, 'gameplay', ['Session lifecycle (new, load, save, campaign progress) and the',
+                                     'simulation tick: armies, AI, factions, research; game recorder.'],
+     ['session', 'army', 'ai', 'faction', 'selection', 'technology', 'replay'], '63 files · 32k lines')
+area(550, 232, 410, 118, 'world', ['Entities, camera, terrain, pathfinding', '(original or improved), 3D models, effects, shots.'],
+     ['runtime', 'camera', 'terrain', 'pathing', 'model', 'effects', 'shots'], '36 files · 15k lines')
 area(60, 382, 210, 118, 'network', ['Multiplayer transport,', 'session and transfer protocol.'],
      ['protocol', 'backend'], '10 files')
 area(290, 382, 180, 118, 'audio', ['Positioned sound,', 'sample codec, mixer slots.'],
@@ -38,16 +38,16 @@ area(490, 382, 150, 118, 'movie', ['FLM playback', 'and encoding.'], ['runtime']
 area(660, 382, 340, 118, 'graphics', ['Render pipeline, terrain renderer, textures,', 'palettes; software renderer.'],
      ['render', 'terrain', 'resources', 'core', 'backend'], '31 files · 14k lines')
 area(1030, 92, 210, 230, 'assets', ['Game data: PCK packages,', 'level catalogs for armies,', 'models, shots, effects,',
-                                    'sprites; menu room, scenarios,', 'texts.'],
-     ['package', 'rom', 'army', 'model', 'effect', 'shot', 'sprite', 'scenario', 'text'], '14 files')
-area(1030, 342, 210, 158, 'core', ['Fixed-point maths, memory,', 'settings (thandor.ini),', 'errors, strings.'],
-     ['math', 'memory', 'settings', 'error', 'text'], '13 files')
+                                    'sprites; menu room, scenarios', 'and custom maps, texts.'],
+     ['package', 'rom', 'army', 'model', 'effect', 'shot', 'sprite', 'scenario', 'text'], '20 files')
+area(1030, 342, 210, 158, 'core', ['Fixed-point maths, memory,', 'settings (thandor.ini) and the', 'Original Thandor switch,', 'errors, strings.'],
+     ['math', 'memory', 'settings', 'error', 'text'], '14 files')
 area(60, 552, 1180, 100, 'platform', ['Start-up and event pump; SDL3 layer: window, SDL GPU renderer (Vulkan / D3D12), '
-                                      'audio device, input, timer;', 'file system, system services, debug tools and self-tests.'],
-     ['bootstrap', 'sdl3', 'input', 'filesystem', 'system', 'debug', 'selftest'], '58 files · 23k lines')
+                                      'audio device, input, timer;', 'file system, system services, debug tools (state hash, path trace, profiler) and self-tests.'],
+     ['bootstrap', 'sdl3', 'input', 'filesystem', 'system', 'debug', 'selftest'], '69 files · 29k lines')
 
 for x, w, t in ((60, 200, 'Keyboard · mouse (Steam Input)'), (300, 170, 'Display'), (500, 170, 'Sound device'),
-                (700, 170, 'LAN peers'), (1000, 240, 'Game files: PCK · ini · saves')):
+                (700, 170, 'LAN peers'), (1000, 240, 'Game files: PCK · ini · saves · maps')):
     d.ext(x, 700, w, 40, t)
 
 # outside <-> platform

@@ -1,27 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 870" width="1280" height="870" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 940" width="1280" height="940" font-family="Segoe UI, Helvetica, Arial, sans-serif">
 <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker><style>.t{font-size:17px;font-weight:700;fill:#1d1d1f}.d{font-size:12px;fill:#333}.m{font-size:11px;fill:#222}.f{font-size:11px;fill:#666}.l{font-size:11.5px;fill:#333;font-style:italic}.h{font-size:11px;font-weight:700;fill:#888;letter-spacing:1.5px}</style></defs>
-<rect width="1280" height="870" fill="#fff"/>
+<rect width="1280" height="940" fill="#fff"/>
 <text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">ui — modules and flows</text>
 <text x="20" y="52" class="d">Modules under src/ui/ (headers in include/thandor/ui/). Solid boxes are ui modules, dashed boxes other areas. Arrows show the main calls and data, not every include. Click a box.</text>
 <a href="../../../src/ui/core/"><g>
-<rect x="290" y="150" width="340" height="135" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
+<rect x="290" y="150" width="340" height="170" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
 <text x="304" y="175" class="t">core</text>
-<text x="618" y="174" class="f" text-anchor="end">5 files</text>
-<text x="304" y="194" class="d">Frame loop (events, ticks, actions, draw, present),</text>
-<text x="304" y="209" class="d">action queue and handler pages, frame lock.</text>
+<text x="618" y="174" class="f" text-anchor="end">9 files · 3.3k lines</text>
+<text x="304" y="194" class="d">Frame loop, action queue, frame lock; key bindings</text>
+<text x="304" y="209" class="d">([keys] in thandor.ini) and the shared bindings panel.</text>
 <rect x="304" y="220" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
 <text x="311" y="234" class="m">frame_loop</text>
 <rect x="387" y="220" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
 <text x="394" y="234" class="m">runtime</text>
 <rect x="451" y="220" width="90" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="458" y="234" class="m">chat_history</text>
-<rect x="304" y="244" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="311" y="258" class="m">model_tint</text>
-<rect x="387" y="244" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="394" y="258" class="m">pcx_preview</text>
+<text x="458" y="234" class="m">key_bindings</text>
+<rect x="304" y="244" width="115" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="258" class="m">key_bindings_ini</text>
+<rect x="425" y="244" width="127" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="432" y="258" class="m">key_bindings_panel</text>
+<rect x="304" y="268" width="127" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="282" class="m">key_binding_tables</text>
+<rect x="437" y="268" width="90" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="444" y="282" class="m">chat_history</text>
+<rect x="533" y="268" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="540" y="282" class="m">model_tint</text>
+<rect x="304" y="292" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="306" class="m">pcx_preview</text>
 </g></a>
 <a href="../../../src/ui/dialogs/"><g>
-<rect x="650" y="150" width="160" height="135" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
+<rect x="650" y="150" width="160" height="170" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
 <text x="664" y="175" class="t">dialogs</text>
 <text x="798" y="174" class="f" text-anchor="end">2 files</text>
 <text x="664" y="194" class="d">Modal roots:</text>
@@ -33,217 +41,235 @@
 <text x="671" y="273" class="m">fatal_error</text>
 </g></a>
 <a href="../../../src/ui/text/"><g>
-<rect x="830" y="150" width="160" height="135" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
+<rect x="830" y="150" width="160" height="170" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
 <text x="844" y="175" class="t">text</text>
-<text x="978" y="174" class="f" text-anchor="end">2 files</text>
-<text x="844" y="194" class="d">Fonts, rich-text</text>
-<text x="844" y="209" class="d">command streams:</text>
-<text x="844" y="224" class="d">measure, wrap, draw.</text>
+<text x="978" y="174" class="f" text-anchor="end">3 files</text>
+<text x="844" y="194" class="d">Fonts, rich text;</text>
+<text x="844" y="209" class="d">HD font for the</text>
+<text x="844" y="224" class="d">GPU renderer.</text>
 <rect x="844" y="235" width="39" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
 <text x="851" y="249" class="m">font</text>
 <rect x="844" y="259" width="108" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
 <text x="851" y="273" class="m">richtext_render</text>
+<rect x="844" y="283" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="851" y="297" class="m">hd_font</text>
 </g></a>
 <a href="../../../src/ui/controls/"><g>
-<rect x="290" y="340" width="700" height="130" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
-<text x="304" y="365" class="t">controls</text>
-<text x="978" y="364" class="f" text-anchor="end">18 files · 11k lines</text>
-<text x="304" y="384" class="d">Control framework: node vtables, root stack, pointer capture and keyboard focus, input dispatch, widgets.</text>
-<rect x="304" y="395" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="311" y="409" class="m">root_stack</text>
-<rect x="387" y="395" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="394" y="409" class="m">input</text>
-<rect x="438" y="395" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="446" y="409" class="m">container</text>
-<rect x="515" y="395" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="522" y="409" class="m">window</text>
-<rect x="573" y="395" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="580" y="409" class="m">panels</text>
-<rect x="631" y="395" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="638" y="409" class="m">image</text>
-<rect x="682" y="395" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="689" y="409" class="m">buttons</text>
-<rect x="746" y="395" width="90" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="753" y="409" class="m">text_buttons</text>
-<rect x="842" y="395" width="39" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="849" y="409" class="m">text</text>
-<rect x="887" y="395" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="894" y="409" class="m">text_edit</text>
-<rect x="304" y="419" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="311" y="433" class="m">lists</text>
-<rect x="356" y="419" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="362" y="433" class="m">scrollable</text>
-<rect x="438" y="419" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="446" y="433" class="m">selectable</text>
-<rect x="522" y="419" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="528" y="433" class="m">slider</text>
-<rect x="579" y="419" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="586" y="433" class="m">gauge</text>
-<rect x="631" y="419" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="638" y="433" class="m">tooltip</text>
-<rect x="695" y="419" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="702" y="433" class="m">focus_proxy</text>
-<rect x="784" y="419" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="791" y="433" class="m">minimap</text>
+<rect x="290" y="360" width="700" height="130" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
+<text x="304" y="385" class="t">controls</text>
+<text x="978" y="384" class="f" text-anchor="end">18 files · 11k lines</text>
+<text x="304" y="404" class="d">Control framework: node vtables, root stack, pointer capture and keyboard focus, input dispatch, widgets.</text>
+<rect x="304" y="415" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="429" class="m">root_stack</text>
+<rect x="387" y="415" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="394" y="429" class="m">input</text>
+<rect x="438" y="415" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="446" y="429" class="m">container</text>
+<rect x="515" y="415" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="522" y="429" class="m">window</text>
+<rect x="573" y="415" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="580" y="429" class="m">panels</text>
+<rect x="631" y="415" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="638" y="429" class="m">image</text>
+<rect x="682" y="415" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="689" y="429" class="m">buttons</text>
+<rect x="746" y="415" width="90" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="753" y="429" class="m">text_buttons</text>
+<rect x="842" y="415" width="39" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="849" y="429" class="m">text</text>
+<rect x="887" y="415" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="894" y="429" class="m">text_edit</text>
+<rect x="304" y="439" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="453" class="m">lists</text>
+<rect x="356" y="439" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="362" y="453" class="m">scrollable</text>
+<rect x="438" y="439" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="446" y="453" class="m">selectable</text>
+<rect x="522" y="439" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="528" y="453" class="m">slider</text>
+<rect x="579" y="439" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="586" y="453" class="m">gauge</text>
+<rect x="631" y="439" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="638" y="453" class="m">tooltip</text>
+<rect x="695" y="439" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="702" y="453" class="m">focus_proxy</text>
+<rect x="784" y="439" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="791" y="453" class="m">minimap</text>
 </g></a>
 <a href="../../../src/ui/frontend/"><g>
-<rect x="290" y="530" width="340" height="218" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
-<text x="304" y="555" class="t">frontend</text>
-<text x="618" y="554" class="f" text-anchor="end">23 files · 14k lines</text>
-<text x="304" y="574" class="d">Main-menu state machine and pages; the 3D world</text>
-<text x="304" y="589" class="d">view control (menu room, also in-game).</text>
-<rect x="304" y="600" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="311" y="614" class="m">main_loop</text>
-<rect x="381" y="600" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="388" y="614" class="m">lifecycle</text>
-<rect x="457" y="600" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="464" y="614" class="m">state</text>
-<rect x="509" y="600" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="516" y="614" class="m">menu_room</text>
-<rect x="304" y="624" width="108" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="311" y="638" class="m">menu_room_scene</text>
-<rect x="418" y="624" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="426" y="638" class="m">session</text>
-<rect x="483" y="624" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="490" y="638" class="m">network</text>
-<rect x="547" y="624" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="554" y="638" class="m">player</text>
-<rect x="304" y="648" width="127" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="311" y="662" class="m">scenario_selection</text>
-<rect x="437" y="648" width="108" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="444" y="662" class="m">task_assignment</text>
-<rect x="304" y="672" width="115" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="311" y="686" class="m">mission_briefing</text>
-<rect x="425" y="672" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="432" y="686" class="m">results</text>
-<rect x="489" y="672" width="64" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="496" y="686" class="m">settings</text>
-<rect x="304" y="696" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="311" y="710" class="m">end_movie</text>
-<rect x="381" y="696" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="388" y="710" class="m">credits</text>
-<rect x="445" y="696" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="452" y="710" class="m">ui_template</text>
+<rect x="290" y="540" width="340" height="270" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
+<text x="304" y="565" class="t">frontend</text>
+<text x="618" y="564" class="f" text-anchor="end">29 files · 17k lines</text>
+<text x="304" y="584" class="d">Main-menu state machine and pages (campaign map,</text>
+<text x="304" y="599" class="d">Eigene Karten tab, options); the 3D world view.</text>
+<rect x="304" y="610" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="624" class="m">main_loop</text>
+<rect x="381" y="610" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="388" y="624" class="m">lifecycle</text>
+<rect x="457" y="610" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="464" y="624" class="m">state</text>
+<rect x="509" y="610" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="516" y="624" class="m">menu_room</text>
+<rect x="304" y="634" width="108" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="648" class="m">menu_room_scene</text>
+<rect x="418" y="634" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="426" y="648" class="m">session</text>
+<rect x="483" y="634" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="490" y="648" class="m">network</text>
+<rect x="547" y="634" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="554" y="648" class="m">player</text>
+<rect x="304" y="658" width="127" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="672" class="m">scenario_selection</text>
+<rect x="437" y="658" width="90" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="444" y="672" class="m">campaign_tab</text>
+<rect x="304" y="682" width="140" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="696" class="m">campaign_map_control</text>
+<rect x="450" y="682" width="102" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="457" y="696" class="m">campaign_graph</text>
+<rect x="304" y="706" width="134" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="720" class="m">campaign_level_info</text>
+<rect x="444" y="706" width="108" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="451" y="720" class="m">task_assignment</text>
+<rect x="304" y="730" width="115" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="744" class="m">mission_briefing</text>
+<rect x="425" y="730" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="432" y="744" class="m">results</text>
+<rect x="489" y="730" width="115" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="496" y="744" class="m">display_settings</text>
+<rect x="304" y="754" width="108" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="768" class="m">language_choice</text>
+<rect x="418" y="754" width="121" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="426" y="768" class="m">key_bindings_page</text>
+<rect x="546" y="754" width="71" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="553" y="768" class="m">end_movie</text>
+<rect x="304" y="778" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="311" y="792" class="m">ui_template</text>
 </g></a>
 <a href="../../../src/ui/ingame/"><g>
-<rect x="650" y="530" width="340" height="218" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
-<text x="664" y="555" class="t">ingame</text>
-<text x="978" y="554" class="f" text-anchor="end">32 files · 19k lines</text>
-<text x="664" y="574" class="d">HUD, pages and panels of a running session, world</text>
-<text x="664" y="589" class="d">input, hotkeys, map editor tools.</text>
-<rect x="664" y="600" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="671" y="614" class="m">root_frame</text>
-<rect x="747" y="600" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="754" y="614" class="m">world_input</text>
-<rect x="836" y="600" width="64" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="843" y="614" class="m">commands</text>
-<rect x="907" y="600" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="914" y="614" class="m">hotkeys</text>
-<rect x="664" y="624" width="90" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="671" y="638" class="m">key_commands</text>
-<rect x="760" y="624" width="33" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="767" y="638" class="m">hud</text>
-<rect x="798" y="624" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="806" y="638" class="m">layout</text>
-<rect x="856" y="624" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="863" y="638" class="m">pages</text>
-<rect x="664" y="648" width="96" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="671" y="662" class="m">build_catalog</text>
-<rect x="766" y="648" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="773" y="662" class="m">army_stock</text>
-<rect x="849" y="648" width="115" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="856" y="662" class="m">selection_detail</text>
-<rect x="664" y="672" width="121" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="671" y="686" class="m">selection_overlay</text>
-<rect x="791" y="672" width="108" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="798" y="686" class="m">minimap_texture</text>
-<rect x="664" y="696" width="96" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="671" y="710" class="m">savegame_page</text>
-<rect x="766" y="696" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="773" y="710" class="m">technology</text>
-<rect x="849" y="696" width="90" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="856" y="710" class="m">editor_tools</text>
-<rect x="664" y="720" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
-<text x="671" y="734" class="m">ui_template</text>
+<rect x="650" y="540" width="340" height="270" rx="10" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="2"/>
+<text x="664" y="565" class="t">ingame</text>
+<text x="978" y="564" class="f" text-anchor="end">34 files · 20k lines</text>
+<text x="664" y="584" class="d">HUD, pages and panels of a running session, world</text>
+<text x="664" y="599" class="d">input, hotkeys, objective overlay, editor tools.</text>
+<rect x="664" y="610" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="671" y="624" class="m">root_frame</text>
+<rect x="747" y="610" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="754" y="624" class="m">world_input</text>
+<rect x="836" y="610" width="64" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="843" y="624" class="m">commands</text>
+<rect x="907" y="610" width="58" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="914" y="624" class="m">hotkeys</text>
+<rect x="664" y="634" width="90" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="671" y="648" class="m">key_commands</text>
+<rect x="760" y="634" width="33" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="767" y="648" class="m">hud</text>
+<rect x="798" y="634" width="52" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="806" y="648" class="m">layout</text>
+<rect x="856" y="634" width="46" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="863" y="648" class="m">pages</text>
+<rect x="664" y="658" width="96" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="671" y="672" class="m">build_catalog</text>
+<rect x="766" y="658" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="773" y="672" class="m">army_stock</text>
+<rect x="849" y="658" width="115" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="856" y="672" class="m">selection_detail</text>
+<rect x="664" y="682" width="121" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="671" y="696" class="m">selection_overlay</text>
+<rect x="791" y="682" width="108" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="798" y="696" class="m">minimap_texture</text>
+<rect x="664" y="706" width="96" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="671" y="720" class="m">savegame_page</text>
+<rect x="766" y="706" width="77" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="773" y="720" class="m">technology</text>
+<rect x="849" y="706" width="121" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="856" y="720" class="m">objective_overlay</text>
+<rect x="664" y="730" width="140" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="671" y="744" class="m">key_bindings_overlay</text>
+<rect x="810" y="730" width="90" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="817" y="744" class="m">editor_tools</text>
+<rect x="664" y="754" width="83" height="19" rx="9" fill="#fff" stroke="#4a6fd0" stroke-opacity="0.6"/>
+<text x="671" y="768" class="m">ui_template</text>
 </g></a>
 <a href="../platform/README.md"><g>
-<rect x="40" y="150" width="160" height="300" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="120.0" y="304.0" class="d" text-anchor="middle"></text>
+<rect x="40" y="150" width="160" height="340" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="120.0" y="324.0" class="d" text-anchor="middle"></text>
 </g></a>
-<text x="120.0" y="273.5" class="t" text-anchor="middle">platform</text>
-<text x="120.0" y="293.5" class="f" text-anchor="middle">SDL3 event pump,</text>
-<text x="120.0" y="308.5" class="f" text-anchor="middle">keyboard queue,</text>
-<text x="120.0" y="323.5" class="f" text-anchor="middle">timers, bootstrap</text>
+<text x="120.0" y="293.5" class="t" text-anchor="middle">platform</text>
+<text x="120.0" y="313.5" class="f" text-anchor="middle">SDL3 event pump,</text>
+<text x="120.0" y="328.5" class="f" text-anchor="middle">keyboard queue,</text>
+<text x="120.0" y="343.5" class="f" text-anchor="middle">timers, bootstrap</text>
 <a href="../audio/README.md"><g>
-<rect x="90" y="545" width="110" height="40" rx="8" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="145.0" y="569.0" class="d" text-anchor="middle">audio</text>
+<rect x="90" y="565" width="110" height="40" rx="8" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="145.0" y="589.0" class="d" text-anchor="middle">audio</text>
 </g></a>
 <a href="../movie/README.md"><g>
-<rect x="90" y="620" width="110" height="40" rx="8" fill="#f3ecfb" stroke="#8a5ac8" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="145.0" y="644.0" class="d" text-anchor="middle">movie</text>
+<rect x="90" y="640" width="110" height="40" rx="8" fill="#f3ecfb" stroke="#8a5ac8" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="145.0" y="664.0" class="d" text-anchor="middle">movie</text>
 </g></a>
 <a href="../graphics/README.md"><g>
-<rect x="1060" y="340" width="140" height="130" rx="8" fill="#e6f6ec" stroke="#2f9a57" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="1130.0" y="409.0" class="d" text-anchor="middle"></text>
+<rect x="1060" y="360" width="140" height="130" rx="8" fill="#e6f6ec" stroke="#2f9a57" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1130.0" y="429.0" class="d" text-anchor="middle"></text>
 </g></a>
-<text x="1130.0" y="378.5" class="t" text-anchor="middle">graphics</text>
-<text x="1130.0" y="398.5" class="f" text-anchor="middle">framebuffer, 2D blits,</text>
-<text x="1130.0" y="413.5" class="f" text-anchor="middle">cursor event ring,</text>
-<text x="1130.0" y="428.5" class="f" text-anchor="middle">render passes</text>
+<text x="1130.0" y="398.5" class="t" text-anchor="middle">graphics</text>
+<text x="1130.0" y="418.5" class="f" text-anchor="middle">framebuffer, 2D blits,</text>
+<text x="1130.0" y="433.5" class="f" text-anchor="middle">cursor event ring,</text>
+<text x="1130.0" y="448.5" class="f" text-anchor="middle">render passes</text>
 <a href="../gameplay/README.md"><g>
-<rect x="1060" y="545" width="140" height="50" rx="8" fill="#fdeee0" stroke="#d07a2a" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="1130.0" y="574.0" class="d" text-anchor="middle">gameplay</text>
+<rect x="1060" y="565" width="140" height="50" rx="8" fill="#fdeee0" stroke="#d07a2a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1130.0" y="594.0" class="d" text-anchor="middle">gameplay</text>
 </g></a>
 <a href="../network/README.md"><g>
-<rect x="1060" y="615" width="140" height="40" rx="8" fill="#fde8ef" stroke="#c84a76" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="1130.0" y="639.0" class="d" text-anchor="middle">network</text>
+<rect x="1060" y="635" width="140" height="40" rx="8" fill="#fde8ef" stroke="#c84a76" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1130.0" y="659.0" class="d" text-anchor="middle">network</text>
 </g></a>
 <a href="../world/README.md"><g>
-<rect x="1060" y="680" width="140" height="40" rx="8" fill="#fff6d6" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="1130.0" y="704.0" class="d" text-anchor="middle">world</text>
+<rect x="1060" y="700" width="140" height="40" rx="8" fill="#fff6d6" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1130.0" y="724.0" class="d" text-anchor="middle">world</text>
 </g></a>
 <a href="../assets/README.md"><g>
-<rect x="290" y="800" width="340" height="40" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="460.0" y="824.0" class="d" text-anchor="middle">assets · texts, ROM records, catalogs (used by all)</text>
+<rect x="290" y="870" width="340" height="40" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="460.0" y="894.0" class="d" text-anchor="middle">assets · texts, ROM records, catalogs (used by all)</text>
 </g></a>
 <a href="../core/README.md"><g>
-<rect x="650" y="800" width="340" height="40" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="820.0" y="824.0" class="d" text-anchor="middle">core · settings (thandor.ini), memory (used by all)</text>
+<rect x="650" y="870" width="340" height="40" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="820.0" y="894.0" class="d" text-anchor="middle">core · settings (thandor.ini), memory (used by all)</text>
 </g></a>
 <path d="M200,200 L290,200" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="207" y="193" class="l" text-anchor="start">pump · ticks</text>
-<path d="M200,405 L290,405" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="207" y="398" class="l" text-anchor="start">key events</text>
-<path d="M60,450 L60,715 L290,715" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="54" y="590" class="l" text-anchor="middle" transform="rotate(-90 54 590)">Frontend_MainLoop</text>
-<path d="M460,285 L460,340" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="467" y="318" class="l" text-anchor="start">dispatch input · draw roots</text>
-<path d="M560,340 L560,285" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="567" y="300" class="l" text-anchor="start">queued actions</text>
-<path d="M990,380 L1060,380" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="997" y="373" class="l" text-anchor="start">blits</text>
-<path d="M1060,430 L990,430" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="997" y="423" class="l" text-anchor="start">pointer ev.</text>
-<path d="M990,215 L1130,215 L1130,340" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M200,425 L290,425" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="207" y="418" class="l" text-anchor="start">key events</text>
+<path d="M60,490 L60,780 L290,780" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="54" y="635" class="l" text-anchor="middle" transform="rotate(-90 54 635)">Frontend_MainLoop</text>
+<path d="M460,320 L460,360" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="467" y="345" class="l" text-anchor="start">dispatch input · draw roots</text>
+<path d="M560,360 L560,320" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="567" y="335" class="l" text-anchor="start">queued actions</text>
+<path d="M990,400 L1060,400" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="997" y="393" class="l" text-anchor="start">blits</text>
+<path d="M1060,450 L990,450" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="997" y="443" class="l" text-anchor="start">pointer ev.</text>
+<path d="M990,215 L1130,215 L1130,360" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
 <text x="997" y="208" class="l" text-anchor="start">glyph blits</text>
-<path d="M560,530 L560,500 L1100,500 L1100,470" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="660" y="494" class="l" text-anchor="start">world view render passes</text>
-<path d="M290,565 L200,565" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="207" y="558" class="l" text-anchor="start">menu music</text>
-<path d="M290,640 L200,640" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="207" y="633" class="l" text-anchor="start">end movie</text>
-<path d="M990,560 L1060,560" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="995" y="553" class="l" text-anchor="start">commands</text>
-<path d="M1060,580 L990,580" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="995" y="598" class="l" text-anchor="start">builds root</text>
-<path d="M990,635 L1060,635" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="995" y="628" class="l" text-anchor="start">cmd queue</text>
-<path d="M990,700 L1060,700" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="995" y="693" class="l" text-anchor="start">camera</text>
-<path d="M380,150 L380,125 L1220,125 L1220,555 L1200,555" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<path d="M560,540 L560,515 L1100,515 L1100,490" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="660" y="509" class="l" text-anchor="start">world view render passes</text>
+<path d="M320,810 L320,870" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="313" y="850" class="l" text-anchor="end">custom maps · level info</text>
+<path d="M290,585 L200,585" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="207" y="578" class="l" text-anchor="start">menu music</text>
+<path d="M290,660 L200,660" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="207" y="653" class="l" text-anchor="start">end movie</text>
+<path d="M990,580 L1060,580" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="995" y="573" class="l" text-anchor="start">cmds · goals</text>
+<path d="M1060,600 L990,600" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="995" y="618" class="l" text-anchor="start">builds root</text>
+<path d="M990,655 L1060,655" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="995" y="648" class="l" text-anchor="start">cmd queue</text>
+<path d="M990,720 L1060,720" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="995" y="713" class="l" text-anchor="start">camera</text>
+<path d="M380,150 L380,125 L1220,125 L1220,575 L1200,575" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
 <text x="392" y="119" class="l" text-anchor="start">session loop: UiFrame_ProcessAndPresent  ·  frame-lock release hook: simulation step</text>
-<path d="M450,748 L450,780 L1260,780 L1260,585 L1200,585" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
-<text x="660" y="794" class="l" text-anchor="start">InGameRuntime_RunSessionUntilExit</text>
-<path d="M520,748 L520,765 L1240,765 L1240,645 L1200,645" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
-<text x="660" y="760" class="l" text-anchor="start">lobby · transfers</text>
+<path d="M450,810 L450,845 L1260,845 L1260,605 L1200,605" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="660" y="859" class="l" text-anchor="start">InGameRuntime_RunSessionUntilExit  ·  campaign progress</text>
+<path d="M520,810 L520,828 L1240,828 L1240,665 L1200,665" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<text x="660" y="823" class="l" text-anchor="start">lobby · transfers</text>
 </svg>

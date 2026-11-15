@@ -61,7 +61,7 @@ Software 3D path: `SoftwareRenderer_DrawPrimitiveQueueBridge` → `g_GraphicsFra
 What graphics calls:
 
 - [assets](../assets/README.md): `Package_LoadEntry` and `Package_LoadEntryWithSize` for `gfx`, `pal` and terrain table entries, and `Resource_Release`.
-- [platform](../platform/README.md): the software backend draws into the framebuffer pixels that `video.cpp` owns (`g_DisplayFramebufferAccess.pixels`). The SDL GPU renderer replaces the 3D slots and reads the 2D draw list. The present slot `g_GraphicsFramebufferPresent` is called by ui and gameplay, not by graphics.
+- [platform](../platform/README.md): the software backend draws into the framebuffer pixels that `video.cpp` owns (`g_DisplayFramebufferAccess.pixels`). The SDL GPU renderer replaces the 3D slots and reads the 2D draw list. The present slot `g_GraphicsFramebufferPresent` is called by ui and gameplay, not by graphics. The optional high-resolution font (`[game] hd_font`, UI scale 2 and 3) does not pass through graphics either: the draw list still records the original glyph, and the GPU renderer swaps in its high-resolution form (`HdFont_GlyphSource`, `ui/text/hd_font.cpp`) when it looks up the texture region; the software backend always draws the original font.
 - [core](../core/README.md): `g_MemoryApi` for tables, depth buffers and texture copies; fixed-point transforms such as `FixedTransform_ApplyPoint`. In the other direction, `Runtime_Shutdown` (`src/core/memory/synchronization.cpp`) calls `Graphics_Shutdown`.
 
 Who calls graphics:
