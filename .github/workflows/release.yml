@@ -1,5 +1,5 @@
 # Builds the patch installer Thandor-Patch-Z.exe (docs/BUILDING.md, "Patch installer" and "Releases"); the patch
-# number Z is the last part of the version (1.0.7 -> Thandor Patch 7).
+# number Z is the last part of the version (1.0.8 -> Thandor Patch 8).
 #
 #   push of a tag vX.Y.Z  -> build, then a GitHub Release "Thandor Patch Z - Open Thandor X.Y.Z" with
 #                            Thandor-Patch-Z.exe and Thandor-Patch-Z.exe.sha256 attached

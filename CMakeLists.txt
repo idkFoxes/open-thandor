@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 # The single version source: the generated version header (include/thandor/version.h.in), the version resource of
 # thandor.exe (src/platform/bootstrap/thandor.rc.in) and the installer take it from here.
-project(open_thandor VERSION 1.0.7 LANGUAGES C CXX RC)  # C: third_party/miniz
+project(open_thandor VERSION 1.0.8 LANGUAGES C CXX RC)  # C: third_party/miniz
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -618,7 +618,7 @@ endif()
 
 # ---- Patch installer (step 10) ---------------------------------------------------------------------------------
 # `cmake --build --preset mingw-release --target installer` builds <build>/installer/Thandor-Patch-N.exe ("Thandor
-# Patch N", N = the last part of the version: 1.0.7 -> Patch 7) with Inno Setup 7: tools/installer/build_installer.py stages thandor.exe,
+# Patch N", N = the last part of the version: 1.0.8 -> Patch 8) with Inno Setup 7: tools/installer/build_installer.py stages thandor.exe,
 # SDL3.dll, thandor.sym and the SDL3 licence in <build>/installer/stage (stripping debug sections where a file still
 # has them) and runs ISCC /DAppVersion=${PROJECT_VERSION} on tools/installer/thandor-patch.iss. The wizard images
 # come from tools/installer/images when it holds them, else Inno's placeholders stay. Only defined for a release

@@ -1,5 +1,5 @@
 ﻿THANDOR - DIE INVASION
-Open Thandor 1.0.7 ("Thandor Patch 7")
+Open Thandor 1.0.8 ("Thandor Patch 8")
 =======================================
 
 Was ist das?
@@ -35,7 +35,7 @@ Voraussetzungen
 Was installiert wird
 --------------------
 Im Thandor-Ordner:
-  thandor.exe                 das neue Spielprogramm (Version 1.0.7)
+  thandor.exe                 das neue Spielprogramm (Version 1.0.8)
   SDL3.dll                    Bibliothek für Fenster, Grafik, Ton und Eingabe
   thandor.sym                 Funktionsnamen für Absturzberichte (crash.log)
   OpenThandor-liesmich.txt    diese Datei
@@ -131,7 +131,7 @@ Ordner save des Spiels.
 
 Deinstallation
 --------------
-Über Einstellungen -> Apps -> Installierte Apps -> "Thandor Patch 7" (oder
+Über Einstellungen -> Apps -> Installierte Apps -> "Thandor Patch 8" (oder
 OpenThandor\unins000.exe im Spielordner). Die Deinstallation entfernt
 thandor.exe, SDL3.dll, thandor.sym und diese Datei und stellt die
 gesicherte alte thandor.exe (Version 1.05) wieder her. Spielstände, der
