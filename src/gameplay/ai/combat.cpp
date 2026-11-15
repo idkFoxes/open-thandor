@@ -189,6 +189,15 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
     if (candidateTargetModelRuntime->definitionOrSavedId.runtimeDefinition == nullptr) {
       continue;
     }
+    /* Not in the original: a slot without a root model node holds no live model. A destroyed model loses its
+       root node (ModelRuntimePool_DestroyHierarchyAndDetach) but keeps its definition and owner pointer (so do
+       slots in the middle of their creation and slots dropped at load); the never-cleared workspace can still
+       list it, and the original then sends the group against that owner army, possibly another army that
+       reused the slot ("ghost target"). Not a crash fix: a deliberate behaviour change. Checked after the pool
+       check, which keeps a stale pointer from being read at all. */
+    if (candidateTargetModelRuntime->rootModelNodeOrSavedOffset.modelNode == nullptr) {
+      continue;
+    }
     /* Not in the original: a destroyed model keeps its definition, but its army slot is free (no model node,
        ArmyRuntime_DestroyInstanceAndRefreshUi). As the best candidate the original follows that node in
        ArmyRuntime_ResolveCommandTargetAndRoute and crashes; as any other candidate it changes nothing. */
