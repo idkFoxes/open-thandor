@@ -104,7 +104,7 @@ box, autosave, custom maps from the map editor, and fixes for the crashes report
 #### Kept on purpose
 
 - After a win the campaign goes on to the next mission through the briefing room, exactly as before. The campaign
-  map changes neither savegames, levels nor campaigns, and network games with the original game still work.
+  map changes neither savegames, levels nor campaigns.
 - In a network game the host can start every unlocked mission except one that takes over units: such a mission is
   only reached by playing the mission before it.
 - The map is used with the mouse; with more than six campaigns (add-ons) the tab shows the old list.
@@ -216,8 +216,7 @@ gemeldeten Abstürze.
 #### Bewusst beibehalten
 
 - Nach einem Sieg geht die Kampagne wie bisher über den Besprechungsraum zur nächsten Mission weiter. Die
-  Kampagnenkarte ändert weder Spielstände noch Level oder Kampagnen, und Netzwerkspiele mit dem Originalspiel
-  funktionieren weiter.
+  Kampagnenkarte ändert weder Spielstände noch Level oder Kampagnen.
 - Im Netzwerkspiel kann der Host jede freigeschaltete Mission starten, außer einer mit Einheitenübernahme: Sie wird
   nur über die Mission davor erreicht.
 - Die Karte wird mit der Maus bedient; bei mehr als sechs Kampagnen (Add-ons) zeigt die Registerkarte die alte
