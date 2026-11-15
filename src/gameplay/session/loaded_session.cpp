@@ -135,6 +135,7 @@ static void InGameLoadedSession_ResetSessionState(uint32_t savedFactionIndex)
   g_EndMovieSelectionIndex = UINT32_MAX;
   g_EndMovieVariantIndex = 0;
   g_EndMoviePath = nullptr;
+  GameplayReplay_ConfigureLoadedPlayer(savedFactionIndex);
   g_LocalPlayerRuntimeId = 0;
   g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerBlocks;
   g_SelectionPlayerBlocks->factionIndex = savedFactionIndex;

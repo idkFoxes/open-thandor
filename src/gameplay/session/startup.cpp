@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/session/startup.h>
 #include <algorithm>
+#include <thandor/gameplay/replay/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
@@ -44,7 +45,15 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
      in-game UI also advance per drawn frame, so its outcome depends on the frame rate (a network game seeds both
      streams and simulates on the secondary one). The state hash test aid does the same as a network game here,
      before the first simulation steps, which already run during the initialisation. */
+  if(!GameplayReplay_PrepareSession()) { *outError=FATAL_ERROR_GENERAL_FAILURE; return false; }
+  struct ReplayLifetime { ~ReplayLifetime(){ GameplayReplay_Close(); } } replayLifetime;
   DebugHook_SessionInitializing();
+  if(GameplayReplay_Playing()) {
+    GameplayReplay_BeginCheckpointLoad();
+    started=InGameRuntime_InitializeLoadedSession(
+        const_cast<uint16_t*>(GameplayReplay_CheckpointPath()),&startupError);
+    GameplayReplay_EndCheckpointLoad();
+  } else
   if ((loadExistingSessionFlag & 1U) == 0) {
     started = InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16,&startupError);
   }
@@ -54,6 +63,25 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
   if (!started) {
     return InGameRuntime_FailSession(startupError,outError);
   }
+  if(GameplayReplay_RecordingRequested()) {
+    // Start both recording and playback through the SAME existing save loader.
+    // The one PCK-compressed checkpoint captures terrain, AI and runtime pools.
+    if(!GameplayReplay_CaptureInitialCheckpoint())
+      return InGameRuntime_FailSession(FATAL_ERROR_GENERAL_FAILURE,outError);
+    g_SoundStopAllVoices();
+    g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
+    GridScratch_ReleaseBuffers();
+    UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
+    UiRootStack_PopUntilWindowTextureBoundary();
+    InGameRuntime_ShutdownAndReleaseResources();
+    GameplayReplay_BeginCheckpointLoad();
+    started=InGameRuntime_InitializeLoadedSession(
+        const_cast<uint16_t*>(GameplayReplay_CheckpointPath()),&startupError);
+    GameplayReplay_EndCheckpointLoad();
+    if(!started) return InGameRuntime_FailSession(startupError,outError);
+  }
+  if(!GameplayReplay_SessionStarted())
+    return InGameRuntime_FailSession(FATAL_ERROR_GENERAL_FAILURE,outError);
   DebugHook_SessionStarted();
   do {
     DebugHook_SessionFrameBegin();
@@ -129,6 +157,7 @@ void InGameRuntime_ShutdownAndReleaseResources()
   InGameRuntimeRoot *inGameRoot;
   bool beginAccessFailed;
   
+  GameplayReplay_ClosingWorld();
   g_TimerUnregisterPeriodic(InGameRuntime_PeriodicCountdownAndClockTick);
   inGameRoot = g_InGameRuntimeRoot;
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);

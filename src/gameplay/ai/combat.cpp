@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/ai/combat.h>
 #include <thandor/thandor.h>
+#include <algorithm>
 
 /* Module data. */
 
@@ -110,11 +111,9 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
   ArmyCommandGeneration assignedCommandGeneration;
   uint32_t targetCandidateCount;
   uint32_t targetCandidateIndex;
-  AiTargetWorkspaceEntry *targetCandidateRecords;
   ModelRuntimeSlot *candidateTargetModelRuntime;
   uint32_t candidateClassScore;
   uint32_t bestScore;
-  ModelRuntimeSlot *bestTargetModelRuntime;
   GameEntityRuntime *targetRuntime;
   ArmyRuntimeSlot *collectedArmy;
 
@@ -139,25 +138,28 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
   assignedCommandGeneration = g_AiCommandGenerationCandidateBase;
 
   /* the group is strong enough: pick the target */
+  const bool useUnseenTargets = g_AiWorkspace07Count == 0;
   targetCandidateCount = g_AiWorkspace07Count;
-  targetCandidateRecords = g_AiWorkspace07Targets;
-  if (g_AiWorkspace07Count == 0) {
+  if (useUnseenTargets) {
     /* Original quirk: workspace 03 holds 8-byte AiRuntimeWorkspaceEntry records (written at ws03+count*8 in
        0x005383BE) but the original walks it with the 16-byte workspace-07 stride (0x0053B960 `add edi,0x10`,
        modelRuntime read at +8), so candidate i is ws03[2i+1].modelRuntime: for i >= count/2 a stale entry of an
-       earlier rebuild, for count > 256 past the 0x1000-byte buffer. Kept: it feeds the AI decisions and the AI
-       hash; a loaded game can see a different stale tail than an uninterrupted one. */
-    targetCandidateCount = g_AiWorkspace03Count;
-    targetCandidateRecords = reinterpret_cast<AiTargetWorkspaceEntry *>(g_AiWorkspace03UnseenHostiles); /* the quirk's stride */
-    if (g_AiWorkspace03Count == 0) {
-      return;
-    }
+       earlier rebuild. Preserve the retained entries within the workspace allocation. */
+    targetCandidateCount = std::min<uint32_t>(g_AiWorkspace03Count, AI_WORKSPACE03_CAPACITY / 2);
   }
   bestScore = 0;
-  bestTargetModelRuntime = nullptr;
+  targetRuntime = nullptr;
   for (targetCandidateIndex = 0; targetCandidateIndex < targetCandidateCount; targetCandidateIndex++) {
-    candidateTargetModelRuntime = targetCandidateRecords[targetCandidateIndex].modelRuntime;
-    if (candidateTargetModelRuntime == nullptr) {
+    candidateTargetModelRuntime = useUnseenTargets
+        ? g_AiWorkspace03UnseenHostiles[2 * targetCandidateIndex + 1].modelRuntime.get()
+        : g_AiWorkspace07Targets[targetCandidateIndex].modelRuntime.get();
+    if (candidateTargetModelRuntime == nullptr ||
+        candidateTargetModelRuntime->rootModelNodeOrSavedOffset.modelNode == nullptr) {
+      continue;
+    }
+    // The retained workspace can still refer to a released army.
+    auto *candidateOwner = candidateTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime.get();
+    if (candidateOwner == nullptr || candidateOwner->common.ownership.modelNode == nullptr) {
       continue;
     }
     candidateClassScore = g_AiCombatTargetClassBaseScores
@@ -165,7 +167,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
     /* ties go to the later candidate */
     if (bestScore <= candidateClassScore) {
       bestScore = candidateClassScore;
-      bestTargetModelRuntime = candidateTargetModelRuntime;
+      targetRuntime = candidateOwner;
     }
   }
   if (bestScore == 0) {
@@ -173,7 +175,6 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
   }
 
   /* send every collected army against the target model's owning army */
-  targetRuntime = bestTargetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
   collectedCount = g_AiCollectedEntityCount;
   collectedArmies = g_AiWorkspace14CollectedArmies;
   for (collectedIndex = 0; collectedIndex < collectedCount; collectedIndex++) {

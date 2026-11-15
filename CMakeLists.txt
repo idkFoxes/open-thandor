@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 # The single version source: the generated version header (include/thandor/version.h.in), the version resource of
 # thandor.exe (src/platform/bootstrap/thandor.rc.in) and the installer take it from here.
-project(open_thandor VERSION 1.0.7 LANGUAGES CXX RC)
+project(open_thandor VERSION 1.0.7 LANGUAGES C CXX RC)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -51,6 +51,13 @@ endif()
 
 # Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): the crash logs rely on stable code addresses.
 add_executable(thandor WIN32
+    src/assets/scenario/custom_project.cpp
+    src/ui/frontend/custom_maps.cpp
+    mapeditor/project_format/src/binary.cpp
+    mapeditor/project_format/src/pck.cpp
+    mapeditor/project_format/src/text_resource.cpp
+    mapeditor/project_format/src/gfx.cpp
+    mapeditor/project_format/src/map_project_archive.cpp
     src/assets/army/catalog.cpp
     src/assets/effect/catalog.cpp
     src/assets/model/definitions.cpp
@@ -83,6 +90,9 @@ add_executable(thandor WIN32
     src/core/settings/persistent.cpp
     src/core/text/path.cpp
     src/core/text/string.cpp
+    src/gameplay/replay/compact_stream.cpp
+    src/gameplay/replay/runtime.cpp
+    src/gameplay/replay/state_hash.cpp
     src/gameplay/ai/combat.cpp
     src/gameplay/ai/construction.cpp
     src/gameplay/ai/perception.cpp
@@ -301,7 +311,25 @@ add_executable(thandor WIN32
     src/world/terrain/sight.cpp
     src/world/terrain/water_relaxation.cpp
 )
-target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/mapeditor/project_format/include)
+add_library(thandor_miniz STATIC mapeditor/project_format/third_party/miniz/miniz.c)
+target_include_directories(thandor_miniz PUBLIC mapeditor/project_format/third_party/miniz)
+target_compile_definitions(thandor_miniz PUBLIC MINIZ_NO_STDIO MINIZ_NO_ZLIB_COMPATIBLE_NAMES)
+target_link_libraries(thandor PRIVATE thandor_miniz)
+# Pin replays to the exact gameplay source. Content changes trigger reconfigure.
+file(GLOB_RECURSE REPLAY_ID_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
+list(SORT REPLAY_ID_SOURCES)
+file(SHA256 "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt" REPLAY_CMAKE_HASH)
+set(REPLAY_SOURCE_HASHES "${REPLAY_CMAKE_HASH}")
+foreach(REPLAY_SOURCE IN LISTS REPLAY_ID_SOURCES)
+    file(SHA256 "${REPLAY_SOURCE}" REPLAY_SOURCE_HASH)
+    string(APPEND REPLAY_SOURCE_HASHES "${REPLAY_SOURCE_HASH}")
+endforeach()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${REPLAY_ID_SOURCES})
+string(SHA256 REPLAY_BUILD_ID "${REPLAY_SOURCE_HASHES};${CMAKE_CXX_COMPILER_ID};${CMAKE_CXX_COMPILER_VERSION};${CMAKE_BUILD_TYPE};${CMAKE_CXX_FLAGS};${CMAKE_CXX_FLAGS_RELEASE};${CMAKE_CXX_FLAGS_DEBUG};${THANDOR_DEV_TOOLS}")
+target_compile_definitions(thandor PRIVATE OPEN_THANDOR_REPLAY_BUILD_ID="${REPLAY_BUILD_ID}")
+
 # The version header <thandor/version.h> and the resources (icon, VERSIONINFO), generated from project(VERSION).
 configure_file(include/thandor/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor/version.h @ONLY)
 set(THANDOR_RC_ICON ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/bootstrap/thandor.ico)
@@ -372,10 +400,24 @@ else()
     # ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
     # sets the flag as THANDOR_LARGE_ADDRESS_AWARE wants it (keeps it; clears it for OFF) in the final image (after
     # strip and objcopy) and fails the build if the image came out relocatable.
-    add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
-    target_link_options(pe_not_large_address_aware PRIVATE -static)
+    if(CMAKE_CROSSCOMPILING AND CMAKE_HOST_UNIX)
+        find_program(THANDOR_HOST_CXX NAMES c++ g++ clang++ REQUIRED NO_CMAKE_FIND_ROOT_PATH)
+        set(THANDOR_PE_HELPER "${CMAKE_CURRENT_BINARY_DIR}/host-tools/pe_not_large_address_aware")
+        add_custom_command(OUTPUT "${THANDOR_PE_HELPER}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/host-tools"
+            COMMAND "${THANDOR_HOST_CXX}" -std=c++20 -O2
+                    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/pe_not_large_address_aware.cpp"
+                    -o "${THANDOR_PE_HELPER}"
+            DEPENDS cmake/pe_not_large_address_aware.cpp VERBATIM)
+        add_custom_target(pe_not_large_address_aware DEPENDS "${THANDOR_PE_HELPER}")
+        add_dependencies(thandor pe_not_large_address_aware)
+    else()
+        add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
+        target_link_options(pe_not_large_address_aware PRIVATE -static)
+        set(THANDOR_PE_HELPER "$<TARGET_FILE:pe_not_large_address_aware>")
+    endif()
     add_custom_command(TARGET thandor POST_BUILD
-        COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor> ${THANDOR_LAA_HELPER_ARGUMENT}
+        COMMAND "${THANDOR_PE_HELPER}" $<TARGET_FILE:thandor> ${THANDOR_LAA_HELPER_ARGUMENT}
         VERBATIM)
 endif()
 

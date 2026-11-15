@@ -1,0 +1,1 @@
+Map-editor project-format readers, copied from the workspace Thandor Map Editor 0.9.781 source. These portable readers keep .thmap PCK compression and STR semantics aligned with the editor; no editor renderer or simulation code is linked into the game. The custom_project wrapper enforces project resource limits before extraction.

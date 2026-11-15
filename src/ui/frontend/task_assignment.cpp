@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/task_assignment.h>
 #include <thandor/thandor.h>
+#include <thandor/ui/frontend/custom_maps.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -275,6 +276,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
        ->selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
   FrontendUi_Image(frontendRootPage)->NodeAt<UiTextButtonControl>(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[localPlayerRow])
        ->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+  CustomMaps_InitializeFactionChoice();
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(&FrontendUi_Image(frontendRootPage)->frontendRoot.root);
   rootVtable = frontendRootPage->rootNode.vtable;
   /* frontendRootPage is the frontend root (FrontendUiImage). */
@@ -359,6 +361,7 @@ void
 FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot)
 
 {
+  CustomMaps_EnsureAiFactions();
   UiNodeFlags *controlFlags;
   UiSelectableStateFlags *controlStateFlags;
   uint32_t controlOffset;
@@ -643,4 +646,5 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     remainingPlayers--;
     playerRecord++;
   }
+  CustomMaps_LockFactionModes();
 }

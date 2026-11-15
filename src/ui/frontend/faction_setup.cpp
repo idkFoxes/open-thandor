@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/faction_setup.h>
 #include <thandor/thandor.h>
+#include <thandor/ui/frontend/custom_maps.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -237,6 +238,7 @@ void FrontendFactionSetup_ChooseFaction
       }
     }
     matchedPlayerBlock->factionAssignment.factionAssignmentIndex = rowIndex + 1;
+    CustomMaps_RecordFactionChoice(static_cast<uint32_t>(rowIndex+1));
     matchedPlayerBlock->factionAssignment.readyOrWaitState = readyStateGeneration;
     g_FrontendFactionAssignmentReadyStateGeneration++;
     FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(&g_FrontendRootNode->frontendRoot.root);

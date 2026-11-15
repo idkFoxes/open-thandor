@@ -601,7 +601,13 @@ void CommandDispatch_ExecuteRecord(uint32_t codeBase,uint32_t originalRegionEnd,
   if (commandHandler == nullptr || !CommandDispatch_ValidateRecord(codeBase,record)) {
     return;
   }
-  (*commandHandler)(record->packedCommandAndPlayerId & 0xff,record->payload1,record->payload2,record->payload3);
+  if(codeBase==INGAME_COMMAND_CODE_BASE) {
+    GameplayReplayCommandGuard replayGuard(code,record->packedCommandAndPlayerId & 0xff,
+        record->payload1,record->payload2,record->payload3);
+    if(replayGuard.execute()) (*commandHandler)(record->packedCommandAndPlayerId & 0xff,record->payload1,record->payload2,record->payload3);
+  } else {
+    (*commandHandler)(record->packedCommandAndPlayerId & 0xff,record->payload1,record->payload2,record->payload3);
+  }
 }
 
 
@@ -635,7 +641,13 @@ void InGameCommand_IssueHandler(CommandQueueHandlerProc *handler,CommandPayload 
   uint32_t code;
 
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    if(!GameplayReplay_Active()) {
+      handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    } else {
+      code = CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,CommandDispatch_HandlerKey(handler));
+      GameplayReplayCommandGuard replayGuard(code,g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+      if(replayGuard.execute()) handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    }
     return;
   }
   code = CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,CommandDispatch_HandlerKey(handler));

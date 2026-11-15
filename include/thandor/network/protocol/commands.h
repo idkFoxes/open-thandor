@@ -9,6 +9,7 @@
 #define THANDOR_NETWORK_PROTOCOL_COMMANDS_H
 
 #include <thandor/core/types.h>
+#include <thandor/gameplay/replay/runtime.h>
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
 #include <thandor/ui/ingame/types.h>
@@ -190,7 +191,13 @@ inline void InGameCommand_Issue(P1 payload1,P2 payload2,P3 payload3)
   uint32_t code;
 
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    if(!GameplayReplay_Active()) {
+      Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    } else {
+      GameplayReplayCommandGuard replayGuard(CommandDispatch_CachedCodeOf<INGAME_COMMAND_CODE_BASE,Handler>(),
+          g_LocalPlayerRuntimeId,(CommandPayload)payload1,(CommandPayload)payload2,(CommandPayload)payload3);
+      if(replayGuard.execute()) Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    }
   }
   else {
     code = CommandDispatch_CachedCodeOf<INGAME_COMMAND_CODE_BASE,Handler>();

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/session/tick.h>
+#include <thandor/gameplay/replay/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
@@ -26,9 +27,7 @@ void InGameRuntime_PeriodicCountdownAndClockTick()
 
   while ((remaining != 0) && !countdown.compare_exchange_weak(remaining,remaining - 1,std::memory_order_relaxed)) {
   }
-  if (InGameTick_ResourceRegistrationBusyCount().load(std::memory_order_relaxed) == 0) {
-    InGameTick_PeriodicClockTick().fetch_add(1,std::memory_order_relaxed);
-  }
+  GameplayReplay_PeriodicClockTick();
 }
 
 /* Whether the current simulation step is a network interval boundary. The original divides by
@@ -296,6 +295,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
   bool stepDue;
   InGameRuntimeRoot *inGameRoot;
 
+  if(GameplayReplay_LoadingCheckpoint()) return;
   lockAlreadyHeld = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   if (lockAlreadyHeld) {
@@ -309,13 +309,20 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     }
     g_InGamePendingSimulationTicks++;
   }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
+  if(GameplayReplay_Playing()) {
+    stepDue=InGameTick_NetworkTickCountdown().load(std::memory_order_relaxed)==0;
+    if(stepDue) InGameTick_NetworkTickCountdown().store(INGAME_TIMER_TICKS_PER_SIMULATION_STEP,std::memory_order_relaxed);
+  } else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     stepDue = InGameTick_RunHostOrLocalLockstep();
   }
   else {
     stepDue = InGameTick_RunClientLockstep();
   }
   if (!stepDue) {
+    g_SpinLockRelease(&g_InGameStateTickSpinLock);
+    return;
+  }
+  if(!GameplayReplay_BeforeStep()) {
     g_SpinLockRelease(&g_InGameStateTickSpinLock);
     return;
   }
@@ -327,5 +334,6 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
            (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED))) {
     InGameTick_RunSimulationStep(inGameRoot);
   }
+  GameplayReplay_AfterStep();
   g_SpinLockRelease(&g_InGameStateTickSpinLock);
 }

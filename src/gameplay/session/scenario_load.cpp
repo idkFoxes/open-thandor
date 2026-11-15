@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/session/scenario_load.h>
 #include <thandor/thandor.h>
+#include <thandor/ui/frontend/custom_maps.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/assets/record_bytes.h>
 
@@ -487,6 +488,12 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
 
   frontendRoot = g_FrontendRootNode;
   pageStack = UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack);
+  const bool customProject = CustomMaps_ActiveLevelPath() != nullptr;
+  if (customProject) {
+    const auto* path = CustomMaps_ActiveLevelPath();
+    unsigned i = 0;
+    do { g_FrontendScenarioPathScratchUtf16[i] = path[i]; } while (path[i++] != 0 && i < 255);
+  } else {
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,
              static_cast<uint16_t *>
@@ -494,6 +501,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
                    [selectedRowIndex]),
              g_ScenarioLevelDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
+  }
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
   frontendRoot->menuRoomModelView.contextFlags =
        frontendRoot->menuRoomModelView.contextFlags &
@@ -569,6 +577,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
     }
   }
   g_FrontendLoadedLevelAsset = levelAsset;
+  if (customProject) return; // Custom files have no numbered catalog slot or availability mask.
   levelRecordOffset = (uint32_t)Asset_ByteDistance
                         (static_cast<uint8_t *>
                               (g_FrontendRootNode->missionsList.rowSlots

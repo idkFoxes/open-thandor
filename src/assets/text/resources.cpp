@@ -7,6 +7,7 @@
 
 #include <thandor/assets/text/resources.h>
 #include <thandor/thandor.h>
+#include <thandor/ui/frontend/custom_maps.h>
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -50,13 +51,18 @@ static uint16_t g_ProjectText144[] = {PROJECT_TEXT_BRIGHT,'1','4','4',' ','B','i
 static uint16_t g_ProjectTextVSync[] = {PROJECT_TEXT_BRIGHT,'V','S','y','n','c',0};
 static uint16_t g_ProjectTextNoteSoftware[] = {'3','D','-','K','a','n','t','e','n',' ','u','n','d',' ','U','I','-','S','k','a','l','i','e','r','u','n','g',' ','w','i','r','k','e','n',' ','n','u','r',' ','m','i','t',' ','V','u','l','k','a','n',' ','o','d','e','r',' ','D','i','r','e','c','t','X',' ','1','2',0};
 static uint16_t g_ProjectTextNoteUiScale[96] = {}; /* TextResource_SetUiScaleNote */
+static uint16_t g_CustomMapsText[] = {'C','u','s','t','o','m',' ','m','a','p','s',0};
+static uint16_t g_CustomMapHeaders[] = {'M','a','p',' ',' ','|',' ','P','l','a','n','e','t',' ','|',' ','S','i','z','e',' ','|',' ','H','u','m','a','n','s',' ','|',' ','T','o','t','a','l',' ','|',' ','A','u','t','h','o','r',0};
+static uint16_t g_OpenThandorGitHubText[] = {'G','i','t','H','u','b',0};
+static uint16_t g_MapEditorGitHubText[] = {'M','a','p',' ','E','d','i','t','o','r',0};
 static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
     g_ProjectTextAnzeigemodus, g_ProjectTextFenster, g_ProjectTextVollbildfenster, g_ProjectTextVollbild,
     g_ProjectTextAnzeige, g_ProjectTextAnzeigeeinstellungen, g_ProjectTextErweitert, g_ProjectTextErweiterteEinstellungen,
     g_ProjectText3DKanten, g_ProjectTextGlatt, g_ProjectTextOriginal, g_ProjectTextUiSkalierung,
     g_ProjectTextAuto, g_ProjectText1x, g_ProjectText2x, g_ProjectText3x,
     g_ProjectTextBildratenbegrenzung, g_ProjectTextAus, g_ProjectText60, g_ProjectText120,
-    g_ProjectText144, g_ProjectTextVSync, g_ProjectTextNoteSoftware, g_ProjectTextNoteUiScale};
+    g_ProjectText144, g_ProjectTextVSync, g_ProjectTextNoteSoftware, g_ProjectTextNoteUiScale, g_CustomMapsText, g_CustomMapHeaders,
+    g_OpenThandorGitHubText, g_MapEditorGitHubText};
 
 void TextResource_SetUiScaleNote(const char *text)
 {
@@ -373,6 +379,7 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   uint32_t overrideIndex;
   uint32_t pageIndex;
 
+  if (CustomMaps_TryResolveText(resourceId,outText)) return true;
   if (resourceId == TEXT_RESOURCE_ID_NONE) {
     *outText = g_EmptyTextResourceUtf16;
     return true;

@@ -7,6 +7,7 @@
 
 #include <thandor/assets/package/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/ui/frontend/custom_maps.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -69,6 +70,17 @@ bool Package_LoadEntryIntoBuffer
 
   const PackageLoadFlags loadFlags = FromBits<PackageLoadFlags>(bufferCapacityAndLoadFlags);
   bufferCapacity = ToBits(loadFlags & PACKAGE_LOAD_CAPACITY_MASK);
+  if (!Any(loadFlags & PACKAGE_LOAD_SKIP_PACKAGES)) {
+    if (const auto* asset = CustomMaps_FindAsset(path)) {
+      if (asset->size() > bufferCapacity) {
+        if (outByteCountOrError) *outByteCountOrError = FATAL_ERROR_OUT_OF_MEMORY;
+        return false;
+      }
+      std::copy(asset->begin(),asset->end(),reinterpret_cast<std::byte*>(destination));
+      if (outByteCountOrError) *outByteCountOrError = static_cast<uint32_t>(asset->size());
+      return true;
+    }
+  }
   entry = nullptr;
   if (!Any(loadFlags & PACKAGE_LOAD_SKIP_PACKAGES)) {
     entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
@@ -262,6 +274,13 @@ void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *
   uint32_t decodeErrorCode;
   uint32_t errorCode;
 
+  if (const auto* asset = CustomMaps_FindAsset(path)) {
+    const auto error = g_MemoryApi.alloc(static_cast<uint32_t>(std::max<size_t>(asset->size(),1)),&buffer);
+    if (error) { if (outErrorCode) *outErrorCode = error; return nullptr; }
+    std::copy(asset->begin(),asset->end(),static_cast<std::byte*>(buffer));
+    if (outByteCount) *outByteCount = static_cast<uint32_t>(asset->size());
+    return buffer;
+  }
   entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
   if (entry == nullptr) {
     if (FileSystem_LoadWholeFileNearExecutable(path,&buffer,outByteCount,&errorCode)) {
