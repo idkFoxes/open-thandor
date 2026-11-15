@@ -26,12 +26,18 @@ relative to `images/`).
    (no hover frame), then the shots (`GAME_DIR_wizshots/showcase_NN.bmp`, plus `sheet.png`). `--maps` also takes
    stock maps or `campaign:level` with `--script wizard_shot.txt`.
 3. `make_wizard_images.py GAME_DIR SHOT.bmp --crop X,Y,W,H --out tools/installer/images`: crops the playfield to
-   164:314, adds the logo, the version (`--version`, default "1.0.7") and "OPEN THANDOR", writes all sizes and `wizard-files.txt`.
+   164:314, adds the logo, the version (`--version`, default "1.0.8") and "OPEN THANDOR", writes all sizes and `wizard-files.txt`.
    The small image is the logo's globe on black. `--preview DIR --original PATCH5.png` adds PNG previews and
    `compare.png` (Patch 5's picture beside ours).
 
-The committed set (2026-10-10, version "1.0.7"): a 2560x1440 GPU-native battle frame of the README screenshots
-(`ot-scratch/readme-shots/raw/f_s2_gpunative_0006.bmp`, the frame behind `battle-1`) with
-`--crop 1340,60,580,1110 --version 1.0.7`; the small images came out byte-identical to the earlier set. (The set of
-2026-10-06, version "1.0.6", used `showcase_02.bmp` (5 wheel notches) with `--crop 840,200,460,880`; that shot no
-longer exists.) Shots are not bit-reproducible (timing), so a new run gives a slightly different picture.
+The committed set (2026-11-15, version "1.0.8"): a 2560x1440 GPU-native frame of the showcase level (`--maps
+showcase`, hansolo level 4 plus the heavy units, the rocket tanks firing) made with `take_wizard_shots.py --width 2560
+--height 1440` run through a wrapper that switches it to UI scale 2 with `OPEN_THANDOR_GPU_NATIVE_SHOTS=1` and copies
+`shots\gpunative_NNNN.bmp` out of the copy (the script itself fixes UI scale 1), with an input script for the 1280x720
+UI (4 wheel notches at 495,360, selection cleared at 940,660, pointer parked at 1275,715; wrapper and script:
+`ot-scratch/installer-shots/wiz2x.py`, `showcase_2x.txt`), kept as `ot-scratch/installer-shots/showcase_2x_gpunative_0004.bmp`, with
+`--crop 1100,330,580,1110 --version 1.0.8`; the small images came out byte-identical to the earlier set. (The set of
+2026-10-10, version "1.0.7", used a README battle frame, `ot-scratch/readme-shots/raw/f_s2_gpunative_0006.bmp` with
+`--crop 1340,60,580,1110`; the set of 2026-10-06, version "1.0.6", used `showcase_02.bmp` (5 wheel notches) with
+`--crop 840,200,460,880`; neither shot exists any more.) Shots are not bit-reproducible (timing), so a new run gives a
+slightly different picture.
