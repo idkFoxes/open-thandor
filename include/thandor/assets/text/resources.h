@@ -288,6 +288,19 @@ static_assert((TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY >= TEXT_ID_OBJECTIVE_BASE + TE
 static_assert(TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED <= TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE,
               "the objective block ends before the short mission objectives");
 
+/* Not in the original: the hint row of the "Single game" list while no custom map is listed (custom_maps.h,
+   docs/custom_maps.md): the row title, the description and the link to the map editor; German for German, English
+   for every other language. Resolved by CustomMaps_TryResolveText. Block TEXT_ID_CUSTOM_MAPS_HINT_BASE..
+   +TEXT_ID_CUSTOM_MAPS_HINT_RESERVED - 1 (0x7F0300..0x7F030F). */
+#define TEXT_ID_CUSTOM_MAPS_HINT_BASE (TEXT_ID_PROJECT_BASE + 0x300)
+inline constexpr int TEXT_ID_CUSTOM_MAPS_HINT_RESERVED = 0x10;
+#define TEXT_ID_CUSTOM_MAPS_HINT_TITLE (TEXT_ID_CUSTOM_MAPS_HINT_BASE + 0) /* "Eigene Karten: keine gefunden" */
+#define TEXT_ID_CUSTOM_MAPS_HINT_DESCRIPTION (TEXT_ID_CUSTOM_MAPS_HINT_BASE + 1) /* "Keine eigenen Karten gefunden. ..." */
+#define TEXT_ID_CUSTOM_MAPS_HINT_LINK (TEXT_ID_CUSTOM_MAPS_HINT_BASE + 2) /* "Map Editor auf GitHub" */
+static_assert(TEXT_ID_MISSION_OBJECTIVE_SHORT_BASE + TEXT_ID_MISSION_OBJECTIVE_SHORT_RESERVED <=
+              TEXT_ID_CUSTOM_MAPS_HINT_BASE,
+              "the short mission objectives end before the custom maps hint texts");
+
 /* Not in the original: the text id of the hand-written short objective of level levelName (the level file base name
    as LevelAssetHeader.levelFileNameUtf16 holds it, terminated; a directory before the last '\' or '/' and an
    extension from the first '.' are ignored, as is ASCII/Latin-1 case) for faction (1..7), or TEXT_RESOURCE_ID_NONE

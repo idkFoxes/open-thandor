@@ -532,6 +532,13 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   bool customMap;
 
   frontendRoot = g_FrontendRootNode;
+  /* open-thandor: the hint row of an empty custom map list (custom_maps.h) is no level: Start and a double click on
+     it do nothing */
+  if ((selectedRowIndex < g_FrontendRootNode->missionsList.rowCount) &&
+      CustomMaps_IsHintRecord(g_FrontendRootNode->missionsList.rowSlots[selectedRowIndex].get())) {
+    Thandor_Log("custom maps: the hint row is no map, nothing started");
+    return;
+  }
   pageStack = UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack);
   /* open-thandor: a custom map row (local games only) loads maps\<name>.lev from its project (custom_maps.h) */
   customMap = CustomMaps_LevelPathOfRecord(g_FrontendScenarioPathScratchUtf16,

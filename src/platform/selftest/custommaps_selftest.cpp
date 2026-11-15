@@ -858,6 +858,16 @@ void CustomMaps_ProjectTests(const std::vector<uint8_t> &lev, const std::vector<
   }
   Thandor_Log("custommaps: scan listed %u: %s", CustomMaps_Count(), listed.c_str());
   CustomMaps_Expect(listed == "good_pck,good_zip", "scan lists exactly good_pck and good_zip");
+  {
+    /* the hint texts count the rejected files of the scan (the hint row itself only shows without a listed map) */
+    uint16_t *description = nullptr;
+    CustomMaps_Expect(CustomMaps_TryResolveText(TEXT_ID_CUSTOM_MAPS_HINT_DESCRIPTION, &description),
+                      "the hint description resolves");
+    const std::string text = CustomMaps_Narrow(description);
+    CustomMaps_Expect(text.find(" abgelehnt, siehe thandor.log)") != std::string::npos ||
+                      text.find(" rejected, see thandor.log)") != std::string::npos,
+                      "the hint description names the rejected files");
+  }
 
   /* texts: the title from display_name, else STR string 0; the author in the description */
   const int zipSlot = CustomMaps_FindTitleSlot("Zip Test");
@@ -942,6 +952,32 @@ void CustomMaps_ProjectTests(const std::vector<uint8_t> &lev, const std::vector<
 
   std::filesystem::remove_all(root, error);
   CustomMaps_Rebuild(nullptr); /* the directory is gone: nothing listed afterwards */
+  {
+    /* no maps folder: the hint row behind the stock rows, not counted, no level */
+    ScenarioCatalogDisplayRecord stockRecord{};
+    Ptr32<ScenarioCatalogDisplayRecord> stockRows[1] = {};
+    stockRows[0] = &stockRecord;
+    uint32_t rowCount = 0;
+    bool hintRow = false;
+    Ptr32<ScenarioCatalogDisplayRecord> *rows = CustomMaps_ListRows(stockRows, 1, &rowCount, &hintRow);
+    CustomMaps_Expect(hintRow && (rowCount == 1) && (rows[0].get() == &stockRecord) &&
+                      CustomMaps_IsHintRecord(rows[1].get()) && !CustomMaps_IsHintRecord(&stockRecord),
+                      "without a maps folder the hint row follows the stock rows, uncounted");
+    uint16_t levelPath[64] = {};
+    CustomMaps_Expect(!CustomMaps_LevelPathOfRecord(levelPath, rows[1].get()) && (rows[1]->identifier[0] == 0x01) &&
+                      (rows[1]->identifier[1] == 0), "the hint row has no level path and identifier 0x01");
+    uint16_t *text = nullptr;
+    CustomMaps_TryResolveText(TEXT_ID_CUSTOM_MAPS_HINT_DESCRIPTION, &text);
+    const std::string description = CustomMaps_Narrow(text);
+    CustomMaps_TryResolveText(TEXT_ID_CUSTOM_MAPS_HINT_LINK, &text);
+    const std::string link = CustomMaps_Narrow(text);
+    Thandor_Log("custommaps: hint \"%s\" link \"%s\"", description.c_str(), link.c_str());
+    CustomMaps_Expect((description.find("Keine eigenen Karten gefunden. ") == 0 ||
+                       description.find("No custom maps found. ") == 0) &&
+                      (description.find("thandor.exe.") != std::string::npos) &&
+                      (link == "Map Editor auf GitHub" || link == "Map Editor on GitHub"),
+                      "the hint texts without rejected files");
+  }
   memcpy(g_ExecutableDirectoryUtf16, savedDirectory, sizeof savedDirectory);
 }
 

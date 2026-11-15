@@ -11,7 +11,8 @@
    maps\<name>.thmap next to the executable (a ZIP with map.ini or a legacy stored PCK with editor/project.txt,
    custom_project.h) whose level and field grid pass the checks becomes a row of the "Single game" list in a local
    game. Custom maps never enter g_ScenarioCatalog, so a network host neither lists nor sends them. Everything here
-   is native memory and native file calls (no arena): without a maps folder nothing changes.
+   is native memory and native file calls (no arena): without a maps folder nothing changes but the hint row of the
+   list (CustomMaps_ListRows).
 
    Text ids: a custom map gets the title index CUSTOM_MAP_TITLE_INDEX_BASE + slot (slot = hash of the lowercased name
    modulo CUSTOM_MAP_TITLE_INDEX_SLOTS, probing on), which the loaded .lev copy carries instead of its own; its title
@@ -57,10 +58,21 @@ uint32_t CustomMaps_Count();
 const char *CustomMaps_ListedName(uint32_t index);
 
 /* The row pointers of the "Single game" list: stockRows (stockCount rows) followed by one display record per custom
-   map with its column texts resolved. Returns stockRows unchanged when there is no custom map; otherwise a native
-   array that stays valid until the next call. *outCount receives the row count. */
+   map with its column texts resolved. Returns stockRows unchanged when there is no custom map and no hint row;
+   otherwise a native array that stays valid until the next call. *outCount receives the row count.
+   The hint row: while the feature is on and no custom map is listed (no maps folder, no .thmap file, or every file
+   rejected), *outHintRow is set and the array holds one more slot behind the *outCount rows, the hint record (title
+   TEXT_ID_CUSTOM_MAPS_HINT_TITLE). The caller sorts the *outCount rows first and then shows *outCount + 1 rows, so
+   the hint stays the last row and never takes part in the sort. It is no level: CustomMaps_IsHintRecord tells it
+   apart, its identifier (unit 0x01) never equals a -KARTE name, and the start of a level refuses it. */
 Ptr32<ScenarioCatalogDisplayRecord> *CustomMaps_ListRows(Ptr32<ScenarioCatalogDisplayRecord> *stockRows,
-                                                         uint32_t stockCount,uint32_t *outCount);
+                                                         uint32_t stockCount,uint32_t *outCount,bool *outHintRow);
+
+/* Whether record is the hint row of CustomMaps_ListRows. */
+bool CustomMaps_IsHintRecord(const void *record);
+
+/* The URL the hint row's link opens: the map editor's project page. */
+inline constexpr const char *CUSTOM_MAPS_EDITOR_URL = "https://github.com/idkFoxes/thandor-map-editor";
 
 /* When record is a custom map row: writes "maps\<name>." (the caller sets the extension) and returns true. */
 bool CustomMaps_LevelPathOfRecord(uint16_t *destination,const void *record);
@@ -99,7 +111,8 @@ bool CustomMaps_FindServedAsset(const uint16_t *path,const uint8_t **outData,uin
 /* The self-test: the checks of the scan on maps\<name>.thmap (without the name and collision rules). */
 bool CustomMaps_CheckProjectForTest(const std::string &name,std::string *outReason);
 
-/* The text of a custom map title or description id in the current language (see above); false for every other id. */
+/* The text of a custom map title or description id, or of a hint row id (TEXT_ID_CUSTOM_MAPS_HINT_*), in the current
+   language (see above); false for every other id. */
 bool CustomMaps_TryResolveText(uint32_t resourceId,uint16_t **outText);
 
 /* Rewrites the list titles of the custom map rows for the current text language (Game_ApplyLanguage). */
