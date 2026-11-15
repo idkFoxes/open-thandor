@@ -104,6 +104,9 @@ void Thandor_SelfTestKeyBindingsPanel();
 /* OPEN_THANDOR_SELFTEST=keymatch (keymatch_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestKeyMatch(void);
 
+/* OPEN_THANDOR_SELFTEST=mousering (mousering_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestMouseRing();
+
 /* OPEN_THANDOR_SELFTEST=campaignprogress (campaignprogress_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestCampaignProgress();
 

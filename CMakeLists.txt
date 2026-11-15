@@ -588,6 +588,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/selftest/keybindings_selftest.cpp
         src/platform/selftest/keymatch_selftest.cpp
         src/platform/selftest/language_selftest.cpp
+        src/platform/selftest/mousering_selftest.cpp
         src/platform/selftest/nativefile_selftest.cpp
         src/platform/selftest/objectives_selftest.cpp
         src/platform/selftest/raster_selftest.cpp

@@ -72,6 +72,10 @@ bool SdlPlatform_CreateMainWindow(const char *title)
 {
   /* the original window procedure swallows WM_SYSKEYDOWN, so Alt+F4 does not close the game */
   SDL_SetHint(SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, "0");
+  /* Without this SDL swallows the release of a button held across a focus change (focus_click_pending in
+     WIN_UpdateFocus), which left the button stuck in relative mouse mode. Side effect: in window mode the click
+     that activates the window reaches the game. */
+  SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
   if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
     Thandor_Log("SDL_Init failed: %s", SDL_GetError());
     return false;
@@ -190,6 +194,7 @@ void SdlPlatform_PumpEvents()
   if (g_WindowDestroyDepth != 0) {
     Runtime_ShutdownAndExit(nullptr); /* the original's Win32_ShutdownAndExit */
   }
+  UpdateMouseDiagnostics();
 }
 
 void SdlPlatform_Quit()
