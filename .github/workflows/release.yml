@@ -217,6 +217,11 @@ jobs:
           awk -v v="$VERSION" '/^## /{inside = (index($0, "## " v " ") == 1 || $0 == "## " v); if (inside) next}
                                inside' docs/PATCH_NOTES.md > section.md
           if [ ! -s section.md ]; then echo "::error::no section '## ${VERSION}' in docs/PATCH_NOTES.md"; exit 1; fi
+          # the section's relative links point from docs/ (custom_maps.md, ../README.md); on the release page they
+          # would be broken, so they become links into the tagged tree
+          BLOB="https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}"
+          sed -E -i -e "s#\]\(\.\./([^)]+)\)#](${BLOB}/\1)#g" \
+                    -e "s#\]\(([^)/:#][^):]*)\)#](${BLOB}/docs/\1)#g" section.md
           printf '\n---\n\n## Patch notes %s\n' "$VERSION" >> notes.md
           cat section.md >> notes.md
           printf '\nSHA256 (%s): `%s`\n' "$INSTALLER" "$(cut -d' ' -f1 "dist/${INSTALLER}.sha256")" >> notes.md
