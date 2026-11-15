@@ -135,4 +135,5 @@ Rechtliches
 Thandor - Die Invasion (c) 1999 Innonics GmbH. Open Thandor ist ein
 unabhängiges Fanprojekt und enthält keine Spieldaten; es benötigt Ihre
 gekaufte Thandor-Installation. SDL3 steht unter der zlib-Lizenz
-(OpenThandor\LICENSE-SDL3.txt).
+(OpenThandor\LICENSE-SDL3.txt), miniz (liest die ZIP-Karten .thmap) unter
+der MIT-Lizenz (OpenThandor\LICENSE-miniz.txt).

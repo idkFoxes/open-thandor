@@ -182,6 +182,8 @@ Contributions are welcome.
 The source code and documentation are under the [MIT License](LICENSE): free to use, change and share, as long as
 the copyright notice is kept. The original game and its data (artwork, texts, sounds, movies) belong to their
 rights holders and are not part of this project; you need an original copy to play. This project is not
-affiliated with the original developers or publishers. This is an unofficial reverse-engineering and preservation project.
+affiliated with the original developers or publishers. Third-party code: SDL3 (zlib licence) and, in
+[third_party](third_party), miniz (MIT, [third_party/miniz/LICENSE](third_party/miniz/LICENSE)) and the map editor's
+project-format reader (MIT, [third_party/map_editor_project_format/README.txt](third_party/map_editor_project_format/README.txt)). This is an unofficial reverse-engineering and preservation project.
 It is not affiliated with or endorsed by the original copyright holders.
 Original game assets and software remain the property of their respective owners.

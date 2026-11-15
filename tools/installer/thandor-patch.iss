@@ -8,7 +8,7 @@
 ;   PatchNumber       the patch number, default the last part of AppVersion (1.0.7 -> 7; Patch 5 was 1.05)
 ;   PatchName         AppName and wizard name, default "Thandor Patch <PatchNumber>"; the installer file is
 ;                     Thandor-Patch-<PatchNumber>.exe
-;   Stage             folder with thandor.exe, SDL3.dll and optionally thandor.sym and LICENSE-SDL3.txt,
+;   Stage             folder with thandor.exe, SDL3.dll and optionally thandor.sym, LICENSE-SDL3.txt and LICENSE-miniz.txt,
 ;                     default <repo>\build-mingw-release\installer\stage
 ;   OutDir            output folder (ISCC /O wins), default <repo>\build-mingw-release\installer
 ;   WizardImage       large wizard image(s), e.g. "a-164.bmp,a-328.bmp"; default: every
@@ -173,6 +173,7 @@ Source: "{#Stage}\thandor.exe"; DestDir: "{app}"; Flags: ignoreversion overwrite
 Source: "{#Stage}\SDL3.dll"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly
 Source: "{#Stage}\thandor.sym"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly skipifsourcedoesntexist
 Source: "{#Stage}\LICENSE-SDL3.txt"; DestDir: "{app}\OpenThandor"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "{#Stage}\LICENSE-miniz.txt"; DestDir: "{app}\OpenThandor"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#SourcePath}\OpenThandor-liesmich.txt"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly isreadme
 
 [Code]
