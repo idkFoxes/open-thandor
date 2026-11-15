@@ -89,6 +89,23 @@ No other entry of a project is ever served.
   carries this index instead of the file's. Its identifier becomes `maps\<name>.`.
 * **Start:** from the list, or with `-KARTE="<name>"` (as for an original map). The level path is the virtual
   `maps\<name>.lev`.
+* **Hint row:** while no custom map is listed (no `maps` folder, no `.thmap` file in it, or every file rejected),
+  the *Einzelspiel* list ends with one dark grey row *Eigene Karten: keine gefunden* / *Custom maps: none found*.
+  It is appended behind the sorted rows, so it is always the last row and never changes the order or the selection
+  of the maps. Selected, it shows in the description box:
+  *Keine eigenen Karten gefunden. Lege .thmap-Dateien des Thandor Map Editors in den Ordner maps neben thandor.exe.*
+  (English: *No custom maps found. Put Thandor Map Editor .thmap files into the maps folder next to thandor.exe.*).
+  When the scan rejected files, their number follows: *Keine eigenen Karten gefunden (3 abgelehnt, siehe
+  thandor.log). Lege .thmap-Dateien in den Ordner maps neben thandor.exe.* / *No custom maps found (3 files
+  rejected, see thandor.log). Put .thmap files into the maps folder next to thandor.exe.* Below the text the link
+  *Map Editor auf GitHub* / *Map Editor on GitHub* opens <https://github.com/idkFoxes/thandor-map-editor> in the
+  browser (`SdlPlatform_OpenUrl`; with `OPEN_THANDOR_OPEN_URL=log` it is only logged). The row is no map: *Starten*
+  is greyed out while it is selected, a double click or Enter on it starts nothing, and `-KARTE` never selects it
+  (its identifier is the unit 0x01, which no command line name contains). German texts for German, English for
+  every other language, like the list suffix. Not shown in network games and in "Original Thandor" mode. Texts:
+  `TEXT_ID_CUSTOM_MAPS_HINT_TITLE` / `_DESCRIPTION` / `_LINK` (0x7F0300..0x7F0302, block up to 0x7F030F), resolved
+  by `CustomMaps_TryResolveText`; the link: `FrontendCustomMapsHintLink_Draw` / `_HandleLeftPress`
+  (`ui/frontend/scenario_selection.cpp`).
 * **Serving:** the file's level, its field grid and its terrain files come from memory while the project is
   *active*. It becomes active when its map is loaded (list, `-KARTE`, *Neustart*, loading a save) and stays active
   through the session. Only one project is active at a time. The active project is released:
@@ -101,9 +118,11 @@ No other entry of a project is ever served.
   file again and checks it again.
 * **Objective overlay:** custom maps get the generated objective line, never the hand-written one of an original
   level.
-* **Memory:** the scan and the active project use native memory only (no arena). Without a `maps` folder nothing is
-  allocated and the game behaves exactly as before.
-* **Original Thandor mode** (`OT_FEATURE_CUSTOM_MAPS` off): `maps\` is neither scanned nor listed.
+* **Memory:** the scan and the active project use native memory only (no arena). Without a `maps` folder the scan
+  allocates nothing; the list then only gets the hint row (a native row array, no arena), and levels, saves and
+  the game state are unchanged.
+* **Original Thandor mode** (`OT_FEATURE_CUSTOM_MAPS` off): `maps\` is neither scanned nor listed, and the hint
+  row is not shown.
 
 ### Saved games
 
@@ -191,4 +210,6 @@ python tools/data/custom_map.py corrupt SRC.thmap OUT_DIR KIND
   * broken LEV and FLD entries, a field path mismatch, a missing manifest, unsupported manifest versions
 * invalid names, collisions with original levels, an old map folder
 * the scan, the texts, serving and its release
+* the hint row: the rejected count in its text, and without a `maps` folder the row behind the stock rows (not
+  counted, no level path, identifier 0x01) with its texts
 * fuzz runs over mutated ZIP and PCK projects

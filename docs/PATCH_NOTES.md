@@ -30,7 +30,9 @@ A mission map for the campaigns: replay any mission you have reached, without sa
   (ZIP or the editor's older PCK form) appears in the *Einzelspiel* list, marked *(custom map)*, with the title,
   description and author from the project. A project may bring its own ground textures. Every project is checked
   before it is listed; a rejected one gets one line in `thandor.log`. Network games neither list nor send them.
-  The earlier `maps\<name>\` folders are no longer read. Details: [custom_maps.md](custom_maps.md).
+  The earlier `maps\<name>\` folders are no longer read. Without any custom map the list ends with a hint row
+  that says where `.thmap` files go (and how many were rejected), with a link to the Thandor Map Editor on GitHub.
+  Details: [custom_maps.md](custom_maps.md).
 
 #### Kept on purpose
 
@@ -66,7 +68,8 @@ Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder
   *(eigene Karte)*, mit Titel, Beschreibung und Autor aus dem Projekt. Ein Projekt darf eigene Bodentexturen
   mitbringen. Jedes Projekt wird vor dem Anzeigen geprüft; ein abgelehntes erhält eine Zeile in `thandor.log`.
   Netzwerkspiele zeigen und senden sie nicht. Die früheren Ordner `maps\<Name>\` werden nicht mehr gelesen.
-  Einzelheiten: [custom_maps.md](custom_maps.md).
+  Ohne eigene Karte endet die Liste mit einer Hinweiszeile, die sagt, wohin `.thmap`-Dateien gehören (und wie viele
+  abgelehnt wurden), mit einem Link zum Thandor Map Editor auf GitHub. Einzelheiten: [custom_maps.md](custom_maps.md).
 
 #### Bewusst beibehalten
 
