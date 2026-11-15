@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker><style>.t{font-size:17px;font-weight:700;fill:#1d1d1f}.d{font-size:12px;fill:#333}.m{font-size:11px;fill:#222}.f{font-size:11px;fill:#666}.l{font-size:11.5px;fill:#333;font-style:italic}.h{font-size:11px;font-weight:700;fill:#888;letter-spacing:1.5px}</style></defs>
+<rect width="1280" height="640" fill="#fff"/>
+<text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">movie — FLM playback and encoding</text>
+<text x="20" y="52" class="d">One module, src/movie/runtime/ (headers in include/thandor/movie/runtime/); the boxes are its source files. Arrows are real call paths; click a box for its sources or page.</text>
+<text x="1240" y="76" class="h" text-anchor="end">WHERE MOVIES PLAY</text>
+<text x="1240" y="192" class="h" text-anchor="end">MOVIE/RUNTIME</text>
+<text x="1240" y="600" class="h" text-anchor="end">SERVICES</text>
+<a href="../platform/README.md"><g>
+<rect x="40" y="84" width="250" height="44" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="165.0" y="110.0" class="d" text-anchor="middle">platform: intro movies at start-up</text>
+</g></a>
+<a href="../gameplay/README.md"><g>
+<rect x="320" y="84" width="240" height="44" rx="8" fill="#fdeee0" stroke="#d07a2a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="440.0" y="110.0" class="d" text-anchor="middle">gameplay: level loading movie</text>
+</g></a>
+<a href="../ui/README.md"><g>
+<rect x="590" y="84" width="400" height="44" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="790.0" y="110.0" class="d" text-anchor="middle">ui: briefing loop, campaign end movie, notifications</text>
+</g></a>
+<a href="../../../src/movie/runtime/"><g>
+<rect x="40" y="200" width="660" height="250" rx="10" fill="#f3ecfb" stroke="#8a5ac8" stroke-width="2"/>
+<text x="54" y="225" class="t">playback.cpp</text>
+<text x="688" y="224" class="f" text-anchor="end">playback</text>
+<text x="54" y="244" class="d">Opens an FLM (loose movie folder, mounted package, exe folder), loads the header and the</text>
+<text x="54" y="259" class="d">video stream, picks one embedded soundtrack at random, keeps g_ActiveMovie as a one-frame</text>
+<text x="54" y="274" class="d">texture; a refill worker thread streams large movies. One movie open at a time.</text>
+<rect x="54" y="285" width="77" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="61" y="299" class="m">Movie_Open</text>
+<rect x="137" y="285" width="127" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="144" y="299" class="m">Movie_AdvanceFrame</text>
+<rect x="270" y="285" width="165" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="277" y="299" class="m">Movie_StreamWorkerThread</text>
+<rect x="442" y="285" width="90" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="449" y="299" class="m">Movie_Rewind</text>
+<rect x="537" y="285" width="83" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="544" y="299" class="m">Movie_Close</text>
+<rect x="54" y="309" width="165" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="61" y="323" class="m">Movie_GetFrameDimensions</text>
+<rect x="225" y="309" width="146" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="232" y="323" class="m">Movie_SetAudioGainQ15</text>
+<rect x="378" y="309" width="140" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="384" y="323" class="m">IntroMovie_TimerTick</text>
+</g></a>
+<a href="../../../src/movie/runtime/"><g>
+<rect x="760" y="200" width="480" height="110" rx="10" fill="#f3ecfb" stroke="#8a5ac8" stroke-width="2"/>
+<text x="774" y="225" class="t">flm_decoder.cpp</text>
+<text x="1228" y="224" class="f" text-anchor="end">decode</text>
+<text x="774" y="244" class="d">4x4 block delta decoder into the ARGB frame;</text>
+<text x="774" y="259" class="d">chroma/luma colour table built at start-up.</text>
+<rect x="774" y="270" width="172" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="781" y="284" class="m">Movie_DecodeFrame4x4Delta</text>
+<rect x="952" y="270" width="178" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="958" y="284" class="m">Movie_BuildChromaLumaTable</text>
+</g></a>
+<a href="../../../src/movie/runtime/"><g>
+<rect x="760" y="325" width="480" height="125" rx="10" fill="#f3ecfb" stroke="#8a5ac8" stroke-width="2"/>
+<text x="774" y="350" class="t">flm_encoder.cpp</text>
+<text x="1228" y="349" class="f" text-anchor="end">encode</text>
+<text x="774" y="369" class="d">FLM encoder (keyframe and delta frames); not used</text>
+<text x="774" y="384" class="d">by the game, only by the self-tests.</text>
+<rect x="774" y="395" width="190" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="781" y="409" class="m">Movie_EncodeFrame4x4Keyframe</text>
+<rect x="970" y="395" width="172" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="977" y="409" class="m">Movie_EncodeFrame4x4Delta</text>
+<rect x="774" y="419" width="90" height="19" rx="9" fill="#fff" stroke="#8a5ac8" stroke-opacity="0.6"/>
+<text x="781" y="433" class="m">MovieColor_*</text>
+</g></a>
+<a href="../assets/README.md"><g>
+<rect x="40" y="520" width="200" height="44" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="140.0" y="546.0" class="d" text-anchor="middle">assets: PCK package entry</text>
+</g></a>
+<a href="../platform/README.md"><g>
+<rect x="270" y="520" width="260" height="44" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="400.0" y="546.0" class="d" text-anchor="middle">platform: file system, periodic timer</text>
+</g></a>
+<a href="../audio/README.md"><g>
+<rect x="560" y="520" width="200" height="44" rx="8" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="660.0" y="546.0" class="d" text-anchor="middle">audio: soundtrack voice</text>
+</g></a>
+<a href="../graphics/README.md"><g>
+<rect x="790" y="520" width="220" height="44" rx="8" fill="#e6f6ec" stroke="#2f9a57" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="900.0" y="546.0" class="d" text-anchor="middle">graphics: frame drawn as texture</text>
+</g></a>
+<a href="../platform/README.md"><g>
+<rect x="1040" y="520" width="200" height="44" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1140.0" y="546.0" class="d" text-anchor="middle">platform: self-tests</text>
+</g></a>
+<path d="M165,128 L165,200" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="172" y="168" class="l" text-anchor="start">open, advance, close</text>
+<path d="M440,128 L440,200" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="447" y="168" class="l" text-anchor="start">open, advance per load step</text>
+<path d="M640,128 L640,200" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="647" y="168" class="l" text-anchor="start">open, advance, rewind</text>
+<path d="M700,255 L760,255" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="730" y="247" class="l" text-anchor="middle">decode</text>
+<path d="M140,450 L140,520" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="147" y="490" class="l" text-anchor="start">find entry</text>
+<path d="M360,450 L360,520" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="367" y="490" class="l" text-anchor="start">open, read, seek</text>
+<path d="M470,520 L470,450" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="477" y="490" class="l" text-anchor="start">frame ticks</text>
+<path d="M660,450 L660,520" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="653" y="490" class="l" text-anchor="end">voice set, play</text>
+<path d="M690,450 L690,490 L900,490 L900,520" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="800" y="483" class="l" text-anchor="middle">ARGB frame via callers</text>
+<path d="M1140,520 L1140,450" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1147" y="490" class="l" text-anchor="start">round trip</text>
+</svg>

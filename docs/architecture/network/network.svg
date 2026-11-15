@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 650" width="1280" height="650" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker><style>.t{font-size:17px;font-weight:700;fill:#1d1d1f}.d{font-size:12px;fill:#333}.m{font-size:11px;fill:#222}.f{font-size:11px;fill:#666}.l{font-size:11.5px;fill:#333;font-style:italic}.h{font-size:11px;font-weight:700;fill:#888;letter-spacing:1.5px}</style></defs>
+<rect width="1280" height="650" fill="#fff"/>
+<text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">network — modules</text>
+<text x="20" y="52" class="d">src/network/: the session and transfer protocol on top of a pluggable UDP backend. Arrows are real calls or data flows. Click a box for its source folder or area page.</text>
+<text x="1220" y="74" class="h" text-anchor="end">OTHER AREAS</text>
+<a href="../ui/README.md"><g>
+<rect x="60" y="80" width="300" height="44" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="210.0" y="106.0" class="d" text-anchor="middle">ui (frontend pages · ui/core receive ring)</text>
+</g></a>
+<a href="../gameplay/README.md"><g>
+<rect x="400" y="80" width="230" height="44" rx="8" fill="#fdeee0" stroke="#d07a2a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="515.0" y="106.0" class="d" text-anchor="middle">gameplay (session tick · scenario load)</text>
+</g></a>
+<a href="../world/README.md"><g>
+<rect x="670" y="80" width="150" height="44" rx="8" fill="#fff6d6" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="745.0" y="106.0" class="d" text-anchor="middle">world (terrain edit)</text>
+</g></a>
+<a href="../assets/README.md"><g>
+<rect x="860" y="80" width="150" height="44" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="935.0" y="106.0" class="d" text-anchor="middle">assets (PCK codec)</text>
+</g></a>
+<a href="../core/README.md"><g>
+<rect x="1050" y="80" width="170" height="44" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1135.0" y="106.0" class="d" text-anchor="middle">core (random seeds)</text>
+</g></a>
+<text x="1220" y="204" class="h" text-anchor="end">NETWORK</text>
+<a href="../../../src/network/protocol/"><g>
+<rect x="60" y="212" width="1160" height="126" rx="10" fill="#fde8ef" stroke="#c84a76" stroke-width="2"/>
+<text x="74" y="237" class="t">protocol</text>
+<text x="1208" y="236" class="f" text-anchor="end">8 files · 4.0k lines</text>
+<text x="74" y="256" class="d">Lobby (discovery, session list, join), session-start snapshot exchange, in-game lockstep command batches,</text>
+<text x="74" y="271" class="d">command queues and dispatch tables, chunked mailbox transfer (maps, catalog), packet cipher, receive timer.</text>
+<rect x="74" y="282" width="71" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="81" y="296" class="m">lobby.cpp</text>
+<rect x="151" y="282" width="140" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="158" y="296" class="m">frontend_session.cpp</text>
+<rect x="297" y="282" width="140" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="304" y="296" class="m">command_exchange.cpp</text>
+<rect x="443" y="282" width="90" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="450" y="296" class="m">lockstep.cpp</text>
+<rect x="538" y="282" width="90" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="545" y="296" class="m">commands.cpp</text>
+<rect x="634" y="282" width="83" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="641" y="296" class="m">mailbox.cpp</text>
+<rect x="723" y="282" width="77" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="730" y="296" class="m">cipher.cpp</text>
+<rect x="806" y="282" width="146" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="813" y="296" class="m">scenario_transfer.cpp</text>
+<rect x="958" y="282" width="102" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="965" y="296" class="m">packet_bytes.h</text>
+<rect x="1067" y="282" width="58" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="1074" y="296" class="m">types.h</text>
+</g></a>
+<a href="../../../src/network/backend/"><g>
+<rect x="60" y="420" width="560" height="110" rx="10" fill="#fde8ef" stroke="#c84a76" stroke-width="2"/>
+<text x="74" y="445" class="t">backend</text>
+<text x="608" y="444" class="f" text-anchor="end">2 files</text>
+<text x="74" y="464" class="d">WinSock 1.1 (wsock32.dll) bound at start-up; eight backend slots:</text>
+<text x="74" y="479" class="d">select, cleanup, open/bind, close, receive, send, parse, format address.</text>
+<rect x="74" y="490" width="83" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="81" y="504" class="m">runtime.cpp</text>
+<rect x="163" y="490" width="115" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="170" y="504" class="m">fallback_udp.cpp</text>
+<rect x="284" y="490" width="58" height="19" rx="9" fill="#fff" stroke="#c84a76" stroke-opacity="0.6"/>
+<text x="291" y="504" class="m">types.h</text>
+</g></a>
+<a href="../platform/README.md"><g>
+<rect x="760" y="450" width="260" height="44" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="890.0" y="476.0" class="d" text-anchor="middle">platform (bootstrap · Game_Run)</text>
+</g></a>
+<rect x="200" y="590" width="280" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="340.0" y="614.0" class="d" text-anchor="middle">LAN peers</text>
+<path d="M110,124 L110,212" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="117" y="150" class="l" text-anchor="start">lobby ticks · join</text>
+<path d="M270,212 L270,124" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="277" y="186" class="l" text-anchor="start">packet ring</text>
+<text x="277" y="200" class="l" text-anchor="start">lobby command handlers</text>
+<path d="M440,124 L440,212" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="447" y="150" class="l" text-anchor="start">lockstep step</text>
+<text x="447" y="164" class="l" text-anchor="start">map send buffer</text>
+<path d="M580,212 L580,124" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="587" y="186" class="l" text-anchor="start">game commands</text>
+<path d="M745,212 L745,124" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="752" y="186" class="l" text-anchor="start">terrain edits</text>
+<path d="M935,212 L935,124" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="942" y="186" class="l" text-anchor="start">decode maps</text>
+<path d="M1135,212 L1135,124" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1142" y="186" class="l" text-anchor="start">seed sync</text>
+<path d="M340,338 L340,420" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="347" y="372" class="l" text-anchor="start">send · receive datagram</text>
+<text x="347" y="386" class="l" text-anchor="start">close on host loss</text>
+<path d="M60,102 L34,102 L34,470 L60,470" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="28" y="300" class="l" text-anchor="middle" transform="rotate(-90 28 300)">open port 929 · addresses</text>
+<path d="M760,472 L620,472" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="690" y="464" class="l" text-anchor="middle">Network_Init</text>
+<text x="690" y="490" class="l" text-anchor="middle">close at exit</text>
+<path d="M340,530 L340,590" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<text x="347" y="565" class="l" text-anchor="start">UDP</text>
+</svg>
