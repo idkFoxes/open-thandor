@@ -109,21 +109,6 @@ as ordinary variables of the modules; only the game's data files (`*.PCK`, movie
 - Bugs and quirks of the original game are kept on purpose and marked "Original quirk" in the code; only the ones
   that corrupt memory or crash are bounded.
 
-### Roadmap
-
-1. Step 8 (done): a full code review and idiomatic C++, following the
-   [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) ([plan](docs/plans/step8_idiomatic_cpp.md)).
-2. Step 9 (done): the UI and the 2D overlays drawn on the GPU, UI scaling at 1440p and 4K
-   ([plan](docs/plans/step9_gpu_ui.md)).
-3. Step 10 (done): the patch installer "Thandor Patch 6" (Inno Setup 7) for version 1.0.6, built by GitHub Actions
-   on a release tag ([plan](docs/plans/step10_installer.md)).
-4. Step 11 (done): security and crash fixes for local input - level, savegame and asset files, local crashes,
-   thread races, undefined behaviour ([plan](docs/plans/step11_security_crash.md)).
-5. Step 12 (next): the multiplayer security fixes - data received from peers, lobby and session transfer, the
-   UDP backend; tested against the original game ([plan](docs/plans/step12_multiplayer_security.md)).
-6. Step 13 (done): modern C++ - typed UI objects instead of template offsets, named casts, `constexpr` and
-   `enum class`, RAII, `bool`, named key actions and plain loops ([plan](docs/plans/step13_modern_cpp.md)).
-
 ### How correctness is kept
 
 The project gave up byte-identical machine code in favour of readable code; behaviour is checked instead
@@ -189,7 +174,7 @@ change the graphics API, fix sound and so on. I hope some of you want to join th
 ## Contributors
 
 - **idkFoxes** - reverse engineering of the game and the original decompilation this project grew from.
-- **Crankerer** - compilable build, the C/C++ reimplementation and its verification, and the patches 1.0.6 and 1.0.7
+- **Crankerer** - compilable build, the C/C++ reimplementation and its verification, and the patches 1.0.6, 1.0.7 and 1.0.8
   (Open Thandor) including the patch installer.
 
 Contributions are welcome.
