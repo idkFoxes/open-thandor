@@ -42,6 +42,9 @@ inline constexpr uint32_t INGAME_CAMERA_MAXIMUM_DISTANCE_Q12 = 32 * Q12_ONE;
 
 bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
                                         uint32_t *outError);
+/* open-thandor: queues the level's five intro notifications without starting the notification timer (the game
+   recorder after it loaded a new level again from its checkpoint, gameplay/replay/runtime.h) */
+void InGameNewSession_QueueIntroNotificationRecords();
 
 extern uint32_t g_EndMovieVariantIndex;
 extern uint16_t *g_EndMoviePath;

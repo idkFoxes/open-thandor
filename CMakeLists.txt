@@ -117,7 +117,10 @@ add_executable(thandor WIN32
     src/gameplay/faction/economy.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
+    src/gameplay/replay/runtime.cpp
     src/gameplay/replay/state_hash.cpp
+    src/gameplay/replay/files.cpp
+    src/gameplay/replay/stream.cpp
     src/gameplay/selection/commands.cpp
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp

@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/gameplay/replay/runtime.h>
 
 /* Periodic timer callback of the in-game session: counts the network tick countdown down to zero and advances the
    periodic clock while no resource registration is in progress.
@@ -301,6 +302,11 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
   if (lockAlreadyHeld) {
     return;
   }
+  if (g_GameRecorderLoading) {
+    /* open-thandor: no steps while the game recorder loads its checkpoint (gameplay/replay/runtime.h) */
+    g_SpinLockRelease(&g_InGameStateTickSpinLock);
+    return;
+  }
   if (!Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS)) {
     /* do not run ahead of the renderer by more than a few steps */
     if (2 < (int)g_InGamePendingSimulationTicks) {
@@ -310,7 +316,10 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     g_InGamePendingSimulationTicks++;
   }
   DebugHook_ProfileEnter(DEBUG_PROFILE_LOCKSTEP);
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
+  if (g_GameRecorderActive && GameRecorder_StepsUnpaced()) {
+    stepDue = true; /* open-thandor: a playback with OPEN_THANDOR_REPLAY_FAST=1 does not wait for the timer */
+  }
+  else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     stepDue = InGameTick_RunHostOrLocalLockstep();
   }
   else {
@@ -321,6 +330,11 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     g_SpinLockRelease(&g_InGameStateTickSpinLock);
     return;
   }
+  /* open-thandor: the game recorder records the step, or plays the recorded events up to it */
+  if (g_GameRecorderActive && !GameRecorder_BeforeStep()) {
+    g_SpinLockRelease(&g_InGameStateTickSpinLock);
+    return;
+  }
   g_SessionNetworkTickCounter++;
   if (Any(g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE)) {
     InGameTick_RunReducedUpdate(inGameRoot);
@@ -328,6 +342,9 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
   else if (!Any(g_UiCommandRuntimeFlags &
            (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED))) {
     InGameTick_RunSimulationStep(inGameRoot);
+  }
+  if (g_GameRecorderActive) {
+    GameRecorder_AfterStep();
   }
   g_SpinLockRelease(&g_InGameStateTickSpinLock);
 }

@@ -32,6 +32,7 @@
 #include <vector>
 #include <thandor/thandor.h>
 #include <thandor/core/settings/original_mode.h>
+#include <thandor/gameplay/replay/runtime.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 #include <thandor/ui/ingame/objective_overlay.h>
@@ -70,7 +71,8 @@ AutosaveState s_Autosave;
    (OPEN_THANDOR_AUTOSAVE) still wins, as for the setting. */
 int Autosave_IntervalSeconds()
 {
-  const bool enabled = Autosave_Enabled() && OtFeature_Active(OT_FEATURE_AUTOSAVE);
+  /* open-thandor: a played back recording writes no autosaves (gameplay/replay/runtime.h) */
+  const bool enabled = Autosave_Enabled() && OtFeature_Active(OT_FEATURE_AUTOSAVE) && GameRecorder_AutosaveAllowed();
   return DebugHook_AutosaveIntervalSeconds(enabled ? AUTOSAVE_INTERVAL_SECONDS : 0);
 }
 

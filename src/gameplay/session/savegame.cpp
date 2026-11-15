@@ -12,6 +12,7 @@
 #include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/world/pathing/mode.h>
+#include <thandor/gameplay/replay/runtime.h>
 
 /* Module data. */
 
@@ -345,6 +346,8 @@ uint32_t InGameSaveGame_WritePackage(void *worldView,void *savePath,bool autosav
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
   uint32_t errorCode;
+  /* open-thandor: a manual save of a recorded game is an event of the recording (gameplay/replay/runtime.h) */
+  GameRecorderSaveScope recordedSave(autosave);
 
   InGameTick_ResourceRegistrationBusyCount().fetch_add(1,std::memory_order_relaxed);
   /* first hand every player's pending army asset back to its faction */

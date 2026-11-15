@@ -260,12 +260,20 @@ static bool InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameR
 static void InGameNewSession_QueueIntroNotifications()
 
 {
+  g_TimerRegisterPeriodic(10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
+  InGameNewSession_QueueIntroNotificationRecords();
+}
+
+/* The records part of InGameNewSession_QueueIntroNotifications (split off for the game recorder, which starts a
+   recorded new level again from a save game: a loaded session queues no intro notifications). */
+void InGameNewSession_QueueIntroNotificationRecords()
+
+{
   InGameNotificationMovieId firstMovieId;
   uint32_t introIndex;
 
   /* the first of the five level intro notification movies, from the level image */
   firstMovieId = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.introNotificationMovieId;
-  g_TimerRegisterPeriodic(10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
   if (firstMovieId == 0) {
     return;
   }

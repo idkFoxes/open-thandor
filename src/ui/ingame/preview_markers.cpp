@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/gameplay/replay/runtime.h>
 
 /* Module data. */
 
@@ -319,8 +320,9 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
   intptr_t pendingPlacementAsset;
 
   /* developer tools (not in the original): no render-path objects while the determinism test hashes the
-     simulation */
-  if (DebugHook_SuppressTransientMarkers()) {
+     simulation, nor while a game is recorded or played back (gameplay/replay/runtime.h): they take effect pool
+     slots the simulation shares, so the result would depend on the frames drawn */
+  if (DebugHook_SuppressTransientMarkers() || GameRecorder_Active()) {
     return;
   }
   pendingPlacementAsset = g_InGamePendingPlacementArmyAsset;
