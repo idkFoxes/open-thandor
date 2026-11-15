@@ -100,6 +100,9 @@ box, autosave, custom maps from the map editor, and fixes for the crashes report
   disk no longer leaves it empty or half written.
 - A minimized game with the sound off no longer runs slower than real time on Windows 11.
 - Route planning is faster (same routes), which shortens the small hitches with many moving units.
+- **Black screen during the intro:** with the display mode *Vollbild* (exclusive fullscreen) the screen stayed
+  black during the intro movie on some systems. The intro and the end movies of the missions now always play in a
+  borderless fullscreen window; the game itself goes back to *Vollbild* right after the movie.
 
 #### Kept on purpose
 
@@ -212,6 +215,9 @@ gemeldeten Abstürze.
 - Ein minimiertes Spiel mit abgeschaltetem Ton läuft unter Windows 11 nicht mehr langsamer als in Echtzeit.
 - Die Wegplanung ist schneller (mit denselben Wegen), das verkürzt die kleinen Ruckler bei vielen fahrenden
   Einheiten.
+- **Schwarzer Bildschirm beim Intro:** Mit dem Anzeigemodus *Vollbild* (exklusives Vollbild) blieb der Bildschirm
+  auf manchen Systemen während des Introfilms schwarz. Das Intro und die Abschlussfilme der Missionen laufen jetzt
+  immer in einem randlosen Vollbildfenster; das Spiel selbst kehrt gleich nach dem Film zu *Vollbild* zurück.
 
 #### Bewusst beibehalten
 

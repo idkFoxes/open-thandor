@@ -279,6 +279,12 @@ static void ProcessEntry_RunGame()
   /* the adapters are the renderers; the choice is kept in PERSISTENT_SETTING_RENDERER, not in the original's
      adapter index (SdlVideo_SavedAdapterIndex) */
   adapterIndex = SdlVideo_SavedAdapterIndex();
+  /* Not in the original: the intro movies play in borderless fullscreen instead of an exclusive 640x480 mode (black
+     on some systems); Game_Run's switch to the saved mode after them applies the saved kind (one switch, as before).
+     Without intro (-NOINTRO) the start mode is the saved kind as before. */
+  if (CommandLine_FindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro) == nullptr) {
+    SdlVideo_BeginMovieDisplay();
+  }
   if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth,&displayModeError)) {
     FatalError_ExitIfFailed(displayModeError,true);
   }
@@ -1286,6 +1292,7 @@ bool Game_PlayIntroMovies()
     while (Movie_Open(MovieOpenFlags::MOVIE_OPEN_STREAM,g_FlmIntro0FlmPathUtf16,&playbackRateHz,nullptr)) {
       if (!Movie_AdvanceFrame(&introMovie,nullptr)) {
         Movie_Close();
+        SdlVideo_EndMovieDisplay(false);
         return true;
       }
       IntroMovie_PendingTicks().store(0);
@@ -1300,6 +1307,8 @@ bool Game_PlayIntroMovies()
       g_FlmIntro0FlmPathUtf16[9] = g_FlmIntro0FlmPathUtf16[9] + 1;
     }
   }
+  /* the saved display mode kind comes back with Game_Run's next display mode switch */
+  SdlVideo_EndMovieDisplay(false);
   return false;
 }
 

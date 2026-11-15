@@ -91,6 +91,13 @@ uint32_t SdlVideo_SavedDisplayModeKind();
 void SdlVideo_SaveDisplayModeKind(uint32_t kind);
 uint32_t SdlVideo_DisplayModeKind();
 void SdlVideo_SetDisplayModeKind(uint32_t kind);
+/* Movies (the intro, a mission's end movie) always play in borderless fullscreen: between Begin and End the
+   exclusive fullscreen kind is shown as borderless fullscreen over the desktop (logged once), switched at once when
+   the window is already shown, else by the next display mode switch; a window and borderless fullscreen are not
+   touched. End with restoreNow switches back to exclusive fullscreen at once; without it the next display mode
+   switch does (the intro, which Game_Run's switch to the saved mode follows), so a movie sequence switches once. */
+void SdlVideo_BeginMovieDisplay();
+void SdlVideo_EndMovieDisplay(bool restoreNow);
 /* Whether the renderer in use is a GPU one (Vulkan, DirectX 12), not the software renderer. */
 bool SdlVideo_GpuRendererActive();
 /* The GPU renderers' rasterization ([graphics] gpu_rasterization, PERSISTENT_GPU_RASTERIZATION_*): the saved one, and
