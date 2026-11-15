@@ -244,6 +244,8 @@ autosave = on
 original_thandor = off
 ; record every single player game for bug reports to recordings\<date>_<time>_<level>.otr (the newest 10, at most 200 MB together): off (default) or on; off while "Original Thandor" is on
 record_games = off
+; Vulkan / DirectX 12 at UI scale 2 and 3: the game font redrawn in high resolution instead of its pixels scaled up (same sizes and line breaks): off (default) or on; off while "Original Thandor" is on
+hd_font = off
 
 [network]
 ; player count of a hosted network game (default 4)
@@ -335,7 +337,7 @@ must read what the others wrote.
   `PersistentSettings_Read` call sites, never in the file. Do not write a key just because it exists.
 - **Every key has a range.** A value outside it (or one that does not parse; a negative number for an unsigned
   key) reads as the default, with one log line - a hand-edited file must not reach the game code unchecked. An
-  enumeration (`pathing`, `objective_overlay`, `autosave`, `original_thandor`, `record_games`, ...) accepts only its names or their
+  enumeration (`pathing`, `objective_overlay`, `autosave`, `original_thandor`, `record_games`, `hd_font`, ...) accepts only its names or their
   indices, `language` its names or a country code 0..999.
 - **Every new key gets a fixture entry**: the key table copy in
   [`src/platform/selftest/inifixtures_selftest.cpp`](../src/platform/selftest/inifixtures_selftest.cpp) (it fails on
@@ -348,7 +350,7 @@ must read what the others wrote.
   so it cannot grow further). The original's dwords 0x00-0xAF are its own (0x50-0x58 are unused there and hold
   `pathing`, `objective_overlay` and `autosave`, so a `thandor.dat` migration must not take them over),
   open-thandor's additions start at 0xB0 (0xC8, the first dword past `thandor.dat`, is `original_thandor`, 0xCC
-  `record_games`), and 0xD0-0xFF (`freeD0_FF`) are free. A new key needs a free dword; reusing one changes what older files mean.
+  `record_games`, 0xD0 `hd_font`), and 0xD4-0xFF (`freeD4_FF`) are free. A new key needs a free dword; reusing one changes what older files mean.
 - **Downgrades keep what they do not know.** An older version reads a newer file, ignores the keys it does not
   know - and must write them back unchanged on its next save, sections included (`[keys]`), so the newer version
   finds them again. Releases up to 1.0.7 drop them (`python tools/test/ini_downgrade.py --exe <older test build>`
@@ -580,6 +582,21 @@ scale, the UI size and the window size (`display mode 2560x1440x32, window, rend
 UI 1280x720, window 2560x1440`). Captures (`shot`, autoshot, the PCX screenshot, the compare mode) download the
 frame at N x and point-sample it back to the logical size. The test tools set `OPEN_THANDOR_UI_SCALE=1` unless the
 caller sets it.
+
+**High-resolution font** (Vulkan / DirectX 12 at UI scale 2 and 3 only): with "Hochaufgelöste Schrift" on the
+"Erweitert" page (`[game] hd_font = on`, default `off`; off while "Original Thandor" is on, `OT_FEATURE_HD_FONT`) the
+glyphs of `engine\font.gfx` and `engine\fontk.gfx` are drawn from versions redrawn at 2x and 3x instead of the 1x
+texels repeated N x N times. Every redrawn glyph is exactly (width x N) x (height x N) target pixels, so advances,
+line height, wrapping, layout, the shadow (the same glyph at alpha x 0x7F, shifted 1 or 2 logical pixels) and the text
+colours stay the original ones; only the pixels inside each glyph box change. The switch applies with the next frame.
+The software renderer, UI scale 1 and the scales above 3 always draw the original glyphs, and so does text that is
+drawn into an offscreen image instead of the frame. The glyphs come from `src/assets/text/hd_font_data.cpp`
+(generated, see [Data tools](#data-tools-toolsdata)); a glyph is only replaced when its 1x form in the loaded font
+file matches the one the data was made from (a hash per glyph; `thandor.log`: `hd font: font 0 at 2x: 256 of 256
+glyphs in high resolution`), so another version of the font files falls back to the plain scaling glyph by glyph.
+The hook is `RecordSpriteRegion` in `src/platform/sdl3/gpu_renderer.cpp`: a modulated glyph blit of one of the two
+loaded fonts takes its texture region from `HdFont_GlyphSource` (`src/ui/text/hd_font.cpp`, a `gfx` texture source
+per font and scale built outside the game's memory arena) instead of the font asset.
 
 **VSync and frame limit** (all renderers; the render rate only - the game's timers are untouched, see below for the
 steps): `[graphics] vsync = on|off` (default `on`; `OPEN_THANDOR_VSYNC=0|1` wins) - on, Vulkan / DirectX 12
@@ -813,6 +830,7 @@ it were removed from the tree after the code no longer needed them; they are in 
 | `cgn.py dump <file.cgn \| level dir> [--triggers] [--all]`, `cgn.py catalog <campagne.dat>` | the campaign files: per level the successors, carry-over and skip masks, exit zones and, with `--triggers`, the level's end triggers (through `lev.py`); `catalog` lists `level\campagne.dat`. Extract them first with `pck.py extract LEVEL.PCK <out dir> level\` |
 | `campaign_progress.py <kampagne.dat> [--units]` | the campaign progress file `save\kampagne.dat` (a PCK package, see `pck.py`): per campaign the fingerprint, won missions with their end selections, unlocked missions and carry-over snapshots, with the CRC32 of every payload checked; `--units` lists the snapshot units |
 | `symbolize.py <crash_raw.log> <thandor.map>` | names for the raw crash dump |
+| `font_hd/make_hd_font.py --game <game dir>` (or `--pck <ENGINE.PCK>`, `--font <font.gfx> --fontk <fontk.gfx>`) | the high-resolution font ("v8") of the option "Hochaufgelöste Schrift": rebuilds every glyph of `engine\font.gfx` and `engine\fontk.gfx` at 2x and 3x and writes `src/assets/text/hd_font_data.cpp` (a zlib stream of the glyphs' alpha with a hash of each source glyph; about 41 KB packed, 636 KB unpacked; 2-3 minutes, numpy). `--npz` also writes the glyphs as numpy arrays, `--compare <npz>` checks them against such a file (exit code 1 on a difference), `--png <dir>` writes overview sheets (Pillow). The other modules of `font_hd/` are the font work's pipeline, unchanged apart from where they read the font files: `upscale*.py` (font model, contour vectorisation, straight strokes) and the `*_parts.py` hand constructions of single glyphs; see the docstring of `make_hd_font.py` |
 
 ## Documentation generator (`tools/docs`)
 
