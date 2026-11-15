@@ -205,6 +205,10 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
     /* not in the original: action 0x2069, the high-resolution font checkbox of the advanced settings page */
     .handlers69 = {
         /* 105 */ UI_SLOT(FrontendAdvancedSettingsAction_SetHdFont)
+    },
+    /* not in the original: action 0x206A, the "Eigene Karten" tab button of the "Choose game" page */
+    .handlers6A = {
+        /* 106 */ UI_SLOT(FrontendScenarioPage_OpenCustomMapRecordsAndRefresh)
     }};
 
 /* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of

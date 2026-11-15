@@ -218,7 +218,7 @@ static const char *DebugCampaign_RowName(const uint16_t *text, char *out, unsign
 }
 
 /* Port-only test aid for unattended mission runs, called when the "Choose game" page opens in a local game:
-     OPEN_THANDOR_LIST_SCENARIOS=1 logs the names of all single games and campaigns ("scenario: ...") and
+     OPEN_THANDOR_LIST_SCENARIOS=1 logs the names of all single games, custom maps and campaigns ("scenario: ...") and
                                    ends the process;
      OPEN_THANDOR_CAMPAIGN=<name>  starts that campaign (name as in the campaigns list, or its 0-based row)
                                    like its Start button, once per process; OPEN_THANDOR_CAMPAIGN_LEVEL picks
@@ -245,6 +245,16 @@ int DebugCampaign_ApplyScenarioOptions()
     for (row = 0; row < list->rowCount; row++) {
       Thandor_Log("scenario: single \"%s\"",
                   DebugCampaign_RowName(static_cast<const uint16_t *>(list->rowSlots[row].get()),name,sizeof name));
+    }
+    /* the custom maps have their own tab ("Eigene Karten") */
+    if (FrontendScenarioSelection_CustomMapsTabAvailable()) {
+      ScenarioCatalog_RebuildCustomMapRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
+      for (row = 0; row < list->rowCount; row++) {
+        if (!CustomMaps_IsHintRecord(list->rowSlots[row].get())) {
+          Thandor_Log("scenario: custom \"%s\"",
+                      DebugCampaign_RowName(static_cast<const uint16_t *>(list->rowSlots[row].get()),name,sizeof name));
+        }
+      }
     }
     ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
     list = &g_FrontendRootNode->campaignsList;

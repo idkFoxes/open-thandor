@@ -1,8 +1,9 @@
 # Custom maps (`maps\<name>.thmap`, single player)
 
 Experimental. A custom map is a map editor project file `maps\<name>.thmap` next to `thandor.exe`, as the
-[Thandor Map Editor](https://github.com/idkFoxes/thandor-map-editor) saves it. The game lists it in the *Einzelspiel*
-tab of *Spiel auswählen* in a local game only. Network games (host and client) neither list nor send custom maps.
+[Thandor Map Editor](https://github.com/idkFoxes/thandor-map-editor) saves it. The game lists it in the *Eigene Karten*
+tab of *Spiel auswählen* (English: *Custom maps*) in a local game only. Network games (host and client) neither list
+nor send custom maps.
 Code:
 - `src/assets/scenario/custom_maps.cpp` (`custom_maps.h`): scan, list, texts, activation
 - `src/assets/scenario/custom_project.cpp` (`custom_project.h`): reading a project
@@ -73,10 +74,17 @@ No other entry of a project is ever served.
 
 ## In the game
 
-* **List:** custom maps are sorted into the *Einzelspiel* list by title like the original maps. Their title carries
-  the suffix ` (eigene Karte)` (German texts) or ` (custom map)` (every other language). The suffix shows only in
-  the list, not in the briefing, the in-game title or the save name. The other columns (planet, size, players) come
-  from the level's catalog record (+0x100..+0x1FF), like an original map's from `level.dat`.
+* **Tab button:** *Spiel auswählen* has a fourth button on the left, *Eigene Karten* (English: *Custom maps*), below
+  *Kampagnen*, with the size and spacing of the other three (`customMapsTabButton`, action
+  `FRONTEND_ACTION_OPEN_CUSTOM_MAPS`, `ui/frontend/scenario_selection.cpp`). It shows the same list as *Einzelspiel*
+  (same columns, selection, description box with `Autor: ...`, *Starten* and double click), but only with the custom
+  maps; the label above the list reads *Eigene Karten:* / *Custom maps:*. The *Einzelspiel* list holds only the
+  original maps. The button is shown only in a local game with custom maps on: it is hidden in network games (host
+  and client) and in "Original Thandor" mode (`OT_FEATURE_CUSTOM_MAPS` off).
+* **List:** custom maps are sorted in the *Eigene Karten* list by title like the original maps in *Einzelspiel*. Their
+  title carries the suffix ` (eigene Karte)` (German texts) or ` (custom map)` (every other language). The suffix
+  shows only in the list, not in the briefing, the in-game title or the save name. The other columns (planet, size,
+  players) come from the level's catalog record (+0x100..+0x1FF), like an original map's from `level.dat`.
 * **Texts:** the title is `display_name`. Without one, the title is STR string 0 with leading blanks removed, and
   without that, the map name. The description block line *k* is STR string *k + 1*: line 0 is the description, and
   the further lines are the faction tasks and briefing lines. The current text language picks the STR block with
@@ -87,12 +95,11 @@ No other entry of a project is ever served.
   hash of the lowercased name, 0..0x7FF, probing on to the next free slot. The title is text id `0x2500 + slot`, the
   description block `0x230010 + 0x10 * index`. No game text page uses these ids. The loaded copy of the level
   carries this index instead of the file's. Its identifier becomes `maps\<name>.`.
-* **Start:** from the list, or with `-KARTE="<name>"` (as for an original map). The level path is the virtual
-  `maps\<name>.lev`.
+* **Start:** from the list, or with `-KARTE="<name>"` (as for an original map; a name that is no original map is
+  looked up in the *Eigene Karten* list, which the page then shows). The level path is the virtual `maps\<name>.lev`.
 * **Hint row:** while no custom map is listed (no `maps` folder, no `.thmap` file in it, or every file rejected),
-  the *Einzelspiel* list ends with one dark grey row *Eigene Karten: keine gefunden* / *Custom maps: none found*.
-  It is appended behind the sorted rows, so it is always the last row and never changes the order or the selection
-  of the maps. Selected, it shows in the description box:
+  the *Eigene Karten* list holds one dark grey row *Eigene Karten: keine gefunden* / *Custom maps: none found*
+  (appended behind the sorted rows, so it would always stay the last row). Selected, it shows in the description box:
   *Keine eigenen Karten gefunden. Lege .thmap-Dateien des Thandor Map Editors in den Ordner maps neben thandor.exe.*
   (English: *No custom maps found. Put Thandor Map Editor .thmap files into the maps folder next to thandor.exe.*).
   When the scan rejected files, their number follows: *Keine eigenen Karten gefunden (3 abgelehnt, siehe

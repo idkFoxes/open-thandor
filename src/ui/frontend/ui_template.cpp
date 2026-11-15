@@ -775,7 +775,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         { /* +1E14 campaignsTabButton g_UiFramedTextButtonControlVtable */
             .selectable = {
                 .base = {
-                    .nextSibling = UI_TEMPLATE_LINK(0x1E74), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1C38),
+                    /* followed by customMapsTabButton (+8668), then gameSelectTitleLabel (+1E74) */
+                    .nextSibling = UI_TEMPLATE_LINK(0x8668), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1C38),
                     .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = -304, .topOffset = -48, .rightOffset = -192, .bottomOffset = -24,
@@ -2981,4 +2982,20 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
                 .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_HD_FONT},
             .textResourceId = TEXT_ID_ADVANCED_HD_FONT},
+        /* not in the original (open-thandor): the fourth tab button of the "Choose game" page ("Eigene Karten"), one
+           row below campaignsTabButton with the tab buttons' size and spacing (x -304..-192, y -16..8), between
+           campaignsTabButton and gameSelectTitleLabel in the page's sibling chain. Suppressed and hidden while
+           suppressed (UI_BUTTON_HIDDEN_WHILE_SUPPRESSED) until the page shows it in a local game with custom maps on
+           (FrontendScenarioSelectionPage_InitializeAndApplyMapOption) */
+        { /* +8668 customMapsTabButton g_UiFramedTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x1E74), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1C38),
+                    .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = -304, .topOffset = -16, .rightOffset = -192, .bottomOffset = 8,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x28)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000481), .actionId = FRONTEND_ACTION_OPEN_CUSTOM_MAPS},
+            .textResourceId = TEXT_ID_CUSTOM_MAPS_TAB},
 };

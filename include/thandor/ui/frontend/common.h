@@ -105,6 +105,9 @@ inline constexpr int32_t FRONTEND_ACTION_ADVANCED_RECORD_GAMES = 0x2068;
 /* Not in the original: the high-resolution font checkbox of the advanced settings page (advancedHdFontCheckbox,
    handlers69 of g_FrontendUiActionHandlersPage20) */
 inline constexpr int32_t FRONTEND_ACTION_ADVANCED_HD_FONT = 0x2069;
+/* Not in the original: the "Eigene Karten" tab button of the "Choose game" page (customMapsTabButton, handlers6A of
+   g_FrontendUiActionHandlersPage20) */
+inline constexpr int32_t FRONTEND_ACTION_OPEN_CUSTOM_MAPS = 0x206A;
 /* the pages of displayPageStack (frontendPageStack page FRONTEND_PAGE_DISPLAY_SETTINGS) */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_DISPLAY = 0; /* displaySettingsPage ("Anzeige") */
 inline constexpr int32_t FRONTEND_DISPLAY_SUBPAGE_MORE = 1; /* settingsSubPageStack (the two pages below) */
