@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 680" width="1280" height="680" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker><style>.t{font-size:17px;font-weight:700;fill:#1d1d1f}.d{font-size:12px;fill:#333}.m{font-size:11px;fill:#222}.f{font-size:11px;fill:#666}.l{font-size:11.5px;fill:#333;font-style:italic}.h{font-size:11px;font-weight:700;fill:#888;letter-spacing:1.5px}</style></defs>
+<rect width="1280" height="680" fill="#fff"/>
+<text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">audio — positioned sound, sample codec, backend slots</text>
+<text x="20" y="52" class="d">Modules under src/audio/ (headers in include/thandor/audio/). The SDL mixer itself lives in platform/sdl3/audio.cpp. Arrows are real call paths; click a box for its sources or page.</text>
+<text x="1240" y="76" class="h" text-anchor="end">CALLERS</text>
+<text x="1240" y="192" class="h" text-anchor="end">AUDIO AREA</text>
+<text x="1240" y="600" class="h" text-anchor="end">PLATFORM · DEVICE</text>
+<a href="../gameplay/README.md"><g>
+<rect x="40" y="84" width="230" height="44" rx="8" fill="#fdeee0" stroke="#d07a2a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="155.0" y="110.0" class="d" text-anchor="middle">gameplay: army sounds, level samples</text>
+</g></a>
+<a href="../world/README.md"><g>
+<rect x="300" y="84" width="200" height="44" rx="8" fill="#fff6d6" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="400.0" y="110.0" class="d" text-anchor="middle">world: effects, shots</text>
+</g></a>
+<a href="../ui/README.md"><g>
+<rect x="520" y="84" width="270" height="44" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="655.0" y="110.0" class="d" text-anchor="middle">ui: clicks, music, settings, camera</text>
+</g></a>
+<a href="../movie/README.md"><g>
+<rect x="810" y="84" width="180" height="44" rx="8" fill="#f3ecfb" stroke="#8a5ac8" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="900.0" y="110.0" class="d" text-anchor="middle">movie: soundtrack</text>
+</g></a>
+<a href="../platform/README.md"><g>
+<rect x="1020" y="84" width="220" height="44" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1130.0" y="110.0" class="d" text-anchor="middle">platform: start-up, saved gains</text>
+</g></a>
+<a href="../../../src/audio/spatial/"><g>
+<rect x="40" y="200" width="520" height="200" rx="10" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="2"/>
+<text x="54" y="225" class="t">spatial</text>
+<text x="548" y="224" class="f" text-anchor="end">1 file</text>
+<text x="54" y="244" class="d">Listener at the camera, distance fade and azimuth pan</text>
+<text x="54" y="259" class="d">for world sounds; 256 slots for looping positioned</text>
+<text x="54" y="274" class="d">sounds, refreshed every 8th frame.</text>
+<rect x="54" y="285" width="83" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="61" y="299" class="m">runtime.cpp</text>
+<rect x="143" y="285" width="127" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="150" y="299" class="m">listener transform</text>
+<rect x="277" y="285" width="146" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="284" y="299" class="m">PlayPositionedOneShot</text>
+<rect x="429" y="285" width="96" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="436" y="299" class="m">looping slots</text>
+<rect x="54" y="309" width="159" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="61" y="323" class="m">Clear/ApplyDesiredGains</text>
+<rect x="219" y="309" width="90" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="226" y="323" class="m">effects gain</text>
+<rect x="314" y="309" width="102" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="322" y="323" class="m">reverse stereo</text>
+</g></a>
+<a href="../../../src/audio/backend/"><g>
+<rect x="620" y="200" width="330" height="200" rx="10" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="2"/>
+<text x="634" y="225" class="t">backend</text>
+<text x="938" y="224" class="f" text-anchor="end">2 files</text>
+<text x="634" y="244" class="d">The eight g_Sound* slots every caller</text>
+<text x="634" y="259" class="d">plays through; silent stubs until</text>
+<text x="634" y="274" class="d">SdlAudio_Init installs the SDL3 backend.</text>
+<rect x="634" y="285" width="83" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="641" y="299" class="m">runtime.cpp</text>
+<rect x="723" y="285" width="115" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="730" y="299" class="m">null_backend.cpp</text>
+<rect x="634" y="309" width="127" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="641" y="323" class="m">g_SoundPlayOneShot</text>
+<rect x="767" y="309" width="127" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="774" y="323" class="m">g_SoundPlayLooping</text>
+<rect x="634" y="333" width="121" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="641" y="347" class="m">attenuation table</text>
+</g></a>
+<a href="../../../src/audio/codec/"><g>
+<rect x="1000" y="200" width="240" height="200" rx="10" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="2"/>
+<text x="1014" y="225" class="t">codec</text>
+<text x="1228" y="224" class="f" text-anchor="end">2 files</text>
+<text x="1014" y="244" class="d">.sam sample codec: packed</text>
+<text x="1014" y="259" class="d">coefficient blocks, inverse</text>
+<text x="1014" y="274" class="d">cosine transform to PCM.</text>
+<rect x="1014" y="285" width="58" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="1021" y="299" class="m">sam.cpp</text>
+<rect x="1078" y="285" width="108" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="1085" y="299" class="m">sam_encoder.cpp</text>
+<rect x="1014" y="309" width="96" height="19" rx="9" fill="#fff" stroke="#2a9a9a" stroke-opacity="0.6"/>
+<text x="1021" y="323" class="m">cosine tables</text>
+</g></a>
+<a href="../platform/README.md"><g>
+<rect x="560" y="480" width="450" height="56" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="785.0" y="512.0" class="d" text-anchor="middle">platform/sdl3/audio.cpp: SDL mixer, voice sets of 8 voices</text>
+</g></a>
+<rect x="620" y="600" width="330" height="44" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="785.0" y="626.0" class="d" text-anchor="middle">Sound device</text>
+<path d="M150,128 L150,200" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="157" y="168" class="l" text-anchor="start">positioned one-shots, slots</text>
+<path d="M400,128 L400,200" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="407" y="168" class="l" text-anchor="start">one-shots, shot loops</text>
+<path d="M540,128 L540,200" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="547" y="160" class="l" text-anchor="start">listener pose,</text>
+<text x="547" y="174" class="l" text-anchor="start">gain pass</text>
+<path d="M700,128 L700,200" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="707" y="168" class="l" text-anchor="start">clicks, music</text>
+<path d="M900,128 L900,200" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="907" y="168" class="l" text-anchor="start">soundtrack</text>
+<path d="M1220,128 L1220,160 L1258,160 L1258,512 L1010,512" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1250" y="425" class="l" text-anchor="end">SdlAudio_Init</text>
+<path d="M560,300 L620,300" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="590" y="292" class="l" text-anchor="middle">play</text>
+<text x="590" y="318" class="l" text-anchor="middle">gains</text>
+<path d="M785,400 L785,480" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="792" y="445" class="l" text-anchor="start">slots call SdlAudio_*</text>
+<path d="M1010,495 L1120,495 L1120,400" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1128" y="450" class="l" text-anchor="start">decode .sam</text>
+<path d="M785,536 L785,600" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="792" y="572" class="l" text-anchor="start">S16 stereo, 22050 Hz</text>
+</svg>

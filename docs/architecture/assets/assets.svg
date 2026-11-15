@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 850" width="1280" height="850" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker><style>.t{font-size:17px;font-weight:700;fill:#1d1d1f}.d{font-size:12px;fill:#333}.m{font-size:11px;fill:#222}.f{font-size:11px;fill:#666}.l{font-size:11.5px;fill:#333;font-style:italic}.h{font-size:11px;font-weight:700;fill:#888;letter-spacing:1.5px}</style></defs>
+<rect width="1280" height="850" fill="#fff"/>
+<text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">assets — PCK packages and catalogs</text>
+<text x="20" y="52" class="d">src/assets/: the package layer reads (and for savegames writes) PCK archives; the catalogs register the loaded records by id for lookups. Click a box for its sources.</text>
+<rect x="60" y="80" width="560" height="40" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="340.0" y="104.0" class="d" text-anchor="middle">Game files: daten, modelle, graphik, sound, filme, level, patchNN .pck · loose files</text>
+<a href="../platform/README.md"><g>
+<rect x="660" y="80" width="580" height="40" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="950.0" y="104.0" class="d" text-anchor="middle">platform — CoreAssets_MountPackages at start-up, file I/O (g_FileSystem*)</text>
+</g></a>
+<a href="../../../src/assets/package/"><g>
+<rect x="60" y="150" width="1180" height="112" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<text x="74" y="175" class="t">package</text>
+<text x="1228" y="174" class="f" text-anchor="end">4 files</text>
+<text x="74" y="194" class="d">Mount table of 1024 slots: Package_Mount reads each archive directory; Package_FindEntryAcrossMounts searches the slots in mount order (earlier mounts win), a loose file next to the exe is the fallback.</text>
+<text x="74" y="209" class="d">Package_DecodeEntryInto stages the packed bytes in the 8 MiB scratch buffer and decodes by method: 0 Huffman/RLE, 1 stored, 2 field grid. Package_UpsertEntry / DeleteEntry rewrite save archives.</text>
+<rect x="74" y="220" width="83" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="81" y="234" class="m">runtime.cpp</text>
+<rect x="163" y="220" width="71" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="170" y="234" class="m">codec.cpp</text>
+<rect x="240" y="220" width="134" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="247" y="234" class="m">resource_loader.cpp</text>
+<rect x="380" y="220" width="121" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="387" y="234" class="m">archive_write.cpp</text>
+</g></a>
+<path d="M340,120 L340,150" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<text x="347" y="140" class="l" text-anchor="start">read · write</text>
+<path d="M950,120 L950,150" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="957" y="140" class="l" text-anchor="start">Package_Mount · file I/O</text>
+<text x="452" y="294" class="h" text-anchor="start">LEVEL CATALOGS</text>
+<a href="../../../src/assets/army/"><g>
+<rect x="60" y="306" width="200" height="150" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<text x="74" y="331" class="t">army</text>
+<text x="74" y="350" class="d">ARM records (converter</text>
+<text x="74" y="365" class="d">0x20008) by id; enabled</text>
+<text x="74" y="380" class="d">and placeable checks,</text>
+<text x="74" y="395" class="d">armour / energy sums</text>
+<rect x="74" y="406" width="83" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="81" y="420" class="m">catalog.cpp</text>
+</g></a>
+<a href="../../../src/assets/model/"><g>
+<rect x="300" y="306" width="200" height="150" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<text x="314" y="331" class="t">model</text>
+<text x="314" y="350" class="d">MDL definitions: node</text>
+<text x="314" y="365" class="d">sprites, shot and effect</text>
+<text x="314" y="380" class="d">ids, terrain class values</text>
+<rect x="314" y="391" width="108" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="321" y="405" class="m">definitions.cpp</text>
+</g></a>
+<a href="../../../src/assets/shot/"><g>
+<rect x="540" y="306" width="200" height="150" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<text x="554" y="331" class="t">shot</text>
+<text x="554" y="350" class="d">SHT definitions: .spr</text>
+<text x="554" y="365" class="d">sprite, effect references,</text>
+<text x="554" y="380" class="d">terrain material check</text>
+<rect x="554" y="391" width="83" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="561" y="405" class="m">catalog.cpp</text>
+</g></a>
+<a href="../../../src/assets/effect/"><g>
+<rect x="780" y="306" width="200" height="150" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<text x="794" y="331" class="t">effect</text>
+<text x="794" y="350" class="d">EFF definitions (0xC0</text>
+<text x="794" y="365" class="d">bytes): sprite, linked</text>
+<text x="794" y="380" class="d">effect and shot ids</text>
+<rect x="794" y="391" width="83" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="801" y="405" class="m">catalog.cpp</text>
+</g></a>
+<a href="../../../src/assets/sprite/"><g>
+<rect x="1020" y="306" width="220" height="150" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<text x="1034" y="331" class="t">sprite</text>
+<text x="1034" y="350" class="d">Shared registry of .spr</text>
+<text x="1034" y="365" class="d">assets by id; relocates</text>
+<text x="1034" y="380" class="d">their pointers when</text>
+<text x="1034" y="395" class="d">registered</text>
+<rect x="1034" y="406" width="83" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="1041" y="420" class="m">catalog.cpp</text>
+</g></a>
+<path d="M160,262 L160,306" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M400,262 L400,306" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M640,262 L640,306" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<path d="M880,262 L880,306" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="887" y="290" class="l" text-anchor="start">loaded asset buffers</text>
+<path d="M500,381 L540,381" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="520" y="374" class="l" text-anchor="middle">ids</text>
+<path d="M740,381 L780,381" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<text x="760" y="374" class="l" text-anchor="middle">refs</text>
+<path d="M980,381 L1020,381" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1000" y="374" class="l" text-anchor="middle">.spr</text>
+<a href="../gameplay/README.md"><g>
+<rect x="60" y="492" width="680" height="40" rx="8" fill="#fdeee0" stroke="#d07a2a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="400.0" y="516.0" class="d" text-anchor="middle">gameplay — NewLevel_LoadAssetList loads and prepares the four lists; army, model lookups</text>
+</g></a>
+<a href="../world/README.md"><g>
+<rect x="780" y="492" width="460" height="40" rx="8" fill="#fff6d6" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1010.0" y="516.0" class="d" text-anchor="middle">world — shot, effect and model definition lookups</text>
+</g></a>
+<path d="M160,492 L160,456" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="167" y="480" class="l" text-anchor="start">*_Prepare* · lookups</text>
+<path d="M880,492 L880,456" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="887" y="486" class="l" text-anchor="start">lookups</text>
+<path d="M280,492 L280,262" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<text x="274" y="385" class="l" text-anchor="middle" transform="rotate(-90 274 385)">saves: Mount · UpsertEntry</text>
+<text x="60" y="566" class="h" text-anchor="start">FRONT-END CATALOGS AND TEXTS</text>
+<a href="../../../src/assets/rom/"><g>
+<rect x="60" y="576" width="360" height="140" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<text x="74" y="601" class="t">rom</text>
+<text x="74" y="620" class="d">Menu rooms of engine\zentrale.rom: records with</text>
+<text x="74" y="635" class="d">camera pose, lights, action tables and</text>
+<text x="74" y="650" class="d">sprite node trees; registry of 256 slots</text>
+<rect x="74" y="661" width="83" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="81" y="675" class="m">runtime.cpp</text>
+</g></a>
+<a href="../../../src/assets/scenario/"><g>
+<rect x="460" y="576" width="380" height="140" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<text x="474" y="601" class="t">scenario</text>
+<text x="474" y="620" class="d">"Choose game" list: level.dat, campagne.dat</text>
+<text x="474" y="635" class="d">(+ add-ons 00..99) and save\*.sve headers;</text>
+<text x="474" y="650" class="d">ScenarioCatalog_Rebuild via Resource_Load</text>
+<rect x="474" y="661" width="83" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="481" y="675" class="m">catalog.cpp</text>
+</g></a>
+<a href="../../../src/assets/text/"><g>
+<rect x="880" y="576" width="360" height="140" rx="10" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="2"/>
+<text x="894" y="601" class="t">text</text>
+<text x="1228" y="600" class="f" text-anchor="end">3 files</text>
+<text x="894" y="620" class="d">STR pages per locale (TextResourcePage_Load),</text>
+<text x="894" y="635" class="d">override table, TextResource_Resolve;</text>
+<text x="894" y="650" class="d">rich-text command streams</text>
+<rect x="894" y="661" width="96" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="901" y="675" class="m">resources.cpp</text>
+<rect x="996" y="661" width="90" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="1003" y="675" class="m">richtext.cpp</text>
+<rect x="1092" y="661" width="134" height="19" rx="9" fill="#fff" stroke="#7a7a7a" stroke-opacity="0.6"/>
+<text x="1098" y="675" class="m">richtext_markup.cpp</text>
+</g></a>
+<path d="M380,576 L380,552 L760,552 L760,468 L1130,468 L1130,456" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1010" y="464" class="l" text-anchor="start">.spr</text>
+<path d="M1240,206 L1262,206 L1262,646 L1240,646" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1256" y="420" class="l" text-anchor="middle" transform="rotate(-90 1256 420)">Package_LoadEntryWithSize</text>
+<a href="../ui/README.md"><g>
+<rect x="60" y="776" width="560" height="44" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="340.0" y="802.0" class="d" text-anchor="middle">ui — loads zentrale.rom, rebuilds the catalog; resolves texts</text>
+</g></a>
+<a href="../network/README.md"><g>
+<rect x="660" y="776" width="180" height="44" rx="8" fill="#fde8ef" stroke="#c84a76" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="750.0" y="802.0" class="d" text-anchor="middle">network</text>
+</g></a>
+<a href="../core/README.md"><g>
+<rect x="880" y="776" width="360" height="44" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1060.0" y="802.0" class="d" text-anchor="middle">core · platform — load text pages at start-up</text>
+</g></a>
+<path d="M240,776 L240,716" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="247" y="752" class="l" text-anchor="start">RomAsset_PrepareRecords</text>
+<path d="M540,776 L540,716" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="547" y="752" class="l" text-anchor="start">ScenarioCatalog_Rebuild</text>
+<path d="M750,716 L750,776" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="757" y="752" class="l" text-anchor="start">catalog to clients</text>
+<path d="M1060,776 L1060,716" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1067" y="752" class="l" text-anchor="start">TextResourcePage_Load</text>
+</svg>

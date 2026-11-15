@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 850" width="1280" height="850" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker><style>.t{font-size:17px;font-weight:700;fill:#1d1d1f}.d{font-size:12px;fill:#333}.m{font-size:11px;fill:#222}.f{font-size:11px;fill:#666}.l{font-size:11.5px;fill:#333;font-style:italic}.h{font-size:11px;font-weight:700;fill:#888;letter-spacing:1.5px}</style></defs>
+<rect width="1280" height="850" fill="#fff"/>
+<text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">graphics — render pipeline, terrain, textures, software renderer</text>
+<text x="20" y="52" class="d">Modules under src/graphics/ (headers in include/thandor/graphics/). Solid boxes are modules of this area, dashed boxes other areas. Arrows show calls and data; slot = function pointer the backend can swap.</text>
+<a href="../gameplay/README.md"><g>
+<rect x="40" y="76" width="240" height="44" rx="8" fill="#fdeee0" stroke="#d07a2a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="160.0" y="102.0" class="d" text-anchor="middle">gameplay (level, army, effects)</text>
+</g></a>
+<a href="../ui/README.md"><g>
+<rect x="310" y="76" width="930" height="44" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="775.0" y="102.0" class="d" text-anchor="middle">ui — world view (FrontendModelPointerContext_RenderWorldViewQueuesClipped), HUD, menus</text>
+</g></a>
+<a href="../../../src/graphics/resources/"><g>
+<rect x="40" y="196" width="240" height="216" rx="10" fill="#e6f6ec" stroke="#2f9a57" stroke-width="2"/>
+<text x="54" y="221" class="t">resources</text>
+<text x="268" y="220" class="f" text-anchor="end">9 files</text>
+<text x="54" y="240" class="d">Loads and owns gfx texture sources,</text>
+<text x="54" y="255" class="d">texture sets and pal palettes; PCX</text>
+<text x="54" y="270" class="d">read/write; tiled blits; framebuffer</text>
+<text x="54" y="285" class="d">globals and access hooks.</text>
+<rect x="54" y="296" width="83" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="61" y="310" class="m">texture_set</text>
+<rect x="143" y="296" width="102" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="150" y="310" class="m">texture_source</text>
+<rect x="54" y="320" width="58" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="61" y="334" class="m">palette</text>
+<rect x="118" y="320" width="33" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="125" y="334" class="m">pcx</text>
+<rect x="157" y="320" width="77" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="164" y="334" class="m">tiled_blit</text>
+<rect x="54" y="344" width="83" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="61" y="358" class="m">framebuffer</text>
+<rect x="143" y="344" width="121" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="150" y="358" class="m">palette_optimizer</text>
+<rect x="54" y="368" width="121" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="61" y="382" class="m">texture_decompose</text>
+</g></a>
+<a href="../../../src/graphics/terrain/"><g>
+<rect x="310" y="196" width="210" height="216" rx="10" fill="#e6f6ec" stroke="#2f9a57" stroke-width="2"/>
+<text x="324" y="221" class="t">terrain</text>
+<text x="508" y="220" class="f" text-anchor="end">2 files</text>
+<text x="324" y="240" class="d">Terrain pass: clips the field grid</text>
+<text x="324" y="255" class="d">rows to the frustum, projects and</text>
+<text x="324" y="270" class="d">shades vertices, queues two</text>
+<text x="324" y="285" class="d">triangles per grid quad. Loads the</text>
+<text x="324" y="300" class="d">material texture sets and palettes.</text>
+<rect x="324" y="311" width="102" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="331" y="325" class="m">terrain_render</text>
+<rect x="324" y="335" width="121" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="331" y="349" class="m">terrain_resources</text>
+</g></a>
+<a href="../../../src/graphics/render/"><g>
+<rect x="550" y="196" width="350" height="216" rx="10" fill="#e6f6ec" stroke="#2f9a57" stroke-width="2"/>
+<text x="564" y="221" class="t">render</text>
+<text x="888" y="220" class="f" text-anchor="end">9 files</text>
+<text x="564" y="240" class="d">Projection and frustum, model hierarchies (cull,</text>
+<text x="564" y="255" class="d">transform, light, submit), dynamic light records,</text>
+<text x="564" y="270" class="d">the primitive queue with its radix sort,</text>
+<text x="564" y="285" class="d">generated shadow textures, off-screen model</text>
+<text x="564" y="300" class="d">rendering (army preview).</text>
+<rect x="564" y="311" width="77" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="571" y="325" class="m">projection</text>
+<rect x="647" y="311" width="77" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="654" y="325" class="m">model_draw</text>
+<rect x="730" y="311" width="90" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="737" y="325" class="m">model_submit</text>
+<rect x="564" y="335" width="102" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="571" y="349" class="m">model_lighting</text>
+<rect x="672" y="335" width="96" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="679" y="349" class="m">light_records</text>
+<rect x="564" y="359" width="121" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="571" y="373" class="m">light_transitions</text>
+<rect x="691" y="359" width="77" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="698" y="373" class="m">primitives</text>
+<rect x="774" y="359" width="102" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="781" y="373" class="m">shadow_texture</text>
+<rect x="564" y="383" width="71" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="571" y="397" class="m">offscreen</text>
+</g></a>
+<a href="../../../src/graphics/core/"><g>
+<rect x="930" y="196" width="310" height="216" rx="10" fill="#e6f6ec" stroke="#2f9a57" stroke-width="2"/>
+<text x="944" y="221" class="t">core</text>
+<text x="1228" y="220" class="f" text-anchor="end">3 files</text>
+<text x="944" y="240" class="d">2D draw list and its backend switch</text>
+<text x="944" y="255" class="d">(software / GPU record / compare): installs</text>
+<text x="944" y="270" class="d">the blit and fill slots; graphics tables,</text>
+<text x="944" y="285" class="d">display framebuffer publish, shutdown;</text>
+<text x="944" y="300" class="d">cursor animation and input event ring.</text>
+<rect x="944" y="311" width="52" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="951" y="325" class="m">draw2d</text>
+<rect x="1002" y="311" width="52" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="1009" y="325" class="m">device</text>
+<rect x="1060" y="311" width="52" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="1067" y="325" class="m">cursor</text>
+</g></a>
+<a href="../assets/README.md"><g>
+<rect x="40" y="476" width="240" height="44" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="160.0" y="502.0" class="d" text-anchor="middle">assets (Package_LoadEntry)</text>
+</g></a>
+<a href="../world/README.md"><g>
+<rect x="310" y="516" width="290" height="44" rx="8" fill="#fff6d6" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="455.0" y="542.0" class="d" text-anchor="middle">world (field grid, model nodes, lights)</text>
+</g></a>
+<a href="../../../src/graphics/backend/"><g>
+<rect x="650" y="476" width="500" height="156" rx="10" fill="#e6f6ec" stroke="#2f9a57" stroke-width="2"/>
+<text x="664" y="501" class="t">backend</text>
+<text x="1138" y="500" class="f" text-anchor="end">6 files</text>
+<text x="664" y="520" class="d">Software renderer: 40 triangle handlers over the sorted queue into the</text>
+<text x="664" y="535" class="d">framebuffer and depth buffer; 32-bit blits and fills; bilinear scaling,</text>
+<text x="664" y="550" class="d">minimap; depth buffer on mode switch; display-mode table checks.</text>
+<rect x="664" y="561" width="134" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="671" y="575" class="m">software_rasterizer</text>
+<rect x="804" y="561" width="96" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="811" y="575" class="m">software_blit</text>
+<rect x="906" y="561" width="153" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="913" y="575" class="m">software_texture_scale</text>
+<rect x="664" y="585" width="146" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="671" y="599" class="m">software_display_mode</text>
+<rect x="816" y="585" width="96" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="823" y="599" class="m">display_modes</text>
+<rect x="918" y="585" width="64" height="19" rx="9" fill="#fff" stroke="#2f9a57" stroke-opacity="0.6"/>
+<text x="925" y="599" class="m">software</text>
+</g></a>
+<a href="../platform/README.md"><g>
+<rect x="650" y="680" width="270" height="48" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="785.0" y="708.0" class="d" text-anchor="middle">platform/sdl3 video.cpp — SdlVideo_Present</text>
+</g></a>
+<rect x="960" y="680" width="190" height="48" rx="8" fill="#fafafa" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1055.0" y="708.0" class="d" text-anchor="middle">Display (window)</text>
+<a href="../platform/README.md"><g>
+<rect x="310" y="778" width="930" height="48" rx="8" fill="#e9edf2" stroke="#4b5d73" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="775.0" y="806.0" class="d" text-anchor="middle">platform/sdl3 SDL GPU renderer (Vulkan / D3D12): gpu_renderer.cpp, gpu_ui2d.cpp, gpu_ui_textures.cpp</text>
+</g></a>
+<text x="40" y="608" class="f" text-anchor="start">Renderer selection (video.cpp): the saved renderer</text>
+<text x="40" y="624" class="f" text-anchor="start">or OPEN_THANDOR_GPU. StartGpuDevice swaps the 3D slots</text>
+<text x="40" y="640" class="f" text-anchor="start">g_GraphicsSetViewportAndClearDepth, ...DrawPrimitiveQueue</text>
+<text x="40" y="656" class="f" text-anchor="start">and ...EndScene and sets the draw list to GPU record;</text>
+<text x="40" y="672" class="f" text-anchor="start">StopGpuDevice puts the software ones back.</text>
+<path d="M160,120 L160,196" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="167" y="160" class="l" text-anchor="start">gfx, palette loads</text>
+<path d="M415,120 L415,196" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="422" y="150" class="l" text-anchor="start">terrain pass</text>
+<path d="M700,120 L700,196" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="707" y="146" class="l" text-anchor="start">projection, model passes,</text>
+<text x="707" y="160" class="l" text-anchor="start">sort + draw the queue</text>
+<path d="M1085,120 L1085,196" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1092" y="160" class="l" text-anchor="start">blits, fills, minimap</text>
+<path d="M310,400 L280,400" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="295" y="424" class="l" text-anchor="middle">loads</text>
+<path d="M520,400 L550,400" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="535" y="424" class="l" text-anchor="middle">queue</text>
+<path d="M160,412 L160,476" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="167" y="448" class="l" text-anchor="start">Package_LoadEntry</text>
+<path d="M415,516 L415,412" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="422" y="442" class="l" text-anchor="start">field grid</text>
+<path d="M580,516 L580,412" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="573" y="464" class="l" text-anchor="end">model nodes, light records</text>
+<path d="M800,412 L800,476" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="807" y="448" class="l" text-anchor="start">slot: DrawPrimitiveQueue</text>
+<path d="M1000,412 L1000,476" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1007" y="448" class="l" text-anchor="start">slots: software blitters</text>
+<path d="M620,412 L620,778" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="612" y="655" class="l" text-anchor="middle" transform="rotate(-90 612 655)">slot: GpuRenderer_DrawPrimitiveQueue</text>
+<path d="M1210,412 L1210,778" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1202" y="595" class="l" text-anchor="middle" transform="rotate(-90 1202 595)">Draw2D_FrameItems (GPU record)</text>
+<path d="M800,632 L800,680" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="807" y="658" class="l" text-anchor="start">framebuffer pixels</text>
+<path d="M920,704 L960,704" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="940" y="672" class="l" text-anchor="middle">SDL_Renderer</text>
+<path d="M760,728 L760,778" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="767" y="758" class="l" text-anchor="start">PresentGpuFrame</text>
+<path d="M1055,778 L1055,728" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1062" y="758" class="l" text-anchor="start">swapchain</text>
+</svg>

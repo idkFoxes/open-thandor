@@ -157,6 +157,7 @@ compilers (MSVC, Clang) are not supported. Details in [docs/BUILDING.md](docs/BU
 Public headers under [`include/thandor`](include/thandor), implementations under [`src`](src), grouped by area
 (`assets`, `audio`, `core`, `gameplay`, `graphics`, `movie`, `network`, `platform`, `ui`, `world`).
 
+- [Architecture](docs/architecture/README.md) - block diagrams: the whole game, then one page per area.
 - [Module tree](docs/MODULE_TREE.md) - every module with its `.cpp` and `.h` files.
 - [Source file guide](docs/SOURCE_FILE_GUIDE.md) - what each source/header pair owns, its callers and dependencies.
 - Types: each module's structures are in `include/thandor/<area>/<module>/types.h`, the common ones in [core/types.h](include/thandor/core/types.h).

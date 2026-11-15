@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 830" width="1280" height="830" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker><style>.t{font-size:17px;font-weight:700;fill:#1d1d1f}.d{font-size:12px;fill:#333}.m{font-size:11px;fill:#222}.f{font-size:11px;fill:#666}.l{font-size:11.5px;fill:#333;font-style:italic}.h{font-size:11px;font-weight:700;fill:#888;letter-spacing:1.5px}</style></defs>
+<rect width="1280" height="830" fill="#fff"/>
+<text x="20" y="32" style="font-size:22px;font-weight:700;fill:#111">world — entities, camera, terrain, pathing, models, effects, shots</text>
+<text x="20" y="52" class="d">Modules under src/world/ (headers in include/thandor/world/). Arrows show the main calls; all modules use core fixed-point maths. Click a box for its source folder or area page.</text>
+<a href="../gameplay/README.md"><g>
+<rect x="60" y="80" width="1160" height="40" rx="8" fill="#fdeee0" stroke="#d07a2a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="640.0" y="104.0" class="d" text-anchor="middle">gameplay — session tick, armies, AI, move orders, weapons</text>
+</g></a>
+<a href="../audio/README.md"><g>
+<rect x="980" y="370" width="110" height="40" rx="8" fill="#e6f5f5" stroke="#2a9a9a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1035.0" y="394.0" class="d" text-anchor="middle">audio</text>
+</g></a>
+<a href="../graphics/README.md"><g>
+<rect x="1110" y="370" width="110" height="40" rx="8" fill="#e6f6ec" stroke="#2f9a57" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1165.0" y="394.0" class="d" text-anchor="middle">graphics</text>
+</g></a>
+<a href="../network/README.md"><g>
+<rect x="60" y="760" width="240" height="40" rx="8" fill="#fde8ef" stroke="#c84a76" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="180.0" y="784.0" class="d" text-anchor="middle">network — lockstep commands</text>
+</g></a>
+<a href="../assets/README.md"><g>
+<rect x="340" y="760" width="260" height="40" rx="8" fill="#f0f0f0" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="470.0" y="784.0" class="d" text-anchor="middle">assets — PCK packages</text>
+</g></a>
+<a href="../ui/README.md"><g>
+<rect x="640" y="760" width="580" height="40" rx="8" fill="#e8f0fe" stroke="#4a6fd0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="930.0" y="784.0" class="d" text-anchor="middle">ui — world input, camera commands, map editor</text>
+</g></a>
+<a href="../../../src/world/pathing/"><g>
+<rect x="60" y="170" width="280" height="320" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>
+<text x="74" y="195" class="t">pathing</text>
+<text x="328" y="194" class="f" text-anchor="end">5 files</text>
+<text x="74" y="214" class="d">Scratch grid derived from the</text>
+<text x="74" y="229" class="d">field grid; influence bands,</text>
+<text x="74" y="244" class="d">hex path costs, reachability</text>
+<text x="74" y="259" class="d">and entity routes for move</text>
+<text x="74" y="274" class="d">orders.</text>
+<rect x="74" y="285" width="71" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="299" class="m">route.cpp</text>
+<rect x="151" y="285" width="96" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="158" y="299" class="m">path_cost.cpp</text>
+<rect x="74" y="309" width="115" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="323" class="m">reachability.cpp</text>
+<rect x="195" y="309" width="96" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="202" y="323" class="m">influence.cpp</text>
+<rect x="74" y="333" width="115" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="347" class="m">scratch_grid.cpp</text>
+</g></a>
+<a href="../../../src/world/model/"><g>
+<rect x="380" y="170" width="250" height="140" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>
+<text x="394" y="195" class="t">model</text>
+<text x="618" y="194" class="f" text-anchor="end">4 files</text>
+<text x="394" y="214" class="d">Model runtime pool, node</text>
+<text x="394" y="229" class="d">hierarchy, picking, ray hits.</text>
+<rect x="394" y="240" width="64" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="401" y="254" class="m">pool.cpp</text>
+<rect x="464" y="240" width="96" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="471" y="254" class="m">hierarchy.cpp</text>
+<rect x="394" y="264" width="83" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="401" y="278" class="m">picking.cpp</text>
+<rect x="483" y="264" width="115" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="490" y="278" class="m">mesh_raycast.cpp</text>
+</g></a>
+<a href="../../../src/world/shots/"><g>
+<rect x="680" y="170" width="250" height="140" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>
+<text x="694" y="195" class="t">shots</text>
+<text x="918" y="194" class="f" text-anchor="end">3 files</text>
+<text x="694" y="214" class="d">Projectile pool, flight and</text>
+<text x="694" y="229" class="d">hits; launch angles.</text>
+<rect x="694" y="240" width="64" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="701" y="254" class="m">pool.cpp</text>
+<rect x="764" y="240" width="77" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="771" y="254" class="m">flight.cpp</text>
+<rect x="694" y="264" width="102" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="701" y="278" class="m">ballistics.cpp</text>
+</g></a>
+<a href="../../../src/world/effects/"><g>
+<rect x="980" y="170" width="240" height="140" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>
+<text x="994" y="195" class="t">effects</text>
+<text x="1208" y="194" class="f" text-anchor="end">2 files</text>
+<text x="994" y="214" class="d">Effect pool and lifecycle:</text>
+<text x="994" y="229" class="d">animation, fades, motion.</text>
+<rect x="994" y="240" width="64" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="1001" y="254" class="m">pool.cpp</text>
+<rect x="1064" y="240" width="96" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="1071" y="254" class="m">lifecycle.cpp</text>
+</g></a>
+<a href="../../../src/world/runtime/"><g>
+<rect x="380" y="370" width="550" height="120" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>
+<text x="394" y="395" class="t">runtime</text>
+<text x="918" y="394" class="f" text-anchor="end">2 files</text>
+<text x="394" y="414" class="d">World context: owner list of models, shots and effects,</text>
+<text x="394" y="429" class="d">world object records, attached field grid.</text>
+<rect x="394" y="440" width="64" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="401" y="454" class="m">core.cpp</text>
+<rect x="464" y="440" width="134" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="471" y="454" class="m">entity_registry.cpp</text>
+</g></a>
+<a href="../../../src/world/terrain/"><g>
+<rect x="60" y="540" width="760" height="160" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>
+<text x="74" y="565" class="t">terrain</text>
+<text x="808" y="564" class="f" text-anchor="end">14 files</text>
+<text x="74" y="584" class="d">Field grid: load and save, height sampling, raycasts, lighting, deformation,</text>
+<text x="74" y="599" class="d">water relaxation, occupancy, sight, placement tests, map-editor edits.</text>
+<rect x="74" y="610" width="134" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="624" class="m">field_lifecycle.cpp</text>
+<rect x="214" y="610" width="127" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="221" y="624" class="m">field_sampling.cpp</text>
+<rect x="347" y="610" width="121" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="354" y="624" class="m">field_raycast.cpp</text>
+<rect x="474" y="610" width="127" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="481" y="624" class="m">field_lighting.cpp</text>
+<rect x="608" y="610" width="146" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="615" y="624" class="m">field_deformation.cpp</text>
+<rect x="74" y="634" width="159" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="648" class="m">field_edit_commands.cpp</text>
+<rect x="239" y="634" width="83" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="246" y="648" class="m">editing.cpp</text>
+<rect x="328" y="634" width="140" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="335" y="648" class="m">water_relaxation.cpp</text>
+<rect x="474" y="634" width="96" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="481" y="648" class="m">occupancy.cpp</text>
+<rect x="576" y="634" width="71" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="583" y="648" class="m">sight.cpp</text>
+<rect x="653" y="634" width="134" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="660" y="648" class="m">placement_tests.cpp</text>
+<rect x="74" y="658" width="127" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="81" y="672" class="m">fog_visibility.cpp</text>
+<rect x="207" y="658" width="134" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="214" y="672" class="m">overlay_marking.cpp</text>
+<rect x="347" y="658" width="90" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="354" y="672" class="m">hex_scan.cpp</text>
+</g></a>
+<a href="../../../src/world/camera/"><g>
+<rect x="860" y="540" width="360" height="160" rx="10" fill="#fff6d6" stroke="#c9a227" stroke-width="2"/>
+<text x="874" y="565" class="t">camera</text>
+<text x="1208" y="564" class="f" text-anchor="end">3 files</text>
+<text x="874" y="584" class="d">Camera motion state (position, target,</text>
+<text x="874" y="599" class="d">angles), input deltas, snapshots,</text>
+<text x="874" y="614" class="d">menu-room motion splines.</text>
+<rect x="874" y="625" width="77" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="881" y="639" class="m">camera.cpp</text>
+<rect x="957" y="625" width="115" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="964" y="639" class="m">camera_input.cpp</text>
+<rect x="1078" y="625" width="121" height="19" rx="9" fill="#fff" stroke="#c9a227" stroke-opacity="0.6"/>
+<text x="1085" y="639" class="m">motion_spline.cpp</text>
+</g></a>
+<path d="M200,120 L200,170" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="207" y="150" class="l" text-anchor="start">move orders</text>
+<path d="M505,120 L505,170" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="512" y="150" class="l" text-anchor="start">create · transforms</text>
+<path d="M740,120 L740,170" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="747" y="150" class="l" text-anchor="start">fire · tick</text>
+<path d="M880,170 L880,120" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="873" y="150" class="l" text-anchor="end">hit damage</text>
+<path d="M1100,120 L1100,170" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1107" y="150" class="l" text-anchor="start">spawn · tick</text>
+<path d="M60,100 L36,100 L36,620 L60,620" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="30" y="360" class="l" text-anchor="middle" transform="rotate(-90 30 360)">tick jobs: lighting, relaxation, occupancy</text>
+<path d="M680,240 L630,240" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="655" y="232" class="l" text-anchor="middle">hit rays</text>
+<path d="M930,240 L980,240" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<text x="955" y="232" class="l" text-anchor="middle">impact</text>
+<text x="955" y="258" class="l" text-anchor="middle">linked</text>
+<path d="M505,310 L505,370" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="512" y="344" class="l" text-anchor="start">alloc records</text>
+<path d="M805,310 L805,370" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="812" y="344" class="l" text-anchor="start">link · unlink</text>
+<path d="M200,490 L200,540" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="207" y="520" class="l" text-anchor="start">classify field cells</text>
+<path d="M860,620 L820,620" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="840" y="612" class="l" text-anchor="middle">raycast</text>
+<path d="M1035,310 L1035,370" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1030" y="344" class="l" text-anchor="end">sounds</text>
+<path d="M1165,310 L1165,370" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1172" y="344" class="l" text-anchor="start">shading</text>
+<path d="M780,540 L780,515 L1165,515 L1165,410" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1000" y="508" class="l" text-anchor="middle">field grid (terrain renderer)</text>
+<path d="M180,760 L180,700" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="187" y="734" class="l" text-anchor="start">terrain edit commands</text>
+<path d="M470,700 L470,760" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="477" y="734" class="l" text-anchor="start">load .fld</text>
+<path d="M720,760 L720,700" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="727" y="734" class="l" text-anchor="start">map editor</text>
+<path d="M1040,760 L1040,700" stroke="#555" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<text x="1047" y="734" class="l" text-anchor="start">pointer · keys · camera commands</text>
+</svg>
