@@ -473,6 +473,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers65[1]; // Not in the original: action ID 0x2065 (the objective overlay checkbox of the advanced settings page).
     Ptr32<void (void *)> handlers66[1]; // Not in the original: action ID 0x2066 (the autosave checkbox of the advanced settings page).
     Ptr32<void (void *)> handlers67[1]; // Not in the original: action ID 0x2067 (the "Original Thandor" checkbox of the advanced settings page).
+    Ptr32<void (void *)> handlers68[1]; // Not in the original: action ID 0x2068 (the game recording checkbox of the advanced settings page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1381,6 +1382,11 @@ struct FrontendUiImage {
        the page's sibling chain (the language list layer stays the last child). */
     UiTextButtonControl advancedOriginalThandorCheckbox; /* +84EC g_UiTextButtonControlVtable: Checkbox "Original Thandor" (action FRONTEND_ACTION_ADVANCED_ORIGINAL_THANDOR). */
     UiFocusProxyControl advancedOriginalThandorNote; /* +854C g_UiFocusProxyControlVtable: "Wie das Original: Neuerungen aus, Fehlerbehebungen bleiben". */
+    /* Not in the original (open-thandor): the game recording setting of the advanced settings page ([game]
+       record_games, gameplay/replay/runtime.h), in the left column under "Verbesserte Wegfindung"; linked between
+       advancedOriginalThandorNote and advancedLanguageGroup in the page's sibling chain (the language list layer
+       stays the last child). */
+    UiTextButtonControl advancedRecordGamesCheckbox; /* +85A8 g_UiTextButtonControlVtable: Checkbox "Partien fuer Fehlerberichte aufzeichnen" (action FRONTEND_ACTION_ADVANCED_RECORD_GAMES). */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is

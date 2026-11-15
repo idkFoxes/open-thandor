@@ -127,7 +127,8 @@ struct PersistentSettingsImage {
     uint32_t vsync; /* open-thandor: PERSISTENT_SETTING_VSYNC (0 = on) */
     uint32_t frameLimit; /* open-thandor: PERSISTENT_SETTING_FRAME_LIMIT (0 = no limit) */
     uint32_t originalThandor; /* open-thandor: PERSISTENT_SETTING_ORIGINAL_THANDOR (0 = off) */
-    uint32_t freeCC_FF[13]; /* open-thandor: room for further settings (PERSISTENT_SETTINGS_IMAGE_BYTES); never in thandor.dat */
+    uint32_t recordGames; /* open-thandor: PERSISTENT_SETTING_RECORD_GAMES (0 = off) */
+    uint32_t freeD0_FF[12]; /* open-thandor: room for further settings (PERSISTENT_SETTINGS_IMAGE_BYTES); never in thandor.dat */
 };
 
 #endif /* THANDOR_CORE_SETTINGS_TYPES_H */

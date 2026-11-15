@@ -1,0 +1,8 @@
+# thandor.ini as this version writes it with the game recording on ([game] record_games, the dword 0xCC past
+# thandor.dat, gameplay/replay/runtime.h): the values and lines of experimental_dev_v3 and the recording switch; a
+# save writes it unchanged (record_games after original_thandor). An older build keeps or drops the line as one
+# more unknown key (see experimental_dev_v3.downgrade).
+include: experimental_dev_v3.expect
+game.record_games = on
+preserved: [game] record_games = on
+order: [game] original_thandor = on < [game] record_games = on

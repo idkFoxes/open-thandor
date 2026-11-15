@@ -128,6 +128,8 @@ static const char *const s_IniObjectiveOverlayNames[] = {"on", "off"};
 static const char *const s_IniAutosaveNames[] = {"on", "off"};
 /* off first: index 0 is the default a missing key reads (PERSISTENT_ORIGINAL_THANDOR_OFF) */
 static const char *const s_IniOriginalThandorNames[] = {"off", "on"};
+/* off first: index 0 is the default a missing key reads (PERSISTENT_RECORD_GAMES_OFF) */
+static const char *const s_IniRecordGamesNames[] = {"off", "on"};
 
 /* the text languages of [game] language (the value is the telephone country code, see LocaleTelephoneCountryCode) */
 struct PersistentIniLanguage {
@@ -231,6 +233,10 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "objective box, autosave, campaign map, movie loudness, own maps, key bindings) behaves as in the original, their "
    "own settings are kept for when it is off again; bug and crash fixes stay",
    0, 0, INI_ENUM(s_IniOriginalThandorNames)},
+  {PERSISTENT_SETTING_RECORD_GAMES, INI_KIND_ENUM, "game", "record_games",
+   "record every single player game for bug reports to recordings\\<date>_<time>_<level>.otr (the newest 10, at most "
+   "200 MB together): off (default) or on; off while \"Original Thandor\" is on",
+   0, 0, INI_ENUM(s_IniRecordGamesNames)},
 
   {PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, INI_KIND_UINT, "network", "players",
    "player count of a hosted network game (default 4)", 0, 0, INI_RANGE(s_IniRangePlayers)},
@@ -1672,4 +1678,13 @@ void PersistentSettings_WriteOriginalThandor(bool on)
 {
   PersistentSettings_WriteChosen(on ? PERSISTENT_ORIGINAL_THANDOR_ON : PERSISTENT_ORIGINAL_THANDOR_OFF,
                                  PERSISTENT_SETTING_ORIGINAL_THANDOR);
+}
+
+/* Not in the original: the game recorder's option chosen in the menus ("Partien fuer Fehlerberichte aufzeichnen" on
+   the "Erweitert" page): the settings dword the next PersistentSettings_Flush saves as [game] record_games; the next
+   single player session follows it. */
+void PersistentSettings_WriteRecordGames(bool on)
+{
+  PersistentSettings_WriteChosen(on ? PERSISTENT_RECORD_GAMES_ON : PERSISTENT_RECORD_GAMES_OFF,
+                                 PERSISTENT_SETTING_RECORD_GAMES);
 }

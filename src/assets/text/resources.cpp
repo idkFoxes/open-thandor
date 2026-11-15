@@ -138,6 +138,14 @@ static uint16_t g_ProjectTextSpielAutomatischGespeichert[] = {
     'g','e','s','p','e','i','c','h','e','r','t',0};
 static uint16_t g_ProjectTextGameSavedAutomatically[] = {
     PROJECT_TEXT_BRIGHT,'G','a','m','e',' ','s','a','v','e','d',' ','a','u','t','o','m','a','t','i','c','a','l','l','y',0};
+/* Not in the original: the game recording checkbox of the advanced settings page (TEXT_ID_ADVANCED_RECORD_GAMES),
+   bright like the VSync checkbox (0x00FC: u umlaut). */
+static uint16_t g_ProjectTextPartienAufzeichnen[] = {
+    PROJECT_TEXT_BRIGHT,'P','a','r','t','i','e','n',' ','f',0x00FC,'r',' ','F','e','h','l','e','r','b','e','r','i','c','h','t','e',' ',
+    'a','u','f','z','e','i','c','h','n','e','n',0};
+static uint16_t g_ProjectTextRecordGames[] = {
+    PROJECT_TEXT_BRIGHT,'R','e','c','o','r','d',' ','g','a','m','e','s',' ','f','o','r',' ','b','u','g',' ',
+    'r','e','p','o','r','t','s',0};
 /* Not in the original: the "Original Thandor" checkbox of the advanced settings page (TEXT_ID_ADVANCED_ORIGINAL_THANDOR,
    bright like the VSync checkbox, the same in every language: it names the game), its note
    (TEXT_ID_ADVANCED_ORIGINAL_THANDOR_NOTE, plain like the page's other note) and the key binding panel's line while
@@ -974,6 +982,17 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     /* not in the original */
     *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextOriginalThandorNoteGerman
                                                     : g_ProjectTextOriginalThandorNoteEnglish;
+    return true;
+  }
+  if (resourceId == TEXT_ID_ADVANCED_RECORD_GAMES) {
+    /* not in the original */
+    *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextPartienAufzeichnen : g_ProjectTextRecordGames;
+    return true;
+  }
+  if (resourceId == TEXT_ID_ADVANCED_RECORD_GAMES_GREYED) {
+    /* not in the original: the bright checkbox text without its leading colour code (PROJECT_TEXT_BRIGHT) */
+    TextResource_TryResolve(TEXT_ID_ADVANCED_RECORD_GAMES,outText);
+    *outText += 1;
     return true;
   }
   if ((resourceId == TEXT_ID_ADVANCED_PATHING_GREYED) || (resourceId == TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY_GREYED) ||

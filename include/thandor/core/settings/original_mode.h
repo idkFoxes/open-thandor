@@ -20,6 +20,7 @@ enum OtFeature {
     OT_FEATURE_MOVIE_VOLUME_BOOST,  /* loudness boost of the quiet movies */
     OT_FEATURE_CUSTOM_MAPS,         /* user maps from maps\ in the single-player list */
     OT_FEATURE_KEY_BINDINGS,        /* user key bindings ([keys]); off = the original keys */
+    OT_FEATURE_GAME_RECORDING,      /* recordings of single player games for bug reports ([game] record_games) */
     OT_FEATURE_COUNT
 };
 
