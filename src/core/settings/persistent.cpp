@@ -130,6 +130,8 @@ static const char *const s_IniAutosaveNames[] = {"on", "off"};
 static const char *const s_IniOriginalThandorNames[] = {"off", "on"};
 /* off first: index 0 is the default a missing key reads (PERSISTENT_RECORD_GAMES_OFF) */
 static const char *const s_IniRecordGamesNames[] = {"off", "on"};
+/* off first: index 0 is the default a missing key reads (PERSISTENT_HD_FONT_OFF) */
+static const char *const s_IniHdFontNames[] = {"off", "on"};
 
 /* the text languages of [game] language (the value is the telephone country code, see LocaleTelephoneCountryCode) */
 struct PersistentIniLanguage {
@@ -237,6 +239,10 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "record every single player game for bug reports to recordings\\<date>_<time>_<level>.otr (the newest 10, at most "
    "200 MB together): off (default) or on; off while \"Original Thandor\" is on",
    0, 0, INI_ENUM(s_IniRecordGamesNames)},
+  {PERSISTENT_SETTING_HD_FONT, INI_KIND_ENUM, "game", "hd_font",
+   "Vulkan / DirectX 12 at UI scale 2 and 3: the game font redrawn in high resolution instead of its pixels scaled up "
+   "(same sizes and line breaks): off (default) or on; off while \"Original Thandor\" is on",
+   0, 0, INI_ENUM(s_IniHdFontNames)},
 
   {PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, INI_KIND_UINT, "network", "players",
    "player count of a hosted network game (default 4)", 0, 0, INI_RANGE(s_IniRangePlayers)},
@@ -1687,4 +1693,12 @@ void PersistentSettings_WriteRecordGames(bool on)
 {
   PersistentSettings_WriteChosen(on ? PERSISTENT_RECORD_GAMES_ON : PERSISTENT_RECORD_GAMES_OFF,
                                  PERSISTENT_SETTING_RECORD_GAMES);
+}
+
+/* Not in the original: the high-resolution font option chosen in the menus ("Hochaufgeloeste Schrift" on the
+   "Erweitert" page): the settings dword the next PersistentSettings_Flush saves as [game] hd_font; the GPU renderers
+   read it with every frame (ui/text/hd_font.h). */
+void PersistentSettings_WriteHdFont(bool on)
+{
+  PersistentSettings_WriteChosen(on ? PERSISTENT_HD_FONT_ON : PERSISTENT_HD_FONT_OFF, PERSISTENT_SETTING_HD_FONT);
 }

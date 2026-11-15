@@ -86,6 +86,7 @@
 #include <thandor/platform/sdl3/sdl_objects.h>
 #include <thandor/platform/system/win32.h>
 #include <thandor/graphics/core/draw2d.h>
+#include <thandor/ui/text/hd_font.h>
 
 #include "gpu_diagnostics.h"
 #include "gpu_ui2d.h"
@@ -1584,8 +1585,17 @@ void RecordSpriteRegion(uint32_t itemIndex, const Draw2DItem *item)
        the staging buffer now: a movie frame is rewritten by the next decode) */
     region = GpuUiTextures_UploadRegion(item->pixels, item->src[2], item->src[3], item->pitchBytes);
   }
-  else if (!GpuUiTextures_Lookup(item->asset, item->subresource, item->paletteBank, &region)) {
-    region.page = nullptr;
+  else {
+    /* the high-resolution font (ui/text/hd_font.h) at UI scale 2 / 3: a glyph of the loaded fonts comes from its
+       (width * N) x (height * N) form; AppendUiQuad maps the region over the same logical rectangle, so every target
+       pixel samples its own texel. A glyph without that form keeps the 1x texels. */
+    const GraphicsTextureSourceAsset *hdFont =
+        (item->Blend() == DRAW2D_BLEND_MODULATED) ? HdFont_GlyphSource(item->asset, s_uiScale) : nullptr;
+    if ((hdFont == nullptr) || !GpuUiTextures_Lookup(hdFont, item->subresource, GPU_UI_TEX_ENTRY_PALETTE, &region)) {
+      if (!GpuUiTextures_Lookup(item->asset, item->subresource, item->paletteBank, &region)) {
+        region.page = nullptr;
+      }
+    }
   }
   s_gpu.spriteRegions[itemIndex] = region;
 }

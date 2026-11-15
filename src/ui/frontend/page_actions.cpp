@@ -201,6 +201,10 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
     /* not in the original: action 0x2068, the game recording checkbox of the advanced settings page */
     .handlers68 = {
         /* 104 */ UI_SLOT(FrontendAdvancedSettingsAction_SetRecordGames)
+    },
+    /* not in the original: action 0x2069, the high-resolution font checkbox of the advanced settings page */
+    .handlers69 = {
+        /* 105 */ UI_SLOT(FrontendAdvancedSettingsAction_SetHdFont)
     }};
 
 /* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of

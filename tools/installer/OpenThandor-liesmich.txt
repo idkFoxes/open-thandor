@@ -66,6 +66,12 @@ mit dem Parameter -SOFTWARE (z. B. in einer Verknüpfung:
 "...\thandor.exe" -SOFTWARE) oder der Eintrag renderer = software in
 thandor.ini.
 
+Unter Optionen -> Erweitert macht "Hochaufgelöste Schrift" (anfangs aus;
+aus, wenn "Original Thandor" an ist) die Schrift bei UI-Skalierung 2x und 3x
+mit Vulkan oder DirectX 12 schärfer: Die Buchstaben sind hochaufgelöst
+nachgezeichnet statt vergrößert, behalten aber Größe und Position, so dass
+Zeilen und Umbrüche gleich bleiben.
+
 Kampagnenkarte
 --------------
 Unter "Spiel auswählen" zeigt die Kampagnen-Registerkarte eine Schaltfläche

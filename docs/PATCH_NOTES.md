@@ -42,6 +42,10 @@ A mission map for the campaigns: replay any mission you have reached, without sa
   the crash with the same version. Network games are not recorded; loading a savegame or moving on to the next
   campaign mission starts a new recording. While a game is recorded, the short-lived selection and target markers
   in the world are not shown.
+- **High resolution font:** with *Hochaufgelöste Schrift* on the *Erweitert* page (off by default, off while
+  *Original Thandor* is on) Vulkan and DirectX 12 draw the game's text at UI scale 2x and 3x with glyphs redrawn in
+  high resolution instead of the original pixels enlarged. Letters keep their exact size and place, so lines,
+  line breaks and the layout stay as before. The software renderer and UI scale 1x are not affected.
 
 #### Kept on purpose
 
@@ -88,6 +92,11 @@ Eine Missionskarte für die Kampagnen: Jede erreichte Mission lässt sich wieder
   bei, dann lässt sich die Partie mit derselben Version bis zum Absturz nachspielen. Netzwerkspiele werden nicht
   aufgezeichnet; das Laden eines Spielstands oder die nächste Kampagnenmission beginnt eine neue Aufzeichnung.
   Während einer Aufzeichnung fehlen die kurzlebigen Auswahl- und Zielmarkierungen in der Welt.
+- **Hochaufgelöste Schrift:** Mit *Hochaufgelöste Schrift* auf der Seite *Erweitert* (anfangs aus, aus, solange
+  *Original Thandor* an ist) zeichnen Vulkan und DirectX 12 die Schrift des Spiels bei UI-Skalierung 2x und 3x mit
+  hochaufgelöst nachgezeichneten Buchstaben statt mit vergrößerten Originalpixeln. Die Buchstaben behalten Größe und
+  Position genau, Zeilen, Zeilenumbrüche und das Layout bleiben wie bisher. Software-Renderer und UI-Skalierung 1x
+  sind nicht betroffen.
 
 #### Bewusst beibehalten
 

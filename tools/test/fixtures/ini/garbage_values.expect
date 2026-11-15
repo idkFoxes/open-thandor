@@ -20,4 +20,6 @@ game.player_name = "Ok"
 game.original_thandor = <default>
 # the same for the game recording switch (off, on)
 game.record_games = <default>
+# the same for the high-resolution font switch (off, on)
+game.hd_font = <default>
 others = <default>

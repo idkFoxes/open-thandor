@@ -148,6 +148,12 @@ static uint16_t g_ProjectTextPartienAufzeichnen[] = {
 static uint16_t g_ProjectTextRecordGames[] = {
     PROJECT_TEXT_BRIGHT,'R','e','c','o','r','d',' ','g','a','m','e','s',' ','f','o','r',' ','b','u','g',' ',
     'r','e','p','o','r','t','s',0};
+/* Not in the original: the high-resolution font checkbox of the advanced settings page (TEXT_ID_ADVANCED_HD_FONT),
+   bright like the VSync checkbox (0x00F6: o umlaut). */
+static uint16_t g_ProjectTextHochaufgeloesteSchrift[] = {
+    PROJECT_TEXT_BRIGHT,'H','o','c','h','a','u','f','g','e','l',0x00F6,'s','t','e',' ','S','c','h','r','i','f','t',0};
+static uint16_t g_ProjectTextHighResolutionFont[] = {
+    PROJECT_TEXT_BRIGHT,'H','i','g','h',' ','r','e','s','o','l','u','t','i','o','n',' ','f','o','n','t',0};
 /* Not in the original: the "Original Thandor" checkbox of the advanced settings page (TEXT_ID_ADVANCED_ORIGINAL_THANDOR,
    bright like the VSync checkbox, the same in every language: it names the game), its note
    (TEXT_ID_ADVANCED_ORIGINAL_THANDOR_NOTE, plain like the page's other note) and the key binding panel's line while
@@ -994,6 +1000,18 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   if (resourceId == TEXT_ID_ADVANCED_RECORD_GAMES_GREYED) {
     /* not in the original: the bright checkbox text without its leading colour code (PROJECT_TEXT_BRIGHT) */
     TextResource_TryResolve(TEXT_ID_ADVANCED_RECORD_GAMES,outText);
+    *outText += 1;
+    return true;
+  }
+  if (resourceId == TEXT_ID_ADVANCED_HD_FONT) {
+    /* not in the original */
+    *outText = TextResource_ProjectTextsAreGerman() ? g_ProjectTextHochaufgeloesteSchrift
+                                                    : g_ProjectTextHighResolutionFont;
+    return true;
+  }
+  if (resourceId == TEXT_ID_ADVANCED_HD_FONT_GREYED) {
+    /* not in the original: the bright checkbox text without its leading colour code (PROJECT_TEXT_BRIGHT) */
+    TextResource_TryResolve(TEXT_ID_ADVANCED_HD_FONT,outText);
     *outText += 1;
     return true;
   }

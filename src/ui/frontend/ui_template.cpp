@@ -2957,7 +2957,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         { /* +85A8 advancedRecordGamesCheckbox g_UiTextButtonControlVtable */
             .selectable = {
                 .base = {
-                    .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    /* followed by advancedHdFontCheckbox (+8608), then advancedLanguageGroup (+7FD4) */
+                    .nextSibling = UI_TEMPLATE_LINK(0x8608), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
                     .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
                     .left = -1, .top = -1, .right = -1, .bottom = -1,
                     .leftOffset = -283, .topOffset = 84, .rightOffset = 32, .bottomOffset = 108,
@@ -2965,4 +2966,19 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
                     .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
                 .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_RECORD_GAMES},
             .textResourceId = TEXT_ID_ADVANCED_RECORD_GAMES},
+        /* not in the original (open-thandor): the high-resolution font setting of the advanced settings page ([game]
+           hd_font, ui/text/hd_font.h) in the right column of the "Zurueck" row (x 53..288, y 128..152; the note
+           above ends at 132 and is centred in its row), between advancedRecordGamesCheckbox and advancedLanguageGroup
+           in the page's sibling chain */
+        { /* +8608 advancedHdFontCheckbox g_UiTextButtonControlVtable */
+            .selectable = {
+                .base = {
+                    .nextSibling = UI_TEMPLATE_LINK(0x7FD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+                    .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+                    .left = -1, .top = -1, .right = -1, .bottom = -1,
+                    .leftOffset = 53, .topOffset = 128, .rightOffset = 288, .bottomOffset = 152,
+                    .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+                    .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = FromBits<UiNodeFlags>(0x20)},
+                .stateFlags = FromBits<UiSelectableStateFlags>(0x00000091), .actionId = FRONTEND_ACTION_ADVANCED_HD_FONT},
+            .textResourceId = TEXT_ID_ADVANCED_HD_FONT},
 };

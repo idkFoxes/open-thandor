@@ -58,6 +58,7 @@ add_executable(thandor WIN32
     src/assets/scenario/custom_project.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
+    src/assets/text/hd_font_data.cpp
     src/assets/text/objective_texts.cpp
     src/assets/text/project_texts_en.cpp
     src/assets/text/resources.cpp
@@ -287,6 +288,7 @@ add_executable(thandor WIN32
     src/ui/ingame/ui_template.cpp
     src/ui/ingame/world_input.cpp
     src/ui/text/font.cpp
+    src/ui/text/hd_font.cpp
     src/ui/text/richtext_render.cpp
     src/world/camera/camera.cpp
     src/world/camera/camera_input.cpp

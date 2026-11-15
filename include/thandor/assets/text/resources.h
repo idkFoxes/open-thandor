@@ -226,6 +226,12 @@ inline constexpr int TEXT_ID_LANGUAGE_NAME_COUNT = 5;
 #define TEXT_ID_ADVANCED_RECORD_GAMES (TEXT_ID_ADVANCED_PATHING + 13)
 #define TEXT_ID_ADVANCED_RECORD_GAMES_GREYED (TEXT_ID_ADVANCED_PATHING + 14)
 
+/* Not in the original: the high-resolution game font (ui/text/hd_font.h) - the "Hochaufgeloeste Schrift" / "High
+   resolution font" checkbox of the advanced settings page ([game] hd_font) and its text without the bright colour
+   code while "Original Thandor" greys it out; German for German, English for every other language. */
+#define TEXT_ID_ADVANCED_HD_FONT (TEXT_ID_ADVANCED_PATHING + 15)
+#define TEXT_ID_ADVANCED_HD_FONT_GREYED (TEXT_ID_ADVANCED_PATHING + 16)
+
 /* Not in the original: the objective overlay (docs/plans/objective_overlay.md 3b): the templates of the generated
    objective lines (gameplay/session/mission_objective.h), German for German, English for every other language
    (project_texts_en.cpp). Block TEXT_ID_OBJECTIVE_BASE..TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED - 1
@@ -290,9 +296,9 @@ static_assert(TEXT_ID_KEY_BINDING_BASE + TEXT_ID_KEY_BINDING_COUNT <= TEXT_ID_LA
               "the key binding texts end before the language names");
 static_assert(TEXT_ID_LANGUAGE_NAME_BASE + TEXT_ID_LANGUAGE_NAME_COUNT <= TEXT_ID_ADVANCED_PATHING,
               "the language names end before the pathing checkbox text");
-static_assert(TEXT_ID_ADVANCED_RECORD_GAMES_GREYED < TEXT_ID_OBJECTIVE_BASE,
-              "the pathing checkbox, the autosave, the \"Original Thandor\" and the game recording texts lie before the "
-              "objective block");
+static_assert(TEXT_ID_ADVANCED_HD_FONT_GREYED < TEXT_ID_OBJECTIVE_BASE,
+              "the pathing checkbox, the autosave, the \"Original Thandor\", the game recording and the high-resolution "
+              "font texts lie before the objective block");
 static_assert((TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY >= TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_COUNT) &&
               (TEXT_ID_ADVANCED_OBJECTIVE_OVERLAY < TEXT_ID_OBJECTIVE_BASE + TEXT_ID_OBJECTIVE_RESERVED),
               "the objective overlay checkbox text lies in the objective block, after the templates");

@@ -474,6 +474,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers66[1]; // Not in the original: action ID 0x2066 (the autosave checkbox of the advanced settings page).
     Ptr32<void (void *)> handlers67[1]; // Not in the original: action ID 0x2067 (the "Original Thandor" checkbox of the advanced settings page).
     Ptr32<void (void *)> handlers68[1]; // Not in the original: action ID 0x2068 (the game recording checkbox of the advanced settings page).
+    Ptr32<void (void *)> handlers69[1]; // Not in the original: action ID 0x2069 (the high-resolution font checkbox of the advanced settings page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1387,6 +1388,11 @@ struct FrontendUiImage {
        advancedOriginalThandorNote and advancedLanguageGroup in the page's sibling chain (the language list layer
        stays the last child). */
     UiTextButtonControl advancedRecordGamesCheckbox; /* +85A8 g_UiTextButtonControlVtable: Checkbox "Partien fuer Fehlerberichte aufzeichnen" (action FRONTEND_ACTION_ADVANCED_RECORD_GAMES). */
+    /* Not in the original (open-thandor): the high-resolution font setting of the advanced settings page ([game]
+       hd_font, ui/text/hd_font.h), in the right column of the "Zurueck" row; linked between
+       advancedRecordGamesCheckbox and advancedLanguageGroup in the page's sibling chain (the language list layer
+       stays the last child). */
+    UiTextButtonControl advancedHdFontCheckbox; /* +8608 g_UiTextButtonControlVtable: Checkbox "Hochaufgeloeste Schrift" (action FRONTEND_ACTION_ADVANCED_HD_FONT). */
 
     /* Node T at byte offset `offset` of this image copy: for the node offset tables whose entries are compared as
        byte offsets (g_FrontendTaskAssignmentControlOffsets, offsetof(FrontendUiImage, x) values). The offset is

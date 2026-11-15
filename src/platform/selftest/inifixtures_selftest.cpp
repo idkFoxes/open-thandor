@@ -140,6 +140,7 @@ const std::vector<IniFixtureKey> &IniFixture_Keys()
          {"off", "on"}},
         {"game", "record_games", PERSISTENT_SETTING_RECORD_GAMES, K::Enum, PERSISTENT_RECORD_GAMES_OFF, 0,
          {"off", "on"}},
+        {"game", "hd_font", PERSISTENT_SETTING_HD_FONT, K::Enum, PERSISTENT_HD_FONT_OFF, 0, {"off", "on"}},
         {"network", "players", PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, K::Uint, 4, 0, {}},
     };
     return keys;
