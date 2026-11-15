@@ -36,6 +36,9 @@ void SdlPlatform_InstallTimersAndPump();
 void SdlPlatform_PumpEvents();
 /* End of ProcessEntry, after Runtime_Shutdown: stops SDL. */
 void SdlPlatform_Quit();
+/* Not in the original: opens url (UTF-8) in the system's browser through SDL_OpenURL; a failure is logged as a
+   warning. The developer tools can only log it instead (DebugHook_InterceptOpenUrl). */
+void SdlPlatform_OpenUrl(const char *url);
 
 /* --- periodic timers (src/platform/sdl3/timer.cpp) --- */
 

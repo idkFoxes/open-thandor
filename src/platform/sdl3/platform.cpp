@@ -15,6 +15,7 @@
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_misc.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_version.h>
@@ -195,4 +196,14 @@ void SdlPlatform_Quit()
 {
   DestroyMainWindow();
   SDL_Quit();
+}
+
+void SdlPlatform_OpenUrl(const char *url)
+{
+  if (DebugHook_InterceptOpenUrl(url)) {
+    return;
+  }
+  if (!SDL_OpenURL(url)) {
+    Thandor_Log("warning: SDL_OpenURL(\"%s\") failed: %s", url, SDL_GetError());
+  }
 }

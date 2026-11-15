@@ -612,6 +612,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_WINDOW_MINIMIZED=1` | that window (implies `OPEN_THANDOR_WINDOWED=1`), created minimized and never activated, so test games stay out of the way; the game keeps running at full speed and drawing its frames (screenshots read the framebuffer; input scripts do not need focus). The test tools set it for every game (`game_env.py`) unless `OPEN_THANDOR_TEST_VISIBLE=1` |
 | `OPEN_THANDOR_RESTORE_AFTER_MS=<ms>` | restores that minimized window (without activating it) once, `<ms>` milliseconds after the first message pump; tests the GPU renderer's swapchain recovery after a minimized start (log: `SDL_GPU: window ... claimed for the swapchain`, `swapchain texture ... acquired again`) |
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
+| `OPEN_THANDOR_OPEN_URL=log` | a URL the game would open in the browser (the main menu's *GitHub* link, `SdlPlatform_OpenUrl`) is only logged (`open url (OPEN_THANDOR_OPEN_URL=log, not opened): ...`), no browser starts; the test tools (`game_env.py`) set it for every game unless the caller sets it |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |
 | `OPEN_THANDOR_LIST_SCENARIOS=1` | log the names of all single games and campaigns when the "Choose game" page opens, then quit |
