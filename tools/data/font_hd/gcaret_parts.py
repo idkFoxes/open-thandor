@@ -4,6 +4,9 @@
      that row is cut right of the stem, the rest of the finished glyph stays.
  ordfeminine  the contour build loses the counter: small a composed from font.gfx's finished a at high N, hinted,
      area-downscaled (frac_parts), final stroke W as the small digits. The original has no underline, so none is drawn.
+ ordmasculine (0xBA, v9)  elliptic ring in the ink box of the contour build (size and place unchanged), ring width =
+     the final stroke of the ordfeminine, so both have the same weight (the contour build gave it the heavier stroke
+     of the full-size letters).
 """
 import math
 import numpy as np
@@ -46,20 +49,42 @@ def g_ae(M):
     return r
 
 
-def small_a(N):
-    if N not in _ord:
+def small_a(N, letter='a'):
+    if (N, letter) not in _ord:
         import upscale as U, upscale3 as S, dumpcur as D
         NH, WH, k, W, top, bot = ORD[N]
         M = S.FontModel(U.load('font.gfx'), NH, W=WH, **D.FONT_KW['font.gfx'])
-        c = FR.hint(FR._crop(S.render(M, ord('a'))), k, (bot - top) * k)
-        _ord[N] = FR._crop(min((FR._down(c, k, dx) for dx in range(k)), key=FR._soft))
-    return _ord[N]
+        c = FR.hint(FR._crop(S.render(M, ord(letter))), k, (bot - top) * k)
+        _ord[(N, letter)] = FR._crop(min((FR._down(c, k, dx) for dx in range(k)), key=FR._soft))
+    return _ord[(N, letter)]
 
 
-def g_ordf(M):
+def g_ordm(M):
+    import upscale3 as S
+    import accents_parts as AP
+    M._gcaret_busy = True
+    try:
+        r = S.render(M, 0xBA)
+    finally:
+        M._gcaret_busy = False
+    rows = np.nonzero(r.max(axis=1) > 0.5)[0]
+    cols = np.nonzero(r.max(axis=0) > 0.5)[0]
+    y0, y1, x0, x1 = rows[0], rows[-1] + 1, cols[0], cols[-1] + 1
+    W = ORD[M.N][3]
+    cy, cx = (y0 + y1) / 2.0, (x0 + x1) / 2.0
+    ry, rx = (y1 - y0) / 2.0, (x1 - x0) / 2.0
+    n = 96
+    ell = lambda a, b: [(cy + a * math.sin(2 * math.pi * i / n), cx + b * math.cos(2 * math.pi * i / n))
+                        for i in range(n)]
+    return AP._poly_raster([ell(ry, rx), ell(ry - W, rx - W)], r.shape[0], r.shape[1])
+
+
+def g_ordf(M, code=0xAA):
+    if code == 0xBA:
+        return g_ordm(M)
     N = M.N
     a = small_a(N)
-    src = M.g[0xAA]
+    src = M.g[code]
     h, w = src.shape[0] * N, src.shape[1] * N
     top = ORD[N][4]
     cs = (src.sum(axis=0) * (np.arange(src.shape[1]) + 0.5)).sum() / src.sum() * N
@@ -72,12 +97,14 @@ def g_ordf(M):
 
 def render(M, code):
     """finished raster or None."""
-    if code not in (0x5E, 0xE6, 0xAA) or M.N not in (2, 3) or not is_font(M):
+    if code not in (0x5E, 0xE6, 0xAA, 0xBA) or M.N not in (2, 3) or not is_font(M):
         return None
     if code == 0x5E:
         return g_hat(M)
-    if code == 0xAA:
-        return g_ordf(M)
+    if code == 0xBA and getattr(M, '_gcaret_busy', False):
+        return None
+    if code in (0xAA, 0xBA):
+        return g_ordf(M, code)
     if M.N == 3 and not getattr(M, '_gcaret_busy', False):
         return g_ae(M)
     return None

@@ -7,14 +7,21 @@
                  accents_parts (originals: row 1 of S-caron is a V, row 1 of Y-diaeresis has two peaks).
   2x only      : lower-case tilde 3 rows high (1 clear row above the body, band is only 3 rows),
                  ring 4 x 3 with a 2-wide hole (a 3 x 3 ring has a 1-px grey hole), upper and lower case.
+  v9           : A (0x41) = the same raised form as a, so A and the accented capitals A-grave .. A-ring (composed on
+                 the run-time A) stand on the line of the other capitals; the 3-row tilde also for the capitals
+                 (A-tilde, N-tilde, O-tilde at 2x); S-caron, Y-diaeresis, Y-acute = fontk S / Y + the capital accent
+                 part on the rows of the 9-row letters (like the y-acute / s-caron of BASED) instead of the large
+                 distorted source bodies.
 Active for fontk only (9-row A cell), 2x / 3x with M.W == M.N."""
 import numpy as np
 import accents_parts as A
 
 A_LOWER = 0x61
+A_UPPER = 0x41
 BASED = (0x9A, 0xFD, 0xFF)                  # s-caron, y-acute, y-diaeresis
-MARKS = (0x8A, 0x9F)                        # S-caron, Y-diaeresis
-CODES = (A_LOWER,) + BASED + MARKS
+BASED_UPPER = (0x8A, 0x9F, 0xDD)            # v9: S-caron, Y-diaeresis, Y-acute
+MARKS = ()                                  # v8: S-caron, Y-diaeresis (body of the source glyph + new mark)
+CODES = (A_LOWER, A_UPPER) + BASED + BASED_UPPER + MARKS
 ROW_9 = 3
 
 TILDE_2X = np.array([[.25, 1, 1, 1, .4, 0, 0],
@@ -35,7 +42,8 @@ def _seed_2x_parts(M):
         return
     M.__dict__['_kacc_seeded'] = True
     cache = M.__dict__.setdefault('_accparts', {})
-    cache[(TILDE, False)] = (TILDE_2X, TILDE_2X.shape[1] / 2.0)
+    for upper in (True, False):
+        cache[(TILDE, upper)] = (TILDE_2X, TILDE_2X.shape[1] / 2.0)
     for upper in (True, False):
         cache[(RING, upper)] = (RING_2X, RING_2X.shape[1] / 2.0)
 
@@ -56,7 +64,11 @@ def _stamp(out, part, y0, cx):
 def g_a(M):
     """A with the first all-straight leg row doubled: everything above it moves up one row."""
     import upscale3 as S
-    r = S.render(M, ord('A')).copy()
+    M.__dict__['_kacc_skip'] = A_UPPER      # the unraised A of the normal path
+    try:
+        r = S.render(M, A_UPPER).copy()
+    finally:
+        M.__dict__['_kacc_skip'] = None
     y0, y1, _, _ = _box(r)
     y = y1 - 2                              # a leg row (flat down to the baseline)
     out = np.zeros_like(r)
@@ -65,7 +77,7 @@ def g_a(M):
     return out
 
 
-def g_based(M, code):
+def g_based(M, code, upper=False):
     import upscale3 as S
     N = M.N
     h, w = M.g[code].shape[0] * N, M.g[code].shape[1] * N
@@ -76,8 +88,13 @@ def g_based(M, code):
     out = np.zeros((h, w))
     x0 = (w - (c1 - c0)) // 2
     out[yo:yo + base.shape[0], x0:x0 + c1 - c0] = base[:, c0:c1]
-    part, _ = A.accent_part(M, acc, False)
-    _stamp(out, part, yo + A.params(M)['base'][False] - part.shape[0], x0 + (c1 - c0) / 2.0)
+    part, _ = A.accent_part(M, acc, upper)
+    p = A.params(M)
+    if acc == TILDE:                        # centred in the band, as accents_parts.compose
+        y0 = yo + p['base'][upper] - p['H'] + (p['H'] - part.shape[0]) // 2
+    else:
+        y0 = yo + p['base'][upper] - part.shape[0]
+    _stamp(out, part, y0, x0 + (c1 - c0) / 2.0)
     return out
 
 
@@ -107,6 +124,8 @@ def render(M, code):
     _seed_2x_parts(M)
     if code not in CODES or M.__dict__.get('_kacc_skip') == code:
         return None
-    if code == A_LOWER:
+    if code in (A_LOWER, A_UPPER):
         return g_a(M)
+    if code in BASED_UPPER:
+        return g_based(M, code, True)
     return g_based(M, code) if code in BASED else g_marks(M, code)
