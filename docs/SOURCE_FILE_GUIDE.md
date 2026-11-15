@@ -256,6 +256,14 @@ Module header: [`faction.h`](../include/thandor/gameplay/faction.h) · Changelog
 - [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-faction-runtime) - no file comment; main functions `GameFactionRuntime_TestCapabilityBitClear`, `GameFactionRuntime_RecomputeProgressAndScoreMetrics`, `GameFactionRuntime_GetPackedStateNibble`
 - [`types.h`](source_guide/gameplay.md#file-gameplay-faction-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
+<a id="module-gameplay-replay"></a>
+### `gameplay/replay`
+
+- [`files.cpp / files.h`](source_guide/gameplay.md#file-gameplay-replay-files) - Not in the original: the operating system side of the game recorder (gameplay/replay/runtime.h), kept apart because &lt;windows.h&gt; and the game headers do not mix: environment, command line, paths, ...
+- [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-replay-runtime) - Not in the original: the game recorder (gameplay/replay/runtime.h).
+- [`state_hash.cpp / state_hash.h`](source_guide/gameplay.md#file-gameplay-replay-state-hash) - Not in the original: the hash of the simulation state that the determinism test (OPEN_THANDOR_STATEHASH, platform/debug/statehash.cpp) writes per step and the game recorder ...
+- [`stream.cpp / stream.h`](source_guide/gameplay.md#file-gameplay-replay-stream) - Not in the original: the .otr format (gameplay/replay/stream.h).
+
 <a id="module-gameplay-selection"></a>
 ### `gameplay/selection`
 
@@ -283,7 +291,7 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 - [`loaded_session.cpp / loaded_session.h`](source_guide/gameplay.md#file-gameplay-session-loaded-session) - no file comment; main functions `InGameRuntime_InitializeLoadedSession`
 - [`loading_movie.cpp / loading_movie.h`](source_guide/gameplay.md#file-gameplay-session-loading-movie) - no file comment; main functions `MoviePlayback_AdvanceScheduledFrameAndTick`, `MoviePlayback_AdvanceToFrameAndPresent`
 - [`mission_objective.cpp / mission_objective.h`](source_guide/gameplay.md#file-gameplay-session-mission-objective) - open-thandor (objective overlay, docs/plans/objective_overlay.md 3): the local faction's objective from the level script.
-- [`new_session.cpp / new_session.h`](source_guide/gameplay.md#file-gameplay-session-new-session) - no file comment; main functions `InGameRuntime_InitializeNewSession`
+- [`new_session.cpp / new_session.h`](source_guide/gameplay.md#file-gameplay-session-new-session) - no file comment; main functions `InGameNewSession_QueueIntroNotificationRecords`, `InGameRuntime_InitializeNewSession`
 - [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-session-runtime)
 - [`savegame.cpp / savegame.h`](source_guide/gameplay.md#file-gameplay-session-savegame) - no file comment; main functions `InGameSaveGame_WritePackage`, `RuntimeHexSegment_ToggleLightImageFlag`, `InGameSaveGame_CreatePackage`
 - [`savegame_load.cpp / savegame_load.h`](source_guide/gameplay.md#file-gameplay-session-savegame-load) - no file comment; main functions `GameFactionRuntime_RebaseLoadedArmyReferences`, `ResourceRegistrationRuntime_RebaseLoadedRecords`, `SavedLevel_LoadRuntimePools`

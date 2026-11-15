@@ -242,6 +242,8 @@ objective_overlay = on
 autosave = on
 ; "Original Thandor": off (default) or on; on plays like the original game: every open-thandor addition (pathing, objective box, autosave, campaign map, movie loudness, own maps, key bindings) behaves as in the original, their own settings are kept for when it is off again; bug and crash fixes stay
 original_thandor = off
+; record every single player game for bug reports to recordings\<date>_<time>_<level>.otr (the newest 10, at most 200 MB together): off (default) or on; off while "Original Thandor" is on
+record_games = off
 
 [network]
 ; player count of a hosted network game (default 4)
@@ -333,7 +335,7 @@ must read what the others wrote.
   `PersistentSettings_Read` call sites, never in the file. Do not write a key just because it exists.
 - **Every key has a range.** A value outside it (or one that does not parse; a negative number for an unsigned
   key) reads as the default, with one log line - a hand-edited file must not reach the game code unchecked. An
-  enumeration (`pathing`, `objective_overlay`, `autosave`, `original_thandor`, ...) accepts only its names or their
+  enumeration (`pathing`, `objective_overlay`, `autosave`, `original_thandor`, `record_games`, ...) accepts only its names or their
   indices, `language` its names or a country code 0..999.
 - **Every new key gets a fixture entry**: the key table copy in
   [`src/platform/selftest/inifixtures_selftest.cpp`](../src/platform/selftest/inifixtures_selftest.cpp) (it fails on
@@ -345,14 +347,74 @@ must read what the others wrote.
   = 256: the 200 bytes of the original `thandor.dat` followed by free dwords; the present/written masks are 64-bit,
   so it cannot grow further). The original's dwords 0x00-0xAF are its own (0x50-0x58 are unused there and hold
   `pathing`, `objective_overlay` and `autosave`, so a `thandor.dat` migration must not take them over),
-  open-thandor's additions start at 0xB0 (0xC8, the first dword past `thandor.dat`, is `original_thandor`), and
-  0xCC-0xFF (`freeCC_FF`) are free. A new key needs a free dword; reusing one changes what older files mean.
+  open-thandor's additions start at 0xB0 (0xC8, the first dword past `thandor.dat`, is `original_thandor`, 0xCC
+  `record_games`), and 0xD0-0xFF (`freeD0_FF`) are free. A new key needs a free dword; reusing one changes what older files mean.
 - **Downgrades keep what they do not know.** An older version reads a newer file, ignores the keys it does not
   know - and must write them back unchanged on its next save, sections included (`[keys]`), so the newer version
   finds them again. Releases up to 1.0.7 drop them (`python tools/test/ini_downgrade.py --exe <older test build>`
   shows what an older build with the developer tools keeps of this version's file; the older build's expectations
   are the fixtures' `<name>.downgrade` files); this is why new keys must never be required: a file saved by an older
   version may have lost them.
+
+### Game recordings (`.otr`)
+
+A diagnostic tool of every build ([`src/gameplay/replay/runtime.cpp`](../src/gameplay/replay/runtime.cpp), file
+format in [`include/thandor/gameplay/replay/stream.h`](../include/thandor/gameplay/replay/stream.h)): a single player
+game is recorded into one file and can be played back by the same build, step for step, to reproduce a crash or a
+wrong behaviour that a player reports.
+
+**Recording.** With "Partien für Fehlerberichte aufzeichnen" on the "Erweitert" page (`[game] record_games`,
+default off, off while "Original Thandor" is on) every local game is written to
+`recordings\<date>_<time>_<level>.otr` next to `thandor.exe`; the folder keeps the newest 10 recordings and at most
+200 MB of them (the oldest are deleted when a game starts and ends, logged). `thandor.log` names the file at the start
+and its size, event counts and the recorder's time at the end (`recorder: recording finished: ...`); while a game is
+recorded, `crash.log` names its recording (`recording: ...`). The file holds the session's start as an ordinary save
+game (the checkpoint, about 1 MB), then every local command, every manual save and every simulation step with the
+context it ran in (ticks, game speed, pause and other UI flags, both random seeds, local player, active faction,
+camera) and the state hash (`GameStateHash_Compute`, the hash of the determinism test, plus the step counters) before
+and after it - some 20-30 bytes per step. It is written as it goes, so a crash or a killed process leaves a file that
+plays up to its last complete step.
+
+**Environment** (every build; wins over the setting): `OPEN_THANDOR_RECORD=<path>` records to that file instead
+(a later session of the same process, or an existing file, gets `-2`, `-3`, ... before the extension);
+`OPEN_THANDOR_RECORD=on` records to `recordings\` as the option does; `OPEN_THANDOR_RECORD=0` or `off` records nothing.
+`OPEN_THANDOR_REPLAY=<path>`, or `-REPLAY="<path>"` on the command line (before `-KARTE="..."`, whose value must end
+the line), plays a recording back: the next local session the process starts (any level; with `-KARTE="<level>"`
+and the start clicks, e.g. `tools/test/skirmish_start.txt`) is replaced by the recording's checkpoint, once per
+process; the environment variable wins over the switch, and a playback wins over any recording (a played back game
+is not recorded). `OPEN_THANDOR_REPLAY_FAST=1` runs the steps as fast as the frames allow instead of at 20 per second,
+`OPEN_THANDOR_REPLAY_QUIT=1` ends the process when the playback ends (exit code 0 complete, 2 the recording has no
+clean end, 3 a divergence or a recording that cannot be played), `OPEN_THANDOR_REPLAY_FORCE=1` plays a recording of
+another build or other game files anyway (logged; it will usually diverge).
+
+**Playback.** The recording names the build that made it (product version and git commit, `-dirty-<hash>` for
+uncommitted changes to tracked files in `src`, `include`, `cmake` or `CMakeLists.txt`, `unknown` without git;
+`cmake/build_id.cmake`) and a fingerprint of the
+`*.PCK` files next to `thandor.exe` (their bytes; a level of its own such as a custom map is part of the checkpoint).
+Another build or other packages are refused with a log line, and the session starts as chosen. Otherwise the
+checkpoint is loaded, the live commands are blocked (leaving the game ends the playback), the recorded ones are
+executed between the same steps, and every event's context is restored and both hashes compared. `thandor.log`
+ends the playback with one of
+`replay: COMPLETE: all N events matched (...), final state hash H`,
+`replay: recording ends at event N (no clean end): every event up to there matched (...)` (a crash recording: the
+game is at the state just before the step that crashed) or
+`replay: STOP at event N: the state differs before step (recorded A, now B)` (the first event whose result differs).
+Then the game is paused and yours. Tools: `OPEN_THANDOR_STATEHASH_DETAIL` of the determinism test gives the values
+behind a hash at one tick, in a recording and in its playback alike.
+
+**Limits.** Single player only: a network game is never recorded (`recorder: network games are not recorded`). One
+session is one recording: loading a save game in a game or moving on to the next campaign level ends the recording
+cleanly and starts a new one with the next session. A recorded session is saved and loaded again right after it
+started (as the playback starts it), with both random streams seeded and the simulation on the secondary stream as
+in a network game, so its random numbers differ from an unrecorded game; the intro notifications of a new level are
+queued again after that. While a game is recorded or played back the transient selection and target preview markers
+of the world view are not drawn: they take effect pool slots the simulation shares, so the result would depend on the
+frames drawn (the determinism test hides them for the same reason). The autosave runs while recording (it restores the
+state it changes) and not during a playback. The test aids that change the game outside its commands
+(`OPEN_THANDOR_ARENA_ORDERS`, `_AUTOWIN`, `_AUTOLOSE`, `_STATEHASH_SPEED`, `_STATEHASH_PAUSE_AT`) switch recording and
+playback off. The hashes cover the main simulation state (armies, objects, resources, pathing side table), not all
+of it, so a difference elsewhere is found one or more events later. Without a recording or playback the hooks only
+test two plain booleans on the main thread; nothing runs on the timer thread.
 
 ## Patch installer
 
@@ -626,6 +688,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_WATCHDOG=<s>` | log the main thread's stack to `thandor.log` every <s> seconds |
 | `OPEN_THANDOR_PATHING=improved\|original` | pathing mode of every new local session, wins over `[game] pathing` (default `improved`, the "Verbesserte Wegfindung" checkbox of the "Erweitert" page; plan in [`docs/plans/pathfinding.md`](plans/pathfinding.md)); any other value (`setting`) keeps the setting's mode. A network session agrees on its mode in the lobby and a loaded savegame keeps its own, both unaffected. `thandor.log` names the mode of each new session (`session: pathing mode ...`). The test tools (`tools/test`, `game_env.py`) start every game with `OPEN_THANDOR_PATHING=original` unless the caller sets it, so the determinism references, the AI hash and the other checks keep comparing the original movement; `run_checks.py`, `run_determinism.py`, `compare_map_hash.py`, `run_campaign_chain.py`, `run_all_maps.py`, `run_multiplayer.py` and `run_pathing.py` take `--pathing original\|improved\|setting` for that |
 | `OPEN_THANDOR_AUTOSAVE=0\|off\|<n>` | the autosave of local games ([`src/gameplay/session/autosave.cpp`](../src/gameplay/session/autosave.cpp); `[game] autosave`, default on: `save\autosave.sve` after every minute of play, "Automatisch speichern" on the "Erweitert" page): `0` or `off` switches it off, a number n > 0 saves every n seconds of play whatever the setting says; `thandor.log` names each save and its duration (`autosave: ... written in <ms> ms`). The test tools (`game_env.py`) start every game with `OPEN_THANDOR_AUTOSAVE=0` unless the caller sets it |
+| `OPEN_THANDOR_CRASH_AT_TICK=<n>` | an access violation at the end of the simulation step of tick n or later (`test aid: OPEN_THANDOR_CRASH_AT_TICK ...` in `thandor.log`): tests `crash.log` and the crash recordings of the game recorder ("Game recordings" above) |
 | `OPEN_THANDOR_ORIGINAL=1\|on\|0\|off` | the "Original Thandor" master switch ([`src/core/settings/original_mode.cpp`](../src/core/settings/original_mode.cpp); `[game] original_thandor`, default off, "Original Thandor" at the top of the "Erweitert" page): `1` or `on` plays as the original (every open-thandor addition of `OtFeature` off, their own settings unchanged), `0` or `off` lets the additions' own settings apply, whatever the setting says; the menu checkbox then shows the overridden state. The test tools (`game_env.py`) leave it unset |
 
 Always on in this build: the level-script log (its conditions and triggers, and which end trigger fired), which
