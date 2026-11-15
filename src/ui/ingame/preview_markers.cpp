@@ -320,7 +320,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
 
   /* developer tools (not in the original): no render-path objects while the determinism test hashes the
      simulation */
-  if (DebugHook_SuppressTransientMarkers()) {
+  if (DebugHook_SuppressTransientMarkers() || GameplayReplay_Active()) {
     return;
   }
   pendingPlacementAsset = g_InGamePendingPlacementArmyAsset;

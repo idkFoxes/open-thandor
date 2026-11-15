@@ -49,7 +49,11 @@ inline constexpr int TEXT_ID_PROJECT_BASE = 0x7F0000;
 /* the effective UI scale when it differs from the chosen one, or the one auto chose; written by
    TextResource_SetUiScaleNote */
 #define TEXT_ID_ADVANCED_NOTE_UI_SCALE (TEXT_ID_PROJECT_BASE + 23)
-inline constexpr int TEXT_ID_PROJECT_COUNT = 24;
+#define TEXT_ID_CUSTOM_MAPS (TEXT_ID_PROJECT_BASE + 24)
+#define TEXT_ID_CUSTOM_MAP_HEADERS (TEXT_ID_PROJECT_BASE + 25)
+#define TEXT_ID_OPEN_THANDOR_GITHUB (TEXT_ID_PROJECT_BASE + 26)
+#define TEXT_ID_MAP_EDITOR_GITHUB (TEXT_ID_PROJECT_BASE + 27)
+inline constexpr int TEXT_ID_PROJECT_COUNT = 28;
 
 /* Not in the original: sets the text of TEXT_ID_ADVANCED_NOTE_UI_SCALE (Latin-1, cut to its buffer). */
 void TextResource_SetUiScaleNote(const char *text);

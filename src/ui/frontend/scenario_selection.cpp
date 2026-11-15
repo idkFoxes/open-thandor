@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/scenario_selection.h>
 #include <thandor/thandor.h>
+#include <thandor/ui/frontend/custom_maps.h>
 #include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
@@ -203,6 +204,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
 
 {
   FrontendUiImage *ui = FrontendUi_Image(scenarioSelectionPage);
+  CustomMaps_LeaveMenu();
   /* scenarioOptionRow0..4 are the page's Cancel, Start, Load game, Single game and Campaigns buttons. */
   UiNodeFlags *controlFlags;
   UiControlCount activeTabIndex;
@@ -289,6 +291,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
 void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode)
 
 {
+  CustomMaps_LeaveMenu();
   
   /* climb from the clicked control to the root node of the frontend UI */
   while (sourceNode->parent != UI_NODE_NONE) {
@@ -308,6 +311,7 @@ void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode)
 void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode)
 
 {
+  CustomMaps_LeaveMenu();
   
   /* climb from the clicked control to the root node of the frontend UI */
   while (sourceNode->parent != UI_NODE_NONE) {
@@ -326,6 +330,7 @@ void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode)
 void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
 
 {
+  CustomMaps_LeaveMenu();
   
   /* climb from the clicked control to the root node of the frontend UI */
   while (sourceNode->parent != UI_NODE_NONE) {
@@ -633,6 +638,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(UiFramedTextButtonControl 
   uint32_t selectedTabIndex;
   Ptr32<void> *scenarioPathPointerTable;
 
+  if (CustomMaps_MenuActive()) { CustomMaps_Start(); return; }
   /* selectionControl is the frontend template's gameSelectStartButton; the other nodes are its siblings. */
   FrontendUiImage *ui = FrontendUi_ImageOfNode(selectionControl,offsetof(FrontendUiImage,gameSelectStartButton));
   if (!UiSelectableGroup_FindVisibleSelected(nullptr,&selectedTabIndex,3,

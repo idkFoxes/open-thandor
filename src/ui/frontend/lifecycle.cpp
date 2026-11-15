@@ -8,10 +8,16 @@
 #include <thandor/ui/frontend/lifecycle.h>
 #include <algorithm>
 #include <thandor/thandor.h>
+#include <thandor/ui/frontend/custom_maps.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/version.h>
 
+#include <SDL3/SDL.h>
+
 #include <array>
+#include <filesystem>
+#include <new>
+#include <string>
 #include <initializer_list>
 
 /* Module data. */
@@ -30,8 +36,161 @@ SoundVoiceSet *g_FrontendMusicVoiceSet = nullptr;
 
 uint16_t g_FrontendMusic00SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'm', 'u', 's', 'i', 'c', '0', '0', '.', 's', 'a', 'm', 0}; /* L"sound\\music00.sam" */
 
+namespace {
+
+constexpr unsigned kRepositoryActionPage = 0x7d;
+constexpr int kRepositoryMargin = 8;
+constexpr int kGitHubWidth = 80;
+constexpr int kEditorWidth = 104;
+constexpr int kRepositoryGap = 6;
+constexpr auto kGameRepository = "https://github.com/idkFoxes/open-thandor";
+constexpr auto kEditorRepository = "https://github.com/idkFoxes/thandor-map-editor";
+
+struct RepositoryButtons {
+  UiFramedTextButtonControl github;
+  UiFramedTextButtonControl editor;
+  bool wasOnMainMenu{};
+  bool editorInstalled{};
+};
+
+RepositoryButtons *g_RepositoryButtons = nullptr;
+UiActionHandlerPage g_RepositoryActions{};
+
+bool FrontendShowsMainMenu()
+{
+  const auto *root = g_FrontendRootNode;
+  return root != nullptr && g_UiRootNode == &root->frontendRoot.root &&
+         g_FrontendActiveRomRecord != nullptr &&
+         g_FrontendActiveRomRecord->recordId == FRONTEND_ROM_RECORD_MAIN_MENU &&
+         UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendViewModeStack)) == 0 &&
+         UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&g_FrontendRootNode->frontendPageStack)) == FRONTEND_PAGE_MAIN &&
+         !Any(root->menuRoomModelView.contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED);
+}
+
+void OpenRepository(const char *url)
+{
+  if (!SDL_OpenURL(url)) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Could not open %s: %s", url, SDL_GetError());
+  }
+}
+
+bool MapEditorInstalled()
+{
+  // Match the executable and the versioned AppImage produced by the editor's build scripts.
+  const auto lowerAscii = [](char16_t ch) {
+    return ch >= u'A' && ch <= u'Z' ? static_cast<char16_t>(ch + u'a' - u'A') : ch;
+  };
+  const std::filesystem::path gameRoot(
+      std::u16string(reinterpret_cast<const char16_t *>(g_ExecutableDirectoryUtf16)));
+  std::error_code error;
+  for (std::filesystem::directory_iterator it(gameRoot, error), end;
+       !error && it != end; it.increment(error)) {
+    const auto &path = it->path();
+    auto extension = path.extension().u16string();
+    std::transform(extension.begin(), extension.end(), extension.begin(), lowerAscii);
+    if (extension != u".exe" && extension != u".appimage") {
+      continue;
+    }
+    std::u16string stem;
+    for (char16_t ch : path.stem().u16string()) {
+      ch = lowerAscii(ch);
+      if ((ch >= u'a' && ch <= u'z') || (ch >= u'0' && ch <= u'9')) {
+        stem.push_back(ch);
+      }
+    }
+    std::error_code fileError;
+    if ((stem.starts_with(u"thandormapeditor") || stem.starts_with(u"thandorvulkanmapeditor")) &&
+        it->is_regular_file(fileError)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void UpdateRepositoryButtons()
+{
+  if (!g_RepositoryButtons) {
+    return;
+  }
+  auto &buttons = *g_RepositoryButtons;
+  const bool mainMenu = FrontendShowsMainMenu();
+  if (mainMenu && !buttons.wasOnMainMenu) {
+    buttons.editorInstalled = MapEditorInstalled();
+    auto &github = buttons.github.selectable.base;
+    github.rightOffset = -kRepositoryMargin - (buttons.editorInstalled ? 0 : kEditorWidth + kRepositoryGap);
+    github.leftOffset = github.rightOffset - kGitHubWidth;
+    UiRootStack_Relayout();
+  }
+  buttons.wasOnMainMenu = mainMenu;
+  const auto setVisible = [](UiFramedTextButtonControl &button, bool visible) {
+    if (visible) {
+      button.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    } else {
+      button.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
+    }
+  };
+  setVisible(buttons.github, mainMenu);
+  setVisible(buttons.editor, mainMenu && !buttons.editorInstalled);
+}
+
+void InstallRepositoryButtons(FrontendUiImage &frontend)
+{
+  void *memory = nullptr;
+  if (g_MemoryApi.alloc(sizeof(RepositoryButtons), &memory) != 0) {
+    return;
+  }
+  g_RepositoryButtons = new (memory) RepositoryButtons{};
+  auto &root = frontend.frontendRoot.root.base;
+  auto &buttons = *g_RepositoryButtons;
+  const auto init = [&](UiFramedTextButtonControl &button, UiTextResourceId label,
+                        unsigned action, int width) {
+    button = frontend.campaignsTabButton;
+    auto &node = button.selectable.base;
+    node.parent = &root;
+    node.firstChild = UI_NODE_NONE;
+    node.nextSibling = UI_NODE_NONE;
+    node.leftAnchorQ31 = node.rightAnchorQ31 = 0x80000000u;
+    node.topAnchorQ31 = node.bottomAnchorQ31 = 0x80000000u;
+    node.rightOffset = -kRepositoryMargin;
+    node.leftOffset = node.rightOffset - width;
+    node.topOffset = -51;
+    node.bottomOffset = -27;
+    node.nodeFlags = UI_NODE_SUPPRESSED;
+    button.selectable.stateFlags = UI_BUTTON_PLAY_ACTIVATION_SOUND | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED;
+    button.selectable.actionId = (kRepositoryActionPage << 8) + action;
+    button.textResourceId = label;
+  };
+  init(buttons.github, TEXT_ID_OPEN_THANDOR_GITHUB, 0, kGitHubWidth);
+  init(buttons.editor, TEXT_ID_MAP_EDITOR_GITHUB, 1, kEditorWidth);
+
+  // Append so the buttons draw above the menu room and receive pointer input first.
+  auto *last = root.firstChild.get();
+  while (last->nextSibling != UI_NODE_NONE) {
+    last = last->nextSibling;
+  }
+  last->nextSibling = &buttons.github.selectable.base;
+  buttons.github.selectable.base.nextSibling = &buttons.editor.selectable.base;
+
+  g_RepositoryActions.handlers[0] = [](void *) {
+    if (FrontendShowsMainMenu()) OpenRepository(kGameRepository);
+  };
+  g_RepositoryActions.handlers[1] = [](void *) {
+    if (FrontendShowsMainMenu() && !MapEditorInstalled()) OpenRepository(kEditorRepository);
+  };
+  UiActionHandlers_SetPage(kRepositoryActionPage, &g_RepositoryActions);
+  UiRootStack_Relayout();
+}
+
+void TickFrontendWithRepositoryButtons(UiRootNode *root)
+{
+  UpdateRepositoryButtons();
+  FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(root);
+}
+
+} // namespace
+
 static UiRootCallbacks g_FrontendUiRootCallbacks = {
-    .frameUpdate = UI_SLOT(FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState),
+    .frameUpdate = UI_SLOT(TickFrontendWithRepositoryButtons),
     .keyboardFallback = UI_SLOT(FrontendRuntime_DispatchCommandByCodeAndModifierFlags)};
 
 /* row pointer table of the frontend network backend list (display
@@ -334,6 +493,8 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   std::copy_n(templateDwords,sizeof(FrontendUiImage) / 4,rootDwords);
   FrontendMenu_BindSharedResources(frontendUiState);
   UiRootStack_Push(&g_FrontendUiRootCallbacks,&FrontendUi_Image(frontendUiState)->frontendRoot.root);
+  CustomMaps_InstallUi();
+  InstallRepositoryButtons(*g_FrontendRootNode);
   if (Any(PersistentSettings_ReadSoundOptions() & PERSISTENT_SOUND_OPTION_MUSIC)) {
     FrontendMusic_StartMenuMusic();
   }
@@ -560,6 +721,12 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   if (g_FrontendRootNode != nullptr) {
     FrontendTeardown_SaveStatusTextAndHostAddress(&g_FrontendRootNode->frontendRoot.root);
     UiRootStack_Pop(root);
+    CustomMaps_ReleaseUi();
+    UiActionHandlers_SetPage(kRepositoryActionPage, nullptr);
+    if (g_RepositoryButtons) {
+      g_MemoryApi.free(g_RepositoryButtons);
+      g_RepositoryButtons = nullptr;
+    }
     g_MemoryApi.free(root);
     g_FrontendRootNode = nullptr;
   }
@@ -592,11 +759,7 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   UiFrame_FlushInputAndResetPendingTicks();
 }
 
-/* Not in the original (open-thandor): "Open Thandor 1.0.7" (THANDOR_PRODUCT_VERSION_STRING) at the bottom right of
-   the main menu, in the small grey game font with its shadow. Shown while the frontend is the front root and the
-   menu room shows the entry hall (ROM record FRONTEND_ROM_RECORD_MAIN_MENU) with no dialog page open: centred in
-   the black bar below the room, or just above the bottom edge where the room reaches it. Called by UiFrame_Draw
-   after the roots, before the tooltip. */
+/* Draw the version below the repository links on the main menu. */
 void FrontendVersionLabel_Draw()
 {
   constexpr uint32_t kStyle = (0u << TEXT_STYLE_FONT_SHIFT) | (2u << TEXT_STYLE_PALETTE_SHIFT) | TEXT_STYLE_ALIGN_RIGHT;
@@ -608,31 +771,12 @@ void FrontendVersionLabel_Draw()
     }
     return utf16;
   }();
-  FrontendUiImage *const frontendRoot = g_FrontendRootNode;
+  if (!FrontendShowsMainMenu()) {
+    return;
+  }
   uint32_t lineHeight;
-  int barTop;
-  int lineTop;
-
-  if ((frontendRoot == nullptr) || (g_UiRootNode != &frontendRoot->frontendRoot.root) || (g_FrontendActiveRomRecord == nullptr) ||
-      (g_FrontendActiveRomRecord->recordId != FRONTEND_ROM_RECORD_MAIN_MENU) ||
-      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendViewModeStack)) != 0) ||
-      (UiPageStack_ActivePageIndex(UiLayoutContainerControl_AsPageStack(&frontendRoot->frontendPageStack)) !=
-       FRONTEND_PAGE_MAIN)) {
-    return;
-  }
-  const FrontendModelPointerContext *room =
-       &frontendRoot->menuRoomModelView;
-  if (Any(room->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED)) {
-    return;
-  }
   FontGlyph_GetLogicalSizeForStyle(kStyle,0,&lineHeight);
-  barTop = room->base.bottom;
-  if ((barTop < 0) || ((int)g_FramebufferHeight - barTop < (int)lineHeight + 4)) {
-    lineTop = (int)g_FramebufferHeight - (int)lineHeight - kMargin;
-  }
-  else {
-    lineTop = barTop + ((int)g_FramebufferHeight - barTop - (int)lineHeight) / 2;
-  }
+  const int lineTop = static_cast<int>(g_FramebufferHeight) - static_cast<int>(lineHeight) - kMargin;
   if (g_GraphicsFramebufferBeginAccess()) {
     return;
   }
