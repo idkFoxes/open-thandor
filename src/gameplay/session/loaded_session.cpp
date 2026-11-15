@@ -220,7 +220,11 @@ static bool InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage,
   if (!InGameSession_CreateRoot(reinterpret_cast<SelectionInfoEntitySlots *>(g_SelectionPlayerBlocks),outRoot,outError)) {
     return false;
   }
-  /* open-thandor: a custom map's copy carries "maps\<name>." (custom_maps.h) and gives maps\<name>\<name>.lev */
+  /* open-thandor: a custom map's copy carries "maps\<name>." (custom_maps.h) and gives maps\<name>.lev; its project
+     becomes active, so the level resources can load its terrain files. The save holds the level and the field
+     grid; without the project (deleted or failing its checks, logged) a level on stock terrain still loads, one
+     on the project's own terrain fails to load its textures like a missing package file. */
+  CustomMaps_ActivateIdentifier((levelImage->header).levelFileNameUtf16);
   if (!CustomMaps_LevelPathOfIdentifier(g_FrontendScenarioPathScratchUtf16,(levelImage->header).levelFileNameUtf16)) {
     WidePath_CombineDirectoryAndLeaf
               (g_FrontendScenarioPathScratchUtf16,

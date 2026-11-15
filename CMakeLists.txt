@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 # The single version source: the generated version header (include/thandor/version.h.in), the version resource of
 # thandor.exe (src/platform/bootstrap/thandor.rc.in) and the installer take it from here.
-project(open_thandor VERSION 1.0.7 LANGUAGES CXX RC)
+project(open_thandor VERSION 1.0.7 LANGUAGES C CXX RC)  # C: third_party/miniz
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -55,6 +55,7 @@ add_executable(thandor WIN32
     src/assets/scenario/catalog.cpp
     src/assets/scenario/custom_map_validate.cpp
     src/assets/scenario/custom_maps.cpp
+    src/assets/scenario/custom_project.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
     src/assets/text/objective_texts.cpp
@@ -321,6 +322,21 @@ add_executable(thandor WIN32
     src/world/terrain/water_relaxation.cpp
 )
 target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# Custom maps (docs/custom_maps.md): the map editor's project-format reader for maps\<name>.thmap and miniz for its
+# ZIP form (third_party/, MIT licences: third_party/miniz/LICENSE, third_party/map_editor_project_format/README.txt).
+add_library(thandor_thmap STATIC
+    third_party/map_editor_project_format/src/binary.cpp
+    third_party/map_editor_project_format/src/gfx.cpp
+    third_party/map_editor_project_format/src/map_project_archive.cpp
+    third_party/map_editor_project_format/src/pck.cpp
+    third_party/map_editor_project_format/src/text_resource.cpp
+    third_party/miniz/miniz.c
+)
+# (miniz is public for the custommaps self-test, which writes broken ZIP projects)
+target_include_directories(thandor_thmap PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/map_editor_project_format/include
+                           ${CMAKE_CURRENT_SOURCE_DIR}/third_party/miniz)
+target_compile_definitions(thandor_thmap PUBLIC MINIZ_NO_STDIO MINIZ_NO_ZLIB_COMPATIBLE_NAMES)
+target_link_libraries(thandor PRIVATE thandor_thmap)
 # The version header <thandor/version.h> and the resources (icon, VERSIONINFO), generated from project(VERSION).
 configure_file(include/thandor/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/thandor/version.h @ONLY)
 set(THANDOR_RC_ICON ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/bootstrap/thandor.ico)

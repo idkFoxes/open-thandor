@@ -38,7 +38,8 @@
        but reads as indices (fog-of-war lighting index dword, occupancy mask, resource extraction descriptor).
    Paths: UTF-16, terminated, no '.', ':', '/', wildcards (except '?' in the sound pattern), no leading, doubled
    or trailing backslash, and a fixed directory prefix per field (gfx\, flm\, sound\, engine\ or level\, mdl\,
-   arm\, sht\, eff\, each list also level\; the field grid path level\ or maps\). With '.' banned there is no ".." and no extension. */
+   arm\, sht\, eff\, each list also level\; the field grid path level\: a custom map's own field
+   grid is its project's level\<x>.fld, custom_maps.cpp). With '.' banned there is no ".." and no extension. */
 
 #include <thandor/assets/scenario/custom_map_validate.h>
 #include <thandor/thandor.h>
@@ -106,7 +107,7 @@ const char *const s_LevPathNames[LEV_PATH_COUNT] = {"field grid", "ground textur
                                                     "technology"};
 /* allowed directory prefixes (lower case, compared case-insensitively), at most two per field */
 const char *const s_LevPathPrefixes[LEV_PATH_COUNT][2] = {
-    {"level\\", "maps\\"}, {"gfx\\", nullptr},    {"gfx\\", nullptr},   {"gfx\\", nullptr},
+    {"level\\", nullptr},  {"gfx\\", nullptr},    {"gfx\\", nullptr},   {"gfx\\", nullptr},
     {"gfx\\", nullptr},    {"gfx\\", nullptr},    {"gfx\\", nullptr},   {"flm\\", nullptr},
     {"sound\\", nullptr},  {"engine\\", "level\\"}};
 

@@ -34,7 +34,7 @@ static bool InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
    player left, tears the session down along the matching path and returns true. A failed start or an emptied UI
    root stack returns false with the error code in *outError, which the caller hands to the fatal-error dispatcher.
 */
-bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
+static bool InGameRuntime_RunSession(LevelAssetRuntimePrefix *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError)
 
 {
@@ -123,6 +123,22 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
     Autosave_AfterFrame();
   } while (g_UiRootNode != UI_ROOT_STACK_END);
   return InGameRuntime_FailSession(FATAL_ERROR_GENERAL_FAILURE,outError);
+}
+
+/* InGameRuntime_RunSession between the project switches of the custom maps (open-thandor, custom_maps.h): a new
+   session on a custom map makes its project active (a network session or another level releases it; a loaded
+   save activates in InGameRuntime_InitializeLoadedSession, which knows the level only then), and every session end
+   releases it - a "Neustart" reads and checks the project again. */
+bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
+          FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError)
+
+{
+  if ((loadExistingSessionFlag & 1U) == 0) {
+    CustomMaps_ActivateIdentifier((levelAsset->header).levelFileNameUtf16);
+  }
+  const bool result = InGameRuntime_RunSession(levelAsset,loadExistingSessionFlag,levelPathUtf16,outError);
+  CustomMaps_Deactivate();
+  return result;
 }
 
 /* Sets or clears flag in the world runtime flags. */

@@ -429,6 +429,9 @@ static void FrontendMainLoop_LoadSelectedLevel()
   g_FrontendLoadedLevelAsset = nullptr;
   /* Package_LoadEntryWithSize is the core of Package_LoadEntry (same allocation); the original used
      Package_LoadEntry and trusted the level header's size */
+  /* open-thandor: the project of a custom map becomes active (its files are served), any other level releases it;
+     a project that is gone or fails its checks now leaves maps\<name>.lev unloadable (the failure below) */
+  CustomMaps_ActivateLevelPath(g_FrontendScenarioPathScratchUtf16);
   loadedPackageEntry =
        Package_LoadEntryWithSize(g_FrontendScenarioPathScratchUtf16,&loadedByteCount,&packageLoadErrorCode);
   if (loadedPackageEntry == nullptr) {

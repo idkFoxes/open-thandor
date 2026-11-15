@@ -6,6 +6,8 @@
  */
 
 #include <thandor/assets/package/runtime.h>
+#include <cstring>
+#include <thandor/assets/scenario/custom_maps.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -69,6 +71,23 @@ bool Package_LoadEntryIntoBuffer
 
   const PackageLoadFlags loadFlags = FromBits<PackageLoadFlags>(bufferCapacityAndLoadFlags);
   bufferCapacity = ToBits(loadFlags & PACKAGE_LOAD_CAPACITY_MASK);
+  /* open-thandor: the files of the active custom map project come first (none without one, custom_maps.h) */
+  const uint8_t *servedData;
+  uint32_t servedBytes;
+  if (!Any(loadFlags & PACKAGE_LOAD_SKIP_PACKAGES) && CustomMaps_FindServedAsset(path,&servedData,&servedBytes)) {
+    if (servedBytes > bufferCapacity) { /* (no packed data is staged: like a loose file, also into the scratch) */
+      Package_SetLastErrorPath(path);
+      if (outByteCountOrError != nullptr) {
+        *outByteCountOrError = FATAL_ERROR_OUT_OF_MEMORY;
+      }
+      return false;
+    }
+    std::memcpy(destination,servedData,servedBytes);
+    if (outByteCountOrError != nullptr) {
+      *outByteCountOrError = servedBytes;
+    }
+    return true;
+  }
   entry = nullptr;
   if (!Any(loadFlags & PACKAGE_LOAD_SKIP_PACKAGES)) {
     entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
@@ -261,7 +280,25 @@ void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *
   uint32_t allocError;
   uint32_t decodeErrorCode;
   uint32_t errorCode;
+  const uint8_t *servedData;
+  uint32_t servedBytes;
 
+  /* open-thandor: the files of the active custom map project come first (none without one, custom_maps.h); the
+     copy is allocated like a loose file's */
+  if (CustomMaps_FindServedAsset(path,&servedData,&servedBytes)) {
+    allocError = g_MemoryApi.alloc(servedBytes,&buffer);
+    if (allocError != 0) {
+      if (outErrorCode != nullptr) {
+        *outErrorCode = allocError;
+      }
+      return nullptr;
+    }
+    std::memcpy(buffer,servedData,servedBytes);
+    if (outByteCount != nullptr) {
+      *outByteCount = servedBytes;
+    }
+    return buffer;
+  }
   entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
   if (entry == nullptr) {
     if (FileSystem_LoadWholeFileNearExecutable(path,&buffer,outByteCount,&errorCode)) {

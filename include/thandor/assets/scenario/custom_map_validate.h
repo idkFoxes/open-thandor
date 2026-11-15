@@ -11,9 +11,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* Custom maps (maps\<name>\<name>.lev, the expanded <name>.fld, map.ini; single player only) come from users and
-   are untrusted. Limits of CustomMap_Validate, chosen so that every stock level and field grid passes (all 55 of
-   LEVEL.PCK) and every value the level loaders use as a size, offset, count or index stays inside its table:
+/* Custom maps (the level and expanded field grid of a map editor project maps\<name>.thmap; single player only)
+   come from users and are untrusted. Limits of CustomMap_Validate, chosen so that every stock level and field grid
+   passes (all 55 of LEVEL.PCK) and every value the level loaders use as a size, offset, count or index stays inside its table:
      - field grid sides: 4k + 3 cells (fld.py rule; every stock grid is 8k + 3), CUSTOM_MAP_FIELD_MIN_SIDE_CELLS ..
        CUSTOM_MAP_FIELD_MAX_SIDE_CELLS (the stock range 59..139: well inside the terrain renderer's 257 rows, the
        path cost queue and the package scratch buffer);
